@@ -1,82 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbYJTBNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752629AbYJTBQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752420AbYJTBNm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 21:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbYJTBNd
+	id S1752629AbYJTBQo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 21:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbYJTBQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 21:13:33 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:38073 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751172AbYJTBNc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 21:13:32 -0400
-Date: Sun, 19 Oct 2008 21:13:28 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Andreas Dilger <adilger@sun.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] ext4: Replace hackish
-	ext4_mb_poll_new_transaction with commit callback
-Message-ID: <20081020011327.GA8162@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andreas Dilger <adilger@sun.com>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1224201763-9637-1-git-send-email-tytso@mit.edu> <20081017060424.GA26192@skywalker> <20081017100214.GB11557@mit.edu> <20081017122552.GC21503@mit.edu> <20081019224904.GF3184@webber.adilger.int>
+	Sun, 19 Oct 2008 21:16:36 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49635 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751955AbYJTBQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 21:16:35 -0400
+Message-ID: <4F580DA88E8146FC8BDA0789613AB813@zhaoleiwin>
+From: "Zhaolei" <zhaolei@cn.fujitsu.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Cc: <linux-kernel@vger.kernel.org>, <dbrownell@users.sourceforge.net>,
+       <linux-usb@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0810171114500.2178-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH] Fix debugfs_create_file's error checking method for usb/gadget/
+Date: Mon, 20 Oct 2008 09:15:16 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081019224904.GF3184@webber.adilger.int>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: text/plain;
+	charset="ISO-8859-1"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m9K1Gmdq009870
 
-On Sun, Oct 19, 2008 at 04:49:28PM -0600, Andreas Dilger wrote:
+From: "Alan Stern" <stern@rowland.harvard.edu>
+To: "Zhaolei" <zhaolei@cn.fujitsu.com>
+Cc: <linux-kernel@vger.kernel.org>; <dbrownell@users.sourceforge.net>; <linux-usb@vger.kernel.org>
+Sent: Friday, October 17, 2008 11:18 PM
+Subject: Re: [PATCH] Fix debugfs_create_file's error checking method for usb/gadget/
+
+
+> On Fri, 17 Oct 2008, Zhaolei wrote:
 > 
-> The problem with the mechanism you've implemented is that it isn't
-> possible to add any other kind of callback to the journal.  There
-> is only a single callback function, and the entries in the "t_private_list"
-> are all assumed to be "ext4_free_data" structures so even if other
-> users wanted to add callbacks they would only be handled by the
-> release_blocks_on_commit() function.
+>> Hi,
+>> 
+>> debugfs_create_file() returns NULL if an error occurs, returns -ENODEV
+>> when debugfs is not enabled in the kernel.
+>> 
+>> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+>> ---
+>>  drivers/usb/gadget/s3c2410_udc.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>> 
+>> diff --git a/drivers/usb/gadget/s3c2410_udc.c b/drivers/usb/gadget/s3c2410_udc.c
+>> index 29d13eb..4ba50ef 100644
+>> --- a/drivers/usb/gadget/s3c2410_udc.c
+>> +++ b/drivers/usb/gadget/s3c2410_udc.c
+>> @@ -1894,7 +1894,7 @@ static int s3c2410_udc_probe(struct platform_device *pdev)
+>>  udc->regs_info = debugfs_create_file("registers", S_IRUGO,
+>>  s3c2410_udc_debugfs_root,
+>>  udc, &s3c2410_udc_debugfs_fops);
+>> - if (IS_ERR(udc->regs_info)) {
+>> + if (IS_ERR(udc->regs_info) || !udc->regs_info) {
+>>  dev_warn(dev, "debugfs file creation failed %ld\n",
+>>  PTR_ERR(udc->regs_info));
+>>  udc->regs_info = NULL;
 > 
-> Is there any reason not to make this more generic and have the callback
-> function pointer embedded in the "ext4_free_data" struct in some way
-> that other callbacks could be registered?  This would still avoid the
-> need to allocate for each of these operations, but would make the
-> callback mechanism more generic and useful.
+> In fact the original code and your patch are both wrong.  The test 
+> should simply be:
+> 
+> if (!udc->regs_info) {
+> dev_warn(dev, "debugfs file creation failed\n");
+> 
+Hello, Alan Stern
 
-Another possibility would be to simply re-point
-sbi->s_journal->j_commit_callback() to a function like this:
+If we only check if (!udc->regs_info), that is no problem except that we
+can't see dev_warn when debugfs isn't enabled in the kernel.
+It this warning message is not necessary, I agree with you.
 
-static void new_commit_callback_func(journal_t *journal, transaction_t *txn)
-{
-	do_new_callback_stuff(journal, txn)
-	release_blocks_on_commit(journal, txn)
-}
-
-Or Luster could initialize ext4, and then intercept the callback,
-stash it away in a pointer, and then do this:
-
-static void new_commit_callback_func(journal_t *journal, transaction_t *txn)
-{
-	do_new_callback_stuff(journal, txn)
-	(*orig_value_of_j_commit_callback)(journal, txn)
-}
-
-
-If you want to be even *more* general, we could hang a struct
-list_head off of struct ext4_sb_info which contains the linked list of
-functions to be called, one of which would be release_blocks_on_commit(), 
-and then change sbi->s_journal->j_commit_callback to point to a function
-which iterates over the functions in the list_head
-sbi->s_commit_callback_funcs.
-
-Do you have specific use in mind for Lustre?  Could one of the above
-schemes work for you?
-
-							- Ted
+Thanks!
+> (The line setting udc->regs_info to NULL can then be removed.)
+> 
+> The driver should be able to work even if debugfs isn't enabled in the 
+> kernel.
+> 
+> Alan Stern
+> 
+> 
+>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
