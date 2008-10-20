@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbYJTXCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYJTXC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755173AbYJTXCo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 19:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbYJTXCg
+	id S1755513AbYJTXC5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 19:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbYJTXCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 19:02:36 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3784 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753509AbYJTXCf (ORCPT
+	Mon, 20 Oct 2008 19:02:44 -0400
+Received: from zrtps0kn.nortel.com ([47.140.192.55]:56447 "EHLO
+	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755133AbYJTXCn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 19:02:35 -0400
-Subject: Re: [PATCH 1/3] Add file patterns to MAINTAINERS
-From: Joe Perches <joe@perches.com>
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Pavel Machek <pavel@suse.cz>,
-       Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <ukleinek@strlen.de>
-In-Reply-To: <20081020225058.GA7184@isilmar.linta.de>
-References: <1224541704-30357-1-git-send-email-joe@perches.com>
-	 <1224541704-30357-2-git-send-email-joe@perches.com>
-	 <20081020225058.GA7184@isilmar.linta.de>
-Content-Type: text/plain
-Date: Mon, 20 Oct 2008 16:02:26 -0700
-Message-Id: <1224543747.12101.66.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.0-2mdv2009.0 
+	Mon, 20 Oct 2008 19:02:43 -0400
+Message-ID: <48FD0DF0.2050008@nortel.com>
+Date: Mon, 20 Oct 2008 17:02:08 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+MIME-Version: 1.0
+To: david@lang.hm
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: sched_yield() options
+References: <alpine.DEB.1.10.0810201531010.21749@asgard.lang.hm>
+In-Reply-To: <alpine.DEB.1.10.0810201531010.21749@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Oct 2008 23:02:09.0361 (UTC) FILETIME=[E13FC410:01C93307]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-21 at 00:50 +0200, Dominik Brodowski wrote:
-> Hi,
+david@lang.hm wrote:
+> I've seen a lot of discussion about how sched_yield is abused by 
+> applications. I'm working with a developer on one application that looks 
+> like it's falling into this same trap (mutexes between threads and using 
+> sched_yield (or more precisely pthread_yield()) to let other threads get 
+> the lock)
 > 
-> >  PCMCIA SUBSYSTEM
-> >  P:	Linux PCMCIA Team
-> >  L:	linux-pcmcia@lists.infradead.org
-> >  W:	http://lists.infradead.org/mailman/listinfo/linux-pcmcia
-> >  T:	git kernel.org:/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
-> >  S:	Maintained
-> > +F:	Documentation/pcmcia/
-> > +F:	drivers/*/pcmcia/
-> > +F:	drivers/pcmcia/
-> > +F:	include/pcmcia/
-> > +F:	sound/pcmcia/
+> however I've been having a hard time tracking down the appropriate 
+> discussions to forward on to the developer (both for why what he's doing 
+> is bad, and for what he should be doing instead)
 > 
-> sound/pcmcia/ and lots of drivers/*/pcmcia is actually really
-> driver-related and not PCMCIA related so I'm not really happy if this will
-> be described by the PCMCIA F:-realm...
+> could someone point out appropriate mailing list threads, or other 
+> documentation for this?
 
-I generated that pattern from patchsets like:
-http://lists.infradead.org/pipermail/linux-pcmcia/2008-August/005787.html
+The main reason why it's bad is that the behaviour of yield() for 
+SCHED_OTHER tasks is not strongly defined in the spec.  Depending on 
+OS/version you may yield to all other SCHED_OTHER tasks, only one task, 
+or anywhere in between.
 
-If you could send a more correct pattern,
-it's easy to change.
+Also, yield() gives the kernel no information on why it's yielding and 
+to whom, so it is impossible for the kernel to make the optimal decision 
+in all cases.
 
-cheers, Joe
+For more information, try searching the linux.kernel google groups 
+archive.  There's a thread called "yield API" with some information. 
+See also " CFS: some bad numbers with Java/database threading [FIXED]".
 
+Chris
