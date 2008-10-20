@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbYJTR1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbYJTR2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754802AbYJTR1r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 13:27:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYJTR1i
+	id S1756078AbYJTR2g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 13:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYJTR21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 13:27:38 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:5411 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752065AbYJTR1h (ORCPT
+	Mon, 20 Oct 2008 13:28:27 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:39997 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751518AbYJTR21 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 13:27:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=rtd7waOEbaaP2X1U1ikPB7alC4oLIEEKvaKNLlJG2ufYtJnAyYP/7JGXuUzvSfjI9R
-         Cz31TA0qveoz1OMvFU4s1IFfZWM1hXpx+4gEeEzebzk3abEPZgD0U0q5Zqh+27dkkaDU
-         tLCVkGQ1w1XUbhoSWVQ0hHdJLdEe0v00tTNQc=
-From: Eric Lacombe <goretux@gmail.com>
-To: avi@redhat.com
-Subject: [x86] - technical questions about HV implementation on Intel VT
-Date: Mon, 20 Oct 2008 19:27:33 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
+	Mon, 20 Oct 2008 13:28:27 -0400
+Date: Mon, 20 Oct 2008 13:28:24 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
+In-Reply-To: <20081020170808.GB7249@yoda.jdub.homelinux.org>
+Message-ID: <alpine.DEB.1.10.0810201327410.4852@gandalf.stny.rr.com>
+References: <20080906050602.409299112@goodmis.org> <20080906120346.GA30964@elte.hu> <20081016181452.GA29739@yoda.jdub.homelinux.org> <alpine.DEB.1.10.0810161421530.11042@gandalf.stny.rr.com> <20081016183529.GB29739@yoda.jdub.homelinux.org>
+ <alpine.DEB.1.10.0810161444050.11042@gandalf.stny.rr.com> <20081016150106.6ddf7e46@zod.rchland.ibm.com> <alpine.DEB.1.10.0810201222570.3760@gandalf.stny.rr.com> <20081020170808.GB7249@yoda.jdub.homelinux.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810201927.33580.goretux@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-I worked on a particular hypervisor, that just put in a VM the currently 
-running kernel. But I faced some problems and I would like to know some good 
-practices in order to debug the module I develop.
+On Mon, 20 Oct 2008, Josh Boyer wrote:
 
-When the module put the current kernel in "vmx non-root mode", some conditions 
-irremediably trigger a VM-Exit (with the processor I use, loading cr3 always 
-trigger a vmexit). And here comes my problem. How can I reliably get 
-information (by way of printk) when my hypervisor screw something up, and 
-crash the machine with lots of debug info that scroll quickly on the screen, 
-just before freezing the machine.
+> On Mon, Oct 20, 2008 at 12:30:33PM -0400, Steven Rostedt wrote:
+> >> Anyway, if you want a tester let me know.  It seems 2.6.27.1 should be
+> >> fine since FTRACE was disabled, but for .28-rc1 it would be cool if it
+> >> worked :).
+> >
+> >Hi Josh,
+> >
+> >I've been looking deeper at the code for PPC. I realized that my PPC64 box 
+> >that I've been testing on did not use modules. While looking at the module 
+> >code it dawned on me the dynamic ftrace needs a bit of work. This is 
+> >because the way modules are handled in PPC (and other architectures as 
+> >well).  The jmps used by mcount is a 24 bit jump. Since the modules are 
+> >loaded farther than 24bits away, a trampoline is needed.
+> 
+> Ah, indeed.
+> 
+> >A bit of rework is needed in the ftrace infrastructure to handle the 
+> >trampoline. Too much work to go into 28. I'll start working on code that 
+> >can hopefully be ready and tested for 29. It's not that major of a change, 
+> >but since the merge window for 28 has already been opened, we would like 
+> >to get a bit more testing in before we hand it over to Linus.
+> 
+> That seems like a good plan.  Should we mark dynamic ftrace as X86 only
+> in Kconfig for .28 to prevent people from inadvertently setting it?
 
-In fact, It seems that in some situations the machine "loop on page faults".
-Let me depict the scenario:
-After a vmxlaunch, the host hand over the cpu to the guest then a vmexit 
-occurs. Thus, the guest hand over to the host. the host checks some things 
-and issue a vmxresume, and.. a vmexit occurs again, etc. etc.
+Well, we probably should disable it for PPC at least. I don't know if 
+sparc has the same issue.
 
-So, when the host take control for the first time after the first vmexit, I 
-would like the host to print informations and to "die correctly", so as I 
-could read these information on the screen (ie, without being polluted with 
-lots of debug messages that scroll on the screen).
+David?
 
-Note: I already have some vmexits due to invalid guest state during vmxlaunch, 
-but it seems (because my trivial printings for those situations do not show 
-again) I fully repaired those problems. Now there is a lot of debug info 
-quickly scrolling on the screen before the system crashes :/
+-- Steve
 
-Thanks in advance for your answers.
-
-	Eric
