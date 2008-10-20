@@ -1,84 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbYJTVji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbYJTVjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756698AbYJTVji (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 17:39:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756315AbYJTVi0
+	id S1756606AbYJTVjz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 17:39:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756489AbYJTVip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 17:38:26 -0400
-Received: from kroah.org ([198.145.64.141]:37583 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756307AbYJTViZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 17:38:25 -0400
-Subject: patch staging-sxg-depends-on-x86.patch added to gregkh-2.6 tree
-To: sfr@canb.auug.org.au, akpm@linux-foundation.org, charrer@alacritech.com,
-       gregkh@suse.de, greg@kroah.com, linux-kernel@vger.kernel.org,
-       mmiles@alacritech.com
-From: <gregkh@suse.de>
-Date: Mon, 20 Oct 2008 14:32:38 -0700
-In-Reply-To: <20081020230420.aa85f83b.sfr@canb.auug.org.au>
-Message-ID: <12245383582488@kroah.org>
+	Mon, 20 Oct 2008 17:38:45 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:57611 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756468AbYJTVij (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 17:38:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=YGnVIJ/vJ3cGzhCwHGRu8gtyF6ghSZvOlYqVaOWjgy7snfE0VE6aTY8siniDNkT+8/
+         54rLoGAXEpUfVyJh0sO43I743nH5vLz4FdNKxf0RaGQ/KcoijcoEq1uYln7YO/RaG5u/
+         JVIC4B0izEO2G6SuhSX9TAye8uKpXhpemFUi4=
+Message-ID: <1f1b08da0810201438g6a109af5i75b34841462b655d@mail.gmail.com>
+Date: Mon, 20 Oct 2008 14:38:37 -0700
+From: "john stultz" <johnstul@us.ibm.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [RFC patch 15/15] LTTng timestamp x86
+Cc: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "David Miller" <davem@davemloft.net>, "Ingo Molnar" <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <alpine.LFD.2.00.0810201256350.3518@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081016232729.699004293@polymtl.ca>
+	 <20081016234657.837704867@polymtl.ca>
+	 <alpine.LFD.2.00.0810161701470.3288@nehalem.linux-foundation.org>
+	 <20081017012835.GA30195@Krystal>
+	 <57C9024A16AD2D4C97DC78E552063EA3532D455F@orsmsx505.amr.corp.intel.com>
+	 <20081017172515.GA9639@goodmis.org>
+	 <57C9024A16AD2D4C97DC78E552063EA3533458AC@orsmsx505.amr.corp.intel.com>
+	 <20081017184215.GB9874@Krystal>
+	 <alpine.LFD.2.00.0810201256350.3518@nehalem.linux-foundation.org>
+X-Google-Sender-Auth: cd0221c393eb41ca
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 20, 2008 at 1:10 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+> I think it's a mistake for us to maintain a single clock for
+> gettimeofday() (well, "getnstimeofday" and the whole "clocksource_read()"
+> crud to be technically correct). And sure, I bet clocksource_read() can do
+> various per-CPU things and try to do that, but it's complex and pretty
+> generic code, and as far as I know none of the clocksources have even
+> tried. The TSC clocksource read certainly does not (it just does a very
+> similar horrible "at least don't go backwards" crud that the LTTng patch
+> suggested).
+>
+> So I think we should make "xtime" be a per-CPU thing, and add support for
+> per-CPU clocksources. And screw that insane "mark_tsc_unstable()" thing.
+>
+> And if we did it well, we migth be able to get good timestamps that way
+> too.
 
-This is a note to let you know that I've just added the patch titled
+Personally I'd been hoping that the experiments in the trace
+timestamping code would provide a safe area of experimentation before
+we adapt it to the TSC clocksource implementation for
+getnstimeofday(). Earlier I know Andi and Jiri were working on such a
+per-cpu TSC clocksource, but I don't know where it ended up.
 
-    Subject: Staging: sxg depends on X86
-Subject: linux-next: build failure
+I'm not quite sure I followed your per-cpu xtime thoughts.  Could you
+explain further your thinking as to why the entire timekeeping
+subsystem should be per-cpu instead of just keeping that back in the
+arch-specific clocksource implementation?  In other words, why keep
+things synced at the nanosecond level instead of keeping the per-cpu
+TSC synched at the cycle level?
 
-to my gregkh-2.6 tree.  Its filename is
-
-    staging-sxg-depends-on-x86.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From sfr@canb.auug.org.au  Mon Oct 20 13:45:45 2008
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 20 Oct 2008 22:59:18 +1100
-Subject: Staging: sxg depends on X86
-Subject: linux-next: build failure
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, Christopher Harrer <charrer@alacritech.com>, Michael Miles <mmiles@alacritech.com>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linus
-Message-ID: <20081020230420.aa85f83b.sfr@canb.auug.org.au>
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-
-sxghif.h has code that explicitly will not build fo other architecures.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/staging/sxg/Kconfig |    1 +
- drivers/staging/sxg/README  |    1 +
- 2 files changed, 2 insertions(+)
-
---- a/drivers/staging/sxg/Kconfig
-+++ b/drivers/staging/sxg/Kconfig
-@@ -1,6 +1,7 @@
- config SXG
- 	tristate "Alacritech SLIC Technology Non-Accelerated 10Gbe support"
- 	depends on PCI && NETDEV_10000
-+	depends on X86
- 	default n
- 	help
- 	  This driver supports the Alacritech SLIC Technology Non-Accelerated
---- a/drivers/staging/sxg/README
-+++ b/drivers/staging/sxg/README
-@@ -7,6 +7,7 @@ TODO:
- 	- remove wrappers
- 	- checkpatch.pl cleanups
- 	- new functionality that the card needs
-+	- remove reliance on x86
- 
- Please send patches to:
-         Greg Kroah-Hartman <gregkh@suse.de>
-
-
-Patches currently in gregkh-2.6 which might be from sfr@canb.auug.org.au are
-
-bad/battery-class-driver.patch
-staging/staging-sxg-depends-on-x86.patch
+thanks
+-john
