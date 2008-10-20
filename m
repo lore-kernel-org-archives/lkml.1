@@ -1,57 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbYJTXer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbYJTXnL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754255AbYJTXer (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 19:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYJTXek
+	id S1753515AbYJTXnL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 19:43:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbYJTXmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 19:34:40 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:32605 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209AbYJTXej (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 19:34:39 -0400
-Date: Mon, 20 Oct 2008 17:34:38 -0600
-From: Alex Chiang <achiang@hp.com>
-To: ebiederm@xmission.com
-Cc: oomichi@mxs.nes.nec.co.jp, akpm@linux-foundation.org,
+	Mon, 20 Oct 2008 19:42:54 -0400
+Received: from kroah.org ([198.145.64.141]:39238 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751209AbYJTXmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 19:42:54 -0400
+Subject: patch staging-remove-remaining-uses-of-__function__.patch added to gregkh-2.6 tree
+To: harvey.harrison@gmail.com, gregkh@suse.de, greg@kroah.com,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] declare vmlist to fix ia64 build breakage in kexec core
-Message-ID: <20081020233438.GG15771@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>, ebiederm@xmission.com,
-	oomichi@mxs.nes.nec.co.jp, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: <gregkh@suse.de>
+Date: Mon, 20 Oct 2008 16:39:02 -0700
+In-Reply-To: <1224542725.31861.224.camel@brick>
+Message-ID: <1224545942149@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit acd99dbf54020f5c80b9aa2f2ea86f43cb285b02 (kdump: add
-vmlist.addr to vmcoreinfo for x86 vmalloc translation) broke the
-ia64 build in this fashion:
 
-kernel/kexec.c: In function `crash_save_vmcoreinfo_init':
-kernel/kexec.c:1374: error: `vmlist' undeclared (first use in this function)
-kernel/kexec.c:1374: error: (Each undeclared identifier is reported only once
-kernel/kexec.c:1374: error: for each function it appears in.)
-kernel/kexec.c:1410: error: dereferencing pointer to incomplete type
-make[1]: *** [kernel/kexec.o] Error 1
+This is a note to let you know that I've just added the patch titled
 
-Adding the proper include fixes the build.
+    Subject: Staging: remove remaining uses of __FUNCTION__
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
+to my gregkh-2.6 tree.  Its filename is
+
+    staging-remove-remaining-uses-of-__function__.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From harvey.harrison@gmail.com  Mon Oct 20 15:48:28 2008
+From: Harvey Harrison <harvey.harrison@gmail.com>
+Date: Mon, 20 Oct 2008 15:45:25 -0700
+Subject: Staging: remove remaining uses of __FUNCTION__
+To: Greg KH <greg@kroah.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Message-ID: <1224542725.31861.224.camel@brick>
+
+
+__FUNCTION__ is gcc-specific, use __func__
+
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
-diff --git a/kernel/kexec.c b/kernel/kexec.c
-index 777ac45..ac0fde7 100644
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -30,6 +30,7 @@
- #include <linux/pm.h>
- #include <linux/cpu.h>
- #include <linux/console.h>
-+#include <linux/vmalloc.h>
+ drivers/staging/usbip/usbip_common.c  |    2 +-
+ drivers/staging/wlan-ng/wlan_compat.h |    8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+--- a/drivers/staging/usbip/usbip_common.c
++++ b/drivers/staging/usbip/usbip_common.c
+@@ -221,7 +221,7 @@ static void usbip_dump_request_type(__u8
+ static void usbip_dump_usb_ctrlrequest(struct usb_ctrlrequest *cmd)
+ {
+ 	if (!cmd) {
+-		printk("      %s : null pointer\n", __FUNCTION__);
++		printk("      %s : null pointer\n", __func__);
+ 		return;
+ 	}
  
- #include <asm/page.h>
- #include <asm/uaccess.h>
+--- a/drivers/staging/wlan-ng/wlan_compat.h
++++ b/drivers/staging/wlan-ng/wlan_compat.h
+@@ -245,11 +245,11 @@ typedef int64_t		INT64;
+ #  define preempt_count() (0UL)
+ #endif
+ 
+-#define WLAN_LOG_ERROR(x,args...) printk(KERN_ERR "%s: " x , __FUNCTION__ , ##args);
++#define WLAN_LOG_ERROR(x,args...) printk(KERN_ERR "%s: " x , __func__ , ##args);
+ 
+-#define WLAN_LOG_WARNING(x,args...) printk(KERN_WARNING "%s: " x , __FUNCTION__ , ##args);
++#define WLAN_LOG_WARNING(x,args...) printk(KERN_WARNING "%s: " x , __func__ , ##args);
+ 
+-#define WLAN_LOG_NOTICE(x,args...) printk(KERN_NOTICE "%s: " x , __FUNCTION__ , ##args);
++#define WLAN_LOG_NOTICE(x,args...) printk(KERN_NOTICE "%s: " x , __func__ , ##args);
+ 
+ #define WLAN_LOG_INFO(args... ) printk(KERN_INFO args)
+ 
+@@ -265,7 +265,7 @@ typedef int64_t		INT64;
+ 	#define DBFENTER { if ( WLAN_DBVAR >= 5 ){ WLAN_LOG_DEBUG(3,"---->\n"); } }
+ 	#define DBFEXIT  { if ( WLAN_DBVAR >= 5 ){ WLAN_LOG_DEBUG(3,"<----\n"); } }
+ 
+-	#define WLAN_LOG_DEBUG(l,x,args...) if ( WLAN_DBVAR >= (l)) printk(KERN_DEBUG "%s(%lu): " x ,  __FUNCTION__, (preempt_count() & PREEMPT_MASK), ##args );
++	#define WLAN_LOG_DEBUG(l,x,args...) if ( WLAN_DBVAR >= (l)) printk(KERN_DEBUG "%s(%lu): " x ,  __func__, (preempt_count() & PREEMPT_MASK), ##args );
+ #else
+ 	#define WLAN_ASSERT(c)
+ 	#define WLAN_HEX_DUMP( l, s, p, n)
+
+
+Patches currently in gregkh-2.6 which might be from harvey.harrison@gmail.com are
+
+staging/staging-sxg-replace-__function__-with-__func__.patch
+staging/staging-remove-remaining-uses-of-__function__.patch
