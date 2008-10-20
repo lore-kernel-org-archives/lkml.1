@@ -1,129 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753279AbYJTX3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbYJTXcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753279AbYJTX3y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 19:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751090AbYJTX3q
+	id S1753968AbYJTXcN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 19:32:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYJTXb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 19:29:46 -0400
-Received: from www.tglx.de ([62.245.132.106]:37481 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751255AbYJTX3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 19:29:45 -0400
-Date: Tue, 21 Oct 2008 01:29:23 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [GIT pull] range hrtimers for .28
-Message-ID: <alpine.LFD.2.00.0810202345570.3301@apollo>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 20 Oct 2008 19:31:58 -0400
+Received: from fk-out-0910.google.com ([209.85.128.188]:27340 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751822AbYJTXb6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 19:31:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=GkqFGovxx/LFzdR1JCAbveTivw1baLDEl3rgdPz6qVd/r1VjjIP65aYyiOPEAA1kO9
+         3Yc6h7jocuTRAdViA/6/xko7LhK7SKIdTbrdFku87ciX5mNwUk+iFinzNYgIfq5RAa/F
+         EGilTBtMnABVQM63LH443Q/uxihxyYngzk0P4=
+Date: Tue, 21 Oct 2008 03:31:45 +0400
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] i915: fix build failure in fast_user_write()
+Message-ID: <20081020233145.GC21471@orion>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+drivers/gpu/drm/i915/i915_gem.c: In function 'fast_user_write':
+drivers/gpu/drm/i915/i915_gem.c:196: error: 'o' undeclared (first use in this function)
+drivers/gpu/drm/i915/i915_gem.c:196: error: (Each undeclared identifier is reported only once
+drivers/gpu/drm/i915/i915_gem.c:196: error: for each function it appears in.)
 
-please pull range-hrtimers from
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git v28-range-hrtimers-for-linus
-
-These patches provide the following new functionality:
-
-    - convert select/poll to hrtimers
-    - introduce range_hrtimers which allow to apply slack on an hrtimer
-      in order to allow batching of hrtimers
-    - add a prctrl to modify the per process slack value
-    - convert the user space interfaces to use the range(slack) interfaces
-
-a detailed description is available here: http://lwn.net/Articles/296578/
-
-Full patch is available from: http://userweb.kernel.org/~tglx/v28-range-hrtimers-for-linus.patch
-
-Thanks,
-
-        tglx
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 ---
 
-Arjan van de Ven (30):
-      select: Introduce a hrtimeout function
-      select: switch select() and poll() over to hrtimers
-      hrtimer: add abstraction functions for accessing the "expires" member
-      hrtimer: convert kvm to the new hrtimer apis
-      hrtimer: convert timerfd to the new hrtimer apis
-      hrtimer: convert net::sched_cbq to the new hrtimer apis
-      hrtimer: convert kernel/* to the new hrtimer apis
-      hrtimer: convert powerpc/oprofile to the new hrtimer apis
-      hrtimer: convert kvm-ia64 to the new hrtimer apis
-      hrtimer: convert s390 to the new hrtimer apis
-      hrtimer: convert sound/ to the new hrtimer apis
-      hrtimer: rename the "expires" struct member to avoid accidental usage
-      hrtimer: turn hrtimers into range timers
-      hrtimer: create a "timer_slack" field in the task struct
-      hrtimer: make select() and poll() use the hrtimer range feature
-      hrtimer: fix build bug found by Ingo
-      hrtimer: another build fix
-      hrtimer: add a hrtimer_start_range() function
-      hrtimer: incorporate feedback from Peter Zijlstra
-      hrtimer: show the timer ranges in /proc/timer_list
-      hrtimer: fix signed/unsigned bug in slack estimator
-      hrtimer: make the nanosleep() syscall use the per process slack
-      hrtimer: make the futex() system call use the per process slack value
-      hrtimer: peek at the timer queue just before going idle
-      select: fix alpha OSF wrapper
-      select: fix alpha OSF wrapper
-      rangetimer: fix x86 build failure for the !HRTIMERS case
-      rangetimer: fix BUG_ON reported by Ingo
-      rangetimers: fix the bug reported by Ingo for real
-      Merge commit 'linus/master' into merge-linus
+ drivers/gpu/drm/i915/i915_gem.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-Ingo Molnar (2):
-      Merge branch 'master' of git://git.kernel.org/.../arjan/linux-2.6-hrtimer into timers/range-hrtimers
-      hrtimers: fix typo
+diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
+index 49c5a17..16afdb5 100644
+--- a/drivers/gpu/drm/i915/i915_gem.c
++++ b/drivers/gpu/drm/i915/i915_gem.c
+@@ -182,7 +182,8 @@ i915_gem_pread_ioctl(struct drm_device *dev, void *data,
+  * happens to let us map card memory without taking IPIs.  When the vmap
+  * rework lands we should be able to dump this hack.
+  */
+-static inline int fast_user_write(unsigned long pfn, char __user *user_data, int l)
++static inline int fast_user_write(unsigned long pfn, char __user *user_data,
++				  int i, int o, int l)
+ {
+ #ifdef CONFIG_HIGHMEM
+ 	unsigned long unwritten;
+@@ -251,7 +252,7 @@ i915_gem_gtt_pwrite(struct drm_device *dev, struct drm_gem_object *obj,
+ 
+ 		pfn = (dev->agp->base >> PAGE_SHIFT) + i;
+ 
+-		if (!fast_user_write(pfn, user_data, l)) {
++		if (!fast_user_write(pfn, user_data, i, o, l)) {
+ 			unsigned long unwritten;
+ 			char __iomem *vaddr;
+ 
 
-Stephen Rothwell (1):
-      DECLARE_PER_CPU needs linux/percpu.h
-
-Thomas Gleixner (8):
-      select: add a timespec_add_safe() function
-      select: add poll_select_set_timeout() and poll_select_copy_remaining() helpers
-      select: add a poll specific struct to the restart_block union
-      Merge branch 'for-linus' of git://git.kernel.org/.../arjan/linux-2.6-hrtimer into timers/range-hrtimers
-      hrtimers: fix docbook comments
-      hrtimers: simplify hrtimer_peek_ahead_timers()
-      hrtimers: add missing docbook comments to struct hrtimer
-      Merge branch 'timers/range-hrtimers' into v28-timers-for-linus
-
- arch/alpha/kernel/osf_sys.c               |   13 +-
- arch/ia64/kvm/kvm-ia64.c                  |    2 +-
- arch/powerpc/oprofile/cell/spu_profiler.c |    2 +-
- arch/x86/kvm/i8254.c                      |    8 +-
- arch/x86/kvm/lapic.c                      |    6 +-
- drivers/cpuidle/cpuidle.c                 |    7 +
- drivers/s390/crypto/ap_bus.c              |    6 +-
- fs/compat.c                               |  187 +++++---------
- fs/select.c                               |  396 ++++++++++++++++-------------
- fs/timerfd.c                              |    8 +-
- include/linux/hrtimer.h                   |  105 ++++++++-
- include/linux/init_task.h                 |    1 +
- include/linux/poll.h                      |    8 +-
- include/linux/prctl.h                     |    7 +
- include/linux/sched.h                     |    6 +
- include/linux/thread_info.h               |    8 +
- include/linux/time.h                      |    4 +
- kernel/fork.c                             |    2 +
- kernel/futex.c                            |   11 +-
- kernel/hrtimer.c                          |  206 ++++++++++++++--
- kernel/posix-timers.c                     |   10 +-
- kernel/rtmutex.c                          |    3 +-
- kernel/sched.c                            |    7 +-
- kernel/sys.c                              |   10 +
- kernel/time.c                             |   18 ++
- kernel/time/ntp.c                         |    3 +-
- kernel/time/tick-sched.c                  |   25 +-
- kernel/time/timer_list.c                  |    8 +-
- net/sched/sch_cbq.c                       |    7 +-
- sound/drivers/pcsp/pcsp_lib.c             |    5 +-
- 30 files changed, 710 insertions(+), 379 deletions(-)
