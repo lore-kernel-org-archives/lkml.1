@@ -1,347 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753069AbYJTLCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752144AbYJTLEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753069AbYJTLCi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 07:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbYJTLCa
+	id S1752144AbYJTLEI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 07:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYJTLD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 07:02:30 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:38650 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751516AbYJTLC3 (ORCPT
+	Mon, 20 Oct 2008 07:03:57 -0400
+Received: from smtpauth.net4india.com ([202.71.129.41]:40066 "EHLO
+	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751516AbYJTLD4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 07:02:29 -0400
-Date: Mon, 20 Oct 2008 13:02:26 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Andrey Mirkin <major@openvz.org>
-Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [PATCH 05/10] Introduce function to dump process
-Message-ID: <20081020110226.GP15171@hawkmoon.kerlabs.com>
-Reply-To: Louis.Rilling@kerlabs.com
-References: <1224285098-573-1-git-send-email-major@openvz.org> <1224285098-573-2-git-send-email-major@openvz.org> <1224285098-573-3-git-send-email-major@openvz.org> <1224285098-573-4-git-send-email-major@openvz.org> <1224285098-573-5-git-send-email-major@openvz.org> <1224285098-573-6-git-send-email-major@openvz.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-18226-1224500403-0001-2"
-Content-Disposition: inline
-In-Reply-To: <1224285098-573-6-git-send-email-major@openvz.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 20 Oct 2008 07:03:56 -0400
+From: David John <davidjon@xenontk.org>
+To: mingo@elte.hu
+Cc: akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com,
+       tglx@linutronix.de, andi@firstfloor.org
+Subject: [PATCH v4] HPET: Remove the BKL.
+Date: Mon, 20 Oct 2008 16:33:42 +0530
+Message-Id: <1224500622-3717-1-git-send-email-davidjon@xenontk.org>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <20081020092441.GA3538@elte.hu>
+References: <20081020092441.GA3538@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Remove calls to the BKL as concurrent access is protected
+by the spinlock hpet_lock.
 
---=_bohort-18226-1224500403-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: David John <davidjon@xenontk.org>
+---
+ drivers/char/hpet.c |   41 ++++++++++++++++++++++++-----------------
+ 1 files changed, 24 insertions(+), 17 deletions(-)
 
-Hi,
-
-On Sat, Oct 18, 2008 at 03:11:33AM +0400, Andrey Mirkin wrote:
-> Functions to dump task struct, fpu state and registers are added.
-> All IDs are saved from the POV of process (container) namespace.
-
-Just a couple of little comments, in case this series should keep on living.
-
-[...]
-
-> diff --git a/checkpoint/cpt_process.c b/checkpoint/cpt_process.c
-> new file mode 100644
-> index 0000000..58f608d
-> --- /dev/null
-> +++ b/checkpoint/cpt_process.c
-> @@ -0,0 +1,236 @@
-> +/*
-> + *  Copyright (C) 2008 Parallels, Inc.
-> + *
-> + *  Author: Andrey Mirkin <major@openvz.org>
-> + *
-> + *  This program is free software; you can redistribute it and/or
-> + *  modify it under the terms of the GNU General Public License as
-> + *  published by the Free Software Foundation, version 2 of the
-> + *  License.
-> + *
-> + */
-> +
-> +#include <linux/sched.h>
-> +#include <linux/fs.h>
-> +#include <linux/file.h>
-> +#include <linux/version.h>
-> +#include <linux/nsproxy.h>
-> +
-> +#include "checkpoint.h"
-> +#include "cpt_image.h"
-> +
-> +static unsigned int encode_task_flags(unsigned int task_flags)
-> +{
-> +	unsigned int flags =3D 0;
-> +
-> +	if (task_flags & PF_EXITING)
-> +		flags |=3D (1 << CPT_PF_EXITING);
-> +	if (task_flags & PF_FORKNOEXEC)
-> +		flags |=3D (1 << CPT_PF_FORKNOEXEC);
-> +	if (task_flags & PF_SUPERPRIV)
-> +		flags |=3D (1 << CPT_PF_SUPERPRIV);
-> +	if (task_flags & PF_DUMPCORE)
-> +		flags |=3D (1 << CPT_PF_DUMPCORE);
-> +	if (task_flags & PF_SIGNALED)
-> +		flags |=3D (1 << CPT_PF_SIGNALED);
-> +	if (task_flags & PF_USED_MATH)
-> +		flags |=3D (1 << CPT_PF_USED_MATH);
-> +=09
-> +	return flags;
-> +	=09
-> +}
-> +
-> +int cpt_dump_task_struct(struct task_struct *tsk, struct cpt_context *ct=
-x)
-> +{
-> +	struct cpt_task_image *t;
-> +	int i;
-> +	int err;
-> +
-> +	t =3D kzalloc(sizeof(*t), GFP_KERNEL);
-> +	if (!t)
-> +		return -ENOMEM;
-> +
-> +	t->cpt_len =3D sizeof(*t);
-> +	t->cpt_type =3D CPT_OBJ_TASK;
-> +	t->cpt_hdrlen =3D sizeof(*t);
-> +	t->cpt_content =3D CPT_CONTENT_ARRAY;
-> +
-> +	t->cpt_state =3D tsk->state;
-> +	t->cpt_flags =3D encode_task_flags(tsk->flags);
-> +	t->cpt_exit_code =3D tsk->exit_code;
-> +	t->cpt_exit_signal =3D tsk->exit_signal;
-> +	t->cpt_pdeath_signal =3D tsk->pdeath_signal;
-> +	t->cpt_pid =3D task_pid_nr_ns(tsk, ctx->nsproxy->pid_ns);
-> +	t->cpt_tgid =3D task_tgid_nr_ns(tsk, ctx->nsproxy->pid_ns);
-> +	t->cpt_ppid =3D tsk->parent ?
-> +		task_pid_nr_ns(tsk->parent, ctx->nsproxy->pid_ns) : 0;
-> +	t->cpt_rppid =3D tsk->real_parent ?
-> +		task_pid_nr_ns(tsk->real_parent, ctx->nsproxy->pid_ns) : 0;
-> +	t->cpt_pgrp =3D task_pgrp_nr_ns(tsk, ctx->nsproxy->pid_ns);
-> +	t->cpt_session =3D task_session_nr_ns(tsk, ctx->nsproxy->pid_ns);
-> +	t->cpt_old_pgrp =3D 0;
-> +	if (tsk->signal->tty_old_pgrp)
-> +		t->cpt_old_pgrp =3D pid_vnr(tsk->signal->tty_old_pgrp);
-> +	t->cpt_leader =3D tsk->group_leader ? task_pid_vnr(tsk->group_leader) :=
- 0;
-
-Why pid_vnr() here, and task_*_nr_ns() above? According to the introducing
-comment, I'd expect something like pid_nr_ns(tsk->signal->tty_old_pgrp,
-tsk->nsproxy->pid_ns), and the same for tsk->group_leader.
-
-IIUC, pid_vnr() is correct only if ctx->nsproxy->pid_ns =3D=3D tsk->nsproxy=
-->pid_ns
-=3D=3D current->nsproxy->pid_ns, and I expect current to live in a differen=
-t pid_ns.
-
-Comments?
-
-> +	t->cpt_utime =3D tsk->utime;
-> +	t->cpt_stime =3D tsk->stime;
-> +	t->cpt_utimescaled =3D tsk->utimescaled;
-> +	t->cpt_stimescaled =3D tsk->stimescaled;
-> +	t->cpt_gtime =3D tsk->gtime;
-> +	t->cpt_prev_utime =3D tsk->prev_utime;
-> +	t->cpt_prev_stime =3D tsk->prev_stime;
-> +	t->cpt_nvcsw =3D tsk->nvcsw;
-> +	t->cpt_nivcsw =3D tsk->nivcsw;
-> +	t->cpt_start_time =3D cpt_timespec_export(&tsk->start_time);
-> +	t->cpt_real_start_time =3D cpt_timespec_export(&tsk->real_start_time);
-> +	t->cpt_min_flt =3D tsk->min_flt;
-> +	t->cpt_maj_flt =3D tsk->maj_flt;
-> +	memcpy(t->cpt_comm, tsk->comm, TASK_COMM_LEN);
-> +	for (i =3D 0; i < GDT_ENTRY_TLS_ENTRIES; i++) {
-> +		t->cpt_tls[i] =3D (((u64)tsk->thread.tls_array[i].b) << 32) +
-> +			tsk->thread.tls_array[i].a;
-> +	}
-> +	/* TODO: encode thread flags and status like task flags */
-> +	t->cpt_thrflags =3D task_thread_info(tsk)->flags & ~(1<<TIF_FREEZE);
-> +	t->cpt_thrstatus =3D task_thread_info(tsk)->status;
-> +	t->cpt_user =3D tsk->user->uid;
-> +	t->cpt_uid =3D tsk->uid;
-> +	t->cpt_euid =3D tsk->euid;
-> +	t->cpt_suid =3D tsk->suid;
-> +	t->cpt_fsuid =3D tsk->fsuid;
-> +	t->cpt_gid =3D tsk->gid;
-> +	t->cpt_egid =3D tsk->egid;
-> +	t->cpt_sgid =3D tsk->sgid;
-> +	t->cpt_fsgid =3D tsk->fsgid;
-> +
-> +	err =3D ctx->write(t, sizeof(*t), ctx);
-> +
-> +	kfree(t);
-> +	return err;
-> +}
-> +
-> +static int cpt_dump_fpustate(struct task_struct *tsk, struct cpt_context=
- *ctx)
-> +{
-> +	struct cpt_obj_bits hdr;
-> +	int err;
-> +	int content;
-> +	unsigned long size;
-> +
-> +	content =3D CPT_CONTENT_X86_FPUSTATE;
-> +	size =3D sizeof(struct i387_fxsave_struct);
-> +#ifndef CONFIG_X86_64
-> +	if (!cpu_has_fxsr) {
-> +		size =3D sizeof(struct i387_fsave_struct);
-> +		content =3D CPT_CONTENT_X86_FPUSTATE_OLD;
-> +	}
-> +#endif
-> +
-> +	hdr.cpt_len =3D sizeof(hdr) + size;
-> +	hdr.cpt_type =3D CPT_OBJ_BITS;
-> +	hdr.cpt_hdrlen =3D sizeof(hdr);
-> +	hdr.cpt_content =3D content;
-> +	hdr.cpt_size =3D size;
-> +	err =3D ctx->write(&hdr, sizeof(hdr), ctx);
-> +	if (!err)
-> +		ctx->write(tsk->thread.xstate, size, ctx);
-
-Should check the error code of the line above, right?
-
-> +	return err;
-> +}
-> +
-> +static u32 encode_segment(u32 segreg)
-> +{
-> +	segreg &=3D 0xFFFF;
-> +
-> +	if (segreg =3D=3D 0)
-> +		return CPT_SEG_ZERO;
-> +	if ((segreg & 3) !=3D 3) {
-> +		eprintk("Invalid RPL of a segment reg %x\n", segreg);
-> +		return CPT_SEG_ZERO;
-> +	}
-> +
-> +	/* LDT descriptor, it is just an index to LDT array */
-> +	if (segreg & 4)
-> +		return CPT_SEG_LDT + (segreg >> 3);
-> +
-> +	/* TLS descriptor. */
-> +	if ((segreg >> 3) >=3D GDT_ENTRY_TLS_MIN &&
-> +			(segreg >> 3) <=3D GDT_ENTRY_TLS_MAX)
-> +		return CPT_SEG_TLS1 + ((segreg>>3) - GDT_ENTRY_TLS_MIN);
-> +
-> +	/* One of standard desriptors */
-> +#ifdef CONFIG_X86_64
-> +	if (segreg =3D=3D __USER32_DS)
-> +		return CPT_SEG_USER32_DS;
-> +	if (segreg =3D=3D __USER32_CS)
-> +		return CPT_SEG_USER32_CS;
-> +	if (segreg =3D=3D __USER_DS)
-> +		return CPT_SEG_USER64_DS;
-> +	if (segreg =3D=3D __USER_CS)
-> +		return CPT_SEG_USER64_CS;
-> +#else
-> +	if (segreg =3D=3D __USER_DS)
-> +		return CPT_SEG_USER32_DS;
-> +	if (segreg =3D=3D __USER_CS)
-> +		return CPT_SEG_USER32_CS;
-> +#endif
-> +	eprintk("Invalid segment reg %x\n", segreg);
-> +	return CPT_SEG_ZERO;
-> +}
-> +
-> +static int cpt_dump_registers(struct task_struct *tsk, struct cpt_contex=
-t *ctx)
-> +{
-> +	struct cpt_x86_regs ri;
-> +	struct pt_regs *pt_regs;
-> +
-> +	ri.cpt_len =3D sizeof(ri);
-> +	ri.cpt_type =3D CPT_OBJ_X86_REGS;
-> +	ri.cpt_hdrlen =3D sizeof(ri);
-> +	ri.cpt_content =3D CPT_CONTENT_VOID;
-> +
-> +	ri.cpt_debugreg[0] =3D tsk->thread.debugreg0;
-> +	ri.cpt_debugreg[1] =3D tsk->thread.debugreg1;
-> +	ri.cpt_debugreg[2] =3D tsk->thread.debugreg2;
-> +	ri.cpt_debugreg[3] =3D tsk->thread.debugreg3;
-> +	ri.cpt_debugreg[4] =3D 0;
-> +	ri.cpt_debugreg[5] =3D 0;
-> +	ri.cpt_debugreg[6] =3D tsk->thread.debugreg6;
-> +	ri.cpt_debugreg[7] =3D tsk->thread.debugreg7;
-> +
-> +	pt_regs =3D task_pt_regs(tsk);
-> +
-> +	ri.cpt_fs =3D encode_segment(pt_regs->fs);
-> +	ri.cpt_gs =3D encode_segment(tsk->thread.gs);
-> +
-> +	ri.cpt_bx =3D pt_regs->bx;
-> +	ri.cpt_cx =3D pt_regs->cx;
-> +	ri.cpt_dx =3D pt_regs->dx;
-> +	ri.cpt_si =3D pt_regs->si;
-> +	ri.cpt_di =3D pt_regs->di;
-> +	ri.cpt_bp =3D pt_regs->bp;
-> +	ri.cpt_ax =3D pt_regs->ax;
-> +	ri.cpt_ds =3D encode_segment(pt_regs->ds);
-> +	ri.cpt_es =3D encode_segment(pt_regs->es);
-> +	ri.cpt_orig_ax =3D pt_regs->orig_ax;
-> +	ri.cpt_ip =3D pt_regs->ip;
-> +	ri.cpt_cs =3D encode_segment(pt_regs->cs);
-> +	ri.cpt_flags =3D pt_regs->flags;
-> +	ri.cpt_sp =3D pt_regs->sp;
-> +	ri.cpt_ss =3D encode_segment(pt_regs->ss);
-> +=09
-> +	return ctx->write(&ri, sizeof(ri), ctx);
-> +}
-> +
-> +int cpt_dump_task(struct task_struct *tsk, struct cpt_context *ctx)
-> +{
-> +	int err;
-> +
-> +	err =3D cpt_dump_task_struct(tsk, ctx);
-> +
-> +	/* Dump task mm */
-> +
-> +	if (!err)
-> +		cpt_dump_fpustate(tsk, ctx);
-
-error checking...
-
-> +	if (!err)
-> +		cpt_dump_registers(tsk, ctx);
-
-error checking...
-
-> +
-> +	return err;
-> +}
-> --=20
-> 1.5.6
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-Louis
-
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
-
---=_bohort-18226-1224500403-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFI/GVCVKcRuvQ9Q1QRAj0HAKCPboBYRdTcoqVGaQpNm2CwyybUAACgzXm0
-c4x6rxEAKKV9UpKc6PcVkV8=
-=0bvq
------END PGP SIGNATURE-----
-
---=_bohort-18226-1224500403-0001-2--
+diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
+index b3f5dbc..e7315b8 100644
+--- a/drivers/char/hpet.c
++++ b/drivers/char/hpet.c
+@@ -14,7 +14,6 @@
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+-#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/miscdevice.h>
+ #include <linux/major.h>
+@@ -194,7 +193,6 @@ static int hpet_open(struct inode *inode, struct file *file)
+ 	if (file->f_mode & FMODE_WRITE)
+ 		return -EINVAL;
+ 
+-	lock_kernel();
+ 	spin_lock_irq(&hpet_lock);
+ 
+ 	for (devp = NULL, hpetp = hpets; hpetp && !devp; hpetp = hpetp->hp_next)
+@@ -209,7 +207,6 @@ static int hpet_open(struct inode *inode, struct file *file)
+ 
+ 	if (!devp) {
+ 		spin_unlock_irq(&hpet_lock);
+-		unlock_kernel();
+ 		return -EBUSY;
+ 	}
+ 
+@@ -217,7 +214,6 @@ static int hpet_open(struct inode *inode, struct file *file)
+ 	devp->hd_irqdata = 0;
+ 	devp->hd_flags |= HPET_OPEN;
+ 	spin_unlock_irq(&hpet_lock);
+-	unlock_kernel();
+ 
+ 	return 0;
+ }
+@@ -375,15 +371,12 @@ static int hpet_release(struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
+-static int hpet_ioctl_common(struct hpet_dev *, int, unsigned long, int);
++static long hpet_ioctl_common(struct hpet_dev *, int, unsigned long, int);
+ 
+-static int
+-hpet_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+-	   unsigned long arg)
++static long
++hpet_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+-	struct hpet_dev *devp;
+-
+-	devp = file->private_data;
++	struct hpet_dev *devp = file->private_data;
+ 	return hpet_ioctl_common(devp, cmd, arg, 0);
+ }
+ 
+@@ -414,7 +407,6 @@ static int hpet_ioctl_ieon(struct hpet_dev *devp)
+ 
+ 	if (readl(&timer->hpet_config) & Tn_INT_TYPE_CNF_MASK)
+ 		devp->hd_flags |= HPET_SHARED_IRQ;
+-	spin_unlock_irq(&hpet_lock);
+ 
+ 	irq = devp->hd_hdwirq;
+ 
+@@ -432,7 +424,6 @@ static int hpet_ioctl_ieon(struct hpet_dev *devp)
+ 	}
+ 
+ 	if (irq == 0) {
+-		spin_lock_irq(&hpet_lock);
+ 		devp->hd_flags ^= HPET_IE;
+ 		spin_unlock_irq(&hpet_lock);
+ 		return -EIO;
+@@ -463,7 +454,9 @@ static int hpet_ioctl_ieon(struct hpet_dev *devp)
+ 		isr = 1 << (devp - devp->hd_hpets->hp_dev);
+ 		writel(isr, &hpet->hpet_isr);
+ 	}
++
+ 	writeq(g, &timer->hpet_config);
++	spin_unlock_irq(&hpet_lock);
+ 	local_irq_restore(flags);
+ 
+ 	return 0;
+@@ -480,13 +473,13 @@ static inline unsigned long hpet_time_div(struct hpets *hpets,
+ 	return (unsigned long)m;
+ }
+ 
+-static int
++static long
+ hpet_ioctl_common(struct hpet_dev *devp, int cmd, unsigned long arg, int kernel)
+ {
+ 	struct hpet_timer __iomem *timer;
+ 	struct hpet __iomem *hpet;
+ 	struct hpets *hpetp;
+-	int err;
++	long err;
+ 	unsigned long v;
+ 
+ 	switch (cmd) {
+@@ -509,8 +502,11 @@ hpet_ioctl_common(struct hpet_dev *devp, int cmd, unsigned long arg, int kernel)
+ 
+ 	switch (cmd) {
+ 	case HPET_IE_OFF:
+-		if ((devp->hd_flags & HPET_IE) == 0)
++		spin_lock_irq(&hpet_lock);
++		if ((devp->hd_flags & HPET_IE) == 0) {
++			spin_unlock_irq(&hpet_lock);
+ 			break;
++		}
+ 		v = readq(&timer->hpet_config);
+ 		v &= ~Tn_INT_ENB_CNF_MASK;
+ 		writeq(v, &timer->hpet_config);
+@@ -519,11 +515,13 @@ hpet_ioctl_common(struct hpet_dev *devp, int cmd, unsigned long arg, int kernel)
+ 			devp->hd_irq = 0;
+ 		}
+ 		devp->hd_flags ^= HPET_IE;
++		spin_unlock_irq(&hpet_lock);
+ 		break;
+ 	case HPET_INFO:
+ 		{
+ 			struct hpet_info info;
+ 
++			spin_lock_irq(&hpet_lock);
+ 			if (devp->hd_ireqfreq)
+ 				info.hi_ireqfreq =
+ 					hpet_time_div(hpetp, devp->hd_ireqfreq);
+@@ -533,6 +531,7 @@ hpet_ioctl_common(struct hpet_dev *devp, int cmd, unsigned long arg, int kernel)
+ 			    readq(&timer->hpet_config) & Tn_PER_INT_CAP_MASK;
+ 			info.hi_hpet = hpetp->hp_which;
+ 			info.hi_timer = devp - hpetp->hp_dev;
++			spin_unlock_irq(&hpet_lock);
+ 			if (kernel)
+ 				memcpy((void *)arg, &info, sizeof(info));
+ 			else
+@@ -542,16 +541,21 @@ hpet_ioctl_common(struct hpet_dev *devp, int cmd, unsigned long arg, int kernel)
+ 			break;
+ 		}
+ 	case HPET_EPI:
++		spin_lock_irq(&hpet_lock);
+ 		v = readq(&timer->hpet_config);
+ 		if ((v & Tn_PER_INT_CAP_MASK) == 0) {
++			spin_unlock_irq(&hpet_lock);
+ 			err = -ENXIO;
+ 			break;
+ 		}
+ 		devp->hd_flags |= HPET_PERIODIC;
++		spin_unlock_irq(&hpet_lock);
+ 		break;
+ 	case HPET_DPI:
++		spin_lock_irq(&hpet_lock);
+ 		v = readq(&timer->hpet_config);
+ 		if ((v & Tn_PER_INT_CAP_MASK) == 0) {
++			spin_unlock_irq(&hpet_lock);
+ 			err = -ENXIO;
+ 			break;
+ 		}
+@@ -562,6 +566,7 @@ hpet_ioctl_common(struct hpet_dev *devp, int cmd, unsigned long arg, int kernel)
+ 			writeq(v, &timer->hpet_config);
+ 		}
+ 		devp->hd_flags &= ~HPET_PERIODIC;
++		spin_unlock_irq(&hpet_lock);
+ 		break;
+ 	case HPET_IRQFREQ:
+ 		if (!kernel && (arg > hpet_max_freq) &&
+@@ -575,7 +580,9 @@ hpet_ioctl_common(struct hpet_dev *devp, int cmd, unsigned long arg, int kernel)
+ 			break;
+ 		}
+ 
++		spin_lock_irq(&hpet_lock);
+ 		devp->hd_ireqfreq = hpet_time_div(hpetp, arg);
++		spin_lock_irq(&hpet_lock);
+ 	}
+ 
+ 	return err;
+@@ -586,7 +593,7 @@ static const struct file_operations hpet_fops = {
+ 	.llseek = no_llseek,
+ 	.read = hpet_read,
+ 	.poll = hpet_poll,
+-	.ioctl = hpet_ioctl,
++	.unlocked_ioctl = hpet_ioctl,
+ 	.open = hpet_open,
+ 	.release = hpet_release,
+ 	.fasync = hpet_fasync,
