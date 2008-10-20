@@ -1,144 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbYJTSUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbYJTSYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754092AbYJTSUx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 14:20:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbYJTSUo
+	id S1754417AbYJTSYE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 14:24:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbYJTSXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 14:20:44 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:46401 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751855AbYJTSUn (ORCPT
+	Mon, 20 Oct 2008 14:23:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48654 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751855AbYJTSXv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 14:20:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=aeL0ayCIBhEdIlDeMpjkvsP0F4Q6ux/TClPy3d8VqklI+CFEdVU8FJtfhGJHQUxzfe
-         d1sjKU7Y5IJ3YZZ8WvzeG8sVFBscx0OpcF1mImE0o5OqC4AQcUAnZXjUEQz+yU2j4Vju
-         4MSuHl0SSa/c5GiK7oTlVV+Tscsvcs8e3a4kQ=
-Date: Mon, 20 Oct 2008 22:20:38 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: CFS related question
-Message-ID: <20081020182038.GB503@localhost>
-References: <20081018200319.GC8188@localhost> <1224361698.10548.38.camel@lappy.programming.kicks-ass.net> <48FCCA14.5000103@ct.jp.nec.com>
+	Mon, 20 Oct 2008 14:23:51 -0400
+Message-ID: <48FCCC72.5020202@linux-foundation.org>
+Date: Mon, 20 Oct 2008 13:22:42 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48FCCA14.5000103@ct.jp.nec.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au, hugh@veritas.com,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: SLUB defrag pull request?
+References: <1223883004.31587.15.camel@penberg-laptop> <1223883164.31587.16.camel@penberg-laptop> <Pine.LNX.4.64.0810131227120.20511@blonde.site> <200810132354.30789.nickpiggin@yahoo.com.au> <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu> <E1KpOOL-0003Vf-9y@pomaz-ex.szeredi.hu> <48F378C6.7030206@linux-foundation.org> <E1KpOjX-0003dt-AY@pomaz-ex.szeredi.hu> <48FC9CCC.3040006@linux-foundation.org> <E1Krz4o-0002Fi-Pu@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1Krz4o-0002Fi-Pu@pomaz-ex.szeredi.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Hiroshi Shimamoto - Mon, Oct 20, 2008 at 11:12:36AM -0700]
-| Peter Zijlstra wrote:
-| > On Sun, 2008-10-19 at 00:03 +0400, Cyrill Gorcunov wrote:
-| >> Hi Ingo, Peter,
-| >>
-| >> I just curious, look we have the following
-| >>
-| >> static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
-| >> {
-| >> 	struct sched_entity *se = NULL;
-| >>
-| >> 	if (first_fair(cfs_rq)) {
-| >> 		se = __pick_next_entity(cfs_rq);
-| >> 		se = pick_next(cfs_rq, se);
-| >> 		set_next_entity(cfs_rq, se);
-| >> 	}
-| >>
-| >> 	return se;
-| >> }
-| >>
-| >> which I presume may return NULL so the following piece
-| >> could fail
-| >>
-| >> static struct task_struct *pick_next_task_fair(struct rq *rq)
-| >> {
-| >> 	struct task_struct *p;
-| >> 	struct cfs_rq *cfs_rq = &rq->cfs;
-| >> 	struct sched_entity *se;
-| >>
-| >> 	if (unlikely(!cfs_rq->nr_running))
-| >> 		return NULL;
-| >>
-| >> 	do {
-| >> -->		se = pick_next_entity(cfs_rq);
-| >> --> OOPs	cfs_rq = group_cfs_rq(se);
-| >> 	} while (cfs_rq);
-| >>
-| >> 	p = task_of(se);
-| >> 	hrtick_start_fair(rq, p);
-| >>
-| >> 	return p;
-| >> }
-| >>
-| >> Did I miss something? Or it comepletely can NOT happen?
-| > 
-| > pick_next_entity() only returns NULL when !first_fair(), which is when !
-| > nr_running.
-| > 
-| > So the initial !nr_running check in pick_next_task_fair() will catch
-| > that. Further nested RQs will never have !nr_running because then they
-| > get dequeued.
-| 
-| Hi Peter,
-| 
-| pick_next_entity() is used in pick_next_task_fair() only.
-| So, checking first_fair() never fail, and if fails it means bug. Right?
-| 
-| How about the below patch?
-| --------
-| From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-| Subject: [PATCH] sched: replace check with BUG_ON in pick_next_entity()
-| 
-| BUG_ON instead of returning NULL in pick_next_entity() when !first_fair().
-| Basically first_fair() is always true, and returning NULL will cause oops later.
-| 
-| Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-| ---
-|  kernel/sched_fair.c |   12 ++++++------
-|  1 files changed, 6 insertions(+), 6 deletions(-)
-| 
-| diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-| index 9573c33..3ce7c25 100644
-| --- a/kernel/sched_fair.c
-| +++ b/kernel/sched_fair.c
-| @@ -758,13 +758,13 @@ pick_next(struct cfs_rq *cfs_rq, struct sched_entity *se)
-|  
-|  static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
-|  {
-| -	struct sched_entity *se = NULL;
-| +	struct sched_entity *se;
-|  
-| -	if (first_fair(cfs_rq)) {
-| -		se = __pick_next_entity(cfs_rq);
-| -		se = pick_next(cfs_rq, se);
-| -		set_next_entity(cfs_rq, se);
-| -	}
-| +	BUG_ON(!first_fair(cfs_rq));
-| +
-| +	se = __pick_next_entity(cfs_rq);
-| +	se = pick_next(cfs_rq, se);
-| +	set_next_entity(cfs_rq, se);
-|  
-|  	return se;
-|  }
-| -- 
-| 1.5.6
-|
+Miklos Szeredi wrote:
+> On Mon, 20 Oct 2008, Christoph Lameter wrote:
+>>>> kick_inodes() only works on inodes that first have undergone 
+>>>> get_inodes() where we establish a refcount under inode_lock(). The final 
+>>>> cleanup in kick_inodes() is done under iprune_mutex. You are looking at 
+>>>> the loop that does writeback and invalidates attached dentries. This can 
+>>>> fail for various reasons.
+>>> Yes, but I'm not at all sure that calling remove_inode_buffers() or
+>>> invalidate_mapping_pages() is OK on a live inode.  They should be done
+>>> after checking the refcount, just like prune_icache() does.
+>> Dont we do the same on a truncate?
+> 
+> Yes, with i_mutex and i_alloc_sem held.
 
-Technically it should not happen (as Peter explained). But it
-seems it happens sometime -- and most probably 'cause of error
-in another part of kernel (ie indirect error). So if Peter would
-not object against -- I would really like to better have BUG_ON
-check there :) Peter?
+There is another call to invalidate_mapping_pages() in prune_icache (that is
+where this code originates). No i_mutex and i_alloc. Only iprune_mutex held
+and that seems to be for the protection of the list. So just checking
+inode->i_count would do the trick?
 
-	http://lkml.org/lkml/2008/8/3/269
-	http://lists.openwall.net/linux-kernel/2008/05/14/130
- 
-		- Cyrill -
+>>> Also, while d_invalidate() is not actually wrong here, because you
+>>> check S_ISDIR(), but it's still the wrong function to use.  You really
+>>> just want to shrink the children.  Invalidation means: the filesystem
+>>> found out that the cached inode is invalid, so we want to throw it
+>>> away.  In the future it might actually be able to do it for
+>>> directories as well, but currently it cannot because of possible
+>>> mounts on the dentry.
+>> Thats the same issue as with the dentries. The new function could deal with
+>> both situations?
+> 
+> Sure.
+> 
+> The big issue is dealing with umount.  You could do something like
+> grab_super() on sb before getting a ref on the inode/dentry.  But I'm
+> not sure this is a good idea.  There must be a simpler way to achieve
+> this...
+
+Taking a lock on vfsmount_lock? But that would make dentry reclaim a pain.
+
+We are only interested in the reclaim a dentry if its currently unused. If so
+then why does unmount matter? Both unmount and reclaim will attempt to remove
+the dentry.
+
+Have a look at get_dentries(). It takes the dcache_lock and checks the dentry
+state. Either the entry is ignored or dget_locked() removes it from the lru.
+If its off the LRU then it can no longer be reclaimed by umount.
+
+
