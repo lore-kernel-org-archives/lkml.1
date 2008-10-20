@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbYJTFMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbYJTFOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752712AbYJTFMS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 01:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYJTFMG
+	id S1752845AbYJTFOY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 01:14:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYJTFOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 01:12:06 -0400
-Received: from sh.osrg.net ([192.16.179.4]:44116 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751735AbYJTFMF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 01:12:05 -0400
-Date: Mon, 20 Oct 2008 14:11:55 +0900
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] block: remove unused ll_new_mergeable()
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081011153521M.fujita.tomonori@lab.ntt.co.jp>
-References: <20081011153521M.fujita.tomonori@lab.ntt.co.jp>
+	Mon, 20 Oct 2008 01:14:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34927 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751735AbYJTFON (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 01:14:13 -0400
+Date: Sun, 19 Oct 2008 22:13:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, tytso@mit.edu,
+       adilger@sun.com, jack@suse.cz, sandeen@redhat.com
+Subject: Re: status of the ext3/jbd error handling enhancement patches
+Message-Id: <20081019221331.ddf6b8c2.akpm@linux-foundation.org>
+In-Reply-To: <48FC081D.60306@hitachi.com>
+References: <48FC081D.60306@hitachi.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20081020141141L.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Oct 2008 15:38:08 +0900
-FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+On Mon, 20 Oct 2008 13:25:01 +0900 Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> wrote:
 
-> This is against the latest git (b922df7383749a1c0b7ea64c50fa839263d3816b).
-> =
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Subject: [PATCH] block: remove unused ll_new_mergeable()
+> Hi Andrew,
 > 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> ---
->  block/blk-merge.c |   21 ---------------------
->  1 files changed, 0 insertions(+), 21 deletions(-)
-
-Ping. Any reason to keep this function?
-
-
-> diff --git a/block/blk-merge.c b/block/blk-merge.c
-> index 68b0f1e..37bcfc9 100644
-> --- a/block/blk-merge.c
-> +++ b/block/blk-merge.c
-> @@ -218,27 +218,6 @@ new_segment:
->  }
->  EXPORT_SYMBOL(blk_rq_map_sg);
->  
-> -static inline int ll_new_mergeable(struct request_queue *q,
-> -				   struct request *req,
-> -				   struct bio *bio)
-> -{
-> -	int nr_phys_segs = bio_phys_segments(q, bio);
-> -
-> -	if (req->nr_phys_segments + nr_phys_segs > q->max_phys_segments) {
-> -		req->cmd_flags |= REQ_NOMERGE;
-> -		if (req == q->last_merge)
-> -			q->last_merge = NULL;
-> -		return 0;
-> -	}
-> -
-> -	/*
-> -	 * A hw segment is just getting larger, bump just the phys
-> -	 * counter.
-> -	 */
-> -	req->nr_phys_segments += nr_phys_segs;
-> -	return 1;
-> -}
-> -
->  static inline int ll_new_hw_segment(struct request_queue *q,
->  				    struct request *req,
->  				    struct bio *bio)
-> -- 
-> 1.5.5.GIT
+> Thank you for pushing my ext3/jbd to Linus.  But some of patches
+> in -mm (following three patches) haven't been sent to Linus.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>   #jbd-fix-error-handling-for-checkpoint-io.patch: double-check this
+>   jbd-fix-error-handling-for-checkpoint-io.patch
+>   ext3-add-checks-for-errors-from-jbd.patch
+>   jbd-test-bh_write_eio-to-detect-errors-on-metadata-buffers.patch
+> 
+> They improve filesystem corruption problem and it is needed by
+> mission critical systems.
+> 
+> Could you tell me what is your concern (you commented, "double-check
+> this") ?  Are there something that I can help?  For example, I can
+> provide some SystemTap scripts to help tests.
+
+I forget my reasons for that - would need to go back and review the
+discussions when the patch was first merged.
+
+One of the above patches (I forget which) breaks the build because it
+expects the presence of Al Viro's VFS tree, and that hasn't been merged
+yet.  I need to wait and see if that merge will be happening (seems
+unlikely) and if not, rework the patch against mainline.
+
+Quie a few patches (5%?) tend to get delayed like this due to missing
+dependencies.
