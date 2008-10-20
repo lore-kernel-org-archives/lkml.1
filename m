@@ -1,99 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbYJTTmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbYJTTy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755246AbYJTTmN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 15:42:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYJTTl6
+	id S1754043AbYJTTy0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 15:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYJTTyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 15:41:58 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:13172 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753317AbYJTTl5 (ORCPT
+	Mon, 20 Oct 2008 15:54:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45984 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752197AbYJTTyQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 15:41:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=OmnBT7yc/Wt2R8YRDYPuJMQ1a+p5vnEdrKJyyL6aiNBNRyKjYUUzSVYhPIFcqLbOM3
-         nItMMWtCJu78rfxBYGK8pjVHyooLQdqq1jiyRgIgdIYGsexRsZ1BE82PrKpH6xqyl252
-         3pn6BRV1gK62IWTNZb/1vo0F8VtZMQwy1cFP4=
-From: Yauhen Kharuzhy <jekhor@gmail.com>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org, Yauhen Kharuzhy <jekhor@gmail.com>
-Subject: [PATCH] MMC: Fix race condition in resume/card detect code
-Date: Mon, 20 Oct 2008 22:41:48 +0300
-Message-Id: <1224531708-13624-1-git-send-email-jekhor@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <20081018191147.00327019@mjolnir.drzeus.cx>
-References: <20081018191147.00327019@mjolnir.drzeus.cx>
+	Mon, 20 Oct 2008 15:54:16 -0400
+Message-ID: <48FCE1C4.20807@linux-foundation.org>
+Date: Mon, 20 Oct 2008 14:53:40 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au, hugh@veritas.com,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: SLUB defrag pull request?
+References: <1223883004.31587.15.camel@penberg-laptop> <1223883164.31587.16.camel@penberg-laptop> <Pine.LNX.4.64.0810131227120.20511@blonde.site> <200810132354.30789.nickpiggin@yahoo.com.au> <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu> <E1KpOOL-0003Vf-9y@pomaz-ex.szeredi.hu> <48F378C6.7030206@linux-foundation.org> <E1KpOjX-0003dt-AY@pomaz-ex.szeredi.hu> <48FC9CCC.3040006@linux-foundation.org> <E1Krz4o-0002Fi-Pu@pomaz-ex.szeredi.hu> <48FCCC72.5020202@linux-foundation.org> <E1KrzgK-0002QS-Os@pomaz-ex.szeredi.hu> <48FCD7CB.4060505@linux-foundation.org> <E1Ks0QX-0002aC-SQ@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1Ks0QX-0002aC-SQ@pomaz-ex.szeredi.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When device wakes up by card change interrupt and MMC_UNSAFE_RESUME is
-enabled then race condition between mmc_rescan() and
-mmc_resume()/mmc_sd_resume() appeared.
+Miklos Szeredi wrote:
+> So, isn't it possible to do without get_dentries()?  What's the
+> fundamental difference between this and regular cache shrinking?
 
-Resume functions can sleep into mmc_remove_card() and at this time
-mmc_rescan() can be called by delayed work handler. Double-free of
-kobject or double-remove of host->card can be result of this.
+The fundamental difference is that slab defrag operates on sparsely populated
+dentries. It comes into effect when the density of dentries per page is low
+and lots of memory is wasted. It defragments by kicking out dentries in low
+density pages. These can then be reclaimed.
 
-This patch adds an host->suspended flag which indicated that host is in
-suspend state. mmc_rescan() checks it and returned when
-host->suspended == 1. It's safe because resume code calls
-mmc_detect_change() at end of resume process.
 
-Signed-off-by: Yauhen Kharuzhy <jekhor@gmail.com>
----
- drivers/mmc/core/core.c  |    7 +++++++
- include/linux/mmc/host.h |    3 +++
- 2 files changed, 10 insertions(+), 0 deletions(-)
+> Case below was brainfart, please ignore.  But that doesn't really
+> help: the VFS assumes that you cannot umount while there are busy
+> dentries/inodes.  Usually it works this way: VFS first gets vfsmount
+> ref, then gets dentry ref, and releases them in the opposite order.
+> And umount is not allowed if vfsmount has a non-zero refcount (it's a
+> bit more complicated, but the essense is the same).
 
-diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-index 044d84e..427f283 100644
---- a/drivers/mmc/core/core.c
-+++ b/drivers/mmc/core/core.c
-@@ -657,6 +657,9 @@ void mmc_rescan(struct work_struct *work)
- 	u32 ocr;
- 	int err;
- 
-+	if (host->suspended)
-+		return;
-+
- 	mmc_bus_get(host);
- 
- 	if (host->bus_ops == NULL) {
-@@ -780,6 +783,8 @@ int mmc_suspend_host(struct mmc_host *host, pm_message_t state)
- 
- 	mmc_power_off(host);
- 
-+	host->suspended = 1;
-+
- 	return 0;
- }
- 
-@@ -805,6 +810,8 @@ int mmc_resume_host(struct mmc_host *host)
- 	 */
- 	mmc_detect_change(host, 1);
- 
-+	host->suspended = 0;
-+
- 	return 0;
- }
- 
-diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-index 9c288c9..a584239 100644
---- a/include/linux/mmc/host.h
-+++ b/include/linux/mmc/host.h
-@@ -139,6 +139,9 @@ struct mmc_host {
- #ifdef CONFIG_MMC_DEBUG
- 	unsigned int		removed:1;	/* host is being removed */
- #endif
-+#ifdef CONFIG_MMC_UNSAFE_RESUME
-+	unsigned int		suspended:1;
-+#endif
- 
- 	struct mmc_card		*card;		/* device attached to this host */
- 
--- 
-1.5.6.5
+The dentries that we get a ref on are candidates for removal. Their lifetime
+is limited. Unmounting while we are trying to remove dentries/inodes results
+in two mechanisms removing dentries/inodes.
+
+If we have obtained a reference then invalidate_list() will return the number
+of busy inodes which would trigger the printk in generic_shutdown_super(). But
+these are inodes currently being reclaimed by slab defrag. Just waiting a bit
+would remedy the situation.
+
+We would need some way to make generic_shutdown_super() wait until slab defrag
+is finished.
 
