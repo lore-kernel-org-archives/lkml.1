@@ -1,120 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752353AbYJTHaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752331AbYJTHeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752353AbYJTHaR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 03:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbYJTHaB
+	id S1752331AbYJTHeu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 03:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbYJTHem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 03:30:01 -0400
-Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:26413 "HELO
-	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750966AbYJTHaB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 03:30:01 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=16uJPR9IeB/rnkns5d9Nde1LDAq2WJUDNN6jdCDqpWpJ5LbGxUyPuL7c8JsDaJpoUgqpZItQUSalyx01hXLZXmnYtVk+dT2Wvd2ghBFaMWcY8HO+L1yf2neL9hAE6Mcw/UdXez7HIkvQYll6mrx9gEixdyJC5+qEu2VP3IbDgyA=  ;
-X-YMail-OSG: wQzKrbgVM1naEjjBl0TXauK1KHN9t8L8_xQH3d7j55lPNp0yaQ94WxsS1otJH7woG8oDl3cfHxbB5cXGTGVk8BjsRPlFlS6MhtO8leFvxr2q1GwQcHx8VlzbrcKKZl6Dsk760Vaee5NmXqL4G26KfuFzkDynZ35cirb1cUI-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
-Date: Mon, 20 Oct 2008 00:29:57 -0700
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       "Steven A. Falco" <sfalco@harris.com>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>,
-       i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
-References: <20081016171222.GA24812@oksana.dev.rtsoft.ru> <200810171324.42650.david-b@pacbell.net> <20081017212942.GA1919@oksana.dev.rtsoft.ru>
-In-Reply-To: <20081017212942.GA1919@oksana.dev.rtsoft.ru>
+	Mon, 20 Oct 2008 03:34:42 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32978 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750958AbYJTHem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 03:34:42 -0400
+Date: Mon, 20 Oct 2008 09:34:28 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] kmemcheck: (finally) use 4k pages for identity mapping
+Message-ID: <20081020073428.GB20461@elte.hu>
+References: <20081019172041.GA3258@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810200029.58312.david-b@pacbell.net>
+In-Reply-To: <20081019172041.GA3258@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 17 October 2008, Anton Vorontsov wrote:
-> On Fri, Oct 17, 2008 at 01:24:42PM -0700, David Brownell wrote:
-> > On Thursday 16 October 2008, Anton Vorontsov wrote:
-> > > +/*
-> > > + * Platforms can define their own __dev_ versions to glue gpio_chips with the
-> > > + * architecture-specific code.
-> > > + */
-> > > +#ifndef __dev_gpiochip_add
-> > > +#define __dev_gpiochip_add __dev_gpiochip_add
-> > > +static inline int __dev_gpiochip_add(struct device *dev,
-> > > +                                    struct gpio_chip *chip)
-> > > +{
-> > > +       chip->dev = dev;
-> > > +       return gpiochip_add(chip);
-> > > +}
-> > > +#endif /* __dev_gpiochip_add */
-> > 
-> > This is pretty ugly, especially the implication that *EVERY* gpio_chip
-> > provider needs modification to use these calls.
+
+* Vegard Nossum <vegard.nossum@gmail.com> wrote:
+
+> >From 760932c8607b736504a134ed6feec25e90e089ac Mon Sep 17 00:00:00 2001
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Sun, 19 Oct 2008 15:28:04 +0200
+> Subject: [PATCH] kmemcheck: (finally) use 4k pages for identity mapping
 > 
-> Anyway most of them need some modifications to work with OF...
-
-The changes I saw were just to cope with not having
-the system-specific platform_data provided:  don't
-fail if that pointer is NULL, and arrange for dynamic
-allocation of some GPIO numbers.
-
-With OpenFirmware, presumably the implication is that
-the relevant data is in the OF device tree...
-
-
-I think that it *barely* makes sense to allow the chips
-to bind to drivers without platform data when there's
-not even OF in the environment.  ONLY in the case where
-the GPIOs are exported through sysfs, in fact, since
-otherwise there's no way for other system components
-to know those GPIOs even exist!!  And even that seems
-pretty marginal to me...
-
-
-> > Surely it would be a lot simpler to just add platform-specific hooks
-> > to gpiochip_{add,remove}(), [...]
+> At last I found the right hooks for doing this properly. DEBUG_PAGEALLOC
+> has the exact same requirement: Kernel pages must be mapped with 4k
+> physical pages (since that's the size of pages returned by the page
+> allocator).
 > 
-> We have printk and dev_printk. kzalloc and devm_kzalloc (though I
-> aware that devm_ are different than just dev_).  So I thought that
-> dev_gpiochip_* would be logical order of things...
+> Now we finally get rid of the need to do set_memory_4k() or try to work
+> around TLB flushing from interrupt context. Yay!
+> 
+> Has been tested on both 32- and 64-bit on a P4 and a Dual Core.
+> 
+> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+> ---
+>  arch/x86/kernel/cpu/common.c      |    7 -------
+>  arch/x86/mm/init_32.c             |    2 +-
+>  arch/x86/mm/init_64.c             |    2 +-
+>  arch/x86/mm/kmemcheck/kmemcheck.c |    4 ----
+>  mm/kmemcheck.c                    |    8 --------
+>  5 files changed, 2 insertions(+), 21 deletions(-)
 
-Those aren't platform hook mechanisms though, and
-there's no need to modify every driver to use them
-in order to work *at all* on OpenFirmware systems.
+nice! Pulled into tip/kmemcheck-v2, thanks Vegard.
 
-
-> If you don't like it, I can readily implement hooks for
-> gpiochip_{add,remove}().
-
-It seems a better way to a clean solution, IMO.  For
-example, the OF hook for adding a gpio_chip might
-know that it's got to stuff chip->base with a number
-other than "-1" (say, "42") since that was stored in
-some property of the device's OF shadow, and other
-devices have properties associating them with GPIO
-numbers derived from that (3rd gpio on that chip,
-42 + 3 == 45) and so forth.
-
-That said ... there's a LOT of configuration that
-doesn't seem to me like it can be generic.  Pullups,
-pulldowns, default values, polarity inversion,
-what devices depend on those GPIOs being available
-before they can come up (GPIO leds and power switches
-come quickly to mind), all kinds of chip-specific
-details, and more.
-
-Did you look at providing chip-aware OF glue drivers
-for this stuff?  Doing stuff like just turn the OF
-device properties into the right platform_data, and
-maybe runing FORTH bytecodes to do other configuration
-magic needed...
-
-- Dave
+	Ingo
