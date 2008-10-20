@@ -1,51 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYJTVgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbYJTVgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbYJTVgP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 17:36:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbYJTVf6
+	id S1755838AbYJTVgf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 17:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbYJTVgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 17:35:58 -0400
-Received: from gate.crashing.org ([63.228.1.57]:47514 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752381AbYJTVf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 17:35:57 -0400
-Subject: Re: [PATCH] x86, ioremap: use %pR in printk
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@osdl.org>,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       linux-pci@vger.kernel.org, yhlu.kernel@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <1224507486.27899.31.camel@johannes.berg>
-References: <20081020040823.871BDDDDEC@ozlabs.org>
-	 <20081020071203.GB12131@elte.hu> <1224491682.7654.135.camel@pasglop>
-	 <20081020090502.GB31710@elte.hu> <20081020110018.GA24579@elte.hu>
-	 <1224501352.7654.141.camel@pasglop> <1224501768.7654.144.camel@pasglop>
-	 <2008102  <20081020113602.GA2697@elte.hu>
-	 <1224507486.27899.31.camel@johannes.berg>
-Content-Type: text/plain
-Date: Tue, 21 Oct 2008 08:35:18 +1100
-Message-Id: <1224538518.7654.164.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Oct 2008 17:36:22 -0400
+Received: from kroah.org ([198.145.64.141]:37435 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753906AbYJTVgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 17:36:21 -0400
+Date: Mon, 20 Oct 2008 13:43:18 -0700
+From: Greg KH <greg@kroah.com>
+To: mtk.manpages@gmail.com
+Cc: Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org,
+       linux-api@vger.kernel.org
+Subject: Re: [PATCH] Document kernel taint flags properly
+Message-ID: <20081020204318.GB21131@kroah.com>
+References: <20081017225515.GA14133@kroah.com> <cfd18e0f0810180151v232f623pdbf0f12cad6532d6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cfd18e0f0810180151v232f623pdbf0f12cad6532d6@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-20 at 14:58 +0200, Johannes Berg wrote:
-> On Mon, 2008-10-20 at 13:36 +0200, Ingo Molnar wrote:
+On Sat, Oct 18, 2008 at 03:51:11AM -0500, Michael Kerrisk wrote:
+> Greg,
 > 
-> > +	/* room for the actual number, the "0x" and the final zero */
-> > +	char sym[2*sizeof(phys_addr_t) + 2];
+> Small corrections below.
 > 
-> Buffer overflow.
+> On Fri, Oct 17, 2008 at 5:55 PM, Greg KH <greg@kroah.com> wrote:
+> > From: Greg Kroah-Hartman <gregkh@suse.de>
+> >
+> > This fills in the documentation for all of the current kernel taint
+> > flags, and fixes the number for TAINT_CRAP, which was incorrectly
+> > described.
+> >
+> > Cc: Michael Kerrisk <mtk.manpages@gmail.com>
+> > Cc: Randy Dunlap <rdunlap@xenotime.net>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> >
+> > ---
+> >  Documentation/sysctl/kernel.txt |   24 +++++++++++++++++-------
+> >  1 file changed, 17 insertions(+), 7 deletions(-)
+> >
+> > --- a/Documentation/sysctl/kernel.txt
+> > +++ b/Documentation/sysctl/kernel.txt
+> > @@ -363,11 +363,21 @@ tainted:
+> >  Non-zero if the kernel has been tainted.  Numeric values, which
+> >  can be ORed together:
+> >
+> > -  1 - A module with a non-GPL license has been loaded, this
+> > -      includes modules with no license.
+> > -      Set by modutils >= 2.4.9 and module-init-tools.
+> > -  2 - A module was force loaded by insmod -f.
+> > -      Set by modutils >= 2.4.9 and module-init-tools.
+> > -  4 - Unsafe SMP processors: SMP with CPUs not designed for SMP.
+> > - 64 - A module from drivers/staging was loaded.
+> > +   1 - A module with a non-GPL license has been loaded, this
+> > +       includes modules with no license.
+> > +       Set by modutils >= 2.4.9 and module-init-tools.
+> > +   2 - A module was force loaded by insmod -f.
+> > +       Set by modutils >= 2.4.9 and module-init-tools.
+> > +   4 - Unsafe SMP processors: SMP with CPUs not designed for SMP.
+> > +   8 - A module was forcefully unloaded from the system by rmmod -f.
+> 
+> s/forcefully/forcibly/
+> 
+> > +  16 - A hardware machine check error occured on the system.
+> 
+> occurred
 
-It's actually not going to overflow as we pass the end of the buffer to
-"number" but we'll miss a digit.
+Thanks, I've updated this in my version.
 
-Ben.
+Randy, I can send this through my tree, is that ok?  Or do you want it
+to go through yours?
 
+thanks,
 
+greg k-h
