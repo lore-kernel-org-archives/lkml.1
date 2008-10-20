@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752109AbYJTDVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752421AbYJTDdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752109AbYJTDVH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 23:21:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYJTDUo
+	id S1752421AbYJTDdc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 23:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbYJTDdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 23:20:44 -0400
-Received: from ozlabs.org ([203.10.76.45]:33060 "EHLO ozlabs.org"
+	Sun, 19 Oct 2008 23:33:23 -0400
+Received: from sh.osrg.net ([192.16.179.4]:56989 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751843AbYJTDUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 23:20:43 -0400
-To: linux-kernel@vger.kernel.org
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Sun, 19 Oct 2008 22:20:36 -0500
-Subject: [PATCH 5/5] Make panic= and panic_on_oops into core_params
-MIME-Version: 1.0
+	id S1751142AbYJTDdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 23:33:23 -0400
+Date: Mon, 20 Oct 2008 12:32:43 +0900
+To: joro@8bytes.org
+Cc: dwmw2@infradead.org, mingo@elte.hu, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, fenghua.yu@intel.com, tony.luck@intel.com,
+       suresh.b.siddha@intel.com, sfr@canb.auug.org.au,
+       andreas.herrmann3@amd.com, joseph.cihula@intel.com,
+       akpm@linux-foundation.org, jbarnes@virtuousgeek.org, tglx@linutronix.de,
+       torvalds@linux-foundation.org
+Subject: Re: [ANNOUNCE] iommu-2.6.git tree
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081019212327.GI21841@8bytes.org>
+References: <20081019124732.GA21115@elte.hu>
+	<1224422474.6770.1475.camel@macbook.infradead.org>
+	<20081019212327.GI21841@8bytes.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810201420.36136.rusty@rustcorp.com.au>
+Message-Id: <20081020123245J.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 19 Oct 2008 23:23:27 +0200
+Joerg Roedel <joro@8bytes.org> wrote:
 
-This allows them to be examined and set after boot, plus means they
-actually give errors if they are misused (eg. panic=yes).
+> On Sun, Oct 19, 2008 at 02:21:14PM +0100, David Woodhouse wrote:
+> > I thought you and Thomas were working together, and I spoke to Thomas
+> > about it during the Kernel Summit. Unless I'm very much mistaken, he
+> > agreed that it makes sense to have a separate, real, git tree for
+> > cross-platform IOMMU-related work.
+> 
+> Is there any cross-platform IOMMU-related work outside the Intel IOMMU
+> development?
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- kernel/panic.c |   17 +++--------------
- 1 file changed, 3 insertions(+), 14 deletions(-)
+IA64 and PARISC uses the same IOMMU hardware but they duplicate the
+driver for them (the drivers are very similar). Calgary and POWER also
+have similar IOMMU drivers. But I don't think it's worth merging them.
 
-diff -r 660a97679013 kernel/panic.c
---- a/kernel/panic.c	Thu Aug 28 11:46:29 2008 +1000
-+++ b/kernel/panic.c	Thu Aug 28 11:51:50 2008 +1000
-@@ -33,13 +33,6 @@ ATOMIC_NOTIFIER_HEAD(panic_notifier_list
- ATOMIC_NOTIFIER_HEAD(panic_notifier_list);
- 
- EXPORT_SYMBOL(panic_notifier_list);
--
--static int __init panic_setup(char *str)
--{
--	panic_timeout = simple_strtoul(str, NULL, 0);
--	return 1;
--}
--__setup("panic=", panic_setup);
- 
- static long no_blink(long time)
- {
-@@ -187,13 +180,6 @@ void add_taint(unsigned flag)
- }
- EXPORT_SYMBOL(add_taint);
- 
--static int __init pause_on_oops_setup(char *str)
--{
--	pause_on_oops = simple_strtoul(str, NULL, 0);
--	return 1;
--}
--__setup("pause_on_oops=", pause_on_oops_setup);
--
- static void spin_msec(int msecs)
- {
- 	int i;
-@@ -353,3 +339,6 @@ void __stack_chk_fail(void)
- }
- EXPORT_SYMBOL(__stack_chk_fail);
- #endif
-+
-+core_param(panic, panic_timeout, int, 0644);
-+core_param(pause_on_oops, pause_on_oops, int, 0644);
-
+Unless a new cross-platform IOMMU git tree handles DMA-API changes,
+there is no point in having such new tree. There is very little
+non-architecture-specific IOMMU stuff.
