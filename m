@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYJTWvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbYJTWxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbYJTWvR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 18:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbYJTWvD
+	id S1754750AbYJTWxd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 18:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYJTWxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 18:51:03 -0400
-Received: from isilmar.linta.de ([213.133.102.198]:38922 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751261AbYJTWvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 18:51:01 -0400
-Date: Tue, 21 Oct 2008 00:50:58 +0200
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Pavel Machek <pavel@suse.cz>,
-       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@strlen.de>
-Subject: Re: [PATCH 1/3] Add file patterns to MAINTAINERS
-Message-ID: <20081020225058.GA7184@isilmar.linta.de>
-Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
-	Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
-	Linus Torvalds <torvalds@osdl-foundation.org>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	Pavel Machek <pavel@suse.cz>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@strlen.de>
-References: <1224541704-30357-1-git-send-email-joe@perches.com> <1224541704-30357-2-git-send-email-joe@perches.com>
+	Mon, 20 Oct 2008 18:53:24 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34352 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751934AbYJTWxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 18:53:23 -0400
+Date: Mon, 20 Oct 2008 20:53:18 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: david@lang.hm
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: sched_yield() options
+Message-ID: <20081020225318.GA10352@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>, david@lang.hm,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <alpine.DEB.1.10.0810201531010.21749@asgard.lang.hm>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1224541704-30357-2-git-send-email-joe@perches.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <alpine.DEB.1.10.0810201531010.21749@asgard.lang.hm>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Em Mon, Oct 20, 2008 at 03:34:07PM -0700, david@lang.hm escreveu:
+> I've seen a lot of discussion about how sched_yield is abused by  
+> applications. I'm working with a developer on one application that looks  
+> like it's falling into this same trap (mutexes between threads and using  
+> sched_yield (or more precisely pthread_yield()) to let other threads get  
+> the lock)
+>
+> however I've been having a hard time tracking down the appropriate  
+> discussions to forward on to the developer (both for why what he's doing  
+> is bad, and for what he should be doing instead)
+>
+> could someone point out appropriate mailing list threads, or other  
+> documentation for this?
 
->  PCMCIA SUBSYSTEM
->  P:	Linux PCMCIA Team
->  L:	linux-pcmcia@lists.infradead.org
->  W:	http://lists.infradead.org/mailman/listinfo/linux-pcmcia
->  T:	git kernel.org:/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
->  S:	Maintained
-> +F:	Documentation/pcmcia/
-> +F:	drivers/*/pcmcia/
-> +F:	drivers/pcmcia/
-> +F:	include/pcmcia/
-> +F:	sound/pcmcia/
+http://kerneltrap.org/Linux/Using_sched_yield_Improperly
 
-sound/pcmcia/ and lots of drivers/*/pcmcia is actually really
-driver-related and not PCMCIA related so I'm not really happy if this will
-be described by the PCMCIA F:-realm...
-
-Best,
-	Dominik
+- Arnaldo
