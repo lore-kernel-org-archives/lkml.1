@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbYJTRNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbYJTRN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756154AbYJTRNe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 13:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbYJTREQ
+	id S1756241AbYJTRN4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 13:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbYJTRES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 13:04:16 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33627 "EHLO
+	Mon, 20 Oct 2008 13:04:18 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33628 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753895AbYJTRD1 (ORCPT
+	with ESMTP id S1753929AbYJTRD1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 20 Oct 2008 13:03:27 -0400
-Message-Id: <20081020170320.850964000@polaris-admin.engr.sgi.com>
+Message-Id: <20081020170321.397462000@polaris-admin.engr.sgi.com>
 References: <20081020170319.539427000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Oct 2008 10:03:28 -0700
+Date: Mon, 20 Oct 2008 10:03:32 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: Andi Kleen <andi@firstfloor.org>,
@@ -25,46 +25,81 @@ Cc: Andi Kleen <andi@firstfloor.org>,
        Yinghai Lu <yhlu.kernel@gmail.com>, IA64 <linux-ia64@vger.kernel.org>,
        PowerPC <linuxppc-dev@ozlabs.org>, S390 <linux-s390@vger.kernel.org>,
        SPARC <sparclinux@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 09/35] cpumask: add cpumask_copy()
-Content-Disposition: inline; filename=cpumask:cpus_copy.patch
+Subject: [PATCH 13/35] cpumask: use setup_nr_cpu_ids() instead of direct assignment.
+Content-Disposition: inline; filename=cpumask:setup_nr_cpu_ids-everywhere.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since cpumasks are to become pointers to undefined structs, we need to
-replace assignments.  Also, dynamically allocated ones will eventually
-be nr_cpu_ids bits (<= NR_CPUS), so assignment is a definite no-no.
+nr_cpu_ids is going to become a constant under some configs, so don't
+assign it.  Currently only x86 seems to anyway.
 
 From: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- include/linux/cpumask.h |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/x86/kernel/smpboot.c |    4 ++--
+ include/linux/cpumask.h   |    4 ++++
+ init/main.c               |    4 ++--
+ 3 files changed, 8 insertions(+), 4 deletions(-)
 
---- linux-2.6.28.orig/include/linux/cpumask.h
-+++ linux-2.6.28/include/linux/cpumask.h
-@@ -64,6 +64,8 @@
-  * int next_cpu(cpu, mask)		Next cpu past 'cpu', or NR_CPUS
-  * int next_cpu_nr(cpu, mask)		Next cpu past 'cpu', or nr_cpu_ids
-  *
-+ * void cpumask_copy(dmask, smask)	dmask = smask
-+ *
-  * size_t cpumask_size()		Length of cpumask in bytes.
-  * cpumask_t cpumask_of_cpu(cpu)	Return cpumask with bit 'cpu' set
-  *					(can be used as an lvalue)
-@@ -351,6 +353,12 @@ static inline void cpumask_fold(struct c
- 	bitmap_fold(dstp->bits, origp->bits, sz, NR_CPUS);
+--- linux-2.6.28.orig/arch/x86/kernel/smpboot.c
++++ linux-2.6.28/arch/x86/kernel/smpboot.c
+@@ -1079,7 +1079,7 @@ static int __init smp_sanity_check(unsig
+ 			nr++;
+ 		}
+ 
+-		nr_cpu_ids = 8;
++		setup_nr_cpu_ids();
+ 	}
+ #endif
+ 
+@@ -1296,7 +1296,7 @@ __init void prefill_possible_map(void)
+ 	for (i = 0; i < possible; i++)
+ 		cpu_set(i, cpu_possible_map);
+ 
+-	nr_cpu_ids = possible;
++	setup_nr_cpu_ids();
  }
  
-+static inline void cpumask_copy(struct cpumask *dstp,
-+				const struct cpumask *srcp)
-+{
-+	bitmap_copy(cpumask_bits(dstp), cpumask_bits(srcp), NR_CPUS);
-+}
-+
- /*
-  * Special-case data structure for "single bit set only" constant CPU masks.
-  *
+ #ifdef CONFIG_HOTPLUG_CPU
+--- linux-2.6.28.orig/include/linux/cpumask.h
++++ linux-2.6.28/include/linux/cpumask.h
+@@ -144,6 +144,7 @@
+ #include <linux/kernel.h>
+ #include <linux/threads.h>
+ #include <linux/bitmap.h>
++#include <linux/init.h>
+ 
+ struct cpumask
+ {
+@@ -636,4 +637,7 @@ extern cpumask_t cpu_active_map;
+ #define for_each_online_cpu(cpu)   for_each_cpu_mask_nr((cpu), cpu_online_map)
+ #define for_each_present_cpu(cpu)  for_each_cpu_mask_nr((cpu), cpu_present_map)
+ 
++/* Arch-specific code may call this to initialize nr_cpu_ids based on
++ * the cpu_possible_map. */
++void __init setup_nr_cpu_ids(void);
+ #endif /* __LINUX_CPUMASK_H */
+--- linux-2.6.28.orig/init/main.c
++++ linux-2.6.28/init/main.c
+@@ -362,7 +362,7 @@ static void __init smp_init(void)
+ #endif
+ 
+ static inline void setup_per_cpu_areas(void) { }
+-static inline void setup_nr_cpu_ids(void) { }
++void __init setup_nr_cpu_ids(void) { }
+ static inline void smp_prepare_cpus(unsigned int maxcpus) { }
+ 
+ #else
+@@ -377,7 +377,7 @@ int nr_cpu_ids __read_mostly = NR_CPUS;
+ EXPORT_SYMBOL(nr_cpu_ids);
+ 
+ /* An arch may set nr_cpu_ids earlier if needed, so this would be redundant */
+-static void __init setup_nr_cpu_ids(void)
++void __init setup_nr_cpu_ids(void)
+ {
+ 	int cpu, highest_cpu = 0;
+ 
 
 -- 
