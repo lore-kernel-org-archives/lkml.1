@@ -1,38 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752024AbYJTJds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752024AbYJTJq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752024AbYJTJds (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 05:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750769AbYJTJdl
+	id S1752024AbYJTJq3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 05:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763AbYJTJqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 05:33:41 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:44003 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbYJTJdl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 05:33:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=Cn/alDuqHP8y/PvqVauG2kFCWYWfv7dpxYuVYsEe5/jVP191ThdxenK6F7mhXuayob
-         hoylsKHq6lli/hl8u5YHtGSLuIDfWpIHbVVVBn0oasTpR//Ey7f/cwm3gKeeaPXt9Z+w
-         YFEcPt9kimq0paOOoCRYRJJ5FbhPytswj6HQ4=
-Message-ID: <787b0d920810200233v3ccc87bfjab4a4aec510a79cb@mail.gmail.com>
-Date: Mon, 20 Oct 2008 05:33:40 -0400
-From: "Albert Cahalan" <acahalan@gmail.com>
-To: prasad@linux.vnet.ibm.com, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC Patch 1/9] Introducing generic hardware breakpoint handler interfaces
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 20 Oct 2008 05:46:22 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:60239 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750745AbYJTJqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 05:46:22 -0400
+Date: Mon, 20 Oct 2008 11:46:07 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Mark Jackson <mpfj@mimc.co.uk>
+Cc: dbrownell@users.sourceforge.net, lkml <linux-kernel@vger.kernel.org>,
+       rtc-linux@googlegroups.com, spi-devel-general@lists.sourceforge.net
+Subject: Re: [PATCH v2] Add Dallas DS1390 RTC chip
+Message-ID: <20081020114607.1b0299cb@i1501.lan.towertech.it>
+In-Reply-To: <48FC442E.9070206@mimc.co.uk>
+References: <48FC442E.9070206@mimc.co.uk>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'd just like to point out that not all hardware breakpoints
-involve addresses. For example:
+On Mon, 20 Oct 2008 09:41:18 +0100
+Mark Jackson <mpfj@mimc.co.uk> wrote:
 
-The OLPC XO uses an x86 processor called the Geode.
-It supports a breakpoint that traps based on the opcode.
-For example, one could set it to trap on arpl instructions.
+> +struct ds1390 {
+> +	struct rtc_device *rtc;
+> +	u8 buf[9];	/* cmd + 8 registers */
+> +	u8 tx_buf[2];
+> +	u8 rx_buf[2];
+> +};
+> +
+
+ don't we still have too many buffers?
+
+ the use of bin2bcd an bcd2bin (lowercase) would also be appreciated.
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
+
