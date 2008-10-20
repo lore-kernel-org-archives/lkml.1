@@ -1,1621 +1,432 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754258AbYJTTRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbYJTTWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754258AbYJTTRe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 15:17:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbYJTTR0
+	id S1754132AbYJTTWQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 15:22:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbYJTTWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 15:17:26 -0400
-Received: from mga03.intel.com ([143.182.124.21]:44898 "EHLO mga03.intel.com"
+	Mon, 20 Oct 2008 15:22:01 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59221 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752322AbYJTTRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 15:17:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,453,1220252400"; 
-   d="scan'208";a="62692699"
-Subject: Re: [PATCH] dmaengine: at_hdmac: new driver for the Atmel AHB DMA
-	Controller
-From: Dan Williams <dan.j.williams@intel.com>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Victor <linux@maxim.org.za>
-In-Reply-To: <48F8B291.1060500@atmel.com>
-References: <48F8B291.1060500@atmel.com>
-Content-Type: text/plain
-Date: Mon, 20 Oct 2008 12:18:46 -0700
-Message-Id: <1224530326.27425.25.camel@dwillia2-linux.ch.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	id S1751981AbYJTTWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 15:22:00 -0400
+Date: Mon, 20 Oct 2008 21:21:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Roland Dreier <rdreier@cisco.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [announce] new tree: "fix all build warnings, on all configs"
+Message-ID: <20081020192110.GA28736@elte.hu>
+References: <20081017171139.GA1792@elte.hu> <ada3aiv9k6j.fsf@cisco.com> <20081017180523.GA11590@elte.hu> <adatzbbrrcf.fsf@cisco.com> <20081017191202.GA5396@elte.hu> <adaiqrrrp2h.fsf@cisco.com> <20081018082209.GA24220@elte.hu> <alpine.LFD.2.00.0810200933470.3518@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.2.00.0810200933470.3518@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2008-10-17 at 08:43 -0700, Nicolas Ferre wrote:
-> This AHB DMA Controller (aka HDMA or DMAC on AT91 systems) is availlable on
-> at91sam9rl chip. It will be used on other products in the future.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> That thing is supposed to be a 5-byte memcpy. Not a "take a random 
+> byte from a random location and move it to another random location". 
+> That would be "randcpy()", not "memcpy()".
 > 
-> This first release covers only the memory-to-memory tranfer type. This is the
-> only tranfer type supported by this chip.
-> On other products, it will be used also for peripheral DMA transfer (slave API
-> support to come).
-> 
-> I used dmatest client without problem in different configurations to test
-> it.
-> 
-> Full documentation for this controller can be found in the SAM9RL datasheet :
-> http://www.atmel.com/dyn/products/product_card.asp?part_id=4243
-> 
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> ---
+> I don't want to see obvious and shitty crap like this. I don't want to 
+> pull from people who write code with some "random walk" algorithm.
 
-Hi Nicolas,
+yes, the patch is worse than crap, so i:
 
-A few comments below.
+ 1) signalled that it's crap in its branch name (warnings/ugly)
+ 2) named it a hack in the subject line: "hack, workaround for warning"
+ 3) explained it in the commit log that GCC is crap
+ 4) added a NOT-Signed-off
 
-Also, checkpatch reported:
+but i guess i should not even have created it, because it shows a broken 
+"symptom driven" thought process when it was created.
 
-total: 4 errors, 45 warnings, 1475 lines checked
+So i zapped the 'ugly' branch completely and removed all those commits. 
+Will filter out bogus warnings via different technical means. Have no 
+ideas at the moment of how to do it technically though - filtering the 
+compiler output does not work reliably.
 
-...mostly 80 column warnings (some you may want to take a look at).
+Below are the kind of commits i want to end up with eventually and 
+reliably.
+
+	Ingo
+
+------------------>
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git warnings/simple
+
+Ingo Molnar (10):
+      x86: fix default_spin_lock_flags() prototype
+      drivers/ide/pci/hpt366.c: remove unused variable
+      drivers/net/wireless/b43/phy_g.c: type check debug printouts
+      drivers/video/cirrusfb.c: remove unused variables
+      fs/afs/dir.c: fix uninitialized variable use
+      net/netlabel/netlabel_addrlist.c: add type checking to audit_log_format()
+      include/linux/fs.h: improve type checking of __mandatory_lock()
+      [vfs] fs.h: fops_get()/fops_put(): use pointer comparison
+      net/mac80211/rc80211_minstrel_debugfs.c: fix return type
+      sound/soc/codecs/tlv320aic23.c: remove unused variable
 
 
-Regards,
-Dan
+ arch/x86/kernel/paravirt-spinlocks.c    |    3 ++-
+ drivers/ide/pci/hpt366.c                |    1 -
+ drivers/net/wireless/b43/b43.h          |    3 ++-
+ drivers/video/cirrusfb.c                |    3 +--
+ fs/afs/dir.c                            |    2 +-
+ include/linux/audit.h                   |    3 ++-
+ include/linux/fs.h                      |    6 +++---
+ net/mac80211/rc80211_minstrel_debugfs.c |    2 +-
+ sound/soc/codecs/tlv320aic23.c          |    2 --
+ 9 files changed, 12 insertions(+), 13 deletions(-)
 
->  arch/arm/mach-at91/at91sam9rl_devices.c |   47 ++
->  drivers/dma/Kconfig                     |    8 +
->  drivers/dma/Makefile                    |    1 +
->  drivers/dma/at_hdmac.c                  |  989 +++++++++++++++++++++++++++++++
->  drivers/dma/at_hdmac_regs.h             |  377 ++++++++++++
->  include/linux/at_hdmac.h                |   26 +
+commit 54b1d646d442289d8d49e04bc2f10ba122ff6aa4
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Fri Oct 17 12:07:47 2008 +0200
 
-...this header should be moved somewhere under arch/arm/include.
+    sound/soc/codecs/tlv320aic23.c: remove unused variable
+    
+    this warning:
+    
+      sound/soc/codecs/tlv320aic23.c: In function ‘tlv320aic23_set_dai_sysclk’:
+      sound/soc/codecs/tlv320aic23.c:424: warning: unused variable ‘codec’
+    
+    triggers because this variable is not used in any form.
+    
+    Remove it.
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
->  6 files changed, 1448 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/arm/mach-at91/at91sam9rl_devices.c b/arch/arm/mach-at91/at91sam9rl_devices.c
-> index 87deb1e..ad596ff 100644
-> --- a/arch/arm/mach-at91/at91sam9rl_devices.c
-> +++ b/arch/arm/mach-at91/at91sam9rl_devices.c
-> @@ -9,6 +9,7 @@
->  #include <asm/mach/arch.h>
->  #include <asm/mach/map.h>
-> 
-> +#include <linux/at_hdmac.h>
->  #include <linux/dma-mapping.h>
->  #include <linux/platform_device.h>
->  #include <linux/i2c-gpio.h>
-> @@ -26,6 +27,51 @@
-> 
-> 
->  /* --------------------------------------------------------------------
-> + *  HDMAC - AHB DMA Controller
-> + * -------------------------------------------------------------------- */
-> +
-> +#if defined(CONFIG_AT_HDMAC) || defined(CONFIG_AT_HDMAC_MODULE)
-> +static u64 hdmac_dmamask = DMA_BIT_MASK(32);
-> +
-> +static struct at_dma_platform_data atdma_pdata = {
-> +       .nr_channels    = 2,
-> +};
-> +
-> +static struct resource hdmac_resources[] = {
-> +       [0] = {
-> +               .start  = AT91_BASE_SYS + AT91_DMA,
-> +               .end    = AT91_BASE_SYS + AT91_DMA + SZ_512 - 1,
-> +               .flags  = IORESOURCE_MEM,
-> +       },
-> +       [2] = {
-> +               .start  = AT91SAM9RL_ID_DMA,
-> +               .end    = AT91SAM9RL_ID_DMA,
-> +               .flags  = IORESOURCE_IRQ,
-> +       },
-> +};
-> +
-> +static struct platform_device at_hdmac_device = {
-> +       .name           = "at_hdmac",
-> +       .id             = -1,
-> +       .dev            = {
-> +                               .dma_mask               = &hdmac_dmamask,
-> +                               .coherent_dma_mask      = DMA_BIT_MASK(32),
-> +                               .platform_data          = &atdma_pdata,
-> +       },
-> +       .resource       = hdmac_resources,
-> +       .num_resources  = ARRAY_SIZE(hdmac_resources),
-> +};
-> +
-> +void __init at91_add_device_hdmac(void)
-> +{
-> +       dma_cap_set(DMA_MEMCPY, atdma_pdata.cap_mask);
-> +       platform_device_register(&at_hdmac_device);
-> +}
-> +#else
-> +void __init at91_add_device_hdmac(void) {}
-> +#endif
-> +
-> +/* --------------------------------------------------------------------
->   *  USB HS Device (Gadget)
->   * -------------------------------------------------------------------- */
-> 
-> @@ -1114,6 +1160,7 @@ void __init at91_add_device_serial(void) {}
->   */
->  static int __init at91_add_standard_devices(void)
->  {
-> +       at91_add_device_hdmac();
->         at91_add_device_rtc();
->         at91_add_device_rtt();
->         at91_add_device_watchdog();
-> diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-> index cd30390..03bfd8f 100644
-> --- a/drivers/dma/Kconfig
-> +++ b/drivers/dma/Kconfig
-> @@ -47,6 +47,14 @@ config DW_DMAC
->           Support the Synopsys DesignWare AHB DMA controller.  This
->           can be integrated in chips such as the Atmel AT32ap7000.
-> 
-> +config AT_HDMAC
-> +       tristate "Atmel AHB DMA support"
-> +       depends on ARCH_AT91 && ARCH_AT91SAM9RL
-> +       select DMA_ENGINE
-> +       help
-> +         Support the Atmel AHB DMA controller.  This can be integrated in
-> +         chips such as the Atmel AT91SAM9RL.
-> +
->  config FSL_DMA
->         bool "Freescale MPC85xx/MPC83xx DMA support"
->         depends on PPC
-> diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
-> index 14f5952..9c8ce35 100644
-> --- a/drivers/dma/Makefile
-> +++ b/drivers/dma/Makefile
-> @@ -7,3 +7,4 @@ obj-$(CONFIG_INTEL_IOP_ADMA) += iop-adma.o
->  obj-$(CONFIG_FSL_DMA) += fsldma.o
->  obj-$(CONFIG_MV_XOR) += mv_xor.o
->  obj-$(CONFIG_DW_DMAC) += dw_dmac.o
-> +obj-$(CONFIG_AT_HDMAC) += at_hdmac.o
-> diff --git a/drivers/dma/at_hdmac.c b/drivers/dma/at_hdmac.c
-> new file mode 100644
-> index 0000000..2f0a386
-> --- /dev/null
-> +++ b/drivers/dma/at_hdmac.c
-> @@ -0,0 +1,989 @@
-> +/*
-> + * Driver for the Atmel AHB DMA Controller (aka HDMA or DMAC on AT91 systems)
-> + *
-> + * Copyright (C) 2008 Atmel Corporation
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + *
-> + * This supports the Atmel AHB DMA Controller,
-> + *
-> + * The driver has currently been tested with the Atmel AT91SAM9RL
-> + * and AT91SAM9M10.
-> + */
-> +
-> +#include <linux/clk.h>
-> +#include <linux/dmaengine.h>
-> +#include <linux/dma-mapping.h>
-> +#include <linux/dmapool.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +
-> +#include "at_hdmac_regs.h"
-> +
-> +/*
-> + * Glossary
-> + * --------
-> + *
-> + * at_hdmac            : Name of the ATmel AHB DMA Controller
-> + * at_dma_ / atdma     : ATmel DMA controller entity related
-> + * atc_        / atchan        : ATmel DMA Channel entity related
-> + */
-> +
-> +#define        ATC_DEFAULT_CFG         (ATC_FIFOCFG_HALFFIFO)
-> +#define        ATC_DEFAULT_CTRLA       (0)
-> +#define        ATC_DEFAULT_CTRLB       ( ATC_SIF(0)    \
-> +                               | ATC_DIF(1))
-> +
-> +/*
-> + * Initial number of descriptors to allocate for each channel. This could
-> + * be increased of this amount during dma usage.
-> + */
-> +#define INIT_NR_DESCS_PER_CHANNEL      16
-> +
-> +/* prototypes */
-> +static dma_cookie_t atc_tx_submit(struct dma_async_tx_descriptor *tx);
-> +
-> +
-> +/*----------------------------------------------------------------------*/
-> +
-> +static struct at_desc *atc_first_active(struct at_dma_chan *atchan)
-> +{
-> +       return list_first_entry(&atchan->active_list, struct at_desc, desc_node);
-> +}
-> +
-> +static struct at_desc *atc_first_queued(struct at_dma_chan *atchan)
-> +{
-> +       return list_first_entry(&atchan->queue, struct at_desc, desc_node);
-> +}
-> +
-> +/**
-> + * atc_alloc_descriptor - allocate and return an initilized descriptor
-> + * @chan: the channel to allocate descriptors for
-> + * @gfp_flags: GFP allocation flags
-> + */
-> +static struct at_desc *atc_alloc_descriptor(struct dma_chan *chan,
-> +                                           gfp_t gfp_flags)
-> +{
-> +       struct at_desc  *desc = NULL;
-> +       struct at_dma   *atdma = to_at_dma(chan->device);
-> +       dma_addr_t phys;
-> +
-> +       desc = dma_pool_alloc(atdma->dma_desc_pool, gfp_flags, &phys);
-> +       if (desc) {
-> +               BUG_ON(phys & 0x3UL); /* descriptors have to be word aligned */
+diff --git a/sound/soc/codecs/tlv320aic23.c b/sound/soc/codecs/tlv320aic23.c
+index 44308da..45395d0 100644
+--- a/sound/soc/codecs/tlv320aic23.c
++++ b/sound/soc/codecs/tlv320aic23.c
+@@ -421,8 +421,6 @@ static int tlv320aic23_set_dai_fmt(struct snd_soc_dai *codec_dai,
+ static int tlv320aic23_set_dai_sysclk(struct snd_soc_dai *codec_dai,
+ 				      int clk_id, unsigned int freq, int dir)
+ {
+-	struct snd_soc_codec *codec = codec_dai->codec;
+-
+ 	switch (freq) {
+ 	case 12000000:
+ 		return 0;
 
-hmm, yes this is a bug but can't we trust that dma_pool_alloc does its
-job correctly?
+commit 0be735b3ff71e13e24b82420f23a1b3b0a207ffb
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Fri Oct 17 12:56:23 2008 +0200
 
-> +               memset(desc, 0, sizeof(struct at_desc));
-> +               dma_async_tx_descriptor_init(&desc->txd, chan);
-> +               async_tx_ack(&desc->txd);
+    net/mac80211/rc80211_minstrel_debugfs.c: fix return type
+    
+    this warning:
+    
+      net/mac80211/rc80211_minstrel_debugfs.c:145: warning: initialization from incompatible pointer type
+    
+    triggers because the proper return type for file_operations::read
+    is ssize_t, not int.
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-the DMA_CTRL_ACK bit is under control of the client.  It should be
-read-only to the driver (except for extra descriptors that the driver
-creates on behalf of the client).
+diff --git a/net/mac80211/rc80211_minstrel_debugfs.c b/net/mac80211/rc80211_minstrel_debugfs.c
+index 0b024cd..26f8ffc 100644
+--- a/net/mac80211/rc80211_minstrel_debugfs.c
++++ b/net/mac80211/rc80211_minstrel_debugfs.c
+@@ -106,7 +106,7 @@ minstrel_stats_open(struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
+-static int
++static ssize_t
+ minstrel_stats_read(struct file *file, char __user *buf, size_t len, loff_t *o)
+ {
+ 	struct minstrel_stats_info *ms;
 
-> +               desc->txd.tx_submit = atc_tx_submit;
-> +               INIT_LIST_HEAD(&desc->txd.tx_list);
-> +               desc->txd.phys = phys;
-> +       }
-> +
-> +       return desc;
-> +}
-> +
-> +/**
-> + * atc_desc_get - get a unsused descriptor from free_list
-> + * @atchan: channel we want a new descriptor for
-> + */
-> +static struct at_desc *atc_desc_get(struct at_dma_chan *atchan)
-> +{
-> +       struct at_desc *desc, *_desc;
-> +       struct at_desc *ret = NULL;
-> +       unsigned int i = 0;
-> +       LIST_HEAD(tmp_list);
-> +
-> +       spin_lock_bh(&atchan->lock);
-> +       list_for_each_entry_safe(desc, _desc, &atchan->free_list, desc_node) {
-> +               if (async_tx_test_ack(&desc->txd)) {
-> +                       list_del(&desc->desc_node);
-> +                       ret = desc;
-> +                       break;
-> +               }
-> +               dev_dbg(&atchan->chan_common.dev, "desc %p not ACKed\n", desc);
-> +               i++;
-> +       }
-> +       spin_unlock_bh(&atchan->lock);
-> +
-> +       dev_vdbg(&atchan->chan_common.dev, "scanned %u descriptors on freelist\n", i);
-> +
-> +       /* no more descriptor available in initial pool : create some more */
-> +       if (!ret) {
-> +               for (i = 0; i < INIT_NR_DESCS_PER_CHANNEL; i++) {
-> +                       desc = atc_alloc_descriptor(&atchan->chan_common, GFP_KERNEL);
-> +                       if (!desc)
-> +                               break;
-> +                       /* return first descripor, queue others in free_list */
+commit 04271505e03535e1fd085c96085fcee41e7c415f
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Mon Aug 18 15:31:58 2008 +0200
 
-sp: descriptor
+    [vfs] fs.h: fops_get()/fops_put(): use pointer comparison
+    
+    this warning:
+    
+      drivers/infiniband/core/uverbs_main.c: In function ‘ib_uverbs_alloc_event_file’:
+      drivers/infiniband/core/uverbs_main.c:526: warning: the address of ‘uverbs_event_fops’ will always evaluate as ‘true’
+      drivers/infiniband/core/uverbs_main.c:526: warning: assignment discards qualifiers from pointer target type
+    
+    triggers because we use an arithmetic comparison. Use a pointer
+    comparison instead.
+    
+    No code changed:
+       91bef63ad2e661e7adb4456b944cec7d  uverbs_main.o.before.asm
+       91bef63ad2e661e7adb4456b944cec7d  uverbs_main.o.after.asm
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-> +                       if (i)
-> +                               list_add_tail(&desc->desc_node, &tmp_list);
-> +                       else
-> +                               ret = desc;
-> +               }
-> +
-> +               spin_lock_bh(&atchan->lock);
-> +               atchan->descs_allocated += i;
-> +               list_splice(&tmp_list, &atchan->free_list);
-> +               spin_unlock_bh(&atchan->lock);
-> +       }
-> +
-> +       return ret;
-> +}
-> +
-> +/**
-> + * atc_desc_put - move a descriptor, including any children, to the free list
-> + * @atchan: channel we work on
-> + * @desc: descriptor, at the head of a chain, to move to free list
-> + */
-> +static void atc_desc_put(struct at_dma_chan *atchan, struct at_desc *desc)
-> +{
-> +       if (desc) {
-> +               struct at_desc *child;
-> +
-> +               spin_lock_bh(&atchan->lock);
-> +               list_for_each_entry(child, &desc->txd.tx_list, desc_node)
-> +                       dev_vdbg(&atchan->chan_common.dev,
-> +                                       "moving child desc %p to freelist\n",
-> +                                       child);
-> +               list_splice_init(&desc->txd.tx_list, &atchan->free_list);
-> +               dev_vdbg(&atchan->chan_common.dev, "moving desc %p to freelist\n", desc);
-> +               list_add(&desc->desc_node, &atchan->free_list);
-> +               spin_unlock_bh(&atchan->lock);
-> +       }
-> +}
-> +
-> +/**
-> + * atc_assign_cookie - compute and assign new cookie
-> + * @atchan: channel we work on
-> + * @desc: descriptor to asign cookie for
-> + *
-> + * Called with atchan->lock held and bh disabled
-> + */
-> +static dma_cookie_t
-> +atc_assign_cookie(struct at_dma_chan *atchan, struct at_desc *desc)
-> +{
-> +       dma_cookie_t cookie = atchan->chan_common.cookie;
-> +
-> +       if (++cookie < 0)
-> +               cookie = 1;
-> +
-> +       atchan->chan_common.cookie = cookie;
-> +       desc->txd.cookie = cookie;
-> +
-> +       return cookie;
-> +}
-> +
-> +/**
-> + * atc_dostart - starts the DMA engine for real
-> + * @atchan: the channel we want to start
-> + * @first: first descriptor in the list we want to begin with
-> + *
-> + * Called with atchan->lock held and bh disabled
-> + */
-> +static void atc_dostart(struct at_dma_chan *atchan, struct at_desc *first)
-> +{
-> +       struct at_dma   *atdma = to_at_dma(atchan->chan_common.device);
-> +
-> +       /* ASSERT:  channel is idle */
-> +       if (atc_chan_is_enabled(atchan)) {
-> +               dev_err(&atchan->chan_common.dev,
-> +                       "BUG: Attempted to start non-idle channel\n");
-> +               dev_err(&atchan->chan_common.dev,
-> +                       "  channel: s0x%x d0x%x ctrl0x%x:0x%x l0x%x\n",
-> +                       channel_readl(atchan, SADDR),
-> +                       channel_readl(atchan, DADDR),
-> +                       channel_readl(atchan, CTRLA),
-> +                       channel_readl(atchan, CTRLB),
-> +                       channel_readl(atchan, DSCR));
-> +
-> +               /* The tasklet will hopefully advance the queue... */
-> +               return;
-> +       }
-> +
-> +       vdbg_dump_regs(atchan);
-> +
-> +       /* clear any pending interrupt */
-> +       while (dma_readl(atdma, EBCISR))
-> +               cpu_relax();
-> +
-> +       channel_writel(atchan, SADDR, 0);
-> +       channel_writel(atchan, DADDR, 0);
-> +       channel_writel(atchan, CTRLA, 0);
-> +       channel_writel(atchan, CTRLB, 0);
-> +       channel_writel(atchan, DSCR, first->txd.phys);
-> +       dma_writel(atdma, CHER, atchan->mask);
-> +
-> +       vdbg_dump_regs(atchan);
-> +}
-> +
-> +/**
-> + * atc_chain_complete - finish work for one transaction chain
-> + * @atchan: channel we work on
-> + * @desc: descriptor at the head of the chain we want do complete
-> + *
-> + * Called with atchan->lock held and bh disabled */
-> +static void
-> +atc_chain_complete(struct at_dma_chan *atchan, struct at_desc *desc)
-> +{
-> +       dma_async_tx_callback           callback;
-> +       void                            *param;
-> +       struct dma_async_tx_descriptor  *txd = &desc->txd;
-> +
-> +       dev_vdbg(&atchan->chan_common.dev, "descriptor %u complete\n", txd->cookie);
-> +
-> +       atchan->completed_cookie = txd->cookie;
-> +       callback = txd->callback;
-> +       param = txd->callback_param;
-> +
-> +       /* move children to free_list */
-> +       list_splice_init(&txd->tx_list, &atchan->free_list);
-> +       /* move myself to free_list */
-> +       list_move(&desc->desc_node, &atchan->free_list);
-> +
-> +       /*
-> +        * We use dma_unmap_page() regardless of how the buffers were
-> +        * mapped before they were submitted...
-> +        */
-> +       if (!(txd->flags & DMA_COMPL_SKIP_DEST_UNMAP))
-> +               dma_unmap_page(atchan->chan_common.dev.parent, desc->lli.daddr, desc->len,
-> +                               DMA_FROM_DEVICE);
-> +       if (!(txd->flags & DMA_COMPL_SKIP_SRC_UNMAP))
-> +               dma_unmap_page(atchan->chan_common.dev.parent, desc->lli.saddr, desc->len,
-> +                               DMA_TO_DEVICE);
-> +
-> +       /*
-> +        * The API requires that no submissions are done from a
-> +        * callback, so we don't need to drop the lock here
-> +        */
-> +       if (callback)
-> +               callback(param);
-> +}
-> +
-> +/**
-> + * atc_complete_all - finish work for all transactions
-> + * @atchan: channel to complete transactions for
-> + *
-> + * Eventually submit queued descriptors if any
-> + *
-> + * Assume channel is idle while calling this function
-> + * Called with atchan->lock held and bh disabled
-> + */
-> +static void atc_complete_all(struct at_dma_chan *atchan)
-> +{
-> +       struct at_desc *desc, *_desc;
-> +       LIST_HEAD(list);
-> +
-> +       dev_vdbg(&atchan->chan_common.dev, "complete all\n");
-> +
-> +       BUG_ON(atc_chan_is_enabled(atchan));
-> +
-> +       /*
-> +        * Submit queued descriptors ASAP, i.e. before we go through
-> +        * the completed ones.
-> +        */
-> +       if (!list_empty(&atchan->queue))
-> +               atc_dostart(atchan, atc_first_queued(atchan));
-> +       /* empty active_list now it is completed */
-> +       list_splice_init(&atchan->active_list, &list);
-> +       /* empty queue list by moving descriptors (if any) to active_list */
-> +       list_splice_init(&atchan->queue, &atchan->active_list);
-> +
-> +       list_for_each_entry_safe(desc, _desc, &list, desc_node)
-> +               atc_chain_complete(atchan, desc);
-> +}
-> +
-> +/**
-> + * atc_cleanup_descriptors - cleanup up finished descriptors in active_list
-> + * @atchan: channel to be cleaned up
-> + *
-> + * Called with atchan->lock held and bh disabled
-> + */
-> +static void atc_cleanup_descriptors(struct at_dma_chan *atchan)
-> +{
-> +       struct at_desc  *desc, *_desc;
-> +       struct at_desc  *child;
-> +
-> +       dev_vdbg(&atchan->chan_common.dev, "cleanup descriptors\n");
-> +
-> +       list_for_each_entry_safe(desc, _desc, &atchan->active_list, desc_node) {
-> +               if (!(desc->lli.ctrla & ATC_DONE))
-> +                       /* This one is currently in progress */
-> +                       return;
-> +
-> +               list_for_each_entry(child, &desc->txd.tx_list, desc_node)
-> +                       if (!(child->lli.ctrla & ATC_DONE))
-> +                               /* Currently in progress */
-> +                               return;
-> +
-> +               /*
-> +                * No descriptors so far seem to be in progress, i.e.
-> +                * this chain must be done.
-> +                */
-> +               atc_chain_complete(atchan, desc);
-> +       }
-> +}
-> +
-> +/**
-> + * atc_advance_work - at the end of a transaction, move forward
-> + * @atchan: channel where the transaction ended
-> + *
-> + * Called with atchan->lock held and bh disabled
-> + */
-> +static void atc_advance_work(struct at_dma_chan *atchan)
-> +{
-> +       dev_vdbg(&atchan->chan_common.dev, "advance_work\n");
-> +
-> +       if (   list_empty(&atchan->active_list)
-> +           || list_is_singular(&atchan->active_list)) {
-> +               atc_complete_all(atchan);
-> +       } else {
-> +               atc_chain_complete(atchan, atc_first_active(atchan));
-> +               /* advance work */
-> +               atc_dostart(atchan, atc_first_active(atchan));
-> +       }
-> +}
-> +
-> +
-> +/**
-> + * atc_handle_error - handle errors reported by DMA controller
-> + * @atchan: channel where error occurs
-> + *
-> + * Called with atchan->lock held and bh disabled
-> + */
-> +static void atc_handle_error(struct at_dma_chan *atchan)
-> +{
-> +       struct at_desc *bad_desc;
-> +       struct at_desc *child;
-> +
-> +       /*
-> +        * The descriptor currently at the head of the active list is
-> +        * broked. Since we don't have any way to report errors, we'll
-> +        * just have to scream loudly and try to carry on.
-> +        */
-> +       bad_desc = atc_first_active(atchan);
-> +       list_del_init(&bad_desc->desc_node);
-> +
-> +       /* As we are stopped, take advantage to push queued descriptors
-> +        * in active_list */
-> +       list_splice_init(&atchan->queue, atchan->active_list.prev);
-> +
-> +       /* Try to restart the controller */
-> +       if (!list_empty(&atchan->active_list))
-> +               atc_dostart(atchan, atc_first_active(atchan));
-> +
-> +       /*
-> +        * KERN_CRITICAL may seem harsh, but since this only happens
-> +        * when someone submits a bad physical address in a
-> +        * descriptor, we should consider ourselves lucky that the
-> +        * controller flagged an error instead of scribbling over
-> +        * random memory locations.
-> +        */
-> +       dev_crit(&atchan->chan_common.dev,
-> +                       "Bad descriptor submitted for DMA!\n");
-> +       dev_crit(&atchan->chan_common.dev,
-> +                       "  cookie: %d\n", bad_desc->txd.cookie);
-> +       atc_dump_lli(atchan, &bad_desc->lli);
-> +       list_for_each_entry(child, &bad_desc->txd.tx_list, desc_node)
-> +               atc_dump_lli(atchan, &child->lli);
-> +
-> +       /* Pretend the descriptor completed successfully */
-> +       atc_chain_complete(atchan, bad_desc);
-> +}
-> +
-> +
-> +/*--  IRQ & Tasklet  ---------------------------------------------------*/
-> +
-> +static void atc_tasklet(unsigned long data)
-> +{
-> +       struct at_dma_chan *atchan = (struct at_dma_chan *)data;
-> +
-> +       /* Channel cannot be enabled here */
-> +       if (atc_chan_is_enabled(atchan)) {
-> +               dev_err(&atchan->chan_common.dev,
-> +                       "BUG: channel enabled in tasklet\n");
-> +               return;
-> +       }
-> +
-> +       spin_lock(&atchan->lock);
-> +       if (test_and_clear_bit(0, &atchan->error_status))
-> +               atc_handle_error(atchan);
-> +       else
-> +               atc_advance_work(atchan);
-> +
-> +       spin_unlock(&atchan->lock);
-> +}
-> +
-> +static irqreturn_t at_dma_interrupt(int irq, void *dev_id)
-> +{
-> +       struct at_dma           *atdma = (struct at_dma *)dev_id;
-> +       struct at_dma_chan      *atchan;
-> +       int                     i;
-> +       u32                     status, pending, imr;
-> +       int                     ret = IRQ_NONE;
-> +
-> +       do {
-> +               imr = dma_readl(atdma, EBCIMR);
-> +               status = dma_readl(atdma, EBCISR);
-> +               pending = status & imr;
-> +
-> +               if (!pending)
-> +                       break;
-> +
-> +               dev_vdbg(atdma->dma_common.dev,
-> +                       "interrupt: status = 0x%08x, 0x%08x, 0x%08x\n",
-> +                        status, imr, pending);
-> +
-> +               for (i = 0; i < atdma->dma_common.chancnt; i++) {
-> +                       atchan = &atdma->chan[i];
-> +                       if (pending & (AT_DMA_CBTC(i) | AT_DMA_ERR(i))) {
-> +                               if (pending & AT_DMA_ERR(i)) {
-> +                                       /*
-> +                                       spin_lock(atchan->lock);
-> +                                       atchan->error_status = 1;
-> +                                       spin_unlock(atchan->lock);
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 686d46c..114f469 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1597,9 +1597,9 @@ void unnamed_dev_init(void);
+ 
+ /* Alas, no aliases. Too much hassle with bringing module.h everywhere */
+ #define fops_get(fops) \
+-	(((fops) && try_module_get((fops)->owner) ? (fops) : NULL))
++	(((fops != NULL) && try_module_get((fops)->owner) ? (fops) : NULL))
+ #define fops_put(fops) \
+-	do { if (fops) module_put((fops)->owner); } while(0)
++	do { if (fops != NULL) module_put((fops)->owner); } while(0)
+ 
+ extern int register_filesystem(struct file_system_type *);
+ extern int unregister_filesystem(struct file_system_type *);
 
-writing to an unsigned long should already be atomic, no?
+commit f81ee5ca545020daf0ddfff3744199b87bbd8c70
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Fri Oct 17 14:54:48 2008 +0200
 
-> +                                       */
-> +                                       /* Disable channel on AHB error */
-> +                                       dma_writel(atdma, CHDR, atchan->mask);
-> +                                       /* Give information to tasklet */
-> +                                       set_bit(0, &atchan->error_status);
-> +                               }
-> +                               tasklet_schedule(&atchan->tasklet);
-> +                               ret = IRQ_HANDLED;
-> +                       }
-> +               }
-> +
-> +       } while (pending);
-> +
-> +       return ret;
-> +}
-> +
-> +
-> +/*--  DMA Engine API  --------------------------------------------------*/
-> +
-> +/**
-> + * atc_tx_submit - set the prepared descriptor(s) to be executed by the engine
-> + * @desc: descriptor at the head of the transaction chain
-> + *
-> + * Queue chain if DMA engine is working already
-> + *
-> + * Cookie increment and adding to active_list or queue must be atomic
-> + */
-> +static dma_cookie_t atc_tx_submit(struct dma_async_tx_descriptor *tx)
-> +{
-> +       struct at_desc          *desc = txd_to_at_desc(tx);
-> +       struct at_dma_chan      *atchan = to_at_dma_chan(tx->chan);
-> +       dma_cookie_t            cookie;
-> +
-> +       spin_lock_bh(&atchan->lock);
-> +       cookie = atc_assign_cookie(atchan, desc);
-> +
-> +       if (list_empty(&atchan->active_list)) {
-> +               dev_vdbg(&tx->chan->dev, "tx_submit: started %u\n",
-> +                               desc->txd.cookie);
-> +               atc_dostart(atchan, desc);
-> +               list_add_tail(&desc->desc_node, &atchan->active_list);
-> +       } else {
-> +               dev_vdbg(&tx->chan->dev, "tx_submit: queued %u\n",
-> +                               desc->txd.cookie);
-> +               list_add_tail(&desc->desc_node, &atchan->queue);
-> +       }
-> +
-> +       spin_unlock_bh(&atchan->lock);
-> +
-> +       return cookie;
-> +}
-> +
-> +/**
-> + * atc_prep_dma_memcpy - prepare a memcpy operation
-> + * @chan: the channel to prepare operation on
-> + * @dest: operation virtual destination address
-> + * @src: operation virtual source address
-> + * @len: operation length
-> + * @flags: tx descriptor status flags
-> + */
-> +static struct dma_async_tx_descriptor *
-> +atc_prep_dma_memcpy(struct dma_chan *chan, dma_addr_t dest, dma_addr_t src,
-> +               size_t len, unsigned long flags)
-> +{
-> +       struct at_dma_chan      *atchan = to_at_dma_chan(chan);
-> +       struct at_desc          *desc = NULL;
-> +       struct at_desc          *first = NULL;
-> +       struct at_desc          *prev = NULL;
-> +       size_t                  xfer_count;
-> +       size_t                  offset;
-> +       unsigned int            src_width;
-> +       unsigned int            dst_width;
-> +       u32                     ctrla;
-> +       u32                     ctrlb;
-> +
-> +       dev_vdbg(&chan->dev, "prep_dma_memcpy: d0x%x s0x%x l0x%zx f0x%lx\n",
-> +                       dest, src, len, flags);
-> +
-> +       if (unlikely(!len)) {
-> +               dev_dbg(&chan->dev, "prep_dma_memcpy: length is zero!\n");
-> +               return NULL;
-> +       }
-> +
-> +       ctrla =   ATC_DEFAULT_CTRLA;
-> +       ctrlb =   ATC_DEFAULT_CTRLB
-> +               | ATC_SRC_ADDR_MODE_INCR
-> +               | ATC_DST_ADDR_MODE_INCR
-> +               | ATC_FC_MEM2MEM;
-> +
-> +       /*
-> +        * We can be a lot more clever here, but this should take care
-> +        * of the most common optimization.
-> +        */
-> +       if (!((src | dest  | len) & 3)) {
-> +               ctrla |= ATC_SRC_WIDTH_WORD | ATC_DST_WIDTH_WORD;
-> +               src_width = dst_width = 2;
-> +       } else if (!((src | dest | len) & 1)) {
-> +               ctrla |= ATC_SRC_WIDTH_HALFWORD | ATC_DST_WIDTH_HALFWORD;
-> +               src_width = dst_width = 1;
-> +       } else {
-> +               ctrla |= ATC_SRC_WIDTH_BYTE | ATC_DST_WIDTH_BYTE;
-> +               src_width = dst_width = 0;
-> +       }
-> +
-> +       for (offset = 0; offset < len; offset += xfer_count << src_width) {
-> +               xfer_count = min_t(size_t, (len - offset) >> src_width,
-> +                               ATC_BTSIZE_MAX);
-> +
-> +               desc = atc_desc_get(atchan);
-> +               if (!desc)
-> +                       goto err_desc_get;
-> +
-> +               desc->lli.saddr = src + offset;
-> +               desc->lli.daddr = dest + offset;
-> +               desc->lli.ctrla = ctrla | xfer_count;
-> +               desc->lli.ctrlb = ctrlb;
-> +
-> +               desc->txd.cookie = 0;
-> +               async_tx_ack(&desc->txd);
-> +
-> +               if (!first) {
-> +                       first = desc;
-> +               } else {
-> +                       /* inform the HW lli about chaining */
-> +                       prev->lli.dscr = desc->txd.phys;
-> +                       /* insert the link descriptor to the LD ring */
-> +                       list_add_tail(&desc->desc_node,
-> +                                       &first->txd.tx_list);
-> +               }
-> +               prev = desc;
-> +       }
-> +
-> +       /* First descriptor of the chain embedds additional information */
-> +       first->txd.flags = flags; /* client is in control of this ack */
-> +       first->txd.cookie = -EBUSY;
-> +       first->len = len;
-> +
-> +       /* set end-of-link to the last link descriptor of list*/
-> +       set_desc_eol(desc);
-> +
-> +       return &first->txd;
-> +
-> +err_desc_get:
-> +       atc_desc_put(atchan, first);
-> +       return NULL;
-> +}
-> +
-> +/**
-> + * atc_is_tx_complete - poll for transaction completion
-> + * @chan: DMA channel
-> + * @cookie: transaction identifier to check status of
-> + * @done: if not %NULL, updated with last completed transaction
-> + * @used: if not %NULL, updated with last used transaction
-> + *
-> + * If @done and @used are passed in, upon return they reflect the driver
-> + * internal state and can be used with dma_async_is_complete() to check
-> + * the status of multiple cookies without re-checking hardware state.
-> + */
-> +static enum dma_status
-> +atc_is_tx_complete(struct dma_chan *chan,
-> +               dma_cookie_t cookie,
-> +               dma_cookie_t *done, dma_cookie_t *used)
-> +{
-> +       struct at_dma_chan      *atchan = to_at_dma_chan(chan);
-> +       dma_cookie_t            last_used;
-> +       dma_cookie_t            last_complete;
-> +       enum dma_status         ret;
-> +
-> +       dev_vdbg(&chan->dev, "is_tx_complete: %d (d%d, u%d)\n",
-> +                       cookie, done ? *done : 0, used ? *used : 0);
-> +
-> +       spin_lock_bh(atchan->lock);
-> +
-> +       last_complete = atchan->completed_cookie;
-> +       last_used = chan->cookie;
-> +
-> +       ret = dma_async_is_complete(cookie, last_complete, last_used);
-> +       if (ret != DMA_SUCCESS) {
-> +               atc_cleanup_descriptors(atchan);
-> +
-> +               last_complete = atchan->completed_cookie;
-> +               last_used = chan->cookie;
-> +
-> +               ret = dma_async_is_complete(cookie, last_complete, last_used);
-> +       }
-> +
-> +       spin_unlock_bh(atchan->lock);
-> +
-> +       if (done)
-> +               *done = last_complete;
-> +       if (used)
-> +               *used = last_used;
-> +
-> +       return ret;
-> +}
-> +
-> +/**
-> + * atc_issue_pending - try to finish work
-> + * @chan: target DMA channel
-> + */
-> +static void atc_issue_pending(struct dma_chan *chan)
-> +{
-> +       struct at_dma_chan      *atchan = to_at_dma_chan(chan);
-> +
-> +       dev_vdbg(&chan->dev, "issue_pending\n");
-> +
-> +       if (!atc_chan_is_enabled(atchan)) {
-> +               spin_lock_bh(&atchan->lock);
-> +               atc_advance_work(atchan);
-> +               spin_unlock_bh(&atchan->lock);
-> +       }
-> +}
-> +
-> +/**
-> + * atc_alloc_chan_resources - allocate resources for DMA channel
-> + * @chan: allocate descriptor resources for this channel
-> + * @client: current client requesting the channel be ready for requests
-> + *
-> + * return - the number of allocated descriptors
-> + */
-> +static int atc_alloc_chan_resources(struct dma_chan *chan,
-> +                                   struct dma_client *client)
-> +{
-> +       struct at_dma_chan      *atchan = to_at_dma_chan(chan);
-> +       struct at_dma           *atdma = to_at_dma(chan->device);
-> +       struct at_desc          *desc;
-> +       int                     i;
-> +       LIST_HEAD(tmp_list);
-> +
-> +       dev_vdbg(&chan->dev, "alloc_chan_resources\n");
-> +
-> +       /* ASSERT:  channel is idle */
-> +       if (atc_chan_is_enabled(atchan)) {
-> +               dev_dbg(&chan->dev, "DMA channel not idle ?\n");
-> +               return -EIO;
-> +       }
-> +
-> +       /* have we already been set up? */
-> +       if (!list_empty(&atchan->free_list))
-> +               return atchan->descs_allocated;
-> +
-> +       /* Allocate initial pool of descriptors */
-> +       for (i = 0; i < INIT_NR_DESCS_PER_CHANNEL; i++) {
-> +               desc = atc_alloc_descriptor(chan, GFP_KERNEL);
-> +               if (!desc) {
-> +                       dev_err(atdma->dma_common.dev,
-> +                               "Only %d initial descriptors\n", i);
-> +                       break;
-> +               }
-> +               list_add_tail(&desc->desc_node, &tmp_list);
-> +       }
-> +
-> +       spin_lock_bh(&atchan->lock);
-> +       atchan->descs_allocated = i;
-> +       list_splice(&tmp_list, &atchan->free_list);
-> +       atchan->completed_cookie = chan->cookie = 1;
-> +       spin_unlock_bh(&atchan->lock);
-> +
-> +       /* channel parameters */
-> +       channel_writel(atchan, CFG, ATC_DEFAULT_CFG);
-> +
-> +       tasklet_init(&atchan->tasklet, atc_tasklet, (unsigned long)atchan);
+    include/linux/fs.h: improve type checking of __mandatory_lock()
+    
+    this warning:
+    
+      fs/gfs2/ops_file.c: In function ‘gfs2_flock’:
+      fs/gfs2/ops_file.c:722: warning: unused variable ‘ip’
+    
+    triggers because __mandatory_lock() should not be a macro in the
+    !CONFIG_FILE_LOCKING case but an inline. This improves the type
+    checking and also does not trigger a warning.
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-This routine may be called while the channel is already active,
-potentially causing tasklet_init() to be called while a tasklet is
-pending.  Can this move to at_dma_probe()?
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index a6a625b..686d46c 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1675,7 +1675,7 @@ static inline int break_lease(struct inode *inode, unsigned int mode)
+ #else /* !CONFIG_FILE_LOCKING */
+ #define locks_mandatory_locked(a) ({ 0; })
+ #define locks_mandatory_area(a, b, c, d, e) ({ 0; })
+-#define __mandatory_lock(a) ({ 0; })
++static inline int __mandatory_lock(struct inode *ino) { return 0; }
+ #define mandatory_lock(a) ({ 0; })
+ #define locks_verify_locked(a) ({ 0; })
+ #define locks_verify_truncate(a, b, c) ({ 0; })
 
-> +       /* clear any pending interrupt */
-> +       while (dma_readl(atdma, EBCISR))
-> +               cpu_relax();
-> +       atc_enable_irq(atchan);
+commit 5baf34fc63c31ef676e0a764415b10e5cc1c7a4b
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Fri Oct 17 14:25:36 2008 +0200
 
-ditto.
+    net/netlabel/netlabel_addrlist.c: add type checking to audit_log_format()
+    
+    this warning:
+    
+      net/netlabel/netlabel_addrlist.c: In function ‘netlbl_af4list_audit_addr’:
+      net/netlabel/netlabel_addrlist.c:335: warning: unused variable ‘dir’
+      net/netlabel/netlabel_addrlist.c: In function ‘netlbl_af6list_audit_addr’:
+      net/netlabel/netlabel_addrlist.c:369: warning: unused variable ‘dir’
+    
+    is caused because audit_log_format() is a macro, hence in the
+    !CONFIG_AUDIT case the compiler does not know that the variables are
+    used.
+    
+    Convert it to a proper inline instead. This improves type checking
+    in the !CONFIG_AUDIT case.
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-> +
-> +       dev_dbg(&chan->dev,
-> +               "alloc_chan_resources: allocated %d descriptors\n",
-> +               atchan->descs_allocated);
-> +
-> +       return atchan->descs_allocated;
-> +}
-> +
-> +/**
-> + * atc_free_chan_resources - free all channel resources
-> + * @chan: DMA channel
-> + */
-> +static void atc_free_chan_resources(struct dma_chan *chan)
-> +{
-> +       struct at_dma_chan      *atchan = to_at_dma_chan(chan);
-> +       struct at_dma           *atdma = to_at_dma(chan->device);
-> +       struct at_desc          *desc, *_desc;
-> +       LIST_HEAD(list);
-> +
-> +       dev_dbg(&chan->dev, "free_chan_resources: (descs allocated=%u)\n",
-> +                       atchan->descs_allocated);
-> +
-> +       /* ASSERT:  channel is idle */
-> +       BUG_ON(!list_empty(&atchan->active_list));
-> +       BUG_ON(!list_empty(&atchan->queue));
-> +       BUG_ON(atc_chan_is_enabled(atchan));
-> +
-> +       /* Disable interrupts */
-> +       atc_disable_irq(atchan);
-> +       tasklet_disable(&atchan->tasklet);
-> +
-> +       list_for_each_entry_safe(desc, _desc, &atchan->free_list, desc_node) {
-> +               dev_vdbg(&chan->dev, "  freeing descriptor %p\n", desc);
-> +               list_del(&desc->desc_node);
-> +               /* free link descriptor */
-> +               dma_pool_free(atdma->dma_desc_pool, desc, desc->txd.phys);
-> +       }
-> +       list_splice_init(&atchan->free_list, &list);
-> +       atchan->descs_allocated = 0;
-> +
-> +       dev_vdbg(&chan->dev, "free_chan_resources: done\n");
-> +}
-> +
-> +
-> +/*--  Module Management  -----------------------------------------------*/
-> +
-> +/**
-> + * at_dma_off - disable DMA controller
-> + * @atdma: the Atmel HDAMC device
-> + */
-> +static void at_dma_off(struct at_dma *atdma)
-> +{
-> +       dma_writel(atdma, EN, 0);
-> +
-> +       /* disable all interrupts */
-> +       dma_writel(atdma, EBCIDR, -1L);
-> +
-> +       /* confirm that all channels are disabled */
-> +       while (dma_readl(atdma, CHSR) & atdma->all_chan_mask)
-> +               cpu_relax();
-> +}
-> +
-> +static int __init at_dma_probe(struct platform_device *pdev)
-> +{
-> +       struct at_dma_platform_data *pdata;
-> +       struct resource         *io;
-> +       struct at_dma           *atdma;
-> +       size_t                  size;
-> +       int                     irq;
-> +       int                     err;
-> +       int                     i;
-> +
-> +       /* get DMA Controller parameters from platform */
-> +       pdata = pdev->dev.platform_data;
-> +       if (!pdata || pdata->nr_channels > AT_DMA_MAX_NR_CHANNELS)
-> +               return -EINVAL;
-> +
-> +       io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +       if (!io)
-> +               return -EINVAL;
-> +
-> +       irq = platform_get_irq(pdev, 0);
-> +       if (irq < 0)
-> +               return irq;
-> +
-> +       size = sizeof(struct at_dma);
-> +       size += pdata->nr_channels * sizeof(struct at_dma_chan);
-> +       atdma = kzalloc(size, GFP_KERNEL);
-> +       if (!atdma)
-> +               return -ENOMEM;
-> +
-> +       /* discover transaction capabilites from the platform data */
-> +       atdma->dma_common.cap_mask = pdata->cap_mask;
-> +       atdma->all_chan_mask = (1 << pdata->nr_channels) - 1;
-> +
-> +       size = io->end - io->start + 1;
-> +       if (!request_mem_region(io->start, size, pdev->dev.driver->name)) {
-> +               err = -EBUSY;
-> +               goto err_kfree;
-> +       }
-> +
-> +       atdma->regs = ioremap(io->start, size);
-> +       if (!atdma->regs) {
-> +               err = -ENOMEM;
-> +               goto err_release_r;
-> +       }
-> +
-> +       atdma->clk = clk_get(&pdev->dev, "dma_clk");
-> +       if (IS_ERR(atdma->clk)) {
-> +               err = PTR_ERR(atdma->clk);
-> +               goto err_clk;
-> +       }
-> +       clk_enable(atdma->clk);
-> +
-> +       /* force dma off, just in case */
-> +       at_dma_off(atdma);
-> +
-> +       err = request_irq(irq, at_dma_interrupt, 0, "at_hdmac", atdma);
-> +       if (err)
-> +               goto err_irq;
-> +
-> +       platform_set_drvdata(pdev, atdma);
-> +
-> +       /* creates a pool of consistent memory blocks for hardware descriptors */
-> +       atdma->dma_desc_pool = dma_pool_create("at_hdmac_desc_pool",
-> +                       &pdev->dev, sizeof(struct at_desc),
-> +                       4 /* word alignment */, 0);
-> +       if (!atdma->dma_desc_pool) {
-> +               dev_err(&pdev->dev, "No memory for descriptors dma pool\n");
-> +               err = -ENOMEM;
-> +               goto err_pool_create;
-> +       }
-> +
-> +       /* initialize channels related values */
-> +       INIT_LIST_HEAD(&atdma->dma_common.channels);
-> +       for (i = 0; i < pdata->nr_channels; i++, atdma->dma_common.chancnt++) {
-> +               struct at_dma_chan      *atchan = &atdma->chan[i];
-> +
-> +               atchan->chan_common.device = &atdma->dma_common;
-> +               atchan->chan_common.cookie = atchan->completed_cookie = 1;
-> +               atchan->chan_common.chan_id = i;
-> +               list_add_tail(&atchan->chan_common.device_node, &atdma->dma_common.channels);
-> +
-> +               atchan->ch_regs = atdma->regs + ch_regs(i);
-> +               spin_lock_init(&atchan->lock);
-> +               atchan->mask = 1 << i;
-> +
-> +               INIT_LIST_HEAD(&atchan->active_list);
-> +               INIT_LIST_HEAD(&atchan->queue);
-> +               INIT_LIST_HEAD(&atchan->free_list);
-> +       }
-> +
-> +       /* set base routines */
-> +       atdma->dma_common.device_alloc_chan_resources = atc_alloc_chan_resources;
-> +       atdma->dma_common.device_free_chan_resources = atc_free_chan_resources;
-> +       atdma->dma_common.device_is_tx_complete = atc_is_tx_complete;
-> +       atdma->dma_common.device_issue_pending = atc_issue_pending;
-> +       atdma->dma_common.dev = &pdev->dev;
-> +
-> +       /* set prep routines based on capability */
-> +       if (dma_has_cap(DMA_MEMCPY, atdma->dma_common.cap_mask))
-> +               atdma->dma_common.device_prep_dma_memcpy = atc_prep_dma_memcpy;
-> +
-> +       dma_writel(atdma, EN, AT_DMA_ENABLE);
-> +
-> +       dev_info(&pdev->dev, "Atmel AHB DMA Controller ( %s%s), %d channels\n",
-> +         dma_has_cap(DMA_MEMCPY, atdma->dma_common.cap_mask) ? "cpy " : "",
-> +         dma_has_cap(DMA_SLAVE, atdma->dma_common.cap_mask)  ? "slave " : "",
-> +         atdma->dma_common.chancnt);
-> +
-> +       dma_async_device_register(&atdma->dma_common);
-> +
-> +       return 0;
-> +
-> +err_pool_create:
-> +       platform_set_drvdata(pdev, NULL);
-> +       free_irq(platform_get_irq(pdev, 0), atdma);
-> +err_irq:
-> +       clk_disable(atdma->clk);
-> +       clk_put(atdma->clk);
-> +err_clk:
-> +       iounmap(atdma->regs);
-> +       atdma->regs = NULL;
-> +err_release_r:
-> +       release_mem_region(io->start, size);
-> +err_kfree:
-> +       kfree(atdma);
-> +       return err;
-> +}
-> +
-> +static int __exit at_dma_remove(struct platform_device *pdev)
-> +{
-> +       struct at_dma           *atdma = platform_get_drvdata(pdev);
-> +       struct dma_chan         *chan, *_chan;
-> +       struct resource         *io;
-> +
-> +       at_dma_off(atdma);
-> +       dma_async_device_unregister(&atdma->dma_common);
-> +
-> +       dma_pool_destroy(atdma->dma_desc_pool);
-> +       platform_set_drvdata(pdev, NULL);
-> +       free_irq(platform_get_irq(pdev, 0), atdma);
-> +
-> +       list_for_each_entry_safe(chan, _chan, &atdma->dma_common.channels,
-> +                       device_node) {
-> +               tasklet_kill(&(to_at_dma_chan(chan)->tasklet));
-> +               list_del(&chan->device_node);
-> +       }
-> +
-> +       clk_disable(atdma->clk);
-> +       clk_put(atdma->clk);
-> +
-> +       iounmap(atdma->regs);
-> +       atdma->regs = NULL;
-> +
-> +       io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +       release_mem_region(io->start, io->end - io->start + 1);
-> +
-> +       kfree(atdma);
-> +
-> +       return 0;
-> +}
-> +
-> +static void at_dma_shutdown(struct platform_device *pdev)
-> +{
-> +       struct at_dma   *atdma = platform_get_drvdata(pdev);
-> +
-> +       at_dma_off(platform_get_drvdata(pdev));
-> +       clk_disable(atdma->clk);
-> +}
-> +
-> +static int at_dma_suspend_late(struct platform_device *pdev, pm_message_t mesg)
-> +{
-> +       struct at_dma   *atdma = platform_get_drvdata(pdev);
-> +
-> +       at_dma_off(platform_get_drvdata(pdev));
-> +       clk_disable(atdma->clk);
-> +       return 0;
-> +}
-> +
-> +static int at_dma_resume_early(struct platform_device *pdev)
-> +{
-> +       struct at_dma   *atdma = platform_get_drvdata(pdev);
-> +
-> +       clk_enable(atdma->clk);
-> +       dma_writel(atdma, EN, AT_DMA_ENABLE);
-> +       return 0;
-> +
-> +}
-> +
-> +static struct platform_driver at_dma_driver = {
-> +       .remove         = __exit_p(at_dma_remove),
-> +       .shutdown       = at_dma_shutdown,
-> +       .suspend_late   = at_dma_suspend_late,
-> +       .resume_early   = at_dma_resume_early,
-> +       .driver = {
-> +               .name   = "at_hdmac",
-> +       },
-> +};
-> +
-> +static int __init at_dma_init(void)
-> +{
-> +       return platform_driver_probe(&at_dma_driver, at_dma_probe);
-> +}
-> +module_init(at_dma_init);
-> +
-> +static void __exit at_dma_exit(void)
-> +{
-> +       platform_driver_unregister(&at_dma_driver);
-> +}
-> +module_exit(at_dma_exit);
-> +
-> +MODULE_DESCRIPTION("Atmel AHB DMA Controller driver");
-> +MODULE_AUTHOR("Nicolas Ferre <nicolas.ferre@atmel.com>");
-> +MODULE_LICENSE("GPL");
-> +MODULE_ALIAS("platform:at_hdmac");
-> diff --git a/drivers/dma/at_hdmac_regs.h b/drivers/dma/at_hdmac_regs.h
-> new file mode 100644
-> index 0000000..294f625
-> --- /dev/null
-> +++ b/drivers/dma/at_hdmac_regs.h
-> @@ -0,0 +1,377 @@
-> +/*
-> + * Header file for the Atmel AHB DMA Controller driver
-> + *
-> + * Copyright (C) 2008 Atmel Corporation
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + */
-> +#ifndef AT_HDMAC_REGS_H
-> +#define        AT_HDMAC_REGS_H
-> +
-> +#include <linux/at_hdmac.h>
-> +
-> +#define        AT_DMA_MAX_NR_CHANNELS  8
-> +
-> +
-> +#define        AT_DMA_GCFG     0x00    /* Global Configuration Register */
-> +#define                AT_DMA_IF_BIGEND(i)     (0x1 << (i))    /* AHB-Lite Interface i in Big-endian mode */
-> +#define                AT_DMA_ARB_CFG  (0x1 << 4)      /* Arbiter mode. */
-> +#define                        AT_DMA_ARB_CFG_FIXED            (0x0 << 4)
-> +#define                        AT_DMA_ARB_CFG_ROUND_ROBIN      (0x1 << 4)
-> +
-> +#define        AT_DMA_EN       0x04    /* Controller Enable Register */
-> +#define                AT_DMA_ENABLE   (0x1 << 0)
-> +
-> +#define        AT_DMA_SREQ     0x08    /* Software Single Request Register */
-> +#define                AT_DMA_SSREQ(x) (0x1 << ((x) << 1))             /* Request a source single transfer on channel x */
-> +#define                AT_DMA_DSREQ(x) (0x1 << (1 + ((x) << 1)))       /* Request a destination single transfer on channel x */
-> +
-> +#define        AT_DMA_CREQ     0x0C    /* Software Chunk Transfer Request Register */
-> +#define                AT_DMA_SCREQ(x) (0x1 << ((x) << 1))             /* Request a source chunk transfer on channel x */
-> +#define                AT_DMA_DCREQ(x) (0x1 << (1 + ((x) << 1)))       /* Request a destination chunk transfer on channel x */
-> +
-> +#define        AT_DMA_LAST     0x10    /* Software Last Transfer Flag Register */
-> +#define                AT_DMA_SLAST(x) (0x1 << ((x) << 1))             /* This src rq is last tx of buffer on channel x */
-> +#define                AT_DMA_DLAST(x) (0x1 << (1 + ((x) << 1)))       /* This dst rq is last tx of buffer on channel x */
-> +
-> +#define        AT_DMA_SYNC     0x14    /* Request Synchronization Register */
-> +#define                AT_DMA_SYR(h)   (0x1 << (h))                    /* Synchronize handshake line h */
-> +
-> +/* Error, Chained Buffer transfer completed and Buffer transfer completed Interrupt registers */
-> +#define        AT_DMA_EBCIER   0x18    /* Enable register */
-> +#define        AT_DMA_EBCIDR   0x1C    /* Disable register */
-> +#define        AT_DMA_EBCIMR   0x20    /* Mask Register */
-> +#define        AT_DMA_EBCISR   0x24    /* Status Register */
-> +#define                AT_DMA_CBTC_OFFSET      8
-> +#define                AT_DMA_ERR_OFFSET       16
-> +#define                AT_DMA_BTC(x)   (0x1 << (x))
-> +#define                AT_DMA_CBTC(x)  (0x1 << (AT_DMA_CBTC_OFFSET + (x)))
-> +#define                AT_DMA_ERR(x)   (0x1 << (AT_DMA_ERR_OFFSET + (x)))
-> +
-> +#define        AT_DMA_CHER     0x28    /* Channel Handler Enable Register */
-> +#define                AT_DMA_ENA(x)   (0x1 << (x))
-> +#define                AT_DMA_SUSP(x)  (0x1 << ( 8 + (x)))
-> +#define                AT_DMA_KEEP(x)  (0x1 << (24 + (x)))
-> +
-> +#define        AT_DMA_CHDR     0x2C    /* Channel Handler Disable Register */
-> +#define                AT_DMA_DIS(x)   (0x1 << (x))
-> +#define                AT_DMA_RES(x)   (0x1 << ( 8 + (x)))
-> +
-> +#define        AT_DMA_CHSR     0x30    /* Channel Handler Status Register */
-> +#define                AT_DMA_EMPT(x)  (0x1 << (16 + (x)))
-> +#define                AT_DMA_STAL(x)  (0x1 << (24 + (x)))
-> +
-> +
-> +#define        AT_DMA_CH_REGS_BASE     0x3C    /* Channel registers base address */
-> +#define        ch_regs(x)      (AT_DMA_CH_REGS_BASE + (x) * 0x28) /* Channel x base addr */
-> +
-> +/* Hardware register offset for each channel */
-> +#define        ATC_SADDR_OFFSET        0x00    /* Source Address Register */
-> +#define        ATC_DADDR_OFFSET        0x04    /* Destination Address Register */
-> +#define        ATC_DSCR_OFFSET         0x08    /* Descriptor Address Register */
-> +#define        ATC_CTRLA_OFFSET        0x0C    /* Control A Register */
-> +#define        ATC_CTRLB_OFFSET        0x10    /* Control B Register */
-> +#define        ATC_CFG_OFFSET          0x14    /* Configuration Register */
-> +#define        ATC_SPIP_OFFSET         0x18    /* Src PIP Configuration Register */
-> +#define        ATC_DPIP_OFFSET         0x1C    /* Dst PIP Configuration Register */
-> +
-> +
-> +/* Bitfield definitions */
-> +
-> +/* Bitfields in DSCR */
-> +#define        ATC_DSCR_IF(i)          (0x3 & (i))     /* Dsc feched via AHB-Lite Interface i */
-> +
-> +/* Bitfields in CTRLA */
-> +#define        ATC_BTSIZE_MAX          0xFFFFUL        /* Maximum Buffer Transfer Size */
-> +#define        ATC_BTSIZE(x)           (ATC_BTSIZE_MAX & (x)) /* Buffer Transfer Size */
-> +#define        ATC_SCSIZE_MASK         (0x7 << 16)     /* Source Chunk Transfer Size */
-> +#define                ATC_SCSIZE_1            (0x0 << 16)
-> +#define                ATC_SCSIZE_4            (0x1 << 16)
-> +#define                ATC_SCSIZE_8            (0x2 << 16)
-> +#define                ATC_SCSIZE_16           (0x3 << 16)
-> +#define                ATC_SCSIZE_32           (0x4 << 16)
-> +#define                ATC_SCSIZE_64           (0x5 << 16)
-> +#define                ATC_SCSIZE_128          (0x6 << 16)
-> +#define                ATC_SCSIZE_256          (0x7 << 16)
-> +#define        ATC_DCSIZE_MASK         (0x7 << 20)     /* Destination Chunk Transfer Size */
-> +#define                ATC_DCSIZE_1            (0x0 << 20)
-> +#define                ATC_DCSIZE_4            (0x1 << 20)
-> +#define                ATC_DCSIZE_8            (0x2 << 20)
-> +#define                ATC_DCSIZE_16           (0x3 << 20)
-> +#define                ATC_DCSIZE_32           (0x4 << 20)
-> +#define                ATC_DCSIZE_64           (0x5 << 20)
-> +#define                ATC_DCSIZE_128          (0x6 << 20)
-> +#define                ATC_DCSIZE_256          (0x7 << 20)
-> +#define        ATC_SRC_WIDTH_MASK      (0x3 << 24)     /* Source Single Transfer Size */
-> +#define                ATC_SRC_WIDTH_BYTE      (0x0 << 24)
-> +#define                ATC_SRC_WIDTH_HALFWORD  (0x1 << 24)
-> +#define                ATC_SRC_WIDTH_WORD      (0x2 << 24)
-> +#define        ATC_DST_WIDTH_MASK      (0x3 << 28)     /* Destination Single Transfer Size */
-> +#define                ATC_DST_WIDTH_BYTE      (0x0 << 28)
-> +#define                ATC_DST_WIDTH_HALFWORD  (0x1 << 28)
-> +#define                ATC_DST_WIDTH_WORD      (0x2 << 28)
-> +#define        ATC_DONE                (0x1 << 31)     /* Tx Done (only written back in descriptor) */
-> +
-> +/* Bitfields in CTRLB */
-> +#define        ATC_SIF(i)              (0x3 & (i))     /* Src tx done via AHB-Lite Interface i */
-> +#define        ATC_DIF(i)              ((0x3 & (i)) <<  4)     /* Dst tx done via AHB-Lite Interface i */
-> +#define        ATC_SRC_PIP             (0x1 <<  8)     /* Source Picture-in-Picture enabled */
-> +#define        ATC_DST_PIP             (0x1 << 12)     /* Destination Picture-in-Picture enabled */
-> +#define        ATC_SRC_DSCR_DIS        (0x1 << 16)     /* Src Descriptor fetch disable */
-> +#define        ATC_DST_DSCR_DIS        (0x1 << 20)     /* Dst Descriptor fetch disable */
-> +#define        ATC_FC_MASK             (0x7 << 21)     /* Choose Flow Controller */
-> +#define                ATC_FC_MEM2MEM          (0x0 << 21)     /* Mem-to-Mem (DMA) */
-> +#define                ATC_FC_MEM2PER          (0x1 << 21)     /* Mem-to-Periph (DMA) */
-> +#define                ATC_FC_PER2MEM          (0x2 << 21)     /* Periph-to-Mem (DMA) */
-> +#define                ATC_FC_PER2PER          (0x3 << 21)     /* Periph-to-Periph (DMA) */
-> +#define                ATC_FC_PER2MEM_PER      (0x4 << 21)     /* Periph-to-Mem (Peripheral) */
-> +#define                ATC_FC_MEM2PER_PER      (0x5 << 21)     /* Mem-to-Periph (Peripheral) */
-> +#define                ATC_FC_PER2PER_PER      (0x6 << 21)     /* Periph-to-Periph (Src Peripheral) */
-> +#define        ATC_SRC_ADDR_MODE_MASK  (0x3 << 24)
-> +#define                ATC_SRC_ADDR_MODE_INCR  (0x0 << 24)     /* Incrementing Mode */
-> +#define                ATC_SRC_ADDR_MODE_DECR  (0x1 << 24)     /* Decrementing Mode */
-> +#define                ATC_SRC_ADDR_MODE_FIXED (0x2 << 24)     /* Fixed Mode */
-> +#define        ATC_DST_ADDR_MODE_MASK  (0x3 << 28)
-> +#define                ATC_DST_ADDR_MODE_INCR  (0x0 << 28)     /* Incrementing Mode */
-> +#define                ATC_DST_ADDR_MODE_DECR  (0x1 << 28)     /* Decrementing Mode */
-> +#define                ATC_DST_ADDR_MODE_FIXED (0x2 << 28)     /* Fixed Mode */
-> +#define        ATC_IEN                 (0x1 << 30)     /* BTC interrupt enable (active low) */
-> +#define        ATC_AUTO                (0x1 << 31)     /* Auto multiple buffer tx enable */
-> +
-> +/* Bitfields in CFG */
-> +#define        ATC_SRC_PER(h)          (0xFU & (h))    /* Channel src rq associated with periph handshaking ifc h */
-> +#define        ATC_DST_PER(h)          ((0xFU & (h)) <<  4)    /* Channel dst rq associated with periph handshaking ifc h */
-> +#define        ATC_SRC_REP             (0x1 <<  8)     /* Source Replay Mod */
-> +#define        ATC_SRC_H2SEL           (0x1 <<  9)     /* Source Handshaking Mod */
-> +#define                ATC_SRC_H2SEL_SW        (0x0 <<  9)
-> +#define                ATC_SRC_H2SEL_HW        (0x1 <<  9)
-> +#define        ATC_DST_REP             (0x1 << 12)     /* Destination Replay Mod */
-> +#define        ATC_DST_H2SEL           (0x1 << 13)     /* Destination Handshaking Mod */
-> +#define                ATC_DST_H2SEL_SW        (0x0 << 13)
-> +#define                ATC_DST_H2SEL_HW        (0x1 << 13)
-> +#define        ATC_SOD                 (0x1 << 16)     /* Stop On Done */
-> +#define        ATC_LOCK_IF             (0x1 << 20)     /* Interface Lock */
-> +#define        ATC_LOCK_B              (0x1 << 21)     /* AHB Bus Lock */
-> +#define        ATC_LOCK_IF_L           (0x1 << 22)     /* Master Interface Arbiter Lock */
-> +#define                ATC_LOCK_IF_L_CHUNK     (0x0 << 22)
-> +#define                ATC_LOCK_IF_L_BUFFER    (0x1 << 22)
-> +#define        ATC_AHB_PROT_MASK       (0x7 << 24)     /* AHB Protection */
-> +#define        ATC_FIFOCFG_MASK        (0x3 << 28)     /* FIFO Request Configuration */
-> +#define                ATC_FIFOCFG_LARGESTBURST        (0x0 << 28)
-> +#define                ATC_FIFOCFG_HALFFIFO            (0x1 << 28)
-> +#define                ATC_FIFOCFG_ENOUGHSPACE         (0x2 << 28)
-> +
-> +/* Bitfields in SPIP */
-> +#define        ATC_SPIP_HOLE(x)        (0xFFFFU & (x))
-> +#define        ATC_SPIP_BOUNDARY(x)    ((0x3FF & (x)) << 16)
-> +
-> +/* Bitfields in DPIP */
-> +#define        ATC_DPIP_HOLE(x)        (0xFFFFU & (x))
-> +#define        ATC_DPIP_BOUNDARY(x)    ((0x3FF & (x)) << 16)
-> +
-> +
-> +/*--  descriptors  -----------------------------------------------------*/
-> +
-> +/* LLI == Linked List Item; aka DMA buffer descriptor */
-> +struct at_lli {
-> +       /* values that are not changed by hardware */
-> +       dma_addr_t      saddr;
-> +       dma_addr_t      daddr;
-> +       /* value that may get written back: */
-> +       u32             ctrla;
-> +       /* more values that are not changed by hardware */
-> +       u32             ctrlb;
-> +       dma_addr_t      dscr;   /* chain to next lli */
-> +};
-> +
-> +/**
-> + * struct at_desc - software descriptor
-> + * @at_lli: hardware lli structure
-> + * @txd: support for the async_tx api
-> + * @desc_node: node on the channed descriptors list
-> + * @len: total transaction bytecount
-> + */
-> +struct at_desc {
-> +       /* FIRST values the hardware uses */
-> +       struct at_lli                   lli;
-> +
-> +       /* THEN values for driver housekeeping */
-> +       struct dma_async_tx_descriptor  txd;
-> +       struct list_head                desc_node;
-> +       size_t                          len;
-> +};
-> +
-> +static inline struct at_desc *
-> +txd_to_at_desc(struct dma_async_tx_descriptor *txd)
-> +{
-> +       return container_of(txd, struct at_desc, txd);
-> +}
-> +
-> +
-> +/*--  Channels  --------------------------------------------------------*/
-> +
-> +/**
-> + * struct at_dma_chan - internal representation of an Atmel HDMAC channel
-> + * @chan_common: common dmaengine channel object members
-> + * @device: parent device
-> + * @ch_regs: memory mapped register base
-> + * @mask: channel index in a mask
-> + * @error_status: transmit error status information from irq handler
-> + *                to tasklet (use atomic operations)
-> + * @tasklet: bottom half to finish transaction work
-> + * @lock: serializes enqueue/dequeue operations to descriptors lists
-> + * @completed_cookie: identifier for the most recently completed operation
-> + * @active_list: list of descriptors dmaengine is being running on
-> + * @queue: list of descriptors ready to be submitted to engine
-> + * @free_list: list of descriptors usable by the channel
-> + * @descs_allocated: records the actual size of the descriptor pool
-> + */
-> +struct at_dma_chan {
-> +       struct dma_chan         chan_common;
-> +       struct at_dma           *device;
-> +       void __iomem            *ch_regs;
-> +       u8                      mask;
-> +       unsigned long           error_status;
-> +       struct tasklet_struct   tasklet;
-> +
-> +       spinlock_t              lock;
-> +
-> +       /* these other elements are all protected by lock */
-> +       dma_cookie_t            completed_cookie;
-> +       struct list_head        active_list;
-> +       struct list_head        queue;
-> +       struct list_head        free_list;
-> +       unsigned int            descs_allocated;
-> +};
-> +
-> +#define        channel_readl(atchan, name) \
-> +       __raw_readl((atchan)->ch_regs + ATC_##name##_OFFSET)
-> +
-> +#define        channel_writel(atchan, name, val) \
-> +       __raw_writel((val), (atchan)->ch_regs + ATC_##name##_OFFSET)
-> +
-> +static inline struct at_dma_chan *to_at_dma_chan(struct dma_chan *dchan)
-> +{
-> +       return container_of(dchan, struct at_dma_chan, chan_common);
-> +}
-> +
-> +
-> +/*--  Controller  ------------------------------------------------------*/
-> +
-> +/**
-> + * struct at_dma - internal representation of an Atmel HDMA Controller
-> + * @chan_common: common dmaengine dma_device object members
-> + * @ch_regs: memory mapped register base
-> + * @clk: dma controller clock
-> + * @all_chan_mask: all channels availlable in a mask
-> + * @dma_desc_pool: base of DMA descriptor region (DMA address)
-> + * @chan: channels table to store at_dma_chan structures
-> + */
-> +struct at_dma {
-> +       struct dma_device       dma_common;
-> +       void __iomem            *regs;
-> +       struct clk              *clk;
-> +
-> +       u8                      all_chan_mask;
-> +
-> +       struct dma_pool         *dma_desc_pool;
-> +       /* AT THE END channels table */
-> +       struct at_dma_chan      chan[0];
-> +};
-> +
-> +#define        dma_readl(atdma, name) \
-> +       __raw_readl((atdma)->regs + AT_DMA_##name)
-> +#define        dma_writel(atdma, name, val) \
-> +       __raw_writel((val), (atdma)->regs + AT_DMA_##name)
-> +
-> +static inline struct at_dma *to_at_dma(struct dma_device *ddev)
-> +{
-> +       return container_of(ddev, struct at_dma, dma_common);
-> +}
-> +
-> +
-> +/*--  Helper functions  ------------------------------------------------*/
-> +
-> +#if defined(VERBOSE_DEBUG)
-> +static void vdbg_dump_regs(struct at_dma_chan *atchan)
-> +{
-> +       struct at_dma   *atdma = to_at_dma(atchan->chan_common.device);
-> +
-> +       dev_err(&atchan->chan_common.dev,
-> +               "  channel %d : imr = 0x%x, chsr = 0x%x\n",
-> +               atchan->chan_common.chan_id,
-> +               dma_readl(atdma, EBCIMR),
-> +               dma_readl(atdma, CHSR));
-> +
-> +       dev_err(&atchan->chan_common.dev,
-> +               "  channel: s0x%x d0x%x ctrl0x%x:0x%x l0x%x\n",
-> +               channel_readl(atchan, SADDR),
-> +               channel_readl(atchan, DADDR),
-> +               channel_readl(atchan, CTRLA),
-> +               channel_readl(atchan, CTRLB),
-> +               channel_readl(atchan, DSCR));
-> +}
-> +#else
-> +static void vdbg_dump_regs(struct at_dma_chan *atchan) {}
-> +#endif
-> +
-> +static void atc_dump_lli(struct at_dma_chan *atchan, struct at_lli *lli)
-> +{
-> +       dev_printk(KERN_CRIT, &atchan->chan_common.dev,
-> +                       "  desc: s0x%x d0x%x ctrl0x%x:0x%x l0x%x\n",
-> +                       lli->saddr, lli->daddr,
-> +                       lli->ctrla, lli->ctrlb, lli->dscr);
-> +}
-> +
-> +
-> +static void atc_setup_irq(struct at_dma_chan *atchan, int on)
-> +{
-> +       struct at_dma   *atdma = to_at_dma(atchan->chan_common.device);
-> +       u32             ebci;
-> +
-> +       /* enable interrupts on buffer chain completion & error */
-> +       ebci =    AT_DMA_CBTC(atchan->chan_common.chan_id)
-> +               | AT_DMA_ERR(atchan->chan_common.chan_id);
-> +       if (on)
-> +               dma_writel(atdma, EBCIER, ebci);
-> +       else
-> +               dma_writel(atdma, EBCIDR, ebci);
-> +}
-> +
-> +static inline void atc_enable_irq(struct at_dma_chan *atchan)
-> +{
-> +       atc_setup_irq(atchan, 1);
-> +}
-> +
-> +static inline void atc_disable_irq(struct at_dma_chan *atchan)
-> +{
-> +       atc_setup_irq(atchan, 0);
-> +}
-> +
-> +
-> +/**
-> + * atc_chan_is_enabled - test if given channel is enabled
-> + * @atchan: channel we want to test status
-> + */
-> +static inline int atc_chan_is_enabled(struct at_dma_chan *atchan)
-> +{
-> +       struct at_dma   *atdma = to_at_dma(atchan->chan_common.device);
-> +
-> +       return !!(dma_readl(atdma, CHSR) & atchan->mask);
-> +}
-> +
-> +
-> +/**
-> + * set_desc_eol - set end-of-link to descriptor so it will end transfer
-> + * @desc: descriptor, signle or at the end of a chain, to end chain on
-> + */
-> +static void set_desc_eol(struct at_desc *desc)
-> +{
-> +       desc->lli.ctrlb |= ATC_SRC_DSCR_DIS | ATC_DST_DSCR_DIS;
-> +       desc->lli.dscr = 0;
-> +}
-> +
-> +#endif /* AT_HDMAC_REGS_H */
-> diff --git a/include/linux/at_hdmac.h b/include/linux/at_hdmac.h
-> new file mode 100644
-> index 0000000..21a5554
-> --- /dev/null
-> +++ b/include/linux/at_hdmac.h
-> @@ -0,0 +1,26 @@
-> +/*
-> + * Header file for the Atmel AHB DMA Controller driver
-> + *
-> + * Copyright (C) 2008 Atmel Corporation
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + */
-> +#ifndef AT_HDMAC_H
-> +#define AT_HDMAC_H
-> +
-> +#include <linux/dmaengine.h>
-> +
-> +/**
-> + * struct at_dma_platform_data - Controller configuration parameters
-> + * @nr_channels: Number of channels supported by hardware (max 8)
-> + * @cap_mask: dma_capability flags supported by the platform
-> + */
-> +struct at_dma_platform_data {
-> +       unsigned int    nr_channels;
-> +       dma_cap_mask_t  cap_mask;
-> +};
-> +
-> +#endif /* AT_HDMAC_H */
-> --
-> 1.5.3.7
-> 
-> 
-> 
-> 
-> 
+diff --git a/include/linux/audit.h b/include/linux/audit.h
+index 6272a39..a3f78d0 100644
+--- a/include/linux/audit.h
++++ b/include/linux/audit.h
+@@ -580,7 +580,8 @@ extern int audit_enabled;
+ #define audit_log(c,g,t,f,...) do { ; } while (0)
+ #define audit_log_start(c,g,t) ({ NULL; })
+ #define audit_log_vformat(b,f,a) do { ; } while (0)
+-#define audit_log_format(b,f,...) do { ; } while (0)
++static inline void __attribute__ ((format(printf, 2, 3)))
++audit_log_format(struct audit_buffer *ab, const char *fmt, ...) { }
+ #define audit_log_end(b) do { ; } while (0)
+ #define audit_log_n_hex(a,b,l) do { ; } while (0)
+ #define audit_log_n_string(a,c,l) do { ; } while (0)
 
+commit d58cbf52cb25e215c0e34048bda8ec481bdce4af
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Fri Oct 17 14:18:31 2008 +0200
+
+    fs/afs/dir.c: fix uninitialized variable use
+    
+    this warning:
+    
+      fs/afs/dir.c: In function ‘afs_d_revalidate’:
+      fs/afs/dir.c:566: warning: ‘fid.vnode’ may be used uninitialized in this function
+      fs/afs/dir.c:566: warning: ‘fid.unique’ may be used uninitialized in this function
+    
+    shows us a real bug: afs_dir_get_page() could use the uninitialized
+    fid variable if CONFIG_AFS_DEBUG=y to print messages, and leak kernel
+    stack data to the console.
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/fs/afs/dir.c b/fs/afs/dir.c
+index dfda03d..254c567 100644
+--- a/fs/afs/dir.c
++++ b/fs/afs/dir.c
+@@ -563,7 +563,7 @@ static struct dentry *afs_lookup(struct inode *dir, struct dentry *dentry,
+ static int afs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
+ {
+ 	struct afs_vnode *vnode, *dir;
+-	struct afs_fid fid;
++	struct afs_fid fid = { 0, };
+ 	struct dentry *parent;
+ 	struct key *key;
+ 	void *dir_version;
+
+commit 19be5d76a014ce0e743848a42cbb3b579c0ad8d7
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Fri Oct 17 13:40:00 2008 +0200
+
+    drivers/video/cirrusfb.c: remove unused variables
+    
+    fix these warnings:
+    
+      drivers/video/cirrusfb.c: In function ‘cirrusfb_setup’:
+      drivers/video/cirrusfb.c:2466: warning: unused variable ‘i’
+      drivers/video/cirrusfb.c:2465: warning: unused variable ‘s’
+    
+    These two parameters are not used anymore, their use got removed
+    in this commit:
+    
+      a1d35a7: cirrusfb: use modedb and add mode_option parameter
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
+index 048b139..ace4001 100644
+--- a/drivers/video/cirrusfb.c
++++ b/drivers/video/cirrusfb.c
+@@ -2462,8 +2462,7 @@ static int __init cirrusfb_init(void)
+ 
+ #ifndef MODULE
+ static int __init cirrusfb_setup(char *options) {
+-	char *this_opt, s[32];
+-	int i;
++	char *this_opt;
+ 
+ 	DPRINTK("ENTER\n");
+ 
+
+commit d138e44e2f8d0f26e04b0386d328d9cc7e33d82e
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Fri Oct 17 14:30:37 2008 +0200
+
+    drivers/net/wireless/b43/phy_g.c: type check debug printouts
+    
+    this warning:
+    
+      drivers/net/wireless/b43/phy_g.c: In function ‘b43_gphy_op_recalc_txpower’:
+      drivers/net/wireless/b43/phy_g.c:3191: warning: unused variable ‘dbm’
+    
+    is caused because b43dbg() is a macro, hence in the !B43_DEBUG
+    case the compiler does not know that the variables are used.
+    
+    Convert it to a proper inline instead. This also improves type checking
+    in the !B43_DEBUG case.
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/drivers/net/wireless/b43/b43.h b/drivers/net/wireless/b43/b43.h
+index 427b820..ac55b62 100644
+--- a/drivers/net/wireless/b43/b43.h
++++ b/drivers/net/wireless/b43/b43.h
+@@ -853,7 +853,8 @@ void b43warn(struct b43_wl *wl, const char *fmt, ...)
+ void b43dbg(struct b43_wl *wl, const char *fmt, ...)
+     __attribute__ ((format(printf, 2, 3)));
+ #else /* DEBUG */
+-# define b43dbg(wl, fmt...) do { /* nothing */ } while (0)
++static inline void __attribute__ ((format(printf, 2, 3)))
++b43dbg(struct b43_wl *wl, const char *fmt, ...) { }
+ #endif /* DEBUG */
+ 
+ /* A WARN_ON variant that vanishes when b43 debugging is disabled.
+
+commit f11adf3c65aff25074d5d3a90d72cdfc40d66b50
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Fri Oct 17 12:54:56 2008 +0200
+
+    drivers/ide/pci/hpt366.c: remove unused variable
+    
+    this warning:
+    
+      drivers/ide/pci/hpt366.c: In function ‘init_hwif_hpt366’:
+      drivers/ide/pci/hpt366.c:1292: warning: unused variable ‘dev’
+    
+    triggers because this variable is not used in this function at all.
+    
+    Remov it.
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/drivers/ide/pci/hpt366.c b/drivers/ide/pci/hpt366.c
+index 9cf171c..ca0acb5 100644
+--- a/drivers/ide/pci/hpt366.c
++++ b/drivers/ide/pci/hpt366.c
+@@ -1289,7 +1289,6 @@ static u8 hpt3xx_cable_detect(ide_hwif_t *hwif)
+ 
+ static void __devinit init_hwif_hpt366(ide_hwif_t *hwif)
+ {
+-	struct pci_dev *dev	= to_pci_dev(hwif->dev);
+ 	struct hpt_info *info	= hpt3xx_get_info(hwif->dev);
+ 	int serialize		= HPT_SERIALIZE_IO;
+ 	u8  chip_type		= info->chip_type;
+
+commit ecd05381e26b9a61e49fa485baea1595bd3d1b40
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Fri Oct 17 16:09:57 2008 +0200
+
+    x86: fix default_spin_lock_flags() prototype
+    
+    these warnings:
+    
+      arch/x86/kernel/paravirt-spinlocks.c: In function ‘default_spin_lock_flags’:
+      arch/x86/kernel/paravirt-spinlocks.c:12: warning: passing argument 1 of ‘__raw_spin_lock’ from incompatible pointer type
+      arch/x86/kernel/paravirt-spinlocks.c: At top level:
+      arch/x86/kernel/paravirt-spinlocks.c:11: warning: ‘default_spin_lock_flags’ defined but not used
+    
+    showed that the prototype of default_spin_lock_flags() was confused about
+    what type spinlocks have.
+    
+    the proper type on UP is raw_spinlock_t.
+    
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/arch/x86/kernel/paravirt-spinlocks.c b/arch/x86/kernel/paravirt-spinlocks.c
+index 0e9f198..95777b0 100644
+--- a/arch/x86/kernel/paravirt-spinlocks.c
++++ b/arch/x86/kernel/paravirt-spinlocks.c
+@@ -7,7 +7,8 @@
+ 
+ #include <asm/paravirt.h>
+ 
+-static void default_spin_lock_flags(struct raw_spinlock *lock, unsigned long flags)
++static inline void
++default_spin_lock_flags(raw_spinlock_t *lock, unsigned long flags)
+ {
+ 	__raw_spin_lock(lock);
+ }
