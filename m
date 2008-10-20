@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbYJTHho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbYJTHiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753143AbYJTHho (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 03:37:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbYJTHgy
+	id S1753323AbYJTHiA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 03:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbYJTHg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 03:36:54 -0400
-Received: from ms1.nttdata.co.jp ([163.135.193.232]:49581 "EHLO
+	Mon, 20 Oct 2008 03:36:56 -0400
+Received: from ms1.nttdata.co.jp ([163.135.193.232]:49598 "EHLO
 	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751464AbYJTHgw (ORCPT
+	with ESMTP id S1751578AbYJTHgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 03:36:52 -0400
-Message-Id: <20081020073645.488058369@nttdata.co.jp>
+	Mon, 20 Oct 2008 03:36:53 -0400
+Message-Id: <20081020073648.682014372@nttdata.co.jp>
 References: <20081020073423.024299308@nttdata.co.jp>
 User-Agent: quilt/0.45-1
-Date: Mon, 20 Oct 2008 16:34:25 +0900
+Date: Mon, 20 Oct 2008 16:34:26 +0900
 From: Kentaro Takeda <takedakn@nttdata.co.jp>
 To: Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
        Chris Wright <chrisw@sous-sol.org>
@@ -21,97 +21,103 @@ Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
        linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
        Toshiharu Harada <haradats@nttdata.co.jp>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       David Howells <dhowells@redhat.com>
-Subject: [TOMOYO #11 (linux-next) 02/11] Add in_execve flag into task_struct.
-X-OriginalArrivalTime: 20 Oct 2008 07:36:49.0253 (UTC) FILETIME=[9CAF9950:01C93286]
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Subject: [TOMOYO #11 (linux-next) 03/11] Singly linked list implementation.
+X-OriginalArrivalTime: 20 Oct 2008 07:36:51.0082 (UTC) FILETIME=[9DC6AEA0:01C93286]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows LSM modules to determine whether current process is in an
-execve operation or not so that they can behave differently while an execve
-operation is in progress.
-
-This allows TOMOYO to dispense with a readability check on a file to be
-executed under the process's current credentials, and to do it instead under
-the proposed credentials.
-
-This is required with the new COW credentials because TOMOYO is no longer
-allowed to mark the state temporarily in the security struct attached to the
-task_struct.
-
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Signed-off-by: David Howells <dhowells@redhat.com>
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- fs/compat.c           |    3 +++
- fs/exec.c             |    3 +++
- include/linux/sched.h |    2 ++
- 3 files changed, 8 insertions(+)
+ include/linux/list1.h |   81 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 81 insertions(+)
 
---- linux-next.orig/fs/compat.c
-+++ linux-next/fs/compat.c
-@@ -1396,6 +1396,7 @@ int compat_do_execve(char * filename,
- 	retval = mutex_lock_interruptible(&current->cred_exec_mutex);
- 	if (retval < 0)
- 		goto out_free;
-+	current->in_execve = 1;
- 
- 	retval = -ENOMEM;
- 	bprm->cred = prepare_exec_creds();
-@@ -1448,6 +1449,7 @@ int compat_do_execve(char * filename,
- 		goto out;
- 
- 	/* execve succeeded */
-+	current->in_execve = 0;
- 	mutex_unlock(&current->cred_exec_mutex);
- 	acct_update_integrals(current);
- 	free_bprm(bprm);
-@@ -1464,6 +1466,7 @@ out_file:
- 	}
- 
- out_unlock:
-+	current->in_execve = 0;
- 	mutex_unlock(&current->cred_exec_mutex);
- 
- out_free:
---- linux-next.orig/fs/exec.c
-+++ linux-next/fs/exec.c
-@@ -1303,6 +1303,7 @@ int do_execve(char * filename,
- 	retval = mutex_lock_interruptible(&current->cred_exec_mutex);
- 	if (retval < 0)
- 		goto out_free;
-+	current->in_execve = 1;
- 
- 	retval = -ENOMEM;
- 	bprm->cred = prepare_exec_creds();
-@@ -1356,6 +1357,7 @@ int do_execve(char * filename,
- 		goto out;
- 
- 	/* execve succeeded */
-+	current->in_execve = 0;
- 	mutex_unlock(&current->cred_exec_mutex);
- 	acct_update_integrals(current);
- 	free_bprm(bprm);
-@@ -1374,6 +1376,7 @@ out_file:
- 	}
- 
- out_unlock:
-+	current->in_execve = 0;
- 	mutex_unlock(&current->cred_exec_mutex);
- 
- out_free:
---- linux-next.orig/include/linux/sched.h
-+++ linux-next/include/linux/sched.h
-@@ -1089,6 +1089,8 @@ struct task_struct {
- 	/* ??? */
- 	unsigned int personality;
- 	unsigned did_exec:1;
-+	unsigned in_execve:1;	/* Tell the LSMs that the process is doing an
-+				 * execve */
- 	pid_t pid;
- 	pid_t tgid;
- 
+--- /dev/null
++++ linux-next/include/linux/list1.h
+@@ -0,0 +1,81 @@
++#ifndef _LINUX_LIST1_H
++#define _LINUX_LIST1_H
++
++#include <linux/list.h>
++#include <linux/rcupdate.h>
++
++/*
++ * Singly linked list implementation.
++ *
++ * This list supports only two operations.
++ * (1) Append an entry to the tail of the list.
++ * (2) Read all entries starting from the head of the list.
++ *
++ * This list is designed for holding "write once, read many" entries.
++ * This list requires no locks for read operation.
++ * This list doesn't support "remove an entry from the list" operation.
++ */
++
++/* To reduce memory usage, this list doesn't use "->prev" pointer. */
++struct list1_head {
++	struct list1_head *next;
++};
++
++#define LIST1_HEAD_INIT(name) { &(name) }
++#define LIST1_HEAD(name) struct list1_head name = LIST1_HEAD_INIT(name)
++
++static inline void INIT_LIST1_HEAD(struct list1_head *list)
++{
++	list->next = list;
++}
++
++/* Reuse list_entry because it doesn't use "->prev" pointer. */
++#define list1_entry list_entry
++
++/* Reuse list_for_each_rcu because it doesn't use "->prev" pointer. */
++#define list1_for_each list_for_each_rcu
++/* Reuse list_for_each_entry_rcu because it doesn't use "->prev" pointer. */
++#define list1_for_each_entry list_for_each_entry_rcu
++
++/**
++ * list1_for_each_cookie - iterate over a list with cookie.
++ * @pos:        the &struct list1_head to use as a loop cursor.
++ * @cookie:     the &struct list1_head to use as a cookie.
++ * @head:       the head for your list.
++ *
++ * Same with list_for_each_rcu() except that this primitive uses @cookie
++ * so that we can continue iteration.
++ * @cookie must be NULL when iteration starts, and @cookie will become
++ * NULL when iteration finishes.
++ *
++ * Since list elements are never removed, we don't need to get a lock
++ * or a reference count.
++ */
++#define list1_for_each_cookie(pos, cookie, head)                      \
++	for (({ if (!cookie)                                          \
++				     cookie = head; }),               \
++	     pos = rcu_dereference((cookie)->next);                   \
++	     prefetch(pos->next), pos != (head) || ((cookie) = NULL); \
++	     (cookie) = pos, pos = rcu_dereference(pos->next))
++
++/**
++ * list1_add_tail - add a new entry to list1 list.
++ * @new: new entry to be added.
++ * @head: list head to add it before.
++ *
++ * Same with list_add_tail_rcu() without "->prev" pointer.
++ *
++ * Caller must hold a lock for protecting @head.
++ */
++static inline void list1_add_tail(struct list1_head *new,
++				  struct list1_head *head)
++{
++	struct list1_head *prev = head;
++
++	new->next = head;
++	while (prev->next != head)
++		prev = prev->next;
++	rcu_assign_pointer(prev->next, new);
++}
++
++#endif
 
 --
 
