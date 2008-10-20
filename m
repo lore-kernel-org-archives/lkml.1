@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbYJTNov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753330AbYJTNsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754028AbYJTNov (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 09:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbYJTNoa
+	id S1753330AbYJTNsP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 09:48:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYJTNr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 09:44:30 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:39893 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752118AbYJTNo3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 09:44:29 -0400
-Date: Mon, 20 Oct 2008 09:42:11 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org, vgoyal@redhat.com,
-       hbabu@us.ibm.com, ebiederm@xmission.com, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com, akpm@linux-foundation.org,
-       Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: Re: [PATCH] kexec: fix hang on i386 when panic occurs while
-	console_sem is held
-Message-ID: <20081020134211.GA15574@hmsreliant.think-freely.org>
-References: <20081017210013.GD23591@hmsreliant.think-freely.org> <20081020121339.GE10594@elte.hu>
+	Mon, 20 Oct 2008 09:47:59 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47345 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751794AbYJTNr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 09:47:59 -0400
+Date: Mon, 20 Oct 2008 15:47:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jike Song <albcamus@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, trivial@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: questions about rd{msr|tsc|pmc} instruction with x86-64
+Message-ID: <20081020134740.GA8007@elte.hu>
+References: <df9815e70810152330h7886c77arb01e1fd308b4a7ae@mail.gmail.com> <48F6E1A7.2070602@zytor.com> <df9815e70810160931s86c9058rc18d426ce278aa30@mail.gmail.com> <48F76FA3.1000602@zytor.com> <48F821B3.2060300@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081020121339.GE10594@elte.hu>
+In-Reply-To: <48F821B3.2060300@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 20, 2008 at 02:13:39PM +0200, Ingo Molnar wrote:
-> 
-> * Neil Horman <nhorman@tuxdriver.com> wrote:
-> 
-> > Hey all-
-> > 	Theres a corner case in 32 bit x86 kdump at the moment.  When 
-> > the box panics via nmi, we call bust_spinlocks(1) to disable 
-> > sensitivity to the console_sem (allowing us to print to the console in 
-> > all cases), but we don't call crash_kexec, until after we call 
-> > bust_spinlocks(0), which re-enables console_sem sensitivity.  The 
-> > result is that, if we get an nmi while the console_sem is held and 
-> > kdump is configured, and we try to print something to the console 
-> > during kdump shutdown (which we often do) we deadlock the box.  The 
-> > fix is to simply do what 64 bit die_nmi does which is to not call 
-> > bust_spinlocks(0) until after we call crash_kexec.  Patch below tested 
-> > successfully by me:
-> 
-> applied to tip/x86/urgent, thanks Neil!
-> 
-Thanks, Ingo!
 
-> >  dumpstack_32.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> would be nice to unify this code some more - to create a new 
-> arch/x86/kernel/dumpstack.c and fill it in with die_nmi() as a 
-> beginning?
-> 
-Agreed, I'll try look into that as soon as I have some free time.
+* Jike Song <albcamus@gmail.com> wrote:
 
-Regards
-Neil
+> H. Peter Anvin wrote:
+>>  Jike Song wrote:
+>> > Thanks, Peter!  So I misunderstood the gcc constraint 'A' for x86-64,
+>> > but seems the comment "while x86_64 returns at rax" still wrong,
+>> > should this be fixed?
+>>
+>>  Yes, feel free to submit a patch.
+>>
+>>     -hpa
+> Here you go... CC trivial@kernel.org as well.
+>
+> From 6eed2948d41f959dc113eb3ff30927bcacf34d08 Mon Sep 17 00:00:00 2001
+> From: Jike Song <albcamus@gmail.com>
+> Date: Fri, 17 Oct 2008 10:51:13 +0800
+> Subject: [PATCH] x86: correct wrong comment
+>
+> The rdmsr instruction(et al) for i386 and x86-64 are semantically same.
+> The only difference is how gcc interpret constraint "A" for these targets.
+>
+> Signed-off-by: Jike Song <albcamus@gmail.com>
+> ---
+> include/asm-x86/msr.h |    8 ++++----
+> 1 files changed, 4 insertions(+), 4 deletions(-)
 
-> 	Ingo
-> 
+applied to tip/x86/cleanups, thanks!
 
--- 
-/****************************************************
- * Neil Horman <nhorman@tuxdriver.com>
- * Software Engineer, Red Hat
- ****************************************************/
+	Ingo
