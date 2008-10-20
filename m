@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752363AbYJTBE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752583AbYJTBFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752363AbYJTBE0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 21:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbYJTBES
+	id S1752583AbYJTBFy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 21:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbYJTBFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 21:04:18 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:53680 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751136AbYJTBES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 21:04:18 -0400
-Date: Mon, 20 Oct 2008 02:04:16 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Andres Freund <andres@anarazel.de>
-cc: Keith Packard <keithp@keithp.com>, linux-kernel@vger.kernel.org
-Subject: Re: [git pull] agp patches for 2.6.28-rc1.
-In-Reply-To: <200810200300.01411.andres@anarazel.de>
-Message-ID: <alpine.DEB.0.82.0810200202270.27788@skynet.skynet.ie>
-References: <alpine.DEB.0.82.0810160758320.16504@skynet.skynet.ie>
- <200810200144.44383.andres@anarazel.de> <1224461977.5303.34.camel@koto.keithp.com>
- <200810200300.01411.andres@anarazel.de>
+	Sun, 19 Oct 2008 21:05:47 -0400
+Received: from ellpspace.math.ualberta.ca ([129.128.207.67]:46829 "EHLO
+	ellpspace.math.ualberta.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751136AbYJTBFq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 21:05:46 -0400
+X-Greylist: delayed 2320 seconds by postgrey-1.27 at vger.kernel.org; Sun, 19 Oct 2008 21:05:46 EDT
+Date: Sun, 19 Oct 2008 18:27:02 -0600
+From: Michal Jaegermann <michal@ellpspace.math.ualberta.ca>
+To: "M. Vefa Bicakci" <bicave@superonline.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Regression in 2.6.27: "irq 18: nobody cared" on Toshiba
+	Satellite A100
+Message-ID: <20081020002702.GA2641@ellpspace.math.ualberta.ca>
+References: <48FB3ED5.60904@superonline.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48FB3ED5.60904@superonline.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> Hm. But still, there is at least one distribution (ubuntu intrepid) which will 
-> propably will ship 2.4.1 in its stable version soon (it seems unlikely that 
-> they will update to an unstable version just before an release).
-> Which means, that this driver will get quite some spread...
-
-Intel will give the fixes to Ubuntu to roll into 2.4.x hopefully.
-
-> Is it accepted that the kernel abi breaks that radically/fast?
+On Sun, Oct 19, 2008 at 10:06:13AM -0400, M. Vefa Bicakci wrote:
 > 
+> As you might guess from the subject line, since I started to use 2.6.27-rcX
+> series, I began to get "irq 18: nobody cared" messages in dmesg.
 
-The problem is this isn't a kernel ABI at all. This is two pieces of code 
-which are doing the exact same thing to a piece of hardware, one from the 
-kernel and one from userspace. When they disagree things break, however 
-sometimes when they agree things are broken. . The solution is proper 
-kernel graphics drivers, however that future is further away.
+I have seen something of that sort on x86_64 machine, and only with
+2.6.27-rcX kernels, but there this was "irq 16: nobody cared".  Various
+details are at https://bugzilla.redhat.com/show_bug.cgi?id=466575
 
-Dave.
+This happens infrequently and unpredictably so I have no idea
+how to reproduce.  I do not have anything connected which is served
+by this interrupt so for me effects were limited to kernel
+complaints.
 
-> Andres
-> 
-> 
+Recently I did not bump into that.
+
+   Michal
