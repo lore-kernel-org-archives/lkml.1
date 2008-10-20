@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbYJTT2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbYJTTbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754564AbYJTT2t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 15:28:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYJTT2k
+	id S1754418AbYJTTbR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 15:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbYJTTbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 15:28:40 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:60711 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753093AbYJTT2j (ORCPT
+	Mon, 20 Oct 2008 15:31:04 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:13824 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753142AbYJTTbB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 15:28:39 -0400
-To: cl@linux-foundation.org
-CC: miklos@szeredi.hu, penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au,
-       hugh@veritas.com, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-reply-to: <48FCD7CB.4060505@linux-foundation.org> (message from Christoph
-	Lameter on Mon, 20 Oct 2008 14:11:07 -0500)
-Subject: Re: SLUB defrag pull request?
-References: <1223883004.31587.15.camel@penberg-laptop> <1223883164.31587.16.camel@penberg-laptop> <Pine.LNX.4.64.0810131227120.20511@blonde.site> <200810132354.30789.nickpiggin@yahoo.com.au> <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu> <E1KpOOL-0003Vf-9y@pomaz-ex.szeredi.hu> <48F378C6.7030206@linux-foundation.org> <E1KpOjX-0003dt-AY@pomaz-ex.szeredi.hu> <48FC9CCC.3040006@linux-foundation.org> <E1Krz4o-0002Fi-Pu@pomaz-ex.szeredi.hu> <48FCCC72.5020202@linux-foundation.org> <E1KrzgK-0002QS-Os@pomaz-ex.szeredi.hu> <48FCD7CB.4060505@linux-foundation.org>
-Message-Id: <E1Ks0QX-0002aC-SQ@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 20 Oct 2008 21:28:29 +0200
+	Mon, 20 Oct 2008 15:31:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=XeAacFpLFVjFnHL9NuQnyL3LY5Dw0jDbYY5ViMDzf02okSPoV3R3Kk+TJqDJBEG6WP
+         HIqPl6w2EzCvDR7meTkqD64sU9xII9U31J2j0h4jT/P1PEUkLGfqQ48y6D3+j8U3zE9a
+         BZ0e9hFObS3azL1gxdJ+uPZ1a5vxyHMRzvqc8=
+From: Dotan Barak <dotanba@gmail.com>
+To: apw@uk.ibm.com
+Subject: checkpatch.pl print the line twice when trailing statements in the same line
+Date: Mon, 20 Oct 2008 20:51:38 +0200
+User-Agent: KMail/1.9.4
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810202051.38694.dotanba@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Oct 2008, Christoph Lameter wrote:
-> >>> The big issue is dealing with umount.  You could do something like
-> >>> grab_super() on sb before getting a ref on the inode/dentry.  But I'm
-> >>> not sure this is a good idea.  There must be a simpler way to achieve
-> >>> this..
-> >> Taking a lock on vfsmount_lock? But that would make dentry reclaim a pain.
-> > 
-> > No, I mean simpler than having to do this two stage stuff.
-> 
-> How could it be simpler? First you need to establish a secure
-> reference to the object so that it cannot vanish from under us. Then
-> all the references can be checked and possibly removed. If we do not
-> need a secure reference then the get_dentries() etc method can be
-> NULL.
+Hi.
 
-So, isn't it possible to do without get_dentries()?  What's the
-fundamental difference between this and regular cache shrinking?
+I executed checkpatch.pl version 0.24 on a file and i noticed that when
+a tailing statement is being declared at the same line with "while, checkpatch
+prints the erroneous line twice.
 
-> Those inodes are going to be freed by the reclaim code. Why would
-> they be busy (unless the case below occurs of course).
+Here is an example of the output:
 
-Case below was brainfart, please ignore.  But that doesn't really
-help: the VFS assumes that you cannot umount while there are busy
-dentries/inodes.  Usually it works this way: VFS first gets vfsmount
-ref, then gets dentry ref, and releases them in the opposite order.
-And umount is not allowed if vfsmount has a non-zero refcount (it's a
-bit more complicated, but the essense is the same).
+ERROR: trailing statements should be on next line
+#651: FILE: idbm.c:651:
++               while (*nl && isspace(c = *nl)) nl++;
++               while (*nl && isspace(c = *nl)) nl++;
 
-The current SLUB defrag violates this: it gets dentry or inode ref
-without getting a ref on the vfsmount or the super block as well.
-This means that the umount will succeed (that's OK), but also the
-super block will be going away and that's bad.  See
-generic_shutdown_super().
+Is this is the expected behavior?
 
-> > And anyway the dentry could be put back onto the LRU by somebody else
-> > between get_dentries() and kick_dentries().  So I don't even see how
-> > taking the dentry off the LRU helps _anything_.
-> 
-> get_dentries() gets a reference. dput will not put the dentry back
-> onto the LRU.
-
-Right.
-
-Miklos
+Thanks
+Dotan
