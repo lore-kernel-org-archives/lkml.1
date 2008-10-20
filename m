@@ -1,344 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752368AbYJTMNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbYJTMNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752368AbYJTMNR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 08:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbYJTMNA
+	id S1753952AbYJTMNu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 08:13:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750952AbYJTMNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 08:13:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34905 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752118AbYJTMM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 08:12:57 -0400
-Date: Mon, 20 Oct 2008 08:12:18 -0400
-From: David Howells <dhowells@redhat.com>
-Message-Id: <200810201212.m9KCCImi011708@ns3.rdu.redhat.com>
-To: unlisted-recipients:; (no To-header on input)
+	Mon, 20 Oct 2008 08:13:40 -0400
+Received: from ns0.motion-twin.com ([213.186.50.39]:37279 "EHLO
+	mail.motion-twin.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751519AbYJTMNj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 08:13:39 -0400
+Message-ID: <48FC75EF.1020705@motion-twin.com>
+Date: Mon, 20 Oct 2008 14:13:35 +0200
+From: Nicolas Cannasse <ncannasse@motion-twin.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: swivel@shells.gnugeneration.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: poll() blocked / packets not received ?
+References: <48FC4066.9060303@motion-twin.com> <20081020101549.GH2811@fc6222126.aspadmin.net> <48FC61A0.7010003@motion-twin.com> <20081020113942.GJ2811@fc6222126.aspadmin.net>
+In-Reply-To: <20081020113942.GJ2811@fc6222126.aspadmin.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From dhowells  Sat Oct 18 10: 29:48 2008
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-To: torvalds@osdl.org
-cc: dhowells@redhat.com, jmorris@namei.org, viro@ZenIV.linux.org.uk,
-    linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT Pull Request] Copy on write credentials for Linux [ver #2]
-X-Scanned-By: MIMEDefang 2.58 on 172.16.27.26
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.3; GNU Emacs 23.0.50
-Date: Mon, 20 Oct 2008 13:12:17 +0100
-Message-ID: <14349.1224504737@redhat.com>
-From: David Howells <dhowells@redhat.com>
+swivel@shells.gnugeneration.com a écrit :
+> When the other end of the TCP is _gone_ that leads me to believe a FIN
+> will not be coming, hence the indefinite ESTABLISHED state.  Why it's
+> gone is a different question, maybe your problem is at the other end?
+> The end initiating a shutdown has to enter FIN_WAIT_1 then FIN_WAIT_2,
+> these transitions require the other side to leave ESTABLISHED (receive a
+> FIN then ACK) at the very least to proceed.
+> 
+>> I agree with your comment in general, except that we have been running 
+>> the same application in single-thread environment for years without 
+>> running into this very specific problem.
+>>
+> 
+> Perhaps when you run in multicore/threaded you are stressing the network
+> stacks at both ends more, including everything in-between?  The
+> threading vs. single process relationship is probably not causal, but
+> just coincidental.
 
+Not sure why this should happen, since it's the same servers. What only 
+change is part of the software that we are using to handle our server 
+requests. It's either embedded in Apache 1.3 with fork() or a standalone 
+multithread server which acts as Apache backend.
 
-The following changes since commit 0cfd81031a26717fe14380d18275f8e217571615:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../gregkh/usb-2.6
+So the only difference for networking is that we have additional 
+Apache<->MT-Server communications, but they should be on 127.0.0.1 so I 
+think they are purely software and not hardware-related.
 
-are available in the git repository at:
+> What is the protocol?  Are there any timeouts to take care of these
+> situations?  Do you schedule an alarm or use SO_RCVTIMEO to shutdown
+> dead connections and free up consumed threads?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/dhowells/cred-2.6.git master
+The protocol is MySQL. Since we had the problem with libmysqlclient, we 
+reimplemented it again from scratch to make sure that it was not 
+software-related.
 
-David Howells (78):
-      CRED: Wrap task credential accesses in the IA64 arch
-      CRED: Wrap task credential accesses in the MIPS arch
-      CRED: Wrap task credential accesses in the PA-RISC arch
-      CRED: Wrap task credential accesses in the PowerPC arch
-      CRED: Wrap task credential accesses in the S390 arch
-      CRED: Wrap task credential accesses in the x86 arch
-      CRED: Wrap task credential accesses in the block loopback driver
-      CRED: Wrap task credential accesses in the tty driver
-      CRED: Wrap task credential accesses in the ISDN drivers
-      CRED: Wrap task credential accesses in the network device drivers
-      CRED: Wrap task credential accesses in the USB driver
-      CRED: Wrap task credential accesses in 9P2000 filesystem
-      CRED: Wrap task credential accesses in the AFFS filesystem
-      CRED: Wrap task credential accesses in the autofs filesystem
-      CRED: Wrap task credential accesses in the autofs4 filesystem
-      CRED: Wrap task credential accesses in the BFS filesystem
-      CRED: Wrap task credential accesses in the CIFS filesystem
-      CRED: Wrap task credential accesses in the Coda filesystem
-      CRED: Wrap task credential accesses in the devpts filesystem
-      CRED: Wrap task credential accesses in the eCryptFS filesystem
-      CRED: Wrap task credential accesses in the Ext2 filesystem
-      CRED: Wrap task credential accesses in the Ext3 filesystem
-      CRED: Wrap task credential accesses in the Ext4 filesystem
-      CRED: Wrap task credential accesses in the FAT filesystem
-      CRED: Wrap task credential accesses in the FUSE filesystem
-      CRED: Wrap task credential accesses in the GFS2 filesystem
-      CRED: Wrap task credential accesses in the HFS filesystem
-      CRED: Wrap task credential accesses in the HFSplus filesystem
-      CRED: Wrap task credential accesses in the HPFS filesystem
-      CRED: Wrap task credential accesses in the hugetlbfs filesystem
-      CRED: Wrap task credential accesses in the JFFS2 filesystem
-      CRED: Wrap task credential accesses in the JFS filesystem
-      CRED: Wrap task credential accesses in the Minix filesystem
-      CRED: Wrap task credential accesses in the NCPFS filesystem
-      CRED: Wrap task credential accesses in the NFS daemon
-      CRED: Wrap task credential accesses in the OCFS2 filesystem
-      CRED: Wrap task credential accesses in the OMFS filesystem
-      CRED: Wrap task credential accesses in the RAMFS filesystem
-      CRED: Wrap task credential accesses in the ReiserFS filesystem
-      CRED: Wrap task credential accesses in the SMBFS filesystem
-      CRED: Wrap task credential accesses in the SYSV filesystem
-      CRED: Wrap task credential accesses in the UBIFS filesystem
-      CRED: Wrap task credential accesses in the UDF filesystem
-      CRED: Wrap task credential accesses in the UFS filesystem
-      CRED: Wrap task credential accesses in the XFS filesystem
-      CRED: Wrap task credential accesses in the filesystem subsystem
-      CRED: Wrap task credential accesses in the SYSV IPC subsystem
-      CRED: Wrap task credential accesses in the AX25 protocol
-      CRED: Wrap task credential accesses in the IPv6 protocol
-      CRED: Wrap task credential accesses in the netrom protocol
-      CRED: Wrap task credential accesses in the ROSE protocol
-      CRED: Wrap task credential accesses in the SunRPC protocol
-      CRED: Wrap task credential accesses in the UNIX socket protocol
-      CRED: Wrap task credential accesses in the networking subsystem
-      CRED: Wrap task credential accesses in the key management code
-      CRED: Wrap task credential accesses in the capabilities code
-      CRED: Wrap task credential accesses in the core kernel
-      KEYS: Disperse linux/key_ui.h
-      KEYS: Alter use of key instantiation link-to-keyring argument
-      CRED: Neuter sys_capset()
-      CRED: Constify the kernel_cap_t arguments to the capset LSM hooks
-      CRED: Separate task security context from task_struct
-      CRED: Detach the credentials from task_struct
-      CRED: Wrap current->cred and a few other accessors
-      CRED: Use RCU to access another task's creds and to release a task's own creds
-      CRED: Wrap access to SELinux's task SID
-      CRED: Separate per-task-group keyrings from signal_struct
-      CRED: Rename is_single_threaded() to is_wq_single_threaded()
-      CRED: Make inode_has_perm() and file_has_perm() take a cred pointer
-      CRED: Pass credentials through dentry_open()
-      CRED: Inaugurate COW credentials
-      CRED: Make execve() take advantage of copy-on-write credentials
-      CRED: Prettify commoncap.c
-      CRED: Use creds in file structs
-      CRED: Documentation
-      CRED: Differentiate objective and effective subjective credentials on a task
-      CRED: Add a kernel_service object class to SELinux
-      CRED: Allow kernel services to override LSM settings for task actions
+What happens at the protocol-level is the following :
 
- Documentation/credentials.txt                |  582 +++++++++++++
- arch/alpha/kernel/asm-offsets.c              |   11 +-
- arch/alpha/kernel/entry.S                    |   10 +-
- arch/ia64/ia32/sys_ia32.c                    |    7 +-
- arch/ia64/kernel/mca_drv.c                   |    2 +-
- arch/ia64/kernel/perfmon.c                   |   43 +-
- arch/ia64/kernel/signal.c                    |    4 +-
- arch/mips/kernel/kspd.c                      |    4 +-
- arch/mips/kernel/mips-mt-fpaff.c             |    5 +-
- arch/mips/kernel/vpe.c                       |    4 +-
- arch/parisc/kernel/signal.c                  |    2 +-
- arch/powerpc/mm/fault.c                      |    2 +-
- arch/powerpc/platforms/cell/spufs/inode.c    |    8 +-
- arch/s390/hypfs/inode.c                      |    4 +-
- arch/s390/kernel/compat_linux.c              |   28 +-
- arch/um/drivers/mconsole_kern.c              |    3 +-
- arch/x86/ia32/ia32_aout.c                    |    2 +-
- arch/x86/mm/fault.c                          |    2 +-
- drivers/block/loop.c                         |    6 +-
- drivers/char/tty_audit.c                     |    6 +-
- drivers/connector/cn_proc.c                  |   16 +-
- drivers/isdn/capi/capifs.c                   |    4 +-
- drivers/isdn/hysdn/hysdn_procconf.c          |    6 +-
- drivers/net/tun.c                            |    8 +-
- drivers/usb/core/devio.c                     |   10 +-
- drivers/usb/core/inode.c                     |    4 +-
- fs/9p/fid.c                                  |    2 +-
- fs/9p/vfs_inode.c                            |    4 +-
- fs/9p/vfs_super.c                            |    4 +-
- fs/affs/inode.c                              |    4 +-
- fs/affs/super.c                              |    4 +-
- fs/anon_inodes.c                             |    4 +-
- fs/attr.c                                    |    4 +-
- fs/autofs/inode.c                            |    4 +-
- fs/autofs4/dev-ioctl.c                       |    3 +-
- fs/autofs4/inode.c                           |    4 +-
- fs/autofs4/waitq.c                           |    4 +-
- fs/bfs/dir.c                                 |    4 +-
- fs/binfmt_aout.c                             |    2 +-
- fs/binfmt_elf.c                              |   20 +-
- fs/binfmt_elf_fdpic.c                        |   19 +-
- fs/binfmt_flat.c                             |    2 +-
- fs/binfmt_som.c                              |    2 +-
- fs/cifs/cifs_fs_sb.h                         |    2 +-
- fs/cifs/cifsproto.h                          |    2 +-
- fs/cifs/connect.c                            |    4 +-
- fs/cifs/dir.c                                |   12 +-
- fs/cifs/inode.c                              |    8 +-
- fs/cifs/ioctl.c                              |    2 +-
- fs/cifs/misc.c                               |    4 +-
- fs/coda/cache.c                              |    6 +-
- fs/coda/file.c                               |    2 +-
- fs/coda/upcall.c                             |    2 +-
- fs/compat.c                                  |   42 +-
- fs/devpts/inode.c                            |    4 +-
- fs/dquot.c                                   |    4 +-
- fs/ecryptfs/ecryptfs_kernel.h                |    3 +-
- fs/ecryptfs/kthread.c                        |    9 +-
- fs/ecryptfs/main.c                           |    3 +-
- fs/ecryptfs/messaging.c                      |   18 +-
- fs/ecryptfs/miscdev.c                        |   20 +-
- fs/exec.c                                    |  183 +++--
- fs/exportfs/expfs.c                          |    4 +-
- fs/ext2/balloc.c                             |    2 +-
- fs/ext2/ialloc.c                             |    4 +-
- fs/ext3/balloc.c                             |    2 +-
- fs/ext3/ialloc.c                             |    4 +-
- fs/ext4/balloc.c                             |    5 +-
- fs/ext4/ialloc.c                             |    4 +-
- fs/fat/file.c                                |    2 +-
- fs/fat/inode.c                               |    4 +-
- fs/fcntl.c                                   |   18 +-
- fs/file_table.c                              |   10 +-
- fs/fuse/dev.c                                |    4 +-
- fs/fuse/dir.c                                |   25 +-
- fs/gfs2/inode.c                              |   10 +-
- fs/hfs/inode.c                               |    4 +-
- fs/hfs/super.c                               |    4 +-
- fs/hfsplus/inode.c                           |    4 +-
- fs/hfsplus/options.c                         |    4 +-
- fs/hpfs/namei.c                              |   24 +-
- fs/hpfs/super.c                              |    4 +-
- fs/hppfs/hppfs.c                             |    6 +-
- fs/hugetlbfs/inode.c                         |   21 +-
- fs/inotify_user.c                            |    2 +-
- fs/internal.h                                |    6 +
- fs/ioprio.c                                  |   18 +-
- fs/jffs2/fs.c                                |    4 +-
- fs/jfs/jfs_inode.c                           |    4 +-
- fs/locks.c                                   |    2 +-
- fs/minix/bitmap.c                            |    4 +-
- fs/namei.c                                   |   10 +-
- fs/namespace.c                               |    2 +-
- fs/ncpfs/ioctl.c                             |   91 +-
- fs/nfsctl.c                                  |    3 +-
- fs/nfsd/auth.c                               |   95 ++-
- fs/nfsd/nfs4recover.c                        |   71 +-
- fs/nfsd/nfsfh.c                              |   11 +-
- fs/nfsd/vfs.c                                |    9 +-
- fs/ocfs2/dlm/dlmfs.c                         |    8 +-
- fs/ocfs2/namei.c                             |    4 +-
- fs/omfs/inode.c                              |    8 +-
- fs/open.c                                    |   59 +-
- fs/pipe.c                                    |    4 +-
- fs/posix_acl.c                               |    4 +-
- fs/proc/array.c                              |   32 +-
- fs/proc/base.c                               |   32 +-
- fs/quota.c                                   |    4 +-
- fs/ramfs/inode.c                             |    4 +-
- fs/reiserfs/namei.c                          |    4 +-
- fs/smbfs/dir.c                               |    3 +-
- fs/smbfs/inode.c                             |    2 +-
- fs/smbfs/proc.c                              |    2 +-
- fs/sysv/ialloc.c                             |    4 +-
- fs/ubifs/budget.c                            |    2 +-
- fs/ubifs/dir.c                               |    4 +-
- fs/udf/ialloc.c                              |    4 +-
- fs/udf/namei.c                               |    2 +-
- fs/ufs/ialloc.c                              |    4 +-
- fs/xfs/linux-2.6/xfs_cred.h                  |    6 +-
- fs/xfs/linux-2.6/xfs_globals.h               |    2 +-
- fs/xfs/linux-2.6/xfs_ioctl.c                 |    5 +-
- fs/xfs/xfs_acl.c                             |    6 +-
- fs/xfs/xfs_inode.h                           |    2 +-
- fs/xfs/xfs_vnodeops.h                        |   10 +-
- include/keys/keyring-type.h                  |   31 +
- include/linux/binfmts.h                      |   16 +-
- include/linux/capability.h                   |    2 -
- include/linux/cred.h                         |  340 +++++++-
- include/linux/fs.h                           |    8 +-
- include/linux/init_task.h                    |   13 +-
- include/linux/key-ui.h                       |   66 --
- include/linux/key.h                          |   32 +-
- include/linux/keyctl.h                       |    4 +-
- include/linux/sched.h                        |   64 +--
- include/linux/securebits.h                   |    2 +-
- include/linux/security.h                     |  326 ++++----
- include/net/scm.h                            |    4 +-
- init/main.c                                  |    1 +
- ipc/mqueue.c                                 |   19 +-
- ipc/shm.c                                    |    9 +-
- ipc/util.c                                   |   18 +-
- kernel/Makefile                              |    2 +-
- kernel/acct.c                                |    7 +-
- kernel/auditsc.c                             |   57 +-
- kernel/capability.c                          |  268 +------
- kernel/cgroup.c                              |   17 +-
- kernel/cred-internals.h                      |   21 +
- kernel/cred.c                                |  577 +++++++++++++
- kernel/exit.c                                |   23 +-
- kernel/fork.c                                |   45 +-
- kernel/futex.c                               |   20 +-
- kernel/futex_compat.c                        |    7 +-
- kernel/kmod.c                                |   30 +-
- kernel/ptrace.c                              |   29 +-
- kernel/sched.c                               |   26 +-
- kernel/signal.c                              |   60 +-
- kernel/sys.c                                 |  579 +++++++------
- kernel/sysctl.c                              |    2 +-
- kernel/timer.c                               |    8 +-
- kernel/trace/trace.c                         |    2 +-
- kernel/tsacct.c                              |    6 +-
- kernel/uid16.c                               |   31 +-
- kernel/user.c                                |   37 +-
- kernel/user_namespace.c                      |   14 +-
- kernel/workqueue.c                           |    8 +-
- lib/Makefile                                 |    2 +-
- lib/is_single_threaded.c                     |   45 +
- mm/mempolicy.c                               |    9 +-
- mm/migrate.c                                 |    9 +-
- mm/oom_kill.c                                |    6 +-
- mm/shmem.c                                   |    8 +-
- net/9p/client.c                              |    2 +-
- net/ax25/af_ax25.c                           |    2 +-
- net/ax25/ax25_route.c                        |    2 +-
- net/core/dev.c                               |    8 +-
- net/core/scm.c                               |   10 +-
- net/ipv4/netfilter/ipt_LOG.c                 |    4 +-
- net/ipv6/ip6_flowlabel.c                     |    2 +-
- net/ipv6/netfilter/ip6t_LOG.c                |    4 +-
- net/netfilter/nfnetlink_log.c                |    5 +-
- net/netfilter/xt_owner.c                     |   16 +-
- net/netrom/af_netrom.c                       |    4 +-
- net/rose/af_rose.c                           |    4 +-
- net/rxrpc/ar-key.c                           |    6 +-
- net/sched/cls_flow.c                         |    4 +-
- net/socket.c                                 |    4 +-
- net/sunrpc/auth.c                            |   14 +-
- net/unix/af_unix.c                           |   11 +-
- security/capability.c                        |   56 +-
- security/commoncap.c                         |  699 ++++++++++------
- security/keys/internal.h                     |   47 +-
- security/keys/key.c                          |   25 +-
- security/keys/keyctl.c                       |  210 +++--
- security/keys/keyring.c                      |   15 +-
- security/keys/permission.c                   |   29 +-
- security/keys/proc.c                         |    8 +-
- security/keys/process_keys.c                 |  469 +++++------
- security/keys/request_key.c                  |  133 ++--
- security/keys/request_key_auth.c             |   46 +-
- security/root_plug.c                         |   13 +-
- security/security.c                          |   96 +--
- security/selinux/exports.c                   |    8 +-
- security/selinux/hooks.c                     | 1162 ++++++++++++++------------
- security/selinux/include/av_perm_to_string.h |    2 +
- security/selinux/include/av_permissions.h    |    2 +
- security/selinux/include/class_to_string.h   |    5 +
- security/selinux/include/flask.h             |    1 +
- security/selinux/include/objsec.h            |   11 -
- security/selinux/selinuxfs.c                 |   13 +-
- security/selinux/xfrm.c                      |    6 +-
- security/smack/smack_access.c                |    4 +-
- security/smack/smack_lsm.c                   |  173 +++--
- security/smack/smackfs.c                     |    6 +-
- 214 files changed, 5070 insertions(+), 3106 deletions(-)
- create mode 100644 Documentation/credentials.txt
- create mode 100644 include/keys/keyring-type.h
- delete mode 100644 include/linux/key-ui.h
- create mode 100644 kernel/cred-internals.h
- create mode 100644 kernel/cred.c
- create mode 100644 lib/is_single_threaded.c
+a) we connect to the server
+b) we make several requests and get answers back
+c) at some (random+rare) point - always after making a request - we're 
+stuck while waiting for the answer.
+
+Sadly, this can happen inside a transaction while we hold the lock on 
+some shared resource. This will lock the whole website until we run out 
+of File Descriptor due to accept'ed pending connections. In that case we 
+get an exception and the server (the multithread one, not MySQL) 
+restarts, which release the lock.
+
+In some other cases when we don't hold a lock, the thread remains 
+blocked in poll() as I described it. After a timeout (I think it's 28800 
+seconds) the MySQL server closes the connection. The client - which is 
+waiting in poll() - does not have any timeout activated (it's relying on 
+the mysql server). But it doesn't notice that the socket has been closed 
+either.
+
+We investigated a lot about signals since poll() can also be interrupted 
+by Garbage Collector and child process signals, but we correctly handle 
+EINTR everywhere it's needed. So unless there's a possibility that 
+interrupting poll() with a signal might somehow consume the data, this 
+is not the problem here.
+
+> TCP being reliable can block indefinitely, you can employ TCP keepalive
+> to change indefinite to quite a long time.
+
+Sure. We could also use a client timeout, but we don't want to hold the 
+lock more than required, and we can't make the difference between a 
+given request that would take too much time to complete and a lost 
+connection.
+
+Hope we can somehow understand what's going on.
+Thanks for the answers so far,
+
+Best,
+Nicolas
