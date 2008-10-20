@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752306AbYJTO6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbYJTO66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752306AbYJTO6U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 10:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbYJTO6M
+	id S1752595AbYJTO66 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 10:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbYJTO6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 10:58:12 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:46459 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751134AbYJTO6L (ORCPT
+	Mon, 20 Oct 2008 10:58:50 -0400
+Received: from smtp-vbr9.xs4all.nl ([194.109.24.29]:2310 "EHLO
+	smtp-vbr9.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbYJTO6t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 10:58:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=HfiO15nnQ446lqIQYV+Vfu7PN1c6b/X2I3LP3N0qT0t0Qj2+qEWfCdkzffIfwdom+4
-         EC3yI1cu5zvUVpQVr14hsXFomwL4ss2oFTK+kif5pQbYvnYY6DTJ1SS2ZicWMaERB3fc
-         ChlN5SiTOKBFAVrVtKCyoz4UrLokLt+IS01pE=
-Message-ID: <a4423d670810200758m3cea3841h40988afc8eaf81@mail.gmail.com>
-Date: Mon, 20 Oct 2008 18:58:09 +0400
-From: "Alexander Beregalov" <a.beregalov@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: BUG: sleeping function called from invalid context at kernel/rwsem.c:131 XFS? (was: Re: linux-next: Tree for October 17)
-Cc: "Christoph Hellwig" <hch@infradead.org>, xfs@oss.sgi.com,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081017135510.7127c4e7@infradead.org>
+	Mon, 20 Oct 2008 10:58:49 -0400
+Date: Mon, 20 Oct 2008 16:58:39 +0200
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Ye Janboe <janboe.ye@gmail.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Steve VanDeBogart <vandebo-lkml@nerdbox.net>,
+       John Reiser <jreiser@bitwagon.com>
+Subject: Re: What's in kmemcheck.git (for v2.6.28?)
+Message-ID: <20081020145839.GA12863@vanheusden.com>
+References: <20081019201109.GA5058@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a4423d670810170543vd6b4c39p44bf125610d8540@mail.gmail.com>
-	 <20081017164116.GA17375@infradead.org>
-	 <a4423d670810170954h7ca130aaw8895380a4c6b125@mail.gmail.com>
-	 <20081017165738.GA20818@infradead.org>
-	 <a4423d670810171013g5bc19c1cm3f7d9c014ee70349@mail.gmail.com>
-	 <20081017203710.GA27187@infradead.org>
-	 <20081017135510.7127c4e7@infradead.org>
+In-Reply-To: <20081019201109.GA5058@localhost.localdomain>
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Tue Oct 21 16:50:45 CEST 2008
+X-Message-Flag: www.vanheusden.com
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/18 Arjan van de Ven <arjan@infradead.org>:
-> On Fri, 17 Oct 2008 16:37:10 -0400
-> Christoph Hellwig <hch@infradead.org> wrote:
->
->> I just ran the xfs testsuite over linux-next on qemu (i386), and I
->> can't find anything at all.  Really strange.  Let's see if this still
->> there with mondays linux-next, and if yes can you just try the xfs
->> patch from the splitout linux-next patches and see if that alone
->> causes it?
+> git://git.kernel.org/pub/scm/linux/kernel/git/vegard/kmemcheck.git
+> A complete and combined patch (applies to mainline!) may be found at:
+> http://userweb.kernel.org/~vegard/kmemcheck/kmemcheck-preview-20081019.patch
+> Thanks to everybody who helped out! Enjoy :-)
 
-Hi Christoph
+Please consider creating a diff against 2.6.27.*
 
-I have the same result with next-1020 and today's xfs-2.6.git/master
-(
-commit bfd2bd10da76378dc4afd87d7d204a1d3d70b347
-Author: David Chinner <david@fromorbit.com>
-Date:   Fri Oct 17 15:36:23 2008 +1000
-    Inode: Allow external list initialisation
-)
 
-Should I start bisecting?
->>
->> In fact that might be useful for todays linux-next, too.
->> --
->
-> also if you enable lockdep, it tracks where irq's got turned off (with
-> a stacktrace I think) so it would provide some good clues.
+Folkert van Heusden
 
-Yes, lockdep was enabled, but there is no more information than I
-already posted.
+-- 
+Looking for a cheap but fast webhoster with an excellent helpdesk?
+http://keetweej.vanheusden.com/redir.php?id=1001
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
