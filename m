@@ -1,47 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752583AbYJTBFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbYJTBNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752583AbYJTBFy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 21:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbYJTBFr
+	id S1752420AbYJTBNm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 21:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbYJTBNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 21:05:47 -0400
-Received: from ellpspace.math.ualberta.ca ([129.128.207.67]:46829 "EHLO
-	ellpspace.math.ualberta.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751136AbYJTBFq (ORCPT
+	Sun, 19 Oct 2008 21:13:33 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:38073 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751172AbYJTBNc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 21:05:46 -0400
-X-Greylist: delayed 2320 seconds by postgrey-1.27 at vger.kernel.org; Sun, 19 Oct 2008 21:05:46 EDT
-Date: Sun, 19 Oct 2008 18:27:02 -0600
-From: Michal Jaegermann <michal@ellpspace.math.ualberta.ca>
-To: "M. Vefa Bicakci" <bicave@superonline.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Regression in 2.6.27: "irq 18: nobody cared" on Toshiba
-	Satellite A100
-Message-ID: <20081020002702.GA2641@ellpspace.math.ualberta.ca>
-References: <48FB3ED5.60904@superonline.com>
+	Sun, 19 Oct 2008 21:13:32 -0400
+Date: Sun, 19 Oct 2008 21:13:28 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andreas Dilger <adilger@sun.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] ext4: Replace hackish
+	ext4_mb_poll_new_transaction with commit callback
+Message-ID: <20081020011327.GA8162@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andreas Dilger <adilger@sun.com>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1224201763-9637-1-git-send-email-tytso@mit.edu> <20081017060424.GA26192@skywalker> <20081017100214.GB11557@mit.edu> <20081017122552.GC21503@mit.edu> <20081019224904.GF3184@webber.adilger.int>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48FB3ED5.60904@superonline.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081019224904.GF3184@webber.adilger.int>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 19, 2008 at 10:06:13AM -0400, M. Vefa Bicakci wrote:
+On Sun, Oct 19, 2008 at 04:49:28PM -0600, Andreas Dilger wrote:
 > 
-> As you might guess from the subject line, since I started to use 2.6.27-rcX
-> series, I began to get "irq 18: nobody cared" messages in dmesg.
+> The problem with the mechanism you've implemented is that it isn't
+> possible to add any other kind of callback to the journal.  There
+> is only a single callback function, and the entries in the "t_private_list"
+> are all assumed to be "ext4_free_data" structures so even if other
+> users wanted to add callbacks they would only be handled by the
+> release_blocks_on_commit() function.
+> 
+> Is there any reason not to make this more generic and have the callback
+> function pointer embedded in the "ext4_free_data" struct in some way
+> that other callbacks could be registered?  This would still avoid the
+> need to allocate for each of these operations, but would make the
+> callback mechanism more generic and useful.
 
-I have seen something of that sort on x86_64 machine, and only with
-2.6.27-rcX kernels, but there this was "irq 16: nobody cared".  Various
-details are at https://bugzilla.redhat.com/show_bug.cgi?id=466575
+Another possibility would be to simply re-point
+sbi->s_journal->j_commit_callback() to a function like this:
 
-This happens infrequently and unpredictably so I have no idea
-how to reproduce.  I do not have anything connected which is served
-by this interrupt so for me effects were limited to kernel
-complaints.
+static void new_commit_callback_func(journal_t *journal, transaction_t *txn)
+{
+	do_new_callback_stuff(journal, txn)
+	release_blocks_on_commit(journal, txn)
+}
 
-Recently I did not bump into that.
+Or Luster could initialize ext4, and then intercept the callback,
+stash it away in a pointer, and then do this:
 
-   Michal
+static void new_commit_callback_func(journal_t *journal, transaction_t *txn)
+{
+	do_new_callback_stuff(journal, txn)
+	(*orig_value_of_j_commit_callback)(journal, txn)
+}
+
+
+If you want to be even *more* general, we could hang a struct
+list_head off of struct ext4_sb_info which contains the linked list of
+functions to be called, one of which would be release_blocks_on_commit(), 
+and then change sbi->s_journal->j_commit_callback to point to a function
+which iterates over the functions in the list_head
+sbi->s_commit_callback_funcs.
+
+Do you have specific use in mind for Lustre?  Could one of the above
+schemes work for you?
+
+							- Ted
