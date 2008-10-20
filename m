@@ -1,84 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbYJTKNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752806AbYJTKP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752822AbYJTKNZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 06:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYJTKNR
+	id S1752806AbYJTKP5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 06:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbYJTKPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 06:13:17 -0400
-Received: from ti-out-0910.google.com ([209.85.142.191]:27443 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750911AbYJTKNQ (ORCPT
+	Mon, 20 Oct 2008 06:15:50 -0400
+Received: from shells.gnugeneration.com ([66.240.222.126]:47861 "HELO
+	shells.gnugeneration.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750911AbYJTKPt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 06:13:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=V2qUtG0EAArvhQCqzdhvCVlBl1xoeb5nrdHLHJRq71kuDVfwWsA4WokbsqvuizN2uJ
-         pcRqhLQ8a2ebtBlFijWPFyJyOUzbZfRnqT7irbomNBYN31g+t+jxBvCsGXotsvx/qioO
-         xxUzmp+l2XsgRTtIfiz0lMqSEkee/Hj34bIds=
-Message-ID: <2891419e0810200313j5cac8541qff80614e3d784b1b@mail.gmail.com>
-Date: Mon, 20 Oct 2008 19:13:14 +0900
-From: "Dong-Jae Kang" <baramsori72@gmail.com>
-To: "Ryo Tsuruta" <ryov@valinux.co.jp>
-Subject: Re: [PATCH 0/2] dm-ioband: I/O bandwidth controller v1.8.0: Introduction
-Cc: agk@redhat.com, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
-       corsetproject@googlegroups.com
-In-Reply-To: <20081020.180129.193689104.ryov@valinux.co.jp>
+	Mon, 20 Oct 2008 06:15:49 -0400
+From: swivel@shells.gnugeneration.com
+Date: Mon, 20 Oct 2008 05:15:49 -0500
+To: Nicolas Cannasse <ncannasse@motion-twin.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: poll() blocked / packets not received ?
+Message-ID: <20081020101549.GH2811@fc6222126.aspadmin.net>
+References: <48FC4066.9060303@motion-twin.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081017.160950.71109894.ryov@valinux.co.jp>
-	 <2891419e0810200140s3cf9c0a3q228620519ae5f4af@mail.gmail.com>
-	 <20081020.180129.193689104.ryov@valinux.co.jp>
+In-Reply-To: <48FC4066.9060303@motion-twin.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Ryo Tsuruta
+On Mon, Oct 20, 2008 at 10:25:10AM +0200, Nicolas Cannasse wrote:
+> Hello,
+> 
+> We have an application that uses pthreads and (blocking) sockets.
+> 
+> When the application runs with one single thread in separate processes 
+> (using fork()) we don't get any problem.
+> 
+> However when it's multithreaded, we sometimes get stuck while poll()ing 
+> a socket (with events set to POLLIN). Even after the other side of the 
+> connection has closed its side of the connection, we are still stuck 
+> here. Adding a timeout only makes the poll() exit with 0, so we loop.
+> 
+> In case we don't loop the next operation is a recv() which will block as 
+> well (which is consistent).
+> 
+> It seems like nothing is longer received on the socket but it's 
+> difficult to verify with tcpdump since our server outputs something like 
+> 15MB at peek time with 150 hits per seconds.
+> 
+> We have Shorewall installed and enabled, but what seems strange is that 
+> the problem depends on multithreading. It also occurs much more often on 
+> the 4 core machines than on a 2 core ones (both with Hyperthreading 
+> activated). We're using kernel 2.6.20-15-server (#2 SMP) provided by Ubuntu.
+> 
+> Any tip on we could fix that or investigate further would be 
+> appreciated. After one month of debugging we're really out of solution now.
+> 
+> Best,
+> Nicolas
 
-Thank you for fast reply.
+Your usage pattern is a very common one, I highly doubt you are experiencing
+a kernel bug here or many people (including myself) would be complaining.
 
-2008/10/20 Ryo Tsuruta <ryov@valinux.co.jp>:
-> Hi Dong-Jae,
->
->> I am trying to install your new released dm-ioband v1.8.0
->> I/O bandwidth controller v1.8.0 could be adjusted to  the latest
->> stable kernel 2.6.27.1
->> it was good news for me
->> but, I had a problem when I try to patch bio-cgroup files to  stable
->> kernel 2.6.27.1
->> many patch failure and hunk messages were occured.
->>
->> Can you check bio-cgroup patch files against stable kernel 2.6.27.1?
->
-> bio-cgroup patch can apply only to 2.6.27-rc5-mm1 so far.
-> Please use 2.6.27-rc5-mm1 to try both bio-cgroup and dm-ioband,
-> dm-ioband v1.8.0 can also apply to 2.6.27-rc5-mm1.
+Shorewall sounds like it might be suspect, are FIN's not coming in when the
+remote closes?  You can look in the output of netstat to see what state the
+TCP is in, still ESTABLISHED?
 
-OK, I will use kernel-2.6.27-rc5-mm1 as your comments
-
-Well, do you have any plan to upgrade bio-cgroup patches for stable
-latest kernel?
-but, I think it will be not easy job ^^
-Thank you
+Have you tried just disabling the firewall to see if the problem
+disappears?
 
 Regards,
-Dong-Jae Kang
-
-
--- 
--------------------------------------------------------------------------------------------------
-   DONG-JAE, KANG
-   Senior Member of Engineering Staff
-   Internet Platform Research Dept, S/W Content Research Lab
-   Electronics and Telecommunications Research Institute(ETRI)
-   138 Gajeongno, Yuseong-gu, Daejeon, 305-700 KOREA
-   Phone : 82-42-860-1561 Fax : 82-42-860-6699
-   Mobile : 82-10-9919-2353 E-mail : djkang@etri.re.kr (MSN)
--------------------------------------------------------------------------------------------------
+Vito Caputo
