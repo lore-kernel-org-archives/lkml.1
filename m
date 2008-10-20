@@ -1,242 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752647AbYJTPna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752452AbYJTPsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752647AbYJTPna (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 11:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYJTPnV
+	id S1752452AbYJTPsq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 11:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbYJTPsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 11:43:21 -0400
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:60663 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750992AbYJTPnV (ORCPT
+	Mon, 20 Oct 2008 11:48:38 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:24100 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751246AbYJTPsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 11:43:21 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AswEAHtC/EhMQWQ+/2dsb2JhbACBcsEgg2w
-Date: Mon, 20 Oct 2008 11:43:19 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH tip/tracing/markers] markers: simplify
-	marker_set_format()
-Message-ID: <20081020154319.GC27993@Krystal>
-References: <48F59425.40601@cn.fujitsu.com> <20081015134416.GA29281@Krystal> <48FC40B3.8060308@cn.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Oct 2008 11:48:37 -0400
+Date: Mon, 20 Oct 2008 19:48:35 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       "Steven A. Falco" <sfalco@harris.com>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>,
+       i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
+Message-ID: <20081020154835.GA3234@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru> <200810171324.42650.david-b@pacbell.net> <20081017212942.GA1919@oksana.dev.rtsoft.ru> <200810200029.58312.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
 Content-Disposition: inline
-In-Reply-To: <48FC40B3.8060308@cn.fujitsu.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:42:37 up 137 days, 20:23,  9 users,  load average: 0.88, 0.50,
-	0.47
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <200810200029.58312.david-b@pacbell.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
-> Mathieu Desnoyers wrote:
-> > * Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
-> >> current marker_set_format() is complex this patch simplify it, 
-> >> and decrease the overhead of marker_update_probes().
-> >>
-> > 
-> > Yep, I think I did put the format string after the name \0, which was
-> > rather tricky. I agree that such change makes the code more readable at
-> > the expense of doing 2 allocations per marker rather than one, but
-> > readability might be a good thing here.
+On Mon, Oct 20, 2008 at 12:29:57AM -0700, David Brownell wrote:
+[...]
+> > Anyway most of them need some modifications to work with OF...
 > 
-> this fix did help for readability and made code cleanly.
-> but it's still 1 allocation per marker_entry when format != NULL.
-> the previous benefit is not lost.
+> The changes I saw were just to cope with not having
+> the system-specific platform_data provided:  don't
+> fail if that pointer is NULL, and arrange for dynamic
+> allocation of some GPIO numbers.
 > 
+> With OpenFirmware, presumably the implication is that
+> the relevant data is in the OF device tree...
 
-Yes, but the common case is to have format != NULL, so it's 2 alloc per
-marker. :)
+Yes. Some data is in the device tree.
 
-Mathieu
+> I think that it *barely* makes sense to allow the chips
+> to bind to drivers without platform data when there's
+> not even OF in the environment. ONLY in the case where
+> the GPIOs are exported through sysfs, in fact, since
+> otherwise there's no way for other system components
+> to know those GPIOs even exist!!  And even that seems
+> pretty marginal to me...
 
+Platform data is a completely different story. And yes, we can't
+handle it properly with the device tree. By "properly" I mean without
+adding an explicit OF stuff to the drivers, i.e. we should handle the
+pdata transparently to the existing drivers.
 
-> Thanks, Lai
+I quite like the bus notifiers approach:
+
+http://lkml.org/lkml/2008/6/5/209  (mmc_spi example)
+
+But it doesn't work as a module (i.e. OF-specific bits should be
+always in-kernel).
+
+[...]
+> > If you don't like it, I can readily implement hooks for
+> > gpiochip_{add,remove}().
 > 
-> > 
-> > Thanks !
-> > 
-> > Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > 
-> >> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> >> ---
-> >> diff --git a/kernel/marker.c b/kernel/marker.c
-> >> index e49a9c5..ef43c86 100644
-> >> --- a/kernel/marker.c
-> >> +++ b/kernel/marker.c
-> >> @@ -65,6 +65,7 @@ struct marker_entry {
-> >>  	void *oldptr;
-> >>  	int rcu_pending;
-> >>  	unsigned char ptype:1;
-> >> +	unsigned char format_allocated:1;
-> >>  	char name[0];	/* Contains name'\0'format'\0' */
-> >>  };
-> >>  
-> >> @@ -415,6 +416,7 @@ static struct marker_entry *add_marker(const char *name, const char *format)
-> >>  	e->single.probe_private = NULL;
-> >>  	e->multi = NULL;
-> >>  	e->ptype = 0;
-> >> +	e->format_allocated = 0;
-> >>  	e->refcount = 0;
-> >>  	e->rcu_pending = 0;
-> >>  	hlist_add_head(&e->hlist, head);
-> >> @@ -446,6 +448,8 @@ static int remove_marker(const char *name)
-> >>  	if (e->single.func != __mark_empty_function)
-> >>  		return -EBUSY;
-> >>  	hlist_del(&e->hlist);
-> >> +	if (e->format_allocated)
-> >> +		kfree(e->format);
-> >>  	/* Make sure the call_rcu has been executed */
-> >>  	if (e->rcu_pending)
-> >>  		rcu_barrier_sched();
-> >> @@ -456,57 +460,34 @@ static int remove_marker(const char *name)
-> >>  /*
-> >>   * Set the mark_entry format to the format found in the element.
-> >>   */
-> >> -static int marker_set_format(struct marker_entry **entry, const char *format)
-> >> +static int marker_set_format(struct marker_entry *entry, const char *format)
-> >>  {
-> >> -	struct marker_entry *e;
-> >> -	size_t name_len = strlen((*entry)->name) + 1;
-> >> -	size_t format_len = strlen(format) + 1;
-> >> -
-> >> -
-> >> -	e = kmalloc(sizeof(struct marker_entry) + name_len + format_len,
-> >> -			GFP_KERNEL);
-> >> -	if (!e)
-> >> +	entry->format = kstrdup(format, GFP_KERNEL);
-> >> +	if (!entry->format)
-> >>  		return -ENOMEM;
-> >> -	memcpy(&e->name[0], (*entry)->name, name_len);
-> >> -	e->format = &e->name[name_len];
-> >> -	memcpy(e->format, format, format_len);
-> >> -	if (strcmp(e->format, MARK_NOARGS) == 0)
-> >> -		e->call = marker_probe_cb_noarg;
-> >> -	else
-> >> -		e->call = marker_probe_cb;
-> >> -	e->single = (*entry)->single;
-> >> -	e->multi = (*entry)->multi;
-> >> -	e->ptype = (*entry)->ptype;
-> >> -	e->refcount = (*entry)->refcount;
-> >> -	e->rcu_pending = 0;
-> >> -	hlist_add_before(&e->hlist, &(*entry)->hlist);
-> >> -	hlist_del(&(*entry)->hlist);
-> >> -	/* Make sure the call_rcu has been executed */
-> >> -	if ((*entry)->rcu_pending)
-> >> -		rcu_barrier_sched();
-> >> -	kfree(*entry);
-> >> -	*entry = e;
-> >> +	entry->format_allocated = 1;
-> >> +
-> >>  	trace_mark(core_marker_format, "name %s format %s",
-> >> -			e->name, e->format);
-> >> +			entry->name, entry->format);
-> >>  	return 0;
-> >>  }
-> >>  
-> >>  /*
-> >>   * Sets the probe callback corresponding to one marker.
-> >>   */
-> >> -static int set_marker(struct marker_entry **entry, struct marker *elem,
-> >> +static int set_marker(struct marker_entry *entry, struct marker *elem,
-> >>  		int active)
-> >>  {
-> >>  	int ret;
-> >> -	WARN_ON(strcmp((*entry)->name, elem->name) != 0);
-> >> +	WARN_ON(strcmp(entry->name, elem->name) != 0);
-> >>  
-> >> -	if ((*entry)->format) {
-> >> -		if (strcmp((*entry)->format, elem->format) != 0) {
-> >> +	if (entry->format) {
-> >> +		if (strcmp(entry->format, elem->format) != 0) {
-> >>  			printk(KERN_NOTICE
-> >>  				"Format mismatch for probe %s "
-> >>  				"(%s), marker (%s)\n",
-> >> -				(*entry)->name,
-> >> -				(*entry)->format,
-> >> +				entry->name,
-> >> +				entry->format,
-> >>  				elem->format);
-> >>  			return -EPERM;
-> >>  		}
-> >> @@ -522,34 +503,33 @@ static int set_marker(struct marker_entry **entry, struct marker *elem,
-> >>  	 * pass from a "safe" callback (with argument) to an "unsafe"
-> >>  	 * callback (does not set arguments).
-> >>  	 */
-> >> -	elem->call = (*entry)->call;
-> >> +	elem->call = entry->call;
-> >>  	/*
-> >>  	 * Sanity check :
-> >>  	 * We only update the single probe private data when the ptr is
-> >>  	 * set to a _non_ single probe! (0 -> 1 and N -> 1, N != 1)
-> >>  	 */
-> >>  	WARN_ON(elem->single.func != __mark_empty_function
-> >> -		&& elem->single.probe_private
-> >> -		!= (*entry)->single.probe_private &&
-> >> -		!elem->ptype);
-> >> -	elem->single.probe_private = (*entry)->single.probe_private;
-> >> +		&& elem->single.probe_private != entry->single.probe_private
-> >> +		&& !elem->ptype);
-> >> +	elem->single.probe_private = entry->single.probe_private;
-> >>  	/*
-> >>  	 * Make sure the private data is valid when we update the
-> >>  	 * single probe ptr.
-> >>  	 */
-> >>  	smp_wmb();
-> >> -	elem->single.func = (*entry)->single.func;
-> >> +	elem->single.func = entry->single.func;
-> >>  	/*
-> >>  	 * We also make sure that the new probe callbacks array is consistent
-> >>  	 * before setting a pointer to it.
-> >>  	 */
-> >> -	rcu_assign_pointer(elem->multi, (*entry)->multi);
-> >> +	rcu_assign_pointer(elem->multi, entry->multi);
-> >>  	/*
-> >>  	 * Update the function or multi probe array pointer before setting the
-> >>  	 * ptype.
-> >>  	 */
-> >>  	smp_wmb();
-> >> -	elem->ptype = (*entry)->ptype;
-> >> +	elem->ptype = entry->ptype;
-> >>  	elem->state = active;
-> >>  
-> >>  	return 0;
-> >> @@ -593,8 +573,7 @@ void marker_update_probe_range(struct marker *begin,
-> >>  	for (iter = begin; iter < end; iter++) {
-> >>  		mark_entry = get_marker(iter->name);
-> >>  		if (mark_entry) {
-> >> -			set_marker(&mark_entry, iter,
-> >> -					!!mark_entry->refcount);
-> >> +			set_marker(mark_entry, iter, !!mark_entry->refcount);
-> >>  			/*
-> >>  			 * ignore error, continue
-> >>  			 */
-> >> @@ -656,7 +635,7 @@ int marker_probe_register(const char *name, const char *format,
-> >>  			ret = PTR_ERR(entry);
-> >>  	} else if (format) {
-> >>  		if (!entry->format)
-> >> -			ret = marker_set_format(&entry, format);
-> >> +			ret = marker_set_format(entry, format);
-> >>  		else if (strcmp(entry->format, format))
-> >>  			ret = -EPERM;
-> >>  	}
-> >>
-> >>
-> >>
-> >>
-> >>
-> > 
-> 
-> 
+> It seems a better way to a clean solution, IMO.
+
+Ok. I will do it.
+
+[...]
+> Did you look at providing chip-aware OF glue drivers
+> for this stuff?  Doing stuff like just turn the OF
+> device properties into the right platform_data, and
+> maybe runing FORTH bytecodes to do other configuration
+> magic needed...
+
+Yes. Few times already. To make the glue, every driver needs
+some modifications, and it is always triggers huge discussions
+about how to exactly refactor the driver to make it work with
+the OF.
+
+http://lkml.org/lkml/2008/5/23/297 (again mmc_spi example).
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
