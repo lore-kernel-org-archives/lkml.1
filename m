@@ -1,87 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbYJTVjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbYJTVoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756606AbYJTVjz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 17:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756489AbYJTVip
+	id S1755475AbYJTVoX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 17:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbYJTVoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 17:38:45 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:57611 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756468AbYJTVij (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 17:38:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=YGnVIJ/vJ3cGzhCwHGRu8gtyF6ghSZvOlYqVaOWjgy7snfE0VE6aTY8siniDNkT+8/
-         54rLoGAXEpUfVyJh0sO43I743nH5vLz4FdNKxf0RaGQ/KcoijcoEq1uYln7YO/RaG5u/
-         JVIC4B0izEO2G6SuhSX9TAye8uKpXhpemFUi4=
-Message-ID: <1f1b08da0810201438g6a109af5i75b34841462b655d@mail.gmail.com>
-Date: Mon, 20 Oct 2008 14:38:37 -0700
-From: "john stultz" <johnstul@us.ibm.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [RFC patch 15/15] LTTng timestamp x86
-Cc: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "David Miller" <davem@davemloft.net>, "Ingo Molnar" <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <alpine.LFD.2.00.0810201256350.3518@nehalem.linux-foundation.org>
+	Mon, 20 Oct 2008 17:44:14 -0400
+Received: from kroah.org ([198.145.64.141]:35127 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752473AbYJTVoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 17:44:14 -0400
+Date: Mon, 20 Oct 2008 14:40:18 -0700
+From: Greg KH <greg@kroah.com>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: mtk.manpages@gmail.com, linux-kernel@vger.kernel.org,
+       linux-api@vger.kernel.org
+Subject: Re: [PATCH] Document kernel taint flags properly
+Message-ID: <20081020214018.GA28903@kroah.com>
+References: <20081017225515.GA14133@kroah.com> <cfd18e0f0810180151v232f623pdbf0f12cad6532d6@mail.gmail.com> <20081020204318.GB21131@kroah.com> <48FCFA30.9000707@xenotime.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081016232729.699004293@polymtl.ca>
-	 <20081016234657.837704867@polymtl.ca>
-	 <alpine.LFD.2.00.0810161701470.3288@nehalem.linux-foundation.org>
-	 <20081017012835.GA30195@Krystal>
-	 <57C9024A16AD2D4C97DC78E552063EA3532D455F@orsmsx505.amr.corp.intel.com>
-	 <20081017172515.GA9639@goodmis.org>
-	 <57C9024A16AD2D4C97DC78E552063EA3533458AC@orsmsx505.amr.corp.intel.com>
-	 <20081017184215.GB9874@Krystal>
-	 <alpine.LFD.2.00.0810201256350.3518@nehalem.linux-foundation.org>
-X-Google-Sender-Auth: cd0221c393eb41ca
+In-Reply-To: <48FCFA30.9000707@xenotime.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 20, 2008 at 1:10 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
-> I think it's a mistake for us to maintain a single clock for
-> gettimeofday() (well, "getnstimeofday" and the whole "clocksource_read()"
-> crud to be technically correct). And sure, I bet clocksource_read() can do
-> various per-CPU things and try to do that, but it's complex and pretty
-> generic code, and as far as I know none of the clocksources have even
-> tried. The TSC clocksource read certainly does not (it just does a very
-> similar horrible "at least don't go backwards" crud that the LTTng patch
-> suggested).
->
-> So I think we should make "xtime" be a per-CPU thing, and add support for
-> per-CPU clocksources. And screw that insane "mark_tsc_unstable()" thing.
->
-> And if we did it well, we migth be able to get good timestamps that way
-> too.
+On Mon, Oct 20, 2008 at 02:37:52PM -0700, Randy Dunlap wrote:
+> Greg KH wrote:
+> > On Sat, Oct 18, 2008 at 03:51:11AM -0500, Michael Kerrisk wrote:
+> >   
+> >> Greg,
+> >>
+> >> Small corrections below.
+> >>
+> >> On Fri, Oct 17, 2008 at 5:55 PM, Greg KH <greg@kroah.com> wrote:
+> >>     
+> >>> From: Greg Kroah-Hartman <gregkh@suse.de>
+> >>>
+> >>> This fills in the documentation for all of the current kernel taint
+> >>> flags, and fixes the number for TAINT_CRAP, which was incorrectly
+> >>> described.
+> >>>
+> >>> Cc: Michael Kerrisk <mtk.manpages@gmail.com>
+> >>> Cc: Randy Dunlap <rdunlap@xenotime.net>
+> >>> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> >>>
+> >>> ---
+> >>>  Documentation/sysctl/kernel.txt |   24 +++++++++++++++++-------
+> >>>  1 file changed, 17 insertions(+), 7 deletions(-)
+> >>>
+> >>> --- a/Documentation/sysctl/kernel.txt
+> >>> +++ b/Documentation/sysctl/kernel.txt
+> >>> @@ -363,11 +363,21 @@ tainted:
+> >>>  Non-zero if the kernel has been tainted.  Numeric values, which
+> >>>  can be ORed together:
+> >>>
+> >>> -  1 - A module with a non-GPL license has been loaded, this
+> >>> -      includes modules with no license.
+> >>> -      Set by modutils >= 2.4.9 and module-init-tools.
+> >>> -  2 - A module was force loaded by insmod -f.
+> >>> -      Set by modutils >= 2.4.9 and module-init-tools.
+> >>> -  4 - Unsafe SMP processors: SMP with CPUs not designed for SMP.
+> >>> - 64 - A module from drivers/staging was loaded.
+> >>> +   1 - A module with a non-GPL license has been loaded, this
+> >>> +       includes modules with no license.
+> >>> +       Set by modutils >= 2.4.9 and module-init-tools.
+> >>> +   2 - A module was force loaded by insmod -f.
+> >>> +       Set by modutils >= 2.4.9 and module-init-tools.
+> >>> +   4 - Unsafe SMP processors: SMP with CPUs not designed for SMP.
+> >>> +   8 - A module was forcefully unloaded from the system by rmmod -f.
+> >>>       
+> >> s/forcefully/forcibly/
+> >>
+> >>     
+> >>> +  16 - A hardware machine check error occured on the system.
+> >>>       
+> >> occurred
+> >>     
+> >
+> > Thanks, I've updated this in my version.
+> >
+> > Randy, I can send this through my tree, is that ok?  Or do you want it
+> > to go through yours?
+> >   
+> You please go ahead with it.
 
-Personally I'd been hoping that the experiments in the trace
-timestamping code would provide a safe area of experimentation before
-we adapt it to the TSC clocksource implementation for
-getnstimeofday(). Earlier I know Andi and Jiri were working on such a
-per-cpu TSC clocksource, but I don't know where it ended up.
+Will do.
 
-I'm not quite sure I followed your per-cpu xtime thoughts.  Could you
-explain further your thinking as to why the entire timekeeping
-subsystem should be per-cpu instead of just keeping that back in the
-arch-specific clocksource implementation?  In other words, why keep
-things synced at the nanosecond level instead of keeping the per-cpu
-TSC synched at the cycle level?
+thanks,
 
-thanks
--john
+greg k-h
