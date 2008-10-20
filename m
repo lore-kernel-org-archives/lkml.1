@@ -1,48 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754394AbYJTTGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753685AbYJTTLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754394AbYJTTGF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 15:06:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbYJTTFy
+	id S1753685AbYJTTLs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 15:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbYJTTLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 15:05:54 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48779 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751981AbYJTTFx (ORCPT
+	Mon, 20 Oct 2008 15:11:40 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:37551 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751981AbYJTTLj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 15:05:53 -0400
-Message-ID: <48FCD585.4050107@zytor.com>
-Date: Mon, 20 Oct 2008 12:01:25 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ian Campbell <Ian.Campbell@eu.citrix.com>
-CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, maluta_tiago@yahoo.com.br,
-       lguest@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	Mon, 20 Oct 2008 15:11:39 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: n0ano@n0ano.com
+Subject: Re: [PATCH] Enable console on PCI serial devices
+Date: Mon, 20 Oct 2008 13:11:05 -0600
+User-Agent: KMail/1.9.9
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, donald.d.dugger@intel.com,
        linux-kernel@vger.kernel.org
-Subject: Re: [Lguest] lguest: unhandled trap
-References: <713731.28571.qm@web50701.mail.re2.yahoo.com>	 <200810201452.04932.rusty@rustcorp.com.au> <20081020072236.GD12131@elte.hu>	 <48FC36B9.6000704@goop.org>  <20081020075333.GC798@elte.hu> <1224494055.9053.192.camel@zakaz.uk.xensource.com>
-In-Reply-To: <1224494055.9053.192.camel@zakaz.uk.xensource.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+References: <200810142231.m9EMV95O002974@los-vmm.sc.intel.com> <200810201111.08703.bjorn.helgaas@hp.com> <20081020174351.GK14490@xolotl.n0ano.com>
+In-Reply-To: <20081020174351.GK14490@xolotl.n0ano.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810201311.06602.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Campbell wrote:
+On Monday 20 October 2008 11:43:51 am n0ano@n0ano.com wrote:
+> On Mon, Oct 20, 2008 at 11:11:07AM -0600, Bjorn Helgaas wrote:
+> >... 
+> > It doesn't bother me that the number is large.  It's only a factor
+> > of 16 bigger than the baud rate.  It is sort of magic, but on the
+> > other hand, the number is often printed on a part on the board, so
+> > it's easy to determine, and fairly easy to document.  If you've
+> > lost the box with the marketing messages on it, I'd argue that it's
+> > easier to determine the clock rate than the fastest baud rate.
+> > 
+> > To me it seems more confusing to specify two baud rates: the one
+> > you want to use, and the fastest one the UART supports.
 > 
-> Wasn't there some concern about BIOSes which don't correctly reserve
-> their DMI tables? Or don't even have e820 maps? H. Peter once said:
+> Well, how about consistency with the current serial driver.  The
+> current driver uses base baud, as evidenced by this code from
+> `drivers/serial/8250_pci.c':
 > 
->> It's pretty standard for 0xf0000...0x100000 to be marked RESERVED in
->> E820 on real hardware (including the system I'm typing on right now.)
->> It is so marked to indicate that hardware cannot be mapped into that
->> space.  However, you can't rely on this fact -- heck, you can't rely on
->> E820 even existing on a real machine.  I have specimens of real-life
->> machines that go both ways.
+> static struct pciserial_board pci_boards[] __devinitdata = {
+>         [pbn_default] = {
+>                 .flags          = FL_BASE0,
+>                 .num_ports      = 1,
+>                 .base_baud      = 115200,
+>                 .uart_offset    = 8,
+>         },
 > 
+> I think it's even more important to follow what the driver is
+> doing.  (If I'd lost the bix I would get the PCI IDs and see
+> what the driver is doing for my unknown card :-)
 
-Not only that, but the ACPI spec states explicitly that the ISA magic 
-areas should be handled without relying on E820.
+Ideally we could put something in Documentation/kernel-parameters.txt
+that's useful for people who can't or don't want to look at
+the source.
 
-	-hpa
+Bjorn
