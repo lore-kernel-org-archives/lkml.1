@@ -1,183 +1,347 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689AbYJTLAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753069AbYJTLCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752689AbYJTLAt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 07:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbYJTLAl
+	id S1753069AbYJTLCi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 07:02:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbYJTLCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 07:00:41 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42920 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750911AbYJTLAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 07:00:40 -0400
-Date: Mon, 20 Oct 2008 13:00:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, linux-pci@vger.kernel.org,
-       yhlu.kernel@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] x86, ioremap: use %pR in printk
-Message-ID: <20081020110018.GA24579@elte.hu>
-References: <20081020040823.871BDDDDEC@ozlabs.org> <20081020071203.GB12131@elte.hu> <1224491682.7654.135.camel@pasglop> <20081020090502.GB31710@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 20 Oct 2008 07:02:30 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:38650 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751516AbYJTLC3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 07:02:29 -0400
+Date: Mon, 20 Oct 2008 13:02:26 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Andrey Mirkin <major@openvz.org>
+Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [PATCH 05/10] Introduce function to dump process
+Message-ID: <20081020110226.GP15171@hawkmoon.kerlabs.com>
+Reply-To: Louis.Rilling@kerlabs.com
+References: <1224285098-573-1-git-send-email-major@openvz.org> <1224285098-573-2-git-send-email-major@openvz.org> <1224285098-573-3-git-send-email-major@openvz.org> <1224285098-573-4-git-send-email-major@openvz.org> <1224285098-573-5-git-send-email-major@openvz.org> <1224285098-573-6-git-send-email-major@openvz.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-18226-1224500403-0001-2"
 Content-Disposition: inline
-In-Reply-To: <20081020090502.GB31710@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+In-Reply-To: <1224285098-573-6-git-send-email-major@openvz.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+--=_bohort-18226-1224500403-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > No, you don't pass it a phys_addr_t or a resource_size_t, you pass 
-> > it a struct resource *
-> 
-> oops ... i only looked at:
-> 
-> +       char sym[4*sizeof(resource_size_t) + 8];
-> 
-> and assumed that it was a resource_size_t printout format :-/
-> 
-> while printing out ranges is useful too, it's by far not the only 
-> source of ugliness all around resource_size_t.
+Hi,
 
-so how about something like the two patches below (ontop of Linus's 
-patch): the first patch introduces a "small" resource pointer printout 
-format: %pr - the little brother of %pR.
+On Sat, Oct 18, 2008 at 03:11:33AM +0400, Andrey Mirkin wrote:
+> Functions to dump task struct, fpu state and registers are added.
+> All IDs are saved from the POV of process (container) namespace.
 
-The output format is [0x00001234] - minimum width is 8.
+Just a couple of little comments, in case this series should keep on living.
 
-The second patch takes advantage of it in ioremap.c.
+[...]
 
-Not tested yet but should work. One thing that would be nice is to 
-extend it to phys_addr_t as well. Right now there's no guarantee that 
-sizeof(resource_size_t) == sizeof(phys_addr_t).
+> diff --git a/checkpoint/cpt_process.c b/checkpoint/cpt_process.c
+> new file mode 100644
+> index 0000000..58f608d
+> --- /dev/null
+> +++ b/checkpoint/cpt_process.c
+> @@ -0,0 +1,236 @@
+> +/*
+> + *  Copyright (C) 2008 Parallels, Inc.
+> + *
+> + *  Author: Andrey Mirkin <major@openvz.org>
+> + *
+> + *  This program is free software; you can redistribute it and/or
+> + *  modify it under the terms of the GNU General Public License as
+> + *  published by the Free Software Foundation, version 2 of the
+> + *  License.
+> + *
+> + */
+> +
+> +#include <linux/sched.h>
+> +#include <linux/fs.h>
+> +#include <linux/file.h>
+> +#include <linux/version.h>
+> +#include <linux/nsproxy.h>
+> +
+> +#include "checkpoint.h"
+> +#include "cpt_image.h"
+> +
+> +static unsigned int encode_task_flags(unsigned int task_flags)
+> +{
+> +	unsigned int flags =3D 0;
+> +
+> +	if (task_flags & PF_EXITING)
+> +		flags |=3D (1 << CPT_PF_EXITING);
+> +	if (task_flags & PF_FORKNOEXEC)
+> +		flags |=3D (1 << CPT_PF_FORKNOEXEC);
+> +	if (task_flags & PF_SUPERPRIV)
+> +		flags |=3D (1 << CPT_PF_SUPERPRIV);
+> +	if (task_flags & PF_DUMPCORE)
+> +		flags |=3D (1 << CPT_PF_DUMPCORE);
+> +	if (task_flags & PF_SIGNALED)
+> +		flags |=3D (1 << CPT_PF_SIGNALED);
+> +	if (task_flags & PF_USED_MATH)
+> +		flags |=3D (1 << CPT_PF_USED_MATH);
+> +=09
+> +	return flags;
+> +	=09
+> +}
+> +
+> +int cpt_dump_task_struct(struct task_struct *tsk, struct cpt_context *ct=
+x)
+> +{
+> +	struct cpt_task_image *t;
+> +	int i;
+> +	int err;
+> +
+> +	t =3D kzalloc(sizeof(*t), GFP_KERNEL);
+> +	if (!t)
+> +		return -ENOMEM;
+> +
+> +	t->cpt_len =3D sizeof(*t);
+> +	t->cpt_type =3D CPT_OBJ_TASK;
+> +	t->cpt_hdrlen =3D sizeof(*t);
+> +	t->cpt_content =3D CPT_CONTENT_ARRAY;
+> +
+> +	t->cpt_state =3D tsk->state;
+> +	t->cpt_flags =3D encode_task_flags(tsk->flags);
+> +	t->cpt_exit_code =3D tsk->exit_code;
+> +	t->cpt_exit_signal =3D tsk->exit_signal;
+> +	t->cpt_pdeath_signal =3D tsk->pdeath_signal;
+> +	t->cpt_pid =3D task_pid_nr_ns(tsk, ctx->nsproxy->pid_ns);
+> +	t->cpt_tgid =3D task_tgid_nr_ns(tsk, ctx->nsproxy->pid_ns);
+> +	t->cpt_ppid =3D tsk->parent ?
+> +		task_pid_nr_ns(tsk->parent, ctx->nsproxy->pid_ns) : 0;
+> +	t->cpt_rppid =3D tsk->real_parent ?
+> +		task_pid_nr_ns(tsk->real_parent, ctx->nsproxy->pid_ns) : 0;
+> +	t->cpt_pgrp =3D task_pgrp_nr_ns(tsk, ctx->nsproxy->pid_ns);
+> +	t->cpt_session =3D task_session_nr_ns(tsk, ctx->nsproxy->pid_ns);
+> +	t->cpt_old_pgrp =3D 0;
+> +	if (tsk->signal->tty_old_pgrp)
+> +		t->cpt_old_pgrp =3D pid_vnr(tsk->signal->tty_old_pgrp);
+> +	t->cpt_leader =3D tsk->group_leader ? task_pid_vnr(tsk->group_leader) :=
+ 0;
 
-What do you think? Passing it by reference makes it somewhat ugly [and 
-restricts it to lvalues], but that's the safest we can get at the moment 
-i guess, as it guarantees followup vararg parameter correctness, because 
-gcc does not check these extensions.
+Why pid_vnr() here, and task_*_nr_ns() above? According to the introducing
+comment, I'd expect something like pid_nr_ns(tsk->signal->tty_old_pgrp,
+tsk->nsproxy->pid_ns), and the same for tsk->group_leader.
 
-Worst-case we get gibberish output if it's used incorrectly - but we 
-dont get a kernel security hole if a %s follows it in the format string 
-and an attacker can control some of the parameters, etc.
+IIUC, pid_vnr() is correct only if ctx->nsproxy->pid_ns =3D=3D tsk->nsproxy=
+->pid_ns
+=3D=3D current->nsproxy->pid_ns, and I expect current to live in a differen=
+t pid_ns.
 
-	Ingo
+Comments?
 
----------------->
->From bec931cb306f0901b9e2017c845d5ad6016574e4 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 20 Oct 2008 12:39:17 +0200
-Subject: [PATCH] vsprintf: implement %pr to print resource_size_t
+> +	t->cpt_utime =3D tsk->utime;
+> +	t->cpt_stime =3D tsk->stime;
+> +	t->cpt_utimescaled =3D tsk->utimescaled;
+> +	t->cpt_stimescaled =3D tsk->stimescaled;
+> +	t->cpt_gtime =3D tsk->gtime;
+> +	t->cpt_prev_utime =3D tsk->prev_utime;
+> +	t->cpt_prev_stime =3D tsk->prev_stime;
+> +	t->cpt_nvcsw =3D tsk->nvcsw;
+> +	t->cpt_nivcsw =3D tsk->nivcsw;
+> +	t->cpt_start_time =3D cpt_timespec_export(&tsk->start_time);
+> +	t->cpt_real_start_time =3D cpt_timespec_export(&tsk->real_start_time);
+> +	t->cpt_min_flt =3D tsk->min_flt;
+> +	t->cpt_maj_flt =3D tsk->maj_flt;
+> +	memcpy(t->cpt_comm, tsk->comm, TASK_COMM_LEN);
+> +	for (i =3D 0; i < GDT_ENTRY_TLS_ENTRIES; i++) {
+> +		t->cpt_tls[i] =3D (((u64)tsk->thread.tls_array[i].b) << 32) +
+> +			tsk->thread.tls_array[i].a;
+> +	}
+> +	/* TODO: encode thread flags and status like task flags */
+> +	t->cpt_thrflags =3D task_thread_info(tsk)->flags & ~(1<<TIF_FREEZE);
+> +	t->cpt_thrstatus =3D task_thread_info(tsk)->status;
+> +	t->cpt_user =3D tsk->user->uid;
+> +	t->cpt_uid =3D tsk->uid;
+> +	t->cpt_euid =3D tsk->euid;
+> +	t->cpt_suid =3D tsk->suid;
+> +	t->cpt_fsuid =3D tsk->fsuid;
+> +	t->cpt_gid =3D tsk->gid;
+> +	t->cpt_egid =3D tsk->egid;
+> +	t->cpt_sgid =3D tsk->sgid;
+> +	t->cpt_fsgid =3D tsk->fsgid;
+> +
+> +	err =3D ctx->write(t, sizeof(*t), ctx);
+> +
+> +	kfree(t);
+> +	return err;
+> +}
+> +
+> +static int cpt_dump_fpustate(struct task_struct *tsk, struct cpt_context=
+ *ctx)
+> +{
+> +	struct cpt_obj_bits hdr;
+> +	int err;
+> +	int content;
+> +	unsigned long size;
+> +
+> +	content =3D CPT_CONTENT_X86_FPUSTATE;
+> +	size =3D sizeof(struct i387_fxsave_struct);
+> +#ifndef CONFIG_X86_64
+> +	if (!cpu_has_fxsr) {
+> +		size =3D sizeof(struct i387_fsave_struct);
+> +		content =3D CPT_CONTENT_X86_FPUSTATE_OLD;
+> +	}
+> +#endif
+> +
+> +	hdr.cpt_len =3D sizeof(hdr) + size;
+> +	hdr.cpt_type =3D CPT_OBJ_BITS;
+> +	hdr.cpt_hdrlen =3D sizeof(hdr);
+> +	hdr.cpt_content =3D content;
+> +	hdr.cpt_size =3D size;
+> +	err =3D ctx->write(&hdr, sizeof(hdr), ctx);
+> +	if (!err)
+> +		ctx->write(tsk->thread.xstate, size, ctx);
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- lib/vsprintf.c |   20 ++++++++++++++++++++
- 1 files changed, 20 insertions(+), 0 deletions(-)
+Should check the error code of the line above, right?
 
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index a013bbc..ddcaa6e 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -581,6 +581,21 @@ static char *resource_string(char *buf, char *end, struct resource *res, int fie
- 	return string(buf, end, sym, field_width, precision, flags);
- }
- 
-+static char *resource_size_string(char *buf, char *end, resource_size_t *val, int field_width, int precision, int flags)
-+{
-+	/* room for the actual number, the one "0x", [, ] and the final zero */
-+	char sym[2*sizeof(resource_size_t) + 5];
-+	char *p = sym, *pend = sym + sizeof(sym);
-+	int size = 8;
-+
-+	*p++ = '[';
-+	p = number(p, pend, *val, 16, size, -1, SPECIAL | SMALL | ZEROPAD);
-+	*p++ = ']';
-+	*p = 0;
-+
-+	return string(buf, end, sym, field_width, precision, flags);
-+}
-+
- /*
-  * Show a '%p' thing.  A kernel extension is that the '%p' is followed
-  * by an extra set of alphanumeric characters that are extended format
-@@ -592,6 +607,8 @@ static char *resource_string(char *buf, char *end, struct resource *res, int fie
-  * - 'S' For symbolic direct pointers
-  * - 'R' For a struct resource pointer, it prints the range of
-  *       addresses (not the name nor the flags)
-+ * - 'r' For a resource_size_t pointer, it prints the resource
-+ *       addresses (in %pR format)
-  *
-  * Note: The difference between 'S' and 'F' is that on ia64 and ppc64
-  * function pointers are really function descriptors, which contain a
-@@ -607,6 +624,8 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field
- 		return symbol_string(buf, end, ptr, field_width, precision, flags);
- 	case 'R':
- 		return resource_string(buf, end, ptr, field_width, precision, flags);
-+	case 'r':
-+		return resource_size_string(buf, end, ptr, field_width, precision, flags);
- 	}
- 	flags |= SMALL;
- 	if (field_width == -1) {
-@@ -627,6 +646,7 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field
-  * %pS output the name of a text symbol
-  * %pF output the name of a function pointer
-  * %pR output the address range in a struct resource
-+ * %pr output the address in a pointer to a resource_size_t type
-  *
-  * The return value is the number of characters which would
-  * be generated for the given input, excluding the trailing
+> +	return err;
+> +}
+> +
+> +static u32 encode_segment(u32 segreg)
+> +{
+> +	segreg &=3D 0xFFFF;
+> +
+> +	if (segreg =3D=3D 0)
+> +		return CPT_SEG_ZERO;
+> +	if ((segreg & 3) !=3D 3) {
+> +		eprintk("Invalid RPL of a segment reg %x\n", segreg);
+> +		return CPT_SEG_ZERO;
+> +	}
+> +
+> +	/* LDT descriptor, it is just an index to LDT array */
+> +	if (segreg & 4)
+> +		return CPT_SEG_LDT + (segreg >> 3);
+> +
+> +	/* TLS descriptor. */
+> +	if ((segreg >> 3) >=3D GDT_ENTRY_TLS_MIN &&
+> +			(segreg >> 3) <=3D GDT_ENTRY_TLS_MAX)
+> +		return CPT_SEG_TLS1 + ((segreg>>3) - GDT_ENTRY_TLS_MIN);
+> +
+> +	/* One of standard desriptors */
+> +#ifdef CONFIG_X86_64
+> +	if (segreg =3D=3D __USER32_DS)
+> +		return CPT_SEG_USER32_DS;
+> +	if (segreg =3D=3D __USER32_CS)
+> +		return CPT_SEG_USER32_CS;
+> +	if (segreg =3D=3D __USER_DS)
+> +		return CPT_SEG_USER64_DS;
+> +	if (segreg =3D=3D __USER_CS)
+> +		return CPT_SEG_USER64_CS;
+> +#else
+> +	if (segreg =3D=3D __USER_DS)
+> +		return CPT_SEG_USER32_DS;
+> +	if (segreg =3D=3D __USER_CS)
+> +		return CPT_SEG_USER32_CS;
+> +#endif
+> +	eprintk("Invalid segment reg %x\n", segreg);
+> +	return CPT_SEG_ZERO;
+> +}
+> +
+> +static int cpt_dump_registers(struct task_struct *tsk, struct cpt_contex=
+t *ctx)
+> +{
+> +	struct cpt_x86_regs ri;
+> +	struct pt_regs *pt_regs;
+> +
+> +	ri.cpt_len =3D sizeof(ri);
+> +	ri.cpt_type =3D CPT_OBJ_X86_REGS;
+> +	ri.cpt_hdrlen =3D sizeof(ri);
+> +	ri.cpt_content =3D CPT_CONTENT_VOID;
+> +
+> +	ri.cpt_debugreg[0] =3D tsk->thread.debugreg0;
+> +	ri.cpt_debugreg[1] =3D tsk->thread.debugreg1;
+> +	ri.cpt_debugreg[2] =3D tsk->thread.debugreg2;
+> +	ri.cpt_debugreg[3] =3D tsk->thread.debugreg3;
+> +	ri.cpt_debugreg[4] =3D 0;
+> +	ri.cpt_debugreg[5] =3D 0;
+> +	ri.cpt_debugreg[6] =3D tsk->thread.debugreg6;
+> +	ri.cpt_debugreg[7] =3D tsk->thread.debugreg7;
+> +
+> +	pt_regs =3D task_pt_regs(tsk);
+> +
+> +	ri.cpt_fs =3D encode_segment(pt_regs->fs);
+> +	ri.cpt_gs =3D encode_segment(tsk->thread.gs);
+> +
+> +	ri.cpt_bx =3D pt_regs->bx;
+> +	ri.cpt_cx =3D pt_regs->cx;
+> +	ri.cpt_dx =3D pt_regs->dx;
+> +	ri.cpt_si =3D pt_regs->si;
+> +	ri.cpt_di =3D pt_regs->di;
+> +	ri.cpt_bp =3D pt_regs->bp;
+> +	ri.cpt_ax =3D pt_regs->ax;
+> +	ri.cpt_ds =3D encode_segment(pt_regs->ds);
+> +	ri.cpt_es =3D encode_segment(pt_regs->es);
+> +	ri.cpt_orig_ax =3D pt_regs->orig_ax;
+> +	ri.cpt_ip =3D pt_regs->ip;
+> +	ri.cpt_cs =3D encode_segment(pt_regs->cs);
+> +	ri.cpt_flags =3D pt_regs->flags;
+> +	ri.cpt_sp =3D pt_regs->sp;
+> +	ri.cpt_ss =3D encode_segment(pt_regs->ss);
+> +=09
+> +	return ctx->write(&ri, sizeof(ri), ctx);
+> +}
+> +
+> +int cpt_dump_task(struct task_struct *tsk, struct cpt_context *ctx)
+> +{
+> +	int err;
+> +
+> +	err =3D cpt_dump_task_struct(tsk, ctx);
+> +
+> +	/* Dump task mm */
+> +
+> +	if (!err)
+> +		cpt_dump_fpustate(tsk, ctx);
 
->From cfbd2eec241a53bc5c1b95bb68f269036e3e92a4 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 20 Oct 2008 09:08:57 +0200
-Subject: [PATCH] x86, ioremap: use %pr in printk
+error checking...
 
-use the new %pr IO resource pointer/address/size printk type conversion
-specifier.
+> +	if (!err)
+> +		cpt_dump_registers(tsk, ctx);
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/ioremap.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+error checking...
 
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index ae71e11..4725c7a 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -207,8 +207,8 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
- 		return NULL;
- 
- 	if (!phys_addr_valid(phys_addr)) {
--		printk(KERN_WARNING "ioremap: invalid physical address %llx\n",
--		       (unsigned long long)phys_addr);
-+		printk(KERN_WARNING "ioremap: invalid physical address %pr\n",
-+		       &phys_addr);
- 		WARN_ON_ONCE(1);
- 		return NULL;
- 	}
-@@ -267,9 +267,9 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
- 		    (prot_val == _PAGE_CACHE_WC &&
- 		     new_prot_val == _PAGE_CACHE_WB)) {
- 			pr_debug(
--		"ioremap error for 0x%llx-0x%llx, requested 0x%lx, got 0x%lx\n",
--				(unsigned long long)phys_addr,
--				(unsigned long long)(phys_addr + size),
-+		"ioremap error for %pr [%lx], requested 0x%lx, got 0x%lx\n",
-+				&phys_addr,
-+				size,
- 				prot_val, new_prot_val);
- 			free_memtype(phys_addr, phys_addr + size);
- 			return NULL;
+> +
+> +	return err;
+> +}
+> --=20
+> 1.5.6
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+Louis
+
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
+
+--=_bohort-18226-1224500403-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFI/GVCVKcRuvQ9Q1QRAj0HAKCPboBYRdTcoqVGaQpNm2CwyybUAACgzXm0
+c4x6rxEAKKV9UpKc6PcVkV8=
+=0bvq
+-----END PGP SIGNATURE-----
+
+--=_bohort-18226-1224500403-0001-2--
