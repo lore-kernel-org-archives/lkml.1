@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbYJTXtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbYJTXxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754811AbYJTXtV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 19:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbYJTXtJ
+	id S1754286AbYJTXxQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 19:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbYJTXxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 19:49:09 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40308 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751136AbYJTXtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 19:49:06 -0400
-Subject: Re: [PATCH] ibm_newemac: Fix new MAL feature handling
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Jeff Garzik <jgarzik@pobox.com>
-In-Reply-To: <20081016143840.GA29805@yoda.jdub.homelinux.org>
-References: <20081015213337.a99a9595.akpm@linux-foundation.org>
-	 <1224133010.8157.543.camel@pasglop>
-	 <20081016143840.GA29805@yoda.jdub.homelinux.org>
-Content-Type: text/plain
-Date: Tue, 21 Oct 2008 10:43:41 +1100
-Message-Id: <1224546221.7654.196.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Oct 2008 19:53:00 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:25606 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751136AbYJTXxA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 19:53:00 -0400
+Date: Mon, 20 Oct 2008 17:52:58 -0600
+From: Alex Chiang <achiang@hp.com>
+To: ebiederm@xmission.com, oomichi@mxs.nes.nec.co.jp,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       tony.luck@intel.com
+Subject: Re: [PATCH] declare vmlist to fix ia64 build breakage in kexec core
+Message-ID: <20081020235258.GH15771@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>, ebiederm@xmission.com,
+	oomichi@mxs.nes.nec.co.jp, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org, tony.luck@intel.com
+References: <20081020233438.GG15771@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081020233438.GG15771@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-16 at 10:38 -0400, Josh Boyer wrote:
-> On Thu, Oct 16, 2008 at 03:56:50PM +1100, Benjamin Herrenschmidt wrote:
-> >> drivers/net/ibm_newemac/mal.c: In function 'mal_txeob':
-> >> drivers/net/ibm_newemac/mal.c:284: error: implicit declaration of function 'mtdcri'
-> >> drivers/net/ibm_newemac/mal.c:284: error: 'SDR0' undeclared (first use in this function)
-> >> drivers/net/ibm_newemac/mal.c:284: error: (Each undeclared identifier is reported only once
-> >> drivers/net/ibm_newemac/mal.c:284: error: for each function it appears in.)
-> >> drivers/net/ibm_newemac/mal.c:285: error: implicit declaration of function 'mfdcri'
-> >> drivers/net/ibm_newemac/mal.c: In function 'mal_rxeob':
-> >> drivers/net/ibm_newemac/mal.c:302: error: 'SDR0' undeclared (first use in this function)
-> >
-> >That's annoying, I'll have a look.
+Oh whoops, I see that Tony Luck already sent a patch for this
+directly to Linus.
+
+[Sorry for the noise, but I didn't realize this until I decided
+to browse through my lkml folder, as Tony's patch hasn't been
+pushed out yet.]
+
+/ac
+
+* Alex Chiang <achiang@hp.com>:
+> Commit acd99dbf54020f5c80b9aa2f2ea86f43cb285b02 (kdump: add
+> vmlist.addr to vmcoreinfo for x86 vmalloc translation) broke the
+> ia64 build in this fashion:
 > 
-> Support for new features needed by the PPC 405EZ boards
-> introduced some errors in the MAL and EMAC feature handling.
-> This broke 'allmodconfig' builds as CONFIG_PPC_DCR_NATIVE is
-> not set for those.
+> kernel/kexec.c: In function `crash_save_vmcoreinfo_init':
+> kernel/kexec.c:1374: error: `vmlist' undeclared (first use in this function)
+> kernel/kexec.c:1374: error: (Each undeclared identifier is reported only once
+> kernel/kexec.c:1374: error: for each function it appears in.)
+> kernel/kexec.c:1410: error: dereferencing pointer to incomplete type
+> make[1]: *** [kernel/kexec.o] Error 1
 > 
-> This patch fixes these errors by wrapping the code in the
-> appropriate #ifdefs.
+> Adding the proper include fixes the build.
 > 
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-
-Jeff, this breaks build, I'll put it in powerpc.git for a merge today,
-
-Cheers,
-Ben.
-
-
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
+> diff --git a/kernel/kexec.c b/kernel/kexec.c
+> index 777ac45..ac0fde7 100644
+> --- a/kernel/kexec.c
+> +++ b/kernel/kexec.c
+> @@ -30,6 +30,7 @@
+>  #include <linux/pm.h>
+>  #include <linux/cpu.h>
+>  #include <linux/console.h>
+> +#include <linux/vmalloc.h>
+>  
+>  #include <asm/page.h>
+>  #include <asm/uaccess.h>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
