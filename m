@@ -1,51 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752583AbYJTBSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669AbYJTBVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752583AbYJTBSr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 21:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbYJTBSj
+	id S1752669AbYJTBVd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 21:21:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbYJTBVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 21:18:39 -0400
-Received: from mail.anarazel.de ([217.115.131.40]:48393 "EHLO smtp.anarazel.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751955AbYJTBSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 21:18:39 -0400
-From: Andres Freund <andres@anarazel.de>
-To: Dave Airlie <airlied@linux.ie>
-Subject: Re: [git pull] agp patches for 2.6.28-rc1.
-Date: Mon, 20 Oct 2008 03:18:37 +0200
-User-Agent: KMail/1.10.1 (Linux/2.6.27-andres-04904-gc813b4e; KDE/4.1.2; x86_64; ; )
-Cc: Keith Packard <keithp@keithp.com>, linux-kernel@vger.kernel.org
-References: <alpine.DEB.0.82.0810160758320.16504@skynet.skynet.ie> <200810200300.01411.andres@anarazel.de> <alpine.DEB.0.82.0810200202270.27788@skynet.skynet.ie>
-In-Reply-To: <alpine.DEB.0.82.0810200202270.27788@skynet.skynet.ie>
+	Sun, 19 Oct 2008 21:21:24 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61156 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751172AbYJTBVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 21:21:23 -0400
+Message-ID: <14EBD9064A77422F95930B2F3B2FD9DB@zhaoleiwin>
+From: "Zhaolei" <zhaolei@cn.fujitsu.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Cc: <linux-kernel@vger.kernel.org>, <dbrownell@users.sourceforge.net>,
+       <linux-usb@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0810171114500.2178-100000@iolanthe.rowland.org> <4F580DA88E8146FC8BDA0789613AB813@zhaoleiwin>
+Subject: Re: [PATCH] Fix debugfs_create_file's error checking method for usb/gadget/
+Date: Mon, 20 Oct 2008 09:19:58 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810200318.37337.andres@anarazel.de>
+	charset="ISO-8859-1"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m9K1Lbdq009919
 
-Hi,
-
-On Monday 20 October 2008 03:04:16 Dave Airlie wrote:
-> > Hm. But still, there is at least one distribution (ubuntu intrepid) which
-> > will propably will ship 2.4.1 in its stable version soon (it seems
-> > unlikely that they will update to an unstable version just before an
-> > release). Which means, that this driver will get quite some spread...
-> Intel will give the fixes to Ubuntu to roll into 2.4.x hopefully.
-I opened a bugreport on their bugtracker to make them aware of the issue:
-https://bugs.launchpad.net/ubuntu/+source/xserver-xorg-video-intel/+bug/286182
-
-> > Is it accepted that the kernel abi breaks that radically/fast?
-> The problem is this isn't a kernel ABI at all. This is two pieces of code
-> which are doing the exact same thing to a piece of hardware, one from the
-> kernel and one from userspace. When they disagree things break, however
-> sometimes when they agree things are broken.
-Hm, I understand what you are saying, but I don't see a fundamental difference 
-to an ABI here. But it doesn't matter anyway...
+From: "Alan Stern" <stern@rowland.harvard.edu>
+To: "Zhaolei" <zhaolei@cn.fujitsu.com>
+Cc: <linux-kernel@vger.kernel.org>; <dbrownell@users.sourceforge.net>; <linux-usb@vger.kernel.org>
+Sent: Friday, October 17, 2008 11:18 PM
+Subject: Re: [PATCH] Fix debugfs_create_file's error checking method for usb/gadget/
 
 
-Andres
+> On Fri, 17 Oct 2008, Zhaolei wrote:
+> 
+>> Hi,
+>> 
+>> debugfs_create_file() returns NULL if an error occurs, returns -ENODEV
+>> when debugfs is not enabled in the kernel.
+>> 
+>> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+>> ---
+>>  drivers/usb/gadget/s3c2410_udc.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>> 
+>> diff --git a/drivers/usb/gadget/s3c2410_udc.c b/drivers/usb/gadget/s3c2410_udc.c
+>> index 29d13eb..4ba50ef 100644
+>> --- a/drivers/usb/gadget/s3c2410_udc.c
+>> +++ b/drivers/usb/gadget/s3c2410_udc.c
+>> @@ -1894,7 +1894,7 @@ static int s3c2410_udc_probe(struct platform_device *pdev)
+>>  udc->regs_info = debugfs_create_file("registers", S_IRUGO,
+>>  s3c2410_udc_debugfs_root,
+>>  udc, &s3c2410_udc_debugfs_fops);
+>> - if (IS_ERR(udc->regs_info)) {
+>> + if (IS_ERR(udc->regs_info) || !udc->regs_info) {
+>>  dev_warn(dev, "debugfs file creation failed %ld\n",
+>>  PTR_ERR(udc->regs_info));
+>>  udc->regs_info = NULL;
+> 
+> In fact the original code and your patch are both wrong.  The test 
+> should simply be:
+> 
+> if (!udc->regs_info) {
+> dev_warn(dev, "debugfs file creation failed\n");
+> 
+Hello, Alan Stern
 
+If we only check if (!udc->regs_info), that is no problem except that we
+can't see dev_warn when debugfs isn't enabled in the kernel.
+It this warning message is not necessary, I agree with you.
+->If this warning message is not necessary, I agree with you.
+
+Thanks!
+> (The line setting udc->regs_info to NULL can then be removed.)
+> 
+> The driver should be able to work even if debugfs isn't enabled in the 
+> kernel.
+> 
+> Alan Stern
+> 
+> 
+>N²rys²¶v-ºn?S'z¶¡}²zjv¾'z?z¢s~?ÿz®¢T­¢¢"jy.A¶ÿ¶®'ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
