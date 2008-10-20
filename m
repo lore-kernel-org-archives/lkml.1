@@ -1,42 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbYJTVdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755289AbYJTVeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754966AbYJTVdQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 17:33:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbYJTVdD
+	id S1755289AbYJTVeS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 17:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbYJTVeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 17:33:03 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:17226 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753111AbYJTVdB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 17:33:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=q5N5ftMEWK7wPPvUTqZ1G4dmAMHEohnEzv2srTQY5lhaeCRDlxkGZJjVzYJDdg4Ed4
-         sG8gNa7uCqSBY+FM+sC2htLAFqfNei7PjCtCgfk67K7f91+2AWcjsIR1o+PWWQWGtvWF
-         bimFbRYbvs4W0vZsdaKzNX+DTdfwmEgykJLm0=
-Message-ID: <6e4284620810201431g699c705yf5157a96e3fa4b25@mail.gmail.com>
-Date: Mon, 20 Oct 2008 23:31:49 +0200
-From: "Vlada Peric" <vlada.peric@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] io_apic_32.c: fix compile warning on printk type
-Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Disposition: inline
+	Mon, 20 Oct 2008 17:34:07 -0400
+Received: from gate.crashing.org ([63.228.1.57]:37705 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753181AbYJTVeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 17:34:06 -0400
+Subject: Re: [PATCH] x86, ioremap: use %pR in printk
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, linux-pci@vger.kernel.org,
+       yhlu.kernel@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <20081020113602.GA2697@elte.hu>
+References: <20081020040823.871BDDDDEC@ozlabs.org>
+	 <20081020071203.GB12131@elte.hu> <1224491682.7654.135.camel@pasglop>
+	 <20081020090502.GB31710@elte.hu> <20081020110018.GA24579@elte.hu>
+	 <1224501352.7654.141.camel@pasglop> <1224501768.7654.144.camel@pasglop>
+	 <20081020113143.GB14097@elte.hu>  <20081020113602.GA2697@elte.hu>
+Content-Type: text/plain
+Date: Tue, 21 Oct 2008 08:33:35 +1100
+Message-Id: <1224538415.7654.160.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m9KLXLdq017708
 
-Please CC me directly, as I'm not subscribed to the list. I'm not sureif Gmail won't mangle the patch, but I've been unable to find a guideonline on how to send one. I also might've sent the message more thanonce, for which I sincerely apologize.
-This patch fixes the following warnings by casting to u32:
-arch/x86/kernel/io_apic_32.c: In function 'print_local_APIC':arch/x86/kernel/io_apic_32.c:1539: warning: format '%08x' expects type'unsigned int', but argument 2 has type 'u64'arch/x86/kernel/io_apic_32.c:1540: warning: format '%08x' expects type'unsigned int', but argument 2 has type 'u64'
-Signed-off-by: Vlada Periæ <vlada.peric <at> gmail.com>--- arch/x86/kernel/io_apic_32.c |    4 ++-- 1 files changed, 2 insertions(+), 2 deletions(-)
-diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.cindex e710289..64f0953 100644--- a/arch/x86/kernel/io_apic_32.c+++ b/arch/x86/kernel/io_apic_32.c@@ -1536,8 +1536,8 @@ __apicdebuginit(void) print_local_APIC(void *dummy)       }
-       icr = apic_icr_read();-       printk(KERN_DEBUG "... APIC ICR: %08x\n", icr);-       printk(KERN_DEBUG "... APIC ICR2: %08x\n", icr >> 32);+       printk(KERN_DEBUG "... APIC ICR: %08x\n", (u32)icr);+       printk(KERN_DEBUG "... APIC ICR2: %08x\n", (u32)(icr >> 32));
-       v = apic_read(APIC_LVTT);       printk(KERN_DEBUG "... APIC LVTT: %08x\n", v);--1.6.0.2
---Vlada Periæÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+On Mon, 2008-10-20 at 13:36 +0200, Ingo Molnar wrote:
+> got rid of the brackets, see the patches below.
+> 
+> One open question would be whether to set the width to 8 on 32-bit 
+> platforms and 16 on 64-bit platforms - right now it's 8 on both. Since 
+> this is specifically a 'physical address' thing it might make sense to 
+> extend that on 64-bit systems. (although it's quite a bit of screen real 
+> estate so i think the current width of 8 should be fine)
+
+A -lot- of 64-bit platforms (though not all of them) have most of their
+stuff still in the 32 bit space, especially when IO is concerned.
+Keeping it to 8 thus makes the output nicer on those, and as Linus
+mentioned before, it's not like we lose digits anyway.
+
+If you want, you can re-use the #ifdef/#define I did for resources and
+thus give archs the option to have a different default.
+
+Cheers,
+Ben.
+
+
