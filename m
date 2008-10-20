@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754296AbYJTRE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754448AbYJTRFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754296AbYJTRE6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 13:04:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbYJTRDc
+	id S1754448AbYJTRFj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 13:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbYJTRD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 13:03:32 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:55242 "EHLO relay.sgi.com"
+	Mon, 20 Oct 2008 13:03:28 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:59473 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753395AbYJTRDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753454AbYJTRDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 20 Oct 2008 13:03:23 -0400
-Message-Id: <20081020170321.816821000@polaris-admin.engr.sgi.com>
+Message-Id: <20081020170319.867619000@polaris-admin.engr.sgi.com>
 References: <20081020170319.539427000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Oct 2008 10:03:35 -0700
+Date: Mon, 20 Oct 2008 10:03:21 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: Andi Kleen <andi@firstfloor.org>,
@@ -24,56 +24,48 @@ Cc: Andi Kleen <andi@firstfloor.org>,
        Yinghai Lu <yhlu.kernel@gmail.com>, IA64 <linux-ia64@vger.kernel.org>,
        PowerPC <linuxppc-dev@ozlabs.org>, S390 <linux-s390@vger.kernel.org>,
        SPARC <sparclinux@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 16/35] percpu: fix percpu accessors to potentially !cpu_possible() cpus
-Content-Disposition: inline; filename=cpumask:fix-impossible-percpu-accesses.patch
+Subject: [PATCH 02/35] cpumask: remove min from first_cpu/next_cpu
+Content-Disposition: inline; filename=cpumask:remove-min.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Percpu areas are only allocated for possible cpus.  In general, you
-shouldn't access random cpu's percpu areas: you're corrupting memory.
+Seems like this has been here forever, but I can't see why:
+find_first_bit and find_next_bit both return >= NR_CPUS on failure.
 
 From: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- arch/m32r/kernel/smpboot.c          |    2 +-
- arch/x86/mach-voyager/voyager_smp.c |    2 +-
- drivers/pnp/pnpbios/bioscalls.c     |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ lib/cpumask.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
---- test-compile.orig/arch/m32r/kernel/smpboot.c
-+++ test-compile/arch/m32r/kernel/smpboot.c
-@@ -598,7 +598,7 @@ int setup_profiling_timer(unsigned int m
- 	 * accounting. At that time they also adjust their APIC timers
- 	 * accordingly.
- 	 */
--	for (i = 0; i < NR_CPUS; ++i)
-+	for_each_possible_cpu(i)
- 		per_cpu(prof_multiplier, i) = multiplier;
+--- linux-2.6.28.orig/lib/cpumask.c
++++ linux-2.6.28/lib/cpumask.c
+@@ -5,21 +5,20 @@
  
- 	return 0;
---- test-compile.orig/arch/x86/mach-voyager/voyager_smp.c
-+++ test-compile/arch/x86/mach-voyager/voyager_smp.c
-@@ -1223,7 +1223,7 @@ int setup_profiling_timer(unsigned int m
- 	 * new values until the next timer interrupt in which they do process
- 	 * accounting.
- 	 */
--	for (i = 0; i < NR_CPUS; ++i)
-+	for_each_possible_cpu(i)
- 		per_cpu(prof_multiplier, i) = multiplier;
+ int __first_cpu(const cpumask_t *srcp)
+ {
+-	return min_t(int, NR_CPUS, find_first_bit(srcp->bits, NR_CPUS));
++	return find_first_bit(srcp->bits, NR_CPUS);
+ }
+ EXPORT_SYMBOL(__first_cpu);
  
- 	return 0;
---- test-compile.orig/drivers/pnp/pnpbios/bioscalls.c
-+++ test-compile/drivers/pnp/pnpbios/bioscalls.c
-@@ -481,7 +481,7 @@ void pnpbios_calls_init(union pnp_bios_i
+ int __next_cpu(int n, const cpumask_t *srcp)
+ {
+-	return min_t(int, NR_CPUS, find_next_bit(srcp->bits, NR_CPUS, n+1));
++	return find_next_bit(srcp->bits, NR_CPUS, n+1);
+ }
+ EXPORT_SYMBOL(__next_cpu);
  
- 	set_base(bad_bios_desc, __va((unsigned long)0x40 << 4));
- 	_set_limit((char *)&bad_bios_desc, 4095 - (0x40 << 4));
--	for (i = 0; i < NR_CPUS; i++) {
-+	for_each_possible_cpu(i) {
- 		struct desc_struct *gdt = get_cpu_gdt_table(i);
- 		if (!gdt)
- 			continue;
+ #if NR_CPUS > 64
+ int __next_cpu_nr(int n, const cpumask_t *srcp)
+ {
+-	return min_t(int, nr_cpu_ids,
+-				find_next_bit(srcp->bits, nr_cpu_ids, n+1));
++	return find_next_bit(srcp->bits, nr_cpu_ids, n+1);
+ }
+ EXPORT_SYMBOL(__next_cpu_nr);
+ #endif
 
 -- 
