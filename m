@@ -1,46 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752194AbYJTHVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752708AbYJTHXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752194AbYJTHVn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 03:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbYJTHVg
+	id S1752708AbYJTHXP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 03:23:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbYJTHXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 03:21:36 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35240 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878AbYJTHVf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 03:21:35 -0400
-Subject: Re: [PATCH] intel-iommu: use coherent_dma_mask in alloc_coherent
-From: David Woodhouse <dwmw2@infradead.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: mgross@linux.intel.com, mingo@elte.hu, grundler@parisc-linux.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081020093824G.fujita.tomonori@lab.ntt.co.jp>
-References: <20081015160732K.fujita.tomonori@lab.ntt.co.jp>
-	 <1224337616.6770.1366.camel@macbook.infradead.org>
-	 <20081020093824G.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain
-Date: Mon, 20 Oct 2008 08:21:02 +0100
-Message-Id: <1224487262.6770.1505.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 20 Oct 2008 03:23:00 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46517 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751485AbYJTHW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 03:22:59 -0400
+Date: Mon, 20 Oct 2008 09:22:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: maluta_tiago@yahoo.com.br, lguest@ozlabs.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [Lguest] lguest: unhandled trap
+Message-ID: <20081020072236.GD12131@elte.hu>
+References: <713731.28571.qm@web50701.mail.re2.yahoo.com> <200810201452.04932.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810201452.04932.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-20 at 09:46 +0900, FUJITA Tomonori wrote:
-> > I've fixed this up to cope with the fact that dma_mask can be bigger
-> > than an 'unsigned long', and committed it to the iommu-2-6.git tree.
+
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
+
+> On Monday 20 October 2008 12:50:09 Tiago Maluta wrote:
+> > --- On Sun, 10/19/08, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > > > Hi,
+> > > >
+> > > > I'm using 2.6.27-05323-g26e9a39 and when I try to
+> > >
+> > > use lguest:
+> > > > ~#Documentation/lguest/lguest 128 vmlinux
+> > > > lguest: unhandled trap 14 at 0xc0594f6a (0xff900000)
+> > >
+> > > Yes, I found the same issue.  Does this fix it for you?
+> >
+> > Yes. This code fixed the problem.
 > 
-> Hmm, 'unsigned long' is 64 bits on IA64 and X86_64. How can dma_mask
-> be bigger than an 'unsigned long'?
+> Thanks.  Ingo, can you push this?
+> 
+> Subject: lguest: don't try DMI
+> 
+> dmi_scan_machine breaks under lguest; this is the simplest fix (though
+> ugly).  Perhaps this hurts Xen too?
+> 
+> Error:
+> 	lguest: unhandled trap 14 at 0xc04edeae (0xffa00000)
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> diff -r 47449cd8e3d8 drivers/firmware/dmi_scan.c
+> --- a/drivers/firmware/dmi_scan.c	Fri Oct 17 12:14:40 2008 +1100
+> +++ b/drivers/firmware/dmi_scan.c	Fri Oct 17 20:54:30 2008 +1100
+> @@ -369,6 +369,11 @@ void __init dmi_scan_machine(void)
+>  	char __iomem *p, *q;
+>  	int rc;
+>  
+> +#ifdef CONFIG_PARAVIRT
+> +	if (strcmp(pv_info.name, "lguest") == 0)
+> +		goto error;
+> +#endif
+> +
 
-On i386.
+hm, could you give some more background please? I'm not subscribed to 
+the lguest list and the thread is not Cc:-ed to lkml (Cc:-ed it now). 
+The patch looks quite ugly because it adds a special-case.
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Was the problem introduced by:
 
+5649b7c: x86: add DMI quirk for AMI BIOS which corrupts address 0xc000 during 
+
+perhaps?
+
+i think Xen can withstand DMI scanning just fine.
+
+without having seen any background, my general feeling is that lguest 
+should either do what Xen does and reserve the classic BIOS ranges that 
+we probe - or we should make DMI scanning more robust by making sure 
+real RAM ranges are never probed. (only ranges that the BIOS itself 
+marks as reserved in the e820 map) 
+
+(with exceptions for the first 4K perhaps.)
+
+	Ingo
