@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbYJTRUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbYJTRUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754491AbYJTRUN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 13:20:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbYJTREz
+	id S1757530AbYJTRUh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 13:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754688AbYJTRE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 13:04:55 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:55322 "EHLO relay.sgi.com"
+	Mon, 20 Oct 2008 13:04:56 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:55336 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753643AbYJTRDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753793AbYJTRDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 20 Oct 2008 13:03:24 -0400
-Message-Id: <20081020170323.056637000@polaris-admin.engr.sgi.com>
+Message-Id: <20081020170323.335697000@polaris-admin.engr.sgi.com>
 References: <20081020170319.539427000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Oct 2008 10:03:44 -0700
+Date: Mon, 20 Oct 2008 10:03:46 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: Andi Kleen <andi@firstfloor.org>,
@@ -24,89 +24,57 @@ Cc: Andi Kleen <andi@firstfloor.org>,
        Yinghai Lu <yhlu.kernel@gmail.com>, IA64 <linux-ia64@vger.kernel.org>,
        PowerPC <linuxppc-dev@ozlabs.org>, S390 <linux-s390@vger.kernel.org>,
        SPARC <sparclinux@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 25/35] cpumask: Deprecate CPUMASK_ALLOC etc in favor of cpumask_var_t.
-Content-Disposition: inline; filename=cpumask:deprecate-CPUMASK_ALLOC.patch
+Subject: [PATCH 27/35] cpumask: to_cpumask()
+Content-Disposition: inline; filename=cpumask:to_cpumask.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove CPUMASK_ALLOC() in favor of alloc_cpumask_var().
+There are times when we really want a static cpumask.  Yet we don't
+want to expose the struct cpumask definition, to avoid casual on-stack
+usage and assignment.
+
+So this macro allows you to do DECLARE_BITMAP(map, CONFIG_NR_CPUS); then use
+to_cpumask() to turn it into a cpumask as needed.
+
+Ugly?  Yes, but as we move to fewer static cpumasks these calls vanish.
 
 From: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- include/linux/cpumask.h |   46 ++++++++--------------------------------------
- 1 file changed, 8 insertions(+), 38 deletions(-)
+ include/linux/cpumask.h |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
 --- linux-2.6.28.orig/include/linux/cpumask.h
 +++ linux-2.6.28/include/linux/cpumask.h
-@@ -57,35 +57,6 @@
+@@ -57,6 +57,9 @@
   * CPU_MASK_NONE			Initializer - no bits set
   * unsigned long *cpumask_bits(mask)	Array of unsigned long's in mask
   *
-- * CPUMASK_ALLOC kmalloc's a structure that is a composite of many cpumask_t
-- * variables, and CPUMASK_PTR provides pointers to each field.
-- *
-- * The structure should be defined something like this:
-- * struct my_cpumasks {
-- *	cpumask_t mask1;
-- *	cpumask_t mask2;
-- * };
-- *
-- * Usage is then:
-- *	CPUMASK_ALLOC(my_cpumasks);
-- *	CPUMASK_PTR(mask1, my_cpumasks);
-- *	CPUMASK_PTR(mask2, my_cpumasks);
-- *
-- *	--- DO NOT reference cpumask_t pointers until this check ---
-- *	if (my_cpumasks == NULL)
-- *		"kmalloc failed"...
-- *
-- * References are now pointers to the cpumask_t variables (*mask1, ...)
-- *
-- *if NR_CPUS > BITS_PER_LONG
-- *   CPUMASK_ALLOC(m)			Declares and allocates struct m *m =
-- *						kmalloc(sizeof(*m), GFP_KERNEL)
-- *   CPUMASK_FREE(m)			Macro for kfree(m)
-- *else
-- *   CPUMASK_ALLOC(m)			Declares struct m _m, *m = &_m
-- *   CPUMASK_FREE(m)			Nop
-- *endif
-- *   CPUMASK_PTR(v, m)			Declares cpumask_t *v = &(m->v)
++ * struct cpumask *to_cpumask(const unsigned long[])
++ *					Convert a bitmap to a cpumask.
++ *
   * ------------------------------------------------------------------------
   *
   * int cpumask_scnprintf(buf, len, mask) Format cpumask for printing
-@@ -184,6 +155,14 @@ extern cpumask_t _unused_cpumask_arg_;
- #define first_cpu(src)		cpumask_first(&(src))
- #define next_cpu(n, src)	cpumask_next((n), &(src))
- #define any_online_cpu(mask)	cpumask_any_and(&(mask), &cpu_online_map)
-+#if NR_CPUS > BITS_PER_LONG
-+#define	CPUMASK_ALLOC(m)	struct m *m = kmalloc(sizeof(*m), GFP_KERNEL)
-+#define	CPUMASK_FREE(m)		kfree(m)
-+#else
-+#define	CPUMASK_ALLOC(m)	struct m _m, *m = &_m
-+#define	CPUMASK_FREE(m)
-+#endif
-+#define	CPUMASK_PTR(v, m) 	cpumask_t *v = &(m->v)
- /* End deprecated region. */
+@@ -362,6 +365,17 @@ static inline void cpumask_copy(struct c
+ #define cpumask_any(srcp) cpumask_first(srcp)
+ #define cpumask_any_and(mask1, mask2) cpumask_first_and((mask1), (mask2))
  
- #if NR_CPUS <= BITS_PER_LONG
-@@ -435,15 +414,6 @@ extern cpumask_t cpu_mask_all;
- 	[0] =  1UL							\
- } }
- 
--#if NR_CPUS > BITS_PER_LONG
--#define	CPUMASK_ALLOC(m)	struct m *m = kmalloc(sizeof(*m), GFP_KERNEL)
--#define	CPUMASK_FREE(m)		kfree(m)
--#else
--#define	CPUMASK_ALLOC(m)	struct m _m, *m = &_m
--#define	CPUMASK_FREE(m)
--#endif
--#define	CPUMASK_PTR(v, m) 	cpumask_t *v = &(m->v)
--
- #if NR_CPUS == 1
- 
- #define cpumask_first(src)	({ (void)(src); 0; })
++/* Used for static bitmaps of CONFIG_NR_CPUS bits.  Must be a constant to use
++ * as an initializer. */
++#define to_cpumask(bitmap)						\
++	((struct cpumask *)(1 ? (bitmap)				\
++			    : (void *)sizeof(__check_is_bitmap(bitmap))))
++
++static inline int __check_is_bitmap(const unsigned long *bitmap)
++{
++	return 1;
++}
++
+ /*
+  * Special-case data structure for "single bit set only" constant CPU masks.
+  *
 
 -- 
