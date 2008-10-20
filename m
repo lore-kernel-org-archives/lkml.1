@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752629AbYJTMmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbYJTMrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752629AbYJTMmF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 08:42:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbYJTMly
+	id S1753333AbYJTMrh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 08:47:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYJTMr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 08:41:54 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:34253 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750985AbYJTMlx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 08:41:53 -0400
-Date: Mon, 20 Oct 2008 08:41:45 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       adilger@sun.com, jack@suse.cz, sandeen@redhat.com
-Subject: Re: status of the ext3/jbd error handling enhancement patches
-Message-ID: <20081020124145.GB10698@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
-	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-	adilger@sun.com, jack@suse.cz, sandeen@redhat.com
-References: <48FC081D.60306@hitachi.com> <20081019221331.ddf6b8c2.akpm@linux-foundation.org>
+	Mon, 20 Oct 2008 08:47:28 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37638 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751587AbYJTMr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 08:47:27 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Dmitri Monakhov <dmonakhov@openvz.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 1/2] fs: truncate blocks outside i_size after generic_file_direct_write error
+References: <1224424981-5144-1-git-send-email-dmonakhov@openvz.org>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Mon, 20 Oct 2008 08:47:22 -0400
+In-Reply-To: <1224424981-5144-1-git-send-email-dmonakhov@openvz.org> (Dmitri
+	Monakhov's message of "Sun, 19 Oct 2008 18:03:00 +0400")
+Message-ID: <x498wsj302t.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081019221331.ddf6b8c2.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 19, 2008 at 10:13:31PM -0700, Andrew Morton wrote:
-> >   #jbd-fix-error-handling-for-checkpoint-io.patch: double-check this
-> >   jbd-fix-error-handling-for-checkpoint-io.patch
-> >   ext3-add-checks-for-errors-from-jbd.patch
-> >   jbd-test-bh_write_eio-to-detect-errors-on-metadata-buffers.patch
-> > 
-> > They improve filesystem corruption problem and it is needed by
-> > mission critical systems.
-> > 
-> > Could you tell me what is your concern (you commented, "double-check
-> > this") ?  Are there something that I can help?  For example, I can
-> > provide some SystemTap scripts to help tests.
-> 
-> I forget my reasons for that - would need to go back and review the
-> discussions when the patch was first merged.
-> 
-> One of the above patches (I forget which) breaks the build because it
-> expects the presence of Al Viro's VFS tree, and that hasn't been merged
-> yet.  I need to wait and see if that merge will be happening (seems
-> unlikely) and if not, rework the patch against mainline.
+Dmitri Monakhov <dmonakhov@openvz.org> writes:
 
-Strange; I don't recall any of the ext4 variants of the error handling
-patches requiring Al's VFS tree.  And I thought all of them have been
-merged into Linus's tree at this point.
+> We need to remove block that was allocated in generic_file_direct_write()
+> if we fail. We have to do it *regardless* to blocksize. At least ext2,
+> ext3 and reiserfs interpret (i_size < biggest block) condition as error.
+> Fsck will complain about wrong i_size. Then fsck will fix the error
+> by changing i_size according to the biggest block. This is bad because
+> this blocks contain gurbage from previous write attempt. And result in
+> data corruption.
+>
+> In order to call vmtruncate() we have to hold host->i_mutex. This is true
+> for generic_file_aio_write(). In fact occasionally it is also true for all
+> generic_file_aio_write_nolock() callers except blockdev. But this situation
+> may change someday. This patch fix only generic_write_aio_write() case.
+> BTW: update generic_file_direct_write's comment with currently outdated.
 
-Kawai-san, could you double check and see if I processed all of your
-patches and pushed them to Linus?  I was pretty sure I had...
+Do you have a test case for this, by any chance?
 
-		    	   	   	     - Ted
+Cheers,
+
+Jeff
