@@ -1,70 +1,537 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbYJTEmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753044AbYJTEmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752624AbYJTEmS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 00:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbYJTEmG
+	id S1753044AbYJTEmc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 00:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbYJTEmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 00:42:06 -0400
-Received: from smtp110.sbc.mail.mud.yahoo.com ([68.142.198.209]:34149 "HELO
+	Mon, 20 Oct 2008 00:42:10 -0400
+Received: from smtp110.sbc.mail.mud.yahoo.com ([68.142.198.209]:34200 "HELO
 	smtp110.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751003AbYJTEmG (ORCPT
+	by vger.kernel.org with SMTP id S1751735AbYJTEmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 00:42:06 -0400
+	Mon, 20 Oct 2008 00:42:07 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Rj4zIqUwnBiOPLknJ7jZQKUolAGKdphhc7zMWmkYD/j9xvPgF8neqY6VBF0HChvPqIet/5yb+7OrcDuiUpFqiekY8HPMlaLP2WSbxpqRh1wscXhMdF6Lhe88XxeUsB964XJ7/SaCRT45TBcqXjMMj0umRt+qm4W/rXC4spxv8k4=  ;
-X-YMail-OSG: iXkM3bEVM1lvUe27pih5dJ6AsUxNF4Ak5DnW439kiNO7sy7Zo.kXsq50lpMGRlKl3FPvUh726Oa1suV3ugGnB__4aNVLV8gyrqErnW7.whEsJN779_zszi.J9kbujUwYu0kQjy5LJlrxkY9mnZmCzgiPn1S2he0LKBCUX4o-
+  b=Urz5mGZ2WKPP5eLU99x0aZnt7feNYvi6On0eqoc8cOtZhRu2+kiFeE+p8fPfWty1MqRaQ0Akjnq6VB00jy3HKr1uttRtQeKCl8aFS9iEVAAvjSwqGQu4GPq2/8V7XXaWS0EaaXkVLi9lzm9a5fqdE5u3IVKAHySgj2/eieICQes=  ;
+X-YMail-OSG: juHEaf8VM1nm3SkIjfccpWs2Oo2CUX9eiQAEnhZXgRZ7Mf4TX5El.1VDpg_buE.s1qtRwaBqCA4A5ajIjT6KPKtocc4KXgy0JlFr8VC5JACYG3zm7GbKqH0A6M1RB0AS_wybsNNW9gN5Q9N8gJ_wgC.3x2uNaFm4K8p2IMKF.laXVg3WeGKC.TBoW0HM
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: "Magnus Damm" <magnus.damm@gmail.com>
-Subject: Re: [PATCH v3] Add SPI over GPIO driver
-Date: Sun, 19 Oct 2008 21:16:51 -0700
-User-Agent: KMail/1.9.10
-Cc: "Piotr Skamruk" <piotr.skamruk@gmail.com>, "Michael Buesch" <mb@bu3sch.de>,
+To: "Magnus Damm" <magnus.damm@gmail.com>,
        "Andrew Morton" <akpm@linux-foundation.org>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
+       spi-devel-general@lists.sourceforge.net
+Subject: [patch 2.6.27-git] spi_gpio driver
+Date: Sun, 19 Oct 2008 21:24:36 -0700
+User-Agent: KMail/1.9.10
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>
 References: <200807202146.12759.mb@bu3sch.de> <200810181354.23955.david-b@pacbell.net> <aec7e5c30810191944u4c125943h895099b3f1eaa813@mail.gmail.com>
 In-Reply-To: <aec7e5c30810191944u4c125943h895099b3f1eaa813@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810192116.52286.david-b@pacbell.net>
+Message-Id: <200810192124.36402.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 19 October 2008, Magnus Damm wrote:
-> >
-> > I fully support the idea of SPI over GPIO.  It's just that
-> > particular patch which is problematic.
-> 
-> Ok, let's fix those issues then!
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-The issues I identified earlier still haven't been resolved...
-one of several reasons IMO to just use a different driver.
+Generalize the old at91rm9200 "bootstrap" bitbanging SPI master driver
+as "spi_gpio", so it works with arbitrary GPIOs and can be configured
+through platform_data.  Such SPI masters support:
 
+ - any number of bus instances (bus_num is the platform_device.id)
+ - any number of chipselects (one GPIO per spi_device)
+ - all four SPI_MODE values, and SPI_CS_HIGH
+ - i/o word sizes from 1 to 32 bits;
+ - devices configured as with any other spi_master controller
 
-> > I'm sanity testing a refresh of the *original* late-2006
-> > SPI-over-GPIO driver.  It's actually usable as a drop-in
-> > replacement for a "native" driver.
-> 
-> The Openwrt driver by Michael Buesch works just fine for me, but if
-> you prefer to switch driver that's of course ok too.
-> 
-> > Unfortunately I goofed and pulled down the current GIT tree
-> > and found lots of unrelated breakage (non-SPI) that's keept
-> > that sanity test from proceeding apace.  And the board on
-> > which it's most recently been used is currently broken.
-> > I may just send that patch out soon, as an FYI...
-> 
-> Please CC me and I'll test it on some SuperH boards. Thanks!
+When configured using platform_data, this provides relatively low clock
+rates.  On platforms that support inlined GPIO calls, significantly
+improved transfer speeds are also possible with a semi-custom driver.
+(It's still painful when accessing flash memory, but less so.)
 
-Patch follows in a separate message, with trimmed CC list.
+Sanity checked by using this version to replace both native controllers
+on a board with six different SPI slaves, relying on three different
+SPI_MODE_* values and both SPI_CS_HIGH settings for correct operation.
 
-- Dave
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/spi/Kconfig          |   18 +-
+ drivers/spi/Makefile         |    1 
+ drivers/spi/spi_gpio.c       |  360 +++++++++++++++++++++++++++++++++++++++++
+ include/linux/spi/spi_gpio.h |   60 ++++++
+ 4 files changed, 438 insertions(+), 1 deletion(-)
 
-
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -78,7 +78,7 @@ config SPI_AU1550
+ 	  will be called au1550_spi.
+ 
+ config SPI_BITBANG
+-	tristate "Bitbanging SPI master"
++	tristate "Utilities for Bitbanging SPI masters"
+ 	help
+ 	  With a few GPIO pins, your system can bitbang the SPI protocol.
+ 	  Select this to get SPI support through I/O pins (GPIO, parallel
+@@ -100,6 +100,22 @@ config SPI_BUTTERFLY
+ 	  inexpensive battery powered microcontroller evaluation board.
+ 	  This same cable can be used to flash new firmware.
+ 
++config SPI_GPIO
++	tristate "GPIO-based bitbanging SPI Master"
++	depends on GENERIC_GPIO
++	select SPI_BITBANG
++	help
++	  This simple GPIO bitbanging SPI master uses the arch-neutral GPIO
++	  interface to manage MOSI, MISO, SCK, and chipselect signals.  SPI
++	  slaves connected to a bus using this driver are configured as usual,
++	  except that the spi_board_info.controller_data holds the GPIO number
++	  for the chipselect used by this controller driver.
++
++	  Note that this driver often won't achieve even 1 Mbit/sec speeds,
++	  making it unusually slow for SPI.  If your platform can inline
++	  GPIO operations, you should be able to leverage that for better
++	  speed with a custom version of this driver; see the source code.
++
+ config SPI_IMX
+ 	tristate "Freescale iMX SPI controller"
+ 	depends on ARCH_IMX && EXPERIMENTAL
+--- a/drivers/spi/Makefile
++++ b/drivers/spi/Makefile
+@@ -16,6 +16,7 @@ obj-$(CONFIG_SPI_BFIN)			+= spi_bfin5xx.
+ obj-$(CONFIG_SPI_BITBANG)		+= spi_bitbang.o
+ obj-$(CONFIG_SPI_AU1550)		+= au1550_spi.o
+ obj-$(CONFIG_SPI_BUTTERFLY)		+= spi_butterfly.o
++obj-$(CONFIG_SPI_GPIO)			+= spi_gpio.o
+ obj-$(CONFIG_SPI_IMX)			+= spi_imx.o
+ obj-$(CONFIG_SPI_LM70_LLP)		+= spi_lm70llp.o
+ obj-$(CONFIG_SPI_PXA2XX)		+= pxa2xx_spi.o
+--- /dev/null
++++ b/drivers/spi/spi_gpio.c
+@@ -0,0 +1,360 @@
++/*
++ * spi_gpio.c - SPI master driver using generic bitbanged GPIO
++ *
++ * Copyright (C) 2006,2008 David Brownell
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/gpio.h>
++
++#include <linux/spi/spi.h>
++#include <linux/spi/spi_bitbang.h>
++#include <linux/spi/spi_gpio.h>
++
++
++/*
++ * This bitbanging SPI master driver should help make systems usable
++ * when a native hardware SPI engine is not available, perhaps because
++ * its driver isn't yet working or because the I/O pins it requires
++ * are used for other purposes.
++ *
++ * platform_device->driver_data ... points to spi_gpio
++ *
++ * spi->controller_state ... reserved for bitbang framework code
++ * spi->controller_data ... holds chipselect GPIO
++ *
++ * spi->master->dev.driver_data ... points to spi_gpio->bitbang
++ */
++
++struct spi_gpio {
++	struct spi_bitbang		bitbang;
++	struct spi_gpio_platform_data	pdata;
++	struct platform_device		*pdev;
++};
++
++/*----------------------------------------------------------------------*/
++
++/*
++ * Because the overhead of going through four GPIO procedure calls
++ * per transferred bit can make performance a problem, this code
++ * is set up so that you can use it in either of two ways:
++ *
++ *   - The slow generic way:  set up platform_data to hold the GPIO
++ *     numbers used for MISO/MOSI/SCK, and issue procedure calls for
++ *     each of them.  This driver can handle several such busses.
++ *
++ *   - The quicker inlined way:  only helps with platform GPIO code
++ *     that inlines operations for constant GPIOs.  This can give
++ *     you tight (fast!) inner loops, but each such bus needs a
++ *     new driver.  You'll define a new C file, with Makefile and
++ *     Kconfig support; the C code can be a total of six lines:
++ *
++ *		#define DRIVER_NAME	"myboard_spi2"
++ *		#define	SPI_MISO_GPIO	119
++ *		#define	SPI_MOSI_GPIO	120
++ *		#define	SPI_SCK_GPIO	121
++ *		#define	SPI_N_CHIPSEL	4
++ *		#include "spi_gpio.c"
++ */
++
++#ifndef DRIVER_NAME
++#define DRIVER_NAME	"spi_gpio"
++
++#define GENERIC_BITBANG	/* vs tight inlines */
++
++/* all functions referencing these symbols must define pdata */
++#define SPI_MISO_GPIO	((pdata)->miso)
++#define SPI_MOSI_GPIO	((pdata)->mosi)
++#define SPI_SCK_GPIO	((pdata)->sck)
++
++#define SPI_N_CHIPSEL	((pdata)->num_chipselect)
++
++#endif
++
++/*----------------------------------------------------------------------*/
++
++static inline const struct spi_gpio_platform_data * __pure
++spi_to_pdata(const struct spi_device *spi)
++{
++	const struct spi_bitbang	*bang;
++	const struct spi_gpio		*spi_gpio;
++
++	bang = spi_master_get_devdata(spi->master);
++	spi_gpio = container_of(bang, struct spi_gpio, bitbang);
++	return &spi_gpio->pdata;
++}
++
++/* this is #defined to avoid unused-variable warnings when inlining */
++#define pdata		spi_to_pdata(spi)
++
++static inline void setsck(const struct spi_device *spi, int is_on)
++{
++	gpio_set_value(SPI_SCK_GPIO, is_on);
++}
++
++static inline void setmosi(const struct spi_device *spi, int is_on)
++{
++	gpio_set_value(SPI_MOSI_GPIO, is_on);
++}
++
++static inline int getmiso(const struct spi_device *spi)
++{
++	return gpio_get_value(SPI_MISO_GPIO);
++}
++
++#undef pdata
++
++/*
++ * NOTE:  this clocks "as fast as we can".  It "should" be a function of the
++ * requested device clock.  Software overhead means we usually have trouble
++ * reaching even one Mbit/sec (except when we can inline bitops), so for now
++ * we'll just assume we never need additional per-bit slowdowns.
++ */
++#define spidelay(nsecs)	do{} while(0)
++
++#define	EXPAND_BITBANG_TXRX
++#include <linux/spi/spi_bitbang.h>
++
++/*
++ * These functions can leverage inline expansion of GPIO calls to shrink
++ * costs for a txrx bit, often by factors of around ten (by instruction
++ * count).  That is particularly visible for larger word sizes, but helps
++ * even with default 8-bit words.
++ *
++ * REVISIT overheads calling these functions for each word also have
++ * significant performance costs.  Having txrx_bufs() calls that inline
++ * the txrx_word() logic would help performance, e.g. on larger blocks
++ * used with flash storage or MMC/SD.  There should also be ways to make
++ * GCC be less stupid about reloading registers inside the I/O loops,
++ * even without inlined GPIO calls; __attribute__((hot)) on GCC 4.3?
++ */
++
++static u32 spi_gpio_txrx_word_mode0(struct spi_device *spi,
++		unsigned nsecs, u32 word, u8 bits)
++{
++	return bitbang_txrx_be_cpha0(spi, nsecs, 0, word, bits);
++}
++
++static u32 spi_gpio_txrx_word_mode1(struct spi_device *spi,
++		unsigned nsecs, u32 word, u8 bits)
++{
++	return bitbang_txrx_be_cpha1(spi, nsecs, 0, word, bits);
++}
++
++static u32 spi_gpio_txrx_word_mode2(struct spi_device *spi,
++		unsigned nsecs, u32 word, u8 bits)
++{
++	return bitbang_txrx_be_cpha0(spi, nsecs, 1, word, bits);
++}
++
++static u32 spi_gpio_txrx_word_mode3(struct spi_device *spi,
++		unsigned nsecs, u32 word, u8 bits)
++{
++	return bitbang_txrx_be_cpha1(spi, nsecs, 1, word, bits);
++}
++
++/*----------------------------------------------------------------------*/
++
++static void spi_gpio_chipselect(struct spi_device *spi, int is_active)
++{
++	unsigned long cs = (unsigned long) spi->controller_data;
++
++	/* set initial clock polarity */
++	if (is_active)
++		setsck(spi, spi->mode & SPI_CPOL);
++
++	/* SPI is normally active-low */
++	gpio_set_value(cs, (spi->mode & SPI_CS_HIGH) ? is_active : !is_active);
++}
++
++static int spi_gpio_setup(struct spi_device *spi)
++{
++	unsigned long	cs = (unsigned long) spi->controller_data;
++	int		status = 0;
++
++	if (spi->bits_per_word > 32)
++		return -EINVAL;
++
++	if (!spi->controller_state) {
++		status = gpio_request(cs, spi->dev.bus_id);
++		if (status)
++			return status;
++		status = gpio_direction_output(cs, spi->mode & SPI_CS_HIGH);
++	}
++	if (!status)
++		status = spi_bitbang_setup(spi);
++	if (status) {
++		if (!spi->controller_state)
++			gpio_free(cs);
++	}
++	return status;
++}
++
++static void spi_gpio_cleanup(struct spi_device *spi)
++{
++	unsigned long	cs = (unsigned long) spi->controller_data;
++
++	gpio_free(cs);
++	spi_bitbang_cleanup(spi);
++}
++
++static int __init spi_gpio_alloc(unsigned pin, const char *label, bool is_in)
++{
++	int value;
++
++	value = gpio_request(pin, label);
++	if (value == 0) {
++		if (is_in)
++			value = gpio_direction_input(pin);
++		else
++			value = gpio_direction_output(pin, 0);
++	}
++	return value;
++}
++
++static int __init
++spi_gpio_request(struct spi_gpio_platform_data *pdata, const char *label)
++{
++	int value;
++
++	/* NOTE:  SPI_*_GPIO symbols may reference "pdata" */
++
++	value = spi_gpio_alloc(SPI_MOSI_GPIO, label, false);
++	if (value)
++		goto done;
++
++	value = spi_gpio_alloc(SPI_MISO_GPIO, label, true);
++	if (value)
++		goto free_mosi;
++
++	value = spi_gpio_alloc(SPI_SCK_GPIO, label, false);
++	if (value)
++		goto free_miso;
++
++	goto done;
++
++free_miso:
++	gpio_free(SPI_MISO_GPIO);
++free_mosi:
++	gpio_free(SPI_MOSI_GPIO);
++done:
++	return value;
++}
++
++static int __init spi_gpio_probe(struct platform_device *pdev)
++{
++	int				status;
++	struct spi_master		*master;
++	struct spi_gpio			*spi_gpio;
++	struct spi_gpio_platform_data	*pdata;
++
++	pdata = pdev->dev.platform_data;
++#ifdef GENERIC_BITBANG
++	if (!pdata || !pdata->num_chipselect)
++		return -ENODEV;
++#endif
++
++	status = spi_gpio_request(pdata, dev_name(&pdev->dev));
++	if (status < 0)
++		return status;
++
++	master = spi_alloc_master(&pdev->dev, sizeof *spi_gpio);
++	if (!master) {
++		status = -ENOMEM;
++		goto gpio_free;
++	}
++	spi_gpio = spi_master_get_devdata(master);
++	platform_set_drvdata(pdev, spi_gpio);
++
++	spi_gpio->pdev = pdev;
++	if (pdata)
++		spi_gpio->pdata = *pdata;
++
++	master->bus_num = pdev->id;
++	master->num_chipselect = SPI_N_CHIPSEL;
++	master->setup = spi_gpio_setup;
++	master->cleanup = spi_gpio_cleanup;
++
++	spi_gpio->bitbang.master = spi_master_get(master);
++	spi_gpio->bitbang.chipselect = spi_gpio_chipselect;
++	spi_gpio->bitbang.txrx_word[SPI_MODE_0] = spi_gpio_txrx_word_mode0;
++	spi_gpio->bitbang.txrx_word[SPI_MODE_1] = spi_gpio_txrx_word_mode1;
++	spi_gpio->bitbang.txrx_word[SPI_MODE_2] = spi_gpio_txrx_word_mode2;
++	spi_gpio->bitbang.txrx_word[SPI_MODE_3] = spi_gpio_txrx_word_mode3;
++	spi_gpio->bitbang.setup_transfer = spi_bitbang_setup_transfer;
++	spi_gpio->bitbang.flags = SPI_CS_HIGH;
++
++	status = spi_bitbang_start(&spi_gpio->bitbang);
++	if (status < 0) {
++		spi_master_put(spi_gpio->bitbang.master);
++gpio_free:
++		gpio_free(SPI_MISO_GPIO);
++		gpio_free(SPI_MOSI_GPIO);
++		gpio_free(SPI_SCK_GPIO);
++		spi_master_put(master);
++	}
++
++	return status;
++}
++
++static int __exit spi_gpio_remove(struct platform_device *pdev)
++{
++	struct spi_gpio			*spi_gpio;
++	struct spi_gpio_platform_data	*pdata;
++	int				status;
++
++	spi_gpio = platform_get_drvdata(pdev);
++	pdata = pdev->dev.platform_data;
++
++	/* stop() unregisters child devices too */
++	status = spi_bitbang_stop(&spi_gpio->bitbang);
++	(void) spi_master_put(spi_gpio->bitbang.master);
++
++	platform_set_drvdata(pdev, NULL);
++
++	gpio_free(SPI_MISO_GPIO);
++	gpio_free(SPI_MOSI_GPIO);
++	gpio_free(SPI_SCK_GPIO);
++
++	return status;
++}
++
++MODULE_ALIAS("platform:" DRIVER_NAME);
++
++static struct platform_driver spi_gpio_driver = {
++	.driver.name	= DRIVER_NAME,
++	.driver.owner	= THIS_MODULE,
++	.remove		= __exit_p(spi_gpio_remove),
++};
++
++static int __init spi_gpio_init(void)
++{
++	return platform_driver_probe(&spi_gpio_driver, spi_gpio_probe);
++}
++module_init(spi_gpio_init);
++
++static void __exit spi_gpio_exit(void)
++{
++	platform_driver_unregister(&spi_gpio_driver);
++}
++module_exit(spi_gpio_exit);
++
++
++MODULE_DESCRIPTION("SPI master driver using generic bitbanged GPIO ");
++MODULE_AUTHOR("David Brownell");
++MODULE_LICENSE("GPL");
+--- /dev/null
++++ b/include/linux/spi/spi_gpio.h
+@@ -0,0 +1,60 @@
++#ifndef __LINUX_SPI_GPIO_H
++#define __LINUX_SPI_GPIO_H
++
++/*
++ * For each bitbanged SPI bus, set up a platform_device node with:
++ *   - name "spi_gpio"
++ *   - id the same as the SPI bus number it implements
++ *   - dev.platform data pointing to a struct spi_gpio_platform_data
++ *
++ * Or, see the driver code for information about speedups that are
++ * possible on platforms that support inlined access for GPIOs (no
++ * spi_gpio_platform_data is used).
++ *
++ * Use spi_board_info with these busses in the usual way, being sure
++ * that the controller_data being the GPIO used for each device's
++ * chipselect:
++ *
++ *	static struct spi_board_info ... [] = {
++ *	...
++ *		// this slave uses GPIO 42 for its chipselect
++ *		.controller_data = (void *) 42,
++ *	...
++ *		// this one uses GPIO 86 for its chipselect
++ *		.controller_data = (void *) 86,
++ *	...
++ *	};
++ *
++ * If the bitbanged bus is later switched to a "native" controller,
++ * that platform_device and controller_data should be removed.
++ */
++
++/**
++ * struct spi_gpio_platform_data - parameter for bitbanged SPI master
++ * @sck: number of the GPIO used for clock output
++ * @mosi: number of the GPIO used for Master Output, Slave In (MOSI) data
++ * @miso: number of the GPIO used for Master Input, Slave Output (MISO) data
++ * @num_chipselect: how many slaves to allow
++ *
++ * All GPIO signals used with the SPI bus managed through this driver
++ * (chipselects, MOSI, MISO, SCK) must be configured as GPIOs, instead
++ * of some alternate function.
++ *
++ * It can be convenient to use this driver with pins that have alternate
++ * functions associated with a "native" SPI controller if a driver for that
++ * controller is not available, or is missing important functionality.
++ *
++ * On platforms which can do so, configure MISO with a weak pullup unless
++ * there's an external pullup on that signal.  That saves power by avoiding
++ * floating signals.  (A weak pulldown would save power too, but many
++ * drivers expect to see all-ones data as the no slave "response".)
++ */
++struct spi_gpio_platform_data {
++	unsigned	sck;
++	unsigned	mosi;
++	unsigned	miso;
++
++	u16		num_chipselect;
++};
++
++#endif /* __LINUX_SPI_GPIO_H */
