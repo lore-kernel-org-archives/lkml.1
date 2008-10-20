@@ -1,31 +1,35 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755183AbYJTUnv (ORCPT <rfc822;ralf@linux-mips.org>);
-	Mon, 20 Oct 2008 16:43:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbYJTUnl
+	id S1755486AbYJTXLp (ORCPT <rfc822;ralf@linux-mips.org>);
+	Mon, 20 Oct 2008 19:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYJTXLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 16:43:41 -0400
-Received: from ag-out-0708.google.com ([72.14.246.248]:21942 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752710AbYJTUnk (ORCPT
+	Mon, 20 Oct 2008 19:11:35 -0400
+Received: from sccmmhc91.asp.att.net ([204.127.203.211]:58041 "EHLO
+	sccmmhc91.asp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751933AbYJTXLf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 16:43:40 -0400
-Message-ID: <f05945610810201343o6b90efdvf352fa3004d08f63@mail.gmail.com>
-Date: Tue, 21 Oct 2008 04:43:29 +0800
-From: "=?BIG5?B?p7qnu7C2?=" <l0xm0s3z641@gmail.com>
-To: lingshung@tccg.gov.tw
-Subject: =?BIG5?B?oe+juK3TpEiquqldsd+sT7FJueaquqFBue+m26R2pm6juMJJofE=?=
-MIME-Version: 1.0
-Content-Type: text/plain; charset=BIG5
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+	Mon, 20 Oct 2008 19:11:35 -0400
+From: petrus2@mchsi.com (petrus.wheelers@hotmail.com)
+Date: Mon, 20 Oct 2008 23:09:51 +0000
+Message-Id: <102020082309.23500.48FD0FBE000D638800005BCC219791332903010CD2079C080C03BFCD9C9A9D9B0A9F@mchsi.com>
+X-Mailer: AT&T Message Center Version 1 (Oct 30 2007)
+X-Authenticated-Sender: cGV0cnVzMkBtY2hzaS5jb20=
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755183AbYJTUnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755486AbYJTXLp@vger.kernel.org>
 
-MjAwOC8xMC8yMSAtIDQ6NDM6MjIKCq23quG2rsP9obipyrrWpc2soaG4vGG0Qaldv0WxoQoKs8y3
-c6FBs8ymaKFBtNqmobPMu/Sl/qq6saG97KXOq36zo6Zis2+4zAoKsXGye6Zitn2pbKZipF2ko6XO
-rmCy26q6qOypsa2xpWi2UrGhveylzqt+pEYKCrr0p32mYrNvoUdrdXJvLnR2LzJSNgoop+K69Kd9
-vca7c6jsuvSnfaZDtkukV6dZpWkpCgqjuK3TpEiquqldsd+sT7FJueaquqFBue+m26R2pm6juMJJ
-CqO4rdOkSKRdr+C/V6bbqMmo/KnKt1K7UL9FsaGqurzWvewKCrJ7pkGlW6RKt3yt+6X+qHSmQ7DT
-q36kRafpwHW0Zgo=
+
+
+--
+I give out loans at very cheap and
+moderate rates. I am a registered
+lender if you are interested. You
+are to
+contact me with this
+Email:petrus.wheelers@hotmail.com
+I hope to hear from you.
+
+Best Regards
+Rev Petrus Wheelers
