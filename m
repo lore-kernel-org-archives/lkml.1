@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYJTXC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755733AbYJTXDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbYJTXC5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 19:02:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbYJTXCo
+	id S1755733AbYJTXDZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 19:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbYJTXDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 19:02:44 -0400
-Received: from zrtps0kn.nortel.com ([47.140.192.55]:56447 "EHLO
-	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755133AbYJTXCn (ORCPT
+	Mon, 20 Oct 2008 19:03:01 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:17264 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755568AbYJTXDA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 19:02:43 -0400
-Message-ID: <48FD0DF0.2050008@nortel.com>
-Date: Mon, 20 Oct 2008 17:02:08 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
+	Mon, 20 Oct 2008 19:03:00 -0400
+Message-ID: <48FD0DEE.7000302@oracle.com>
+Date: Mon, 20 Oct 2008 16:02:06 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
 User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-To: david@lang.hm
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: sched_yield() options
-References: <alpine.DEB.1.10.0810201531010.21749@asgard.lang.hm>
-In-Reply-To: <alpine.DEB.1.10.0810201531010.21749@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk@arm.linux.org.uk>, Greg KH <greg@kroah.com>,
+       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] misc: replace remaining __FUNCTION__ with __func__
+References: <1224543608.31861.228.camel@brick>
+In-Reply-To: <1224543608.31861.228.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Oct 2008 23:02:09.0361 (UTC) FILETIME=[E13FC410:01C93307]
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> I've seen a lot of discussion about how sched_yield is abused by 
-> applications. I'm working with a developer on one application that looks 
-> like it's falling into this same trap (mutexes between threads and using 
-> sched_yield (or more precisely pthread_yield()) to let other threads get 
-> the lock)
+Harvey Harrison wrote:
+> __FUNCTION__ is gcc-specific, use __func__
 > 
-> however I've been having a hard time tracking down the appropriate 
-> discussions to forward on to the developer (both for why what he's doing 
-> is bad, and for what he should be doing instead)
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> These are the last occurences in-tree that are not already coming
+> through a subsystem tree.
 > 
-> could someone point out appropriate mailing list threads, or other 
-> documentation for this?
+> xtensa, staging and blackfin (serial driver and a fb driver) will
+> catch the remaining ones as they merge.
+> 
+>  Documentation/DocBook/kernel-hacking.tmpl |    2 +-
+>  arch/arm/mach-iop13xx/include/mach/time.h |    4 ++--
+>  arch/arm/mach-pxa/include/mach/zylonite.h |    4 ++--
+>  arch/powerpc/include/asm/ptrace.h         |    2 +-
+>  drivers/net/usb/pegasus.c                 |    4 ++--
+>  5 files changed, 8 insertions(+), 8 deletions(-)
+> 
+> diff --git a/Documentation/DocBook/kernel-hacking.tmpl b/Documentation/DocBook/kernel-hacking.tmpl
+> index 4c63e58..ae15d55 100644
+> --- a/Documentation/DocBook/kernel-hacking.tmpl
+> +++ b/Documentation/DocBook/kernel-hacking.tmpl
+> @@ -1105,7 +1105,7 @@ static struct block_device_operations opt_fops = {
+>      </listitem>
+>      <listitem>
+>       <para>
+> -      Function names as strings (__FUNCTION__).
+> +      Function names as strings (__func__).
+>       </para>
+>      </listitem>
+>      <listitem>
 
-The main reason why it's bad is that the behaviour of yield() for 
-SCHED_OTHER tasks is not strongly defined in the spec.  Depending on 
-OS/version you may yield to all other SCHED_OTHER tasks, only one task, 
-or anywhere in between.
+Ack that part.
 
-Also, yield() gives the kernel no information on why it's yielding and 
-to whom, so it is impossible for the kernel to make the optimal decision 
-in all cases.
-
-For more information, try searching the linux.kernel google groups 
-archive.  There's a thread called "yield API" with some information. 
-See also " CFS: some bad numbers with Java/database threading [FIXED]".
-
-Chris
+Thanks.
