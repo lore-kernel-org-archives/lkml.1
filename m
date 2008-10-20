@@ -1,336 +1,327 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbYJTNRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752806AbYJTNZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753234AbYJTNRh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 09:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbYJTNR2
+	id S1752806AbYJTNZr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 09:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYJTNZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 09:17:28 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50474 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750992AbYJTNR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 09:17:26 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-To: torvalds@osdl.org
-cc: dhowells@redhat.com, jmorris@namei.org, viro@ZenIV.linux.org.uk,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT Pull Request] Copy on write credentials for Linux [ver #2]
-Date: Mon, 20 Oct 2008 14:17:13 +0100
-Message-ID: <17285.1224508633@redhat.com>
-From: David Howells <dhowells@redhat.com>
+	Mon, 20 Oct 2008 09:25:39 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:45848 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751792AbYJTNZi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 09:25:38 -0400
+Date: Mon, 20 Oct 2008 15:25:36 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Andrey Mirkin <major@openvz.org>
+Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [PATCH 08/10] Introduce functions to restart a process
+Message-ID: <20081020132536.GS15171@hawkmoon.kerlabs.com>
+Reply-To: Louis.Rilling@kerlabs.com
+References: <1224285098-573-1-git-send-email-major@openvz.org> <1224285098-573-2-git-send-email-major@openvz.org> <1224285098-573-3-git-send-email-major@openvz.org> <1224285098-573-4-git-send-email-major@openvz.org> <1224285098-573-5-git-send-email-major@openvz.org> <1224285098-573-6-git-send-email-major@openvz.org> <1224285098-573-7-git-send-email-major@openvz.org> <1224285098-573-8-git-send-email-major@openvz.org> <1224285098-573-9-git-send-email-major@openvz.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-22007-1224508992-0001-2"
+Content-Disposition: inline
+In-Reply-To: <1224285098-573-9-git-send-email-major@openvz.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-The following changes since commit 0cfd81031a26717fe14380d18275f8e217571615:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../gregkh/usb-2.6
+--=_bohort-22007-1224508992-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-are available in the git repository at:
+On Sat, Oct 18, 2008 at 03:11:36AM +0400, Andrey Mirkin wrote:
+> Functions to restart process, restore its state, fpu and registers are ad=
+ded.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/dhowells/cred-2.6.git master
+[...]
 
-David Howells (78):
-      CRED: Wrap task credential accesses in the IA64 arch
-      CRED: Wrap task credential accesses in the MIPS arch
-      CRED: Wrap task credential accesses in the PA-RISC arch
-      CRED: Wrap task credential accesses in the PowerPC arch
-      CRED: Wrap task credential accesses in the S390 arch
-      CRED: Wrap task credential accesses in the x86 arch
-      CRED: Wrap task credential accesses in the block loopback driver
-      CRED: Wrap task credential accesses in the tty driver
-      CRED: Wrap task credential accesses in the ISDN drivers
-      CRED: Wrap task credential accesses in the network device drivers
-      CRED: Wrap task credential accesses in the USB driver
-      CRED: Wrap task credential accesses in 9P2000 filesystem
-      CRED: Wrap task credential accesses in the AFFS filesystem
-      CRED: Wrap task credential accesses in the autofs filesystem
-      CRED: Wrap task credential accesses in the autofs4 filesystem
-      CRED: Wrap task credential accesses in the BFS filesystem
-      CRED: Wrap task credential accesses in the CIFS filesystem
-      CRED: Wrap task credential accesses in the Coda filesystem
-      CRED: Wrap task credential accesses in the devpts filesystem
-      CRED: Wrap task credential accesses in the eCryptFS filesystem
-      CRED: Wrap task credential accesses in the Ext2 filesystem
-      CRED: Wrap task credential accesses in the Ext3 filesystem
-      CRED: Wrap task credential accesses in the Ext4 filesystem
-      CRED: Wrap task credential accesses in the FAT filesystem
-      CRED: Wrap task credential accesses in the FUSE filesystem
-      CRED: Wrap task credential accesses in the GFS2 filesystem
-      CRED: Wrap task credential accesses in the HFS filesystem
-      CRED: Wrap task credential accesses in the HFSplus filesystem
-      CRED: Wrap task credential accesses in the HPFS filesystem
-      CRED: Wrap task credential accesses in the hugetlbfs filesystem
-      CRED: Wrap task credential accesses in the JFFS2 filesystem
-      CRED: Wrap task credential accesses in the JFS filesystem
-      CRED: Wrap task credential accesses in the Minix filesystem
-      CRED: Wrap task credential accesses in the NCPFS filesystem
-      CRED: Wrap task credential accesses in the NFS daemon
-      CRED: Wrap task credential accesses in the OCFS2 filesystem
-      CRED: Wrap task credential accesses in the OMFS filesystem
-      CRED: Wrap task credential accesses in the RAMFS filesystem
-      CRED: Wrap task credential accesses in the ReiserFS filesystem
-      CRED: Wrap task credential accesses in the SMBFS filesystem
-      CRED: Wrap task credential accesses in the SYSV filesystem
-      CRED: Wrap task credential accesses in the UBIFS filesystem
-      CRED: Wrap task credential accesses in the UDF filesystem
-      CRED: Wrap task credential accesses in the UFS filesystem
-      CRED: Wrap task credential accesses in the XFS filesystem
-      CRED: Wrap task credential accesses in the filesystem subsystem
-      CRED: Wrap task credential accesses in the SYSV IPC subsystem
-      CRED: Wrap task credential accesses in the AX25 protocol
-      CRED: Wrap task credential accesses in the IPv6 protocol
-      CRED: Wrap task credential accesses in the netrom protocol
-      CRED: Wrap task credential accesses in the ROSE protocol
-      CRED: Wrap task credential accesses in the SunRPC protocol
-      CRED: Wrap task credential accesses in the UNIX socket protocol
-      CRED: Wrap task credential accesses in the networking subsystem
-      CRED: Wrap task credential accesses in the key management code
-      CRED: Wrap task credential accesses in the capabilities code
-      CRED: Wrap task credential accesses in the core kernel
-      KEYS: Disperse linux/key_ui.h
-      KEYS: Alter use of key instantiation link-to-keyring argument
-      CRED: Neuter sys_capset()
-      CRED: Constify the kernel_cap_t arguments to the capset LSM hooks
-      CRED: Separate task security context from task_struct
-      CRED: Detach the credentials from task_struct
-      CRED: Wrap current->cred and a few other accessors
-      CRED: Use RCU to access another task's creds and to release a task's own creds
-      CRED: Wrap access to SELinux's task SID
-      CRED: Separate per-task-group keyrings from signal_struct
-      CRED: Rename is_single_threaded() to is_wq_single_threaded()
-      CRED: Make inode_has_perm() and file_has_perm() take a cred pointer
-      CRED: Pass credentials through dentry_open()
-      CRED: Inaugurate COW credentials
-      CRED: Make execve() take advantage of copy-on-write credentials
-      CRED: Prettify commoncap.c
-      CRED: Use creds in file structs
-      CRED: Documentation
-      CRED: Differentiate objective and effective subjective credentials on a task
-      CRED: Add a kernel_service object class to SELinux
-      CRED: Allow kernel services to override LSM settings for task actions
+> diff --git a/checkpoint/rst_process.c b/checkpoint/rst_process.c
+> new file mode 100644
+> index 0000000..b9f745e
+> --- /dev/null
+> +++ b/checkpoint/rst_process.c
+> @@ -0,0 +1,277 @@
+> +/*
+> + *  Copyright (C) 2008 Parallels, Inc.
+> + *
+> + *  Author: Andrey Mirkin <major@openvz.org>
+> + *
+> + *  This program is free software; you can redistribute it and/or
+> + *  modify it under the terms of the GNU General Public License as
+> + *  published by the Free Software Foundation, version 2 of the
+> + *  License.
+> + *
+> + */
+> +
+> +#include <linux/sched.h>
+> +#include <linux/fs.h>
+> +#include <linux/file.h>
+> +#include <linux/version.h>
+> +#include <linux/module.h>
+> +
+> +#include "checkpoint.h"
+> +#include "cpt_image.h"
+> +
+> +#define HOOK_RESERVE	256
+> +
+> +struct thr_context {
+> +	struct completion complete;
+> +	int error;
+> +	struct cpt_context *ctx;
+> +	struct task_struct *tsk;
+> +};
+> +
+> +int local_kernel_thread(int (*fn)(void *), void * arg, unsigned long fla=
+gs, pid_t pid)
+> +{
+> +	pid_t ret;
+> +
+> +	if (current->fs =3D=3D NULL) {
+> +		/* do_fork_pid() hates processes without fs, oopses. */
+> +		eprintk("local_kernel_thread: current->fs=3D=3DNULL\n");
+> +		return -EINVAL;
+> +	}
+> +	if (!try_module_get(THIS_MODULE))
+> +		return -EBUSY;
+> +	ret =3D kernel_thread(fn, arg, flags);
+> +	if (ret < 0)
+> +		module_put(THIS_MODULE);
+> +	return ret;
+> +}
+> +
+> +static unsigned int decode_task_flags(unsigned int task_flags)
+> +{
+> +	unsigned int flags =3D 0;
+> +
+> +	if (task_flags & (1 << CPT_PF_EXITING))
+> +		flags |=3D PF_EXITING;
+> +	if (task_flags & (1 << CPT_PF_FORKNOEXEC))
+> +		flags |=3D PF_FORKNOEXEC;
+> +	if (task_flags & (1 << CPT_PF_SUPERPRIV))
+> +		flags |=3D PF_SUPERPRIV;
+> +	if (task_flags & (1 << CPT_PF_DUMPCORE))
+> +		flags |=3D PF_DUMPCORE;
+> +	if (task_flags & (1 << CPT_PF_SIGNALED))
+> +		flags |=3D PF_SIGNALED;
+> +=09
+> +	return flags;
+> +	=09
+> +}
+> +
+> +int rst_restore_task_struct(struct task_struct *tsk, struct cpt_task_ima=
+ge *ti,
+> +			    struct cpt_context *ctx)
+> +{
+> +	int i;
+> +
+> +	/* Restore only saved flags, comm and tls for now */
+> +	tsk->flags =3D decode_task_flags(ti->cpt_flags);
+> +	clear_tsk_thread_flag(tsk, TIF_FREEZE);
+> +	memcpy(tsk->comm, ti->cpt_comm, TASK_COMM_LEN);
+> +	for (i =3D 0; i < GDT_ENTRY_TLS_ENTRIES; i++) {
+> +		tsk->thread.tls_array[i].a =3D ti->cpt_tls[i] & 0xFFFFFFFF;
+> +		tsk->thread.tls_array[i].b =3D ti->cpt_tls[i] >> 32;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int rst_restore_fpustate(struct task_struct *tsk, struct cpt_task=
+_image *ti,
+> +				struct cpt_context *ctx)
+> +{
+> +	struct cpt_obj_bits hdr;
+> +	int err;
+> +	char *buf;
+> +
+> +	clear_stopped_child_used_math(tsk);
+> +
+> +	err =3D rst_get_object(CPT_OBJ_BITS, &hdr, sizeof(hdr), ctx);
+> +	if (err < 0)
+> +		return err;
+> +
+> +	buf =3D kmalloc(hdr.cpt_size, GFP_KERNEL);
+> +	if (!buf)
+> +		return -ENOMEM;
+> +
+> +	err =3D ctx->read(buf, hdr.cpt_size, ctx);
+> +	if (err)
+> +		goto out;
+> +
+> +	if (hdr.cpt_content =3D=3D CPT_CONTENT_X86_FPUSTATE && cpu_has_fxsr) {
+> +		memcpy(&tsk->thread.xstate, buf,
+> +				sizeof(struct i387_fxsave_struct));
+> +		if (ti->cpt_flags & CPT_PF_USED_MATH)
+> +			set_stopped_child_used_math(tsk);
+> +	}
+> +#ifndef CONFIG_X86_64
+> +	else if (hdr.cpt_content =3D=3D CPT_CONTENT_X86_FPUSTATE_OLD &&
+> +			!cpu_has_fxsr) {	=09
+> +		memcpy(&tsk->thread.xstate, buf,
+> +				sizeof(struct i387_fsave_struct));
+> +		if (ti->cpt_flags & CPT_PF_USED_MATH)
+> +			set_stopped_child_used_math(tsk);
+> +	}
+> +#endif
+> +
+> +out:
+> +	kfree(buf);
+> +	return err;
+> +}
+> +
+> +static u32 decode_segment(u32 segid)
+> +{
+> +	if (segid =3D=3D CPT_SEG_ZERO)
+> +		return 0;
+> +
+> +	/* TLS descriptors */
+> +	if (segid <=3D CPT_SEG_TLS3)
+> +		return ((GDT_ENTRY_TLS_MIN + segid - CPT_SEG_TLS1) << 3) + 3;
+> +
+> +	/* LDT descriptor, it is just an index to LDT array */
+> +	if (segid >=3D CPT_SEG_LDT)
+> +		return ((segid - CPT_SEG_LDT) << 3) | 7;
+> +
+> +	/* Check for one of standard descriptors */
+> +	if (segid =3D=3D CPT_SEG_USER32_DS)
+> +		return __USER_DS;
+> +	if (segid =3D=3D CPT_SEG_USER32_CS)
+> +		return __USER_CS;
+> +
+> +	eprintk("Invalid segment reg %d\n", segid);
+> +	return 0;
+> +}
+> +
+> +static int rst_restore_registers(struct task_struct *tsk, struct cpt_con=
+text *ctx)
+> +{
+> +	struct cpt_x86_regs ri;
+> +	struct pt_regs *regs =3D task_pt_regs(tsk);
+> +	extern char i386_ret_from_resume;
+> +	int err;
+> +
+> +	err =3D rst_get_object(CPT_OBJ_X86_REGS, &ri, sizeof(ri), ctx);
+> +	if (err < 0)
+> +		return err;
+> +
+> +	tsk->thread.sp =3D (unsigned long) regs;
+> +	tsk->thread.sp0 =3D (unsigned long) (regs+1);
+> +	tsk->thread.ip =3D (unsigned long) &i386_ret_from_resume;
+> +
+> +	tsk->thread.gs =3D decode_segment(ri.cpt_gs);
+> +	tsk->thread.debugreg0 =3D ri.cpt_debugreg[0];
+> +	tsk->thread.debugreg1 =3D ri.cpt_debugreg[1];
+> +	tsk->thread.debugreg2 =3D ri.cpt_debugreg[2];
+> +	tsk->thread.debugreg3 =3D ri.cpt_debugreg[3];
+> +	tsk->thread.debugreg6 =3D ri.cpt_debugreg[6];
+> +	tsk->thread.debugreg7 =3D ri.cpt_debugreg[7];
+> +
+> +	regs->bx =3D ri.cpt_bx;
+> +	regs->cx =3D ri.cpt_cx;
+> +	regs->dx =3D ri.cpt_dx;
+> +	regs->si =3D ri.cpt_si;
+> +	regs->di =3D ri.cpt_di;
+> +	regs->bp =3D ri.cpt_bp;
+> +	regs->ax =3D ri.cpt_ax;
+> +	regs->orig_ax =3D ri.cpt_orig_ax;
+> +	regs->ip =3D ri.cpt_ip;
+> +	regs->flags =3D ri.cpt_flags;
+> +	regs->sp =3D ri.cpt_sp;
+> +
+> +	regs->cs =3D decode_segment(ri.cpt_cs);
+> +	regs->ss =3D decode_segment(ri.cpt_ss);
+> +	regs->ds =3D decode_segment(ri.cpt_ds);
+> +	regs->es =3D decode_segment(ri.cpt_es);
+> +	regs->fs =3D decode_segment(ri.cpt_fs);
+> +
+> +	tsk->thread.sp -=3D HOOK_RESERVE;
+> +	memset((void*)tsk->thread.sp, 0, HOOK_RESERVE);
+> +
+> +	return 0;
+> +}
+> +
+> +static int restart_thread(void *arg)
+> +{
+> +	struct thr_context *thr_ctx =3D arg;
+> +	struct cpt_context *ctx;
+> +	struct cpt_task_image *ti;
+> +	int err;
+> +
+> +	current->state =3D TASK_UNINTERRUPTIBLE;
+> +
+> +	ctx =3D thr_ctx->ctx;
+> +	ti =3D kmalloc(sizeof(*ti), GFP_KERNEL);
+> +	if (!ti)
+> +		return -ENOMEM;
+> +
+> +	err =3D rst_get_object(CPT_OBJ_TASK, ti, sizeof(*ti), ctx);
+> +	if (!err)
+> +		err =3D rst_restore_task_struct(current, ti, ctx);
+> +	/* Restore mm here */
+> +	if (!err)
+> +		err =3D rst_restore_fpustate(current, ti, ctx);
+> +	if (!err)
+> +		err =3D rst_restore_registers(current, ctx);
+> +
+> +	thr_ctx->error =3D err;
+> +	complete(&thr_ctx->complete);
+> +
+> +	if (!err && (ti->cpt_state & (EXIT_ZOMBIE|EXIT_DEAD))) {
+> +		do_exit(ti->cpt_exit_code);
+> +	} else {
+> +		__set_current_state(TASK_UNINTERRUPTIBLE);
+> +	}
+> +
+> +	kfree(ti);
+> +	schedule();
+> +
+> +	eprintk("leaked %d/%d %p\n", task_pid_nr(current), task_pid_vnr(current=
+), current->mm);
+> +
+> +	module_put(THIS_MODULE);
 
- Documentation/credentials.txt                |  582 +++++++++++++
- arch/alpha/kernel/asm-offsets.c              |   11 +-
- arch/alpha/kernel/entry.S                    |   10 +-
- arch/ia64/ia32/sys_ia32.c                    |    7 +-
- arch/ia64/kernel/mca_drv.c                   |    2 +-
- arch/ia64/kernel/perfmon.c                   |   43 +-
- arch/ia64/kernel/signal.c                    |    4 +-
- arch/mips/kernel/kspd.c                      |    4 +-
- arch/mips/kernel/mips-mt-fpaff.c             |    5 +-
- arch/mips/kernel/vpe.c                       |    4 +-
- arch/parisc/kernel/signal.c                  |    2 +-
- arch/powerpc/mm/fault.c                      |    2 +-
- arch/powerpc/platforms/cell/spufs/inode.c    |    8 +-
- arch/s390/hypfs/inode.c                      |    4 +-
- arch/s390/kernel/compat_linux.c              |   28 +-
- arch/um/drivers/mconsole_kern.c              |    3 +-
- arch/x86/ia32/ia32_aout.c                    |    2 +-
- arch/x86/mm/fault.c                          |    2 +-
- drivers/block/loop.c                         |    6 +-
- drivers/char/tty_audit.c                     |    6 +-
- drivers/connector/cn_proc.c                  |   16 +-
- drivers/isdn/capi/capifs.c                   |    4 +-
- drivers/isdn/hysdn/hysdn_procconf.c          |    6 +-
- drivers/net/tun.c                            |    8 +-
- drivers/usb/core/devio.c                     |   10 +-
- drivers/usb/core/inode.c                     |    4 +-
- fs/9p/fid.c                                  |    2 +-
- fs/9p/vfs_inode.c                            |    4 +-
- fs/9p/vfs_super.c                            |    4 +-
- fs/affs/inode.c                              |    4 +-
- fs/affs/super.c                              |    4 +-
- fs/anon_inodes.c                             |    4 +-
- fs/attr.c                                    |    4 +-
- fs/autofs/inode.c                            |    4 +-
- fs/autofs4/dev-ioctl.c                       |    3 +-
- fs/autofs4/inode.c                           |    4 +-
- fs/autofs4/waitq.c                           |    4 +-
- fs/bfs/dir.c                                 |    4 +-
- fs/binfmt_aout.c                             |    2 +-
- fs/binfmt_elf.c                              |   20 +-
- fs/binfmt_elf_fdpic.c                        |   19 +-
- fs/binfmt_flat.c                             |    2 +-
- fs/binfmt_som.c                              |    2 +-
- fs/cifs/cifs_fs_sb.h                         |    2 +-
- fs/cifs/cifsproto.h                          |    2 +-
- fs/cifs/connect.c                            |    4 +-
- fs/cifs/dir.c                                |   12 +-
- fs/cifs/inode.c                              |    8 +-
- fs/cifs/ioctl.c                              |    2 +-
- fs/cifs/misc.c                               |    4 +-
- fs/coda/cache.c                              |    6 +-
- fs/coda/file.c                               |    2 +-
- fs/coda/upcall.c                             |    2 +-
- fs/compat.c                                  |   42 +-
- fs/devpts/inode.c                            |    4 +-
- fs/dquot.c                                   |    4 +-
- fs/ecryptfs/ecryptfs_kernel.h                |    3 +-
- fs/ecryptfs/kthread.c                        |    9 +-
- fs/ecryptfs/main.c                           |    3 +-
- fs/ecryptfs/messaging.c                      |   18 +-
- fs/ecryptfs/miscdev.c                        |   20 +-
- fs/exec.c                                    |  183 +++--
- fs/exportfs/expfs.c                          |    4 +-
- fs/ext2/balloc.c                             |    2 +-
- fs/ext2/ialloc.c                             |    4 +-
- fs/ext3/balloc.c                             |    2 +-
- fs/ext3/ialloc.c                             |    4 +-
- fs/ext4/balloc.c                             |    5 +-
- fs/ext4/ialloc.c                             |    4 +-
- fs/fat/file.c                                |    2 +-
- fs/fat/inode.c                               |    4 +-
- fs/fcntl.c                                   |   18 +-
- fs/file_table.c                              |   10 +-
- fs/fuse/dev.c                                |    4 +-
- fs/fuse/dir.c                                |   25 +-
- fs/gfs2/inode.c                              |   10 +-
- fs/hfs/inode.c                               |    4 +-
- fs/hfs/super.c                               |    4 +-
- fs/hfsplus/inode.c                           |    4 +-
- fs/hfsplus/options.c                         |    4 +-
- fs/hpfs/namei.c                              |   24 +-
- fs/hpfs/super.c                              |    4 +-
- fs/hppfs/hppfs.c                             |    6 +-
- fs/hugetlbfs/inode.c                         |   21 +-
- fs/inotify_user.c                            |    2 +-
- fs/internal.h                                |    6 +
- fs/ioprio.c                                  |   18 +-
- fs/jffs2/fs.c                                |    4 +-
- fs/jfs/jfs_inode.c                           |    4 +-
- fs/locks.c                                   |    2 +-
- fs/minix/bitmap.c                            |    4 +-
- fs/namei.c                                   |   10 +-
- fs/namespace.c                               |    2 +-
- fs/ncpfs/ioctl.c                             |   91 +-
- fs/nfsctl.c                                  |    3 +-
- fs/nfsd/auth.c                               |   95 ++-
- fs/nfsd/nfs4recover.c                        |   71 +-
- fs/nfsd/nfsfh.c                              |   11 +-
- fs/nfsd/vfs.c                                |    9 +-
- fs/ocfs2/dlm/dlmfs.c                         |    8 +-
- fs/ocfs2/namei.c                             |    4 +-
- fs/omfs/inode.c                              |    8 +-
- fs/open.c                                    |   59 +-
- fs/pipe.c                                    |    4 +-
- fs/posix_acl.c                               |    4 +-
- fs/proc/array.c                              |   32 +-
- fs/proc/base.c                               |   32 +-
- fs/quota.c                                   |    4 +-
- fs/ramfs/inode.c                             |    4 +-
- fs/reiserfs/namei.c                          |    4 +-
- fs/smbfs/dir.c                               |    3 +-
- fs/smbfs/inode.c                             |    2 +-
- fs/smbfs/proc.c                              |    2 +-
- fs/sysv/ialloc.c                             |    4 +-
- fs/ubifs/budget.c                            |    2 +-
- fs/ubifs/dir.c                               |    4 +-
- fs/udf/ialloc.c                              |    4 +-
- fs/udf/namei.c                               |    2 +-
- fs/ufs/ialloc.c                              |    4 +-
- fs/xfs/linux-2.6/xfs_cred.h                  |    6 +-
- fs/xfs/linux-2.6/xfs_globals.h               |    2 +-
- fs/xfs/linux-2.6/xfs_ioctl.c                 |    5 +-
- fs/xfs/xfs_acl.c                             |    6 +-
- fs/xfs/xfs_inode.h                           |    2 +-
- fs/xfs/xfs_vnodeops.h                        |   10 +-
- include/keys/keyring-type.h                  |   31 +
- include/linux/binfmts.h                      |   16 +-
- include/linux/capability.h                   |    2 -
- include/linux/cred.h                         |  340 +++++++-
- include/linux/fs.h                           |    8 +-
- include/linux/init_task.h                    |   13 +-
- include/linux/key-ui.h                       |   66 --
- include/linux/key.h                          |   32 +-
- include/linux/keyctl.h                       |    4 +-
- include/linux/sched.h                        |   64 +--
- include/linux/securebits.h                   |    2 +-
- include/linux/security.h                     |  326 ++++----
- include/net/scm.h                            |    4 +-
- init/main.c                                  |    1 +
- ipc/mqueue.c                                 |   19 +-
- ipc/shm.c                                    |    9 +-
- ipc/util.c                                   |   18 +-
- kernel/Makefile                              |    2 +-
- kernel/acct.c                                |    7 +-
- kernel/auditsc.c                             |   57 +-
- kernel/capability.c                          |  268 +------
- kernel/cgroup.c                              |   17 +-
- kernel/cred-internals.h                      |   21 +
- kernel/cred.c                                |  577 +++++++++++++
- kernel/exit.c                                |   23 +-
- kernel/fork.c                                |   45 +-
- kernel/futex.c                               |   20 +-
- kernel/futex_compat.c                        |    7 +-
- kernel/kmod.c                                |   30 +-
- kernel/ptrace.c                              |   29 +-
- kernel/sched.c                               |   26 +-
- kernel/signal.c                              |   60 +-
- kernel/sys.c                                 |  579 +++++++------
- kernel/sysctl.c                              |    2 +-
- kernel/timer.c                               |    8 +-
- kernel/trace/trace.c                         |    2 +-
- kernel/tsacct.c                              |    6 +-
- kernel/uid16.c                               |   31 +-
- kernel/user.c                                |   37 +-
- kernel/user_namespace.c                      |   14 +-
- kernel/workqueue.c                           |    8 +-
- lib/Makefile                                 |    2 +-
- lib/is_single_threaded.c                     |   45 +
- mm/mempolicy.c                               |    9 +-
- mm/migrate.c                                 |    9 +-
- mm/oom_kill.c                                |    6 +-
- mm/shmem.c                                   |    8 +-
- net/9p/client.c                              |    2 +-
- net/ax25/af_ax25.c                           |    2 +-
- net/ax25/ax25_route.c                        |    2 +-
- net/core/dev.c                               |    8 +-
- net/core/scm.c                               |   10 +-
- net/ipv4/netfilter/ipt_LOG.c                 |    4 +-
- net/ipv6/ip6_flowlabel.c                     |    2 +-
- net/ipv6/netfilter/ip6t_LOG.c                |    4 +-
- net/netfilter/nfnetlink_log.c                |    5 +-
- net/netfilter/xt_owner.c                     |   16 +-
- net/netrom/af_netrom.c                       |    4 +-
- net/rose/af_rose.c                           |    4 +-
- net/rxrpc/ar-key.c                           |    6 +-
- net/sched/cls_flow.c                         |    4 +-
- net/socket.c                                 |    4 +-
- net/sunrpc/auth.c                            |   14 +-
- net/unix/af_unix.c                           |   11 +-
- security/capability.c                        |   56 +-
- security/commoncap.c                         |  699 ++++++++++------
- security/keys/internal.h                     |   47 +-
- security/keys/key.c                          |   25 +-
- security/keys/keyctl.c                       |  210 +++--
- security/keys/keyring.c                      |   15 +-
- security/keys/permission.c                   |   29 +-
- security/keys/proc.c                         |    8 +-
- security/keys/process_keys.c                 |  469 +++++------
- security/keys/request_key.c                  |  133 ++--
- security/keys/request_key_auth.c             |   46 +-
- security/root_plug.c                         |   13 +-
- security/security.c                          |   96 +--
- security/selinux/exports.c                   |    8 +-
- security/selinux/hooks.c                     | 1162 ++++++++++++++------------
- security/selinux/include/av_perm_to_string.h |    2 +
- security/selinux/include/av_permissions.h    |    2 +
- security/selinux/include/class_to_string.h   |    5 +
- security/selinux/include/flask.h             |    1 +
- security/selinux/include/objsec.h            |   11 -
- security/selinux/selinuxfs.c                 |   13 +-
- security/selinux/xfrm.c                      |    6 +-
- security/smack/smack_access.c                |    4 +-
- security/smack/smack_lsm.c                   |  173 +++--
- security/smack/smackfs.c                     |    6 +-
- 214 files changed, 5070 insertions(+), 3106 deletions(-)
- create mode 100644 Documentation/credentials.txt
- create mode 100644 include/keys/keyring-type.h
- delete mode 100644 include/linux/key-ui.h
- create mode 100644 kernel/cred-internals.h
- create mode 100644 kernel/cred.c
- create mode 100644 lib/is_single_threaded.c
+I'm sorry, I still do not understand what you are doing with this self-modu=
+le
+pinning stuff. AFAICS, we should not get here unless there is a bug. So the
+checkpoint module ref count is never decreased, right?
+
+Could you detail what is this self-module pinning for? As I already told yo=
+u,
+this looks like a bogus solution to avoid unloading the checkpoint module d=
+uring
+restart.
+
+Thanks!
+
+Louis
+
+[...]
+
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
+
+--=_bohort-22007-1224508992-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFI/IbQVKcRuvQ9Q1QRAiGBAKC4Z8k/6JoKv8ZUPiICCENVm/3WzACff24m
+6BQS1z6dHnMA8QzMK7MMuk8=
+=iJ08
+-----END PGP SIGNATURE-----
+
+--=_bohort-22007-1224508992-0001-2--
