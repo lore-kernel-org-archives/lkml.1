@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbYJTROb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191AbYJTRP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756386AbYJTROb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 13:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYJTREV
+	id S1754191AbYJTRP0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 13:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbYJTRE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 13:04:21 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:59561 "EHLO relay.sgi.com"
+	Mon, 20 Oct 2008 13:04:28 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:59554 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752819AbYJTRD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753927AbYJTRD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 20 Oct 2008 13:03:26 -0400
-Message-Id: <20081020170322.922269000@polaris-admin.engr.sgi.com>
+Message-Id: <20081020170322.646161000@polaris-admin.engr.sgi.com>
 References: <20081020170319.539427000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 20 Oct 2008 10:03:43 -0700
+Date: Mon, 20 Oct 2008 10:03:41 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: Andi Kleen <andi@firstfloor.org>,
@@ -24,68 +24,105 @@ Cc: Andi Kleen <andi@firstfloor.org>,
        Yinghai Lu <yhlu.kernel@gmail.com>, IA64 <linux-ia64@vger.kernel.org>,
        PowerPC <linuxppc-dev@ozlabs.org>, S390 <linux-s390@vger.kernel.org>,
        SPARC <sparclinux@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 24/35] cpumask: cpumask_any_but()
-Content-Disposition: inline; filename=cpumask:cpumask_any_but.patch
+Subject: [PATCH 22/35] cpumask: cpumask_first/cpumask_next
+Content-Disposition: inline; filename=cpumask:cpumask_first-cpumask_next.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's a common case where we want any online cpu except a particular
-one.  This creates a helper to do that, otherwise we need a temp var
-and cpumask_andnot().
+Pointer-taking variants of first_cpu/next_cpu.
 
 From: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- include/linux/cpumask.h |    3 +++
- lib/cpumask.c           |   10 ++++++++++
- 2 files changed, 13 insertions(+)
+ include/linux/cpumask.h |   18 +++++++++---------
+ lib/cpumask.c           |   10 +++++-----
+ 2 files changed, 14 insertions(+), 14 deletions(-)
 
 --- test-compile.orig/include/linux/cpumask.h
 +++ test-compile/include/linux/cpumask.h
-@@ -111,6 +111,7 @@
+@@ -46,8 +46,8 @@
+  * void cpumask_shift_right(dst, src, n) Shift right
+  * void cpumask_shift_left(dst, src, n)	Shift left
   *
-  * int cpumask_any(mask)		Any cpu in mask
-  * int cpumask_any_and(mask1,mask2)	Any cpu in both masks
-+ * int cpumask_any_but(mask,cpu)	Any cpu in mask except cpu
+- * int first_cpu(mask)			Number lowest set bit or nr_cpumask_bits
+- * int next_cpu(cpu, mask)		Next cpu past 'cpu', or nr_cpumask_bits
++ * int cpumask_first(mask)		Number lowest set bit or nr_cpumask_bits
++ * int cpumask_next(cpu, mask)		Next cpu past 'cpu', or nr_cpumask_bits
   *
-  * for_each_possible_cpu(cpu)		for-loop cpu over cpu_possible_map
-  * for_each_online_cpu(cpu)		for-loop cpu over cpu_online_map
-@@ -458,6 +459,7 @@ extern cpumask_t cpu_mask_all;
- #define cpumask_first(src)		({ (void)(src); 0; })
- #define cpumask_next(n, src)		({ (void)(src); 1; })
- #define cpumask_next_and(n, srcp, andp)	({ (void)(srcp), (void)(andp); 1; })
-+#define cpumask_any_but(mask, cpu)	({ (void)(mask); (void)(cpu); 0; })
+  * void cpumask_copy(dmask, smask)	dmask = smask
+  *
+@@ -200,6 +200,8 @@ extern cpumask_t _unused_cpumask_arg_;
+ #define for_each_cpu_mask(cpu, mask)	for_each_cpu(cpu, &(mask))
+ #define for_each_cpu_mask_and(cpu, mask, and)	\
+ 		for_each_cpu_and(cpu, &(mask), &(and))
++#define first_cpu(src)		cpumask_first(&(src))
++#define next_cpu(n, src)	cpumask_next((n), &(src))
+ /* End deprecated region. */
  
- #define for_each_cpu(cpu, mask)			\
- 	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
-@@ -469,6 +471,7 @@ extern cpumask_t cpu_mask_all;
- int cpumask_first(const cpumask_t *srcp);
- int cpumask_next(int n, const cpumask_t *srcp);
+ static inline void cpumask_set_cpu(int cpu, volatile struct cpumask *dstp)
+@@ -448,8 +450,8 @@ extern cpumask_t cpu_mask_all;
+ 
+ #if NR_CPUS == 1
+ 
+-#define first_cpu(src)			({ (void)(src); 0; })
+-#define next_cpu(n, src)		({ (void)(src); 1; })
++#define cpumask_first(src)		({ (void)(src); 0; })
++#define cpumask_next(n, src)		({ (void)(src); 1; })
+ #define cpumask_next_and(n, srcp, andp)	({ (void)(srcp), (void)(andp); 1; })
+ #define any_online_cpu(mask)		0
+ 
+@@ -460,18 +462,16 @@ extern cpumask_t cpu_mask_all;
+ 
+ #else /* NR_CPUS > 1 */
+ 
+-int __first_cpu(const cpumask_t *srcp);
+-int __next_cpu(int n, const cpumask_t *srcp);
++int cpumask_first(const cpumask_t *srcp);
++int cpumask_next(int n, const cpumask_t *srcp);
  int cpumask_next_and(int n, const cpumask_t *srcp, const cpumask_t *andp);
-+int cpumask_any_but(const struct cpumask *mask, unsigned int cpu);
+ int __any_online_cpu(const cpumask_t *mask);
+ 
+-#define first_cpu(src)		__first_cpu(&(src))
+-#define next_cpu(n, src)	__next_cpu((n), &(src))
+ #define any_online_cpu(mask) __any_online_cpu(&(mask))
  
  #define for_each_cpu(cpu, mask)				\
  	for ((cpu) = -1;				\
+-		(cpu) = __next_cpu((cpu), (mask)),	\
++		(cpu) = cpumask_next((cpu), (mask)),	\
+ 		(cpu) < nr_cpumask_bits;)
+ #define for_each_cpu_and(cpu, mask, and)			\
+ 	for ((cpu) = -1;					\
 --- test-compile.orig/lib/cpumask.c
 +++ test-compile/lib/cpumask.c
-@@ -24,6 +24,16 @@ int cpumask_next_and(int n, const cpumas
- }
- EXPORT_SYMBOL(cpumask_next_and);
+@@ -3,21 +3,21 @@
+ #include <linux/cpumask.h>
+ #include <linux/module.h>
  
-+int cpumask_any_but(const struct cpumask *mask, unsigned int cpu)
-+{
-+	unsigned int i;
-+
-+	for_each_cpu(i, mask)
-+		if (i != cpu)
-+			break;
-+	return i;
-+}
-+
- /* These are not inline because of header tangles. */
- #ifdef CONFIG_CPUMASK_OFFSTACK
- bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
+-int __first_cpu(const cpumask_t *srcp)
++int cpumask_first(const cpumask_t *srcp)
+ {
+ 	return find_first_bit(cpumask_bits(srcp), nr_cpumask_bits);
+ }
+-EXPORT_SYMBOL(__first_cpu);
++EXPORT_SYMBOL(cpumask_first);
+ 
+-int __next_cpu(int n, const cpumask_t *srcp)
++int cpumask_next(int n, const cpumask_t *srcp)
+ {
+ 	return find_next_bit(cpumask_bits(srcp), nr_cpumask_bits, n+1);
+ }
+-EXPORT_SYMBOL(__next_cpu);
++EXPORT_SYMBOL(cpumask_next);
+ 
+ int cpumask_next_and(int n, const cpumask_t *srcp, const cpumask_t *andp)
+ {
+-	while ((n = next_cpu(n, *srcp)) < nr_cpumask_bits)
++	while ((n = cpumask_next(n, srcp)) < nr_cpu_ids)
+ 		if (cpumask_test_cpu(n, andp))
+ 			break;
+ 	return n;
 
 -- 
