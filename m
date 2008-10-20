@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752331AbYJTGjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752221AbYJTGoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752331AbYJTGjS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 02:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbYJTGjJ
+	id S1752221AbYJTGoR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 02:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbYJTGoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 02:39:09 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:60332 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751369AbYJTGjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 02:39:08 -0400
-Message-ID: <48FC273B.3030300@cn.fujitsu.com>
-Date: Mon, 20 Oct 2008 14:37:47 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 20 Oct 2008 02:44:07 -0400
+Received: from ti-out-0910.google.com ([209.85.142.191]:1347 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751298AbYJTGoG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 02:44:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=DlhUpogL8PwIAHcl0k+UDqZFeIJNsn3XQ/VeStY/H7F5AWb669FFj2Pjqeu7c1+BIq
+         4bsxDssU4bqUv8McDMIQMM2ZzF7JGJydhSgYM/+XcQc0rfKPALmpzZ2vTctUW7dgf83J
+         Z23oVuMuqxBfT352D8eT12I5goWoWG0PfFlgg=
+Message-ID: <df9815e70810192344v3a80f70awfc8f621e155bda6@mail.gmail.com>
+Date: Mon, 20 Oct 2008 14:44:04 +0800
+From: "Jike Song" <albcamus@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: add missed clobber for 32-bit memmove
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <48F8BEE1.1010000@zytor.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Breaks the redundant loop in kernel/marker.c
-Content-Type: text/plain; charset=GB2312
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1224249353-3032-1-git-send-email-albcamus@gmail.com>
+	 <1224249353-3032-2-git-send-email-albcamus@gmail.com>
+	 <48F8BEE1.1010000@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- kernel/marker.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+On Sat, Oct 18, 2008 at 12:35 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Jike Song wrote:
+>>
+>> memmove() is implemented by inline assembly. It calls std at first
+>> and cld at last, but EFLAGS still should be clobbered.
+>
+> gcc always treats EFLAGS as clobbered on x86.  The "cc" clobber is needed on
+> some platforms, but is a noop on x86.
 
-diff --git a/kernel/marker.c b/kernel/marker.c
-index 7d1faec..2c3172d 100644
---- a/kernel/marker.c
-+++ b/kernel/marker.c
-@@ -836,8 +836,6 @@ void *marker_get_private_data(const char *name, marker_probe_func *probe,
- 			if (!e->ptype) {
- 				if (num == 0 && e->single.func == probe)
- 					return e->single.probe_private;
--				else
--					break;
- 			} else {
- 				struct marker_probe_closure *closure;
- 				int match = 0;
-@@ -849,6 +847,7 @@ void *marker_get_private_data(const char *name, marker_probe_func *probe,
- 						return closure[i].probe_private;
- 				}
- 			}
-+			break;
- 		}
- 	}
- 	return ERR_PTR(-ENOENT);
+No wonder there are inline asms that clobbered eflags/rflags but
+without declaring them as clobbered. Thanks for your information.
+
+It turns out that I need to read through the gcc x86 back-end as long
+as I want to be a Linux/x86 developer, right? That sounds
+discouraging:)
+
 -- 
-1.5.5.3
-
-
+Thanks,
+Jike
