@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbYJTMrh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbYJTMrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753333AbYJTMrh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 08:47:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYJTMr2
+	id S1753933AbYJTMrz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 08:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbYJTMrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 08:47:28 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37638 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751587AbYJTMr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 08:47:27 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Dmitri Monakhov <dmonakhov@openvz.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 1/2] fs: truncate blocks outside i_size after generic_file_direct_write error
-References: <1224424981-5144-1-git-send-email-dmonakhov@openvz.org>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Mon, 20 Oct 2008 08:47:22 -0400
-In-Reply-To: <1224424981-5144-1-git-send-email-dmonakhov@openvz.org> (Dmitri
-	Monakhov's message of "Sun, 19 Oct 2008 18:03:00 +0400")
-Message-ID: <x498wsj302t.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Mon, 20 Oct 2008 08:47:43 -0400
+Received: from mail.gmx.net ([213.165.64.20]:37019 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751830AbYJTMrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 08:47:42 -0400
+X-Authenticated: #6028172
+X-Provags-ID: V01U2FsdGVkX18+Dnomu38+Ki8UJ9vMpGqAg0NdIO5rCDznHhaarK
+	iABWlejq8w6OyO
+Message-ID: <48FC7DEC.9060200@gmx.de>
+Date: Mon, 20 Oct 2008 14:47:40 +0200
+From: Dieter Ries <clip2@gmx.de>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081002)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Johannes Berg <johannes@sipsolutions.net>
+CC: Dominik Brodowski <linux@dominikbrodowski.net>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       Tomas Winkler <tomasw@gmail.com>
+Subject: Re: iwl3945 broken in current git
+References: <48FC6C05.6020901@gmx.de>	 <20081020121710.GA3607@isilmar.linta.de>	 (sfid-20081020_141718_690091_E56EF8AB) <1224506010.27899.23.camel@johannes.berg>	 <48FC7B1A.10307@gmx.de> (sfid-20081020_143609_718157_68144039) <1224506366.27899.25.camel@johannes.berg>
+In-Reply-To: <1224506366.27899.25.camel@johannes.berg>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5600000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitri Monakhov <dmonakhov@openvz.org> writes:
+Johannes Berg schrieb:
+> On Mon, 2008-10-20 at 14:35 +0200, Dieter Ries wrote:
+>> Johannes Berg schrieb:
+>>> On Mon, 2008-10-20 at 14:17 +0200, Dominik Brodowski wrote:
+>>>
+>>>>> iwl3945: Microcode SW error detected.  Restarting 0x82000008.
+>>>>> iwl3945: Error Reply type 0x00000005 cmd REPLY_SCAN_CMD (0x80) seq
+>>>>> 0x4416 ser 0x0000004B
+>>>>> iwl3945: Can't stop Rx DMA.
+>>>> It needs a more recent uCode -- the driver really should scream out loudly
+>>>> that the old firmware no longer suffices.
+>>> You could try reverting ef224ca2ce55e81acc6c3a74c3e8c00a00941c70, that's
+>>> the only commit I can find that seems to be vaguely related to the
+>>> problem as Tomas described it. Not that it might not be hidden in some
+>>> other commit...
+>> The new firmware did it. It works now, but it should really scream out
+>> loud ...
+> 
+> Do you still have the old one? Would you try anyway?
 
-> We need to remove block that was allocated in generic_file_direct_write()
-> if we fail. We have to do it *regardless* to blocksize. At least ext2,
-> ext3 and reiserfs interpret (i_size < biggest block) condition as error.
-> Fsck will complain about wrong i_size. Then fsck will fix the error
-> by changing i_size according to the biggest block. This is bad because
-> this blocks contain gurbage from previous write attempt. And result in
-> data corruption.
->
-> In order to call vmtruncate() we have to hold host->i_mutex. This is true
-> for generic_file_aio_write(). In fact occasionally it is also true for all
-> generic_file_aio_write_nolock() callers except blockdev. But this situation
-> may change someday. This patch fix only generic_write_aio_write() case.
-> BTW: update generic_file_direct_write's comment with currently outdated.
+ahem, I don't seem to have ef224ca2ce55e81acc6c3a74c3e8c00a00941c70, are
+you sure that is the right hash?
 
-Do you have a test case for this, by any chance?
+> 
+> johannes
 
-Cheers,
-
-Jeff
+cu
+Dieter
