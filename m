@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752203AbYJTAej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752215AbYJTArO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752203AbYJTAej (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Oct 2008 20:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbYJTAeb
+	id S1752215AbYJTArO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Oct 2008 20:47:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbYJTAq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Oct 2008 20:34:31 -0400
-Received: from mail.anarazel.de ([217.115.131.40]:52724 "EHLO smtp.anarazel.de"
+	Sun, 19 Oct 2008 20:46:58 -0400
+Received: from sh.osrg.net ([192.16.179.4]:43358 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750704AbYJTAeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Oct 2008 20:34:31 -0400
-From: Andres Freund <andres@anarazel.de>
-To: Keith Packard <keithp@keithp.com>
-Subject: Re: [git pull] agp patches for 2.6.28-rc1.
-Date: Mon, 20 Oct 2008 02:34:28 +0200
-User-Agent: KMail/1.10.1 (Linux/2.6.27-andres-04904-gc813b4e; KDE/4.1.2; x86_64; ; )
-Cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org
-References: <alpine.DEB.0.82.0810160758320.16504@skynet.skynet.ie> <200810200144.44383.andres@anarazel.de> <1224461977.5303.34.camel@koto.keithp.com>
-In-Reply-To: <1224461977.5303.34.camel@koto.keithp.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	id S1751291AbYJTAq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Oct 2008 20:46:58 -0400
+Date: Mon, 20 Oct 2008 09:46:06 +0900
+To: dwmw2@infradead.org
+Cc: joro@8bytes.org, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, fenghua.yu@intel.com, tony.luck@intel.com,
+       suresh.b.siddha@intel.com, sfr@canb.auug.org.au,
+       andreas.herrmann3@amd.com, joseph.cihula@intel.com,
+       akpm@linux-foundation.org, jbarnes@virtuousgeek.org, tglx@linutronix.de,
+       torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: [ANNOUNCE] iommu-2.6.git tree
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1224415198.6770.1464.camel@macbook.infradead.org>
+References: <1224343843.6770.1378.camel@macbook.infradead.org>
+	<20081019111203.GB29705@8bytes.org>
+	<1224415198.6770.1464.camel@macbook.infradead.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810200234.28751.andres@anarazel.de>
+Message-Id: <20081020094441G.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, 19 Oct 2008 12:19:58 +0100
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-On Monday 20 October 2008 02:19:37 you wrote:
-> The GM45/G45 support in both kernel and user space was horribly broken,
-> causing the kernel to either overwrite stolen entries with freshly
-> allocated pages, and potentially corrupt the system, or leave some GTT
-> entries uninitialized and cause the hardware to lock up.
-I had some crashes with 3d, but none in 2d as far as I know.
+> The Intel IOMMU appears on IA64 too, and doesn't want to be developed
+> and tested off in an x86-specific corner by itself. And I'm going to be
+> looking at other generic things we can do to improve IOMMU-related
+> performance, which will touch on other architectures too.
 
-> You appear to have a happy situation where this bug isn't obviously
-> breaking things. We couldn't find any machines where even simple 2D
-> graphics was stable for very long.
-Interesting. I had the system running for some days without problems related 
-to graphics.
+Any plan to replace the current rb tree algorithm that VT-d
+IOMMU implementation uses with the bitmap algorithm that the rest of
+the IOMMU implementations use?
 
-> We applied a patch to both kernel and 2D driver (as both end up
-> computing the size of the GTT stolen area for historical reasons) to fix
-> this mistake. Updating your 2D driver to 2.4.98 should get you the other
-> half of the fix.
-Ok, will try, and also report this to ubuntu and maybe other distributions...
-
-> Yeah, I'm getting information about how 'hybrid' graphics hardware
-> works.
-If you need some information/testing/whatever...
-
-Andres
+http://lkml.org/lkml/2008/6/4/250
