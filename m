@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752473AbYJTHPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbYJTHSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752473AbYJTHPL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 03:15:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbYJTHO6
+	id S1752181AbYJTHSx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 03:18:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbYJTHSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 03:14:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53698 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750958AbYJTHO6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 03:14:58 -0400
-Date: Mon, 20 Oct 2008 09:14:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Cc: kexec-ml <kexec@lists.infradead.org>, lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Huang Ying <ying.huang@intel.com>, Yinghai Lu <yinghai@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] kdump: Fix invalid access on i386 sparsemem.
-Message-ID: <20081020071433.GC12131@elte.hu>
-References: <48FC0E68.50902@mxs.nes.nec.co.jp>
+	Mon, 20 Oct 2008 03:18:45 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63901 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750911AbYJTHSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 03:18:45 -0400
+Message-ID: <48FC3083.8020104@cn.fujitsu.com>
+Date: Mon, 20 Oct 2008 15:17:23 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48FC0E68.50902@mxs.nes.nec.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0020]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Re: [PATCH] Breaks the redundant loop in kernel/marker.c
+References: <48FC273B.3030300@cn.fujitsu.com> <20081020065205.GA12927@elte.hu>
+In-Reply-To: <20081020065205.GA12927@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> hm, could you describe the necessity of this patch some more? This has 
+> the change to change behavior, which might even be a bugfix: is there 
+> any chance that the closure-loop in the e->ptype != NULL branch does not 
+> exit? Before your patch we'd continue the iteration - which _probably_ 
+> does not lead to any more matches (e->name is supposed to be unique).
 
-* Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp> wrote:
+Because e->name is unique in list, we don't need to continue the iteration
+after matched.
+This is a cleanup.
 
-> 
-> Hi,
-> 
-> Since linux-2.6.27, kdump has failed on i386 sparsemem kernel.
-> 1st-kernel gets a panic just before switching to 2nd-kernel.
-> 
-> The cause is that a kernel accesses invalid mem_section by
-> page_to_pfn(image->swap_page) at machine_kexec().
-> image->swap_page is allocated if kexec for hibernation, but
-> it is not allocated if kdump. So if kdump, a kernel should
-> not access the mem_section corresponding to image->swap_page.
-> The attached patch fixes this invalid access.
+Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+---
+ kernel/marker.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-applied to tip/x86/urgent, thanks!
+diff --git a/kernel/marker.c b/kernel/marker.c
+index 7d1faec..2c3172d 100644
+--- a/kernel/marker.c
++++ b/kernel/marker.c
+@@ -836,8 +836,6 @@ void *marker_get_private_data(const char *name, marker_probe_func *probe,
+ 			if (!e->ptype) {
+ 				if (num == 0 && e->single.func == probe)
+ 					return e->single.probe_private;
+-				else
+-					break;
+ 			} else {
+ 				struct marker_probe_closure *closure;
+ 				int match = 0;
+@@ -849,6 +847,7 @@ void *marker_get_private_data(const char *name, marker_probe_func *probe,
+ 						return closure[i].probe_private;
+ 				}
+ 			}
++			break;
+ 		}
+ 	}
+ 	return ERR_PTR(-ENOENT);
+-- 
+1.5.5.3
 
-	Ingo
+
