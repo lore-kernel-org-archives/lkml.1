@@ -1,91 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbYJTSHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbYJTSMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753463AbYJTSHx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 14:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbYJTSHb
+	id S1754158AbYJTSMq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 14:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbYJTSMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 14:07:31 -0400
-Received: from mga11.intel.com ([192.55.52.93]:50394 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752385AbYJTSH3 convert rfc822-to-8bit (ORCPT
+	Mon, 20 Oct 2008 14:12:38 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:5134 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752406AbYJTSMh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 14:07:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,453,1220252400"; 
-   d="scan'208";a="393848953"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "ltt-dev@lists.casi.polymtl.ca" <ltt-dev@lists.casi.polymtl.ca>
-Date: Mon, 20 Oct 2008 11:07:05 -0700
-Subject: RE: [RFC patch 15/15] LTTng timestamp x86
-Thread-Topic: [RFC patch 15/15] LTTng timestamp x86
-Thread-Index: AckxQyh8bXSMGeBMQIe9AFo7wn5DqABmcSmg
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA353346068@orsmsx505.amr.corp.intel.com>
-References: <20081016234657.837704867@polymtl.ca>
- <alpine.LFD.2.00.0810161701470.3288@nehalem.linux-foundation.org>
- <20081017012835.GA30195@Krystal>
- <57C9024A16AD2D4C97DC78E552063EA3532D455F@orsmsx505.amr.corp.intel.com>
- <20081017172515.GA9639@goodmis.org>
- <57C9024A16AD2D4C97DC78E552063EA3533458AC@orsmsx505.amr.corp.intel.com>
- <20081017184215.GB9874@Krystal>
- <57C9024A16AD2D4C97DC78E552063EA35334594F@orsmsx505.amr.corp.intel.com>
- <20081017202313.GA13597@Krystal>
- <57C9024A16AD2D4C97DC78E552063EA353345B9B@orsmsx505.amr.corp.intel.com>
- <20081018170118.GA22243@Krystal>
-In-Reply-To: <20081018170118.GA22243@Krystal>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 20 Oct 2008 14:12:37 -0400
+Message-ID: <48FCCA14.5000103@ct.jp.nec.com>
+Date: Mon, 20 Oct 2008 11:12:36 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: CFS related question
+References: <20081018200319.GC8188@localhost> <1224361698.10548.38.camel@lappy.programming.kicks-ass.net>
+In-Reply-To: <1224361698.10548.38.camel@lappy.programming.kicks-ass.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And what do we say when we detect this ? "sorry, please upgrade your
-> hardware to get a reliable trace" ? ;)
+Peter Zijlstra wrote:
+> On Sun, 2008-10-19 at 00:03 +0400, Cyrill Gorcunov wrote:
+>> Hi Ingo, Peter,
+>>
+>> I just curious, look we have the following
+>>
+>> static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
+>> {
+>> 	struct sched_entity *se = NULL;
+>>
+>> 	if (first_fair(cfs_rq)) {
+>> 		se = __pick_next_entity(cfs_rq);
+>> 		se = pick_next(cfs_rq, se);
+>> 		set_next_entity(cfs_rq, se);
+>> 	}
+>>
+>> 	return se;
+>> }
+>>
+>> which I presume may return NULL so the following piece
+>> could fail
+>>
+>> static struct task_struct *pick_next_task_fair(struct rq *rq)
+>> {
+>> 	struct task_struct *p;
+>> 	struct cfs_rq *cfs_rq = &rq->cfs;
+>> 	struct sched_entity *se;
+>>
+>> 	if (unlikely(!cfs_rq->nr_running))
+>> 		return NULL;
+>>
+>> 	do {
+>> -->		se = pick_next_entity(cfs_rq);
+>> --> OOPs	cfs_rq = group_cfs_rq(se);
+>> 	} while (cfs_rq);
+>>
+>> 	p = task_of(se);
+>> 	hrtick_start_fair(rq, p);
+>>
+>> 	return p;
+>> }
+>>
+>> Did I miss something? Or it comepletely can NOT happen?
+> 
+> pick_next_entity() only returns NULL when !first_fair(), which is when !
+> nr_running.
+> 
+> So the initial !nr_running check in pick_next_task_fair() will catch
+> that. Further nested RQs will never have !nr_running because then they
+> get dequeued.
 
-My employer might be happy with that answer ;-) ... but I think
-we could tell the user to:
+Hi Peter,
 
-        1) adjust something in /sys/...
-        2) boot with some special option
-        3) rebuild kernel with CONFIG_INSANE_TSC=y
+pick_next_entity() is used in pick_next_task_fair() only.
+So, checking first_fair() never fail, and if fails it means bug. Right?
 
-to switch over to a heavyweight workaround in s/w.  Systems
-that require this are already in the minority ... and I
-think (hope!) that current and future generations of cpus
-won't have these challenges.
+How about the below patch?
+--------
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Subject: [PATCH] sched: replace check with BUG_ON in pick_next_entity()
 
-So this is mostly a campaign for the default code path to
-be based on current (sane) TSC behaviour ... with the workarounds
-for past problems kept to one side.
+BUG_ON instead of returning NULL in pick_next_entity() when !first_fair().
+Basically first_fair() is always true, and returning NULL will cause oops later.
 
-> Nope, this is not required. I removed the heartbeat event from LTTng two
-> weeks ago, implementing detection of the delta from the last timestamp
-> written into the trace. If we detect that the new timestamp is too far
-> from the previous one, we write the full 64 bits TSC in an extended
-> event header. Therefore, we have no dependency on interrupt latency to
-> get a sane time-base.
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ kernel/sched_fair.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-Neat.  Could you grab the HPET value here too?
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 9573c33..3ce7c25 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -758,13 +758,13 @@ pick_next(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ 
+ static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
+ {
+-	struct sched_entity *se = NULL;
++	struct sched_entity *se;
+ 
+-	if (first_fair(cfs_rq)) {
+-		se = __pick_next_entity(cfs_rq);
+-		se = pick_next(cfs_rq, se);
+-		set_next_entity(cfs_rq, se);
+-	}
++	BUG_ON(!first_fair(cfs_rq));
++
++	se = __pick_next_entity(cfs_rq);
++	se = pick_next(cfs_rq, se);
++	set_next_entity(cfs_rq, se);
+ 
+ 	return se;
+ }
+-- 
+1.5.6
 
-
-> (8 cores up)
-
-Interesting results.  I'm not at all sure why HPET scales so badly.
-Maybe some h/w throttling/synchronizing going on???
-
--Tony
