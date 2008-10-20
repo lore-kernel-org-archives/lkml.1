@@ -1,100 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751973AbYJTHMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752250AbYJTHN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751973AbYJTHMV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 03:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbYJTHMM
+	id S1752250AbYJTHN4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 03:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbYJTHNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 03:12:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47977 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751124AbYJTHMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 03:12:10 -0400
-Date: Mon, 20 Oct 2008 09:12:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, linux-pci@vger.kernel.org,
-       yhlu.kernel@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH] x86, ioremap: use %pR in printk
-Message-ID: <20081020071203.GB12131@elte.hu>
-References: <20081020040823.871BDDDDEC@ozlabs.org>
+	Mon, 20 Oct 2008 03:13:48 -0400
+Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:49133 "EHLO
+	boneca.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751207AbYJTHNr convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 03:13:47 -0400
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "H. Peter Anvin" <hpa@kernel.org>, Greg KH <greg@kroah.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+References: <20081016002509.GA25868@kroah.com>
+	<20081016124943.GE23630@cs181140183.pp.htv.fi>
+	<20081016151748.GA31075@kroah.com>
+	<20081016153053.GJ5834@nostromo.devel.redhat.com>
+	<20081016154726.GA6331@kroah.com>
+	<20081016171626.GB22554@cs181140183.pp.htv.fi>
+	<20081017040239.GB28188@kroah.com>
+	<20081017103138.1ca68d17@lxorguk.ukuu.org.uk>
+	<48F8C000.8030003@kernel.org> <20081017174226.GF2221@kroah.com>
+	<48F98DE2.8030205@kernel.org>
+	<ortzb89bak.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<48FC1727.4030403@zytor.com>
+From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+Organization: Free thinker, not speaking for University of Campinas
+Date: Mon, 20 Oct 2008 05:13:10 -0200
+In-Reply-To: <48FC1727.4030403@zytor.com> (H. Peter Anvin's message of "Sun\, 19 Oct 2008 22\:29\:11 -0700")
+Message-ID: <ork5c3age1.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081020040823.871BDDDDEC@ozlabs.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Oct 20, 2008, "H. Peter Anvin" <hpa@zytor.com> wrote:
 
-* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> Uhm, so what happens when a release starts with an -rc stage intended
+> for 2008 release, and then comes out in 2009?
 
-> This converts things in drivers/pci to use %pR to printout the
-> content of a struct resource instead of hand-casted %llx or
-> other variants.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I see at least two possibilities:
 
-cool!
+- it stays 2008, as originally intended.
 
- Acked-by: Ingo Molnar <mingo@elte.hu>
+- it's labeled 2009 since the beginning of the release cycle
 
-there's also two places in arch/x86/mm/ioremap.c that could use this 
-straight away - see the (untested) patch below.
+If it gets released in a year other than originally planned, it's no
+more confusing that buying a 2009-series car in 2008, or Fiscal Years
+vs Calendar Years.
 
-	Ingo
+Personally, I'd rather go with the second option than the first, if
+nothing else because people seem to like better next year's stuff than
+last year's stuff.  But it's not like it matters much.  The point
+(AFAICT) is to give some rough guidance of the time-frame of the
+release, not something like $(date +%s) of the beginning or end of the
+release cycle.
 
---------------------->
->From 3b4f8fd4ff54a2da035e972a610b8d5ac8d8eabb Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 20 Oct 2008 09:08:57 +0200
-Subject: [PATCH] x86, ioremap: use %pR in printk
+Major might as well be defined as Year+/-1 - Constant, monotonically
+increasing.  This should work and make sense as long as no release
+cycle takes longer than say a year or two.
 
-use the new %pR IO resource pointer/address/size printk type conversion
-specifier.
+> Plus, of course, it makes it hard to talk about future releases.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/ioremap.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+Not that it makes a lot of sense to talk about future releases other
+than the next two or so, but we could right now agree to use the
+following replacement table.  Does your roadmap cover longer than
+that?  Did I get the release year approximations wrong?
 
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index ae71e11..640c653 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -207,8 +207,8 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
- 		return NULL;
- 
- 	if (!phys_addr_valid(phys_addr)) {
--		printk(KERN_WARNING "ioremap: invalid physical address %llx\n",
--		       (unsigned long long)phys_addr);
-+		printk(KERN_WARNING "ioremap: invalid physical address %pR\n",
-+		       phys_addr);
- 		WARN_ON_ONCE(1);
- 		return NULL;
- 	}
-@@ -267,9 +267,9 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
- 		    (prot_val == _PAGE_CACHE_WC &&
- 		     new_prot_val == _PAGE_CACHE_WB)) {
- 			pr_debug(
--		"ioremap error for 0x%llx-0x%llx, requested 0x%lx, got 0x%lx\n",
--				(unsigned long long)phys_addr,
--				(unsigned long long)(phys_addr + size),
-+		"ioremap error for %pR-%pR, requested 0x%lx, got 0x%lx\n",
-+				phys_addr,
-+				phys_addr + size,
- 				prot_val, new_prot_val);
- 			free_memtype(phys_addr, phys_addr + size);
- 			return NULL;
+2.6.28 doesn't change
+2.6.29 <-> 2009.1
+2.6.30 <-> 2009.2
+2.6.31 <-> 2009.3
+2.6.32 <-> 2010.1
+2.6.33 <-> 2010.2
+2.6.34 <-> 2010.3
+2.6.35 <-> 2010.4
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+FSFLA Board Member       ¡Sé Libre! => http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
