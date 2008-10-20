@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbYJTSsB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbYJTSvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754829AbYJTSsB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 14:48:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbYJTSrx
+	id S1754246AbYJTSvw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 14:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYJTSvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 14:47:53 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:58455 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752229AbYJTSrw (ORCPT
+	Mon, 20 Oct 2008 14:51:44 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:58702 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751901AbYJTSvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 14:47:52 -0400
-Date: Mon, 20 Oct 2008 19:47:13 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Matt Mackall <mpm@selenic.com>
-cc: Dave Airlie <airlied@redhat.com>, Keith Packard <keithp@keithp.com>,
-       Eric Anholt <eric@anholt.net>, Nick Piggin <npiggin@suse.de>,
-       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Export tiny shmem_file_setup for DRM-GEM
-In-Reply-To: <1224525754.4323.21.camel@calx>
-Message-ID: <Pine.LNX.4.64.0810201939310.14915@blonde.site>
-References: <Pine.LNX.4.64.0810191242220.22825@blonde.site>
- <1224525754.4323.21.camel@calx>
+	Mon, 20 Oct 2008 14:51:44 -0400
+Date: Mon, 20 Oct 2008 13:51:30 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: David Howells <dhowells@redhat.com>
+Cc: James Morris <jmorris@namei.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Michael Halcrow <mhalcrow@us.ibm.com>
+Subject: Re: [PATCH] User namespaces: set of cleanups (eventually for
+	linux-next?)
+Message-ID: <20081020185130.GA21054@us.ibm.com>
+References: <20081016224641.GA17413@us.ibm.com> <758.1224201299@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <758.1224201299@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Oct 2008, Matt Mackall wrote:
-> On Sun, 2008-10-19 at 12:52 +0100, Hugh Dickins wrote:
-> > We're trying to keep the !CONFIG_SHMEM tiny-shmem.c (using ramfs without
-> > swap) in synch with CONFIG_SHMEM shmem.c (and mpm is preparing patches
-> > to combine them).  I was glad to see EXPORT_SYMBOL_GPL(shmem_file_setup)
-> > go into shmem.c, but why not support DRM-GEM when !CONFIG_SHMEM too?
-> > But caution says still depend on MMU, since !CONFIG_MMU is.. different.
-> > 
-> > Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Quoting David Howells (dhowells@redhat.com):
 > 
-> Acked-by: Matt Mackall <mpm@selenic.com>
-
-Thanks.
-
+> Serge E. Hallyn <serue@us.ibm.com> wrote:
 > 
-> Hugh, what path do you usually take for upstreaming shmem bits and what
-> path should I take with my unify patch?
+> > David, since this consumes your patch, I wasn't sure whether it was
+> > appropriate to put your signed-off-by on here or not.  I decided
+> > doing so was the worse of the potential offenses...
+> 
+> The way I think I'd've done it is to include my patch description and
+> signed-off-by then list your additional changes (just keep on incrementing the
+> point numbers) and your signed-off-by.
+> 
+> > -	new_user = alloc_uid(current->nsproxy->user_ns, new->uid);
+> > +	new_user = alloc_uid(current_user()->user_ns, new->uid);
+> 
+> That should be current_user_ns() rather than current_user()->user_ns.  I made
+> this change before adding the macro.
 
-I send them to Andrew (Cc linux-kernel and/or linux-mm, erratic which,
-at best depending on what the area of interest is - there's not much
-of interest to linux-mm in the case of this unification) to get their
-airing in -mm until the next merge window.
+Ok, will change.
 
-You could do that, or were you expecting me to pick up what you had?
-We can do it that way too if you prefer: as things stood, I think
-you were intending to add a patch to remove that redundant function,
-and another to remove CONFIG_TMPFS - but I can do them if you prefer.
+> > +	key_put(new->thread_keyring);
+> > +	new->thread_keyring = NULL;
+> 
+> Superfluous.  copy_creds() does this immediately upon return.
 
-Hugh
+Oops, will drop.
+
+> Also, in copy_creds(), should the session and process keyrings be discarded if
+> CLONE_NEWUSER is set?  Actually, I think that should be dealt with by a patch
+> to deal with namespacing keyrings as the user-default keyrings need to be
+> namespaced rather than here.
+> 
+> David
+
+Oh, yeah, that's going to have to be a separate patch I guess...
+
+thanks,
+-serge
