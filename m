@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbYJTHSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752194AbYJTHVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752181AbYJTHSx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 03:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbYJTHSp
+	id S1752194AbYJTHVn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 03:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbYJTHVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 03:18:45 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63901 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750911AbYJTHSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 03:18:45 -0400
-Message-ID: <48FC3083.8020104@cn.fujitsu.com>
-Date: Mon, 20 Oct 2008 15:17:23 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Re: [PATCH] Breaks the redundant loop in kernel/marker.c
-References: <48FC273B.3030300@cn.fujitsu.com> <20081020065205.GA12927@elte.hu>
-In-Reply-To: <20081020065205.GA12927@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 20 Oct 2008 03:21:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35240 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750878AbYJTHVf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 03:21:35 -0400
+Subject: Re: [PATCH] intel-iommu: use coherent_dma_mask in alloc_coherent
+From: David Woodhouse <dwmw2@infradead.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: mgross@linux.intel.com, mingo@elte.hu, grundler@parisc-linux.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081020093824G.fujita.tomonori@lab.ntt.co.jp>
+References: <20081015160732K.fujita.tomonori@lab.ntt.co.jp>
+	 <1224337616.6770.1366.camel@macbook.infradead.org>
+	 <20081020093824G.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain
+Date: Mon, 20 Oct 2008 08:21:02 +0100
+Message-Id: <1224487262.6770.1505.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> hm, could you describe the necessity of this patch some more? This has 
-> the change to change behavior, which might even be a bugfix: is there 
-> any chance that the closure-loop in the e->ptype != NULL branch does not 
-> exit? Before your patch we'd continue the iteration - which _probably_ 
-> does not lead to any more matches (e->name is supposed to be unique).
+On Mon, 2008-10-20 at 09:46 +0900, FUJITA Tomonori wrote:
+> > I've fixed this up to cope with the fact that dma_mask can be bigger
+> > than an 'unsigned long', and committed it to the iommu-2-6.git tree.
+> 
+> Hmm, 'unsigned long' is 64 bits on IA64 and X86_64. How can dma_mask
+> be bigger than an 'unsigned long'?
 
-Because e->name is unique in list, we don't need to continue the iteration
-after matched.
-This is a cleanup.
+On i386.
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- kernel/marker.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/marker.c b/kernel/marker.c
-index 7d1faec..2c3172d 100644
---- a/kernel/marker.c
-+++ b/kernel/marker.c
-@@ -836,8 +836,6 @@ void *marker_get_private_data(const char *name, marker_probe_func *probe,
- 			if (!e->ptype) {
- 				if (num == 0 && e->single.func == probe)
- 					return e->single.probe_private;
--				else
--					break;
- 			} else {
- 				struct marker_probe_closure *closure;
- 				int match = 0;
-@@ -849,6 +847,7 @@ void *marker_get_private_data(const char *name, marker_probe_func *probe,
- 						return closure[i].probe_private;
- 				}
- 			}
-+			break;
- 		}
- 	}
- 	return ERR_PTR(-ENOENT);
 -- 
-1.5.5.3
-
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
