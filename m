@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbYJTNtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752930AbYJTOCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753937AbYJTNtj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 09:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbYJTNtb
+	id S1752930AbYJTOCf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 10:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYJTOC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 09:49:31 -0400
-Received: from mtagate1.uk.ibm.com ([194.196.100.161]:54042 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751864AbYJTNtb (ORCPT
+	Mon, 20 Oct 2008 10:02:26 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:58946 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751806AbYJTOC0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 09:49:31 -0400
-Message-ID: <48FC8C51.2050108@fr.ibm.com>
-Date: Mon, 20 Oct 2008 15:49:05 +0200
-From: Daniel Lezcano <dlezcano@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 20 Oct 2008 10:02:26 -0400
+Date: Mon, 20 Oct 2008 10:02:25 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+cc: Oliver Neukum <oliver@neukum.org>, <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: Kernel 2.6.26.5 -> 2.6.27.2 [USB REGRESSION] (USB -> D_STATE)
+In-Reply-To: <alpine.DEB.1.10.0810191247540.19058@p34.internal.lan>
+Message-ID: <Pine.LNX.4.44L0.0810200959020.2477-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Cedric Le Goater <clg@fr.ibm.com>
-CC: Louis.Rilling@kerlabs.com, Dave Hansen <dave@linux.vnet.ibm.com>,
-       containers@lists.linux-foundation.org, Andrey Mirkin <major@openvz.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/9] OpenVZ kernel based checkpointing/restart
-References: <1220439476-16465-1-git-send-email-major@openvz.org> <1224286383.1848.65.camel@nimitz> <20081020111002.GQ15171@hawkmoon.kerlabs.com> <48FC86B2.8000606@fr.ibm.com> <48FC8C30.6040409@fr.ibm.com>
-In-Reply-To: <48FC8C30.6040409@fr.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cedric Le Goater wrote:
->>> I'm afraid that we are forgetting to take the best from both
->>> approaches...
->> I agree with Louis.
->>
->> I played with Oren's patchset and tryed to port it on x86_64. I was able
->> to sys_checkpoint/sys_restart but if you remove the restoring of the
->> general registers, the restart still works. I am not an expert on asm,
->> but my hypothesis is when we call sys_checkpoint the registers are saved
->> on the stack by the syscall and when we restore the memory of the
->> process, we restore the stack and the stacked registers are restored
->> when exiting the sys_restart. That make me feel there is an important
->> gap between external checkpoint and internal checkpoint.
->>
->> Dmitry's patchset is nice too, but IMO, it goes too far from what we
-> 
-> I think you are talking about Andrey.
+On Sun, 19 Oct 2008, Justin Piszcz wrote:
 
-Yes :)
+> > You should turn on the usbfs_snoop module parameter for usbcore and see
+> > what shows up in the system log.
+> 
+> > Alan Stern
+> 
+> Tried this, kernel would not boot up any further when I had that enabled
+> alongside the 'extra' debugging options in the kernel:
+> 
+> http://home.comcast.net/~jpiszcz/20081019/2.6.27.2-usb-extra-debug.txt
+
+I'm not interested in your config file; I need to see the dmesg log.
+
+> > Please get sysrq-t of a hang.
+> >
+> > 	Regards
+> > 		Oliver
+> >
+> 
+> Before I tried the above, I was able to get a sysrq-t of the hang:
+> 
+> http://home.comcast.net/~jpiszcz/20081019/trace_before_trigger.txt
+> http://home.comcast.net/~jpiszcz/20081019/trace_after_trigger.txt
+
+Your trace is incomplete.  You might need to increase the size of the 
+kernel log buffer (CONFIG_LOG_BUF_SHIFT) or the size of the buffer used 
+by dmesg (the -s option).
+
+Alan Stern
+
