@@ -1,54 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752153AbYJTIZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752153AbYJTI2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752153AbYJTIZa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 04:25:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbYJTIZW
+	id S1752153AbYJTI2s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 04:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750724AbYJTI2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 04:25:22 -0400
-Received: from ns0.motion-twin.com ([213.186.50.39]:44863 "EHLO
-	mail.motion-twin.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751587AbYJTIZW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 04:25:22 -0400
-Message-ID: <48FC4066.9060303@motion-twin.com>
-Date: Mon, 20 Oct 2008 10:25:10 +0200
-From: Nicolas Cannasse <ncannasse@motion-twin.com>
+	Mon, 20 Oct 2008 04:28:40 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52096 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750763AbYJTI2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 04:28:39 -0400
+Message-ID: <48FC40B3.8060308@cn.fujitsu.com>
+Date: Mon, 20 Oct 2008 16:26:27 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: poll() blocked / packets not received ?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH tip/tracing/markers] markers: simplify	marker_set_format()
+References: <48F59425.40601@cn.fujitsu.com> <20081015134416.GA29281@Krystal>
+In-Reply-To: <20081015134416.GA29281@Krystal>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Mathieu Desnoyers wrote:
+> * Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
+>> current marker_set_format() is complex this patch simplify it, 
+>> and decrease the overhead of marker_update_probes().
+>>
+> 
+> Yep, I think I did put the format string after the name \0, which was
+> rather tricky. I agree that such change makes the code more readable at
+> the expense of doing 2 allocations per marker rather than one, but
+> readability might be a good thing here.
 
-We have an application that uses pthreads and (blocking) sockets.
+this fix did help for readability and made code cleanly.
+but it's still 1 allocation per marker_entry when format != NULL.
+the previous benefit is not lost.
 
-When the application runs with one single thread in separate processes 
-(using fork()) we don't get any problem.
+Thanks, Lai
 
-However when it's multithreaded, we sometimes get stuck while poll()ing 
-a socket (with events set to POLLIN). Even after the other side of the 
-connection has closed its side of the connection, we are still stuck 
-here. Adding a timeout only makes the poll() exit with 0, so we loop.
+> 
+> Thanks !
+> 
+> Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> 
+>> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+>> ---
+>> diff --git a/kernel/marker.c b/kernel/marker.c
+>> index e49a9c5..ef43c86 100644
+>> --- a/kernel/marker.c
+>> +++ b/kernel/marker.c
+>> @@ -65,6 +65,7 @@ struct marker_entry {
+>>  	void *oldptr;
+>>  	int rcu_pending;
+>>  	unsigned char ptype:1;
+>> +	unsigned char format_allocated:1;
+>>  	char name[0];	/* Contains name'\0'format'\0' */
+>>  };
+>>  
+>> @@ -415,6 +416,7 @@ static struct marker_entry *add_marker(const char *name, const char *format)
+>>  	e->single.probe_private = NULL;
+>>  	e->multi = NULL;
+>>  	e->ptype = 0;
+>> +	e->format_allocated = 0;
+>>  	e->refcount = 0;
+>>  	e->rcu_pending = 0;
+>>  	hlist_add_head(&e->hlist, head);
+>> @@ -446,6 +448,8 @@ static int remove_marker(const char *name)
+>>  	if (e->single.func != __mark_empty_function)
+>>  		return -EBUSY;
+>>  	hlist_del(&e->hlist);
+>> +	if (e->format_allocated)
+>> +		kfree(e->format);
+>>  	/* Make sure the call_rcu has been executed */
+>>  	if (e->rcu_pending)
+>>  		rcu_barrier_sched();
+>> @@ -456,57 +460,34 @@ static int remove_marker(const char *name)
+>>  /*
+>>   * Set the mark_entry format to the format found in the element.
+>>   */
+>> -static int marker_set_format(struct marker_entry **entry, const char *format)
+>> +static int marker_set_format(struct marker_entry *entry, const char *format)
+>>  {
+>> -	struct marker_entry *e;
+>> -	size_t name_len = strlen((*entry)->name) + 1;
+>> -	size_t format_len = strlen(format) + 1;
+>> -
+>> -
+>> -	e = kmalloc(sizeof(struct marker_entry) + name_len + format_len,
+>> -			GFP_KERNEL);
+>> -	if (!e)
+>> +	entry->format = kstrdup(format, GFP_KERNEL);
+>> +	if (!entry->format)
+>>  		return -ENOMEM;
+>> -	memcpy(&e->name[0], (*entry)->name, name_len);
+>> -	e->format = &e->name[name_len];
+>> -	memcpy(e->format, format, format_len);
+>> -	if (strcmp(e->format, MARK_NOARGS) == 0)
+>> -		e->call = marker_probe_cb_noarg;
+>> -	else
+>> -		e->call = marker_probe_cb;
+>> -	e->single = (*entry)->single;
+>> -	e->multi = (*entry)->multi;
+>> -	e->ptype = (*entry)->ptype;
+>> -	e->refcount = (*entry)->refcount;
+>> -	e->rcu_pending = 0;
+>> -	hlist_add_before(&e->hlist, &(*entry)->hlist);
+>> -	hlist_del(&(*entry)->hlist);
+>> -	/* Make sure the call_rcu has been executed */
+>> -	if ((*entry)->rcu_pending)
+>> -		rcu_barrier_sched();
+>> -	kfree(*entry);
+>> -	*entry = e;
+>> +	entry->format_allocated = 1;
+>> +
+>>  	trace_mark(core_marker_format, "name %s format %s",
+>> -			e->name, e->format);
+>> +			entry->name, entry->format);
+>>  	return 0;
+>>  }
+>>  
+>>  /*
+>>   * Sets the probe callback corresponding to one marker.
+>>   */
+>> -static int set_marker(struct marker_entry **entry, struct marker *elem,
+>> +static int set_marker(struct marker_entry *entry, struct marker *elem,
+>>  		int active)
+>>  {
+>>  	int ret;
+>> -	WARN_ON(strcmp((*entry)->name, elem->name) != 0);
+>> +	WARN_ON(strcmp(entry->name, elem->name) != 0);
+>>  
+>> -	if ((*entry)->format) {
+>> -		if (strcmp((*entry)->format, elem->format) != 0) {
+>> +	if (entry->format) {
+>> +		if (strcmp(entry->format, elem->format) != 0) {
+>>  			printk(KERN_NOTICE
+>>  				"Format mismatch for probe %s "
+>>  				"(%s), marker (%s)\n",
+>> -				(*entry)->name,
+>> -				(*entry)->format,
+>> +				entry->name,
+>> +				entry->format,
+>>  				elem->format);
+>>  			return -EPERM;
+>>  		}
+>> @@ -522,34 +503,33 @@ static int set_marker(struct marker_entry **entry, struct marker *elem,
+>>  	 * pass from a "safe" callback (with argument) to an "unsafe"
+>>  	 * callback (does not set arguments).
+>>  	 */
+>> -	elem->call = (*entry)->call;
+>> +	elem->call = entry->call;
+>>  	/*
+>>  	 * Sanity check :
+>>  	 * We only update the single probe private data when the ptr is
+>>  	 * set to a _non_ single probe! (0 -> 1 and N -> 1, N != 1)
+>>  	 */
+>>  	WARN_ON(elem->single.func != __mark_empty_function
+>> -		&& elem->single.probe_private
+>> -		!= (*entry)->single.probe_private &&
+>> -		!elem->ptype);
+>> -	elem->single.probe_private = (*entry)->single.probe_private;
+>> +		&& elem->single.probe_private != entry->single.probe_private
+>> +		&& !elem->ptype);
+>> +	elem->single.probe_private = entry->single.probe_private;
+>>  	/*
+>>  	 * Make sure the private data is valid when we update the
+>>  	 * single probe ptr.
+>>  	 */
+>>  	smp_wmb();
+>> -	elem->single.func = (*entry)->single.func;
+>> +	elem->single.func = entry->single.func;
+>>  	/*
+>>  	 * We also make sure that the new probe callbacks array is consistent
+>>  	 * before setting a pointer to it.
+>>  	 */
+>> -	rcu_assign_pointer(elem->multi, (*entry)->multi);
+>> +	rcu_assign_pointer(elem->multi, entry->multi);
+>>  	/*
+>>  	 * Update the function or multi probe array pointer before setting the
+>>  	 * ptype.
+>>  	 */
+>>  	smp_wmb();
+>> -	elem->ptype = (*entry)->ptype;
+>> +	elem->ptype = entry->ptype;
+>>  	elem->state = active;
+>>  
+>>  	return 0;
+>> @@ -593,8 +573,7 @@ void marker_update_probe_range(struct marker *begin,
+>>  	for (iter = begin; iter < end; iter++) {
+>>  		mark_entry = get_marker(iter->name);
+>>  		if (mark_entry) {
+>> -			set_marker(&mark_entry, iter,
+>> -					!!mark_entry->refcount);
+>> +			set_marker(mark_entry, iter, !!mark_entry->refcount);
+>>  			/*
+>>  			 * ignore error, continue
+>>  			 */
+>> @@ -656,7 +635,7 @@ int marker_probe_register(const char *name, const char *format,
+>>  			ret = PTR_ERR(entry);
+>>  	} else if (format) {
+>>  		if (!entry->format)
+>> -			ret = marker_set_format(&entry, format);
+>> +			ret = marker_set_format(entry, format);
+>>  		else if (strcmp(entry->format, format))
+>>  			ret = -EPERM;
+>>  	}
+>>
+>>
+>>
+>>
+>>
+> 
 
-In case we don't loop the next operation is a recv() which will block as 
-well (which is consistent).
 
-It seems like nothing is longer received on the socket but it's 
-difficult to verify with tcpdump since our server outputs something like 
-15MB at peek time with 150 hits per seconds.
-
-We have Shorewall installed and enabled, but what seems strange is that 
-the problem depends on multithreading. It also occurs much more often on 
-the 4 core machines than on a 2 core ones (both with Hyperthreading 
-activated). We're using kernel 2.6.20-15-server (#2 SMP) provided by Ubuntu.
-
-Any tip on we could fix that or investigate further would be 
-appreciated. After one month of debugging we're really out of solution now.
-
-Best,
-Nicolas
