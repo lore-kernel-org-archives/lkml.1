@@ -1,34 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYJUNa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753701AbYJUNd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbYJUNa4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 09:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbYJUNas
+	id S1753701AbYJUNd0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 09:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbYJUNdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 09:30:48 -0400
-Received: from ti-out-0910.google.com ([209.85.142.185]:64058 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750936AbYJUNas (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 09:30:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=uKwXdgPE85vYQHyZsFiVzFMC75xpTOoY/LfKTrhNHXsRe09Eae5WhkE3L9wbTe6Th/
-         XFMxQEENIb2FAbfOBspcG41QKRpA3VJHKVOmxsHR0WFgptQYmjL9XWA382msQHUKH9tL
-         hjER74ejp5IFNn3zCazN6aq0vSaWqwa4t6NfM=
-Date: Tue, 21 Oct 2008 21:30:12 +0800
-From: arrow.ebd@gmail.com
-To: linux_kernel <linux-kernel@vger.kernel.org>
-Subject: =?utf-8?B?W+e/u+ivkeiuoeWIkl1mZWF0dXJlLXJl?=
-	=?utf-8?Q?moval-schedule=2Etxt?=
-Message-ID: <20081021133012.GA6032@think>
+	Tue, 21 Oct 2008 09:33:18 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44486 "EHLO UNKNOWN"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751167AbYJUNdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 09:33:18 -0400
+Date: Tue, 21 Oct 2008 15:33:05 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Use PC-BIOS NUMLOCK flag
+Message-ID: <20081021133304.GB9617@ucw.cz>
+References: <alpine.LSU.0.999.0810161358540.5404@be1.lrz> <20081016143856.GD5071@const.bordeaux.inria.fr> <alpine.LSU.0.999.0810161958450.5051@be1.lrz> <20081016191106.GB4988@const.famille.thibault.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081016191106.GB4988@const.famille.thibault.fr>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-feature-removal-schedule.txt
+On Thu 2008-10-16 21:11:06, Samuel Thibault wrote:
+> Bodo Eggert, le Thu 16 Oct 2008 20:00:31 +0200, a écrit :
+> > On Thu, 16 Oct 2008, Samuel Thibault wrote:
+> > > Bodo Eggert, le Thu 16 Oct 2008 13:59:49 +0200, a écrit :
+> > 
+> > > > +	  If you have an alternative firmware like OpenFirmware or LinuxBios,
+> > > > +	  this flag might not be set correctly, which results in a random state
+> > > > +	  of the Numlock key.
+> > > 
+> > > That's an issue. That means that distributions will just not enable,
+> > > and thus the flag is not really useful, since people who would
+> > > compile their own kernel would very likely have already setup their
+> > > initialization scripts into calling setleds +num (or just set LEDS=+num
+> > > in /etc/console-tools/config on a debian machine).
+> > 
+> > I hope somebody will pop up and say "Hey, those will create an IBM PC data 
+> > area, because they run DOS" ...
+> 
+> Mmm, or rather "hey, here are the patches to fix those BIOSes" :)
+
+Broken bioses being around should not penalize working bioses. Patch
+looks good to me. Yes, I consider LinuxBios broken in this regard.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
