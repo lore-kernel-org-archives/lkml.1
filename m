@@ -1,158 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755817AbYJUVWJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbYJUVW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755817AbYJUVWJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 17:22:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbYJUVV4
+	id S1756030AbYJUVW0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 17:22:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755459AbYJUVWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 17:21:56 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:37240 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750966AbYJUVVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 17:21:55 -0400
-Date: Tue, 21 Oct 2008 16:21:54 -0500
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Cc: Dimitri Sivanich <sivanich@sgi.com>
-Subject: [PATCH 3/3] SGI RTC: add RTC system interrupt
-Message-ID: <20081021212154.GC4037@sgi.com>
-References: <20081021211740.GA3936@sgi.com> <20081021211921.GA4037@sgi.com> <20081021212031.GB4037@sgi.com>
+	Tue, 21 Oct 2008 17:22:01 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:52175 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753517AbYJUVWA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 17:22:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=iOsC2tLKlB1IHaZVDp9USIqE4QuTYsgpceVf7/+7MFaNeWBBGpbm4o8m9OX3XwrdCt
+         E+2pbsjChRJW/dX6OlS0V8cEClaOSdq3AjzrrljE37noyWcJbnAMVnnk5faxDjmzusZS
+         Emt+MrDxfmAZUnH6ZjLjHq/Q1bKfIopCSQ8lA=
+Message-ID: <2bfaaf400810211421i100d10fexbea8f74d86d813de@mail.gmail.com>
+Date: Tue, 21 Oct 2008 18:21:58 -0300
+From: "Alexandre Lymberopoulos" <lymber@gmail.com>
+To: "Theodore Tso" <tytso@mit.edu>,
+       "=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@ime.usp.br>,
+       "Alexandre Lymberopoulos" <lymber@gmail.com>, 502583@bugs.debian.org,
+       502583-submitter@bugs.debian.org, linux-kernel@vger.kernel.org
+Subject: Re: Bug#502583: scary messages in dmesg
+In-Reply-To: <20081021123348.GB15685@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20081021212031.GB4037@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <2bfaaf400810172145g4aba4827l87a19e67b9742815@mail.gmail.com>
+	 <20081018060400.GB916@ime.usp.br>
+	 <2bfaaf400810201654u21c9d950o72b2afa9496ba3da@mail.gmail.com>
+	 <20081021101510.GA16244@ime.usp.br> <20081021123348.GB15685@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allocates a system interrupt vector for architecture specific
-use in implementing RTC timer interrupts.
+On Tue, Oct 21, 2008 at 9:33 AM, Theodore Tso <tytso@mit.edu> wrote:
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+> A patch to suppress the WARN information will be in 2.6.28 when the
+> user does something stupid (i.e., yank out a USB stick without
+> unmounting the filesystem first).  This was done mainly to suppress
+> the "scary message" in dmesg, which on distributions that support
+> uploading such messages to http://www.kerneloops.org for analysis, was
+> cluttering the reports.
 
-Index: linux/arch/x86/kernel/entry_64.S
-===================================================================
---- linux.orig/arch/x86/kernel/entry_64.S	2008-10-21 12:06:52.000000000 -0500
-+++ linux/arch/x86/kernel/entry_64.S	2008-10-21 12:10:47.000000000 -0500
-@@ -858,6 +858,10 @@ ENTRY(apic_timer_interrupt)
- 	apicinterrupt LOCAL_TIMER_VECTOR,smp_apic_timer_interrupt
- END(apic_timer_interrupt)
- 
-+ENTRY(uv_rtc_timer_intr)
-+	apicinterrupt RTC_TIMER_VECTOR,uv_rtc_timer_interrupt
-+END(uv_rtc_timer_intr)
-+
- ENTRY(uv_bau_message_intr1)
- 	apicinterrupt 220,uv_bau_message_interrupt
- END(uv_bau_message_intr1)
-Index: linux/arch/x86/kernel/irqinit_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/irqinit_64.c	2008-10-21 12:06:52.000000000 -0500
-+++ linux/arch/x86/kernel/irqinit_64.c	2008-10-21 12:10:47.000000000 -0500
-@@ -205,6 +205,9 @@ static void __init apic_intr_init(void)
- 	/* self generated IPI for local APIC timer */
- 	alloc_intr_gate(LOCAL_TIMER_VECTOR, apic_timer_interrupt);
- 
-+	/* IPI for RTC timers */
-+	alloc_intr_gate(RTC_TIMER_VECTOR, uv_rtc_timer_intr);
-+
- 	/* IPI vectors for APIC spurious and error interrupts */
- 	alloc_intr_gate(SPURIOUS_APIC_VECTOR, spurious_interrupt);
- 	alloc_intr_gate(ERROR_APIC_VECTOR, error_interrupt);
-Index: linux/include/asm-x86/irq_vectors.h
-===================================================================
---- linux.orig/include/asm-x86/irq_vectors.h	2008-10-21 12:06:52.000000000 -0500
-+++ linux/include/asm-x86/irq_vectors.h	2008-10-21 12:10:47.000000000 -0500
-@@ -90,6 +90,7 @@
-  * sources per level' errata.
-  */
- #define LOCAL_TIMER_VECTOR	0xef
-+#define RTC_TIMER_VECTOR	0xee
- 
- /*
-  * First APIC vector available to drivers: (vectors 0x30-0xee) we
-Index: linux/arch/x86/kernel/genx2apic_uv_x.c
-===================================================================
---- linux.orig/arch/x86/kernel/genx2apic_uv_x.c	2008-10-21 12:06:52.000000000 -0500
-+++ linux/arch/x86/kernel/genx2apic_uv_x.c	2008-10-21 12:10:47.000000000 -0500
-@@ -22,6 +22,7 @@
- #include <asm/ipi.h>
- #include <asm/genapic.h>
- #include <asm/pgtable.h>
-+#include <asm/idle.h>
- #include <asm/uv/uv_mmrs.h>
- #include <asm/uv/uv_hub.h>
- #include <asm/uv/bios.h>
-@@ -356,6 +357,46 @@ static __init void uv_rtc_init(void)
- 		sn_rtc_cycles_per_second = ticks_per_sec;
- }
- 
-+/* Function pointer for RTC interrupt handling */
-+static void (*uv_rtc_interrupt_extension)(void);
-+
-+int
-+uv_rtc_reg_extension(void (*fn)(void))
-+{
-+	if (uv_rtc_interrupt_extension)
-+		return 1;
-+
-+	uv_rtc_interrupt_extension = fn;
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(uv_rtc_reg_extension);
-+
-+void
-+uv_rtc_unreg_extension(void)
-+{
-+	if (uv_rtc_interrupt_extension)
-+		uv_rtc_interrupt_extension = NULL;
-+}
-+EXPORT_SYMBOL_GPL(uv_rtc_unreg_extension);
-+
-+void uv_rtc_timer_interrupt(struct pt_regs *regs)
-+{
-+	struct pt_regs *old_regs = set_irq_regs(regs);
-+
-+	ack_APIC_irq();
-+
-+	exit_idle();
-+
-+	irq_enter();
-+
-+	if (uv_rtc_interrupt_extension)
-+		uv_rtc_interrupt_extension();
-+
-+	irq_exit();
-+
-+	set_irq_regs(old_regs);
-+}
-+
- /*
-  * Called on each cpu to initialize the per_cpu UV data area.
-  * 	ZZZ hotplug not supported yet
-Index: linux/include/asm-x86/genapic_64.h
-===================================================================
---- linux.orig/include/asm-x86/genapic_64.h	2008-10-21 12:06:52.000000000 -0500
-+++ linux/include/asm-x86/genapic_64.h	2008-10-21 12:10:47.000000000 -0500
-@@ -49,6 +49,8 @@ extern int is_uv_system(void);
- 
- extern struct genapic apic_x2apic_uv_x;
- DECLARE_PER_CPU(int, x2apic_extra_bits);
-+extern int uv_rtc_reg_extension(void (*fn)(void));
-+extern void uv_rtc_unreg_extension(void);
- extern void uv_cpu_init(void);
- extern void uv_system_init(void);
- extern int uv_wakeup_secondary(int phys_apicid, unsigned int start_rip);
-Index: linux/include/asm-x86/hw_irq.h
-===================================================================
---- linux.orig/include/asm-x86/hw_irq.h	2008-10-21 12:06:52.000000000 -0500
-+++ linux/include/asm-x86/hw_irq.h	2008-10-21 12:10:47.000000000 -0500
-@@ -29,6 +29,7 @@
- 
- /* Interrupt handlers registered during init_IRQ */
- extern void apic_timer_interrupt(void);
-+extern void uv_rtc_timer_intr(void);
- extern void error_interrupt(void);
- extern void spurious_interrupt(void);
- extern void thermal_interrupt(void);
+I don't think removing these messages is a good idea. It's good even
+for non-developer users to have information about what is happening on
+their systems. At least to know that they (me in that case) did
+something stupid.
+
+> However, the patch does not make it any *safer* to uncerimoniously
+> yank out a USB stick without unmounting it first.  This can still lead
+> to data loss, unless you're *sure* that no process is writing to the
+> stick and you issued the sync command, and you know enough time has
+> passed so all of the data has been written to the USB stick.
+
+Another reason to keep these messages. To hide information without
+provinding a solution (I can see none here, i´'s impossible to prevent
+anyone from doing stupid things) is not a good idea, sounds like the
+philosophy of other operating systems...
+
+> If you see "lost page write due to I/O error", then you will have lost
+> data due to premature removal of the USB stick, and fundamentally
+> *that* bug exists between the keyboard and the chair.
+
+;-)
+
+> Regards,
+>
+>                                                - Ted
+
+Sincerley, Alexandre
+-- 
+===============================================================================
+Alexandre Lymberopoulos - lymber@gmail.com
+===============================================================================
