@@ -1,301 +1,324 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbYJUItc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752857AbYJUIva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752722AbYJUItc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 04:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbYJUItZ
+	id S1752857AbYJUIva (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 04:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbYJUIvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 04:49:25 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55043 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751380AbYJUItY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 04:49:24 -0400
-Date: Tue, 21 Oct 2008 10:49:22 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] w35und: remove spinlock wrappers
-Message-ID: <20081021084922.GH15782@atrey.karlin.mff.cuni.cz>
-References: <Pine.LNX.4.64.0810211143390.30870@melkki.cs.Helsinki.FI>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0810211143390.30870@melkki.cs.Helsinki.FI>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 21 Oct 2008 04:51:21 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34087 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751380AbYJUIvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 04:51:19 -0400
+Date: Tue, 21 Oct 2008 19:51:09 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for October 21
+Message-Id: <20081021195109.ed83b102.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__21_Oct_2008_19_51_09_+1100_=fktP1r/1=Bnmrwe"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> This patch removes the OS_SPIN_LOCK and related wrappers from the driver code.
-> 
-> Cc: Pavel Machek <pavel@suse.cz>
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+--Signature=_Tue__21_Oct_2008_19_51_09_+1100_=fktP1r/1=Bnmrwe
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-ACK.
+Hi all,
 
-> ---
->  drivers/staging/winbond/linux/common.h    |    7 -----
->  drivers/staging/winbond/linux/wb35reg.c   |   37 +++++++++++++---------------
->  drivers/staging/winbond/linux/wb35reg_s.h |    2 +-
->  drivers/staging/winbond/mlme_s.h          |    2 +-
->  drivers/staging/winbond/wblinux.c         |   13 ++++-----
->  drivers/staging/winbond/wblinux_s.h       |    4 +-
->  6 files changed, 27 insertions(+), 38 deletions(-)
-> 
-> diff --git a/drivers/staging/winbond/linux/common.h b/drivers/staging/winbond/linux/common.h
-> index c8f14b7..712a86c 100644
-> --- a/drivers/staging/winbond/linux/common.h
-> +++ b/drivers/staging/winbond/linux/common.h
-> @@ -105,13 +105,6 @@ typedef struct urb * PURB;
->  #define OS_MEMORY_CLEAR( _A, _S )	memset( (u8 *)_A,0,_S)
->  #define OS_MEMORY_COMPARE( _A, _B, _S )	(memcmp(_A,_B,_S)? 0 : 1) // Definition is reverse with Ndis 1: the same 0: different
->  
-> -
-> -#define OS_SPIN_LOCK				spinlock_t
-> -#define OS_SPIN_LOCK_ALLOCATE( _S )		spin_lock_init( _S );
-> -#define OS_SPIN_LOCK_FREE( _S )
-> -#define OS_SPIN_LOCK_ACQUIRED( _S )		spin_lock_irq( _S )
-> -#define OS_SPIN_LOCK_RELEASED( _S )		spin_unlock_irq( _S );
-> -
->  #define OS_TIMER	struct timer_list
->  #define OS_TIMER_INITIAL( _T, _F, _P )			\
->  {							\
-> diff --git a/drivers/staging/winbond/linux/wb35reg.c b/drivers/staging/winbond/linux/wb35reg.c
-> index 5c28ec9..ebb6db5 100644
-> --- a/drivers/staging/winbond/linux/wb35reg.c
-> +++ b/drivers/staging/winbond/linux/wb35reg.c
-> @@ -46,14 +46,14 @@ Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 N
->  		pRegQueue->pUsbReq = dr;
->  		pRegQueue->pUrb = pUrb;
->  
-> -		OS_SPIN_LOCK_ACQUIRED( &pWb35Reg->EP0VM_spin_lock );
-> +		spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
->  		if (pWb35Reg->pRegFirst == NULL)
->  			pWb35Reg->pRegFirst = pRegQueue;
->  		else
->  			pWb35Reg->pRegLast->Next = pRegQueue;
->  		pWb35Reg->pRegLast = pRegQueue;
->  
-> -		OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
-> +		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
->  
->  		// Start EP0VM
->  		Wb35Reg_EP0VM_start(pHwData);
-> @@ -193,14 +193,14 @@ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
->  		pRegQueue->pUsbReq = dr;
->  		pRegQueue->pUrb = pUrb;
->  
-> -		OS_SPIN_LOCK_ACQUIRED(&pWb35Reg->EP0VM_spin_lock );
-> +		spin_lock_irq(&pWb35Reg->EP0VM_spin_lock );
->  		if (pWb35Reg->pRegFirst == NULL)
->  			pWb35Reg->pRegFirst = pRegQueue;
->  		else
->  			pWb35Reg->pRegLast->Next = pRegQueue;
->  		pWb35Reg->pRegLast = pRegQueue;
->  
-> -		OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
-> +		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
->  
->  		// Start EP0VM
->  		Wb35Reg_EP0VM_start(pHwData);
-> @@ -254,14 +254,14 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
->  		pRegQueue->Next = NULL;
->  		pRegQueue->pUsbReq = dr;
->  		pRegQueue->pUrb = pUrb;
-> -		OS_SPIN_LOCK_ACQUIRED (&pWb35Reg->EP0VM_spin_lock );
-> +		spin_lock_irq (&pWb35Reg->EP0VM_spin_lock );
->  		if( pWb35Reg->pRegFirst == NULL )
->  			pWb35Reg->pRegFirst = pRegQueue;
->  		else
->  			pWb35Reg->pRegLast->Next = pRegQueue;
->  		pWb35Reg->pRegLast = pRegQueue;
->  
-> -		OS_SPIN_LOCK_RELEASED ( &pWb35Reg->EP0VM_spin_lock );
-> +		spin_unlock_irq ( &pWb35Reg->EP0VM_spin_lock );
->  
->  		// Start EP0VM
->  		Wb35Reg_EP0VM_start(pHwData);
-> @@ -359,14 +359,14 @@ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
->  		pRegQueue->Next = NULL;
->  		pRegQueue->pUsbReq = dr;
->  		pRegQueue->pUrb = pUrb;
-> -		OS_SPIN_LOCK_ACQUIRED ( &pWb35Reg->EP0VM_spin_lock );
-> +		spin_lock_irq ( &pWb35Reg->EP0VM_spin_lock );
->  		if( pWb35Reg->pRegFirst == NULL )
->  			pWb35Reg->pRegFirst = pRegQueue;
->  		else
->  			pWb35Reg->pRegLast->Next = pRegQueue;
->  		pWb35Reg->pRegLast = pRegQueue;
->  
-> -		OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
-> +		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
->  
->  		// Start EP0VM
->  		Wb35Reg_EP0VM_start( pHwData );
-> @@ -411,9 +411,9 @@ Wb35Reg_EP0VM(phw_data_t pHwData )
->  		goto cleanup;
->  
->  	// Get the register data and send to USB through Irp
-> -	OS_SPIN_LOCK_ACQUIRED( &pWb35Reg->EP0VM_spin_lock );
-> +	spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
->  	pRegQueue = pWb35Reg->pRegFirst;
-> -	OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
-> +	spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
->  
->  	if (!pRegQueue)
->  		goto cleanup;
-> @@ -468,12 +468,12 @@ Wb35Reg_EP0VM_complete(PURB pUrb)
->  		OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Reg->RegFireCount );
->  	} else {
->  		// Complete to send, remove the URB from the first
-> -		OS_SPIN_LOCK_ACQUIRED( &pWb35Reg->EP0VM_spin_lock );
-> +		spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
->  		pRegQueue = pWb35Reg->pRegFirst;
->  		if (pRegQueue == pWb35Reg->pRegLast)
->  			pWb35Reg->pRegLast = NULL;
->  		pWb35Reg->pRegFirst = pWb35Reg->pRegFirst->Next;
-> -		OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
-> +		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
->  
->  		if (pWb35Reg->EP0VM_status) {
->  #ifdef _PE_REG_DUMP_
-> @@ -513,7 +513,7 @@ Wb35Reg_destroy(phw_data_t pHwData)
->  	OS_SLEEP(10000);  // Delay for waiting function enter 940623.1.b
->  
->  	// Release all the data in RegQueue
-> -	OS_SPIN_LOCK_ACQUIRED( &pWb35Reg->EP0VM_spin_lock );
-> +	spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
->  	pRegQueue = pWb35Reg->pRegFirst;
->  	while (pRegQueue) {
->  		if (pRegQueue == pWb35Reg->pRegLast)
-> @@ -521,7 +521,7 @@ Wb35Reg_destroy(phw_data_t pHwData)
->  		pWb35Reg->pRegFirst = pWb35Reg->pRegFirst->Next;
->  
->  		pUrb = pRegQueue->pUrb;
-> -		OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
-> +		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
->  		if (pUrb) {
->  			usb_free_urb(pUrb);
->  			kfree(pRegQueue);
-> @@ -530,14 +530,11 @@ Wb35Reg_destroy(phw_data_t pHwData)
->  			WBDEBUG(("EP0 queue release error\n"));
->  			#endif
->  		}
-> -		OS_SPIN_LOCK_ACQUIRED( &pWb35Reg->EP0VM_spin_lock );
-> +		spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
->  
->  		pRegQueue = pWb35Reg->pRegFirst;
->  	}
-> -	OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
-> -
-> -	// Free resource
-> -	OS_SPIN_LOCK_FREE(  &pWb35Reg->EP0VM_spin_lock );
-> +	spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
->  }
->  
->  //====================================================================================
-> @@ -550,7 +547,7 @@ unsigned char Wb35Reg_initial(phw_data_t pHwData)
->  	u32 SoftwareSet, VCO_trim, TxVga, Region_ScanInterval;
->  
->  	// Spin lock is acquired for read and write IRP command
-> -	OS_SPIN_LOCK_ALLOCATE( &pWb35Reg->EP0VM_spin_lock );
-> +	spin_lock_init( &pWb35Reg->EP0VM_spin_lock );
->  
->  	// Getting RF module type from EEPROM ------------------------------------
->  	Wb35Reg_WriteSync( pHwData, 0x03b4, 0x080d0000 ); // Start EEPROM access + Read + address(0x0d)
-> diff --git a/drivers/staging/winbond/linux/wb35reg_s.h b/drivers/staging/winbond/linux/wb35reg_s.h
-> index 9b76301..8b35b93 100644
-> --- a/drivers/staging/winbond/linux/wb35reg_s.h
-> +++ b/drivers/staging/winbond/linux/wb35reg_s.h
-> @@ -143,7 +143,7 @@ typedef struct _WB35REG
->  	//-------------------
->  	// VM
->  	//-------------------
-> -	OS_SPIN_LOCK	EP0VM_spin_lock; // 4B
-> +	spinlock_t	EP0VM_spin_lock; // 4B
->  	u32	        EP0VM_status;//$$
->  	PREG_QUEUE	    pRegFirst;
->  	PREG_QUEUE	    pRegLast;
-> diff --git a/drivers/staging/winbond/mlme_s.h b/drivers/staging/winbond/mlme_s.h
-> index 6ec818b..039fd40 100644
-> --- a/drivers/staging/winbond/mlme_s.h
-> +++ b/drivers/staging/winbond/mlme_s.h
-> @@ -130,7 +130,7 @@ typedef struct _MLME_FRAME
->  	u8			DataType;
->  	u8			IsInUsed;
->  
-> -	OS_SPIN_LOCK	MLMESpinLock;
-> +	spinlock_t	MLMESpinLock;
->  
->      u8		TxMMPDU[MAX_NUM_TX_MMPDU][MAX_MMPDU_SIZE];
->  	u8		TxMMPDUInUse[ (MAX_NUM_TX_MMPDU+3) & ~0x03 ];
-> diff --git a/drivers/staging/winbond/wblinux.c b/drivers/staging/winbond/wblinux.c
-> index 51dad95..186ad60 100644
-> --- a/drivers/staging/winbond/wblinux.c
-> +++ b/drivers/staging/winbond/wblinux.c
-> @@ -26,10 +26,10 @@ EncapAtomicInc(PADAPTER Adapter, void* pAtomic)
->  	PWBLINUX pWbLinux = &Adapter->WbLinux;
->  	u32	ltmp;
->  	u32 *	pltmp = (u32 *)pAtomic;
-> -	OS_SPIN_LOCK_ACQUIRED( &pWbLinux->AtomicSpinLock );
-> +	spin_lock_irq( &pWbLinux->AtomicSpinLock );
->  	(*pltmp)++;
->  	ltmp = (*pltmp);
-> -	OS_SPIN_LOCK_RELEASED( &pWbLinux->AtomicSpinLock );
-> +	spin_unlock_irq( &pWbLinux->AtomicSpinLock );
->  	return ltmp;
->  }
->  
-> @@ -39,10 +39,10 @@ EncapAtomicDec(PADAPTER Adapter, void* pAtomic)
->  	PWBLINUX pWbLinux = &Adapter->WbLinux;
->  	u32	ltmp;
->  	u32 *	pltmp = (u32 *)pAtomic;
-> -	OS_SPIN_LOCK_ACQUIRED( &pWbLinux->AtomicSpinLock );
-> +	spin_lock_irq( &pWbLinux->AtomicSpinLock );
->  	(*pltmp)--;
->  	ltmp = (*pltmp);
-> -	OS_SPIN_LOCK_RELEASED( &pWbLinux->AtomicSpinLock );
-> +	spin_unlock_irq( &pWbLinux->AtomicSpinLock );
->  	return ltmp;
->  }
->  
-> @@ -51,8 +51,8 @@ WBLINUX_Initial(PADAPTER Adapter)
->  {
->  	PWBLINUX pWbLinux = &Adapter->WbLinux;
->  
-> -	OS_SPIN_LOCK_ALLOCATE( &pWbLinux->SpinLock );
-> -	OS_SPIN_LOCK_ALLOCATE( &pWbLinux->AtomicSpinLock );
-> +	spin_lock_init( &pWbLinux->SpinLock );
-> +	spin_lock_init( &pWbLinux->AtomicSpinLock );
->  	return TRUE;
->  }
->  
-> @@ -79,7 +79,6 @@ void
->  WBLINUX_Destroy(PADAPTER Adapter)
->  {
->  	WBLINUX_stop( Adapter );
-> -	OS_SPIN_LOCK_FREE( &pWbNdis->SpinLock );
->  #ifdef _PE_USB_INI_DUMP_
->  	WBDEBUG(("[w35und] unregister_netdev!\n"));
->  #endif
-> diff --git a/drivers/staging/winbond/wblinux_s.h b/drivers/staging/winbond/wblinux_s.h
-> index 97e9167..fd2bb43 100644
-> --- a/drivers/staging/winbond/wblinux_s.h
-> +++ b/drivers/staging/winbond/wblinux_s.h
-> @@ -24,8 +24,8 @@
->  
->  typedef struct _WBLINUX
->  {
-> -	OS_SPIN_LOCK	AtomicSpinLock;
-> -	OS_SPIN_LOCK	SpinLock;
-> +	spinlock_t	AtomicSpinLock;
-> +	spinlock_t	SpinLock;
->  	u32	shutdown;
->  
->  	OS_ATOMIC	ThreadCount;
+Today's tree will not build for powerpc allyesconfig (libc aborts the
+link due to a free() problem), sparc(32) defconfig and probably some
+other configurations.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I am no longer commenting on conflicts that are clearly just caused by
+slight differences in what has been merged into Linus' tree and
+linux-next or conflicts caused by further changes in the linux-next after
+a subset of a tree has been merged.
+
+Changes since 20081020:
+
+Dropped trees:
+	tests (because its future is in doubt and it has conflicts)
+	v4l-dvb (the tree is a mess)
+	proc (messy conflicts, hopefully fixed tomorrow)
+	bdev (too many conflicts for me to fix today)
+
+Linus' tree lost its buid fix patch.
+
+The drivers-core.current tree lost its conflicts.
+
+The usb.current tree lost its conflicts.
+
+The parisc tree lost its conflict.
+
+The sh tree lost its 2 conflicts.
+
+The usb tree lost a conflict and a build fix patch.
+
+The ftrace tree lost its 3 conflicts.
+
+The timers tree gained a conflict against Linus' tree.
+
+The acpi tree gained a conflict against Linus' tree but also lost a conflic=
+t.
+
+The mtd tree lost its build fix revert.
+
+The rr tree lost its 2 conflicts.
+
+The leds tree gained a build fix patch.
+
+The slab tree gained a conflict against Linus' tree.
+
+The kmemcheck tree gained 2 conflicts against Linus' tree.
+
+The creds tree gained a conflict against Linus' tree.
+The fastboot tree lost a conflict.
+
+The uwb tree lost its 2 conflicts.
+
+The proc tree gained 2 conflicts against Linus' tree and a build failure
+that caused me to drop it for today.
+
+I have also applied the following patches for known problems:
+
+	sparc: qlogicpti fallout from sbus removal
+	ibm_newemac: Fix new MAL feature handling
+	binfmt_elf_fdpic: Update for cputime changes.
+	Fix page_cgroup build breakage
+	fix CONFIG_HIGHMEM compile error in drivers/gpu/drm/i915/i915_gem.c
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 120 trees (counting Linus' and 14 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging quilt/m68k
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/powerpc-next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging quilt/driver-core
+Merging quilt/usb
+Created commit 73d994e: Revert "USB: remove info() macro from usb.h"
+Created commit 8c73818: Revert "USB: remove warn() macro from usb.h"
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+CONFLICT (content): Merge conflict in include/asm-x86/smp.h
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+CONFLICT (content): Merge conflict in kernel/fork.c
+Merging timers/auto-timers-next
+CONFLICT (content): Merge conflict in arch/x86/kvm/i8254.c
+CONFLICT (content): Merge conflict in kernel/time/tick-sched.c
+Applying DECLARE_PER_CPU needs linux/percpu.h
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in arch/x86/kernel/acpi/boot.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/acpi/sleep.c
+CONFLICT (content): Merge conflict in drivers/acpi/Kconfig
+CONFLICT (content): Merge conflict in drivers/pnp/Makefile
+CONFLICT (content): Merge conflict in drivers/pnp/quirks.c
+Applying acpi: merge fix for dpulicate acpi_mcfg_64bit_base_addr
+Applying acpi: acpi_os_hotplug_execute needs to be exported
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+CONFLICT (content): Merge conflict in fs/ext4/namei.c
+Applying vfs/xfs: fallout from i_vnode change
+Applying vfs: fix up merge of ext4
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging semaphore-removal/semaphore-removal
+CONFLICT (content): Merge conflict in net/9p/trans_virtio.c
+Merging bkl-removal/bkl-removal
+Merging trivial/next
+CONFLICT (content): Merge conflict in Documentation/edac.txt
+CONFLICT (content): Merge conflict in include/linux/securebits.h
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in drivers/scsi/qlogicpti.c
+CONFLICT (content): Merge conflict in firmware/WHENCE
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Applying leds/acpi: fix merge fallout from acpi_driver_data change
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+CONFLICT (content): Merge conflict in mm/Makefile
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in include/linux/mm_types.h
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (content): Merge conflict in kernel/sysctl.c
+CONFLICT (content): Merge conflict in mm/Makefile
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-linus
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Created commit 3b5cfed: Revert "8250-oxsemi-mainpine"
+Merging agp/agp-next
+Merging creds/next-creds-subsys
+CONFLICT (content): Merge conflict in fs/devpts/inode.c
+CONFLICT (content): Merge conflict in fs/namespace.c
+CONFLICT (content): Merge conflict in fs/nfsd/nfs4recover.c
+CONFLICT (content): Merge conflict in include/linux/sched.h
+CONFLICT (content): Merge conflict in kernel/exit.c
+CONFLICT (content): Merge conflict in kernel/fork.c
+CONFLICT (content): Merge conflict in kernel/signal.c
+CONFLICT (content): Merge conflict in mm/migrate.c
+CONFLICT (content): Merge conflict in net/9p/client.c
+CONFLICT (content): Merge conflict in security/selinux/hooks.c
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+CONFLICT (content): Merge conflict in drivers/md/Kconfig
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (add/add): Merge conflict in scripts/bootgraph.pl
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging proc/proc
+CONFLICT (delete/modify): fs/proc/proc_misc.c deleted in proc/proc and modi=
+fied in HEAD. Version HEAD of fs/proc/proc_misc.c left in tree.
+CONFLICT (content): Merge conflict in fs/proc/vmcore.c
+CONFLICT (content): Merge conflict in mm/hugetlb.c
+$ git rm -f fs/proc/proc_misc.c
+$ git reset --hard HEAD^
+Merging scsi-post-merge/master
+Applying sparc: qlogicpti fallout from sbus removal
+Applying ibm_newemac: Fix new MAL feature handling
+Applying binfmt_elf_fdpic: Update for cputime changes.
+Applying Fix page_cgroup build breakage
+Applying fix CONFIG_HIGHMEM compile error in drivers/gpu/drm/i915/i915_gem.c
+
+--Signature=_Tue__21_Oct_2008_19_51_09_+1100_=fktP1r/1=Bnmrwe
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkj9l/0ACgkQjjKRsyhoI8wnugCdEyxu0os/DD89ax3LXfee+zXb
+qJIAoJwRilws/i/z/8DxqsnLUrUahJNP
+=QZDn
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__21_Oct_2008_19_51_09_+1100_=fktP1r/1=Bnmrwe--
