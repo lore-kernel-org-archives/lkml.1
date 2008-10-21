@@ -1,103 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbYJUQpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbYJUQsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754793AbYJUQpr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 12:45:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbYJUQpg
+	id S1754632AbYJUQsB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 12:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342AbYJUQrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 12:45:36 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:52682 "EHLO mummy.ncsc.mil"
+	Tue, 21 Oct 2008 12:47:51 -0400
+Received: from mga09.intel.com ([134.134.136.24]:56111 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752198AbYJUQpe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 12:45:34 -0400
-Subject: Re: Subject: [PATCH 12/16] Squashfs: header files
-From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-Cc: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       tim.bird@am.sony.com
-In-Reply-To: <E1KqrTX-0001y4-JE@dylan>
-References: <E1KqrTX-0001y4-JE@dylan>
-Content-Type: text/plain
-Date: Tue, 21 Oct 2008 12:25:18 -0400
-Message-Id: <1224606318.31157.80.camel@moss-terrapins.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	id S1751963AbYJUQru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 12:47:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,458,1220252400"; 
+   d="scan'208";a="453925638"
+Message-ID: <48FE07AE.4010203@linux.intel.com>
+Date: Tue, 21 Oct 2008 18:47:42 +0200
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Len Brown <lenb@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Andy Henroid <andrew.d.henroid@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 2/2] i7300_idle driver v1.55
+References: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com> <e8b529091b2ab65f5a4783e292c2b472e309116e.1223706853.git.len.brown@intel.com> <20081011083347.GA31918@elte.hu> <alpine.LFD.1.10.0810161805360.3026@localhost.localdomain>
+In-Reply-To: <alpine.LFD.1.10.0810161805360.3026@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-17 at 16:42 +0100, Phillip Lougher wrote:
-[snip]
+Len Brown wrote:
+
+> diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
+> index bc8c6e3..f8396ca 100644
+> --- a/drivers/dma/ioat_dma.c
+> +++ b/drivers/dma/ioat_dma.c
+> @@ -171,6 +171,9 @@ static int ioat_dma_enumerate_channels(struct ioatdma_device *device)
+>  	xfercap_scale = readb(device->reg_base + IOAT_XFERCAP_OFFSET);
+>  	xfercap = (xfercap_scale == 0 ? -1 : (1UL << xfercap_scale));
+>  
+> +#if CONFIG_I7300_IDLE_IOAT_CHANNEL
+> +	device->common.chancnt--;
+> +#endif
+
+I still think this lone decrement looks fishy. Can there please be some
+explanation how it exactly relates to the i7300 idle driver, where the
+matching increment is, etc.?
+
+> +config I7300_IDLE
+> +	tristate "Intel chipset idle power saving driver"
+
+It would be probably good to mention the word memory here.
+
+> +	select I7300_IDLE_IOAT_CHANNEL
+> +	depends on X86_64
+> +	help
+> +	  Enable idle power savings with certain Intel server chipsets.
+
+And here too.
+
+> +	  The chipset must have I/O AT support, such as the Intel 7300.
+> +	  The power savings depends on the type and quantity of DRAM devices.
+
+
+> +static int debug;
+> +module_param_named(debug, debug, uint, 0644);
+> +MODULE_PARM_DESC(debug, "Enable debug printks in this driver");
+
+> +#define dprintk(fmt, arg...) \
+> +	do { if (debug) printk(KERN_INFO I7300_PRINT fmt, ##arg); } while (0)
+
+2.6.28 just got a new dynamic printk facility, which could be used.
 
 > +
-> +struct squashfs_reg_inode {
-> +	__le16			inode_type;
-> +	__le16			mode;
-> +	__le16			uid;
-> +	__le16			guid;
-> +	__le32			mtime;
-> +	__le32	 		inode_number;
-> +	__le32			start_block;
-> +	__le32			fragment;
-> +	__le32			offset;
-> +	__le32			file_size;
-> +	__le16			block_list[0];
-> +};
-> +
-> +struct squashfs_lreg_inode {
-> +	__le16			inode_type;
-> +	__le16			mode;
-> +	__le16			uid;
-> +	__le16			guid;
-> +	__le32			mtime;
-> +	__le32	 		inode_number;
-> +	__le64			start_block;
-> +	__le64			file_size;
-> +	__le64			sparse;
-> +	__le32			nlink;
-> +	__le32			fragment;
-> +	__le32			offset;
-> +	__le32			xattr;
-> +	__le16			block_list[0];
-> +};
-> +
-> +struct squashfs_dir_inode {
-> +	__le16			inode_type;
-> +	__le16			mode;
-> +	__le16			uid;
-> +	__le16			guid;
-> +	__le32			mtime;
-> +	__le32	 		inode_number;
-> +	__le32			start_block;
-> +	__le32			nlink;
-> +	__le16			file_size;
-> +	__le16			offset;
-> +	__le32			parent_inode;
-> +};
-> +
-> +struct squashfs_ldir_inode {
-> +	__le16			inode_type;
-> +	__le16			mode;
-> +	__le16			uid;
-> +	__le16			guid;
-> +	__le32			mtime;
-> +	__le32	 		inode_number;
-> +	__le32			nlink;
-> +	__le32			file_size;
-> +	__le32			start_block;
-> +	__le32			parent_inode;
-> +	__le16			i_count;
-> +	__le16			offset;
-> +	struct squashfs_dir_index	index[0];
-> +};
-> +
-[snip]
+> +/*
+> + * Value to set THRTLOW to when initiating throttling
+> + *  0 = No throttling
+> + *  1 = Throttle when > 4 activations per eval window (Maximum throttling)
+> + *  2 = Throttle when > 8 activations
+> + *  168 = Throttle when > 168 activations (Minimum throttling)
+> + */
+> +#define MAX_THRTLWLIMIT		168
+> +static uint i7300_idle_thrtlowlm = 1;
+> +module_param_named(thrtlwlimit, i7300_idle_thrtlowlm, uint, 0644);
 
-Something that seems weird is the inconsistency in the ordering of these
-structs. The base part is the same across all inodes but for your
-reg/lreg dir/ldir pairs you seem to shuffle the order of the added
-parts. Is there a reason for this? Is their layout the same on disk
-(baring the extra data in the l versions)? If so they probably should be
-the same in the struct.
+Just imagining how someone would pronounce this parameter @) Will they
+get damages when their tongue ends up in a knot?
 
+> +static cpumask_t idle_cpumask;
+
+Would it make sense to cache align this field? I could imagine
+it false sharing with some frequently written variable could be quite
+bad.
+
+> +	writeb(IOAT_CHANCMD_RESET, ioat_chanbase + IOAT1_CHANCMD_OFFSET);
+> +	writeb(IOAT_CHANCMD_START, ioat_chanbase + IOAT1_CHANCMD_OFFSET);
+> +
+> +	udelay(1000);
+> +
+> +	chan_sts = readq(ioat_chanbase + IOAT1_CHANSTS_OFFSET) &
+> +			IOAT_CHANSTS_DMA_TRANSFER_STATUS;
+
+Wouldn't it be better to poll here instead of udelay?
+
+> +	/* Wait for a while for the channel to halt before releasing */
+> +	for (i = 0; i < 10; i++) {
+> +		writeb(IOAT_CHANCMD_RESET,
+> +		       ioat_chanbase + IOAT1_CHANCMD_OFFSET);
+> +
+> +		chan_sts = readq(ioat_chanbase + IOAT1_CHANSTS_OFFSET) &
+> +			IOAT_CHANSTS_DMA_TRANSFER_STATUS;
+> +
+> +		if (chan_sts != IOAT_CHANSTS_DMA_TRANSFER_STATUS_ACTIVE) {
+> +			writew(0, ioat_chanbase + IOAT_CHANCTRL_OFFSET);
+> +			break;
+> +		}
+> +		udelay(1000);
+
+Same here.
+
+
+> +	spin_lock_irqsave(&i7300_idle_lock, flags);
+
+This lock still scares me. In the worst case with very frequent
+idle frequencies this could bounce around a lot.
+
+It would be better to only invoke it less frequently,
+i.e. when the driver determines there is a long idle
+time coming up.
+
+> +/* Check for known platforms with I/O-AT */
+> +static int __init i7300_idle_platform_probe(void)
+> +{
+> +	int i;
+> +
+> +	fbd_dev = pci_get_bus_and_slot(MEMCTL_BUS, MEMCTL_DEVFN)
+
+Is there a specific reason you cannot match this by pci vendor/devid
+like all standard drivers do?
+
+If there is a good reason add a comment.
+
+;
+> +static void __exit i7300_idle_exit(void)
+> +{
+> +	idle_notifier_unregister(&i7300_idle_nb);
+
+I still think this needs some kind of idle synchronization.
+
+-Andi
