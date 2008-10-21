@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752647AbYJUFvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751907AbYJUFvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752647AbYJUFvR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 01:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbYJUFvF
+	id S1751907AbYJUFvg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 01:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbYJUFvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 01:51:05 -0400
-Received: from twinlark.arctic.org ([208.69.40.136]:53002 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751486AbYJUFvE (ORCPT
+	Tue, 21 Oct 2008 01:51:25 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:48970 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751402AbYJUFvY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 01:51:04 -0400
-Message-ID: <48FD6DA1.5030402@kernel.org>
-Date: Mon, 20 Oct 2008 22:50:25 -0700
-From: "Andrew G. Morgan" <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+	Tue, 21 Oct 2008 01:51:24 -0400
+Date: Mon, 20 Oct 2008 23:51:08 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Anirban Chakraborty <anirban.chakraborty@qlogic.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Subject: Re: What's in pci-2.6.git
+Message-ID: <20081021055107.GN26184@parisc-linux.org>
+References: <200810081521.10262.jbarnes@virtuousgeek.org> <34A54798-E6AE-42E4-AAE3-D6C918971D69@qlogic.com>
 MIME-Version: 1.0
-To: Eric Paris <eparis@redhat.com>
-CC: linux-kernel@vger.kernel.org, linux-audit@redhat.com,
-       viro@zeniv.linux.org.ok, sgrubb@redhat.com, serue@us.ibm.com
-Subject: Re: [PATCH 1/4] CAPABILITIES: add cpu endian vfs caps structure
-References: <20081020222538.3895.50175.stgit@paris.rdu.redhat.com> <20081020222602.3895.77302.stgit@paris.rdu.redhat.com>
-In-Reply-To: <20081020222602.3895.77302.stgit@paris.rdu.redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <34A54798-E6AE-42E4-AAE3-D6C918971D69@qlogic.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Eric Paris wrote:
-> This patch add a generic cpu endian caps structure and enternally available
-> functions which retrieve fcaps information from disk.  This information is
-> necessary so fcaps information can be collected and recorded by the audit
-> system.
+On Mon, Oct 20, 2008 at 10:18:38PM -0700, Anirban Chakraborty wrote:
+> >Arjan van de Ven (1):
+> >     PCI: introduce an pci_ioremap(pdev, barnr) function
 > 
-[...]
->  	CAP_FOR_EACH_U32(i) {
-> -		__u32 value_cpu;
-> -
-> -		if (i >= tocopy) {
-> -			/*
-> -			 * Legacy capability sets have no upper bits
-> -			 */
-> -			bprm->cap_post_exec_permitted.cap[i] = 0;
-> +		if (i > tocopy) {
+> Does it make sense to rename iounmap to pci_iounmap, just to be  
+> consistent with pci_ioremap_bar?
 
-Shouldn't the above still be (i >= tocopy) ?
+iounmap can be used for ioremaps that aren't necessarily from PCI devices.
+Since there's no length parameter to iounmap, there's nothing to get
+wrong, so there's no natural counterpart to pci_ioremap().
 
-Cheers
-
-Andrew
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFI/W2e+bHCR3gb8jsRAtDBAJ94XoCVXRDDycns4KEmLLBlYODiqACfUD7W
-wx996Hso7mGH9lcc8Eiq89k=
-=gx3P
------END PGP SIGNATURE-----
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
