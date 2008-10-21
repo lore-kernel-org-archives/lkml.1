@@ -1,183 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbYJUD50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752255AbYJUEF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225AbYJUD50 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 23:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbYJUD5R
+	id S1752255AbYJUEF4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 00:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750771AbYJUEFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 23:57:17 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:47667 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751011AbYJUD5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 23:57:16 -0400
-Date: Tue, 21 Oct 2008 04:57:13 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: nagaraj s k <nagaraj.sk@gmail.com>
-cc: trivial@kernel.org, greg@kroah.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, nagaraj.krishnappa@thomsonreuters.com
-Subject: Re: [PATCH] via-agp.c fixed compilation error and warnings for
- 2.6.26
-In-Reply-To: <663ba5090810202049i16285109k34fde3ec1c9df319@mail.gmail.com>
-Message-ID: <alpine.DEB.0.82.0810210453290.26751@skynet.skynet.ie>
-References: <663ba5090810050509g6ce3c25bh40686506b1d35b8f@mail.gmail.com>
- <663ba5090810202049i16285109k34fde3ec1c9df319@mail.gmail.com>
+	Tue, 21 Oct 2008 00:05:47 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:53126 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750746AbYJUEFp convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 00:05:45 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq8EAKPs/EhMQWQ+/2dsb2JhbACBcsFig1A
+Date: Tue, 21 Oct 2008 00:05:42 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Nicolas Pitre <nico@cam.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC patch 00/15] Tracer Timestamping
+Message-ID: <20081021040542.GB24142@Krystal>
+References: <20081016232729.699004293@polymtl.ca> <1224230353.28131.65.camel@twins> <20081020202517.GF28562@Krystal> <alpine.LFD.2.00.0810202003260.26244@xanadu.home> <20081021013223.GB18751@Krystal> <alpine.LFD.2.00.0810202152030.26244@xanadu.home>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <alpine.LFD.2.00.0810202152030.26244@xanadu.home>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 23:46:49 up 138 days,  8:27,  9 users,  load average: 0.13, 0.25,
+	0.33
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 21 Oct 2008, nagaraj s k wrote:
-
-> Hi All,
+* Nicolas Pitre (nico@cam.org) wrote:
+> On Mon, 20 Oct 2008, Mathieu Desnoyers wrote:
 > 
-> can you please have a look at the patch in the below mail thread, it seems
-> like my mails get lost often here. is there any way i can reach the
-> moderator or any one who can comment on my work( i know there are thousands
-> of patches sent across, i am not the only one).
+> > * Nicolas Pitre (nico@cam.org) wrote:
+> > > On Mon, 20 Oct 2008, Mathieu Desnoyers wrote:
+> > > 
+> > > > * Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> > > > > Have you looked at the existing 32->63 extention code in
+> > > > > include/linux/cnt32_to_63.h and considered unifying it?
+> > > > > 
+> > > > 
+> > > > Yep, I felt this code was dangerous on SMP given it could suffer from
+> > > > the following type of race due to lack of proper barriers :
+> > > 
+> > > You are wrong.
+> > > 
+> > > > CPU    A                                 B
+> > > >        read hw cnt low
+> > > >        read __m_cnt_hi
+> > > >                                          read hw cnt low
+> > > >        (wrap detected)
+> > > >        write __m_cnt_hi (incremented)
+> > > >                                          read __m_cnt_hi
+> > > >                                          (wrap detected)
+> > > >                                          write __m_cnt_hi (incremented)
+> > > > 
+> > > > we therefore increment the high bits twice in the given race.
+> > > 
+> > > No.  Either you do the _same_ incrementation twice effectively writing 
+> > > the _same_ high value twice, or you don't have simultaneous wrap 
+> > > detections.  Simulate it on paper with real numbers if you are not 
+> > > convinced.
+> > > 
+> > 
+> > Hi Nicolas,
+> > 
+> > Yup, you are right. However, the case where one CPU sees the clock source
+> > a little bit off-sync (late) still poses a problem. Example follows :
+> > 
+> > CPU    A                                 B
+> >        read __m_cnt_hi (0x80000000)
+> >        read hw cnt low (0x00000001)
+> >        (wrap detected :
+> >         (s32)(0x80000000 ^ 0x1) < 0)
+> >        write __m_cnt_hi = 0x00000001
+> >        return 0x0000000100000001
+> >                                             read __m_cnt_hi (0x00000001)
+> >                                      (late) read hw cnt low (0xFFFFFFFA)
+> >                                             (wrap detected :
+> >                                              (s32)(0x00000001 ^ 0xFFFFFFFA) < 0)
+> >                                             write __m_cnt_hi = 0x80000001
+> >                                             return 0x80000001FFFFFFFA
+> >                                                                   (time jumps)
+> 
+> If this is through a global counter then I have a big problem believing 
+> you.
 > 
 
-I saw this patch and couldn't see the problem is was solving. If its just 
-a checkpatch.pl run across the file, in parts it makes the file less 
-readable, anything splitting stings to avoid the checkpatch.pl stupid 80 
-chars warnings isn't anything I'm going to worryabout.
+If the global counter read through mmap io insures that the values
+monotonically increases and if the proper memory barriers are there, it
+should be ok and two consecutive reads done on different CPUs should
+never go backward.
 
-The mail says fixing compilation errors, there are no compilation errors, 
-if it fixes checkpatch.pl issues then please say that.
-
-> >          }
-> >      }
-> > -    printk(KERN_ERR PFX "Unknown aperture size from AGP bridge (0x%x)\n",
-> > temp);
-> > +    printk(KERN_ERR PFX "Unknown aperture size from AGP
-> > +        bridge (0x%x)\n", temp);
-
-Uglier code.
-
-> >      return 0;
-> >  }
-> >
-> > @@ -116,7 +117,8 @@ static int via_fetch_size_agp3(void)
-> >      for (i = 0; i < agp_bridge->driver->num_aperture_sizes; i++) {
-> >          if (temp == values[i].size_value) {
-> >              agp_bridge->previous_size =
-> > -                agp_bridge->current_size = (void *) (values + i);
-> > +                agp_bridge->current_size =
-> > +                     (void *) (values + i);
-
-arguably uglier code.
-
-> >              agp_bridge->aperture_size_idx = i;
-> >              return values[i].size;
-> >          }
-> > @@ -142,11 +144,12 @@ static int via_configure_agp3(void)
-> >
-> >      /* 1. Enable GTLB in RX90<7>, all AGP aperture access needs to fetch
-> >       *    translation table first.
-> > -     * 2. Enable AGP aperture in RX91<0>. This bit controls the enabling
-> > of the
-> > -     *    graphics AGP aperture for the AGP3.0 port.
-> > +     * 2. Enable AGP aperture in RX91<0>. This bit controls the
-> > +     * enabling of the graphics AGP aperture for the AGP3.0 port.
-
-this is okay.
-
-> >       */
-> >      pci_read_config_dword(agp_bridge->dev, VIA_AGP3_GARTCTRL, &temp);
-> > -    pci_write_config_dword(agp_bridge->dev, VIA_AGP3_GARTCTRL, temp |
-> > (3<<7));
-> > +    pci_write_config_dword(agp_bridge->dev, VIA_AGP3_GARTCTRL,
-> > +                         temp | (3<<7));
-
-this one is probably okay.
-
-> >      return 0;
-> >  }
-> >
-> > @@ -156,7 +159,8 @@ static void via_cleanup_agp3(void)
-> >      struct aper_size_info_16 *previous_size;
-> >
-> >      previous_size = A_SIZE_16(agp_bridge->previous_size);
-> > -    pci_write_config_byte(agp_bridge->dev, VIA_APSIZE,
-> > previous_size->size_value);
-> > +    pci_write_config_byte(agp_bridge->dev, VIA_APSIZE,
-> > +                previous_size->size_value);
-> >  }
-> >
-> >
-> > @@ -165,7 +169,8 @@ static void via_tlbflush_agp3(struct agp
-> >      u32 temp;
-> >
-> >      pci_read_config_dword(agp_bridge->dev, VIA_AGP3_GARTCTRL, &temp);
-> > -    pci_write_config_dword(agp_bridge->dev, VIA_AGP3_GARTCTRL, temp &
-> > ~(1<<7));
-> > +    pci_write_config_dword(agp_bridge->dev, VIA_AGP3_GARTCTRL,
-> > +                            temp & ~(1<<7));
-> >      pci_write_config_dword(agp_bridge->dev, VIA_AGP3_GARTCTRL, temp);
-> >  }
-> >
-> > @@ -421,13 +426,13 @@ static struct agp_device_ids via_agp_dev
-> >   * VIA's AGP3 chipsets do magick to put the AGP bridge compliant
-> >   * with the same standards version as the graphics card.
-> >   */
-> > -static void check_via_agp3 (struct agp_bridge_data *bridge)
-> > +static void check_via_agp3(struct agp_bridge_data *bridge)
-> >  {
-> >      u8 reg;
-> >
-> >      pci_read_config_byte(bridge->dev, VIA_AGPSEL, &reg);
-> >      /* Check AGP 2.0 compatibility mode. */
-> > -    if ((reg & (1<<1))==0)
-> > +    if ((reg & (1<<1)) == 0)
-> >          bridge->driver = &via_agp3_driver;
-> >  }
-> >
-> > @@ -445,7 +450,8 @@ static int __devinit agp_via_probe(struc
-> >          return -ENODEV;
-> >
-> >      j = ent - agp_via_pci_table;
-> > -    printk (KERN_INFO PFX "Detected VIA %s chipset\n",
-> > devs[j].chipset_name);
-> > +    printk(KERN_INFO PFX "Detected VIA %s chipset\n",
-> > +             devs[j].chipset_name);
-> >
-> >      bridge = agp_alloc_bridge();
-> >      if (!bridge)
-> > @@ -461,7 +467,8 @@ static int __devinit agp_via_probe(struc
-> >      if (pdev->device == PCI_DEVICE_ID_VIA_8367_0) {
-> >          /* Is there a KT400 subsystem ? */
-> >          if (pdev->subsystem_device == PCI_DEVICE_ID_VIA_8377_0) {
-> > -            printk(KERN_INFO PFX "Found KT400 in disguise as a KT266.\n");
-> > +            printk(KERN_INFO PFX "Found KT400 in disguise
-> > +                as a KT266.\n");
-
-uglier.
-
-> >              check_via_agp3(bridge);
-> >          }
-> >      }
-> > @@ -491,8 +498,8 @@ static void __devexit agp_via_remove(str
-> >
-> >  static int agp_via_suspend(struct pci_dev *pdev, pm_message_t state)
-> >  {
-> > -    pci_save_state (pdev);
-> > -    pci_set_power_state (pdev, PCI_D3hot);
-> > +    pci_save_state(pdev);
-> > +    pci_set_power_state(pdev, PCI_D3hot);
-> >
-> >      return 0;
-> >  }
-> > @@ -501,7 +508,7 @@ static int agp_via_resume(struct pci_dev
-> >  {
-> >      struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
-> >
-> > -    pci_set_power_state (pdev, PCI_D0);
-> > +    pci_set_power_state(pdev, PCI_D0);
-> >      pci_restore_state(pdev);
-> >
-> >      if (bridge->driver == &via_agp3_driver)
-> >
-> >
+> If this is a per-CPU counter then you just need a per-CPU version of 
+> __m_cnt_hi.
 > 
+
+Counters like MIPS 32-bits timestamp counter is supposedly synchronized
+across cores, and could thus be thought to be global, but could suffer
+from such small drift due to inexact counter synchronization.
+
+> > A similar situation can be generated by out-of-order hi/low bits reads.
+> 
+> This, of course, should and can be prevented.  No big deal.
+> 
+> > > If the low part is a per CPU value then the high part has to be a per 
+> > > CPU value too.  There only needs to be a per-CPU variant of the same 
+> > > algorithm where the only difference is that __m_cnt_hi would be per CPU.
+> > > 
+> > > If the low part is global then __m_cnt_hi has to be global, even on SMP.
+> > > 
+> > 
+> > Hrm, given the performance impact of barriers that would need to be
+> > added to insure correct read order of hi and low bits, and also
+> > considering the risk that a "synchronized" timestamp counter off by a
+> > few cycles poses in terms of time jumping forward, I don't see why we
+> > would ever want to use a global __m_cnt_hi ?
+> 
+> I still would like to know just _how_ you could manage to have one CPU 
+> perform two reads and one write and manage for another CPU to see that 
+> just written value but read an even older value from the global counter 
+> than what the first CPU saw.
+> 
+
+As I said above, it would be ok with a global mmio counter, given the
+proper barriers are used.
+
+> > I would therefore recommend to always use a per-cpu __m_cnt_hi.
+> 
+> No, not until you convince me of the above nonsense.  Sure it will 
+> work with a per-CPU __m_cnt_hi of course, but then the timing constraint 
+> to keep the algorithm warm is for each CPU which, if the source counter 
+> is global, shouldn't be necessary.
+> 
+
+True, with a mmio time source, only a single counter seems necessary.
+Only when there are slightly off time sources (such as "almost"
+synchronized TSC") would the per-cpu counter be needed.
+
+> If the 63-bit counter is queried often enough on each CPU then it is of 
+> course advantageous to go per-CPU to avoid excessive cache bouncing, and 
+> if you start worrying about cache bouncing then you certainly call this 
+> code often enough to keep everything in synch.  But that needs not to be 
+> always the case.
+
+This code should only cache bounce about once or twice per overflow
+period. The rest should only read the __m_cnt_hi value for comparison.
+Therefore I don't think cache-line bouncing is such an issue here. OTOH,
+added barriers can degrade performance a lot.
+
+> 
+> > Also, a small nit, to make sure cnt32_to_63 never gets scheduled out
+> > with a stale old __m_cnt_hi value, its comments should probably say that
+> > it has to be always used with preemption off.
+> 
+> NO! THAT's THE WHOLE POINT OF THIS CODE: TO NOT NEED ANY KIND OF 
+> LOCKING!  The only requirement is that you must not be preempted away 
+> for longer than half (or a quarter if you want to play real safe) the 
+> period of the base counter.  If you cannot guarantee that then either 
+> your base counter is so fast that it wraps so often to be unusable, or 
+> you have another and bigger problem for being preempted for so long.
+> 
+
+Or maybe you are just unlucky and a user hit CTRL-Z at the wrong time ?
+I could be wrong and maybe there is no such thing possible as to "stop"
+a thread while it's in kernel-space, but unless there are restrictions
+about where a thread can be stopped, I assume such scenario could cause
+a very long preemption if preemption is not disabled.
+
+Even if such thread stop is not possible, assuming the scheduler will
+never leave _any_ thread out of the runqueue for a few seconds seems
+questionable.
+
+Mathieu
+
+> 
+> Nicolas
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
