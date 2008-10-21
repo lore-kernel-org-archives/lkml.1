@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbYJUXPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbYJUXST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755723AbYJUXPn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 19:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbYJUXPc
+	id S1756085AbYJUXST (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 19:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbYJUXSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 19:15:32 -0400
-Received: from anchor-post-34.mail.demon.net ([194.217.242.92]:4912 "EHLO
-	anchor-post-34.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751352AbYJUXPb (ORCPT
+	Tue, 21 Oct 2008 19:18:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41125 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751461AbYJUXSD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 19:15:31 -0400
-Message-ID: <48FE62A0.7080202@lougher.demon.co.uk>
-Date: Wed, 22 Oct 2008 00:15:44 +0100
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+	Tue, 21 Oct 2008 19:18:03 -0400
+Message-ID: <48FE6306.6020806@linux-foundation.org>
+Date: Tue, 21 Oct 2008 18:17:26 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: Alex Riesen <raa.lkml@gmail.com>
-CC: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       tim.bird@am.sony.com
-Subject: Re: Subject: [PATCH 00/16] Squashfs: compressed read-only filesystem
-References: <E1KqrTW-0001x8-3h@dylan> <81b0412b0810211529x3fc85567yc34fd369ff7c8518@mail.gmail.com>
-In-Reply-To: <81b0412b0810211529x3fc85567yc34fd369ff7c8518@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au, hugh@veritas.com,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: SLUB defrag pull request?
+References: <1223883004.31587.15.camel@penberg-laptop> <1223883164.31587.16.camel@penberg-laptop> <Pine.LNX.4.64.0810131227120.20511@blonde.site> <200810132354.30789.nickpiggin@yahoo.com.au> <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu> <E1KpOOL-0003Vf-9y@pomaz-ex.szeredi.hu> <48F378C6.7030206@linux-foundation.org> <E1KpOjX-0003dt-AY@pomaz-ex.szeredi.hu> <48FC9CCC.3040006@linux-foundation.org> <E1Krz4o-0002Fi-Pu@pomaz-ex.szeredi.hu> <48FCCC72.5020202@linux-foundation.org> <E1KrzgK-0002QS-Os@pomaz-ex.szeredi.hu> <48FCD7CB.4060505@linux-foundation.org> <E1Ks0QX-0002aC-SQ@pomaz-ex.szeredi.hu> <48FCE1C4.20807@linux-foundation.org> <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Riesen wrote:
-> 2008/10/17 Phillip Lougher <phillip@lougher.demon.co.uk>:
->> There are 16 patches in the patch set, and the patches are against the
->> latest linux-next tree (linux 2.6.27-next-20081016).
+Miklos Szeredi wrote:
+> On Mon, 20 Oct 2008, Christoph Lameter wrote:
+>> Miklos Szeredi wrote:
+>>> So, isn't it possible to do without get_dentries()?  What's the
+>>> fundamental difference between this and regular cache shrinking?
+>> The fundamental difference is that slab defrag operates on sparsely
+>> populated dentries. It comes into effect when the density of
+>> dentries per page is low and lots of memory is wasted. It
+>> defragments by kicking out dentries in low density pages. These can
+>> then be reclaimed.
 > 
-> You better don't base anything off linux-next. These are not stable: there
-> can be even something in the tree you mentioned which will never end
-> up in the mainline and if your patches depend on it they wont apply to
-> something like v2.6.26.2.
+> OK, but why can't this be done in just one stage?
 
-Definately, there's some d_obtain_alias stuff in linux-next which has 
-been there since linux-2.6.27-rc4-next.  I thought it would make it into 
-the final 2.6.27 but it didn't.
-
-I thought linux-next *was* the tree that new patches should be based 
-off.  However, the relationship between linux-2.6.git, linux-next.git, 
-and the  -mm patch series seems to be a little vague to me, not to 
-mention where the linux-staging tree fits into all this.
-
-Phillip
+The only way that a secure reference can be established is if the slab page is
+locked. That requires a spinlock. The slab allocator calls the get() functions
+ while the slab lock guarantees object existence. Then locks are dropped and
+reclaim actions can start with the guarantee that the slab object will not
+suddenly vanish.
