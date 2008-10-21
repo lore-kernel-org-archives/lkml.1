@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753923AbYJUKzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbYJULGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753923AbYJUKzN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 06:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbYJUKzA
+	id S1753373AbYJULGx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 07:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbYJULGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 06:55:00 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:52943 "EHLO pasmtpB.tele.dk"
+	Tue, 21 Oct 2008 07:06:44 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60561 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751067AbYJUKzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 06:55:00 -0400
-Date: Tue, 21 Oct 2008 12:54:05 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, oomichi@mxs.nes.nec.co.jp
-Subject: Re: [PATCH] Fix kexec compile error, undeclared 'vmlist'
-Message-ID: <20081021105404.GD22217@kernel.dk>
-References: <20081021105228.GC22217@kernel.dk>
+	id S1751786AbYJULGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 07:06:44 -0400
+Message-ID: <48FDB7E7.4090007@redhat.com>
+Date: Tue, 21 Oct 2008 07:07:19 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081021105228.GC22217@kernel.dk>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <pzijlstr@redhat.com>
+Subject: Re: Scheduler on C2D CPU and latest 2.6.27 kernel
+References: <c4e36d110810210259o38897783i2dc4bcb59e8d32e7@mail.gmail.com>
+In-Reply-To: <c4e36d110810210259o38897783i2dc4bcb59e8d32e7@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 21 2008, Jens Axboe wrote:
-> Hi,
+Zdenek Kabelac wrote:
+> Hi
 > 
-> Current -git fails to compile, at least on ppc:
+> Recently I'm noticing bad behavior of the CPU scheduler on my T61 (2GB, C2D)
 > 
-> kernel/kexec.c: In function 'crash_save_vmcoreinfo_init':
-> kernel/kexec.c:1374: error: 'vmlist' undeclared (first use in this function)
-> kernel/kexec.c:1374: error: (Each undeclared identifier is reported only once
-> kernel/kexec.c:1374: error: for each function it appears in.)
-> kernel/kexec.c:1410: error: invalid use of undefined type 'struct vm_struct'
+> It looks like Linux concentrates all running tasks on one CPU and the
+> second cpu is sleeping.
 > 
-> It's missing a vmalloc.h include, introduced by
-> acd99dbf54020f5c80b9aa2f2ea86f43cb285b02.
+> With recent changes to DRI - glxgears went up to 840FPS but also takes
+> 100% (with Xorg) and when I run 'while :; do true; done' loop in
+> parallel frame rate drops to 300FPS.
 > 
-> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> But as I have C2D CPU I would expect that there should be no such
+> dramatic slowdown.
 > 
-> diff --git a/kernel/kexec.c b/kernel/kexec.c
-> index 777ac45..ac0fde7 100644
-> --- a/kernel/kexec.c
-> +++ b/kernel/kexec.c
-> @@ -30,6 +30,7 @@
->  #include <linux/pm.h>
->  #include <linux/cpu.h>
->  #include <linux/console.h>
-> +#include <linux/vmalloc.h>
->  
->  #include <asm/page.h>
->  #include <asm/uaccess.h>
+> Xosview shows that only one CPU is fully loaded.
+> 
+> Here are my .config scheduler options:
+> 
+> CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
+> # CONFIG_GROUP_SCHED is not set
+> CONFIG_IOSCHED_NOOP=y
+> CONFIG_IOSCHED_AS=y
+> CONFIG_IOSCHED_DEADLINE=y
+> CONFIG_IOSCHED_CFQ=y
+> CONFIG_DEFAULT_IOSCHED="cfq"
+> CONFIG_SCHED_SMT=y
+> # CONFIG_SCHED_MC is not set
+> CONFIG_SCHED_HRTICK=y
+> # CONFIG_NET_SCHED is not set
+> CONFIG_USB_EHCI_TT_NEWSCHED=y
+> CONFIG_SCHED_DEBUG=y
+> CONFIG_SCHEDSTATS=y
+> CONFIG_SCHED_TRACER=y
+> 
+> 
+> Am I missing something?
 
-So this was already fixed and pushed out by Tony, so nevermind the extra
-noise. Apparently I had pulled this morning just before, so missed the
-last few changes.
+You're running a loop that does nothing except create new tasks that have no 
+scheduling history, and then disappear before the scheduler can migrate them.
 
--- 
-Jens Axboe
+Try running 'openssl speed' to chew up CPU.  I promise you the scheduler will 
+behave very nicely.
 
+-- Chris
