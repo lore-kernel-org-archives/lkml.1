@@ -1,70 +1,301 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbYJUIqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbYJUItc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753505AbYJUIqT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 04:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbYJUIqL
+	id S1752722AbYJUItc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 04:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbYJUItZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 04:46:11 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:54609 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751328AbYJUIqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 04:46:10 -0400
-Message-ID: <48FD96C9.6060204@atmel.com>
-Date: Tue, 21 Oct 2008 10:46:01 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Tue, 21 Oct 2008 04:49:25 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55043 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751380AbYJUItY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 04:49:24 -0400
+Date: Tue, 21 Oct 2008 10:49:22 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] w35und: remove spinlock wrappers
+Message-ID: <20081021084922.GH15782@atrey.karlin.mff.cuni.cz>
+References: <Pine.LNX.4.64.0810211143390.30870@melkki.cs.Helsinki.FI>
 MIME-Version: 1.0
-To: roel kluin <roel.kluin@gmail.com>
-CC: linux-fbdev-devel@lists.sourceforge.net,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] atmel_lcdfb: unsigned irq_base cannot be negative
-References: <48FD4F7E.6010708@gmail.com>
-In-Reply-To: <48FD4F7E.6010708@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0810211143390.30870@melkki.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
+> This patch removes the OS_SPIN_LOCK and related wrappers from the driver code.
+> 
+> Cc: Pavel Machek <pavel@suse.cz>
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-roel kluin :
-> unsigned irq_base cannot be negative
+ACK.
 
-Indeed. Thanks for taking this point !
-
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 > ---
-> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-> index f8d0a57..f93f57a 100644
-> --- a/drivers/video/atmel_lcdfb.c
-> +++ b/drivers/video/atmel_lcdfb.c
-> @@ -857,12 +857,12 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
->  		goto stop_clk;
->  	}
+>  drivers/staging/winbond/linux/common.h    |    7 -----
+>  drivers/staging/winbond/linux/wb35reg.c   |   37 +++++++++++++---------------
+>  drivers/staging/winbond/linux/wb35reg_s.h |    2 +-
+>  drivers/staging/winbond/mlme_s.h          |    2 +-
+>  drivers/staging/winbond/wblinux.c         |   13 ++++-----
+>  drivers/staging/winbond/wblinux_s.h       |    4 +-
+>  6 files changed, 27 insertions(+), 38 deletions(-)
+> 
+> diff --git a/drivers/staging/winbond/linux/common.h b/drivers/staging/winbond/linux/common.h
+> index c8f14b7..712a86c 100644
+> --- a/drivers/staging/winbond/linux/common.h
+> +++ b/drivers/staging/winbond/linux/common.h
+> @@ -105,13 +105,6 @@ typedef struct urb * PURB;
+>  #define OS_MEMORY_CLEAR( _A, _S )	memset( (u8 *)_A,0,_S)
+>  #define OS_MEMORY_COMPARE( _A, _B, _S )	(memcmp(_A,_B,_S)? 0 : 1) // Definition is reverse with Ndis 1: the same 0: different
 >  
-> -	sinfo->irq_base = platform_get_irq(pdev, 0);
-> -	if (sinfo->irq_base < 0) {
-> +	ret = platform_get_irq(pdev, 0);
-> +	if (ret < 0) {
->  		dev_err(dev, "unable to get irq\n");
-> -		ret = sinfo->irq_base;
->  		goto stop_clk;
+> -
+> -#define OS_SPIN_LOCK				spinlock_t
+> -#define OS_SPIN_LOCK_ALLOCATE( _S )		spin_lock_init( _S );
+> -#define OS_SPIN_LOCK_FREE( _S )
+> -#define OS_SPIN_LOCK_ACQUIRED( _S )		spin_lock_irq( _S )
+> -#define OS_SPIN_LOCK_RELEASED( _S )		spin_unlock_irq( _S );
+> -
+>  #define OS_TIMER	struct timer_list
+>  #define OS_TIMER_INITIAL( _T, _F, _P )			\
+>  {							\
+> diff --git a/drivers/staging/winbond/linux/wb35reg.c b/drivers/staging/winbond/linux/wb35reg.c
+> index 5c28ec9..ebb6db5 100644
+> --- a/drivers/staging/winbond/linux/wb35reg.c
+> +++ b/drivers/staging/winbond/linux/wb35reg.c
+> @@ -46,14 +46,14 @@ Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 N
+>  		pRegQueue->pUsbReq = dr;
+>  		pRegQueue->pUrb = pUrb;
+>  
+> -		OS_SPIN_LOCK_ACQUIRED( &pWb35Reg->EP0VM_spin_lock );
+> +		spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
+>  		if (pWb35Reg->pRegFirst == NULL)
+>  			pWb35Reg->pRegFirst = pRegQueue;
+>  		else
+>  			pWb35Reg->pRegLast->Next = pRegQueue;
+>  		pWb35Reg->pRegLast = pRegQueue;
+>  
+> -		OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
+> +		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
+>  
+>  		// Start EP0VM
+>  		Wb35Reg_EP0VM_start(pHwData);
+> @@ -193,14 +193,14 @@ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+>  		pRegQueue->pUsbReq = dr;
+>  		pRegQueue->pUrb = pUrb;
+>  
+> -		OS_SPIN_LOCK_ACQUIRED(&pWb35Reg->EP0VM_spin_lock );
+> +		spin_lock_irq(&pWb35Reg->EP0VM_spin_lock );
+>  		if (pWb35Reg->pRegFirst == NULL)
+>  			pWb35Reg->pRegFirst = pRegQueue;
+>  		else
+>  			pWb35Reg->pRegLast->Next = pRegQueue;
+>  		pWb35Reg->pRegLast = pRegQueue;
+>  
+> -		OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
+> +		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
+>  
+>  		// Start EP0VM
+>  		Wb35Reg_EP0VM_start(pHwData);
+> @@ -254,14 +254,14 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
+>  		pRegQueue->Next = NULL;
+>  		pRegQueue->pUsbReq = dr;
+>  		pRegQueue->pUrb = pUrb;
+> -		OS_SPIN_LOCK_ACQUIRED (&pWb35Reg->EP0VM_spin_lock );
+> +		spin_lock_irq (&pWb35Reg->EP0VM_spin_lock );
+>  		if( pWb35Reg->pRegFirst == NULL )
+>  			pWb35Reg->pRegFirst = pRegQueue;
+>  		else
+>  			pWb35Reg->pRegLast->Next = pRegQueue;
+>  		pWb35Reg->pRegLast = pRegQueue;
+>  
+> -		OS_SPIN_LOCK_RELEASED ( &pWb35Reg->EP0VM_spin_lock );
+> +		spin_unlock_irq ( &pWb35Reg->EP0VM_spin_lock );
+>  
+>  		// Start EP0VM
+>  		Wb35Reg_EP0VM_start(pHwData);
+> @@ -359,14 +359,14 @@ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
+>  		pRegQueue->Next = NULL;
+>  		pRegQueue->pUsbReq = dr;
+>  		pRegQueue->pUrb = pUrb;
+> -		OS_SPIN_LOCK_ACQUIRED ( &pWb35Reg->EP0VM_spin_lock );
+> +		spin_lock_irq ( &pWb35Reg->EP0VM_spin_lock );
+>  		if( pWb35Reg->pRegFirst == NULL )
+>  			pWb35Reg->pRegFirst = pRegQueue;
+>  		else
+>  			pWb35Reg->pRegLast->Next = pRegQueue;
+>  		pWb35Reg->pRegLast = pRegQueue;
+>  
+> -		OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
+> +		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
+>  
+>  		// Start EP0VM
+>  		Wb35Reg_EP0VM_start( pHwData );
+> @@ -411,9 +411,9 @@ Wb35Reg_EP0VM(phw_data_t pHwData )
+>  		goto cleanup;
+>  
+>  	// Get the register data and send to USB through Irp
+> -	OS_SPIN_LOCK_ACQUIRED( &pWb35Reg->EP0VM_spin_lock );
+> +	spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
+>  	pRegQueue = pWb35Reg->pRegFirst;
+> -	OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
+> +	spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
+>  
+>  	if (!pRegQueue)
+>  		goto cleanup;
+> @@ -468,12 +468,12 @@ Wb35Reg_EP0VM_complete(PURB pUrb)
+>  		OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Reg->RegFireCount );
+>  	} else {
+>  		// Complete to send, remove the URB from the first
+> -		OS_SPIN_LOCK_ACQUIRED( &pWb35Reg->EP0VM_spin_lock );
+> +		spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
+>  		pRegQueue = pWb35Reg->pRegFirst;
+>  		if (pRegQueue == pWb35Reg->pRegLast)
+>  			pWb35Reg->pRegLast = NULL;
+>  		pWb35Reg->pRegFirst = pWb35Reg->pRegFirst->Next;
+> -		OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
+> +		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
+>  
+>  		if (pWb35Reg->EP0VM_status) {
+>  #ifdef _PE_REG_DUMP_
+> @@ -513,7 +513,7 @@ Wb35Reg_destroy(phw_data_t pHwData)
+>  	OS_SLEEP(10000);  // Delay for waiting function enter 940623.1.b
+>  
+>  	// Release all the data in RegQueue
+> -	OS_SPIN_LOCK_ACQUIRED( &pWb35Reg->EP0VM_spin_lock );
+> +	spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
+>  	pRegQueue = pWb35Reg->pRegFirst;
+>  	while (pRegQueue) {
+>  		if (pRegQueue == pWb35Reg->pRegLast)
+> @@ -521,7 +521,7 @@ Wb35Reg_destroy(phw_data_t pHwData)
+>  		pWb35Reg->pRegFirst = pWb35Reg->pRegFirst->Next;
+>  
+>  		pUrb = pRegQueue->pUrb;
+> -		OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
+> +		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
+>  		if (pUrb) {
+>  			usb_free_urb(pUrb);
+>  			kfree(pRegQueue);
+> @@ -530,14 +530,11 @@ Wb35Reg_destroy(phw_data_t pHwData)
+>  			WBDEBUG(("EP0 queue release error\n"));
+>  			#endif
+>  		}
+> -		OS_SPIN_LOCK_ACQUIRED( &pWb35Reg->EP0VM_spin_lock );
+> +		spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
+>  
+>  		pRegQueue = pWb35Reg->pRegFirst;
 >  	}
-> +	sinfo->irq_base = ret;
+> -	OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
+> -
+> -	// Free resource
+> -	OS_SPIN_LOCK_FREE(  &pWb35Reg->EP0VM_spin_lock );
+> +	spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
+>  }
+>  
+>  //====================================================================================
+> @@ -550,7 +547,7 @@ unsigned char Wb35Reg_initial(phw_data_t pHwData)
+>  	u32 SoftwareSet, VCO_trim, TxVga, Region_ScanInterval;
+>  
+>  	// Spin lock is acquired for read and write IRP command
+> -	OS_SPIN_LOCK_ALLOCATE( &pWb35Reg->EP0VM_spin_lock );
+> +	spin_lock_init( &pWb35Reg->EP0VM_spin_lock );
+>  
+>  	// Getting RF module type from EEPROM ------------------------------------
+>  	Wb35Reg_WriteSync( pHwData, 0x03b4, 0x080d0000 ); // Start EEPROM access + Read + address(0x0d)
+> diff --git a/drivers/staging/winbond/linux/wb35reg_s.h b/drivers/staging/winbond/linux/wb35reg_s.h
+> index 9b76301..8b35b93 100644
+> --- a/drivers/staging/winbond/linux/wb35reg_s.h
+> +++ b/drivers/staging/winbond/linux/wb35reg_s.h
+> @@ -143,7 +143,7 @@ typedef struct _WB35REG
+>  	//-------------------
+>  	// VM
+>  	//-------------------
+> -	OS_SPIN_LOCK	EP0VM_spin_lock; // 4B
+> +	spinlock_t	EP0VM_spin_lock; // 4B
+>  	u32	        EP0VM_status;//$$
+>  	PREG_QUEUE	    pRegFirst;
+>  	PREG_QUEUE	    pRegLast;
+> diff --git a/drivers/staging/winbond/mlme_s.h b/drivers/staging/winbond/mlme_s.h
+> index 6ec818b..039fd40 100644
+> --- a/drivers/staging/winbond/mlme_s.h
+> +++ b/drivers/staging/winbond/mlme_s.h
+> @@ -130,7 +130,7 @@ typedef struct _MLME_FRAME
+>  	u8			DataType;
+>  	u8			IsInUsed;
+>  
+> -	OS_SPIN_LOCK	MLMESpinLock;
+> +	spinlock_t	MLMESpinLock;
+>  
+>      u8		TxMMPDU[MAX_NUM_TX_MMPDU][MAX_MMPDU_SIZE];
+>  	u8		TxMMPDUInUse[ (MAX_NUM_TX_MMPDU+3) & ~0x03 ];
+> diff --git a/drivers/staging/winbond/wblinux.c b/drivers/staging/winbond/wblinux.c
+> index 51dad95..186ad60 100644
+> --- a/drivers/staging/winbond/wblinux.c
+> +++ b/drivers/staging/winbond/wblinux.c
+> @@ -26,10 +26,10 @@ EncapAtomicInc(PADAPTER Adapter, void* pAtomic)
+>  	PWBLINUX pWbLinux = &Adapter->WbLinux;
+>  	u32	ltmp;
+>  	u32 *	pltmp = (u32 *)pAtomic;
+> -	OS_SPIN_LOCK_ACQUIRED( &pWbLinux->AtomicSpinLock );
+> +	spin_lock_irq( &pWbLinux->AtomicSpinLock );
+>  	(*pltmp)++;
+>  	ltmp = (*pltmp);
+> -	OS_SPIN_LOCK_RELEASED( &pWbLinux->AtomicSpinLock );
+> +	spin_unlock_irq( &pWbLinux->AtomicSpinLock );
+>  	return ltmp;
+>  }
+>  
+> @@ -39,10 +39,10 @@ EncapAtomicDec(PADAPTER Adapter, void* pAtomic)
+>  	PWBLINUX pWbLinux = &Adapter->WbLinux;
+>  	u32	ltmp;
+>  	u32 *	pltmp = (u32 *)pAtomic;
+> -	OS_SPIN_LOCK_ACQUIRED( &pWbLinux->AtomicSpinLock );
+> +	spin_lock_irq( &pWbLinux->AtomicSpinLock );
+>  	(*pltmp)--;
+>  	ltmp = (*pltmp);
+> -	OS_SPIN_LOCK_RELEASED( &pWbLinux->AtomicSpinLock );
+> +	spin_unlock_irq( &pWbLinux->AtomicSpinLock );
+>  	return ltmp;
+>  }
+>  
+> @@ -51,8 +51,8 @@ WBLINUX_Initial(PADAPTER Adapter)
+>  {
+>  	PWBLINUX pWbLinux = &Adapter->WbLinux;
+>  
+> -	OS_SPIN_LOCK_ALLOCATE( &pWbLinux->SpinLock );
+> -	OS_SPIN_LOCK_ALLOCATE( &pWbLinux->AtomicSpinLock );
+> +	spin_lock_init( &pWbLinux->SpinLock );
+> +	spin_lock_init( &pWbLinux->AtomicSpinLock );
+>  	return TRUE;
+>  }
+>  
+> @@ -79,7 +79,6 @@ void
+>  WBLINUX_Destroy(PADAPTER Adapter)
+>  {
+>  	WBLINUX_stop( Adapter );
+> -	OS_SPIN_LOCK_FREE( &pWbNdis->SpinLock );
+>  #ifdef _PE_USB_INI_DUMP_
+>  	WBDEBUG(("[w35und] unregister_netdev!\n"));
+>  #endif
+> diff --git a/drivers/staging/winbond/wblinux_s.h b/drivers/staging/winbond/wblinux_s.h
+> index 97e9167..fd2bb43 100644
+> --- a/drivers/staging/winbond/wblinux_s.h
+> +++ b/drivers/staging/winbond/wblinux_s.h
+> @@ -24,8 +24,8 @@
+>  
+>  typedef struct _WBLINUX
+>  {
+> -	OS_SPIN_LOCK	AtomicSpinLock;
+> -	OS_SPIN_LOCK	SpinLock;
+> +	spinlock_t	AtomicSpinLock;
+> +	spinlock_t	SpinLock;
+>  	u32	shutdown;
+>  
+>  	OS_ATOMIC	ThreadCount;
 
-I prefer changing the definition of irq_base to plain int.
-
-So the patch becomes obvious:
--       unsigned long           irq_base;
-+       int                     irq_base;
-
-What do you think of this ?
-
-I repost a patch addressing this issue.
-
-Regards,
 -- 
-Nicolas Ferre
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
