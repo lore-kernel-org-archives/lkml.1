@@ -1,56 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbYJUV2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbYJUVa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756604AbYJUV2v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 17:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbYJUV2l
+	id S1756267AbYJUVa4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 17:30:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYJUVaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 17:28:41 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:41728 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751784AbYJUV2k (ORCPT
+	Tue, 21 Oct 2008 17:30:46 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:42028 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752224AbYJUVap (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 17:28:40 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: jkosina@suse.cz
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 4/4] HID: hiddev, fix lock imbalance
-Date: Tue, 21 Oct 2008 23:27:56 +0200
-Message-Id: <1224624476-16596-2-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1224624476-16596-1-git-send-email-jirislaby@gmail.com>
-References: <1224624476-16596-1-git-send-email-jirislaby@gmail.com>
+	Tue, 21 Oct 2008 17:30:45 -0400
+Subject: Re: Regression in 2.6.27-git from commit 43ac2ca3840f64
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Jouni Malinen <jouni.malinen@atheros.com>,
+       wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       John Linville <linville@tuxdriver.com>
+In-Reply-To: <48FDFCCA.8040604@lwfinger.net> (sfid-20081021_232731_453910_0675C4D6)
+References: <48FDFCCA.8040604@lwfinger.net>
+	 (sfid-20081021_232731_453910_0675C4D6)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-FvwKm92DqCiD2epAvsvz"
+Date: Tue, 21 Oct 2008 23:30:36 +0200
+Message-Id: <1224624636.28639.15.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't forget to unlock_kernel() in hiddev_ioctl_usage().
-Added in 7961df16819085b8a357720d89d0239036e6af2a
-(HID: Switch hiddev to unlocked_ioctl).
 
-Corresponing sparse warning:
-drivers/hid/usbhid/hiddev.c:515:10: warning: context imbalance in 'hiddev_ioctl_usage': wrong count at exit
-drivers/hid/usbhid/hiddev.c:515:10:    context 'kernel_lock': wanted 0, got 1
+--=-FvwKm92DqCiD2epAvsvz
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- drivers/hid/usbhid/hiddev.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+On Tue, 2008-10-21 at 09:01 -0700, Larry Finger wrote:
+> On my x86_64 system, the mainline 2.6.27-git kernel (v2.6.27-6030-g6da0b3=
+8)
+> shows the following anomaly with the 'iwlist scan' command:
+>=20
+>           Cell 03 - Address: 00:14:BF:85:49:FA
+>                     ESSID:"lwfdjf"
+>                     Mode:Master
+>                     Channel:1
+>                     Frequency:2.412 GHz (Channel 1)
+>                     Quality=3D66/100  Signal level:-62 dBm  Noise level=
+=3D-68 dBm
+>                     Encryption key:on
+>                     IE: Unknown: 00066C7766646A66
+>                     IE: Unknown: 010882848B962430486C
+>                     IE: Unknown: 030101
+>                     IE: Unknown: 2A0104
+>                     IE: Unknown: 2F0104
+>                     IE: Unknown: 32040C121860
+>                     IE: Unknown: DD09001018020014000000
+>                     IE: WPA Version 1
+>                         Group Cipher : TKIP
+>                         Pairwise Ciphers (1) : TKIP
+>                         Authentication Suites (1) : PSK
+>                     Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 18 Mb/s
+>                               24 Mb/s; 36 Mb/s; 54 Mb/s; 6 Mb/s; 9 Mb/s
+>                               12 Mb/s; 48 Mb/s
+>                     Extra:tsf=3D0000014488aeb18b
+>                     Extra: Last beacon: 448ms ago
+>=20
+> This problem was bisected to commit 43ac2ca3840f64f699a239535c590fa7ebaaa=
+c27,
+> entitled "mac80211: Handle scan result IEs in one block". The same bug is
+> present in the wireless-testing tree.
 
-diff --git a/drivers/hid/usbhid/hiddev.c b/drivers/hid/usbhid/hiddev.c
-index babd65d..3ac3207 100644
---- a/drivers/hid/usbhid/hiddev.c
-+++ b/drivers/hid/usbhid/hiddev.c
-@@ -436,8 +436,7 @@ static noinline int hiddev_ioctl_usage(struct hiddev *hiddev, unsigned int cmd,
- 		if (copy_to_user(user_arg, uref, sizeof(*uref)))
- 			goto fault;
- 
--		kfree(uref_multi);
--		return 0;
-+		goto goodreturn;
- 
- 	default:
- 		if (cmd != HIDIOCGUSAGE &&
--- 
-1.6.0.2
+I'm probably too tired, what exactly is the problem?
+
+johannes
+
+--=-FvwKm92DqCiD2epAvsvz
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJI/kn4AAoJEKVg1VMiehFYxcgP/0nlanrDO3PaajNsAjCEQu/6
+ZkGa6k/bp3FqBOpmMYJ8V04CMcS76qAo29NfDRs2S29jXAbjmvRmnkcqKiw4Fh02
+PA9brm+fKjk4a1O2vowIb2kfUEs24E4zXdNryIdPVE+scS7SDKQ3mSGXdu/lExk6
+C//3W0jMZhdQbG7Ru11T73YsDMO1AIpe0kc8I6xNPl00OK36v2xifVnx2ROqmxre
+7hs2o+0DrO85+DtCEugOUWLtYoyeSYpoPxQjGKXer/+pK0PRPXXcK5H3lLF1W0LZ
+/Km6TnZqN/fJGc9znHdYtOJxHEoejhbfkwYqhoTbJUAQ7wUs3E6Zr4dHJXhVGJHk
+N5AcJxQR2xBojAdLlrrv/BW8BN24vaXs7HhLlKIhZUmPL5UFzNQXYB/rqAg0Q+lr
+5JP5bGvZVGTeUHtnkOarN+isFd6IANjRhs2pJgSOsVk8XdgoY14lIFbbIsfwkGE3
+7kCns475AwIAICbjrwKEXaFHndon6HMYHz/+yqU9ArlSC/tGlZB8LsZvTNJIXL9i
+0wsWFY+M5d3owhVKNWpI8QxnEiHNl8+tiD/cj9VGtBy+NRKeZJA6wf9QuaeSZrBD
+lEFHu6GhBRYvV8Zf/ynvEAAKDpdWSQklrmd8nP/L/6syHplFzvFsydrtZBYOI53z
+0/cuy948F8IhJi03Kvbn
+=1T3d
+-----END PGP SIGNATURE-----
+
+--=-FvwKm92DqCiD2epAvsvz--
 
