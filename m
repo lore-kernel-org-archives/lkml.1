@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753768AbYJUJ7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbYJUKAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753768AbYJUJ7R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 05:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbYJUJ7E
+	id S1753912AbYJUKAV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 06:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbYJUKAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 05:59:04 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:41225 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752128AbYJUJ7C (ORCPT
+	Tue, 21 Oct 2008 06:00:07 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:5872 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752250AbYJUKAG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 05:59:02 -0400
+	Tue, 21 Oct 2008 06:00:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=wtbFCi+JH6yMSmk5SvH79De1qo8rY0fkwIJDz27mSwPfmdI4K1OAllLfJznX8BMVGD
-         Tj9NwQNzAWgzm6pF6rLySuxxUtUzdYeoMSpX5cgt9fPCIOxIdSfvr2MK8BxfCY8Oud3Z
-         gmBvfs6Qd16iRTuWiBVATybzkK7rfT/Po68E4=
-Message-ID: <c4e36d110810210259o38897783i2dc4bcb59e8d32e7@mail.gmail.com>
-Date: Tue, 21 Oct 2008 11:59:00 +0200
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Scheduler on C2D CPU and latest 2.6.27 kernel
-Cc: "Ingo Molnar" <mingo@redhat.com>, "Peter Zijlstra" <pzijlstr@redhat.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=i6LNthlcd+i0o4/2PZNcBu59c1f6EarZg0tIGzjqmgdRuElRWqGJZlNcBe50orJR6B
+         n99Nm7fcBGGu4VEvjXPDKpcdT4+MUVMvTrsjSxWf4vW9WIIotYbE6WDDytt4DSPuP+LD
+         pPSagZ+P68Jqvv2GrPRETF3E6Lf0X75JEdjBk=
+Message-ID: <241b8f7b0810210300t3f755e01s2c01a520702f04e2@mail.gmail.com>
+Date: Tue, 21 Oct 2008 15:30:04 +0530
+From: "Prabhu Chawandi" <prabhu.chavandi@gmail.com>
+To: "Jike Song" <albcamus@gmail.com>
+Subject: Re: History of Linux File !!!
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <df9815e70810210205m36a6e47di41e52776511f8ba6@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <241b8f7b0810210156k27a957c3i5df40f12068ea199@mail.gmail.com>
+	 <df9815e70810210205m36a6e47di41e52776511f8ba6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Thanks ..
 
-Recently I'm noticing bad behavior of the CPU scheduler on my T61 (2GB, C2D)
-
-It looks like Linux concentrates all running tasks on one CPU and the
-second cpu is sleeping.
-
-With recent changes to DRI - glxgears went up to 840FPS but also takes
-100% (with Xorg) and when I run 'while :; do true; done' loop in
-parallel frame rate drops to 300FPS.
-
-But as I have C2D CPU I would expect that there should be no such
-dramatic slowdown.
-
-Xosview shows that only one CPU is fully loaded.
-
-Here are my .config scheduler options:
-
-CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
-# CONFIG_GROUP_SCHED is not set
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_AS=y
-CONFIG_IOSCHED_DEADLINE=y
-CONFIG_IOSCHED_CFQ=y
-CONFIG_DEFAULT_IOSCHED="cfq"
-CONFIG_SCHED_SMT=y
-# CONFIG_SCHED_MC is not set
-CONFIG_SCHED_HRTICK=y
-# CONFIG_NET_SCHED is not set
-CONFIG_USB_EHCI_TT_NEWSCHED=y
-CONFIG_SCHED_DEBUG=y
-CONFIG_SCHEDSTATS=y
-CONFIG_SCHED_TRACER=y
+ Or do v have any site ... where we can see all version as we see in WinCVS ?
 
 
-Am I missing something?
+Prabhu
 
-
-Zdenek
+On 10/21/08, Jike Song <albcamus@gmail.com> wrote:
+> On Tue, Oct 21, 2008 at 4:56 PM, Prabhu Chawandi
+> <prabhu.chavandi@gmail.com> wrote:
+> > Hi,
+> >
+> >  Is there any way tosee the history of a linux kernel file....
+> >
+> > I mean .. when it is updated changed or what is the latest version ...
+> >
+>
+> try :
+>
+> $ git whatchanged -p   path/to/your/file
+>
+> --
+> Thanks,
+> Jike
+>
