@@ -1,53 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbYJUGiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbYJUGmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752818AbYJUGiB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 02:38:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbYJUGhw
+	id S1752818AbYJUGmq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 02:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbYJUGmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 02:37:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48076 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751167AbYJUGhv (ORCPT
+	Tue, 21 Oct 2008 02:42:37 -0400
+Received: from lazybastard.de ([212.112.238.170]:36387 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751129AbYJUGmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 02:37:51 -0400
-Date: Mon, 20 Oct 2008 23:37:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, adilger@sun.com, jack@suse.cz,
-       sandeen@redhat.com
-Subject: Re: status of the ext3/jbd error handling enhancement patches
-Message-Id: <20081020233726.5682a278.akpm@linux-foundation.org>
-In-Reply-To: <48FD75AF.6080507@hitachi.com>
-References: <48FC081D.60306@hitachi.com>
-	<20081019221331.ddf6b8c2.akpm@linux-foundation.org>
-	<20081020124145.GB10698@mit.edu>
-	<48FD75AF.6080507@hitachi.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Oct 2008 02:42:37 -0400
+Date: Tue, 21 Oct 2008 08:41:45 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland Dreier <rdreier@cisco.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [announce] new tree: "fix all build warnings, on all configs"
+Message-ID: <20081021064144.GC30563@logfs.org>
+References: <20081017171139.GA1792@elte.hu> <ada3aiv9k6j.fsf@cisco.com> <20081017180523.GA11590@elte.hu> <adatzbbrrcf.fsf@cisco.com> <20081017191202.GA5396@elte.hu> <adaiqrrrp2h.fsf@cisco.com> <20081018082209.GA24220@elte.hu> <alpine.LFD.2.00.0810200933470.3518@nehalem.linux-foundation.org> <20081020192110.GA28736@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081020192110.GA28736@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Oct 2008 15:24:47 +0900 Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> wrote:
+On Mon, 20 October 2008 21:21:10 +0200, Ingo Molnar wrote:
+>  
+>  /* Alas, no aliases. Too much hassle with bringing module.h everywhere */
+>  #define fops_get(fops) \
+> -	(((fops) && try_module_get((fops)->owner) ? (fops) : NULL))
+> +	(((fops != NULL) && try_module_get((fops)->owner) ? (fops) : NULL))
+>  #define fops_put(fops) \
+> -	do { if (fops) module_put((fops)->owner); } while(0)
+> +	do { if (fops != NULL) module_put((fops)->owner); } while(0)
 
-> >>One of the above patches (I forget which) breaks the build because it
-> >>expects the presence of Al Viro's VFS tree, and that hasn't been merged
-> >>yet.  I need to wait and see if that merge will be happening (seems
-> >>unlikely) and if not, rework the patch against mainline.
-> 
-> I see.  Thank you for your work.
-> 
-> > Strange; I don't recall any of the ext4 variants of the error handling
-> > patches requiring Al's VFS tree.  And I thought all of them have been
-> > merged into Linus's tree at this point.
-> 
-> I checked Al's VFS tree and I found commit
-> 6ac465f99b29f74ca5a62bc32a8772985d9a071b changes codes near where
-> one of my patch changes (in ext3/ext4_quota_on()), but not the same code.
+This, I would argue, makes the code worse.
 
-OK.
+> diff --git a/include/linux/audit.h b/include/linux/audit.h
+> index 6272a39..a3f78d0 100644
+> --- a/include/linux/audit.h
+> +++ b/include/linux/audit.h
+> @@ -580,7 +580,8 @@ extern int audit_enabled;
+>  #define audit_log(c,g,t,f,...) do { ; } while (0)
+>  #define audit_log_start(c,g,t) ({ NULL; })
+>  #define audit_log_vformat(b,f,a) do { ; } while (0)
+> -#define audit_log_format(b,f,...) do { ; } while (0)
+> +static inline void __attribute__ ((format(printf, 2, 3)))
+> +audit_log_format(struct audit_buffer *ab, const char *fmt, ...) { }
 
-Don't worry about it - I'll fix things up some time this week.
+Took me a moment to notice the two lines aren't independent.  A tab
+would have been appreciated.
+
+> diff --git a/drivers/net/wireless/b43/b43.h b/drivers/net/wireless/b43/b43.h
+> index 427b820..ac55b62 100644
+> --- a/drivers/net/wireless/b43/b43.h
+> +++ b/drivers/net/wireless/b43/b43.h
+> @@ -853,7 +853,8 @@ void b43warn(struct b43_wl *wl, const char *fmt, ...)
+>  void b43dbg(struct b43_wl *wl, const char *fmt, ...)
+>      __attribute__ ((format(printf, 2, 3)));
+>  #else /* DEBUG */
+> -# define b43dbg(wl, fmt...) do { /* nothing */ } while (0)
+> +static inline void __attribute__ ((format(printf, 2, 3)))
+> +b43dbg(struct b43_wl *wl, const char *fmt, ...) { }
+
+Dito.
+
+Jörn
+
+-- 
+A victorious army first wins and then seeks battle.
+-- Sun Tzu
