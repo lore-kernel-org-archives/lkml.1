@@ -1,145 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbYJUCc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbYJUCis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753395AbYJUCc5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 22:32:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYJUCcr
+	id S1753534AbYJUCis (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 22:38:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbYJUCik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 22:32:47 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:57310 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751805AbYJUCcq (ORCPT
+	Mon, 20 Oct 2008 22:38:40 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3999 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752074AbYJUCij (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 22:32:46 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Mon, 20 Oct 2008 22:32:39 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Mon, 20 Oct 2008 22:38:39 -0400
+Subject: Re: [PATCH 1/3] Add file patterns to MAINTAINERS
+From: Joe Perches <joe@perches.com>
+To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Cc: linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [RFC patch 00/15] Tracer Timestamping
-In-reply-to: <20081021013223.GB18751@Krystal>
-Message-id: <alpine.LFD.2.00.0810202152030.26244@xanadu.home>
-References: <20081016232729.699004293@polymtl.ca>
- <1224230353.28131.65.camel@twins> <20081020202517.GF28562@Krystal>
- <alpine.LFD.2.00.0810202003260.26244@xanadu.home>
- <20081021013223.GB18751@Krystal>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+       Randy Dunlap <randy.dunlap@oracle.com>, Pavel Machek <pavel@suse.cz>,
+       Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <ukleinek@strlen.de>
+In-Reply-To: <9929d2390810201858m39cd46demfc6b61f81a93650f@mail.gmail.com>
+References: <1224541704-30357-1-git-send-email-joe@perches.com>
+	 <1224541704-30357-2-git-send-email-joe@perches.com>
+	 <9929d2390810201858m39cd46demfc6b61f81a93650f@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 20 Oct 2008 19:38:35 -0700
+Message-Id: <1224556715.12101.95.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.0-2mdv2009.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Oct 2008, Mathieu Desnoyers wrote:
-
-> * Nicolas Pitre (nico@cam.org) wrote:
-> > On Mon, 20 Oct 2008, Mathieu Desnoyers wrote:
-> > 
-> > > * Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
-> > > > Have you looked at the existing 32->63 extention code in
-> > > > include/linux/cnt32_to_63.h and considered unifying it?
-> > > > 
-> > > 
-> > > Yep, I felt this code was dangerous on SMP given it could suffer from
-> > > the following type of race due to lack of proper barriers :
-> > 
-> > You are wrong.
-> > 
-> > > CPU    A                                 B
-> > >        read hw cnt low
-> > >        read __m_cnt_hi
-> > >                                          read hw cnt low
-> > >        (wrap detected)
-> > >        write __m_cnt_hi (incremented)
-> > >                                          read __m_cnt_hi
-> > >                                          (wrap detected)
-> > >                                          write __m_cnt_hi (incremented)
-> > > 
-> > > we therefore increment the high bits twice in the given race.
-> > 
-> > No.  Either you do the _same_ incrementation twice effectively writing 
-> > the _same_ high value twice, or you don't have simultaneous wrap 
-> > detections.  Simulate it on paper with real numbers if you are not 
-> > convinced.
-> > 
+On Mon, 2008-10-20 at 18:58 -0700, Jeff Kirsher wrote:
+> Your missing
 > 
-> Hi Nicolas,
+> drivers/net/e1000e/
+> drivers/net/igb/
+> drivers/net/ixgbe/
 > 
-> Yup, you are right. However, the case where one CPU sees the clock source
-> a little bit off-sync (late) still poses a problem. Example follows :
-> 
-> CPU    A                                 B
->        read __m_cnt_hi (0x80000000)
->        read hw cnt low (0x00000001)
->        (wrap detected :
->         (s32)(0x80000000 ^ 0x1) < 0)
->        write __m_cnt_hi = 0x00000001
->        return 0x0000000100000001
->                                             read __m_cnt_hi (0x00000001)
->                                      (late) read hw cnt low (0xFFFFFFFA)
->                                             (wrap detected :
->                                              (s32)(0x00000001 ^ 0xFFFFFFFA) < 0)
->                                             write __m_cnt_hi = 0x80000001
->                                             return 0x80000001FFFFFFFA
->                                                                   (time jumps)
+> for the INTEL ETHERNET DRIVERS (e100/e1000/e1000e/igb/ixgb/ixgbe)
 
-If this is through a global counter then I have a big problem believing 
-you.
+Thanks.
 
-If this is a per-CPU counter then you just need a per-CPU version of 
-__m_cnt_hi.
+I added 2 of those in patch 3 of 3
 
-> A similar situation can be generated by out-of-order hi/low bits reads.
++F:     drivers/net/e1000e/
+ F:     drivers/net/ixgb/
++F:     drivers/net/ixgbe/
+ 
+When Linus accepts the series, I'll do whatever
+cleanup patches are required.
 
-This, of course, should and can be prevented.  No big deal.
+I'll add driver/net/igb for INTEL ETHERNET DRIVERS.
 
-> > If the low part is a per CPU value then the high part has to be a per 
-> > CPU value too.  There only needs to be a per-CPU variant of the same 
-> > algorithm where the only difference is that __m_cnt_hi would be per CPU.
-> > 
-> > If the low part is global then __m_cnt_hi has to be global, even on SMP.
-> > 
-> 
-> Hrm, given the performance impact of barriers that would need to be
-> added to insure correct read order of hi and low bits, and also
-> considering the risk that a "synchronized" timestamp counter off by a
-> few cycles poses in terms of time jumping forward, I don't see why we
-> would ever want to use a global __m_cnt_hi ?
+cheers, Joe
 
-I still would like to know just _how_ you could manage to have one CPU 
-perform two reads and one write and manage for another CPU to see that 
-just written value but read an even older value from the global counter 
-than what the first CPU saw.
-
-> I would therefore recommend to always use a per-cpu __m_cnt_hi.
-
-No, not until you convince me of the above nonsense.  Sure it will 
-work with a per-CPU __m_cnt_hi of course, but then the timing constraint 
-to keep the algorithm warm is for each CPU which, if the source counter 
-is global, shouldn't be necessary.
-
-If the 63-bit counter is queried often enough on each CPU then it is of 
-course advantageous to go per-CPU to avoid excessive cache bouncing, and 
-if you start worrying about cache bouncing then you certainly call this 
-code often enough to keep everything in synch.  But that needs not to be 
-always the case.
-
-> Also, a small nit, to make sure cnt32_to_63 never gets scheduled out
-> with a stale old __m_cnt_hi value, its comments should probably say that
-> it has to be always used with preemption off.
-
-NO! THAT's THE WHOLE POINT OF THIS CODE: TO NOT NEED ANY KIND OF 
-LOCKING!  The only requirement is that you must not be preempted away 
-for longer than half (or a quarter if you want to play real safe) the 
-period of the base counter.  If you cannot guarantee that then either 
-your base counter is so fast that it wraps so often to be unusable, or 
-you have another and bigger problem for being preempted for so long.
-
-
-Nicolas
