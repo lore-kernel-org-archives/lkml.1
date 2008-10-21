@@ -1,102 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbYJURAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752918AbYJURH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753516AbYJURAl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 13:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbYJURAP
+	id S1752918AbYJURH2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 13:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYJURHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 13:00:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34451 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754171AbYJURAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 13:00:12 -0400
-Date: Tue, 21 Oct 2008 17:59:01 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Heinz Mauelshagen <mauelshagen@redhat.com>,
-       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
-       Mikulas Patocka <mpatocka@redhat.com>, Milan Broz <mbroz@redhat.com>,
-       Kazuo Ito <ito.kazuo@oss.ntt.co.jp>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>, stable@kernel.org
-Subject: [git pull] Additional device-mapper patches for 2.6.28
-Message-ID: <20081021165901.GO5098@agk.fab.redhat.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Heinz Mauelshagen <mauelshagen@redhat.com>,
-	Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
-	Mikulas Patocka <mpatocka@redhat.com>,
-	Milan Broz <mbroz@redhat.com>, Kazuo Ito <ito.kazuo@oss.ntt.co.jp>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	stable@kernel.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 21 Oct 2008 13:07:17 -0400
+Received: from outbound-mail-152.bluehost.com ([67.222.39.32]:49740 "HELO
+	outbound-mail-152.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750930AbYJURHQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 13:07:16 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=OSodSAffq1AYhDuTMivsjI14BQQh7McRMIl4LErUjhlyYYS3DsygVrrobaHBn537ErY2W1iWf8G2WijDM0FP19cKLrNzqqbNozbIAGgpGWwfGUkUJ1QodN4LGxun1P/0;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] include io.h in pci.h to avoid pci_ioremap build errors
+Date: Tue, 21 Oct 2008 10:07:14 -0700
+User-Agent: KMail/1.10.1 (Linux/2.6.26.5-45.fc9.x86_64; KDE/4.1.2; x86_64; ; )
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+Message-Id: <200810211007.14378.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
+Ingo pointed out that the m32r build was broken by pci_ioremap.  It looks like 
+some files include pci.h w/o including io.h.  The latter defines ioremap_* if 
+present, so it makes sense to include it in pci.h now that we have pci_ioremap 
+there.
 
-  master.kernel.org:/pub/scm/linux/kernel/git/agk/linux-2.6-dm.git
+I'll queue this up in my tree for the next pull request, but affected users 
+can apply this patch in the meantime.
+
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 085187b..3e2f1d3 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -18,6 +18,7 @@
+ #define LINUX_PCI_H
  
-to get the following additional device-mapper patches for 2.6.28:
-  
-Alasdair G Kergon (1):
-      dm exception store: refactor zero_area
+ #include <linux/pci_regs.h>	/* The pci register defines */
++#include <asm/io.h>
+ 
+ /*
+  * The PCI interface treats multi-function devices as independent
 
-Heinz Mauelshagen (1):
-      dm raid1: separate region_hash interface part1
-
-Kazuo Ito (1):
-      dm kcopyd: avoid queue shuffle
-
-Kiyoshi Ueda (2):
-      dm: remove unused flush_all
-      dm: tidy local_init
-
-Martin K. Petersen (1):
-      dm: mark split bio as cloned
-
-Mikulas Patocka (5):
-      dm snapshot: fix primary_pe race
-      dm snapshot: drop unused last_percent
-      dm exception store: fix misordered writes
-      dm: publish array_too_big
-      dm: remove dm header from targets
-
-Milan Broz (3):
-      dm crypt: tidy sector
-      dm crypt: fix async split
-      dm crypt: remove waitqueue
-
- drivers/md/Makefile             |    2 +-
- drivers/md/dm-crypt.c           |   56 +++-
- drivers/md/dm-delay.c           |    3 +-
- drivers/md/dm-exception-store.c |  108 ++++--
- drivers/md/dm-io.c              |    2 +-
- drivers/md/dm-kcopyd.c          |   14 +-
- drivers/md/dm-linear.c          |    2 +-
- drivers/md/dm-log.c             |    2 +-
- drivers/md/dm-mpath.c           |    3 +-
- drivers/md/dm-path-selector.c   |    3 +-
- drivers/md/dm-raid1.c           |  791 +++++----------------------------------
- drivers/md/dm-region-hash.c     |  704 ++++++++++++++++++++++++++++++++++
- drivers/md/dm-round-robin.c     |    3 +-
- drivers/md/dm-snap.c            |   11 +-
- drivers/md/dm-snap.h            |    5 +-
- drivers/md/dm-stripe.c          |    6 +-
- drivers/md/dm-zero.c            |    2 +-
- drivers/md/dm.c                 |   49 +--
- drivers/md/dm.h                 |    9 -
- include/linux/device-mapper.h   |    3 +
- include/linux/dm-region-hash.h  |  104 +++++
- 21 files changed, 1084 insertions(+), 798 deletions(-)
- create mode 100644 drivers/md/dm-region-hash.c
- create mode 100644 include/linux/dm-region-hash.h
-
-Thanks,
-Alasdair
--- 
-agk@redhat.com
