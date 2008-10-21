@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbYJUUPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755751AbYJUUQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755205AbYJUUPv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 16:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbYJUUPn
+	id S1755751AbYJUUQV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 16:16:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbYJUUQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 16:15:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53057 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751321AbYJUUPm (ORCPT
+	Tue, 21 Oct 2008 16:16:07 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:2261 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751759AbYJUUQG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 16:15:42 -0400
-Date: Tue, 21 Oct 2008 13:15:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: torvalds@linux-foundation.org, paulmck@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] byteorder: remove direct includes of
- linux/byteorder/swab[b].h
-Message-Id: <20081021131534.7c084fdb.akpm@linux-foundation.org>
-In-Reply-To: <1224523418.31861.4.camel@brick>
-References: <1224523418.31861.4.camel@brick>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Oct 2008 16:16:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=Cm9Q6BMJGXFtwD+MhilrOvVaMPIwYXGO4qOHeeBPBkDWqYRgisgq7/MxVNh+Shmfi8
+         ioQ4IY+eqJzgm1Ag/6yG0qxtIW2u8PAOZbYUjUuSuBjTayoM0a3aAfy344bEdCvVqI5U
+         x8Kq07z9YIdStRVx6f9BqFI8MW/u7Mre7y8LY=
+Message-ID: <e9c3a7c20810211316i13610410h5ec022b55c248c6a@mail.gmail.com>
+Date: Tue, 21 Oct 2008 13:16:04 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Timur Tabi" <timur@freescale.com>
+Subject: Re: Best method for sending messages to user space?
+Cc: linux-kernel@vger.kernel.org, "Kumar Gala" <kumar.gala@freescale.com>
+In-Reply-To: <48FE30D8.6050705@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48FE1741.1000502@freescale.com>
+	 <e9c3a7c20810211114w5be330d3h35f859b4ea8f8af7@mail.gmail.com>
+	 <48FE30D8.6050705@freescale.com>
+X-Google-Sender-Auth: 9073f54d247fb368
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Oct 2008 10:23:38 -0700
-Harvey Harrison <harvey.harrison@gmail.com> wrote:
+On Tue, Oct 21, 2008 at 12:43 PM, Timur Tabi <timur@freescale.com> wrote:
+> Dan Williams wrote:
+>
+>> I really like the sysfs_notify() approach that Neil Brown has put
+>> together for delivering md-raid events.
+>
+> Is there any documentation for sysfs_notify?  It doesn't appear to do anything
+> whenever I call it.
+>
 
-> A consolidated implementation will provide this generically through
-> asm/byteorder, remove direct includes to avoid breakage when the
-> changeover to the new implementation occurs.
-> 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
-> Andrew, this hunk seems to have been lost when you sent it to Linus, it's possible
-> you applied this on top of the -next tree where this file has moved, but the tests
-> tree hasn't been pulled yet.
-> 
-> The rest of the patch went into mainline as 1d8cca44b6a244b7e378546d719041819049a0f9
-> 
+It simply allows you to write an event loop in userspace using a sysfs
+attribute file descriptor.  Pseudo-example:
 
-Grump.  It happens sometimes.  People putting stuff into linux-next and
-then not merging it into the next kernel.
-
-> 
->  kernel/rcutorture.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
-> index 90b5b12..85cb905 100644
-> --- a/kernel/rcutorture.c
-> +++ b/kernel/rcutorture.c
-> @@ -42,10 +42,10 @@
->  #include <linux/freezer.h>
->  #include <linux/cpu.h>
->  #include <linux/delay.h>
-> -#include <linux/byteorder/swabb.h>
->  #include <linux/stat.h>
->  #include <linux/srcu.h>
->  #include <linux/slab.h>
-> +#include <asm/byteorder.h>
-
-Should this be linux/byteorder.h?  (Which weirdly doesn't include
-asm/byteorder.h).
+fd = open("/sys/block/md0/md/array_state");
+do {
+	read(buf, fd, len);
+	act_on_message(buf);
+	select(...); /* wait for next sysfs_notify event */
+	lseek(fd, 0, SEEK_SET); /* seek back so we can read the new state */
+} while (1);
