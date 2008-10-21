@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752466AbYJUH6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752497AbYJUIB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752466AbYJUH6U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 03:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbYJUH6K
+	id S1752497AbYJUIB3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 04:01:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbYJUIBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 03:58:10 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:37173 "EHLO aun.it.uu.se"
+	Tue, 21 Oct 2008 04:01:19 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:37223 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751482AbYJUH6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 03:58:09 -0400
+	id S1751483AbYJUIBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 04:01:18 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18685.35653.125899.390135@harpo.it.uu.se>
-Date: Tue, 21 Oct 2008 09:56:53 +0200
+Message-ID: <18685.35827.914278.413151@harpo.it.uu.se>
+Date: Tue, 21 Oct 2008 09:59:47 +0200
 From: Mikael Pettersson <mikpe@it.uu.se>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Mikael Pettersson <mikpe@it.uu.se>,
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: Tejun Heo <htejun@gmail.com>,
        Christian Mueller <Christian.Mueller@wdc.com>,
        Bruce Allen <ballen@gravity.phys.uwm.edu>,
        Smartmontools Mailing List 
@@ -25,57 +25,47 @@ Cc: Mikael Pettersson <mikpe@it.uu.se>,
        IDE/ATA development list <linux-ide@vger.kernel.org>
 Subject: Re: [smartmontools-support] inactive SATA drives won't stay in standby
  or sleep, PATA models did. (fwd)
-In-Reply-To: <48FD580E.4080101@gmail.com>
+In-Reply-To: <18683.50533.786782.474536@harpo.it.uu.se>
 References: <D73D40172004714D95D7A84AC3E68EC802282133@wdscexbe03.sc.wdc.com>
 	<48EBFE9B.9070503@gmail.com>
 	<18674.4081.839329.116533@harpo.it.uu.se>
 	<48F2D9A8.1030502@gmail.com>
 	<18683.50533.786782.474536@harpo.it.uu.se>
-	<48FD580E.4080101@gmail.com>
 X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo writes:
- > Hello, Mikael.
- > 
- > > --- linux-2.6.27/drivers/ata/sata_promise.c.~1~	2008-07-14 10:22:36.000000000 +0200
- > > +++ linux-2.6.27/drivers/ata/sata_promise.c	2008-10-20 00:20:58.000000000 +0200
- > > @@ -153,6 +153,7 @@ static void pdc_freeze(struct ata_port *
- > >  static void pdc_sata_freeze(struct ata_port *ap);
- > >  static void pdc_thaw(struct ata_port *ap);
- > >  static void pdc_sata_thaw(struct ata_port *ap);
- > > +static int pdc_prereset(struct ata_link *link, unsigned long deadline);
- > >  static void pdc_error_handler(struct ata_port *ap);
- > >  static void pdc_post_internal_cmd(struct ata_queued_cmd *qc);
- > >  static int pdc_pata_cable_detect(struct ata_port *ap);
- > > @@ -175,6 +176,7 @@ static const struct ata_port_operations 
- > >  	.sff_irq_clear		= pdc_irq_clear,
- > >  
- > >  	.post_internal_cmd	= pdc_post_internal_cmd,
- > > +	.prereset		= pdc_prereset,
- > >  	.error_handler		= pdc_error_handler,
- > >  };
- > >  
- > > @@ -691,6 +693,12 @@ static void pdc_sata_thaw(struct ata_por
- > >  	readl(host_mmio + hotplug_offset); /* flush */
- > >  }
- > >  
- > > +static int pdc_prereset(struct ata_link *link, unsigned long deadline)
- > > +{
- > > +	pdc_reset_port(link->ap);
- > 
- > I would put this into ->hardreset itself as the controller can also
- > get out of sync with reality during reset.
+On Mon, 20 Oct 2008 01:40:21 +0200, Mikael Pettersson wrote:
+>On Mon, 13 Oct 2008 14:16:24 +0900, Tejun Heo wrote:
+>>Mikael Pettersson wrote:
+>>> - hardreset in sata_promise seems broken. I'll take a closer look
+>>>   at that in about a week's time (I'll be busy with other work the
+>>>   next couple of days).
+>>
+>>This looks like a rather serious problem, so please take a look at
+>>this.
+>
+>I've done more tests now, and the problem is that errors detected
+>outside of sata_promise itself, typically timeouts, don't trigger
+>the pdc_reset_port() call needed to bring the ATA engine behind the
+>port back to sanity.
 
-The only thing I see going on between prereset and (hard/soft)reset
-is an optional freeze, so I don't see why moving the pdc_reset_port()
-into the beginning of hardreset() would make any difference.
+I did a round of regression tests which identified another
+related but different problem.
 
-sata_promise currently uses the ->hardreset and ->softreset inherited
-from ata_sff_port_ops, so it would need to override both to ensure that
-we always do pdc_reset_port() before libata does its thing. That's why
-I felt doing that in ->prereset would be the right solution.
+In kernels 2.6.24 and 2.6.25 sata_promise would actually recover
+from the timeouts, while in kernels 2.6.26 and 2.6.27 it would not.
+Before 2.6.26 sata_promise explicitly used sata_std_hardreset, but
+in the "make reset related methods proper port operations" commit
+(a1efdaba2dbd6fb89e23a87b66d3f4dd92c9f5af), Tejun changed sata_promise
+to use the hardreset it now inherits from ata_sff_port_ops, namely
+sata_sff_hardreset. This change looks accidental. The main difference
+between these two procedures is that the sff version will poll the
+legacy status register until the port becomes ready.
+
+Changing sata_promise to use sata_std_hardreset in 2.6.26/.27
+makes the EH after the timeouts much more reliable. Not as
+tidy as with the previous ->prereset fix, but still working.
 
 /Mikael
