@@ -1,59 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755885AbYJUUDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbYJUUJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755885AbYJUUDQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 16:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYJUUC7
+	id S1754374AbYJUUJT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 16:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbYJUUJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 16:02:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48295 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751841AbYJUUC7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 16:02:59 -0400
-Date: Tue, 21 Oct 2008 13:01:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kees Cook <kees.cook@canonical.com>
-Cc: drepper@redhat.com, jakub@redhat.com, arjan@infradead.org,
-       roland@redhat.com, linux-kernel@vger.kernel.org,
-       libc-alpha@sourceware.org
-Subject: Re: [PATCH v5] ELF: implement AT_RANDOM for glibc PRNG seeding
-Message-Id: <20081021130111.b8d73625.akpm@linux-foundation.org>
-In-Reply-To: <20081003175917.GX10632@outflux.net>
-References: <20081001222706.68E7E1544B4@magilla.localdomain>
-	<20081003001616.GN10632@outflux.net>
-	<20081003004340.GF32682@tyan-ft48-01.lab.bos.redhat.com>
-	<20081003052938.GS10632@outflux.net>
-	<20081002225718.6a0d803a@infradead.org>
-	<48E5BAC6.9070007@redhat.com>
-	<20081003145054.GU10632@outflux.net>
-	<20081003145754.GH32682@tyan-ft48-01.lab.bos.redhat.com>
-	<20081003173313.GW10632@outflux.net>
-	<48E65964.5020809@redhat.com>
-	<20081003175917.GX10632@outflux.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 21 Oct 2008 16:09:06 -0400
+Received: from willie.n0ano.com ([64.66.241.76]:45411 "EHLO xolotl.n0ano.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751056AbYJUUJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 16:09:05 -0400
+From: n0ano@n0ano.com
+Date: Tue, 21 Oct 2008 14:08:41 -0600
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: n0ano@n0ano.com, Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, donald.d.dugger@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Enable console on PCI serial devices
+Message-ID: <20081021200841.GL14490@xolotl.n0ano.com>
+References: <200810142231.m9EMV95O002974@los-vmm.sc.intel.com> <200810201111.08703.bjorn.helgaas@hp.com> <20081020174351.GK14490@xolotl.n0ano.com> <200810201311.06602.bjorn.helgaas@hp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810201311.06602.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Oct 2008 10:59:17 -0700
-Kees Cook <kees.cook@canonical.com> wrote:
+On Mon, Oct 20, 2008 at 01:11:05PM -0600, Bjorn Helgaas wrote:
+>... 
+> Ideally we could put something in Documentation/kernel-parameters.txt
+> that's useful for people who can't or don't want to look at
+> the source.
 
-> While discussing[1] the need for glibc to have access to random bytes
-> during program load, it seems that an earlier attempt to implement
-> AT_RANDOM got stalled.  This implements a random 16 byte string, available
-> to every ELF program via a new auxv AT_RANDOM vector.
-> 
-> [1] http://sourceware.org/ml/libc-alpha/2008-10/msg00006.html
+How about this.  I've modified the doc slightly to indicate that the
+magic number is the base baud used to calculate the divsor used against
+the crystal frequency.  This should be sufficient for most people and
+the curious should now have enough info to research the matter further.
 
-I read the above changeloglet and read the above-linked page and it's
-still 87% unclear to me what this feature does.  Something to do with
-stack randomisation, apparently.  I suppose I could go do further
-hunting, but from the quality-of-changelog POV I don't think I should
-need to do so.
+Signed-off-by: Don Dugger <donald.d.dugger@intel.com>
 
-IOW: better changelog, please.
+-- 
+Don Dugger
+"Censeo Toto nos in Kansa esse decisse." - D. Gale
+n0ano@n0ano.com
+Ph: 303/443-3786
 
-It's unclear to me that the random-number issue got sorted out?
+ Documentation/kernel-parameters.txt |   14 +++++++++-----
+ drivers/serial/8250_early.c         |    5 +++++
+ 2 files changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 82c561f..f07e77c 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -505,12 +505,16 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			Documentation/networking/netconsole.txt for an
+ 			alternative.
+ 
+-		uart[8250],io,<addr>[,options]
+-		uart[8250],mmio,<addr>[,options]
++		uart[8250],io,<addr>[,options[,base]]
++		uart[8250],mmio,<addr>[,options[,base]]
+ 			Start an early, polled-mode console on the 8250/16550
+ 			UART at the specified I/O port or MMIO address,
+ 			switching to the matching ttyS device later.  The
+-			options are the same as for ttyS, above.
++			"options" are the same as for ttyS, above.  "base"
++			is base baud, defaults to 115200, which is used to
++			calculate the divisor for the crystal frequency
++			(typically this is the fastest baud rate supported
++			by the uart).
+ 
+                 If the device connected to the port is not a TTY but a braille
+                 device, prepend "brl," before the device type, for instance
+@@ -518,8 +522,8 @@ and is between 256 and 4096 characters. It is defined in the file
+ 		For now, only VisioBraille is supported.
+ 
+ 	earlycon=	[KNL] Output early console device and options.
+-		uart[8250],io,<addr>[,options]
+-		uart[8250],mmio,<addr>[,options]
++		uart[8250],io,<addr>[,options,[base]]
++		uart[8250],mmio,<addr>[,options,[base]]
+ 			Start an early, polled-mode console on the 8250/16550
+ 			UART at the specified I/O port or MMIO address.
+ 			The options are the same as for ttyS, above.
+diff --git a/drivers/serial/8250_early.c b/drivers/serial/8250_early.c
+index f279745..edd5803 100644
+--- a/drivers/serial/8250_early.c
++++ b/drivers/serial/8250_early.c
+@@ -180,6 +180,11 @@ static int __init parse_options(struct early_serial8250_device *device,
+ 		snprintf(device->options, sizeof(device->options), "%u",
+ 			device->baud);
+ 	}
++	options = strchr(options, ',');
++	if (options) {
++		options++;
++		port->uartclk = simple_strtoul(options, NULL, 0) * 16;
++	}
+ 
+ 	printk(KERN_INFO "Early serial console at %s 0x%llx (options '%s')\n",
+ 		mmio ? "MMIO" : "I/O port",
