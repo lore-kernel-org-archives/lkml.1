@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754164AbYJUNRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbYJUNWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754164AbYJUNRI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 09:17:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbYJUNQ7
+	id S1754165AbYJUNWi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 09:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbYJUNWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 09:16:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47742 "EHLO mx2.redhat.com"
+	Tue, 21 Oct 2008 09:22:30 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47865 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752252AbYJUNQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 09:16:58 -0400
-Message-ID: <48FDD646.6070705@redhat.com>
-Date: Tue, 21 Oct 2008 09:16:54 -0400
-From: Steven Rostedt <srostedt@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Arch x86 is not supported with CONFIG_FTRACE_MCOUNT_RECORD
-References: <20081021060945.GA14126@cs181140183.pp.htv.fi>
-In-Reply-To: <20081021060945.GA14126@cs181140183.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1751967AbYJUNW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 09:22:29 -0400
+Subject: Re: [PATCH 1/4] CAPABILITIES: add cpu endian vfs caps structure
+From: Eric Paris <eparis@redhat.com>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-audit@redhat.com,
+       viro@zeniv.linux.org.ok, sgrubb@redhat.com, serue@us.ibm.com
+In-Reply-To: <48FD6DA1.5030402@kernel.org>
+References: <20081020222538.3895.50175.stgit@paris.rdu.redhat.com>
+	 <20081020222602.3895.77302.stgit@paris.rdu.redhat.com>
+	 <48FD6DA1.5030402@kernel.org>
+Content-Type: text/plain
+Date: Tue, 21 Oct 2008 09:22:17 -0400
+Message-Id: <1224595337.3189.196.camel@paris-laptop>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> Commit 8da3821ba5634497da63d58a69e24a97697c4a2b
-> (ftrace: create __mcount_loc section) causes the
-> following build error:
->
-> <--  snip  -->
->
-> $ make ARCH=x86
->   
+On Mon, 2008-10-20 at 22:50 -0700, Andrew G. Morgan wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> Eric Paris wrote:
+> > This patch add a generic cpu endian caps structure and enternally available
+> > functions which retrieve fcaps information from disk.  This information is
+> > necessary so fcaps information can be collected and recorded by the audit
+> > system.
+> > 
+> [...]
+> >  	CAP_FOR_EACH_U32(i) {
+> > -		__u32 value_cpu;
+> > -
+> > -		if (i >= tocopy) {
+> > -			/*
+> > -			 * Legacy capability sets have no upper bits
+> > -			 */
+> > -			bprm->cap_post_exec_permitted.cap[i] = 0;
+> > +		if (i > tocopy) {
+> 
+> Shouldn't the above still be (i >= tocopy) ?
 
-Could you specify either i386 or x86_64 and see if that works. I may 
-need to add a way to pass in subarchs to the script.
+just replaced this with
 
--- Steve
+if (i >= tocopy)
+        break;
 
-> ...
->   CC      scripts/mod/empty.o
-> Arch x86 is not supported with CONFIG_FTRACE_MCOUNT_RECORD at /home/bunk/linux/kernel-2.6/git/linux-2.6/scripts/recordmcount.pl line 157.
-> make[3]: *** [scripts/mod/empty.o] Error 255
->
-> <--  snip  -->
->
-> cu
-> Adrian
->
->   
+I'm already zero'ing out the cap data at the beginning so there isn't
+really a need for me to zero the upper bits if they aren't set.
+
+-Eric
 
