@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbYJURJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbYJURL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753457AbYJURJT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 13:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbYJURIi
+	id S1754171AbYJURL0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 13:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbYJURLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 13:08:38 -0400
-Received: from kroah.org ([198.145.64.141]:44921 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752121AbYJURIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 13:08:36 -0400
-Date: Tue, 21 Oct 2008 10:04:36 -0700
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org,
-       Heinz Mauelshagen <mauelshagen@redhat.com>,
-       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
-       Mikulas Patocka <mpatocka@redhat.com>, Milan Broz <mbroz@redhat.com>,
-       Kazuo Ito <ito.kazuo@oss.ntt.co.jp>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>, stable@kernel.org
-Subject: Re: [stable] [git pull] Additional device-mapper patches for 2.6.28
-Message-ID: <20081021170436.GA25030@kroah.com>
-References: <20081021165901.GO5098@agk.fab.redhat.com>
+	Tue, 21 Oct 2008 13:11:18 -0400
+Received: from xenotime.net ([66.160.160.81]:49317 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751032AbYJURLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 13:11:17 -0400
+Message-ID: <48FE0D32.9090103@xenotime.net>
+Date: Tue, 21 Oct 2008 10:11:14 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081021165901.GO5098@agk.fab.redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Oliver Neukum <oliver@neukum.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: vanilla tree not compiling
+References: <200810211855.00182.oliver@neukum.org>
+In-Reply-To: <200810211855.00182.oliver@neukum.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 21, 2008 at 05:59:01PM +0100, Alasdair G Kergon wrote:
-> Please pull from:
-> 
->   master.kernel.org:/pub/scm/linux/kernel/git/agk/linux-2.6-dm.git
->  
-> to get the following additional device-mapper patches for 2.6.28:
+Oliver Neukum wrote:
+> Hi,
+>
+> compilation failed with this error:
+>
+> ERROR: "p9_debug_level" [net/9p/9pnet.ko] undefined!
+> WARNING: modpost: Found 4 section mismatch(es).
+> To see full details build your kernel with:
+> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+> make[1]: *** [__modpost] Fehler 1
+> make: *** [modules] Fehler 2
+>
+> The last commit was 2515ddc6db8eb49a79f0fe5e67ff09ac7c81eab4
+> .config is attached.
+>   
+Hi Oliver,
+Patches have been posted for this a few times.
 
-Hm, as you copied stable@kernel.org, does that mean that some of these
-are applicable to -stable releases?
+~Randy
 
-thanks,
-
-greg k-h
