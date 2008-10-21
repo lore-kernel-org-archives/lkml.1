@@ -1,81 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbYJUVkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbYJUVmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756112AbYJUVkg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 17:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbYJUVk2
+	id S1756173AbYJUVmP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 17:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbYJUVl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 17:40:28 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:39423 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751508AbYJUVk1 (ORCPT
+	Tue, 21 Oct 2008 17:41:59 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:60879 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752777AbYJUVl6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 17:40:27 -0400
-Subject: Re: [PATCH 2/4] freezer_cg: remove redundant check in
-	freezer_can_attach()
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Cedric Le Goater <clg@fr.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-In-Reply-To: <48FD273F.3040505@cn.fujitsu.com>
-References: <48FD26F5.1070809@cn.fujitsu.com>
-	 <48FD273F.3040505@cn.fujitsu.com>
+	Tue, 21 Oct 2008 17:41:58 -0400
+Subject: Re: [PATCH 0/3] Improve TSC as a clocksource under VMware
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>
+In-Reply-To: <1224618463.6161.82.camel@alok-dev1>
+References: <1224552902.2640.88.camel@alok-dev1>
+	 <874p36fflp.fsf@basil.nowhere.org> <1224607284.6161.22.camel@alok-dev1>
+	 <20081021174008.GH12825@one.firstfloor.org>
+	 <1224612294.6161.43.camel@alok-dev1>
+	 <20081021181536.GI12825@one.firstfloor.org>
+	 <1224616236.6161.60.camel@alok-dev1>
+	 <20081021192746.GJ12825@one.firstfloor.org>
+	 <1224618463.6161.82.camel@alok-dev1>
 Content-Type: text/plain
-Date: Tue, 21 Oct 2008 14:40:33 -0700
-Message-Id: <1224625233.2991.87.camel@enoch>
+Organization: VMware INC.
+Date: Tue, 21 Oct 2008 14:41:56 -0700
+Message-Id: <1224625316.6161.105.camel@alok-dev1>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-21 at 08:50 +0800, Li Zefan wrote:
-> It is sufficient to check if @task is frozen, and no need to check if
-> the original freezer is frozen.
+On Tue, 2008-10-21 at 12:47 -0700, Alok Kataria wrote:
+> On Tue, 2008-10-21 at 12:27 -0700, Andi Kleen wrote:
+> > On Tue, Oct 21, 2008 at 12:10:36PM -0700, Alok Kataria wrote:
+> > > On Tue, 2008-10-21 at 11:15 -0700, Andi Kleen wrote:
 
-Looks great! Thanks!
+> > When the margin changes then it likely won't be good enough for
+> > gettimeofday(). There are a couple of testers for monotonity around,
+> > would such a system with shifting marging surive running them
+> > for a few days?
+> 
+> I meant, the margin changes when you are running different flavors of
+> the build, or running different user configurations (from overcommitment
+> POV). Once a system is booted the margin won't vary, apart from the
+> bootup stage which will always have some extreme states. In all our
+> internal testing that has been done, 
 
-Acked-by: Matt Helsley <matthltc@us.ibm.com>
+> we have never noticed time drift is
+> withing the NTP threshold when its compared to the host system, under
+> varying load. 
+> 
 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  kernel/cgroup_freezer.c |   16 +++++++---------
->  1 files changed, 7 insertions(+), 9 deletions(-)
-> 
-> diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
-> index 7f54d1c..6fadafe 100644
-> --- a/kernel/cgroup_freezer.c
-> +++ b/kernel/cgroup_freezer.c
-> @@ -162,9 +162,13 @@ static int freezer_can_attach(struct cgroup_subsys *ss,
->  			      struct task_struct *task)
->  {
->  	struct freezer *freezer;
-> -	int retval;
-> 
-> -	/* Anything frozen can't move or be moved to/from */
-> +	/*
-> +	 * Anything frozen can't move or be moved to/from.
-> +	 *
-> +	 * Since orig_freezer->state == FROZEN means that @task has been
-> +	 * frozen, so it's sufficient to check the latter condition.
-> +	 */
-> 
->  	if (is_task_frozen_enough(task))
->  		return -EBUSY;
-> @@ -173,13 +177,7 @@ static int freezer_can_attach(struct cgroup_subsys *ss,
->  	if (freezer->state == CGROUP_FROZEN)
->  		return -EBUSY;
-> 
-> -	retval = 0;
-> -	task_lock(task);
-> -	freezer = task_freezer(task);
-> -	if (freezer->state == CGROUP_FROZEN)
-> -		retval = -EBUSY;
-> -	task_unlock(task);
-> -	return retval;
-> +	return 0;
->  }
-> 
->  static void freezer_fork(struct cgroup_subsys *ss, struct task_struct *task)
+oops... i meant the time drift is _always_ within the NTP threshold.
+
 
