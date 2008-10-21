@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbYJUTPA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbYJUTP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbYJUTPA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 15:15:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751015AbYJUTOv
+	id S1755564AbYJUTP0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 15:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbYJUTPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 15:14:51 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49837 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750896AbYJUTOv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 15:14:51 -0400
-Subject: [GIT *] iommu fixes for 2.6.28
-From: David Woodhouse <dwmw2@infradead.org>
-To: torvalds@linux-foundation.org
-Cc: tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com
-Content-Type: text/plain
-Date: Tue, 21 Oct 2008 20:14:24 +0100
-Message-Id: <1224616464.16910.103.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 21 Oct 2008 15:15:07 -0400
+Received: from mail.windriver.com ([147.11.1.11]:44621 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755524AbYJUTPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 15:15:04 -0400
+From: Jason Wessel <jason.wessel@windriver.com>
+To: kgdb-bugreport@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>
+Subject: [PATCH 1/7] kgdb: Add the ability to schedule a breakpoint via a tasklet
+Date: Tue, 21 Oct 2008 14:14:47 -0500
+Message-Id: <1224616493-23237-2-git-send-email-jason.wessel@windriver.com>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1224616493-23237-1-git-send-email-jason.wessel@windriver.com>
+References: <1224616493-23237-1-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 21 Oct 2008 19:14:54.0810 (UTC) FILETIME=[4CD623A0:01C933B1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from git://git.infradead.org/iommu-2.6.git
+Some kgdb I/O modules require the ability to create a breakpoint
+tasklet, such as kgdboc and external modules such as kgdboe.  The
+breakpoint tasklet is used as an asynchronous entry point into the
+debugger which will have a different function scope than the current
+execution path where it might not be safe to have an inline breakpoint
+inside the kgdb I/O driver.
 
-This contains a few iommu-related fixes -- it restores DMA remapping on
-newer Intel hardware, which was disabled by the interrupt remapping
-patches, adds IA64 support for the Intel IOMMU, and some other small
-fixes.
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+---
+ include/linux/kgdb.h |    1 +
+ kernel/kgdb.c        |   26 ++++++++++++++++++++++++++
+ 2 files changed, 27 insertions(+), 0 deletions(-)
 
- MAINTAINERS                      |    7 +
- arch/x86/kernel/amd_iommu_init.c |    2 +-
- arch/x86/kernel/pci-dma.c        |   16 ---
- drivers/pci/dmar.c               |  119 +++++++++++++-----
- drivers/pci/intel-iommu.c        |  250 ++++++++++++++++++++------------------
- drivers/pci/quirks.c             |   14 ++
- include/asm-x86/iommu.h          |    4 +
- include/linux/dma_remapping.h    |   27 ++--
- include/linux/intel-iommu.h      |   66 ++++++++---
- 9 files changed, 305 insertions(+), 200 deletions(-)
-
-Andreas Herrmann (1):
-      amd_iommu: fix nasty bug that caused ILLEGAL_DEVICE_TABLE_ENTRY errors
-
-David Woodhouse (4):
-      dmar: fix uninitialised 'ret' variable in dmar_parse_dev()
-      Admit to maintaining VT-d, for my sins.
-      Merge branch 'master' of master.kernel.org:/.../torvalds/linux-2.6
-      Merge branch 'master' of master.kernel.org:/.../torvalds/linux-2.6
-
-FUJITA Tomonori (1):
-      intel-iommu: use coherent_dma_mask in alloc_coherent
-
-Fenghua Yu (1):
-      intel-iommu: IA64 support
-
-Suresh Siddha (1):
-      dmar: use spin_lock_irqsave() in qi_submit_sync()
-
-Youquan Song (3):
-      dmar: context cache and IOTLB invalidation using queued invalidation
-      dmar: Use queued invalidation interface for IOTLB and context invalidation
-      dmar: remove the quirk which disables dma-remapping when intr-remapping enabled
-
+diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
+index 6adcc29..8fdd3cb 100644
+--- a/include/linux/kgdb.h
++++ b/include/linux/kgdb.h
+@@ -279,5 +279,6 @@ extern int kgdb_nmicallback(int cpu, void *regs);
+ 
+ extern int			kgdb_single_step;
+ extern atomic_t			kgdb_active;
++extern void kgdb_schedule_breakpoint(void);
+ 
+ #endif /* _KGDB_H_ */
+diff --git a/kernel/kgdb.c b/kernel/kgdb.c
+index e4dcfb2..5365d46 100644
+--- a/kernel/kgdb.c
++++ b/kernel/kgdb.c
+@@ -123,6 +123,7 @@ atomic_t			kgdb_active = ATOMIC_INIT(-1);
+  */
+ static atomic_t			passive_cpu_wait[NR_CPUS];
+ static atomic_t			cpu_in_kgdb[NR_CPUS];
++static atomic_t			kgdb_break_tasklet_var;
+ atomic_t			kgdb_setting_breakpoint;
+ 
+ struct task_struct		*kgdb_usethread;
+@@ -1623,6 +1624,31 @@ static void kgdb_unregister_callbacks(void)
+ 	}
+ }
+ 
++/*
++ * There are times a tasklet needs to be used vs a compiled in in
++ * break point so as to cause an exception outside a kgdb I/O module,
++ * such as is the case with kgdboe, where calling a breakpoint in the
++ * I/O driver itself would be fatal.
++ */
++static void kgdb_tasklet_bpt(unsigned long ing)
++{
++	kgdb_breakpoint();
++	atomic_set(&kgdb_break_tasklet_var, 0);
++}
++
++static DECLARE_TASKLET(kgdb_tasklet_breakpoint, kgdb_tasklet_bpt, 0);
++
++void kgdb_schedule_breakpoint(void)
++{
++	if (atomic_read(&kgdb_break_tasklet_var) ||
++		atomic_read(&kgdb_active) != -1 ||
++		atomic_read(&kgdb_setting_breakpoint))
++		return;
++	atomic_inc(&kgdb_break_tasklet_var);
++	tasklet_schedule(&kgdb_tasklet_breakpoint);
++}
++EXPORT_SYMBOL_GPL(kgdb_schedule_breakpoint);
++
+ static void kgdb_initial_breakpoint(void)
+ {
+ 	kgdb_break_asap = 0;
 -- 
-dwmw2
+1.6.0.2
 
