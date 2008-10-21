@@ -1,83 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbYJUMgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754561AbYJUMhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754161AbYJUMgP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 08:36:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753037AbYJUMf6
+	id S1754561AbYJUMhQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 08:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYJUMhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 08:35:58 -0400
-Received: from mga09.intel.com ([134.134.136.24]:18226 "EHLO mga09.intel.com"
+	Tue, 21 Oct 2008 08:37:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42799 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753013AbYJUMf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 08:35:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,457,1220252400"; 
-   d="scan'208";a="453859013"
-Date: Tue, 21 Oct 2008 19:40:56 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: linux-pci@vger.kernel.org
-Cc: jbarnes@virtuousgeek.org, randy.dunlap@oracle.com,
-       grundler@parisc-linux.org, achiang@hp.com, matthew@wil.cx,
-       rdreier@cisco.com, greg@kroah.com, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, virtualization@lists.linux-foundation.org
-Subject: [PATCH 0/15 v5] PCI: Linux kernel SR-IOV support
-Message-ID: <20081021114056.GA3185@yzhao12-linux.sh.intel.com>
+	id S1753077AbYJUMhC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 08:37:02 -0400
+Message-ID: <48FDCCCB.2080103@redhat.com>
+Date: Tue, 21 Oct 2008 14:36:27 +0200
+From: Ivan Vecera <ivecera@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, nhorman@redhat.com, jmarchan@redhat.com
+Subject: Re: [PATCH] x86: call machine_shutdown and stop all CPUs in	native_machine_halt
+References: <1224504787-11403-1-git-send-email-ivecera@redhat.com> <20081020160058.GB22779@elte.hu>
+In-Reply-To: <20081020160058.GB22779@elte.hu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
+Ingo Molnar wrote:
+> the code in arch/x86/kernel/smp.c::stop_this_cpu() is very similar to 
+> this and could be shared. You could move the stop_this_cpu() function to 
+> arch/x86/kernel/process.c (out of smp.c), so that it can be used by 
+> reboot.c.
+> 
+Yes, this make sense. Here is the patch.
 
-Following patches are intended to support SR-IOV capability in the
-Linux kernel. With these patches, people can turn a PCI device with
-the capability into multiple ones from software perspective, which
-will benefit KVM and achieve other purposes such as QoS, security,
-and etc.
-
-Major changes between v4 -> v5:
-1, remove interfaces for PF driver to create sysfs entries (Matthew Wilcox)
-2, get ride of 'struct kobject' used in 'struct pci_iov' (Greg KH)
-3, split big chunk of code into more patches
-4, add boot options to reassign resources under a bus
-5, add boot option to align MMIO resources of a device
+Ivan
 
 ---
+ arch/x86/kernel/process.c |   16 ++++++++++++++++
+ arch/x86/kernel/reboot.c  |    5 +++++
+ arch/x86/kernel/smp.c     |   13 -------------
+ include/asm-x86/system.h  |    2 ++
+ 4 files changed, 23 insertions(+), 13 deletions(-)
 
-[PATCH 1/15 v5] PCI: remove unnecessary arg of pci_update_resource()
-[PATCH 2/15 v5] PCI: define PCI resource names in an 'enum'
-[PATCH 3/15 v5] PCI: export __pci_read_base
-[PATCH 4/15 v5] PCI: make pci_alloc_child_bus() be able to handle bridge device
-[PATCH 5/15 v5] PCI: add a wrapper for resource_alignment()
-[PATCH 6/15 v5] PCI: add a new function to map BAR offset
-[PATCH 7/15 v5] PCI: cleanup pcibios_allocate_resources()
-[PATCH 8/15 v5] PCI: add boot option to reassign resources
-[PATCH 9/15 v5] PCI: add boot option to align MMIO resource
-[PATCH 10/15 v5] PCI: cleanup pci_bus_add_devices()
-[PATCH 11/15 v5] PCI: split a new function from pci_bus_add_devices()
-[PATCH 12/15 v5] PCI: support the SR-IOV capability
-[PATCH 13/15 v5] PCI: reserve bus range for the SR-IOV device
-[PATCH 14/15 v5] PCI: document the changes
-[PATCH 15/15 v5] PCI: document the new PCI boot parameters
-
----
-
-Single Root I/O Virtualization (SR-IOV) capability defined by PCI-SIG
-is intended to enable multiple system software to share PCI hardware
-resources.  PCI device that supports this capability can be extended
-to one Physical Functions plus multiple Virtual Functions. Physical
-Function, which could be considered as the "real" PCI device, reflects
-the hardware instance and manages all physical resources. Virtual
-Functions are associated with a Physical Function and shares physical
-resources with the Physical Function.Software can control allocation of
-Virtual Functions via registers encapsulated in the capability structure.
-
-SR-IOV specification can be found at
-http://www.pcisig.com/members/downloads/specifications/iov/sr-iov1.0_11Sep07.pdf
-
-Devices that support SR-IOV are available from following vendors:
-http://download.intel.com/design/network/ProdBrf/320025.pdf
-http://www.netxen.com/products/chipsolutions/NX3031.html
-http://www.neterion.com/products/x3100.html
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index c622772..af6904e 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -8,6 +8,7 @@
+ #include <linux/pm.h>
+ #include <linux/clockchips.h>
+ #include <asm/system.h>
++#include <asm/apic.h>
+ 
+ unsigned long idle_halt;
+ EXPORT_SYMBOL(idle_halt);
+@@ -122,6 +123,21 @@ void default_idle(void)
+ EXPORT_SYMBOL(default_idle);
+ #endif
+ 
++void stop_this_cpu(void *dummy)
++{
++	local_irq_disable();
++	/*
++	 * Remove this CPU:
++	 */
++	cpu_clear(smp_processor_id(), cpu_online_map);
++#ifdef CONFIG_X86_LOCAL_APIC
++	disable_local_APIC();
++#endif
++	if (hlt_works(smp_processor_id()))
++		for (;;) halt();
++	for (;;);
++}
++
+ static void do_nothing(void *unused)
+ {
+ }
+diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+index f4c93f1..3113d9e 100644
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -465,6 +465,11 @@ static void native_machine_restart(char *__unused)
+ 
+ static void native_machine_halt(void)
+ {
++	/* stop other cpus and apics */
++	machine_shutdown();
++
++	/* stop this cpu */
++	stop_this_cpu(NULL);
+ }
+ 
+ static void native_machine_power_off(void)
+diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
+index 18f9b19..3f92b13 100644
+--- a/arch/x86/kernel/smp.c
++++ b/arch/x86/kernel/smp.c
+@@ -140,19 +140,6 @@ void native_send_call_func_ipi(cpumask_t mask)
+ 		send_IPI_mask(mask, CALL_FUNCTION_VECTOR);
+ }
+ 
+-static void stop_this_cpu(void *dummy)
+-{
+-	local_irq_disable();
+-	/*
+-	 * Remove this CPU:
+-	 */
+-	cpu_clear(smp_processor_id(), cpu_online_map);
+-	disable_local_APIC();
+-	if (hlt_works(smp_processor_id()))
+-		for (;;) halt();
+-	for (;;);
+-}
+-
+ /*
+  * this function calls the 'stop' function on all other CPUs in the system.
+  */
+diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
+index b20c894..17ac753 100644
+--- a/include/asm-x86/system.h
++++ b/include/asm-x86/system.h
+@@ -314,6 +314,8 @@ extern void free_init_pages(char *what, unsigned long begin, unsigned long end);
+ 
+ void default_idle(void);
+ 
++void stop_this_cpu(void *dummy);
++
+ /*
+  * Force strict CPU ordering.
+  * And yes, this is required on UP too when we're talking
+-- 
+1.5.6.3
