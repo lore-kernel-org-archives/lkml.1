@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbYJUWQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbYJUWUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754217AbYJUWQM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 18:16:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbYJUWPz
+	id S1755879AbYJUWUa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 18:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbYJUWUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 18:15:55 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:43108 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753108AbYJUWPx (ORCPT
+	Tue, 21 Oct 2008 18:20:20 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:7405 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751179AbYJUWUT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 18:15:53 -0400
-Message-ID: <48FE546B.4000003@oracle.com>
-Date: Tue, 21 Oct 2008 15:15:07 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Tue, 21 Oct 2008 18:20:19 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnsDAM8S9kg7p+/xgWdsb2JhbACBcpFuAQEWIq4MgWs
+X-IronPort-AV: E=Sophos;i="4.33,460,1220193000"; 
+   d="scan'208";a="215378366"
+Message-ID: <48FE559F.4040404@call-direct.com.au>
+Date: Wed, 22 Oct 2008 08:20:15 +1000
+From: Iwo Mergler <iwo@call-direct.com.au>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080302)
 MIME-Version: 1.0
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, Len Brown <lenb@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Henroid, Andrew D" <andrew.d.henroid@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@linux.intel.com>
-Subject: Re: [PATCH 2/2] i7300_idle driver v1.55
-References: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>	<e8b529091b2ab65f5a4783e292c2b472e309116e.1223706853.git.len.brown@intel.com>	<20081011083347.GA31918@elte.hu>	<alpine.LFD.1.10.0810161805360.3026@localhost.localdomain> <20081020103214.072e3b5f.randy.dunlap@oracle.com> <7E82351C108FA840AB1866AC776AEC4637CD2743@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <7E82351C108FA840AB1866AC776AEC4637CD2743@orsmsx505.amr.corp.intel.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: linux-kernel@vger.kernel.org, Jes Sorensen <jes@trained-monkey.org>
+Subject: Re: Fix for genalloc locking
+References: <48F83400.90901@call-direct.com.au> <20081021083949.3b1473c8.randy.dunlap@oracle.com>
+In-Reply-To: <20081021083949.3b1473c8.randy.dunlap@oracle.com>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pallipadi, Venkatesh wrote:
-> Thanks for the review. Some comments below.
+Randy Dunlap wrote:
+> On Fri, 17 Oct 2008 16:43:12 +1000 Iwo Mergler wrote:
+>> BTW, is there any documentation on the Lockdep warnings?
+>> What exactly is the meaning of {--+.} in 
+>>
+>> (&pool->lock){--+.}, at: [<c0125d1c>] gen_pool_free+0x34/0x120
 > 
-> Thanks,
-> Venki
+> Did you read Documentation/lockdep-design.txt ?
 > 
->> What is debugfs used for?  any docs for it?
-> 
-> It has some statistics about how many times we went
-> into "memory throttling" state and how long we stayed
-> there since the boot. And one tunable that tunes a
-> parameter changing the policy to start throttling.
-> Will document this with an update patch.
 
-"Normal" tunables should be in sysfs, not debugfs.
-Or is this just a debugging tunable?
+No, I didn't. Selective blindness. Thanks for the hint.
 
-You surely can't be certain (or require) that debugfs
-be available.
+Kind regards,
 
-~Randy
+Iwo
+
