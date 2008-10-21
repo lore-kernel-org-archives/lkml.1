@@ -1,81 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbYJUUzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbYJUU65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755856AbYJUUzo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 16:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbYJUUzf
+	id S1755176AbYJUU65 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 16:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYJUU6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 16:55:35 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:63090 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751906AbYJUUze convert rfc822-to-8bit (ORCPT
+	Tue, 21 Oct 2008 16:58:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33643 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752496AbYJUU6t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 16:55:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=F0V9PS/LJjLuYfe+3Oq4cjMboj9+cpJrZ3+xf3tsEDvnZlAcoe48q3XVxmg4YEkdRl
-         0y8iYFiNtixI80cYLye1YaNrxZvAF3IyTCtDlc8LUB825u0WD2lSaBfNU6NomZNmh+b8
-         Nh8x54APyctTYVtlsiNfXJ/kVgzTZFSwknt5w=
-Message-ID: <2bfaaf400810211355h21bbcddcre50d7c16a5499df3@mail.gmail.com>
-Date: Tue, 21 Oct 2008 17:55:32 -0300
-From: "Alexandre Lymberopoulos" <lymber@gmail.com>
-To: "=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@ime.usp.br>
-Subject: Re: Bug#502583: scary messages in dmesg
-Cc: 502583@bugs.debian.org, 502583-submitter@bugs.debian.org,
+	Tue, 21 Oct 2008 16:58:49 -0400
+Date: Tue, 21 Oct 2008 13:58:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Cedric Le Goater <clg@fr.ibm.com>
+Cc: lizf@cn.fujitsu.com, containers@lists.linux-foundation.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20081021101510.GA16244@ime.usp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <2bfaaf400810172145g4aba4827l87a19e67b9742815@mail.gmail.com>
-	 <20081018060400.GB916@ime.usp.br>
-	 <2bfaaf400810201654u21c9d950o72b2afa9496ba3da@mail.gmail.com>
-	 <20081021101510.GA16244@ime.usp.br>
+Subject: Re: [PATCH 3/4] freezer_cg: use thaw_process() in unfreeze_cgroup()
+Message-Id: <20081021135813.e77d3015.akpm@linux-foundation.org>
+In-Reply-To: <48FD81B8.5030103@fr.ibm.com>
+References: <48FD26F5.1070809@cn.fujitsu.com>
+	<48FD273F.3040505@cn.fujitsu.com>
+	<48FD2784.30906@cn.fujitsu.com>
+	<48FD81B8.5030103@fr.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 21, 2008 at 7:15 AM, Rogério Brito <rbrito@ime.usp.br> wrote:
+On Tue, 21 Oct 2008 09:16:08 +0200
+Cedric Le Goater <clg@fr.ibm.com> wrote:
 
-> Ok, this far.
+> Li Zefan wrote:
+> > Don't duplicate the implementation of thaw_process().
+> 
+> looks OK but you should remove  __thaw_process() which is unused 
+> now.
 
-Just till that point... ;-)
+It's called by thaw_process().
 
-> Did you sync the device? From the message, it seems that some data were to
-> be written to the device, but the device was already gone by that time, but
-> I'm not a specialist on the filesystem subsystem and perhaps others could
-> say more about it.
+But that's the only callsite, I believe, so...
 
-No, not that time. I'm used to sync devices via command line, but I
-tought that if a device is mounted with sync option tha data is
-actually written to the disk when any command to do so is given. I'm
-almost convinced that the drive was not in use when I unplugged (I was
-rsync'ing mp3 files between devices).
+--- a/include/linux/freezer.h~freezer_cg-use-thaw_process-in-unfreeze_cgroup-fix
++++ a/include/linux/freezer.h
+@@ -44,11 +44,6 @@ static inline bool should_send_signal(st
+ 	return !(p->flags & PF_FREEZER_NOSIG);
+ }
+ 
+-/*
+- * Wake up a frozen process
+- */
+-extern int __thaw_process(struct task_struct *p);
+-
+ /* Takes and releases task alloc lock using task_lock() */
+ extern int thaw_process(struct task_struct *p);
+ 
+diff -puN kernel/freezer.c~freezer_cg-use-thaw_process-in-unfreeze_cgroup-fix kernel/freezer.c
+--- a/kernel/freezer.c~freezer_cg-use-thaw_process-in-unfreeze_cgroup-fix
++++ a/kernel/freezer.c
+@@ -121,16 +121,7 @@ void cancel_freezing(struct task_struct 
+ 	}
+ }
+ 
+-/*
+- * Wake up a frozen process
+- *
+- * task_lock() is needed to prevent the race with refrigerator() which may
+- * occur if the freezing of tasks fails.  Namely, without the lock, if the
+- * freezing of tasks failed, thaw_tasks() might have run before a task in
+- * refrigerator() could call frozen_process(), in which case the task would be
+- * frozen and no one would thaw it.
+- */
+-int __thaw_process(struct task_struct *p)
++static int __thaw_process(struct task_struct *p)
+ {
+ 	if (frozen(p)) {
+ 		p->flags &= ~PF_FROZEN;
+@@ -140,6 +131,15 @@ int __thaw_process(struct task_struct *p
+ 	return 0;
+ }
+ 
++/*
++ * Wake up a frozen process
++ *
++ * task_lock() is needed to prevent the race with refrigerator() which may
++ * occur if the freezing of tasks fails.  Namely, without the lock, if the
++ * freezing of tasks failed, thaw_tasks() might have run before a task in
++ * refrigerator() could call frozen_process(), in which case the task would be
++ * frozen and no one would thaw it.
++ */
+ int thaw_process(struct task_struct *p)
+ {
+ 	task_lock(p);
+_
 
-By the way I purged usbmount by now, altought I'm pretty aware that it
-may be not safe to unplug the device without unmounting it (which
-could be done only logging as root when you use usbmount, since the
-device is not in /etc/fstab.)
-
-> In a subsequent mount, I guess.
-
-In a previous one and in the later one.
-
-> Well, it is a bug. It just needs more investigation to see where the bug
-> lies.
-
-Not everyone agrees that it'a bug on usbmount, maybe be it's in me... ;-)
-
-I'm not that totally newbie user, so it is good that this happened to
-me and not to anyone else...
-
-> Regards, Rogério.
-
-Yours, Alexandre
--- 
-===============================================================================
-Alexandre Lymberopoulos - lymber@gmail.com
-===============================================================================
