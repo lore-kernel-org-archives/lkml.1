@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbYJUUK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbYJUUNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755403AbYJUUK0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 16:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbYJUUKR
+	id S1754531AbYJUUNi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 16:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbYJUUN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 16:10:17 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:42762 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751174AbYJUUKQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 16:10:16 -0400
-Date: Tue, 21 Oct 2008 14:10:12 -0600
-From: dann frazier <dannf@hp.com>
-To: Jens Axboe <axboe@kernel.dk>
-Cc: Mike Miller <mike.miller@hp.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] cciss: Add P700m to list of supported controllers
-Message-ID: <20081021201012.GB13772@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 21 Oct 2008 16:13:29 -0400
+Received: from mga09.intel.com ([134.134.136.24]:38873 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751056AbYJUUN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 16:13:28 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,460,1220252400"; 
+   d="scan'208";a="453978409"
+Subject: Re: iwl3945: if I leave my machine running overnight, wifi will
+	not work in the morning
+From: reinette chatre <reinette.chatre@intel.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: "jbenc@suse.cz" <jbenc@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "i.zhu@intel.com" <i.zhu@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ipw3945-devel@lists.sourceforge.net" 
+	<ipw3945-devel@lists.sourceforge.net>
+In-Reply-To: <20081019214035.GA30485@elf.ucw.cz>
+References: <20081019214035.GA30485@elf.ucw.cz>
+Content-Type: text/plain
+Date: Tue, 21 Oct 2008 13:13:45 -0700
+Message-Id: <1224620025.10863.50.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-P700m support was added in:
-  9cff3b383dad193b0762c27278a16237e10b53dc
+On Sun, 2008-10-19 at 14:40 -0700, Pavel Machek wrote:
 
-Update cciss.txt to match.
+> root@amd:~# ping hobit
+> PING hobit.ucw.cz (10.0.0.2): 56 data bytes
+> ^C
+> --- hobit.ucw.cz ping statistics ---
+> 34 packets transmitted, 0 packets received, 100% packet loss
+> root@amd:~#
 
-Signed-off-by: dann frazier <dannf@hp.com>
-Acked-by: Mike Miller <mike.miller@hp.com>
----
- Documentation/cciss.txt |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Can we start to get some debug logs about what happens when you try to
+ping (and it fails)? Please ensure driver is compiled with debugging
+(CONFIG_IWL3945_DEBUG) and load the module with debug=0x43fff
 
-diff --git a/Documentation/cciss.txt b/Documentation/cciss.txt
-index 8244c64..802c3c0 100644
---- a/Documentation/cciss.txt
-+++ b/Documentation/cciss.txt
-@@ -21,6 +21,7 @@ This driver is known to work with the following cards:
- 	* SA E200
- 	* SA E200i
- 	* SA E500
-+	* SA P700m
- 	* SA P212
- 	* SA P410
- 	* SA P410i
--- 
-1.5.6.5
+Also, please submit a bug for this
+( http://www.intellinuxwireless.org/bugzilla/ )to help us keep track of
+all the debugging output you are providing.
+
+Thank you
+
+Reinette
 
