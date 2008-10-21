@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbYJUBnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754464AbYJUBoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753520AbYJUBnt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 21:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbYJUBnk
+	id S1754464AbYJUBoJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 21:44:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYJUBnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 20 Oct 2008 21:43:40 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:40097 "EHLO
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:40106 "EHLO
 	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751934AbYJUBnj (ORCPT
+	by vger.kernel.org with ESMTP id S1752074AbYJUBnj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 20 Oct 2008 21:43:39 -0400
-X-Greylist: delayed 516 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Oct 2008 21:43:39 EDT
-Subject: [PATCH 1/3] Add serial key as a field to check for in
-	dmi_name_in_vendors.
+Subject: [PATCH 0/3] Improve TSC as a clocksource under VMware
 From: Alok Kataria <akataria@vmware.com>
 Reply-To: akataria@vmware.com
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Dan Hecht <dhecht@vmware.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Dan Hecht <dhecht@vmware.com>
 Content-Type: text/plain
 Organization: VMware INC.
-Date: Mon, 20 Oct 2008 18:35:33 -0700
-Message-Id: <1224552933.2640.90.camel@alok-dev1>
+Date: Mon, 20 Oct 2008 18:35:02 -0700
+Message-Id: <1224552902.2640.88.camel@alok-dev1>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
@@ -30,32 +28,19 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alok N Kataria <akataria@vmware.com>
+Hi,
 
-In some user configurable cases, VMware may choose not to put a VMware specific
-DMI string, but the serial key is always there and is VMware specific.
-Add that too to check for in the dmi_name_in_vendors function.
+This patch set makes some changes to the TSC code, so that it is always
+used as the default clocksource when running under VMware.
+The first 2 patches do the ground work of adding code to detect if we
+are running under VMware.
+The third patch adds a tsc_reliable flag which tells us that TSC is
+reliable on this system, so that we can skip some tests which can
+potentially mark TSC as unstable. Details under individual patch
+headers. 
 
-Signed-off-by: Alok N Kataria <akataria@vmware.com>
----
+Please have a look.
 
- drivers/firmware/dmi_scan.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-
-diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
-index 3e526b6..14fcb52 100644
---- a/drivers/firmware/dmi_scan.c
-+++ b/drivers/firmware/dmi_scan.c
-@@ -476,7 +476,8 @@ int dmi_name_in_vendors(const char *str)
- {
- 	static int fields[] = { DMI_BIOS_VENDOR, DMI_BIOS_VERSION, DMI_SYS_VENDOR,
- 				DMI_PRODUCT_NAME, DMI_PRODUCT_VERSION, DMI_BOARD_VENDOR,
--				DMI_BOARD_NAME, DMI_BOARD_VERSION, DMI_NONE };
-+				DMI_BOARD_NAME, DMI_BOARD_VERSION, DMI_PRODUCT_SERIAL,
-+				DMI_NONE };
- 	int i;
- 	for (i = 0; fields[i] != DMI_NONE; i++) {
- 		int f = fields[i];
-
+Thanks,
+Alok
 
