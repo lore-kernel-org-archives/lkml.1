@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbYJUJjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbYJUJnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753442AbYJUJjS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 05:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYJUJjI
+	id S1753173AbYJUJnk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 05:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbYJUJnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 05:39:08 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36831 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751476AbYJUJjG (ORCPT
+	Tue, 21 Oct 2008 05:43:32 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43459 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750955AbYJUJnb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 05:39:06 -0400
-Date: Tue, 21 Oct 2008 10:38:33 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Daney <ddaney@caviumnetworks.com>, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       Tomaso.Paoletti@caviumnetworks.com
-Subject: Re: [PATCH] serial: Initialize spinlocks in 8250 and don't clobber
- them.
-Message-ID: <20081021103833.5e960c8d@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081020141750.d0610586.akpm@linux-foundation.org>
-References: <48F51114.2010105@caviumnetworks.com>
-	<20081020141750.d0610586.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Oct 2008 05:43:31 -0400
+To: akataria@vmware.com
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Dan Hecht <dhecht@vmware.com>
+Subject: Re: [PATCH 0/3] Improve TSC as a clocksource under VMware
+From: Andi Kleen <andi@firstfloor.org>
+References: <1224552902.2640.88.camel@alok-dev1>
+Date: Tue, 21 Oct 2008 11:43:30 +0200
+In-Reply-To: <1224552902.2640.88.camel@alok-dev1> (Alok Kataria's message of "Mon, 20 Oct 2008 18:35:02 -0700")
+Message-ID: <874p36fflp.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> But yes, copying a spinlock by value is quite wrong.  Perhaps we could
-> retain the struct assigment and then run spin_lock_init() to get the
-> spinlock into a sane state?
+Alok Kataria <akataria@vmware.com> writes:
 
-Kind of irrelevant now however, the split of patches that caused the
-original bug is over and the NR_IRQ removal patch half of it hit Linus
-tree.
+> This patch set makes some changes to the TSC code, so that it is always
+> used as the default clocksource when running under VMware.
 
-Alan
+Does this imply that vmware always emulates TSC reads?
+Or how do you guarantee reliable TSC on a system where the underlying
+TSC isn't?
+
+It would be far nicer if VMware just emulated the "constant_tsc" bit
+in the AMD CPUID leaf, instead of adding all that gunk to Linux.
+Right now it's only checked for AMD CPUs, but that could be changed.
+
+Otherwise with more and more hypervisors we mind end up with more
+and more unscalable detection code.
+
+-Andi
+
+-- 
+ak@linux.intel.com
