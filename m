@@ -1,79 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbYJUU7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbYJUVRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755888AbYJUU7l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 16:59:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbYJUU7d
+	id S1754217AbYJUVRy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 17:17:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYJUVRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 16:59:33 -0400
-Received: from gate.crashing.org ([63.228.1.57]:56557 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752047AbYJUU7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 16:59:32 -0400
-Subject: Re: [PATCH] edac/cell: enable polling mode
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Jens Osterkamp <jens@linux.vnet.ibm.com>
-Cc: Doug Thompson <dougthompson@xmission.com>,
-       bluesmoke-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org,
-       arnd@arndb.de, linux-kernel@vger.kernel.org
-In-Reply-To: <200810211607.22600.jens@linux.vnet.ibm.com>
-References: <200810211607.22600.jens@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 22 Oct 2008 07:58:54 +1100
-Message-Id: <1224622734.7654.273.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 21 Oct 2008 17:17:43 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:57819 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751507AbYJUVRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 17:17:42 -0400
+Date: Tue, 21 Oct 2008 16:17:40 -0500
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Cc: Dimitri Sivanich <sivanich@sgi.com>
+Subject: [PATCH 0/3] SGI RTC: add clocksource/clockevent driver and timer bios calls
+Message-ID: <20081021211740.GA3936@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-21 at 16:07 +0200, Jens Osterkamp wrote:
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> The edac driver on cell turned out to be not enabled because of a missing op_state.
-> This patch introduces it. Verified to work on top of Bens next branch.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Jens Osterkamp <jens@linux.vnet.ibm.com>
+The following patchset provides a driver and bios call framework for
+synchronized RTC clocksource and clockevents for SGI systems.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> Ben, can you please confirm this is the patch you wanted to send upstream ?
+With these patches, a module can be installed that registers the system-wide
+synchronized RTC clocksource and timers as both a clocksource and clockevents
+device running in high resolution mode.
 
-Yes.
 
-> Index: linux-2.6/drivers/edac/cell_edac.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/edac/cell_edac.c
-> +++ linux-2.6/drivers/edac/cell_edac.c
-> @@ -9,6 +9,7 @@
->   */
->  #undef DEBUG
->  
-> +#include <linux/edac.h>
->  #include <linux/module.h>
->  #include <linux/init.h>
->  #include <linux/platform_device.h>
-> @@ -164,6 +165,8 @@ static int __devinit cell_edac_probe(str
->  	if (regs == NULL)
->  		return -ENODEV;
->  
-> +	edac_op_state = EDAC_OPSTATE_POLL;
-> +
->  	/* Get channel population */
->  	reg = in_be64(&regs->mic_mnt_cfg);
->  	dev_dbg(&pdev->dev, "MIC_MNT_CFG = 0x%016lx\n", reg);
-> ---
-> 
-> Gruß,
-> 
-> Jens
-> 
-> IBM Deutschland Entwicklung GmbH
-> Vorsitzender des Aufsichtsrats: Martin Jetter
-> Geschäftsführung: Erich Baier 
-> Sitz der Gesellschaft: Böblingen
-> Registergericht: Amtsgericht Stuttgart, HRB 243294
+[PATCH 1/3] SGI RTC: add clocksource driver
+[PATCH 2/3] SGI RTC: add bios framework for RTC timer operations
+[PATCH 3/3] SGI RTC: add RTC system interrupt
 
+These patches should be installed on top of the following:
+	http://marc.info/?l=linux-kernel&m=122461934110503&w=2
+	http://marc.info/?l=linux-kernel&m=122461934110506&w=2
+	http://marc.info/?l=linux-kernel&m=122461934210509&w=2
