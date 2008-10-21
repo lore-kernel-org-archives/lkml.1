@@ -1,103 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753563AbYJUJ3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752990AbYJUJfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753563AbYJUJ3l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 05:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbYJUJ3b
+	id S1752990AbYJUJfx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 05:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYJUJfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 05:29:31 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62306 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751929AbYJUJ3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 05:29:30 -0400
-Message-ID: <48FDA0F3.2070306@cn.fujitsu.com>
-Date: Tue, 21 Oct 2008 17:29:23 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 21 Oct 2008 05:35:44 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:38808 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752383AbYJUJfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 05:35:43 -0400
 MIME-Version: 1.0
-To: Cedric Le Goater <clg@fr.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/4] freezer_cg: remove redundant check in freezer_can_attach()
-References: <48FD26F5.1070809@cn.fujitsu.com> <48FD273F.3040505@cn.fujitsu.com> <48FD85A2.8090605@fr.ibm.com>
-In-Reply-To: <48FD85A2.8090605@fr.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18685.41265.560866.890756@harpo.it.uu.se>
+Date: Tue, 21 Oct 2008 11:30:25 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Mikael Pettersson <mikpe@it.uu.se>,
+       Christian Mueller <Christian.Mueller@wdc.com>,
+       Bruce Allen <ballen@gravity.phys.uwm.edu>,
+       Smartmontools Mailing List 
+	<smartmontools-support@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: [smartmontools-support] inactive SATA drives won't stay in standby
+ or sleep, PATA models did. (fwd)
+In-Reply-To: <48FD9A90.8000205@gmail.com>
+References: <D73D40172004714D95D7A84AC3E68EC802282133@wdscexbe03.sc.wdc.com>
+	<48EBFE9B.9070503@gmail.com>
+	<18674.4081.839329.116533@harpo.it.uu.se>
+	<48F2D9A8.1030502@gmail.com>
+	<18683.50533.786782.474536@harpo.it.uu.se>
+	<48FD580E.4080101@gmail.com>
+	<18685.35653.125899.390135@harpo.it.uu.se>
+	<48FD9A90.8000205@gmail.com>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cedric Le Goater wrote:
-> Li Zefan wrote:
->> It is sufficient to check if @task is frozen, and no need to check if
->> the original freezer is frozen.
-> 
-> hmm, a task being frozen does not mean that its freezer cgroup is 
-> frozen.
+Tejun Heo writes:
+ > Hello,
+ > 
+ > Mikael Pettersson wrote:
+ > > Tejun Heo writes:
+ > >  > Hello, Mikael.
+ > >  > I would put this into ->hardreset itself as the controller can also
+ > >  > get out of sync with reality during reset.
+ > > 
+ > > The only thing I see going on between prereset and (hard/soft)reset
+ > > is an optional freeze, so I don't see why moving the pdc_reset_port()
+ > > into the beginning of hardreset() would make any difference.
+ > > 
+ > > sata_promise currently uses the ->hardreset and ->softreset inherited
+ > > from ata_sff_port_ops, so it would need to override both to ensure that
+ > > we always do pdc_reset_port() before libata does its thing. That's why
+ > > I felt doing that in ->prereset would be the right solution.
+ > 
+ > Hmm.. reset sequence goes on like the following.
+ > 
+ >  1. prereset
+ >  2. hardreset, if fail, retry
+ >  3. follow-up softreset if requested, if fail, goto #2
+ >  4. postreset, if successful
+ > 
+ > So, if some PHY event happens while the reset is waiting for device
+ > readiness and makes the controller state go out of sync with the
+ > drive.  ->prereset() will NOT be called for the following retry.
 
-If a task has being frozen, then can_attach() returns -EBUSY at once.
-If a task isn't frozen, then we have orig_freezer->state == THAWED.
+I see. Ok, then I'll forget about ->prereset and bind ->hardreset to
+code which does pdc_reset_port() before invoking sata_sff_hardreset().
 
-So we need to check the state of the task only.
+Thanks for your input.
 
-> So the extra check seems valid but looking at the comment :
-> 
-> 	/*
-> 	 * The call to cgroup_lock() in the freezer.state write method prevents
-> 	 * a write to that file racing against an attach, and hence the
-> 	 * can_attach() result will remain valid until the attach completes.
-> 	 */
-> 	static int freezer_can_attach(struct cgroup_subsys *ss,
-> 
-> how do we know that the task_freezer(task), which is not protected by
-> the cgroup_lock(), is not going to change its state to CGROUP_FROZEN 
-> it looks racy.
-> 
-
-Since freezer_can_attach() is called by cgroup core with cgroup_lock held, there is
-no race with task attaching and state changing.
-
-> C.
-> 
->> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->> ---
->>  kernel/cgroup_freezer.c |   16 +++++++---------
->>  1 files changed, 7 insertions(+), 9 deletions(-)
->>
->> diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
->> index 7f54d1c..6fadafe 100644
->> --- a/kernel/cgroup_freezer.c
->> +++ b/kernel/cgroup_freezer.c
->> @@ -162,9 +162,13 @@ static int freezer_can_attach(struct cgroup_subsys *ss,
->>  			      struct task_struct *task)
->>  {
->>  	struct freezer *freezer;
->> -	int retval;
->>  
->> -	/* Anything frozen can't move or be moved to/from */
->> +	/*
->> +	 * Anything frozen can't move or be moved to/from.
->> +	 *
->> +	 * Since orig_freezer->state == FROZEN means that @task has been
->> +	 * frozen, so it's sufficient to check the latter condition.
->> +	 */
->>  
->>  	if (is_task_frozen_enough(task))
->>  		return -EBUSY;
->> @@ -173,13 +177,7 @@ static int freezer_can_attach(struct cgroup_subsys *ss,
->>  	if (freezer->state == CGROUP_FROZEN)
->>  		return -EBUSY;
->>  
->> -	retval = 0;
->> -	task_lock(task);
->> -	freezer = task_freezer(task);
->> -	if (freezer->state == CGROUP_FROZEN)
->> -		retval = -EBUSY;
->> -	task_unlock(task);
->> -	return retval;
->> +	return 0;
->>  }
->>  
->>  static void freezer_fork(struct cgroup_subsys *ss, struct task_struct *task)
-> 
-> 
+/Mikael
