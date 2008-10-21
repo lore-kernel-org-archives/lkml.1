@@ -1,26 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756259AbYJUWqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756408AbYJUWrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756259AbYJUWqU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 18:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbYJUWqL
+	id S1756408AbYJUWrs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 18:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbYJUWrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 18:46:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50508 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751706AbYJUWqK (ORCPT
+	Tue, 21 Oct 2008 18:47:40 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37532 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751352AbYJUWrk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 18:46:10 -0400
-Date: Tue, 21 Oct 2008 15:45:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dean Nelson <dcn@sgi.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 0/4] sgi-xp: add low-level hardware specific
- functionality
-Message-Id: <20081021154500.7ea5b369.akpm@linux-foundation.org>
-In-Reply-To: <20081021212054.GB14386@sgi.com>
-References: <20081021212054.GB14386@sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 21 Oct 2008 18:47:40 -0400
+Date: Tue, 21 Oct 2008 23:47:28 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: Re: [PATCH 5/7] kgdboc, tty: use tty open to start low level
+ drivers
+Message-ID: <20081021234728.6853beee@lxorguk.ukuu.org.uk>
+In-Reply-To: <1224616493-23237-6-git-send-email-jason.wessel@windriver.com>
+References: <1224616493-23237-1-git-send-email-jason.wessel@windriver.com>
+	<1224616493-23237-2-git-send-email-jason.wessel@windriver.com>
+	<1224616493-23237-3-git-send-email-jason.wessel@windriver.com>
+	<1224616493-23237-4-git-send-email-jason.wessel@windriver.com>
+	<1224616493-23237-5-git-send-email-jason.wessel@windriver.com>
+	<1224616493-23237-6-git-send-email-jason.wessel@windriver.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -28,29 +36,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Oct 2008 16:20:54 -0500
-Dean Nelson <dcn@sgi.com> wrote:
+On Tue, 21 Oct 2008 14:14:51 -0500
+Jason Wessel <jason.wessel@windriver.com> wrote:
 
-> This patchset adds some low-level hardware specific functionality to the
-> xp/xpc drivers.
-> 
-> To build cleanly this patchset is dependent on the following patches
-> submitted by Russ Anderson <rja@sgi.com>.
-> 
-> [PATCH] x86: Use consistent names for region size and conherence id on x86 and ia64.
->  (see http://marc.info/?l=linux-kernel&m=122461625304772&w=2)
-> 
-> [PATCH 1/3] x86: Add UV watchlist bios call
->  (see http://marc.info/?l=linux-kernel&m=122461934110503&w=2)
-> [PATCH 2/3] x86: Add UV memory protection bios call
->  (see http://marc.info/?l=linux-kernel&m=122461934110506&w=2)
-> [PATCH 3/3] x86: Add UV reserved page bios call
->  (see http://marc.info/?l=linux-kernel&m=122461934210509&w=2)
-> 
-> [PATCH] Add UV watchlist support
->  (see http://marc.info/?l=linux-ia64&m=122462371418298&w=2)
+> This patch adds two new hooks to the tty layer in tty_io.c to allow
 
-OK, so I need to go into hiding until/unless those patches turn up in
-linux-next.
+Gak
 
-Please poke me if I forget.
+> A few minor changes were needed in tty_io.c to deal with the fact that
+> the inode and fpath.dentry were NULL with the generic flip structure.
+
+Gak and more gak
+
+> +		tty = tty_driver_lookup_tty(driver, NULL, tty_line);
+> +		if (!tty) {
+> +			tty = tty_init_dev(driver, tty_line, 0);
+> +			inc_tty = 0;
+> +		}
+> +		(*filp)->private_data = tty;
+> +		ret = tty->ops->open(tty, *filp);
+
+Digging deep into tty innards (some of which btw are going to change)
+
+> +		unlock_kernel();
+> +	} else {
+> +		tty = tty_driver_lookup_tty(driver, NULL, tty_line);
+> +		if (!tty) {
+> +			tty = tty_init_dev(driver, tty_line, 0);
+> +			inc_tty = 0;
+> +		}
+> +		(*filp)->private_data = tty;
+> +		ret = tty->ops->open(tty, *filp);
+
+and with the error paths wrong
+
+
+This is to put it bluntly just horrible.
+
+Really kgdb, console and other boot processes need an abstraction for tty
+device ports at the device (not ldisc) level and until that work is done
+there is no acceptable way to sort this out. Merging gunk like this will
+simply make the existing mess worse and provide more crap that will make
+it harder to fix properly.
+
+All this stuff needs revisiting when every tty device side object in the
+kernel contains a struct tty_port, until then it's a nasty (perhaps
+neccessary for the moment) hack that belongs out of tree.
+
+Alan
