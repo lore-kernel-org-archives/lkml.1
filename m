@@ -1,64 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbYJUBwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753812AbYJUB6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754021AbYJUBwz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 21:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbYJUBwq
+	id S1753812AbYJUB6I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 21:58:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYJUB5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 21:52:46 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38839 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751596AbYJUBwq (ORCPT
+	Mon, 20 Oct 2008 21:57:55 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:57892 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbYJUB5y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 21:52:46 -0400
-Message-ID: <48FD35CC.10904@zytor.com>
-Date: Mon, 20 Oct 2008 18:52:12 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: akataria@vmware.com
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Dan Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH 2/3] x86: Get TSC frequency from VMware hypervisor.
-References: <1224552952.2640.93.camel@alok-dev1>
-In-Reply-To: <1224552952.2640.93.camel@alok-dev1>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Oct 2008 21:57:54 -0400
+Date: Mon, 20 Oct 2008 21:57:28 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 1/2] x86: allow module driver to register idle notifier
+In-reply-to: <alpine.LFD.1.10.0810161803230.3026@localhost.localdomain>
+X-X-Sender: lenb@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Andy Henroid <andrew.d.henroid@intel.com>,
+       Len Brown <len.brown@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@linux.intel.com>
+Message-id: <alpine.LFD.1.10.0810202156280.2996@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
+ <e8b529091b2ab65f5a4783e292c2b472e309116e.1223706853.git.len.brown@intel.com>
+ <20081011083347.GA31918@elte.hu>
+ <alpine.LFD.1.10.0810161803230.3026@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alok Kataria wrote:
-> x86: Get TSC frequency from VMware hypervisor.
-> 
-> From: Alok N Kataria <akataria@vmware.com>
-> 
-> This patch adds functions to detect if we are running under VMware.
-> The current way to check if we are on VMware is following,
-> #  check if "hypervisor present bit" is set, if so read the 0x40000000
->    cpuid leaf and check for "VMwareVMware" signature.
-> #  if the above fails, check the DMI vendors name for "VMware" string
->    if we find one we query the VMware backdoor port to check if we are
->    under VMware.
-> 
-> The DMI + Backdoor check is needed for older VMware products, which
-> don't implement the hypervisor signature cpuid leaf.
-> Also note that since we are checking for the DMI signature the backdoor
-> port would never be accessed on native hardware.
-> 
-> This patch also adds a hypervisor_get_tsc_freq function, instead of
-> calibrating the frequency which can be error prone in virtualized
-> environment, we ask the hypervisor for it. We get the frequency from
-> the hypervisor by accessing the backdoor port if we are running on VMware.
-> Other hypervisors too can add code to get frequency on their platform
-> to this routine.
-> 
+Ingo,
+How shall we proceed?
+If you take this patch, we can ship a modular i7300_idle driver.
+If you do not take this patch, then we'll need to build it into
+the kernel and not allow it to un-register.
 
-I would like to see, instead of calling vmware_platform() directly in 
-places like tsc.c, a hypervisor field in the CPU structure that is set 
-with the rest of the CPU identification stuff.  That way we avoid ending 
-up with garbage like:
+thanks,
+-Len
 
-if (vmware_platform() || xen_platform() || kvm_platform() ...)
+On Thu, 16 Oct 2008, Len Brown wrote:
 
-	-hpa
+> From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> 
+> needed if the i7300_idle driver is to be a module.
+> 
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  arch/x86/kernel/process_64.c |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+> index e12e0e4..3e3d503 100644
+> --- a/arch/x86/kernel/process_64.c
+> +++ b/arch/x86/kernel/process_64.c
+> @@ -62,6 +62,13 @@ void idle_notifier_register(struct notifier_block *n)
+>  {
+>  	atomic_notifier_chain_register(&idle_notifier, n);
+>  }
+> +EXPORT_SYMBOL_GPL(idle_notifier_register);
+> +
+> +void idle_notifier_unregister(struct notifier_block *n)
+> +{
+> +	atomic_notifier_chain_unregister(&idle_notifier, n);
+> +}
+> +EXPORT_SYMBOL_GPL(idle_notifier_unregister);
+>  
+>  void enter_idle(void)
+>  {
+> -- 
+> 1.6.0.2.532.g84ed4c
+> 
+> 
