@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753975AbYJUPg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753685AbYJUPkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753975AbYJUPg6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 11:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbYJUPgt
+	id S1753685AbYJUPkp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 11:40:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbYJUPki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 11:36:49 -0400
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:3601 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751552AbYJUPgs (ORCPT
+	Tue, 21 Oct 2008 11:40:38 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:53346 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751424AbYJUPkh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 11:36:48 -0400
-Message-ID: <48FDF6CB.4070605@caviumnetworks.com>
-Date: Tue, 21 Oct 2008 08:35:39 -0700
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       Tomaso.Paoletti@caviumnetworks.com
-Subject: Re: [PATCH] serial: Initialize spinlocks in 8250 and don't clobber
- them.
-References: <48F51114.2010105@caviumnetworks.com>	<20081020141750.d0610586.akpm@linux-foundation.org> <20081021103833.5e960c8d@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081021103833.5e960c8d@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 21 Oct 2008 11:40:37 -0400
+Date: Tue, 21 Oct 2008 08:39:49 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Iwo Mergler <iwo@call-direct.com.au>
+Cc: linux-kernel@vger.kernel.org, Jes Sorensen <jes@trained-monkey.org>
+Subject: Re: Fix for genalloc locking
+Message-Id: <20081021083949.3b1473c8.randy.dunlap@oracle.com>
+In-Reply-To: <48F83400.90901@call-direct.com.au>
+References: <48F83400.90901@call-direct.com.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Oct 2008 15:35:40.0274 (UTC) FILETIME=[AC1F3D20:01C93392]
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> But yes, copying a spinlock by value is quite wrong.  Perhaps we could
->> retain the struct assigment and then run spin_lock_init() to get the
->> spinlock into a sane state?
+On Fri, 17 Oct 2008 16:43:12 +1000 Iwo Mergler wrote:
+
+> Hi,
 > 
-> Kind of irrelevant now however, the split of patches that caused the
-> original bug is over and the NR_IRQ removal patch half of it hit Linus
-> tree.
+> I hit a little problem while using genalloc with a mix
+> of interrupt/non-interrupt context. I believe the correct
+> fix is to replace the locking calls with the _irqsave/_irqrestore
+> variants. Patch follows.
 > 
-My original patch fixed *two* problems.  As you note here, you already fixed the first one.
+> Is this correct?
+> 
+> BTW, is there any documentation on the Lockdep warnings?
+> What exactly is the meaning of {--+.} in 
+> 
+> (&pool->lock){--+.}, at: [<c0125d1c>] gen_pool_free+0x34/0x120
 
-As far as I know, the second problem is still present, and that is what akpm was referring to above.  Several days ago I posted a revised patch for this here:
+Did you read Documentation/lockdep-design.txt ?
 
-http://marc.info/?l=linux-serial&m=122408950013741&w=2
-
-The question is:  What is the best way to initialize some (or all) fields of a structure *except* a single lock field that was previously initialized?
-
-We can just copy field by field as my patch does, or you could do something ugly using memcpy on portions of the structure.  In this case we know which structure elements will be used by the early console, so I just copied them.
-
-Any comments about that patch are certainly most welcome.
-
-Thanks,
-David Daney
+---
+~Randy
