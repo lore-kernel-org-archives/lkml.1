@@ -1,52 +1,819 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752466AbYJUJFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbYJUJPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752466AbYJUJFm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 05:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbYJUJFV
+	id S1752621AbYJUJPa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 05:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbYJUJPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 05:05:21 -0400
-Received: from ti-out-0910.google.com ([209.85.142.189]:49879 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751970AbYJUJFU (ORCPT
+	Tue, 21 Oct 2008 05:15:21 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:50496 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751032AbYJUJPT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 05:05:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=AghY7YZ79iSoNq8cx/Udmt6xiXWXg8KJP4f8E7JPzBUKljFPAag+Wk35a/pTZqqJoq
-         1fZCXpHAvjcSWGxzcSsxah6E1wgi0XaybNE9nRnGGv3TqVKI4Lrf58EfXMWJcaP40T4F
-         XrH8sbDzpu4WRAPRrAyJhID1/n/BxFSET5K4I=
-Message-ID: <df9815e70810210205m36a6e47di41e52776511f8ba6@mail.gmail.com>
-Date: Tue, 21 Oct 2008 17:05:19 +0800
-From: "Jike Song" <albcamus@gmail.com>
-To: "Prabhu Chawandi" <prabhu.chavandi@gmail.com>
-Subject: Re: History of Linux File !!!
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <241b8f7b0810210156k27a957c3i5df40f12068ea199@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 21 Oct 2008 05:15:19 -0400
+Date: Tue, 21 Oct 2008 12:14:58 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Greg Kroah-Hartman <greg@kroah.com>
+cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
+Subject: [PATCH] w35und: use gotos for error handling
+Message-ID: <Pine.LNX.4.64.0810211214120.31513@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <241b8f7b0810210156k27a957c3i5df40f12068ea199@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 21, 2008 at 4:56 PM, Prabhu Chawandi
-<prabhu.chavandi@gmail.com> wrote:
-> Hi,
->
->  Is there any way tosee the history of a linux kernel file....
->
-> I mean .. when it is updated changed or what is the latest version ...
->
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-try :
+The driver code uses do { } while (0) together with the break statement to
+emulate gotos for error handling. Fix that up by using the goto statement
+instead.
 
-$ git whatchanged -p   path/to/your/file
+Cc: Pavel Machek <pavel@suse.cz>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ drivers/staging/winbond/linux/wb35rx.c |  161 +++++++++++++--------------
+ drivers/staging/winbond/linux/wb35tx.c |  130 +++++++++++------------
+ drivers/staging/winbond/linux/wbusb.c  |  161 +++++++++++++--------------
+ drivers/staging/winbond/wblinux.c      |  188 ++++++++++++++++----------------
+ 4 files changed, 313 insertions(+), 327 deletions(-)
 
+diff --git a/drivers/staging/winbond/linux/wb35rx.c b/drivers/staging/winbond/linux/wb35rx.c
+index c5c3317..b4b9f5f 100644
+--- a/drivers/staging/winbond/linux/wb35rx.c
++++ b/drivers/staging/winbond/linux/wb35rx.c
+@@ -35,51 +35,50 @@ void Wb35Rx(  phw_data_t pHwData )
+ 	//
+ 	// Issuing URB
+ 	//
+-	do {
+-		if (pHwData->SurpriseRemove || pHwData->HwStop)
+-			break;
++	if (pHwData->SurpriseRemove || pHwData->HwStop)
++		goto error;
+ 
+-		if (pWb35Rx->rx_halt)
+-			break;
++	if (pWb35Rx->rx_halt)
++		goto error;
+ 
+-		// Get RxBuffer's ID
+-		RxBufferId = pWb35Rx->RxBufferId;
+-		if (!pWb35Rx->RxOwner[RxBufferId]) {
+-			// It's impossible to run here.
+-			#ifdef _PE_RX_DUMP_
+-			WBDEBUG(("Rx driver fifo unavailable\n"));
+-			#endif
+-			break;
+-		}
++	// Get RxBuffer's ID
++	RxBufferId = pWb35Rx->RxBufferId;
++	if (!pWb35Rx->RxOwner[RxBufferId]) {
++		// It's impossible to run here.
++		#ifdef _PE_RX_DUMP_
++		WBDEBUG(("Rx driver fifo unavailable\n"));
++		#endif
++		goto error;
++	}
+ 
+-		// Update buffer point, then start to bulkin the data from USB
+-		pWb35Rx->RxBufferId++;
+-		pWb35Rx->RxBufferId %= MAX_USB_RX_BUFFER_NUMBER;
++	// Update buffer point, then start to bulkin the data from USB
++	pWb35Rx->RxBufferId++;
++	pWb35Rx->RxBufferId %= MAX_USB_RX_BUFFER_NUMBER;
+ 
+-		pWb35Rx->CurrentRxBufferId = RxBufferId;
++	pWb35Rx->CurrentRxBufferId = RxBufferId;
+ 
+-		if (1 != OS_MEMORY_ALLOC((void* *)&pWb35Rx->pDRx, MAX_USB_RX_BUFFER)) {
+-			printk("w35und: Rx memory alloc failed\n");
+-			break;
+-		}
+-		pRxBufferAddress = pWb35Rx->pDRx;
++	if (1 != OS_MEMORY_ALLOC((void* *)&pWb35Rx->pDRx, MAX_USB_RX_BUFFER)) {
++		printk("w35und: Rx memory alloc failed\n");
++		goto error;
++	}
++	pRxBufferAddress = pWb35Rx->pDRx;
+ 
+-		usb_fill_bulk_urb(pUrb, pHwData->WbUsb.udev,
+-				  usb_rcvbulkpipe(pHwData->WbUsb.udev, 3),
+-				  pRxBufferAddress, MAX_USB_RX_BUFFER,
+-				  Wb35Rx_Complete, pHwData);
++	usb_fill_bulk_urb(pUrb, pHwData->WbUsb.udev,
++			  usb_rcvbulkpipe(pHwData->WbUsb.udev, 3),
++			  pRxBufferAddress, MAX_USB_RX_BUFFER,
++			  Wb35Rx_Complete, pHwData);
+ 
+-		pWb35Rx->EP3vm_state = VM_RUNNING;
++	pWb35Rx->EP3vm_state = VM_RUNNING;
+ 
+-		retv = wb_usb_submit_urb(pUrb);
++	retv = wb_usb_submit_urb(pUrb);
+ 
+-		if (retv != 0) {
+-			printk("Rx URB sending error\n");
+-			break;
+-		}
+-		return;
+-	} while(FALSE);
++	if (retv != 0) {
++		printk("Rx URB sending error\n");
++		goto error;
++	}
++	return;
+ 
++error:
+ 	// VM stop
+ 	pWb35Rx->EP3vm_state = VM_STOP;
+ 	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Rx->RxFireCounter );
+@@ -99,65 +98,63 @@ void Wb35Rx_Complete(PURB pUrb)
+ 	pWb35Rx->EP3vm_state = VM_COMPLETED;
+ 	pWb35Rx->EP3VM_status = pUrb->status;//Store the last result of Irp
+ 
+-	do {
+-		RxBufferId = pWb35Rx->CurrentRxBufferId;
++	RxBufferId = pWb35Rx->CurrentRxBufferId;
+ 
+-		pRxBufferAddress = pWb35Rx->pDRx;
+-		BulkLength = (u16)pUrb->actual_length;
++	pRxBufferAddress = pWb35Rx->pDRx;
++	BulkLength = (u16)pUrb->actual_length;
+ 
+-		// The IRP is completed
+-		pWb35Rx->EP3vm_state = VM_COMPLETED;
++	// The IRP is completed
++	pWb35Rx->EP3vm_state = VM_COMPLETED;
+ 
+-		if (pHwData->SurpriseRemove || pHwData->HwStop) // Must be here, or RxBufferId is invalid
+-			break;
++	if (pHwData->SurpriseRemove || pHwData->HwStop) // Must be here, or RxBufferId is invalid
++		goto error;
+ 
+-		if (pWb35Rx->rx_halt)
+-			break;
++	if (pWb35Rx->rx_halt)
++		goto error;
+ 
+-		// Start to process the data only in successful condition
+-		pWb35Rx->RxOwner[ RxBufferId ] = 0; // Set the owner to driver
+-		R00.value = le32_to_cpu(*(u32 *)pRxBufferAddress);
++	// Start to process the data only in successful condition
++	pWb35Rx->RxOwner[ RxBufferId ] = 0; // Set the owner to driver
++	R00.value = le32_to_cpu(*(u32 *)pRxBufferAddress);
+ 
+-		// The URB is completed, check the result
+-		if (pWb35Rx->EP3VM_status != 0) {
+-			#ifdef _PE_USB_STATE_DUMP_
+-			WBDEBUG(("EP3 IoCompleteRoutine return error\n"));
+-			DebugUsbdStatusInformation( pWb35Rx->EP3VM_status );
+-			#endif
+-			pWb35Rx->EP3vm_state = VM_STOP;
+-			break;
+-		}
++	// The URB is completed, check the result
++	if (pWb35Rx->EP3VM_status != 0) {
++		#ifdef _PE_USB_STATE_DUMP_
++		WBDEBUG(("EP3 IoCompleteRoutine return error\n"));
++		DebugUsbdStatusInformation( pWb35Rx->EP3VM_status );
++		#endif
++		pWb35Rx->EP3vm_state = VM_STOP;
++		goto error;
++	}
+ 
+-		// 20060220 For recovering. check if operating in single USB mode
+-		if (!HAL_USB_MODE_BURST(pHwData)) {
+-			SizeCheck = R00.R00_receive_byte_count;  //20060926 anson's endian
+-			if ((SizeCheck & 0x03) > 0)
+-				SizeCheck -= 4;
+-			SizeCheck = (SizeCheck + 3) & ~0x03;
+-			SizeCheck += 12; // 8 + 4 badbeef
+-			if ((BulkLength > 1600) ||
+-				(SizeCheck > 1600) ||
+-				(BulkLength != SizeCheck) ||
+-				(BulkLength == 0)) { // Add for fail Urb
+-				pWb35Rx->EP3vm_state = VM_STOP;
+-				pWb35Rx->Ep3ErrorCount2++;
+-			}
++	// 20060220 For recovering. check if operating in single USB mode
++	if (!HAL_USB_MODE_BURST(pHwData)) {
++		SizeCheck = R00.R00_receive_byte_count;  //20060926 anson's endian
++		if ((SizeCheck & 0x03) > 0)
++			SizeCheck -= 4;
++		SizeCheck = (SizeCheck + 3) & ~0x03;
++		SizeCheck += 12; // 8 + 4 badbeef
++		if ((BulkLength > 1600) ||
++			(SizeCheck > 1600) ||
++			(BulkLength != SizeCheck) ||
++			(BulkLength == 0)) { // Add for fail Urb
++			pWb35Rx->EP3vm_state = VM_STOP;
++			pWb35Rx->Ep3ErrorCount2++;
+ 		}
++	}
+ 
+-		// Indicating the receiving data
+-		pWb35Rx->ByteReceived += BulkLength;
+-		pWb35Rx->RxBufferSize[ RxBufferId ] = BulkLength;
+-
+-		if (!pWb35Rx->RxOwner[ RxBufferId ])
+-			Wb35Rx_indicate(pHwData);
++	// Indicating the receiving data
++	pWb35Rx->ByteReceived += BulkLength;
++	pWb35Rx->RxBufferSize[ RxBufferId ] = BulkLength;
+ 
+-		kfree(pWb35Rx->pDRx);
+-		// Do the next receive
+-		Wb35Rx(pHwData);
+-		return;
++	if (!pWb35Rx->RxOwner[ RxBufferId ])
++		Wb35Rx_indicate(pHwData);
+ 
+-	} while(FALSE);
++	kfree(pWb35Rx->pDRx);
++	// Do the next receive
++	Wb35Rx(pHwData);
++	return;
+ 
++error:
+ 	pWb35Rx->RxOwner[ RxBufferId ] = 1; // Set the owner to hardware
+ 	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Rx->RxFireCounter );
+ 	pWb35Rx->EP3vm_state = VM_STOP;
+diff --git a/drivers/staging/winbond/linux/wb35tx.c b/drivers/staging/winbond/linux/wb35tx.c
+index bcb014a..ba9d512 100644
+--- a/drivers/staging/winbond/linux/wb35tx.c
++++ b/drivers/staging/winbond/linux/wb35tx.c
+@@ -100,25 +100,24 @@ void Wb35Tx_complete(struct urb * pUrb)
+ 	pWb35Tx->TxSendIndex++;
+ 	pWb35Tx->TxSendIndex %= MAX_USB_TX_BUFFER_NUMBER;
+ 
+-	do {
+-		if (pHwData->SurpriseRemove || pHwData->HwStop) // Let WbWlanHalt to handle surprise remove
+-			break;
++	if (pHwData->SurpriseRemove || pHwData->HwStop) // Let WbWlanHalt to handle surprise remove
++		goto error;
+ 
+-		if (pWb35Tx->tx_halt)
+-			break;
++	if (pWb35Tx->tx_halt)
++		goto error;
+ 
+-		// The URB is completed, check the result
+-		if (pWb35Tx->EP4VM_status != 0) {
+-			printk("URB submission failed\n");
+-			pWb35Tx->EP4vm_state = VM_STOP;
+-			break; // Exit while(FALSE);
+-		}
++	// The URB is completed, check the result
++	if (pWb35Tx->EP4VM_status != 0) {
++		printk("URB submission failed\n");
++		pWb35Tx->EP4vm_state = VM_STOP;
++		goto error;
++	}
+ 
+-		Mds_Tx(Adapter);
+-		Wb35Tx(pHwData);
+-		return;
+-	} while(FALSE);
++	Mds_Tx(Adapter);
++	Wb35Tx(pHwData);
++	return;
+ 
++error:
+ 	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Tx->TxFireCounter );
+ 	pWb35Tx->EP4vm_state = VM_STOP;
+ }
+@@ -228,33 +227,30 @@ void Wb35Tx_EP2VM(phw_data_t pHwData)
+ 	u32 *	pltmp = (u32 *)pWb35Tx->EP2_buf;
+ 	int		retv;
+ 
+-	do {
+-		if (pHwData->SurpriseRemove || pHwData->HwStop)
+-			break;
+-
+-		if (pWb35Tx->tx_halt)
+-			break;
+-
+-		//
+-		// Issuing URB
+-		//
+-		usb_fill_int_urb( pUrb, pHwData->WbUsb.udev, usb_rcvintpipe(pHwData->WbUsb.udev,2),
+-				  pltmp, MAX_INTERRUPT_LENGTH, Wb35Tx_EP2VM_complete, pHwData, 32);
++	if (pHwData->SurpriseRemove || pHwData->HwStop)
++		goto error;
+ 
+-		pWb35Tx->EP2vm_state = VM_RUNNING;
+-		retv = wb_usb_submit_urb( pUrb );
++	if (pWb35Tx->tx_halt)
++		goto error;
+ 
+-		if(retv < 0) {
+-			#ifdef _PE_TX_DUMP_
+-			WBDEBUG(("EP2 Tx Irp sending error\n"));
+-			#endif
+-			break;
+-		}
++	//
++	// Issuing URB
++	//
++	usb_fill_int_urb( pUrb, pHwData->WbUsb.udev, usb_rcvintpipe(pHwData->WbUsb.udev,2),
++			  pltmp, MAX_INTERRUPT_LENGTH, Wb35Tx_EP2VM_complete, pHwData, 32);
+ 
+-		return;
++	pWb35Tx->EP2vm_state = VM_RUNNING;
++	retv = wb_usb_submit_urb( pUrb );
+ 
+-	} while(FALSE);
++	if (retv < 0) {
++		#ifdef _PE_TX_DUMP_
++		WBDEBUG(("EP2 Tx Irp sending error\n"));
++		#endif
++		goto error;
++	}
+ 
++	return;
++error:
+ 	pWb35Tx->EP2vm_state = VM_STOP;
+ 	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Tx->TxResultCount );
+ }
+@@ -275,38 +271,36 @@ void Wb35Tx_EP2VM_complete(struct urb * pUrb)
+ 	pWb35Tx->EP2vm_state = VM_COMPLETED;
+ 	pWb35Tx->EP2VM_status = pUrb->status;
+ 
+-	do {
+-		// For Linux 2.4. Interrupt will always trigger
+-		if( pHwData->SurpriseRemove || pHwData->HwStop ) // Let WbWlanHalt to handle surprise remove
+-			break;
+-
+-		if( pWb35Tx->tx_halt )
+-			break;
+-
+-		//The Urb is completed, check the result
+-		if (pWb35Tx->EP2VM_status != 0) {
+-			WBDEBUG(("EP2 IoCompleteRoutine return error\n"));
+-			pWb35Tx->EP2vm_state= VM_STOP;
+-			break; // Exit while(FALSE);
+-		}
+-
+-		// Update the Tx result
+-		InterruptInLength = pUrb->actual_length;
+-		// Modify for minimum memory access and DWORD alignment.
+-		T02.value = cpu_to_le32(pltmp[0]) >> 8; // [31:8] -> [24:0]
+-		InterruptInLength -= 1;// 20051221.1.c Modify the follow for more stable
+-		InterruptInLength >>= 2; // InterruptInLength/4
+-		for (i=1; i<=InterruptInLength; i++) {
+-			T02.value |= ((cpu_to_le32(pltmp[i]) & 0xff) << 24);
+-
+-			TSTATUS.value = T02.value;  //20061009 anson's endian
+-			Mds_SendComplete( Adapter, &TSTATUS );
+-			T02.value = cpu_to_le32(pltmp[i]) >> 8;
+-		}
+-
+-		return;
+-	} while(FALSE);
++	// For Linux 2.4. Interrupt will always trigger
++	if (pHwData->SurpriseRemove || pHwData->HwStop) // Let WbWlanHalt to handle surprise remove
++		goto error;
++
++	if (pWb35Tx->tx_halt)
++		goto error;
++
++	//The Urb is completed, check the result
++	if (pWb35Tx->EP2VM_status != 0) {
++		WBDEBUG(("EP2 IoCompleteRoutine return error\n"));
++		pWb35Tx->EP2vm_state= VM_STOP;
++		goto error;
++	}
+ 
++	// Update the Tx result
++	InterruptInLength = pUrb->actual_length;
++	// Modify for minimum memory access and DWORD alignment.
++	T02.value = cpu_to_le32(pltmp[0]) >> 8; // [31:8] -> [24:0]
++	InterruptInLength -= 1;// 20051221.1.c Modify the follow for more stable
++	InterruptInLength >>= 2; // InterruptInLength/4
++	for (i = 1; i <= InterruptInLength; i++) {
++		T02.value |= ((cpu_to_le32(pltmp[i]) & 0xff) << 24);
++
++		TSTATUS.value = T02.value;  //20061009 anson's endian
++		Mds_SendComplete( Adapter, &TSTATUS );
++		T02.value = cpu_to_le32(pltmp[i]) >> 8;
++	}
++
++	return;
++error:
+ 	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Tx->TxResultCount );
+ 	pWb35Tx->EP2vm_state = VM_STOP;
+ }
+diff --git a/drivers/staging/winbond/linux/wbusb.c b/drivers/staging/winbond/linux/wbusb.c
+index ee9f471..e09b272 100644
+--- a/drivers/staging/winbond/linux/wbusb.c
++++ b/drivers/staging/winbond/linux/wbusb.c
+@@ -218,114 +218,111 @@ int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
+ 
+ 	printk("[w35und]wb35_probe ->\n");
+ 
+-	do {
+-		for (i=0; i<(sizeof(Id_Table)/sizeof(struct usb_device_id)); i++ ) {
+-			if ((udev->descriptor.idVendor == Id_Table[i].idVendor) &&
+-				(udev->descriptor.idProduct == Id_Table[i].idProduct)) {
+-				printk("[w35und]Found supported hardware\n");
+-				break;
+-			}
+-		}
+-		if ((i == (sizeof(Id_Table)/sizeof(struct usb_device_id)))) {
+-			#ifdef _PE_USB_INI_DUMP_
+-			WBDEBUG(("[w35und] This is not the one we are interested about\n"));
+-			#endif
+-			return -ENODEV;
++	for (i=0; i<(sizeof(Id_Table)/sizeof(struct usb_device_id)); i++ ) {
++		if ((udev->descriptor.idVendor == Id_Table[i].idVendor) &&
++			(udev->descriptor.idProduct == Id_Table[i].idProduct)) {
++			printk("[w35und]Found supported hardware\n");
++			break;
+ 		}
++	}
+ 
+-		// 20060630.2 Check the device if it already be opened
+-		ret = usb_control_msg(udev, usb_rcvctrlpipe( udev, 0 ),
+-				      0x01, USB_TYPE_VENDOR|USB_RECIP_DEVICE|USB_DIR_IN,
+-				      0x0, 0x400, &ltmp, 4, HZ*100 );
+-		if( ret < 0 )
+-			break;
++	if ((i == (sizeof(Id_Table)/sizeof(struct usb_device_id)))) {
++		#ifdef _PE_USB_INI_DUMP_
++		WBDEBUG(("[w35und] This is not the one we are interested about\n"));
++		#endif
++		return -ENODEV;
++	}
+ 
+-		ltmp = cpu_to_le32(ltmp);
+-		if (ltmp)  // Is already initialized?
+-			break;
++	// 20060630.2 Check the device if it already be opened
++	ret = usb_control_msg(udev, usb_rcvctrlpipe( udev, 0 ),
++			      0x01, USB_TYPE_VENDOR|USB_RECIP_DEVICE|USB_DIR_IN,
++			      0x0, 0x400, &ltmp, 4, HZ*100 );
++	if (ret < 0)
++		goto error;
+ 
++	ltmp = cpu_to_le32(ltmp);
++	if (ltmp)  // Is already initialized?
++		goto error;
+ 
+-		Adapter = kzalloc(sizeof(ADAPTER), GFP_KERNEL);
++	Adapter = kzalloc(sizeof(ADAPTER), GFP_KERNEL);
+ 
+-		my_adapter = Adapter;
+-		pWbLinux = &Adapter->WbLinux;
+-		pWbUsb = &Adapter->sHwData.WbUsb;
+-		pWbUsb->udev = udev;
++	my_adapter = Adapter;
++	pWbLinux = &Adapter->WbLinux;
++	pWbUsb = &Adapter->sHwData.WbUsb;
++	pWbUsb->udev = udev;
+ 
+-	        interface = intf->cur_altsetting;
+-	        endpoint = &interface->endpoint[0].desc;
++        interface = intf->cur_altsetting;
++        endpoint = &interface->endpoint[0].desc;
+ 
+-		if (endpoint[2].wMaxPacketSize == 512) {
+-			printk("[w35und] Working on USB 2.0\n");
+-			pWbUsb->IsUsb20 = 1;
+-		}
++	if (endpoint[2].wMaxPacketSize == 512) {
++		printk("[w35und] Working on USB 2.0\n");
++		pWbUsb->IsUsb20 = 1;
++	}
+ 
+-		if (!WbWLanInitialize(Adapter)) {
+-			printk("[w35und]WbWLanInitialize fail\n");
+-			break;
+-		}
++	if (!WbWLanInitialize(Adapter)) {
++		printk("[w35und]WbWLanInitialize fail\n");
++		goto error;
++	}
+ 
+-		{
+-			struct wbsoft_priv *priv;
+-			struct ieee80211_hw *dev;
+-			int res;
++	{
++		struct wbsoft_priv *priv;
++		struct ieee80211_hw *dev;
++		int res;
+ 
+-			dev = ieee80211_alloc_hw(sizeof(*priv), &wbsoft_ops);
++		dev = ieee80211_alloc_hw(sizeof(*priv), &wbsoft_ops);
+ 
+-			if (!dev) {
+-				printk("w35und: ieee80211 alloc failed\n" );
+-				BUG();
+-			}
++		if (!dev) {
++			printk("w35und: ieee80211 alloc failed\n" );
++			BUG();
++		}
+ 
+-			my_dev = dev;
++		my_dev = dev;
+ 
+-			SET_IEEE80211_DEV(dev, &udev->dev);
+-			{
+-				phw_data_t pHwData = &Adapter->sHwData;
+-				unsigned char		dev_addr[MAX_ADDR_LEN];
+-				hal_get_permanent_address(pHwData, dev_addr);
+-				SET_IEEE80211_PERM_ADDR(dev, dev_addr);
+-			}
++		SET_IEEE80211_DEV(dev, &udev->dev);
++		{
++			phw_data_t pHwData = &Adapter->sHwData;
++			unsigned char		dev_addr[MAX_ADDR_LEN];
++			hal_get_permanent_address(pHwData, dev_addr);
++			SET_IEEE80211_PERM_ADDR(dev, dev_addr);
++		}
+ 
+ 
+-			dev->extra_tx_headroom = 12;	/* FIXME */
+-			dev->flags = 0;
++		dev->extra_tx_headroom = 12;	/* FIXME */
++		dev->flags = 0;
+ 
+-			dev->channel_change_time = 1000;
+-//			dev->max_rssi = 100;
++		dev->channel_change_time = 1000;
++//		dev->max_rssi = 100;
+ 
+-			dev->queues = 1;
++		dev->queues = 1;
+ 
+-			static struct ieee80211_supported_band band;
++		static struct ieee80211_supported_band band;
+ 
+-			band.channels = wbsoft_channels;
+-			band.n_channels = ARRAY_SIZE(wbsoft_channels);
+-			band.bitrates = wbsoft_rates;
+-			band.n_bitrates = ARRAY_SIZE(wbsoft_rates);
++		band.channels = wbsoft_channels;
++		band.n_channels = ARRAY_SIZE(wbsoft_channels);
++		band.bitrates = wbsoft_rates;
++		band.n_bitrates = ARRAY_SIZE(wbsoft_rates);
+ 
+-			dev->wiphy->bands[IEEE80211_BAND_2GHZ] = &band;
++		dev->wiphy->bands[IEEE80211_BAND_2GHZ] = &band;
+ #if 0
+-			wbsoft_modes[0].num_channels = 1;
+-			wbsoft_modes[0].channels = wbsoft_channels;
+-			wbsoft_modes[0].mode = MODE_IEEE80211B;
+-			wbsoft_modes[0].num_rates = ARRAY_SIZE(wbsoft_rates);
+-			wbsoft_modes[0].rates = wbsoft_rates;
+-
+-			res = ieee80211_register_hwmode(dev, &wbsoft_modes[0]);
+-			BUG_ON(res);
++		wbsoft_modes[0].num_channels = 1;
++		wbsoft_modes[0].channels = wbsoft_channels;
++		wbsoft_modes[0].mode = MODE_IEEE80211B;
++		wbsoft_modes[0].num_rates = ARRAY_SIZE(wbsoft_rates);
++		wbsoft_modes[0].rates = wbsoft_rates;
++
++		res = ieee80211_register_hwmode(dev, &wbsoft_modes[0]);
++		BUG_ON(res);
+ #endif
+ 
+-			res = ieee80211_register_hw(dev);
+-			BUG_ON(res);
+-		}
+-
+-		usb_set_intfdata( intf, Adapter );
+-
+-		printk("[w35und] _probe OK\n");
+-		return 0;
++		res = ieee80211_register_hw(dev);
++		BUG_ON(res);
++	}
+ 
+-	} while(FALSE);
++	usb_set_intfdata( intf, Adapter );
+ 
++	printk("[w35und] _probe OK\n");
++	return 0;
++error:
+ 	return -ENOMEM;
+ }
+ 
+diff --git a/drivers/staging/winbond/wblinux.c b/drivers/staging/winbond/wblinux.c
+index 186ad60..4ed45e4 100644
+--- a/drivers/staging/winbond/wblinux.c
++++ b/drivers/staging/winbond/wblinux.c
+@@ -147,114 +147,112 @@ WbWLanInitialize(PADAPTER Adapter)
+ 	u8		EEPROM_region;
+ 	u8		HwRadioOff;
+ 
+-	do {
+-		//
+-		// Setting default value for Linux
+-		//
+-		Adapter->sLocalPara.region_INF = REGION_AUTO;
+-		Adapter->sLocalPara.TxRateMode = RATE_AUTO;
+-		psLOCAL->bMacOperationMode = MODE_802_11_BG;	// B/G mode
+-		Adapter->Mds.TxRTSThreshold = DEFAULT_RTSThreshold;
+-		Adapter->Mds.TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
+-		hal_set_phy_type( &Adapter->sHwData, RF_WB_242_1 );
+-		Adapter->sLocalPara.MTUsize = MAX_ETHERNET_PACKET_SIZE;
+-		psLOCAL->bPreambleMode = AUTO_MODE;
+-		Adapter->sLocalPara.RadioOffStatus.boSwRadioOff = FALSE;
+-		pHwData = &Adapter->sHwData;
+-		hal_set_phy_type( pHwData, RF_DECIDE_BY_INF );
+-
+-		//
+-		// Initial each module and variable
+-		//
+-		if (!WBLINUX_Initial(Adapter)) {
++	//
++	// Setting default value for Linux
++	//
++	Adapter->sLocalPara.region_INF = REGION_AUTO;
++	Adapter->sLocalPara.TxRateMode = RATE_AUTO;
++	psLOCAL->bMacOperationMode = MODE_802_11_BG;	// B/G mode
++	Adapter->Mds.TxRTSThreshold = DEFAULT_RTSThreshold;
++	Adapter->Mds.TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
++	hal_set_phy_type( &Adapter->sHwData, RF_WB_242_1 );
++	Adapter->sLocalPara.MTUsize = MAX_ETHERNET_PACKET_SIZE;
++	psLOCAL->bPreambleMode = AUTO_MODE;
++	Adapter->sLocalPara.RadioOffStatus.boSwRadioOff = FALSE;
++	pHwData = &Adapter->sHwData;
++	hal_set_phy_type( pHwData, RF_DECIDE_BY_INF );
++
++	//
++	// Initial each module and variable
++	//
++	if (!WBLINUX_Initial(Adapter)) {
+ #ifdef _PE_USB_INI_DUMP_
+-			WBDEBUG(("[w35und]WBNDIS initialization failed\n"));
++		WBDEBUG(("[w35und]WBNDIS initialization failed\n"));
+ #endif
+-			break;
+-		}
++		goto error;
++	}
+ 
+-		// Initial Software variable
+-		Adapter->sLocalPara.ShutDowned = FALSE;
+-
+-		//added by ws for wep key error detection
+-		Adapter->sLocalPara.bWepKeyError= FALSE;
+-		Adapter->sLocalPara.bToSelfPacketReceived = FALSE;
+-		Adapter->sLocalPara.WepKeyDetectTimerCount= 2 * 100; /// 2 seconds
+-
+-		// Initial USB hal
+-		InitStep = 1;
+-		pHwData = &Adapter->sHwData;
+-		if (!hal_init_hardware(pHwData, Adapter))
+-			break;
+-
+-		EEPROM_region = hal_get_region_from_EEPROM( pHwData );
+-		if (EEPROM_region != REGION_AUTO)
+-			psLOCAL->region = EEPROM_region;
+-		else {
+-			if (psLOCAL->region_INF != REGION_AUTO)
+-				psLOCAL->region = psLOCAL->region_INF;
+-			else
+-				psLOCAL->region = REGION_USA;	//default setting
+-		}
++	// Initial Software variable
++	Adapter->sLocalPara.ShutDowned = FALSE;
++
++	//added by ws for wep key error detection
++	Adapter->sLocalPara.bWepKeyError= FALSE;
++	Adapter->sLocalPara.bToSelfPacketReceived = FALSE;
++	Adapter->sLocalPara.WepKeyDetectTimerCount= 2 * 100; /// 2 seconds
++
++	// Initial USB hal
++	InitStep = 1;
++	pHwData = &Adapter->sHwData;
++	if (!hal_init_hardware(pHwData, Adapter))
++		goto error;
++
++	EEPROM_region = hal_get_region_from_EEPROM( pHwData );
++	if (EEPROM_region != REGION_AUTO)
++		psLOCAL->region = EEPROM_region;
++	else {
++		if (psLOCAL->region_INF != REGION_AUTO)
++			psLOCAL->region = psLOCAL->region_INF;
++		else
++			psLOCAL->region = REGION_USA;	//default setting
++	}
+ 
+-		// Get Software setting flag from hal
+-		Adapter->sLocalPara.boAntennaDiversity = FALSE;
+-		if (hal_software_set(pHwData) & 0x00000001)
+-			Adapter->sLocalPara.boAntennaDiversity = TRUE;
+-
+-		//
+-		// For TS module
+-		//
+-		InitStep = 2;
+-
+-		// For MDS module
+-		InitStep = 3;
+-		Mds_initial(Adapter);
+-
+-		//=======================================
+-		// Initialize the SME, SCAN, MLME, ROAM
+-		//=======================================
+-		InitStep = 4;
+-		InitStep = 5;
+-		InitStep = 6;
+-
+-		// If no user-defined address in the registry, use the addresss "burned" on the NIC instead.
+-		pMacAddr = Adapter->sLocalPara.ThisMacAddress;
+-		pMacAddr2 = Adapter->sLocalPara.PermanentAddress;
+-		hal_get_permanent_address( pHwData, Adapter->sLocalPara.PermanentAddress );// Reading ethernet address from EEPROM
+-		if (OS_MEMORY_COMPARE(pMacAddr, "\x00\x00\x00\x00\x00\x00", MAC_ADDR_LENGTH )) // Is equal
+-		{
+-			memcpy( pMacAddr, pMacAddr2, MAC_ADDR_LENGTH );
+-		} else {
+-			// Set the user define MAC address
+-			hal_set_ethernet_address( pHwData, Adapter->sLocalPara.ThisMacAddress );
+-		}
++	// Get Software setting flag from hal
++	Adapter->sLocalPara.boAntennaDiversity = FALSE;
++	if (hal_software_set(pHwData) & 0x00000001)
++		Adapter->sLocalPara.boAntennaDiversity = TRUE;
++
++	//
++	// For TS module
++	//
++	InitStep = 2;
++
++	// For MDS module
++	InitStep = 3;
++	Mds_initial(Adapter);
++
++	//=======================================
++	// Initialize the SME, SCAN, MLME, ROAM
++	//=======================================
++	InitStep = 4;
++	InitStep = 5;
++	InitStep = 6;
++
++	// If no user-defined address in the registry, use the addresss "burned" on the NIC instead.
++	pMacAddr = Adapter->sLocalPara.ThisMacAddress;
++	pMacAddr2 = Adapter->sLocalPara.PermanentAddress;
++	hal_get_permanent_address( pHwData, Adapter->sLocalPara.PermanentAddress );// Reading ethernet address from EEPROM
++	if (OS_MEMORY_COMPARE(pMacAddr, "\x00\x00\x00\x00\x00\x00", MAC_ADDR_LENGTH )) // Is equal
++	{
++		memcpy( pMacAddr, pMacAddr2, MAC_ADDR_LENGTH );
++	} else {
++		// Set the user define MAC address
++		hal_set_ethernet_address( pHwData, Adapter->sLocalPara.ThisMacAddress );
++	}
+ 
+-		//get current antenna
+-		psLOCAL->bAntennaNo = hal_get_antenna_number(pHwData);
++	//get current antenna
++	psLOCAL->bAntennaNo = hal_get_antenna_number(pHwData);
+ #ifdef _PE_STATE_DUMP_
+-		WBDEBUG(("Driver init, antenna no = %d\n", psLOCAL->bAntennaNo));
++	WBDEBUG(("Driver init, antenna no = %d\n", psLOCAL->bAntennaNo));
+ #endif
+-		hal_get_hw_radio_off( pHwData );
++	hal_get_hw_radio_off( pHwData );
+ 
+-		// Waiting for HAL setting OK
+-		while (!hal_idle(pHwData))
+-			OS_SLEEP(10000);
++	// Waiting for HAL setting OK
++	while (!hal_idle(pHwData))
++		OS_SLEEP(10000);
+ 
+-		MTO_Init(Adapter);
++	MTO_Init(Adapter);
+ 
+-		HwRadioOff = hal_get_hw_radio_off( pHwData );
+-		psLOCAL->RadioOffStatus.boHwRadioOff = !!HwRadioOff;
++	HwRadioOff = hal_get_hw_radio_off( pHwData );
++	psLOCAL->RadioOffStatus.boHwRadioOff = !!HwRadioOff;
+ 
+-		hal_set_radio_mode( pHwData, (unsigned char)(psLOCAL->RadioOffStatus.boSwRadioOff || psLOCAL->RadioOffStatus.boHwRadioOff) );
++	hal_set_radio_mode( pHwData, (unsigned char)(psLOCAL->RadioOffStatus.boSwRadioOff || psLOCAL->RadioOffStatus.boHwRadioOff) );
+ 
+-		hal_driver_init_OK(pHwData) = 1; // Notify hal that the driver is ready now.
+-		//set a tx power for reference.....
+-//		sme_set_tx_power_level(Adapter, 12);	FIXME?
+-		return TRUE;
+-	}
+-	while(FALSE);
++	hal_driver_init_OK(pHwData) = 1; // Notify hal that the driver is ready now.
++	//set a tx power for reference.....
++//	sme_set_tx_power_level(Adapter, 12);	FIXME?
++	return TRUE;
+ 
++error:
+ 	switch (InitStep) {
+ 	case 5:
+ 	case 4:
 -- 
-Thanks,
-Jike
+1.5.3.7
+
