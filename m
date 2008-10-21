@@ -1,44 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbYJUMmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbYJUMmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754802AbYJUMmb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 08:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbYJUMmX
+	id S1755361AbYJUMmw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 08:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbYJUMmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 08:42:23 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:14470 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752950AbYJUMmW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 08:42:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Hg5CVxWK7F67CFqWWZ9XuaLXs6EfDtSAQKB14sgy2g97OGOmqcn0RC6MAl9WHEVjt/
-         +47VwzXC+fBxYpdd9sBQk/KEkwh1GZFeOC5z2hIKT2Bwy1HiE4heI4MFEo3F9M/ly2Zf
-         Kl/5L/sGHlV4bxQSpVRmEoUtsdM3rEasxaauQ=
-Message-ID: <c62985530810210542nb526081p9daac1027a72a269@mail.gmail.com>
-Date: Tue, 21 Oct 2008 14:42:21 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 5/5] tracing/ftrace: Introduce the big kernel lock tracer
-Cc: linux-kernel@vger.kernel.org, "Steven Rostedt" <rostedt@goodmis.org>
-In-Reply-To: <20081021123234.GA30726@elte.hu>
+	Tue, 21 Oct 2008 08:42:38 -0400
+Received: from mga09.intel.com ([134.134.136.24]:41641 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753119AbYJUMmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 08:42:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,457,1220252400"; 
+   d="scan'208";a="350677934"
+Date: Tue, 21 Oct 2008 19:47:35 +0800
+From: Yu Zhao <yu.zhao@intel.com>
+To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "greg@kroah.com" <greg@kroah.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: [PATCH 4/15 v5] PCI: make pci_alloc_child_bus() be able to handle
+	NULL bridge
+Message-ID: <20081021114735.GE3185@yzhao12-linux.sh.intel.com>
+References: <20081021114056.GA3185@yzhao12-linux.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48F10B0B.406@gmail.com>
-	 <c62985530810210528t416c82b2lbe8471322e8359c@mail.gmail.com>
-	 <20081021123234.GA30726@elte.hu>
+In-Reply-To: <20081021114056.GA3185@yzhao12-linux.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/21 Ingo Molnar <mingo@elte.hu>:
-> Correct, we froze down for the merge window. Thawing it now :)
+Make pci_alloc_child_bus() be able to handle buses without bridge
+devices. Some devices such as SR-IOV devices use more than one bus
+number while there is no explicit bridge devices since they have
+internal routing mechanism.
 
-Ok, it's an element of the process that I wasn't aware about :)
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Grant Grundler <grundler@parisc-linux.org>
+Cc: Alex Chiang <achiang@hp.com>
+Cc: Matthew Wilcox <matthew@wil.cx>
+Cc: Roland Dreier <rdreier@cisco.com>
+Cc: Greg KH <greg@kroah.com>
+Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 
-Thanks!
+---
+ drivers/pci/probe.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index db3e5a7..4b12b58 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -401,12 +401,10 @@ static struct pci_bus *pci_alloc_child_bus(struct pci_bus *parent,
+ 	if (!child)
+ 		return NULL;
+ 
+-	child->self = bridge;
+ 	child->parent = parent;
+ 	child->ops = parent->ops;
+ 	child->sysdata = parent->sysdata;
+ 	child->bus_flags = parent->bus_flags;
+-	child->bridge = get_device(&bridge->dev);
+ 
+ 	/* initialize some portions of the bus device, but don't register it
+ 	 * now as the parent is not properly set up yet.  This device will get
+@@ -423,6 +421,11 @@ static struct pci_bus *pci_alloc_child_bus(struct pci_bus *parent,
+ 	child->primary = parent->secondary;
+ 	child->subordinate = 0xff;
+ 
++	if (!bridge)
++		return child;
++
++	child->self = bridge;
++	child->bridge = get_device(&bridge->dev);
+ 	/* Set up default resource pointers and names.. */
+ 	for (i = 0; i < PCI_BRIDGE_RES_NUM; i++) {
+ 		child->resource[i] = &bridge->resource[PCI_BRIDGE_RESOURCES+i];
+-- 
+1.5.6.4
+
