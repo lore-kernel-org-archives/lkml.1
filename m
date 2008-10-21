@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbYJUVt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbYJUVvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbYJUVt3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 17:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbYJUVtV
+	id S1756044AbYJUVvU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 17:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbYJUVvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 17:49:21 -0400
-Received: from mail.windriver.com ([147.11.1.11]:50995 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751330AbYJUVtV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 17:49:21 -0400
-Message-ID: <48FE4E55.90601@windriver.com>
-Date: Tue, 21 Oct 2008 16:49:09 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 21 Oct 2008 17:51:10 -0400
+Received: from phunq.net ([64.81.85.152]:42809 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751625AbYJUVvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 17:51:09 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: [PATCH,RFC] ext3: Add support for non-native signed/unsigned htree hash algorithms
+Date: Tue, 21 Oct 2008 14:50:59 -0700
+User-Agent: KMail/1.9.5
+Cc: Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <1224560624-9691-1-git-send-email-tytso@mit.edu> <1224560624-9691-2-git-send-email-tytso@mit.edu>
+In-Reply-To: <1224560624-9691-2-git-send-email-tytso@mit.edu>
 MIME-Version: 1.0
-To: kgdb-bugreport@lists.sourceforge.net
-CC: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 5/7] kgdboc, tty: use tty open to start low level drivers
-References: <1224616493-23237-6-git-send-email-jason.wessel@windriver.com>
-In-Reply-To: <1224616493-23237-6-git-send-email-jason.wessel@windriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Oct 2008 21:49:09.0241 (UTC) FILETIME=[D8E83E90:01C933C6]
+Content-Disposition: inline
+Message-Id: <200810211450.59184.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jason Wessel wrote:
-> A few minor changes were needed in tty_io.c to deal with the fact that
-> the inode and fpath.dentry were NULL with the generic flip structure.
->   
+On Monday 20 October 2008 20:43, Theodore Ts'o wrote:
+> +static __u32 dx_hack_hash (const char *name, int len, int unsigned_flag)
+> ...
+> +		if (unsigned_flag)
+> +			c = (int) *ucp++;
+> +		else
+> +			c = (int) *scp++;
 
-After further testing and review one patch hunk has been eliminated.
+This being a high performance hash function and all, why not something
+like:
 
-> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-> ---
->  drivers/char/tty_io.c      |   96 +++++++++++++++++++++++++++++++++++++++++---
->  drivers/serial/kgdboc.c    |   26 ++++++++----
->  include/linux/tty_driver.h |    5 ++
->  3 files changed, 113 insertions(+), 14 deletions(-)
->
-> diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-> index fa44e6b..fe500ec 100644
-> --- a/drivers/char/tty_io.c
-> +++ b/drivers/char/tty_io.c
-> @@ -1723,7 +1806,7 @@ void tty_release_dev(struct file *filp)
->  	release_tty(tty, idx);
->  
->  	/* Make this pty number available for reallocation */
-> -	if (devpts)
-> +	if (devpts && inode)
->  		devpts_kill_index(inode, idx);
->  }
->   
++static __u32 uchar_hack_hash (const char *name, int len)
++...
 
-Specifically the call to devpts_kill_index() should get executed
-and the above patch hunk has been removed.
++static __u32 char_hack_hash (const char *name, int len)
++...
 
-Thanks,
-Jason.
++static __u32 dx_hack_hash(const char *name, int len, int unsigned_flag)
++{
++	if (unsigned_flag)
++		return uchar_hack_hash(name, len);
++	return char_hack_hash(name, len);
++}
