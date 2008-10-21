@@ -1,76 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbYJUUXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbYJUUXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753668AbYJUUXT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 16:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbYJUUXJ
+	id S1754669AbYJUUXe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 16:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbYJUUXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 16:23:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59904 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751150AbYJUUXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 16:23:08 -0400
-Message-ID: <48FE39FA.9030601@redhat.com>
-Date: Tue, 21 Oct 2008 13:22:18 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 21 Oct 2008 16:23:22 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:62496 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754149AbYJUUXV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 16:23:21 -0400
+Message-ID: <48FE3A34.5040105@freescale.com>
+Date: Tue, 21 Oct 2008 15:23:16 -0500
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Kees Cook <kees.cook@canonical.com>, jakub@redhat.com, arjan@infradead.org,
-       roland@redhat.com, linux-kernel@vger.kernel.org,
-       libc-alpha@sourceware.org
-Subject: Re: [PATCH v5] ELF: implement AT_RANDOM for glibc PRNG seeding
-References: <20081001222706.68E7E1544B4@magilla.localdomain>	<20081003001616.GN10632@outflux.net>	<20081003004340.GF32682@tyan-ft48-01.lab.bos.redhat.com>	<20081003052938.GS10632@outflux.net>	<20081002225718.6a0d803a@infradead.org>	<48E5BAC6.9070007@redhat.com>	<20081003145054.GU10632@outflux.net>	<20081003145754.GH32682@tyan-ft48-01.lab.bos.redhat.com>	<20081003173313.GW10632@outflux.net>	<48E65964.5020809@redhat.com>	<20081003175917.GX10632@outflux.net> <20081021130111.b8d73625.akpm@linux-foundation.org>
-In-Reply-To: <20081021130111.b8d73625.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To: Dan Williams <dan.j.williams@intel.com>
+CC: linux-kernel@vger.kernel.org, Kumar Gala <kumar.gala@freescale.com>
+Subject: Re: Best method for sending messages to user space?
+References: <48FE1741.1000502@freescale.com>	 <e9c3a7c20810211114w5be330d3h35f859b4ea8f8af7@mail.gmail.com>	 <48FE30D8.6050705@freescale.com> <e9c3a7c20810211316i13610410h5ec022b55c248c6a@mail.gmail.com>
+In-Reply-To: <e9c3a7c20810211316i13610410h5ec022b55c248c6a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Dan Williams wrote:
 
-Andrew Morton wrote:
-> I read the above changeloglet and read the above-linked page and it's
-> still 87% unclear to me what this feature does.  Something to do with
-> stack randomisation, apparently.  I suppose I could go do further
-> hunting, but from the quality-of-changelog POV I don't think I should
-> need to do so.
+> fd = open("/sys/block/md0/md/array_state");
+> do {
+> 	read(buf, fd, len);
+> 	act_on_message(buf);
+> 	select(...); /* wait for next sysfs_notify event */
+> 	lseek(fd, 0, SEEK_SET); /* seek back so we can read the new state */
+> } while (1);
 
-Not stack randomization.  glibc needs right after startup a bit of
-random data for internal protections (stack canary etc).  What is now in
-upstream glibc is that we always unconditionally open /dev/urandom, read
-some data, and use it.  For every process startup.  That's slow.
+I meant from the kernel side.  I added a call to sysfs_notify(), and I didn't
+see any sysfs entries being created, so I presume I need to set up sysfs before
+I call sysfs_notify(), but I can't figure out what that setup is.
 
-In addition Andi mentioned that this use of /dev/urandom might be
-problematic.  I let him explain this.
-
-The solution is to provide a limited amount of random data to the
-starting process in the aux vector.  I suggested 16 bytes and this is
-what the patch implements.  If we need only 16 bytes or less we use the
-data directly.  If we need more we'll use the 16 bytes to see a PRNG.
-This avoids the costly /dev/urandom use and it allows the kernel to use
-the most adequate source of random data for this purpose.  It might not
-be the same pool as that for /dev/urandom.
-
-
-> It's unclear to me that the random-number issue got sorted out?
-
-I think the last patch used the normal function to get 16 random bytes,
-equivalent to the data used for stack randomization etc.
-
-If Andi has concrete proposals for a revamp of the use of entropy in the
-kernel this can be easily done as an add-on.  This patch doesn't make
-the situation worse, it doesn't deplete entropy more than it happens now.
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkj+OfoACgkQ2ijCOnn/RHST+gCfTriVvBAdfYNXSPuklog3V47u
-/2kAnipBxYx7IFZe/M2zc6MOnDZkalSb
-=JpXN
------END PGP SIGNATURE-----
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
