@@ -1,85 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbYJUTUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753191AbYJUTWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756228AbYJUTUh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 15:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbYJUTU2
+	id S1753191AbYJUTWy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 15:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYJUTWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 15:20:28 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49658 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751806AbYJUTU1 (ORCPT
+	Tue, 21 Oct 2008 15:22:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36990 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750939AbYJUTWo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 15:20:27 -0400
-Date: Tue, 21 Oct 2008 21:27:47 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Alok Kataria <akataria@vmware.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH 0/3] Improve TSC as a clocksource under VMware
-Message-ID: <20081021192746.GJ12825@one.firstfloor.org>
-References: <1224552902.2640.88.camel@alok-dev1> <874p36fflp.fsf@basil.nowhere.org> <1224607284.6161.22.camel@alok-dev1> <20081021174008.GH12825@one.firstfloor.org> <1224612294.6161.43.camel@alok-dev1> <20081021181536.GI12825@one.firstfloor.org> <1224616236.6161.60.camel@alok-dev1>
+	Tue, 21 Oct 2008 15:22:44 -0400
+Date: Tue, 21 Oct 2008 12:21:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: torvalds@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-api@vger.kernel.org, tglx@linutronix.de, serue@us.ibm.com,
+       dave@linux.vnet.ibm.com, mingo@elte.hu, hpa@zytor.com,
+       viro@zeniv.linux.org.uk, orenl@cs.columbia.edu
+Subject: Re: [RFC v7][PATCH 0/9] Kernel based checkpoint/restart
+Message-Id: <20081021122135.4bce362c.akpm@linux-foundation.org>
+In-Reply-To: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu>
+References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1224616236.6161.60.camel@alok-dev1>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 21, 2008 at 12:10:36PM -0700, Alok Kataria wrote:
-> On Tue, 2008-10-21 at 11:15 -0700, Andi Kleen wrote:
-> > > FWIU from the code, even if  cpu A's TSC is just 1 tick behind that of
-> > > cpu B, we increment the nr_wraps value.
-> > > And the code expects that there are no wraps in TSC throughout the
-> > > 20msec measurement window.
-> > > So IMO its fairly easy to fail this test.
-> > 
-> > Ok I think it would be better to enlarge the margin then to fix your
-> > issue.
-> > 
-> 
-> Yeah, i thought about that, but given the different kinds of native
-> hardware that we have i think coming up with values that would be safe
-> for all the cases would be difficult. And given that nobody has
-> complained about this on native until now, i would prefer not to change
+On Mon, 20 Oct 2008 01:40:28 -0400
+Oren Laadan <orenl@cs.columbia.edu> wrote:
 
-It would certainly be the better solution (or trusting the CPUID bit)
+> These patches implement basic checkpoint-restart [CR]. This version
+> (v7) supports basic tasks with simple private memory, and open files
+> (regular files and directories only).
 
-Hypervisors are pretty popular these days and there are many different
-flavours and if each of them adds their own detection code Linux will soon 
-get very crowded. It's just a non scalable bad solution.
+This is a problem.  I wouldn't want to be in a position where we merge
+this code in mainline, but it's just a not-very-useful toy.  Then, as
+we turn it into a useful non-toy it all turns into an utter mess.
 
-> the status quo. Apart from that, even on VMware virtualized environment
-> there can different configurations where this margin keeps on varying,
-> under different scenarios, f.e. under overcommitment and all. So i don't
-> think that changing threshold values maybe safe for all cases. 
+IOW, merging this code as-is will commit us to merging more code which
+hasn't even been written yet.  It might even commit us to solving
+thus-far-unknown problems which we don't know how to solve!
 
-When the margin changes then it likely won't be good enough for
-gettimeofday(). There are a couple of testers for monotonity around,
-would such a system with shifting marging surive running them
-for a few days?
+It's a big blank cheque.
 
+So.
 
-> 
-> I think going with ignoring this check for specific systems is the best
-> way to go further. 
+- how useful is this code as it stands in real-world usage?
 
-Disagree.
+- what additional work needs to be done to it?  (important!)
 
+- how far are we down the design and implementation path with that new
+  work?  Are we yet at least in a position where we can say "yes, this
+  feature can be completed and no, it won't be a horrid mess"?
 
-> I hope you also agree with the CONSTANT_TSC check.
-
-Yes constant_tsc is good, although the question is how much sanity 
-check is still needed. I suspect even with it some sanity check
-will still make sense.
-
-And the question is if your HV even sets the bit?
-Also you would need to change the Linux code to check it on Intel too.
-
--Andi
-
--- 
-ak@linux.intel.com
