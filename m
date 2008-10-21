@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984AbYJUUsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbYJUUs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754984AbYJUUsc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 16:48:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYJUUsX
+	id S1756117AbYJUUs4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 16:48:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYJUUsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 16:48:23 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:9438 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751759AbYJUUsX (ORCPT
+	Tue, 21 Oct 2008 16:48:45 -0400
+Received: from casper.infradead.org ([85.118.1.10]:58491 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755524AbYJUUso (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 16:48:23 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -9.389
-Message-ID: <48FE400C.2070005@tremplin-utc.net>
-Date: Tue, 21 Oct 2008 22:48:12 +0200
-From: Eric Piel <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.17) Gecko/20080929 Mandriva/2.0.0.17-2mdv2009.0 (2009.0) Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       pavel@suse.cz, burman.yan@gmail.com, pau@eslack.org
-Subject: Re: [PATCH] LIS3LV02Dx Accelerometer driver (take 4)
-References: <48FA3368.1040605@tremplin-utc.net> <20081021114121.5144841c.akpm@linux-foundation.org> <48FE2525.90701@oracle.com>
-In-Reply-To: <48FE2525.90701@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 21 Oct 2008 16:48:44 -0400
+Subject: Re: mlock: mlocked pages are unevictable
+From: Peter Zijlstra <peterz@infradead.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>, linux-mm@kvack.org,
+       Oleg Nesterov <oleg@tv-sign.ru>
+In-Reply-To: <1224621015.6724.6.camel@twins>
+References: <200810201659.m9KGxtFC016280@hera.kernel.org>
+	 <20081021151301.GE4980@osiris.boeblingen.de.ibm.com>
+	 <2f11576a0810210851g6e0d86benef5d801871886dd7@mail.gmail.com>
+	 <2f11576a0810211018g5166c1byc182f1194cfdd45d@mail.gmail.com>
+	 <1224621015.6724.6.camel@twins>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 21 Oct 2008 22:48:06 +0200
+Message-Id: <1224622086.6724.8.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap schreef:
-> Andrew Morton wrote:
->> On Sat, 18 Oct 2008 21:05:12 +0200
->> Eric Piel <eric.piel@tremplin-utc.net> wrote:
->>
->>> ...
->>>
->>> +/**
->>> + * lis3lv02d_acpi_read() - ACPI ALRD method: read a register
->> All the kerneldoc comments include the () after the function name. 
->> That is unconventional and I do not know what effect it will have upon
->> kerneldoc processing and output.
-> 
-> Yes, it's unconventional.
-> It works.  It (the "()") will be dropped when processed.
-I simply followed the style used in the very first example of the
-documentation (kernel-doc-nano-HOWTO.txt). Anyhow, I can drop the "()",
-I'm not attached to them too much ;-)
+On Tue, 2008-10-21 at 22:30 +0200, Peter Zijlstra wrote:
 
-See you,
-Eric
+> The problem appears to be calling flush_work(), which is rather heavy
+> handed. We could do schedule_on_each_cpu() using a completion.
+> 
+> Which I think is a nicer solution (if sufficient of course).
+
+Ah, never mind, the flush_work() is already doing the right thing using
+barriers and completions.
+
+
