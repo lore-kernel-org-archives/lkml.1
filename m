@@ -1,101 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752959AbYJULme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754240AbYJULms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752959AbYJULme (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 07:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbYJULmQ
+	id S1754240AbYJULms (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 07:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbYJULmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 07:42:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42394 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752776AbYJULmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 07:42:15 -0400
-Message-ID: <48FDC03B.3050708@redhat.com>
-Date: Tue, 21 Oct 2008 07:42:51 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 21 Oct 2008 07:42:19 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:30619 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752776AbYJULmR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 07:42:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ZMQb+2yckCT2V8lwfdzM+rYDmHVVkRYe9DdGFIEEdmPlkSOPUUVAPdHU3B+nTspeMW
+         q/cR3xgeEJgsiz+/6jt5sJtOxOYzTR5DRzALUcl00MEdhZ5EFFkPVIAV7EbNLApmryEy
+         XHnjnv/kDIqAwCH2ReX4e5kMugAjJyuDTMkco=
+Message-ID: <a4423d670810210442y51b62fc2naf6cb649e6b26942@mail.gmail.com>
+Date: Tue, 21 Oct 2008 15:42:16 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: lachlan@sgi.com, "Dave Chinner" <david@fromorbit.com>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Arjan van de Ven" <arjan@infradead.org>, xfs@oss.sgi.com,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: sleeping function called from invalid context at kernel/rwsem.c:131 XFS? (was: Re: linux-next: Tree for October 17)
+In-Reply-To: <20081020223549.GA21152@disturbed>
 MIME-Version: 1.0
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <pzijlstr@redhat.com>
-Subject: Re: Scheduler on C2D CPU and latest 2.6.27 kernel
-References: <c4e36d110810210259o38897783i2dc4bcb59e8d32e7@mail.gmail.com>	 <48FDB7E7.4090007@redhat.com> <c4e36d110810210429q55e959c5hcdf7bfad34cb1f57@mail.gmail.com>
-In-Reply-To: <c4e36d110810210429q55e959c5hcdf7bfad34cb1f57@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a4423d670810170543vd6b4c39p44bf125610d8540@mail.gmail.com>
+	 <a4423d670810170954h7ca130aaw8895380a4c6b125@mail.gmail.com>
+	 <20081017165738.GA20818@infradead.org>
+	 <a4423d670810171013g5bc19c1cm3f7d9c014ee70349@mail.gmail.com>
+	 <20081017203710.GA27187@infradead.org>
+	 <20081017135510.7127c4e7@infradead.org>
+	 <a4423d670810200758m3cea3841h40988afc8eaf81@mail.gmail.com>
+	 <20081020163327.GA15651@infradead.org>
+	 <a4423d670810201013w6448cb38w402771799cefb5f5@mail.gmail.com>
+	 <20081020223549.GA21152@disturbed>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zdenek Kabelac wrote:
-> 2008/10/21 Chris Snook <csnook@redhat.com>:
->> Zdenek Kabelac wrote:
->>> Hi
->>>
->>> Recently I'm noticing bad behavior of the CPU scheduler on my T61 (2GB,
->>> C2D)
->>>
->>> It looks like Linux concentrates all running tasks on one CPU and the
->>> second cpu is sleeping.
->>>
->>> With recent changes to DRI - glxgears went up to 840FPS but also takes
->>> 100% (with Xorg) and when I run 'while :; do true; done' loop in
->>> parallel frame rate drops to 300FPS.
->>>
->>> But as I have C2D CPU I would expect that there should be no such
->>> dramatic slowdown.
->>>
->>> Xosview shows that only one CPU is fully loaded.
->>>
->>> Here are my .config scheduler options:
->>>
->>> CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
->>> # CONFIG_GROUP_SCHED is not set
->>> CONFIG_IOSCHED_NOOP=y
->>> CONFIG_IOSCHED_AS=y
->>> CONFIG_IOSCHED_DEADLINE=y
->>> CONFIG_IOSCHED_CFQ=y
->>> CONFIG_DEFAULT_IOSCHED="cfq"
->>> CONFIG_SCHED_SMT=y
->>> # CONFIG_SCHED_MC is not set
-> 
-> I've also tested   SMT=n  MC=y - with same result
+2008/10/21 Dave Chinner <david@fromorbit.com>:
+> On Mon, Oct 20, 2008 at 09:13:05PM +0400, Alexander Beregalov wrote:
+>> 2008/10/20 Christoph Hellwig <hch@infradead.org>:
+>> > On Mon, Oct 20, 2008 at 06:58:09PM +0400, Alexander Beregalov wrote:
+>> >> Hi Christoph
+>> >>
+>> >> I have the same result with next-1020 and today's xfs-2.6.git/master
+>> >> (
+>> >> commit bfd2bd10da76378dc4afd87d7d204a1d3d70b347
+>> >> Author: David Chinner <david@fromorbit.com>
+>> >> Date:   Fri Oct 17 15:36:23 2008 +1000
+>> >>     Inode: Allow external list initialisation
+>> >> )
+>> Ha, that kernel (xfs/master) has made my system dead locked.
+>> SysRQ-d:
+>> Show all locks held in the system
+>> 1 lock held by pdflush
+>> (&type->s_umount_key#18{----}, at writeback_inodes
+>> 1 lock held by login
+>> (&(&ip->i_iolock)->mr_lock){----} at xfs_ilock
+>> and so on ( many locks at xfs_ilock)
+>
+> Curious. Can you post the full stack traces?
+I can not reproduce it, yet.
 
-Expected.
+Bisected to:
+dd509097cb0b76d3836385f80d6b2d6fd3b97757 is first bad commit
+commit dd509097cb0b76d3836385f80d6b2d6fd3b97757
+Author: Lachlan McIlroy <lachlan@sgi.com>
+Date:   Mon Sep 29 14:56:40 2008 +1000
 
->>> CONFIG_SCHED_HRTICK=y
->>> # CONFIG_NET_SCHED is not set
->>> CONFIG_USB_EHCI_TT_NEWSCHED=y
->>> CONFIG_SCHED_DEBUG=y
->>> CONFIG_SCHEDSTATS=y
->>> CONFIG_SCHED_TRACER=y
->>>
->>>
->>> Am I missing something?
->> You're running a loop that does nothing except create new tasks that have no
->> scheduling history, and then disappear before the scheduler can migrate
->> them.
->>
->> Try running 'openssl speed' to chew up CPU.  I promise you the scheduler
->> will behave very nicely.
-> 
-> Well -  sorry you really shouldn't promise things you cannot guarantee.
+    [XFS] Unlock inode before calling xfs_idestroy()
 
-You must be new here.
+    Lock debugging reported the ilock was being destroyed without being
+    unlocked. We don't need to lock the inode until we are going to insert it
+    into the radix tree.
 
-> It's obviously showing exactly same problem on my box.
+    SGI-PV: 987246
 
-If you start 2 'openssl speed' tasks while glxgears is running, what happens?
+    SGI-Modid: xfs-linux-melb:xfs-kern:32159a
 
-> And I should add that with  2.6.27-rc8 I do not experience this behavior.
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+    Signed-off-by: Christoph Hellwig <hch@infradead.org>
 
-Thanks.  Can you bisect?
+:040000 040000 b56d4b74bf0cbdd66d0e61c537b4bb2f7461084f
+40773db6102a1e348a0a21b0e960cb33ffd0d419 M      fs
 
-> Gears are showning 80% speed - but consumes only 25%
-> and bash loop or openssl speed task do not influence its speed.
-> (as expected with 2CPU machine)
-
-That's definitely what it should be doing with openssl speed.  The bash loop 
-isn't something we should go out of our way to optimize for, since real world 
-apps don't behave that way, but if there's a free fix, we might as well do it.
-
--- Chris
+git bisect start 'fs/xfs'
+git bisect bad bfd2bd10da76378dc4afd87d7d204a1d3d70b347 Inode: Allow
+external list initialisation
+git bisect good 3fa8749e584b55f1180411ab1b51117190bac1e5 Linux 2.6.27
+git bisect skip a55c8e45381bcc5588a544ba73580719887372eb
+git bisect skip 35afc673a41114eb650c6ae766010160dd982a7b
+git bisect skip 7a9ba9bb899933293604a2b3c5ca4f40ad5a92a8
+git bisect skip c02afc5fa7433fbbc0a045afbb472533de0758de
+git bisect skip c0f47794ba870f0cd1dbe5c8fdbf56b86f5f2afa
+git bisect skip 7197197719eb94b527c6a422bf3fb682cdf89954
+git bisect good e0fe783155e4f1c7106f3579c258b9f995330c19
+git bisect bad 2472c6b938d2b3cb1698abe39cc90a3c1d7625b9
+git bisect good 20c1bd2cc6d9311fb7d7d0eb91b46dc4a42b5d11
+git bisect good 8e47c0b2427f0ea35984f02648163cc7a35d3592
+git bisect good a1853934a9bef78aeb1aa7539c629cdb755edab2
+git bisect bad 05de34dbbe744a4d235279f1493a8f05b903a4bb
+git bisect bad c4fa37724d18a3444bb4b4f77c4580b9dd525ed9
+git bisect good 4b4577db477462ff6f41babcc3b3e7036a1ba27d
+git bisect bad dd509097cb0b76d3836385f80d6b2d6fd3b97757
