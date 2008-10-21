@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbYJUWpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756259AbYJUWqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754432AbYJUWpY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 18:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbYJUWpJ
+	id S1756259AbYJUWqU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 18:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbYJUWqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 18:45:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50322 "EHLO
+	Tue, 21 Oct 2008 18:46:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50508 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751195AbYJUWpH (ORCPT
+	by vger.kernel.org with ESMTP id S1751706AbYJUWqK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 18:45:07 -0400
-Date: Tue, 21 Oct 2008 15:44:08 -0700
+	Tue, 21 Oct 2008 18:46:10 -0400
+Date: Tue, 21 Oct 2008 15:45:00 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Miller <mike.miller@hp.com>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
-       adobriyan@gmail.com
-Subject: Re: [PATCH 2/2] cciss:fix regression firmware not displayed in
- procfs (again and again)
-Message-Id: <20081021154408.ed96c9b3.akpm@linux-foundation.org>
-In-Reply-To: <20081021212322.GA6421@roadking.ldev.net>
-References: <20081021212322.GA6421@roadking.ldev.net>
+To: Dean Nelson <dcn@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 0/4] sgi-xp: add low-level hardware specific
+ functionality
+Message-Id: <20081021154500.7ea5b369.akpm@linux-foundation.org>
+In-Reply-To: <20081021212054.GB14386@sgi.com>
+References: <20081021212054.GB14386@sgi.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,27 +28,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Oct 2008 16:23:22 -0500
-Mike Miller <mike.miller@hp.com> wrote:
+On Tue, 21 Oct 2008 16:20:54 -0500
+Dean Nelson <dcn@sgi.com> wrote:
 
-> Patch 2 of 2
+> This patchset adds some low-level hardware specific functionality to the
+> xp/xpc drivers.
+> 
+> To build cleanly this patchset is dependent on the following patches
+> submitted by Russ Anderson <rja@sgi.com>.
+> 
+> [PATCH] x86: Use consistent names for region size and conherence id on x86 and ia64.
+>  (see http://marc.info/?l=linux-kernel&m=122461625304772&w=2)
+> 
+> [PATCH 1/3] x86: Add UV watchlist bios call
+>  (see http://marc.info/?l=linux-kernel&m=122461934110503&w=2)
+> [PATCH 2/3] x86: Add UV memory protection bios call
+>  (see http://marc.info/?l=linux-kernel&m=122461934110506&w=2)
+> [PATCH 3/3] x86: Add UV reserved page bios call
+>  (see http://marc.info/?l=linux-kernel&m=122461934210509&w=2)
+> 
+> [PATCH] Add UV watchlist support
+>  (see http://marc.info/?l=linux-ia64&m=122462371418298&w=2)
 
-What happened with "1 of 2"?
+OK, so I need to go into hiding until/unless those patches turn up in
+linux-next.
 
-> Sorry for the delay. I've been out of the office and the network has been
-> down since before lunch CDT. This regression was introduced by commit
-> 6ae5ce8e8d4de666f31286808d2285aa6a50fa40.
-> This patch fixes a regression where the controller firmware version is not
-> displayed in procfs. The previous patch would be called anytime something
-> changed. This will get called only once for each controller.
-> 
-> In this patch I again initialize *inq_buff to NULL per Tomo's comments. I
-> also use a goto clean 4 instead of returning -ENOMEM if the kzalloc fails.
-> 
-> I hope this finally meets everyones expectations.
-> 
-> Please consider this for inclusion.
-> 
-> Signed-off-by: Mike Miller <mike.miller@hp.com>
-
-So this fix is needed in 2.6.27.x, yes?
+Please poke me if I forget.
