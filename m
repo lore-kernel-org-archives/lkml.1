@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbYJURmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYJURq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754149AbYJURmN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 13:42:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbYJURl6
+	id S1754189AbYJURq1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 13:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbYJURqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 13:41:58 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:10523 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751086AbYJURl6 (ORCPT
+	Tue, 21 Oct 2008 13:46:19 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:20999 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751277AbYJURqT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 13:41:58 -0400
-Message-ID: <48FE1459.5010205@oracle.com>
-Date: Tue, 21 Oct 2008 10:41:45 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Tue, 21 Oct 2008 13:46:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=q701VdfWIaOVhG3hgcMA6CDugZi+ywqdhF4JApiQEgbRGBDEuyJ/IFeBJpGsKjkBNm
+         4q01zQSMCzAcUAdUSzNZR/paC6tJY1D0ysRAXlUzUYDxmtw5j05TDfbKwYVKmjiOT8Fb
+         tkZM4En1r+55FAMnqf3YBZUZGnmFeE+ODIpAM=
+Message-ID: <8bd0f97a0810211046n2e32868fu1a58cc9123da7c6d@mail.gmail.com>
+Date: Tue, 21 Oct 2008 13:46:18 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Jesper Nilsson" <jesper.nilsson@axis.com>
+Subject: Re: [RFC] CRIS: Move header files from include to arch/cris
+Cc: "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       "Mikael Starvik" <mikael.starvik@axis.com>,
+       "Bryan Wu" <Bryan.Wu@analog.com>
+In-Reply-To: <20081021164211.GG24715@axis.com>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: -git10 staging build warnings
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <20081021164211.GG24715@axis.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i386:
+On Tue, Oct 21, 2008 at 12:42, Jesper Nilsson <jesper.nilsson@axis.com> wrote:
+> That means that the machine dependent header files are moved to
+> arch/cris/mach-{fs,a3}/include, while the common and architecture
+> dependent files are moved to arch/cris/include.
+>
+> It is mainly this I'd like some input on, since most other ports
+> that have moved their header files have put all headers in arch/*/include.
 
-drivers/staging/sxg/sxg.c:462: warning: format '%lx' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
-drivers/staging/sxg/sxg.c:479: warning: format '%lx' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
-drivers/staging/sxg/sxg.c:540: warning: format '%lx' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
-drivers/staging/sxg/sxg.c:571: warning: format '%lx' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
-
-x86_64:
-
-drivers/staging/winbond/./linux/wbusb .c:109: warning: 'struct ieee80211_tx_control' declared inside parameter list drivers/staging/winbond/./linux/wbusb.c:109: warning: its scope is only this definition or declaration, which is proba bly not what you want
-drivers/staging/winbond/./linux/wbusb .c:172: warning: initialization from incompatible pointer type
-drivers/staging/winbond/./linux/wbusb .c:174: warning: initialization from incompatible pointer type
-drivers/staging/winbond/./linux/wbusb .c:180: warning: initialization from incompatible pointer type
-drivers/staging/winbond/./linux/wbusb .c:181: warning: initialization from incompatible pointer type
-drivers/staging/winbond/./linux/wbusb .c:299: warning: ISO C90 forbids mixed declarations and code
-drivers/staging/usbip/vhci_rx.c:204: warning: format '%d' expects type 'int', but argument 7 has type 'long unsigned int'
-drivers/staging/winbond/sme_api.c:13: warning: no return statement in function returning non-void
+that seems like a fairly obvious good idea to me ... i'm thinking we
+should do it for Blackfin as well ...
+-mike
