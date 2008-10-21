@@ -1,178 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbYJUUY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690AbYJUUZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755455AbYJUUY3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 16:24:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbYJUUYU
+	id S1755690AbYJUUZL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 16:25:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbYJUUYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 16:24:20 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:41427 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751863AbYJUUYT (ORCPT
+	Tue, 21 Oct 2008 16:24:51 -0400
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:39253 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752245AbYJUUYt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 16:24:19 -0400
-Date: Tue, 21 Oct 2008 15:24:10 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Oren Laadan <orenl@cs.columbia.edu>, torvalds@linux-foundation.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-api@vger.kernel.org, tglx@linutronix.de,
-       dave@linux.vnet.ibm.com, mingo@elte.hu, hpa@zytor.com,
-       viro@zeniv.linux.org.uk
-Subject: Re: [RFC v7][PATCH 2/9] General infrastructure for checkpoint
-	restart
-Message-ID: <20081021202410.GA10423@us.ibm.com>
-References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu> <1224481237-4892-3-git-send-email-orenl@cs.columbia.edu> <20081021124130.a002e838.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081021124130.a002e838.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 21 Oct 2008 16:24:49 -0400
+X-YMail-OSG: xJ8kB7wVM1mqHyMwdqCf6A8tPbGJgUpn7aCpj2KJF_37rpn51DSd_KaYTM6tde3YsW7xz_qUJhdISEbUNTDOpltx9CjImqVIOqUpIVCGgQ5UfnZQGPZ_fmY5iCKpAZiQhn_QQWaHyymG.B2lA4W6F5u8k2f9WXp_AgS5qkpCJQE54rapBUIf4YvmZww-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH] [Target_Core_Mod/ConfigFS]: Added initial support for file
+	descriptors for se_device_t
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Cc: Joel Becker <joel.becker@oracle.com>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@osdl.org>, Christoph Hellwig <hch@lst.de>,
+       Ming Zhang <blackmagic02881@gmail.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       "H. Peter Anvin" <hpa@zytor.com>, Mike Christie <mchristie@redhat.com>
+Content-Type: text/plain
+Date: Tue, 21 Oct 2008 13:20:47 -0700
+Message-Id: <1224620447.24358.27.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew Morton (akpm@linux-foundation.org):
-> On Mon, 20 Oct 2008 01:40:30 -0400
-> Oren Laadan <orenl@cs.columbia.edu> wrote:
-> >  asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
-> >  {
-> > -	pr_debug("sys_checkpoint not implemented yet\n");
-> > -	return -ENOSYS;
-> > +	struct cr_ctx *ctx;
-> > +	int ret;
-> > +
-> > +	/* no flags for now */
-> > +	if (flags)
-> > +		return -EINVAL;
-> > +
-> > +	ctx = cr_ctx_alloc(pid, fd, flags | CR_CTX_CKPT);
-> > +	if (IS_ERR(ctx))
-> > +		return PTR_ERR(ctx);
-> > +
-> > +	ret = do_checkpoint(ctx);
-> > +
-> > +	if (!ret)
-> > +		ret = ctx->crid;
-> > +
-> > +	cr_ctx_free(ctx);
-> > +	return ret;
-> >  }
-> 
-> Is it appropriate that this be an unprivileged operation?
+Hi again Folks,
 
-Early versions checked capable(CAP_SYS_ADMIN), and we reasoned that we
-would later attempt to remove the need for privilege so that all users
-could safely use it.
+Here is the first commit using Joel's recommendations allow
+target_core_mod configfs generic infrastructure to allow subsystem
+plugins from target_core_mod to handle FDs passed using TYPE_DISK for
+Linux/SCSI and Linux/BLOCK and TYPE_CDROM with Linux/SCSI.
 
-Arnd Bergmann called us on that nonsense, pointing out that it'd make
-more sense to let unprivileged users use them now, so that we'll be
-more careful about the security as patches roll in.
+Below, se_subsystem_dev_t->create_virtdevice_from_fd() method into Linux
+storage subsystem APIs is added to;
 
-So, Oren's patchset right now only checkpoints current, despite pid
-being part of the API.  So the task can access its own data.  When
-the patch supports checkpointing another task (which Oren says he's
-doing right now), then our intent is to check for ptrace access to
-the target task.  (Right, Oren?)
+/sys/kernel/config/target/core/$PLUGIN_HBA/$STORAGE_OBJECT/fd
 
-> What happens if I pass it a pid which isn't system-wide unique?
+This commit depends upon the changes to target_core_mod/IBLOCK and
+target_core_mod/PSCSI:
 
-pid must be checked in the caller's pid namespace.  So if I've create a
-container which I want to checkpoint, pid 1 in that pidns will be, say,
-3497 in my pid_ns, and so 3497 is the pid I must use.  If I try to pass
-1, I'll try to checkpoint my own container.  And, if I'm not privileged
-and init is owned by root, the ptrace() check I mentioned above will
-return -EPERM.
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=commitdiff;h=9c6293c1bfe82d04a215fab22a3a850ea879a137
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=commitdiff;h=bd4227278bbb6ec911a15b380f2479782cbe94ce
 
-> What happens if I pass it a pid of a process which I don't own?  This
-> is super security-sensitive and we need to go over the permission
-> checking with a toothcomb.  It needs to be exhaustively described in
-> the changelog.  It might have security/selinux implications - I don't
-> know, I didn't look, but lights are flashing and bells are ringing over
-> here.
-> 
-> What happens if I pass it a pid of a process which I _do_ own, but it
-> does not refer to a container's init process?
+There are a few FIXMEs below..  Also, using target_core_mod/PSCSI with
+*NON* struct block_device backed struct scsi_devices (eg: character
+devices like TYPE_TAPE, TYPE_MEDIUM_CHANGER, etc) is currently not
+implemented in the target_core_mod/PSCSI commit above.  If anyone can
+tell me how to get struct scsi_device from /dev/st0 it would be much
+appericated..
 
-I would assume that do_checkpoint() would return -EINVAL, but it's a
-great question:  Oren, did you have another plan?
+Also, the sr0 device appears to need the medium in the drive before it
+can great a READ FD from /dev/sr0 initially (I have recalled seeing
+something like this in the past, eg: where struct scsi_device is not
+attached until the first struct scsi_cmnd come down through Linux/SCSI's
+->queuecommand()..  It (Linux/SCSI with TYPE_CDROM) has worked like this
+as long as I have known, is it possible to get access to TYPE_CDROM's FD
+through /dev/sr0 to struct scsi_device before the medium is in the
+drive..?   Should I just restrict the FD method to TYPE_DISK for
+Linux/BLOCK and Linux/SCSI..?
 
-> If `pid' must refer to a container's init process, isn't it always
-> equal to 1??
+Comments..?
 
-Not in the caller's pid_namespace.
+--nab
 
-> 
-> >  /**
-> >   * sys_restart - restart a container
-> >   * @crid: checkpoint image identifier
-> > @@ -36,6 +234,19 @@ asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
-> >   */
-> >  asmlinkage long sys_restart(int crid, int fd, unsigned long flags)
-> >  {
-> > -	pr_debug("sys_restart not implemented yet\n");
-> > -	return -ENOSYS;
-> > +	struct cr_ctx *ctx;
-> > +	int ret;
-> > +
-> > +	/* no flags for now */
-> > +	if (flags)
-> > +		return -EINVAL;
-> > +
-> > +	ctx = cr_ctx_alloc(crid, fd, flags | CR_CTX_RSTR);
-> > +	if (IS_ERR(ctx))
-> > +		return PTR_ERR(ctx);
-> > +
-> > +	ret = do_restart(ctx);
-> > +
-> > +	cr_ctx_free(ctx);
-> > +	return ret;
-> >  }
-> 
-> Again, this is scary stuff.  We're allowing unprivileged userspace to
-> feed random numbers into kernel data structures.
 
-Yes, all of the file opens and mmaps must not skip the usual security
-checks.  The task credentials are currently unsupported, meaning that
-euid, etc, come from the caller, not the checkpoint image.  When the
-restoration of credentials becomes supported, then definately the
-caller (of sys_restore())'s ability to setresuid/setresgid to those
-values must be checked.
+>From 362d4ef391699b0282dfbef3da633a561d9cbde7 Mon Sep 17 00:00:00 2001
+From: Nicholas Bellinger <nab@linux-iscsi.org>
+Date: Mon, 20 Oct 2008 23:21:43 -0700
+Subject: [PATCH] [Target_Core_Mod/ConfigFS]: Added initial support for file descriptors for se_device_t
 
-So that's why we don't want CAP_SYS_ADMIN required up-front.  That way
-we will be forced to more carefully review each of those features.
+Added support for passing in file descriptors for referencing Linux storage objects
+in the generic target core.  This patch adds the method to the subsystem API
+ se_subsystem_api_t->create_virtdevice_from_fd()  and the configfs entries
+$TARGET/$HBA_$ID/$STORAGE_OBJECT/fd.
 
-> I'd like to see the security guys take a real close look at all of
-> this, and for them to do that effectively they should be provided with
-> a full description of the security design of this feature.
+Currently Linux/SCSI and Linux/BLOCK are supported, here are some examples:
 
-Right, some of the above should be spelled out somewhere.  Should it be
-in the patch description, in the Documentation/checkpoint.txt file,
-or someplace else?  Oren, do you want to filter the above information
-into the right place, or do you want me to do it and send you a patch?
+mkdir -p $TARGET/iblock_0/lvm_test0
+exec 3<>/dev/lio-test/test0 # RW
+echo 3 > $TARGET/iblock_0/lvm_test0/fd
+exec 3>&-
 
-> > diff --git a/fs/read_write.c b/fs/read_write.c
-> > index 9ba495d..e2deded 100644
-> > --- a/fs/read_write.c
-> > +++ b/fs/read_write.c
-> > @@ -324,12 +324,12 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
-> >  
-> >  EXPORT_SYMBOL(vfs_write);
-> >  
-> > -static inline loff_t file_pos_read(struct file *file)
-> > +inline loff_t file_pos_read(struct file *file)
-> >  {
-> >  	return file->f_pos;
-> >  }
-> >  
-> > -static inline void file_pos_write(struct file *file, loff_t pos)
-> > +inline void file_pos_write(struct file *file, loff_t pos)
-> >  {
-> >  	file->f_pos = pos;
-> >  }
-> 
-> Might as well move these to a header and inline them everywhere. 
-> That'd be a separate leadin patch.
-> 
+<SNIP>
 
-thanks,
--serge
+Target_Core_ConfigFS: Located se_plugin: ced17090 plugin_name: iblock hba_type: 4 plugin_dep_id: 0
+CORE_HBA[0] - Linux-iSCSI.org iBlock HBA Driver v3.0 on Generic Target Core Stack v3.0.0
+CORE_HBA[0] - Attached iBlock HBA: 0 to Generic Target Core TCQ Depth: 512
+CORE_HBA[0] - Attached HBA to Generic Target Core
+IBLOCK: Allocated ib_dev for lvm_test0
+Target_Core_ConfigFS: Allocated se_subsystem_dev_t: cefe6400 se_dev_su_ptr: cf9fd200
+IBLOCK: Claiming struct block_device: cf63cf00
+IBLOCK: Created bio_set() for major/minor: 254:2
+CORE_iBLOCK[0] - Activating Device with TCQ: 0 at Major: 254 Minor 2
+  Vendor: LIO-ORG   Model: IBLOCK            Revision: v3.0
+  Type:   Direct-Access                      ANSI SCSI revision: 02
+T10 EVPD Unit Serial Number: 1234567890:0_254_2
+T10 EVPD Device Identifier: LIO-ORG IBLOCK:1234567890:0_254_2
+Target_Core_ConfigFS: Registered iblock se_dev->se_dev_ptr: cf350000 from fd
+
+<SNIP>
+
+mkdir -p $TARGET/pscsi_0/sdd
+exec 3<>/dev/sdd # RW
+echo 3 > $TARGET/pscsi_0/sdd/fd
+exec 3>&-
+
+<SNIP>
+
+Target_Core_ConfigFS: Located se_plugin: ced17024 plugin_name: pscsi hba_type: 1 plugin_dep_id: 0
+CORE_HBA[1] - Linux-iSCSI.org Parallel SCSI HBA Driver v3.0 on Generic Target Core Stack v3.0.0
+CORE_HBA[1] - MPT SPI Host
+CORE_HBA[1] - Attached Parallel SCSI HBA to Generic Target Core with TCQ Depth: 127 MaxSectors: 8192
+CORE_HBA[1] - Attached HBA to Generic Target Core
+PSCSI: Allocated pdv: cfb42800 for sdd
+Target_Core_ConfigFS: Allocated se_subsystem_dev_t: cf86fe80 se_dev_su_ptr: cfb42800
+PSCSI: Claiming cf87f800 Major:Minor - 8:48
+CORE_PSCSI[0] - Activating Device with TCQ: 32 at Parallel SCSI Location (Channel/Target/LUN) 0/3/0
+  Vendor: VMware,   Model: VMware Virtual S  Revision: 1.0
+  Type:   Direct-Access                      ANSI SCSI revision: 02
+Parallel SCSI Status Byte exception - ITT: 0x00000000 Task: cee6d600 CDB: 0x12 Result: 0x08000002
+CORE_PSCSI[0] - Added TYPE_DISK for 0:3:0
+Target_Core_ConfigFS: Registered pscsi se_dev->se_dev_ptr: ced6ec00 from fd
+
+<SNIP>
+
+exec 3</dev/sr0 # RO
+echo 3 > $TARGET/pscsi_1/sr0/fd
+exec 3>&-
+
+<SNIP>
+
+Target_Core_ConfigFS: Located se_plugin: ced17024 plugin_name: pscsi hba_type: 1 plugin_dep_id: 1
+CORE_HBA[2] - Linux-iSCSI.org Parallel SCSI HBA Driver v3.0 on Generic Target Core Stack v3.0.0
+CORE_HBA[2] - MPT SPI Host
+CORE_HBA[2] - Attached Parallel SCSI HBA to Generic Target Core with TCQ Depth: 127 MaxSectors: 8192
+CORE_HBA[2] - Attached HBA to Generic Target Core
+PSCSI: Allocated pdv: cfb42640 for sr0
+Target_Core_ConfigFS: Allocated se_subsystem_dev_t: ced70f00 se_dev_su_ptr: cfb42640
+CORE_PSCSI[1] - Activating Device with TCQ: 32 at Parallel SCSI Location (Channel/Target/LUN) 0/0/0
+  Vendor: VMware,   Model: Virtual CD-ROM    Revision: 1.0
+  Type:   CD-ROM                             ANSI SCSI revision: 02
+Parallel SCSI Status Byte exception - ITT: 0x00000000 Task: cfa79200 CDB: 0x12 Result: 0x08000002
+CORE_PSCSI[1] - Added Type: CD-ROM            for 0:0:0
+Target_Core_ConfigFS: Registered pscsi se_dev->se_dev_ptr: ceed1800 from fd
+
+<SNIP>
+
+There a few FIXMEs:
+
+*) Determine long term status of struct gendisk->driverfs_dev for
+   locating struct scsi_device from struct inode for Linux/SCSI.
+*) Add support for struct scsi_device's backed by character device.
+*) SCSI CDROM can only be attached through the fd method when medium
+   is in the drive.
+
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+---
+ drivers/lio-core/target_core_configfs.c  |   54 +++++++++++++++++++++++++++++-
+ drivers/lio-core/target_core_transport.h |    4 ++
+ 2 files changed, 57 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/lio-core/target_core_configfs.c b/drivers/lio-core/target_core_configfs.c
+index 268ab38..264dcdb 100644
+--- a/drivers/lio-core/target_core_configfs.c
++++ b/drivers/lio-core/target_core_configfs.c
+@@ -574,9 +574,57 @@ static struct target_core_configfs_attribute target_core_attr_dev_control = {
+ 	.store	= target_core_store_dev_control,
+ };
+ 
++static ssize_t target_core_store_dev_fd (void *p, const char *page, size_t count)
++{
++	se_subsystem_dev_t *se_dev = (se_subsystem_dev_t *)p;	
++	se_device_t *dev;
++	se_hba_t *hba = se_dev->se_dev_hba;
++	se_subsystem_api_t *t;
++	int ret = 0;
++
++	if (se_dev->se_dev_ptr) {
++		printk(KERN_ERR "se_dev->se_dev_ptr already set, ignoring fd request\n");
++		return(-EEXIST);
++	}
++
++	t = (se_subsystem_api_t *)plugin_get_obj(PLUGIN_TYPE_TRANSPORT, hba->type, &ret);		
++	if (!t || (ret != 0))
++		return(-EINVAL);
++
++	if (!(t->create_virtdevice_from_fd)) {
++		printk(KERN_ERR "se_subsystem_api_t->create_virtdevice_from_fd()"
++			" NULL for: %s\n", hba->transport->name);
++		return(-EINVAL);
++	}
++	/*
++	 * The subsystem PLUGIN is responsible for calling target_core_mod
++	 * symbols to claim the underlying struct block_device for TYPE_DISK.
++	 */
++	dev = t->create_virtdevice_from_fd(se_dev, page);
++	if (!(dev) || IS_ERR(dev))
++		goto out;
++
++	se_dev->se_dev_ptr = dev;
++
++	printk("Target_Core_ConfigFS: Registered %s se_dev->se_dev_ptr: %p"
++		" from fd\n", hba->transport->name, se_dev->se_dev_ptr);
++	return(count);
++out:
++	return(-EINVAL);
++}
++
++static struct target_core_configfs_attribute target_core_attr_dev_fd = {
++	.attr	= { .ca_owner = THIS_MODULE,
++		    .ca_name = "fd",
++		    .ca_mode = S_IWUSR },
++	.show	= NULL,
++	.store	= target_core_store_dev_fd,
++};
++
+ static ssize_t target_core_store_dev_enable (void *p, const char *page, size_t count)
+ {
+ 	se_subsystem_dev_t *se_dev = (se_subsystem_dev_t *)p;
++	se_device_t *dev;
+ 	se_hba_t *hba = se_dev->se_dev_hba;
+ 	se_subsystem_api_t *t;
+ 	char *ptr;
+@@ -598,10 +646,13 @@ static ssize_t target_core_store_dev_enable (void *p, const char *page, size_t c
+ 	if (t->check_configfs_dev_params(hba, se_dev) < 0)
+ 		return(-EINVAL);
+ 
+-	if (!(se_dev->se_dev_ptr = t->create_virtdevice(hba, se_dev->se_dev_su_ptr)))
++	dev = t->create_virtdevice(hba, se_dev->se_dev_su_ptr);
++	if (!(dev) || IS_ERR(dev))
+ 		return(-EINVAL);
+ 
++	se_dev->se_dev_ptr = dev;
+ 	printk("Target_Core_ConfigFS: Registered se_dev->se_dev_ptr: %p\n", se_dev->se_dev_ptr);
++
+ 	return(count);
+ }
+ 
+@@ -616,6 +667,7 @@ static struct target_core_configfs_attribute target_core_attr_dev_enable = {
+ static struct configfs_attribute *lio_core_dev_attrs[] = {
+ 	&target_core_attr_dev_info.attr,
+ 	&target_core_attr_dev_control.attr,
++	&target_core_attr_dev_fd.attr,
+ 	&target_core_attr_dev_enable.attr,
+ 	NULL,
+ };
+diff --git a/drivers/lio-core/target_core_transport.h b/drivers/lio-core/target_core_transport.h
+index 7f96176..078750b 100644
+--- a/drivers/lio-core/target_core_transport.h
++++ b/drivers/lio-core/target_core_transport.h
+@@ -427,6 +427,10 @@ typedef struct se_subsystem_api_s {
+ 	 */	
+ 	ssize_t (*show_configfs_dev_params)(se_hba_t *, se_subsystem_dev_t *, char *);
+ 	/*
++	 * create_virtdevice_from-fd():
++	 */
++	se_device_t *(*create_virtdevice_from_fd)(se_subsystem_dev_t *, const char *);
++	/*
+ 	 * check_dev_params():
+ 	 */
+ 	int (*check_dev_params)(se_hba_t *, struct iscsi_target *, se_dev_transport_info_t *);
+-- 
+1.5.4.1
+
+
+
