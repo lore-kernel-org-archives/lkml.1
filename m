@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbYJUMOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYJUMTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753902AbYJUMOj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 08:14:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbYJUMOb
+	id S1753906AbYJUMTx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 08:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYJUMTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 08:14:31 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:35402 "EHLO smtps.tip.net.au"
+	Tue, 21 Oct 2008 08:19:45 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47540 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751770AbYJUMOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 08:14:30 -0400
-Date: Tue, 21 Oct 2008 23:14:21 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for October 21
-Message-Id: <20081021231421.a9cdfcb4.sfr@canb.auug.org.au>
-In-Reply-To: <20081021120735.GA10567@yoda.jdub.homelinux.org>
-References: <20081021195109.ed83b102.sfr@canb.auug.org.au>
-	<20081021120735.GA10567@yoda.jdub.homelinux.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__21_Oct_2008_23_14_21_+1100_Lc/jz3JxT4PpBBrb"
+	id S1751818AbYJUMTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 08:19:44 -0400
+Date: Tue, 21 Oct 2008 14:19:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       Uwe Hermann <uwe@hermann-uwe.de>
+Subject: Re: [PATCH] doc/x86: update file locations and 00-INDEX
+Message-ID: <20081021121936.GB17108@elte.hu>
+References: <48FD1374.9090504@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48FD1374.9090504@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__21_Oct_2008_23_14_21_+1100_Lc/jz3JxT4PpBBrb
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Josh,
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-On Tue, 21 Oct 2008 08:07:35 -0400 Josh Boyer <jwboyer@linux.vnet.ibm.com> =
-wrote:
->
-> On Tue, Oct 21, 2008 at 07:51:09PM +1100, Stephen Rothwell wrote:
-> >I have also applied the following patches for known problems:
-> >
-> >	sparc: qlogicpti fallout from sbus removal
-> >	ibm_newemac: Fix new MAL feature handling
->=20
-> Did you?  I put that in my next branch, which Ben pulled into his powerpc
-> tree, so it shouldn't have needed applying separately.
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> A few Doc/x86/ files were moved, so account for that.
+> Update Doc/x86/00-INDEX file.
 
-It got into Ben's tree way after I started building linux-next for
-today.  Tomorrow I will indeed not need it any more, thanks.
+we already had this patch in tip/x86/doc, and i resolved this conflict 
+yesterday. (it was easy) Generally we'll handle all conflicts once we've 
+picked up patches, no need to resend.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__21_Oct_2008_23_14_21_+1100_Lc/jz3JxT4PpBBrb
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkj9x50ACgkQjjKRsyhoI8xgJQCeK+e/gtp4xuXJoLI+mm3t9meg
-BRMAnjdEx71jjYH47DunCtdMSzCC+lIr
-=8aXV
------END PGP SIGNATURE-----
-
---Signature=_Tue__21_Oct_2008_23_14_21_+1100_Lc/jz3JxT4PpBBrb--
+	Ingo
