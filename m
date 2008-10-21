@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752819AbYJUI3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYJUIaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752819AbYJUI3X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 04:29:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbYJUI3P
+	id S1753196AbYJUIaj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 04:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751686AbYJUIa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 04:29:15 -0400
-Received: from hope.ime.usp.br ([143.107.45.8]:53653 "HELO hope.ime.usp.br"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751328AbYJUI3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 04:29:14 -0400
-Date: Tue, 21 Oct 2008 06:29:08 -0200
-From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-To: bugme-daemon@bugzilla.kernel.org, David.Sainty@dtsp.co.nz
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [Bug 11779] No way to disable bluetooth
-Message-ID: <20081021082907.GA15890@ime.usp.br>
-References: <bug-11779-5003@http.bugzilla.kernel.org/> <20081021080218.9CF73108047@picon.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081021080218.9CF73108047@picon.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 21 Oct 2008 04:30:28 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:43191 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751195AbYJUIa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 04:30:27 -0400
+Date: Tue, 21 Oct 2008 19:30:13 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus <torvalds@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: linux-next: tree build failure
+Message-Id: <20081021193013.4ccbf02f.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__21_Oct_2008_19_30_13_+1100_PsjEatYOTO8Z0aq="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct 21 2008, bugme-daemon@bugzilla.kernel.org wrote:
-> http://bugzilla.kernel.org/show_bug.cgi?id=11779
-> Rog?rio Brito wrote:
-> > I may test it latter, but I'm scared. And this is what is preventing me
-> > from using this notebook (as well as bug
-> > http://bugzilla.kernel.org/show_bug.cgi?id=11717).
-> >
-> > For this latter one I even provided a *video* of me pressing the power
-> > button and the machine not waking up from suspend. :-( I can't think of
-> > anything else that I can provice, but I'm willing to help here.
-> 
-> It sounds like you have much worse issues with it than whether the 
-> bluetooth adapter is drawing idle current - which should be dwarfed by 
-> more heavyweight sinks like the WiFi transceiver.
+--Signature=_Tue__21_Oct_2008_19_30_13_+1100_PsjEatYOTO8Z0aq=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The wifi is working fine (at least, as far as I can see).
+Hi Linus,
 
-> Sorry, I don't have any suggestions - though you could try asking the 
-> manufacturer for support.
+Today's linux-next build (i386 defconfig) failed like this:
 
-I can't get past the "first line" of support. :-( But I can generate all
-data that is necessary here. Just ask and I will do whatever I can to get
-things working smoothly.
+drivers/gpu/drm/i915/i915_gem.c: In function 'fast_user_write':
+drivers/gpu/drm/i915/i915_gem.c:196: error: 'o' undeclared (first use in th=
+is function)
 
+Caused by commit 9b7530cc329eb036cfa589930c270e85031f554c ("i915: cleanup
+coding horrors in i915_gem_gtt_pwrite()").
 
-Thanks, Rogério Brito.
+I have applied Thomas' fix since today' linux-next base precedes the fix
+being added.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+--Signature=_Tue__21_Oct_2008_19_30_13_+1100_PsjEatYOTO8Z0aq=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkj9kxUACgkQjjKRsyhoI8y3OACdEs7IKhj0iWBz6lP1grTccXm7
+QDIAn2QcDdiYZCBILjLVm+Ytt+DQe2r9
+=xKHC
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__21_Oct_2008_19_30_13_+1100_PsjEatYOTO8Z0aq=--
