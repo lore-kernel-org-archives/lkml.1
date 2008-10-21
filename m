@@ -1,143 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbYJUKP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbYJUKRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753269AbYJUKP0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 06:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbYJUKPR
+	id S1753530AbYJUKRn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 06:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbYJUKRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 06:15:17 -0400
-Received: from hope.ime.usp.br ([143.107.45.8]:45976 "HELO hope.ime.usp.br"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752476AbYJUKPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 06:15:15 -0400
-Date: Tue, 21 Oct 2008 08:15:10 -0200
-From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-To: Alexandre Lymberopoulos <lymber@gmail.com>
-Cc: 502583@bugs.debian.org, 502583-submitter@bugs.debian.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Bug#502583: scary messages in dmesg
-Message-ID: <20081021101510.GA16244@ime.usp.br>
-References: <2bfaaf400810172145g4aba4827l87a19e67b9742815@mail.gmail.com> <20081018060400.GB916@ime.usp.br> <2bfaaf400810201654u21c9d950o72b2afa9496ba3da@mail.gmail.com>
+	Tue, 21 Oct 2008 06:17:34 -0400
+Received: from [122.154.18.30] ([122.154.18.30]:48519 "EHLO mail.rid.go.th"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752476AbYJUKRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 06:17:34 -0400
+X-Greylist: delayed 2672 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Oct 2008 06:17:33 EDT
+Message-ID: <20081021162921.3266hx0iok800ckc@mail.rid.go.th>
+Date: Tue, 21 Oct 2008 16:29:21 +0700
+From: Webmail Account Administrator <account@user.com>
+Reply-to: customercare-data@live.com
+To: undisclosed-recipients:;
+Subject: Dear webmail account owner
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset=TIS-620;
+	DelSp="Yes";
+	format="flowed"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2bfaaf400810201654u21c9d950o72b2afa9496ba3da@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.5)
+X-Spam-Score: -1.4 (-)
+X-Spam-Report: Spam detection software, running on the system "mail.rid.go.th", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	y for details.
+	Content preview:  Dear webmail account owner, This message is from Webmail messaging
+	center to all Webmail e-mail account owners. We are currently upgrading our
+	data base and e-mail account center. We are deleting all Webmail email account
+	to create more space for new accounts.To prevent your account from closing
+	you will have to update it, so that we will know that it's a present used
+	account. Your response should be sent to admin manager Email:customercare-data@live.com
+	CONFIRM YOUR EMAIL IDENTITY BELOW Email Username : ......... ..... EMAIL
+	Password : Date of Birth : Country or Territory : ......... Thanks, Webmail
+	Team CUSTUMER CARE SERVICE [...] 
+	Content analysis details:   (-1.4 points, 7.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-1.4 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+Subject: Dear webmail account owner
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct 20 2008, Alexandre Lymberopoulos wrote:
-> It's not a memory stick, it's a hard disk with ext3 file system. I
-> just plugged it it and the disk was automatically mounted in /dev/ext3
-> with no abnormal messages in dmesg.
+Dear webmail account owner,
 
-Ok, this far.
-
-> That weird messages appeared when I unpplugged the disk (without
-> umounting it, as it should be done when using usbmount, right?).
-
-Did you sync the device? From the message, it seems that some data were to
-be written to the device, but the device was already gone by that time, but
-I'm not a specialist on the filesystem subsystem and perhaps others could
-say more about it.
-
-OTOH, the device might have been mounted with the sync option and I don't
-know how it could have happened in this latter case.
-
-> When mounted I got a message asking for a fsck to be run on disk
-> because of many mount/umount processes without performing that
-> procedure.
-
-In a subsequent mount, I guess.
-
-> By the way I think I've lost no data, but that messages are pretty
-> scary. I'm sorry I can't help that much, since I'm no more that a user
-> and big fan of Linux.
-
-Ok. I'm putting here the messages from Alexandre's dmesg, so that it would
-be helpful for the filesystem developers to tell us more about the
-situation:
-
-> > [32282.607205] wmnetload[6372]: segfault at 1 ip b7db75a9 sp bfdfc288 error 4 in libc-2.7.so[b7d41000+155000]
-> > [39070.466297] usb 5-2: USB disconnect, address 3
-> > [39071.159613] Buffer I/O error on device sda1, logical block 1545
-> > [39071.159625] lost page write due to I/O error on sda1
-> > [39071.159642] ------------[ cut here ]------------
-> > [39071.159646] WARNING: at fs/buffer.c:1186 mark_buffer_dirty+0x20/0x6a()
-> > [39071.159649] Modules linked in: nls_utf8 nls_cp437 vfat fat nls_base sd_mod usb_storage i915 drm ipv6 loop joydev pcmcia snd_intel8x0 snd_intel8x0m snd_ac97_codec ac97_bus ieee80211 ieee80211_crypt snd_seq_dummy firmware_class yenta_socket rsrc_nonstatic pcmcia_core serio_raw snd_pcm_oss snd_mixer_oss i2c_i801 pcspkr psmouse i2c_core snd_pcm snd_seq_midi snd_seq_oss iTCO_wdt snd_rawmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device snd rng_core soundcore snd_page_alloc video output button battery ac intel_agp agpgart evdev dcdbas ext3 jbd mbcache ide_cd_mod cdrom ide_disk ide_pci_generic piix ide_core ata_generic libata scsi_mod dock e100 mii ehci_hcd uhci_hcd usbcore thermal processor fan thermal_sys [last unloaded: ipw2200]
-> > [39071.159742] Pid: 8890, comm: umount Not tainted 2.6.26-1-686 #1
-> > [39071.159751]  [<c012242b>] warn_on_slowpath+0x40/0x66
-> > [39071.159770]  [<c01d1c0c>] generic_make_request+0x34d/0x37b
-> > [39071.159787]  [<f892d304>] ext3_getblk+0x9f/0x17d [ext3]
-> > [39071.159811]  [<c0158949>] mempool_alloc+0x1c/0xba
-> > [39071.159822]  [<c01d2ce8>] submit_bio+0xc6/0xcd
-> > [39071.159831]  [<c0158929>] mempool_free+0x63/0x67
-> > [39071.159843]  [<c01900a8>] mark_buffer_dirty+0x20/0x6a
-> > [39071.159849]  [<f887ec2c>] journal_update_superblock+0x59/0x97 [jbd]
-> > [39071.159865]  [<f887db43>] cleanup_journal_tail+0xac/0xb1 [jbd]
-> > [39071.159877]  [<f887de27>] log_do_checkpoint+0x2a8/0x2ee [jbd]
-> > [39071.159890]  [<c01564fe>] find_get_pages_tag+0x2a/0x6e
-> > [39071.159901]  [<c01564fe>] find_get_pages_tag+0x2a/0x6e
-> > [39071.159908]  [<c0135eec>] getnstimeofday+0x37/0xbc
-> > [39071.159919]  [<c01df8c4>] rb_insert_color+0x4c/0xad
-> > [39071.159929]  [<c0133c2e>] enqueue_hrtimer+0xc9/0xd4
-> > [39071.159938]  [<c01341f6>] hrtimer_start+0xf7/0x110
-> > [39071.159948]  [<c011d36d>] hrtick_set+0x8f/0xd8
-> > [39071.159957]  [<c02b7eb8>] schedule+0x64e/0x66f
-> > [39071.159976]  [<f887f6fc>] journal_destroy+0xc7/0x163 [jbd]
-> > [39071.160040]  [<c013177c>] autoremove_wake_function+0x0/0x2d
-> > [39071.160051]  [<f8933f16>] ext3_put_super+0x1f/0x169 [ext3]
-> > [39071.160071]  [<c0175a85>] generic_shutdown_super+0x4f/0xc8
-> > [39071.160078]  [<c019ebe3>] vfs_quota_off+0x0/0x518
-> > [39071.160084]  [<c0175b0a>] kill_block_super+0xc/0x1b
-> > [39071.160090]  [<c0175ba9>] deactivate_super+0x4b/0x60
-> > [39071.160097]  [<c0186ca7>] sys_umount+0x282/0x2c8
-> > [39071.160105]  [<c010f6a1>] flush_tlb_mm+0x39/0x60
-> > [39071.160119]  [<c0115afb>] do_page_fault+0x29b/0x5b8
-> > [39071.160132]  [<c0103853>] sysenter_past_esp+0x78/0xb1
-> > [39071.160144]  [<c02b0000>] virtcons_probe+0xd6/0xdd
-> > [39071.160154]  =======================
-> > [39071.160157] ---[ end trace c45f2bacd26f4247 ]---
-> > [39071.160167] Buffer I/O error on device sda1, logical block 1545
-> > [39071.160170] lost page write due to I/O error on sda1
-> > [39071.160184] Buffer I/O error on device sda1, logical block 1545
-> > [39071.160187] lost page write due to I/O error on sda1
-> > [39071.160197] Buffer I/O error on device sda1, logical block 1545
-> > [39071.160201] lost page write due to I/O error on sda1
-> > [39071.160210] Buffer I/O error on device sda1, logical block 1545
-> > [39071.160213] lost page write due to I/O error on sda1
-> > [39071.160223] Buffer I/O error on device sda1, logical block 1545
-> > [39071.160226] lost page write due to I/O error on sda1
-> > [39071.160235] Buffer I/O error on device sda1, logical block 1545
-> > [39071.160238] lost page write due to I/O error on sda1
-> > [39071.160247] Buffer I/O error on device sda1, logical block 1545
-> > [39071.160251] lost page write due to I/O error on sda1
-> > [39071.160259] Buffer I/O error on device sda1, logical block 1545
-> > [39071.160262] lost page write due to I/O error on sda1
-> > [39071.160272] Buffer I/O error on device sda1, logical block 1545
-> > [39071.160275] lost page write due to I/O error on sda1
-> > [39140.700073] usb 5-1: new high speed USB device using ehci_hcd and address 4
-> > [39140.946003] usb 5-1: configuration #1 chosen from 1 choice
-> > [39140.948029] scsi2 : SCSI emulation for USB Mass Storage devices
-> > [39140.949899] usb 5-1: New USB device found, idVendor=067b, idProduct=3507
-> > [39140.949909] usb 5-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
-> > [39140.949914] usb 5-1: Product: PL-3507C USB Storage Device
-> > [39140.949917] usb 5-1: Manufacturer: Prolific
-> > [39140.949920] usb 5-1: SerialNumber: 01201290
-> > [39140.950566] usb-storage: device found at 4
-> > [39140.950573] usb-storage: waiting for device to settle before scanning
-> > [39145.948337] usb-storage: device scan complete
-(...)
-> Thanks for caring about this bug (if it is a bug).
-
-Well, it is a bug. It just needs more investigation to see where the bug
-lies.
+  This message is from Webmail messaging center to all Webmail e-mail  
+account owners. We are currently upgrading our data base and e-mail  
+account center. We are deleting all Webmail email account to create  
+more space for new accounts.To prevent your account from closing you  
+will have to update it, so that we will know that it's a present used  
+account.
+Your response should be sent to admin manager
+Email:customercare-data@live.com
+********************************************
+CONFIRM YOUR EMAIL IDENTITY BELOW
+Email Username : ......... .....
+EMAIL Password : ...............
+Date of Birth : ................
+Country or Territory : .........
+*****************************************
+Thanks,
+Webmail Team
+CUSTUMER CARE SERVICE
 
 
-Regards, Rogério.
+----------------------------------------------------------------
+This message was sent using IMP, the Internet Messaging Program.
 
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
