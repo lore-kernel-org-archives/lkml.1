@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbYJUS6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbYJUTBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755189AbYJUS6B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 14:58:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYJUS5x
+	id S1754877AbYJUTBd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 15:01:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYJUTB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 14:57:53 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:54702 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751277AbYJUS5x (ORCPT
+	Tue, 21 Oct 2008 15:01:26 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47483 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751548AbYJUTBZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 14:57:53 -0400
-Message-ID: <48FE2525.90701@oracle.com>
-Date: Tue, 21 Oct 2008 11:53:25 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Eric Piel <eric.piel@tremplin-utc.net>, linux-kernel@vger.kernel.org,
-       pavel@suse.cz, burman.yan@gmail.com, pau@eslack.org
-Subject: Re: [PATCH] LIS3LV02Dx Accelerometer driver (take 4)
-References: <48FA3368.1040605@tremplin-utc.net> <20081021114121.5144841c.akpm@linux-foundation.org>
-In-Reply-To: <20081021114121.5144841c.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 21 Oct 2008 15:01:25 -0400
+Subject: Re: sched: add CONFIG_SMP consistency
+From: Peter Zijlstra <peterz@infradead.org>
+To: henrik@austad.us
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
+       Henrik Austad <henrik.austad@gmail.com>
+In-Reply-To: <1224614719-14452-1-git-send-email-henrik@austad.us>
+References: <1224614719-14452-1-git-send-email-henrik@austad.us>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Date: Tue, 21 Oct 2008 21:01:21 +0200
+Message-Id: <1224615681.661.3.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sat, 18 Oct 2008 21:05:12 +0200
-> Eric Piel <eric.piel@tremplin-utc.net> wrote:
+On Tue, 2008-10-21 at 20:45 +0200, henrik@austad.us wrote:
+> From: Henrik Austad <henrik.austad@gmail.com>
 > 
->> ...
->>
->> +/**
->> + * lis3lv02d_acpi_read() - ACPI ALRD method: read a register
+> Do not declare select_task_rq as part of sched_class when CONFIG_SMP is
+> not set.
+
+While a proper cleanup, could you do it by re-arranging the methods so
+as to not create an additional ifdef?
+
+Thanks
+
+> Signed-off-by: Henrik Austad <henrik.austad@gmail.com>
+> ---
+>  include/linux/sched.h |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
 > 
-> All the kerneldoc comments include the () after the function name. 
-> That is unconventional and I do not know what effect it will have upon
-> kerneldoc processing and output.
-
-Yes, it's unconventional.
-It works.  It (the "()") will be dropped when processed.
-
-
->> + * @handle: the handle of the device
->> + * @reg:    the register to read
->> + * @ret:    result of the operation
->> + *
->> + * Returns AE_OK on success.
->> + */
->> +static acpi_status lis3lv02d_acpi_read(acpi_handle handle, int reg, u8 *ret)
->> +{
-
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index c226c7b..9e0e33c 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -898,8 +898,9 @@ struct sched_class {
+>  	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup);
+>  	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int sleep);
+>  	void (*yield_task) (struct rq *rq);
+> +#ifdef CONFIG_SMP
+>  	int  (*select_task_rq)(struct task_struct *p, int sync);
+> -
+> +#endif
+>  	void (*check_preempt_curr) (struct rq *rq, struct task_struct *p, int sync);
+>  
+>  	struct task_struct * (*pick_next_task) (struct rq *rq);
