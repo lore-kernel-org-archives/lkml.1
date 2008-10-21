@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752629AbYJUFdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752647AbYJUFvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752629AbYJUFdf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 01:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbYJUFd2
+	id S1752647AbYJUFvR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 01:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbYJUFvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 01:33:28 -0400
-Received: from ozlabs.org ([203.10.76.45]:39021 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751174AbYJUFd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 01:33:27 -0400
+	Tue, 21 Oct 2008 01:51:05 -0400
+Received: from twinlark.arctic.org ([208.69.40.136]:53002 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751486AbYJUFvE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 01:51:04 -0400
+Message-ID: <48FD6DA1.5030402@kernel.org>
+Date: Mon, 20 Oct 2008 22:50:25 -0700
+From: "Andrew G. Morgan" <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Eric Paris <eparis@redhat.com>
+CC: linux-kernel@vger.kernel.org, linux-audit@redhat.com,
+       viro@zeniv.linux.org.ok, sgrubb@redhat.com, serue@us.ibm.com
+Subject: Re: [PATCH 1/4] CAPABILITIES: add cpu endian vfs caps structure
+References: <20081020222538.3895.50175.stgit@paris.rdu.redhat.com> <20081020222602.3895.77302.stgit@paris.rdu.redhat.com>
+In-Reply-To: <20081020222602.3895.77302.stgit@paris.rdu.redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-ID: <18685.27030.529655.761257@cargo.ozlabs.ibm.com>
-Date: Tue, 21 Oct 2008 16:33:10 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Cc: linuxppc-dev@ozlabs.org, Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: build failure on powerpc with current -git
-In-Reply-To: <48F8E86B.702@nortel.com>
-References: <48F8E86B.702@nortel.com>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen writes:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> The current -git fails to build on 64-bit powerpc (failure log below) . 
->   Initially I tried using my older toolchain, when I first saw the 
-> problem I built a new toolchain with crosstool (gcc 4.1.2 and binutils 
-> 2.16.1) and tried again but got the same problem.
+Eric Paris wrote:
+> This patch add a generic cpu endian caps structure and enternally available
+> functions which retrieve fcaps information from disk.  This information is
+> necessary so fcaps information can be collected and recorded by the audit
+> system.
+> 
+[...]
+>  	CAP_FOR_EACH_U32(i) {
+> -		__u32 value_cpu;
+> -
+> -		if (i >= tocopy) {
+> -			/*
+> -			 * Legacy capability sets have no upper bits
+> -			 */
+> -			bprm->cap_post_exec_permitted.cap[i] = 0;
+> +		if (i > tocopy) {
 
-It's a bug in older versions of ld (including 2.16.1) that's fixed in
-the current version (2.18).  However, this patch appears to work
-around the problem - at least, it let me build a 32-bit kernel with a
-cross-toolchain including a 2.16.1 ld.  Let me know if this gets it
-working for you.
+Shouldn't the above still be (i >= tocopy) ?
 
-Paul.
+Cheers
 
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index 25fe9d6..e8acee2 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -284,6 +284,8 @@ if [ -n "$dtb" ]; then
-     if [ -n "$dts" ]; then
- 	rm $dtb
-     fi
-+else
-+    addsec $tmp /dev/null .kernel:dtb
- fi
- 
- if [ "$platform" != "miboot" ]; then
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index b39c27e..384dca5 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -187,6 +187,7 @@ SECTIONS
- 		*(.machine.desc)
- 		__machine_desc_end = . ;
- 	}
-+#ifdef CONFIG_RELOCATABLE
- 	. = ALIGN(8);
- 	.dynsym : AT(ADDR(.dynsym) - LOAD_OFFSET) { *(.dynsym) }
- 	.dynstr : AT(ADDR(.dynstr) - LOAD_OFFSET) { *(.dynstr) }
-@@ -202,6 +203,7 @@ SECTIONS
- 		__rela_dyn_start = .;
- 		*(.rela*)
- 	}
-+#endif
- 
- 	/* Fake ELF header containing RPA note; for addnote */
- 	.fakeelf : AT(ADDR(.fakeelf) - LOAD_OFFSET) { *(.fakeelf) }
+Andrew
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFI/W2e+bHCR3gb8jsRAtDBAJ94XoCVXRDDycns4KEmLLBlYODiqACfUD7W
+wx996Hso7mGH9lcc8Eiq89k=
+=gx3P
+-----END PGP SIGNATURE-----
