@@ -1,91 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbYJUK3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbYJUKab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753403AbYJUK3m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 06:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbYJUK3d
+	id S1753910AbYJUKab (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 06:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbYJUKaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 06:29:33 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:47071 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752630AbYJUK3c (ORCPT
+	Tue, 21 Oct 2008 06:30:23 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58111 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752269AbYJUKaW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 06:29:32 -0400
-Subject: Re: [RFC patch] genirq threading (v2) for ehci, ohci and uhci USB
-	hosts and ohci1394
-From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       slert-devel <slert-devel@suse.de>, Daniel Walker <dwalker@soe.ucsc.edu>,
-       RT Users List <linux-rt-users@vger.kernel.org>
-In-Reply-To: <200810210207.m9L275nQ031086@turbo.physics.adelaide.edu.au>
-References: <200810210207.m9L275nQ031086@turbo.physics.adelaide.edu.au>
-Content-Type: text/plain
-Date: Tue, 21 Oct 2008 03:29:26 -0700
-Message-Id: <1224584966.20800.19.camel@sven.thebigcorporation.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Oct 2008 06:30:22 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [announce] new tree: "fix all build warnings, on all configs" II
+From: Andi Kleen <andi@firstfloor.org>
+References: <20081017171139.GA1792@elte.hu> <87r66ejqla.fsf@basil.nowhere.org>
+Date: Tue, 21 Oct 2008 12:30:22 +0200
+In-Reply-To: <87r66ejqla.fsf@basil.nowhere.org> (Andi Kleen's message of "Sat, 18 Oct 2008 09:43:29 +0200")
+Message-ID: <87zlkydyv5.fsf_-_@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-21 at 11:37 +0930, Jonathan Woithe wrote:
-> Hi
-> 
-> > > This patch series implements support for threaded irq handlers for the
-> > > generic IRQ layer.
-> >
-> > Subject: genirq threading for ehci, ohci and uhci USB hosts.
-> > 
-> > This is a functional POC for partitioning of the USB interrupt handlers into
-> > a quickcheck function and a threaded main-handler function.
-> > :
-> > The ieee1394/ohci1394.c is a bit more problematic, since it does not use
-> > struct usb_hcd, and therefore another place for the status cache must be found,
-> > in struct ti_ohci presumably. 
-> > I will send a separate patch for ieee1394/ohci1394.c after looking at it more.
-> 
-> Thanks for sending this through; I will endeavour to test it over the coming
-> days.  I'll also see if I can test it for the case where USB and ieee1394
-> share IRQs.  Even though ieee1394 isn't done yet these changes should
-> prevent the USB-related problems we've seen in FFADO when USB shares the
-> firewire IRQ.
-> 
-> Having said that, the forthcoming ohci1394.c patch will also be interesting
-> since that is the other area which will greatly benefit FFADO.
-> 
+Andi Kleen <andi@firstfloor.org> writes:
+>>  		if (battery->have_sysfs_alarm)
+>> diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
+>> index d13194a..2276d75 100644
+>> --- a/drivers/acpi/sleep/main.c
+>> +++ b/drivers/acpi/sleep/main.c
+>> @@ -63,7 +63,7 @@ void __init acpi_old_suspend_ordering(void)
+>>  /**
+>>   *	acpi_pm_disable_gpes - Disable the GPEs.
+>>   */
+>> -static int acpi_pm_disable_gpes(void)
+>> +static inline int acpi_pm_disable_gpes(void)
+>
+> Just to satisfy my curiosity, what compiler warning does marking functions inline 
+> fix?
 
-Hi, 
+No reply. 
 
-I have re-released the patch set with support for ohci1394. 
+General note: ignoring review comments does not make the problems go away.
 
-I have not tested, for lack of hardware :: it compiles.
+The reason I asked is that the patch is very likely wrong.
 
-The location of status_cache is now within the ti_ohci struct.
+AFAIK the only warning that can be fixed by this inline would
+be a linker section mismatch (that is why I asked).
 
-That organization not entirely consistent with the USB side, predicated
-by other variation between the drivers.
+But for linker section mismatch this is not the correct
+change:
 
-The updated patch queue is available here.
+- inline is only advisory and gcc is free to disregard it.
+So you could get the warning back any time.
+- If you really want inlining for correctness you need
+to use __always_inline
+- Or if it's really to satisfy a linker section mismatch 
+it's typically better to just declare all inlined functions
+in the correct section, e.g. __init
 
-http://www.thebigcorporation.com/Sven/genirq-usb/genirq-usb-v2.tar.bz2
-
-Bug fix:
-The declaration of status_cache has been made consistent u32. 
-The former declaration of unsigned short (copied from uhci-hcd.c) it was
-probably too ambiguous for some architectures.
+Please fix this properly.
 
 Thanks,
+-Andi
 
-Sven
-
-
-> Regards
->   jonathan
-
+-- 
+ak@linux.intel.com
