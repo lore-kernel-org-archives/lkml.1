@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbYJUWzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbYJUW72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755854AbYJUWzx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 18:55:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbYJUWzp
+	id S1754585AbYJUW72 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 18:59:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYJUW7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 18:55:45 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:45405 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752211AbYJUWzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 18:55:44 -0400
-Date: Wed, 22 Oct 2008 09:55:32 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for October 21
-Message-Id: <20081022095532.63cad898.sfr@canb.auug.org.au>
-In-Reply-To: <1224609617.16910.94.camel@macbook.infradead.org>
-References: <20081021195109.ed83b102.sfr@canb.auug.org.au>
-	<1224609617.16910.94.camel@macbook.infradead.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__22_Oct_2008_09_55_32_+1100_2w2yDdgaF2_1.zVD"
+	Tue, 21 Oct 2008 18:59:20 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:23859 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751195AbYJUW7T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 18:59:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=eN+sogMElhVyxb23jRbCeyx8HbHorvhzq3tErYV8ScZyEPHWcVxOc8aS2sFNBL1899
+         Nxi/KvtRPj4e17LI3u8P60Rp/oyROliQzMyPZZ2jiezN8kZOonLDrSNr4MOZMwWfxAKh
+         kIo9+ZtChY3pCl59WLhXQGVKwbVpsAAv45XfA=
+Message-ID: <eada2a070810211559u6a040d29y11d1235557ac44f3@mail.gmail.com>
+Date: Tue, 21 Oct 2008 15:59:16 -0700
+From: "Tim Pepper" <tpepper@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: [PATCH] lockstat: contend with points
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
+       "=?ISO-8859-1?Q?T=F6r=F6k_Edwin?=" <edwintorok@gmail.com>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       "Bill Huey" <billh@gnuppy.monkey.org>,
+       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>
+In-Reply-To: <1224231505.28131.71.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1224231505.28131.71.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__22_Oct_2008_09_55_32_+1100_2w2yDdgaF2_1.zVD
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Oct 17, 2008 at 1:18 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> +06                          &mm->mmap_sem-W:           233            538 18446744073708       22924.27      607243.51           1342          45806           1.71        8595.89     1180582.34
+> +07                          &mm->mmap_sem-R:           205            587 18446744073708       28403.36      731975.00           1940         412426           0.58      187825.45     6307502.88
+> +08                          ---------------
+> +09                            &mm->mmap_sem            487          [<ffffffff8053491f>] do_page_fault+0x466/0x928
+> +10                            &mm->mmap_sem            179          [<ffffffff802a6200>] sys_mprotect+0xcd/0x21d
+> +11                            &mm->mmap_sem            279          [<ffffffff80210a57>] sys_mmap+0x75/0xce
+> +12                            &mm->mmap_sem             76          [<ffffffff802a490b>] sys_munmap+0x32/0x59
+> +13                          ---------------
+> +14                            &mm->mmap_sem            270          [<ffffffff80210a57>] sys_mmap+0x75/0xce
+> +15                            &mm->mmap_sem            431          [<ffffffff8053491f>] do_page_fault+0x466/0x928
+> +16                            &mm->mmap_sem            138          [<ffffffff802a490b>] sys_munmap+0x32/0x59
+> +17                            &mm->mmap_sem            145          [<ffffffff802a6200>] sys_mprotect+0xcd/0x21d
+> +18
+> +19 ...............................................................................................................................................................................................
+> +20
+> +21                              dcache_lock:           621            623           0.52         118.26        1053.02           6745          91930           0.29         316.29      118423.41
+> +22                              -----------
+> +23                              dcache_lock            179          [<ffffffff80378274>] _atomic_dec_and_lock+0x34/0x54
+> +24                              dcache_lock            113          [<ffffffff802cc17b>] d_alloc+0x19a/0x1eb
+> +25                              dcache_lock             99          [<ffffffff802ca0dc>] d_rehash+0x1b/0x44
+> +26                              dcache_lock            104          [<ffffffff802cbca0>] d_instantiate+0x36/0x8a
+> +27                              -----------
+> +28                              dcache_lock            192          [<ffffffff80378274>] _atomic_dec_and_lock+0x34/0x54
+> +29                              dcache_lock             98          [<ffffffff802ca0dc>] d_rehash+0x1b/0x44
+> +30                              dcache_lock             72          [<ffffffff802cc17b>] d_alloc+0x19a/0x1eb
+> +31                              dcache_lock            112          [<ffffffff802cbca0>] d_instantiate+0x36/0x8a
 
-Hi David,
 
-On Tue, 21 Oct 2008 18:20:17 +0100 David Woodhouse <dwmw2@infradead.org> wr=
-ote:
->
-> Missing the git://git.infradead.org/iommu-2.6.git tree, which contains a
-> bunch of patches which had got dropped over the last few weeks, and
-> which I need to send to Linus before the merge window closes. I was
-> really hoping they'd be in today's linux-next :(
 
-I was waiting for
-	1) the dust to settle
-	2) someone to tell me that the tree should be included
-	3) someone to make clear that it only contains 2.6.28 stuff
-
-You have now done that, so I will include it today and call it dwmw2-iommu
-(unless you have a better name.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__22_Oct_2008_09_55_32_+1100_2w2yDdgaF2_1.zVD
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkj+XeQACgkQjjKRsyhoI8wyHgCgiq1Pv0QrKlxBh/jstjgR6fzn
-yVkAn3xbFr/AklsEcSA2FvKRVI3VaKes
-=4NlG
------END PGP SIGNATURE-----
-
---Signature=_Wed__22_Oct_2008_09_55_32_+1100_2w2yDdgaF2_1.zVD--
+Just out of curiousity...what was running as you collected these?
