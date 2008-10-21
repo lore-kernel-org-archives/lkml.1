@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754464AbYJUCBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753694AbYJUCIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754464AbYJUCBZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 22:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbYJUCBR
+	id S1753694AbYJUCIp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 22:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbYJUCIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 22:01:17 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51835 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751694AbYJUCBQ (ORCPT
+	Mon, 20 Oct 2008 22:08:36 -0400
+Received: from cnmailgate04.alcatel-sbell.com.cn ([211.144.215.47]:38468 "EHLO
+	cnshjsmin03.cn.alcatel-lucent.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750998AbYJUCIf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 22:01:16 -0400
-Date: Tue, 21 Oct 2008 11:00:48 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: baramsori72@gmail.com, xen-devel@lists.xensource.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
-       corsetproject@googlegroups.com, fernando@oss.ntt.co.jp, agk@redhat.com
-Subject: Re: [PATCH 0/2] dm-ioband: I/O bandwidth controller v1.8.0:
- Introduction
-Message-Id: <20081021110048.949704bd.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081020.214858.193685328.ryov@valinux.co.jp>
-References: <2891419e0810200140s3cf9c0a3q228620519ae5f4af@mail.gmail.com>
-	<20081020.180129.193689104.ryov@valinux.co.jp>
-	<2891419e0810200313j5cac8541qff80614e3d784b1b@mail.gmail.com>
-	<20081020.214858.193685328.ryov@valinux.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 20 Oct 2008 22:08:35 -0400
+X-AuditID: ac189297-a9f7fbb000000fe5-05-48fd3972e353
+Message-ID: <48FD3986.6040909@alcatel-lucent.com>
+Date: Tue, 21 Oct 2008 10:08:06 +0800
+From: gshan <gshan@alcatel-lucent.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: pls help me: ext3 filesystem reported errors while deleting files
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 21 Oct 2008 02:07:52.0537 (UTC) FILETIME=[D3197C90:01C93321]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Oct 2008 21:48:58 +0900 (JST)
-Ryo Tsuruta <ryov@valinux.co.jp> wrote:
+Hi All,
 
-> Hi Dong-Jae,
-> 
-> > Well, do you have any plan to upgrade bio-cgroup patches for stable
-> > latest kernel?
-> > but, I think it will be not easy job ^^
-> 
-> I think the memory cgroup will have a major change sometime soon.
-> So the new patch will be released after that.
-> 
+After I uncompressed a big tar file (about 600MB) that has been mounted 
+through NFS to local
+hard disk, I tried to delete all of files from the tar file, but ext3 
+filesystem reported huge errors
+as follows. Note that I'm using IDE driver instead of ATA driver for 
+hard disk.
 
-the newest mmotm has the newest *big* change. enjoy it ;)
-I think no major change around page_cgroup will not occur for a while
-but I myself have plan/patches to modify memcg itself's charge/uncharge
-callpath.
+SP(27-A) $ cd /disk_root/
+SP(27-A) $ busybox tar -zxf /aaa/Gavin/sp3m/target_7xx_cge5.2008-07-10.tgz
+SP(27-A) $ ls
+bin         home        media       root        sys
+boot        lib         mnt         sbin        tmp
+dev         lost+found  opt         selinux     usr
+etc         man         proc        srv         var
+SP(27-A) $ rm -fr *
+EXT3-fs error (device hdc5): ext3_free_blocks_sb: bit already cleared 
+for block 538640
+EXT3-fs error (device hdc5): ext3_free_blocks_sb: bit already cleared 
+for block 538648
+EXT3-fs error (device hdc5): ext3_free_blocks_sb: bit already cleared 
+for block 538648
+EXT3-fs error (device hdc5): ext3_free_blocks_sb: bit already cleared 
+for block 534539
+EXT3-fs error (device hdc5): ext3_free_blocks_sb: bit already cleared 
+for block 534540
+:
+:
 
 Thanks,
--Kame
-
+Gavin
