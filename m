@@ -1,50 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYJURAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbYJURAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754189AbYJURAN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 13:00:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYJUQ77
+	id S1753516AbYJURAl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 13:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbYJURAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 12:59:59 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:15037 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751876AbYJUQ76 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 12:59:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding:sender;
-        b=hxcLlTlS5hzzCmh4Nwk3PALLK+06vxkRXFsqQAO4IRkSGySGPrU037XRc5LuttIRw9
-         uOg8mx6SbQJAl+3gzvHn/Mjp0kF+R1aHkHBsmX2DXukSXyRdOOgo5BRb6zy6CKBfZUYS
-         g1beRsiTn3woFDlD2tFevZqFMh8hmVR6R5LRs=
-Message-ID: <48FE0A89.2040107@mimas.ru>
-Date: Tue, 21 Oct 2008 21:59:53 +0500
-From: "damir@mimas.ru" <damir@mimas.ru>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081005)
-MIME-Version: 1.0
-To: trivial@kernel.org
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.27 1/1] cp2101: added Enfora GSM2228
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Oct 2008 13:00:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34451 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754171AbYJURAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 13:00:12 -0400
+Date: Tue, 21 Oct 2008 17:59:01 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Heinz Mauelshagen <mauelshagen@redhat.com>,
+       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
+       Mikulas Patocka <mpatocka@redhat.com>, Milan Broz <mbroz@redhat.com>,
+       Kazuo Ito <ito.kazuo@oss.ntt.co.jp>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>, stable@kernel.org
+Subject: [git pull] Additional device-mapper patches for 2.6.28
+Message-ID: <20081021165901.GO5098@agk.fab.redhat.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+	Heinz Mauelshagen <mauelshagen@redhat.com>,
+	Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
+	Mikulas Patocka <mpatocka@redhat.com>,
+	Milan Broz <mbroz@redhat.com>, Kazuo Ito <ito.kazuo@oss.ntt.co.jp>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	stable@kernel.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enfora GSM2228 based on Cygnal Integrated Products chip uses the same 
-cp2101 driver.
+Please pull from:
 
-Signed-off-by: Damir N Abdullin <damir@mimas.ru <mailto:damir@mimas.ru>>
+  master.kernel.org:/pub/scm/linux/kernel/git/agk/linux-2.6-dm.git
+ 
+to get the following additional device-mapper patches for 2.6.28:
+  
+Alasdair G Kergon (1):
+      dm exception store: refactor zero_area
 
+Heinz Mauelshagen (1):
+      dm raid1: separate region_hash interface part1
 
---- a/drivers/usb/serial/cp2101.c    2008-10-10 03:13:53.000000000 +0500
-+++ b/drivers/usb/serial/cp2101.c    2008-10-20 18:27:45.000000000 +0500
-@@ -67,6 +67,7 @@ static struct usb_device_id id_table []
-     { USB_DEVICE(0x10C4, 0x800A) }, /* SPORTident BSM7-D-USB main 
-station */
-     { USB_DEVICE(0x10C4, 0x803B) }, /* Pololu USB-serial converter */
-     { USB_DEVICE(0x10C4, 0x8053) }, /* Enfora EDG1228 */
-+    { USB_DEVICE(0x10C4, 0x8054) }, /* Enfora GSM2228 */
-     { USB_DEVICE(0x10C4, 0x8066) }, /* Argussoft In-System Programmer */
-     { USB_DEVICE(0x10C4, 0x807A) }, /* Crumb128 board */
-     { USB_DEVICE(0x10C4, 0x80CA) }, /* Degree Controls Inc */
+Kazuo Ito (1):
+      dm kcopyd: avoid queue shuffle
+
+Kiyoshi Ueda (2):
+      dm: remove unused flush_all
+      dm: tidy local_init
+
+Martin K. Petersen (1):
+      dm: mark split bio as cloned
+
+Mikulas Patocka (5):
+      dm snapshot: fix primary_pe race
+      dm snapshot: drop unused last_percent
+      dm exception store: fix misordered writes
+      dm: publish array_too_big
+      dm: remove dm header from targets
+
+Milan Broz (3):
+      dm crypt: tidy sector
+      dm crypt: fix async split
+      dm crypt: remove waitqueue
+
+ drivers/md/Makefile             |    2 +-
+ drivers/md/dm-crypt.c           |   56 +++-
+ drivers/md/dm-delay.c           |    3 +-
+ drivers/md/dm-exception-store.c |  108 ++++--
+ drivers/md/dm-io.c              |    2 +-
+ drivers/md/dm-kcopyd.c          |   14 +-
+ drivers/md/dm-linear.c          |    2 +-
+ drivers/md/dm-log.c             |    2 +-
+ drivers/md/dm-mpath.c           |    3 +-
+ drivers/md/dm-path-selector.c   |    3 +-
+ drivers/md/dm-raid1.c           |  791 +++++----------------------------------
+ drivers/md/dm-region-hash.c     |  704 ++++++++++++++++++++++++++++++++++
+ drivers/md/dm-round-robin.c     |    3 +-
+ drivers/md/dm-snap.c            |   11 +-
+ drivers/md/dm-snap.h            |    5 +-
+ drivers/md/dm-stripe.c          |    6 +-
+ drivers/md/dm-zero.c            |    2 +-
+ drivers/md/dm.c                 |   49 +--
+ drivers/md/dm.h                 |    9 -
+ include/linux/device-mapper.h   |    3 +
+ include/linux/dm-region-hash.h  |  104 +++++
+ 21 files changed, 1084 insertions(+), 798 deletions(-)
+ create mode 100644 drivers/md/dm-region-hash.c
+ create mode 100644 include/linux/dm-region-hash.h
+
+Thanks,
+Alasdair
+-- 
+agk@redhat.com
