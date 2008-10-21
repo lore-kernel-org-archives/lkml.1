@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbYJUWUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbYJUWWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755879AbYJUWUa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 18:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbYJUWUU
+	id S1756062AbYJUWWS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 18:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbYJUWWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 18:20:20 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:7405 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751179AbYJUWUT (ORCPT
+	Tue, 21 Oct 2008 18:22:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56850 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751127AbYJUWWD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 18:20:19 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AnsDAM8S9kg7p+/xgWdsb2JhbACBcpFuAQEWIq4MgWs
-X-IronPort-AV: E=Sophos;i="4.33,460,1220193000"; 
-   d="scan'208";a="215378366"
-Message-ID: <48FE559F.4040404@call-direct.com.au>
-Date: Wed, 22 Oct 2008 08:20:15 +1000
-From: Iwo Mergler <iwo@call-direct.com.au>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080302)
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: linux-kernel@vger.kernel.org, Jes Sorensen <jes@trained-monkey.org>
-Subject: Re: Fix for genalloc locking
-References: <48F83400.90901@call-direct.com.au> <20081021083949.3b1473c8.randy.dunlap@oracle.com>
-In-Reply-To: <20081021083949.3b1473c8.randy.dunlap@oracle.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 21 Oct 2008 18:22:03 -0400
+Date: Tue, 21 Oct 2008 15:21:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Piel <eric.piel@tremplin-utc.net>
+Cc: linux-kernel@vger.kernel.org, pavel@suse.cz, burman.yan@gmail.com,
+       pau@eslack.org
+Subject: Re: [PATCH] LIS3LV02Dx Accelerometer driver (take 4)
+Message-Id: <20081021152142.9a535e0e.akpm@linux-foundation.org>
+In-Reply-To: <48FE5416.9070402@tremplin-utc.net>
+References: <48FA3368.1040605@tremplin-utc.net>
+	<20081021114121.5144841c.akpm@linux-foundation.org>
+	<48FE5416.9070402@tremplin-utc.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Fri, 17 Oct 2008 16:43:12 +1000 Iwo Mergler wrote:
->> BTW, is there any documentation on the Lockdep warnings?
->> What exactly is the meaning of {--+.} in 
->>
->> (&pool->lock){--+.}, at: [<c0125d1c>] gen_pool_free+0x34/0x120
+On Wed, 22 Oct 2008 00:13:42 +0200
+Eric Piel <eric.piel@tremplin-utc.net> wrote:
+
+> Andrew Morton schreef:
+> >> +static void lis3lv02d_poweroff_timeout(unsigned long data)
+> >> +{
+> >> +	struct acpi_lis3lv02d *dev = (void *)data;
+> >> +
+> >> +	up(&dev->poff_sem);
+> >> +	lis3lv02d_poweroff(dev->device->handle);
+> >> +	down(&dev->poff_sem);
+> > 
+> > eek, no, we cannot down a semaphore from a timer handler!  It will lead
+> > to might_sleep() warnings, scheduling-in-atomic warnings and kernel
+> > deadlocks.
+> Ooh... What happened is that I wrote the other functions first. They
+> indirectly use acpi_evaluate_integer(), which can sleep. So I avoided
+> spin_locks, and decided to use a semaphore. But now there is a semaphore
+> in a timer (which is not allowed to sleep).
 > 
-> Did you read Documentation/lockdep-design.txt ?
-> 
+> It seems the semaphore usage is compulsory due to acpi, so I'm planning
+> to change the timer into a scheduled work on a workqueue (with
+> queue_delayed_work(),  and cancel_delayed_work_sync()). This workqueue
+> could be the same as the one for the joystick input. Does that look the
+> right way to do it?
 
-No, I didn't. Selective blindness. Thanks for the hint.
+yep, that's generally a safe transformation.
 
-Kind regards,
-
-Iwo
-
+You might also be able to use keventd, via scheule_delayed_work().
