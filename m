@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbYJUWWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbYJUW24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756062AbYJUWWS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 18:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbYJUWWF
+	id S1755205AbYJUW24 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 18:28:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbYJUW2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 18:22:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56850 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751127AbYJUWWD (ORCPT
+	Tue, 21 Oct 2008 18:28:46 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:58892 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751703AbYJUW2n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 18:22:03 -0400
-Date: Tue, 21 Oct 2008 15:21:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Piel <eric.piel@tremplin-utc.net>
-Cc: linux-kernel@vger.kernel.org, pavel@suse.cz, burman.yan@gmail.com,
-       pau@eslack.org
-Subject: Re: [PATCH] LIS3LV02Dx Accelerometer driver (take 4)
-Message-Id: <20081021152142.9a535e0e.akpm@linux-foundation.org>
-In-Reply-To: <48FE5416.9070402@tremplin-utc.net>
-References: <48FA3368.1040605@tremplin-utc.net>
-	<20081021114121.5144841c.akpm@linux-foundation.org>
-	<48FE5416.9070402@tremplin-utc.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Oct 2008 18:28:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=YyuIR5RPcTP2Tl/iQFP7XAO2FyVKEYmxOHPTHAkmv6Fmii0vUCe2Vw+MUaAjpbgE6P
+         vXO/zRb2qEXsSllyu6nrZ8SG/vnA0N7VYiErtD5K5tXc1COF+6wN12rlVJmchP2Vxkk7
+         lMAozxG/y7VU73z6Hka1pAm48cncR2NEK/cVI=
+Message-ID: <c6740f810810211528g641b3224j3a70ee4b56942bb9@mail.gmail.com>
+Date: Wed, 22 Oct 2008 00:28:40 +0200
+From: "Philip Stark" <heller.barde@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27 seems to break something with DSL
+Cc: netdev@vger.kernel.org
+In-Reply-To: <20081020101241.456963cd@doriath.conectiva>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <c6740f810810110553q75478033ub984651d5509199b@mail.gmail.com>
+	 <20081020101241.456963cd@doriath.conectiva>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Oct 2008 00:13:42 +0200
-Eric Piel <eric.piel@tremplin-utc.net> wrote:
+I was just going to say that Bug Nr. 11721 on bugzilla.kernel.org is
+exactly my problem and is in fact resolved with the
+solution/workaround presented there.
 
-> Andrew Morton schreef:
-> >> +static void lis3lv02d_poweroff_timeout(unsigned long data)
-> >> +{
-> >> +	struct acpi_lis3lv02d *dev = (void *)data;
-> >> +
-> >> +	up(&dev->poff_sem);
-> >> +	lis3lv02d_poweroff(dev->device->handle);
-> >> +	down(&dev->poff_sem);
-> > 
-> > eek, no, we cannot down a semaphore from a timer handler!  It will lead
-> > to might_sleep() warnings, scheduling-in-atomic warnings and kernel
-> > deadlocks.
-> Ooh... What happened is that I wrote the other functions first. They
-> indirectly use acpi_evaluate_integer(), which can sleep. So I avoided
-> spin_locks, and decided to use a semaphore. But now there is a semaphore
-> in a timer (which is not allowed to sleep).
-> 
-> It seems the semaphore usage is compulsory due to acpi, so I'm planning
-> to change the timer into a scheduled work on a workqueue (with
-> queue_delayed_work(),  and cancel_delayed_work_sync()). This workqueue
-> could be the same as the one for the joystick input. Does that look the
-> right way to do it?
+Thanks for your time
+Philip Stark
 
-yep, that's generally a safe transformation.
-
-You might also be able to use keventd, via scheule_delayed_work().
+2008/10/20 Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>:
+<snip>
+> | it seems to  be related to the packet  size because ping only seems to
+> | work because it uses small packets. if i increase the ping size up to
+> | 1000 bytes, it fails as well. (while it does work on 2.6.26)
+>
+>  If you haven't solved this issue yet you could try:
+>
+> # echo 0 > /proc/sys/net/ipv4/tcp_timestamps
+>
+>  We (Mandriva) have had some reports of this issue and it seems that
+> some broken routers can drop packages because of the timestamp (that's
+> what our local network guy has said). Disabling timestamps make it work
+> again.
+>
+> --
+> Luiz Fernando N. Capitulino
+>
