@@ -1,79 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752614AbYJUEUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbYJUEYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752614AbYJUEUg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 00:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750866AbYJUEU0
+	id S1752777AbYJUEYV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 00:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbYJUEYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 00:20:26 -0400
-Received: from ti-out-0910.google.com ([209.85.142.187]:12928 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbYJUEUY (ORCPT
+	Tue, 21 Oct 2008 00:24:12 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:52259 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750828AbYJUEYL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 00:20:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=N1Qs540dN5OIc7tA7ZW5pW5PqH9iph00E+xoA/6PhBH8eumg/4TL2//uZV+lJZj3q7
-         UTGm0wZMC317NM6soZ+WwxKonoyVyGlx0TOPfOJlbAR/MUwQNuhVmkRiBR6JLisuFNWr
-         gAyn74cIUdPAJXntNQJux3dksV1ktp6wvQl2s=
-Message-ID: <48FD580E.4080101@gmail.com>
-Date: Tue, 21 Oct 2008 13:18:22 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Tue, 21 Oct 2008 00:24:11 -0400
+Date: Mon, 20 Oct 2008 22:23:54 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Dave Airlie <airlied@linux.ie>
+Cc: nagaraj s k <nagaraj.sk@gmail.com>, trivial@kernel.org, greg@kroah.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       nagaraj.krishnappa@thomsonreuters.com
+Subject: Re: [PATCH] via-agp.c fixed compilation error and warnings for 2.6.26
+Message-ID: <20081021042353.GL26184@parisc-linux.org>
+References: <663ba5090810050509g6ce3c25bh40686506b1d35b8f@mail.gmail.com> <663ba5090810202049i16285109k34fde3ec1c9df319@mail.gmail.com> <alpine.DEB.0.82.0810210453290.26751@skynet.skynet.ie>
 MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-CC: Christian Mueller <Christian.Mueller@wdc.com>,
-       Bruce Allen <ballen@gravity.phys.uwm.edu>,
-       Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: [smartmontools-support] inactive SATA drives won't stay in standby
- or sleep, PATA models did. (fwd)
-References: <D73D40172004714D95D7A84AC3E68EC802282133@wdscexbe03.sc.wdc.com>	<48EBFE9B.9070503@gmail.com>	<18674.4081.839329.116533@harpo.it.uu.se>	<48F2D9A8.1030502@gmail.com> <18683.50533.786782.474536@harpo.it.uu.se>
-In-Reply-To: <18683.50533.786782.474536@harpo.it.uu.se>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.0.82.0810210453290.26751@skynet.skynet.ie>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Mikael.
+On Tue, Oct 21, 2008 at 04:57:13AM +0100, Dave Airlie wrote:
+> > > -    printk(KERN_ERR PFX "Unknown aperture size from AGP bridge (0x%x)\n",
+> > > temp);
+> > > +    printk(KERN_ERR PFX "Unknown aperture size from AGP
+> > > +        bridge (0x%x)\n", temp);
+> 
+> Uglier code.
 
-> --- linux-2.6.27/drivers/ata/sata_promise.c.~1~	2008-07-14 10:22:36.000000000 +0200
-> +++ linux-2.6.27/drivers/ata/sata_promise.c	2008-10-20 00:20:58.000000000 +0200
-> @@ -153,6 +153,7 @@ static void pdc_freeze(struct ata_port *
->  static void pdc_sata_freeze(struct ata_port *ap);
->  static void pdc_thaw(struct ata_port *ap);
->  static void pdc_sata_thaw(struct ata_port *ap);
-> +static int pdc_prereset(struct ata_link *link, unsigned long deadline);
->  static void pdc_error_handler(struct ata_port *ap);
->  static void pdc_post_internal_cmd(struct ata_queued_cmd *qc);
->  static int pdc_pata_cable_detect(struct ata_port *ap);
-> @@ -175,6 +176,7 @@ static const struct ata_port_operations 
->  	.sff_irq_clear		= pdc_irq_clear,
->  
->  	.post_internal_cmd	= pdc_post_internal_cmd,
-> +	.prereset		= pdc_prereset,
->  	.error_handler		= pdc_error_handler,
->  };
->  
-> @@ -691,6 +693,12 @@ static void pdc_sata_thaw(struct ata_por
->  	readl(host_mmio + hotplug_offset); /* flush */
->  }
->  
-> +static int pdc_prereset(struct ata_link *link, unsigned long deadline)
-> +{
-> +	pdc_reset_port(link->ap);
+Not just that, but it won;t even compile with a recent compiler.  You'd
+need to do it as:
 
-I would put this into ->hardreset itself as the controller can also
-get out of sync with reality during reset.  Other than that, looks
-like the correct approach.
+	printk(KERN_ERR PFX "Unknown aperture size from AGP "
+		"bridge (0x%x)\n", temp);
 
-Thanks.
+and that would seem like not much of a win.  What might be a win would
+be:
+	dev_err(&agp_bridge->dev->dev, "Unknown AGP aperture size 0x%x\n",
+		temp);
+
+> > >          if (temp == values[i].size_value) {
+> > >              agp_bridge->previous_size =
+> > > -                agp_bridge->current_size = (void *) (values + i);
+> > > +                agp_bridge->current_size =
+> > > +                     (void *) (values + i);
+> 
+> arguably uglier code.
+
+No argument about it ... it's uglier.  The (void *) cast is unnecessary.
+
+What I'd do to this function is:
+
+        for (i = 0; i < agp_bridge->driver->num_aperture_sizes; i++) {
+		if (temp != values[i].size_value)
+			continue;
+
+		agp_bridge->previous_size = agp_bridge->current_size =
+			values + i;
+		agp_bridge->aperture_size_idx = i;
+		return values[i].size;
+	}
+
+	dev_err(&agp_bridge->dev->dev, "Unknown AGP aperture size 0x%x\n",
+		temp);
+	return 0;
+}
+
+
+> > > @@ -142,11 +144,12 @@ static int via_configure_agp3(void)
+> > >
+> > >      /* 1. Enable GTLB in RX90<7>, all AGP aperture access needs to fetch
+> > >       *    translation table first.
+> > > -     * 2. Enable AGP aperture in RX91<0>. This bit controls the enabling
+> > > of the
+> > > -     *    graphics AGP aperture for the AGP3.0 port.
+> > > +     * 2. Enable AGP aperture in RX91<0>. This bit controls the
+> > > +     * enabling of the graphics AGP aperture for the AGP3.0 port.
+> 
+> this is okay.
+
+Except the missing spaces between the '*' and 'enabling'.
+
+> > >       */
+> > >      pci_read_config_dword(agp_bridge->dev, VIA_AGP3_GARTCTRL, &temp);
+> > > -    pci_write_config_dword(agp_bridge->dev, VIA_AGP3_GARTCTRL, temp |
+> > > (3<<7));
+> > > +    pci_write_config_dword(agp_bridge->dev, VIA_AGP3_GARTCTRL,
+> > > +                         temp | (3<<7));
+> 
+> this one is probably okay.
+
+I'd add some more spacing:
+
++				temp | (3 << 7));
+
+The driver seems to suffer from a lack of spaces around << throughout.
+And most of those << should probably be defines somewhere ...
 
 -- 
-tejun
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
