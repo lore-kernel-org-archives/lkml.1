@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195AbYJUHed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752330AbYJUHo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753195AbYJUHed (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 03:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbYJUHeQ
+	id S1752330AbYJUHo7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 03:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbYJUHou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 03:34:16 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38565 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753317AbYJUHeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 03:34:15 -0400
-Date: Tue, 21 Oct 2008 09:33:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
+	Tue, 21 Oct 2008 03:44:50 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:53378 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751374AbYJUHot (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 03:44:49 -0400
+Date: Tue, 21 Oct 2008 09:42:08 +0200
+From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: Bug in "genirq: record trigger type"
-Message-ID: <20081021073350.GA22351@elte.hu>
-References: <200810202205.m9KM5une024759@hera.kernel.org> <1224570730.7654.242.camel@pasglop> <86802c440810210022i75d3c081r8fc979386cdda9ce@mail.gmail.com> <20081021072857.GA333@elte.hu> <1224574343.7654.244.camel@pasglop>
+Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       Linux PPC devel <linuxppc-dev@ozlabs.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "Ryan S. Arnold" <rsa@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [RFC PATCH 0/5] patches for a network-based hvc backend (s390)
+Message-ID: <20081021074208.GA8870@cetus.boeblingen.de.ibm.com>
+Mail-Followup-To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Linux PPC devel <linuxppc-dev@ozlabs.org>,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	"Ryan S. Arnold" <rsa@us.ibm.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Christian Borntraeger <borntraeger@de.ibm.com>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>
+References: <20081014091247.433079967@linux.vnet.ibm.com> <1224545017.7654.188.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1224574343.7654.244.camel@pasglop>
+In-Reply-To: <1224545017.7654.188.camel@pasglop>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Oct 21, 2008 at 10:23:37AM +1100, Benjamin Herrenschmidt wrote:
+> What's the status with that patch serie ? Is this 2.6.28 material ?
+It is 2.6.28 material.
+> Alan, are you ok with those ? Hendrik, have there been any respin other
+> than v2 of patch 4/5 ?
+The other patches have not been changed.
 
-* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+fyi: patch 1/5 (hangup notifier) applies successfully with an offset
+of 2 lines due to commit eef2622a9fcfa964073333ea72c7c9cd20ad45e6
+(hvc_console: Fix free_irq in spinlocked section).
 
-> On Tue, 2008-10-21 at 09:28 +0200, Ingo Molnar wrote:
-> 
-> > From: Chris Friesen <cfriesen@nortel.com>
-> > Date: Mon, 20 Oct 2008 12:41:58 -0600
-> > Subject: [PATCH] genirq: fix set_irq_type() when recording trigger type
-> > 
-> > In set_irq_type() we want to pass the type rather than the current
-> > interrupt state.
-> > 
-> > Signed-off-by: Chris Friesen <cfriesen@nortel.com>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-thx, added your ack to the commit as well.
+> I can merge it via powerpc but it's getting late in the merge window...
+Thanks... that would be really great!
 
-	Ingo
+Regards
+Hendrik
+
+-- 
+Hendrik Brueckner
+D/3303 Linux on System z Development
+Tel: +49 7031 16-1073
+Fax: +49 7031 16-3456
+eMail: brueckner@linux.vnet.ibm.com
+IBM Deutschland Research & Development GmbH, Schoenaicher Str. 220, 71032 Boeblingen
+
+IBM Deutschland Research & Development GmbH
+Vorsitzender des Aufsichtsrats: Martin Jetter
+Geschaeftsfuehrung: Erich Baier
+Sitz der Gesellschaft: Boeblingen
+Registergericht: Amtsgericht Stuttgart, HRB 243294
+
