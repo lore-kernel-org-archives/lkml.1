@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbYJUVmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbYJUVpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756173AbYJUVmP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 17:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbYJUVl7
+	id S1755236AbYJUVpf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 17:45:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbYJUVp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 17:41:59 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:60879 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752777AbYJUVl6 (ORCPT
+	Tue, 21 Oct 2008 17:45:26 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:55035 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750966AbYJUVpZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 17:41:58 -0400
-Subject: Re: [PATCH 0/3] Improve TSC as a clocksource under VMware
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-In-Reply-To: <1224618463.6161.82.camel@alok-dev1>
-References: <1224552902.2640.88.camel@alok-dev1>
-	 <874p36fflp.fsf@basil.nowhere.org> <1224607284.6161.22.camel@alok-dev1>
-	 <20081021174008.GH12825@one.firstfloor.org>
-	 <1224612294.6161.43.camel@alok-dev1>
-	 <20081021181536.GI12825@one.firstfloor.org>
-	 <1224616236.6161.60.camel@alok-dev1>
-	 <20081021192746.GJ12825@one.firstfloor.org>
-	 <1224618463.6161.82.camel@alok-dev1>
+	Tue, 21 Oct 2008 17:45:25 -0400
+Subject: Re: [PATCH 3/4] freezer_cg: use thaw_process() in unfreeze_cgroup()
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Cedric Le Goater <clg@fr.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+In-Reply-To: <48FD2784.30906@cn.fujitsu.com>
+References: <48FD26F5.1070809@cn.fujitsu.com>
+	 <48FD273F.3040505@cn.fujitsu.com>  <48FD2784.30906@cn.fujitsu.com>
 Content-Type: text/plain
-Organization: VMware INC.
-Date: Tue, 21 Oct 2008 14:41:56 -0700
-Message-Id: <1224625316.6161.105.camel@alok-dev1>
+Date: Tue, 21 Oct 2008 14:44:41 -0700
+Message-Id: <1224625481.2991.91.camel@enoch>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-21 at 12:47 -0700, Alok Kataria wrote:
-> On Tue, 2008-10-21 at 12:27 -0700, Andi Kleen wrote:
-> > On Tue, Oct 21, 2008 at 12:10:36PM -0700, Alok Kataria wrote:
-> > > On Tue, 2008-10-21 at 11:15 -0700, Andi Kleen wrote:
-
-> > When the margin changes then it likely won't be good enough for
-> > gettimeofday(). There are a couple of testers for monotonity around,
-> > would such a system with shifting marging surive running them
-> > for a few days?
+On Tue, 2008-10-21 at 08:51 +0800, Li Zefan wrote:
+> Don't duplicate the implementation of thaw_process().
 > 
-> I meant, the margin changes when you are running different flavors of
-> the build, or running different user configurations (from overcommitment
-> POV). Once a system is booted the margin won't vary, apart from the
-> bootup stage which will always have some extreme states. In all our
-> internal testing that has been done, 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-> we have never noticed time drift is
-> withing the NTP threshold when its compared to the host system, under
-> varying load. 
+Acked-by: Matt Helsley <matthltc@us.ibm.com>
+
+> ---
+>  kernel/cgroup_freezer.c |   15 ++++-----------
+>  1 files changed, 4 insertions(+), 11 deletions(-)
 > 
-
-oops... i meant the time drift is _always_ within the NTP threshold.
-
+> diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
+> index 6fadafe..3ea57e4 100644
+> --- a/kernel/cgroup_freezer.c
+> +++ b/kernel/cgroup_freezer.c
+> @@ -275,25 +275,18 @@ static int try_to_freeze_cgroup(struct cgroup *cgroup, struct freezer *freezer)
+>  	return num_cant_freeze_now ? -EBUSY : 0;
+>  }
+> 
+> -static int unfreeze_cgroup(struct cgroup *cgroup, struct freezer *freezer)
+> +static void unfreeze_cgroup(struct cgroup *cgroup, struct freezer *freezer)
+>  {
+>  	struct cgroup_iter it;
+>  	struct task_struct *task;
+> 
+>  	cgroup_iter_start(cgroup, &it);
+>  	while ((task = cgroup_iter_next(cgroup, &it))) {
+> -		int do_wake;
+> -
+> -		task_lock(task);
+> -		do_wake = __thaw_process(task);
+> -		task_unlock(task);
+> -		if (do_wake)
+> -			wake_up_process(task);
+> +		thaw_process(task);
+>  	}
+>  	cgroup_iter_end(cgroup, &it);
+> -	freezer->state = CGROUP_THAWED;
+> 
+> -	return 0;
+> +	freezer->state = CGROUP_THAWED;
+>  }
+> 
+>  static int freezer_change_state(struct cgroup *cgroup,
+> @@ -320,7 +313,7 @@ static int freezer_change_state(struct cgroup *cgroup,
+>  		}
+>  		/* state == FREEZING and goal_state == THAWED, so unfreeze */
+>  	case CGROUP_FROZEN:
+> -		retval = unfreeze_cgroup(cgroup, freezer);
+> +		unfreeze_cgroup(cgroup, freezer);
+>  		break;
+>  	default:
+>  		break;
 
