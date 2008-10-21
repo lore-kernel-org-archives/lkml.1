@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbYJUGLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbYJUGLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754137AbYJUGLz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 02:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYJUGL2
+	id S1753931AbYJUGLj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 02:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYJUGLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 02:11:28 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46205 "EHLO mail.dvmed.net"
+	Tue, 21 Oct 2008 02:11:03 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46188 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753573AbYJUGL1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 02:11:27 -0400
-Message-ID: <48FD728A.2090504@garzik.org>
-Date: Tue, 21 Oct 2008 02:11:22 -0400
+	id S1751945AbYJUGLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 02:11:00 -0400
+Message-ID: <48FD7267.1000704@garzik.org>
+Date: Tue, 21 Oct 2008 02:10:47 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
-CC: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org, ossrosch@linux.vnet.ibm.com,
-       ossthema@de.ibm.com, raisch@de.ibm.com, themann@de.ibm.com,
-       osstklei@de.ibm.com
-Subject: Re: [PATCH] ehea: Fix memory hotplug support
-References: <200809171619.46741.hannes.hering@linux.vnet.ibm.com> <200810151318.59151.hannes.hering@linux.vnet.ibm.com> <48F7056F.7050602@garzik.org> <200810161136.42822.hannes.hering@linux.vnet.ibm.com>
-In-Reply-To: <200810161136.42822.hannes.hering@linux.vnet.ibm.com>
+To: Bryan Wu <cooloney@kernel.org>
+CC: ben@simtec.co.uk, davem@davemloft.net, vapier.adi@gmail.com,
+       shemminger@vyatta.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] netdev: DM9000: remove BLACKFIN hacking in DM9000
+ netdev driver
+References: <1224178844-12496-1-git-send-email-cooloney@kernel.org>
+In-Reply-To: <1224178844-12496-1-git-send-email-cooloney@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -31,16 +31,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hannes Hering wrote:
-> This patch implements the memory notifier to update the busmap instantly
-> instead of rebuilding the whole map. This is necessary because
-> walk_memory_resource provides different information than required during memory
-> hotplug.
+Bryan Wu wrote:
+> remove integer casting in the read/write IO accessors,
+> because Blackfin now provides those functions
 > 
-> Signed-off-by: Hannes Hering <hering2@de.ibm.com>
+> Tested-by: Javier Herrero <jherrero@hvsistemas.es>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
 > ---
-> Jeff, as requested, this patch is now based on davem's net-2.6.git.
+>  drivers/net/dm9000.c |    9 ---------
+>  1 files changed, 0 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/net/dm9000.c b/drivers/net/dm9000.c
+> index f42c23f..5a9083e 100644
+> --- a/drivers/net/dm9000.c
+> +++ b/drivers/net/dm9000.c
+> @@ -47,15 +47,6 @@
+>  #define CARDNAME	"dm9000"
+>  #define DRV_VERSION	"1.31"
+>  
+> -#ifdef CONFIG_BLACKFIN
+> -#define readsb	insb
+> -#define readsw	insw
+> -#define readsl	insl
+> -#define writesb	outsb
+> -#define writesw	outsw
+> -#define writesl	outsl
+> -#endif
 
 applied
+
 
 
