@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbYJUJg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbYJUJjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753855AbYJUJg2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 05:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752452AbYJUJgV
+	id S1753442AbYJUJjS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 05:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYJUJjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 05:36:21 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:51297 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752395AbYJUJgU (ORCPT
+	Tue, 21 Oct 2008 05:39:08 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36831 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751476AbYJUJjG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 05:36:20 -0400
-Message-ID: <48FDA28B.30204@fr.ibm.com>
-Date: Tue, 21 Oct 2008 11:36:11 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Oren Laadan <orenl@cs.columbia.edu>
-CC: Daniel Lezcano <dlezcano@fr.ibm.com>, Louis.Rilling@kerlabs.com,
-       containers@lists.linux-foundation.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrey Mirkin <major@openvz.org>
-Subject: Re: [PATCH 0/9] OpenVZ kernel based checkpointing/restart
-References: <1220439476-16465-1-git-send-email-major@openvz.org>	<1224286383.1848.65.camel@nimitz>	<20081020111002.GQ15171@hawkmoon.kerlabs.com>	<48FC86B2.8000606@fr.ibm.com> <48FCA97C.1040108@cs.columbia.edu>
-In-Reply-To: <48FCA97C.1040108@cs.columbia.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 21 Oct 2008 05:39:06 -0400
+Date: Tue, 21 Oct 2008 10:38:33 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Daney <ddaney@caviumnetworks.com>, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+       Tomaso.Paoletti@caviumnetworks.com
+Subject: Re: [PATCH] serial: Initialize spinlocks in 8250 and don't clobber
+ them.
+Message-ID: <20081021103833.5e960c8d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081020141750.d0610586.akpm@linux-foundation.org>
+References: <48F51114.2010105@caviumnetworks.com>
+	<20081020141750.d0610586.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> IMHO we should look at Dmitry patchset and merge the external checkpoint 
->> code to Oren's patchset in order to checkpoint *one* process and have 
->> the process to restart itself. At this point, we can begin to talk about 
->> the restart itself, shall we have the kernel to fork the processes to be 
->> restarted ? shall we fork from userspace and implement some mechanism to 
->> have each processes to restart themselves ? etc...
->>
-> 
-> In both approaches, processes restart themselves, in the sense that a
-> process to be restarted eventually calls "do_restart()" (or equivalent).
-> 
-> The only question is how processes are created. Andrew's patch creates
-> everything inside the kernel. I would like to still give it a try outside
-> the kernel. Everything is ready, except that we need a way to pre-select
-> a PID for the new child... we never agreed on that one, did we ?
+> But yes, copying a spinlock by value is quite wrong.  Perhaps we could
+> retain the struct assigment and then run spin_lock_init() to get the
+> spinlock into a sane state?
 
-what do you mean ? like a clone_with_pid() routine ? 
+Kind of irrelevant now however, the split of patches that caused the
+original bug is over and the NR_IRQ removal patch half of it hit Linus
+tree.
 
-> If we go ahead with the kernel-based process creation, it's easy to merge
-> it to the current patch-set.
-
-Both solution are valid. Nevertheless, I would choose the solution 
-sharing existing code and being arch independent.
-
-Now, we can start by duplicating code and see later how we could
-share. But for mainline inclusion, I think that code reuse is a
-faster path.
-
-C.
+Alan
