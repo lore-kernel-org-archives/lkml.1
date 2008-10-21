@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbYJURc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbYJURff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754127AbYJURc5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 13:32:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbYJURct
+	id S1754774AbYJURff (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 13:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbYJURf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 13:32:49 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43249 "EHLO
+	Tue, 21 Oct 2008 13:35:28 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50085 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751423AbYJURct (ORCPT
+	with ESMTP id S1750930AbYJURf1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 13:32:49 -0400
-Date: Tue, 21 Oct 2008 19:40:08 +0200
+	Tue, 21 Oct 2008 13:35:27 -0400
+To: David John <davidjon@xenontk.org>
+Cc: mingo@elte.hu, akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com,
+       tglx@linutronix.de
+Subject: Re: [PATCH v5] HPET: Remove the BKL.
 From: Andi Kleen <andi@firstfloor.org>
-To: Alok Kataria <akataria@vmware.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH 0/3] Improve TSC as a clocksource under VMware
-Message-ID: <20081021174008.GH12825@one.firstfloor.org>
-References: <1224552902.2640.88.camel@alok-dev1> <874p36fflp.fsf@basil.nowhere.org> <1224607284.6161.22.camel@alok-dev1>
-Mime-Version: 1.0
+References: <1224568707-2361-1-git-send-email-davidjon@xenontk.org>
+Date: Tue, 21 Oct 2008 19:35:26 +0200
+In-Reply-To: <1224568707-2361-1-git-send-email-davidjon@xenontk.org> (David John's message of "Tue, 21 Oct 2008 11:28:27 +0530")
+Message-ID: <87abcxetr5.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1224607284.6161.22.camel@alok-dev1>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > It would be far nicer if VMware just emulated the "constant_tsc" bit
-> > in the AMD CPUID leaf, instead of adding all that gunk to Linux.
-> > Right now it's only checked for AMD CPUs, but that could be changed.
-> 
-> I am not sure if we might want to skip the tsc_sync code for all the
-> cpus which have this constant_tsc bit set, can we ?
+David John <davidjon@xenontk.org> writes:
 
-It should be ok, although normally sanity checks should be kept.
+>  	switch (cmd) {
+>  	case HPET_IE_OFF:
+> -		if ((devp->hd_flags & HPET_IE) == 0)
+> +		spin_lock_irq(&hpet_lock);
+> +		if ((devp->hd_flags & HPET_IE) == 0) {
+> +			spin_unlock_irq(&hpet_lock);
+>  			break;
 
-> Since i have seen that we can have cases where tsc is marked unstable as
-> its not found to be perfectly stable between cpus, we have to make sure
-> that we avoid this check when on VMware. Even with slight difference in
+Reads don't need to be locked here, so you could just move the spin_lock_irq
+down a bit and avoid the redundant unlock_irq. Same below.
 
-Normally tsc sync should only fail when the error is large.
-It cannot detect very small derivation by design. It's more like
-a sanity check "does the TSC sync look half way sane"
-
-If it fails on VMware perhaps the margins are not big enough or 
-something else is fishy.
-
-But still it could be skipped with constant_tsc. But again you
-shouldn't really fail that check -- if you do fail are you
-sure your clock is really synchronized enough that there
-are no observable differences?
-
-> TSC between cpus, we know that TSC is the best available clocksource as
-> the hypervisor (VMware) makes sure that the drift is always marginal (if
-> ever there is).
-
-The drift has to be unobservable, otherwise you still risk
-non monotonity.  Also when there is drift it has to be short
-term only, otherwise it would accumulate over longer times.
+> +		}
 
 -Andi
 
