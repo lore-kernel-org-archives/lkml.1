@@ -1,84 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbYJUSmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbYJUSnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755498AbYJUSmn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 14:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbYJUSm0
+	id S1754897AbYJUSnq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 14:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbYJUSnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 14:42:26 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:23947 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755339AbYJUSmZ (ORCPT
+	Tue, 21 Oct 2008 14:43:37 -0400
+Received: from pih-relay06.plus.net ([212.159.14.19]:54038 "EHLO
+	pih-relay06.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751903AbYJUSng (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 14:42:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Pay3rs5PgsXYGMm1tUj4zuB+j58A2C7m5/dZrdiEY0Ef3OILX2vyk+F++SPUhKKib4
-         QPRkU+ZjVcfchmEHmUVIgV34NE+MfFVPzeg/ERn+gHrIy3WVURqxYObqH8D7RjSJPuqN
-         xU4hCaGZT8b5xGiMJOnpZKIz/iqaauVw0AN58=
-Message-ID: <86802c440810211142v30cf5b4s4f71aa1261526c08@mail.gmail.com>
-Date: Tue, 21 Oct 2008 11:42:24 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Daniele Calore" <orkaan@orkaan.org>
-Subject: Re: [PATCH 2.6.27] x86: memtest fix use of reserve_early()
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20081013103412.6fec375a@buddha>
+	Tue, 21 Oct 2008 14:43:36 -0400
+Message-ID: <48FE22A2.7030604@mimc.co.uk>
+Date: Tue, 21 Oct 2008 19:42:42 +0100
+From: Mark Jackson <mpfj@mimc.co.uk>
+Organization: Mercury IMC Ltd
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jean Delvare <khali@linux-fr.org>
+CC: ben-linux@fluff.org, akpm@linux-foundation.org, i2c@lm-sensors.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [i2c] [PATCH v2] Add support for Dallas DS28CM00 Unique ID chip
+References: <48FDED5E.5080605@mimc.co.uk> <20081021173505.2f7673e2@hyperion.delvare>
+In-Reply-To: <20081021173505.2f7673e2@hyperion.delvare>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081013103412.6fec375a@buddha>
-X-Google-Sender-Auth: 559e8ac4e6a867ae
+X-Plusnet-Relay: a082ebaac809d79b052f5c4d765076bf
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 13, 2008 at 1:34 AM, Daniele Calore <orkaan@orkaan.org> wrote:
-> Hi all,
->
-> Wrong usage of 2nd parameter in reserve_early call.
-> 66/75: reserve_early(start_bad, last_bad - start_bad, "BAD RAM");
->                                ^^^^^^^^^^^^^^^^^^^^
->
-> The correct way is to use 'end' address and not 'size'.
-> As a bonus a fix to the printk format.
->
-> Signed-off-by: Daniele Calore <orkaan@orkaan.org>
->
-> ---
-> diff --git a/arch/x86/mm/memtest.c b/arch/x86/mm/memtest.c
-> index 672e17f..9cab18b 100644
-> --- a/arch/x86/mm/memtest.c
-> +++ b/arch/x86/mm/memtest.c
-> @@ -61,9 +61,9 @@ static void __init memtest(unsigned long start_phys, unsigned long size,
->                                last_bad += incr;
->                        } else {
->                                if (start_bad) {
-> -                                       printk(KERN_CONT "\n  %010lx bad mem addr %010lx - %010lx reserved",
-> +                                       printk(KERN_CONT "\n  %016lx bad mem addr %010lx - %010lx reserved",
->                                                val, start_bad, last_bad + incr);
-> -                                       reserve_early(start_bad, last_bad - start_bad, "BAD RAM");
-> +                                       reserve_early(start_bad, last_bad + incr, "BAD RAM");
->                                }
->                                start_bad = last_bad = start_phys_aligned;
->                        }
-> @@ -72,9 +72,8 @@ static void __init memtest(unsigned long start_phys, unsigned long size,
->        if (start_bad) {
->                printk(KERN_CONT "\n  %016lx bad mem addr %010lx - %010lx reserved",
->                        val, start_bad, last_bad + incr);
-> -               reserve_early(start_bad, last_bad - start_bad, "BAD RAM");
-> +               reserve_early(start_bad, last_bad + incr, "BAD RAM");
->        }
-> -
->  }
->
->  /* default is disabled */
+Jean Delvare wrote:
+> On Tue, 21 Oct 2008 15:55:26 +0100, Mark Jackson wrote:
+>> This patch adds support for the (I2C based) DS28CM00 ID chip.
+>> (v2 after running through checkpatch)
+>>
+>> Signed-off-by: M.Jackson <mpfj@mimc.co.uk> 
+>> ---
+>>  drivers/i2c/chips/Kconfig    |    7 ++
+>>  drivers/i2c/chips/Makefile   |    1 +
+>>  drivers/i2c/chips/ds28cm00.c |  166 ++++++++++++++++++++++++++++++++++++++++++
+>>  3 files changed, 174 insertions(+), 0 deletions(-)
+> 
+> Nack. No new drivers under drivers/i2c/chips please, it's going away
+> soon.
 
-Acked-by: Yinghai Lu <yinghai@kernel.org>
+Okay ... where should any new drivers be located ?
+
+<...snip...>
+
+>> +static int ds28cm00_attach_adapter(struct i2c_adapter *adapter);
+>> +static int ds28cm00_detect(struct i2c_adapter *adapter, int address, int kind);
+>> +static int ds28cm00_detach_client(struct i2c_client *client);
+>> +
+>> +/* This is the driver that will be inserted */
+>> +static struct i2c_driver ds28cm00_driver = {
+>> +	.driver = {
+>> +		.name	= "ds28cm00",
+>> +	},
+>> +	.attach_adapter	= ds28cm00_attach_adapter,
+>> +	.detach_client	= ds28cm00_detach_client,
+>> +};
+> 
+> attach_adapter and detach_client are deprecated. Please use probe and
+> remove instead.
+
+Are there any existing chip drivers that use this new method ?
 
 Thanks
-
-YH
+Mark
