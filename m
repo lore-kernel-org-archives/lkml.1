@@ -1,62 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751814AbYJUTMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbYJUTNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751814AbYJUTMA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 15:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbYJUTLv
+	id S1755393AbYJUTNS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 15:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYJUTNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 15:11:51 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:44605 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752020AbYJUTLu (ORCPT
+	Tue, 21 Oct 2008 15:13:04 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:32658 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750874AbYJUTND (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 15:11:50 -0400
-Subject: Re: [PATCH 0/3] Improve TSC as a clocksource under VMware
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Chris Snook <csnook@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>, Jeff Hansen <x@jeffhansen.com>
-In-Reply-To: <48FD6EDC.5010801@redhat.com>
-References: <1224552902.2640.88.camel@alok-dev1>
-	 <48FD6EDC.5010801@redhat.com>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Tue, 21 Oct 2008 12:11:49 -0700
-Message-Id: <1224616309.6161.63.camel@alok-dev1>
+	Tue, 21 Oct 2008 15:13:03 -0400
+Date: Tue, 21 Oct 2008 21:12:19 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Mark Jackson <mpfj@mimc.co.uk>
+Cc: ben-linux@fluff.org, akpm@linux-foundation.org, i2c@lm-sensors.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [i2c] [PATCH v2] Add support for Dallas DS28CM00 Unique ID chip
+Message-ID: <20081021211219.18fb7d84@hyperion.delvare>
+In-Reply-To: <48FE22A2.7030604@mimc.co.uk>
+References: <48FDED5E.5080605@mimc.co.uk>
+	<20081021173505.2f7673e2@hyperion.delvare>
+	<48FE22A2.7030604@mimc.co.uk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-20 at 22:55 -0700, Chris Snook wrote:
-> Alok Kataria wrote:
-> > This patch set makes some changes to the TSC code, so that it is always
-> > used as the default clocksource when running under VMware.
-> > The first 2 patches do the ground work of adding code to detect if we
-> > are running under VMware.
-> > The third patch adds a tsc_reliable flag which tells us that TSC is
-> > reliable on this system, so that we can skip some tests which can
-> > potentially mark TSC as unstable. Details under individual patch
-> > headers.
+Hi Mark,
+
+On Tue, 21 Oct 2008 19:42:42 +0100, Mark Jackson wrote:
+> Jean Delvare wrote:
+> > On Tue, 21 Oct 2008 15:55:26 +0100, Mark Jackson wrote:
+> >> This patch adds support for the (I2C based) DS28CM00 ID chip.
+> >> (v2 after running through checkpatch)
+> >>
+> >> Signed-off-by: M.Jackson <mpfj@mimc.co.uk> 
+> >> ---
+> >>  drivers/i2c/chips/Kconfig    |    7 ++
+> >>  drivers/i2c/chips/Makefile   |    1 +
+> >>  drivers/i2c/chips/ds28cm00.c |  166 ++++++++++++++++++++++++++++++++++++++++++
+> >>  3 files changed, 174 insertions(+), 0 deletions(-)
+> > 
+> > Nack. No new drivers under drivers/i2c/chips please, it's going away
+> > soon.
 > 
-> Do you intend for this to supplement Jeff Hansen's tsc=stable patch, or to
-> replace it?  If you intend to supplement it, you should rework your submission
-> to make sure that both your autodetection and his command-line option use the
-> same internal mechanism, and if you intend to replace it, you should say this
-> explicitly, and justify it.  Either way, you should definitely CC Jeff on the
-> submission, as I am doing now.
+> Okay ... where should any new drivers be located ?
 
-Hi Chris,
+Depends of what the device does.
+* Hardware monitoring chip drivers go to drivers/hwmon
+* RTC chip drivers go to drivers/rtc
+* I/O expander drivers go to drivers/gpio
+If you can't find a suitable directory under drivers, either create a
+new one if that makes sense, or put your driver under drivers/misc.
 
-I had made this change to supplement Jeff's change, but I notice that
-his change is not in any of the trees yet. Let me incorporate that in
-the next iteration of this patch.
-
-Thanks,
-Alok
+> >> +static int ds28cm00_attach_adapter(struct i2c_adapter *adapter);
+> >> +static int ds28cm00_detect(struct i2c_adapter *adapter, int address, int kind);
+> >> +static int ds28cm00_detach_client(struct i2c_client *client);
+> >> +
+> >> +/* This is the driver that will be inserted */
+> >> +static struct i2c_driver ds28cm00_driver = {
+> >> +	.driver = {
+> >> +		.name	= "ds28cm00",
+> >> +	},
+> >> +	.attach_adapter	= ds28cm00_attach_adapter,
+> >> +	.detach_client	= ds28cm00_detach_client,
+> >> +};
+> > 
+> > attach_adapter and detach_client are deprecated. Please use probe and
+> > remove instead.
 > 
-> -- Chris
+> Are there any existing chip drivers that use this new method ?
 
+As of 2.6.27-git10: all drivers under drivers/i2c/chips, all i2c
+drivers under drivers/gpio, all i2c drivers under drivers/hwmon, all
+i2c drivers under drivers/rtc, and more.
+
+You may want to take a look at Documentation/i2c/upgrading-clients too.
+
+
+-- 
+Jean Delvare
