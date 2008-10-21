@@ -1,82 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbYJUGmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817AbYJUGsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752818AbYJUGmq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 02:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbYJUGmh
+	id S1752817AbYJUGsB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 02:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbYJUGrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 02:42:37 -0400
-Received: from lazybastard.de ([212.112.238.170]:36387 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751129AbYJUGmh (ORCPT
+	Tue, 21 Oct 2008 02:47:52 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:33493 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751318AbYJUGrv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 02:42:37 -0400
-Date: Tue, 21 Oct 2008 08:41:45 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland Dreier <rdreier@cisco.com>,
+	Tue, 21 Oct 2008 02:47:51 -0400
+Subject: Re: [PATCH] x86, ioremap: use %pR in printk
+From: Johannes Berg <johannes@sipsolutions.net>
+To: benh@kernel.crashing.org
+Cc: Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@osdl.org>,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       linux-pci@vger.kernel.org, yhlu.kernel@gmail.com,
        Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [announce] new tree: "fix all build warnings, on all configs"
-Message-ID: <20081021064144.GC30563@logfs.org>
-References: <20081017171139.GA1792@elte.hu> <ada3aiv9k6j.fsf@cisco.com> <20081017180523.GA11590@elte.hu> <adatzbbrrcf.fsf@cisco.com> <20081017191202.GA5396@elte.hu> <adaiqrrrp2h.fsf@cisco.com> <20081018082209.GA24220@elte.hu> <alpine.LFD.2.00.0810200933470.3518@nehalem.linux-foundation.org> <20081020192110.GA28736@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081020192110.GA28736@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <1224538518.7654.164.camel@pasglop>
+References: <20081020040823.871BDDDDEC@ozlabs.org>
+	 <20081020071203.GB12131@elte.hu> <1224491682.7654.135.camel@pasglop>
+	 <20081020090502.GB31710@elte.hu> <20081020110018.GA24579@elte.hu>
+	 <1224501352.7654.141.camel@pasglop> <1224501768.7654.144.camel@pasglop>
+	 <2008102  <20081020113602.GA2697@elte.hu>
+	 <1224507486.27899.31.camel@johannes.berg>
+	 <1224538518.7654.164.camel@pasglop>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-e3lXRRFrItNsUStAzToZ"
+Date: Tue, 21 Oct 2008 08:47:29 +0200
+Message-Id: <1224571649.27899.73.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 October 2008 21:21:10 +0200, Ingo Molnar wrote:
->  
->  /* Alas, no aliases. Too much hassle with bringing module.h everywhere */
->  #define fops_get(fops) \
-> -	(((fops) && try_module_get((fops)->owner) ? (fops) : NULL))
-> +	(((fops != NULL) && try_module_get((fops)->owner) ? (fops) : NULL))
->  #define fops_put(fops) \
-> -	do { if (fops) module_put((fops)->owner); } while(0)
-> +	do { if (fops != NULL) module_put((fops)->owner); } while(0)
 
-This, I would argue, makes the code worse.
+--=-e3lXRRFrItNsUStAzToZ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> diff --git a/include/linux/audit.h b/include/linux/audit.h
-> index 6272a39..a3f78d0 100644
-> --- a/include/linux/audit.h
-> +++ b/include/linux/audit.h
-> @@ -580,7 +580,8 @@ extern int audit_enabled;
->  #define audit_log(c,g,t,f,...) do { ; } while (0)
->  #define audit_log_start(c,g,t) ({ NULL; })
->  #define audit_log_vformat(b,f,a) do { ; } while (0)
-> -#define audit_log_format(b,f,...) do { ; } while (0)
-> +static inline void __attribute__ ((format(printf, 2, 3)))
-> +audit_log_format(struct audit_buffer *ab, const char *fmt, ...) { }
+On Tue, 2008-10-21 at 08:35 +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2008-10-20 at 14:58 +0200, Johannes Berg wrote:
+> > On Mon, 2008-10-20 at 13:36 +0200, Ingo Molnar wrote:
+> >=20
+> > > +	/* room for the actual number, the "0x" and the final zero */
+> > > +	char sym[2*sizeof(phys_addr_t) + 2];
+> >=20
+> > Buffer overflow.
+>=20
+> It's actually not going to overflow as we pass the end of the buffer to
+> "number" but we'll miss a digit.
 
-Took me a moment to notice the two lines aren't independent.  A tab
-would have been appreciated.
+"buf" won't overflow, but "sym" will, no? Anyway, +3 is the correct
+thing to do.
 
-> diff --git a/drivers/net/wireless/b43/b43.h b/drivers/net/wireless/b43/b43.h
-> index 427b820..ac55b62 100644
-> --- a/drivers/net/wireless/b43/b43.h
-> +++ b/drivers/net/wireless/b43/b43.h
-> @@ -853,7 +853,8 @@ void b43warn(struct b43_wl *wl, const char *fmt, ...)
->  void b43dbg(struct b43_wl *wl, const char *fmt, ...)
->      __attribute__ ((format(printf, 2, 3)));
->  #else /* DEBUG */
-> -# define b43dbg(wl, fmt...) do { /* nothing */ } while (0)
-> +static inline void __attribute__ ((format(printf, 2, 3)))
-> +b43dbg(struct b43_wl *wl, const char *fmt, ...) { }
+johannes
 
-Dito.
+--=-e3lXRRFrItNsUStAzToZ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Jörn
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
--- 
-A victorious army first wins and then seeks battle.
--- Sun Tzu
+iQIcBAABAgAGBQJI/Xr9AAoJEKVg1VMiehFYAtIP/iJV5VlO+Gnth9KzRnKG4B8k
+bC0LF9Q5uIxxSv4pZgLOiLAfVsEpMb7N8BztQ+9DplkFbFOGDeVTpBgCaQb2arIO
+lsxN9hhP2bVwjqQdMnOzB3i69rLpFG8vFMXWajQg+RF3+a/ntLyqnKtlIdQAikKS
+PsVoEliwrTHf1tIKcjvVycGVYYayhlB3EOUh7MAjNIy4HT1CbPyKcaXt0hc22w3u
+jWZzZ7ceU2uFlMKLPpeI+eX3GXHCGWMPmTVVFXzGd+nkv0aD42edUGIktYQNR9N8
+r/BZVYxvo58UrsRKGqBbAdhyHOXnLoyNAdxXgcvDMCr8HCp0tJPpejchrj0kjuAa
+GtkJ6oH/0RBSBLfqp2Ib2kuWlg19KkHSX1ctEKzFxWsL4GqKXofEzUqpG2fqocZX
+U9SXQwyG/4l+cZJwZD3Qybj5GZbJXeee5fVinrqssSh42jh9/kQFMmUJah9Dcyi+
+h2QNu8fFrlgqumK+wJ+KFmQZ9AdAZ76PH39jOKq7Hmn/GU1S6uFCDQPlhd2zY5Dd
+bohXJ6UqN6voE41EAbQgdWdIR+/pfvC6h0cnXjJBoLOiIqSyE3Fn+ZXXCzyijgFM
+8qX6Di3VXIjnMLLu201OLQ2BJ0TQf9okWTkKuTtzB/Qb4tFy+051wFZ8h35T9Ise
+btYZuWGR+mNr+472dz3i
+=Gl+r
+-----END PGP SIGNATURE-----
+
+--=-e3lXRRFrItNsUStAzToZ--
+
