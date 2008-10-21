@@ -1,134 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbYJUL6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbYJUMAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754150AbYJUL6W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 07:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbYJUL6G
+	id S1754031AbYJUMAS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 08:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbYJUMAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 07:58:06 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:61552 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753997AbYJUL6E (ORCPT
+	Tue, 21 Oct 2008 08:00:05 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42726 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752282AbYJUMAE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 07:58:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Cp0BxrgZbRFD4DkTCJJKQhYO3cfi+w5NpxpArCXP7bXdsiC5tGRfX0i4u4KhuPtsh4
-         GUoNRo7y+88OV+qyyNAFZK9tCgo6UFy8g7bZoVStLxdi4PPLiqXvl6wdeu0PU1pkqjJS
-         iLBocL4jqz+FX+9qdhxNEba04VqKd6y/y7vsk=
-Message-ID: <c4e36d110810210458x63ec0356j9a59571008943e63@mail.gmail.com>
-Date: Tue, 21 Oct 2008 13:58:02 +0200
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Chris Snook" <csnook@redhat.com>
-Subject: Re: Scheduler on C2D CPU and latest 2.6.27 kernel
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@redhat.com>,
-       "Peter Zijlstra" <pzijlstr@redhat.com>
-In-Reply-To: <48FDC03B.3050708@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Oct 2008 08:00:04 -0400
+Date: Tue, 21 Oct 2008 14:07:20 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [announce] new tree: "fix all build warnings, on all configs"
+Message-ID: <20081021120720.GG12825@one.firstfloor.org>
+References: <20081017171139.GA1792@elte.hu> <87r66ejqla.fsf@basil.nowhere.org> <20081021111716.GA4476@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <c4e36d110810210259o38897783i2dc4bcb59e8d32e7@mail.gmail.com>
-	 <48FDB7E7.4090007@redhat.com>
-	 <c4e36d110810210429q55e959c5hcdf7bfad34cb1f57@mail.gmail.com>
-	 <48FDC03B.3050708@redhat.com>
+In-Reply-To: <20081021111716.GA4476@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/21 Chris Snook <csnook@redhat.com>:
-> Zdenek Kabelac wrote:
->>
->> 2008/10/21 Chris Snook <csnook@redhat.com>:
->>>
->>> Zdenek Kabelac wrote:
->>>>
->>>> Hi
->>>>
->>>> Recently I'm noticing bad behavior of the CPU scheduler on my T61 (2GB,
->>>> C2D)
->>>>
->>>> It looks like Linux concentrates all running tasks on one CPU and the
->>>> second cpu is sleeping.
->>>>
->>>> With recent changes to DRI - glxgears went up to 840FPS but also takes
->>>> 100% (with Xorg) and when I run 'while :; do true; done' loop in
->>>> parallel frame rate drops to 300FPS.
->>>>
->>>> But as I have C2D CPU I would expect that there should be no such
->>>> dramatic slowdown.
->>>>
->>>> Xosview shows that only one CPU is fully loaded.
->>>>
->>>> Here are my .config scheduler options:
->>>>
->>>> CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
->>>> # CONFIG_GROUP_SCHED is not set
->>>> CONFIG_IOSCHED_NOOP=y
->>>> CONFIG_IOSCHED_AS=y
->>>> CONFIG_IOSCHED_DEADLINE=y
->>>> CONFIG_IOSCHED_CFQ=y
->>>> CONFIG_DEFAULT_IOSCHED="cfq"
->>>> CONFIG_SCHED_SMT=y
->>>> # CONFIG_SCHED_MC is not set
->>
->> I've also tested   SMT=n  MC=y - with same result
->
-> Expected.
->
->>>> CONFIG_SCHED_HRTICK=y
->>>> # CONFIG_NET_SCHED is not set
->>>> CONFIG_USB_EHCI_TT_NEWSCHED=y
->>>> CONFIG_SCHED_DEBUG=y
->>>> CONFIG_SCHEDSTATS=y
->>>> CONFIG_SCHED_TRACER=y
->>>>
->>>>
->>>> Am I missing something?
->>>
->>> You're running a loop that does nothing except create new tasks that have
->>> no
->>> scheduling history, and then disappear before the scheduler can migrate
->>> them.
->>>
->>> Try running 'openssl speed' to chew up CPU.  I promise you the scheduler
->>> will behave very nicely.
->>
->> Well -  sorry you really shouldn't promise things you cannot guarantee.
->
-> You must be new here.
+On Tue, Oct 21, 2008 at 01:17:16PM +0200, Ingo Molnar wrote:
+> 
+> * Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > >   *	acpi_pm_disable_gpes - Disable the GPEs.
+> > >   */
+> > > -static int acpi_pm_disable_gpes(void)
+> > > +static inline int acpi_pm_disable_gpes(void)
+> > 
+> > Just to satisfy my curiosity, what compiler warning does marking 
+> > functions inline fix?
+> 
+> the commit log below explains the situation. The warning exposed a maze 
+> of #ifdefs in drivers/acpi/sleep/main.c. It's not the warning we need to 
+> "fix" but that maze, obviously.
 
-hmm, I don't think so :)
+Thanks. That makes sense, 
 
->
->> It's obviously showing exactly same problem on my box.
->
-> If you start 2 'openssl speed' tasks while glxgears is running, what
-> happens?
->
->> And I should add that with  2.6.27-rc8 I do not experience this behavior.
->
-> Thanks.  Can you bisect?
+I also agree with you that the better alternative would be 
+to just always force SUSPEND together with ACPI.
 
-Maybe the author of this regression will 'confess' himself and will
-safe my time?
+I suspect the code delta wouldn't be very large compared to the rest
+of the ACPI code.
 
-I can see some major merge  on Oct 20 for kernel/sched.c
+-Andi
 
->
->> Gears are showning 80% speed - but consumes only 25%
->> and bash loop or openssl speed task do not influence its speed.
->> (as expected with 2CPU machine)
->
-> That's definitely what it should be doing with openssl speed.  The bash loop
-> isn't something we should go out of our way to optimize for, since real
-> world apps don't behave that way, but if there's a free fix, we might as
-> well do it.
-
-You really should check first what the loop I've posted actually does :)
-(hint -  /bin/true  !=  true)
-
-Zdenek
