@@ -1,107 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbYJUMus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbYJUNDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756492AbYJUMus (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 08:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753738AbYJUMuh
+	id S1754165AbYJUNDo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 09:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbYJUNDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 08:50:37 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45173 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753799AbYJUMug (ORCPT
+	Tue, 21 Oct 2008 09:03:35 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:57480 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752221AbYJUNDe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 08:50:36 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 2/2] 8250: Add more OxSemi devices
-To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Date: Tue, 21 Oct 2008 13:50:14 +0100
-Message-ID: <20081021124908.5113.50743.stgit@localhost.localdomain>
-In-Reply-To: <20081021124849.5113.26613.stgit@localhost.localdomain>
-References: <20081021124849.5113.26613.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
+	Tue, 21 Oct 2008 09:03:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=mEqkgguwf6D5/r+fgXeFEQEHKdJKG8T2Z+P1b7+c3YFUD3FF4RrucWCSOfa06m5yqv
+         xG6gmlwhQ1vpEiL8W5DQgqFCzOo8TkhzrBap1X7o2dgeor9OXqL1pEargyMVQfwIlhwk
+         8KDFsy7waFAyT9E0Yq//Hla+vkWCX646zF+5c=
+Date: Tue, 21 Oct 2008 09:02:01 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for October 21
+Message-ID: <20081021130201.GB31686@yoda.jdub.homelinux.org>
+References: <20081021195109.ed83b102.sfr@canb.auug.org.au> <20081021120735.GA10567@yoda.jdub.homelinux.org> <20081021231421.a9cdfcb4.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081021231421.a9cdfcb4.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Lee Howard <lee.howard@mainpine.com>
+On Tue, Oct 21, 2008 at 11:14:21PM +1100, Stephen Rothwell wrote:
+>Hi Josh,
+>
+>On Tue, 21 Oct 2008 08:07:35 -0400 Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+>>
+>> On Tue, Oct 21, 2008 at 07:51:09PM +1100, Stephen Rothwell wrote:
+>> >I have also applied the following patches for known problems:
+>> >
+>> >	sparc: qlogicpti fallout from sbus removal
+>> >	ibm_newemac: Fix new MAL feature handling
+>> 
+>> Did you?  I put that in my next branch, which Ben pulled into his powerpc
+>> tree, so it shouldn't have needed applying separately.
+>
+>It got into Ben's tree way after I started building linux-next for
+>today.  Tomorrow I will indeed not need it any more, thanks.
 
-These have the Mainpine PCI identifier on however
+Ah.  I sort of guessed that after I sent out my first mail.  Silly me
+for emailing before coffee again.
 
-Additional paranoia check for Tornado versions added by Alan Cox
-
-(and this time I remembered to do an stg refresh so that the corrections ended
- up in these patches not randomly attached to another diff -- Alan)
-
-Signed-off-by: Lee Howard <lee.howard@mainpine.com>
-Signed-off-by: Alan Cox <alan@redhat.com>
----
-
- drivers/serial/8250_pci.c |   30 +++++++++++++++++++++++++-----
- 1 files changed, 25 insertions(+), 5 deletions(-)
-
-
-diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
-index 43c990a..a8818b7 100644
---- a/drivers/serial/8250_pci.c
-+++ b/drivers/serial/8250_pci.c
-@@ -1865,6 +1865,11 @@ static int pci_oxsemi_tornado_init(struct pci_dev *dev, struct pciserial_board *
- 	unsigned long deviceID;
- 	unsigned int  number_uarts;
- 
-+	/* OxSemi Tornado devices are all 0xCxxx */
-+	if (dev->vendor == PCI_VENDOR_ID_OXSEMI &&
-+	    (dev->device & 0xF000) != 0xC000)
-+	    	return 0;
-+
- 	p = pci_iomap(dev, 0, 5);
- 	if (p == NULL)
- 		return -ENOMEM;
-@@ -1893,7 +1898,8 @@ pciserial_init_ports(struct pci_dev *dev, struct pciserial_board *board)
- 	/*
- 	 * Find number of ports on board
- 	 */
--	 if (dev->vendor == PCI_VENDOR_ID_OXSEMI)
-+	if (dev->vendor == PCI_VENDOR_ID_OXSEMI ||
-+	    dev->vendor == PCI_VENDOR_ID_MAINPINE)
- 	 	pci_oxsemi_tornado_init(dev, board);
-     
- 	nr_ports = board->num_ports;
-@@ -2375,9 +2381,9 @@ static struct pci_device_id serial_pci_tbl[] = {
- 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
- 		pbn_b0_bt_2_921600 },
- 
--    /*
--     * Oxford Semiconductor Inc. Tornado PCI express device range.
--     */
-+	/*
-+	 * Oxford Semiconductor Inc. Tornado PCI express device range.
-+	 */
-  	{	PCI_VENDOR_ID_OXSEMI, 0xc101,    /* OXPCIe952 1 Legacy UART */
- 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
- 		pbn_b0_1_4000000 },
-@@ -2510,7 +2516,21 @@ static struct pci_device_id serial_pci_tbl[] = {
- 	{	PCI_VENDOR_ID_OXSEMI, 0xc4cf,    /* OXPCIe200 1 Native UART */
- 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
- 		pbn_oxsemi_1_4000000 },
--
-+	/*
-+	 * Mainpine Inc. IQ Express "Rev3" utilizing OxSemi Tornado
-+	 */
-+ 	{	PCI_VENDOR_ID_MAINPINE, 0x4000,	/* IQ Express 1 Port V.34 Super-G3 Fax */
-+		PCI_VENDOR_ID_MAINPINE, 0x4001, 0, 0,
-+		pbn_oxsemi_1_4000000 },
-+ 	{	PCI_VENDOR_ID_MAINPINE, 0x4000,	/* IQ Express 2 Port V.34 Super-G3 Fax */
-+		PCI_VENDOR_ID_MAINPINE, 0x4002, 0, 0,
-+		pbn_oxsemi_2_4000000 },
-+ 	{	PCI_VENDOR_ID_MAINPINE, 0x4000,	/* IQ Express 4 Port V.34 Super-G3 Fax */
-+		PCI_VENDOR_ID_MAINPINE, 0x4004, 0, 0,
-+		pbn_oxsemi_4_4000000 },
-+ 	{	PCI_VENDOR_ID_MAINPINE, 0x4000,	/* IQ Express 8 Port V.34 Super-G3 Fax */
-+		PCI_VENDOR_ID_MAINPINE, 0x4008, 0, 0,
-+		pbn_oxsemi_8_4000000 },
- 	/*
- 	 * SBS Technologies, Inc. P-Octal and PMC-OCTPRO cards,
- 	 * from skokodyn@yahoo.com
-
+josh
