@@ -1,42 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753111AbYJUAYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbYJUA0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753111AbYJUAYu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 20:24:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbYJUAYk
+	id S1755505AbYJUA0T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 20:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbYJUA0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 20:24:40 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:63818 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754872AbYJUAYj (ORCPT
+	Mon, 20 Oct 2008 20:26:07 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:55102 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752818AbYJUA0F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 20:24:39 -0400
+	Mon, 20 Oct 2008 20:26:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=EOk+tADlpQlXliJgwkNIuccQbEQnIljjz7cnCBaf7+wLSXRfeBGYKyo39osevAQvPU
-         9qljjNWRSC1FjgJAk60h27Jw4lI/1pzsILD96La4Pa2Z1cKVxep30DKaVX1wSpdRf49E
-         2ZAL7L8HUl3nfvyfRjREP+HyP/Ap7n8lNuDaM=
-Message-ID: <4b6fba110810201724v41d26dd8lc9abcba129599fd1@mail.gmail.com>
-Date: Mon, 20 Oct 2008 20:24:38 -0400
-From: "Daniel Rosenthal" <danielrosenthal@acm.org>
-To: LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-Subject: behavior of hrtimers scheduled to expire in the past
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=cWWG1oKwDIxMzG+AsbPsfpCOfE4/h2ElDAYlxXETkOGED9skC683t7sPHmKp8DVIpA
+         GlNo22mvKh3mqGRuGqdR1KqQrTK93hMlvYw+zYdxDsDNJPFPX4RrSQbapxrVYaL/F8Xw
+         bQX/FBa32I6uAScltgSbQaj77yK+cKKbRdppc=
+Message-ID: <c62985530810201726w17ac4249h71c8feeb00fcd0e9@mail.gmail.com>
+Date: Tue, 21 Oct 2008 02:26:04 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "David S. Miller" <davem@davemloft.net>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sparc: correct section of current_pc()
+Cc: "William L. Irwin" <wli@holomorphy.com>,
+       Sparc <sparclinux@vger.kernel.org>
+In-Reply-To: <48FA0F7C.9040507@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Google-Sender-Auth: 818f32c32b7200b6
+References: <48FA0F7C.9040507@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What is the intended behavior for an hrtimer that is scheduled to
-expire in the past?  I assumed that it would simply be scheduled to
-expire at the nearest available time in the future, but I wrote some
-scheduler code and it looks like hrtimers don't go off at all if they
-are not scheduled to go off at a time which is after rq->clock.  Is
-this the intended behavior or is this a bug?
+2008/10/18 Frederic Weisbecker <fweisbec@gmail.com>:
+> Latest mainline gives this section mismatch on sparc:
+>
+> The function current_pc() references
+> the variable __init no_sun4u_here.
+> This is often because current_pc lacks a __init
+> annotation or the annotation of no_sun4u_here is wrong.
+>
+> Since current_pc() is used only in early time, it is correct to
+> put it in .init section.
+>
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+> diff --git a/arch/sparc/kernel/head.S b/arch/sparc/kernel/head.S
+> index 2d325fd..2fe2c11 100644
+> --- a/arch/sparc/kernel/head.S
+> +++ b/arch/sparc/kernel/head.S
+> @@ -465,6 +465,7 @@ gokernel:
+>                mov     %o7, %g4                ! Save %o7
+>
+>                /* Jump to it, and pray... */
+> +               __INIT
+>  current_pc:
+>                call    1f
+>                 nop
+>
+>
 
-Daniel
+(Adding William and sparclinux in cc)
