@@ -1,153 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbYJUA6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbYJUBFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755612AbYJUA6i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 20:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbYJUA6a
+	id S1754674AbYJUBFS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 21:05:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbYJUBFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 20:58:30 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:58485 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751583AbYJUA63 (ORCPT
+	Mon, 20 Oct 2008 21:05:04 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:4622 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751511AbYJUBFD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 20:58:29 -0400
-Date: Mon, 20 Oct 2008 19:58:29 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Daniel Lezcano <dlezcano@fr.ibm.com>, Louis.Rilling@kerlabs.com,
-       containers@lists.linux-foundation.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrey Mirkin <major@openvz.org>
-Subject: Re: [PATCH 0/9] OpenVZ kernel based checkpointing/restart
-Message-ID: <20081021005829.GB8283@us.ibm.com>
-References: <1220439476-16465-1-git-send-email-major@openvz.org> <1224286383.1848.65.camel@nimitz> <20081020111002.GQ15171@hawkmoon.kerlabs.com> <48FC86B2.8000606@fr.ibm.com> <48FCA97C.1040108@cs.columbia.edu> <48FCB3CC.9030804@fr.ibm.com> <20081020172358.GA29092@us.ibm.com> <48FD1FBC.5050408@cs.columbia.edu>
+	Mon, 20 Oct 2008 21:05:03 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "David@Lang. Hm" <david@lang.hm>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>
+Subject: RE: sched_yield() options
+Date: Mon, 20 Oct 2008 18:04:23 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKKEMLAIAD.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48FD1FBC.5050408@cs.columbia.edu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <alpine.DEB.1.10.0810201603510.21749@asgard.lang.hm>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Mon, 20 Oct 2008 18:06:26 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Mon, 20 Oct 2008 18:06:28 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oren Laadan (orenl@cs.columbia.edu):
-> 
-> 
-> Serge E. Hallyn wrote:
-> > Quoting Daniel Lezcano (dlezcano@fr.ibm.com):
-> >> Oren Laadan wrote:
-> >>> Daniel Lezcano wrote:
-> >>>> Louis Rilling wrote:
-> >>>>> On Fri, Oct 17, 2008 at 04:33:03PM -0700, Dave Hansen wrote:
-> >>>>>> On Wed, 2008-09-03 at 14:57 +0400, Andrey Mirkin wrote:
-> >>>>>>> This patchset introduces kernel based checkpointing/restart as it is
-> >>>>>>> implemented in OpenVZ project. This patchset has limited functionality and
-> >>>>>>> are able to checkpoint/restart only single process. Recently Oren Laaden
-> >>>>>>> sent another kernel based implementation of checkpoint/restart. The main
-> >>>>>>> differences between this patchset and Oren's patchset are:
-> >>>>>> Hi Andrey,
-> >>>>>>
-> >>>>>> I'm curious what you want to happen with this patch set.  Is there
-> >>>>>> something specific in Oren's set that deficient which you need
-> >>>>>> implemented?  Are there some technical reasons you prefer this code?
-> >>>>> To be fair, and since (IIRC) the initial intent was to start with OpenVZ's
-> >>>>> approach, shouldn't Oren answer the same questions with respect to Andrey's
-> >>>>> patchset?
-> >>>>>
-> >>>>> I'm afraid that we are forgetting to take the best from both approaches...
-> >>>> I agree with Louis.
-> >>>>
-> >>>> I played with Oren's patchset and tryed to port it on x86_64. I was able 
-> >>>> to sys_checkpoint/sys_restart but if you remove the restoring of the 
-> >>>> general registers, the restart still works. I am not an expert on asm, 
-> >>>> but my hypothesis is when we call sys_checkpoint the registers are saved 
-> >>>> on the stack by the syscall and when we restore the memory of the 
-> >>>> process, we restore the stack and the stacked registers are restored 
-> >>>> when exiting the sys_restart. That make me feel there is an important 
-> >>>> gap between external checkpoint and internal checkpoint.
-> >>> This is a misconception: my patches are not "internal checkpoint". My
-> >>> patches are basically "external checkpoint" by design, which *also*
-> >>> accommodates self-checkpointing (aka internal). The same holds for the
-> >>> restart. The implementation is demonstrated with "self-checkpoint" to
-> >>> avoid complicating things at this early stage of proof-of-concept.
-> >> Yep, I read your patchset :)
-> >>
-> >> I just want to clarify what we want to demonstrate with this patchset 
-> >> for the proof-of-concept ? A self CR does not show what are the 
-> >> complicate parts of the CR, we are just showing we can dump the memory 
-> >> from the kernel and do setcontext/getcontext.
-> >>
-> >> We state at the container mini-summit on an approach:
-> >>
-> >>     1. Pre-dump
-> >>     2. Freeze the container
-> >>     3. Dump
-> >>     4. Thaw/Kill the container
-> >>     5. Post-dump
-> >>
-> >> We already have the freezer, and we can forget for now pre-dump and 
-> >> post-dump.
-> >>
-> >> IMHO, for the proof-of-concept we should do a minimal CR (like you did), 
-> >> but conforming with these 5 points, but that means we have to do an 
-> >> external checkpoint.
-> > 
-> > Right, Oren, iiuc you are insisting that 'external checkpoint' and
-> > 'multiple task checkpoint' are the same thing.  But they aren't.
-> > Rather, I think that what we say is 'multiple tasks c/r' is what you say
-> > should be done from user-space :)
-> 
-> Then I don't explain myself clearly :)
-> 
-> The only thing I consider doing in user space is the creation of
-> the container, the namespaces and the processes.
 
-That I understand.
+> in the case I'm looking at there are two (or more) threads running with
+> one message queue in the center.
+>
+> 'input threads' are grabbing the lock to add messages to the queue
+>
+> 'output threads' are grabbing the lock to remove messages from the queue
+>
+> the programmer is doing a pthread_yield() after each message is processed
+> in an attempt to help fairness (he initially added it in when he started
+> seeing starvation on single-core systems)
 
-> I argue that "external checkpoint of a single process" is very few
-> lines of code away from "self checkpoint" that is in v7.
-> 
-> I'm not sure how you define "external restart" ?  eventually, the
+Yuck. That forces the worst possible scenario, which is nearly strict
+alternation.
 
-If I ever said external restart, I actually meant external checkpoint.
-I understand that a task should call sys_restart() itself.
+There is no reason he should ever be seeing starvation. Each thread should
+either:
 
-> processes restart themselves. It is a question of how the processes
-> are created to begin with.
-> 
-> > 
-> > So particularly given that your patchset seems to be in good shape,
-> > I'd like to see external checkpoint explicitly supported.  Please
-> > just call me a dunce if v7 already works for that.
-> > 
-> 
-> It seems like you want a single process to checkpoint a single (other)
-> process, and then a single process to start a single (other) process.
+1) Use out its timeslice. In which case, a thread can at most be starved for
+the number of threads multiplied by the size of the timeslice. If this is
+too long, then you have too many threads or your timeslice is too big. You
+can't fix it with ugly hacks.
 
-Yup.
+2) Get blocked because it needs another thread to help it make forward
+progress. In this case, there should be no starvation, since each thread
+can't continue until other threads continue.
 
-> I tried to explicitly avoid dealing with the container (user space ?
-> kernel space ?) and with creating new processes (user space ? kernel
-> space ?).
+> what should he be doing instead?
 
-And that's the right thing to do.  But:
+Simply set a limit on the maximum number of messages that can go in the
+queue when output threads are CPU limited. Output threads can't starve input
+threads because they have to block if the queue is empty (assuming you never
+let the queue get too ridiculously full). Input threads can't starve output
+threads if there's a reasonable limit on the queue size.
 
-> Nevertheless, it's the _same_ code. All that is needed is to make the
+> the link above talks about other cases more, but really doesn't say what
+> the right thing to do is for this case.
+>
+> David Lang
 
-I was under the impression that sys_checkpoint() on some other task's
-pid and then restarting with that image would fail right now.
+Implement a sensible queue.
 
-> checkpoint syscall refer to the other task instead of self, and the
-> restart should create a container and fork there, then call sys_restart.
-> 
-> I guess instead of repeating this argument over, I will go ahead and
-> post a patch on top of v7 to demonstrate this (without a container,
+DS
 
-Cool, thanks!
 
-> therefore without preserving the original pid).
-
-Yes, as i believe you said in another email earlier today, we have not
-decided about how to restore the pid.  Eric continues to argue for
-playing games with /proc/sys/kernel/pid_max.
-
--serge
