@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753117AbYJUGdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbYJUGiB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753117AbYJUGdH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 02:33:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbYJUGc4
+	id S1752818AbYJUGiB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 02:38:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbYJUGhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 02:32:56 -0400
-Received: from gate.crashing.org ([63.228.1.57]:44431 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751295AbYJUGcz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 02:32:55 -0400
-Subject: Bug in "genirq: record trigger type"
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>
-In-Reply-To: <200810202205.m9KM5une024759@hera.kernel.org>
-References: <200810202205.m9KM5une024759@hera.kernel.org>
-Content-Type: text/plain
-Date: Tue, 21 Oct 2008 17:32:10 +1100
-Message-Id: <1224570730.7654.242.camel@pasglop>
+	Tue, 21 Oct 2008 02:37:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48076 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751167AbYJUGhv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 02:37:51 -0400
+Date: Mon, 20 Oct 2008 23:37:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, adilger@sun.com, jack@suse.cz,
+       sandeen@redhat.com
+Subject: Re: status of the ext3/jbd error handling enhancement patches
+Message-Id: <20081020233726.5682a278.akpm@linux-foundation.org>
+In-Reply-To: <48FD75AF.6080507@hitachi.com>
+References: <48FC081D.60306@hitachi.com>
+	<20081019221331.ddf6b8c2.akpm@linux-foundation.org>
+	<20081020124145.GB10698@mit.edu>
+	<48FD75AF.6080507@hitachi.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-20 at 22:05 +0000, Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0c5d1eb77a8be917b638344a22afe1398236482b
-> Commit:     0c5d1eb77a8be917b638344a22afe1398236482b
-> Parent:     d6d5aeb661fc14655c417f3582ae7ec52985d2a8
-> Author:     David Brownell <dbrownell@users.sourceforge.net>
-> AuthorDate: Wed Oct 1 14:46:18 2008 -0700
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Thu Oct 2 10:24:09 2008 +0200
+On Tue, 21 Oct 2008 15:24:47 +0900 Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> wrote:
 
-This one is obviously broken and breaks booting on a whole bunch of
-machines (including powermac's and thus my G5, it's never good when my
-own machine breaks !).
+> >>One of the above patches (I forget which) breaks the build because it
+> >>expects the presence of Al Viro's VFS tree, and that hasn't been merged
+> >>yet.  I need to wait and see if that merge will be happening (seems
+> >>unlikely) and if not, rework the patch against mainline.
+> 
+> I see.  Thank you for your work.
+> 
+> > Strange; I don't recall any of the ext4 variants of the error handling
+> > patches requiring Al's VFS tree.  And I thought all of them have been
+> > merged into Linus's tree at this point.
+> 
+> I checked Al's VFS tree and I found commit
+> 6ac465f99b29f74ca5a62bc32a8772985d9a071b changes codes near where
+> one of my patch changes (in ext3/ext4_quota_on()), but not the same code.
 
-Nice to see 3 SOB's and one Ack and nobody caught the obvious bug :-)
+OK.
 
->  	desc = irq_desc + irq;
-> -	if (desc->chip->set_type) {
-> -		spin_lock_irqsave(&desc->lock, flags);
-> -		ret = desc->chip->set_type(irq, type);
-> -		spin_unlock_irqrestore(&desc->lock, flags);
-> -	}
-> +	if (type == IRQ_TYPE_NONE)
-> +		return 0;
-> +
-> +	spin_lock_irqsave(&desc->lock, flags);
-> +	ret = __irq_set_trigger(desc, irq, flags);
-                                             ^^^^ type maybe ?
-
-> +	spin_unlock_irqrestore(&desc->lock, flags);
->  	return ret;
->  }
-
-I have to run so no patch until tomorrow unless somebody beats me to it.
-
-Cheers,
-Ben.
-
-
+Don't worry about it - I'll fix things up some time this week.
