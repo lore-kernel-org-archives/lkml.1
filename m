@@ -1,58 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbYJUMnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbYJUMnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755417AbYJUMnU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 08:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755347AbYJUMmt
+	id S1755233AbYJUMnm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 08:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755403AbYJUMnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 08:42:49 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:14470 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755339AbYJUMms (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 08:42:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=QVnyonAepl887X9Q2Myec1MMpM+N0oV/ABdy42VLUI/+yv+1qG8QEOPV9ffXl+x5C8
-         my90cfUa8wNPyLBe/EE0HzBy+QFHmd4b1ktIIJJxgJzuTw0X8mMcylILHM5xwqzbBY7m
-         jfTpXhWciJPhhRXp+ErZ/8L6qCURaKZxXpc6E=
-Message-ID: <ce0170d90810210542p6ea65a74t4f9ac6f7702a9314@mail.gmail.com>
-Date: Tue, 21 Oct 2008 09:42:47 -0300
-From: "Sergio Luis" <eeeesti@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: tty: usb-serial krefs - bad magic number for tty struct (188:0)
-Cc: "Alan Cox" <alan@redhat.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Greg KH" <greg@kroah.com>, linux-usb@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081021133824.292a9071@lxorguk.ukuu.org.uk>
+	Tue, 21 Oct 2008 08:43:07 -0400
+Received: from mga09.intel.com ([134.134.136.24]:36135 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754911AbYJUMnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 08:43:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,457,1220252400"; 
+   d="scan'208";a="453859996"
+Date: Tue, 21 Oct 2008 19:48:03 +0800
+From: Yu Zhao <yu.zhao@intel.com>
+To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "greg@kroah.com" <greg@kroah.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: [PATCH 5/15 v5] PCI: add a wrapper for resource_alignment()
+Message-ID: <20081021114803.GF3185@yzhao12-linux.sh.intel.com>
+References: <20081021114056.GA3185@yzhao12-linux.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <ce0170d90810180915m10caa101ucc9e9a8a17cbb6cb@mail.gmail.com>
-	 <ce0170d90810191039i6c78bac1ue1e4b688d47740ff@mail.gmail.com>
-	 <20081021133824.292a9071@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081021114056.GA3185@yzhao12-linux.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 21, 2008 at 9:38 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> one of the problems was the tty_kref_put(tty) in
->> usb_serial_port_work() [drivers/usb/serial/usb-serial.c], that was
->> releasing the tty device. I removed that line and it _almost_ worked.
->> well, it worked, but only _once_. If I stopped the daemon and tried to
->
-> You removed a valid one not the erroneous one it seems.
->
-> Unfortunately your bug report doesn't actually say _WHICH_ USB serial
-> driver you are using which makes it a bit hard to be sure I'm looking for
-> the right bug.
->
+Add a wrap of resource_alignment() so it can handle device specific
+resource alignment.
 
-The device is a Huawei E220 USB modem. What kind of info can I provide
-to help you with this? would dmesg help?
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Grant Grundler <grundler@parisc-linux.org>
+Cc: Alex Chiang <achiang@hp.com>
+Cc: Matthew Wilcox <matthew@wil.cx>
+Cc: Roland Dreier <rdreier@cisco.com>
+Cc: Greg KH <greg@kroah.com>
+Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 
-Sergio.
+---
+ drivers/pci/pci.c       |   20 ++++++++++++++++++++
+ drivers/pci/pci.h       |    1 +
+ drivers/pci/setup-bus.c |    4 ++--
+ drivers/pci/setup-res.c |    7 ++++---
+ 4 files changed, 27 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 40284dc..a9b554e 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1904,6 +1904,26 @@ int pci_select_bars(struct pci_dev *dev, unsigned long flags)
+ 	return bars;
+ }
+ 
++/**
++ * pci_resource_alignment - get a PCI BAR resource alignment
++ * @dev: the PCI device
++ * @resno: the resource number
++ *
++ * Returns alignment size on success, or 0 on error.
++ */
++int pci_resource_alignment(struct pci_dev *dev, int resno)
++{
++	resource_size_t align;
++	struct resource *res = dev->resource + resno;
++
++	align = resource_alignment(res);
++	if (align)
++		return align;
++
++	dev_err(&dev->dev, "alignment: invalid resource #%d\n", resno);
++	return 0;
++}
++
+ static void __devinit pci_no_domains(void)
+ {
+ #ifdef CONFIG_PCI_DOMAINS
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index fbbc6ad..baa3d23 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -166,6 +166,7 @@ enum pci_bar_type {
+ 
+ extern int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
+ 				struct resource *res, unsigned int reg);
++extern int pci_resource_alignment(struct pci_dev *dev, int resno);
+ extern void pci_enable_ari(struct pci_dev *dev);
+ /**
+  * pci_ari_enabled - query ARI forwarding status
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index ea979f2..90a9c0a 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -25,6 +25,7 @@
+ #include <linux/ioport.h>
+ #include <linux/cache.h>
+ #include <linux/slab.h>
++#include "pci.h"
+ 
+ 
+ static void pbus_assign_resources_sorted(struct pci_bus *bus)
+@@ -351,8 +352,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask, unsigned long
+ 			if (r->parent || (r->flags & mask) != type)
+ 				continue;
+ 			r_size = resource_size(r);
+-			/* For bridges size != alignment */
+-			align = resource_alignment(r);
++			align = pci_resource_alignment(dev, i);
+ 			order = __ffs(align) - 20;
+ 			if (order > 11) {
+ 				dev_warn(&dev->dev, "BAR %d bad alignment %llx: "
+diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+index b7ca679..88a9c70 100644
+--- a/drivers/pci/setup-res.c
++++ b/drivers/pci/setup-res.c
+@@ -133,7 +133,7 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
+ 	size = resource_size(res);
+ 	min = (res->flags & IORESOURCE_IO) ? PCIBIOS_MIN_IO : PCIBIOS_MIN_MEM;
+ 
+-	align = resource_alignment(res);
++	align = pci_resource_alignment(dev, resno);
+ 	if (!align) {
+ 		dev_err(&dev->dev, "BAR %d: can't allocate resource (bogus "
+ 			"alignment) %pR flags %#lx\n",
+@@ -224,7 +224,7 @@ void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
+ 		if (!(r->flags) || r->parent)
+ 			continue;
+ 
+-		r_align = resource_alignment(r);
++		r_align = pci_resource_alignment(dev, i);
+ 		if (!r_align) {
+ 			dev_warn(&dev->dev, "BAR %d: bogus alignment "
+ 				"%pR flags %#lx\n",
+@@ -236,7 +236,8 @@ void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
+ 			struct resource_list *ln = list->next;
+ 
+ 			if (ln)
+-				align = resource_alignment(ln->res);
++				align = pci_resource_alignment(ln->dev,
++						ln->res - ln->dev->resource);
+ 
+ 			if (r_align > align) {
+ 				tmp = kmalloc(sizeof(*tmp), GFP_KERNEL);
+-- 
+1.5.6.4
+
