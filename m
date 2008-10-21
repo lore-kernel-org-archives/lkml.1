@@ -1,93 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbYJUMeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbYJUMgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754518AbYJUMeU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 08:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYJUMeD
+	id S1754161AbYJUMgP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 08:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753037AbYJUMf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 08:34:03 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:60469 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752886AbYJUMeB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 08:34:01 -0400
-Date: Tue, 21 Oct 2008 08:33:48 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-Cc: Alexandre Lymberopoulos <lymber@gmail.com>, 502583@bugs.debian.org,
-       502583-submitter@bugs.debian.org, linux-kernel@vger.kernel.org
-Subject: Re: Bug#502583: scary messages in dmesg
-Message-ID: <20081021123348.GB15685@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	=?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>,
-	Alexandre Lymberopoulos <lymber@gmail.com>, 502583@bugs.debian.org,
-	502583-submitter@bugs.debian.org, linux-kernel@vger.kernel.org
-References: <2bfaaf400810172145g4aba4827l87a19e67b9742815@mail.gmail.com> <20081018060400.GB916@ime.usp.br> <2bfaaf400810201654u21c9d950o72b2afa9496ba3da@mail.gmail.com> <20081021101510.GA16244@ime.usp.br>
+	Tue, 21 Oct 2008 08:35:58 -0400
+Received: from mga09.intel.com ([134.134.136.24]:18226 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753013AbYJUMf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 08:35:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,457,1220252400"; 
+   d="scan'208";a="453859013"
+Date: Tue, 21 Oct 2008 19:40:56 +0800
+From: Yu Zhao <yu.zhao@intel.com>
+To: linux-pci@vger.kernel.org
+Cc: jbarnes@virtuousgeek.org, randy.dunlap@oracle.com,
+       grundler@parisc-linux.org, achiang@hp.com, matthew@wil.cx,
+       rdreier@cisco.com, greg@kroah.com, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, virtualization@lists.linux-foundation.org
+Subject: [PATCH 0/15 v5] PCI: Linux kernel SR-IOV support
+Message-ID: <20081021114056.GA3185@yzhao12-linux.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081021101510.GA16244@ime.usp.br>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 21, 2008 at 08:15:10AM -0200, Rogério Brito wrote:
-> On Oct 20 2008, Alexandre Lymberopoulos wrote:
-> > It's not a memory stick, it's a hard disk with ext3 file system. I
-> > just plugged it it and the disk was automatically mounted in /dev/ext3
-> > with no abnormal messages in dmesg.
-> 
-> Ok, this far.
-> 
-> > That weird messages appeared when I unpplugged the disk (without
-> > umounting it, as it should be done when using usbmount, right?).
-> 
-> Did you sync the device? From the message, it seems that some data were to
-> be written to the device, but the device was already gone by that time, but
-> I'm not a specialist on the filesystem subsystem and perhaps others could
-> say more about it.
+Greetings,
 
-A patch to suppress the WARN information will be in 2.6.28 when the
-user does something stupid (i.e., yank out a USB stick without
-unmounting the filesystem first).  This was done mainly to suppress
-the "scary message" in dmesg, which on distributions that support
-uploading such messages to http://www.kerneloops.org for analysis, was
-cluttering the reports.
+Following patches are intended to support SR-IOV capability in the
+Linux kernel. With these patches, people can turn a PCI device with
+the capability into multiple ones from software perspective, which
+will benefit KVM and achieve other purposes such as QoS, security,
+and etc.
 
-However, the patch does not make it any *safer* to uncerimoniously
-yank out a USB stick without unmounting it first.  This can still lead
-to data loss, unless you're *sure* that no process is writing to the
-stick and you issued the sync command, and you know enough time has
-passed so all of the data has been written to the USB stick. 
+Major changes between v4 -> v5:
+1, remove interfaces for PF driver to create sysfs entries (Matthew Wilcox)
+2, get ride of 'struct kobject' used in 'struct pci_iov' (Greg KH)
+3, split big chunk of code into more patches
+4, add boot options to reassign resources under a bus
+5, add boot option to align MMIO resources of a device
 
-> > > [39071.160167] Buffer I/O error on device sda1, logical block 1545
-> > > [39071.160170] lost page write due to I/O error on sda1
-> > > [39071.160184] Buffer I/O error on device sda1, logical block 1545
-> > > [39071.160187] lost page write due to I/O error on sda1
+---
 
-These errors you'd still get, since these messages are the sound of
-users' data being irretrivably being lost.
+[PATCH 1/15 v5] PCI: remove unnecessary arg of pci_update_resource()
+[PATCH 2/15 v5] PCI: define PCI resource names in an 'enum'
+[PATCH 3/15 v5] PCI: export __pci_read_base
+[PATCH 4/15 v5] PCI: make pci_alloc_child_bus() be able to handle bridge device
+[PATCH 5/15 v5] PCI: add a wrapper for resource_alignment()
+[PATCH 6/15 v5] PCI: add a new function to map BAR offset
+[PATCH 7/15 v5] PCI: cleanup pcibios_allocate_resources()
+[PATCH 8/15 v5] PCI: add boot option to reassign resources
+[PATCH 9/15 v5] PCI: add boot option to align MMIO resource
+[PATCH 10/15 v5] PCI: cleanup pci_bus_add_devices()
+[PATCH 11/15 v5] PCI: split a new function from pci_bus_add_devices()
+[PATCH 12/15 v5] PCI: support the SR-IOV capability
+[PATCH 13/15 v5] PCI: reserve bus range for the SR-IOV device
+[PATCH 14/15 v5] PCI: document the changes
+[PATCH 15/15 v5] PCI: document the new PCI boot parameters
 
-> Well, it is a bug. It just needs more investigation to see where the bug
-> lies.
+---
 
-I don't know if you would call it a bug or not.  Fundamentally,
-yanking out a USB stick without unmounting it first is dangerous, and
-can lead to data loss.  Printing the stack trace when this happens
-implies it's a problem which can be fixed by a developer, so perhaps
-that could be considered a bug, and in any case, that should be
-"fixed" in 2.6.28.  (I'm pretty sure akpm has sent the ext3 version of
-that patch to Linus by now, but if not, it should make the 2.6.28
-merge window.)
+Single Root I/O Virtualization (SR-IOV) capability defined by PCI-SIG
+is intended to enable multiple system software to share PCI hardware
+resources.  PCI device that supports this capability can be extended
+to one Physical Functions plus multiple Virtual Functions. Physical
+Function, which could be considered as the "real" PCI device, reflects
+the hardware instance and manages all physical resources. Virtual
+Functions are associated with a Physical Function and shares physical
+resources with the Physical Function.Software can control allocation of
+Virtual Functions via registers encapsulated in the capability structure.
 
-If you see "lost page write due to I/O error", then you will have lost
-data due to premature removal of the USB stick, and fundamentally
-*that* bug exists between the keyboard and the chair.
+SR-IOV specification can be found at
+http://www.pcisig.com/members/downloads/specifications/iov/sr-iov1.0_11Sep07.pdf
 
-Regards,
-
-						- Ted
+Devices that support SR-IOV are available from following vendors:
+http://download.intel.com/design/network/ProdBrf/320025.pdf
+http://www.netxen.com/products/chipsolutions/NX3031.html
+http://www.neterion.com/products/x3100.html
