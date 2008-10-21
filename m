@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbYJUTNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755502AbYJUTNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755393AbYJUTNS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 15:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYJUTNE
+	id S1755502AbYJUTNp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 15:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbYJUTNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 15:13:04 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:32658 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750874AbYJUTND (ORCPT
+	Tue, 21 Oct 2008 15:13:32 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:54787 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751969AbYJUTNb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 15:13:03 -0400
-Date: Tue, 21 Oct 2008 21:12:19 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Mark Jackson <mpfj@mimc.co.uk>
-Cc: ben-linux@fluff.org, akpm@linux-foundation.org, i2c@lm-sensors.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [i2c] [PATCH v2] Add support for Dallas DS28CM00 Unique ID chip
-Message-ID: <20081021211219.18fb7d84@hyperion.delvare>
-In-Reply-To: <48FE22A2.7030604@mimc.co.uk>
-References: <48FDED5E.5080605@mimc.co.uk>
-	<20081021173505.2f7673e2@hyperion.delvare>
-	<48FE22A2.7030604@mimc.co.uk>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Oct 2008 15:13:31 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <48FE2978.5070108@s5r6.in-berlin.de>
+Date: Tue, 21 Oct 2008 21:11:52 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: felipe.balbi@nokia.com
+CC: Greg KH <greg@kroah.com>, Willy Tarreau <w@1wt.eu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Steven Noonan <steven@uplinklabs.net>, Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+References: <20081017064751.GE22554@cs181140183.pp.htv.fi> <20081017075544.GB4850@kroah.com> <f488382f0810170116qd7e1845h8942c195352934d1@mail.gmail.com> <20081017174657.GH2221@kroah.com> <20081017204723.15114eaa@lxorguk.ukuu.org.uk> <20081017214409.GB3585@kroah.com> <20081018084504.GQ24654@1wt.eu> <20081020203033.GB20788@kroah.com> <20081020205400.GB26744@gandalf.research.nokia.com> <20081020210648.GA30389@kroah.com> <20081020222434.GF26744@gandalf.research.nokia.com>
+In-Reply-To: <20081020222434.GF26744@gandalf.research.nokia.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
-
-On Tue, 21 Oct 2008 19:42:42 +0100, Mark Jackson wrote:
-> Jean Delvare wrote:
-> > On Tue, 21 Oct 2008 15:55:26 +0100, Mark Jackson wrote:
-> >> This patch adds support for the (I2C based) DS28CM00 ID chip.
-> >> (v2 after running through checkpatch)
-> >>
-> >> Signed-off-by: M.Jackson <mpfj@mimc.co.uk> 
-> >> ---
-> >>  drivers/i2c/chips/Kconfig    |    7 ++
-> >>  drivers/i2c/chips/Makefile   |    1 +
-> >>  drivers/i2c/chips/ds28cm00.c |  166 ++++++++++++++++++++++++++++++++++++++++++
-> >>  3 files changed, 174 insertions(+), 0 deletions(-)
-> > 
-> > Nack. No new drivers under drivers/i2c/chips please, it's going away
-> > soon.
+Felipe Balbi wrote:
+> On Mon, Oct 20, 2008 at 02:06:48PM -0700, Greg KH wrote:
+>> On Mon, Oct 20, 2008 at 11:54:00PM +0300, Felipe Balbi wrote:
+>>> when we move to 2.7, we know it'll be the start
+>>> for the 2.8 kernel series.
+>> Um, did you not get the memo 3 years ago saying we are changing our
+>> development model and there will not be a 2.7 development series?
+>>
+>> Damm, I thought I had printed it out and placed it on everyone's chairs.
+>> Those pesky cleaners must have picked it up and recycled it, sorry about
+>> that...
+>>
+>>> Just like the migration from 2.4 to 2.5.
+>> Please don't bring up the dark ages again, many of us went through
+>> things back then that have taken a lot of counseling to be able to get
+>> over.
 > 
-> Okay ... where should any new drivers be located ?
+> sorry if i'm developing linux kernel for as long as you are. It's really
+> not my business how many hours of counseling you had to attend to get
+> over a version numbering change.
 
-Depends of what the device does.
-* Hardware monitoring chip drivers go to drivers/hwmon
-* RTC chip drivers go to drivers/rtc
-* I/O expander drivers go to drivers/gpio
-If you can't find a suitable directory under drivers, either create a
-new one if that makes sense, or put your driver under drivers/misc.
+The switch from 2.2/2.3/2.4/2.5 to 2.6.x was not a change of numbering 
+scheme, it was a change of the development model.  2.4 and 2.5 were two 
+parallel mainlines.  2.6.x is a single mainline, and there won't be two 
+mainlines again in any foreseeable future.
 
-> >> +static int ds28cm00_attach_adapter(struct i2c_adapter *adapter);
-> >> +static int ds28cm00_detect(struct i2c_adapter *adapter, int address, int kind);
-> >> +static int ds28cm00_detach_client(struct i2c_client *client);
-> >> +
-> >> +/* This is the driver that will be inserted */
-> >> +static struct i2c_driver ds28cm00_driver = {
-> >> +	.driver = {
-> >> +		.name	= "ds28cm00",
-> >> +	},
-> >> +	.attach_adapter	= ds28cm00_attach_adapter,
-> >> +	.detach_client	= ds28cm00_detach_client,
-> >> +};
-> > 
-> > attach_adapter and detach_client are deprecated. Please use probe and
-> > remove instead.
-> 
-> Are there any existing chip drivers that use this new method ?
+> Maybe you still need a bit more, judging by your reply.
 
-As of 2.6.27-git10: all drivers under drivers/i2c/chips, all i2c
-drivers under drivers/gpio, all i2c drivers under drivers/hwmon, all
-i2c drivers under drivers/rtc, and more.
-
-You may want to take a look at Documentation/i2c/upgrading-clients too.
-
-
+Or maybe not.  You obviously misread his post.
 -- 
-Jean Delvare
+Stefan Richter
+-=====-==--- =-=- =-=-=
+http://arcgraph.de/sr/
