@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbYJUCp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbYJUCym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753537AbYJUCp2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 22:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYJUCpQ
+	id S1753575AbYJUCym (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 22:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYJUCyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 22:45:16 -0400
-Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:57144 "EHLO
-	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751839AbYJUCpO (ORCPT
+	Mon, 20 Oct 2008 22:54:33 -0400
+Received: from ti-out-0910.google.com ([209.85.142.185]:55173 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752356AbYJUCyc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 22:45:14 -0400
-X-Greylist: delayed 2159 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Oct 2008 22:45:12 EDT
-From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Message-Id: <200810210207.m9L275nQ031086@turbo.physics.adelaide.edu.au>
-Subject: Re: [RFC patch] genirq threading for ehci, ohci and uhci USB hosts
-To: sven@thebigcorporation.com (Sven-Thorsten Dietrich)
-Date: Tue, 21 Oct 2008 11:37:05 +0930 (CST)
-Cc: tglx@linutronix.de (Thomas Gleixner),
-       jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
-       linux-kernel@vger.kernel.org (LKML), torvalds@osdl.org (Linus Torvalds),
-       akpm@linux-foundation.org (Andrew Morton), mingo@elte.hu (Ingo Molnar),
-       arjan@infradead.org (Arjan van de Veen),
-       benh@kernel.crashing.org (Benjamin Herrenschmidt),
-       rostedt@goodmis.org (Steven Rostedt),
-       jonathan@jonmasters.org (Jon Masters),
-       slert-devel@suse.de (slert-devel), dwalker@soe.ucsc.edu (Daniel Walker),
-       linux-rt-users@vger.kernel.org (RT Users List)
-In-Reply-To: <1224552779.8278.24.camel@dd> from "Sven-Thorsten Dietrich" at Oct 20, 2008 06:32:59 PM
-X-Mailer: ELM [version 2.5 PL6]
+	Mon, 20 Oct 2008 22:54:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=GwzCJErnSmK/CjtN4vooFA2qf0cknLoYR2cIZHl8WzDVXvfTXavae+TmKEBDnfARvX
+         ZoveYBFnMG4J6SaJ7k1h4rtYgU6ZjIG24SE+0VAC6G/cX7h3pBzCiumFRGAKEHB+P9WI
+         ovoRJzjrRjlCOl/1eU6ir9aym4Ss9EsGLZJOM=
+Message-ID: <2891419e0810201954q57087fc8ufcaa0e42f3ca99e2@mail.gmail.com>
+Date: Tue, 21 Oct 2008 11:54:31 +0900
+From: "Dong-Jae Kang" <baramsori72@gmail.com>
+To: xen-devel@lists.xensource.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       dm-devel@redhat.com, corsetproject@googlegroups.com
+Subject: [Question] power management related with cgroup based resource management
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Hi, all
 
-> > This patch series implements support for threaded irq handlers for the
-> > generic IRQ layer.
->
-> Subject: genirq threading for ehci, ohci and uhci USB hosts.
-> 
-> This is a functional POC for partitioning of the USB interrupt handlers into
-> a quickcheck function and a threaded main-handler function.
-> :
-> The ieee1394/ohci1394.c is a bit more problematic, since it does not use
-> struct usb_hcd, and therefore another place for the status cache must be found,
-> in struct ti_ohci presumably. 
-> I will send a separate patch for ieee1394/ohci1394.c after looking at it more.
+These days, I am interested in green IT area for low power OS
+So, I have a question about it.
+Is there any good idea or comments about power management related with
+cgroup based resource management?
+I have no idea about that, but it seems to be possible to find a good concept.
+And I hope so
+Is it some strange question? ^^
 
-Thanks for sending this through; I will endeavour to test it over the coming
-days.  I'll also see if I can test it for the case where USB and ieee1394
-share IRQs.  Even though ieee1394 isn't done yet these changes should
-prevent the USB-related problems we've seen in FFADO when USB shares the
-firewire IRQ.
-
-Having said that, the forthcoming ohci1394.c patch will also be interesting
-since that is the other area which will greatly benefit FFADO.
-
-Regards
-  jonathan
+Regards,
+Dong-Jae Kang
