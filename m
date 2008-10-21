@@ -1,103 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753454AbYJUTKD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752161AbYJUTKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753454AbYJUTKD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 15:10:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbYJUTJx
+	id S1752161AbYJUTKr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 15:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbYJUTKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 15:09:53 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:47128 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751477AbYJUTJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 15:09:53 -0400
-Date: Tue, 21 Oct 2008 14:09:51 -0500
-From: Russ Anderson <rja@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Cc: Russ Anderson <rja@sgi.com>
-Subject: [PATCH] x86: Use consistent names for region size and conherence id on x86 and ia64.
-Message-ID: <20081021190951.GA51519@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
+	Tue, 21 Oct 2008 15:10:37 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:37849 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751477AbYJUTKh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 15:10:37 -0400
+Subject: Re: [PATCH 0/3] Improve TSC as a clocksource under VMware
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>
+In-Reply-To: <20081021181536.GI12825@one.firstfloor.org>
+References: <1224552902.2640.88.camel@alok-dev1>
+	 <874p36fflp.fsf@basil.nowhere.org> <1224607284.6161.22.camel@alok-dev1>
+	 <20081021174008.GH12825@one.firstfloor.org>
+	 <1224612294.6161.43.camel@alok-dev1>
+	 <20081021181536.GI12825@one.firstfloor.org>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Tue, 21 Oct 2008 12:10:36 -0700
+Message-Id: <1224616236.6161.60.camel@alok-dev1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use consistent names for region size and conherence id on x86 and ia64.
+On Tue, 2008-10-21 at 11:15 -0700, Andi Kleen wrote:
+> > FWIU from the code, even if  cpu A's TSC is just 1 tick behind that of
+> > cpu B, we increment the nr_wraps value.
+> > And the code expects that there are no wraps in TSC throughout the
+> > 20msec measurement window.
+> > So IMO its fairly easy to fail this test.
+> 
+> Ok I think it would be better to enlarge the margin then to fix your
+> issue.
+> 
 
-Signed-off-by: Russ Anderson <rja@sgi.com>
+Yeah, i thought about that, but given the different kinds of native
+hardware that we have i think coming up with values that would be safe
+for all the cases would be difficult. And given that nobody has
+complained about this on native until now, i would prefer not to change
+the status quo. Apart from that, even on VMware virtualized environment
+there can different configurations where this margin keeps on varying,
+under different scenarios, f.e. under overcommitment and all. So i don't
+think that changing threshold values maybe safe for all cases. 
 
----
-The SGI xp drivers are used on both ia64 and x86.  Using the same
-names (sn_coherency_id, sn_region_size) simplies the driver code.
+I think going with ignoring this check for specific systems is the best
+way to go further. I am open to either having a check for 
+CONSTANT_TSC or a new flag tsc_reliable (similar to my patch).
+
+I hope you also agree with the CONSTANT_TSC check.
+
+Thanks,
+Alok
 
 
+> -Andi
 
- arch/x86/kernel/bios_uv.c        |    8 ++++----
- arch/x86/kernel/genx2apic_uv_x.c |    4 ++--
- include/asm-x86/uv/bios.h        |    6 +++---
- 3 files changed, 9 insertions(+), 9 deletions(-)
-
-Index: linux/include/asm-x86/uv/bios.h
-===================================================================
---- linux.orig/include/asm-x86/uv/bios.h	2008-10-21 11:54:05.000000000 -0500
-+++ linux/include/asm-x86/uv/bios.h	2008-10-21 11:54:08.000000000 -0500
-@@ -85,9 +85,9 @@ extern void uv_bios_init(void);
- 
- extern int uv_type;
- extern long sn_partition_id;
--extern long uv_coherency_id;
--extern long uv_region_size;
--#define partition_coherence_id()	(uv_coherency_id)
-+extern long sn_coherency_id;
-+extern long sn_region_size;
-+#define partition_coherence_id()	(sn_coherency_id)
- 
- extern struct kobject *sgi_uv_kobj;	/* /sys/firmware/sgi_uv */
- 
-Index: linux/arch/x86/kernel/bios_uv.c
-===================================================================
---- linux.orig/arch/x86/kernel/bios_uv.c	2008-10-21 11:54:05.000000000 -0500
-+++ linux/arch/x86/kernel/bios_uv.c	2008-10-21 11:54:08.000000000 -0500
-@@ -69,10 +69,10 @@ s64 uv_bios_call_reentrant(enum uv_bios_
- 
- long sn_partition_id;
- EXPORT_SYMBOL_GPL(sn_partition_id);
--long uv_coherency_id;
--EXPORT_SYMBOL_GPL(uv_coherency_id);
--long uv_region_size;
--EXPORT_SYMBOL_GPL(uv_region_size);
-+long sn_coherency_id;
-+EXPORT_SYMBOL_GPL(sn_coherency_id);
-+long sn_region_size;
-+EXPORT_SYMBOL_GPL(sn_region_size);
- int uv_type;
- 
- 
-Index: linux/arch/x86/kernel/genx2apic_uv_x.c
-===================================================================
---- linux.orig/arch/x86/kernel/genx2apic_uv_x.c	2008-10-21 11:54:05.000000000 -0500
-+++ linux/arch/x86/kernel/genx2apic_uv_x.c	2008-10-21 11:54:20.000000000 -0500
-@@ -429,7 +429,7 @@ void __init uv_system_init(void)
- 
- 	uv_bios_init();
- 	uv_bios_get_sn_info(0, &uv_type, &sn_partition_id,
--			    &uv_coherency_id, &uv_region_size);
-+			    &sn_coherency_id, &sn_region_size);
- 	uv_rtc_init();
- 
- 	for_each_present_cpu(cpu) {
-@@ -451,7 +451,7 @@ void __init uv_system_init(void)
- 		uv_cpu_hub_info(cpu)->gpa_mask = (1 << (m_val + n_val)) - 1;
- 		uv_cpu_hub_info(cpu)->gnode_upper = gnode_upper;
- 		uv_cpu_hub_info(cpu)->global_mmr_base = mmr_base;
--		uv_cpu_hub_info(cpu)->coherency_domain_number = uv_coherency_id;
-+		uv_cpu_hub_info(cpu)->coherency_domain_number = sn_coherency_id;
- 		uv_node_to_blade[nid] = blade;
- 		uv_cpu_to_blade[cpu] = blade;
- 		max_pnode = max(pnode, max_pnode);
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
