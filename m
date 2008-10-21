@@ -1,117 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbYJUMko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754994AbYJUMk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754965AbYJUMko (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 08:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYJUMke
+	id S1754994AbYJUMk7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 08:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbYJUMko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 08:40:34 -0400
-Received: from mga09.intel.com ([134.134.136.24]:17619 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753121AbYJUMkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 08:40:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,457,1220252400"; 
-   d="scan'208";a="453859656"
-Date: Tue, 21 Oct 2008 19:45:27 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "greg@kroah.com" <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: [PATCH 3/15 v5] PCI: export __pci_read_base
-Message-ID: <20081021114527.GD3185@yzhao12-linux.sh.intel.com>
-References: <20081021114056.GA3185@yzhao12-linux.sh.intel.com>
+	Tue, 21 Oct 2008 08:40:44 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:53080 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754933AbYJUMkn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 08:40:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=YQe1kLYuKcOnnHK+4o8N1PiioPavB/V6YLbup69p3gViYS76ovRQF+L2Cn6Go5dDMQ
+         c9Tm9AsO5j+thdGJGGsBVxUB+7dyHNqHQR7HDNu0WuqiKTykv7pS+qn3sPB/E3tRpYjE
+         A9krv6b+RW2PXRUnKGIiE27FcImiezdwRhb6s=
+Message-ID: <aec7e5c30810210540p6b50562ax50b0cdd9af9e12e7@mail.gmail.com>
+Date: Tue, 21 Oct 2008 21:40:41 +0900
+From: "Magnus Damm" <magnus.damm@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [patch 2.6.27-git] spi_gpio driver
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       spi-devel-general@lists.sourceforge.net,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200810192124.36402.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081021114056.GA3185@yzhao12-linux.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <200807202146.12759.mb@bu3sch.de>
+	 <200810181354.23955.david-b@pacbell.net>
+	 <aec7e5c30810191944u4c125943h895099b3f1eaa813@mail.gmail.com>
+	 <200810192124.36402.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Export __pci_read_base() so it can be used by whole PCI subsystem.
+On Mon, Oct 20, 2008 at 1:24 PM, David Brownell <david-b@pacbell.net> wrote:
+> From: David Brownell <dbrownell@users.sourceforge.net>
+>
+> Generalize the old at91rm9200 "bootstrap" bitbanging SPI master driver
+> as "spi_gpio", so it works with arbitrary GPIOs and can be configured
+> through platform_data.  Such SPI masters support:
+>
+>  - any number of bus instances (bus_num is the platform_device.id)
+>  - any number of chipselects (one GPIO per spi_device)
+>  - all four SPI_MODE values, and SPI_CS_HIGH
+>  - i/o word sizes from 1 to 32 bits;
+>  - devices configured as with any other spi_master controller
+>
+> When configured using platform_data, this provides relatively low clock
+> rates.  On platforms that support inlined GPIO calls, significantly
+> improved transfer speeds are also possible with a semi-custom driver.
+> (It's still painful when accessing flash memory, but less so.)
+>
+> Sanity checked by using this version to replace both native controllers
+> on a board with six different SPI slaves, relying on three different
+> SPI_MODE_* values and both SPI_CS_HIGH settings for correct operation.
+>
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Grant Grundler <grundler@parisc-linux.org>
-Cc: Alex Chiang <achiang@hp.com>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Cc: Roland Dreier <rdreier@cisco.com>
-Cc: Greg KH <greg@kroah.com>
-Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+Works fine on SuperH together with the mmc_spi driver. Thanks!
 
----
- drivers/pci/pci.h   |    9 +++++++++
- drivers/pci/probe.c |   20 +++++++++-----------
- 2 files changed, 18 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index b205ab8..fbbc6ad 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -157,6 +157,15 @@ struct pci_slot_attribute {
- };
- #define to_pci_slot_attr(s) container_of(s, struct pci_slot_attribute, attr)
- 
-+enum pci_bar_type {
-+	pci_bar_unknown,	/* Standard PCI BAR probe */
-+	pci_bar_io,		/* An io port BAR */
-+	pci_bar_mem32,		/* A 32-bit memory BAR */
-+	pci_bar_mem64,		/* A 64-bit memory BAR */
-+};
-+
-+extern int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
-+				struct resource *res, unsigned int reg);
- extern void pci_enable_ari(struct pci_dev *dev);
- /**
-  * pci_ari_enabled - query ARI forwarding status
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index a52784c..db3e5a7 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -135,13 +135,6 @@ static u64 pci_size(u64 base, u64 maxbase, u64 mask)
- 	return size;
- }
- 
--enum pci_bar_type {
--	pci_bar_unknown,	/* Standard PCI BAR probe */
--	pci_bar_io,		/* An io port BAR */
--	pci_bar_mem32,		/* A 32-bit memory BAR */
--	pci_bar_mem64,		/* A 64-bit memory BAR */
--};
--
- static inline enum pci_bar_type decode_bar(struct resource *res, u32 bar)
- {
- 	if ((bar & PCI_BASE_ADDRESS_SPACE) == PCI_BASE_ADDRESS_SPACE_IO) {
-@@ -156,11 +149,16 @@ static inline enum pci_bar_type decode_bar(struct resource *res, u32 bar)
- 	return pci_bar_mem32;
- }
- 
--/*
-- * If the type is not unknown, we assume that the lowest bit is 'enable'.
-- * Returns 1 if the BAR was 64-bit and 0 if it was 32-bit.
-+/**
-+ * pci_read_base - read a PCI BAR
-+ * @dev: the PCI device
-+ * @type: type of the BAR
-+ * @res: resource buffer to be filled in
-+ * @pos: BAR position in the config space
-+ *
-+ * Returns 1 if the BAR is 64-bit, or 0 if 32-bit.
-  */
--static int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
-+int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
- 			struct resource *res, unsigned int pos)
- {
- 	u32 l, sz, mask;
--- 
-1.5.6.4
-
+Acked-by: Magnus Damm <damm@igel.co.jp>
