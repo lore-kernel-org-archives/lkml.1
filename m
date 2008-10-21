@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbYJUW24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331AbYJUW3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755205AbYJUW24 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 18:28:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbYJUW2q
+	id S1756331AbYJUW3W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 18:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbYJUW2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 18:28:46 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:58892 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751703AbYJUW2n (ORCPT
+	Tue, 21 Oct 2008 18:28:55 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57879 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753877AbYJUW2y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 18:28:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YyuIR5RPcTP2Tl/iQFP7XAO2FyVKEYmxOHPTHAkmv6Fmii0vUCe2Vw+MUaAjpbgE6P
-         vXO/zRb2qEXsSllyu6nrZ8SG/vnA0N7VYiErtD5K5tXc1COF+6wN12rlVJmchP2Vxkk7
-         lMAozxG/y7VU73z6Hka1pAm48cncR2NEK/cVI=
-Message-ID: <c6740f810810211528g641b3224j3a70ee4b56942bb9@mail.gmail.com>
-Date: Wed, 22 Oct 2008 00:28:40 +0200
-From: "Philip Stark" <heller.barde@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27 seems to break something with DSL
-Cc: netdev@vger.kernel.org
-In-Reply-To: <20081020101241.456963cd@doriath.conectiva>
+	Tue, 21 Oct 2008 18:28:54 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 22 Oct 2008 00:28:36 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: fw-sbp2: delay first login to avoid retries
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.f0278c2bdf9e5589@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <c6740f810810110553q75478033ub984651d5509199b@mail.gmail.com>
-	 <20081020101241.456963cd@doriath.conectiva>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I was just going to say that Bug Nr. 11721 on bugzilla.kernel.org is
-exactly my problem and is in fact resolved with the
-solution/workaround presented there.
+This optimizes firewire-sbp2's device probe for the case that the local
+node and the SBP-2 node were discovered at the same time.  In this case,
+fw-core's bus management work and fw-sbp2's login and SCSI probe work
+are scheduled in parallel (in the globally shared workqueue and in
+fw-sbp2's workqueue, respectively).  The bus reset from fw-core may then
+disturb and extremely delay the login and SCSI probe because the latter
+fails with several command timeouts and retries and has to be retried
+from scratch.
 
-Thanks for your time
-Philip Stark
+We avoid this particular situation of sbp2_login() and fw_card_bm_work()
+running in parallel by delaying the first sbp2_login() a little bit.
 
-2008/10/20 Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>:
-<snip>
-> | it seems to  be related to the packet  size because ping only seems to
-> | work because it uses small packets. if i increase the ping size up to
-> | 1000 bytes, it fails as well. (while it does work on 2.6.26)
->
->  If you haven't solved this issue yet you could try:
->
-> # echo 0 > /proc/sys/net/ipv4/tcp_timestamps
->
->  We (Mandriva) have had some reports of this issue and it seems that
-> some broken routers can drop packages because of the timestamp (that's
-> what our local network guy has said). Disabling timestamps make it work
-> again.
->
-> --
-> Luiz Fernando N. Capitulino
->
+This is meant to be a short-term fix for
+https://bugzilla.redhat.com/show_bug.cgi?id=466679.  In the long run,
+the SCSI probe, i.e. fw-sbp2's call of __scsi_add_device(), should be
+parallelized with sbp2_reconnect().
+
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-sbp2.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux/drivers/firewire/fw-sbp2.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-sbp2.c
++++ linux/drivers/firewire/fw-sbp2.c
+@@ -1147,7 +1147,7 @@ static int sbp2_probe(struct device *dev
+ 
+ 	/* Do the login in a workqueue so we can easily reschedule retries. */
+ 	list_for_each_entry(lu, &tgt->lu_list, link)
+-		sbp2_queue_work(lu, 0);
++		sbp2_queue_work(lu, DIV_ROUND_UP(HZ, 5));
+ 	return 0;
+ 
+  fail_tgt_put:
+
+-- 
+Stefan Richter
+-=====-==--- =-=- =-==-
+http://arcgraph.de/sr/
+
