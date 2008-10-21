@@ -1,45 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbYJUIKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752700AbYJUINv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752794AbYJUIKl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 04:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbYJUIK1
+	id S1752700AbYJUINv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 04:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbYJUINh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 04:10:27 -0400
-Received: from www.tglx.de ([62.245.132.106]:48006 "EHLO www.tglx.de"
+	Tue, 21 Oct 2008 04:13:37 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:33527 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751003AbYJUIKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 04:10:25 -0400
-Date: Tue, 21 Oct 2008 10:09:59 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Daniel Rosenthal <danielrosenthal@acm.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: behavior of hrtimers scheduled to expire in the past
-In-Reply-To: <4b6fba110810201724v41d26dd8lc9abcba129599fd1@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0810210953120.3301@apollo>
-References: <4b6fba110810201724v41d26dd8lc9abcba129599fd1@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751084AbYJUINg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 04:13:36 -0400
+Date: Tue, 21 Oct 2008 19:13:24 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>
+Cc: "Chris Friesen" <cfriesen@nortel.com>, linuxppc-dev@ozlabs.org,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: build failure on powerpc with current -git
+Message-Id: <20081021191324.d4810d40.sfr@canb.auug.org.au>
+In-Reply-To: <18685.27030.529655.761257@cargo.ozlabs.ibm.com>
+References: <48F8E86B.702@nortel.com>
+	<18685.27030.529655.761257@cargo.ozlabs.ibm.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__21_Oct_2008_19_13_24_+1100_yTaNXRAow3v+=FeB"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Oct 2008, Daniel Rosenthal wrote:
+--Signature=_Tue__21_Oct_2008_19_13_24_+1100_yTaNXRAow3v+=FeB
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> What is the intended behavior for an hrtimer that is scheduled to
-> expire in the past?  I assumed that it would simply be scheduled to
-> expire at the nearest available time in the future, but I wrote some
-> scheduler code and it looks like hrtimers don't go off at all if they
-> are not scheduled to go off at a time which is after rq->clock.  Is
-> this the intended behavior or is this a bug?
+Hi Paulus,
 
-That depends on the callback mode of the hrtimer. The standard ones
-are scheduled to the softirq when they are already expired, but those
-which are not allowed to run their callback in softirq context are
-_not_ enqueued and the caller has to check, whether the timer is
-active/enqueued after starting it.
+On Tue, 21 Oct 2008 16:33:10 +1100 Paul Mackerras <paulus@samba.org> wrote:
+>
+> It's a bug in older versions of ld (including 2.16.1) that's fixed in
+> the current version (2.18).  However, this patch appears to work
+> around the problem - at least, it let me build a 32-bit kernel with a
+> cross-toolchain including a 2.16.1 ld.  Let me know if this gets it
+> working for you.
 
-Thanks,
+With that patch applied I got these errors for a powerpc ppc64_defconfig
+build (linux-next).
 
-	tglx
+/usr/bin/objcopy: Warning: '/dev/null' is not an ordinary file
+make[2]: *** [arch/powerpc/boot/zImage.pmac] Error 1
+make[2]: *** Waiting for unfinished jobs....
+/usr/bin/objcopy: Warning: '/dev/null' is not an ordinary file
+make[2]: *** [arch/powerpc/boot/zImage.pseries] Error 1
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__21_Oct_2008_19_13_24_+1100_yTaNXRAow3v+=FeB
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkj9jyQACgkQjjKRsyhoI8w9yACfWKeMDbrd+UnysP1+LceONeGj
+UxEAoLbraQzCB2HYZzYx2BX2EYytkenX
+=gnzE
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__21_Oct_2008_19_13_24_+1100_yTaNXRAow3v+=FeB--
