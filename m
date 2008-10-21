@@ -1,135 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbYJUASu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbYJUAUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbYJUASu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 20:18:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbYJUASk
+	id S1755226AbYJUAUq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 20:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbYJUAUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 20:18:40 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:42368 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752583AbYJUASj (ORCPT
+	Mon, 20 Oct 2008 20:20:37 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:45423 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752724AbYJUAUg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 20:18:39 -0400
-Message-ID: <48FD1FBC.5050408@cs.columbia.edu>
-Date: Mon, 20 Oct 2008 20:18:04 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Daniel Lezcano <dlezcano@fr.ibm.com>, Louis.Rilling@kerlabs.com,
-       containers@lists.linux-foundation.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrey Mirkin <major@openvz.org>
-Subject: Re: [PATCH 0/9] OpenVZ kernel based checkpointing/restart
-References: <1220439476-16465-1-git-send-email-major@openvz.org> <1224286383.1848.65.camel@nimitz> <20081020111002.GQ15171@hawkmoon.kerlabs.com> <48FC86B2.8000606@fr.ibm.com> <48FCA97C.1040108@cs.columbia.edu> <48FCB3CC.9030804@fr.ibm.com> <20081020172358.GA29092@us.ibm.com>
-In-Reply-To: <20081020172358.GA29092@us.ibm.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+	Mon, 20 Oct 2008 20:20:36 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 20 Oct 2008 20:20:29 -0400 (EDT)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC patch 00/15] Tracer Timestamping
+In-reply-to: <20081020202517.GF28562@Krystal>
+Message-id: <alpine.LFD.2.00.0810202003260.26244@xanadu.home>
+References: <20081016232729.699004293@polymtl.ca>
+ <1224230353.28131.65.camel@twins> <20081020202517.GF28562@Krystal>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 20 Oct 2008, Mathieu Desnoyers wrote:
 
-
-Serge E. Hallyn wrote:
-> Quoting Daniel Lezcano (dlezcano@fr.ibm.com):
->> Oren Laadan wrote:
->>> Daniel Lezcano wrote:
->>>> Louis Rilling wrote:
->>>>> On Fri, Oct 17, 2008 at 04:33:03PM -0700, Dave Hansen wrote:
->>>>>> On Wed, 2008-09-03 at 14:57 +0400, Andrey Mirkin wrote:
->>>>>>> This patchset introduces kernel based checkpointing/restart as it is
->>>>>>> implemented in OpenVZ project. This patchset has limited functionality and
->>>>>>> are able to checkpoint/restart only single process. Recently Oren Laaden
->>>>>>> sent another kernel based implementation of checkpoint/restart. The main
->>>>>>> differences between this patchset and Oren's patchset are:
->>>>>> Hi Andrey,
->>>>>>
->>>>>> I'm curious what you want to happen with this patch set.  Is there
->>>>>> something specific in Oren's set that deficient which you need
->>>>>> implemented?  Are there some technical reasons you prefer this code?
->>>>> To be fair, and since (IIRC) the initial intent was to start with OpenVZ's
->>>>> approach, shouldn't Oren answer the same questions with respect to Andrey's
->>>>> patchset?
->>>>>
->>>>> I'm afraid that we are forgetting to take the best from both approaches...
->>>> I agree with Louis.
->>>>
->>>> I played with Oren's patchset and tryed to port it on x86_64. I was able 
->>>> to sys_checkpoint/sys_restart but if you remove the restoring of the 
->>>> general registers, the restart still works. I am not an expert on asm, 
->>>> but my hypothesis is when we call sys_checkpoint the registers are saved 
->>>> on the stack by the syscall and when we restore the memory of the 
->>>> process, we restore the stack and the stacked registers are restored 
->>>> when exiting the sys_restart. That make me feel there is an important 
->>>> gap between external checkpoint and internal checkpoint.
->>> This is a misconception: my patches are not "internal checkpoint". My
->>> patches are basically "external checkpoint" by design, which *also*
->>> accommodates self-checkpointing (aka internal). The same holds for the
->>> restart. The implementation is demonstrated with "self-checkpoint" to
->>> avoid complicating things at this early stage of proof-of-concept.
->> Yep, I read your patchset :)
->>
->> I just want to clarify what we want to demonstrate with this patchset 
->> for the proof-of-concept ? A self CR does not show what are the 
->> complicate parts of the CR, we are just showing we can dump the memory 
->> from the kernel and do setcontext/getcontext.
->>
->> We state at the container mini-summit on an approach:
->>
->>     1. Pre-dump
->>     2. Freeze the container
->>     3. Dump
->>     4. Thaw/Kill the container
->>     5. Post-dump
->>
->> We already have the freezer, and we can forget for now pre-dump and 
->> post-dump.
->>
->> IMHO, for the proof-of-concept we should do a minimal CR (like you did), 
->> but conforming with these 5 points, but that means we have to do an 
->> external checkpoint.
+> * Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> > Have you looked at the existing 32->63 extention code in
+> > include/linux/cnt32_to_63.h and considered unifying it?
+> > 
 > 
-> Right, Oren, iiuc you are insisting that 'external checkpoint' and
-> 'multiple task checkpoint' are the same thing.  But they aren't.
-> Rather, I think that what we say is 'multiple tasks c/r' is what you say
-> should be done from user-space :)
+> Yep, I felt this code was dangerous on SMP given it could suffer from
+> the following type of race due to lack of proper barriers :
 
-Then I don't explain myself clearly :)
+You are wrong.
 
-The only thing I consider doing in user space is the creation of
-the container, the namespaces and the processes.
-
-I argue that "external checkpoint of a single process" is very few
-lines of code away from "self checkpoint" that is in v7.
-
-I'm not sure how you define "external restart" ?  eventually, the
-processes restart themselves. It is a question of how the processes
-are created to begin with.
-
+> CPU    A                                 B
+>        read hw cnt low
+>        read __m_cnt_hi
+>                                          read hw cnt low
+>        (wrap detected)
+>        write __m_cnt_hi (incremented)
+>                                          read __m_cnt_hi
+>                                          (wrap detected)
+>                                          write __m_cnt_hi (incremented)
 > 
-> So particularly given that your patchset seems to be in good shape,
-> I'd like to see external checkpoint explicitly supported.  Please
-> just call me a dunce if v7 already works for that.
-> 
+> we therefore increment the high bits twice in the given race.
 
-It seems like you want a single process to checkpoint a single (other)
-process, and then a single process to start a single (other) process.
+No.  Either you do the _same_ incrementation twice effectively writing 
+the _same_ high value twice, or you don't have simultaneous wrap 
+detections.  Simulate it on paper with real numbers if you are not 
+convinced.
 
-I tried to explicitly avoid dealing with the container (user space ?
-kernel space ?) and with creating new processes (user space ? kernel
-space ?).
+> On UP, the same race could happen if the code is called with preemption
+> enabled.
 
-Nevertheless, it's the _same_ code. All that is needed is to make the
-checkpoint syscall refer to the other task instead of self, and the
-restart should create a container and fork there, then call sys_restart.
+Wrong again.
 
-I guess instead of repeating this argument over, I will go ahead and
-post a patch on top of v7 to demonstrate this (without a container,
-therefore without preserving the original pid).
+> I don't think the "volatile" statement would necessarily make sure the
+> compiler and CPU would do the __m_cnt_hi read before the hw cnt low
+> read. A real memory barrier to order mmio reads wrt memory reads (or
+> instruction sync barrier if the value is taken from the cpu registers)
+> would be required to insure such order.
 
-Oren.
+That's easy enough to fix, right?
 
+> I also felt it would be more solid to have per-cpu structures to keep
+> track of 32->64 bits TSC updates, given the TSCs can always be slightly
+> out-of-sync :
+
+If the low part is a per CPU value then the high part has to be a per 
+CPU value too.  There only needs to be a per-CPU variant of the same 
+algorithm where the only difference is that __m_cnt_hi would be per CPU.
+
+If the low part is global then __m_cnt_hi has to be global, even on SMP.
+
+
+Nicolas
