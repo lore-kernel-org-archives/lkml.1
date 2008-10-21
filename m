@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbYJUUNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbYJUUPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754531AbYJUUNi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 16:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbYJUUN3
+	id S1755205AbYJUUPv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 16:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbYJUUPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 16:13:29 -0400
-Received: from mga09.intel.com ([134.134.136.24]:38873 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751056AbYJUUN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 16:13:28 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,460,1220252400"; 
-   d="scan'208";a="453978409"
-Subject: Re: iwl3945: if I leave my machine running overnight, wifi will
-	not work in the morning
-From: reinette chatre <reinette.chatre@intel.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: "jbenc@suse.cz" <jbenc@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "i.zhu@intel.com" <i.zhu@intel.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>
-In-Reply-To: <20081019214035.GA30485@elf.ucw.cz>
-References: <20081019214035.GA30485@elf.ucw.cz>
-Content-Type: text/plain
-Date: Tue, 21 Oct 2008 13:13:45 -0700
-Message-Id: <1224620025.10863.50.camel@rc-desk>
+	Tue, 21 Oct 2008 16:15:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53057 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751321AbYJUUPm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 16:15:42 -0400
+Date: Tue, 21 Oct 2008 13:15:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: torvalds@linux-foundation.org, paulmck@us.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] byteorder: remove direct includes of
+ linux/byteorder/swab[b].h
+Message-Id: <20081021131534.7c084fdb.akpm@linux-foundation.org>
+In-Reply-To: <1224523418.31861.4.camel@brick>
+References: <1224523418.31861.4.camel@brick>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-10-19 at 14:40 -0700, Pavel Machek wrote:
+On Mon, 20 Oct 2008 10:23:38 -0700
+Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-> root@amd:~# ping hobit
-> PING hobit.ucw.cz (10.0.0.2): 56 data bytes
-> ^C
-> --- hobit.ucw.cz ping statistics ---
-> 34 packets transmitted, 0 packets received, 100% packet loss
-> root@amd:~#
+> A consolidated implementation will provide this generically through
+> asm/byteorder, remove direct includes to avoid breakage when the
+> changeover to the new implementation occurs.
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> Andrew, this hunk seems to have been lost when you sent it to Linus, it's possible
+> you applied this on top of the -next tree where this file has moved, but the tests
+> tree hasn't been pulled yet.
+> 
+> The rest of the patch went into mainline as 1d8cca44b6a244b7e378546d719041819049a0f9
+> 
 
-Can we start to get some debug logs about what happens when you try to
-ping (and it fails)? Please ensure driver is compiled with debugging
-(CONFIG_IWL3945_DEBUG) and load the module with debug=0x43fff
+Grump.  It happens sometimes.  People putting stuff into linux-next and
+then not merging it into the next kernel.
 
-Also, please submit a bug for this
-( http://www.intellinuxwireless.org/bugzilla/ )to help us keep track of
-all the debugging output you are providing.
+> 
+>  kernel/rcutorture.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
+> index 90b5b12..85cb905 100644
+> --- a/kernel/rcutorture.c
+> +++ b/kernel/rcutorture.c
+> @@ -42,10 +42,10 @@
+>  #include <linux/freezer.h>
+>  #include <linux/cpu.h>
+>  #include <linux/delay.h>
+> -#include <linux/byteorder/swabb.h>
+>  #include <linux/stat.h>
+>  #include <linux/srcu.h>
+>  #include <linux/slab.h>
+> +#include <asm/byteorder.h>
 
-Thank you
-
-Reinette
-
+Should this be linux/byteorder.h?  (Which weirdly doesn't include
+asm/byteorder.h).
