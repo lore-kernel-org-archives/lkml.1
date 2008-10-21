@@ -1,73 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753677AbYJUL57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbYJUL6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753677AbYJUL57 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 07:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYJUL5v
+	id S1754150AbYJUL6W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 07:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbYJUL6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 07:57:51 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:51885 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752282AbYJUL5u (ORCPT
+	Tue, 21 Oct 2008 07:58:06 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:61552 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753997AbYJUL6E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 07:57:50 -0400
+	Tue, 21 Oct 2008 07:58:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:subject;
-        b=Kpt9aBoueh152vD7lilSkX9ny7NjaxWT3kdr+txnj4U1o+tReAWW5UT3Pbusvs01qv
-         03bkFWE4sMqQ0zpRDiPsmE5h1cN0DvqOyNp5wP7E+vVybL1O38zV3DX0NoJDlDF/BOV0
-         dB63776kQDEKCifzJcPfUZWemT3hzZVR9x/x4=
-From: Magnus Damm <magnus.damm@gmail.com>
-To: kexec@lists.infradead.org
-Cc: akpm@linux-foundation.org, Magnus Damm <magnus.damm@gmail.com>,
-       horms@verge.net.au, linux-kernel@vger.kernel.org, vgoyal@redhat.com
-Date: Tue, 21 Oct 2008 20:56:38 +0900
-Message-Id: <20081021115638.27749.59642.sendpatchset@rx1.opensource.se>
-Subject: [PATCH] vmcore: Remove saved_max_pfn check
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Cp0BxrgZbRFD4DkTCJJKQhYO3cfi+w5NpxpArCXP7bXdsiC5tGRfX0i4u4KhuPtsh4
+         GUoNRo7y+88OV+qyyNAFZK9tCgo6UFy8g7bZoVStLxdi4PPLiqXvl6wdeu0PU1pkqjJS
+         iLBocL4jqz+FX+9qdhxNEba04VqKd6y/y7vsk=
+Message-ID: <c4e36d110810210458x63ec0356j9a59571008943e63@mail.gmail.com>
+Date: Tue, 21 Oct 2008 13:58:02 +0200
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: "Chris Snook" <csnook@redhat.com>
+Subject: Re: Scheduler on C2D CPU and latest 2.6.27 kernel
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@redhat.com>,
+       "Peter Zijlstra" <pzijlstr@redhat.com>
+In-Reply-To: <48FDC03B.3050708@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <c4e36d110810210259o38897783i2dc4bcb59e8d32e7@mail.gmail.com>
+	 <48FDB7E7.4090007@redhat.com>
+	 <c4e36d110810210429q55e959c5hcdf7bfad34cb1f57@mail.gmail.com>
+	 <48FDC03B.3050708@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
+2008/10/21 Chris Snook <csnook@redhat.com>:
+> Zdenek Kabelac wrote:
+>>
+>> 2008/10/21 Chris Snook <csnook@redhat.com>:
+>>>
+>>> Zdenek Kabelac wrote:
+>>>>
+>>>> Hi
+>>>>
+>>>> Recently I'm noticing bad behavior of the CPU scheduler on my T61 (2GB,
+>>>> C2D)
+>>>>
+>>>> It looks like Linux concentrates all running tasks on one CPU and the
+>>>> second cpu is sleeping.
+>>>>
+>>>> With recent changes to DRI - glxgears went up to 840FPS but also takes
+>>>> 100% (with Xorg) and when I run 'while :; do true; done' loop in
+>>>> parallel frame rate drops to 300FPS.
+>>>>
+>>>> But as I have C2D CPU I would expect that there should be no such
+>>>> dramatic slowdown.
+>>>>
+>>>> Xosview shows that only one CPU is fully loaded.
+>>>>
+>>>> Here are my .config scheduler options:
+>>>>
+>>>> CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
+>>>> # CONFIG_GROUP_SCHED is not set
+>>>> CONFIG_IOSCHED_NOOP=y
+>>>> CONFIG_IOSCHED_AS=y
+>>>> CONFIG_IOSCHED_DEADLINE=y
+>>>> CONFIG_IOSCHED_CFQ=y
+>>>> CONFIG_DEFAULT_IOSCHED="cfq"
+>>>> CONFIG_SCHED_SMT=y
+>>>> # CONFIG_SCHED_MC is not set
+>>
+>> I've also tested   SMT=n  MC=y - with same result
+>
+> Expected.
+>
+>>>> CONFIG_SCHED_HRTICK=y
+>>>> # CONFIG_NET_SCHED is not set
+>>>> CONFIG_USB_EHCI_TT_NEWSCHED=y
+>>>> CONFIG_SCHED_DEBUG=y
+>>>> CONFIG_SCHEDSTATS=y
+>>>> CONFIG_SCHED_TRACER=y
+>>>>
+>>>>
+>>>> Am I missing something?
+>>>
+>>> You're running a loop that does nothing except create new tasks that have
+>>> no
+>>> scheduling history, and then disappear before the scheduler can migrate
+>>> them.
+>>>
+>>> Try running 'openssl speed' to chew up CPU.  I promise you the scheduler
+>>> will behave very nicely.
+>>
+>> Well -  sorry you really shouldn't promise things you cannot guarantee.
+>
+> You must be new here.
 
-This patch removes the saved_max_pfn check from the /proc/vmcore
-function read_from_oldmem(). No need to verify, we should be able
-to just trust that "elfcorehdr=" is correctly passed to the crash
-kernel on the kernel command line like we do with other parameters.
+hmm, I don't think so :)
 
-The read_from_oldmem() function in fs/proc/vmcore.c is quite similar
-to read_from_oldmem() in drivers/char/mem.c, but only in the latter
-it makes sense to use saved_max_pfn. For oldmem it is used to determine
-when to stop reading. For vmcore we already have the elf header info
-pointing out the physical memory regions, no need to pass the end-of-
-old-memory twice.
+>
+>> It's obviously showing exactly same problem on my box.
+>
+> If you start 2 'openssl speed' tasks while glxgears is running, what
+> happens?
+>
+>> And I should add that with  2.6.27-rc8 I do not experience this behavior.
+>
+> Thanks.  Can you bisect?
 
-Removing the saved_max_pfn check from vmcore makes it possible for
-architectures to skip oldmem but still support crash dump through
-vmcore - without the need for the old saved_max_pfn cruft.
+Maybe the author of this regression will 'confess' himself and will
+safe my time?
 
-Architectures that want to play safe can do the saved_max_pfn check
-in copy_oldmem_page(). Not sure why anyone would want to do that,
-but that's even safer than today - the saved_max_pfn check in vmcore
-removed by this patch only checks the first page.
+I can see some major merge  on Oct 20 for kernel/sched.c
 
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
-Acked-by: Vivek Goyal <vgoyal@redhat.com>
-Acked-by: Simon Horman <horms@verge.net.au>
----
+>
+>> Gears are showning 80% speed - but consumes only 25%
+>> and bash loop or openssl speed task do not influence its speed.
+>> (as expected with 2CPU machine)
+>
+> That's definitely what it should be doing with openssl speed.  The bash loop
+> isn't something we should go out of our way to optimize for, since real
+> world apps don't behave that way, but if there's a free fix, we might as
+> well do it.
 
- Andrew, can you please pick up this one?
+You really should check first what the loop I've posted actually does :)
+(hint -  /bin/true  !=  true)
 
- fs/proc/vmcore.c |    2 --
- 1 file changed, 2 deletions(-)
-
---- 0001/fs/proc/vmcore.c
-+++ work/fs/proc/vmcore.c	2008-10-21 20:45:15.000000000 +0900
-@@ -47,8 +47,6 @@ static ssize_t read_from_oldmem(char *bu
- 
- 	offset = (unsigned long)(*ppos % PAGE_SIZE);
- 	pfn = (unsigned long)(*ppos / PAGE_SIZE);
--	if (pfn > saved_max_pfn)
--		return -EINVAL;
- 
- 	do {
- 		if (count > (PAGE_SIZE - offset))
+Zdenek
