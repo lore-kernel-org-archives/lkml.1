@@ -1,41 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754114AbYJUPu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbYJUPwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754114AbYJUPu2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 11:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbYJUPuU
+	id S1754349AbYJUPwH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 11:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbYJUPvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 11:50:20 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56471 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751704AbYJUPuT (ORCPT
+	Tue, 21 Oct 2008 11:51:55 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:20977 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751963AbYJUPvy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 11:50:19 -0400
-Date: Tue, 21 Oct 2008 16:50:18 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Daney <ddaney@caviumnetworks.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       Tomaso.Paoletti@caviumnetworks.com
-Subject: Re: [PATCH] serial: Initialize spinlocks in 8250 and don't clobber
- them.
-Message-ID: <20081021165018.28794974@lxorguk.ukuu.org.uk>
-In-Reply-To: <48FDF6CB.4070605@caviumnetworks.com>
-References: <48F51114.2010105@caviumnetworks.com>
-	<20081020141750.d0610586.akpm@linux-foundation.org>
-	<20081021103833.5e960c8d@lxorguk.ukuu.org.uk>
-	<48FDF6CB.4070605@caviumnetworks.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Oct 2008 11:51:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=dk4MTdVMsdvRqdueuwbBI+2Z6qOOQ8dpdhqlJROCnhFgFOYD5rn/9HsYC2CJP1rbUp
+         sUAZTB/Pb2jKxzHj/AjdOUZ5YEc4Vcvyrxv14bXIyb2PnnavRPvgD7LJVkBVxQWdn+DX
+         ziLwqdNRwag/3cBOyOyklIKtE++lga/08pNbI=
+Message-ID: <2f11576a0810210851g6e0d86benef5d801871886dd7@mail.gmail.com>
+Date: Wed, 22 Oct 2008 00:51:53 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Heiko Carstens" <heiko.carstens@de.ibm.com>
+Subject: Re: mlock: mlocked pages are unevictable
+Cc: "Nick Piggin" <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       "Hugh Dickins" <hugh@veritas.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Rik van Riel" <riel@redhat.com>,
+       "Lee Schermerhorn" <lee.schermerhorn@hp.com>, linux-mm@kvack.org
+In-Reply-To: <20081021151301.GE4980@osiris.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200810201659.m9KGxtFC016280@hera.kernel.org>
+	 <20081021151301.GE4980@osiris.boeblingen.de.ibm.com>
+X-Google-Sender-Auth: 6aa0c59fef9e13a1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The question is:  What is the best way to initialize some (or all) fields of a structure *except* a single lock field that was previously initialized?
+Hi
 
-Move the initialisation - or at least memset to zero then spin_lock_init
-and fill in the other fields later.
+> I think the following part of your patch:
+>
+>> diff --git a/mm/swap.c b/mm/swap.c
+>> index fee6b97..bc58c13 100644
+>> --- a/mm/swap.c
+>> +++ b/mm/swap.c
+>> @@ -278,7 +278,7 @@ void lru_add_drain(void)
+>>       put_cpu();
+>>  }
+>>
+>> -#ifdef CONFIG_NUMA
+>> +#if defined(CONFIG_NUMA) || defined(CONFIG_UNEVICTABLE_LRU)
+>>  static void lru_add_drain_per_cpu(struct work_struct *dummy)
+>>  {
+>>       lru_add_drain();
+>
+> causes this (allyesconfig on s390):
+
+hm,
+
+I don't think so.
+
+Actually, this patch has
+   mmap_sem -> lru_add_drain_all() dependency.
+
+but its dependency already exist in another place.
+example,
+
+  sys_move_pages()
+      do_move_pages()  <- down_read(mmap_sem)
+          migrate_prep()
+               lru_add_drain_all()
+
+Thought?
+
+> [17179587.988810] =======================================================
+> [17179587.988819] [ INFO: possible circular locking dependency detected ]
+> [17179587.988824] 2.6.27-06509-g2515ddc-dirty #190
+> [17179587.988827] -------------------------------------------------------
+> [17179587.988831] multipathd/3868 is trying to acquire lock:
+> [17179587.988834]  (events){--..}, at: [<0000000000157f82>] flush_work+0x42/0x124
+> [17179587.988850]
+> [17179587.988851] but task is already holding lock:
+> [17179587.988854]  (&mm->mmap_sem){----}, at: [<00000000001c0be4>] sys_mlockall+0x5c/0xe0
+> [17179587.988865]
+> [17179587.988866] which lock already depends on the new lock.
+> [17179587.988867]
+> [17179587.988871]
+> [17179587.988871] the existing dependency chain (in reverse order) is:
+> [17179587.988875]
+> [17179587.988876] -> #3 (&mm->mmap_sem){----}:
+> [17179587.988883]        [<0000000000171a42>] __lock_acquire+0x143e/0x17c4
+> [17179587.988891]        [<0000000000171e5c>] lock_acquire+0x94/0xbc
+> [17179587.988896]        [<0000000000b2a532>] down_read+0x62/0xd8
+> [17179587.988905]        [<0000000000b2cc40>] do_dat_exception+0x14c/0x390
+> [17179587.988910]        [<0000000000114d36>] sysc_return+0x0/0x8
+> [17179587.988917]        [<00000000006c694a>] copy_from_user_mvcos+0x12/0x84
+> [17179587.988926]        [<00000000007335f0>] eql_ioctl+0x3e8/0x590
+> [17179587.988935]        [<00000000008b6230>] dev_ifsioc+0x29c/0x2c8
+> [17179587.988942]        [<00000000008b6874>] dev_ioctl+0x618/0x680
+> [17179587.988946]        [<00000000008a1a8c>] sock_ioctl+0x2b4/0x2c8
+> [17179587.988953]        [<00000000001f99a8>] vfs_ioctl+0x50/0xbc
+> [17179587.988960]        [<00000000001f9ee2>] do_vfs_ioctl+0x4ce/0x510
+> [17179587.988965]        [<00000000001f9f94>] sys_ioctl+0x70/0x98
+> [17179587.988970]        [<0000000000114d30>] sysc_noemu+0x10/0x16
+> [17179587.988975]        [<0000020000131286>] 0x20000131286
+> [17179587.988980]
+> [17179587.988981] -> #2 (rtnl_mutex){--..}:
+> [17179587.988987]        [<0000000000171a42>] __lock_acquire+0x143e/0x17c4
+> [17179587.988993]        [<0000000000171e5c>] lock_acquire+0x94/0xbc
+> [17179587.988998]        [<0000000000b29ae8>] mutex_lock_nested+0x11c/0x31c
+> [17179587.989003]        [<00000000008bff1c>] rtnl_lock+0x30/0x40
+> [17179587.989009]        [<00000000008c144e>] linkwatch_event+0x26/0x6c
+> [17179587.989015]        [<0000000000157356>] run_workqueue+0x146/0x240
+> [17179587.989020]        [<000000000015756e>] worker_thread+0x11e/0x134
+> [17179587.989025]        [<000000000015cd8e>] kthread+0x6e/0xa4
+> [17179587.989030]        [<000000000010ad9a>] kernel_thread_starter+0x6/0xc
+> [17179587.989036]        [<000000000010ad94>] kernel_thread_starter+0x0/0xc
+> [17179587.989042]
+> [17179587.989042] -> #1 ((linkwatch_work).work){--..}:
+> [17179587.989049]        [<0000000000171a42>] __lock_acquire+0x143e/0x17c4
+> [17179587.989054]        [<0000000000171e5c>] lock_acquire+0x94/0xbc
+> [17179587.989059]        [<0000000000157350>] run_workqueue+0x140/0x240
+> [17179587.989064]        [<000000000015756e>] worker_thread+0x11e/0x134
+> [17179587.989069]        [<000000000015cd8e>] kthread+0x6e/0xa4
+> [17179587.989074]        [<000000000010ad9a>] kernel_thread_starter+0x6/0xc
+> [17179587.989079]        [<000000000010ad94>] kernel_thread_starter+0x0/0xc
+> [17179587.989084]
+> [17179587.989085] -> #0 (events){--..}:
+> [17179587.989091]        [<00000000001716ca>] __lock_acquire+0x10c6/0x17c4
+> [17179587.989096]        [<0000000000171e5c>] lock_acquire+0x94/0xbc
+> [17179587.989101]        [<0000000000157fb4>] flush_work+0x74/0x124
+> [17179587.989107]        [<0000000000158620>] schedule_on_each_cpu+0xec/0x138
+> [17179587.989112]        [<00000000001b0ab4>] lru_add_drain_all+0x2c/0x40
+> [17179587.989117]        [<00000000001c05ac>] __mlock_vma_pages_range+0xcc/0x2e8
+> [17179587.989123]        [<00000000001c0970>] mlock_fixup+0x1a8/0x280
+> [17179587.989128]        [<00000000001c0aec>] do_mlockall+0xa4/0xd4
+> [17179587.989133]        [<00000000001c0c36>] sys_mlockall+0xae/0xe0
+> [17179587.989138]        [<0000000000114d30>] sysc_noemu+0x10/0x16
+> [17179587.989142]        [<000002000025a466>] 0x2000025a466
+> [17179587.989147]
+> [17179587.989148] other info that might help us debug this:
+> [17179587.989149]
+> [17179587.989154] 1 lock held by multipathd/3868:
+> [17179587.989156]  #0:  (&mm->mmap_sem){----}, at: [<00000000001c0be4>] sys_mlockall+0x5c/0xe0
+> [17179587.989165]
+> [17179587.989166] stack backtrace:
+> [17179587.989170] CPU: 0 Not tainted 2.6.27-06509-g2515ddc-dirty #190
+> [17179587.989174] Process multipathd (pid: 3868, task: 000000003978a298, ksp: 0000000039b23eb8)
+> [17179587.989178] 000000003978aa00 0000000039b238b8 0000000000000002 0000000000000000
+> [17179587.989184]        0000000039b23958 0000000039b238d0 0000000039b238d0 00000000001060ee
+> [17179587.989192]        0000000000000003 0000000000000000 0000000000000000 000000000000000b
+> [17179587.989199]        0000000000000060 0000000000000008 0000000039b238b8 0000000039b23928
+> [17179587.989207]        0000000000b30b50 00000000001060ee 0000000039b238b8 0000000039b23910
+> [17179587.989216] Call Trace:
+> [17179587.989219] ([<0000000000106036>] show_trace+0xb2/0xd0)
+> [17179587.989225]  [<000000000010610c>] show_stack+0xb8/0xc8
+> [17179587.989230]  [<0000000000b27a96>] dump_stack+0xae/0xbc
+> [17179587.989234]  [<000000000017019e>] print_circular_bug_tail+0xee/0x100
+> [17179587.989240]  [<00000000001716ca>] __lock_acquire+0x10c6/0x17c4
+> [17179587.989245]  [<0000000000171e5c>] lock_acquire+0x94/0xbc
+> [17179587.989250]  [<0000000000157fb4>] flush_work+0x74/0x124
+> [17179587.989256]  [<0000000000158620>] schedule_on_each_cpu+0xec/0x138
+> [17179587.989261]  [<00000000001b0ab4>] lru_add_drain_all+0x2c/0x40
+> [17179587.989266]  [<00000000001c05ac>] __mlock_vma_pages_range+0xcc/0x2e8
+> [17179587.989271]  [<00000000001c0970>] mlock_fixup+0x1a8/0x280
+> [17179587.989276]  [<00000000001c0aec>] do_mlockall+0xa4/0xd4
+> [17179587.989281]  [<00000000001c0c36>] sys_mlockall+0xae/0xe0
+> [17179587.989286]  [<0000000000114d30>] sysc_noemu+0x10/0x16
+> [17179587.989290]  [<000002000025a466>] 0x2000025a466
+> [17179587.989294] INFO: lockdep is turned off.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
