@@ -1,68 +1,290 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbYJUHd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbYJUHeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753309AbYJUHd1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 03:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYJUHdI
+	id S1753395AbYJUHeQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 03:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbYJUHeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 03:33:08 -0400
-Received: from gate.crashing.org ([63.228.1.57]:50880 "EHLO gate.crashing.org"
+	Tue, 21 Oct 2008 03:34:00 -0400
+Received: from mail.suse.de ([195.135.220.2]:50652 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751966AbYJUHdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 03:33:06 -0400
-Subject: Re: Bug in "genirq: record trigger type"
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>
-In-Reply-To: <20081021072857.GA333@elte.hu>
-References: <200810202205.m9KM5une024759@hera.kernel.org>
-	 <1224570730.7654.242.camel@pasglop>
-	 <86802c440810210022i75d3c081r8fc979386cdda9ce@mail.gmail.com>
-	 <20081021072857.GA333@elte.hu>
-Content-Type: text/plain
-Date: Tue, 21 Oct 2008 18:32:23 +1100
-Message-Id: <1224574343.7654.244.camel@pasglop>
+	id S1751707AbYJUHd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 03:33:59 -0400
+Date: Tue, 21 Oct 2008 09:33:56 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [patch] mm: invoke oom-killer from page fault
+Message-ID: <20081021073356.GB3237@wotan.suse.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-21 at 09:28 +0200, Ingo Molnar wrote:
+Yes I tested this and it correctly results in panic if panic_on_oom is set and
+the page fault runs out of memory. It also doesn't try to kill init if some
+other task can be killed.
 
-> From: Chris Friesen <cfriesen@nortel.com>
-> Date: Mon, 20 Oct 2008 12:41:58 -0600
-> Subject: [PATCH] genirq: fix set_irq_type() when recording trigger type
-> 
-> In set_irq_type() we want to pass the type rather than the current
-> interrupt state.
-> 
-> Signed-off-by: Chris Friesen <cfriesen@nortel.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+One remaining problem is that we don't know the constraint of the allocation
+(don't know the GFP mask etc), so we can't do exactly the right thing there
+yet, but at least we do better than before.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-> ---
->  kernel/irq/chip.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-> index 4895fde..3de6ea3 100644
-> --- a/kernel/irq/chip.c
-> +++ b/kernel/irq/chip.c
-> @@ -127,7 +127,7 @@ int set_irq_type(unsigned int irq, unsigned int type)
->  		return 0;
->  
->  	spin_lock_irqsave(&desc->lock, flags);
-> -	ret = __irq_set_trigger(desc, irq, flags);
-> +	ret = __irq_set_trigger(desc, irq, type);
->  	spin_unlock_irqrestore(&desc->lock, flags);
->  	return ret;
->  }
+mm: invoke OOM killer from pagefault handler
 
+Rather than have the pagefault handler kill a process directly if it gets a
+VM_FAULT_OOM, have it call into the OOM killer.
+
+With increasingly sophisticated oom behaviour (cpusets, memory cgroups, oom
+killing throttling, oom priority adjustment or selective disabling, panic on
+oom, etc), it's silly to unconditionally kill the faulting process at page
+fault time. Create a hook for pagefault oom path to call into instead.
+
+Only converted x86 and uml so far.
+
+Index: linux-2.6/mm/oom_kill.c
+===================================================================
+--- linux-2.6.orig/mm/oom_kill.c
++++ linux-2.6/mm/oom_kill.c
+@@ -508,6 +508,69 @@ void clear_zonelist_oom(struct zonelist 
+ 	spin_unlock(&zone_scan_mutex);
+ }
+ 
++/*
++ * Must be called with tasklist_lock held for read.
++ */
++void __out_of_memory(gfp_t gfp_mask, int order)
++{
++	if (sysctl_oom_kill_allocating_task) {
++		oom_kill_process(current, gfp_mask, order, 0, NULL,
++				"Out of memory (oom_kill_allocating_task)");
++
++	} else {
++		unsigned long points;
++		struct task_struct *p;
++
++retry:
++		/*
++		 * Rambo mode: Shoot down a process and hope it solves whatever
++		 * issues we may have.
++		 */
++		p = select_bad_process(&points, NULL);
++
++		if (PTR_ERR(p) == -1UL)
++			return;
++
++		/* Found nothing?!?! Either we hang forever, or we panic. */
++		if (!p) {
++			read_unlock(&tasklist_lock);
++			panic("Out of memory and no killable processes...\n");
++		}
++
++		if (oom_kill_process(p, gfp_mask, order, points, NULL,
++				     "Out of memory"))
++			goto retry;
++	}
++}
++
++/*
++ * pagefault handler calls into here because it is out of memory but
++ * doesn't know exactly how or why.
++ */
++void pagefault_out_of_memory(void)
++{
++	unsigned long freed = 0;
++
++	blocking_notifier_call_chain(&oom_notify_list, 0, &freed);
++	if (freed > 0)
++		/* Got some memory back in the last second. */
++		return;
++
++	if (sysctl_panic_on_oom)
++		panic("out of memory from page fault. panic_on_oom is selected.\n");
++
++	read_lock(&tasklist_lock);
++	__out_of_memory(0, 0); /* unknown gfp_mask and order */
++	read_unlock(&tasklist_lock);
++
++	/*
++	 * Give "p" a good chance of killing itself before we
++	 * retry to allocate memory unless "p" is current
++	 */
++	if (!test_thread_flag(TIF_MEMDIE))
++		schedule_timeout_uninterruptible(1);
++}
++
+ /**
+  * out_of_memory - kill the "best" process when we run out of memory
+  * @zonelist: zonelist pointer
+@@ -521,8 +584,6 @@ void clear_zonelist_oom(struct zonelist 
+  */
+ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order)
+ {
+-	struct task_struct *p;
+-	unsigned long points = 0;
+ 	unsigned long freed = 0;
+ 	enum oom_constraint constraint;
+ 
+@@ -543,7 +604,7 @@ void out_of_memory(struct zonelist *zone
+ 
+ 	switch (constraint) {
+ 	case CONSTRAINT_MEMORY_POLICY:
+-		oom_kill_process(current, gfp_mask, order, points, NULL,
++		oom_kill_process(current, gfp_mask, order, 0, NULL,
+ 				"No available memory (MPOL_BIND)");
+ 		break;
+ 
+@@ -552,35 +613,10 @@ void out_of_memory(struct zonelist *zone
+ 			panic("out of memory. panic_on_oom is selected\n");
+ 		/* Fall-through */
+ 	case CONSTRAINT_CPUSET:
+-		if (sysctl_oom_kill_allocating_task) {
+-			oom_kill_process(current, gfp_mask, order, points, NULL,
+-					"Out of memory (oom_kill_allocating_task)");
+-			break;
+-		}
+-retry:
+-		/*
+-		 * Rambo mode: Shoot down a process and hope it solves whatever
+-		 * issues we may have.
+-		 */
+-		p = select_bad_process(&points, NULL);
+-
+-		if (PTR_ERR(p) == -1UL)
+-			goto out;
+-
+-		/* Found nothing?!?! Either we hang forever, or we panic. */
+-		if (!p) {
+-			read_unlock(&tasklist_lock);
+-			panic("Out of memory and no killable processes...\n");
+-		}
+-
+-		if (oom_kill_process(p, gfp_mask, order, points, NULL,
+-				     "Out of memory"))
+-			goto retry;
+-
++		__out_of_memory(gfp_mask, order);
+ 		break;
+ 	}
+ 
+-out:
+ 	read_unlock(&tasklist_lock);
+ 
+ 	/*
+Index: linux-2.6/include/linux/mm.h
+===================================================================
+--- linux-2.6.orig/include/linux/mm.h
++++ linux-2.6/include/linux/mm.h
+@@ -700,6 +700,11 @@ static inline int page_mapped(struct pag
+ 
+ #define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS)
+ 
++/*
++ * Can be called by the pagefault handler when it gets a VM_FAULT_OOM.
++ */
++extern void pagefault_out_of_memory(void);
++
+ #define offset_in_page(p)	((unsigned long)(p) & ~PAGE_MASK)
+ 
+ extern void show_free_areas(void);
+Index: linux-2.6/arch/x86/mm/fault.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/fault.c
++++ linux-2.6/arch/x86/mm/fault.c
+@@ -665,7 +665,6 @@ void __kprobes do_page_fault(struct pt_r
+ 	if (unlikely(in_atomic() || !mm))
+ 		goto bad_area_nosemaphore;
+ 
+-again:
+ 	/*
+ 	 * When running in the kernel we expect faults to occur only to
+ 	 * addresses in user space.  All other faults represent errors in the
+@@ -856,25 +855,14 @@ no_context:
+ 	oops_end(flags, regs, SIGKILL);
+ #endif
+ 
+-/*
+- * We ran out of memory, or some other thing happened to us that made
+- * us unable to handle the page fault gracefully.
+- */
+ out_of_memory:
++	/*
++	 * We ran out of memory, call the OOM killer, and return the userspace
++	 * (which will retry the fault, or kill us if we got oom-killed).
++	 */
+ 	up_read(&mm->mmap_sem);
+-	if (is_global_init(tsk)) {
+-		yield();
+-		/*
+-		 * Re-lookup the vma - in theory the vma tree might
+-		 * have changed:
+-		 */
+-		goto again;
+-	}
+-
+-	printk("VM: killing process %s\n", tsk->comm);
+-	if (error_code & PF_USER)
+-		do_group_exit(SIGKILL);
+-	goto no_context;
++	pagefault_out_of_memory();
++	return;
+ 
+ do_sigbus:
+ 	up_read(&mm->mmap_sem);
+Index: linux-2.6/arch/um/kernel/trap.c
+===================================================================
+--- linux-2.6.orig/arch/um/kernel/trap.c
++++ linux-2.6/arch/um/kernel/trap.c
+@@ -64,11 +64,10 @@ good_area:
+ 
+ 	do {
+ 		int fault;
+-survive:
++
+ 		fault = handle_mm_fault(mm, vma, address, is_write);
+ 		if (unlikely(fault & VM_FAULT_ERROR)) {
+ 			if (fault & VM_FAULT_OOM) {
+-				err = -ENOMEM;
+ 				goto out_of_memory;
+ 			} else if (fault & VM_FAULT_SIGBUS) {
+ 				err = -EACCES;
+@@ -104,18 +103,14 @@ out:
+ out_nosemaphore:
+ 	return err;
+ 
+-/*
+- * We ran out of memory, or some other thing happened to us that made
+- * us unable to handle the page fault gracefully.
+- */
+ out_of_memory:
+-	if (is_global_init(current)) {
+-		up_read(&mm->mmap_sem);
+-		yield();
+-		down_read(&mm->mmap_sem);
+-		goto survive;
+-	}
+-	goto out;
++	/*
++	 * We ran out of memory, call the OOM killer, and return the userspace
++	 * (which will retry the fault, or kill us if we got oom-killed).
++	 */
++	up_read(&mm->mmap_sem);
++	pagefault_out_of_memory();
++	return 0;
+ }
+ 
+ static void bad_segv(struct faultinfo fi, unsigned long ip)
+@@ -214,9 +209,6 @@ unsigned long segv(struct faultinfo fi, 
+ 		si.si_addr = (void __user *)address;
+ 		current->thread.arch.faultinfo = fi;
+ 		force_sig_info(SIGBUS, &si, current);
+-	} else if (err == -ENOMEM) {
+-		printk(KERN_INFO "VM: killing process %s\n", current->comm);
+-		do_exit(SIGKILL);
+ 	} else {
+ 		BUG_ON(err != -EFAULT);
+ 		si.si_signo = SIGSEGV;
