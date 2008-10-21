@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbYJUVYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756310AbYJUVZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756173AbYJUVYt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 17:24:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbYJUVYm
+	id S1756310AbYJUVZp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 17:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbYJUVZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 17:24:42 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52995 "EHLO
+	Tue, 21 Oct 2008 17:25:36 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53009 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751907AbYJUVYl (ORCPT
+	with ESMTP id S1752109AbYJUVZf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 17:24:41 -0400
-Date: Tue, 21 Oct 2008 16:24:40 -0500
+	Tue, 21 Oct 2008 17:25:35 -0400
+Date: Tue, 21 Oct 2008 16:25:35 -0500
 From: Dean Nelson <dcn@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/4] sgi-xp: define xp_partition_id and xp_region_size
-Message-ID: <20081021212440.GE14386@sgi.com>
+Subject: [PATCH 4/4] sgi-xp: support getting the address of a partition's reserved page
+Message-ID: <20081021212535.GF14386@sgi.com>
 References: <20081021212054.GB14386@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -26,27 +26,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Define xp_partition_id and xp_region_size to their correct values.
+Add support for getting the address of a partition's reserved page.
 
 Signed-off-by: Dean Nelson <dcn@sgi.com>
 
 ---
 
- drivers/misc/sgi-xp/xp_uv.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/misc/sgi-xp/xpc_uv.c |   31 ++++++++++++++++++++++++++++---
+ 1 file changed, 28 insertions(+), 3 deletions(-)
 
-Index: linux/drivers/misc/sgi-xp/xp_uv.c
+Index: linux/drivers/misc/sgi-xp/xpc_uv.c
 ===================================================================
---- linux.orig/drivers/misc/sgi-xp/xp_uv.c	2008-10-20 14:21:31.000000000 -0500
-+++ linux/drivers/misc/sgi-xp/xp_uv.c	2008-10-20 14:29:31.000000000 -0500
-@@ -119,8 +119,8 @@ xp_init_uv(void)
- 	BUG_ON(!is_uv());
+--- linux.orig/drivers/misc/sgi-xp/xpc_uv.c	2008-10-21 12:50:18.000000000 -0500
++++ linux/drivers/misc/sgi-xp/xpc_uv.c	2008-10-21 14:00:13.000000000 -0500
+@@ -642,7 +642,7 @@ xpc_send_local_activate_IRQ_uv(struct xp
+ 	struct xpc_partition_uv *part_uv = &part->sn.uv;
  
- 	xp_max_npartitions = XP_MAX_NPARTITIONS_UV;
--	xp_partition_id = 0;	/* !!! not correct value */
--	xp_region_size = 0;	/* !!! not correct value */
-+	xp_partition_id = sn_partition_id;
-+	xp_region_size = sn_region_size;
+ 	/*
+-	 * !!! Make our side think that the remote parition sent an activate
++	 * !!! Make our side think that the remote partition sent an activate
+ 	 * !!! message our way by doing what the activate IRQ handler would
+ 	 * !!! do had one really been sent.
+ 	 */
+@@ -660,8 +660,33 @@ static enum xp_retval
+ xpc_get_partition_rsvd_page_pa_uv(void *buf, u64 *cookie, unsigned long *rp_pa,
+ 				  size_t *len)
+ {
+-	/* !!! call the UV version of sn_partition_reserved_page_pa() */
+-	return xpUnsupported;
++	s64 status;
++	enum xp_retval ret;
++
++#if defined CONFIG_X86_64
++	status = uv_bios_reserved_page_pa((u64)buf, cookie, (u64 *)rp_pa,
++					  (u64 *)len);
++	if (status == BIOS_STATUS_SUCCESS)
++		ret = xpSuccess;
++	else if (status == BIOS_STATUS_MORE_PASSES)
++		ret = xpNeedMoreInfo;
++	else
++		ret = xpBiosError;
++
++#elif defined CONFIG_IA64_GENERIC || defined CONFIG_IA64_SGI_UV
++	status = sn_partition_reserved_page_pa((u64)buf, cookie, rp_pa, len);
++	if (status == SALRET_OK)
++		ret = xpSuccess;
++	else if (status == SALRET_MORE_PASSES)
++		ret = xpNeedMoreInfo;
++	else
++		ret = xpSalError;
++
++#else
++	#error not a supported configuration
++#endif
++
++	return ret;
+ }
  
- 	xp_pa = xp_pa_uv;
- 	xp_remote_memcpy = xp_remote_memcpy_uv;
+ static int
