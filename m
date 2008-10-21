@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbYJUGMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbYJUGMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754687AbYJUGMf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 02:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbYJUGLj
+	id S1754854AbYJUGMs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 02:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbYJUGMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 02:11:39 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46218 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753052AbYJUGLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 02:11:37 -0400
-Message-ID: <48FD7292.5020401@garzik.org>
-Date: Tue, 21 Oct 2008 02:11:30 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 21 Oct 2008 02:12:23 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:45558 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753395AbYJUGMW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 02:12:22 -0400
+Date: Tue, 21 Oct 2008 08:12:19 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: [PATCH] Fix page_cgroup build breakage
+Message-ID: <20081021061219.GA4980@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-CC: davem@davemloft.net, netdev@vger.kernel.org, brice@myri.com,
-       dan.j.williams@intel.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, tiwai@suse.de, apw@shadowen.org,
-       linuxppc-dev@ozlabs.org, sam@ravnborg.org,
-       e1000-devel@lists.sourceforge.net, maciej.sosnowski@intel.com,
-       bunk@kernel.org
-Subject: Re: [PATCH] igb: add IGB_DCA instead of selecting INTEL_IOATDMA
-References: <20081017180831.15639.50705.stgit@gitlost.lost>
-In-Reply-To: <20081017180831.15639.50705.stgit@gitlost.lost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Kirsher wrote:
-> Add a bool IGB_DCA defined to y if IGB and DCA are enabled, but IGB isn't y while DCA=m.  And thus remove the need to select INTEL_IOATDMA when IGB is enabled, so that non-x86 architectures can build the igb driver.
-> Based on work/patch from Brice Goglin <brice@myri.com>
-> 
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: [PATCH] Fix page_cgroup build breakage
 
-applied
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
+On s390 I get this:
 
+  CC      mm/page_cgroup.o
+mm/page_cgroup.c: In function 'init_section_page_cgroup':
+mm/page_cgroup.c:111: error: implicit declaration of function 'vmalloc_node'
+mm/page_cgroup.c:111: warning: assignment makes pointer from integer without a cast
+mm/page_cgroup.c: In function '__free_page_cgroup':
+mm/page_cgroup.c:140: error: implicit declaration of function 'vfree'
+make[1]: *** [mm/page_cgroup.o] Error 1
+make: *** [mm] Error 2
+
+caused by 52d4b9ac0b985168009c2a57098324e67bae171f
+("memcg: allocate all page_cgroup at boot")
+
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ mm/page_cgroup.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: linux-2.6/mm/page_cgroup.c
+===================================================================
+--- linux-2.6.orig/mm/page_cgroup.c
++++ linux-2.6/mm/page_cgroup.c
+@@ -3,6 +3,7 @@
+ #include <linux/bootmem.h>
+ #include <linux/bit_spinlock.h>
+ #include <linux/page_cgroup.h>
++#include <linux/vmalloc.h>
+ #include <linux/hash.h>
+ #include <linux/memory.h>
+ 
