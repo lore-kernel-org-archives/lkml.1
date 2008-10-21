@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753685AbYJUPkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753660AbYJUPmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753685AbYJUPkp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 11:40:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbYJUPki
+	id S1753660AbYJUPmg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 11:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbYJUPm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 11:40:38 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:53346 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751424AbYJUPkh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 11:40:37 -0400
-Date: Tue, 21 Oct 2008 08:39:49 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Iwo Mergler <iwo@call-direct.com.au>
-Cc: linux-kernel@vger.kernel.org, Jes Sorensen <jes@trained-monkey.org>
-Subject: Re: Fix for genalloc locking
-Message-Id: <20081021083949.3b1473c8.randy.dunlap@oracle.com>
-In-Reply-To: <48F83400.90901@call-direct.com.au>
-References: <48F83400.90901@call-direct.com.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Oct 2008 11:42:28 -0400
+Received: from mail.tpi.com ([198.107.51.143]:2750 "EHLO mail.tpi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751020AbYJUPm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 11:42:27 -0400
+Message-ID: <48FDF864.9070705@tpi.com>
+Date: Tue, 21 Oct 2008 09:42:28 -0600
+From: Tim Gardner <tcanonical@tpi.com>
+Reply-To: tim.gardner@canonical.com
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Scott James Remnant <scott@canonical.com>
+CC: linux-kernel@vger.kernel.org, kernel-team@lists.ubuntu.com,
+       286977@bugs.launchpad.net
+Subject: Re: [PATCH] add MODULE_ALIAS to load ipmi_devintf with ipmi_si
+References: <E1KsI6R-0006gT-PJ@bioshock.netsplit.com>
+In-Reply-To: <E1KsI6R-0006gT-PJ@bioshock.netsplit.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Oct 2008 16:43:12 +1000 Iwo Mergler wrote:
+Scott James Remnant wrote:
+> The ipmi_devintf module contains the userspace interface for IPMI
+> devices, yet will not be loaded automatically with a system
+> interface handler driver.
+> 
+> Add a MODULE_ALIAS for the "platform:ipmi_si" MODALIAS exported by
+> the ipmi_si driver, so that userspace knows of the recommendation.
+> 
+> Signed-off-by: Scott James Remnant <scott@ubuntu.com>
+> ---
+>  drivers/char/ipmi/ipmi_devintf.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/char/ipmi/ipmi_devintf.c b/drivers/char/ipmi/ipmi_devintf.c
+> index 64e1c16..ecaf369 100644
+> --- a/drivers/char/ipmi/ipmi_devintf.c
+> +++ b/drivers/char/ipmi/ipmi_devintf.c
+> @@ -957,3 +957,4 @@ module_exit(cleanup_ipmi);
+>  MODULE_LICENSE("GPL");
+>  MODULE_AUTHOR("Corey Minyard <minyard@mvista.com>");
+>  MODULE_DESCRIPTION("Linux device interface for the IPMI message handler.");
+> +MODULE_ALIAS("platform:ipmi_si");
 
-> Hi,
-> 
-> I hit a little problem while using genalloc with a mix
-> of interrupt/non-interrupt context. I believe the correct
-> fix is to replace the locking calls with the _irqsave/_irqrestore
-> variants. Patch follows.
-> 
-> Is this correct?
-> 
-> BTW, is there any documentation on the Lockdep warnings?
-> What exactly is the meaning of {--+.} in 
-> 
-> (&pool->lock){--+.}, at: [<c0125d1c>] gen_pool_free+0x34/0x120
+Seems like a candidate for the stable kernel. If you add the line:
 
-Did you read Documentation/lockdep-design.txt ?
+Cc: stable@kernel.org
 
----
-~Randy
+it will happen automagically when Linus merges it into his tree. Can you
+resubmit with this line added?
+
+rtg
+-- 
+Tim Gardner tim.gardner@canonical.com
