@@ -1,384 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbYJUTRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbYJUTSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756024AbYJUTRA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 15:17:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYJUTPT
+	id S1756138AbYJUTSA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 15:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755934AbYJUTQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 15:15:19 -0400
-Received: from mail.windriver.com ([147.11.1.11]:44723 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755296AbYJUTPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 15:15:15 -0400
-From: Jason Wessel <jason.wessel@windriver.com>
-To: kgdb-bugreport@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>,
-       alan@lxorguk.ukuu.org.uk
-Subject: [PATCH 3/7] kgdboc, tty: Add the rx polling call back capability
-Date: Tue, 21 Oct 2008 14:14:49 -0500
-Message-Id: <1224616493-23237-4-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1224616493-23237-3-git-send-email-jason.wessel@windriver.com>
-References: <1224616493-23237-1-git-send-email-jason.wessel@windriver.com>
- <1224616493-23237-2-git-send-email-jason.wessel@windriver.com>
- <1224616493-23237-3-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 21 Oct 2008 19:14:56.0889 (UTC) FILETIME=[4E135E90:01C933B1]
+	Tue, 21 Oct 2008 15:16:34 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:37709 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755561AbYJUTQc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 15:16:32 -0400
+Date: Tue, 21 Oct 2008 14:16:25 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-audit@redhat.com, viro@zeniv.linux.org.ok, sgrubb@redhat.com
+Subject: Re: [PATCH 3/4] AUDIT: audit when fcaps increase the permitted or
+	inheritable capabilities
+Message-ID: <20081021191625.GA4657@us.ibm.com>
+References: <20081020222538.3895.50175.stgit@paris.rdu.redhat.com> <20081020222612.3895.6710.stgit@paris.rdu.redhat.com> <48FD6E49.6060104@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48FD6E49.6060104@kernel.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The idea is to allow kgdboc to intercept a <contorol-c> or any other
-character of preference to cause breakpoint interrupt which will start
-the kgdb interface running on the controlling terminal where the
-character was typed.
+Quoting Andrew G. Morgan (morgan@kernel.org):
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> Eric Paris wrote:
+> > Any time fcaps are used to increase a processes pP or pE we will crate a new
+> > audit record which contains the entire set of known information about the 
+> > executable in question, fP, fI, fE, version and includes the parent processes
+> > pE, pI, pP.  This record type will only be emitted from execve syscalls.
+> 
+> I'm confused by the choice of when to log this event.
+> 
+> File capabilities are required to give a process 'any' active
+> capabilities. That is they don't affect pI -> pI', but without fI or fP,
+> the post-execve() process is guaranteed to have no pP or pE capabilities.
+> 
+> Logging execve()s where there is only an increase in capabilities seems
+> wrong to me. To me it seems equally important to log any event where an
+> execve() yields pP != 0.
 
-The default behavior of kgdboc changes such that the control-c will
-always generate an entry to kgdb unless the "n" option is used in the
-kgdb configuration line. IE: kgdboc=ttyS0,n,115200
+True.
 
-In order to make use of the new API, a low level serial driver must
-check to see if it should execute the callback function for each
-character that it processes.  This is similar to the approach used
-with the NET_POLL API's rx_hook.
+... except if (!issecure(SECURE_NOROOT) && uid==0) I guess?
 
-The only changes to the tty layer introduced by this patch are:
-  * Add poll_rx_cb() call back for the low level driver
-  * Move the poll_init() into kgdboc and out of tty_find_polling_driv()
-  * change poll_init() to accept the rx callback parameter
+And then it also might be interesting in the case where
+(!issecure(SECURE_NOROOT) && uid==0) and pP is not full.
 
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
----
- Documentation/DocBook/kgdb.tmpl |   49 ++++++++++++++++++++++----
- drivers/char/tty_io.c           |    7 +---
- drivers/serial/kgdboc.c         |   72 +++++++++++++++++++++++++++++++++++++-
- drivers/serial/serial_core.c    |   24 ++++++++++++-
- include/linux/serial_core.h     |    3 ++
- include/linux/tty_driver.h      |    3 +-
- kernel/kgdb.c                   |    1 +
- 7 files changed, 141 insertions(+), 18 deletions(-)
+> > diff --git a/security/commoncap.c b/security/commoncap.c
+> > index 888b292..9bb285d 100644
+> > --- a/security/commoncap.c
+> > +++ b/security/commoncap.c
+> > @@ -8,6 +8,7 @@
+> >   */
+> >  
+> >  #include <linux/capability.h>
+> > +#include <linux/audit.h>
+> >  #include <linux/module.h>
+> >  #include <linux/init.h>
+> >  #include <linux/kernel.h>
+> > @@ -320,6 +321,8 @@ static int get_file_caps(struct linux_binprm *bprm)
+> >  
+> >  	rc = bprm_caps_from_vfs_caps(&vcaps, bprm);
+> >  
+> > +	audit_log_bprm_fcaps(bprm, &vcaps);
+> > +
+> 
+> When rc != 0, the execve() will fail. Is it appropriate to log in this case?
 
-diff --git a/Documentation/DocBook/kgdb.tmpl b/Documentation/DocBook/kgdb.tmpl
-index 372dec2..67c17c8 100644
---- a/Documentation/DocBook/kgdb.tmpl
-+++ b/Documentation/DocBook/kgdb.tmpl
-@@ -184,7 +184,14 @@
-   or built-in.
-   <orderedlist>
-   <listitem><para>From the module load or build-in</para>
--  <para><constant>kgdboc=&lt;tty-device&gt;,[baud]</constant></para>
-+  <para><constant>kgdboc=&lt;tty-device&gt;[,n][,B][,c###][,baud]</constant></para>
-+   <itemizedlist>
-+   <listitem><para>,n = No monitoring the port for a break char.</para>
-+     <para>You would consider using this option if you would like to be able to type the control-c character on your console device.  In which case, to enter the debugger, you need to use sysrq-g</para></listitem>
-+   <listitem><para>,B = Monitor the port for a break char and issue a breakpoint in line</para></listitem>
-+   <listitem><para>,c### = Use an alternate break character 1-255 instead of ^C (3), example to use ^D as the break char kgdboc=ttyS0,c4,115200</para></listitem>
-+   <listitem><para>,baud = A baud rate parameter IE: 115200n81</para></listitem>
-+   </itemizedlist>
-   <para>
-   The example here would be if your console port was typically ttyS0, you would use something like <constant>kgdboc=ttyS0,115200</constant> or on the ARM Versatile AB you would likely use <constant>kgdboc=ttyAMA0,115200</constant>
-   </para>
-@@ -195,8 +202,9 @@
-   </orderedlist>
-   </para>
-   <para>
--  NOTE: Kgdboc does not support interrupting the target via the
--  gdb remote protocol.  You must manually send a sysrq-g unless you
-+  NOTE: By default kgdboc tries to use the mode of operation where the
-+  low level serial driver will intercept control-c.  If you elect not
-+  to use this mode, you must manually send a sysrq-g unless you
-   have a proxy that splits console output to a terminal problem and
-   has a separate port for the debugger to connect to that sends the
-   sysrq-g for you.
-@@ -253,9 +261,14 @@
-     attach before you can connect gdb.
-     </para>
-     <para>
--    If you are not using different kgdb I/O driver other than kgdboc,
--    you should be able to connect and the target will automatically
--    respond.
-+    The kgdboc driver has two modes of operation depending on if the
-+    low level serial driver supports the rx polling call back and how
-+    the arguments you passed to kgdboc to configure it.  By default
-+    gdb expects to be able to connect to kgdb and start issuing gdb
-+    serial commands.  If you specificed the ",n" (IE:
-+    kgdboc=ttyS0,n,115200) or your serial driver does not implement
-+    the rx poll hook, you must enter the debugger by using the sysrq-g
-+    sequence prior to connecting gdb.
-     </para>
-     <para>
-     Example (using a serial port):
-@@ -415,7 +428,7 @@
-   The kgdboc driver is actually a very thin driver that relies on the
-   underlying low level to the hardware driver having "polling hooks"
-   which the to which the tty driver is attached.  In the initial
--  implementation of kgdboc it the serial_core was changed to expose a
-+  implementation of kgdboc the serial_core was changed to expose a
-   low level uart hook for doing polled mode reading and writing of a
-   single character while in an atomic context.  When kgdb makes an I/O
-   request to the debugger, kgdboc invokes a call back in the serial
-@@ -424,7 +437,14 @@
-   consoles in the future.
-   </para>
-   <para>
--  When using kgdboc with a uart, the uart driver must implement two callbacks in the <constant>struct uart_ops</constant>. Example from drivers/8250.c:<programlisting>
-+  In the 2.6.28 kernel, the CONSOLE_POLL API was augmented to include
-+  a receive call back which a low level serial driver can call when
-+  ever it receives a character.  This had the explicit purpose of
-+  allowing a kgdboc to register to receive characters so as to execute
-+  an entry point to the debugger upon receiving a specific character.
-+  </para>
-+  <para>
-+  When using kgdboc with a uart, the uart driver must implement two callbacks in the <constant>struct uart_ops</constant>. Example from drivers/serial/8250.c:<programlisting>
- #ifdef CONFIG_CONSOLE_POLL
- 	.poll_get_char = serial8250_get_poll_char,
- 	.poll_put_char = serial8250_put_poll_char,
-@@ -439,6 +459,19 @@
-   with any kind of lock you consider, because failing here is most
-   going to mean pressing the reset button.
-   </para>
-+  <para>
-+  Each low level serial driver can also call poll_rx_cb().  This is a
-+  call back into kgdboc with the purpose allowing kgdboc to intercept
-+  characters.  If the function returns a 1, it means that no further
-+  processing should be done in the low level driver, as if the
-+  character had never been received.  Example from
-+  drivers/serial/8250.c:<programlisting>
-+#ifdef CONFIG_CONSOLE_POLL
-+	if (up->port.poll_rx_cb &amp;&amp; up->port.poll_rx_cb(ch))
-+		goto ignore_char;
-+#endif
-+  </programlisting>
-+  </para>
-   </sect1>
-   </chapter>
-   <chapter id="credits">
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 6fb2cbf..fa44e6b 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -311,13 +311,8 @@ struct tty_driver *tty_find_polling_driver(char *name, int *line)
- 	list_for_each_entry(p, &tty_drivers, tty_drivers) {
- 		if (strncmp(name, p->name, len) != 0)
- 			continue;
--		if (*str == ',')
--			str++;
--		if (*str == '\0')
--			str = NULL;
--
- 		if (tty_line >= 0 && tty_line <= p->num && p->ops &&
--		    p->ops->poll_init && !p->ops->poll_init(p, tty_line, str)) {
-+		    p->ops->poll_init) {
- 			res = tty_driver_kref_get(p);
- 			*line = tty_line;
- 			break;
-diff --git a/drivers/serial/kgdboc.c b/drivers/serial/kgdboc.c
-index eadc1ab..d5d35c3 100644
---- a/drivers/serial/kgdboc.c
-+++ b/drivers/serial/kgdboc.c
-@@ -43,6 +43,34 @@ static int kgdboc_option_setup(char *opt)
- 	return 0;
- }
- 
-+static int buffered_char = -1;
-+static u8 break_char;
-+static int no_polled_breaks;
-+static int schedule_breakpoints;
-+
-+/* Return 1 if a the next layer up should discard the character,
-+ * else return 0
-+ */
-+static int kgdboc_rx_callback(u8 c)
-+{
-+	if (likely(atomic_read(&kgdb_active) == -1)) {
-+		if (no_polled_breaks)
-+			return 0;
-+		if (c != break_char)
-+			buffered_char = c;
-+		if (c == break_char ||
-+		    (c == '$' && !kgdb_connected && break_char == 0x03)) {
-+			if (schedule_breakpoints)
-+				kgdb_schedule_breakpoint();
-+			else
-+				kgdb_breakpoint();
-+			return 1;
-+		}
-+		return 0;
-+	}
-+	return 1;
-+}
-+
- __setup("kgdboc=", kgdboc_option_setup);
- 
- static int configure_kgdboc(void)
-@@ -50,12 +78,18 @@ static int configure_kgdboc(void)
- 	struct tty_driver *p;
- 	int tty_line = 0;
- 	int err;
-+	char *str;
- 
- 	err = kgdboc_option_setup(config);
- 	if (err || !strlen(config) || isspace(config[0]))
- 		goto noconfig;
- 
- 	err = -ENODEV;
-+	/* If a driver was previously configured remove it now */
-+	if (kgdb_tty_driver)
-+		kgdb_tty_driver->ops->poll_init(kgdb_tty_driver, kgdb_tty_line,
-+						NULL, (void *)-1);
-+	kgdb_tty_driver = NULL;
- 
- 	p = tty_find_polling_driver(config, &tty_line);
- 	if (!p)
-@@ -63,6 +97,26 @@ static int configure_kgdboc(void)
- 
- 	kgdb_tty_driver = p;
- 	kgdb_tty_line = tty_line;
-+	/* Set defaults and parse optional configuration information */
-+	no_polled_breaks = 0;
-+	schedule_breakpoints = 1;
-+	break_char = 0x03;
-+	if (strstr(config, ",n"))
-+		no_polled_breaks = 1;
-+	if (strstr(config, ",B"))
-+		schedule_breakpoints = 0;
-+	str = strstr(config, ",c");
-+	if (str)
-+		break_char = simple_strtoul(str+2, &str, 10);
-+	str = strrchr(config, ','); /* pointer to baud for init callback */
-+	if (str) {
-+		str++;
-+		if (!(*str >= '0' && *str <= '9'))
-+			str = NULL;
-+	}
-+	/* Initialize the HW level driver for polling */
-+	if (p->ops->poll_init(p, tty_line, str, kgdboc_rx_callback))
-+		goto noconfig;
- 
- 	err = kgdb_register_io_module(&kgdboc_io_ops);
- 	if (err)
-@@ -73,6 +127,10 @@ static int configure_kgdboc(void)
- 	return 0;
- 
- noconfig:
-+	if (kgdb_tty_driver)
-+		kgdb_tty_driver->ops->poll_init(kgdb_tty_driver, kgdb_tty_line,
-+						NULL, (void *)-1);
-+	kgdb_tty_driver = NULL;
- 	config[0] = 0;
- 	configured = 0;
- 
-@@ -96,8 +154,11 @@ static void cleanup_kgdboc(void)
- 
- static int kgdboc_get_char(void)
- {
-+	if (buffered_char >= 0)
-+		return xchg(&buffered_char, -1);
-+
- 	return kgdb_tty_driver->ops->poll_get_char(kgdb_tty_driver,
--						kgdb_tty_line);
-+						   kgdb_tty_line);
- }
- 
- static void kgdboc_put_char(u8 chr)
-@@ -165,6 +226,13 @@ static struct kgdb_io kgdboc_io_ops = {
- module_init(init_kgdboc);
- module_exit(cleanup_kgdboc);
- module_param_call(kgdboc, param_set_kgdboc_var, param_get_string, &kps, 0644);
--MODULE_PARM_DESC(kgdboc, "<serial_device>[,baud]");
-+/* The optional paramters to the config string are:
-+ * ,n == no monitoring the port for a break char
-+ * ,B == monitor the port for a break char and issue a breakpoint in line
-+ * ,c### == Use an alternate break character 1-255 instead of ^C (3)
-+ * The baud parameter must always be last, if used
-+ * ,baud == A baud rate parameter IE: 115200n81
-+ */
-+MODULE_PARM_DESC(kgdboc, "<serial_device>[,n][,B][,c###][,baud]");
- MODULE_DESCRIPTION("KGDB Console TTY Driver");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 874786a..467b8a4 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -2242,7 +2242,22 @@ uart_configure_port(struct uart_driver *drv, struct uart_state *state,
- 
- #ifdef CONFIG_CONSOLE_POLL
- 
--static int uart_poll_init(struct tty_driver *driver, int line, char *options)
-+/**
-+ *	uart_poll_init - setup the console polling device
-+ *	@driver: pointer to high level tty driver
-+ *	@line: tty line number
-+ *	@options: baud string for uart initialization
-+ *	@rx_callback: call back for character processing
-+ *
-+ *      uart_poll_init activates the low level initialization of the
-+ *      uart device for use with polling access to the uart while the
-+ *      interrupts are off, which is primarily used for the debugger.
-+ *      If rx_callback is set to -1, the specified tty driver and line
-+ *      will have the call back function set to NULL uart_poll_init
-+ *      will return immediately.
-+ */
-+static int uart_poll_init(struct tty_driver *driver, int line,
-+		char *options, void *rx_callback)
- {
- 	struct uart_driver *drv = driver->driver_state;
- 	struct uart_state *state = drv->state + line;
-@@ -2256,9 +2271,16 @@ static int uart_poll_init(struct tty_driver *driver, int line, char *options)
- 		return -1;
- 
- 	port = state->port;
-+	if (rx_callback + 1 == 0) {
-+		port->poll_rx_cb = NULL;
-+		return 0;
-+	}
-+
- 	if (!(port->ops->poll_get_char && port->ops->poll_put_char))
- 		return -1;
- 
-+	port->poll_rx_cb = rx_callback;
-+
- 	if (options) {
- 		uart_parse_options(options, &baud, &parity, &bits, &flow);
- 		return uart_set_options(port, NULL, baud, parity, bits, flow);
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index e27f216..3a57c1d 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -308,6 +308,9 @@ struct uart_port {
- 	unsigned char		suspended;
- 	unsigned char		unused[2];
- 	void			*private_data;		/* generic platform data pointer */
-+#ifdef CONFIG_CONSOLE_POLL
-+	int		(*poll_rx_cb)(u8);
-+#endif
- };
- 
- /*
-diff --git a/include/linux/tty_driver.h b/include/linux/tty_driver.h
-index 78416b9..4c30f16 100644
---- a/include/linux/tty_driver.h
-+++ b/include/linux/tty_driver.h
-@@ -262,7 +262,8 @@ struct tty_operations {
- 				struct winsize *ws);
- 	int (*set_termiox)(struct tty_struct *tty, struct termiox *tnew);
- #ifdef CONFIG_CONSOLE_POLL
--	int (*poll_init)(struct tty_driver *driver, int line, char *options);
-+	int (*poll_init)(struct tty_driver *driver, int line, char *options,
-+			void *rx_callback);
- 	int (*poll_get_char)(struct tty_driver *driver, int line);
- 	void (*poll_put_char)(struct tty_driver *driver, int line, char ch);
- #endif
-diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-index 5365d46..d7a30bb 100644
---- a/kernel/kgdb.c
-+++ b/kernel/kgdb.c
-@@ -116,6 +116,7 @@ static struct kgdb_bkpt		kgdb_break[KGDB_MAX_BREAKPOINTS] = {
-  * The CPU# of the active CPU, or -1 if none:
-  */
- atomic_t			kgdb_active = ATOMIC_INIT(-1);
-+EXPORT_SYMBOL_GPL(kgdb_active);
- 
- /*
-  * We use NR_CPUs not PERCPU, in case kgdb is used to debug early
--- 
-1.6.0.2
+It might fail because fP contains bits not in pP', right?  That's
+probably interesting to auditors.
 
+-serge
