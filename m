@@ -1,75 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbYJTX5E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbYJUABx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753271AbYJTX5E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 19:57:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbYJTX4w
+	id S1754583AbYJUABx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 20:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbYJUABo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 19:56:52 -0400
-Received: from home.keithp.com ([63.227.221.253]:33937 "EHLO keithp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752155AbYJTX4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 19:56:52 -0400
-Subject: Re: io resources and cached mappings (was: [git pull] drm patches
-	for 2.6.27-rc1)
-From: Keith Packard <keithp@keithp.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: keithp@keithp.com, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dri-devel@lists.sf.net, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20081020115810.GC10594@elte.hu>
-References: <200810181237.49784.nickpiggin@yahoo.com.au>
-	 <1224357062.4384.72.camel@koto.keithp.com>
-	 <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
-	 <20081018203741.GA23396@elte.hu> <1224366690.4384.89.camel@koto.keithp.com>
-	 <20081018223214.GA5093@elte.hu> <1224389697.4384.118.camel@koto.keithp.com>
-	 <1224398496.5303.7.camel@koto.keithp.com> <20081019175320.GA6442@elte.hu>
-	 <1224450291.5303.23.camel@koto.keithp.com> <20081020115810.GC10594@elte.hu>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-83If55+YSbYxxbEIri2Z"
-Date: Mon, 20 Oct 2008 08:49:04 -0700
-Message-Id: <1224517744.5195.1.camel@koto.keithp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 20 Oct 2008 20:01:44 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:46233 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751287AbYJUABn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Oct 2008 20:01:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=scr7/Vc97YiujfqgrP71INPgx3tytwgyBtomfEuzOx4INZoGF+X1AW2TLwpfbocD+i
+         095O8jZ6F+UlCpN7rxGAeDIDyYNg/1LYWFN2v85aCku+gILtbNIRG1yer6lwbG1XmVjc
+         FXiJ89puFfTyrzPWc4BMfqnzcLA395JrJZqig=
+Message-ID: <48FD7043.6010703@gmail.com>
+Date: Tue, 21 Oct 2008 02:01:39 -0400
+From: roel kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+MIME-Version: 1.0
+To: ben@simtec.co.uk, sameo@openedhand.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] mfd: fix irq assignment
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+dev->irq is unsigned
 
---=-83If55+YSbYxxbEIri2Z
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 2008-10-20 at 13:58 +0200, Ingo Molnar wrote:
-
-> yes but note that by caching the whole mapping on 64-bit we get=20
-> everything we want: trivially lockless, works from any CPU, can be=20
-> preempted at will, and there are no ugly INVLPG flushes anywhere.
-
-I was assuming that on 64-bit, the map would be created at driver init
-time and be left in place until the driver closed; if that's what you
-mean by 'caching', then yes, we should cache the map.
-
-> 32-bit we should handle as well but not design for it.
-
-As long as we get kmap_atomic-like performance, and we get to simplify
-our code, I'm up for it.
-
---=20
-keith.packard@intel.com
-
---=-83If55+YSbYxxbEIri2Z
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQBI/KhtQp8BWwlsTdMRAiDfAJ9RqvKfPpe18kPdy3zRgjQlcPTmuACcCAiZ
-GBlELYIpxLkB6bFJ5B5vW+Q=
-=6V02
------END PGP SIGNATURE-----
-
---=-83If55+YSbYxxbEIri2Z--
-
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
+index 220e437..56cc9f9 100644
+--- a/drivers/mfd/sm501.c
++++ b/drivers/mfd/sm501.c
+@@ -1374,31 +1374,31 @@ static int sm501_init_dev(struct sm501_devdata *sm)
+ static int sm501_plat_probe(struct platform_device *dev)
+ {
+ 	struct sm501_devdata *sm;
+-	int err;
++	int ret;
+ 
+ 	sm = kzalloc(sizeof(struct sm501_devdata), GFP_KERNEL);
+ 	if (sm == NULL) {
+ 		dev_err(&dev->dev, "no memory for device data\n");
+-		err = -ENOMEM;
++		ret = -ENOMEM;
+ 		goto err1;
+ 	}
+ 
+ 	sm->dev = &dev->dev;
+ 	sm->pdev_id = dev->id;
+-	sm->irq = platform_get_irq(dev, 0);
+-	sm->io_res = platform_get_resource(dev, IORESOURCE_MEM, 1);
+-	sm->mem_res = platform_get_resource(dev, IORESOURCE_MEM, 0);
+ 	sm->platdata = dev->dev.platform_data;
+ 
+-	if (sm->irq < 0) {
++	ret = platform_get_irq(dev, 0);
++	if (ret < 0) {
+ 		dev_err(&dev->dev, "failed to get irq resource\n");
+-		err = sm->irq;
+ 		goto err_res;
+ 	}
++	sm->irq = ret;
+ 
++	sm->io_res = platform_get_resource(dev, IORESOURCE_MEM, 1);
++	sm->mem_res = platform_get_resource(dev, IORESOURCE_MEM, 0);
+ 	if (sm->io_res == NULL || sm->mem_res == NULL) {
+ 		dev_err(&dev->dev, "failed to get IO resource\n");
+-		err = -ENOENT;
++		ret = -ENOENT;
+ 		goto err_res;
+ 	}
+ 
+@@ -1407,7 +1407,7 @@ static int sm501_plat_probe(struct platform_device *dev)
+ 
+ 	if (sm->regs_claim == NULL) {
+ 		dev_err(&dev->dev, "cannot claim registers\n");
+-		err= -EBUSY;
++		ret= -EBUSY;
+ 		goto err_res;
+ 	}
+ 
+@@ -1418,7 +1418,7 @@ static int sm501_plat_probe(struct platform_device *dev)
+ 
+ 	if (sm->regs == NULL) {
+ 		dev_err(&dev->dev, "cannot remap registers\n");
+-		err = -EIO;
++		ret = -EIO;
+ 		goto err_claim;
+ 	}
+ 
+@@ -1430,7 +1430,7 @@ static int sm501_plat_probe(struct platform_device *dev)
+  err_res:
+ 	kfree(sm);
+  err1:
+-	return err;
++	return ret;
+ 
+ }
+ 
