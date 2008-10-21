@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbYJUFLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752982AbYJUFNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752850AbYJUFLf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 01:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYJUFL0
+	id S1752982AbYJUFNW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 01:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYJUFNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 01:11:26 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:46386 "EHLO smtps.tip.net.au"
+	Tue, 21 Oct 2008 01:13:13 -0400
+Received: from 1wt.eu ([62.212.114.60]:4863 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750955AbYJUFLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 01:11:25 -0400
-Date: Tue, 21 Oct 2008 16:11:20 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>
-Subject: [PATCH] cgroup: remove unused variable
-Message-Id: <20081021161120.8a0d00df.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	id S1751174AbYJUFNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 01:13:13 -0400
+Date: Tue, 21 Oct 2008 07:12:53 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Nicolas Cannasse <ncannasse@motion-twin.com>
+Cc: davids@webmaster.com, swivel@shells.gnugeneration.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: poll() blocked / packets not received ?
+Message-ID: <20081021051252.GS24654@1wt.eu>
+References: <MDEHLPKNGKAHNMBLJOLKAEJCAIAD.davids@webmaster.com> <48FCBEBE.700@motion-twin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48FCBEBE.700@motion-twin.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-/scratch/sfr/next/kernel/cgroup.c: In function 'cgroup_tasks_start':
-/scratch/sfr/next/kernel/cgroup.c:2107: warning: unused variable 'i'
+On Mon, Oct 20, 2008 at 07:24:14PM +0200, Nicolas Cannasse wrote:
+> For (1) I can't add the timeout since I have no way to differentiate 
+> between a lost connection and a request that takes time to execute.
 
-Introduced in commit cc31edceee04a7b87f2be48f9489ebb72d264844 "cgroups:
-convert tasks file to use a seq_file with shared pid array".
+Not only you can, but you *must*. Any service assuming infinite timeout
+is deemed to fail. If you know that one request can take as long as one
+minute for instance, then use a 2 minutes timeout. The day all requests
+will be automatically cleaned up because of a failed firewall between
+client and server, you'll be happy not to have to come there and restart
+the service to flush them.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- kernel/cgroup.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+There's a huge difference between using a very large timeout and none at
+all.
 
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 046c160..35eebd5 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -2104,7 +2104,7 @@ static void *cgroup_tasks_start(struct seq_file *s, loff_t *pos)
- 	down_read(&cgrp->pids_mutex);
- 	if (pid) {
- 		int end = cgrp->pids_length;
--		int i;
-+
- 		while (index < end) {
- 			int mid = (index + end) / 2;
- 			if (cgrp->tasks_pids[mid] == pid) {
--- 
-1.5.6.5
+Willy
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
