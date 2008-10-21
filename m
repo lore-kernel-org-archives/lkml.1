@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbYJUTSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbYJUTSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756138AbYJUTSA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 15:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755934AbYJUTQe
+	id S1755637AbYJUTSZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 15:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755551AbYJUTRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 15:16:34 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:37709 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755561AbYJUTQc (ORCPT
+	Tue, 21 Oct 2008 15:17:48 -0400
+Received: from miranda.se.axis.com ([193.13.178.8]:59752 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755876AbYJUTRp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 15:16:32 -0400
-Date: Tue, 21 Oct 2008 14:16:25 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-audit@redhat.com, viro@zeniv.linux.org.ok, sgrubb@redhat.com
-Subject: Re: [PATCH 3/4] AUDIT: audit when fcaps increase the permitted or
-	inheritable capabilities
-Message-ID: <20081021191625.GA4657@us.ibm.com>
-References: <20081020222538.3895.50175.stgit@paris.rdu.redhat.com> <20081020222612.3895.6710.stgit@paris.rdu.redhat.com> <48FD6E49.6060104@kernel.org>
+	Tue, 21 Oct 2008 15:17:45 -0400
+Date: Tue, 21 Oct 2008 21:17:36 +0200
+From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Mikael Starvik <mikael.starvik@axis.com>,
+       Bryan Wu <Bryan.Wu@analog.com>
+Subject: Re: [RFC] CRIS: Move header files from include to arch/cris
+Message-ID: <20081021191736.GH24715@axis.com>
+References: <20081021164211.GG24715@axis.com> <8bd0f97a0810211046n2e32868fu1a58cc9123da7c6d@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48FD6E49.6060104@kernel.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <8bd0f97a0810211046n2e32868fu1a58cc9123da7c6d@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew G. Morgan (morgan@kernel.org):
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+On Tue, Oct 21, 2008 at 07:46:18PM +0200, Mike Frysinger wrote:
+> On Tue, Oct 21, 2008 at 12:42, Jesper Nilsson <jesper.nilsson@axis.com> wrote:
+> > That means that the machine dependent header files are moved to
+> > arch/cris/mach-{fs,a3}/include, while the common and architecture
+> > dependent files are moved to arch/cris/include.
+> >
+> > It is mainly this I'd like some input on, since most other ports
+> > that have moved their header files have put all headers in arch/*/include.
 > 
-> Eric Paris wrote:
-> > Any time fcaps are used to increase a processes pP or pE we will crate a new
-> > audit record which contains the entire set of known information about the 
-> > executable in question, fP, fI, fE, version and includes the parent processes
-> > pE, pI, pP.  This record type will only be emitted from execve syscalls.
-> 
-> I'm confused by the choice of when to log this event.
-> 
-> File capabilities are required to give a process 'any' active
-> capabilities. That is they don't affect pI -> pI', but without fI or fP,
-> the post-execve() process is guaranteed to have no pP or pE capabilities.
-> 
-> Logging execve()s where there is only an increase in capabilities seems
-> wrong to me. To me it seems equally important to log any event where an
-> execve() yields pP != 0.
+> that seems like a fairly obvious good idea to me ... i'm thinking we
+> should do it for Blackfin as well ...
 
-True.
+I'm still not decided, my main reason for following Blackfin and ARM
+was that it seemed good to collect all mach-specific files in one place
+in the tree.
 
-... except if (!issecure(SECURE_NOROOT) && uid==0) I guess?
+However, keeping them in the same place makes it easy to grep through,
+something I use quite frequently.
 
-And then it also might be interesting in the case where
-(!issecure(SECURE_NOROOT) && uid==0) and pP is not full.
 
-> > diff --git a/security/commoncap.c b/security/commoncap.c
-> > index 888b292..9bb285d 100644
-> > --- a/security/commoncap.c
-> > +++ b/security/commoncap.c
-> > @@ -8,6 +8,7 @@
-> >   */
-> >  
-> >  #include <linux/capability.h>
-> > +#include <linux/audit.h>
-> >  #include <linux/module.h>
-> >  #include <linux/init.h>
-> >  #include <linux/kernel.h>
-> > @@ -320,6 +321,8 @@ static int get_file_caps(struct linux_binprm *bprm)
-> >  
-> >  	rc = bprm_caps_from_vfs_caps(&vcaps, bprm);
-> >  
-> > +	audit_log_bprm_fcaps(bprm, &vcaps);
-> > +
-> 
-> When rc != 0, the execve() will fail. Is it appropriate to log in this case?
+One thing that struck me just now is that the ARM and Blackfin
+organization actually follows the way in how all header files have
+been moved, i.e. that header files are being moved closer to the
+source files that use them, in favor of collecting them all in one place...
 
-It might fail because fP contains bits not in pP', right?  That's
-probably interesting to auditors.
+> -mike
 
--serge
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
