@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbYJUMmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbYJUMnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755361AbYJUMmw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 08:42:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbYJUMmi
+	id S1755417AbYJUMnU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 08:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755347AbYJUMmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 08:42:38 -0400
-Received: from mga09.intel.com ([134.134.136.24]:41641 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753119AbYJUMmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 08:42:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,457,1220252400"; 
-   d="scan'208";a="350677934"
-Date: Tue, 21 Oct 2008 19:47:35 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "greg@kroah.com" <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: [PATCH 4/15 v5] PCI: make pci_alloc_child_bus() be able to handle
-	NULL bridge
-Message-ID: <20081021114735.GE3185@yzhao12-linux.sh.intel.com>
-References: <20081021114056.GA3185@yzhao12-linux.sh.intel.com>
+	Tue, 21 Oct 2008 08:42:49 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:14470 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755339AbYJUMms (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 08:42:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=QVnyonAepl887X9Q2Myec1MMpM+N0oV/ABdy42VLUI/+yv+1qG8QEOPV9ffXl+x5C8
+         my90cfUa8wNPyLBe/EE0HzBy+QFHmd4b1ktIIJJxgJzuTw0X8mMcylILHM5xwqzbBY7m
+         jfTpXhWciJPhhRXp+ErZ/8L6qCURaKZxXpc6E=
+Message-ID: <ce0170d90810210542p6ea65a74t4f9ac6f7702a9314@mail.gmail.com>
+Date: Tue, 21 Oct 2008 09:42:47 -0300
+From: "Sergio Luis" <eeeesti@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: tty: usb-serial krefs - bad magic number for tty struct (188:0)
+Cc: "Alan Cox" <alan@redhat.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Greg KH" <greg@kroah.com>, linux-usb@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081021133824.292a9071@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081021114056.GA3185@yzhao12-linux.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <ce0170d90810180915m10caa101ucc9e9a8a17cbb6cb@mail.gmail.com>
+	 <ce0170d90810191039i6c78bac1ue1e4b688d47740ff@mail.gmail.com>
+	 <20081021133824.292a9071@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make pci_alloc_child_bus() be able to handle buses without bridge
-devices. Some devices such as SR-IOV devices use more than one bus
-number while there is no explicit bridge devices since they have
-internal routing mechanism.
+On Tue, Oct 21, 2008 at 9:38 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> one of the problems was the tty_kref_put(tty) in
+>> usb_serial_port_work() [drivers/usb/serial/usb-serial.c], that was
+>> releasing the tty device. I removed that line and it _almost_ worked.
+>> well, it worked, but only _once_. If I stopped the daemon and tried to
+>
+> You removed a valid one not the erroneous one it seems.
+>
+> Unfortunately your bug report doesn't actually say _WHICH_ USB serial
+> driver you are using which makes it a bit hard to be sure I'm looking for
+> the right bug.
+>
 
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Grant Grundler <grundler@parisc-linux.org>
-Cc: Alex Chiang <achiang@hp.com>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Cc: Roland Dreier <rdreier@cisco.com>
-Cc: Greg KH <greg@kroah.com>
-Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+The device is a Huawei E220 USB modem. What kind of info can I provide
+to help you with this? would dmesg help?
 
----
- drivers/pci/probe.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index db3e5a7..4b12b58 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -401,12 +401,10 @@ static struct pci_bus *pci_alloc_child_bus(struct pci_bus *parent,
- 	if (!child)
- 		return NULL;
- 
--	child->self = bridge;
- 	child->parent = parent;
- 	child->ops = parent->ops;
- 	child->sysdata = parent->sysdata;
- 	child->bus_flags = parent->bus_flags;
--	child->bridge = get_device(&bridge->dev);
- 
- 	/* initialize some portions of the bus device, but don't register it
- 	 * now as the parent is not properly set up yet.  This device will get
-@@ -423,6 +421,11 @@ static struct pci_bus *pci_alloc_child_bus(struct pci_bus *parent,
- 	child->primary = parent->secondary;
- 	child->subordinate = 0xff;
- 
-+	if (!bridge)
-+		return child;
-+
-+	child->self = bridge;
-+	child->bridge = get_device(&bridge->dev);
- 	/* Set up default resource pointers and names.. */
- 	for (i = 0; i < PCI_BRIDGE_RES_NUM; i++) {
- 		child->resource[i] = &bridge->resource[PCI_BRIDGE_RESOURCES+i];
--- 
-1.5.6.4
-
+Sergio.
