@@ -1,73 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753697AbYJUF73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752831AbYJUGKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753697AbYJUF73 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 01:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbYJUF7U
+	id S1752831AbYJUGKb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 02:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbYJUGKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 01:59:20 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:49456 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751597AbYJUF7T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 01:59:19 -0400
-Date: Tue, 21 Oct 2008 11:21:18 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       nishimura@mxp.nes.nec.co.jp
-Subject: memcg: Fix init/Kconfig documentation
-Message-ID: <20081021055118.GA11429@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	nishimura@mxp.nes.nec.co.jp
+	Tue, 21 Oct 2008 02:10:20 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:46972 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751742AbYJUGKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 02:10:19 -0400
+Date: Tue, 21 Oct 2008 09:09:45 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Steven Rostedt <srostedt@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Arch x86 is not supported with CONFIG_FTRACE_MCOUNT_RECORD
+Message-ID: <20081021060945.GA14126@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Date: Tue, 21 Oct 2008 11:12:45 +0530
-Subject: [PATCH] memcg: Update Kconfig to remove the struct page overhead statement.
+Commit 8da3821ba5634497da63d58a69e24a97697c4a2b
+(ftrace: create __mcount_loc section) causes the
+following build error:
 
-The memory resource controller no longer has a struct page overhead
-associated with it. The init/Kconfig help has been replaced with
-something more suitable based on the current implementation.
+<--  snip  -->
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
- init/Kconfig |   11 ++++-------
- 1 files changed, 4 insertions(+), 7 deletions(-)
+$ make ARCH=x86
+...
+  CC      scripts/mod/empty.o
+Arch x86 is not supported with CONFIG_FTRACE_MCOUNT_RECORD at /home/bunk/linux/kernel-2.6/git/linux-2.6/scripts/recordmcount.pl line 157.
+make[3]: *** [scripts/mod/empty.o] Error 255
 
-diff --git a/init/Kconfig b/init/Kconfig
-index 113c74c..1847f87 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -404,13 +404,10 @@ config CGROUP_MEM_RES_CTLR
- 	  Provides a memory resource controller that manages both page cache and
- 	  RSS memory.
- 
--	  Note that setting this option increases fixed memory overhead
--	  associated with each page of memory in the system by 4/8 bytes
--	  and also increases cache misses because struct page on many 64bit
--	  systems will not fit into a single cache line anymore.
--
--	  Only enable when you're ok with these trade offs and really
--	  sure you need the memory resource controller.
-+	  The config option adds a small memory overhead proportional to the
-+	  size of memory. The controller can be disabled at run time by
-+	  using the cgroup_disable=memory option, at which point the overhead
-+	  disappears.
- 
- 	  This config option also selects MM_OWNER config option, which
- 	  could in turn add some fork/exit overhead.
+<--  snip  -->
+
+cu
+Adrian
+
 -- 
-1.5.6.3
 
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-        Balbir
