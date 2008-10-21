@@ -1,60 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753694AbYJUCIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbYJUCc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753694AbYJUCIp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 22:08:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbYJUCIg
+	id S1753395AbYJUCc5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 22:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYJUCcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 22:08:36 -0400
-Received: from cnmailgate04.alcatel-sbell.com.cn ([211.144.215.47]:38468 "EHLO
-	cnshjsmin03.cn.alcatel-lucent.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750998AbYJUCIf (ORCPT
+	Mon, 20 Oct 2008 22:32:47 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:57310 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751805AbYJUCcq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 22:08:35 -0400
-X-AuditID: ac189297-a9f7fbb000000fe5-05-48fd3972e353
-Message-ID: <48FD3986.6040909@alcatel-lucent.com>
-Date: Tue, 21 Oct 2008 10:08:06 +0800
-From: gshan <gshan@alcatel-lucent.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: pls help me: ext3 filesystem reported errors while deleting files
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Oct 2008 02:07:52.0537 (UTC) FILETIME=[D3197C90:01C93321]
-X-Brightmail-Tracker: AAAAAA==
+	Mon, 20 Oct 2008 22:32:46 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 20 Oct 2008 22:32:39 -0400 (EDT)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC patch 00/15] Tracer Timestamping
+In-reply-to: <20081021013223.GB18751@Krystal>
+Message-id: <alpine.LFD.2.00.0810202152030.26244@xanadu.home>
+References: <20081016232729.699004293@polymtl.ca>
+ <1224230353.28131.65.camel@twins> <20081020202517.GF28562@Krystal>
+ <alpine.LFD.2.00.0810202003260.26244@xanadu.home>
+ <20081021013223.GB18751@Krystal>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+On Mon, 20 Oct 2008, Mathieu Desnoyers wrote:
 
-After I uncompressed a big tar file (about 600MB) that has been mounted 
-through NFS to local
-hard disk, I tried to delete all of files from the tar file, but ext3 
-filesystem reported huge errors
-as follows. Note that I'm using IDE driver instead of ATA driver for 
-hard disk.
+> * Nicolas Pitre (nico@cam.org) wrote:
+> > On Mon, 20 Oct 2008, Mathieu Desnoyers wrote:
+> > 
+> > > * Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> > > > Have you looked at the existing 32->63 extention code in
+> > > > include/linux/cnt32_to_63.h and considered unifying it?
+> > > > 
+> > > 
+> > > Yep, I felt this code was dangerous on SMP given it could suffer from
+> > > the following type of race due to lack of proper barriers :
+> > 
+> > You are wrong.
+> > 
+> > > CPU    A                                 B
+> > >        read hw cnt low
+> > >        read __m_cnt_hi
+> > >                                          read hw cnt low
+> > >        (wrap detected)
+> > >        write __m_cnt_hi (incremented)
+> > >                                          read __m_cnt_hi
+> > >                                          (wrap detected)
+> > >                                          write __m_cnt_hi (incremented)
+> > > 
+> > > we therefore increment the high bits twice in the given race.
+> > 
+> > No.  Either you do the _same_ incrementation twice effectively writing 
+> > the _same_ high value twice, or you don't have simultaneous wrap 
+> > detections.  Simulate it on paper with real numbers if you are not 
+> > convinced.
+> > 
+> 
+> Hi Nicolas,
+> 
+> Yup, you are right. However, the case where one CPU sees the clock source
+> a little bit off-sync (late) still poses a problem. Example follows :
+> 
+> CPU    A                                 B
+>        read __m_cnt_hi (0x80000000)
+>        read hw cnt low (0x00000001)
+>        (wrap detected :
+>         (s32)(0x80000000 ^ 0x1) < 0)
+>        write __m_cnt_hi = 0x00000001
+>        return 0x0000000100000001
+>                                             read __m_cnt_hi (0x00000001)
+>                                      (late) read hw cnt low (0xFFFFFFFA)
+>                                             (wrap detected :
+>                                              (s32)(0x00000001 ^ 0xFFFFFFFA) < 0)
+>                                             write __m_cnt_hi = 0x80000001
+>                                             return 0x80000001FFFFFFFA
+>                                                                   (time jumps)
 
-SP(27-A) $ cd /disk_root/
-SP(27-A) $ busybox tar -zxf /aaa/Gavin/sp3m/target_7xx_cge5.2008-07-10.tgz
-SP(27-A) $ ls
-bin         home        media       root        sys
-boot        lib         mnt         sbin        tmp
-dev         lost+found  opt         selinux     usr
-etc         man         proc        srv         var
-SP(27-A) $ rm -fr *
-EXT3-fs error (device hdc5): ext3_free_blocks_sb: bit already cleared 
-for block 538640
-EXT3-fs error (device hdc5): ext3_free_blocks_sb: bit already cleared 
-for block 538648
-EXT3-fs error (device hdc5): ext3_free_blocks_sb: bit already cleared 
-for block 538648
-EXT3-fs error (device hdc5): ext3_free_blocks_sb: bit already cleared 
-for block 534539
-EXT3-fs error (device hdc5): ext3_free_blocks_sb: bit already cleared 
-for block 534540
-:
-:
+If this is through a global counter then I have a big problem believing 
+you.
 
-Thanks,
-Gavin
+If this is a per-CPU counter then you just need a per-CPU version of 
+__m_cnt_hi.
+
+> A similar situation can be generated by out-of-order hi/low bits reads.
+
+This, of course, should and can be prevented.  No big deal.
+
+> > If the low part is a per CPU value then the high part has to be a per 
+> > CPU value too.  There only needs to be a per-CPU variant of the same 
+> > algorithm where the only difference is that __m_cnt_hi would be per CPU.
+> > 
+> > If the low part is global then __m_cnt_hi has to be global, even on SMP.
+> > 
+> 
+> Hrm, given the performance impact of barriers that would need to be
+> added to insure correct read order of hi and low bits, and also
+> considering the risk that a "synchronized" timestamp counter off by a
+> few cycles poses in terms of time jumping forward, I don't see why we
+> would ever want to use a global __m_cnt_hi ?
+
+I still would like to know just _how_ you could manage to have one CPU 
+perform two reads and one write and manage for another CPU to see that 
+just written value but read an even older value from the global counter 
+than what the first CPU saw.
+
+> I would therefore recommend to always use a per-cpu __m_cnt_hi.
+
+No, not until you convince me of the above nonsense.  Sure it will 
+work with a per-CPU __m_cnt_hi of course, but then the timing constraint 
+to keep the algorithm warm is for each CPU which, if the source counter 
+is global, shouldn't be necessary.
+
+If the 63-bit counter is queried often enough on each CPU then it is of 
+course advantageous to go per-CPU to avoid excessive cache bouncing, and 
+if you start worrying about cache bouncing then you certainly call this 
+code often enough to keep everything in synch.  But that needs not to be 
+always the case.
+
+> Also, a small nit, to make sure cnt32_to_63 never gets scheduled out
+> with a stale old __m_cnt_hi value, its comments should probably say that
+> it has to be always used with preemption off.
+
+NO! THAT's THE WHOLE POINT OF THIS CODE: TO NOT NEED ANY KIND OF 
+LOCKING!  The only requirement is that you must not be preempted away 
+for longer than half (or a quarter if you want to play real safe) the 
+period of the base counter.  If you cannot guarantee that then either 
+your base counter is so fast that it wraps so often to be unusable, or 
+you have another and bigger problem for being preempted for so long.
+
+
+Nicolas
