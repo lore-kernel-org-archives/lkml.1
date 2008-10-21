@@ -1,32 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752161AbYJUTKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751814AbYJUTMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752161AbYJUTKr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 15:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbYJUTKh
+	id S1751814AbYJUTMA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 15:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbYJUTLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 15:10:37 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:37849 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751477AbYJUTKh (ORCPT
+	Tue, 21 Oct 2008 15:11:51 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:44605 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752020AbYJUTLu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 15:10:37 -0400
+	Tue, 21 Oct 2008 15:11:50 -0400
 Subject: Re: [PATCH 0/3] Improve TSC as a clocksource under VMware
 From: Alok Kataria <akataria@vmware.com>
 Reply-To: akataria@vmware.com
-To: Andi Kleen <andi@firstfloor.org>
+To: Chris Snook <csnook@redhat.com>
 Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
        the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-In-Reply-To: <20081021181536.GI12825@one.firstfloor.org>
+       Daniel Hecht <dhecht@vmware.com>, Jeff Hansen <x@jeffhansen.com>
+In-Reply-To: <48FD6EDC.5010801@redhat.com>
 References: <1224552902.2640.88.camel@alok-dev1>
-	 <874p36fflp.fsf@basil.nowhere.org> <1224607284.6161.22.camel@alok-dev1>
-	 <20081021174008.GH12825@one.firstfloor.org>
-	 <1224612294.6161.43.camel@alok-dev1>
-	 <20081021181536.GI12825@one.firstfloor.org>
+	 <48FD6EDC.5010801@redhat.com>
 Content-Type: text/plain
 Organization: VMware INC.
-Date: Tue, 21 Oct 2008 12:10:36 -0700
-Message-Id: <1224616236.6161.60.camel@alok-dev1>
+Date: Tue, 21 Oct 2008 12:11:49 -0700
+Message-Id: <1224616309.6161.63.camel@alok-dev1>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
@@ -34,35 +31,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-21 at 11:15 -0700, Andi Kleen wrote:
-> > FWIU from the code, even if  cpu A's TSC is just 1 tick behind that of
-> > cpu B, we increment the nr_wraps value.
-> > And the code expects that there are no wraps in TSC throughout the
-> > 20msec measurement window.
-> > So IMO its fairly easy to fail this test.
+On Mon, 2008-10-20 at 22:55 -0700, Chris Snook wrote:
+> Alok Kataria wrote:
+> > This patch set makes some changes to the TSC code, so that it is always
+> > used as the default clocksource when running under VMware.
+> > The first 2 patches do the ground work of adding code to detect if we
+> > are running under VMware.
+> > The third patch adds a tsc_reliable flag which tells us that TSC is
+> > reliable on this system, so that we can skip some tests which can
+> > potentially mark TSC as unstable. Details under individual patch
+> > headers.
 > 
-> Ok I think it would be better to enlarge the margin then to fix your
-> issue.
-> 
+> Do you intend for this to supplement Jeff Hansen's tsc=stable patch, or to
+> replace it?  If you intend to supplement it, you should rework your submission
+> to make sure that both your autodetection and his command-line option use the
+> same internal mechanism, and if you intend to replace it, you should say this
+> explicitly, and justify it.  Either way, you should definitely CC Jeff on the
+> submission, as I am doing now.
 
-Yeah, i thought about that, but given the different kinds of native
-hardware that we have i think coming up with values that would be safe
-for all the cases would be difficult. And given that nobody has
-complained about this on native until now, i would prefer not to change
-the status quo. Apart from that, even on VMware virtualized environment
-there can different configurations where this margin keeps on varying,
-under different scenarios, f.e. under overcommitment and all. So i don't
-think that changing threshold values maybe safe for all cases. 
+Hi Chris,
 
-I think going with ignoring this check for specific systems is the best
-way to go further. I am open to either having a check for 
-CONSTANT_TSC or a new flag tsc_reliable (similar to my patch).
-
-I hope you also agree with the CONSTANT_TSC check.
+I had made this change to supplement Jeff's change, but I notice that
+his change is not in any of the trees yet. Let me incorporate that in
+the next iteration of this patch.
 
 Thanks,
 Alok
-
-
-> -Andi
+> 
+> -- Chris
 
