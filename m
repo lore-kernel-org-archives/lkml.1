@@ -1,48 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbYJUBa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753444AbYJUBcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173AbYJUBa2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Oct 2008 21:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbYJUBaS
+	id S1753444AbYJUBcg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Oct 2008 21:32:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbYJUBc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Oct 2008 21:30:18 -0400
-Received: from outbound-mail-144.bluehost.com ([67.222.38.34]:35089 "HELO
-	outbound-mail-144.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751715AbYJUBaQ (ORCPT
+	Mon, 20 Oct 2008 21:32:28 -0400
+Received: from tomts25.bellnexxia.net ([209.226.175.188]:53801 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751855AbYJUBc1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Oct 2008 21:30:16 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=MTjfJ6Gm7CN3QHdiwH/rJh58yR/wuPsDDT49jvywMf/+M4OnoOXmgIrgIVzHPg3fsI0V5Xan3w4h+A6gVpWIXMO/7o+01jGoAsDSDlfaaLX4fLHtljdAkEezjx99u345;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH] pci: Fixing drivers/pci/search.c compilation warning.
-Date: Mon, 20 Oct 2008 18:29:58 -0700
-User-Agent: KMail/1.10.1 (Linux/2.6.26.5-45.fc9.x86_64; KDE/4.1.2; x86_64; ; )
-Cc: linux-pci@vger.kernel.org, greg@kroah.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Rakib Mullick <rakib.mullick@gmail.com>
-References: <b9df5fa10809280816u23ef3021k7eee287a237b72ae@mail.gmail.com> <20080928163211.GR27204@parisc-linux.org> <20081021011308.GA3889@parisc-linux.org>
-In-Reply-To: <20081021011308.GA3889@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 20 Oct 2008 21:32:27 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq8EAHvJ/EhMQWQ+/2dsb2JhbACBcsFrg1A
+Date: Mon, 20 Oct 2008 21:32:24 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Nicolas Pitre <nico@cam.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC patch 00/15] Tracer Timestamping
+Message-ID: <20081021013223.GB18751@Krystal>
+References: <20081016232729.699004293@polymtl.ca> <1224230353.28131.65.camel@twins> <20081020202517.GF28562@Krystal> <alpine.LFD.2.00.0810202003260.26244@xanadu.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810201829.58541.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <alpine.LFD.2.00.0810202003260.26244@xanadu.home>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 20:41:40 up 138 days,  5:22, 10 users,  load average: 1.41, 0.96,
+	0.93
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, October 20, 2008 6:13 pm Matthew Wilcox wrote:
-> This patch seems to have been overlooked.  It also seems to have had
-> some kind of midair collision with a patch from Greg that ignored the
-> real bug I found.
->
-> Here's an updated version.  I think it should also be applied to
-> -stable.
+* Nicolas Pitre (nico@cam.org) wrote:
+> On Mon, 20 Oct 2008, Mathieu Desnoyers wrote:
+> 
+> > * Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> > > Have you looked at the existing 32->63 extention code in
+> > > include/linux/cnt32_to_63.h and considered unifying it?
+> > > 
+> > 
+> > Yep, I felt this code was dangerous on SMP given it could suffer from
+> > the following type of race due to lack of proper barriers :
+> 
+> You are wrong.
+> 
+> > CPU    A                                 B
+> >        read hw cnt low
+> >        read __m_cnt_hi
+> >                                          read hw cnt low
+> >        (wrap detected)
+> >        write __m_cnt_hi (incremented)
+> >                                          read __m_cnt_hi
+> >                                          (wrap detected)
+> >                                          write __m_cnt_hi (incremented)
+> > 
+> > we therefore increment the high bits twice in the given race.
+> 
+> No.  Either you do the _same_ incrementation twice effectively writing 
+> the _same_ high value twice, or you don't have simultaneous wrap 
+> detections.  Simulate it on paper with real numbers if you are not 
+> convinced.
+> 
 
-Ah I didn't get Cc'd but I should have seen it on linux-pci.  Queued up for my 
-next pull, thanks Matthew.
+Hi Nicolas,
 
-Jesse
+Yup, you are right. However, the case where one CPU sees the clock source
+a little bit off-sync (late) still poses a problem. Example follows :
+
+CPU    A                                 B
+       read __m_cnt_hi (0x80000000)
+       read hw cnt low (0x00000001)
+       (wrap detected :
+        (s32)(0x80000000 ^ 0x1) < 0)
+       write __m_cnt_hi = 0x00000001
+       return 0x0000000100000001
+                                            read __m_cnt_hi (0x00000001)
+                                     (late) read hw cnt low (0xFFFFFFFA)
+                                            (wrap detected :
+                                             (s32)(0x00000001 ^ 0xFFFFFFFA) < 0)
+                                            write __m_cnt_hi = 0x80000001
+                                            return 0x80000001FFFFFFFA
+                                                                  (time jumps)
+       read __m_cnt_hi (0x80000001)
+       read hw cnt low (0x00000020)
+       (wrap detected :
+        (s32)(0x80000001 ^ 0x20) < 0)
+       write __m_cnt_hi = 0x00000002
+       return 0x0000000200000020
+                             (time jumps again)
+
+A similar situation can be generated by out-of-order hi/low bits reads.
+
+> > On UP, the same race could happen if the code is called with preemption
+> > enabled.
+> 
+> Wrong again.
+> 
+> > I don't think the "volatile" statement would necessarily make sure the
+> > compiler and CPU would do the __m_cnt_hi read before the hw cnt low
+> > read. A real memory barrier to order mmio reads wrt memory reads (or
+> > instruction sync barrier if the value is taken from the cpu registers)
+> > would be required to insure such order.
+> 
+> That's easy enough to fix, right?
+> 
+
+For memory read vs cycle counter, something like the "data_barrier(x)"
+on powerpc would probably be enough when available. We would need
+something that orders memory reads with the rest of instruction
+execution. On other architectures, smp_rmb() + get_cycles_barrier() (the
+latter being an instruction sync) would be required.
+
+For memory read vs mmap io read, a smp_rmb() should be enough.
+
+> > I also felt it would be more solid to have per-cpu structures to keep
+> > track of 32->64 bits TSC updates, given the TSCs can always be slightly
+> > out-of-sync :
+> 
+> If the low part is a per CPU value then the high part has to be a per 
+> CPU value too.  There only needs to be a per-CPU variant of the same 
+> algorithm where the only difference is that __m_cnt_hi would be per CPU.
+> 
+> If the low part is global then __m_cnt_hi has to be global, even on SMP.
+> 
+
+Hrm, given the performance impact of barriers that would need to be
+added to insure correct read order of hi and low bits, and also
+considering the risk that a "synchronized" timestamp counter off by a
+few cycles poses in terms of time jumping forward, I don't see why we
+would ever want to use a global __m_cnt_hi ? I would therefore recommend
+to always use a per-cpu __m_cnt_hi.
+
+Also, a small nit, to make sure cnt32_to_63 never gets scheduled out
+with a stale old __m_cnt_hi value, its comments should probably say that
+it has to be always used with preemption off.
+
+Mathieu
+
+> 
+> Nicolas
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
