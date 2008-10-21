@@ -1,45 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbYJUUXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbYJUUY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754669AbYJUUXe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 16:23:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbYJUUXW
+	id S1755455AbYJUUY3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 16:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbYJUUYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 16:23:22 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:62496 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754149AbYJUUXV (ORCPT
+	Tue, 21 Oct 2008 16:24:20 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:41427 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751863AbYJUUYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 16:23:21 -0400
-Message-ID: <48FE3A34.5040105@freescale.com>
-Date: Tue, 21 Oct 2008 15:23:16 -0500
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Tue, 21 Oct 2008 16:24:19 -0400
+Date: Tue, 21 Oct 2008 15:24:10 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Oren Laadan <orenl@cs.columbia.edu>, torvalds@linux-foundation.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org, tglx@linutronix.de,
+       dave@linux.vnet.ibm.com, mingo@elte.hu, hpa@zytor.com,
+       viro@zeniv.linux.org.uk
+Subject: Re: [RFC v7][PATCH 2/9] General infrastructure for checkpoint
+	restart
+Message-ID: <20081021202410.GA10423@us.ibm.com>
+References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu> <1224481237-4892-3-git-send-email-orenl@cs.columbia.edu> <20081021124130.a002e838.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Dan Williams <dan.j.williams@intel.com>
-CC: linux-kernel@vger.kernel.org, Kumar Gala <kumar.gala@freescale.com>
-Subject: Re: Best method for sending messages to user space?
-References: <48FE1741.1000502@freescale.com>	 <e9c3a7c20810211114w5be330d3h35f859b4ea8f8af7@mail.gmail.com>	 <48FE30D8.6050705@freescale.com> <e9c3a7c20810211316i13610410h5ec022b55c248c6a@mail.gmail.com>
-In-Reply-To: <e9c3a7c20810211316i13610410h5ec022b55c248c6a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081021124130.a002e838.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Williams wrote:
+Quoting Andrew Morton (akpm@linux-foundation.org):
+> On Mon, 20 Oct 2008 01:40:30 -0400
+> Oren Laadan <orenl@cs.columbia.edu> wrote:
+> >  asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
+> >  {
+> > -	pr_debug("sys_checkpoint not implemented yet\n");
+> > -	return -ENOSYS;
+> > +	struct cr_ctx *ctx;
+> > +	int ret;
+> > +
+> > +	/* no flags for now */
+> > +	if (flags)
+> > +		return -EINVAL;
+> > +
+> > +	ctx = cr_ctx_alloc(pid, fd, flags | CR_CTX_CKPT);
+> > +	if (IS_ERR(ctx))
+> > +		return PTR_ERR(ctx);
+> > +
+> > +	ret = do_checkpoint(ctx);
+> > +
+> > +	if (!ret)
+> > +		ret = ctx->crid;
+> > +
+> > +	cr_ctx_free(ctx);
+> > +	return ret;
+> >  }
+> 
+> Is it appropriate that this be an unprivileged operation?
 
-> fd = open("/sys/block/md0/md/array_state");
-> do {
-> 	read(buf, fd, len);
-> 	act_on_message(buf);
-> 	select(...); /* wait for next sysfs_notify event */
-> 	lseek(fd, 0, SEEK_SET); /* seek back so we can read the new state */
-> } while (1);
+Early versions checked capable(CAP_SYS_ADMIN), and we reasoned that we
+would later attempt to remove the need for privilege so that all users
+could safely use it.
 
-I meant from the kernel side.  I added a call to sysfs_notify(), and I didn't
-see any sysfs entries being created, so I presume I need to set up sysfs before
-I call sysfs_notify(), but I can't figure out what that setup is.
+Arnd Bergmann called us on that nonsense, pointing out that it'd make
+more sense to let unprivileged users use them now, so that we'll be
+more careful about the security as patches roll in.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+So, Oren's patchset right now only checkpoints current, despite pid
+being part of the API.  So the task can access its own data.  When
+the patch supports checkpointing another task (which Oren says he's
+doing right now), then our intent is to check for ptrace access to
+the target task.  (Right, Oren?)
+
+> What happens if I pass it a pid which isn't system-wide unique?
+
+pid must be checked in the caller's pid namespace.  So if I've create a
+container which I want to checkpoint, pid 1 in that pidns will be, say,
+3497 in my pid_ns, and so 3497 is the pid I must use.  If I try to pass
+1, I'll try to checkpoint my own container.  And, if I'm not privileged
+and init is owned by root, the ptrace() check I mentioned above will
+return -EPERM.
+
+> What happens if I pass it a pid of a process which I don't own?  This
+> is super security-sensitive and we need to go over the permission
+> checking with a toothcomb.  It needs to be exhaustively described in
+> the changelog.  It might have security/selinux implications - I don't
+> know, I didn't look, but lights are flashing and bells are ringing over
+> here.
+> 
+> What happens if I pass it a pid of a process which I _do_ own, but it
+> does not refer to a container's init process?
+
+I would assume that do_checkpoint() would return -EINVAL, but it's a
+great question:  Oren, did you have another plan?
+
+> If `pid' must refer to a container's init process, isn't it always
+> equal to 1??
+
+Not in the caller's pid_namespace.
+
+> 
+> >  /**
+> >   * sys_restart - restart a container
+> >   * @crid: checkpoint image identifier
+> > @@ -36,6 +234,19 @@ asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
+> >   */
+> >  asmlinkage long sys_restart(int crid, int fd, unsigned long flags)
+> >  {
+> > -	pr_debug("sys_restart not implemented yet\n");
+> > -	return -ENOSYS;
+> > +	struct cr_ctx *ctx;
+> > +	int ret;
+> > +
+> > +	/* no flags for now */
+> > +	if (flags)
+> > +		return -EINVAL;
+> > +
+> > +	ctx = cr_ctx_alloc(crid, fd, flags | CR_CTX_RSTR);
+> > +	if (IS_ERR(ctx))
+> > +		return PTR_ERR(ctx);
+> > +
+> > +	ret = do_restart(ctx);
+> > +
+> > +	cr_ctx_free(ctx);
+> > +	return ret;
+> >  }
+> 
+> Again, this is scary stuff.  We're allowing unprivileged userspace to
+> feed random numbers into kernel data structures.
+
+Yes, all of the file opens and mmaps must not skip the usual security
+checks.  The task credentials are currently unsupported, meaning that
+euid, etc, come from the caller, not the checkpoint image.  When the
+restoration of credentials becomes supported, then definately the
+caller (of sys_restore())'s ability to setresuid/setresgid to those
+values must be checked.
+
+So that's why we don't want CAP_SYS_ADMIN required up-front.  That way
+we will be forced to more carefully review each of those features.
+
+> I'd like to see the security guys take a real close look at all of
+> this, and for them to do that effectively they should be provided with
+> a full description of the security design of this feature.
+
+Right, some of the above should be spelled out somewhere.  Should it be
+in the patch description, in the Documentation/checkpoint.txt file,
+or someplace else?  Oren, do you want to filter the above information
+into the right place, or do you want me to do it and send you a patch?
+
+> > diff --git a/fs/read_write.c b/fs/read_write.c
+> > index 9ba495d..e2deded 100644
+> > --- a/fs/read_write.c
+> > +++ b/fs/read_write.c
+> > @@ -324,12 +324,12 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
+> >  
+> >  EXPORT_SYMBOL(vfs_write);
+> >  
+> > -static inline loff_t file_pos_read(struct file *file)
+> > +inline loff_t file_pos_read(struct file *file)
+> >  {
+> >  	return file->f_pos;
+> >  }
+> >  
+> > -static inline void file_pos_write(struct file *file, loff_t pos)
+> > +inline void file_pos_write(struct file *file, loff_t pos)
+> >  {
+> >  	file->f_pos = pos;
+> >  }
+> 
+> Might as well move these to a header and inline them everywhere. 
+> That'd be a separate leadin patch.
+> 
+
+thanks,
+-serge
