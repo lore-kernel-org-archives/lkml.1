@@ -1,168 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527AbYJUKCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbYJUKFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753527AbYJUKCW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 06:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYJUKCN
+	id S1753451AbYJUKFe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 06:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYJUKFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 06:02:13 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:35983 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751814AbYJUKCM (ORCPT
+	Tue, 21 Oct 2008 06:05:25 -0400
+Received: from ti-out-0910.google.com ([209.85.142.190]:49615 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751862AbYJUKFZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 06:02:12 -0400
-Date: Tue, 21 Oct 2008 13:01:42 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Greg Kroah-Hartman <greg@kroah.com>
-cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-Subject: [PATCH] w35und: module init cleanup
-Message-ID: <Pine.LNX.4.64.0810211300560.32317@melkki.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 21 Oct 2008 06:05:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=vk43SMtmW1Tlg3OxfE53G4UoWUNt8V/ILK6t86eDu3n3shBVh30DZXcLO7QOzIYoRU
+         33ZDfYYPMigJ5dEdGVNLMkPRfsCVRchGlIXoAU9E41MsgfYzEobStfEDT34Yc2hcMibM
+         zhZzMOHh4o/Nlkjtu2MXoy6aQzdLf/qT4rTIE=
+Message-ID: <df9815e70810210305l24e48374g3ead8c7936b99e08@mail.gmail.com>
+Date: Tue, 21 Oct 2008 18:05:22 +0800
+From: "Jike Song" <albcamus@gmail.com>
+To: "Prabhu Chawandi" <prabhu.chavandi@gmail.com>
+Subject: Re: History of Linux File !!!
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <241b8f7b0810210300t3f755e01s2c01a520702f04e2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <241b8f7b0810210156k27a957c3i5df40f12068ea199@mail.gmail.com>
+	 <df9815e70810210205m36a6e47di41e52776511f8ba6@mail.gmail.com>
+	 <241b8f7b0810210300t3f755e01s2c01a520702f04e2@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+On Tue, Oct 21, 2008 at 6:00 PM, Prabhu Chawandi
+<prabhu.chavandi@gmail.com> wrote:
+> Thanks ..
+>
+>  Or do v have any site ... where we can see all version as we see in WinCVS ?
 
-This patch cleans up the module init functions a bit and removes the redundant
-device ID check from wb35_probe() function.
+I have no idea about wincvs... Anyway, here is the git web of Linus tree:
 
-Cc: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- drivers/staging/winbond/linux/wbusb.c |   87 ++++++++++++---------------------
- 1 files changed, 31 insertions(+), 56 deletions(-)
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git
 
-diff --git a/drivers/staging/winbond/linux/wbusb.c b/drivers/staging/winbond/linux/wbusb.c
-index e09b272..8f0f923 100644
---- a/drivers/staging/winbond/linux/wbusb.c
-+++ b/drivers/staging/winbond/linux/wbusb.c
-@@ -6,36 +6,23 @@
- #include "sysdef.h"
- #include <net/mac80211.h>
- 
--
--MODULE_AUTHOR( DRIVER_AUTHOR );
--MODULE_DESCRIPTION( DRIVER_DESC );
-+MODULE_AUTHOR(DRIVER_AUTHOR);
-+MODULE_DESCRIPTION(DRIVER_DESC);
- MODULE_LICENSE("GPL");
- MODULE_VERSION("0.1");
- 
--
--//============================================================
--// vendor ID and product ID can into here for others
--//============================================================
--static struct usb_device_id Id_Table[] =
--{
--  {USB_DEVICE( 0x0416, 0x0035 )},
--  {USB_DEVICE( 0x18E8, 0x6201 )},
--  {USB_DEVICE( 0x18E8, 0x6206 )},
--  {USB_DEVICE( 0x18E8, 0x6217 )},
--  {USB_DEVICE( 0x18E8, 0x6230 )},
--  {USB_DEVICE( 0x18E8, 0x6233 )},
--  {USB_DEVICE( 0x1131, 0x2035 )},
--  {  }
-+static struct usb_device_id wb35_table[] __devinitdata = { 
-+	{USB_DEVICE(0x0416, 0x0035)},
-+	{USB_DEVICE(0x18E8, 0x6201)},
-+	{USB_DEVICE(0x18E8, 0x6206)},
-+	{USB_DEVICE(0x18E8, 0x6217)},
-+	{USB_DEVICE(0x18E8, 0x6230)},
-+	{USB_DEVICE(0x18E8, 0x6233)},
-+	{USB_DEVICE(0x1131, 0x2035)},
-+	{}
- };
- 
--MODULE_DEVICE_TABLE(usb, Id_Table);
--
--static struct usb_driver wb35_driver = {
--	.name =		"w35und",
--	.probe =	wb35_probe,
--	.disconnect = wb35_disconnect,
--	.id_table = Id_Table,
--};
-+MODULE_DEVICE_TABLE(usb, wb35_table);
- 
- static const struct ieee80211_rate wbsoft_rates[] = {
- 	{ .bitrate = 10, .flags = IEEE80211_RATE_SHORT_PREAMBLE },
-@@ -187,21 +174,6 @@ struct wbsoft_priv {
- };
- 
- 
--int __init wb35_init(void)
--{
--	printk("[w35und]driver init\n");
--	return usb_register(&wb35_driver);
--}
--
--void __exit wb35_exit(void)
--{
--	printk("[w35und]driver exit\n");
--	usb_deregister( &wb35_driver );
--}
--
--module_init(wb35_init);
--module_exit(wb35_exit);
--
- // Usb kernel subsystem will call this function when a new device is plugged into.
- int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
- {
-@@ -210,7 +182,7 @@ int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
- 	PWBUSB		pWbUsb;
-         struct usb_host_interface *interface;
- 	struct usb_endpoint_descriptor *endpoint;
--	int	i, ret = -1;
-+	int	ret = -1;
- 	u32	ltmp;
- 	struct usb_device *udev = interface_to_usbdev(intf);
- 
-@@ -218,21 +190,6 @@ int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
- 
- 	printk("[w35und]wb35_probe ->\n");
- 
--	for (i=0; i<(sizeof(Id_Table)/sizeof(struct usb_device_id)); i++ ) {
--		if ((udev->descriptor.idVendor == Id_Table[i].idVendor) &&
--			(udev->descriptor.idProduct == Id_Table[i].idProduct)) {
--			printk("[w35und]Found supported hardware\n");
--			break;
--		}
--	}
--
--	if ((i == (sizeof(Id_Table)/sizeof(struct usb_device_id)))) {
--		#ifdef _PE_USB_INI_DUMP_
--		WBDEBUG(("[w35und] This is not the one we are interested about\n"));
--		#endif
--		return -ENODEV;
--	}
--
- 	// 20060630.2 Check the device if it already be opened
- 	ret = usb_control_msg(udev, usb_rcvctrlpipe( udev, 0 ),
- 			      0x01, USB_TYPE_VENDOR|USB_RECIP_DEVICE|USB_DIR_IN,
-@@ -398,4 +355,22 @@ void wb35_disconnect(struct usb_interface *intf)
- 
- }
- 
-+static struct usb_driver wb35_driver = {
-+	.name		= "w35und",
-+	.id_table	= wb35_table,
-+	.probe		= wb35_probe,
-+	.disconnect	= wb35_disconnect,
-+};
-+
-+static int __init wb35_init(void)
-+{
-+	return usb_register(&wb35_driver);
-+}
-+
-+static void __exit wb35_exit(void)
-+{
-+	usb_deregister(&wb35_driver);
-+}
- 
-+module_init(wb35_init);
-+module_exit(wb35_exit);
--- 
-1.5.3.7
+Besides, google it before posting to LKML should be a good idea;)
 
+--
+Thanks,
+Jike
