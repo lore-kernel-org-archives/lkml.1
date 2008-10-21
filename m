@@ -1,176 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755602AbYJUWJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbYJUWOB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755602AbYJUWJs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 18:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYJUWJi
+	id S1753807AbYJUWOB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 18:14:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbYJUWNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 18:09:38 -0400
-Received: from mga03.intel.com ([143.182.124.21]:14475 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751461AbYJUWJh convert rfc822-to-8bit (ORCPT
+	Tue, 21 Oct 2008 18:13:53 -0400
+Received: from mailservice.tudelft.nl ([130.161.131.5]:30700 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751703AbYJUWNw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 18:09:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,460,1220252400"; 
-   d="scan'208";a="63315121"
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>, Len Brown <lenb@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Henroid, Andrew D" <andrew.d.henroid@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@linux.intel.com>
-Date: Tue, 21 Oct 2008 15:09:35 -0700
-Subject: RE: [PATCH 2/2] i7300_idle driver v1.55
-Thread-Topic: [PATCH 2/2] i7300_idle driver v1.55
-Thread-Index: Acky2eNWgyB2rhQ6TGqqgYEyRFR4PQA7LSHA
-Message-ID: <7E82351C108FA840AB1866AC776AEC4637CD2743@orsmsx505.amr.corp.intel.com>
-References: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
-	<e8b529091b2ab65f5a4783e292c2b472e309116e.1223706853.git.len.brown@intel.com>
-	<20081011083347.GA31918@elte.hu>
-	<alpine.LFD.1.10.0810161805360.3026@localhost.localdomain>
- <20081020103214.072e3b5f.randy.dunlap@oracle.com>
-In-Reply-To: <20081020103214.072e3b5f.randy.dunlap@oracle.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 21 Oct 2008 18:13:52 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -9.389
+Message-ID: <48FE5416.9070402@tremplin-utc.net>
+Date: Wed, 22 Oct 2008 00:13:42 +0200
+From: Eric Piel <eric.piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.17) Gecko/20080929 Mandriva/2.0.0.17-2mdv2009.0 (2009.0) Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
 MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, pavel@suse.cz, burman.yan@gmail.com,
+       pau@eslack.org
+Subject: Re: [PATCH] LIS3LV02Dx Accelerometer driver (take 4)
+References: <48FA3368.1040605@tremplin-utc.net> <20081021114121.5144841c.akpm@linux-foundation.org>
+In-Reply-To: <20081021114121.5144841c.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Thanks for the review. Some comments below.
-
-Thanks,
-Venki
-
->-----Original Message-----
->From: Randy Dunlap [mailto:randy.dunlap@oracle.com]
->Sent: Monday, October 20, 2008 10:32 AM
->To: Len Brown
->Cc: Ingo Molnar; linux-acpi@vger.kernel.org; Linux Kernel
->Mailing List; Pallipadi, Venkatesh; Henroid, Andrew D; Linus
->Torvalds; Thomas Gleixner; H. Peter Anvin; Andi Kleen
->Subject: Re: [PATCH 2/2] i7300_idle driver v1.55
->
->On Thu, 16 Oct 2008 18:08:01 -0400 (EDT) Len Brown wrote:
->
->> Signed-off-by: Andy Henroid <andrew.d.henroid@intel.com>
->> Signed-off-by: Len Brown <len.brown@intel.com>
->> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
->> ---
->>  MAINTAINERS               |    6 +
->>  arch/x86/Kconfig          |    2 +
->>  drivers/Makefile          |    1 +
->>  drivers/dma/ioat_dma.c    |    3 +
->>  drivers/idle/Kconfig      |   16 +
->>  drivers/idle/Makefile     |    2 +
->>  drivers/idle/i7300_idle.c |  674
->+++++++++++++++++++++++++++++++++++++++++++++
->
->Why not just use drivers/power/ instead of a new sub-directory?
-
-As the driver was specific to idle system and specific to few
-platforms/chipset, we decided to put it in a separate directory.
-We had called the new directory as drivers/memory initially.
-But, idle seemed to suit it better.
-
-I have no issues moving this over to drivers/power. Will send a
-incremental patch to move it if that suits better. But, if we
-Expect other platforms to have similar platform specific idle
-power savings through drivers like this, then having a separate
-dir to deal with idle optimization should be better.
-
->> +/*
->> + * Value to set THRTLOW to when initiating throttling
->> + *  0 = No throttling
->> + *  1 = Throttle when > 4 activations per eval window
->(Maximum throttling)
->> + *  2 = Throttle when > 8 activations
->> + *  168 = Throttle when > 168 activations (Minimum throttling)
->
->Why do some numbers mean > their value (i.e., 168) but others don't?
->Is it a linear value or logarithmic or what?
-
-That is a typo in the comment. These values are simple "multiply by 4".
-So, 168 should be 672 activations, and that is the minimum
-possible throttling.
-
->> + */
->> +#define MAX_THRTLWLIMIT              168
->> +static uint i7300_idle_thrtlowlm = 1;
->> +module_param_named(thrtlwlimit, i7300_idle_thrtlowlm, uint, 0644);
->> +MODULE_PARM_DESC(thrtlwlimit,
->> +             "Value for THRTLOWLM activation field "
->> +             "(0 = disable throttle, 1 = Max throttle, 168
->= Min throttle)");
->> +
->
->> +/* Stop I/O AT memory copy */
->> +static void i7300_idle_ioat_stop(void)
+Andrew Morton schreef:
+>> +static void lis3lv02d_poweroff_timeout(unsigned long data)
 >> +{
->> +     int i;
->> +     u8 sts;
+>> +	struct acpi_lis3lv02d *dev = (void *)data;
 >> +
->> +     for (i = 0; i < 5; i++) {
->> +             writeb(IOAT_CHANCMD_RESET,
->> +                     ioat_chanbase + IOAT1_CHANCMD_OFFSET);
->> +
->> +             udelay(10);
->> +
->> +             sts = readq(ioat_chanbase + IOAT1_CHANSTS_OFFSET) &
->> +                     IOAT_CHANSTS_DMA_TRANSFER_STATUS;
->
->readq() returns 64 bits.  You only want to LS-byte of it here?
+>> +	up(&dev->poff_sem);
+>> +	lis3lv02d_poweroff(dev->device->handle);
+>> +	down(&dev->poff_sem);
+> 
+> eek, no, we cannot down a semaphore from a timer handler!  It will lead
+> to might_sleep() warnings, scheduling-in-atomic warnings and kernel
+> deadlocks.
+Ooh... What happened is that I wrote the other functions first. They
+indirectly use acpi_evaluate_integer(), which can sleep. So I avoided
+spin_locks, and decided to use a semaphore. But now there is a semaphore
+in a timer (which is not allowed to sleep).
 
-CHANSTS is a 64 bit register and we only use lower few bits
-around here. But, agree with your comment and will change it
-sts to u64 with an update patch. That will make it consistent
-with other reads of this register in this file
+It seems the semaphore usage is compulsory due to acpi, so I'm planning
+to change the timer into a scheduled work on a workqueue (with
+queue_delayed_work(),  and cancel_delayed_work_sync()). This workqueue
+could be the same as the one for the joystick input. Does that look the
+right way to do it?
 
->
->> +             if (sts != IOAT_CHANSTS_DMA_TRANSFER_STATUS_ACTIVE)
->> +                     break;
->> +
->> +     }
->> +
->> +     if (i == 5)
->> +             dprintk("failed to suspend+reset I/O AT after
->5 retries\n");
->> +
->> +}
->
->
->> +struct debugfs_file_info {
->> +     void *ptr;
->> +     char name[32];
->> +     struct dentry *file;
->> +} debugfs_file_list[] = {
->> +                             {&total_starts, "total_starts", NULL},
->> +                             {&total_us, "total_us", NULL},
->> +#ifdef DEBUG
->> +                             {&past_skip, "past_skip", NULL},
->> +#endif
->> +                             {NULL, "", NULL}
->> +                     };
->
->What is debugfs used for?  any docs for it?
-
-It has some statistics about how many times we went
-into "memory throttling" state and how long we stayed
-there since the boot. And one tunable that tunes a
-parameter changing the policy to start throttling.
-Will document this with an update patch.
-
->
->Does this build/work if CONFIG_DEBUG_FS=n?
-
-Yes. Did not see any breakage with DEBIG_FS=n
-
+Eric
