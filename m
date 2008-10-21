@@ -1,104 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbYJULMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbYJULRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753547AbYJULMr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 07:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbYJULMh
+	id S1753644AbYJULRt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 07:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbYJULRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 07:12:37 -0400
-Received: from mail.windriver.com ([147.11.1.11]:57595 "EHLO mail.wrs.com"
+	Tue, 21 Oct 2008 07:17:41 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37751 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752806AbYJULMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 07:12:35 -0400
-Message-ID: <48FDB8AC.9020707@windriver.com>
-Date: Tue, 21 Oct 2008 19:10:36 +0800
-From: Chen Zumeng <zumeng.chen@windriver.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1752647AbYJULRk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 07:17:40 -0400
+Date: Tue, 21 Oct 2008 13:17:16 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [announce] new tree: "fix all build warnings, on all configs"
+Message-ID: <20081021111716.GA4476@elte.hu>
+References: <20081017171139.GA1792@elte.hu> <87r66ejqla.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-CC: agk@redhat.com, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp
-Subject: Re: [PATCH 0/2] dm-ioband: I/O bandwidth controller v1.8.0: Introduction
-References: <20081017.160950.71109894.ryov@valinux.co.jp>
-In-Reply-To: <20081017.160950.71109894.ryov@valinux.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Oct 2008 11:11:54.0132 (UTC) FILETIME=[D3019D40:01C9336D]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <87r66ejqla.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Ryo Tsuruta
 
-I applied your patches(both) into the latest kernel(27), and dm-ioband
-looks work well(other than schedule_timeout in alloc_ioband_device);
-But I think you are the author of bio_tracking, so it is high
-appreciated if you can give your comments and advices for potential
-difference between 27-rc5-mm1 and 2.6.27 to me.
+* Andi Kleen <andi@firstfloor.org> wrote:
 
-And our test team want to test bio_tracking as your benchmark reports,
-so would you please send me your test codes? Thanks in advance.
+> >   *	acpi_pm_disable_gpes - Disable the GPEs.
+> >   */
+> > -static int acpi_pm_disable_gpes(void)
+> > +static inline int acpi_pm_disable_gpes(void)
+> 
+> Just to satisfy my curiosity, what compiler warning does marking 
+> functions inline fix?
 
-Regards,
-Zumeng
+the commit log below explains the situation. The warning exposed a maze 
+of #ifdefs in drivers/acpi/sleep/main.c. It's not the warning we need to 
+"fix" but that maze, obviously.
 
-P.S. The following are my changes to avoid schedule_timeout:
+	Ingo
 
+-------------------------------------------->
+>From 6ddae344a73fcff60c840dd4e429bf55562b41f3 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 17 Oct 2008 15:44:22 +0200
+Subject: [PATCH]  #ifdef complications in drivers/acpi/sleep/main.c
 
-diff --git a/drivers/md/dm-ioband-ctl.c b/drivers/md/dm-ioband-ctl.c
-index a792620..643ca4e 100644
---- a/drivers/md/dm-ioband-ctl.c
-+++ b/drivers/md/dm-ioband-ctl.c
-@@ -100,6 +100,7 @@ static struct ioband_device 
-*alloc_ioband_device(char *name,
-                         return dp;
-                 }
-         }
-+       spin_unlock_irqrestore(&ioband_devicelist_lock, flags);
+this warning:
 
-         /*
-          * Prepare its own workqueue as generic_make_request() may
-@@ -133,9 +134,11 @@ static struct ioband_device 
-*alloc_ioband_device(char *name,
-         init_waitqueue_head(&new->g_waitq);
-         init_waitqueue_head(&new->g_waitq_suspend);
-         init_waitqueue_head(&new->g_waitq_flush);
--       list_add_tail(&new->g_list, &ioband_device_list);
+  drivers/acpi/sleep/main.c:67: warning: ‘acpi_pm_disable_gpes’ defined but not used
+  drivers/acpi/sleep/main.c:92: warning: ‘acpi_pm_prepare’ defined but not used
+  drivers/acpi/sleep/main.c:107: warning: ‘acpi_pm_finish’ defined but not used
+  drivers/acpi/sleep/main.c:128: warning: ‘acpi_pm_end’ defined but not used
 
-+       spin_lock_irqsave(&ioband_devicelist_lock, flags);
-+       list_add_tail(&new->g_list, &ioband_device_list);
-         spin_unlock_irqrestore(&ioband_devicelist_lock, flags);
-+
-         return new;
-  }
+Shows that this code has an identity crisis due to a maze of #ifdefs, in
+the PM_SLEEP && !SUSPEND && !HIBERNATION case for example.
+
+Instead of complicating the code with even more #ifdefs, one option
+would be to convert these rather trivial wrappers to inline functions
+(implemented in this commit). Maybe there's a better solution as well -
+such as to reduce the many config options we have in this area?
+
+No size difference with SUSPEND && HIBERNATION turned back on:
+
+drivers/acpi/sleep/main.o:
+
+   text	   data	    bss	    dec	    hex	filename
+   2717	    976	     33	   3726	    e8e	main.o.before
+   2717	    976	     33	   3726	    e8e	main.o.after
+
+md5:
+   44220906eff0ea6e1a3266b35dd82ac2  main.o.before.asm
+   44220906eff0ea6e1a3266b35dd82ac2  main.o.after.asm
 ---
+ drivers/acpi/sleep/main.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-Ryo Tsuruta wrote:
-> Hi Alasdair and all,
-> 
-> This is the dm-ioband version 1.8.0 release.
-> 
-> Dm-ioband is an I/O bandwidth controller implemented as a device-mapper
-> driver, which gives specified bandwidth to each job running on the same
-> physical device.
-> 
-> This release is a minor bug fix and confirmed running on the latest
-> stable kernel 2.6.27.1.
-> 
-> - Can be applied to the kernel 2.6.27.1 and 2.6.27-rc5-mm1.
-> - Changes from 1.7.0 (posted on Oct 3, 2008):
->   - Fix a minor bug in io_limit setting that causes dm-ioband to stop
->     issuing I/O requests when a large value is set to io_limit.
-> 
-> Alasdair, could you please review this patch and give me any comments?
-> 
-> Thanks,
-> Ryo Tsuruta
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
+index d13194a..2276d75 100644
+--- a/drivers/acpi/sleep/main.c
++++ b/drivers/acpi/sleep/main.c
+@@ -63,7 +63,7 @@ void __init acpi_old_suspend_ordering(void)
+ /**
+  *	acpi_pm_disable_gpes - Disable the GPEs.
+  */
+-static int acpi_pm_disable_gpes(void)
++static inline int acpi_pm_disable_gpes(void)
+ {
+ 	acpi_hw_disable_all_gpes();
+ 	return 0;
+@@ -75,7 +75,7 @@ static int acpi_pm_disable_gpes(void)
+  *	If necessary, set the firmware waking vector and do arch-specific
+  *	nastiness to get the wakeup code to the waking vector.
+  */
+-static int __acpi_pm_prepare(void)
++static inline int __acpi_pm_prepare(void)
+ {
+ 	int error = acpi_sleep_prepare(acpi_target_sleep_state);
+ 
+@@ -88,7 +88,7 @@ static int __acpi_pm_prepare(void)
+  *	acpi_pm_prepare - Prepare the platform to enter the target sleep
+  *		state and disable the GPEs.
+  */
+-static int acpi_pm_prepare(void)
++static inline int acpi_pm_prepare(void)
+ {
+ 	int error = __acpi_pm_prepare();
+ 
+@@ -103,7 +103,7 @@ static int acpi_pm_prepare(void)
+  *	This is called after we wake back up (or if entering the sleep state
+  *	failed).
+  */
+-static void acpi_pm_finish(void)
++static inline void acpi_pm_finish(void)
+ {
+ 	u32 acpi_state = acpi_target_sleep_state;
+ 
+@@ -124,7 +124,7 @@ static void acpi_pm_finish(void)
+ /**
+  *	acpi_pm_end - Finish up suspend sequence.
+  */
+-static void acpi_pm_end(void)
++static inline void acpi_pm_end(void)
+ {
+ 	/*
+ 	 * This is necessary in case acpi_pm_finish() is not called during a
