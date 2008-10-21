@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbYJUKvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbYJUKxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753978AbYJUKvx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 06:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbYJUKvo
+	id S1753912AbYJUKxe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 06:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbYJUKx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 06:51:44 -0400
-Received: from mail.gmx.net ([213.165.64.20]:42204 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752742AbYJUKvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 06:51:44 -0400
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX1+KxOtRAGOKFOJP5t0Yw5/rzAoD7kMgpXIlBdMWOW
-	pYs8d7PxsbqCbl
-Date: Tue, 21 Oct 2008 12:51:42 +0200
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: akpm@linux-foundation.org
-Cc: tigran@aivazian.fsnet.co.uk, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] bfs: check that filesystem fits on the blockdevice
-Message-ID: <20081021105142.GB21885@alice>
+	Tue, 21 Oct 2008 06:53:26 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:56594 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752169AbYJUKx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 06:53:26 -0400
+Date: Tue, 21 Oct 2008 12:52:29 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, oomichi@mxs.nes.nec.co.jp
+Subject: [PATCH] Fix kexec compile error, undeclared 'vmlist'
+Message-ID: <20081021105228.GC22217@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.27-rc8 (x86_64)
-X-Uptime: 12:50:32 up 3 days,  1:22,  9 users,  load average: 0.12, 0.42,
-	0.27
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since all sanity checks rely on the validity of s_start which gets only
-checked to be smaller than s_end, we should also check if s_end is sane.
-Now we also try to retrieve the last block of the filesystem, which is
-computed by s_end. If this fails, something is bogus.
+Hi,
 
-Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
-Acked-by: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
+Current -git fails to compile, at least on ppc:
 
+kernel/kexec.c: In function 'crash_save_vmcoreinfo_init':
+kernel/kexec.c:1374: error: 'vmlist' undeclared (first use in this function)
+kernel/kexec.c:1374: error: (Each undeclared identifier is reported only once
+kernel/kexec.c:1374: error: for each function it appears in.)
+kernel/kexec.c:1410: error: invalid use of undefined type 'struct vm_struct'
 
---- linux/fs/bfs/inode.c.1	2008-09-17 16:00:06.000000000 +0200
-+++ linux/fs/bfs/inode.c	2008-09-17 16:17:54.000000000 +0200
-@@ -390,6 +390,18 @@ static int bfs_fill_super(struct super_b
- 			- le32_to_cpu(bfs_sb->s_start)) >> BFS_BSIZE_BITS;
- 	info->si_freei = 0;
- 	info->si_lf_eblk = 0;
-+
-+	/* can we read the last block? */
-+	bh = sb_bread(s, info->si_blocks - 1);
-+	if (!bh) {
-+		printf("Last block not available: %lu\n", info->si_blocks - 1);
-+		iput(inode);
-+		ret = -EIO;
-+		kfree(info->si_imap);
-+		goto out;
-+	}
-+	brelse(bh);
-+
- 	bh = NULL;
- 	for (i = BFS_ROOT_INO; i <= info->si_lasti; i++) {
- 		struct bfs_inode *di;
+It's missing a vmalloc.h include, introduced by
+acd99dbf54020f5c80b9aa2f2ea86f43cb285b02.
+
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+
+diff --git a/kernel/kexec.c b/kernel/kexec.c
+index 777ac45..ac0fde7 100644
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -30,6 +30,7 @@
+ #include <linux/pm.h>
+ #include <linux/cpu.h>
+ #include <linux/console.h>
++#include <linux/vmalloc.h>
+ 
+ #include <asm/page.h>
+ #include <asm/uaccess.h>
+
+-- 
+Jens Axboe
+
