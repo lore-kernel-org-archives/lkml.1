@@ -1,98 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbYJUU65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbYJUU7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755176AbYJUU65 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 16:58:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYJUU6t
+	id S1755888AbYJUU7l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 16:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbYJUU7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 16:58:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33643 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752496AbYJUU6t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 16:58:49 -0400
-Date: Tue, 21 Oct 2008 13:58:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Cedric Le Goater <clg@fr.ibm.com>
-Cc: lizf@cn.fujitsu.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] freezer_cg: use thaw_process() in unfreeze_cgroup()
-Message-Id: <20081021135813.e77d3015.akpm@linux-foundation.org>
-In-Reply-To: <48FD81B8.5030103@fr.ibm.com>
-References: <48FD26F5.1070809@cn.fujitsu.com>
-	<48FD273F.3040505@cn.fujitsu.com>
-	<48FD2784.30906@cn.fujitsu.com>
-	<48FD81B8.5030103@fr.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 21 Oct 2008 16:59:33 -0400
+Received: from gate.crashing.org ([63.228.1.57]:56557 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752047AbYJUU7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 16:59:32 -0400
+Subject: Re: [PATCH] edac/cell: enable polling mode
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Jens Osterkamp <jens@linux.vnet.ibm.com>
+Cc: Doug Thompson <dougthompson@xmission.com>,
+       bluesmoke-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org,
+       arnd@arndb.de, linux-kernel@vger.kernel.org
+In-Reply-To: <200810211607.22600.jens@linux.vnet.ibm.com>
+References: <200810211607.22600.jens@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 22 Oct 2008 07:58:54 +1100
+Message-Id: <1224622734.7654.273.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Oct 2008 09:16:08 +0200
-Cedric Le Goater <clg@fr.ibm.com> wrote:
-
-> Li Zefan wrote:
-> > Don't duplicate the implementation of thaw_process().
+On Tue, 2008-10-21 at 16:07 +0200, Jens Osterkamp wrote:
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > 
-> looks OK but you should remove  __thaw_process() which is unused 
-> now.
+> The edac driver on cell turned out to be not enabled because of a missing op_state.
+> This patch introduces it. Verified to work on top of Bens next branch.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Signed-off-by: Jens Osterkamp <jens@linux.vnet.ibm.com>
 
-It's called by thaw_process().
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> Ben, can you please confirm this is the patch you wanted to send upstream ?
 
-But that's the only callsite, I believe, so...
+Yes.
 
---- a/include/linux/freezer.h~freezer_cg-use-thaw_process-in-unfreeze_cgroup-fix
-+++ a/include/linux/freezer.h
-@@ -44,11 +44,6 @@ static inline bool should_send_signal(st
- 	return !(p->flags & PF_FREEZER_NOSIG);
- }
- 
--/*
-- * Wake up a frozen process
-- */
--extern int __thaw_process(struct task_struct *p);
--
- /* Takes and releases task alloc lock using task_lock() */
- extern int thaw_process(struct task_struct *p);
- 
-diff -puN kernel/freezer.c~freezer_cg-use-thaw_process-in-unfreeze_cgroup-fix kernel/freezer.c
---- a/kernel/freezer.c~freezer_cg-use-thaw_process-in-unfreeze_cgroup-fix
-+++ a/kernel/freezer.c
-@@ -121,16 +121,7 @@ void cancel_freezing(struct task_struct 
- 	}
- }
- 
--/*
-- * Wake up a frozen process
-- *
-- * task_lock() is needed to prevent the race with refrigerator() which may
-- * occur if the freezing of tasks fails.  Namely, without the lock, if the
-- * freezing of tasks failed, thaw_tasks() might have run before a task in
-- * refrigerator() could call frozen_process(), in which case the task would be
-- * frozen and no one would thaw it.
-- */
--int __thaw_process(struct task_struct *p)
-+static int __thaw_process(struct task_struct *p)
- {
- 	if (frozen(p)) {
- 		p->flags &= ~PF_FROZEN;
-@@ -140,6 +131,15 @@ int __thaw_process(struct task_struct *p
- 	return 0;
- }
- 
-+/*
-+ * Wake up a frozen process
-+ *
-+ * task_lock() is needed to prevent the race with refrigerator() which may
-+ * occur if the freezing of tasks fails.  Namely, without the lock, if the
-+ * freezing of tasks failed, thaw_tasks() might have run before a task in
-+ * refrigerator() could call frozen_process(), in which case the task would be
-+ * frozen and no one would thaw it.
-+ */
- int thaw_process(struct task_struct *p)
- {
- 	task_lock(p);
-_
+> Index: linux-2.6/drivers/edac/cell_edac.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/edac/cell_edac.c
+> +++ linux-2.6/drivers/edac/cell_edac.c
+> @@ -9,6 +9,7 @@
+>   */
+>  #undef DEBUG
+>  
+> +#include <linux/edac.h>
+>  #include <linux/module.h>
+>  #include <linux/init.h>
+>  #include <linux/platform_device.h>
+> @@ -164,6 +165,8 @@ static int __devinit cell_edac_probe(str
+>  	if (regs == NULL)
+>  		return -ENODEV;
+>  
+> +	edac_op_state = EDAC_OPSTATE_POLL;
+> +
+>  	/* Get channel population */
+>  	reg = in_be64(&regs->mic_mnt_cfg);
+>  	dev_dbg(&pdev->dev, "MIC_MNT_CFG = 0x%016lx\n", reg);
+> ---
+> 
+> Gruß,
+> 
+> Jens
+> 
+> IBM Deutschland Entwicklung GmbH
+> Vorsitzender des Aufsichtsrats: Martin Jetter
+> Geschäftsführung: Erich Baier 
+> Sitz der Gesellschaft: Böblingen
+> Registergericht: Amtsgericht Stuttgart, HRB 243294
 
