@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752990AbYJUJfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbYJUJg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752990AbYJUJfx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 05:35:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYJUJfo
+	id S1753855AbYJUJg2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 05:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752452AbYJUJgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 05:35:44 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:38808 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752383AbYJUJfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 05:35:43 -0400
+	Tue, 21 Oct 2008 05:36:21 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:51297 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752395AbYJUJgU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 05:36:20 -0400
+Message-ID: <48FDA28B.30204@fr.ibm.com>
+Date: Tue, 21 Oct 2008 11:36:11 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Oren Laadan <orenl@cs.columbia.edu>
+CC: Daniel Lezcano <dlezcano@fr.ibm.com>, Louis.Rilling@kerlabs.com,
+       containers@lists.linux-foundation.org,
+       Dave Hansen <dave@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Andrey Mirkin <major@openvz.org>
+Subject: Re: [PATCH 0/9] OpenVZ kernel based checkpointing/restart
+References: <1220439476-16465-1-git-send-email-major@openvz.org>	<1224286383.1848.65.camel@nimitz>	<20081020111002.GQ15171@hawkmoon.kerlabs.com>	<48FC86B2.8000606@fr.ibm.com> <48FCA97C.1040108@cs.columbia.edu>
+In-Reply-To: <48FCA97C.1040108@cs.columbia.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18685.41265.560866.890756@harpo.it.uu.se>
-Date: Tue, 21 Oct 2008 11:30:25 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Mikael Pettersson <mikpe@it.uu.se>,
-       Christian Mueller <Christian.Mueller@wdc.com>,
-       Bruce Allen <ballen@gravity.phys.uwm.edu>,
-       Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: [smartmontools-support] inactive SATA drives won't stay in standby
- or sleep, PATA models did. (fwd)
-In-Reply-To: <48FD9A90.8000205@gmail.com>
-References: <D73D40172004714D95D7A84AC3E68EC802282133@wdscexbe03.sc.wdc.com>
-	<48EBFE9B.9070503@gmail.com>
-	<18674.4081.839329.116533@harpo.it.uu.se>
-	<48F2D9A8.1030502@gmail.com>
-	<18683.50533.786782.474536@harpo.it.uu.se>
-	<48FD580E.4080101@gmail.com>
-	<18685.35653.125899.390135@harpo.it.uu.se>
-	<48FD9A90.8000205@gmail.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo writes:
- > Hello,
- > 
- > Mikael Pettersson wrote:
- > > Tejun Heo writes:
- > >  > Hello, Mikael.
- > >  > I would put this into ->hardreset itself as the controller can also
- > >  > get out of sync with reality during reset.
- > > 
- > > The only thing I see going on between prereset and (hard/soft)reset
- > > is an optional freeze, so I don't see why moving the pdc_reset_port()
- > > into the beginning of hardreset() would make any difference.
- > > 
- > > sata_promise currently uses the ->hardreset and ->softreset inherited
- > > from ata_sff_port_ops, so it would need to override both to ensure that
- > > we always do pdc_reset_port() before libata does its thing. That's why
- > > I felt doing that in ->prereset would be the right solution.
- > 
- > Hmm.. reset sequence goes on like the following.
- > 
- >  1. prereset
- >  2. hardreset, if fail, retry
- >  3. follow-up softreset if requested, if fail, goto #2
- >  4. postreset, if successful
- > 
- > So, if some PHY event happens while the reset is waiting for device
- > readiness and makes the controller state go out of sync with the
- > drive.  ->prereset() will NOT be called for the following retry.
+>> IMHO we should look at Dmitry patchset and merge the external checkpoint 
+>> code to Oren's patchset in order to checkpoint *one* process and have 
+>> the process to restart itself. At this point, we can begin to talk about 
+>> the restart itself, shall we have the kernel to fork the processes to be 
+>> restarted ? shall we fork from userspace and implement some mechanism to 
+>> have each processes to restart themselves ? etc...
+>>
+> 
+> In both approaches, processes restart themselves, in the sense that a
+> process to be restarted eventually calls "do_restart()" (or equivalent).
+> 
+> The only question is how processes are created. Andrew's patch creates
+> everything inside the kernel. I would like to still give it a try outside
+> the kernel. Everything is ready, except that we need a way to pre-select
+> a PID for the new child... we never agreed on that one, did we ?
 
-I see. Ok, then I'll forget about ->prereset and bind ->hardreset to
-code which does pdc_reset_port() before invoking sata_sff_hardreset().
+what do you mean ? like a clone_with_pid() routine ? 
 
-Thanks for your input.
+> If we go ahead with the kernel-based process creation, it's easy to merge
+> it to the current patch-set.
 
-/Mikael
+Both solution are valid. Nevertheless, I would choose the solution 
+sharing existing code and being arch independent.
+
+Now, we can start by duplicating code and see later how we could
+share. But for mainline inclusion, I think that code reuse is a
+faster path.
+
+C.
