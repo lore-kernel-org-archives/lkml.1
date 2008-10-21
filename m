@@ -1,70 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714AbYJUSEN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbYJUSFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754714AbYJUSEN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 14:04:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbYJUSDz
+	id S1754834AbYJUSFI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 14:05:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbYJUSE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 14:03:55 -0400
-Received: from lazybastard.de ([212.112.238.170]:47985 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751572AbYJUSDy (ORCPT
+	Tue, 21 Oct 2008 14:04:56 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:52313 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752180AbYJUSEz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 14:03:54 -0400
-Date: Tue, 21 Oct 2008 20:03:41 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-Cc: Phillip Lougher <phillip@lougher.demon.co.uk>, akpm@linux-foundation.org,
-       linux-embedded@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tim.bird@am.sony.com
-Subject: Re: Subject: [PATCH 01/16] Squashfs: inode operations
-Message-ID: <20081021180340.GA11588@logfs.org>
-References: <E1KqrTW-0001xC-9M@dylan> <20081017165300.GA8076@logfs.org> <1224605666.31157.71.camel@moss-terrapins.epoch.ncsc.mil>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1224605666.31157.71.camel@moss-terrapins.epoch.ncsc.mil>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 21 Oct 2008 14:04:55 -0400
+Subject: Re: [PATCH 0/3] Improve TSC as a clocksource under VMware
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>
+In-Reply-To: <20081021174008.GH12825@one.firstfloor.org>
+References: <1224552902.2640.88.camel@alok-dev1>
+	 <874p36fflp.fsf@basil.nowhere.org> <1224607284.6161.22.camel@alok-dev1>
+	 <20081021174008.GH12825@one.firstfloor.org>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Tue, 21 Oct 2008 11:04:54 -0700
+Message-Id: <1224612294.6161.43.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 October 2008 12:14:26 -0400, David P. Quigley wrote:
-> On Fri, 2008-10-17 at 18:53 +0200, Jörn Engel wrote:
-> > None of the comments below are a reason against mainline inclusion, imo.
-> > They should get handled, but whether that happens before or after a
-> > merge doesn't really matter.
-> > 
-> > On Fri, 17 October 2008 16:42:50 +0100, Phillip Lougher wrote:
-> > > 
-> > > +#include <linux/squashfs_fs.h>
-> > > +#include <linux/squashfs_fs_sb.h>
-> > > +#include <linux/squashfs_fs_i.h>
-> > 
-> > Current verdict seems to be that these files should live in fs/squashfs/,
-> > not include/linux/.  No kernel code beside squashfs needs the headers
-> > and userspace tools should have a private copy.
-> > 
-> [Snip]
+On Tue, 2008-10-21 at 10:40 -0700, Andi Kleen wrote:
+> > > It would be far nicer if VMware just emulated the "constant_tsc" bit
+> > > in the AMD CPUID leaf, instead of adding all that gunk to Linux.
+> > > Right now it's only checked for AMD CPUs, but that could be changed.
+> >
+> > I am not sure if we might want to skip the tsc_sync code for all the
+> > cpus which have this constant_tsc bit set, can we ?
 > 
-> I looked at where filesystems such as ext3 store these and it seems to
-> be in include/linux. I'm assuming this is because usespace utilities
-> like fsck need them. It seems wrong for userspace tools to have their
-> own private copy since you can potentially have them out of sync with
-> the kernel you are running and it provides more chance for you
-> forgetting to update a structure somewhere. 
+> It should be ok, although normally sanity checks should be kept.
+> 
+> > Since i have seen that we can have cases where tsc is marked unstable as
+> > its not found to be perfectly stable between cpus, we have to make sure
+> > that we avoid this check when on VMware. Even with slight difference in
+> 
+> Normally tsc sync should only fail when the error is large.
+> It cannot detect very small derivation by design. It's more like
+> a sanity check "does the TSC sync look half way sane"
 
-Existing headers remain where they are.  New headers are supposed to
-go... or at least that's what I was told to do.
+FWIU from the code, even if  cpu A's TSC is just 1 tick behind that of
+cpu B, we increment the nr_wraps value.
+And the code expects that there are no wraps in TSC throughout the
+20msec measurement window. 
+So IMO its fairly easy to fail this test.
+> 
+> If it fails on VMware perhaps the margins are not big enough or
+> something else is fishy.
+> 
+> But still it could be skipped with constant_tsc. But again you
+> shouldn't really fail that check -- if you do fail are you
+> sure your clock is really synchronized enough that there
+> are no observable differences?
+> 
+> > TSC between cpus, we know that TSC is the best available clocksource as
+> > the hypervisor (VMware) makes sure that the drift is always marginal (if
+> > ever there is).
+> 
+> The drift has to be unobservable, otherwise you still risk
+> non monotonity.  Also when there is drift it has to be short
+> term only, otherwise it would accumulate over longer times.
 
-And being out of sync is definitely not an argument you can use with a
-filesystem.  The data on your disk doesn't magically change when you
-upgrade a kernel.  Nor can you assume that any given filesystem is
-accessed only by Linux.  If you change the format, then locating
-external copies of the header will be the least of your problems.
+Usually the problem is more pronounced during the boot process, the
+TSC's between processors are not perfectly in sync at bootup but the
+drift is not observable later, and from timekeeping perspective we are
+perfectly fine.
 
-Jörn
+Thanks,
+Alok
 
--- 
-Do not stop an army on its way home.
--- Sun Tzu
+
+> 
+> -Andi
+> 
+> --
+> ak@linux.intel.com
+
