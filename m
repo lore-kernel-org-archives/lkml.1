@@ -1,60 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbYJUTBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755085AbYJUTEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754877AbYJUTBd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 15:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYJUTB0
+	id S1755085AbYJUTEE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 15:04:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYJUTDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 15:01:26 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47483 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751548AbYJUTBZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 15:01:25 -0400
-Subject: Re: sched: add CONFIG_SMP consistency
-From: Peter Zijlstra <peterz@infradead.org>
-To: henrik@austad.us
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
-       Henrik Austad <henrik.austad@gmail.com>
-In-Reply-To: <1224614719-14452-1-git-send-email-henrik@austad.us>
-References: <1224614719-14452-1-git-send-email-henrik@austad.us>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 21 Oct 2008 21:01:21 +0200
-Message-Id: <1224615681.661.3.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Tue, 21 Oct 2008 15:03:54 -0400
+Received: from kroah.org ([198.145.64.141]:60718 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751126AbYJUTDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 15:03:54 -0400
+Date: Tue, 21 Oct 2008 12:00:20 -0700
+From: Greg KH <greg@kroah.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: -git10 staging build warnings
+Message-ID: <20081021190020.GA22556@kroah.com>
+References: <48FE1459.5010205@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48FE1459.5010205@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-21 at 20:45 +0200, henrik@austad.us wrote:
-> From: Henrik Austad <henrik.austad@gmail.com>
+On Tue, Oct 21, 2008 at 10:41:45AM -0700, Randy Dunlap wrote:
+> x86_64:
 > 
-> Do not declare select_task_rq as part of sched_class when CONFIG_SMP is
-> not set.
+> drivers/staging/winbond/./linux/wbusb .c:109: warning: 'struct ieee80211_tx_control' declared inside parameter list drivers/staging/winbond/./linux/wbusb.c:109: warning: its scope is only this definition or declaration, which is proba bly not what you want
+> drivers/staging/winbond/./linux/wbusb .c:172: warning: initialization from incompatible pointer type
+> drivers/staging/winbond/./linux/wbusb .c:174: warning: initialization from incompatible pointer type
+> drivers/staging/winbond/./linux/wbusb .c:180: warning: initialization from incompatible pointer type
+> drivers/staging/winbond/./linux/wbusb .c:181: warning: initialization from incompatible pointer type
+> drivers/staging/winbond/./linux/wbusb .c:299: warning: ISO C90 forbids mixed declarations and code
+> drivers/staging/usbip/vhci_rx.c:204: warning: format '%d' expects type 'int', but argument 7 has type 'long unsigned int'
+> drivers/staging/winbond/sme_api.c:13: warning: no return statement in function returning non-void
 
-While a proper cleanup, could you do it by re-arranging the methods so
-as to not create an additional ifdef?
+Thanks, I've now fixed these.
 
-Thanks
-
-> Signed-off-by: Henrik Austad <henrik.austad@gmail.com>
-> ---
->  include/linux/sched.h |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index c226c7b..9e0e33c 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -898,8 +898,9 @@ struct sched_class {
->  	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup);
->  	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int sleep);
->  	void (*yield_task) (struct rq *rq);
-> +#ifdef CONFIG_SMP
->  	int  (*select_task_rq)(struct task_struct *p, int sync);
-> -
-> +#endif
->  	void (*check_preempt_curr) (struct rq *rq, struct task_struct *p, int sync);
->  
->  	struct task_struct * (*pick_next_task) (struct rq *rq);
+greg k-h
