@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbYJUMpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755847AbYJUMpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755340AbYJUMpY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 08:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbYJUMpE
+	id S1755847AbYJUMpw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 08:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbYJUMpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 08:45:04 -0400
-Received: from mga09.intel.com ([134.134.136.24]:5810 "EHLO mga09.intel.com"
+	Tue, 21 Oct 2008 08:45:40 -0400
+Received: from mga09.intel.com ([134.134.136.24]:58150 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752790AbYJUMpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 08:45:01 -0400
+	id S1753692AbYJUMph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 08:45:37 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,457,1220252400"; 
-   d="scan'208";a="453860216"
-Date: Tue, 21 Oct 2008 19:49:59 +0800
+   d="scan'208";a="350679075"
+Date: Tue, 21 Oct 2008 19:50:34 +0800
 From: Yu Zhao <yu.zhao@intel.com>
 To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
 Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
@@ -25,8 +25,8 @@ Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
        "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
        "virtualization@lists.linux-foundation.org" 
 	<virtualization@lists.linux-foundation.org>
-Subject: [PATCH 8/15 v5] PCI: add boot options to reassign resources
-Message-ID: <20081021114959.GI3185@yzhao12-linux.sh.intel.com>
+Subject: [PATCH 9/15 v5] PCI: add boot option to align MMIO resource
+Message-ID: <20081021115034.GJ3185@yzhao12-linux.sh.intel.com>
 References: <20081021114056.GA3185@yzhao12-linux.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -37,12 +37,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds boot options so user can reassign device resources
-of all devices under a bus.
+This patch adds boot option to align MMIO resource for a device.
+The alignment is a bigger value between the PAGE_SIZE and the
+resource size.
 
-The boot options can be used as:
-pci=assign-mmio=0000:01;0000:02,assign-pio=0000:03
-'0000' and '01/02/03' are domain and bus number.
+The boot option can be used as:
+pci=align-mmio=0000:01:02.3;04:05.6
+'0000:01:02.3' and '04:05.6' are domain, bus, device and function numbers.
 
 Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
 Cc: Randy Dunlap <randy.dunlap@oracle.com>
@@ -54,142 +55,134 @@ Cc: Greg KH <greg@kroah.com>
 Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 
 ---
- arch/x86/pci/common.c |   71 +++++++++++++++++++++++++++++++++++++++++++++++++
- arch/x86/pci/i386.c   |   10 ++++---
- arch/x86/pci/pci.h    |    3 ++
- 3 files changed, 80 insertions(+), 4 deletions(-)
+ arch/x86/pci/common.c |   37 +++++++++++++++++++++++++++++++++++++
+ drivers/pci/pci.c     |   20 ++++++++++++++++++--
+ include/linux/pci.h   |    1 +
+ 3 files changed, 56 insertions(+), 2 deletions(-)
 
 diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-index b67732b..0774a67 100644
+index 0774a67..c1821e3 100644
 --- a/arch/x86/pci/common.c
 +++ b/arch/x86/pci/common.c
-@@ -137,6 +137,70 @@ static void __devinit pcibios_fixup_device_resources(struct pci_dev *dev)
+@@ -139,6 +139,7 @@ static void __devinit pcibios_fixup_device_resources(struct pci_dev *dev)
+ 
+ static char *pci_assign_pio;
+ static char *pci_assign_mmio;
++static char *pci_align_mmio;
+ 
+ static int pcibios_bus_resource_needs_fixup(struct pci_bus *bus)
+ {
+@@ -190,6 +191,36 @@ static void __devinit pcibios_fixup_bus_resources(struct pci_bus *bus)
  	}
  }
  
-+static char *pci_assign_pio;
-+static char *pci_assign_mmio;
-+
-+static int pcibios_bus_resource_needs_fixup(struct pci_bus *bus)
++int pcibios_resource_alignment(struct pci_dev *dev, int resno)
 +{
-+	int i;
-+	int type = 0;
-+	int domain, busnr;
++	int domain, busnr, slot, func;
++	char *str = pci_align_mmio;
 +
-+	if (!bus->self)
++	if (dev->resource[resno].flags & IORESOURCE_IO)
 +		return 0;
 +
-+	for (i = 0; i < 2; i++) {
-+		char *str = i ? pci_assign_pio : pci_assign_mmio;
-+		while (str && *str) {
-+			if (sscanf(str, "%04x:%02x", &domain, &busnr) != 2) {
-+				if (sscanf(str, "%02x", &busnr) != 1)
-+					break;
-+				domain = 0;
-+			}
-+
-+			if (pci_domain_nr(bus) == domain &&
-+			    bus->number == busnr) {
-+				type |= i ? IORESOURCE_IO : IORESOURCE_MEM;
++	while (str && *str) {
++		if (sscanf(str, "%04x:%02x:%02x.%d",
++				&domain, &busnr, &slot, &func) != 4) {
++			if (sscanf(str, "%02x:%02x.%d",
++					&busnr, &slot, &func) != 3)
 +				break;
-+			}
-+
-+			str = strchr(str, ';');
-+			if (str)
-+				str++;
++			domain = 0;
 +		}
++
++		if (pci_domain_nr(dev->bus) == domain &&
++		    dev->bus->number == busnr &&
++		    dev->devfn == PCI_DEVFN(slot, func))
++			return PAGE_SIZE;
++
++		str = strchr(str, ';');
++		if (str)
++			str++;
 +	}
-+
-+	return type;
-+}
-+
-+static void __devinit pcibios_fixup_bus_resources(struct pci_bus *bus)
-+{
-+	int i;
-+	int type = pcibios_bus_resource_needs_fixup(bus);
-+
-+	if (!type)
-+		return;
-+
-+	for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
-+		struct resource *res = bus->resource[i];
-+		if (!res)
-+			continue;
-+		if (res->flags & type)
-+			res->flags = 0;
-+	}
-+}
-+
-+int pcibios_resource_needs_fixup(struct pci_dev *dev, int resno)
-+{
-+	struct pci_bus *bus;
-+
-+	for (bus = dev->bus; bus && bus != pci_root_bus; bus = bus->parent)
-+		if (pcibios_bus_resource_needs_fixup(bus))
-+			return 1;
 +
 +	return 0;
 +}
 +
- /*
-  *  Called after each bus is probed, but before its children
-  *  are examined.
-@@ -147,6 +211,7 @@ void __devinit  pcibios_fixup_bus(struct pci_bus *b)
- 	struct pci_dev *dev;
+ int pcibios_resource_needs_fixup(struct pci_dev *dev, int resno)
+ {
+ 	struct pci_bus *bus;
+@@ -198,6 +229,9 @@ int pcibios_resource_needs_fixup(struct pci_dev *dev, int resno)
+ 		if (pcibios_bus_resource_needs_fixup(bus))
+ 			return 1;
  
- 	pci_read_bridge_bases(b);
-+	pcibios_fixup_bus_resources(b);
- 	list_for_each_entry(dev, &b->devices, bus_list)
- 		pcibios_fixup_device_resources(dev);
++	if (pcibios_resource_alignment(dev, resno))
++			return 1;
++
+ 	return 0;
  }
-@@ -519,6 +584,12 @@ char * __devinit  pcibios_setup(char *str)
- 	} else if (!strcmp(str, "skip_isa_align")) {
- 		pci_probe |= PCI_CAN_SKIP_ISA_ALIGN;
+ 
+@@ -590,6 +624,9 @@ char * __devinit  pcibios_setup(char *str)
+ 	} else if (!strncmp(str, "assign-mmio=", 12)) {
+ 		pci_assign_mmio = str + 12;
  		return NULL;
-+	} else if (!strncmp(str, "assign-pio=", 11)) {
-+		pci_assign_pio = str + 11;
-+		return NULL;
-+	} else if (!strncmp(str, "assign-mmio=", 12)) {
-+		pci_assign_mmio = str + 12;
++	} else if (!strncmp(str, "align-mmio=", 11)) {
++		pci_align_mmio = str + 11;
 +		return NULL;
  	}
  	return str;
  }
-diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
-index 8729bde..ea82a5b 100644
---- a/arch/x86/pci/i386.c
-+++ b/arch/x86/pci/i386.c
-@@ -169,10 +169,12 @@ static void __init pcibios_allocate_resources(int pass)
- 					(unsigned long long) r->start,
- 					(unsigned long long) r->end,
- 					r->flags, enabled, pass);
--			pr = pci_find_parent_resource(dev, r);
--			if (pr && !request_resource(pr, r))
--				continue;
--			dev_err(&dev->dev, "BAR %d: can't allocate resource\n", idx);
-+			if (!pcibios_resource_needs_fixup(dev, idx)) {
-+				pr = pci_find_parent_resource(dev, r);
-+				if (pr && !request_resource(pr, r))
-+					continue;
-+				dev_err(&dev->dev, "BAR %d: can't allocate resource\n", idx);
-+			}
- 			/* We'll assign a new address later */
- 			r->end -= r->start;
- 			r->start = 0;
-diff --git a/arch/x86/pci/pci.h b/arch/x86/pci/pci.h
-index 15b9cf6..f22737d 100644
---- a/arch/x86/pci/pci.h
-+++ b/arch/x86/pci/pci.h
-@@ -117,6 +117,9 @@ extern int __init pcibios_init(void);
- extern int __init pci_mmcfg_arch_init(void);
- extern void __init pci_mmcfg_arch_free(void);
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index b02167a..11ecd6f 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1015,6 +1015,20 @@ int __attribute__ ((weak)) pcibios_set_pcie_reset_state(struct pci_dev *dev,
+ }
  
-+/* pci-common.c */
-+extern int pcibios_resource_needs_fixup(struct pci_dev *dev, int resno);
+ /**
++ * pcibios_resource_alignment - get resource alignment requirement
++ * @dev: the PCI device
++ * @resno: resource number
++ *
++ * Queries the resource alignment from PCI low level code. Returns positive
++ * if there is alignment requirement of the resource, or 0 otherwise.
++ */
++int __attribute__ ((weak)) pcibios_resource_alignment(struct pci_dev *dev,
++						      int resno)
++{
++	return 0;
++}
 +
- /*
-  * AMD Fam10h CPUs are buggy, and cannot access MMIO config space
-  * on their northbrige except through the * %eax register. As such, you MUST
++/**
+  * pci_set_pcie_reset_state - set reset state for device dev
+  * @dev: the PCI-E device reset
+  * @state: Reset state to enter into
+@@ -1913,12 +1927,14 @@ int pci_select_bars(struct pci_dev *dev, unsigned long flags)
+  */
+ int pci_resource_alignment(struct pci_dev *dev, int resno)
+ {
+-	resource_size_t align;
++	resource_size_t align, bios_align;
+ 	struct resource *res = dev->resource + resno;
+ 
++	bios_align = pcibios_resource_alignment(dev, resno);
++
+ 	align = resource_alignment(res);
+ 	if (align)
+-		return align;
++		return align > bios_align ? align : bios_align;
+ 
+ 	dev_err(&dev->dev, "alignment: invalid resource #%d\n", resno);
+ 	return 0;
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 2ada2b6..6ac69af 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1121,6 +1121,7 @@ int pcibios_add_platform_entries(struct pci_dev *dev);
+ void pcibios_disable_device(struct pci_dev *dev);
+ int pcibios_set_pcie_reset_state(struct pci_dev *dev,
+ 				 enum pcie_reset_state state);
++int pcibios_resource_alignment(struct pci_dev *dev, int resno);
+ 
+ #ifdef CONFIG_PCI_MMCONFIG
+ extern void __init pci_mmcfg_early_init(void);
 -- 
 1.5.6.4
 
