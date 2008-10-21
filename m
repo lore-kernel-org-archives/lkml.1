@@ -1,236 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753637AbYJUOzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753410AbYJUPCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753637AbYJUOzh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 10:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYJUOz3
+	id S1753410AbYJUPCV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 11:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbYJUPCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 10:55:29 -0400
-Received: from mercuryimc.plus.com ([80.229.200.144]:54101 "EHLO
-	mimc.mimc.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750930AbYJUOz2 (ORCPT
+	Tue, 21 Oct 2008 11:02:04 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:48084 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751652AbYJUPCD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 10:55:28 -0400
-Message-ID: <48FDED5E.5080605@mimc.co.uk>
-Date: Tue, 21 Oct 2008 15:55:26 +0100
-From: Mark Jackson <mpfj@mimc.co.uk>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 21 Oct 2008 11:02:03 -0400
+Date: Tue, 21 Oct 2008 10:59:54 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: Ingo Molnar <mingo@elte.hu>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, vgoyal@redhat.com, hbabu@us.ibm.com,
+       ebiederm@xmission.com, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, akpm@linux-foundation.org,
+       Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: Re: [PATCH] x86, dumpstack: make die and die_nmi equal
+Message-ID: <20081021145954.GB25750@hmsreliant.think-freely.org>
+References: <20081017210013.GD23591@hmsreliant.think-freely.org> <20081020121339.GE10594@elte.hu> <20081020134211.GA15574@hmsreliant.think-freely.org> <20081020150731.GA25999@mailshack.com> <20081020150834.GA26018@mailshack.com> <20081020151106.GA26034@mailshack.com>
 MIME-Version: 1.0
-To: ben-linux@fluff.org, akpm@linux-foundation.org
-CC: i2c@lm-sensors.org, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2] Add support for Dallas DS28CM00 Unique ID chip
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081020151106.GA26034@mailshack.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds support for the (I2C based) DS28CM00 ID chip.
-(v2 after running through checkpatch)
+On Mon, Oct 20, 2008 at 05:11:06PM +0200, Alexander van Heukelum wrote:
+> Use the x86_64 version of die() and die_nmi() on i386 too.
+> Changes to the original x86_64-version have no influence
+> on the generated code:
+> 
+>  - whitespace, comments
+>  - use user_mode_vm() instead of user_mode()
+> 
+Hey, smore more comments inline
 
-Signed-off-by: M.Jackson <mpfj@mimc.co.uk> 
----
- drivers/i2c/chips/Kconfig    |    7 ++
- drivers/i2c/chips/Makefile   |    1 +
- drivers/i2c/chips/ds28cm00.c |  166 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 174 insertions(+), 0 deletions(-)
+> Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> ---
+>  arch/x86/kernel/dumpstack_32.c |   40 ++++++++++++++--------------------------
+>  arch/x86/kernel/dumpstack_64.c |    9 +++++++--
+>  2 files changed, 21 insertions(+), 28 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/dumpstack_32.c b/arch/x86/kernel/dumpstack_32.c
+> index e45952b..6f00938 100644
+> --- a/arch/x86/kernel/dumpstack_32.c
+> +++ b/arch/x86/kernel/dumpstack_32.c
+> @@ -377,52 +377,40 @@ void die(const char *str, struct pt_regs *regs, long err)
+>  {
+>  	unsigned long flags = oops_begin();
+>  
+> -	if (die_nest_count < 3) {
+> +	if (!user_mode_vm(regs))
+>  		report_bug(regs->ip, regs);
+>  
+> -		if (__die(str, regs, err))
+> -			regs = NULL;
+> -	} else {
+> -		printk(KERN_EMERG "Recursive die() failure, output suppressed\n");
+> -	}
+> +	if (__die(str, regs, err))
+> +		regs = NULL;
+>  
+>  	oops_end(flags, regs, SIGSEGV);
+>  }
+>  
+> -static DEFINE_SPINLOCK(nmi_print_lock);
+> -
+>  void notrace __kprobes
+>  die_nmi(char *str, struct pt_regs *regs, int do_panic)
+>  {
+> +	unsigned long flags;
+> +
+>  	if (notify_die(DIE_NMIWATCHDOG, str, regs, 0, 2, SIGINT) == NOTIFY_STOP)
+>  		return;
+>  
+> -	spin_lock(&nmi_print_lock);
+> +	flags = oops_begin();
+>  	/*
+>  	* We are in trouble anyway, lets at least try
+> -	* to get a message out:
+> +	* to get a message out.
+>  	*/
+> -	bust_spinlocks(1);
+>  	printk(KERN_EMERG "%s", str);
+>  	printk(" on CPU%d, ip %08lx, registers:\n",
+>  		smp_processor_id(), regs->ip);
+>  	show_registers(regs);
+> -	if (do_panic)
+> -		panic("Non maskable interrupt");
+> -	console_silent();
+> -	spin_unlock(&nmi_print_lock);
+> -	bust_spinlocks(0);
+> -
+> -	/*
+> -	 * If we are in kernel we are probably nested up pretty bad
+> -	 * and might aswell get out now while we still can:
+> -	 */
+> -	if (!user_mode_vm(regs)) {
+> -		current->thread.trap_no = 2;
+> +	if (kexec_should_crash(current))
+>  		crash_kexec(regs);
+As I mentioned in your other patch, this crash_kexec can go I think if you're
+going to do it in oops_end (as long as you correct the deadlock condition there
 
-diff --git a/drivers/i2c/chips/Kconfig b/drivers/i2c/chips/Kconfig
-index a95cb94..98c06e7 100644
---- a/drivers/i2c/chips/Kconfig
-+++ b/drivers/i2c/chips/Kconfig
-@@ -172,4 +172,11 @@ config MENELAUS
- 	  and other features that are often used in portable devices like
- 	  cell phones and PDAs.
- 
-+config DS28CM00
-+	tristate "DS28CM00 Serial Number chip"
-+	depends on EXPERIMENTAL
-+	help
-+	  If you say yes here you get support for the Dallas DS28CM00
-+	  Serial Number chip.
-+
- endmenu
-diff --git a/drivers/i2c/chips/Makefile b/drivers/i2c/chips/Makefile
-index 39e3e69..f674d94 100644
---- a/drivers/i2c/chips/Makefile
-+++ b/drivers/i2c/chips/Makefile
-@@ -21,6 +21,7 @@ obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
- obj-$(CONFIG_TPS65010)		+= tps65010.o
- obj-$(CONFIG_MENELAUS)		+= menelaus.o
- obj-$(CONFIG_SENSORS_TSL2550)	+= tsl2550.o
-+obj-$(CONFIG_DS28CM00)		+= ds28cm00.o
- 
- ifeq ($(CONFIG_I2C_DEBUG_CHIP),y)
- EXTRA_CFLAGS += -DDEBUG
-diff --git a/drivers/i2c/chips/ds28cm00.c b/drivers/i2c/chips/ds28cm00.c
-new file mode 100644
-index 0000000..6abe065
---- /dev/null
-+++ b/drivers/i2c/chips/ds28cm00.c
-@@ -0,0 +1,166 @@
-+/*
-+    ds28cm00.c - driver for DS28CM00 Serial ID chip
-+
-+    Copyright (C) 2008 Mark Jackson <mpfj@mimc.co.uk>
-+
-+    Based on i2c/chips/max6875.c
-+
-+    The DS28CM00 contains a 64bit unique number.
-+    The memory map is defined as follows:
-+     * 0x00		= Device Family Code (0x70)
-+     * 0x01 - 0x06	= Serial Number (bits 0 to 47)
-+     * 0x07		= CRC of addresses 0x00 to 0x06
-+     * 0x08		= Control Register (R/W)
-+
-+    This driver makes the Serial Number available for read.
-+
-+    This program is free software; you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation; version 2 of the License.
-+*/
-+
-+#include <linux/i2c.h>
-+
-+static unsigned short normal_i2c[] = {I2C_CLIENT_END};
-+
-+/* Insmod parameters */
-+I2C_CLIENT_INSMOD_1(ds28cm00);
-+
-+#define DS28CM00_CMD_WRITE	0x50
-+#define DS28CM00_CMD_READ	0x51
-+
-+#define ID_SIZE		9
-+
-+/* Each client has this additional data */
-+struct ds28cm00_data {
-+	struct i2c_client	client;
-+	struct mutex		update_lock;
-+};
-+
-+static int ds28cm00_attach_adapter(struct i2c_adapter *adapter);
-+static int ds28cm00_detect(struct i2c_adapter *adapter, int address, int kind);
-+static int ds28cm00_detach_client(struct i2c_client *client);
-+
-+/* This is the driver that will be inserted */
-+static struct i2c_driver ds28cm00_driver = {
-+	.driver = {
-+		.name	= "ds28cm00",
-+	},
-+	.attach_adapter	= ds28cm00_attach_adapter,
-+	.detach_client	= ds28cm00_detach_client,
-+};
-+
-+static ssize_t ds28cm00_read(struct kobject *kobj,
-+			    struct bin_attribute *bin_attr,
-+			    char *buf, loff_t off, size_t count)
-+{
-+	struct i2c_client *client = kobj_to_i2c_client(kobj);
-+
-+	if (off > ID_SIZE)
-+		return 0;
-+
-+	if (off + count > ID_SIZE)
-+		count = ID_SIZE - off;
-+
-+	if (i2c_smbus_read_i2c_block_data(client, DS28CM00_CMD_READ, count, buf) != count)
-+		return 0;
-+
-+	return count;
-+}
-+
-+static struct bin_attribute id_attr = {
-+	.attr = {
-+		.name = "id",
-+		.mode = S_IRUGO,
-+	},
-+	.size = ID_SIZE,
-+	.read = ds28cm00_read,
-+};
-+
-+static int ds28cm00_attach_adapter(struct i2c_adapter *adapter)
-+{
-+	return i2c_probe(adapter, &addr_data, ds28cm00_detect);
-+}
-+
-+/* This function is called by i2c_probe */
-+static int ds28cm00_detect(struct i2c_adapter *adapter, int address, int kind)
-+{
-+	struct i2c_client *new_client;
-+	struct ds28cm00_data *data;
-+	int err = 0;
-+
-+	printk(KERN_DEBUG "DS28CM00 I2C Serial Number driver\n");
-+
-+	if (!i2c_check_functionality(adapter, I2C_FUNC_I2C)) {
-+		printk(KERN_ALERT "DS28CM00 : failed i2c_check_func()\n");
-+		return 0;
-+	}
-+
-+	data = kzalloc(sizeof(struct ds28cm00_data), GFP_KERNEL);
-+	if (!data) {
-+		printk(KERN_ALERT "DS28CM00 : failed kzalloc()\n");
-+		return -ENOMEM;
-+	}
-+
-+	new_client = &data->client;
-+	i2c_set_clientdata(new_client, data);
-+	new_client->addr = address;
-+	new_client->adapter = adapter;
-+	new_client->driver = &ds28cm00_driver;
-+	new_client->flags = 0;
-+	strlcpy(new_client->name, "ds28cm00", I2C_NAME_SIZE);
-+
-+	/* Tell the I2C layer a new client has arrived */
-+	err = i2c_attach_client(new_client);
-+	if (err) {
-+		printk(KERN_ALERT "DS28CM00 : failed i2c_attach_client()\n");
-+		goto exit_kfree;
-+	}
-+
-+	/* Register sysfs hooks */
-+	err = sysfs_create_bin_file(&new_client->dev.kobj, &id_attr);
-+	if (err) {
-+		printk(KERN_ALERT "DS28CM00 : failed sysfs_create_bin_file()\n");
-+		goto exit_detach;
-+	}
-+
-+	return 0;
-+
-+exit_detach:
-+	i2c_detach_client(new_client);
-+exit_kfree:
-+	kfree(data);
-+	return err;
-+}
-+
-+static int ds28cm00_detach_client(struct i2c_client *client)
-+{
-+	int err;
-+
-+	sysfs_remove_bin_file(&client->dev.kobj, &id_attr);
-+
-+	err = i2c_detach_client(client);
-+	if (err)
-+		return err;
-+
-+	kfree(client);
-+
-+	return 0;
-+}
-+
-+static int __init ds28cm00_init(void)
-+{
-+	return i2c_add_driver(&ds28cm00_driver);
-+}
-+
-+static void __exit ds28cm00_exit(void)
-+{
-+	i2c_del_driver(&ds28cm00_driver);
-+}
-+
-+MODULE_AUTHOR("Mark Jackson <mpfj@mimc.co.uk>");
-+MODULE_DESCRIPTION("DS28CM00 driver");
-+MODULE_LICENSE("GPL");
-+
-+module_init(ds28cm00_init);
-+module_exit(ds28cm00_exit);
+And as before, if you could rediff so that we didn't reintroduce the deadlock
+that we just fixed, that would be much appreciated.
+
+Beyond that, I think this looks good.  Fix that up and It'll have my ack.
+
+Best
+Neil
+
+--
+/****************************************************
+ * Neil Horman <nhorman@tuxdriver.com>
+ * Software Engineer, Red Hat
+ ****************************************************/
