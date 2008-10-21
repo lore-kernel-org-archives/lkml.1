@@ -1,69 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756445AbYJUMuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbYJUMus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756445AbYJUMuQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 08:50:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755817AbYJUMtc
+	id S1756492AbYJUMus (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 08:50:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753738AbYJUMuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 08:49:32 -0400
-Received: from mga09.intel.com ([134.134.136.24]:20878 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755782AbYJUMta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 08:49:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,457,1220252400"; 
-   d="scan'208";a="453868893"
-Date: Tue, 21 Oct 2008 19:54:29 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "greg@kroah.com" <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: [PATCH 15/15 v5] PCI: document the new PCI boot parameters
-Message-ID: <20081021115429.GP3185@yzhao12-linux.sh.intel.com>
-References: <20081021114056.GA3185@yzhao12-linux.sh.intel.com>
+	Tue, 21 Oct 2008 08:50:37 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45173 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753799AbYJUMug (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 08:50:36 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 2/2] 8250: Add more OxSemi devices
+To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Date: Tue, 21 Oct 2008 13:50:14 +0100
+Message-ID: <20081021124908.5113.50743.stgit@localhost.localdomain>
+In-Reply-To: <20081021124849.5113.26613.stgit@localhost.localdomain>
+References: <20081021124849.5113.26613.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081021114056.GA3185@yzhao12-linux.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Complete document for the new PCI boot parameters.
+From: Lee Howard <lee.howard@mainpine.com>
 
+These have the Mainpine PCI identifier on however
+
+Additional paranoia check for Tornado versions added by Alan Cox
+
+(and this time I remembered to do an stg refresh so that the corrections ended
+ up in these patches not randomly attached to another diff -- Alan)
+
+Signed-off-by: Lee Howard <lee.howard@mainpine.com>
+Signed-off-by: Alan Cox <alan@redhat.com>
 ---
- Documentation/kernel-parameters.txt |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 53ba7c7..5482ae0 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1677,6 +1677,16 @@ and is between 256 and 4096 characters. It is defined in the file
- 		cbmemsize=nn[KMG]	The fixed amount of bus space which is
- 				reserved for the CardBus bridge's memory
- 				window. The default value is 64 megabytes.
-+		assign-mmio=[dddd:]bb	[X86] reassign memory resources of all
-+				devices under bus [dddd:]bb (dddd is the domain
-+				number and bb is the bus number).
-+		assign-pio=[dddd:]bb	[X86] reassign io port resources of all
-+				devices under bus [dddd:]bb (dddd is the domain
-+				number and bb is the bus number).
-+		align-mmio=[dddd:]bb:dd.f  [X86] relocate memory resources of a
-+				device with minimum PAGE_SIZE alignment (dddd
-+				is the domain number and bb, dd and f is the
-+				bus, device and function number).
+ drivers/serial/8250_pci.c |   30 +++++++++++++++++++++++++-----
+ 1 files changed, 25 insertions(+), 5 deletions(-)
+
+
+diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
+index 43c990a..a8818b7 100644
+--- a/drivers/serial/8250_pci.c
++++ b/drivers/serial/8250_pci.c
+@@ -1865,6 +1865,11 @@ static int pci_oxsemi_tornado_init(struct pci_dev *dev, struct pciserial_board *
+ 	unsigned long deviceID;
+ 	unsigned int  number_uarts;
  
- 	pcie_aspm=	[PCIE] Forcibly enable or disable PCIe Active State Power
- 			Management.
--- 
-1.5.6.4
++	/* OxSemi Tornado devices are all 0xCxxx */
++	if (dev->vendor == PCI_VENDOR_ID_OXSEMI &&
++	    (dev->device & 0xF000) != 0xC000)
++	    	return 0;
++
+ 	p = pci_iomap(dev, 0, 5);
+ 	if (p == NULL)
+ 		return -ENOMEM;
+@@ -1893,7 +1898,8 @@ pciserial_init_ports(struct pci_dev *dev, struct pciserial_board *board)
+ 	/*
+ 	 * Find number of ports on board
+ 	 */
+-	 if (dev->vendor == PCI_VENDOR_ID_OXSEMI)
++	if (dev->vendor == PCI_VENDOR_ID_OXSEMI ||
++	    dev->vendor == PCI_VENDOR_ID_MAINPINE)
+ 	 	pci_oxsemi_tornado_init(dev, board);
+     
+ 	nr_ports = board->num_ports;
+@@ -2375,9 +2381,9 @@ static struct pci_device_id serial_pci_tbl[] = {
+ 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+ 		pbn_b0_bt_2_921600 },
+ 
+-    /*
+-     * Oxford Semiconductor Inc. Tornado PCI express device range.
+-     */
++	/*
++	 * Oxford Semiconductor Inc. Tornado PCI express device range.
++	 */
+  	{	PCI_VENDOR_ID_OXSEMI, 0xc101,    /* OXPCIe952 1 Legacy UART */
+ 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+ 		pbn_b0_1_4000000 },
+@@ -2510,7 +2516,21 @@ static struct pci_device_id serial_pci_tbl[] = {
+ 	{	PCI_VENDOR_ID_OXSEMI, 0xc4cf,    /* OXPCIe200 1 Native UART */
+ 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+ 		pbn_oxsemi_1_4000000 },
+-
++	/*
++	 * Mainpine Inc. IQ Express "Rev3" utilizing OxSemi Tornado
++	 */
++ 	{	PCI_VENDOR_ID_MAINPINE, 0x4000,	/* IQ Express 1 Port V.34 Super-G3 Fax */
++		PCI_VENDOR_ID_MAINPINE, 0x4001, 0, 0,
++		pbn_oxsemi_1_4000000 },
++ 	{	PCI_VENDOR_ID_MAINPINE, 0x4000,	/* IQ Express 2 Port V.34 Super-G3 Fax */
++		PCI_VENDOR_ID_MAINPINE, 0x4002, 0, 0,
++		pbn_oxsemi_2_4000000 },
++ 	{	PCI_VENDOR_ID_MAINPINE, 0x4000,	/* IQ Express 4 Port V.34 Super-G3 Fax */
++		PCI_VENDOR_ID_MAINPINE, 0x4004, 0, 0,
++		pbn_oxsemi_4_4000000 },
++ 	{	PCI_VENDOR_ID_MAINPINE, 0x4000,	/* IQ Express 8 Port V.34 Super-G3 Fax */
++		PCI_VENDOR_ID_MAINPINE, 0x4008, 0, 0,
++		pbn_oxsemi_8_4000000 },
+ 	/*
+ 	 * SBS Technologies, Inc. P-Octal and PMC-OCTPRO cards,
+ 	 * from skokodyn@yahoo.com
 
