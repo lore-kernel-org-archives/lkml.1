@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbYJUMnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755731AbYJUMog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755233AbYJUMnm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 08:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755403AbYJUMnH
+	id S1755731AbYJUMog (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 08:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbYJUMoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 08:43:07 -0400
-Received: from mga09.intel.com ([134.134.136.24]:36135 "EHLO mga09.intel.com"
+	Tue, 21 Oct 2008 08:44:23 -0400
+Received: from mga09.intel.com ([134.134.136.24]:5726 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754911AbYJUMnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 08:43:04 -0400
+	id S1753348AbYJUMoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 08:44:21 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,457,1220252400"; 
-   d="scan'208";a="453859996"
-Date: Tue, 21 Oct 2008 19:48:03 +0800
+   d="scan'208";a="453860098"
+Date: Tue, 21 Oct 2008 19:48:52 +0800
 From: Yu Zhao <yu.zhao@intel.com>
 To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
 Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
@@ -25,8 +25,8 @@ Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
        "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
        "virtualization@lists.linux-foundation.org" 
 	<virtualization@lists.linux-foundation.org>
-Subject: [PATCH 5/15 v5] PCI: add a wrapper for resource_alignment()
-Message-ID: <20081021114803.GF3185@yzhao12-linux.sh.intel.com>
+Subject: [PATCH 7/15 v5] PCI: cleanup pcibios_allocate_resources()
+Message-ID: <20081021114852.GH3185@yzhao12-linux.sh.intel.com>
 References: <20081021114056.GA3185@yzhao12-linux.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -37,8 +37,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a wrap of resource_alignment() so it can handle device specific
-resource alignment.
+This cleanup makes pcibios_allocate_resources() easier to be read.
 
 Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
 Cc: Randy Dunlap <randy.dunlap@oracle.com>
@@ -50,109 +49,58 @@ Cc: Greg KH <greg@kroah.com>
 Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 
 ---
- drivers/pci/pci.c       |   20 ++++++++++++++++++++
- drivers/pci/pci.h       |    1 +
- drivers/pci/setup-bus.c |    4 ++--
- drivers/pci/setup-res.c |    7 ++++---
- 4 files changed, 27 insertions(+), 5 deletions(-)
+ arch/x86/pci/i386.c |   28 ++++++++++++++--------------
+ 1 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 40284dc..a9b554e 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -1904,6 +1904,26 @@ int pci_select_bars(struct pci_dev *dev, unsigned long flags)
- 	return bars;
- }
- 
-+/**
-+ * pci_resource_alignment - get a PCI BAR resource alignment
-+ * @dev: the PCI device
-+ * @resno: the resource number
-+ *
-+ * Returns alignment size on success, or 0 on error.
-+ */
-+int pci_resource_alignment(struct pci_dev *dev, int resno)
-+{
-+	resource_size_t align;
-+	struct resource *res = dev->resource + resno;
-+
-+	align = resource_alignment(res);
-+	if (align)
-+		return align;
-+
-+	dev_err(&dev->dev, "alignment: invalid resource #%d\n", resno);
-+	return 0;
-+}
-+
- static void __devinit pci_no_domains(void)
+diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
+index 844df0c..8729bde 100644
+--- a/arch/x86/pci/i386.c
++++ b/arch/x86/pci/i386.c
+@@ -147,7 +147,7 @@ static void __init pcibios_allocate_bus_resources(struct list_head *bus_list)
+ static void __init pcibios_allocate_resources(int pass)
  {
- #ifdef CONFIG_PCI_DOMAINS
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index fbbc6ad..baa3d23 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -166,6 +166,7 @@ enum pci_bar_type {
+ 	struct pci_dev *dev = NULL;
+-	int idx, disabled;
++	int idx, enabled;
+ 	u16 command;
+ 	struct resource *r, *pr;
  
- extern int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
- 				struct resource *res, unsigned int reg);
-+extern int pci_resource_alignment(struct pci_dev *dev, int resno);
- extern void pci_enable_ari(struct pci_dev *dev);
- /**
-  * pci_ari_enabled - query ARI forwarding status
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index ea979f2..90a9c0a 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -25,6 +25,7 @@
- #include <linux/ioport.h>
- #include <linux/cache.h>
- #include <linux/slab.h>
-+#include "pci.h"
- 
- 
- static void pbus_assign_resources_sorted(struct pci_bus *bus)
-@@ -351,8 +352,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask, unsigned long
- 			if (r->parent || (r->flags & mask) != type)
+@@ -160,22 +160,22 @@ static void __init pcibios_allocate_resources(int pass)
+ 			if (!r->start)		/* Address not assigned at all */
  				continue;
- 			r_size = resource_size(r);
--			/* For bridges size != alignment */
--			align = resource_alignment(r);
-+			align = pci_resource_alignment(dev, i);
- 			order = __ffs(align) - 20;
- 			if (order > 11) {
- 				dev_warn(&dev->dev, "BAR %d bad alignment %llx: "
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index b7ca679..88a9c70 100644
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -133,7 +133,7 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
- 	size = resource_size(res);
- 	min = (res->flags & IORESOURCE_IO) ? PCIBIOS_MIN_IO : PCIBIOS_MIN_MEM;
- 
--	align = resource_alignment(res);
-+	align = pci_resource_alignment(dev, resno);
- 	if (!align) {
- 		dev_err(&dev->dev, "BAR %d: can't allocate resource (bogus "
- 			"alignment) %pR flags %#lx\n",
-@@ -224,7 +224,7 @@ void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
- 		if (!(r->flags) || r->parent)
- 			continue;
- 
--		r_align = resource_alignment(r);
-+		r_align = pci_resource_alignment(dev, i);
- 		if (!r_align) {
- 			dev_warn(&dev->dev, "BAR %d: bogus alignment "
- 				"%pR flags %#lx\n",
-@@ -236,7 +236,8 @@ void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
- 			struct resource_list *ln = list->next;
- 
- 			if (ln)
--				align = resource_alignment(ln->res);
-+				align = pci_resource_alignment(ln->dev,
-+						ln->res - ln->dev->resource);
- 
- 			if (r_align > align) {
- 				tmp = kmalloc(sizeof(*tmp), GFP_KERNEL);
+ 			if (r->flags & IORESOURCE_IO)
+-				disabled = !(command & PCI_COMMAND_IO);
++				enabled = command & PCI_COMMAND_IO;
+ 			else
+-				disabled = !(command & PCI_COMMAND_MEMORY);
+-			if (pass == disabled) {
+-				dev_dbg(&dev->dev, "resource %#08llx-%#08llx (f=%lx, d=%d, p=%d)\n",
++				enabled = command & PCI_COMMAND_MEMORY;
++			if (pass == enabled)
++				continue;
++			dev_dbg(&dev->dev, "resource %#08llx-%#08llx (f=%lx, d=%d, p=%d)\n",
+ 					(unsigned long long) r->start,
+ 					(unsigned long long) r->end,
+-					r->flags, disabled, pass);
+-				pr = pci_find_parent_resource(dev, r);
+-				if (!pr || request_resource(pr, r) < 0) {
+-					dev_err(&dev->dev, "BAR %d: can't allocate resource\n", idx);
+-					/* We'll assign a new address later */
+-					r->end -= r->start;
+-					r->start = 0;
+-				}
+-			}
++					r->flags, enabled, pass);
++			pr = pci_find_parent_resource(dev, r);
++			if (pr && !request_resource(pr, r))
++				continue;
++			dev_err(&dev->dev, "BAR %d: can't allocate resource\n", idx);
++			/* We'll assign a new address later */
++			r->end -= r->start;
++			r->start = 0;
+ 		}
+ 		if (!pass) {
+ 			r = &dev->resource[PCI_ROM_RESOURCE];
 -- 
 1.5.6.4
 
