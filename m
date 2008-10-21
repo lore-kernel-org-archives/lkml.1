@@ -1,91 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752035AbYJUHdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbYJUHd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752035AbYJUHdJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 03:33:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbYJUHc5
+	id S1753309AbYJUHd1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 03:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYJUHdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 03:32:57 -0400
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:56940 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751374AbYJUHc4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 03:32:56 -0400
-Message-ID: <48FD85A2.8090605@fr.ibm.com>
-Date: Tue, 21 Oct 2008 09:32:50 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/4] freezer_cg: remove redundant check in freezer_can_attach()
-References: <48FD26F5.1070809@cn.fujitsu.com> <48FD273F.3040505@cn.fujitsu.com>
-In-Reply-To: <48FD273F.3040505@cn.fujitsu.com>
-Content-Type: text/plain; charset=us-ascii
+	Tue, 21 Oct 2008 03:33:08 -0400
+Received: from gate.crashing.org ([63.228.1.57]:50880 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751966AbYJUHdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 03:33:06 -0400
+Subject: Re: Bug in "genirq: record trigger type"
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <20081021072857.GA333@elte.hu>
+References: <200810202205.m9KM5une024759@hera.kernel.org>
+	 <1224570730.7654.242.camel@pasglop>
+	 <86802c440810210022i75d3c081r8fc979386cdda9ce@mail.gmail.com>
+	 <20081021072857.GA333@elte.hu>
+Content-Type: text/plain
+Date: Tue, 21 Oct 2008 18:32:23 +1100
+Message-Id: <1224574343.7654.244.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> It is sufficient to check if @task is frozen, and no need to check if
-> the original freezer is frozen.
+On Tue, 2008-10-21 at 09:28 +0200, Ingo Molnar wrote:
 
-hmm, a task being frozen does not mean that its freezer cgroup is 
-frozen. So the extra check seems valid but looking at the comment :
-
-	/*
-	 * The call to cgroup_lock() in the freezer.state write method prevents
-	 * a write to that file racing against an attach, and hence the
-	 * can_attach() result will remain valid until the attach completes.
-	 */
-	static int freezer_can_attach(struct cgroup_subsys *ss,
-
-how do we know that the task_freezer(task), which is not protected by
-the cgroup_lock(), is not going to change its state to CGROUP_FROZEN 
-it looks racy.
-
-C.
-
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  kernel/cgroup_freezer.c |   16 +++++++---------
->  1 files changed, 7 insertions(+), 9 deletions(-)
+> From: Chris Friesen <cfriesen@nortel.com>
+> Date: Mon, 20 Oct 2008 12:41:58 -0600
+> Subject: [PATCH] genirq: fix set_irq_type() when recording trigger type
 > 
-> diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
-> index 7f54d1c..6fadafe 100644
-> --- a/kernel/cgroup_freezer.c
-> +++ b/kernel/cgroup_freezer.c
-> @@ -162,9 +162,13 @@ static int freezer_can_attach(struct cgroup_subsys *ss,
->  			      struct task_struct *task)
->  {
->  	struct freezer *freezer;
-> -	int retval;
+> In set_irq_type() we want to pass the type rather than the current
+> interrupt state.
+> 
+> Signed-off-by: Chris Friesen <cfriesen@nortel.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+> ---
+>  kernel/irq/chip.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
+> index 4895fde..3de6ea3 100644
+> --- a/kernel/irq/chip.c
+> +++ b/kernel/irq/chip.c
+> @@ -127,7 +127,7 @@ int set_irq_type(unsigned int irq, unsigned int type)
+>  		return 0;
 >  
-> -	/* Anything frozen can't move or be moved to/from */
-> +	/*
-> +	 * Anything frozen can't move or be moved to/from.
-> +	 *
-> +	 * Since orig_freezer->state == FROZEN means that @task has been
-> +	 * frozen, so it's sufficient to check the latter condition.
-> +	 */
->  
->  	if (is_task_frozen_enough(task))
->  		return -EBUSY;
-> @@ -173,13 +177,7 @@ static int freezer_can_attach(struct cgroup_subsys *ss,
->  	if (freezer->state == CGROUP_FROZEN)
->  		return -EBUSY;
->  
-> -	retval = 0;
-> -	task_lock(task);
-> -	freezer = task_freezer(task);
-> -	if (freezer->state == CGROUP_FROZEN)
-> -		retval = -EBUSY;
-> -	task_unlock(task);
-> -	return retval;
-> +	return 0;
+>  	spin_lock_irqsave(&desc->lock, flags);
+> -	ret = __irq_set_trigger(desc, irq, flags);
+> +	ret = __irq_set_trigger(desc, irq, type);
+>  	spin_unlock_irqrestore(&desc->lock, flags);
+>  	return ret;
 >  }
->  
->  static void freezer_fork(struct cgroup_subsys *ss, struct task_struct *task)
 
