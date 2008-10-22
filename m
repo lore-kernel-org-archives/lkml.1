@@ -1,203 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbYJVUke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbYJVUlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755918AbYJVUke (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 16:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYJVUkW
+	id S1758130AbYJVUlS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 16:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbYJVUlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 16:40:22 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:50753 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753783AbYJVUkV (ORCPT
+	Wed, 22 Oct 2008 16:41:00 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:38859 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752099AbYJVUk7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 16:40:21 -0400
-Message-ID: <48FF8FAC.1000805@fr.ibm.com>
-Date: Wed, 22 Oct 2008 22:40:12 +0200
-From: Daniel Lezcano <dlezcano@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 22 Oct 2008 16:40:59 -0400
+Date: Wed, 22 Oct 2008 16:40:53 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Phillip Susi <psusi@cfl.rr.com>
+Cc: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Yea old defrag
+Message-ID: <20081022204053.GA10369@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Phillip Susi <psusi@cfl.rr.com>,
+	Linux-kernel <linux-kernel@vger.kernel.org>
+References: <48FF506F.6060701@cfl.rr.com> <20081022180342.GA26257@mit.edu> <48FF86AC.6060802@cfl.rr.com>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Benjamin Thery <benjamin.thery@bull.net>, netdev <netdev@vger.kernel.org>,
-       Dave Miller <davem@davemloft.net>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Al Viro <viro@ftp.linux.org.uk>, Serge Hallyn <serue@us.ibm.com>,
-       linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
-       Denis Lunev <den@openvz.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH] netns: Coexist with the sysfs limitations
-References: <20081022152144.351965414@theryb.frec.bull.fr> <m17i80nzff.fsf@frodo.ebiederm.org>
-In-Reply-To: <m17i80nzff.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48FF86AC.6060802@cfl.rr.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> To make testing of the network namespace simpler allow
-> the network namespace code and the sysfs code to be
-> compiled and run at the same time.  To do this only
-> virtual devices are allowed in the additional network
-> namespaces and those virtual devices are not placed
-> in the kobject tree.
-> 
-> Since virtual devices don't actually do anything interesting
-> hardware wise that needs device management there should
-> be no loss in keeping them out of the kobject tree and
-> by implication sysfs.  The gain in ease of testing
-> and code coverage should be significant.
-> 
-> I.e. people running distributions that make it next to
-> impossible to boot without sysfs should at be able to
-> boot a test kernel now.
-> 
-> Plus no ABIs are harmed with this patch.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+On Wed, Oct 22, 2008 at 04:01:48PM -0400, Phillip Susi wrote:
+>
+> I have been trying to identify any new features that cause problems and  
+> fix any that arise.  Aren't extended attributes stored in the extra  
+> space of large inodes?  If so, I would need to format a new fs using  
+> large inodes to test.
 
-Acked-by: Daniel Lezcano <dlezcano@fr.ibm.com>
+Extended attributes *can* be stored in the extra space of large
+inodes, but they can also be stored in separate, stand-alone data
+blocks --- and just to make life entertaining, if multiple files have
+exactly the same set of extended attributes (for example, if all of
+the files inone directory have the same ACL and/or SELinux property),
+an extended attribute block can be shared across multiple inodes for
+space efficiency.
 
-> ---
->  net/Kconfig          |    2 +-
->  net/core/dev.c       |   12 +++++++++++-
->  net/core/net-sysfs.c |    7 +++++++
->  3 files changed, 19 insertions(+), 2 deletions(-)
-> 
-> diff --git a/net/Kconfig b/net/Kconfig
-> index d789d79..8c3d97c 100644
-> --- a/net/Kconfig
-> +++ b/net/Kconfig
-> @@ -27,7 +27,7 @@ menu "Networking options"
->  config NET_NS
->  	bool "Network namespace support"
->  	default n
-> -	depends on EXPERIMENTAL && !SYSFS && NAMESPACES
-> +	depends on EXPERIMENTAL && NAMESPACES
->  	help
->  	  Allow user space to create what appear to be multiple instances
->  	  of the network stack.
-> diff --git a/net/core/dev.c b/net/core/dev.c
-> index b8a4fd0..a7f0461 100644
-> --- a/net/core/dev.c
-> +++ b/net/core/dev.c
-> @@ -4449,6 +4449,15 @@ int dev_change_net_namespace(struct net_device *dev, struct net *net, const char
->  	if (dev->features & NETIF_F_NETNS_LOCAL)
->  		goto out;
-> 
-> +#ifdef CONFIG_SYSFS
-> +	/* Don't allow real devices to be moved when sysfs
-> +	 * is enabled.
-> +	 */
-> +	err = -EINVAL;
-> +	if (dev->dev.parent)
-> +		goto out;
-> +#endif
-> +
->  	/* Ensure the device has been registrered */
->  	err = -EINVAL;
->  	if (dev->reg_state != NETREG_REGISTERED)
-> @@ -4506,6 +4515,8 @@ int dev_change_net_namespace(struct net_device *dev, struct net *net, const char
->  	 */
->  	dev_addr_discard(dev);
-> 
-> +	netdev_unregister_kobject(dev);
-> +
->  	/* Actually switch the network namespace */
->  	dev_net_set(dev, net);
-> 
-> @@ -4522,7 +4533,6 @@ int dev_change_net_namespace(struct net_device *dev, struct net *net, const char
->  	}
-> 
->  	/* Fixup kobjects */
-> -	netdev_unregister_kobject(dev);
->  	err = netdev_register_kobject(dev);
->  	WARN_ON(err);
-> 
-> diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-> index 92d6b94..85cb8bd 100644
-> --- a/net/core/net-sysfs.c
-> +++ b/net/core/net-sysfs.c
-> @@ -476,6 +476,10 @@ void netdev_unregister_kobject(struct net_device * net)
->  	struct device *dev = &(net->dev);
-> 
->  	kobject_get(&dev->kobj);
-> +
-> +	if (dev_net(net) != &init_net)
-> +		return;
-> +
->  	device_del(dev);
->  }
-> 
-> @@ -501,6 +505,9 @@ int netdev_register_kobject(struct net_device *net)
->  #endif
->  #endif /* CONFIG_SYSFS */
-> 
-> +	if (dev_net(net) != &init_net)
-> +		return 0;
-> +
->  	return device_add(dev);
->  }
-> 
+> Are there any other ext3 features that might cause trouble?  I know  
+> there are plenty in ext4, but I want to make sure everything works well  
+> in ext3 first.
 
+That's probably the main one; and as you say, there are plenty of new
+features that will require special handling for e2defrag, especially
+since it doesn't use the standard libext2fs library.
 
--- 
+						- Ted
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Sauf indication contraire ci-dessus:
-Compagnie IBM France
-Siège Social : Tour Descartes, 2, avenue Gambetta, La Défense 5, 92400
-Courbevoie
-RCS Nanterre 552 118 465
-Forme Sociale : S.A.S.
-Capital Social : 542.737.118 ?
-SIREN/SIRET : 552 118 465 02430
