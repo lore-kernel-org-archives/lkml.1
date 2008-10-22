@@ -1,204 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYJVIOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbYJVIO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbYJVIOd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 04:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbYJVIOR
+	id S1753253AbYJVIO5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 04:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbYJVIOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 04:14:17 -0400
-Received: from lutt.itea.ntnu.no ([129.241.18.234]:50715 "EHLO
-	lutt.itea.ntnu.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751148AbYJVIOP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 04:14:15 -0400
-X-Greylist: delayed 723 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Oct 2008 04:14:15 EDT
-From: Henrik Austad <henrik@austad.us>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: sched: add CONFIG_SMP consistency
-Date: Wed, 22 Oct 2008 10:00:38 +0200
-User-Agent: KMail/1.9.10
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org
-References: <1224614719-14452-1-git-send-email-henrik@austad.us> <48FED566.7020907@cn.fujitsu.com> <20081022073640.GA31633@elte.hu>
-In-Reply-To: <20081022073640.GA31633@elte.hu>
+	Wed, 22 Oct 2008 04:14:34 -0400
+Received: from hostap.isc.org ([149.20.54.63]:36014 "EHLO hostap.isc.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753191AbYJVIOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 04:14:32 -0400
+X-Greylist: delayed 2693 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Oct 2008 04:14:32 EDT
+Date: Wed, 22 Oct 2008 10:28:40 +0300
+From: Jouni Malinen <j@w1.fi>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Jouni Malinen <jouni.malinen@atheros.com>,
+       wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       John Linville <linville@tuxdriver.com>
+Subject: Re: Regression in 2.6.27-git from commit 43ac2ca3840f64
+Message-ID: <20081022072840.GD16005@jm.kir.nu>
+References: <48FDFCCA.8040604@lwfinger.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810221000.38724.henrik@austad.us>
+In-Reply-To: <48FDFCCA.8040604@lwfinger.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Spam-Score: -3.2
+X-Spam-Bar: ---
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 October 2008 09:36:40 Ingo Molnar wrote:
-> 
-> * Li Zefan <lizf@cn.fujitsu.com> wrote:
-> 
-> > How about the following patch?
-> 
-> i've applied it in the form below. Peter, does it look good to you too?
-> 
-> 	Ingo
+On Tue, Oct 21, 2008 at 09:01:14AM -0700, Larry Finger wrote:
 
-FWIW:
-Acked-by Henrik Austad <henrik@austad.us>
+> On my x86_64 system, the mainline 2.6.27-git kernel (v2.6.27-6030-g6da0b38)
+> shows the following anomaly with the 'iwlist scan' command:
+> 
+>           Cell 03 - Address: 00:14:BF:85:49:FA
+>                     ESSID:"lwfdjf"
+>                     Mode:Master
+>                     Channel:1
+>                     Frequency:2.412 GHz (Channel 1)
+>                     Quality=66/100  Signal level:-62 dBm  Noise level=-68 dBm
+>                     Encryption key:on
+>                     IE: Unknown: 00066C7766646A66
 
-Not boot-tested, just build-tested.
+...
 
-> 
-> -------------->
-> From 667ff69f5a248fde6cf871f2c9c5c5d2aa182e71 Mon Sep 17 00:00:00 2001
-> From: Li Zefan <lizf@cn.fujitsu.com>
-> Date: Wed, 22 Oct 2008 15:25:26 +0800
-> Subject: [PATCH] sched: add CONFIG_SMP consistency
-> 
-> a patch from Henrik Austad did this:
-> 
-> >> Do not declare select_task_rq as part of sched_class when CONFIG_SMP is
-> >> not set.
-> 
-> Peter observed:
-> 
-> > While a proper cleanup, could you do it by re-arranging the methods so
-> > as to not create an additional ifdef?
-> 
-> Do not declare select_task_rq and some other methods as part of sched_class
-> when CONFIG_SMP is not set.
-> 
-> Also gather those methods to avoid CONFIG_SMP mess.
-> 
-> Idea-by: Henrik Austad <henrik.austad@gmail.com>
+> This problem was bisected to commit 43ac2ca3840f64f699a239535c590fa7ebaaac27,
+> entitled "mac80211: Handle scan result IEs in one block". The same bug is
+> present in the wireless-testing tree.
 
-can you change this to henrik@austad.us? (sorry for error in first patch.. :-))
+Problem? Bug? This is by design. What does not work for you?
 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> Acked-by: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  include/linux/sched.h   |   12 +++++++-----
->  kernel/sched_fair.c     |    5 ++---
->  kernel/sched_idletask.c |    5 ++---
->  kernel/sched_rt.c       |    5 ++---
->  4 files changed, 13 insertions(+), 14 deletions(-)
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 4f59c8e..c05b45f 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -897,7 +897,6 @@ struct sched_class {
->  	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup);
->  	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int sleep);
->  	void (*yield_task) (struct rq *rq);
-> -	int  (*select_task_rq)(struct task_struct *p, int sync);
->  
->  	void (*check_preempt_curr) (struct rq *rq, struct task_struct *p, int sync);
->  
-> @@ -905,6 +904,8 @@ struct sched_class {
->  	void (*put_prev_task) (struct rq *rq, struct task_struct *p);
->  
->  #ifdef CONFIG_SMP
-> +	int  (*select_task_rq)(struct task_struct *p, int sync);
-> +
->  	unsigned long (*load_balance) (struct rq *this_rq, int this_cpu,
->  			struct rq *busiest, unsigned long max_load_move,
->  			struct sched_domain *sd, enum cpu_idle_type idle,
-> @@ -916,16 +917,17 @@ struct sched_class {
->  	void (*pre_schedule) (struct rq *this_rq, struct task_struct *task);
->  	void (*post_schedule) (struct rq *this_rq);
->  	void (*task_wake_up) (struct rq *this_rq, struct task_struct *task);
-> -#endif
->  
-> -	void (*set_curr_task) (struct rq *rq);
-> -	void (*task_tick) (struct rq *rq, struct task_struct *p, int queued);
-> -	void (*task_new) (struct rq *rq, struct task_struct *p);
->  	void (*set_cpus_allowed)(struct task_struct *p,
->  				 const cpumask_t *newmask);
->  
->  	void (*rq_online)(struct rq *rq);
->  	void (*rq_offline)(struct rq *rq);
-> +#endif
-> +
-> +	void (*set_curr_task) (struct rq *rq);
-> +	void (*task_tick) (struct rq *rq, struct task_struct *p, int queued);
-> +	void (*task_new) (struct rq *rq, struct task_struct *p);
->  
->  	void (*switched_from) (struct rq *this_rq, struct task_struct *task,
->  			       int running);
-> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-> index a0aa38b..8de48a5 100644
-> --- a/kernel/sched_fair.c
-> +++ b/kernel/sched_fair.c
-> @@ -1593,9 +1593,6 @@ static const struct sched_class fair_sched_class = {
->  	.enqueue_task		= enqueue_task_fair,
->  	.dequeue_task		= dequeue_task_fair,
->  	.yield_task		= yield_task_fair,
-> -#ifdef CONFIG_SMP
-> -	.select_task_rq		= select_task_rq_fair,
-> -#endif /* CONFIG_SMP */
->  
->  	.check_preempt_curr	= check_preempt_wakeup,
->  
-> @@ -1603,6 +1600,8 @@ static const struct sched_class fair_sched_class = {
->  	.put_prev_task		= put_prev_task_fair,
->  
->  #ifdef CONFIG_SMP
-> +	.select_task_rq		= select_task_rq_fair,
-> +
->  	.load_balance		= load_balance_fair,
->  	.move_one_task		= move_one_task_fair,
->  #endif
-> diff --git a/kernel/sched_idletask.c b/kernel/sched_idletask.c
-> index dec4cca..8a21a2e 100644
-> --- a/kernel/sched_idletask.c
-> +++ b/kernel/sched_idletask.c
-> @@ -105,9 +105,6 @@ static const struct sched_class idle_sched_class = {
->  
->  	/* dequeue is not valid, we print a debug message there: */
->  	.dequeue_task		= dequeue_task_idle,
-> -#ifdef CONFIG_SMP
-> -	.select_task_rq		= select_task_rq_idle,
-> -#endif /* CONFIG_SMP */
->  
->  	.check_preempt_curr	= check_preempt_curr_idle,
->  
-> @@ -115,6 +112,8 @@ static const struct sched_class idle_sched_class = {
->  	.put_prev_task		= put_prev_task_idle,
->  
->  #ifdef CONFIG_SMP
-> +	.select_task_rq		= select_task_rq_idle,
-> +
->  	.load_balance		= load_balance_idle,
->  	.move_one_task		= move_one_task_idle,
->  #endif
-> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-> index cdf5740..c9aa5be 100644
-> --- a/kernel/sched_rt.c
-> +++ b/kernel/sched_rt.c
-> @@ -1502,9 +1502,6 @@ static const struct sched_class rt_sched_class = {
->  	.enqueue_task		= enqueue_task_rt,
->  	.dequeue_task		= dequeue_task_rt,
->  	.yield_task		= yield_task_rt,
-> -#ifdef CONFIG_SMP
-> -	.select_task_rq		= select_task_rq_rt,
-> -#endif /* CONFIG_SMP */
->  
->  	.check_preempt_curr	= check_preempt_curr_rt,
->  
-> @@ -1512,6 +1509,8 @@ static const struct sched_class rt_sched_class = {
->  	.put_prev_task		= put_prev_task_rt,
->  
->  #ifdef CONFIG_SMP
-> +	.select_task_rq		= select_task_rq_rt,
-> +
->  	.load_balance		= load_balance_rt,
->  	.move_one_task		= move_one_task_rt,
->  	.set_cpus_allowed       = set_cpus_allowed_rt,
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-
-
+-- 
+Jouni Malinen                                            PGP id EFC895FA
