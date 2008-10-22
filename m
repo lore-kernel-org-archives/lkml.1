@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbYJVHFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753673AbYJVHLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753943AbYJVHFW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 03:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYJVHFI
+	id S1753673AbYJVHLK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 03:11:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbYJVHKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 03:05:08 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49087 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751148AbYJVHFG (ORCPT
+	Wed, 22 Oct 2008 03:10:55 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:53764 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751011AbYJVHKy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 03:05:06 -0400
-Subject: Re: [PATCH] lockstat: contend with points
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tim Pepper <tpepper@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
-       =?ISO-8859-1?Q?T=F6r=F6k?= Edwin <edwintorok@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-In-Reply-To: <eada2a070810211559u6a040d29y11d1235557ac44f3@mail.gmail.com>
-References: <1224231505.28131.71.camel@twins>
-	 <eada2a070810211559u6a040d29y11d1235557ac44f3@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 22 Oct 2008 09:04:56 +0200
-Message-Id: <1224659096.6724.9.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Wed, 22 Oct 2008 03:10:54 -0400
+To: cl@linux-foundation.org
+CC: miklos@szeredi.hu, penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au,
+       hugh@veritas.com, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-reply-to: <48FE6306.6020806@linux-foundation.org> (message from Christoph
+	Lameter on Tue, 21 Oct 2008 18:17:26 -0500)
+Subject: Re: SLUB defrag pull request?
+References: <1223883004.31587.15.camel@penberg-laptop> <1223883164.31587.16.camel@penberg-laptop> <Pine.LNX.4.64.0810131227120.20511@blonde.site> <200810132354.30789.nickpiggin@yahoo.com.au> <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu> <E1KpOOL-0003Vf-9y@pomaz-ex.szeredi.hu> <48F378C6.7030206@linux-foundation.org> <E1KpOjX-0003dt-AY@pomaz-ex.szeredi.hu> <48FC9CCC.3040006@linux-foundation.org> <E1Krz4o-0002Fi-Pu@pomaz-ex.szeredi.hu> <48FCCC72.5020202@linux-foundation.org> <E1KrzgK-0002QS-Os@pomaz-ex.szeredi.hu> <48FCD7CB.4060505@linux-foundation.org> <E1Ks0QX-0002aC-SQ@pomaz-ex.szeredi.hu> <48FCE1C4.20807@linux-foundation.org> <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu> <48FE6306.6020806@linux-foundation.org>
+Message-Id: <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 22 Oct 2008 09:10:36 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-21 at 15:59 -0700, Tim Pepper wrote:
-> On Fri, Oct 17, 2008 at 1:18 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > +06                          &mm->mmap_sem-W:           233            538 18446744073708       22924.27      607243.51           1342          45806           1.71        8595.89     1180582.34
-> > +07                          &mm->mmap_sem-R:           205            587 18446744073708       28403.36      731975.00           1940         412426           0.58      187825.45     6307502.88
-> > +08                          ---------------
-> > +09                            &mm->mmap_sem            487          [<ffffffff8053491f>] do_page_fault+0x466/0x928
-> > +10                            &mm->mmap_sem            179          [<ffffffff802a6200>] sys_mprotect+0xcd/0x21d
-> > +11                            &mm->mmap_sem            279          [<ffffffff80210a57>] sys_mmap+0x75/0xce
-> > +12                            &mm->mmap_sem             76          [<ffffffff802a490b>] sys_munmap+0x32/0x59
-> > +13                          ---------------
-> > +14                            &mm->mmap_sem            270          [<ffffffff80210a57>] sys_mmap+0x75/0xce
-> > +15                            &mm->mmap_sem            431          [<ffffffff8053491f>] do_page_fault+0x466/0x928
-> > +16                            &mm->mmap_sem            138          [<ffffffff802a490b>] sys_munmap+0x32/0x59
-> > +17                            &mm->mmap_sem            145          [<ffffffff802a6200>] sys_mprotect+0xcd/0x21d
-> > +18
-> > +19 ...............................................................................................................................................................................................
-> > +20
-> > +21                              dcache_lock:           621            623           0.52         118.26        1053.02           6745          91930           0.29         316.29      118423.41
-> > +22                              -----------
-> > +23                              dcache_lock            179          [<ffffffff80378274>] _atomic_dec_and_lock+0x34/0x54
-> > +24                              dcache_lock            113          [<ffffffff802cc17b>] d_alloc+0x19a/0x1eb
-> > +25                              dcache_lock             99          [<ffffffff802ca0dc>] d_rehash+0x1b/0x44
-> > +26                              dcache_lock            104          [<ffffffff802cbca0>] d_instantiate+0x36/0x8a
-> > +27                              -----------
-> > +28                              dcache_lock            192          [<ffffffff80378274>] _atomic_dec_and_lock+0x34/0x54
-> > +29                              dcache_lock             98          [<ffffffff802ca0dc>] d_rehash+0x1b/0x44
-> > +30                              dcache_lock             72          [<ffffffff802cc17b>] d_alloc+0x19a/0x1eb
-> > +31                              dcache_lock            112          [<ffffffff802cbca0>] d_instantiate+0x36/0x8a
-> 
-> 
-> 
-> Just out of curiousity...what was running as you collected these?
+On Tue, 21 Oct 2008, Christoph Lameter wrote:
+> The only way that a secure reference can be established is if the
+> slab page is locked. That requires a spinlock. The slab allocator
+> calls the get() functions while the slab lock guarantees object
+> existence. Then locks are dropped and reclaim actions can start with
+> the guarantee that the slab object will not suddenly vanish.
 
-I think I just booted the machine, didn't run anything much.
+Yes, you've made up your mind, that you want to do it this way.  But
+it's the _wrong_ way, this "want to get a secure reference for use
+later" leads to madness when applied to dentries or inodes.  Try for a
+minute to think outside this template.
+
+For example dcache_lock will protect against dentries moving to/from
+d_lru.  So you can do this:
+
+  take dcache_lock
+  check if d_lru is non-empty
+  take sb->s_umount
+  free dentry
+  release sb->s_umount
+  release dcache_lock
+
+Yeah, locking will be more complicated in reality.  Still, much less
+complicated than trying to do the same across two separate phases.
+
+Why can't something like that work?
+
+Miklos
