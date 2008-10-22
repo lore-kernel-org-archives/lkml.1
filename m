@@ -1,103 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbYJVR0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbYJVR21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753843AbYJVR0Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756824AbYJVRZn
+	id S1757370AbYJVR21 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbYJVR2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:25:43 -0400
-Received: from kroah.org ([198.145.64.141]:56929 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754660AbYJVRZm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:25:42 -0400
-Date: Wed, 22 Oct 2008 10:22:11 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [GIT PATCH] more USB patches for 2.6-git
-Message-ID: <20081022172211.GB4000@kroah.com>
+	Wed, 22 Oct 2008 13:28:18 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:36154 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751011AbYJVR2R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 13:28:17 -0400
+Message-ID: <48FF628A.2080405@oracle.com>
+Date: Wed, 22 Oct 2008 10:27:38 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][RESEND] tracing/ftrace: Introduce the big kernel lock
+ tracer
+References: <48FF5E54.7000101@gmail.com>
+In-Reply-To: <48FF5E54.7000101@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are a few remaining USB patches for your 2.6-git tree.
+Frederic Weisbecker wrote:
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> ---
+>  include/trace/bkl.h      |   29 ++++++++
+>  kernel/trace/Kconfig     |   11 +++
+>  kernel/trace/Makefile    |    1 +
+>  kernel/trace/trace.h     |   18 +++++
+>  kernel/trace/trace_bkl.c |  170 ++++++++++++++++++++++++++++++++++++++++++++++
+>  lib/kernel_lock.c        |   22 ++++++-
+>  6 files changed, 249 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/trace/bkl.h b/include/trace/bkl.h
+> new file mode 100644
+> index 0000000..bed2f1b
+> --- /dev/null
+> +++ b/include/trace/bkl.h
+> @@ -0,0 +1,29 @@
+> +#ifndef _TRACE_BKL_H
+> +#define _TRACE_BKL_H
+> +
+> +
+> +/* Entry which log the time when the task tried first to acquire the bkl
+> + * and the time when it acquired it.
+> + * That will let us know the latency to acquire the kernel lock.
+> + */
 
-These paches are:
-	- a remaining ohci patch that needed a build fix before it could
-	  be included (that's why it missed the last round of patches)
-	- new device id updates / quirks
-	- bugfixes
+Please use the more common/accepted long-comment style:
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+/*
+ * comment line 1
+ * comment line 2
+ */
 
-The full patches will be sent to the linux-usb mailing list, if anyone
-wants to see them.
+like you did in some other places.
 
-thanks,
+> +struct bkl_trace_acquire {
+> +	unsigned long long acquire_req_time;
+> +	unsigned long long acquire_time;
+> +};
+> +
+> +/* This will log the time when the task released the bkl.
+> + * So we will know the whole duration of its kernel lock.
+> + */
 
-greg k-h
+ditto et al
 
-------------
+> +struct bkl_trace_release {
+> +	unsigned long long release_time;
+> +};
+> +
+> +#ifdef CONFIG_BKL_TRACER
+> +extern void trace_bkl_acquire(struct bkl_trace_acquire *trace);
+> +extern void trace_bkl_release(struct bkl_trace_release *trace);
+> +#else
+> +static void trace_bkl_acquire(struct bkl_trace_acquire *trace) { }
+> +static void trace_bkl_release(struct bkl_trace_release *trace) { }
+> +#endif
+> +
+> +#endif
+> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+> index 396aea1..fde7700 100644
+> --- a/kernel/trace/Kconfig
+> +++ b/kernel/trace/Kconfig
+> @@ -144,6 +144,17 @@ config STACK_TRACER
+>  	 This tracer records the max stack of the kernel, and displays
+>  	 it in debugfs/tracing/stack_trace
+> 
+> +config BKL_TRACER
+> +	bool "Trace Big Kernel Lock latencies"
+> +	depends on HAVE_FTRACE
+> +	depends on DEBUG_KERNEL
+> +	select FTRACE
+> +	select STACKTRACE
+> +	help
+> +	  This tracer records the latencies issued by the Big Kernel Lock.
+> +	  It traces the time when a task request the bkl, the time when it
 
- drivers/usb/Kconfig                |    3 +-
- drivers/usb/atm/speedtch.c         |   12 ++
- drivers/usb/class/cdc-acm.c        |    3 +-
- drivers/usb/class/cdc-wdm.c        |    2 +
- drivers/usb/core/driver.c          |    3 +-
- drivers/usb/core/hub.c             |    2 +-
- drivers/usb/gadget/config.c        |    2 +-
- drivers/usb/gadget/pxa27x_udc.c    |    2 +-
- drivers/usb/gadget/s3c2410_udc.c   |    7 +-
- drivers/usb/host/Kconfig           |    1 -
- drivers/usb/host/ohci-hcd.c        |   21 ++
- drivers/usb/host/ohci-tmio.c       |  376 ++++++++++++++++++++++++++++++++++++
- drivers/usb/misc/usbtest.c         |    3 +-
- drivers/usb/serial/option.c        |   96 +++++++++
- drivers/usb/storage/initializers.c |    3 +-
- drivers/usb/storage/unusual_devs.h |  291 ++++++++++++++++++++++++++--
- 16 files changed, 792 insertions(+), 35 deletions(-)
- create mode 100644 drivers/usb/host/ohci-tmio.c
+	                                 requests
 
----------------
+> +	  acquires it and the time when it releases it.
+> +
+>  config DYNAMIC_FTRACE
+>  	bool "enable/disable ftrace tracepoints dynamically"
+>  	depends on FTRACE
 
-Alan Stern (2):
-      USB: Speedtouch: add pre_reset and post_reset routines
-      USB: don't rebind drivers after failed resume or reset
+> diff --git a/kernel/trace/trace_bkl.c b/kernel/trace/trace_bkl.c
+> new file mode 100644
+> index 0000000..169ee01
+> --- /dev/null
+> +++ b/kernel/trace/trace_bkl.c
+> @@ -0,0 +1,170 @@
+> +/*
+> + * Ring buffer based Big Kernel Lock tracer
+> + * for purpose of measuring the latencies issued
+> + * by the BKL.
+> + *
+> + * Copyright (C) 2008 Frederic Weisbecker <fweisbec@gmail.com>
+> + */
+> +
+> +#include <trace/bkl.h>
+> +#include "trace.h"
+> +#include <linux/ftrace.h>
+> +
+> +
+> +static struct trace_array *bkl_trace;
+> +static bool bkl_tracer_enabled;
+> +
+> +
+> +static void bkl_trace_init(struct trace_array *tr)
+> +{
+> +	int cpu;
+> +	bkl_trace = tr;
 
-Dmitry Baryshkov (1):
-      USB: ohci: add support for tmio-ohci cell
+what is <bkl_trace> used for?  or unused?
 
-Frédéric Marchal (1):
-      USB: Unusual dev for Mio moov 330 gps
+> +
+> +	for_each_cpu_mask(cpu, cpu_possible_map)
+> +		tracing_reset(tr, cpu);
+> +
+> +	if (tr->ctrl)
+> +		bkl_tracer_enabled = 1;
+> +}
 
-Mikhail Gusarov (1):
-      USB: add ZTE MF626 USB GSM modem entry
 
-Oliver Neukum (2):
-      USB: cdc-wdm: make module autoload work
-      USB: fix memory leak in cdc-acm
-
-Phil Dibowitz (1):
-      USB: storage: Avoid I/O errors when issuing SCSI ioctls to JMicron USB/ATA bridge
-
-Randy Dunlap (1):
-      usb/gadget: fix kernel-doc warning
-
-Robert Jarzmik (1):
-      USB: Fix unneeded endpoint check in pxa27x_udc
-
-Zhaolei (1):
-      USB: Fix debugfs_create_file's error checking method for usb/gadget/s3c2410_udc
-
-fangxiaozhi (1):
-      USB: support Huawei data card product IDs
-
-roel kluin (1):
-      USB: usbtest.c: length, sglen and vary are unsigned, so cannot be negative
+~Randy
 
