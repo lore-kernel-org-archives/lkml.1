@@ -1,278 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbYJVIi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752851AbYJVIj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754216AbYJVIi1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 04:38:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbYJVIiT
+	id S1752851AbYJVIj1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 04:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbYJVIjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 04:38:19 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:54144 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751477AbYJVIiS (ORCPT
+	Wed, 22 Oct 2008 04:39:19 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:16357 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752142AbYJVIjS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 04:38:18 -0400
-X-IronPort-AV: E=Sophos;i="4.33,463,1220241600"; 
-   d="scan'208";a="61463022"
-Subject: [PATCH] [kgdb] Switch master cpu after gdb thread command for SMP
-	(v3)
-From: sonic zhang <sonic.adi@gmail.com>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       kgdb mailing list <kgdb-bugreport@lists.sourceforge.net>
-Content-Type: text/plain
-Date: Wed, 22 Oct 2008 16:40:17 +0800
-Message-Id: <1224664817.15846.1.camel@eight.analog.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Wed, 22 Oct 2008 04:39:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=Mwr+Fr6VknQUXAdGSR4BeChNegGsgtlb7ZBrZE58Nrb7Rx7KFF33fv6R1UEOlwCn48
+         P9c6CBQVdMhgcnDQT9EU9urLrAXvhPk3gETmfV4a23DlBMJ9ITimRizc516oubpOvK6R
+         Jfts3XqiNA58pUjvr+IWxqRjltUGg6cFNklHo=
+Message-ID: <7c86c4470810220139h49269138g844194bd5db3d5c2@mail.gmail.com>
+Date: Wed, 22 Oct 2008 10:39:16 +0200
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [patch 00/24] perfmon3: introduction
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20081021.212502.41487120.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48f8a9a3.0437560a.656a.57c5@mx.google.com>
+	 <20081021.212502.41487120.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-   In blackfin SMP architecture, different core has its own L1 SRAM and MMR
-   memory, which code running on the other core can't access. In current kgdb
-   impelemntation, cpus are represented by thread with minus prefix.
+Dave,
 
-If user run thread command in gdb to switch to the thread of the other cpu,
-kgdb should:
-1. send IPI signal to master cpu
-2. release the specific passive cpu waiting in IPI handler
-3. exit kgdb exception loop on master cpu and trap into kgdb wait in IPI handler
-4. trap the released passive cpu into kgdb exception in IPI handler
+On Wed, Oct 22, 2008 at 6:25 AM, David Miller <davem@davemloft.net> wrote:
+> From: eranian@googlemail.com
+> Date: Fri, 17 Oct 2008 08:05:07 -0700 (PDT)
+>
+>> Thanks to all the people who have contributed to this new release.
+>
+> What about the folks who worked hard on sparc, powerpc, et al. perfmon
+> support?  Do they "just lose" for the moment?  :-/
+>
 
-Signed-off-by: Sonic Zhang <sonic.adi@gmail.com>
----
- include/linux/kgdb.h |   16 +++++++++++-
- kernel/kgdb.c        |   66 +++++++++++++++++++++++++++++++++++++++++++-------
- 2 files changed, 72 insertions(+), 10 deletions(-)
+I was told to start with something very simple and for the key
+architecture, i.e,, X86.
+That's what I did.
 
-diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index 6adcc29..664e396 100644
---- a/include/linux/kgdb.h
-+++ b/include/linux/kgdb.h
-@@ -106,7 +106,8 @@ struct kgdb_bkpt {
- # define KGDB_MAX_BREAKPOINTS	1000
- #endif
- 
--#define KGDB_HW_BREAKPOINT	1
-+#define KGDB_HW_BREAKPOINT	0x1
-+#define KGDB_THR_PROC_SWAP	0x2
- 
- /*
-  * Functions each KGDB-supporting architecture must provide:
-@@ -203,6 +204,19 @@ kgdb_arch_handle_exception(int vector, int signo, int err_code,
-  */
- extern void kgdb_roundup_cpus(unsigned long flags);
- 
-+/**
-+ *	kgdb_roundup_cpu - Get spcific CPU into a holding pattern
-+ *	@cpu: Specific cpu id
-+ *	@flags: Current IRQ state
-+ *
-+ *	On SMP systems, we need to switch cpu from current active one to
-+ *	the other passive one. This get current active CPU into a known state
-+ *	in kgdb_wait(). 
-+ *
-+ *	On non-SMP systems, this is not called.
-+ */
-+extern void kgdb_roundup_cpu(int cpu, unsigned long flags);
-+
- /* Optional functions. */
- extern int kgdb_validate_break_address(unsigned long addr);
- extern int kgdb_arch_set_breakpoint(unsigned long addr, char *saved_instr);
-diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-index e4dcfb2..277986d 100644
---- a/kernel/kgdb.c
-+++ b/kernel/kgdb.c
-@@ -565,6 +565,7 @@ static void kgdb_wait(struct pt_regs *regs)
- {
- 	unsigned long flags;
- 	int cpu;
-+	struct task_struct *thread;
- 
- 	local_irq_save(flags);
- 	cpu = raw_smp_processor_id();
-@@ -577,6 +578,8 @@ static void kgdb_wait(struct pt_regs *regs)
- 	smp_wmb();
- 	atomic_set(&cpu_in_kgdb[cpu], 1);
- 
-+	kgdb_disable_hw_debug(regs);
-+
- 	/* Wait till primary CPU is done with debugging */
- 	while (atomic_read(&passive_cpu_wait[cpu]))
- 		cpu_relax();
-@@ -584,6 +587,16 @@ static void kgdb_wait(struct pt_regs *regs)
- 	kgdb_info[cpu].debuggerinfo = NULL;
- 	kgdb_info[cpu].task = NULL;
- 
-+	/* Trap into kgdb as the active CPU if gdb asks to switch. */
-+	thread = getthread(regs, -raw_smp_processor_id() - 2);
-+	if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) &&
-+		kgdb_contthread && kgdb_contthread == thread) {
-+		kgdb_breakpoint();
-+		clocksource_touch_watchdog();
-+		local_irq_restore(flags);
-+		return;
-+	}
-+ 
- 	/* fix up hardware debug registers on local cpu */
- 	if (arch_kgdb_ops.correct_hw_break)
- 		arch_kgdb_ops.correct_hw_break();
-@@ -1066,13 +1079,16 @@ static void gdb_cmd_query(struct kgdb_state *ks)
- 			sprintf(tmpstr, "shadowCPU%d",
- 					(int)(-ks->threadid - 2));
- 			kgdb_mem2hex(tmpstr, remcom_out_buffer, strlen(tmpstr));
-+
-+			if (arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP)
-+				ks->thr_query = 1;
- 		}
- 		break;
- 	}
- }
- 
- /* Handle the 'H' task query packets */
--static void gdb_cmd_task(struct kgdb_state *ks)
-+static int gdb_cmd_task(struct kgdb_state *ks)
- {
- 	struct task_struct *thread;
- 	char *ptr;
-@@ -1089,6 +1105,15 @@ static void gdb_cmd_task(struct kgdb_state *ks)
- 		kgdb_usethread = thread;
- 		ks->kgdb_usethreadid = ks->threadid;
- 		strcpy(remcom_out_buffer, "OK");
-+#ifdef CONFIG_SMP
-+		if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) &&
-+			!ks->thr_query && ks->kgdb_usethreadid < -1 &&
-+			- ks->kgdb_usethreadid - 2 != raw_smp_processor_id()) {
-+			kgdb_roundup_cpu(raw_smp_processor_id(), 0);
-+			kgdb_contthread = kgdb_usethread;
-+			return 1;
-+		}
-+#endif
- 		break;
- 	case 'c':
- 		ptr = &remcom_in_buffer[2];
-@@ -1106,6 +1131,8 @@ static void gdb_cmd_task(struct kgdb_state *ks)
- 		strcpy(remcom_out_buffer, "OK");
- 		break;
- 	}
-+
-+	return 0;
- }
- 
- /* Handle the 'T' thread query packets */
-@@ -1114,6 +1141,9 @@ static void gdb_cmd_thread(struct kgdb_state *ks)
- 	char *ptr = &remcom_in_buffer[1];
- 	struct task_struct *thread;
- 
-+	if (arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP)
-+		ks->thr_query = 0;
-+
- 	kgdb_hex2long(&ptr, &ks->threadid);
- 	thread = getthread(ks->linux_regs, ks->threadid);
- 	if (thread)
-@@ -1223,7 +1253,12 @@ static int gdb_serial_stub(struct kgdb_state *ks)
- 	/* Clear the out buffer. */
- 	memset(remcom_out_buffer, 0, sizeof(remcom_out_buffer));
- 
--	if (kgdb_connected) {
-+	if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) && kgdb_contthread) {
-+		remcom_out_buffer[0] = 'O';
-+		remcom_out_buffer[1] = 'K';
-+		remcom_out_buffer[2] = 0;
-+		put_packet(remcom_out_buffer);
-+	} else if (kgdb_connected) {
- 		unsigned char thref[8];
- 		char *ptr;
- 
-@@ -1238,6 +1273,7 @@ static int gdb_serial_stub(struct kgdb_state *ks)
- 		put_packet(remcom_out_buffer);
- 	}
- 
-+	kgdb_contthread = current;
- 	kgdb_usethread = kgdb_info[ks->cpu].task;
- 	ks->kgdb_usethreadid = shadow_pid(kgdb_info[ks->cpu].task->pid);
- 	ks->pass_exception = 0;
-@@ -1284,7 +1320,8 @@ static int gdb_serial_stub(struct kgdb_state *ks)
- 			gdb_cmd_query(ks);
- 			break;
- 		case 'H': /* task related */
--			gdb_cmd_task(ks);
-+			if (gdb_cmd_task(ks))
-+				goto kgdb_exit;
- 			break;
- 		case 'T': /* Query thread status */
- 			gdb_cmd_thread(ks);
-@@ -1324,6 +1361,7 @@ default_handle:
- 			if (error >= 0 || remcom_in_buffer[0] == 'D' ||
- 			    remcom_in_buffer[0] == 'k') {
- 				error = 0;
-+				kgdb_contthread = NULL;
- 				goto kgdb_exit;
- 			}
- 
-@@ -1464,11 +1502,15 @@ acquirelock:
- 	 * Get the passive CPU lock which will hold all the non-primary
- 	 * CPU in a spin state while the debugger is active
- 	 */
--	if (!kgdb_single_step) {
-+	if (!kgdb_single_step && !kgdb_contthread) {
- 		for (i = 0; i < NR_CPUS; i++)
- 			atomic_set(&passive_cpu_wait[i], 1);
- 	}
- 
-+	if (kgdb_contthread)
-+		atomic_set(&passive_cpu_wait[raw_smp_processor_id()], 1);
-+ 
-+
- 	/*
- 	 * spin_lock code is good enough as a barrier so we don't
- 	 * need one here:
-@@ -1477,7 +1519,7 @@ acquirelock:
- 
- #ifdef CONFIG_SMP
- 	/* Signal the other CPUs to enter kgdb_wait() */
--	if ((!kgdb_single_step) && kgdb_do_roundup)
-+	if ((!kgdb_single_step && !kgdb_contthread) && kgdb_do_roundup)
- 		kgdb_roundup_cpus(flags);
- #endif
- 
-@@ -1496,7 +1538,6 @@ acquirelock:
- 	kgdb_post_primary_code(ks->linux_regs, ks->ex_vector, ks->err_code);
- 	kgdb_deactivate_sw_breakpoints();
- 	kgdb_single_step = 0;
--	kgdb_contthread = current;
- 	exception_level = 0;
- 
- 	/* Talk to debugger with gdbserial protocol */
-@@ -1510,7 +1551,14 @@ acquirelock:
- 	kgdb_info[ks->cpu].task = NULL;
- 	atomic_set(&cpu_in_kgdb[ks->cpu], 0);
- 
--	if (!kgdb_single_step) {
-+#ifdef CONFIG_SMP
-+	i = -(ks->kgdb_usethreadid + 2);
-+	if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) &&
-+		kgdb_contthread && i != cpu) {
-+		atomic_set(&passive_cpu_wait[i], 0);
-+	}
-+#endif
-+	if (!kgdb_single_step && !kgdb_contthread) {
- 		for (i = NR_CPUS-1; i >= 0; i--)
- 			atomic_set(&passive_cpu_wait[i], 0);
- 		/*
-@@ -1536,9 +1584,9 @@ kgdb_restore:
- int kgdb_nmicallback(int cpu, void *regs)
- {
- #ifdef CONFIG_SMP
--	if (!atomic_read(&cpu_in_kgdb[cpu]) &&
-+	if (!atomic_read(&cpu_in_kgdb[cpu]) && (kgdb_contthread ||
- 			atomic_read(&kgdb_active) != cpu &&
--			atomic_read(&cpu_in_kgdb[atomic_read(&kgdb_active)])) {
-+			atomic_read(&cpu_in_kgdb[atomic_read(&kgdb_active)]))) {
- 		kgdb_wait((struct pt_regs *)regs);
- 		return 0;
- 	}
--- 
-1.6.0
+This is only the first step. I am not satisfied with this either. I do
+care about all the other
+architectures as well. I do put a significant effort into maintaining
+those in the current
+perfmon2 and perfmon3 incarnations. That includes SPARC.
+
+Since your first patch, I have made sure SPARC would always compile and have the
+same level of functionality as other architectures. Just checkout the
+2.6.27 patch on SF.net
+for perfmon v2 or the GIT tree for perfmon v3 (perfmon3 branch).
+
+The key thing is to get this basic block into the kernel, then we can
+add all the
+other architectures. I will not forget about Sparc, Power, MIPS, and IA-64.
+In fact, the next step will be to add support for the non-x86 architectures
+rather than adding functionality. This will put everybody back to the
+same level.
 
 
+> I'm really disappointed that I did all of the work to make pfmon,
+> libpfm, and the kernel bits work with perfmon on sparc and that
+> appears to be all for nothing as there is no update for those
+> architectures in this new patch set.  So likely I'll have to do it all
+> over again.
+>
+
+Again, this is not lost, and you will not have to do this again. I will provide
+the patchset for SPARC and others. I will simply need help testing this as
+I don't own SPARC systems. This applies for pfmon and libpfm as well.
+
+
+> I definitely do not support this reincarnation, this is the last thing
+> I expected to happen.
+>
+
+This was not easy to accept for me either. I and many other people
+have put a lot of efforts in the current perfmon v2 codebase. Earlier
+this year, I was told that I had to start from scratch again because the
+patch was too big and too complicated. That's what I did with perfmon v3.
+I have addressed all the issues there were raised on LKML, going as far
+as making this release not backward compatible with perfmon v2.
+
+> Three weeks of my own work down the drain which I invested (during
+> which I put my networking maintainership and other responsibilities to
+> the side) in order to help champion this perfmon stuff in the first
+> place?
+
+I do appreciate your effort which I find quite exceptional. I give you credits
+for the SPARC support in each presentation I do. I do maintain the SPARC
+codebase to the best of my abilities. I will not give up on it, same thing with
+the other architectures. Each one must benefit from the new features offered
+by perfmon and we have proven they can.
+
+In summary, what was posted on LKML is just the first piece. Once this is in,
+I will push the patches to add support for the other architectures as well. Your
+effort is not lost, your code is still maintained and will be used for the SPARC
+patchset. The same applies to other people who have contributed for Power
+and MIPS.
+
+As you know, I have been involved with this project for quite some time
+now. I have been through many ups and downs trying to get this merged
+upstream. So rest assured of my full determination to bring this to the point of
+success.
+
+Thanks.
