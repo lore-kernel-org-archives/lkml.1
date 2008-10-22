@@ -1,63 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbYJVKgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbYJVKhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755343AbYJVKgu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 06:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbYJVKgm
+	id S1755862AbYJVKhz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 06:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbYJVKhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 06:36:42 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:30878 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753268AbYJVKgm (ORCPT
+	Wed, 22 Oct 2008 06:37:47 -0400
+Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:8822 "EHLO
+	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753269AbYJVKhq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 06:36:42 -0400
-Date: Wed, 22 Oct 2008 14:36:41 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
-       Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
-Message-ID: <20081022103641.GB24757@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20081016171222.GA24812@oksana.dev.rtsoft.ru> <20081022014243.GA19362@oksana.dev.rtsoft.ru> <1224642497.7654.319.camel@pasglop> <200810212122.49121.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Content-Disposition: inline
-In-Reply-To: <200810212122.49121.david-b@pacbell.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 22 Oct 2008 06:37:46 -0400
+From: Alexander van Heukelum <heukelum@fastmail.fm>
+To: Neil Horman <nhorman@tuxdriver.com>, Ingo Molnar <mingo@elte.hu>,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       vgoyal@redhat.com, hbabu@us.ibm.com, hpa@zytor.com,
+       akpm@linux-foundation.org,
+       Alexander van Heukelum <heukelum@fastmail.fm>, ebiederm@xmission.com,
+       tglx@linutronix.de
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: [PATCH 5/7] i386, dumpstack: use x86_64's method to account die_nest_count
+Date: Wed, 22 Oct 2008 12:00:12 +0200
+Message-Id: <1224669614-25863-6-git-send-email-heukelum@fastmail.fm>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1224669614-25863-5-git-send-email-heukelum@fastmail.fm>
+References: <1224669614-25863-1-git-send-email-heukelum@fastmail.fm>
+ <1224669614-25863-2-git-send-email-heukelum@fastmail.fm>
+ <1224669614-25863-3-git-send-email-heukelum@fastmail.fm>
+ <1224669614-25863-4-git-send-email-heukelum@fastmail.fm>
+ <1224669614-25863-5-git-send-email-heukelum@fastmail.fm>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Wed, 22 Oct 2008 12:36:43 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.9.0.5; VDF: 7.0.7.72; host: AntiVir2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 21, 2008 at 09:22:48PM -0700, David Brownell wrote:
-> On Tuesday 21 October 2008, Benjamin Herrenschmidt wrote:
-> > The notifier can be registered before the devices, though it's a little
-> > bit fishy and fragile.
-> > 
-> > Easier I suppose to just have OF specific hooks in the bus code.
-> 
-> Like what I suggested:  "chip-aware OF glue drivers".  The relevant
-> bus code being the "of_platform_bus_type" infrastructure.
-> 
-> Example:  instead of Anton's patch #6 modifying the existing pca953x
-> driver, an of_pca953x driver that knows how to poke around in the OF
-> device attributes to (a) create the pca953x_platform_data, (b) call
-> i2c_register_board_info() to make that available later, and then
-> finally (c) vanish, since it's not needed any longer.
+oops_begin/oops_end should always be used in pairs. On x86_64
+oops_begin increments die_nest_count, and oops_end decrements
+die_nest_count. Doing this makes oops_begin and oops_end equal
+to the x86_64 versions.
 
-Heh. You tell me my first approach:
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+---
+ arch/x86/kernel/dumpstack_32.c |   29 +++++++++++++++++------------
+ 1 files changed, 17 insertions(+), 12 deletions(-)
 
-http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056730.html (mmc_spi)
-
-The OF people didn't like the patch which was used to support this
-approach:
-http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056728.html
-
-
-The board info has another problem though. We can't remove it, thus
-we can't implement module_exit() for the 'OF glue'.
-
+diff --git a/arch/x86/kernel/dumpstack_32.c b/arch/x86/kernel/dumpstack_32.c
+index a29b88f..7c7d691 100644
+--- a/arch/x86/kernel/dumpstack_32.c
++++ b/arch/x86/kernel/dumpstack_32.c
+@@ -289,21 +289,24 @@ static unsigned int die_nest_count;
+ 
+ unsigned __kprobes long oops_begin(void)
+ {
++	int cpu;
+ 	unsigned long flags;
+ 
+ 	oops_enter();
+ 
+-	if (die_owner != raw_smp_processor_id()) {
+-		console_verbose();
+-		raw_local_irq_save(flags);
+-		__raw_spin_lock(&die_lock);
+-		die_owner = smp_processor_id();
+-		die_nest_count = 0;
+-		bust_spinlocks(1);
+-	} else {
+-		raw_local_irq_save(flags);
++	/* racy, but better than risking deadlock. */
++	raw_local_irq_save(flags);
++	cpu = smp_processor_id();
++	if (!__raw_spin_trylock(&die_lock)) {
++		if (cpu == die_owner)
++			/* nested oops. should stop eventually */;
++		else
++			__raw_spin_lock(&die_lock);
+ 	}
+ 	die_nest_count++;
++	die_owner = cpu;
++	console_verbose();
++	bust_spinlocks(1);
+ 	return flags;
+ }
+ 
+@@ -315,13 +318,15 @@ void __kprobes oops_end(unsigned long flags, struct pt_regs *regs, int signr)
+ 	bust_spinlocks(0);
+ 	die_owner = -1;
+ 	add_taint(TAINT_DIE);
+-	__raw_spin_unlock(&die_lock);
++	die_nest_count--;
++	if (!die_nest_count)
++		/* Nest count reaches zero, release the lock. */
++		__raw_spin_unlock(&die_lock);
+ 	raw_local_irq_restore(flags);
+-
+ 	oops_exit();
++
+ 	if (!signr)
+ 		return;
+-
+ 	if (in_interrupt())
+ 		panic("Fatal exception in interrupt");
+ 	if (panic_on_oops)
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.4.3
+
