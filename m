@@ -1,51 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbYJVLVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbYJVL0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754500AbYJVLVn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 07:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYJVLVf
+	id S1753924AbYJVL0g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 07:26:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbYJVL02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 07:21:35 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:59600 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752099AbYJVLVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 07:21:35 -0400
-To: apw@shadowen.org
-Cc: rdunlap@xenotime.net, jschopp@austin.ibm.com, linux-kernel@vger.kernel.org
-Subject: Re: */ in string confuses checkpatch.pl
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <200810210057.m9L0vQ7i012829@www262.sakura.ne.jp>
-	<20081022075617.GA22344@brain>
-	<20081022083141.GB22344@brain>
-In-Reply-To: <20081022083141.GB22344@brain>
-Message-Id: <200810222021.EEH69777.MOFOLSVtQJHFOF@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Wed, 22 Oct 2008 20:21:31 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 22 Oct 2008 07:26:28 -0400
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:59770 "EHLO
+	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751846AbYJVL02 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 07:26:28 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: __vm_enough_memory(), OVERCOMMIT_NEVER, current->mm, kernel thread 
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20081022092736.2a0795d1@lxorguk.ukuu.org.uk>
+References: <7123.1224602071@jrobl> <20081021164619.341f01d9@lxorguk.ukuu.org.uk> <6775.1224630654@jrobl> <20081022092736.2a0795d1@lxorguk.ukuu.org.uk>
+Date: Wed, 22 Oct 2008 20:26:19 +0900
+Message-ID: <6689.1224674779@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
 
-Andy Whitcroft wrote:
-> Ok, I can see whats happened here.  Most of these \'s are extraneous.
-> Without those I can reproduce this.  Its a bug in the 'comment is open
-> at the start of hunk' detection.  I think I have updated this heuristic
-> to cope wit this.  Could you try your original patch (I assume there was
-> one) with the version below:
-> 
->   http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-testing
-> 
-> Thanks for your report.
-> 
-> -apw
-> 
-It solved this problem.
+Alan Cox:
+> No - the shmem routine would use vm_enough_memory_fs which wouldn't care
+> if current->mm is NULL, but the others would check.
 
-By the way, I'm using checkpatch.pl for checking userland application.
-It would be convenient if there is a option that omits some checks like
-'# check for external initialisers.' and '# check for static initialisers.'
+Unfortunately I cannot imagine what new vm_enough_memory_fs() will be.
+Would you show me its draft or pseudo code?
 
-Thank you.
+
+Junjiro R. Okajima
