@@ -1,73 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369AbYJVP0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbYJVP1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756369AbYJVP0t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 11:26:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYJVP0l
+	id S1754203AbYJVP1H (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 11:27:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbYJVP0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 11:26:41 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:62890 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751872AbYJVP0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 11:26:40 -0400
-Message-ID: <48FF4617.80204@atmel.com>
-Date: Wed, 22 Oct 2008 17:26:15 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Wed, 22 Oct 2008 11:26:53 -0400
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:40282 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752294AbYJVP0w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 11:26:52 -0400
+Message-ID: <48FF45CF.5000306@cs.columbia.edu>
+Date: Wed, 22 Oct 2008 11:25:03 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-To: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       "Williams, Dan J" <dan.j.williams@intel.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Victor <linux@maxim.org.za>
-Subject: Re: [PATCH] dmaengine: at_hdmac: new driver for the Atmel AHB DMA
- Controller
-References: <48F8B291.1060500@atmel.com> <7F38996F7185A24AB9071ED4950AD8C1022288C6@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <7F38996F7185A24AB9071ED4950AD8C1022288C6@swsmsx413.ger.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrey Mirkin <major@openvz.org>
+CC: Louis.Rilling@kerlabs.com, containers@lists.linux-foundation.org,
+       Cedric Le Goater <clg@fr.ibm.com>, linux-kernel@vger.kernel.org,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [Devel] Re: [PATCH 08/10] Introduce functions to restart a process
+References: <1224285098-573-1-git-send-email-major@openvz.org>	<200810221249.55600.major@openvz.org>	<20081022092502.GW15171@hawkmoon.kerlabs.com> <200810221412.14174.major@openvz.org>
+In-Reply-To: <200810221412.14174.major@openvz.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sosnowski, Maciej :
-> Nicolas Ferre wrote:
->> This AHB DMA Controller (aka HDMA or DMAC on AT91 systems) is
->> availlable on 
->> at91sam9rl chip. It will be used on other products in the future.
->>
->> This first release covers only the memory-to-memory tranfer type.
->> This is the 
->> only tranfer type supported by this chip.
->> On other products, it will be used also for peripheral DMA transfer
->> (slave API 
->> support to come).
->>
->> I used dmatest client without problem in different configurations to
->> test 
->> it.
->>
->> Full documentation for this controller can be found in the SAM9RL
->> datasheet :
->> http://www.atmel.com/dyn/products/product_card.asp?part_id=4243 
->>
->> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
->> ---
+
+
+Andrey Mirkin wrote:
+> On Wednesday 22 October 2008 13:25 Louis Rilling wrote:
+>> On Wed, Oct 22, 2008 at 12:49:54PM +0400, Andrey Mirkin wrote:
+>>> On Monday 20 October 2008 13:23 Cedric Le Goater wrote:
+>>>> Hello Andrey !
+>>>>
+>>>>> diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
+>>>>> index 109792b..a4848a3 100644
+>>>>> --- a/arch/x86/kernel/entry_32.S
+>>>>> +++ b/arch/x86/kernel/entry_32.S
+>>>>> @@ -225,6 +225,7 @@ ENTRY(ret_from_fork)
+>>>>>  	GET_THREAD_INFO(%ebp)
+>>>>>  	popl %eax
+>>>>>  	CFI_ADJUST_CFA_OFFSET -4
+>>>>> +ret_from_fork_tail:
+>>>>>  	pushl $0x0202			# Reset kernel eflags
+>>>>>  	CFI_ADJUST_CFA_OFFSET 4
+>>>>>  	popfl
+>>>>> @@ -233,6 +234,26 @@ ENTRY(ret_from_fork)
+>>>>>  	CFI_ENDPROC
+>>>>>  END(ret_from_fork)
+>>>>>
+>>>>> +ENTRY(i386_ret_from_resume)
+>>>>> +	CFI_STARTPROC
+>>>>> +	pushl %eax
+>>>>> +	CFI_ADJUST_CFA_OFFSET 4
+>>>>> +	call schedule_tail
+>>>>> +	GET_THREAD_INFO(%ebp)
+>>>>> +	popl %eax
+>>>>> +	CFI_ADJUST_CFA_OFFSET -4
+>>>>> +	movl (%esp), %eax
+>>>>> +	testl %eax, %eax
+>>>>> +	jz    1f
+>>>>> +	pushl %esp
+>>>>> +	call  *%eax
+>>>>> +	addl  $4, %esp
+>>>>> +1:
+>>>>> +	addl  $256, %esp
+>>>>> +	jmp   ret_from_fork_tail
+>>>>> +	CFI_ENDPROC
+>>>>> +END(i386_ret_from_resume)
+>>>> Could you explain why you need to do this
+>>>>
+>>>> 	call  *%eax
+>>>>
+>>>> is it related to the freezer code ?
+>>> It is not related to the freezer code actually.
+>>> That is needed to restart syscalls. Right now I don't have a code in my
+>>> patchset which restarts a syscall, but later I plan to add it.
+>>> In OpenVZ checkpointing we restart syscalls if process was caught in
+>>> syscall during checkpointing.
+>> Do you checkpoint uninterruptible syscalls as well? If only interruptible
+>> syscalls are checkpointed, I'd say that either this syscall uses
+>> ERESTARTSYS or ERESTART_RESTARTBLOCK, and then signal handling code already
+>> does the trick, or this syscall does not restart itself when interrupted,
+>> and well, this is life, userspace just sees -EINTR, which is allowed by the
+>> syscall spec.
+>> Actually this is how we checkpoint/migrate tasks in interruptible syscalls
+>> in Kerrighed and this works.
 > 
-> Hi Nicolas,
-> I have walked through the code and I do not see any serious problems
-> here.
+> We checkpoint only interruptible syscalls. Some syscalls do not restart 
+> themself, that is why after restarting a process we restart syscall to 
+> complete it.
 
-Great !
-Thanks for your feedback.
+Can you please elaborate on this ?  I don't recall having had issues
+with that.
 
+Thanks,
 
-> Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
+Oren.
+
 > 
-
-Kind regards,
--- 
-Nicolas Ferre
-
+> Andrey
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
