@@ -1,160 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759575AbYJVS7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758550AbYJVTAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759575AbYJVS7d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 14:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYJVS7V
+	id S1758550AbYJVTAx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 15:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbYJVTAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 14:59:21 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:40569 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753686AbYJVS7T (ORCPT
+	Wed, 22 Oct 2008 15:00:44 -0400
+Received: from mail-gx0-f29.google.com ([209.85.217.29]:35001 "EHLO
+	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751872AbYJVTAn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 14:59:19 -0400
-Date: Wed, 22 Oct 2008 14:58:56 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] ACPI suspend: Fix CONFIG_ACPI_SLEEP dependence and some
- compilation warnings (was: Re: [announce] new tree:
- "fix all build warnings, on all configs")
-In-reply-to: <200810221423.44216.rjw@sisk.pl>
-X-X-Sender: lenb@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Howells <dhowells@redhat.com>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Message-id: <alpine.LFD.1.10.0810221458510.3010@localhost.localdomain>
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary="Boundary_(ID_Nq7q/LjSYOaibcUpFcXwVw)"
-References: <20081017171139.GA1792@elte.hu> <200810212137.58020.rjw@sisk.pl>
- <alpine.LFD.1.10.0810220008050.2984@localhost.localdomain>
- <200810221423.44216.rjw@sisk.pl>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 22 Oct 2008 15:00:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=p8aaQY065rXMvJnm8Fjxul1IBoM6EKBWPZTt6f0oWbMCT+pWk/xi+kXZYnIhhYFlLD
+         GUznKhwo/EJy3cjw5q2C8MnqXDUGmiJHIslNSVTAQMv8XeBlfoSIH8n3Hesm+m9yu7oa
+         pdik6+c3CKoVDGkzI8in+ugRVJr4O+foszUAo=
+Date: Wed, 22 Oct 2008 23:00:38 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] SLUB: cleanup - define macroses instead of hardcoded
+	numbers
+Message-ID: <20081022190038.GD4218@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Acked-by: Christoph Lameter <cl@linux-foundation.org>
+---
 
---Boundary_(ID_Nq7q/LjSYOaibcUpFcXwVw)
-Content-type: TEXT/PLAIN; charset=utf-8
-Content-transfer-encoding: 8BIT
+ mm/slub.c |   18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
 
-applied.
-
-thanks,
--Len
-
-On Wed, 22 Oct 2008, Rafael J. Wysocki wrote:
-
-> On Wednesday, 22 of October 2008, Len Brown wrote:
-> > 
-> > > >   drivers/acpi/sleep/main.c:67: warning: ‘acpi_pm_disable_gpes’ defined but not used
-> > 
-> > > > 
-> > > > Shows that this code has an identity crisis due to a maze of #ifdefs, in
-> > > > the PM_SLEEP && !SUSPEND && !HIBERNATION case for example.
-> > > 
-> > > This case is invalid, because PM_SLEEP == SUSPEND || HIBERNATION !
-> > 
-> > I though so too, but 2.6.27 appears to have added XEN to the mix:
-> > 
-> > config PM_SLEEP
-> >         bool
-> >         depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
-> 
-> Yeah, which breaks things. :-(
-> 
-> The patch below should fix it and BTW I think ACPI_SLEEP should not depend
-> on XEN_SAVE_RESTORE anyway, so this is a bug fix really (please consider as
-> .28 material, probably -stable too).
-> 
-> Thanks,
-> Rafael
-> 
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> ACPI suspend: Fix CONFIG_ACPI_SLEEP dependence and some compilation warnings
-> 
-> Initially CONFIG_PM_SLEEP was defined as
-> CONFIG_SUSPEND || CONFIG_HIBERNATION and some ACPI code, most
-> importantly the code in drivers/acpi/main.c, was written with this
-> assumption.  Currently, however, CONFIG_PM_SLEEP is also set when
-> CONFIG_XEN_SAVE_RESTORE is set.
-> 
-> This causes some compilation warnings to appear in
-> drivers/acpi/main.c if both CONFIG_SUSPEND and CONFIG_HIBERNATION
-> are unset and CONFIG_PM_SLEEP is set (this was impossible before).
-> To fix this problem, redefine CONFIG_ACPI_SLEEP do depend directly
-> on CONFIG_SUSPEND || CONFIG_HIBERNATION, as originally intended, and
-> use it instead of CONFIG_PM_SLEEP in drivers/acpi/main.c, wherever
-> appropriate.
-> 
-> Additionally, move the acpi_target_sleep_state definition from under
-> the #ifdef to prevent compilation from failing in some cases. 
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/acpi/Kconfig      |    2 +-
->  drivers/acpi/sleep/main.c |    7 +++----
->  2 files changed, 4 insertions(+), 5 deletions(-)
-> 
-> Index: linux-2.6/drivers/acpi/Kconfig
-> ===================================================================
-> --- linux-2.6.orig/drivers/acpi/Kconfig
-> +++ linux-2.6/drivers/acpi/Kconfig
-> @@ -42,7 +42,7 @@ if ACPI
->  
->  config ACPI_SLEEP
->  	bool
-> -	depends on PM_SLEEP
-> +	depends on SUSPEND || HIBERNATION
->  	default y
->  
->  config ACPI_PROCFS
-> Index: linux-2.6/drivers/acpi/sleep/main.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/acpi/sleep/main.c
-> +++ linux-2.6/drivers/acpi/sleep/main.c
-> @@ -23,6 +23,7 @@
->  #include "sleep.h"
->  
->  u8 sleep_states[ACPI_S_STATE_COUNT];
-> +static u32 acpi_target_sleep_state = ACPI_STATE_S0;
->  
->  static int acpi_sleep_prepare(u32 acpi_state)
->  {
-> @@ -45,9 +46,7 @@ static int acpi_sleep_prepare(u32 acpi_s
->  	return 0;
->  }
->  
-> -#ifdef CONFIG_PM_SLEEP
-> -static u32 acpi_target_sleep_state = ACPI_STATE_S0;
-> -
-> +#ifdef CONFIG_ACPI_SLEEP
->  /*
->   * ACPI 1.0 wants us to execute _PTS before suspending devices, so we allow the
->   * user to request that behavior by using the 'acpi_old_suspend_ordering'
-> @@ -132,7 +131,7 @@ static void acpi_pm_end(void)
->  	 */
->  	acpi_target_sleep_state = ACPI_STATE_S0;
->  }
-> -#endif /* CONFIG_PM_SLEEP */
-> +#endif /* CONFIG_ACPI_SLEEP */
->  
->  #ifdef CONFIG_SUSPEND
->  extern void do_suspend_lowlevel(void);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-
---Boundary_(ID_Nq7q/LjSYOaibcUpFcXwVw)--
+Index: linux-2.6.git/mm/slub.c
+===================================================================
+--- linux-2.6.git.orig/mm/slub.c	2008-10-22 21:11:26.000000000 +0400
++++ linux-2.6.git/mm/slub.c	2008-10-22 22:53:43.000000000 +0400
+@@ -153,6 +153,10 @@
+ #define ARCH_SLAB_MINALIGN __alignof__(unsigned long long)
+ #endif
+ 
++#define OO_SHIFT	16
++#define OO_MASK		((1 << OO_SHIFT) - 1)
++#define MAX_OBJS_PER_PAGE	65535 /* since page.objects is u16 */
++
+ /* Internal SLUB flags */
+ #define __OBJECT_POISON		0x80000000 /* Poison object */
+ #define __SYSFS_ADD_DEFERRED	0x40000000 /* Not yet visible via sysfs */
+@@ -290,7 +294,7 @@ static inline struct kmem_cache_order_ob
+ 						unsigned long size)
+ {
+ 	struct kmem_cache_order_objects x = {
+-		(order << 16) + (PAGE_SIZE << order) / size
++		(order << OO_SHIFT) + (PAGE_SIZE << order) / size
+ 	};
+ 
+ 	return x;
+@@ -298,12 +302,12 @@ static inline struct kmem_cache_order_ob
+ 
+ static inline int oo_order(struct kmem_cache_order_objects x)
+ {
+-	return x.x >> 16;
++	return x.x >> OO_SHIFT;
+ }
+ 
+ static inline int oo_objects(struct kmem_cache_order_objects x)
+ {
+-	return x.x & ((1 << 16) - 1);
++	return x.x & OO_MASK;
+ }
+ 
+ #ifdef CONFIG_SLUB_DEBUG
+@@ -764,8 +768,8 @@ static int on_freelist(struct kmem_cache
+ 	}
+ 
+ 	max_objects = (PAGE_SIZE << compound_order(page)) / s->size;
+-	if (max_objects > 65535)
+-		max_objects = 65535;
++	if (max_objects > MAX_OBJS_PER_PAGE)
++		max_objects = MAX_OBJS_PER_PAGE;
+ 
+ 	if (page->objects != max_objects) {
+ 		slab_err(s, page, "Wrong number of objects. Found %d but "
+@@ -1819,8 +1823,8 @@ static inline int slab_order(int size, i
+ 	int rem;
+ 	int min_order = slub_min_order;
+ 
+-	if ((PAGE_SIZE << min_order) / size > 65535)
+-		return get_order(size * 65535) - 1;
++	if ((PAGE_SIZE << min_order) / size > MAX_OBJS_PER_PAGE)
++		return get_order(size * MAX_OBJS_PER_PAGE) - 1;
+ 
+ 	for (order = max(min_order,
+ 				fls(min_objects * size - 1) - PAGE_SHIFT);
