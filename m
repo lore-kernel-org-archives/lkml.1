@@ -1,73 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbYJVMwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbYJVMx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755057AbYJVMwE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 08:52:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbYJVMvv
+	id S1756188AbYJVMx4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 08:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbYJVMxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 08:51:51 -0400
-Received: from twinlark.arctic.org ([208.69.40.136]:51348 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750813AbYJVMvu (ORCPT
+	Wed, 22 Oct 2008 08:53:49 -0400
+Received: from 207-172-69-77.c3-0.smr-ubr3.sbo-smr.ma.static.cable.rcn.com ([207.172.69.77]:40476
+	"EHLO luto.stanford.edu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752059AbYJVMxs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 08:51:50 -0400
-Message-ID: <48FF21BF.9090509@kernel.org>
-Date: Wed, 22 Oct 2008 05:51:11 -0700
-From: "Andrew G. Morgan" <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+	Wed, 22 Oct 2008 08:53:48 -0400
+Message-ID: <48FF2259.1010800@myrealbox.com>
+Date: Wed, 22 Oct 2008 08:53:45 -0400
+From: Andy Lutomirski <luto@myrealbox.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-audit@redhat.com, viro@zeniv.linux.org.uk, sgrubb@redhat.com
-Subject: Re: [PATCH 3/4] AUDIT: audit when fcaps increase the permitted or
- inheritable capabilities
-References: <20081020222538.3895.50175.stgit@paris.rdu.redhat.com> <20081020222612.3895.6710.stgit@paris.rdu.redhat.com> <48FD6E49.6060104@kernel.org> <20081021191625.GA4657@us.ibm.com>
-In-Reply-To: <20081021191625.GA4657@us.ibm.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Felipe Contreras <felipe.contreras@gmail.com>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Issue with e1000
+References: <94a0d4530810220448x41241926r8f93cde4463b9864@mail.gmail.com>
+In-Reply-To: <94a0d4530810220448x41241926r8f93cde4463b9864@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-[s/viro@...ok/viro@...uk/]
-
-Serge E. Hallyn wrote:
->> Logging execve()s where there is only an increase in capabilities seems
->> wrong to me. To me it seems equally important to log any event where an
->> execve() yields pP != 0.
+Felipe Contreras wrote:
+> Hi,
 > 
-> True.
+> I've been trying 2.6.27 and 2.6.27.2, and I haven't been able to use
+> the e1000 module.
 > 
-> ... except if (!issecure(SECURE_NOROOT) && uid==0) I guess?
+> I let my system handle the networking, Network Manager in Fedora 9,
+> but I also tried this:
+> ifup eth0
+> Device eth0 does not seem to be present, delaying initialization.
 > 
-> And then it also might be interesting in the case where
-> (!issecure(SECURE_NOROOT) && uid==0) and pP is not full.
-
-I guess so, although this seems like a case of being interested in a
-(unusual) non-privileged execve().
-
->>>  	rc = bprm_caps_from_vfs_caps(&vcaps, bprm);
->>>  
->>> +	audit_log_bprm_fcaps(bprm, &vcaps);
->>> +
->> When rc != 0, the execve() will fail. Is it appropriate to log in this case?
+> The module is not loaded automatically so I'm loading it myself,
+> nothing happens.
 > 
-> It might fail because fP contains bits not in pP', right?  That's
-> probably interesting to auditors.
+> I'm also trying this:
+> modprobe e1000 debug=16
+> 
+> I see nothing special:
+> Intel(R) PRO/1000 Network Driver - version 7.3.20-k3-NAPI
+> Copyright (c) 1999-2006 Intel Corporation.
+> 
+> Am I missing something?
 
-In which case, how is the fact it didn't execute captured in the audit log?
+Depending which hardware you have, you may need to use e1000e instead.
 
-Cheers
+http://lwn.net/Articles/278016/
 
-Andrew
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFI/yG9+bHCR3gb8jsRAii1AKCDluqUSVyAKP67/9bhEgqdlx3xdACg0dn4
-81bi/3eMaP1FqfdVK2u/BpM=
-=QBli
------END PGP SIGNATURE-----
+--Andy
