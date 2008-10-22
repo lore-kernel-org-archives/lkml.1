@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756958AbYJVKKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbYJVKLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756958AbYJVKKd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 06:10:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbYJVKKN
+	id S1755438AbYJVKLQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 06:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbYJVKK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 06:10:13 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:4486 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752292AbYJVKKL (ORCPT
+	Wed, 22 Oct 2008 06:10:58 -0400
+Received: from lazybastard.de ([212.112.238.170]:40545 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752954AbYJVKK5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 06:10:11 -0400
-X-BigFish: VPS-32(zz3b49K1432R98dR1805M936fOzzzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K94XKL-02-EQU-01
-Date: Wed, 22 Oct 2008 12:09:24 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
+	Wed, 22 Oct 2008 06:10:57 -0400
+Date: Wed, 22 Oct 2008 12:10:13 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: remove superfluous dmi_ignore_irq0_timer_override
-	quirks
-Message-ID: <20081022100924.GC13400@alberich.amd.com>
-References: <20081016105706.GC29183@alberich.amd.com> <20081022100253.GB29744@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland Dreier <rdreier@cisco.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [announce] new tree: "fix all build warnings, on all configs"
+Message-ID: <20081022101013.GA25283@logfs.org>
+References: <ada3aiv9k6j.fsf@cisco.com> <20081017180523.GA11590@elte.hu> <adatzbbrrcf.fsf@cisco.com> <20081017191202.GA5396@elte.hu> <adaiqrrrp2h.fsf@cisco.com> <20081018082209.GA24220@elte.hu> <alpine.LFD.2.00.0810200933470.3518@nehalem.linux-foundation.org> <20081020192110.GA28736@elte.hu> <20081021064144.GC30563@logfs.org> <20081022094759.GH12453@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20081022100253.GB29744@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 22 Oct 2008 10:09:58.0946 (UTC) FILETIME=[56FEF820:01C9342E]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081022094759.GH12453@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 12:02:54PM +0200, Ingo Molnar wrote:
+On Wed, 22 October 2008 11:47:59 +0200, Ingo Molnar wrote:
+> * Jörn Engel <joern@logfs.org> wrote:
+> > On Mon, 20 October 2008 21:21:10 +0200, Ingo Molnar wrote:
+> > >  
+> > >  /* Alas, no aliases. Too much hassle with bringing module.h everywhere */
+> > >  #define fops_get(fops) \
+> > > -	(((fops) && try_module_get((fops)->owner) ? (fops) : NULL))
+> > > +	(((fops != NULL) && try_module_get((fops)->owner) ? (fops) : NULL))
+> > >  #define fops_put(fops) \
+> > > -	do { if (fops) module_put((fops)->owner); } while(0)
+> > > +	do { if (fops != NULL) module_put((fops)->owner); } while(0)
+> > 
+> > This, I would argue, makes the code worse.
 > 
-> * Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
-> 
-> > The problem should be solved with commits:
-> > 
-> > x86: SB600: skip IRQ0 override if it is not routed to INT2 of IOAPIC
-> > x86: SB450: skip IRQ0 override if it is not routed to INT2 of IOAPIC
-> > 
-> > IMHO it does not make sense to check within a dmi-quirk
-> > whether an early-quirk was applied. Boot sequence is as follows:
-> > 
-> > acpi_boot_table_init()   (it applies dmi-quirks)
-> > ...
-> > early_quirks()           (detect bogus IRQ0 override)
-> > ...
-> > acpi_boot_init()         (setup IO APIC)
-> > 
-> > Thus with current code we will always get following warnings for
-> > Laptops that have this dmi_ignore_irq0_timer_override dmi quirk:
-> > 
-> >   WARNING: at arch/x86/kernel/acpi/boot.c:1410
-> >   dmi_ignore_irq0_timer_override+0x30/0x60()
-> >   ati_ixp4x0 quirk not complete.
-> > 
-> > ... just because the early-quirk (ati_ixp4x0) was not yet executed.
-> 
-> could we move the DMI check to after the early quicks stage? It would be 
-> nice to have this double check, for at least one kernel cycle.
+> In this specific case the issue is that the 'fops' parameter can 
+> occasionally be a constant pointer (turning the test into always-true) 
+> so the compiler is at least minimally correct at asking the "are you 
+> sure you want this" question - which we answer in the affirmative via 
+> the explicit NULL check. But these are really nuances.
 
-Ok, I'll have a look at that.
+#define fops_put(fops) do {			\
+	if (fops != NULL)			\
+		module_put((fops)->owner);	\
+} while 0
 
-Andreas
+If the code was written like this, I wouldn't mind your patch at all.
+But in the one-liner form, the ' != NULL' makes the difference between
+fluent reading and having to actively sort out which piece belongs
+where.
 
+And I bet that if it hadn't been a macro but an inline function, you
+and checkpatch would have complained about the formatting long ago. ;)
 
+Jörn
+
+-- 
+To announce that there must be no criticism of the President, or that we
+are to stand by the President, right or wrong, is not only unpatriotic
+and servile, but is morally treasonable to the American public.
+-- Theodore Roosevelt, Kansas City Star, 1918
