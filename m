@@ -1,95 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756207AbYJVREh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbYJVREX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756207AbYJVREh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbYJVRES
+	id S1754599AbYJVREX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbYJVREM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:04:18 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:62954 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752906AbYJVRER (ORCPT
+	Wed, 22 Oct 2008 13:04:12 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:37405 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751330AbYJVREL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:04:17 -0400
-Message-ID: <48FF5C62.3020008@oracle.com>
-Date: Wed, 22 Oct 2008 10:01:22 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Wed, 22 Oct 2008 13:04:11 -0400
+Date: Wed, 22 Oct 2008 12:03:25 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org, tglx@linutronix.de,
+       dave@linux.vnet.ibm.com, mingo@elte.hu, hpa@zytor.com,
+       viro@zeniv.linux.org.uk
+Subject: Re: [RFC v7][PATCH 2/9] General infrastructure for checkpoint
+	restart
+Message-ID: <20081022170325.GA4908@us.ibm.com>
+References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu> <1224481237-4892-3-git-send-email-orenl@cs.columbia.edu> <20081021124130.a002e838.akpm@linux-foundation.org> <20081021202410.GA10423@us.ibm.com> <48FE82DF.6030005@cs.columbia.edu> <20081022152804.GA23821@us.ibm.com> <48FF4EB2.5060206@cs.columbia.edu>
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Yu Zhao <yu.zhao@intel.com>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "greg@kroah.com" <greg@kroah.com>, "mingo@elte.hu" <mingo@elte.hu>
-Subject: Re: [PATCH 16/16 v6] PCI: document the new PCI boot parameters
-References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com>	<20081022084531.GP3773@yzhao12-linux.sh.intel.com> <200810220827.33758.bjorn.helgaas@hp.com>
-In-Reply-To: <200810220827.33758.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010202.48FF5C67.0087:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48FF4EB2.5060206@cs.columbia.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas wrote:
-> On Wednesday 22 October 2008 02:45:31 am Yu Zhao wrote:
->> Document the new PCI[x86] boot parameters.
->>
->> Cc: Alex Chiang <achiang@hp.com>
->> Cc: Grant Grundler <grundler@parisc-linux.org>
->> Cc: Greg KH <greg@kroah.com>
->> Cc: Ingo Molnar <mingo@elte.hu>
->> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
->> Cc: Matthew Wilcox <matthew@wil.cx>
->> Cc: Randy Dunlap <randy.dunlap@oracle.com>
->> Cc: Roland Dreier <rdreier@cisco.com>
->> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
->>
->> ---
->>  Documentation/kernel-parameters.txt |   10 ++++++++++
->>  1 files changed, 10 insertions(+), 0 deletions(-)
->>
->> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
->> index 53ba7c7..5482ae0 100644
->> --- a/Documentation/kernel-parameters.txt
->> +++ b/Documentation/kernel-parameters.txt
->> @@ -1677,6 +1677,16 @@ and is between 256 and 4096 characters. It is defined in the file
->>  		cbmemsize=nn[KMG]	The fixed amount of bus space which is
->>  				reserved for the CardBus bridge's memory
->>  				window. The default value is 64 megabytes.
->> +		assign-mmio=[dddd:]bb	[X86] reassign memory resources of all
->> +				devices under bus [dddd:]bb (dddd is the domain
->> +				number and bb is the bus number).
->> +		assign-pio=[dddd:]bb	[X86] reassign io port resources of all
-
-"io" in text should be "IO" or "I/O".  (Small "io" is OK as a parameter placeholder.)
-
->> +				devices under bus [dddd:]bb (dddd is the domain
->> +				number and bb is the bus number).
->> +		align-mmio=[dddd:]bb:dd.f  [X86] relocate memory resources of a
->> +				device to minimum PAGE_SIZE alignment (dddd is
->> +				the domain number and bb, dd and f is the bus,
-
-				                                   are the bus,
-
->> +				device and function number).
->>  
->>  	pcie_aspm=	[PCIE] Forcibly enable or disable PCIe Active State Power
->>  			Management.
+Quoting Oren Laadan (orenl@cs.columbia.edu):
 > 
-> I think it's nicer to have the documentation change included in the
-> patch that implements the change.  For example, I think this and
-> patch 9/16 "add boot option to align ..." should be folded into
-> a single patch.  And similarly for the other documentation patches.
 > 
-> Bjorn
+> Serge E. Hallyn wrote:
+> > Quoting Oren Laadan (orenl@cs.columbia.edu):
+> > Just thinking aloud...
+> > 
+> > Is read mode appropriate?  The user can edit the statefile and restart
+> > it.  Admittedly the restart code should then do all the appropriate
+> > checks for recreating resources, but I'm having a hard time thinking
+> > through this straight.
+> > 
+> > Let's say hallyn is running passwd.  ruid=500,euid=0.  He quickly
+> > checkpoints.  Then he restarts.  Will restart say "ok, the /bin/passwd
+> > binary is setuid 0 so let hallyn take euid=0 for this?"  I guess not.
+> > But are there other resources for which this is harder to get right?
+> 
+> I'd say that checkpoint and restart are separate.
+> 
+> In checkpoint, you read the state and save it somewhere; you don't
+> modify anything in the target task (container). This equivalent to
+> ptrace read-mode. If you could do ptrace, you could save all that
+> state. In fact, you could save it in a format that is suitable for
+> a future restart ... (or just forge one !)
 
+Yeah, that's convincing.
+
+> In restart, we either don't trust the user and keep everything to
+> be done with her credentials, of we trust the root user and allow
+> all operations (like loading a kernel module).
+> 
+> We can actually have both modes of operations. How to decide that
+> we trust the user is a separate question:  one option is to have
+> both checkpoint and restart executables setuid - checkpoint will
+> sign (in user space) the output image, and restart (in user space)
+> will validate the signature, before passing it to the kenrel. Surely
+> there are other ways...
+
+Makes sense.
+
+...
+
+> > Hmm, so do you think we just always use the caller's credentials?
+> 
+> Nope, since we will fail to restart in many cases. We will need a way
+> to move from caller's credentials to saved credentials, and even from
+> caller's credentials to privileged credentials (e.g. to reopen a file
+> that was created by a setuid program prior to dropping privileges).
+
+Can we agree to worry about that much much later? :)  Would you agree
+that for the majority of use-cases, restarting with caller's credentials
+will work?  Or am I wrong about that?
+
+> To do that, we will need to agree on a way to escalate/change the
+> credentials. This however belongs to user-space (and then the binaries
+> for checkpoint/restart will be setuid themselves).
+
+Ok those are less scary, and I have no problem with those.
+
+> There will also be the issue of mapping credentials: a user A may have
+> one UID/GID on once system and another UID/GID on another system, and
+> we may want to do the conversion. This, too, can be done in user space
+> prior to restart by using an appropriate filter through the checkpoint
+> stream.
+
+User namespaces may help here too.  So user A can create a new user
+namespace and restart as user B in that namespace.  But right now that
+sounds like overkill.
+
+-serge
