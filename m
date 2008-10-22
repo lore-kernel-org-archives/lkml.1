@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbYJVTfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbYJVTf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758776AbYJVTfo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 15:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757092AbYJVTfK
+	id S1758136AbYJVTf6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 15:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758246AbYJVTf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 15:35:10 -0400
-Received: from mailout06.t-online.de ([194.25.134.19]:45540 "EHLO
-	mailout06.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756827AbYJVTfJ (ORCPT
+	Wed, 22 Oct 2008 15:35:28 -0400
+Received: from shadow.wildlava.net ([67.40.138.81]:48948 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758138AbYJVTf0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 15:35:09 -0400
-Message-ID: <48FF8065.9@t-online.de>
-Date: Wed, 22 Oct 2008 21:35:01 +0200
-From: Harald Dunkel <harald.dunkel@t-online.de>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080926)
+	Wed, 22 Oct 2008 15:35:26 -0400
+Message-ID: <48FF807B.2020002@skyrush.com>
+Date: Wed, 22 Oct 2008 13:35:23 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081002)
 MIME-Version: 1.0
-To: Michael Tokarev <mjt@tls.msk.ru>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27.1: install conflict about /lib/firmware
-References: <48F78C5C.8080907@t-online.de> <48F7AB05.50103@msgid.tls.msk.ru>
-In-Reply-To: <48F7AB05.50103@msgid.tls.msk.ru>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fix n_tty/pty input/output buffer full and other misc
+ char handling
+References: <48F2E450.1070508@skyrush.com> <20081022103259.2d04729a@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081022103259.2d04729a@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-ID: XNChAZZOZhtuOcH-6NS+cBcqO5PfpjVBPHbATcVfXn4tX9UNNYBpi2uGief4McGZME
-X-TOI-MSGID: 1c253eee-5cec-4149-a9c8-cb3f8ee9d093
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Tokarev wrote:
+Alan Cox wrote:
+>> that ^C, ^Q, etc. can have effect) in non-canonical mode?  This would
+>> allow prevention of the gridlocks that still can be invoked when using
+>> stty -icanon in, say, an xterm.  For now, I took the conservative route
+>> in this patch, but let me know if a more permissive approach is better.
 > 
->> Wouldn't it be more consistent to put the firmware files in a
->> kernel specific directory, e.g. in /lib/firmware/2.6.27.1 or
->> /lib/modules/2.6.27.1/firmware ?
+> I suspect having thought about this a bit more that the proper logic is
+> in fact
 > 
-> No, because the firmware is not kernel-dependent, but device-dependent.
-> It were deliberate choice.
+> 	if (special case a)
+> 	if (special case b)
+> 	if (....)
 > 
+> 	/* An ordinary character for the queue */
+> 	if (queue_full) { ....}
+> 
+> and we should process everything that may have a special effect (flow
+> control, delete line, etc) before worrying about having room to store the
+> character whatever the tty ldisc state
 
-This is not about some api incompatibility, but about a packaging
-conflict. Even if each firmware file is kernel-independent, the
-list of files is not. If I build and install *.rpm or *.deb files
-for a new kernel version (probably with a changed set of modules),
-then there is a high chance that the new package for /lib/\
-firmware provides a new list of files, not suitable for another
-kernel.
+Yeah, I had thought about this a little before too.  The tricky part is
+knowing that such a character exists and is waiting when we have already
+stopped accepting characters.  In the current way things work, a ^C, for
+example, will not make it into the line discipline until the stuff that
+came before has been processed (which is now wedged waiting for space to
+free up), so it's hard to check in the ldisc for it.  I'm guessing that
+is why the orignal logic in set_room was designed to lets stuff flow in
+in that case when we're looking for an erase char...
 
+Now, in the case of a ^C or ^Q (e.g.), if we knew one was back in the
+queue waiting to get to the ldisc, we could put it through out of
+sequence, but for an erase (e.g.), it needs to wait for what real chars
+come before it (i.e. it cannot jump to the front)...
 
-Regards
+I'll think more on this, too - let me know if I am not hearing what you
+are saying exactly.
 
-Harri
+				-Joe
 
