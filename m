@@ -1,192 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbYJVBnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbYJVBys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbYJVBnr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 21:43:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbYJVBni
+	id S1753320AbYJVBys (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 21:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbYJVByj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 21:43:38 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34907 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229AbYJVBni (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 21:43:38 -0400
-Date: Wed, 22 Oct 2008 10:42:59 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH][BUGFIX] memcg: fix page_cgroup allocation
-Message-Id: <20081022104259.fb068b8b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081021183738.d3c995b9.akpm@linux-foundation.org>
-References: <20081022102404.e1f3565a.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081021183738.d3c995b9.akpm@linux-foundation.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Oct 2008 21:54:39 -0400
+Received: from mail.windriver.com ([147.11.1.11]:45114 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751693AbYJVByj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 21:54:39 -0400
+Message-ID: <48FE87CF.4040007@windriver.com>
+Date: Tue, 21 Oct 2008 20:54:23 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/7] kgdboc, tty: use tty open to start low level drivers
+References: <1224616493-23237-1-git-send-email-jason.wessel@windriver.com><1224616493-23237-2-git-send-email-jason.wessel@windriver.com><1224616493-23237-3-git-send-email-jason.wessel@windriver.com><1224616493-23237-4-git-send-email-jason.wessel@windriver.com><1224616493-23237-5-git-send-email-jason.wessel@windriver.com><1224616493-23237-6-git-send-email-jason.wessel@windriver.com> <20081021234728.6853beee@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081021234728.6853beee@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Oct 2008 01:54:23.0789 (UTC) FILETIME=[1B7615D0:01C933E9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Oct 2008 18:37:38 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Alan Cox wrote:
+> On Tue, 21 Oct 2008 14:14:51 -0500
+> Jason Wessel <jason.wessel@windriver.com> wrote:
+>
+>> +        unlock_kernel();
+>> +    } else {
+>> +        tty = tty_driver_lookup_tty(driver, NULL, tty_line);
+>> +        if (!tty) {
+>> +            tty = tty_init_dev(driver, tty_line, 0);
+>> +            inc_tty = 0;
+>> +        }
+>> +        (*filp)->private_data = tty;
+>> +        ret = tty->ops->open(tty, *filp);
+>
+> and with the error paths wrong
+>
+>
+> This is to put it bluntly just horrible.
+>
 
-> Didn't the linux/cgroup.h -> linux/cgroup_subsys..h inclusion already
-> declare this for us?
-> 
-you're right, I'm wrong. fixed one is here. (confirmed by make mm/page_cgroup.i)
+Yeah, I'd say it is pretty horrible too, but this the only API that
+exists presently and it is not at all obvious how to use it.
 
-Regards,
--Kame
-==
-page_cgroup_init() is called from mem_cgroup_init(). But at this
-point, we cannot call alloc_bootmem().
-(and this caused panic at boot.)
+I am fine with keeping it out of the tree, IE this patch is dropped
+from merge consideration for now.  It is obvious that it is a moving
+target because the patch to 2.6.27 looked different than 2.6.28.  Even
+with it out of the tree I am interested in fixing the "error paths"
+you mentioned.  Perhaps in this case the return of tty_init_dev()
+needed further checking and that was what you were stating is incorrect?
 
-This patch moves page_cgroup_init() to init/main.c.
+> Really kgdb, console and other boot processes need an abstraction for tty
+> device ports at the device (not ldisc) level and until that work is done
+> there is no acceptable way to sort this out. Merging gunk like this will
+> simply make the existing mess worse and provide more crap that will make
+> it harder to fix properly.
 
-Time table is following:
-==
-  parse_args(). # we can trust mem_cgroup_subsys.disabled bit after this.
-  ....
-  cgroup_init_early()  # "early" init of cgroup.
-  ....
-  setup_arch()         # memmap is allocated.
-  ...
-  page_cgroup_init();
-  mem_init();   # we cannot call alloc_bootmem after this.
-  ....
-  cgroup_init() # mem_cgroup is initialized.
-==
+If there is another API, please point me to it.  I am not aware of how
+to get uart startup code to run without going through the
+tty->ops->open().  The kgdboc module has only a generic high level
+interface and makes use of only the high level tty calls.  The
+debugger's needs are the same as the console and the user space.  The
+early debug is still a special case, but in the ideal world there
+would be a way to hand off from early debug into the struct tty_port
+at the point that console_init() is called.
 
-Before page_cgroup_init(), mem_map must be initialized. So, 
-I added page_cgroup_init() to init/main.c directly.
+>
+> All this stuff needs revisiting when every tty device side object in the
+> kernel contains a struct tty_port, until then it's a nasty (perhaps
+> neccessary for the moment) hack that belongs out of tree.
 
-(*) maybe this is not very clean but cgroup_init_early() is too early
-    and we have to use vmalloc instead of alloc_bootmem() in cgroup_init().
-    usage of vmalloc area in x86-32 is important and we should avoid
-    vmalloc() in x86-32. So, we want to use alloc_bootmem() from
-    sutaible place.
+Let me know when we get closer to that stage, as I am interested in
+figuring out how to have a uniform way to share the hardware between
+the polled and interrupt drive contexts.
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-Tested-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
- init/main.c      |    2 ++
- mm/memcontrol.c  |    1 -
- mm/page_cgroup.c |   33 ++++++++++++++++++++++++++-------
- 3 files changed, 28 insertions(+), 8 deletions(-)
-
-Index: linux-2.6/init/main.c
-===================================================================
---- linux-2.6.orig/init/main.c
-+++ linux-2.6/init/main.c
-@@ -62,6 +62,7 @@
- #include <linux/signal.h>
- #include <linux/idr.h>
- #include <linux/ftrace.h>
-+#include <linux/page_cgroup.h>
- 
- #include <asm/io.h>
- #include <asm/bugs.h>
-@@ -647,6 +648,7 @@ asmlinkage void __init start_kernel(void
- 	vmalloc_init();
- 	vfs_caches_init_early();
- 	cpuset_init_early();
-+	page_cgroup_init();
- 	mem_init();
- 	enable_debug_pagealloc();
- 	cpu_hotplug_init();
-Index: linux-2.6/mm/memcontrol.c
-===================================================================
---- linux-2.6.orig/mm/memcontrol.c
-+++ linux-2.6/mm/memcontrol.c
-@@ -1088,7 +1088,6 @@ mem_cgroup_create(struct cgroup_subsys *
- 	int node;
- 
- 	if (unlikely((cont->parent) == NULL)) {
--		page_cgroup_init();
- 		mem = &init_mem_cgroup;
- 	} else {
- 		mem = mem_cgroup_alloc();
-Index: linux-2.6/mm/page_cgroup.c
-===================================================================
---- linux-2.6.orig/mm/page_cgroup.c
-+++ linux-2.6/mm/page_cgroup.c
-@@ -4,7 +4,10 @@
- #include <linux/bit_spinlock.h>
- #include <linux/page_cgroup.h>
- #include <linux/hash.h>
-+#include <linux/slab.h>
- #include <linux/memory.h>
-+#include <linux/cgroup.h>
-+
- 
- static void __meminit
- __init_page_cgroup(struct page_cgroup *pc, unsigned long pfn)
-@@ -66,6 +69,9 @@ void __init page_cgroup_init(void)
- 
- 	int nid, fail;
- 
-+	if (mem_cgroup_subsys.disabled)
-+		return;
-+
- 	for_each_online_node(nid)  {
- 		fail = alloc_node_page_cgroup(nid);
- 		if (fail)
-@@ -106,9 +112,14 @@ int __meminit init_section_page_cgroup(u
- 	nid = page_to_nid(pfn_to_page(pfn));
- 
- 	table_size = sizeof(struct page_cgroup) * PAGES_PER_SECTION;
--	base = kmalloc_node(table_size, GFP_KERNEL, nid);
--	if (!base)
--		base = vmalloc_node(table_size, nid);
-+	if (slab_is_available()) {
-+		base = kmalloc_node(table_size, GFP_KERNEL, nid);
-+		if (!base)
-+			base = vmalloc_node(table_size, nid);
-+	} else {
-+		base = __alloc_bootmem_node_nopanic(NODE_DATA(nid), table_size,
-+				PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
-+	}
- 
- 	if (!base) {
- 		printk(KERN_ERR "page cgroup allocation failure\n");
-@@ -135,11 +146,16 @@ void __free_page_cgroup(unsigned long pf
- 	if (!ms || !ms->page_cgroup)
- 		return;
- 	base = ms->page_cgroup + pfn;
--	ms->page_cgroup = NULL;
--	if (is_vmalloc_addr(base))
-+	if (is_vmalloc_addr(base)) {
- 		vfree(base);
--	else
--		kfree(base);
-+		ms->page_cgroup = NULL;
-+	} else {
-+		struct page *page = virt_to_page(base);
-+		if (!PageReserved(page)) { /* Is bootmem ? */
-+			kfree(base);
-+			ms->page_cgroup = NULL;
-+		}
-+	}
- }
- 
- int online_page_cgroup(unsigned long start_pfn,
-@@ -213,6 +229,9 @@ void __init page_cgroup_init(void)
- 	unsigned long pfn;
- 	int fail = 0;
- 
-+	if (mem_cgroup_subsys.disabled)
-+		return;
-+
- 	for (pfn = 0; !fail && pfn < max_pfn; pfn += PAGES_PER_SECTION) {
- 		if (!pfn_present(pfn))
- 			continue;
-
+Thanks,
+Jason.
 
