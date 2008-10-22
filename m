@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758795AbYJVSxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758732AbYJVSw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758795AbYJVSxc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 14:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbYJVSvm
+	id S1758732AbYJVSw7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 14:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757547AbYJVSvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 14:51:42 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:53638 "EHLO
+	Wed, 22 Oct 2008 14:51:41 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:51041 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757970AbYJVSvi (ORCPT
+	with ESMTP id S1757968AbYJVSvi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 22 Oct 2008 14:51:38 -0400
-Message-Id: <20081022185136.312667539@goodmis.org>
+Message-Id: <20081022185135.618026303@goodmis.org>
 References: <20081022184313.179487464@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Oct 2008 14:43:18 -0400
+Date: Wed, 22 Oct 2008 14:43:14 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
@@ -24,137 +24,77 @@ Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 05/11] ftrace: only have ftrace_kill atomic
-Content-Disposition: inline; filename=ftrace-only-kill-atomic.patch
+Subject: [PATCH 01/11] ftrace: handle generic arch calls
+Content-Disposition: inline; filename=ftrace-rm-script-bit-interface.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Only have a way to completely disable ftrace in atomic sections.
+The recordmcount script requires that the actual arch is passed in.
+This works well when ARCH=i386 or ARCH=x86_64 but does not handle the
+case of ARCH=x86.
+
+This patch adds a parameter to the function to pass in the number of
+bits of the architecture. So that it can determine if x86 should be
+run for x86_64 or i386 archs.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- include/linux/ftrace.h |    3 +--
- kernel/trace/ftrace.c  |   43 ++-----------------------------------------
- kernel/trace/trace.c   |    2 +-
- 3 files changed, 4 insertions(+), 44 deletions(-)
+ scripts/Makefile.build  |   10 ++++++++--
+ scripts/recordmcount.pl |   11 ++++++++++-
+ 2 files changed, 18 insertions(+), 3 deletions(-)
 
-Index: linux-compile.git/include/linux/ftrace.h
+Index: linux-compile.git/scripts/Makefile.build
 ===================================================================
---- linux-compile.git.orig/include/linux/ftrace.h	2008-10-22 13:17:26.000000000 -0400
-+++ linux-compile.git/include/linux/ftrace.h	2008-10-22 13:17:29.000000000 -0400
-@@ -40,7 +40,7 @@ extern void ftrace_stub(unsigned long a0
- # define register_ftrace_function(ops) do { } while (0)
- # define unregister_ftrace_function(ops) do { } while (0)
- # define clear_ftrace_function(ops) do { } while (0)
--static inline void ftrace_kill_atomic(void) { }
-+static inline void ftrace_kill(void) { }
- #endif /* CONFIG_FTRACE */
+--- linux-compile.git.orig/scripts/Makefile.build	2008-10-21 09:25:45.000000000 -0400
++++ linux-compile.git/scripts/Makefile.build	2008-10-21 09:26:05.000000000 -0400
+@@ -198,10 +198,16 @@ cmd_modversions =							\
+ 	fi;
+ endif
  
- #ifdef CONFIG_DYNAMIC_FTRACE
-@@ -97,7 +97,6 @@ static inline void ftrace_release(void *
++ifdef CONFIG_64BIT
++arch_bits = 64
++else
++arch_bits = 32
++endif
++
+ ifdef CONFIG_FTRACE_MCOUNT_RECORD
+ cmd_record_mcount = perl $(srctree)/scripts/recordmcount.pl \
+-	"$(ARCH)" "$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" "$(NM)" "$(RM)" \
+-	"$(MV)" "$(@)";
++	"$(ARCH)" "$(arch_bits)" "$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" \
++	"$(NM)" "$(RM)" "$(MV)" "$(@)";
+ endif
  
- /* totally disable ftrace - can not re-enable after this */
- void ftrace_kill(void);
--void ftrace_kill_atomic(void);
- 
- static inline void tracer_disable(void)
- {
-Index: linux-compile.git/kernel/trace/ftrace.c
+ define rule_cc_o_c
+Index: linux-compile.git/scripts/recordmcount.pl
 ===================================================================
---- linux-compile.git.orig/kernel/trace/ftrace.c	2008-10-22 13:17:26.000000000 -0400
-+++ linux-compile.git/kernel/trace/ftrace.c	2008-10-22 13:17:29.000000000 -0400
-@@ -606,7 +606,6 @@ ftrace_code_disable(struct dyn_ftrace *r
- 		print_ip_ins(" expected: ", call);
- 		print_ip_ins(" replace: ", nop);
- 		printk(KERN_CONT "\n");
--		break;
- 
- 		rec->flags |= FTRACE_FL_FAILED;
- 		return 0;
-@@ -1526,22 +1525,6 @@ int ftrace_force_update(void)
- 	return ret;
+--- linux-compile.git.orig/scripts/recordmcount.pl	2008-10-21 09:25:45.000000000 -0400
++++ linux-compile.git/scripts/recordmcount.pl	2008-10-21 09:28:36.000000000 -0400
+@@ -106,7 +106,8 @@ if ($#ARGV < 6) {
+ 	exit(1);
  }
  
--static void ftrace_force_shutdown(void)
--{
--	struct task_struct *task;
--	int command = FTRACE_DISABLE_CALLS | FTRACE_UPDATE_TRACE_FUNC;
--
--	mutex_lock(&ftraced_lock);
--	task = ftraced_task;
--	ftraced_task = NULL;
--	ftraced_suspend = -1;
--	ftrace_run_update_code(command);
--	mutex_unlock(&ftraced_lock);
--
--	if (task)
--		kthread_stop(task);
--}
--
- static __init int ftrace_init_debugfs(void)
- {
- 	struct dentry *d_tracer;
-@@ -1734,17 +1717,16 @@ core_initcall(ftrace_dynamic_init);
- # define ftrace_shutdown()		do { } while (0)
- # define ftrace_startup_sysctl()	do { } while (0)
- # define ftrace_shutdown_sysctl()	do { } while (0)
--# define ftrace_force_shutdown()	do { } while (0)
- #endif /* CONFIG_DYNAMIC_FTRACE */
+-my ($arch, $objdump, $objcopy, $cc, $ld, $nm, $rm, $mv, $inputfile) = @ARGV;
++my ($arch, $bits, $objdump, $objcopy, $cc,
++    $ld, $nm, $rm, $mv, $inputfile) = @ARGV;
  
- /**
-- * ftrace_kill_atomic - kill ftrace from critical sections
-+ * ftrace_kill - kill ftrace
-  *
-  * This function should be used by panic code. It stops ftrace
-  * but in a not so nice way. If you need to simply kill ftrace
-  * from a non-atomic section, use ftrace_kill.
-  */
--void ftrace_kill_atomic(void)
-+void ftrace_kill(void)
- {
- 	ftrace_disabled = 1;
- 	ftrace_enabled = 0;
-@@ -1755,27 +1737,6 @@ void ftrace_kill_atomic(void)
- }
+ $objdump = "objdump" if ((length $objdump) == 0);
+ $objcopy = "objcopy" if ((length $objcopy) == 0);
+@@ -129,6 +130,14 @@ my $function_regex;	# Find the name of a
+ 			#    (return offset and func name)
+ my $mcount_regex;	# Find the call site to mcount (return offset)
  
- /**
-- * ftrace_kill - totally shutdown ftrace
-- *
-- * This is a safety measure. If something was detected that seems
-- * wrong, calling this function will keep ftrace from doing
-- * any more modifications, and updates.
-- * used when something went wrong.
-- */
--void ftrace_kill(void)
--{
--	mutex_lock(&ftrace_sysctl_lock);
--	ftrace_disabled = 1;
--	ftrace_enabled = 0;
--
--	clear_ftrace_function();
--	mutex_unlock(&ftrace_sysctl_lock);
--
--	/* Try to totally disable ftrace */
--	ftrace_force_shutdown();
--}
--
--/**
-  * register_ftrace_function - register a function for profiling
-  * @ops - ops structure that holds the function for profiling.
-  *
-Index: linux-compile.git/kernel/trace/trace.c
-===================================================================
---- linux-compile.git.orig/kernel/trace/trace.c	2008-10-22 13:17:26.000000000 -0400
-+++ linux-compile.git/kernel/trace/trace.c	2008-10-22 13:17:29.000000000 -0400
-@@ -3097,7 +3097,7 @@ void ftrace_dump(void)
- 	dump_ran = 1;
- 
- 	/* No turning back! */
--	ftrace_kill_atomic();
-+	ftrace_kill();
- 
- 	for_each_tracing_cpu(cpu) {
- 		atomic_inc(&global_trace.data[cpu]->disabled);
++if ($arch eq "x86") {
++    if ($bits == 64) {
++	$arch = "x86_64";
++    } else {
++	$arch = "xi386";
++    }
++}
++
+ if ($arch eq "x86_64") {
+     $section_regex = "Disassembly of section";
+     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
 
 -- 
