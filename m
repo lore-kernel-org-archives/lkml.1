@@ -1,64 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbYJVOA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbYJVOBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753402AbYJVOA2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 10:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbYJVOAQ
+	id S1754387AbYJVOBX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 10:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbYJVOBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 10:00:16 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:16910 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752144AbYJVOAO (ORCPT
+	Wed, 22 Oct 2008 10:01:15 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:59101 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750813AbYJVOBO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 10:00:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=UESZkEg/+ZwCfvGGkjOCPJ69wX0aOp6G6zngfFcz4T6CZU5hVLfM2xxG7Aqb+QAW/U
-         Trwkbp2Q5+vMtVvrglSvlnRFFu8YS9AYNWDsX5MdShWGQxrGU1BYaAcizOmwRCaXduFT
-         +4rmDYSZf3/4r6uFFx2Oj4doQQw9pXcJoUQY4=
-Date: Wed, 22 Oct 2008 18:00:09 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Glauber Costa <glommer@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: [PATCH -tip] x86: do_boot_cpu - check if we have ESR register
-Message-ID: <20081022140009.GA9639@localhost>
+	Wed, 22 Oct 2008 10:01:14 -0400
+Message-ID: <48FF3321.4060809@novell.com>
+Date: Wed, 22 Oct 2008 10:05:21 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: sched: deep power-saving states
+References: <48FF2DDC.5010600@gmail.com> <20081022064738.05818670@infradead.org>
+In-Reply-To: <20081022064738.05818670@infradead.org>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigA77803111A387927C48CFEB5"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We should touch ESR register if only we have it.
-The patch fixes the problem mentoined here
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigA77803111A387927C48CFEB5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-	http://lkml.org/lkml/2008/10/17/147
+Arjan van de Ven wrote:
+> On Wed, 22 Oct 2008 09:42:52 -0400
+> Gregory Haskins <gregory.haskins.ml@gmail.com> wrote:
+>
+>  =20
+>> What I was thinking is that a simple mechanism to quantify the
+>> power-state penalty would be to add those states as priority levels in=
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Glauber Costa <glommer@gmail.com>
----
+>> the cpupri namespace.  E.g. We could substitute IDLE-RUNNING for IDLE,=
 
- arch/x86/kernel/smpboot.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+>> and add IDLE-PS1, IDLE-PS2, .. IDLE-PSn, OTHER, RT1, .. RT99.  This
+>> means the scheduler would favor waking an IDLE-RUNNING core over an
+>> IDLE-PS1-PSn, etc.  The question in my mind is: can the power-states
+>> be determined in a static fashion such that we know what value to
+>> quantify the idle state before we enter it?  Or is it more dynamic
+>> (e.g. the longer it is in an MWAIT, the deeper the sleep gets).
+>>    =20
+>
+> it's a little dynamic, but just assuming the worst will be a very good
+> approximation of reality. And we know what we're getting into in that
+> sense.
+>  =20
 
-Index: linux-2.6.git/arch/x86/kernel/smpboot.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/smpboot.c	2008-10-21 20:35:27.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/smpboot.c	2008-10-22 17:45:28.000000000 +0400
-@@ -894,8 +894,10 @@ do_rest:
- 		/*
- 		 * Be paranoid about clearing APIC errors.
- 	 	*/
--		apic_write(APIC_ESR, 0);
--		apic_read(APIC_ESR);
-+		if (APIC_INTEGRATED(apic_version[phys_apicid])) {
-+			apic_write(APIC_ESR, 0);
-+			apic_read(APIC_ESR);
-+		}
- 	}
- 
- 	/*
+Ok, but if we just assume the worst case always, how do I differentiate
+between, say, IDLE-RUNNING and IDLE-PSn?  If I assign them all to
+IDLE-PSn apriori its no better than the basic single IDLE state we
+support today.  Or am I misunderstanding you?
+
+-Greg
+
+
+
+--------------enigA77803111A387927C48CFEB5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkj/MyEACgkQlOSOBdgZUxnZ4gCdHgNvHPsY1xOU38xBljVhEM6C
+qQAAnjGP4GjAd7nYCEf3VTnnPhuxCWMN
+=1PF+
+-----END PGP SIGNATURE-----
+
+--------------enigA77803111A387927C48CFEB5--
