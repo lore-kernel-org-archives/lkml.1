@@ -1,102 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758698AbYJVTX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758105AbYJVTZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758698AbYJVTX7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 15:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbYJVTXt
+	id S1758105AbYJVTZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 15:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbYJVTZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 15:23:49 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:53126 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751535AbYJVTXt (ORCPT
+	Wed, 22 Oct 2008 15:25:49 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:63162 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754545AbYJVTZs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 15:23:49 -0400
-Subject: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is set.
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-In-Reply-To: <20081021192746.GJ12825@one.firstfloor.org>
-References: <1224552902.2640.88.camel@alok-dev1>
-	 <874p36fflp.fsf@basil.nowhere.org> <1224607284.6161.22.camel@alok-dev1>
-	 <20081021174008.GH12825@one.firstfloor.org>
-	 <1224612294.6161.43.camel@alok-dev1>
-	 <20081021181536.GI12825@one.firstfloor.org>
-	 <1224616236.6161.60.camel@alok-dev1>
-	 <20081021192746.GJ12825@one.firstfloor.org>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Wed, 22 Oct 2008 12:23:47 -0700
-Message-Id: <1224703427.13953.8.camel@alok-dev1>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+	Wed, 22 Oct 2008 15:25:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=j15YZo/WavqzTwsyIMeySUJHWn6QYT2y5W1AWLGEboMuwB2pwtSksOIV/NH/3n1Y2X
+         TfYPABlkhoSgU8yvQIRrrO8i/McbsHKwSKUlkuhtLDE460Minnp8DWmoUETO7xW5tfqf
+         VvjgkXAWm5qJ4y43V2i8SMBg1RJFaxQjnKo5w=
+Message-ID: <b637ec0b0810221225q589ed071i75f559d6fa76d96b@mail.gmail.com>
+Date: Wed, 22 Oct 2008 21:25:46 +0200
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: Re: Possible bug in SCSI Kconfig
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       sam@ravnborg.org, linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <1224702340.6851.20.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b637ec0b0810220929r2c889423ma92bef0ec7f9b3b0@mail.gmail.com>
+	 <1224702340.6851.20.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Skip tsc synchronization checks if CONSTANT_TSC bit is set.
+Hi.
 
-From: Alok N Kataria <akataria@vmware.com>
+On Wed, Oct 22, 2008 at 9:05 PM, James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+> On Wed, 2008-10-22 at 18:29 +0200, Fabio Comolli wrote:
+>> Hi.
+>> In kernel 2.6.27.2 - drivers/scsi/Kconfig we have:
+>>
+>> config SCSI_WAIT_SCAN
+>>         tristate
+>>         default m
+>>         depends on SCSI
+>>         depends on MODULES
+>>
+>> The tristate field is empty. This has the effect that this option is
+>> not visible in menuconfig and so it's always selected. The default is
+>> "m" for all architectures and so this module is always compiled if
+>> SCSI and MODULES are both enabled.
+>>
+>> I'm using a patch like this one:
+>>
+>>  config SCSI_WAIT_SCAN
+>> -     tristate
+>> +     tristate "Wait until all the async scans are complete"
+>>       default m
+>>       depends on SCSI
+>>       depends on MODULES
+>>
+>> to get rid of that module.
+>>
+>> Of course, I have no idea if this is correct or the current behavior
+>> is the expected one.
+>
+> The point of all of this is that if you enable async scanning, you need
+> a method of waiting for the scans to complete, which is all this module
+> does (you insert it and it doesn't come back from the insertion until
+> all the pending async scans are complete).  It's tristate because really
+> it only makes sense to be M or N.  The consensus is that, given async
+> scanning is always an option, this function should always be built as a
+> module *if* modules and SCSI are enabled ... because you might have a
+> HBA module you enabled async scanning for and you need to wait.
 
-TSC synchronization checks between CPU's bail out even if we see
-a distortion of a single cycle. This makes the TSC mostly unsuable
-in a virtualized environment.
+OK, I see your point.
 
-The CONSTANT_TSC bit tells us if the hardware exports a constant TSC,
-we can use this bit to trust the hardware and skip the TSC sync checks
-at bootup.
+But in my case I have SCSI enabled only because it's SELECTed by ATA
+(it's just a laptop) and I don't have any hba's and never will. So no
+async scan.
 
-We also force set the CONSTANT_TSC capability bit if we are running on
-VMware, since the VMware hypervisor exports a constant TSC to the guest.
+Maybe this module should be enabled if async scan is.
 
-Signed-off-by: Alok N Kataria <akataria@vmware.com>
-Cc: Andi Kleen <andi@firstfloor.org>
----
+>
+> There's really not much point giving the user the choice, since this
+> module is part of the initrd sequence ... it's not really anything a
+> user would want to use stand alone, hence there's no point giving a
+> choice about it.
+>
 
- arch/x86/kernel/cpu/common.c |    1 +
- arch/x86/kernel/tsc_sync.c   |    8 +++++++-
- 2 files changed, 8 insertions(+), 1 deletions(-)
+I don't use initrd at all. I just noticed the existence of this module
+while trying to have a non modular kernel. This failed because of
+ipw2200 and after having enabled modules again I just found this
+scsi_wait_scan.ko.
 
+> James
+>
+>
+>
 
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index a48cb0e..720b583 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -452,6 +452,7 @@ void __cpuinit detect_hypervisor_vendor(struct cpuinfo_x86 *c)
- {
- 	if (vmware_platform()) {
- 		c->x86_hyper_vendor = X86_HYPER_VENDOR_VMWARE;
-+		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
- 	} else {
- 		c->x86_hyper_vendor = X86_HYPER_VENDOR_NONE;
- 	}
-diff --git a/arch/x86/kernel/tsc_sync.c b/arch/x86/kernel/tsc_sync.c
-index 9ffb01c..c0c89b7 100644
---- a/arch/x86/kernel/tsc_sync.c
-+++ b/arch/x86/kernel/tsc_sync.c
-@@ -108,6 +108,12 @@ void __cpuinit check_tsc_sync_source(int cpu)
- 	if (unsynchronized_tsc())
- 		return;
- 
-+	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC)) {
-+		printk(KERN_INFO
-+		       "Skipping synchronization checks as TSC is constant.\n");
-+		return;
-+	}
-+		
- 	printk(KERN_INFO "checking TSC synchronization [CPU#%d -> CPU#%d]:",
- 			  smp_processor_id(), cpu);
- 
-@@ -161,7 +167,7 @@ void __cpuinit check_tsc_sync_target(void)
- {
- 	int cpus = 2;
- 
--	if (unsynchronized_tsc())
-+	if (unsynchronized_tsc() || boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
- 		return;
- 
- 	/*
-
-
+Regards,
+Fabio
