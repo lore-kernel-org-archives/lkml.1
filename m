@@ -1,97 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755468AbYJVOwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbYJVOwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755468AbYJVOwX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 10:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYJVOwN
+	id S1755854AbYJVOwy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 10:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbYJVOwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 10:52:13 -0400
-Received: from outbound-mail-125.bluehost.com ([67.222.38.25]:41972 "HELO
-	outbound-mail-125.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752857AbYJVOwL (ORCPT
+	Wed, 22 Oct 2008 10:52:44 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:24884 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752255AbYJVOwn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 10:52:11 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=uniscape.net;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=G3/gz4jTbjvJDjp8jbK5B8/0Y0xcLBq+qFIjt89R0PQ/wp5lbj1uDpkI+PmApZnbFeTlrA3vypitr/J4rdoVk4Osty1deFVdXA7JvXT2qO3x2GCMMwo6SiiOnSKyKSJS;
-Message-ID: <48FF3C48.9060809@uniscape.net>
-Date: Wed, 22 Oct 2008 22:44:24 +0800
-From: Yu Zhao <yu.zhao@uniscape.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Wed, 22 Oct 2008 10:52:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ebxdQMV9OhaYvEYPult9AFxSt0qI7QIReGUMe3C7b8Rw3Gqbnff6AbzdR+pqqXpQs+
+         RtKCOv3HlrLmUlmKTGxi/3KhYbj5dQaya674H8vSLpcE9oyqA5TFZcRJB1UTNpC2KRcN
+         62YvxQ9tj/5sHOLeGIRluiJ2bsMalTZKfFA/0=
+Date: Wed, 22 Oct 2008 18:52:38 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Glauber Costa <glommer@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Max Kellermann <mk@cm4all.com>
+Subject: Re: [PATCH -tip] x86: do_boot_cpu - check if we have ESR register
+Message-ID: <20081022145238.GC9639@localhost>
+References: <20081022140009.GA9639@localhost> <20081022141354.GA26372@elte.hu> <20081022141720.GB9639@localhost> <20081022142312.GC26372@elte.hu>
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Yu Zhao <yu.zhao@intel.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "achiang@hp.com" <achiang@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "greg@kroah.com" <greg@kroah.com>, "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 2/16 v6] PCI: define PCI resource names in an 'enum'
-References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <20081022084041.GB3773@yzhao12-linux.sh.intel.com> <200810220824.21356.bjorn.helgaas@hp.com>
-In-Reply-To: <200810220824.21356.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {2990:host272.hostmonster.com:uniscape:uniscape.net} {sentby:smtp auth 58.38.26.55 authed with yu.zhao@uniscape.net}
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081022142312.GC26372@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas wrote:
-> On Wednesday 22 October 2008 02:40:41 am Yu Zhao wrote:
->> This patch moves all definitions of the PCI resource names to an 'enum',
->> and also replaces some hard-coded resource variables with symbol
->> names. This change eases introduction of device specific resources.
-> 
-> Thanks for removing a bunch of magic numbers from the code.
-> 
->>  static void
->>  pci_restore_bars(struct pci_dev *dev)
->>  {
->> -	int i, numres;
->> -
->> -	switch (dev->hdr_type) {
->> -	case PCI_HEADER_TYPE_NORMAL:
->> -		numres = 6;
->> -		break;
->> -	case PCI_HEADER_TYPE_BRIDGE:
->> -		numres = 2;
->> -		break;
->> -	case PCI_HEADER_TYPE_CARDBUS:
->> -		numres = 1;
->> -		break;
->> -	default:
->> -		/* Should never get here, but just in case... */
->> -		return;
->> -	}
->> +	int i;
->>  
->> -	for (i = 0; i < numres; i++)
->> +	for (i = 0; i < PCI_BRIDGE_RESOURCES; i++)
->>  		pci_update_resource(dev, i);
->>  }
-> 
-> The behavior of this function used to depend on dev->hdr_type.  Now
-> we don't look at hdr_type at all, so we do the same thing for all
-> devices.
-> 
-> For example, for a CardBus device, we used to call pci_update_resource()
-> only for BAR 0; now we call it for BARs 0-6.
-> 
-> Maybe this is safe, but I can't tell from the patch, so I think you
-> should explain *why* it's safe in the changelog.
+[Ingo Molnar - Wed, Oct 22, 2008 at 04:23:12PM +0200]
+| 
+| * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| 
+| > | > -		apic_write(APIC_ESR, 0);
+| > | > -		apic_read(APIC_ESR);
+| > | > +		if (APIC_INTEGRATED(apic_version[phys_apicid])) {
+| > | > +			apic_write(APIC_ESR, 0);
+| > | > +			apic_read(APIC_ESR);
+| > | > +		}
+| > | 
+| > | i'm wondering - is the server there really that old, that it has no 
+| > | integrated lapic? I.e. it's an i486 SMP box or so? Or perhaps some 
+| > | other, weird SMP box?
+| > | 
+| > | 	Ingo
+| > | 
+| > 
+| > I was quite wondering too -- it's Xeon server.
+| > 
+| > >From http://lkml.org/lkml/2008/10/20/34
+| > >> Hardware: Compaq P4 Xeon server, Broadcom CMIC-WS / CIOB-X2 board.
+| > >> Tell me if you need more detailed information.
+| 
+| ah, Compaq - how many CPUs does that box support? If it's 8 or more then 
+| perhaps they turned off the real local APIC, fudged some chipset glue to 
+| emulate APIC functionality and thus were able to use 8 or more of these 
+| chips? The built-in lapic would only go up to 4 CPUs. (or maybe even 
+| just up to dual, depending on the model)
 
-It's safe because pci_update_resource() will ignore unused resources. 
-E.g., for a Cardbus, only BAR 0 is used and its 'flags' is set, then 
-pci_update_resource() only updates it. BAR 1-6 are ignored since their 
-'flags' are 0.
+I have no glue how many cpus it does supposrt :) Maybe Max know.
 
-I'll put more explanation in the changelog.
-
-Thanks,
-Yu
+| 
+| This reminds us that all the is-integrated-lapic checks still matter 
+| today.
+| 
+| 	Ingo
+| 
+		- Cyrill -
