@@ -1,98 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbYJVHUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbYJVHWF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754154AbYJVHUa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 03:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbYJVHUR
+	id S1753912AbYJVHWF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 03:22:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbYJVHVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 03:20:17 -0400
-Received: from mga09.intel.com ([134.134.136.24]:37503 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751424AbYJVHUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 03:20:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,462,1220252400"; 
-   d="scan'208";a="351051039"
-Message-ID: <48FED3FA.6040703@linux.intel.com>
-Date: Wed, 22 Oct 2008 09:19:22 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Wed, 22 Oct 2008 03:21:51 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:26151 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751318AbYJVHVt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 03:21:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:cc:subject:references:from:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type:sender;
+        b=MLuLEtNkg+ff08K4w97gknQ8RJen1+sAv5SP6s4CrQYN4Qm6CT/e0yD9ILPBlbBmVe
+         RL/k0rP0q0fFh9KlDS5sPA2/MexZbLEcdEB8xQRX9NvK2PbwtuIemN3sNEAOPmNgfnT5
+         571Q0ON6PizeGFIIXnP8cHySWDtk54MpVyhCI=
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: "David P. Quigley" <dpquigl@tycho.nsa.gov>, akpm@linux-foundation.org,
+       linux-embedded@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, tim.bird@am.sony.com
+Subject: Re: Subject: [PATCH 00/16] Squashfs: compressed	read-only	filesystem
+References: <E1KqrTW-0001x8-3h@dylan>
+	<1224268027.18940.78.camel@moss-terrapins.epoch.ncsc.mil>
+	<48FD2C74.2070608@lougher.demon.co.uk>
+	<1224605348.31157.67.camel@moss-terrapins.epoch.ncsc.mil>
+	<48FE68E9.2020401@lougher.demon.co.uk>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Wed, 22 Oct 2008 09:21:44 +0200
+In-Reply-To: <48FE68E9.2020401@lougher.demon.co.uk> (Phillip Lougher's message of "Wed\, 22 Oct 2008 00\:42\:33 +0100")
+Message-ID: <87r669nlh3.fsf@macbook.be.48ers.dk>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-CC: Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Henroid, Andrew D" <andrew.d.henroid@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 2/2] i7300_idle driver v1.55
-References: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com> <e8b529091b2ab65f5a4783e292c2b472e309116e.1223706853.git.len.brown@intel.com> <20081011083347.GA31918@elte.hu> <alpine.LFD.1.10.0810161805360.3026@localhost.localdomain> <48FE07AE.4010203@linux.intel.com> <7E82351C108FA840AB1866AC776AEC4637CD27F3@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <7E82351C108FA840AB1866AC776AEC4637CD27F3@orsmsx505.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pallipadi, Venkatesh wrote:
-> 
->>> +#if CONFIG_I7300_IDLE_IOAT_CHANNEL
->>> +     device->common.chancnt--;
->>> +#endif
->> I still think this lone decrement looks fishy. Can there please be some
->> explanation how it exactly relates to the i7300 idle driver, where the
->> matching increment is, etc.?
-> 
-> No. This is not a increment/decrement thing. It is basically telling other
-> Users of IOAT that they have one IOAT channel less that they can use.
-> The last IOAT channel is used by i7300 idle driver to get the throttling to
-> work.
+>>>>> "Phillip" == Phillip Lougher <phillip@lougher.demon.co.uk> writes:
 
-Ok then it should be made conditional on the i7300 actually be available
-in the system?  It looks like you do it always no matter what chipset is in there.
+Hi,
 
+ Phillip> Yeah, Git is much better than CVS, however, I've got nowhere
+ Phillip> to host a public Git repository.  If someone were to offer
+ Phillip> hosting I'd be only too happy to move over to Git.
 
-> udelay may be more power efficient than polling. 
+You could apply for a kernel.org account:
 
-Isn't that function a one off anyways?
+http://kernel.org/faq/#account
 
->>> +/* Check for known platforms with I/O-AT */
->>> +static int __init i7300_idle_platform_probe(void)
->>> +{
->>> +     int i;
->>> +
->>> +     fbd_dev = pci_get_bus_and_slot(MEMCTL_BUS, MEMCTL_DEVFN)
->> Is there a specific reason you cannot match this by pci vendor/devid
->> like all standard drivers do?
->>
->> If there is a good reason add a comment.
-> 
-> They have to match vendor device and function. Its not unique to
-> just vendor and device id.
-
-It might be still better then to use the standard callback style and just ignore
-devices that don't match?
-
-
-> 
->> ;
->>> +static void __exit i7300_idle_exit(void)
->>> +{
->>> +     idle_notifier_unregister(&i7300_idle_nb);
->> I still think this needs some kind of idle synchronization.
-> 
-> This unregister uses atomic_notifier_chain_unregister() which
-> uses RCU and handles the race conditions that way. 
-
-I didn't do a full analysis, but I didn't think RCU protects
-against the idle handler itself.  At least not standard RCU.
-You would need to go through at least two quiescent periods,
-not one as standard code.
-
-There used to be an older
-idle synchronization interface for this case (which was removed
-at some point), perhaps it needs to be readded.
-
-Or just use stop_machine(). That protects against idle too
-and while it's a big hammer for unloading it should be ok.
-
--Andi
+-- 
+Bye, Peter Korsgaard
