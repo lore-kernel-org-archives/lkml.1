@@ -1,97 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbYJVVsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbYJVVw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754898AbYJVVsm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 17:48:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbYJVVsc
+	id S1756129AbYJVVw7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 17:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbYJVVwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 17:48:32 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:6830 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751460AbYJVVsb (ORCPT
+	Wed, 22 Oct 2008 17:52:49 -0400
+Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:28546 "HELO
+	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751564AbYJVVwt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 17:48:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=W5HwkEU+ct8SK8wFG8ZFGguTH46k8PGOtrlOWnWD0zdMNC4mM8C5fXaELRJjOhvBQB
-         38yoTBvqXf0CfUfBxYq0HFUBHaAgzoHOulS5oICmMCNqgQhy2ZxEDfiPBCEdGoj4ucbi
-         I4uTX0MYmnG/Aj+3V9jk+56TVuP1dvkno9GL8=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [git pull] IDE updates #4
-Date: Wed, 22 Oct 2008 23:37:42 +0200
+	Wed, 22 Oct 2008 17:52:49 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=3QiUaj9rgKuSioD72mgBJIe2nkXHvpcAnYRe/STHuPMaEqsfyI9UJ1SwgEK2pEOtXzoVLDOjmS2vuZ7xSGO4lLEn4clPkLxrqbB9ItPdof+JoPMh222kpom2U8133mdDKfh643stRmalN7XjlFA+2cAl25aBCJJwekwBiB3ysc0=  ;
+X-YMail-OSG: GGcxoEkVM1kCf_XftE.6PgEZlnlU0l770jk1jhnUjHgPELoegVD2CqMSpo5IxMDYZa9WA2LEuo6vzms_RGE8kFTqrOxCysQ0cFQWMin3CjMfWUzmZzLDZJJVuLqE5PaRB44-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
+Date: Wed, 22 Oct 2008 14:52:46 -0700
 User-Agent: KMail/1.9.10
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200810212100.52985.bzolnier@gmail.com> <58cb370e0810220514x419c9669jba1b7be942d3644a@mail.gmail.com> <48FF2047.6000509@ru.mvista.com>
-In-Reply-To: <48FF2047.6000509@ru.mvista.com>
+Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
+       Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru> <200810221404.52798.david-b@pacbell.net> <20081022212217.GA32378@oksana.dev.rtsoft.ru>
+In-Reply-To: <20081022212217.GA32378@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200810222337.42218.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200810221452.46786.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 October 2008, Sergei Shtylyov wrote:
-> Hello.
+On Wednesday 22 October 2008, Anton Vorontsov wrote:
+> > 
+> > > So if we register the board infos after 
+> > > the controller registered, then nobody will probe the board infos.
+> > 
+> > See above.  If you're doing it right, there's no problem.
+> > That is, scan the OF tables early.  Just like PNP tables
+> > get scanned early, for example.
 > 
-> Bartlomiej Zolnierkiewicz wrote:
+> Heh. If we don't want to be able to make the OF-parsing code
+> be a module then there is no problem at all. I can use the bus
+> notifiers. And it is most straightforward solution then.
 > 
-> >>> Remove needless/confusing subdirs from drivers/ide/.
-> >> I think that with 2 new drivers being submitted/reworked based on feedback
-> >> and several patches submitted and pending submission to the pata-2.6 series
-> >> this really could have waited till 2.6.29...
-> >>     
-> >
-> > The situation is perfect right now for this change as there are no outstanding
-> > patches in pata-2.6 tree 
-> 
->    There was one patch (already stale TX4939 version driver) as of 
-> yesterday.
+> But I quite dislike to bloat the kernel image with
+> maybe-never-used-on-this-board code.
 
-Indeed.
+So have it live in the __init text section.  If you're
+building a kernel with support for several boards, you
+know it's necessarily going to be larger than it would
+be if only one board were supported.  But you can shrink
+kernel size by judicious use of __init sections..
 
-> > and number of new submitted patches is < 10 (I'll take
-> > care of fixing them up, ditto for all other new stuff that will be using old
-> > naming scheme).
-> >   
-> 
->    Thanks for clarifying this.
->    This rename only added more uncertainty for my pending patchset 
-> (which had been already dependant on at least TX4939 driver which keeps 
-> being recast by Atsushi and being stale in pata-2.6 series) as I can't 
-> predict when you and Linus will merge the changes and this is getting on 
-> my nerves, as I don't have time on any extra rework and I'm running out 
-> of time with the submission. I know I should have done this earlier and 
 
-Maybe some parts could be submitted separately?
-(so keeping them up-to-date in pata-2.6 would be my task)
 
-Also I didn't know anything about your patchset and its
-dependency on TX4939, otherwise I'll be pushing things in
-different order or even skip this pull request if needed
-(TX493x drivers are new stuff and were still under review,
-such things can be also submitted after the merge window
-closes so they were given the lowest priority).
+> My aim was to make the 
+> OF-parsing part be a module too. Because in the long run we
+> need the OF-parsing stuff for _every_ driver that needs
+> platform data. It's quite expensive to have it always built-in,
+> don't you think?
 
-Please ping me about such issues, I'm certainly willing to
-adjust my workflow if this is going to help other people with
-their work but I can't do much if I don't know anything...
+If it's discarded early, after translating the data from
+OF format into what the drivers need, there will be no
+RAM footprint.
 
-> I'd have done this if its not for my unfortunate vacations... I aslso 
-> kept finding new issues looking on the IOC4 driver. :-/
+- Dave
 
-I remember about your SGIIOC4 fixes and they are going to
-make the next git pull request so sooner this one gets in the
-better.  Also maybe you could get some help with fixing this
-driver from SGI folks if there are still some issues left?
 
-Thanks,
-Bart
