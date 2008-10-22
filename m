@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759112AbYJVT0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758903AbYJVT1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759112AbYJVT0x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 15:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756545AbYJVT0d
+	id S1758903AbYJVT1h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 15:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759110AbYJVT0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 15:26:33 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53734 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756217AbYJVT0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 15:26:32 -0400
-Date: Wed, 22 Oct 2008 21:26:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alok Kataria <akataria@vmware.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is
-	set.
-Message-ID: <20081022192622.GA30930@elte.hu>
-References: <1224552902.2640.88.camel@alok-dev1> <874p36fflp.fsf@basil.nowhere.org> <1224607284.6161.22.camel@alok-dev1> <20081021174008.GH12825@one.firstfloor.org> <1224612294.6161.43.camel@alok-dev1> <20081021181536.GI12825@one.firstfloor.org> <1224616236.6161.60.camel@alok-dev1> <20081021192746.GJ12825@one.firstfloor.org> <1224703427.13953.8.camel@alok-dev1>
+	Wed, 22 Oct 2008 15:26:53 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:54198 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759104AbYJVT0w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 15:26:52 -0400
+Date: Wed, 22 Oct 2008 13:26:51 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       sam@ravnborg.org, linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: Possible bug in SCSI Kconfig
+Message-ID: <20081022192650.GI26094@parisc-linux.org>
+References: <b637ec0b0810220929r2c889423ma92bef0ec7f9b3b0@mail.gmail.com> <1224702340.6851.20.camel@localhost.localdomain> <b637ec0b0810221225q589ed071i75f559d6fa76d96b@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1224703427.13953.8.camel@alok-dev1>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+In-Reply-To: <b637ec0b0810221225q589ed071i75f559d6fa76d96b@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Oct 22, 2008 at 09:25:46PM +0200, Fabio Comolli wrote:
+> I don't use initrd at all. I just noticed the existence of this module
+> while trying to have a non modular kernel. This failed because of
+> ipw2200 and after having enabled modules again I just found this
+> scsi_wait_scan.ko.
 
-* Alok Kataria <akataria@vmware.com> wrote:
+If you turn off CONFIG_MODULES, the module goes away.
 
-> Skip tsc synchronization checks if CONSTANT_TSC bit is set.
-> 
-> From: Alok N Kataria <akataria@vmware.com>
-> 
-> TSC synchronization checks between CPU's bail out even if we see a 
-> distortion of a single cycle. This makes the TSC mostly unsuable in a 
-> virtualized environment.
-> 
-> The CONSTANT_TSC bit tells us if the hardware exports a constant TSC, 
-> we can use this bit to trust the hardware and skip the TSC sync checks 
-> at bootup.
-
-the sync check is there to check the _offset_ between CPUs. CONSTANT_TSC 
-is not a guarantee that the TSC will be coherent across all CPUs.
-
-so this patch is fundamentally wrong.
-
-	Ingo
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
