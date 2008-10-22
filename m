@@ -1,76 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbYJVKLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbYJVKOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755438AbYJVKLQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 06:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbYJVKK6
+	id S1755934AbYJVKOH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 06:14:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbYJVKNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 06:10:58 -0400
-Received: from lazybastard.de ([212.112.238.170]:40545 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752954AbYJVKK5 (ORCPT
+	Wed, 22 Oct 2008 06:13:54 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53296 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752075AbYJVKNx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 06:10:57 -0400
-Date: Wed, 22 Oct 2008 12:10:13 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland Dreier <rdreier@cisco.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [announce] new tree: "fix all build warnings, on all configs"
-Message-ID: <20081022101013.GA25283@logfs.org>
-References: <ada3aiv9k6j.fsf@cisco.com> <20081017180523.GA11590@elte.hu> <adatzbbrrcf.fsf@cisco.com> <20081017191202.GA5396@elte.hu> <adaiqrrrp2h.fsf@cisco.com> <20081018082209.GA24220@elte.hu> <alpine.LFD.2.00.0810200933470.3518@nehalem.linux-foundation.org> <20081020192110.GA28736@elte.hu> <20081021064144.GC30563@logfs.org> <20081022094759.GH12453@elte.hu>
+	Wed, 22 Oct 2008 06:13:53 -0400
+Date: Wed, 22 Oct 2008 06:13:51 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Alexander Beregalov <a.beregalov@gmail.com>, lachlan@sgi.com,
+       Christoph Hellwig <hch@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>, xfs@oss.sgi.com,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: sleeping function called from invalid context at
+	kernel/rwsem.c:131 XFS? (was: Re: linux-next: Tree for October 17)
+Message-ID: <20081022101351.GB11313@infradead.org>
+References: <a4423d670810171013g5bc19c1cm3f7d9c014ee70349@mail.gmail.com> <20081017203710.GA27187@infradead.org> <20081017135510.7127c4e7@infradead.org> <a4423d670810200758m3cea3841h40988afc8eaf81@mail.gmail.com> <20081020163327.GA15651@infradead.org> <a4423d670810201013w6448cb38w402771799cefb5f5@mail.gmail.com> <20081020223549.GA21152@disturbed> <a4423d670810210442y51b62fc2naf6cb649e6b26942@mail.gmail.com> <20081022075838.GK18495@disturbed> <20081022082550.GM18495@disturbed>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081022094759.GH12453@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081022082550.GM18495@disturbed>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 October 2008 11:47:59 +0200, Ingo Molnar wrote:
-> * Jörn Engel <joern@logfs.org> wrote:
-> > On Mon, 20 October 2008 21:21:10 +0200, Ingo Molnar wrote:
-> > >  
-> > >  /* Alas, no aliases. Too much hassle with bringing module.h everywhere */
-> > >  #define fops_get(fops) \
-> > > -	(((fops) && try_module_get((fops)->owner) ? (fops) : NULL))
-> > > +	(((fops != NULL) && try_module_get((fops)->owner) ? (fops) : NULL))
-> > >  #define fops_put(fops) \
-> > > -	do { if (fops) module_put((fops)->owner); } while(0)
-> > > +	do { if (fops != NULL) module_put((fops)->owner); } while(0)
-> > 
-> > This, I would argue, makes the code worse.
-> 
-> In this specific case the issue is that the 'fops' parameter can 
-> occasionally be a constant pointer (turning the test into always-true) 
-> so the compiler is at least minimally correct at asking the "are you 
-> sure you want this" question - which we answer in the affirmative via 
-> the explicit NULL check. But these are really nuances.
+On Wed, Oct 22, 2008 at 07:25:50PM +1100, Dave Chinner wrote:
+> > Basically the above commit moved xfs_ilock() inside
+> > radix_tree_preload()/radix_tree_preload_end(), which means we are
+> > taking a rwsem() while we have an elevated preempt count. I'll
+> > get a patch out to fix it.
 
-#define fops_put(fops) do {			\
-	if (fops != NULL)			\
-		module_put((fops)->owner);	\
-} while 0
+This really needs a warning.  Then again I don't really understand this
+as the point of radix_tree_preload was that we can do the actual
+radix-tree under a lock, or not?
 
-If the code was written like this, I wouldn't mind your patch at all.
-But in the one-liner form, the ' != NULL' makes the difference between
-fluent reading and having to actively sort out which piece belongs
-where.
-
-And I bet that if it hadn't been a macro but an inline function, you
-and checkpatch would have complained about the formatting long ago. ;)
-
-Jörn
-
--- 
-To announce that there must be no criticism of the President, or that we
-are to stand by the President, right or wrong, is not only unpatriotic
-and servile, but is morally treasonable to the American public.
--- Theodore Roosevelt, Kansas City Star, 1918
+Anyway, the patch looks correct to me, including the slightly unrelated
+hunk to fix the missing unlock and preload leak.
