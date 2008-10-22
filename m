@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759144AbYJVS4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759258AbYJVS45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759144AbYJVS4Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 14:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756964AbYJVSwU
+	id S1759258AbYJVS45 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 14:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758811AbYJVSxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 14:52:20 -0400
-Received: from mo-p05-ob.rzone.de ([81.169.146.180]:59001 "EHLO
-	mo-p05-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758350AbYJVSwT (ORCPT
+	Wed, 22 Oct 2008 14:53:34 -0400
+Received: from mail-gx0-f29.google.com ([209.85.217.29]:53596 "EHLO
+	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758351AbYJVSxc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 14:52:19 -0400
-X-Greylist: delayed 678 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Oct 2008 14:52:18 EDT
-X-RZG-CLASS-ID: mo05
-X-RZG-AUTH: :Pm0FVUW6aauhRGJJc5OfA4AU8DM8ZlijdmJYxKn/UQvEQQx8Ak89p3I=
-Date: Wed, 22 Oct 2008 20:40:58 +0200
-From: Alex Riesen <fork0@users.sourceforge.net>
-To: Markus Rechberger <mrechberger@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       em28xx@mcentral.de
-Subject: Re: [PATCH] em28xx patches against the latest git tree
-Message-ID: <20081022184058.GB4626@blimp.localdomain>
-Reply-To: Alex Riesen <fork0@users.sourceforge.net>
-References: <d9def9db0810221034v3bf4dabt6aa905b8a3ebd5a@mail.gmail.com> <d9def9db0810221038g156871e1u200abb90b774ad28@mail.gmail.com> <81b0412b0810221059w2e02b1c1ubd894b22f7991242@mail.gmail.com> <d9def9db0810221110g6f104b17g36a74704d43c5693@mail.gmail.com> <20081022182924.GA4626@blimp.localdomain>
+	Wed, 22 Oct 2008 14:53:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=npTaWoPNk2rRv6eNpiaMx4o0DyT974+XV5K1oVuXLl4Cm0x+1tAClWfmX5WRTK9wuh
+         +z5p9yCFclIBSQnePsMKXcYH72UHwFvi9alviIiTCXi4SapNjxsZiKG1o3fiJT5cSw3p
+         uoFDfl6BmAxorRAqW1+8tNrhi1+Z5R8uXWFoA=
+Date: Wed, 22 Oct 2008 22:53:26 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] SLUB - define OO_ macro instead of hardcoded numbers
+Message-ID: <20081022185326.GC4218@localhost>
+References: <20081022165354.GI9639@localhost> <20081022172103.GJ9639@localhost> <Pine.LNX.4.64.0810221037320.7633@quilx.com> <48FF6800.20705@cs.helsinki.fi> <20081022175827.GL9639@localhost> <Pine.LNX.4.64.0810221110060.27088@quilx.com> <20081022181556.GM9639@localhost> <Pine.LNX.4.64.0810221123150.17454@quilx.com> <20081022184212.GA4218@localhost> <Pine.LNX.4.64.0810221149360.24883@quilx.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081022182924.GA4626@blimp.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0810221149360.24883@quilx.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Riesen, Wed, Oct 22, 2008 20:29:24 +0200:
-> Markus Rechberger, Wed, Oct 22, 2008 20:10:49 +0200:
-> > On Wed, Oct 22, 2008 at 7:59 PM, Alex Riesen <raa.lkml@gmail.com> wrote:
-> > > 2008/10/22 Markus Rechberger <mrechberger@gmail.com>:
-> > >>> commit history is available at:
-> > >> http://mcentral.de/hg/~mrec/em28xx-new/shortlog
-> > >>
-> > The [old] driver has a long and rather bad history, which I'd like to avoid
-> > by using the different directory.
-> 
-> You could submit patches depricating it. Does the old driver support
-> something yours does not?
-> 
+[Christoph Lameter - Wed, Oct 22, 2008 at 11:49:56AM -0700]
+> On Wed, 22 Oct 2008, Cyrill Gorcunov wrote:
+>
+>> I think the patch becomes more complicated as it should be.
+>> Maybe just use:
+>>
+>> #define MAX_OBJ_PER_PAGE 65535 /* since page.objects is u16 */
+>
+> Ok.
+>
+> Acked-by: Christoph Lameter <cl@linux-foundation.org>
+>
 
-BTW, you forgot to a patch to include your driver into Kconfig of
-drivers/media/video. Something like this, perhaps:
+Thanks for review -- will make normal patch shortly and
+send it to Pekka. Thanks!
 
-diff --git a/drivers/media/video/Kconfig b/drivers/media/video/Kconfig
-index 47102c2..1bbee59 100644
---- a/drivers/media/video/Kconfig
-+++ b/drivers/media/video/Kconfig
-@@ -781,7 +781,7 @@ source "drivers/media/video/gspca/Kconfig"
- 
- source "drivers/media/video/pvrusb2/Kconfig"
- 
--source "drivers/media/video/em28xx/Kconfig"
-+source "drivers/media/video/empia/Kconfig"
- 
- source "drivers/media/video/usbvision/Kconfig"
- 
+		- Cyrill -
