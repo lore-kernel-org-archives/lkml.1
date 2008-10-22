@@ -1,104 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbYJVQSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbYJVQTI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756862AbYJVQSv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 12:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbYJVQSm
+	id S1757215AbYJVQTI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 12:19:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756808AbYJVQSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 12:18:42 -0400
-Received: from gv-out-0910.google.com ([216.239.58.187]:12955 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753123AbYJVQSl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 12:18:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=hXcRZk7bTCPPV6cjsoI0pHJwbe+xbTZ4Zi/AUqj11vq0Atdy2sfNXLBYAvpVlu/TBh
-         qxdSav4PyYr2cWfOGCVpKfTM4/P1t1ENa19MWCwXKzqxJ1z64uJx3Egkd61uRUrio8tJ
-         9/lMFHZCCR+i6mDvLtWCs16E3YqRrvW2r4AAw=
-Date: Wed, 22 Oct 2008 20:18:36 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC] SLUB - define OO_ macro instead of hardcoded numbers
-Message-ID: <20081022161836.GG9639@localhost>
+	Wed, 22 Oct 2008 12:18:49 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:37347 "EHLO pmx1.sophos.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756166AbYJVQSs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 12:18:48 -0400
+From: "Tvrtko A. Ursulin" <tvrtko.ursulin@sophos.com>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Subject: Bug in sysctl table code?
+Date: Wed, 22 Oct 2008 17:18:44 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <31060_1224692340_48FF5274_31060_53418_1_200810221718.45030.tvrtko.ursulin@sophos.com>
+X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 22/10/2008 17:18:45,
+	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 22/10/2008 17:18:46,
+	Serialize complete at 22/10/2008 17:18:46
+X-TNEFEvaluated: 1
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
----
 
-Please check -- wouldn't it be better to use such a macro?
-At least it makes easy to understand the 65535 constant is
-coming from if only I didn't miss anything :)
+Hello to all and Al specifically,
 
- mm/slub.c |   18 +++++++++++-------
- 1 file changed, 11 insertions(+), 7 deletions(-)
+Al, you were the last to touch kernel/sysctl.c and put in a WARN_ON(1) check on line 1930 which I seem to be hitting. Commit in question: http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=commitdiff;h=ae7edecc9b8810770a8e5cb9a466ea4bdcfa8401
 
-Index: linux-2.6.git/mm/slub.c
-===================================================================
---- linux-2.6.git.orig/mm/slub.c	2008-09-26 13:45:16.000000000 +0400
-+++ linux-2.6.git/mm/slub.c	2008-10-22 20:10:59.000000000 +0400
-@@ -153,6 +153,10 @@
- #define ARCH_SLAB_MINALIGN __alignof__(unsigned long long)
- #endif
- 
-+#define OO_SHIFT	16
-+#define OO_MASK		((1 << OO_SHIFT) - 1)
-+#define OO_MAX		OO_MASK
-+
- /* Internal SLUB flags */
- #define __OBJECT_POISON		0x80000000 /* Poison object */
- #define __SYSFS_ADD_DEFERRED	0x40000000 /* Not yet visible via sysfs */
-@@ -290,7 +294,7 @@ static inline struct kmem_cache_order_ob
- 						unsigned long size)
- {
- 	struct kmem_cache_order_objects x = {
--		(order << 16) + (PAGE_SIZE << order) / size
-+		(order << OO_SHIFT) + (PAGE_SIZE << order) / size
- 	};
- 
- 	return x;
-@@ -298,12 +302,12 @@ static inline struct kmem_cache_order_ob
- 
- static inline int oo_order(struct kmem_cache_order_objects x)
- {
--	return x.x >> 16;
-+	return x.x >> OO_SHIFT;
- }
- 
- static inline int oo_objects(struct kmem_cache_order_objects x)
- {
--	return x.x & ((1 << 16) - 1);
-+	return x.x & OO_MASK;
- }
- 
- #ifdef CONFIG_SLUB_DEBUG
-@@ -764,8 +768,8 @@ static int on_freelist(struct kmem_cache
- 	}
- 
- 	max_objects = (PAGE_SIZE << compound_order(page)) / s->size;
--	if (max_objects > 65535)
--		max_objects = 65535;
-+	if (max_objects > OO_MAX)
-+		max_objects = OO_MAX;
- 
- 	if (page->objects != max_objects) {
- 		slab_err(s, page, "Wrong number of objects. Found %d but "
-@@ -1819,8 +1823,8 @@ static inline int slab_order(int size, i
- 	int rem;
- 	int min_order = slub_min_order;
- 
--	if ((PAGE_SIZE << min_order) / size > 65535)
--		return get_order(size * 65535) - 1;
-+	if ((PAGE_SIZE << min_order) / size > OO_MAX)
-+		return get_order(size * OO_MAX) - 1;
- 
- 	for (order = max(min_order,
- 				fls(min_objects * size - 1) - PAGE_SHIFT);
+I thought I was not doing anything special, which also implies nothing wrong, but feel free to tell me correct me if not so. I have a test module which registers some sysctl tables to create this layout:
+
+/proc/sys/test/
+/proc/sys/test/a
+/proc/sys/test/a/1
+/proc/sys/test/a/1/item
+/proc/sys/test/b
+/proc/sys/test/b/1
+/proc/sys/test/b/1/item
+/proc/sys/test/b/2
+/proc/sys/test/b/2/item
+/proc/sys/test/b/3
+/proc/sys/test/b/3/item
+/proc/sys/test/b/4
+/proc/sys/test/b/4/item
+/proc/sys/test/b/5
+/proc/sys/test/b/5/item
+
+Unregistering is done in a different order and that seems to trigger this (ignore tainted status please since it is caused by my test module):
+
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.064657] ------------[ cut here ]------------
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.064717] WARNING: at kernel/sysctl.c:1930 unregister_sysctl_table+0x9a/0xc5()
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.064760] Modules linked in: sysctlunreg(P-) psmouse af_packet serio_raw pcspkr i2c_piix4 container ac button evdev ext3 jbd mbcache ide_cd_mod cdrom floppy pcnet32 mii thermal processor
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.065416] Pid: 2799, comm: rmmod Tainted: P        W 2.6.27-rc6 #3
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.065685]  [<c0117078>] warn_on_slowpath+0x41/0x65
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.065839]  [<c015853b>] ? check_bytes_and_report+0x21/0x8f
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.065881]  [<c0158897>] ? check_object+0x111/0x1a4
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.065891]  [<c011c5c0>] unregister_sysctl_table+0x9a/0xc5
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.065898]  [<c0131f39>] ? trace_hardirqs_on+0xb/0xd
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.065959]  [<e089600b>] unreg_one+0xb/0x15 [sysctlunreg]
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.066371]  [<e08960e3>] test_exit+0x53/0x65 [sysctlunreg]
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.066381]  [<c013a186>] sys_delete_module+0x163/0x1c1
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.066389]  [<c012951d>] ? up_read+0x16/0x29
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.066397]  [<c0262e09>] ? do_page_fault+0x300/0x5c1
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.066407]  [<c0102b1d>] sysenter_do_call+0x12/0x35
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.066476]  =======================
+Oct 22 16:10:59 vm-kernel-32 kernel: [   63.066612] ---[ end trace 4eaa2a86a8e2da22 ]---
+
+Finally, code looks like this:
+
+-----------------<CUT HERE>--------------------------------------------------------
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/init.h>
+#include <linux/slab.h>
+#include <linux/sysctl.h>
+
+static struct ctl_table_header *header[10];
+static unsigned int d[10];
+static ctl_table *tree[10];
+
+static struct ctl_table_header *reg_one(ctl_table *tree, char *first, char *second, unsigned int *data)
+{
+	const unsigned int items = 8;
+
+	tree = kzalloc(items*sizeof(ctl_table), GFP_KERNEL);
+
+	tree[0].procname = "test";
+	tree[0].mode = 0555;
+	tree[0].child = &tree[2];
+
+	tree[2].procname = first;
+	tree[2].mode = 0555;
+	tree[2].child = &tree[4];
+
+	tree[4].procname = second;
+	tree[4].mode = 0555;
+	tree[4].child = &tree[6];
+
+	tree[6].procname = "item";
+	tree[6].mode = 0555;
+	tree[6].data = data;
+	tree[6].maxlen = sizeof(unsigned int);
+	tree[6].proc_handler = proc_dointvec;
+
+	return register_sysctl_table(tree);
+}
+
+static void unreg_one(struct ctl_table_header *h, ctl_table *t)
+{
+	unregister_sysctl_table(h);
+	kfree(t);
+}
+
+static int __init test_init(void)
+{
+	header[0] = reg_one(tree[0], "a", "1", &d[0]);
+	header[1] = reg_one(tree[1], "b", "1", &d[1]);
+	header[2] = reg_one(tree[2], "b", "2", &d[2]);
+	header[3] = reg_one(tree[3], "b", "3", &d[3]);
+	header[4] = reg_one(tree[4], "b", "4", &d[4]);
+	header[5] = reg_one(tree[5], "b", "5", &d[5]);
+	
+	return 0;
+}
+
+static void __exit test_exit(void)
+{
+	unreg_one(header[1], tree[1]);
+	unreg_one(header[2], tree[2]);
+	unreg_one(header[5], tree[5]);
+	unreg_one(header[3], tree[3]);
+	unreg_one(header[4], tree[4]);
+	unreg_one(header[0], tree[0]);
+}
+
+module_init(test_init);
+module_exit(test_exit);
+-----------------<CUT HERE>--------------------------------------------------------
+
+I would never expect unregistering having to be done in the same order, but a) I may be wrong, or b) there may be another bug in my test code. Hopefully you will know something about this.
+
+Regards,
+
+Tvrtko
+
+P.S. Sorry for the dupe, I blame it on Notes!
+
+
+Sophos Plc, The Pentagon, Abingdon Science Park, Abingdon,
+OX14 3YP, United Kingdom.
+
+Company Reg No 2096520. VAT Reg No GB 348 3873 20.
+
