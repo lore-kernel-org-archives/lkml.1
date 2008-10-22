@@ -1,37 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756066AbYJVVaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758702AbYJVVak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756066AbYJVVaS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 17:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbYJVVaE
+	id S1758702AbYJVVak (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 17:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757475AbYJVVa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 17:30:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38764 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751575AbYJVVaC (ORCPT
+	Wed, 22 Oct 2008 17:30:27 -0400
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:40534 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757018AbYJVVaW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 17:30:02 -0400
-Date: Wed, 22 Oct 2008 14:28:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: linux-next: Tree for October 22
-Message-Id: <20081022142842.9a98d8f6.akpm@linux-foundation.org>
-In-Reply-To: <20081022203838.f10065ec.sfr@canb.auug.org.au>
-References: <20081022203838.f10065ec.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Oct 2008 17:30:22 -0400
+Date: Wed, 22 Oct 2008 14:28:57 -0700 (PDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au, hugh@veritas.com,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: SLUB defrag pull request?
+In-Reply-To: <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu>
+Message-ID: <Pine.LNX.4.64.0810221416130.26639@quilx.com>
+References: <1223883004.31587.15.camel@penberg-laptop> 
+ <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu>  <48FE6306.6020806@linux-foundation.org>
+  <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810220822500.30851@quilx.com>
+  <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221252570.3562@quilx.com>
+  <E1Ksk3g-00027r-Lp@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221315080.26671@quilx.com>
+  <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu> <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>
+ <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Spam-Score: -2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i386 allnoconfig:
+On Wed, 22 Oct 2008, Miklos Szeredi wrote:
 
-pci-dma.c:(.init.text+0x3381): undefined reference to `forbid_dac'
-pci-dma.c:(.init.text+0x3387): undefined reference to `forbid_dac'
-pci-dma.c:(.init.text+0x33a1): undefined reference to `forbid_dac'
-pci-dma.c:(.init.text+0x33a7): undefined reference to `forbid_dac'
-pci-dma.c:(.init.text+0x33e7): undefined reference to `forbid_dac'
+>> Actually, when debugging is enabled, it's customary to poison the
+>> object, for example (see free_debug_processing() in mm/slub.c). So we
+>> really can't "easily ensure" that in the allocator unless we by-pass
+>> all the current debugging code.
+
+Plus the allocator may be reusing parts of the freed object for a freelist 
+etc even if the object is not poisoned.
+
+> Thank you, that does actually answer my question.  I would still think
+> it's a good sacrifice to no let the dentries be poisoned for the sake
+> of a simpler dentry defragmenter.
+
+You can simplify defrag by not doing anything in the get() method. That 
+means some of the objects passed to the kick() method may be already have 
+been freed in the interim.
+
+The kick method then must be able to determine if the object has already 
+been freed (or is undergoing freeing) by inspecting the object contents 
+(allocations are held off until kick() is complete). It then needs to free 
+only the objects that are still allocated.
+
+That way you could get to a one stage system.... If the dentry code can 
+give us that then the approach would become much simpler.
+
+
+
