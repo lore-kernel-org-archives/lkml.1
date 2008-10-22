@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbYJVMu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbYJVMwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755998AbYJVMu1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 08:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYJVMuR
+	id S1755057AbYJVMwE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 08:52:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbYJVMvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 08:50:17 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:31212 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751704AbYJVMuQ (ORCPT
+	Wed, 22 Oct 2008 08:51:51 -0400
+Received: from twinlark.arctic.org ([208.69.40.136]:51348 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750813AbYJVMvu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 08:50:16 -0400
-Date: Wed, 22 Oct 2008 16:50:14 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       i2c@lm-sensors.org, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 2/7] i2c: add info->archdata field
-Message-ID: <20081022125014.GA27240@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20081016171222.GA24812@oksana.dev.rtsoft.ru> <20081016171253.GB5515@oksana.dev.rtsoft.ru> <20081017112125.1f2c9d94@hyperion.delvare> <1224635254.7654.292.camel@pasglop> <20081022085002.0698e2a8@hyperion.delvare> <1224661075.7654.338.camel@pasglop> <20081022100813.GA24757@oksana.dev.rtsoft.ru> <20081022130748.57d4587a@hyperion.delvare>
+	Wed, 22 Oct 2008 08:51:50 -0400
+Message-ID: <48FF21BF.9090509@kernel.org>
+Date: Wed, 22 Oct 2008 05:51:11 -0700
+From: "Andrew G. Morgan" <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Content-Disposition: inline
-In-Reply-To: <20081022130748.57d4587a@hyperion.delvare>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-audit@redhat.com, viro@zeniv.linux.org.uk, sgrubb@redhat.com
+Subject: Re: [PATCH 3/4] AUDIT: audit when fcaps increase the permitted or
+ inheritable capabilities
+References: <20081020222538.3895.50175.stgit@paris.rdu.redhat.com> <20081020222612.3895.6710.stgit@paris.rdu.redhat.com> <48FD6E49.6060104@kernel.org> <20081021191625.GA4657@us.ibm.com>
+In-Reply-To: <20081021191625.GA4657@us.ibm.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 01:07:48PM +0200, Jean Delvare wrote:
-> On Wed, 22 Oct 2008 14:08:13 +0400, Anton Vorontsov wrote:
-> > On Wed, Oct 22, 2008 at 06:37:55PM +1100, Benjamin Herrenschmidt wrote:
-> > > On Wed, 2008-10-22 at 08:50 +0200, Jean Delvare wrote:
-> > > > On Wed, 22 Oct 2008 11:27:34 +1100, Benjamin Herrenschmidt wrote:
-> > > > > On Fri, 2008-10-17 at 11:21 +0200, Jean Delvare wrote:
-> > > > > > Hi Anton,
-> > > > > > 
-> > > > > > On Thu, 16 Oct 2008 21:12:53 +0400, Anton Vorontsov wrote:
-> > > > > > > If present the info->archdata is copied into the dev->archdata.
-> > > > > > > Some (OpenFirmware) platforms need it.
-> > > > > > > 
-> > > > > > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > > > > > > ---
-> > > > > 
-> > > > > So who's pushing this one ? Jean ?
-> > > > 
-> > > > As I wrote before, I'm happy to take this patch if you want me to, but
-> > > > I also have no objection if the author of this patchset wants to push
-> > > > it himself together with the rest of the set. Just let me know what you
-> > > > expect from me (preferably in the next few hours, as I will be sending
-> > > > my second and last round of i2c patches for kernel 2.6.28 to Linus
-> > > > today.)
-> > > 
-> > > Anton, I've done my last batch for 2.6.28 before -rc1 so it might be
-> > > better if it goes through Jean no ?
-> > 
-> > Sorry, I guess the "few hours" limit was done exactly when I was
-> > sleeping. ;-) Anyway, I'm fine either way. Don't see any problem
-> > if it goes i2c or powerpc tree.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+[s/viro@...ok/viro@...uk/]
+
+Serge E. Hallyn wrote:
+>> Logging execve()s where there is only an increase in capabilities seems
+>> wrong to me. To me it seems equally important to log any event where an
+>> execve() yields pP != 0.
 > 
-> OK, then I'm taking the patch in my tree and it will go to Linus later
-> today.
+> True.
+> 
+> ... except if (!issecure(SECURE_NOROOT) && uid==0) I guess?
+> 
+> And then it also might be interesting in the case where
+> (!issecure(SECURE_NOROOT) && uid==0) and pP is not full.
 
-Much appreciated, thanks.
+I guess so, although this seems like a case of being interested in a
+(unusual) non-privileged execve().
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+>>>  	rc = bprm_caps_from_vfs_caps(&vcaps, bprm);
+>>>  
+>>> +	audit_log_bprm_fcaps(bprm, &vcaps);
+>>> +
+>> When rc != 0, the execve() will fail. Is it appropriate to log in this case?
+> 
+> It might fail because fP contains bits not in pP', right?  That's
+> probably interesting to auditors.
+
+In which case, how is the fact it didn't execute captured in the audit log?
+
+Cheers
+
+Andrew
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFI/yG9+bHCR3gb8jsRAii1AKCDluqUSVyAKP67/9bhEgqdlx3xdACg0dn4
+81bi/3eMaP1FqfdVK2u/BpM=
+=QBli
+-----END PGP SIGNATURE-----
