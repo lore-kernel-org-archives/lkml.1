@@ -1,193 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706AbYJVScc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbYJVSdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757706AbYJVScc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 14:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbYJVScX
+	id S1757899AbYJVSdY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 14:33:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbYJVSdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 14:32:23 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:32252 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753685AbYJVScX (ORCPT
+	Wed, 22 Oct 2008 14:33:16 -0400
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:37773 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752657AbYJVSdP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 14:32:23 -0400
-Date: Wed, 22 Oct 2008 22:32:18 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
-       Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
-Message-ID: <20081022183218.GA19025@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20081016171222.GA24812@oksana.dev.rtsoft.ru> <20081022014243.GA19362@oksana.dev.rtsoft.ru> <1224642497.7654.319.camel@pasglop> <200810212122.49121.david-b@pacbell.net> <20081022103641.GB24757@oksana.dev.rtsoft.ru> <20081022104606.GA510@oksana.dev.rtsoft.ru>
+	Wed, 22 Oct 2008 14:33:15 -0400
+Message-ID: <48FF71D3.8060505@cs.columbia.edu>
+Date: Wed, 22 Oct 2008 14:32:51 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Content-Disposition: inline
-In-Reply-To: <20081022104606.GA510@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org, tglx@linutronix.de,
+       dave@linux.vnet.ibm.com, mingo@elte.hu, hpa@zytor.com,
+       viro@zeniv.linux.org.uk
+Subject: Re: [RFC v7][PATCH 2/9] General infrastructure for checkpoint	restart
+References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu> <1224481237-4892-3-git-send-email-orenl@cs.columbia.edu> <20081021124130.a002e838.akpm@linux-foundation.org> <20081021202410.GA10423@us.ibm.com> <48FE82DF.6030005@cs.columbia.edu> <20081022152804.GA23821@us.ibm.com> <48FF4EB2.5060206@cs.columbia.edu> <20081022170325.GA4908@us.ibm.com>
+In-Reply-To: <20081022170325.GA4908@us.ibm.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 02:46:06PM +0400, Anton Vorontsov wrote:
-> On Wed, Oct 22, 2008 at 02:36:41PM +0400, Anton Vorontsov wrote:
-> > On Tue, Oct 21, 2008 at 09:22:48PM -0700, David Brownell wrote:
-> > > On Tuesday 21 October 2008, Benjamin Herrenschmidt wrote:
-> > > > The notifier can be registered before the devices, though it's a little
-> > > > bit fishy and fragile.
-> > > > 
-> > > > Easier I suppose to just have OF specific hooks in the bus code.
-> > > 
-> > > Like what I suggested:  "chip-aware OF glue drivers".  The relevant
-> > > bus code being the "of_platform_bus_type" infrastructure.
-> > > 
-> > > Example:  instead of Anton's patch #6 modifying the existing pca953x
-> > > driver, an of_pca953x driver that knows how to poke around in the OF
-> > > device attributes to (a) create the pca953x_platform_data, (b) call
-> > > i2c_register_board_info() to make that available later, and then
-> > > finally (c) vanish, since it's not needed any longer.
-> > 
-> > Heh. You tell me my first approach:
-> > 
-> > http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056730.html (mmc_spi)
-> > 
-> > The OF people didn't like the patch which was used to support this
-> > approach:
-> > http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056728.html
+
+
+Serge E. Hallyn wrote:
+> Quoting Oren Laadan (orenl@cs.columbia.edu):
+>>
+>> Serge E. Hallyn wrote:
+>>> Quoting Oren Laadan (orenl@cs.columbia.edu):
+>>> Just thinking aloud...
+>>>
+>>> Is read mode appropriate?  The user can edit the statefile and restart
+>>> it.  Admittedly the restart code should then do all the appropriate
+>>> checks for recreating resources, but I'm having a hard time thinking
+>>> through this straight.
+>>>
+>>> Let's say hallyn is running passwd.  ruid=500,euid=0.  He quickly
+>>> checkpoints.  Then he restarts.  Will restart say "ok, the /bin/passwd
+>>> binary is setuid 0 so let hallyn take euid=0 for this?"  I guess not.
+>>> But are there other resources for which this is harder to get right?
+>> I'd say that checkpoint and restart are separate.
+>>
+>> In checkpoint, you read the state and save it somewhere; you don't
+>> modify anything in the target task (container). This equivalent to
+>> ptrace read-mode. If you could do ptrace, you could save all that
+>> state. In fact, you could save it in a format that is suitable for
+>> a future restart ... (or just forge one !)
 > 
-> Though, I think I'll able to persuade Grant that two registration paths
-> are inevitable (i.e. for simple devices we should use
-> drivers/of/of_{i2c,spi}.c and for complex cases we'll have to have
-> another method of registration).
+> Yeah, that's convincing.
 > 
-> > The board info has another problem though. We can't remove it, thus
-> > we can't implement module_exit() for the 'OF glue'.
+>> In restart, we either don't trust the user and keep everything to
+>> be done with her credentials, of we trust the root user and allow
+>> all operations (like loading a kernel module).
+>>
+>> We can actually have both modes of operations. How to decide that
+>> we trust the user is a separate question:  one option is to have
+>> both checkpoint and restart executables setuid - checkpoint will
+>> sign (in user space) the output image, and restart (in user space)
+>> will validate the signature, before passing it to the kenrel. Surely
+>> there are other ways...
 > 
-> And try to solve this problem... maybe then things will begin to
-> move forward.
+> Makes sense.
+> 
+> ...
+> 
+>>> Hmm, so do you think we just always use the caller's credentials?
+>> Nope, since we will fail to restart in many cases. We will need a way
+>> to move from caller's credentials to saved credentials, and even from
+>> caller's credentials to privileged credentials (e.g. to reopen a file
+>> that was created by a setuid program prior to dropping privileges).
+> 
+> Can we agree to worry about that much much later? :)  Would you agree
 
-There is another problem: board infos are scanned at the controller
-registration time only. So if we register the board infos after
-the controller registered, then nobody will probe the board infos.
+Definitely. Even more so - I believe that's a user-space issue :)
 
-This is all solvable by hacking the i2c core code though. I started
-it, but it turned out to be ugly. I'll finish it though, just to show
-it someday.
+> that for the majority of use-cases, restarting with caller's credentials
+> will work?  Or am I wrong about that?
 
-But now I'm not sure if it worth the efforts. Maybe we could just
-modify the drivers to do something like this?
+That depends on your target audience. For HPC you're probably right.
+For server applications this may not be the case (e.g. apache needs
+a privileged port, and then it drops privileges).
 
-This is not exactly "transparently" to the drivers, but well..
+I agree that we may safely (...) defer this discussion until the
+implementation gets much beefier.
 
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index 01b4bbd..b1dfa7b 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -9,4 +9,7 @@ obj-$(CONFIG_GPIO_MAX732X)	+= max732x.o
- obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
- obj-$(CONFIG_GPIO_PCA953X)	+= pca953x.o
- obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
-+ifeq ($(CONFIG_OF),y)
-+obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x_of.o
-+endif
- obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
-diff --git a/drivers/gpio/pcf857x.c b/drivers/gpio/pcf857x.c
-index 4bc2070..f8057d2 100644
---- a/drivers/gpio/pcf857x.c
-+++ b/drivers/gpio/pcf857x.c
-@@ -187,7 +187,7 @@ static int pcf857x_probe(struct i2c_client *client,
- 	struct pcf857x			*gpio;
- 	int				status;
- 
--	pdata = client->dev.platform_data;
-+	pdata = pcf857x_get_pdata(client);
- 	if (!pdata)
- 		return -ENODEV;
- 
-@@ -314,7 +314,7 @@ fail:
- 
- static int pcf857x_remove(struct i2c_client *client)
- {
--	struct pcf857x_platform_data	*pdata = client->dev.platform_data;
-+	struct pcf857x_platform_data	*pdata = pcf857x_get_pdata(client);
- 	struct pcf857x			*gpio = i2c_get_clientdata(client);
- 	int				status = 0;
- 
-@@ -334,6 +334,8 @@ static int pcf857x_remove(struct i2c_client *client)
- 		kfree(gpio);
- 	else
- 		dev_err(&client->dev, "%s --> %d\n", "remove", status);
-+
-+	pcf857x_put_pdata(client);
- 	return status;
- }
- 
-diff --git a/drivers/gpio/pcf857x_of.c b/drivers/gpio/pcf857x_of.c
-new file mode 100644
-index 0000000..414943b
---- /dev/null
-+++ b/drivers/gpio/pcf857x_of.c
-@@ -0,0 +1,36 @@
-+#include <linux/kernel.h>
-+#include <linux/slab.h>
-+#include <linux/i2c.h>
-+#include <linux/i2c/pcf857x.h>
-+#include <linux/gpio.h>
-+#include <linux/of.h>
-+#include <linux/of_gpio.h>
-+
-+struct pcf857x_platform_data *pcf857x_get_pdata(struct i2c_client *client)
-+{
-+	struct pcf857x_platform_data *pdata = client->dev.platform_data;
-+
-+	if (pdata)
-+		return pdata;
-+
-+	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
-+	if (!pdata)
-+		return NULL;
-+
-+	/*
-+	 * Do the OF-specific setup here.
-+	 */
-+
-+	client->dev.platform_data = pdata;
-+}
-+
-+void pcf857x_put_pdata(struct i2c_client *client)
-+{
-+	struct pcf857x_platform_data *pdata = client->dev.platform_data;
-+
-+	/*
-+	 * Do the OF-specific cleanup here.
-+	 */
-+
-+	kfree(pdata);
-+}
-diff --git a/include/linux/i2c/pcf857x.h b/include/linux/i2c/pcf857x.h
-index 0767a2a..bdc1aba 100644
---- a/include/linux/i2c/pcf857x.h
-+++ b/include/linux/i2c/pcf857x.h
-@@ -1,6 +1,8 @@
- #ifndef __LINUX_PCF857X_H
- #define __LINUX_PCF857X_H
- 
-+struct i2c_client;
-+
- /**
-  * struct pcf857x_platform_data - data to set up pcf857x driver
-  * @gpio_base: number of the chip's first GPIO
-@@ -41,4 +43,13 @@ struct pcf857x_platform_data {
- 	void		*context;
- };
- 
-+#ifdef CONFIG_OF
-+extern struct pcf857x_platform_data *
-+	pcf857x_get_pdata(struct i2c_client *client);
-+extern void pcf857x_put_pdata(struct i2c_client *client);
-+#else
-+#define pcf857x_get_pdata(client) ((client)->dev.platform_data)
-+#define pcf857x_put_pdata(client)
-+#endif
-+
- #endif /* __LINUX_PCF857X_H */
+> 
+>> To do that, we will need to agree on a way to escalate/change the
+>> credentials. This however belongs to user-space (and then the binaries
+>> for checkpoint/restart will be setuid themselves).
+> 
+> Ok those are less scary, and I have no problem with those.
+> 
+>> There will also be the issue of mapping credentials: a user A may have
+>> one UID/GID on once system and another UID/GID on another system, and
+>> we may want to do the conversion. This, too, can be done in user space
+>> prior to restart by using an appropriate filter through the checkpoint
+>> stream.
+> 
+> User namespaces may help here too.  So user A can create a new user
+> namespace and restart as user B in that namespace.  But right now that
+> sounds like overkill.
+
+Indeed, virtualization is probably the solution. Here, too, I think
+it's safe to defer the discussion.
+
+Oren.
+
+
