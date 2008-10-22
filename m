@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759600AbYJVVKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759735AbYJVVLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759600AbYJVVKp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 17:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbYJVVKf
+	id S1759735AbYJVVLV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 17:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbYJVVLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 17:10:35 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:2813 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752408AbYJVVKe (ORCPT
+	Wed, 22 Oct 2008 17:11:08 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:37819 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754271AbYJVVLF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 17:10:34 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Am4DAM8S9kh5LE2tgWdsb2JhbACTYAEBFiKuDIFr
-X-IronPort-AV: E=Sophos;i="4.33,466,1220193000"; 
-   d="scan'208";a="216162427"
-Date: Thu, 23 Oct 2008 08:10:28 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>, lachlan@sgi.com,
-       Arjan van de Ven <arjan@infradead.org>, xfs@oss.sgi.com,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: BUG: sleeping function called from invalid context at
-	kernel/rwsem.c:131 XFS? (was: Re: linux-next: Tree for October 17)
-Message-ID: <20081022211028.GO18495@disturbed>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Alexander Beregalov <a.beregalov@gmail.com>, lachlan@sgi.com,
-	Arjan van de Ven <arjan@infradead.org>, xfs@oss.sgi.com,
-	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <20081017203710.GA27187@infradead.org> <20081017135510.7127c4e7@infradead.org> <a4423d670810200758m3cea3841h40988afc8eaf81@mail.gmail.com> <20081020163327.GA15651@infradead.org> <a4423d670810201013w6448cb38w402771799cefb5f5@mail.gmail.com> <20081020223549.GA21152@disturbed> <a4423d670810210442y51b62fc2naf6cb649e6b26942@mail.gmail.com> <20081022075838.GK18495@disturbed> <20081022082550.GM18495@disturbed> <20081022101351.GB11313@infradead.org>
+	Wed, 22 Oct 2008 17:11:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=qyT5FAEkgKSTx2QnCKmJOXD5SUFqta1rxEEHgRAZFUtFrGy5Smr6ucFpdLdvfnnSoq
+         lLl3dzJRTQyr21yH/ojA+blAO05KsQkiSroU/4hERI+qqVsbiHkZ1Uhu+PnfHV7vpzK4
+         sRIb18SXXGKzBCdr8uh9gmG0Jci/Bm7/5t/7g=
+Message-ID: <d9def9db0810221411r45ac7404pdfe5d2cf0266c088@mail.gmail.com>
+Date: Wed, 22 Oct 2008 23:11:03 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       em28xx <em28xx@mcentral.de>
+Subject: [PATCH 7/7] adding common used headers
+Cc: acano@fastmail.fm, "Andre Kelmanson" <akelmanson@gmail.com>,
+       "Bouwsma Barry" <freebeer.bouwsma@gmail.com>,
+       "Dan Kreiser" <kreiser@informatik.hu-berlin.de>,
+       "Frank Neuber" <fn@kernelport.de>,
+       "Jelle de Jong" <jelledejong@powercraft.nl>,
+       "John Stowers" <john.stowers.lists@gmail.com>,
+       "Lukas Kuna" <lukas.kuna@evkanet.net>,
+       "Stefan Vonolfen" <stefan.vonolfen@gmail.com>,
+       "Stephan Berberig" <s.berberig@arcor.de>,
+       "Thomas Giesecke" <thomas.giesecke@ibgmbh-naumburg.de>,
+       "Vitaly Wool" <vwool@ru.mvista.com>, "Zhenyu Wang" <zhen78@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081022101351.GB11313@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 06:13:51AM -0400, Christoph Hellwig wrote:
-> On Wed, Oct 22, 2008 at 07:25:50PM +1100, Dave Chinner wrote:
-> > > Basically the above commit moved xfs_ilock() inside
-> > > radix_tree_preload()/radix_tree_preload_end(), which means we are
-> > > taking a rwsem() while we have an elevated preempt count. I'll
-> > > get a patch out to fix it.
-> 
-> This really needs a warning.  Then again I don't really understand this
-> as the point of radix_tree_preload was that we can do the actual
-> radix-tree under a lock, or not?
-
-Right - the preload allows us to do GFP_KERNEL allocations for radix
-tree nodes and use a spinlock for inserts into the tree. We could
-drop the preload stuff if we initialised the radix tree to use
-GFP_ATOMIC allocations for radix tree nodes, but that is more likely
-to lead to insert failures under low memory conditions compared to
-the preload method.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+    tunerchip.h:
+    just contains an internal used struct which can be used for
+setting up a tuner frontend.
