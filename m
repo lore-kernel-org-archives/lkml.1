@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753441AbYJVDYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752585AbYJVD12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753441AbYJVDYW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 23:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbYJVDYN
+	id S1752585AbYJVD12 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 23:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbYJVD1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 23:24:13 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:38521 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022AbYJVDYM (ORCPT
+	Tue, 21 Oct 2008 23:27:20 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:14037 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751022AbYJVD1T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 23:24:12 -0400
+	Tue, 21 Oct 2008 23:27:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=jEf3P/wj3wkL77EoyHYe6sKMBVa1B2O/TkV6X1GfT36KkbZJm7PmOj6Xu+ssOq7Qb1
-         c2KAaYXK96k7ZaQS/7eXiGT5U/da2XF2Dr1zpNoxzZqaqfqAaiwUTXYMiyCYEUHm5V8c
-         HvmjFweB0fXR1DgvrEwti94oSfsmlI/aRjl6A=
-Message-ID: <386072610810212024l52cd86cen79061d7111c421ba@mail.gmail.com>
-Date: Wed, 22 Oct 2008 11:24:10 +0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] re-modprobe a nand controller driver module will cause system crash.
-In-Reply-To: <386072610810160356p3807f538la5087debe0c76866@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=j8Hs/MyjHO+ee+tP+Lqpoz/UvJqH3PmotC3AN0qfRYkkLo9NWK6eNHFXdbcaIQeStw
+         jwKdMb8YryUGdV7qj+UZcgGcMq+Tw8XuJwNjUrDbrBxBO6SbCsawcEBW0juHYmjjKhRz
+         B2HVwBYJnWdhvYV+SrtYnK8hEHEH26PB9ywrw=
+Subject: [PATCH] staging: correct dubious use of !x & y
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 21 Oct 2008 20:27:16 -0700
+Message-Id: <1224646036.5768.8.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <386072610810160356p3807f538la5087debe0c76866@mail.gmail.com>
-X-Google-Sender-Auth: 0743b6e2bd29a831
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
+Noticed by sparse:
+drivers/staging/me4000/me4000.c:1213:43: warning: dubious: !x & y
+drivers/staging/wlan-ng/p80211wext.c:1583:21: warning: dubious: !x & y
 
-Did anyone meet this issue before?
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ drivers/staging/me4000/me4000.c      |    2 +-
+ drivers/staging/wlan-ng/p80211wext.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
--Bryan
+diff --git a/drivers/staging/me4000/me4000.c b/drivers/staging/me4000/me4000.c
+index 862dd7f..182c057 100644
+--- a/drivers/staging/me4000/me4000.c
++++ b/drivers/staging/me4000/me4000.c
+@@ -1210,7 +1210,7 @@ static int me4000_xilinx_download(me4000_info_t * info)
+ 
+ 	/* Wait until /INIT pin is set */
+ 	udelay(20);
+-	if (!inl(info->plx_regbase + PLX_INTCSR) & 0x20) {
++	if (!(inl(info->plx_regbase + PLX_INTCSR) & 0x20)) {
+ 		printk(KERN_ERR "me4000_xilinx_download():Can't init Xilinx\n");
+ 		return -EIO;
+ 	}
+diff --git a/drivers/staging/wlan-ng/p80211wext.c b/drivers/staging/wlan-ng/p80211wext.c
+index 906ba43..c42cd7f 100644
+--- a/drivers/staging/wlan-ng/p80211wext.c
++++ b/drivers/staging/wlan-ng/p80211wext.c
+@@ -1580,7 +1580,7 @@ static int p80211wext_set_encodeext(struct net_device *dev,
+ 
 
-On Thu, Oct 16, 2008 at 6:56 PM, Bryan Wu <cooloney@kernel.org> wrote:
-> Hi folks,
->
-> These days I found a subtle bug which should be related with mtdcore layers.
-> The detailed story is located at
-> https://blackfin.uclinux.org/gf/project/uclinux-dist/tracker/?action=TrackerItemEdit&tracker_id=141&tracker_item_id=4463.
->
-> Briefly speaking,
-> 1) modprobe a nand controller driver to add_mtd_paritition().
-> 2) add_mtd_partition->add_devices->blktrans_notify_add->mtdblock_add_mtd->add_mtd_blktrans_dev
-> 3) in add_mtd_blktrans_dev, alloc_disk will be called to create a new
-> gendisk structure according to the partition setting.
-> 4) "gd->queue = tr->blkcore_priv->rq;"
->    No matter how many partitions (in my test, 2 partitions), there
-> will be the same number gendisk structures but just 1 queue.
->    They all use the same request_queue which is created in
-> register_mtd_blktrans.
-> 5) mtdblockd kthread handles this request_queue for mtdblock layer.
-> 6) There is one backing_dev_info structure member (not pointer) in
-> request_queue. so for several mtd partitions (serveral gendisks) there
-> is only one bdi structure instance.
-> 7) So the problem is in add_disk(),
->    bdi_register_dev(bdi, MKDEV(disk->major, disk->first_minor));
->    For 1st partition mtdblock0, it will create /sys/class/bdi/31:0
-> and register information in bdi structure instance.
->    Then for 2nd partition mtdblock1, because the bdi structure
-> instance is the same as the 1st partition, it will overwrite bdi
-> structure and create /sys/class/bdi/31:1.
->    So the bdi info of 1st partition are totally lost.
-> 8) When we rmmod the nand controller driver, del_mtd_partition will
-> only remove /sys/class/bdi/31:1 but left 1st partition
-> /sys/class/bdi/31:0 there.
-> 9) modprobe again will let the bug show up.
->
-> I found this bug does not relate with my nand flash controller driver
-> and it should be fixed in mtdblock layer.
-> And if we just add only one partition, there is no such bug at all. I
-> tried to solve this bug, but it related with
-> mtdblock/mtd_blktrans/block/bdi. It is diffcult for me to find a way
-> to satisfy all the parts with minimal changes.
->
-> IMHO, can we just simply remove the bdi_register_dev (in add_disk) and
-> bdi_unregister_dev (in unlink_disk)?
->
-> P.S. I also found this bug in latest 2.6.27 kernel mainline.
->
-> Thanks
-> -Bryan
->
+   if ( ext->ext_flags & IW_ENCODE_EXT_SET_TX_KEY ) {
+-    if ( ! ext->alg & IW_ENCODE_ALG_WEP) {
++    if (!(ext->alg & IW_ENCODE_ALG_WEP)) {
+       WLAN_LOG_DEBUG(1,"asked to set a non wep key :(");
+       return -EINVAL;
+     }
+-- 
+1.6.0.2.824.geb4d2
+
+
