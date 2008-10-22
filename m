@@ -1,133 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753723AbYJVKSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbYJVKSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753723AbYJVKSd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 06:18:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbYJVKSN
+	id S1756803AbYJVKSz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 06:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbYJVKSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 06:18:13 -0400
-Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:13957 "EHLO
-	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754139AbYJVKSM (ORCPT
+	Wed, 22 Oct 2008 06:18:44 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:40857 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753334AbYJVKSn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 06:18:12 -0400
-From: Alexander van Heukelum <heukelum@fastmail.fm>
-To: Neil Horman <nhorman@tuxdriver.com>, Ingo Molnar <mingo@elte.hu>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       vgoyal@redhat.com, hbabu@us.ibm.com, hpa@zytor.com,
-       akpm@linux-foundation.org,
-       Alexander van Heukelum <heukelum@fastmail.fm>, ebiederm@xmission.com,
-       tglx@linutronix.de
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: [PATCH 6/7] i386, dumpstack: use oops_begin/oops_end in die_nmi
-Date: Wed, 22 Oct 2008 12:00:13 +0200
-Message-Id: <1224669614-25863-7-git-send-email-heukelum@fastmail.fm>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1224669614-25863-6-git-send-email-heukelum@fastmail.fm>
-References: <1224669614-25863-1-git-send-email-heukelum@fastmail.fm>
- <1224669614-25863-2-git-send-email-heukelum@fastmail.fm>
- <1224669614-25863-3-git-send-email-heukelum@fastmail.fm>
- <1224669614-25863-4-git-send-email-heukelum@fastmail.fm>
- <1224669614-25863-5-git-send-email-heukelum@fastmail.fm>
- <1224669614-25863-6-git-send-email-heukelum@fastmail.fm>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Wed, 22 Oct 2008 12:16:43 +0200 (CEST)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.9.0.5; VDF: 7.0.7.72; host: AntiVir2)
+	Wed, 22 Oct 2008 06:18:43 -0400
+Message-Id: <1224670721.25843.1280616145@webmail.messagingengine.com>
+X-Sasl-Enc: /PQN4AHufBMjU2oHk4CyokETilJXm37KF7XvtcadXpAJ 1224670721
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Neil Horman" <nhorman@tuxdriver.com>,
+       "Alexander van Heukelum" <heukelum@mailshack.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, vgoyal@redhat.com, hbabu@us.ibm.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>, mingo@redhat.com,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20081017210013.GD23591@hmsreliant.think-freely.org>
+ <20081020121339.GE10594@elte.hu>
+ <20081020134211.GA15574@hmsreliant.think-freely.org>
+ <20081020150731.GA25999@mailshack.com>
+ <20081020150834.GA26018@mailshack.com>
+ <20081021144505.GA25750@hmsreliant.think-freely.org>
+Subject: Re: [PATCH] x86: make oops_begin and oops_end equal
+In-Reply-To: <20081021144505.GA25750@hmsreliant.think-freely.org>
+Date: Wed, 22 Oct 2008 12:18:41 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use oops_begin and oops_end in die_nmi.
+On Tue, 21 Oct 2008 10:45:05 -0400, "Neil Horman"
+<nhorman@tuxdriver.com> said:
+> On Mon, Oct 20, 2008 at 05:08:34PM +0200, Alexander van Heukelum wrote:
+> > Mostly use the x86_64 version of oops_begin() and oops_end() on
+> > i386 too. Changes to the original x86_64 version:
+> > 
+> Hey, doing a sight review this am here.  Didn't find anything major, but
+> I did
+> find a few little nits.  comments inlie
 
-Whitespace-only changes on x86_64, to make it equal to i386's
-version.
+Hi Neil,
 
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
----
- arch/x86/kernel/dumpstack_32.c |   33 +++++++++++----------------------
- arch/x86/kernel/dumpstack_64.c |    4 ++--
- 2 files changed, 13 insertions(+), 24 deletions(-)
+Thanks for the review. I've sent a redone patch series just a moment
+ago, based on your comments. There was also another problem with these
+two patches: oops_end(flags, regs, signr) had special behaviour for
+regs=NULL that I did not consider before. The series has grown due
+to this issue...
 
-diff --git a/arch/x86/kernel/dumpstack_32.c b/arch/x86/kernel/dumpstack_32.c
-index 7c7d691..e91ae34 100644
---- a/arch/x86/kernel/dumpstack_32.c
-+++ b/arch/x86/kernel/dumpstack_32.c
-@@ -390,40 +390,29 @@ void die(const char *str, struct pt_regs *regs, long err)
- 	oops_end(flags, regs, sig);
- }
- 
--static DEFINE_SPINLOCK(nmi_print_lock);
--
- void notrace __kprobes
- die_nmi(char *str, struct pt_regs *regs, int do_panic)
- {
-+	unsigned long flags;
-+
- 	if (notify_die(DIE_NMIWATCHDOG, str, regs, 0, 2, SIGINT) == NOTIFY_STOP)
- 		return;
- 
--	spin_lock(&nmi_print_lock);
- 	/*
--	* We are in trouble anyway, lets at least try
--	* to get a message out:
--	*/
--	bust_spinlocks(1);
-+	 * We are in trouble anyway, lets at least try
-+	 * to get a message out.
-+	 */
-+	flags = oops_begin();
- 	printk(KERN_EMERG "%s", str);
- 	printk(" on CPU%d, ip %08lx, registers:\n",
- 		smp_processor_id(), regs->ip);
- 	show_registers(regs);
--	if (do_panic)
-+	oops_end(flags, regs, 0);
-+	if (do_panic || panic_on_oops)
- 		panic("Non maskable interrupt");
--	console_silent();
--	spin_unlock(&nmi_print_lock);
--
--	/*
--	 * If we are in kernel we are probably nested up pretty bad
--	 * and might aswell get out now while we still can:
--	 */
--	if (!user_mode_vm(regs)) {
--		current->thread.trap_no = 2;
--		crash_kexec(regs);
--	}
--
--	bust_spinlocks(0);
--	do_exit(SIGSEGV);
-+	nmi_exit();
-+	local_irq_enable();
-+	do_exit(SIGBUS);
- }
- 
- static int __init oops_setup(char *s)
-diff --git a/arch/x86/kernel/dumpstack_64.c b/arch/x86/kernel/dumpstack_64.c
-index dc6162b..831e1e1 100644
---- a/arch/x86/kernel/dumpstack_64.c
-+++ b/arch/x86/kernel/dumpstack_64.c
-@@ -519,7 +519,7 @@ void die(const char *str, struct pt_regs *regs, long err)
- 	oops_end(flags, regs, sig);
- }
- 
--notrace __kprobes void
-+void notrace __kprobes
- die_nmi(char *str, struct pt_regs *regs, int do_panic)
- {
- 	unsigned long flags;
-@@ -527,11 +527,11 @@ die_nmi(char *str, struct pt_regs *regs, int do_panic)
- 	if (notify_die(DIE_NMIWATCHDOG, str, regs, 0, 2, SIGINT) == NOTIFY_STOP)
- 		return;
- 
--	flags = oops_begin();
- 	/*
- 	 * We are in trouble anyway, lets at least try
- 	 * to get a message out.
- 	 */
-+	flags = oops_begin();
- 	printk(KERN_EMERG "%s", str);
- 	printk(" on CPU%d, ip %08lx, registers:\n",
- 		smp_processor_id(), regs->ip);
+>> [...]
+> Hmm.  I think this creates the same case that I just fixed in my initial
+> post. If we start using oops_end with this here, it may be possible to call
+> crash_kexec with the console_sem held.  If that happens, we deadlock.  I
+> think you should be able to move this clause up above the bust_spinlocks(0)
+> without any issue, and that would take care of that
+
+Indeed. The new series does exactly that.
+
+>> [...]
+> This undoes my previous patch.  I realize your second patch fixes it
+> properly so the ordering is correct when oops_begin and oops_end are used, but if you
+> could rediff so this isn't here, I'd appreciate it.  If these patches are
+> committed separately, you'll avoid having the tree in a state where that deadlock
+> can reoccur (even if it is just for one commit)
+
+Yeah, I quickly rediffed the patches I already had. The new series
+leaves
+it as is until die_nmi is replaced by the oops_begin/oops_end version.
+
+>> [...]
+> If you're going to add the crash_kexec here (which looking at the call
+> sites, makes sense to me), you should likely remove it from the critical section
+> of die and die_nmi, just to avoid the redundancy.  Same issue as the 32 bit
+> version above applies, this needs to happen before you call bust_spinlocks(0).
+
+Indeed.
+
+> Fix those issues, and the rest looks good to me.
+
+I think I've done that ;).
+
+Thanks,
+Greetings,
+    Alexander
+
+(I will probably not be able to respond to e-mail until after the
+weekend)
 -- 
-1.5.4.3
+  Alexander van Heukelum
+  heukelum@fastmail.fm
+
+-- 
+http://www.fastmail.fm - mmm... Fastmail...
 
