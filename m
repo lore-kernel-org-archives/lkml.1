@@ -1,72 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbYJVBzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbYJVCE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbYJVBzh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 21:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYJVBz3
+	id S1753250AbYJVCE3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 22:04:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbYJVCET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 21:55:29 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56232 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752033AbYJVBz2 (ORCPT
+	Tue, 21 Oct 2008 22:04:19 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:52494 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752029AbYJVCES (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 21:55:28 -0400
-Date: Wed, 22 Oct 2008 10:54:59 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: [PATCH] memcg: uptodate menuconfig help text
-Message-Id: <20081022105459.3f7f2485.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Oct 2008 22:04:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=EJh6j+oOMxgcAlglPMpm4Ej9IESRhvKeGY50diMjykWQmKgBCGfuuOjxYOzutlx5QM
+         gcHylCn4TqUrEEcMGs+91Jhfw3QXl46FUO19yBBT0xvdiz9PRedfhHhh3A+vvWWARC26
+         L03hPnC9lsk7A5B+dSk/O/+HYeK3vM6U7ZnrM=
+Message-ID: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com>
+Date: Tue, 21 Oct 2008 19:04:17 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Release of Atheros 802.11n USB Linux driver
+Cc: "Johannes Berg" <johannes@sipsolutions.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: abe19238da7ddf07
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now, page_cgroup is allocated at boot and memmap doesn't includes pointer for
-page_cgroup.
-Fixes menu help text for memcg-allocate-page-cgroup-at-boot.patch.
+We would like to see our Atheros 802.11n USB Linux driver upstream
+however we need help with this so we are releasing our Atheros 11n USB
+Otus Linux driver under the ISC to the community. The goal is to work
+with the community to help move this forward upstream. We are hoping
+for community help and leadership on this (*cough*).
 
-Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-Signed-off-by: KAMEZAWA hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In the meantime users should be able to use this driver and patches
+are welcomed to add newer wireless extension support so users on newer
+kernels can get their devices working. The focus should be upstream
+though :)
 
- init/Kconfig |   16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
+Anyway, some more details.
 
-Index: linux-2.6/init/Kconfig
-===================================================================
---- linux-2.6.orig/init/Kconfig
-+++ linux-2.6/init/Kconfig
-@@ -401,16 +401,20 @@ config CGROUP_MEM_RES_CTLR
- 	depends on CGROUPS && RESOURCE_COUNTERS
- 	select MM_OWNER
- 	help
--	  Provides a memory resource controller that manages both page cache and
--	  RSS memory.
-+	  Provides a memory resource controller that manages both anonymous
-+	  memory and page cache. (See Documentation/controllers/memory.txt)
- 
- 	  Note that setting this option increases fixed memory overhead
--	  associated with each page of memory in the system by 4/8 bytes
--	  and also increases cache misses because struct page on many 64bit
--	  systems will not fit into a single cache line anymore.
-+	  associated with each page of memory in the system. By this,
-+	  20(40)bytes/PAGE_SIZE on 32(64)bit system will be occupied by memory
-+	  usage tracking struct at boot. Total amount of this is printed out
-+	  at boot.
- 
- 	  Only enable when you're ok with these trade offs and really
--	  sure you need the memory resource controller.
-+	  sure you need the memory resource controller. Even when you enable
-+	  this, you can set "cgroup_disable=memory" at your boot option to
-+	  disable memory resource controller and you can avoid overheads.
-+	  (and lose benefits of memory resource contoller)
- 
- 	  This config option also selects MM_OWNER config option, which
- 	  could in turn add some fork/exit overhead.
+Supported hardware:
 
+Atheros 802.11n hardware: UB81, UB82, UB83
+
+Requirements:
+
+Kernel 2.4 - 2.6.24
+
+Get the driver:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/otus.git
+
+Features supported:
+
+  * IEEE standard compliance
+  * IEEE 802.11a/b/g
+  * IEEE 802.11h, 802.11d
+  * IEEE 80211i
+  * IEEE Draft 2.0 802.11n
+  * Ad Hoc
+        join (2.4GHz, 5GHz if SKU allows), create (2.4GHz , 5GHz if SKU allows)
+        Adhoc security:  WEP
+  * Security
+    Authentication: WPA/WPA2 (Personal / Enterprise),
+        802.1x Encryption: none, AES, TKIP, WEP40, WEP104
+
+wpa_supplicant otus driver:
+
+This driver requires its own supplicant driver for wpa_supplicant
+0.4.8. For your convenience you can find the tarball here:
+
+http://www.kernel.org/pub/linux/kernel/people/mcgrof/otus/wpa_supplicant-0.4.8_otus.tar.bz2
