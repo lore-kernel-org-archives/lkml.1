@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758132AbYJVSvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758255AbYJVSwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758132AbYJVSvq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 14:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbYJVSvd
+	id S1758255AbYJVSwI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 14:52:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758000AbYJVSvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 14:51:33 -0400
-Received: from mx2.suse.de ([195.135.220.15]:34718 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751654AbYJVSvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 14:51:33 -0400
-Date: Wed, 22 Oct 2008 11:48:08 -0700
-From: Greg KH <gregkh@suse.de>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Hiroshi Miura <miura@da-cha.org>,
-       YOKOTA Hiroshi <yokota@netlab.is.tsukuba.ac.jp>
-Subject: Re: [PATCH 01/42] Staging: add pcc-acpi driver
-Message-ID: <20081022184808.GA24150@suse.de>
-References: <20081022172203.GA4000@kroah.com> <1224696563-5170-1-git-send-email-gregkh@suse.de> <alpine.LFD.1.10.0810221434070.3010@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0810221434070.3010@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 22 Oct 2008 14:51:39 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42097 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757933AbYJVSvh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 14:51:37 -0400
+Message-Id: <20081022185136.134729572@goodmis.org>
+References: <20081022184313.179487464@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 22 Oct 2008 14:43:17 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 04/11] ftrace: comment arch ftrace code
+Content-Disposition: inline; filename=ftrace-comment-mod-code.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 02:37:18PM -0400, Len Brown wrote:
-> NAK.
-> this was already relplaced by the panasonic driver in the acpi tree.
+Add comments to explain what is happening in the x86 arch ftrace code.
 
-Is this in 2.6.27, or was it a 2.6.28 addition?  For some reason, I had
-reports from openSUSE users that 2.6.27 still didn't work properly and
-needed this driver.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ arch/x86/kernel/ftrace.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-How about the new "pcc-acpi-cdrom" driver hack?  Hiroshi, is that needed
-still with the 2.6.27 kernel?
+Index: linux-compile.git/arch/x86/kernel/ftrace.c
+===================================================================
+--- linux-compile.git.orig/arch/x86/kernel/ftrace.c	2008-10-22 13:15:36.000000000 -0400
++++ linux-compile.git/arch/x86/kernel/ftrace.c	2008-10-22 13:16:35.000000000 -0400
+@@ -66,18 +66,23 @@ ftrace_modify_code(unsigned long ip, uns
+ 	/*
+ 	 * Note: Due to modules and __init, code can
+ 	 *  disappear and change, we need to protect against faulting
+-	 *  as well as code changing.
++	 *  as well as code changing. We do this by using the
++	 *  __copy_*_user functions.
+ 	 *
+ 	 * No real locking needed, this code is run through
+ 	 * kstop_machine, or before SMP starts.
+ 	 */
++
++	/* read the text we want to modify */
+ 	if (__copy_from_user_inatomic(replaced, (char __user *)ip,
+ 				      MCOUNT_INSN_SIZE))
+ 		return -1;
+ 
++	/* Make sure it is what we expect it to be */
+ 	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
+ 		return -1;
+ 
++	/* replace the text with the new text */
+ 	if (__copy_to_user_inatomic((char __user *)ip, new_code,
+ 				    MCOUNT_INSN_SIZE))
+ 		return -1;
 
-> Greg,
-> If it has the word "acpi" in it, please check with me before
-> putting something in the staging tree, for I'd prefer to
-> stage such things in the acpi tree.
-
-Ok, I didn't know you wanted "uncleaned" drivers in your tree, I'll
-remember this for the future :)
-
-thanks,
-
-greg k-h
+-- 
