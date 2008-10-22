@@ -1,100 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbYJVQ3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbYJVQ3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757142AbYJVQ3h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 12:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756785AbYJVQ3Y
+	id S1757308AbYJVQ3w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 12:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756286AbYJVQ3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 12:29:24 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:35593 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756790AbYJVQ3V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 12:29:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Jbm4OJAT/TOlz+Bn89tyWd7BYxSyO+RuBUgHOdmnUDvy7hwMH4ZTFaFUS5AOP910/h
-         3jHf3hsmC17C1tTj+ezvYDfyWM4F77fVajPrfIH8TUdcWjJhwFVTbjyWuypHB5IBZf2N
-         Dk1Td32MJfhNd+ocp0XP1suxYPiXk6MlZYh9I=
-Message-ID: <4807377b0810220929v5906b42bgf9d63215370e5ab5@mail.gmail.com>
-Date: Wed, 22 Oct 2008 09:29:21 -0700
-From: "Jesse Brandeburg" <jesse.brandeburg@gmail.com>
-To: "Sanjoy Mahajan" <sanjoy@mit.edu>
-Subject: Re: e1000e fails after several S3 resumes (2.6.26 Debian, TP T60)
-Cc: linux-kernel@vger.kernel.org, "NetDEV list" <netdev@vger.kernel.org>,
-       e1000-devel@lists.sourceforge.net
-In-Reply-To: <E1Ksdli-0005Os-MP@approx.mit.edu>
+	Wed, 22 Oct 2008 12:29:34 -0400
+Received: from os.eurotux.com ([216.75.63.6]:36595 "EHLO os.eurotux.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757050AbYJVQ3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 12:29:33 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Oct 2008 12:29:33 EDT
+Date: Wed, 22 Oct 2008 17:22:46 +0100
+From: Luciano Rocha <luciano@eurotux.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: usb hdd problems with 2.6.27.2
+Message-ID: <20081022162246.GB5649@bit.office.eurotux.com>
+Mail-Followup-To: Luciano Rocha <luciano@eurotux.com>,
+	Linux-Kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <E1Ksdli-0005Os-MP@approx.mit.edu>
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.14 (2007-03-31)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-added netdev, and maintainer's list.
 
-On Wed, Oct 22, 2008 at 6:28 AM, Sanjoy Mahajan <sanjoy@mit.edu> wrote:
-> Once in a while after resuming from S3 sleep, the Ethernet driver
-> gets confused, whereupon dhcp'ing for an IP address fails, e.g.
->
->  /* doing the dhcp: */
->  Listening on LPF/eth0/00:16:41:52:50:de
->  Sending on   LPF/eth0/00:16:41:52:50:de
->  Sending on   Socket/fallback
->  DHCPDISCOVER on eth0 to 255.255.255.255 port 67 interval 7
->  /* and so on with various intervals */
+Hello,
 
-ethtool -d ethX at this point might be interesting, also we have a
-debug tool called ethregs that dumps all the registers of the adapter
-that would help isolate the difference in the hardware configuration.
-run it once you've hung after sending a few dhcp, and then again after
-you reload the driver and things are working. You can download ethregs
-at prdownloads.sourceforge.net/e1000
+An external HDD, usb-encased, works fine under 2.6.26.5, but under
+2.6.27.2 I get hundreds of errors per second, of 'No Sense [current]'.
 
-you'll have to build ethregs which I haven't tried to do on debian,
-but it should be possible.
+On connection, under 2.6.26.5, I get the following:
 
-> I workaround it with
->
->  modprobe -rv e1000e ; modprobe -v e1000e
-> (the '-v' options to make sure the module does vanish and return)
+[   84.503949] usb 1-2.1.1: new high speed USB device using ehci_hcd and address 8
+[   84.696861] usb 1-2.1.1: configuration #1 chosen from 1 choice
+[   84.740856] usbcore: registered new interface driver libusual
+[   84.817625] Initializing USB Mass Storage driver...
+[   84.817625] scsi2 : SCSI emulation for USB Mass Storage devices
+[   84.818820] usbcore: registered new interface driver usb-storage
+[   84.818823] USB Mass Storage support registered.
+[   89.819567] scsi 2:0:0:0: Direct-Access     SAMSUNG  HD400LD          WQ10 PQ: 0 ANSI: 0
+[   89.857627] Driver 'sd' needs updating - please use bus_type methods
+[   89.857837] sd 2:0:0:0: [sda] 781422769 512-byte hardware sectors (400088 MB)
+[   89.858754] sd 2:0:0:0: [sda] Write Protect is off
+[   89.858754] sd 2:0:0:0: [sda] Assuming drive cache: write through
+[   89.858869] sd 2:0:0:0: [sda] 781422769 512-byte hardware sectors (400088 MB)
+[   89.858869] sd 2:0:0:0: [sda] Write Protect is off
+[   89.858869] sd 2:0:0:0: [sda] Assuming drive cache: write through
+[   89.858869]  sda: sda1
+[   89.879851] sd 2:0:0:0: [sda] Attached SCSI disk
+[   89.901630] sd 2:0:0:0: Attached scsi generic sg0 type 0
+[   89.963632] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
+[   89.963632] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
+[  106.913629] kjournald starting.  Commit interval 5 seconds
+[  106.913629] EXT3 FS on dm-5, internal journal
 
-an ethtool -r eth0 might be sufficient.
+On 2.6.27.2, I get:
 
-> and then try again to get an address, which works.  A similar failure
-> mode happens with the iwl3945 driver (and a similar workaround usually
-> succeeds).
->
-> How can I debug this issue the next time that it happens (it's about
-> once every two weeks)?  Using 'ethtool' or 'lspci -vvvv'?
+[  551.484341] usb 1-2.1.1: new high speed USB device using ehci_hcd and address 8
+[  551.677467] usb 1-2.1.1: configuration #1 chosen from 1 choice
+[  551.718201] usbcore: registered new interface driver libusual
+[  551.799287] Initializing USB Mass Storage driver...
+[  551.800330] scsi2 : SCSI emulation for USB Mass Storage devices
+[  551.800694] usbcore: registered new interface driver usb-storage
+[  551.800698] USB Mass Storage support registered.
+[  556.800702] scsi 2:0:0:0: Direct-Access     SAMSUNG  HD400LD          WQ10 PQ: 0 ANSI: 0
+[  556.835190] Driver 'sd' needs updating - please use bus_type methods
+[  556.835928] sd 2:0:0:0: [sda] 781422769 512-byte hardware sectors (400088 MB)
+[  556.836809] sd 2:0:0:0: [sda] Write Protect is off
+[  556.836816] sd 2:0:0:0: [sda] Assuming drive cache: write through
+[  556.837548] sd 2:0:0:0: [sda] 781422769 512-byte hardware sectors (400088 MB)
+[  556.838296] sd 2:0:0:0: [sda] Write Protect is off
+[  556.838307] sd 2:0:0:0: [sda] Assuming drive cache: write through
+[  556.838310]  sda: sda1
+[  556.859169] sd 2:0:0:0: [sda] Attached SCSI disk
+[  556.878553] sd 2:0:0:0: Attached scsi generic sg0 type 0
+[  556.946044] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
+[  556.946055] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
+[  556.947290] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
+[  556.947298] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
+[  556.948539] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
+[  556.948547] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
+[  556.949790] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
+[  556.949798] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
+[  556.951045] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
+[  556.951053] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
+[  556.952290] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
+[  556.952297] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
+[  556.954665] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
+[  556.954673] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
+[  556.957665] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
+[  556.957673] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
+[  556.960791] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
+[  556.960799] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
+[  556.963790] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
+[  556.963798] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
+[  556.966915] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
 
-yes... :-)
+These repeat forever, till I disconnect.
 
->  $ uname -a
->  Linux approx 2.6.26-1-686 #1 SMP Thu Oct 9 15:18:09 UTC 2008 i686 GNU/Linux
->
-> It's Debian unstable's kernel 2.6.26 based on 2.6.26.4.  The laptop is a
-> Thinkpad T60 whose network controllers are given by lspci as
->
->  02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit Ethernet Controller
->  03:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG [Golan] Network Connection (rev 02)
->
-> Could it be caused by the kernel (and modules) getting upgraded
-> underneath a running system?  In which case I'll just 'not do that
-> again' as the simplest fix, and reboot after a kernel upgrade.  My
-> installed kernel is based on 2.6.26.6, but the running kernel is based
-> on 2.6.26.4 [where based on means 'with Debian's patches'].
+Regards,
+Luciano Rocha
 
-no, if the kernel version changes, the modules that go with it are
-only compatible with that version and would not be loaded
-accidentally.  Also, e1000e does not get unloaded during S3 suspend,
-but we do take a different init path.
-
-There is also lots of opportunity for BIOS bugs to be effecting things
-so please make sure that you have the latest bios.
-
-Jesse
+-- 
+Luciano Rocha <luciano@eurotux.com>
+Eurotux Informática, S.A. <http://www.eurotux.com/>
