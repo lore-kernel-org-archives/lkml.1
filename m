@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755466AbYJVPhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbYJVPiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755466AbYJVPhw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 11:37:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbYJVPho
+	id S1756206AbYJVPiq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 11:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbYJVPih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 11:37:44 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53961 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750815AbYJVPho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 11:37:44 -0400
-Date: Wed, 22 Oct 2008 17:37:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 0/7] post x86 merge section mismatch fixes
-Message-ID: <20081022153729.GJ23060@elte.hu>
-References: <1223804330-10881-1-git-send-email-marcin.slusarz@gmail.com>
+	Wed, 22 Oct 2008 11:38:37 -0400
+Received: from lazybastard.de ([212.112.238.170]:58527 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752149AbYJVPig (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 11:38:36 -0400
+Date: Wed, 22 Oct 2008 17:38:09 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Phillip Lougher <phillip@lougher.demon.co.uk>, sfr@canb.auug.org.au,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Sending patches, against linux-next.git, linux-2.6.git or what?
+Message-ID: <20081022153808.GC25283@logfs.org>
+References: <48FEAD30.3090906@lougher.demon.co.uk> <20081021231757.7cf40e23.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1223804330-10881-1-git-send-email-marcin.slusarz@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.1858]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081021231757.7cf40e23.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 21 October 2008 23:17:57 -0700, Andrew Morton wrote:
+> 
+> A much bigger
+> task is getting them reviewed and generally getting a bit of
+> momentum/interest/enthusiasm/etc.
 
-* Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+How much of that is needed?  Squashfs is very widely used and the
+current work is _much_ better than it used to be.  There is some work
+remaining to be done, but the current format appears sane.
 
-> [PATCH 1/7] x86, xsave: fix section mismatch warning - setup_xstate_init
-> [PATCH 2/7] x86: fix section mismatch warning - reserve_region_with_split
-> [PATCH 3/7] x86: fix section mismatch warning - apic_flat
-> [PATCH 4/7] x86: fix section mismatch warning - apic_physflat
-> [PATCH 5/7] x86: fix section mismatch warning - apic_x2apic_uv_x
-> [PATCH 6/7] x86: fix section mismatch warning - apic_x2apic_cluster
-> [PATCH 7/7] x86: fix section mismatch warning - apic_x2apic_phys
+I'd vote to merge this fairly soon.
 
-applied these to tip/x86/urgent:
+Jörn
 
- 3cfba08: x86: fix section mismatch warning - apic_x2apic_phys
- 2caa371: x86: fix section mismatch warning - apic_x2apic_cluster
- f8827c0: x86: fix section mismatch warning - apic_x2apic_uv_x
- fae1721: x86: fix section mismatch warning - apic_physflat
- 983f91f: x86: fix section mismatch warning - apic_flat
-
-the warnings are harmless but worth fixing nevertheless.
-
-Thanks Marcin!
-
-	Ingo
+-- 
+All art is but imitation of nature.
+-- Lucius Annaeus Seneca
