@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759988AbYJVVj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760144AbYJVVjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759988AbYJVVj3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 17:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbYJVVgE
+	id S1760144AbYJVVjs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 17:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbYJVVgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 17:36:04 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:64453 "EHLO
+	Wed, 22 Oct 2008 17:36:05 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:33441 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757217AbYJVVfy (ORCPT
+	with ESMTP id S1757487AbYJVVfz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 17:35:54 -0400
-Message-Id: <20081022213552.261474833@goodmis.org>
+	Wed, 22 Oct 2008 17:35:55 -0400
+Message-Id: <20081022213553.396121903@goodmis.org>
 References: <20081022212721.167005680@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Oct 2008 17:27:28 -0400
+Date: Wed, 22 Oct 2008 17:27:34 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
@@ -24,102 +24,172 @@ Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 07/13 v2] ftrace: add ftrace warn on to disable ftrace
-Content-Disposition: inline; filename=ftrace-disable-warn-on.patch
+Subject: [PATCH 13/13 v2] ftrace: remove notrace from arch ftrace file
+Content-Disposition: inline; filename=ftace-remove-notrace.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add ftrace warn on to disable ftrace as well as report a warning.
+The entire file of ftrace.c in the arch code needs to be marked
+as notrace. It is much cleaner to do this from the Makefile with
+CFLAGS_REMOVE_ftrace.o.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/ftrace.c |   29 +++++++++++++++++++----------
- 1 file changed, 19 insertions(+), 10 deletions(-)
+ arch/powerpc/kernel/ftrace.c |   10 +++++-----
+ arch/sparc64/kernel/Makefile |    2 ++
+ arch/sparc64/kernel/ftrace.c |    8 ++++----
+ arch/x86/kernel/Makefile     |    1 +
+ arch/x86/kernel/ftrace.c     |   10 +++++-----
+ 5 files changed, 17 insertions(+), 14 deletions(-)
 
-Index: linux-compile.git/kernel/trace/ftrace.c
+Index: linux-compile.git/arch/powerpc/kernel/ftrace.c
 ===================================================================
---- linux-compile.git.orig/kernel/trace/ftrace.c	2008-10-22 15:58:35.000000000 -0400
-+++ linux-compile.git/kernel/trace/ftrace.c	2008-10-22 16:05:30.000000000 -0400
-@@ -32,6 +32,18 @@
+--- linux-compile.git.orig/arch/powerpc/kernel/ftrace.c	2008-10-22 16:07:55.000000000 -0400
++++ linux-compile.git/arch/powerpc/kernel/ftrace.c	2008-10-22 16:10:15.000000000 -0400
+@@ -28,17 +28,17 @@ static unsigned int ftrace_nop = 0x60000
+ #endif
  
- #include "trace.h"
  
-+#define FTRACE_WARN_ON(cond)			\
-+	do {					\
-+		if (WARN_ON(cond))		\
-+			ftrace_kill();		\
-+	} while (0)
+-static unsigned int notrace ftrace_calc_offset(long ip, long addr)
++static unsigned int ftrace_calc_offset(long ip, long addr)
+ {
+ 	return (int)(addr - ip);
+ }
+ 
+-notrace unsigned char *ftrace_nop_replace(void)
++unsigned char *ftrace_nop_replace(void)
+ {
+ 	return (char *)&ftrace_nop;
+ }
+ 
+-notrace unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
++unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+ {
+ 	static unsigned int op;
+ 
+@@ -68,7 +68,7 @@ notrace unsigned char *ftrace_call_repla
+ # define _ASM_PTR	" .long "
+ #endif
+ 
+-notrace int
++int
+ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+ 		   unsigned char *new_code)
+ {
+@@ -113,7 +113,7 @@ ftrace_modify_code(unsigned long ip, uns
+ 	return faulted;
+ }
+ 
+-notrace int ftrace_update_ftrace_func(ftrace_func_t func)
++int ftrace_update_ftrace_func(ftrace_func_t func)
+ {
+ 	unsigned long ip = (unsigned long)(&ftrace_call);
+ 	unsigned char old[MCOUNT_INSN_SIZE], *new;
+Index: linux-compile.git/arch/sparc64/kernel/Makefile
+===================================================================
+--- linux-compile.git.orig/arch/sparc64/kernel/Makefile	2008-10-21 17:07:17.000000000 -0400
++++ linux-compile.git/arch/sparc64/kernel/Makefile	2008-10-22 16:12:22.000000000 -0400
+@@ -5,6 +5,8 @@
+ EXTRA_AFLAGS := -ansi
+ EXTRA_CFLAGS := -Werror
+ 
++CFLAGS_REMOVE_ftrace.o = -pg
 +
-+#define FTRACE_WARN_ON_ONCE(cond)		\
-+	do {					\
-+		if (WARN_ON_ONCE(cond))		\
-+			ftrace_kill();		\
-+	} while (0)
-+
- /* ftrace_enabled is a method to turn ftrace on or off */
- int ftrace_enabled __read_mostly;
- static int last_ftrace_enabled;
-@@ -358,10 +370,8 @@ static struct dyn_ftrace *ftrace_alloc_d
- 		rec = ftrace_free_records;
+ extra-y		:= head.o init_task.o vmlinux.lds
  
- 		if (unlikely(!(rec->flags & FTRACE_FL_FREE))) {
--			WARN_ON_ONCE(1);
-+			FTRACE_WARN_ON_ONCE(1);
- 			ftrace_free_records = NULL;
--			ftrace_disabled = 1;
--			ftrace_enabled = 0;
- 			return NULL;
- 		}
+ obj-y		:= process.o setup.o cpu.o idprom.o reboot.o \
+Index: linux-compile.git/arch/sparc64/kernel/ftrace.c
+===================================================================
+--- linux-compile.git.orig/arch/sparc64/kernel/ftrace.c	2008-10-22 16:08:45.000000000 -0400
++++ linux-compile.git/arch/sparc64/kernel/ftrace.c	2008-10-22 16:10:25.000000000 -0400
+@@ -9,12 +9,12 @@
  
-@@ -410,7 +420,7 @@ ftrace_record_ip(unsigned long ip)
+ static const u32 ftrace_nop = 0x01000000;
  
- 	key = hash_long(ip, FTRACE_HASHBITS);
+-notrace unsigned char *ftrace_nop_replace(void)
++unsigned char *ftrace_nop_replace(void)
+ {
+ 	return (char *)&ftrace_nop;
+ }
  
--	WARN_ON_ONCE(key >= FTRACE_HASHSIZE);
-+	FTRACE_WARN_ON_ONCE(key >= FTRACE_HASHSIZE);
+-notrace unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
++unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+ {
+ 	static u32 call;
+ 	s32 off;
+@@ -25,7 +25,7 @@ notrace unsigned char *ftrace_call_repla
+ 	return (unsigned char *) &call;
+ }
  
- 	if (ftrace_ip_in_hash(ip, key))
- 		goto out;
-@@ -602,12 +612,12 @@ ftrace_code_disable(struct dyn_ftrace *r
- 	if (ret) {
- 		switch (ret) {
- 		case -EFAULT:
--			WARN_ON_ONCE(1);
-+			FTRACE_WARN_ON_ONCE(1);
- 			pr_info("ftrace faulted on modifying ");
- 			print_ip_sym(ip);
- 			break;
- 		case -EINVAL:
--			WARN_ON_ONCE(1);
-+			FTRACE_WARN_ON_ONCE(1);
- 			pr_info("ftrace failed to modify ");
- 			print_ip_sym(ip);
- 			print_ip_ins(" expected: ", call);
-@@ -616,12 +626,12 @@ ftrace_code_disable(struct dyn_ftrace *r
- 			printk(KERN_CONT "\n");
- 			break;
- 		case -EPERM:
--			WARN_ON_ONCE(1);
-+			FTRACE_WARN_ON_ONCE(1);
- 			pr_info("ftrace faulted on writing ");
- 			print_ip_sym(ip);
- 			break;
- 		default:
--			WARN_ON_ONCE(1);
-+			FTRACE_WARN_ON_ONCE(1);
- 			pr_info("ftrace faulted on unknown error ");
- 			print_ip_sym(ip);
- 		}
-@@ -1679,8 +1689,7 @@ static int ftraced(void *ignore)
- 					ftrace_update_cnt != 1 ? "s" : "",
- 					ftrace_update_tot_cnt,
- 					usecs, usecs != 1 ? "s" : "");
--				ftrace_disabled = 1;
--				WARN_ON_ONCE(1);
-+				FTRACE_WARN_ON_ONCE(1);
- 			}
- 		}
- 		mutex_unlock(&ftraced_lock);
+-notrace int
++int
+ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+ 		   unsigned char *new_code)
+ {
+@@ -59,7 +59,7 @@ ftrace_modify_code(unsigned long ip, uns
+ 	return faulted;
+ }
+ 
+-notrace int ftrace_update_ftrace_func(ftrace_func_t func)
++int ftrace_update_ftrace_func(ftrace_func_t func)
+ {
+ 	unsigned long ip = (unsigned long)(&ftrace_call);
+ 	unsigned char old[MCOUNT_INSN_SIZE], *new;
+Index: linux-compile.git/arch/x86/kernel/Makefile
+===================================================================
+--- linux-compile.git.orig/arch/x86/kernel/Makefile	2008-10-21 17:07:17.000000000 -0400
++++ linux-compile.git/arch/x86/kernel/Makefile	2008-10-22 16:12:01.000000000 -0400
+@@ -11,6 +11,7 @@ ifdef CONFIG_FTRACE
+ CFLAGS_REMOVE_tsc.o = -pg
+ CFLAGS_REMOVE_rtc.o = -pg
+ CFLAGS_REMOVE_paravirt-spinlocks.o = -pg
++CFLAGS_REMOVE_ftrace.o = -pg
+ endif
+ 
+ #
+Index: linux-compile.git/arch/x86/kernel/ftrace.c
+===================================================================
+--- linux-compile.git.orig/arch/x86/kernel/ftrace.c	2008-10-22 16:07:55.000000000 -0400
++++ linux-compile.git/arch/x86/kernel/ftrace.c	2008-10-22 16:10:33.000000000 -0400
+@@ -33,17 +33,17 @@ union ftrace_code_union {
+ };
+ 
+ 
+-static int notrace ftrace_calc_offset(long ip, long addr)
++static int ftrace_calc_offset(long ip, long addr)
+ {
+ 	return (int)(addr - ip);
+ }
+ 
+-notrace unsigned char *ftrace_nop_replace(void)
++unsigned char *ftrace_nop_replace(void)
+ {
+ 	return (char *)ftrace_nop;
+ }
+ 
+-notrace unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
++unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+ {
+ 	static union ftrace_code_union calc;
+ 
+@@ -57,7 +57,7 @@ notrace unsigned char *ftrace_call_repla
+ 	return calc.code;
+ }
+ 
+-notrace int
++int
+ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+ 		   unsigned char *new_code)
+ {
+@@ -90,7 +90,7 @@ ftrace_modify_code(unsigned long ip, uns
+ 	return 0;
+ }
+ 
+-notrace int ftrace_update_ftrace_func(ftrace_func_t func)
++int ftrace_update_ftrace_func(ftrace_func_t func)
+ {
+ 	unsigned long ip = (unsigned long)(&ftrace_call);
+ 	unsigned char old[MCOUNT_INSN_SIZE], *new;
 
 -- 
