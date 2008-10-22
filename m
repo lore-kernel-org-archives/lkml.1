@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbYJVHaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817AbYJVHan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753983AbYJVHaQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 03:30:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbYJVHaA
+	id S1752817AbYJVHan (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 03:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYJVHa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 03:30:00 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:45346 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750999AbYJVH37 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 03:29:59 -0400
-Message-ID: <48FED672.4060008@suse.de>
-Date: Wed, 22 Oct 2008 11:29:54 +0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Dmitry Nezhevenko <dion@inhex.net>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: Strange ACPI errors sometimes after resume from s2disk
-References: <20081021220034.GA18248@laptop.local> <200810220044.01259.rjw@sisk.pl>
-In-Reply-To: <200810220044.01259.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Oct 2008 03:30:27 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:44631 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754189AbYJVHaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 03:30:24 -0400
+Date: Wed, 22 Oct 2008 18:30:14 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Sending patches, against linux-next.git, linux-2.6.git or what?
+Message-Id: <20081022183014.c3b39a64.sfr@canb.auug.org.au>
+In-Reply-To: <48FEAD30.3090906@lougher.demon.co.uk>
+References: <48FEAD30.3090906@lougher.demon.co.uk>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__22_Oct_2008_18_30_14_+1100_uPXdK6GzvSbQFKky"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> [Adding CCs]
-> 
-> On Wednesday, 22 of October 2008, Dmitry Nezhevenko wrote:
->> Hiall. Just got these strange messages with 2.6.27.2. They flood dmesg.. (same block every second). 
->>
->> [42016.520062] ACPI: EC: acpi_ec_wait timeout, status = 0x1a, event = "b1=0"
->> [42016.520079] ACPI: EC: input buffer is not empty, aborting transaction
->> [42017.025050] ACPI: EC: acpi_ec_wait timeout, status = 0x1a, event = "b1=0"
->> [42017.025197] ACPI: EC: input buffer is not empty, aborting transaction
->> [42017.025254] ACPI Exception (evregion-0419): AE_TIME, Returned by Handler for [EmbeddedControl] [20080609]
->> [42017.025350] ACPI Error (psparse-0530): Method parse/execution failed [\_SB_.PCI0.SBRG.EC__.BAT1.UPBS] (Node f78353b0), AE_TIME
->> [42017.025546] ACPI Error (psparse-0530): Method parse/execution failed [\_SB_.PCI0.SBRG.EC__.BAT1._BST] (Node f7835400), AE_TIME
->> [42017.025715] ACPI Exception (battery-0360): AE_TIME, Evaluating _BST [20080609]
->>
->> Battery state "freezes" after this.. So if it was charged to 90%, it will
->> be 90% forever.  Also information about charger (plugged/unplugged) is not
->> updating... BIOS automatically increases display brightness just after
->> plugging charger but powersave thinks that it's unplugged.
->>
->> After turning laptop off I can't turn it on any more.. I can hear fan noise,
->> but it don't boots (There are no even BIOS splash/message)
->>
->> I should remove battery and wait ~5 seconds...
->>
->> v2.6.26 was non-working here, but as far as I remember, there was no such
->> problem with 2.6.25.  It's very difficult to reproduce it (this is just
->> second case for ~2-3 weeks).  So bisecting is impossible.
->>
->> Any ideas? Should I fill a bugreport?
-Please try changing msleep(1) to udelay(50) in drivers/acpi/ec.c 
-Do you have msi-laptop module loaded?
-Please fill a bugreport and attach all the information there.
+--Signature=_Wed__22_Oct_2008_18_30_14_+1100_uPXdK6GzvSbQFKky
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Alex.
+Hi Phillip,
+
+On Wed, 22 Oct 2008 05:33:52 +0100 Phillip Lougher <phillip@lougher.demon.c=
+o.uk> wrote:
+>
+> I'm about to send another respin of the Squashfs patches.  Do I base=20
+> them against linux-next.git, linux-2.6.git or what?  I thought they=20
+> should be against linux-next, but I've already got one complaint.  So,=20
+> I'm confused, what tree should new patches be based off?
+
+Please base your patches on Linus' current git tree.  linux-next is too
+much of a moving target.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__22_Oct_2008_18_30_14_+1100_uPXdK6GzvSbQFKky
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkj+1oYACgkQjjKRsyhoI8wBYQCdHFZmjQdx2sNY/mZzXAWAuEvK
+IlsAnRkMcaY8mZ0UEsk1hfeparIFduOP
+=nl5G
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__22_Oct_2008_18_30_14_+1100_uPXdK6GzvSbQFKky--
