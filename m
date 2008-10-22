@@ -1,460 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758982AbYJVUtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbYJVUws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758982AbYJVUtj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 16:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbYJVUt0
+	id S1757461AbYJVUws (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 16:52:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYJVUwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 16:49:26 -0400
-Received: from ik-out-1112.google.com ([66.249.90.182]:42511 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758634AbYJVUtY (ORCPT
+	Wed, 22 Oct 2008 16:52:38 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:60981 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753046AbYJVUwh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 16:49:24 -0400
+	Wed, 22 Oct 2008 16:52:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=EprNeiDlPazNf83RL9VpTPUiY58oGbNhzhOTEWKAjuBhG1fgDrA/mh4vqfGty7cJH2
-         kQqtnVuyR3I+YPeyDc5Ow8ecCmWhz8O4BqJLMkVPfj195/psvLG20ym7ZomwZ6OLhlyX
-         H11IDNMgRw9/u6q4VnSE36YyoN7D/rZ+9/qRc=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Elias Oltmanns <eo@nebensachen.de>
-Subject: Re: [PATCH] ide: don't execute the next queued command from the hard-IRQ context
-Date: Wed, 22 Oct 2008 22:47:17 +0200
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <200810111617.51298.bzolnier@gmail.com> <200810152106.45728.bzolnier@gmail.com> <87od1cu11b.fsf@denkblock.local>
-In-Reply-To: <87od1cu11b.fsf@denkblock.local>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=De/gvOBNXo2kLer0vFqtlrlxHYi2GcGWN+VpMvbWO5QDWqdW9VXrmoBaL5i4cGCVyP
+         z6yyCDMMSI4NFE5Dz5giPgq9UNS+8AIb9hremmwInBPLsDc/uGHCRLjWIRjhp9Tloosu
+         F7PLkR0V4lHS0H0XeL1ynuzuN0AlCIVd8gQfU=
+Message-ID: <48FF928F.1010300@gmail.com>
+Date: Wed, 22 Oct 2008 22:52:31 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200810222247.17800.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] [RESEND v2] tracing/ftrace: Introduce the big kernel lock
+ tracer
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 October 2008, Elias Oltmanns wrote:
-> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> > On Sunday 12 October 2008, Elias Oltmanns wrote:
-> >> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> >
-> >> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> >> > Subject: [PATCH] ide: don't execute the next queued command from the hard-IRQ context
-> >> >
-> >> > * Tell the block layer that we are not done handling requests by using
-> >> >   blk_plug_device() in ide_do_request() (request handling function)
-> >> >   and ide_timer_expiry() (timeout handler) if the queue is not empty.
-> >> >
-> >> > * Remove optimization which directly calls ide_do_request() for the next
-> >> >   queued command from the ide_intr() (IRQ handler) and ide_timer_expiry().
-> >> >
-> >> > * Remove no longer needed IRQ masking from ide_do_request() - in case of
-> >> >   IDE ports needing serialization disable_irq_nosync()/enable_irq() was
-> >> >   used for the (possibly shared) IRQ of the other IDE port.
-> >> >
-> >> > * Put the misplaced comment in the right place in ide_do_request().
-> >> >
-> >> > * Drop no longer needed 'int masked_irq' argument from ide_do_request().
-> >> >
-> >> > * Merge ide_do_request() into do_ide_request().
-> >> >
-> >> > * Remove no longer needed IDE_NO_IRQ define.
-> >> >
-> >> > While at it:
-> >> >
-> >> > * Don't use HWGROUP() macro in do_ide_request().
-> >> >
-> >> > * Use __func__ in ide_intr().
-> >> >
-> >> > This patch reduces IRQ hadling latency for IDE and improves the system-wide
-> >> > handling of shared IRQs (which should result in more timeout resistant and
-> >> > stable IDE systems).  It also makes it possible to do some further changes
-> >> > later (i.e. replace some busy-waiting delays with sleeping equivalents).
-> >> >
-> >> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> >> > ---
-> [...]
-> >> > Index: b/drivers/ide/ide-io.c
-> >> > ===================================================================
-> >> > --- a/drivers/ide/ide-io.c
-> >> > +++ b/drivers/ide/ide-io.c
-> [...]
-> >> >  		startstop = start_request(drive, rq);
-> >> >  		spin_lock_irq(&hwgroup->lock);
-> >> > -		if (masked_irq != IDE_NO_IRQ && hwif->irq != masked_irq)
-> >> > -			enable_irq(hwif->irq);
-> >> > -		if (startstop == ide_stopped)
-> >> > +
-> >> > +		if (startstop == ide_stopped) {
-> >> >  			hwgroup->busy = 0;
-> >> > +			goto plug_device;
-> >> 
-> >> This goto statement is wrong. Simply set ->busy to zero and be done with
-> >> it. This way, the loop will start again and either elv_next_request()
-> >> returns NULL, in which case the queue need not be plugged, or the next
-> >> request will be processed immediately, which is exactly what we want.
-> >
-> > The problem is that the next loop can choose the different drive than
-> > the current one so we can end up with the situation where we will "lose"
-> > the blk_plug_device() call.
-> >
-> > I fixed it by just inlining "plug_device" code for now.
-> 
-> Right, I had missed that. Still, I'm not really convinced yet that this
-> is the right way  to handle things. In fact, I believe that the role of
-> choose_drive() has changed since it is now called directly from the
-> ->request_fn() and it should probably be rewritten and renamed along the
-> way. However, this needs further discussion and the issue below has some
-> bearing on this too.
+Introduce the Big Kernel Lock tracer.
+This new tracer lets one to observe the latencies caused
+by the lock_kernel() function.
+It captures the time when the task request the spinlock,
+the time when the spinlock is hold and the time it is released.
+This way we can measure the latency for a task that wait for this
+spinlock and the latency caused by the time this lock is hold.
 
-Well, in my patch to use per-device request queue lock I was just going
-to remove choose_drive() since it should be handled at the block layer
-(probably using per-queue io priorites if needed).
+I will surely add some improvements like:
 
+_ Adding a stack trace to know which function locked or unlocked the kernel.
+_ Adding a script to get some statistics about this: which functions hold it
+often, which hold it for a long time and some other things....
+
+Changes in this V2:
+
+_ Correction of comments
+_ Make static inline the insertion functions when the tracer is not configured
+_ Remove FTRACE and HAVE_FTRACE as dependencies. Bkl Tracer only depends on TRACING and
+  STACKTRACE for further features.
+_ Use trace_assign_type instead of unsure cast
+_ Several cleanups...
+
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
 ---
-current draft patch just to visualize the idea
+ kernel/trace/Kconfig  |   10 ++++++++++
+ kernel/trace/Makefile |    1 +
+ kernel/trace/trace.h  |   18 ++++++++++++++++++
+ lib/kernel_lock.c     |   36 ++++++++++++++++++++++++++++++++++--
+ 4 files changed, 63 insertions(+), 2 deletions(-)
 
- drivers/ide/ide-io.c    |  172 +++++++++++++++---------------------------------
- drivers/ide/ide-probe.c |    3 
- include/linux/ide.h     |    2 
- 3 files changed, 55 insertions(+), 122 deletions(-)
-
-Index: b/drivers/ide/ide-io.c
-===================================================================
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -828,85 +828,10 @@ void ide_stall_queue (ide_drive_t *drive
- 	drive->sleep = timeout + jiffies;
- 	drive->dev_flags |= IDE_DFLAG_SLEEPING;
- }
--
- EXPORT_SYMBOL(ide_stall_queue);
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index 396aea1..a87484d 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -144,6 +144,16 @@ config STACK_TRACER
+ 	  This tracer records the max stack of the kernel, and displays
+ 	  it in debugfs/tracing/stack_trace
  
--#define WAKEUP(drive)	((drive)->service_start + 2 * (drive)->service_time)
--
--/**
-- *	choose_drive		-	select a drive to service
-- *	@hwgroup: hardware group to select on
-- *
-- *	choose_drive() selects the next drive which will be serviced.
-- *	This is necessary because the IDE layer can't issue commands
-- *	to both drives on the same cable, unlike SCSI.
-- */
-- 
--static inline ide_drive_t *choose_drive (ide_hwgroup_t *hwgroup)
--{
--	ide_drive_t *drive, *best;
--
--repeat:	
--	best = NULL;
--	drive = hwgroup->drive;
--
--	/*
--	 * drive is doing pre-flush, ordered write, post-flush sequence. even
--	 * though that is 3 requests, it must be seen as a single transaction.
--	 * we must not preempt this drive until that is complete
--	 */
--	if (blk_queue_flushing(drive->queue)) {
--		/*
--		 * small race where queue could get replugged during
--		 * the 3-request flush cycle, just yank the plug since
--		 * we want it to finish asap
--		 */
--		blk_remove_plug(drive->queue);
--		return drive;
--	}
--
--	do {
--		u8 dev_s = !!(drive->dev_flags & IDE_DFLAG_SLEEPING);
--		u8 best_s = (best && !!(best->dev_flags & IDE_DFLAG_SLEEPING));
--
--		if ((dev_s == 0 || time_after_eq(jiffies, drive->sleep)) &&
--		    !elv_queue_empty(drive->queue)) {
--			if (best == NULL ||
--			    (dev_s && (best_s == 0 || time_before(drive->sleep, best->sleep))) ||
--			    (best_s == 0 && time_before(WAKEUP(drive), WAKEUP(best)))) {
--				if (!blk_queue_plugged(drive->queue))
--					best = drive;
--			}
--		}
--	} while ((drive = drive->next) != hwgroup->drive);
--
--	if (best && (best->dev_flags & IDE_DFLAG_NICE1) &&
--	    (best->dev_flags & IDE_DFLAG_SLEEPING) == 0 &&
--	    best != hwgroup->drive && best->service_time > WAIT_MIN_SLEEP) {
--		long t = (signed long)(WAKEUP(best) - jiffies);
--		if (t >= WAIT_MIN_SLEEP) {
--		/*
--		 * We *may* have some time to spare, but first let's see if
--		 * someone can potentially benefit from our nice mood today..
--		 */
--			drive = best->next;
--			do {
--				if ((drive->dev_flags & IDE_DFLAG_SLEEPING) == 0
--				 && time_before(jiffies - best->service_time, WAKEUP(drive))
--				 && time_before(WAKEUP(drive), jiffies + t))
--				{
--					ide_stall_queue(best, min_t(long, t, 10 * WAIT_MIN_SLEEP));
--					goto repeat;
--				}
--			} while ((drive = drive->next) != best);
--		}
--	}
--	return best;
--}
--
++config BKL_TRACER
++	bool "Trace Big Kernel Lock latencies"
++	depends on DEBUG_KERNEL
++	select TRACING
++	select STACKTRACE
++	help
++	  This tracer records the latencies issued by the Big Kernel Lock.
++	  It traces the time when a task requests the bkl, the time when it
++	  acquires it and the time when it releases it.
++
+ config DYNAMIC_FTRACE
+ 	bool "enable/disable ftrace tracepoints dynamically"
+ 	depends on FTRACE
+diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
+index a85dfba..2ba8904 100644
+--- a/kernel/trace/Makefile
++++ b/kernel/trace/Makefile
+@@ -24,5 +24,6 @@ obj-$(CONFIG_NOP_TRACER) += trace_nop.o
+ obj-$(CONFIG_STACK_TRACER) += trace_stack.o
+ obj-$(CONFIG_MMIOTRACE) += trace_mmiotrace.o
+ obj-$(CONFIG_BOOT_TRACER) += trace_boot.o
++obj-$(CONFIG_BKL_TRACER) += trace_bkl.o
+ 
+ libftrace-y := ftrace.o
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index f1f9957..8660336 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -8,6 +8,7 @@
+ #include <linux/ring_buffer.h>
+ #include <linux/mmiotrace.h>
+ #include <linux/ftrace.h>
++#include <trace/bkl.h>
+ 
+ enum trace_type {
+ 	__TRACE_FIRST_TYPE = 0,
+@@ -22,6 +23,8 @@ enum trace_type {
+ 	TRACE_MMIO_RW,
+ 	TRACE_MMIO_MAP,
+ 	TRACE_BOOT,
++	TRACE_BKL_ACQ,
++	TRACE_BKL_REL,
+ 
+ 	__TRACE_LAST_TYPE
+ };
+@@ -117,6 +120,17 @@ struct trace_boot {
+ 	struct boot_trace	initcall;
+ };
+ 
++/* Trace bkl entries */
++struct trace_bkl_acq {
++	struct trace_entry		ent;
++	struct bkl_trace_acquire	bkl_acq;
++};
++
++struct trace_bkl_rel {
++	struct trace_entry		ent;
++	struct bkl_trace_release	bkl_rel;
++};
++
  /*
-  * Issue a new request to a drive from hwgroup
-- * Caller must have already done spin_lock_irqsave(&hwgroup->lock, ..);
-  *
-  * A hwgroup is a serialized group of IDE interfaces.  Usually there is
-  * exactly one hwif (interface) per hwgroup, but buggy controllers (eg. CMD640)
-@@ -941,13 +866,15 @@ repeat:	
-  */
- void do_ide_request(struct request_queue *q)
- {
--	ide_drive_t	*orig_drive = q->queuedata;
--	ide_hwgroup_t	*hwgroup = orig_drive->hwif->hwgroup;
--	ide_drive_t	*drive;
-+	ide_drive_t	*drive = q->queuedata;
-+	ide_hwgroup_t	*hwgroup = drive->hwif->hwgroup;
- 	ide_hwif_t	*hwif;
- 	struct request	*rq;
- 	ide_startstop_t	startstop;
+  * trace_flag_type is an enumeration that holds different
+  * states when a trace occurs. These are:
+@@ -217,6 +231,10 @@ extern void __ftrace_bad_type(void);
+ 		IF_ASSIGN(var, ent, struct trace_mmiotrace_map,		\
+ 			  TRACE_MMIO_MAP);				\
+ 		IF_ASSIGN(var, ent, struct trace_boot, TRACE_BOOT);	\
++		IF_ASSIGN(var, ent, struct trace_bkl_acq,               \
++			  TRACE_BKL_ACQ);				\
++		IF_ASSIGN(var, ent, struct trace_bkl_rel,		\
++			  TRACE_BKL_REL);				\
+ 		__ftrace_bad_type();					\
+ 	} while (0)
  
-+	spin_unlock_irq(q->queue_lock);
-+	spin_lock_irq(&hwgroup->lock);
-+
- 	/* for atari only: POSSIBLY BROKEN HERE(?) */
- 	ide_get_lock(ide_intr, hwgroup);
- 
-@@ -956,21 +883,13 @@ void do_ide_request(struct request_queue
- 
- 	while (!hwgroup->busy) {
- 		hwgroup->busy = 1;
--		drive = choose_drive(hwgroup);
--		if (drive == NULL) {
--			int sleeping = 0;
--			unsigned long sleep = 0; /* shut up, gcc */
-+
-+		if (1) {
- 			hwgroup->rq = NULL;
--			drive = hwgroup->drive;
--			do {
--				if ((drive->dev_flags & IDE_DFLAG_SLEEPING) &&
--				    (sleeping == 0 ||
--				     time_before(drive->sleep, sleep))) {
--					sleeping = 1;
--					sleep = drive->sleep;
--				}
--			} while ((drive = drive->next) != hwgroup->drive);
--			if (sleeping) {
-+
-+			if (drive->dev_flags & IDE_DFLAG_SLEEPING) {
-+				unsigned long sleep = drive->sleep;
-+
- 		/*
- 		 * Take a short snooze, and then wake up this hwgroup again.
- 		 * This gives other hwgroups on the same a chance to
-@@ -989,23 +908,12 @@ void do_ide_request(struct request_queue
- 				mod_timer(&hwgroup->timer, sleep);
- 				/* we purposely leave hwgroup->busy==1
- 				 * while sleeping */
--			} else {
--				/* Ugly, but how can we sleep for the lock
--				 * otherwise? perhaps from tq_disk?
--				 */
- 
--				/* for atari only */
--				ide_release_lock();
--				hwgroup->busy = 0;
-+				/* no more work for this hwgroup (for now) */
-+				goto plug_device;
- 			}
--
--			/* no more work for this hwgroup (for now) */
--			goto plug_device;
- 		}
- 
--		if (drive != orig_drive)
--			goto plug_device;
--
- 		hwif = drive->hwif;
- 
- 		if (hwgroup->hwif->sharing_irq && hwif != hwgroup->hwif) {
-@@ -1019,13 +927,17 @@ void do_ide_request(struct request_queue
- 		hwgroup->hwif = hwif;
- 		hwgroup->drive = drive;
- 		drive->dev_flags &= ~(IDE_DFLAG_SLEEPING | IDE_DFLAG_PARKED);
--		drive->service_start = jiffies;
- 
-+		spin_unlock_irq(&hwgroup->lock);
-+		spin_lock_irq(q->queue_lock);
- 		/*
- 		 * we know that the queue isn't empty, but this can happen
- 		 * if the q->prep_rq_fn() decides to kill a request
- 		 */
- 		rq = elv_next_request(drive->queue);
-+		spin_unlock_irq(q->queue_lock);
-+		spin_lock_irq(&hwgroup->lock);
-+
- 		if (!rq) {
- 			hwgroup->busy = 0;
- 			break;
-@@ -1060,15 +972,21 @@ void do_ide_request(struct request_queue
- 
- 		if (startstop == ide_stopped) {
- 			hwgroup->busy = 0;
--			if (!elv_queue_empty(orig_drive->queue))
--				blk_plug_device(orig_drive->queue);
-+			/* give other devices a chance */
-+			goto plug_device;
- 		}
- 	}
-+
-+	spin_unlock_irq(&hwgroup->lock);
-+	spin_lock_irq(q->queue_lock);
- 	return;
- 
- plug_device:
--	if (!elv_queue_empty(orig_drive->queue))
--		blk_plug_device(orig_drive->queue);
-+	spin_unlock_irq(&hwgroup->lock);
-+	spin_lock_irq(q->queue_lock);
-+
-+	if (!elv_queue_empty(q))
-+		blk_plug_device(q);
- }
+diff --git a/lib/kernel_lock.c b/lib/kernel_lock.c
+index 01a3c22..45828b2 100644
+--- a/lib/kernel_lock.c
++++ b/lib/kernel_lock.c
+@@ -9,6 +9,7 @@
+ #include <linux/module.h>
+ #include <linux/kallsyms.h>
+ #include <linux/semaphore.h>
++#include <trace/bkl.h>
  
  /*
-@@ -1129,6 +1047,17 @@ out:
- 	return ret;
+  * The 'big kernel lock'
+@@ -107,6 +108,37 @@ static inline void __unlock_kernel(void)
+ 	preempt_enable();
  }
  
-+static void ide_plug_device(ide_drive_t *drive)
++#ifdef CONFIG_BKL_TRACER
++static void lock_kernel_trace(void)
 +{
-+	struct request_queue *q = drive->queue;
-+	unsigned long flags;
++	int cpu;
++	struct bkl_trace_acquire trace;
 +
-+	spin_lock_irqsave(q->queue_lock, flags);
-+	if (!elv_queue_empty(q))
-+		blk_plug_device(q);
-+	spin_unlock_irqrestore(q->queue_lock, flags);
++	preempt_disable();
++	cpu = raw_smp_processor_id();
++	preempt_enable();
++
++	trace.acquire_req_time = cpu_clock(cpu);
++	__lock_kernel();
++	trace.acquire_time = cpu_clock(cpu);
++	trace_bkl_acquire(&trace);
 +}
 +
- /**
-  *	ide_timer_expiry	-	handle lack of an IDE interrupt
-  *	@data: timer callback magic (hwgroup)
-@@ -1146,10 +1075,12 @@ out:
- void ide_timer_expiry (unsigned long data)
++static void unlock_kernel_trace(void)
++{
++	struct bkl_trace_release trace;
++	trace.release_time = cpu_clock(raw_smp_processor_id());
++	trace_bkl_release(&trace);
++	__unlock_kernel();
++}
++
++#else
++
++#define lock_kernel_trace() __lock_kernel()
++#define unlock_kernel_trace() __unlock_kernel()
++
++#endif
++
+ /*
+  * Getting the big kernel lock.
+  *
+@@ -117,7 +149,7 @@ void __lockfunc lock_kernel(void)
  {
- 	ide_hwgroup_t	*hwgroup = (ide_hwgroup_t *) data;
-+	ide_drive_t	*uninitialized_var(drive);
- 	ide_handler_t	*handler;
- 	ide_expiry_t	*expiry;
- 	unsigned long	flags;
- 	unsigned long	wait = -1;
-+	int		plug_device = 0;
- 
- 	spin_lock_irqsave(&hwgroup->lock, flags);
- 
-@@ -1166,7 +1097,7 @@ void ide_timer_expiry (unsigned long dat
- 			hwgroup->busy = 0;
- 		}
- 	} else {
--		ide_drive_t *drive = hwgroup->drive;
-+		drive = hwgroup->drive;
- 		if (!drive) {
- 			printk(KERN_ERR "ide_timer_expiry: hwgroup->drive was NULL\n");
- 			hwgroup->handler = NULL;
-@@ -1217,17 +1148,19 @@ void ide_timer_expiry (unsigned long dat
- 					ide_error(drive, "irq timeout",
- 						  hwif->tp_ops->read_status(hwif));
- 			}
--			drive->service_time = jiffies - drive->service_start;
-+
- 			spin_lock_irq(&hwgroup->lock);
- 			enable_irq(hwif->irq);
- 			if (startstop == ide_stopped) {
- 				hwgroup->busy = 0;
--				if (!elv_queue_empty(drive->queue))
--					blk_plug_device(drive->queue);
-+				plug_device = 1;
- 			}
- 		}
- 	}
- 	spin_unlock_irqrestore(&hwgroup->lock, flags);
-+
-+	if (plug_device)
-+		ide_plug_device(drive);
+ 	int depth = current->lock_depth+1;
+ 	if (likely(!depth))
+-		__lock_kernel();
++		lock_kernel_trace();
+ 	current->lock_depth = depth;
  }
  
- /**
-@@ -1321,10 +1254,11 @@ irqreturn_t ide_intr (int irq, void *dev
- 	unsigned long flags;
- 	ide_hwgroup_t *hwgroup = (ide_hwgroup_t *)dev_id;
- 	ide_hwif_t *hwif = hwgroup->hwif;
--	ide_drive_t *drive;
-+	ide_drive_t *uninitialized_var(drive);
- 	ide_handler_t *handler;
- 	ide_startstop_t startstop;
- 	irqreturn_t irq_ret = IRQ_NONE;
-+	int plug_device = 0;
- 
- 	spin_lock_irqsave(&hwgroup->lock, flags);
- 
-@@ -1415,12 +1349,10 @@ irqreturn_t ide_intr (int irq, void *dev
- 	 * same irq as is currently being serviced here, and Linux
- 	 * won't allow another of the same (on any CPU) until we return.
- 	 */
--	drive->service_time = jiffies - drive->service_start;
- 	if (startstop == ide_stopped) {
- 		if (hwgroup->handler == NULL) {	/* paranoia */
- 			hwgroup->busy = 0;
--			if (!elv_queue_empty(drive->queue))
--				blk_plug_device(drive->queue);
-+			plug_device = 1;
- 		} else
- 			printk(KERN_ERR "%s: %s: huh? expected NULL handler "
- 					"on exit\n", __func__, drive->name);
-@@ -1429,6 +1361,10 @@ out_handled:
- 	irq_ret = IRQ_HANDLED;
- out:
- 	spin_unlock_irqrestore(&hwgroup->lock, flags);
-+
-+	if (plug_device)
-+		ide_plug_device(drive);
-+
- 	return irq_ret;
+@@ -125,7 +157,7 @@ void __lockfunc unlock_kernel(void)
+ {
+ 	BUG_ON(current->lock_depth < 0);
+ 	if (likely(--current->lock_depth < 0))
+-		__unlock_kernel();
++		unlock_kernel_trace();
  }
  
-Index: b/drivers/ide/ide-probe.c
-===================================================================
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -905,8 +905,7 @@ static int ide_init_queue(ide_drive_t *d
- 	 *	do not.
- 	 */
- 
--	q = blk_init_queue_node(do_ide_request, &hwif->hwgroup->lock,
--				hwif_to_node(hwif));
-+	q = blk_init_queue_node(do_ide_request, NULL, hwif_to_node(hwif));
- 	if (!q)
- 		return 1;
- 
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -605,8 +605,6 @@ struct ide_drive_s {
- 	unsigned long dev_flags;
- 
- 	unsigned long sleep;		/* sleep until this time */
--	unsigned long service_start;	/* time we started last request */
--	unsigned long service_time;	/* service time of last request */
- 	unsigned long timeout;		/* max time to wait for irq */
- 
- 	special_t	special;	/* special action flags */
+ EXPORT_SYMBOL(lock_kernel);
