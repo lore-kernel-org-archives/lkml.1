@@ -1,104 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757141AbYJVQUD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbYJVQUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757141AbYJVQUD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 12:20:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbYJVQTu
+	id S1757271AbYJVQUw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 12:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYJVQUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 12:19:50 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:62372 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751215AbYJVQTs (ORCPT
+	Wed, 22 Oct 2008 12:20:41 -0400
+Received: from exhub016-2.exch016.msoutlookonline.net ([207.5.72.164]:48568
+	"EHLO EXHUB016-2.exch016.msoutlookonline.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753527AbYJVQUl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 12:19:48 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtoEAIjs/khMQWQ+/2dsb2JhbACBcsRpg08
-Date: Wed, 22 Oct 2008 12:19:44 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "ltt-dev@lists.casi.polymtl.ca" <ltt-dev@lists.casi.polymtl.ca>,
-       Michael Davidson <md@google.com>
-Subject: Re: [RFC patch 15/15] LTTng timestamp x86
-Message-ID: <20081022161944.GB12650@Krystal>
-References: <57C9024A16AD2D4C97DC78E552063EA3532D455F@orsmsx505.amr.corp.intel.com> <20081017172515.GA9639@goodmis.org> <57C9024A16AD2D4C97DC78E552063EA3533458AC@orsmsx505.amr.corp.intel.com> <20081017184215.GB9874@Krystal> <57C9024A16AD2D4C97DC78E552063EA35334594F@orsmsx505.amr.corp.intel.com> <20081017202313.GA13597@Krystal> <57C9024A16AD2D4C97DC78E552063EA353345B9B@orsmsx505.amr.corp.intel.com> <20081018170118.GA22243@Krystal> <alpine.LFD.2.00.0810181011310.3438@nehalem.linux-foundation.org> <20081018175005.GA2211@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 22 Oct 2008 12:20:41 -0400
+X-Greylist: delayed 603 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Oct 2008 12:20:40 EDT
+Message-ID: <48FF506F.6060701@cfl.rr.com>
+Date: Wed, 22 Oct 2008 12:10:23 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: "Theodore Ts'o" <tytso@mit.edu>,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Yea old defrag
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20081018175005.GA2211@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:07:23 up 139 days, 20:47,  9 users,  load average: 0.56, 0.95,
-	1.09
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > And if you make all these linear interpolations be per-CPU (so you 
-> > have per-CPU offsets and frequencies) you never _ever_ need to touch 
-> > any shared data at all, and you know you can scale basically 
-> > perfectly.
-> > 
-> > Your linear interpolations may not be _perfect_, but you'll be able to 
-> > get them pretty damn near. In fact, even if the TSC's aren't 
-> > synchronized at all, if they are at least _individually_ stable (just 
-> > running at slightly different frequencies because they are in 
-> > different clock domains, and/or at different start points), you can 
-> > basically perfect the precision over time.
-> 
-> there's been code submitted by Michael Davidson recently that looked 
-> interesting, which turns the TSC into such an entity:
-> 
->     http://lkml.org/lkml/2008/9/25/451
-> 
-> The periodic synchronization uses the hpet, but it thus allows lockless 
-> and globally correct readouts of the TSC .
-> 
-> And that would match the long term goal as well: the hw should do this 
-> all automatically. So perhaps we should have a trace_clock() after all, 
-> independent of sched_clock(), and derived straight from RDTSC.
-> 
-> The approach as propoed has a couple of practical problems, but if we 
-> could be one RDTSC+multiplication away from a pretty good timestamp that 
-> would be rather useful, very fast and very robust ...
-> 
-> 	Ingo
+I'm writing this to Theodore Ts'o because he has worked on the package 
+in the past, and currently maintains e2fsprogs.   I am CCing lkml since 
+there are likely to be other interested parties, and there does not seem 
+to be a separate list for e2fsprogs.
 
-Looking at this code, I wonder :
+The old defrag package for doing offline defragmentation of ext2 has not 
+been maintained in many years.  About two years ago I fixed a few bugs 
+that were causing it to not work on ext3 and placed the changes in 
+Ubuntu.  I would like to see this program continue to live since it 
+still serves a purpose, but because it has had no upstream maintainer in 
+so long, Debian and thus Ubuntu have dropped the package.  I am trying 
+to resurrect it.
 
-- How it would support virtualization.
-- How it would scale to 512 nodes, if we consider that every idle node
-  is doing an HPET readl each time it exits from safe_halt() (this can
-  end up taking most of the HPET timer bandwidth). So in the case where
-  we have 256 idle nodes taking all the HPET timer bandwidth and a 256
-  nodes doing useful work, the time these HPET reads can take on the
-  useful nodes when they try to resync with the HPET could be long (they
-  may need to sample it periodically or at CPU frequency change, or they
-  may simply go idle once in a while). We might end up having difficulty
-  getting a CPU out of idle due to the time it takes simply to get hold
-  of the HPET.
-
-Given the bad scalability numbers I've recently posted for the HPET, I
-doubt this a workable solution to the scalability issue.
-
-Mathieu
-
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+I was wondering why it was never integrated into e2fsprogs, and if this 
+could now be done.  It seems to me that e2fsprogs would be the proper 
+home for it, and a neutral upstream for everyone.  If not, then I will 
+try to maintain it as an Ubuntu native package in a bazaar branch on 
+launchpad.
