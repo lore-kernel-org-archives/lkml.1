@@ -1,88 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752467AbYJVF2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752357AbYJVFfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752467AbYJVF2b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 01:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbYJVF2T
+	id S1752357AbYJVFfg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 01:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYJVFf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 01:28:19 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:46600 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbYJVF2S (ORCPT
+	Wed, 22 Oct 2008 01:35:27 -0400
+Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:56130 "EHLO
+	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751086AbYJVFf1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 01:28:18 -0400
-Message-ID: <48FEBAAA.5080604@suse.de>
-Date: Wed, 22 Oct 2008 11:01:22 +0530
-From: Suresh Jayaraman <sjayaraman@suse.de>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Neil Brown <neilb@suse.de>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 20/32] netvm: INET reserves.
-References: <20081002130504.927878499@chello.nl> <20081002131609.071928149@chello.nl>
-In-Reply-To: <20081002131609.071928149@chello.nl>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Oct 2008 01:35:27 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: __vm_enough_memory(), OVERCOMMIT_NEVER, current->mm, kernel thread 
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+In-Reply-To: <6775.1224630654@jrobl>
+References: <7123.1224602071@jrobl> <20081021164619.341f01d9@lxorguk.ukuu.org.uk> <6775.1224630654@jrobl>
+Date: Wed, 22 Oct 2008 14:35:16 +0900
+Message-ID: <6715.1224653716@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
 
->>> Peter Zijlstra <a.p.zijlstra@chello.nl> 10/02/08 7:06 PM >>>
-> Add reserves for INET.
+> I guess
+> - people don't care overcommit and leave it as default, so they don't
+>   meet the problem 
+> - people who cares overcommit has rich memory, and they don't meet the
+>   problem too.
 
-There's a typo in this patch that results in a Oops like the one below
-when doing `sysctl -a'
-
-<cut>
-RIP: 0010:[<ffffffff804a0487>]  [<ffffffff804a0487>]
-__mutex_lock_slowpath+0x34/0xc9
-
-Call Trace:
- [<ffffffff804a044f>] mutex_lock+0x1a/0x1e
- [<ffffffff8044a82e>] proc_dointvec_route+0x38/0xad
- [<ffffffff80301fce>] proc_sys_call_handler+0x91/0xb8
- [<ffffffff802ba07e>] vfs_read+0xaa/0x153
- [<ffffffff802ba1e3>] sys_read+0x45/0x6e
- [<ffffffff8020c37a>] system_call_fastpath+0x16/0x1b
- [<00007fb25e415880>] 0x7fb25e415880
-
-</cut>
+Correction: the problem is unrelated to the memory size.
+I was sleepy when I wrote that.
+Regardless the memory size, when nfsd writes to tmpfs the system surely
+crashes.
 
 
-Index: linux-2.6/net/ipv4/route.c
-===================================================================
---- linux-2.6.orig/net/ipv4/route.c
-+++ linux-2.6/net/ipv4/route.c
-
-        /* Deprecated. Use gc_min_interval_ms */
-@@ -3271,6 +3330,15 @@ int __init ip_rt_init(void)
-    ipv4_dst_ops.gc_thresh = (rt_hash_mask + 1);
-    ip_rt_max_size = (rt_hash_mask + 1) * 16;
-
-+#ifdef CONFIG_PROCFS
-
-Should be CONFIG_PROC_FS
-
-+    mutex_init(&ipv4_route_lock);
-+#endif
-+
-+    mem_reserve_init(&ipv4_route_reserve, "IPv4 route cache",
-+            &net_rx_reserve);
-+    mem_reserve_kmem_cache_set(&ipv4_route_reserve,
-+            ipv4_dst_ops.kmem_cachep, ip_rt_max_size);
-+
-    devinet_init();
-    ip_fib_init();
-
-
-Thanks,
-
--- 
-Suresh Jayaraman
+Junjiro R. Okajima
