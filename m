@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757885AbYJVWFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbYJVWF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757885AbYJVWFW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 18:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbYJVWFI
+	id S1756266AbYJVWF7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 18:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbYJVWFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 18:05:08 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:7795 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752980AbYJVWFH (ORCPT
+	Wed, 22 Oct 2008 18:05:51 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34221 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752980AbYJVWFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 18:05:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=JVbOlo07xbCAtCGwminPGplDv0FvINaz6VWogi4NVc4Bmuo+HeDQzqfXjW7aSZPCLT
-         Q9EOMnqex43/PmJZKSZ+VYG1YRPDvaSAtGpl0XKt5uZt0rwSio95vnGodnOLkaySm3og
-         5tyStTZMYPwMS88Mbr2VkDfZNBsqjiyRxWg00=
-Message-ID: <a4e6962a0810221505u9cd7e22k2007fb134c345e07@mail.gmail.com>
-Date: Wed, 22 Oct 2008 17:05:06 -0500
-From: "Eric Van Hensbergen" <ericvh@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: [GIT PULL] Additional 9p patches for 2.6.28 merge window
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Oct 2008 18:05:51 -0400
+Date: Thu, 23 Oct 2008 00:13:16 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Alok Kataria <akataria@vmware.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>
+Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is set.
+Message-ID: <20081022221316.GW12825@one.firstfloor.org>
+References: <874p36fflp.fsf@basil.nowhere.org> <1224607284.6161.22.camel@alok-dev1> <20081021174008.GH12825@one.firstfloor.org> <1224612294.6161.43.camel@alok-dev1> <20081021181536.GI12825@one.firstfloor.org> <1224616236.6161.60.camel@alok-dev1> <20081021192746.GJ12825@one.firstfloor.org> <1224703427.13953.8.camel@alok-dev1> <20081022195845.GP12825@one.firstfloor.org> <1224712846.13953.37.camel@alok-dev1>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1224712846.13953.37.camel@alok-dev1>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 2515ddc6db8eb49a79f0fe5e67ff09ac7c81eab4:
-  Paul Mundt (1):
-        binfmt_elf_fdpic: Update for cputime changes.
+> > Adding it with vmware detection code is not useful.
+> 
+> The VMware detection code is something that's needed anyways for other
+> purposes(getting tsc_freq right now). So the code which force sets this
+> TSC_CONSTANT bit is trivial.
 
-are available in the git repository at:
+It would be better to eliminate that too. Why do you need it anyways?
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git for-linus
+> Apart from that, as i said yesterday, this should be viewed as a special
+> case for VMware products which don't already set this bit. Changing the
+> behavior for already existing products is not feasible.
 
-Eric Van Hensbergen (3):
-      9p: fix debug build error
-      9p: fix format warning
-      9p: fix sparse warnings
+On old hypervisors Linux already runs fine without TSC, doesn't it?
 
-Tom Tucker (1):
-      9p: rdma: RDMA Transport Support for 9P
-
- fs/9p/vfs_file.c        |    3 +-
- include/net/9p/9p.h     |    2 +-
- include/net/9p/client.h |    2 +
- net/9p/Kconfig          |    6 +
- net/9p/Makefile         |    4 +
- net/9p/client.c         |    1 +
- net/9p/protocol.c       |   33 ++-
- net/9p/trans_fd.c       |    4 +-
- net/9p/trans_rdma.c     |  712 +++++++++++++++++++++++++++++++++++++++++++++++
- 9 files changed, 750 insertions(+), 17 deletions(-)
- create mode 100644 net/9p/trans_rdma.c
-
-    Thanks,
-           -eric
+-Andi
