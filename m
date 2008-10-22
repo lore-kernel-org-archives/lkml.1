@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758138AbYJVTNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757702AbYJVTQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758138AbYJVTNr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 15:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754907AbYJVTNi
+	id S1757702AbYJVTQo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 15:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbYJVTQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 15:13:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53644 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753441AbYJVTNh (ORCPT
+	Wed, 22 Oct 2008 15:16:36 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:57205 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751086AbYJVTQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 15:13:37 -0400
-Date: Wed, 22 Oct 2008 12:12:57 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
+	Wed, 22 Oct 2008 15:16:35 -0400
+Date: Wed, 22 Oct 2008 15:16:33 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
        sagar.abhishek@gmail.com, davem@davemloft.net, tglx@linutronix.de,
        peterz@infradead.org, torvalds@linux-foundation.org,
        srostedt@redhat.com
-Subject: Re: [PATCH 06/11] ftrace: add ftrace warn on to disable ftrace
-Message-Id: <20081022121257.9a10513e.akpm@linux-foundation.org>
-In-Reply-To: <20081022185136.489385614@goodmis.org>
-References: <20081022184313.179487464@goodmis.org>
-	<20081022185136.489385614@goodmis.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 04/11] ftrace: comment arch ftrace code
+In-Reply-To: <20081022120951.11665534.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0810221513490.25759@gandalf.stny.rr.com>
+References: <20081022184313.179487464@goodmis.org> <20081022185136.134729572@goodmis.org> <20081022120951.11665534.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Oct 2008 14:43:19 -0400
-Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> Add ftrace warn on to disable ftrace as well as report a warning.
+On Wed, 22 Oct 2008, Andrew Morton wrote:
 > 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  kernel/trace/ftrace.c |   29 ++++++++++++++++++++++-------
->  1 file changed, 22 insertions(+), 7 deletions(-)
+> I dunno.
 > 
-> Index: linux-compile.git/kernel/trace/ftrace.c
-> ===================================================================
-> --- linux-compile.git.orig/kernel/trace/ftrace.c	2008-10-22 13:17:29.000000000 -0400
-> +++ linux-compile.git/kernel/trace/ftrace.c	2008-10-22 13:20:11.000000000 -0400
-> @@ -32,6 +32,24 @@
->  
->  #include "trace.h"
->  
-> +#define FTRACE_WARN_ON(cond)			\
-> +	do {					\
-> +		if (unlikely(cond)) {		\
-> +			WARN_ON(1);		\
-> +			ftrace_kill();		\
-> +		}				\
-> +	} while (0)
+> __copy_to_user_inatomic() is for "copying memory from userspace while
+> in an atomic context".
+> 
+> But what you're doing here is "modifying some kernel text which might
+> generate a fault".  It seems somewhat interface-abusive to use a
+> userspace access function for that just because it happens right now to
+> do the right thing.
+> 
+> I'd suggest that for clarity and for future-safety, you create some new
+> interface function which does that thing.  Right now it can be a simple
+> wrapper around __copy_from_user_inatomic().
+> 
+> <looks>
+> 
+> oh, someone added one - probe_kernel_write().  Why not use that?
 
-This could be coded as
+I didn't know about that code. That is what I want.
 
-	if (WARN_ON(cond))
-		ftrace_kill();
+-- Steve
 
-> +#define FTRACE_WARN_ON_ONCE(cond)		\
-> +	do {					\
-> +		static int once;		\
-> +		if (unlikely(cond) && !once) {	\
-> +			once++;			\
-> +			WARN_ON(1);		\
-> +			ftrace_kill();		\
-> +		}				\
-> +	} while (0)
+> 
+> <wonders why he doesn't know what's going on any more>
+> 
+> 
+> Also, I hope that the above code is called from within a
+> pagefault_disable()d region?  Or are relying upon some magical
+> side-effect of something which happens to do the same thing as
+> pagefault_disable()?  IOW: by what means does the above code ensure
+> that do_page_fault() will see in_atomic()==true?
 
+This code is called from kstop_machine, or simply has interrupts disabled.
 
-	if (WARN_ON_ONCE(cond))
-		ftrace_kill();
-
+-- Steve
 
