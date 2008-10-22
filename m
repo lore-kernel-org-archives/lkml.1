@@ -1,70 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbYJVTpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbYJVTqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756144AbYJVTpa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 15:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbYJVTpT
+	id S1756189AbYJVTqi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 15:46:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYJVTq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 15:45:19 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:44219 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752073AbYJVTpR (ORCPT
+	Wed, 22 Oct 2008 15:46:27 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:47503 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752703AbYJVTq0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 15:45:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=g/4eTgS+PX3x0uhxQWLys0A4lQv87nl+CsKQlgw7hpVNXvruYxjmeHjXHCM3cd/H6X
-         nMUfp6hTRPITTRPA8JORAT54ZwDXCo1xKDouAWFjRMcmChhuHwXqbUh/LUc4eJajJMa3
-         2OE9HwQqyX7HknKHJBSdhlpre70q5xrFQnWKE=
-Message-ID: <b637ec0b0810221245p98f5837j58fdc505cf4fa131@mail.gmail.com>
-Date: Wed, 22 Oct 2008 21:45:15 +0200
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Matthew Wilcox" <matthew@wil.cx>
-Subject: Re: Possible bug in SCSI Kconfig
-Cc: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       sam@ravnborg.org, linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <20081022193458.GJ26094@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b637ec0b0810220929r2c889423ma92bef0ec7f9b3b0@mail.gmail.com>
-	 <1224702340.6851.20.camel@localhost.localdomain>
-	 <b637ec0b0810221225q589ed071i75f559d6fa76d96b@mail.gmail.com>
-	 <20081022192650.GI26094@parisc-linux.org>
-	 <b637ec0b0810221231w5a329e2cu84c8789e77a4eb59@mail.gmail.com>
-	 <20081022193458.GJ26094@parisc-linux.org>
+	Wed, 22 Oct 2008 15:46:26 -0400
+To: cl@linux-foundation.org
+CC: miklos@szeredi.hu, penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au,
+       hugh@veritas.com, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-reply-to: <Pine.LNX.4.64.0810220822500.30851@quilx.com> (message from
+	Christoph Lameter on Wed, 22 Oct 2008 08:42:25 -0700 (PDT))
+Subject: Re: SLUB defrag pull request?
+References: <1223883004.31587.15.camel@penberg-laptop>
+ <1223883164.31587.16.camel@penberg-laptop> <Pine.LNX.4.64.0810131227120.20511@blonde.site>
+ <200810132354.30789.nickpiggin@yahoo.com.au> <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu>
+ <E1KpOOL-0003Vf-9y@pomaz-ex.szeredi.hu> <48F378C6.7030206@linux-foundation.org>
+ <E1KpOjX-0003dt-AY@pomaz-ex.szeredi.hu> <48FC9CCC.3040006@linux-foundation.org>
+ <E1Krz4o-0002Fi-Pu@pomaz-ex.szeredi.hu> <48FCCC72.5020202@linux-foundation.org>
+ <E1KrzgK-0002QS-Os@pomaz-ex.szeredi.hu> <48FCD7CB.4060505@linux-foundation.org>
+ <E1Ks0QX-0002aC-SQ@pomaz-ex.szeredi.hu> <48FCE1C4.20807@linux-foundation.org>
+ <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu> <48FE6306.6020806@linux-foundation.org>
+ <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0810220822500.30851@quilx.com>
+Message-Id: <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 22 Oct 2008 21:46:03 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Wed, 22 Oct 2008, Christoph Lameter wrote:
+> On Wed, 22 Oct 2008, Miklos Szeredi wrote:
+> 
+> > On Tue, 21 Oct 2008, Christoph Lameter wrote:
+> >> The only way that a secure reference can be established is if the
+> >> slab page is locked. That requires a spinlock. The slab allocator
+> >> calls the get() functions while the slab lock guarantees object
+> >> existence. Then locks are dropped and reclaim actions can start with
+> >> the guarantee that the slab object will not suddenly vanish.
+> >
+> > Yes, you've made up your mind, that you want to do it this way.  But
+> > it's the _wrong_ way, this "want to get a secure reference for use
+> > later" leads to madness when applied to dentries or inodes.  Try for a
+> > minute to think outside this template.
+> >
+> > For example dcache_lock will protect against dentries moving to/from
+> > d_lru.  So you can do this:
+> >
+> >  take dcache_lock
+> >  check if d_lru is non-empty
+> 
+> The dentry could have been freed even before we take the dcache_lock. We 
+> cannot access d_lru without a stable reference to the dentry.
 
-On Wed, Oct 22, 2008 at 9:34 PM, Matthew Wilcox <matthew@wil.cx> wrote:
-> On Wed, Oct 22, 2008 at 09:31:51PM +0200, Fabio Comolli wrote:
->> Unfortunately this is not an option because of ipw2200. I don't use
->> initrd and if I turn off CONFIG_MODULES the kernel hangs forever
->> requesting the firmware.
->
-> Have you investigated CONFIG_EXTRA_FIRMWARE?
+Why?  The kmem_cache_free() doesn't touch the contents of the object,
+does it?
 
-Wow! You made my day:
+> >  take sb->s_umount
+> >  free dentry
+> >  release sb->s_umount
+> >  release dcache_lock
+> >
+> > Yeah, locking will be more complicated in reality.  Still, much less
+> > complicated than trying to do the same across two separate phases.
+> >
+> > Why can't something like that work?
+> 
+> Because the slab starts out with a series of objects left in a slab. It 
+> needs to do build a list of objects etc in a way that is independent as 
+> possible from the user of the slab page. It does that by locking the slab 
+> page so that free operations stall until the reference has been 
+> established. If it would not be shutting off frees then the objects could 
+> vanish under us.
 
-ipw2200: Intel(R) PRO/Wireless 2200/2915 Network Driver, 1.2.2kmr
-ipw2200: Copyright(c) 2003-2006 Intel Corporation
-ipw2200 0000:06:05.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-ipw2200: Detected Intel PRO/Wireless 2200BG Network Connection
-firmware: using built-in firmware ipw2200-bss.fw
+It doesn't matter.  All we care about is that the dentry is on the
+lru: it's cached but unused.  Every other state (being created,
+active, being freed, freed) is uninteresting.
 
-Thanks!
+> We could also avoid frees by calling some cache specific method that locks 
+> out frees before and after. But then frees would stall everywhere and 
+> every slab cache would have to check a global lock before freeing objects 
+> (there would be numerous complications with RCU free etc etc).
+> 
+> Slab defrag only stops frees on a particular slab page.
+> 
+> The slab defrag approach also allows the slab cache (dentry or inodes 
+> here) to do something else than free the object. It would be possible f.e. 
+> to move the object by allocating a new entry and moving the information to 
+> the new dentry. That would actually be better since it would preserve the 
+> objects and just move them into the same slab page.
 
->
-> --
-> Matthew Wilcox                          Intel Open Source Technology Centre
-> "Bill, look, we understand that you're interested in selling us this
-> operating system, but compare it to ours.  We can't possibly take such
-> a retrograde step."
->
+Sure, and all that is possible without doing this messy 2 phase thing.
+Unless I'm still missing something obvious...
+
+Miklos
