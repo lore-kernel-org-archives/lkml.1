@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026AbYJVDLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753306AbYJVDQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753026AbYJVDLn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 23:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbYJVDLf
+	id S1753306AbYJVDQT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 23:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYJVDQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 23:11:35 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:7582 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022AbYJVDLe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 23:11:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ZamE9qKN6IAcimFxPzb7w9doewRDDtBVjMEm1Cgzz8MFfc0xL1oyrYYGAXw1mrThrt
-         5FN9yyAn2jxElgWSUjrn1WtcnxCiIQT2mkDA4wOYlDm0qB1B2FkPDzilPkiwIaKpx2C7
-         FrZ3F+Zr/T5+OfbAmE3E/PTjzdCu9RGWsJI7k=
-Message-ID: <8bd0f97a0810212011o2dfc2290ra6b227fec3d89a57@mail.gmail.com>
-Date: Tue, 21 Oct 2008 23:11:33 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Bryan Wu" <bryan.wu@analog.com>
-Subject: Re: [RFC] CRIS: Move header files from include to arch/cris
-Cc: "Jesper Nilsson" <jesper.nilsson@axis.com>,
-       "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       "Mikael Starvik" <mikael.starvik@axis.com>
-In-Reply-To: <48FE91AE.4010009@analog.com>
+	Tue, 21 Oct 2008 23:16:09 -0400
+Received: from NaN.false.org ([208.75.86.248]:57474 "EHLO nan.false.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751226AbYJVDQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 23:16:08 -0400
+X-Greylist: delayed 1250 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Oct 2008 23:16:08 EDT
+Date: Tue, 21 Oct 2008 22:55:13 -0400
+From: Daniel Jacobowitz <dan@debian.org>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-api@vger.kernel.org, tglx@linutronix.de, dave@linux.vnet.ibm.com,
+       mingo@elte.hu, hpa@zytor.com, viro@zeniv.linux.org.uk
+Subject: Re: [RFC v7][PATCH 2/9] General infrastructure for checkpoint
+	restart
+Message-ID: <20081022025513.GA7504@caradoc.them.org>
+Mail-Followup-To: Oren Laadan <orenl@cs.columbia.edu>,
+	"Serge E. Hallyn" <serue@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	torvalds@linux-foundation.org,
+	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, linux-api@vger.kernel.org, tglx@linutronix.de,
+	dave@linux.vnet.ibm.com, mingo@elte.hu, hpa@zytor.com,
+	viro@zeniv.linux.org.uk
+References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu> <1224481237-4892-3-git-send-email-orenl@cs.columbia.edu> <20081021124130.a002e838.akpm@linux-foundation.org> <20081021202410.GA10423@us.ibm.com> <48FE82DF.6030005@cs.columbia.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081021164211.GG24715@axis.com>
-	 <8bd0f97a0810211046n2e32868fu1a58cc9123da7c6d@mail.gmail.com>
-	 <48FE91AE.4010009@analog.com>
+In-Reply-To: <48FE82DF.6030005@cs.columbia.edu>
+User-Agent: Mutt/1.5.17 (2008-05-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 21, 2008 at 22:36, Bryan Wu wrote:
-> Mike Frysinger wrote:
->> On Tue, Oct 21, 2008 at 12:42, Jesper Nilsson wrote:
->>> That means that the machine dependent header files are moved to
->>> arch/cris/mach-{fs,a3}/include, while the common and architecture
->>> dependent files are moved to arch/cris/include.
->>>
->>> It is mainly this I'd like some input on, since most other ports
->>> that have moved their header files have put all headers in
->>> arch/*/include.
->>
->> that seems like a fairly obvious good idea to me ... i'm thinking we
->> should do it for Blackfin as well ...
->
-> For moving machine header files to arch/blackfin/include/asm/mach-bf{527,
-> 533, 537, 538, 548, 561},  we need to set a link such as
->  arch/blackfin/include/asm/mach -> arch/blackfin/include/asm/mach-bf527,
-> because tons of drivers use the header file <asm/mach/xxxx.h>.
+On Tue, Oct 21, 2008 at 09:33:19PM -0400, Oren Laadan wrote:
+> >> What happens if I pass it a pid of a process which I _do_ own, but it
+> >> does not refer to a container's init process?
+> > 
+> > I would assume that do_checkpoint() would return -EINVAL, but it's a
+> > great question:  Oren, did you have another plan?
+> 
+> Since we intentional provide minimal functionality to keep the patchset
+> simple and allow easy review - we only checkpoint one task; it doesn't
+> really matter because we don't deal with the entire container.
+> 
+> With the ability to checkpoint multiple process we will have to ensure
+> that we checkpoint an entire container. I planned to return -EINVAL if
+> the target task isn't a container init(1). Another option, if people
+> prefer, is to use any task in a container to "represent" the entire
+> container.
 
-i dont think a ton of drivers use asm/mach/xxx.h considering how few
-files we have in there.  a transition would be pretty trivial.
+I haven't been following - but why this whole container restriction?
+Checkpoint/restart of individual processes is very useful too.
+There are issues with e.g. IPC, but I'm not convinced they're
+substantially different than the issues already present for a
+container.
 
-> But we don't like to setup a link that is the one reason we move our header
-> file from include/asm-blackfin to our arch/blackfin/include/asm.
-
-$arch/include/asm/ and $arch/asm/ would work the same.  just tweak the
-actual -I path.
--mike
+-- 
+Daniel Jacobowitz
+CodeSourcery
