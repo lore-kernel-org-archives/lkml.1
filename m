@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759794AbYJVVhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759944AbYJVVh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759794AbYJVVhn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 17:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757813AbYJVVf6
+	id S1759944AbYJVVh7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 17:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757924AbYJVVf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 17:35:58 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33407 "EHLO
+	Wed, 22 Oct 2008 17:35:59 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:64418 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755949AbYJVVfx (ORCPT
+	with ESMTP id S1755760AbYJVVfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 22 Oct 2008 17:35:53 -0400
-Message-Id: <20081022213552.103446927@goodmis.org>
+Message-Id: <20081022213551.548023022@goodmis.org>
 References: <20081022212721.167005680@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Oct 2008 17:27:27 -0400
+Date: Wed, 22 Oct 2008 17:27:24 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
@@ -24,135 +24,141 @@ Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 06/13 v2] ftrace: only have ftrace_kill atomic
-Content-Disposition: inline; filename=ftrace-only-kill-atomic.patch
+Subject: [PATCH 03/13 v2] ftrace: return error on failed modified text.
+Content-Disposition: inline; filename=ftrace-return-error-on-mod-code.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When an anomaly is detected, we need a way to completely disable
-ftrace. Right now we have two functions: ftrace_kill and ftrace_kill_atomic.
-The ftrace_kill tries to do it in a "nice" way by converting everything
-back to a nop.
+Have the ftrace_modify_code return error values:
 
-The "nice" way is dangerous itself, so this patch removes it and only
-has the "atomic" version, which is all that is needed.
+  -EFAULT on error of reading the address
+
+  -EINVAL if what is read does not match what it expected
+
+  -EPERM  if the write fails to update after a successful match.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- include/linux/ftrace.h |    3 +--
- kernel/trace/ftrace.c  |   42 ++----------------------------------------
- kernel/trace/trace.c   |    2 +-
- 3 files changed, 4 insertions(+), 43 deletions(-)
+ arch/x86/kernel/ftrace.c |   12 +++++++-----
+ include/linux/ftrace.h   |   24 ++++++++++++++++++++++--
+ kernel/trace/ftrace.c    |   21 +++++++++++++++------
+ 3 files changed, 44 insertions(+), 13 deletions(-)
 
-Index: linux-compile.git/include/linux/ftrace.h
+Index: linux-compile.git/arch/x86/kernel/ftrace.c
 ===================================================================
---- linux-compile.git.orig/include/linux/ftrace.h	2008-10-22 15:57:31.000000000 -0400
-+++ linux-compile.git/include/linux/ftrace.h	2008-10-22 15:58:35.000000000 -0400
-@@ -40,7 +40,7 @@ extern void ftrace_stub(unsigned long a0
- # define register_ftrace_function(ops) do { } while (0)
- # define unregister_ftrace_function(ops) do { } while (0)
- # define clear_ftrace_function(ops) do { } while (0)
--static inline void ftrace_kill_atomic(void) { }
-+static inline void ftrace_kill(void) { }
- #endif /* CONFIG_FTRACE */
+--- linux-compile.git.orig/arch/x86/kernel/ftrace.c	2008-10-22 16:30:39.000000000 -0400
++++ linux-compile.git/arch/x86/kernel/ftrace.c	2008-10-22 16:30:45.000000000 -0400
+@@ -71,14 +71,16 @@ ftrace_modify_code(unsigned long ip, uns
+ 	 * No real locking needed, this code is run through
+ 	 * kstop_machine, or before SMP starts.
+ 	 */
+-	if (__copy_from_user_inatomic(replaced, (char __user *)ip, MCOUNT_INSN_SIZE))
+-		return 1;
++	if (__copy_from_user_inatomic(replaced, (char __user *)ip,
++				      MCOUNT_INSN_SIZE))
++		return -EFAULT;
  
- #ifdef CONFIG_DYNAMIC_FTRACE
-@@ -117,7 +117,6 @@ static inline void ftrace_release(void *
+ 	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
+-		return 2;
++		return -EINVAL;
  
- /* totally disable ftrace - can not re-enable after this */
- void ftrace_kill(void);
--void ftrace_kill_atomic(void);
+-	WARN_ON_ONCE(__copy_to_user_inatomic((char __user *)ip, new_code,
+-				    MCOUNT_INSN_SIZE));
++	if (__copy_to_user_inatomic((char __user *)ip, new_code,
++				    MCOUNT_INSN_SIZE))
++		return -EPERM;
  
- static inline void tracer_disable(void)
- {
+ 	sync_core();
+ 
 Index: linux-compile.git/kernel/trace/ftrace.c
 ===================================================================
---- linux-compile.git.orig/kernel/trace/ftrace.c	2008-10-22 15:49:49.000000000 -0400
-+++ linux-compile.git/kernel/trace/ftrace.c	2008-10-22 15:58:35.000000000 -0400
-@@ -1544,22 +1544,6 @@ int ftrace_force_update(void)
- 	return ret;
- }
- 
--static void ftrace_force_shutdown(void)
--{
--	struct task_struct *task;
--	int command = FTRACE_DISABLE_CALLS | FTRACE_UPDATE_TRACE_FUNC;
--
--	mutex_lock(&ftraced_lock);
--	task = ftraced_task;
--	ftraced_task = NULL;
--	ftraced_suspend = -1;
--	ftrace_run_update_code(command);
--	mutex_unlock(&ftraced_lock);
--
--	if (task)
--		kthread_stop(task);
--}
--
- static __init int ftrace_init_debugfs(void)
+--- linux-compile.git.orig/kernel/trace/ftrace.c	2008-10-22 16:30:39.000000000 -0400
++++ linux-compile.git/kernel/trace/ftrace.c	2008-10-22 16:30:45.000000000 -0400
+@@ -591,22 +591,22 @@ ftrace_code_disable(struct dyn_ftrace *r
  {
- 	struct dentry *d_tracer;
-@@ -1752,17 +1736,16 @@ core_initcall(ftrace_dynamic_init);
- # define ftrace_shutdown()		do { } while (0)
- # define ftrace_startup_sysctl()	do { } while (0)
- # define ftrace_shutdown_sysctl()	do { } while (0)
--# define ftrace_force_shutdown()	do { } while (0)
- #endif /* CONFIG_DYNAMIC_FTRACE */
+ 	unsigned long ip;
+ 	unsigned char *nop, *call;
+-	int failed;
++	int ret;
  
- /**
-- * ftrace_kill_atomic - kill ftrace from critical sections
-+ * ftrace_kill - kill ftrace
-  *
-  * This function should be used by panic code. It stops ftrace
-  * but in a not so nice way. If you need to simply kill ftrace
-  * from a non-atomic section, use ftrace_kill.
-  */
--void ftrace_kill_atomic(void)
-+void ftrace_kill(void)
- {
- 	ftrace_disabled = 1;
- 	ftrace_enabled = 0;
-@@ -1773,27 +1756,6 @@ void ftrace_kill_atomic(void)
- }
+ 	ip = rec->ip;
  
- /**
-- * ftrace_kill - totally shutdown ftrace
-- *
-- * This is a safety measure. If something was detected that seems
-- * wrong, calling this function will keep ftrace from doing
-- * any more modifications, and updates.
-- * used when something went wrong.
-- */
--void ftrace_kill(void)
--{
--	mutex_lock(&ftrace_sysctl_lock);
--	ftrace_disabled = 1;
--	ftrace_enabled = 0;
--
--	clear_ftrace_function();
--	mutex_unlock(&ftrace_sysctl_lock);
--
--	/* Try to totally disable ftrace */
--	ftrace_force_shutdown();
--}
--
--/**
-  * register_ftrace_function - register a function for profiling
-  * @ops - ops structure that holds the function for profiling.
-  *
-Index: linux-compile.git/kernel/trace/trace.c
+ 	nop = ftrace_nop_replace();
+ 	call = ftrace_call_replace(ip, mcount_addr);
+ 
+-	failed = ftrace_modify_code(ip, call, nop);
+-	if (failed) {
+-		switch (failed) {
+-		case 1:
++	ret = ftrace_modify_code(ip, call, nop);
++	if (ret) {
++		switch (ret) {
++		case -EFAULT:
+ 			WARN_ON_ONCE(1);
+ 			pr_info("ftrace faulted on modifying ");
+ 			print_ip_sym(ip);
+ 			break;
+-		case 2:
++		case -EINVAL:
+ 			WARN_ON_ONCE(1);
+ 			pr_info("ftrace failed to modify ");
+ 			print_ip_sym(ip);
+@@ -615,6 +615,15 @@ ftrace_code_disable(struct dyn_ftrace *r
+ 			print_ip_ins(" replace: ", nop);
+ 			printk(KERN_CONT "\n");
+ 			break;
++		case -EPERM:
++			WARN_ON_ONCE(1);
++			pr_info("ftrace faulted on writing ");
++			print_ip_sym(ip);
++			break;
++		default:
++			WARN_ON_ONCE(1);
++			pr_info("ftrace faulted on unknown error ");
++			print_ip_sym(ip);
+ 		}
+ 
+ 		rec->flags |= FTRACE_FL_FAILED;
+Index: linux-compile.git/include/linux/ftrace.h
 ===================================================================
---- linux-compile.git.orig/kernel/trace/trace.c	2008-10-22 15:09:04.000000000 -0400
-+++ linux-compile.git/kernel/trace/trace.c	2008-10-22 15:58:35.000000000 -0400
-@@ -3097,7 +3097,7 @@ void ftrace_dump(void)
- 	dump_ran = 1;
+--- linux-compile.git.orig/include/linux/ftrace.h	2008-10-22 16:30:39.000000000 -0400
++++ linux-compile.git/include/linux/ftrace.h	2008-10-22 16:31:37.000000000 -0400
+@@ -72,13 +72,33 @@ extern unsigned char *ftrace_nop_replace
+ extern unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr);
+ extern int ftrace_dyn_arch_init(void *data);
+ extern int ftrace_mcount_set(unsigned long *data);
+-extern int ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+-			      unsigned char *new_code);
+ extern int ftrace_update_ftrace_func(ftrace_func_t func);
+ extern void ftrace_caller(void);
+ extern void ftrace_call(void);
+ extern void mcount_call(void);
  
- 	/* No turning back! */
--	ftrace_kill_atomic();
-+	ftrace_kill();
++/**
++ * ftrace_modify_code - modify code segment
++ * @ip: the address of the code segment
++ * @old_code: the contents of what is expected to be there
++ * @new_code: the code to patch in
++ *
++ * This is a very sensitive operatation and great care needs
++ * to be taken by the arch.  The operation should carefully
++ * read the location, check to see if what is read is indeed
++ * what we expect it to be, and then on success of the compare,
++ * it should write to the location.
++ *
++ * Return must be:
++ *  0 on success
++ *  -EFAULT on error reading the location
++ *  -EINVAL on a failed compare of the contents
++ *  -EPERM  on error writing to the location
++ * Any other value will be considered a failure.
++ */
++extern int ftrace_modify_code(unsigned long ip, unsigned char *old_code,
++			      unsigned char *new_code);
++
+ extern int skip_trace(unsigned long ip);
  
- 	for_each_tracing_cpu(cpu) {
- 		atomic_inc(&global_trace.data[cpu]->disabled);
+ extern void ftrace_release(void *start, unsigned long size);
 
 -- 
