@@ -1,110 +1,501 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759145AbYJVWUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758472AbYJVWUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759145AbYJVWUc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 18:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759632AbYJVWTP
+	id S1758472AbYJVWUu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 18:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759711AbYJVWTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 18:19:15 -0400
-Received: from kroah.org ([198.145.64.141]:54895 "EHLO coco.kroah.org"
+	Wed, 22 Oct 2008 18:19:16 -0400
+Received: from kroah.org ([198.145.64.141]:54896 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759409AbYJVWTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 18:19:10 -0400
-Date: Wed, 22 Oct 2008 15:15:19 -0700
+	id S1759495AbYJVWTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 18:19:13 -0400
+Date: Wed, 22 Oct 2008 15:15:31 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org, stable@kernel.org
-Subject: Linux 2.6.25.19
-Message-ID: <20081022221519.GE15277@kroah.com>
+Subject: Re: Linux 2.6.25.19
+Message-ID: <20081022221531.GF15277@kroah.com>
+References: <20081022221519.GE15277@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20081022221519.GE15277@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We (the -stable team) are announcing the release of the 2.6.25.19
-kernel.
-
-It contains a wide range of bugfixes, and all users of the 2.6.25 kernel
-series are strongly encouraged to upgrade.
-
-There is probably only going to be one more 2.6.25 kernel release so
-everyone should be migrating to 2.6.27 at this point in time.
-
-I'll also be replying to this message with a copy of the patch between
-2.6.25.18 and 2.6.25.19
-
-The updated 2.6.25.y git tree can be found at:
-        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.25.y.git
-and can be browsed at the normal kernel.org git web browser:
-        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.25.y.git;a=summary
-
-thanks,
-
-greg k-h
-
-------------
-
- Makefile                                |    2 
- arch/x86/kernel/alternative.c           |    2 
- arch/x86/kernel/cpu/mtrr/generic.c      |    7 +
- arch/x86/kernel/io_apic_32.c            |    3 
- arch/x86/mm/ioremap.c                   |    2 
- drivers/char/drm/i915_dma.c             |    2 
- drivers/char/tty_io.c                   |    2 
- drivers/hwmon/it87.c                    |   39 ++++++++-
- drivers/media/video/bt8xx/bttv-driver.c |    2 
- drivers/media/video/tvaudio.c           |    2 
- drivers/media/video/zoran_driver.c      |    2 
- drivers/net/wireless/b43legacy/xmit.c   |    2 
- drivers/video/console/fbcon.c           |    4 -
- fs/cifs/cifsglob.h                      |    1 
- fs/cifs/cifssmb.c                       |    4 +
- fs/cifs/readdir.c                       |  128 ++++++++++++++++----------------
- fs/splice.c                             |    3 
- kernel/sched_rt.c                       |    8 +-
- 18 files changed, 130 insertions(+), 85 deletions(-)
-
-Alan Cox (2):
-      x86, early_ioremap: fix fencepost error
-      tty: Termios locking - sort out real_tty confusions and lock reads
-
-Arjan van de Ven (1):
-      security: avoid calling a NULL function pointer in drivers/video/tvaudio.c
-
-Dario Faggioli (1):
-      sched_rt.c: resch needed in rt_rq_enqueue() for the root rt_rq
-
-Greg Kroah-Hartman (1):
-      Linux 2.6.25.19
-
-Ingo Molnar (1):
-      x86: work around MTRR mask setting, v2
-
-Jean Delvare (3):
-      hwmon: (it87) Prevent power-off on Shuttle SN68PT
-      V4L: bttv: Prevent NULL pointer dereference in radio_open
-      V4L: zr36067: Fix RGBR pixel format
-
-Larry Finger (1):
-      b43legacy: Fix failure in rate-adjustment mechanism
-
-Linus Torvalds (1):
-      Don't allow splice() to files opened with O_APPEND
-
-Matthias Hopf (1):
-      drm/i915: fix ioremap of a user address for non-root (CVE-2008-3831)
-
-Oleg Nesterov (1):
-      fbcon_set_all_vcs: fix kernel crash when switching the rotated consoles
-
-Stefan Bader (1):
-      x86: Reserve FIRST_DEVICE_VECTOR in used_vectors bitmap.
-
-Steve French (1):
-      CIFS: make sure we have the right resume info before calling CIFSFindNext
-
-Thomas Gleixner (1):
-      x86: improve UP kernel when CPU-hotplug and SMP is enabled
-
+diff --git a/Makefile b/Makefile
+index 5a92857..71e9d1a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,7 +1,7 @@
+ VERSION = 2
+ PATCHLEVEL = 6
+ SUBLEVEL = 25
+-EXTRAVERSION = .18
++EXTRAVERSION = .19
+ NAME = Funky Weasel is Jiggy wit it
+ 
+ # *DOCUMENTATION*
+diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
+index 5fed98c..2fb2dfe 100644
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -457,7 +457,7 @@ void __init alternative_instructions(void)
+ 					    _text, _etext);
+ 
+ 		/* Only switch to UP mode if we don't immediately boot others */
+-		if (num_possible_cpus() == 1 || setup_max_cpus <= 1)
++		if (num_present_cpus() == 1 || setup_max_cpus <= 1)
+ 			alternatives_smp_switch(0);
+ 	}
+ #endif
+diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
+index f49c970..ca21808 100644
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -251,7 +251,12 @@ static void generic_get_mtrr(unsigned int reg, unsigned long *base,
+ 		tmp |= ~((1<<(hi - 1)) - 1);
+ 
+ 		if (tmp != mask_lo) {
+-			WARN_ON("mtrr: your BIOS has set up an incorrect mask, fixing it up.\n");
++			static int once = 1;
++
++			if (once) {
++				printk(KERN_INFO "mtrr: your BIOS has set up an incorrect mask, fixing it up.\n");
++				once = 0;
++			}
+ 			mask_lo = tmp;
+ 		}
+ 	}
+diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
+index f239b30..0338d89 100644
+--- a/arch/x86/kernel/io_apic_32.c
++++ b/arch/x86/kernel/io_apic_32.c
+@@ -2305,6 +2305,9 @@ void __init setup_IO_APIC(void)
+ 	for (i = FIRST_SYSTEM_VECTOR; i < NR_VECTORS; i++)
+ 		set_bit(i, used_vectors);
+ 
++	/* Mark FIRST_DEVICE_VECTOR which is assigned to IRQ0 as used. */
++	set_bit(FIRST_DEVICE_VECTOR, used_vectors);
++
+ 	enable_IO_APIC();
+ 
+ 	if (acpi_ioapic)
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index f96b2e4..4f8b47e 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -438,7 +438,7 @@ void __init *early_ioremap(unsigned long phys_addr, unsigned long size)
+ 	 */
+ 	offset = phys_addr & ~PAGE_MASK;
+ 	phys_addr &= PAGE_MASK;
+-	size = PAGE_ALIGN(last_addr) - phys_addr;
++	size = PAGE_ALIGN(last_addr + 1) - phys_addr;
+ 
+ 	/*
+ 	 * Mappings have to fit in the FIX_BTMAP area.
+diff --git a/drivers/char/drm/i915_dma.c b/drivers/char/drm/i915_dma.c
+index a043bb1..ed2a83f 100644
+--- a/drivers/char/drm/i915_dma.c
++++ b/drivers/char/drm/i915_dma.c
+@@ -836,7 +836,7 @@ struct drm_ioctl_desc i915_ioctls[] = {
+ 	DRM_IOCTL_DEF(DRM_I915_SET_VBLANK_PIPE,  i915_vblank_pipe_set, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY ),
+ 	DRM_IOCTL_DEF(DRM_I915_GET_VBLANK_PIPE,  i915_vblank_pipe_get, DRM_AUTH ),
+ 	DRM_IOCTL_DEF(DRM_I915_VBLANK_SWAP, i915_vblank_swap, DRM_AUTH),
+-	DRM_IOCTL_DEF(DRM_I915_HWS_ADDR, i915_set_status_page, DRM_AUTH),
++	DRM_IOCTL_DEF(DRM_I915_HWS_ADDR, i915_set_status_page, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
+ };
+ 
+ int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 613ec81..31143e9 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -3373,7 +3373,7 @@ int tty_ioctl(struct inode *inode, struct file *file,
+ 	case TIOCSTI:
+ 		return tiocsti(tty, p);
+ 	case TIOCGWINSZ:
+-		return tiocgwinsz(tty, p);
++		return tiocgwinsz(real_tty, p);
+ 	case TIOCSWINSZ:
+ 		return tiocswinsz(tty, real_tty, p);
+ 	case TIOCCONS:
+diff --git a/drivers/hwmon/it87.c b/drivers/hwmon/it87.c
+index e12c132..48b9f28 100644
+--- a/drivers/hwmon/it87.c
++++ b/drivers/hwmon/it87.c
+@@ -46,6 +46,8 @@
+ #include <linux/err.h>
+ #include <linux/mutex.h>
+ #include <linux/sysfs.h>
++#include <linux/string.h>
++#include <linux/dmi.h>
+ #include <asm/io.h>
+ 
+ #define DRVNAME "it87"
+@@ -235,6 +237,8 @@ struct it87_sio_data {
+ 	enum chips type;
+ 	/* Values read from Super-I/O config space */
+ 	u8 vid_value;
++	/* Values set based on DMI strings */
++	u8 skip_pwm;
+ };
+ 
+ /* For each registered chip, we need to keep some data in memory.
+@@ -952,6 +956,7 @@ static int __init it87_find(unsigned short *address,
+ {
+ 	int err = -ENODEV;
+ 	u16 chip_type;
++	const char *board_vendor, *board_name;
+ 
+ 	superio_enter();
+ 	chip_type = force_id ? force_id : superio_inw(DEVID);
+@@ -1009,6 +1014,25 @@ static int __init it87_find(unsigned short *address,
+ 			pr_info("it87: in7 is VCCH (+5V Stand-By)\n");
+ 	}
+ 
++	sio_data->skip_pwm = 0;
++	/* Disable specific features based on DMI strings */
++	board_vendor = dmi_get_system_info(DMI_BOARD_VENDOR);
++	board_name = dmi_get_system_info(DMI_BOARD_NAME);
++	if (board_vendor && board_name) {
++		if (strcmp(board_vendor, "nVIDIA") == 0
++		 && strcmp(board_name, "FN68PT") == 0) {
++			/* On the Shuttle SN68PT, FAN_CTL2 is apparently not
++			   connected to a fan, but to something else. One user
++			   has reported instant system power-off when changing
++			   the PWM2 duty cycle, so we disable it.
++			   I use the board name string as the trigger in case
++			   the same board is ever used in other systems. */
++			pr_info("it87: Disabling pwm2 due to "
++				"hardware constraints\n");
++			sio_data->skip_pwm = (1 << 1);
++		}
++	}
++
+ exit:
+ 	superio_exit();
+ 	return err;
+@@ -1157,22 +1181,25 @@ static int __devinit it87_probe(struct platform_device *pdev)
+ 		if ((err = device_create_file(dev,
+ 		     &sensor_dev_attr_pwm1_enable.dev_attr))
+ 		 || (err = device_create_file(dev,
+-		     &sensor_dev_attr_pwm2_enable.dev_attr))
+-		 || (err = device_create_file(dev,
+ 		     &sensor_dev_attr_pwm3_enable.dev_attr))
+ 		 || (err = device_create_file(dev,
+ 		     &sensor_dev_attr_pwm1.dev_attr))
+ 		 || (err = device_create_file(dev,
+-		     &sensor_dev_attr_pwm2.dev_attr))
+-		 || (err = device_create_file(dev,
+ 		     &sensor_dev_attr_pwm3.dev_attr))
+ 		 || (err = device_create_file(dev,
+ 		     &dev_attr_pwm1_freq))
+ 		 || (err = device_create_file(dev,
+-		     &dev_attr_pwm2_freq))
+-		 || (err = device_create_file(dev,
+ 		     &dev_attr_pwm3_freq)))
+ 			goto ERROR4;
++		if (!(sio_data->skip_pwm & (1 << 1))) {
++			if ((err = device_create_file(dev,
++			     &sensor_dev_attr_pwm2_enable.dev_attr))
++			 || (err = device_create_file(dev,
++			     &sensor_dev_attr_pwm2.dev_attr))
++			 || (err = device_create_file(dev,
++			     &dev_attr_pwm2_freq)))
++				goto ERROR4;
++		}
+ 	}
+ 
+ 	if (data->type == it8712 || data->type == it8716
+diff --git a/drivers/media/video/bt8xx/bttv-driver.c b/drivers/media/video/bt8xx/bttv-driver.c
+index 594522a..b1cca43 100644
+--- a/drivers/media/video/bt8xx/bttv-driver.c
++++ b/drivers/media/video/bt8xx/bttv-driver.c
+@@ -3422,7 +3422,7 @@ static int radio_open(struct inode *inode, struct file *file)
+ 	dprintk("bttv: open minor=%d\n",minor);
+ 
+ 	for (i = 0; i < bttv_num; i++) {
+-		if (bttvs[i].radio_dev->minor == minor) {
++		if (bttvs[i].radio_dev && bttvs[i].radio_dev->minor == minor) {
+ 			btv = &bttvs[i];
+ 			break;
+ 		}
+diff --git a/drivers/media/video/tvaudio.c b/drivers/media/video/tvaudio.c
+index 01ebcec..db55c5c 100644
+--- a/drivers/media/video/tvaudio.c
++++ b/drivers/media/video/tvaudio.c
+@@ -1804,7 +1804,7 @@ static int chip_command(struct i2c_client *client,
+ 		break;
+ 	case VIDIOC_S_FREQUENCY:
+ 		chip->mode = 0; /* automatic */
+-		if (desc->checkmode) {
++		if (desc->checkmode && desc->setmode) {
+ 			desc->setmode(chip,V4L2_TUNER_MODE_MONO);
+ 			if (chip->prevmode != V4L2_TUNER_MODE_MONO)
+ 				chip->prevmode = -1; /* reset previous mode */
+diff --git a/drivers/media/video/zoran_driver.c b/drivers/media/video/zoran_driver.c
+index fea4946..2e9a4e2 100644
+--- a/drivers/media/video/zoran_driver.c
++++ b/drivers/media/video/zoran_driver.c
+@@ -139,7 +139,7 @@ const struct zoran_format zoran_formats[] = {
+ 	}, {
+ 		.name = "16-bit RGB BE",
+ 		ZFMT(-1,
+-		     V4L2_PIX_FMT_RGB565, V4L2_COLORSPACE_SRGB),
++		     V4L2_PIX_FMT_RGB565X, V4L2_COLORSPACE_SRGB),
+ 		.depth = 16,
+ 		.flags = ZORAN_FORMAT_CAPTURE |
+ 			 ZORAN_FORMAT_OVERLAY,
+diff --git a/drivers/net/wireless/b43legacy/xmit.c b/drivers/net/wireless/b43legacy/xmit.c
+index d84408a..d7bd408 100644
+--- a/drivers/net/wireless/b43legacy/xmit.c
++++ b/drivers/net/wireless/b43legacy/xmit.c
+@@ -624,7 +624,7 @@ void b43legacy_handle_hwtxstatus(struct b43legacy_wldev *dev,
+ 	tmp = hw->count;
+ 	status.frame_count = (tmp >> 4);
+ 	status.rts_count = (tmp & 0x0F);
+-	tmp = hw->flags;
++	tmp = hw->flags << 1;
+ 	status.supp_reason = ((tmp & 0x1C) >> 2);
+ 	status.pm_indicated = !!(tmp & 0x80);
+ 	status.intermediate = !!(tmp & 0x40);
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 0222824..66fd680 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -2974,8 +2974,8 @@ static void fbcon_set_all_vcs(struct fb_info *info)
+ 		p = &fb_display[vc->vc_num];
+ 		set_blitting_type(vc, info);
+ 		var_to_display(p, &info->var, info);
+-		cols = FBCON_SWAP(p->rotate, info->var.xres, info->var.yres);
+-		rows = FBCON_SWAP(p->rotate, info->var.yres, info->var.xres);
++		cols = FBCON_SWAP(ops->rotate, info->var.xres, info->var.yres);
++		rows = FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
+ 		cols /= vc->vc_font.width;
+ 		rows /= vc->vc_font.height;
+ 		vc_resize(vc, cols, rows);
+diff --git a/fs/cifs/cifsglob.h b/fs/cifs/cifsglob.h
+index 69a2e19..9f341b8 100644
+--- a/fs/cifs/cifsglob.h
++++ b/fs/cifs/cifsglob.h
+@@ -315,6 +315,7 @@ struct cifs_search_info {
+ 	__u32 resume_key;
+ 	char *ntwrk_buf_start;
+ 	char *srch_entries_start;
++	char *last_entry;
+ 	char *presume_name;
+ 	unsigned int resume_name_len;
+ 	unsigned endOfSearch:1;
+diff --git a/fs/cifs/cifssmb.c b/fs/cifs/cifssmb.c
+index 30bbe44..6fe47f7 100644
+--- a/fs/cifs/cifssmb.c
++++ b/fs/cifs/cifssmb.c
+@@ -3598,6 +3598,8 @@ findFirstRetry:
+ 					le16_to_cpu(parms->SearchCount);
+ 			psrch_inf->index_of_last_entry = 2 /* skip . and .. */ +
+ 				psrch_inf->entries_in_buffer;
++			psrch_inf->last_entry = psrch_inf->srch_entries_start +
++					le16_to_cpu(parms->LastNameOffset);
+ 			*pnetfid = parms->SearchHandle;
+ 		} else {
+ 			cifs_buf_release(pSMB);
+@@ -3712,6 +3714,8 @@ int CIFSFindNext(const int xid, struct cifsTconInfo *tcon,
+ 						le16_to_cpu(parms->SearchCount);
+ 			psrch_inf->index_of_last_entry +=
+ 				psrch_inf->entries_in_buffer;
++			psrch_inf->last_entry = psrch_inf->srch_entries_start +
++					le16_to_cpu(parms->LastNameOffset);
+ /*  cFYI(1,("fnxt2 entries in buf %d index_of_last %d",
+ 	    psrch_inf->entries_in_buffer, psrch_inf->index_of_last_entry)); */
+ 
+diff --git a/fs/cifs/readdir.c b/fs/cifs/readdir.c
+index 32b445e..2948aab 100644
+--- a/fs/cifs/readdir.c
++++ b/fs/cifs/readdir.c
+@@ -633,6 +633,70 @@ static int is_dir_changed(struct file *file)
+ 
+ }
+ 
++static int cifs_save_resume_key(const char *current_entry,
++	struct cifsFileInfo *cifsFile)
++{
++	int rc = 0;
++	unsigned int len = 0;
++	__u16 level;
++	char *filename;
++
++	if ((cifsFile == NULL) || (current_entry == NULL))
++		return -EINVAL;
++
++	level = cifsFile->srch_inf.info_level;
++
++	if (level == SMB_FIND_FILE_UNIX) {
++		FILE_UNIX_INFO *pFindData = (FILE_UNIX_INFO *)current_entry;
++
++		filename = &pFindData->FileName[0];
++		if (cifsFile->srch_inf.unicode) {
++			len = cifs_unicode_bytelen(filename);
++		} else {
++			/* BB should we make this strnlen of PATH_MAX? */
++			len = strnlen(filename, PATH_MAX);
++		}
++		cifsFile->srch_inf.resume_key = pFindData->ResumeKey;
++	} else if (level == SMB_FIND_FILE_DIRECTORY_INFO) {
++		FILE_DIRECTORY_INFO *pFindData =
++			(FILE_DIRECTORY_INFO *)current_entry;
++		filename = &pFindData->FileName[0];
++		len = le32_to_cpu(pFindData->FileNameLength);
++		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
++	} else if (level == SMB_FIND_FILE_FULL_DIRECTORY_INFO) {
++		FILE_FULL_DIRECTORY_INFO *pFindData =
++			(FILE_FULL_DIRECTORY_INFO *)current_entry;
++		filename = &pFindData->FileName[0];
++		len = le32_to_cpu(pFindData->FileNameLength);
++		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
++	} else if (level == SMB_FIND_FILE_ID_FULL_DIR_INFO) {
++		SEARCH_ID_FULL_DIR_INFO *pFindData =
++			(SEARCH_ID_FULL_DIR_INFO *)current_entry;
++		filename = &pFindData->FileName[0];
++		len = le32_to_cpu(pFindData->FileNameLength);
++		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
++	} else if (level == SMB_FIND_FILE_BOTH_DIRECTORY_INFO) {
++		FILE_BOTH_DIRECTORY_INFO *pFindData =
++			(FILE_BOTH_DIRECTORY_INFO *)current_entry;
++		filename = &pFindData->FileName[0];
++		len = le32_to_cpu(pFindData->FileNameLength);
++		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
++	} else if (level == SMB_FIND_FILE_INFO_STANDARD) {
++		FIND_FILE_STANDARD_INFO *pFindData =
++			(FIND_FILE_STANDARD_INFO *)current_entry;
++		filename = &pFindData->FileName[0];
++		/* one byte length, no name conversion */
++		len = (unsigned int)pFindData->FileNameLength;
++		cifsFile->srch_inf.resume_key = pFindData->ResumeKey;
++	} else {
++		cFYI(1, ("Unknown findfirst level %d", level));
++		return -EINVAL;
++	}
++	cifsFile->srch_inf.resume_name_len = len;
++	cifsFile->srch_inf.presume_name = filename;
++	return rc;
++}
++
+ /* find the corresponding entry in the search */
+ /* Note that the SMB server returns search entries for . and .. which
+    complicates logic here if we choose to parse for them and we do not
+@@ -694,6 +758,7 @@ static int find_cifs_entry(const int xid, struct cifsTconInfo *pTcon,
+ 	while ((index_to_find >= cifsFile->srch_inf.index_of_last_entry) &&
+ 	      (rc == 0) && (cifsFile->srch_inf.endOfSearch == FALSE)) {
+ 		cFYI(1, ("calling findnext2"));
++		cifs_save_resume_key(cifsFile->srch_inf.last_entry, cifsFile);
+ 		rc = CIFSFindNext(xid, pTcon, cifsFile->netfid,
+ 				  &cifsFile->srch_inf);
+ 		if (rc)
+@@ -910,69 +975,6 @@ static int cifs_filldir(char *pfindEntry, struct file *file,
+ 	return rc;
+ }
+ 
+-static int cifs_save_resume_key(const char *current_entry,
+-	struct cifsFileInfo *cifsFile)
+-{
+-	int rc = 0;
+-	unsigned int len = 0;
+-	__u16 level;
+-	char *filename;
+-
+-	if ((cifsFile == NULL) || (current_entry == NULL))
+-		return -EINVAL;
+-
+-	level = cifsFile->srch_inf.info_level;
+-
+-	if (level == SMB_FIND_FILE_UNIX) {
+-		FILE_UNIX_INFO *pFindData = (FILE_UNIX_INFO *)current_entry;
+-
+-		filename = &pFindData->FileName[0];
+-		if (cifsFile->srch_inf.unicode) {
+-			len = cifs_unicode_bytelen(filename);
+-		} else {
+-			/* BB should we make this strnlen of PATH_MAX? */
+-			len = strnlen(filename, PATH_MAX);
+-		}
+-		cifsFile->srch_inf.resume_key = pFindData->ResumeKey;
+-	} else if (level == SMB_FIND_FILE_DIRECTORY_INFO) {
+-		FILE_DIRECTORY_INFO *pFindData =
+-			(FILE_DIRECTORY_INFO *)current_entry;
+-		filename = &pFindData->FileName[0];
+-		len = le32_to_cpu(pFindData->FileNameLength);
+-		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
+-	} else if (level == SMB_FIND_FILE_FULL_DIRECTORY_INFO) {
+-		FILE_FULL_DIRECTORY_INFO *pFindData =
+-			(FILE_FULL_DIRECTORY_INFO *)current_entry;
+-		filename = &pFindData->FileName[0];
+-		len = le32_to_cpu(pFindData->FileNameLength);
+-		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
+-	} else if (level == SMB_FIND_FILE_ID_FULL_DIR_INFO) {
+-		SEARCH_ID_FULL_DIR_INFO *pFindData =
+-			(SEARCH_ID_FULL_DIR_INFO *)current_entry;
+-		filename = &pFindData->FileName[0];
+-		len = le32_to_cpu(pFindData->FileNameLength);
+-		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
+-	} else if (level == SMB_FIND_FILE_BOTH_DIRECTORY_INFO) {
+-		FILE_BOTH_DIRECTORY_INFO *pFindData =
+-			(FILE_BOTH_DIRECTORY_INFO *)current_entry;
+-		filename = &pFindData->FileName[0];
+-		len = le32_to_cpu(pFindData->FileNameLength);
+-		cifsFile->srch_inf.resume_key = pFindData->FileIndex;
+-	} else if (level == SMB_FIND_FILE_INFO_STANDARD) {
+-		FIND_FILE_STANDARD_INFO *pFindData =
+-			(FIND_FILE_STANDARD_INFO *)current_entry;
+-		filename = &pFindData->FileName[0];
+-		/* one byte length, no name conversion */
+-		len = (unsigned int)pFindData->FileNameLength;
+-		cifsFile->srch_inf.resume_key = pFindData->ResumeKey;
+-	} else {
+-		cFYI(1, ("Unknown findfirst level %d", level));
+-		return -EINVAL;
+-	}
+-	cifsFile->srch_inf.resume_name_len = len;
+-	cifsFile->srch_inf.presume_name = filename;
+-	return rc;
+-}
+ 
+ int cifs_readdir(struct file *file, void *direntry, filldir_t filldir)
+ {
+diff --git a/fs/splice.c b/fs/splice.c
+index eeb1a86..51d7c85 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -891,6 +891,9 @@ static long do_splice_from(struct pipe_inode_info *pipe, struct file *out,
+ 	if (unlikely(!(out->f_mode & FMODE_WRITE)))
+ 		return -EBADF;
+ 
++	if (unlikely(out->f_flags & O_APPEND))
++		return -EINVAL;
++
+ 	ret = rw_verify_area(WRITE, out, ppos, len);
+ 	if (unlikely(ret < 0))
+ 		return ret;
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 0a6d2e5..cdeaffe 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -91,12 +91,12 @@ static void dequeue_rt_entity(struct sched_rt_entity *rt_se);
+ 
+ static void sched_rt_rq_enqueue(struct rt_rq *rt_rq)
+ {
++	struct task_struct *curr = rq_of_rt_rq(rt_rq)->curr;
+ 	struct sched_rt_entity *rt_se = rt_rq->rt_se;
+ 
+-	if (rt_se && !on_rt_rq(rt_se) && rt_rq->rt_nr_running) {
+-		struct task_struct *curr = rq_of_rt_rq(rt_rq)->curr;
+-
+-		enqueue_rt_entity(rt_se);
++	if (rt_rq->rt_nr_running) {
++		if (rt_se && !on_rt_rq(rt_se))
++			enqueue_rt_entity(rt_se);
+ 		if (rt_rq->highest_prio < curr->prio)
+ 			resched_task(curr);
+ 	}
