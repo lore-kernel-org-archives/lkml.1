@@ -1,75 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbYJVEPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752562AbYJVEUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753139AbYJVEPo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 00:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbYJVEPg
+	id S1752562AbYJVEUe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 00:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750784AbYJVEUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 00:15:36 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:10767 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750924AbYJVEPf (ORCPT
+	Wed, 22 Oct 2008 00:20:25 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:21220 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750749AbYJVEUZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 00:15:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:organization:message-id:references
-         :in-reply-to:x-mailer:mime-version:content-type
-         :content-transfer-encoding;
-        b=dvpDh3MTWc6hh5aZsru5+ifhL8wOX76epb7TkeZTYNsiszB4ubfqlxDjUUzAX+hDxg
-         oV32hGK4GOpz59GrRWRR6BzMQQ+31b85maIJykAKiWDfXOmSRdWR318Vbhk5k7nfTYuF
-         2VTl3skMzx+yKeryQSf6GzrYXUFMDxA/OmgZ0=
-From: Grant Coady <gcoady.lk@gmail.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Alex Howells <alex@bytemark.co.uk>, Greg KH <greg@kroah.com>,
-       Alexandre Oliva <oliva@lsd.ic.unicamp.br>,
-       "H. Peter Anvin" <hpa@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel version numbering scheme change
-Date: Wed, 22 Oct 2008 15:15:01 +1100
-Organization: scattered
-Message-ID: <i0atf498dl3jeekrptbnlq0eu5h3ggdcb6@4ax.com>
-References: <20081016154726.GA6331@kroah.com> <20081016171626.GB22554@cs181140183.pp.htv.fi> <20081017040239.GB28188@kroah.com> <20081017103138.1ca68d17@lxorguk.ukuu.org.uk> <48F8C000.8030003@kernel.org> <20081017174226.GF2221@kroah.com> <48F98DE2.8030205@kernel.org> <ortzb89bak.fsf@oliva.athome.lsd.ic.unicamp.br> <48FCD421.2010208@bytemark.co.uk> <20081020202147.GA20788@kroah.com> <48FE32E2.5000601@bytemark.co.uk> <33098.1224636084@turing-police.cc.vt.edu>
-In-Reply-To: <33098.1224636084@turing-police.cc.vt.edu>
-X-Mailer: Forte Agent 4.2/32.1118
+	Wed, 22 Oct 2008 00:20:25 -0400
+Date: Tue, 21 Oct 2008 22:20:22 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: avorontsov@ru.mvista.com, David Brownell <david-b@pacbell.net>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       i2c@lm-sensors.org, Jean Delvare <khali@linux-fr.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
+Message-ID: <20081022042022.GB7176@secretlab.ca>
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru> <200810171324.42650.david-b@pacbell.net> <20081017212942.GA1919@oksana.dev.rtsoft.ru> <200810200029.58312.david-b@pacbell.net> <20081020154835.GA3234@oksana.dev.rtsoft.ru> <1224635360.7654.294.camel@pasglop> <20081022010347.GA7377@oksana.dev.rtsoft.ru> <20081022014243.GA19362@oksana.dev.rtsoft.ru> <1224642497.7654.319.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1224642497.7654.319.camel@pasglop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Oct 2008 20:41:24 -0400, you wrote:
+On Wed, Oct 22, 2008 at 01:28:17PM +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2008-10-22 at 05:42 +0400, Anton Vorontsov wrote:
+> > 
+> > Thinking about it more, I started recalling other issues. The bus
+> > notifier chain doesn't replay previous events, so we also have to
+> > register the notifier before the _devices_ are registered. And this
+> > ruins the whole approach. :-/ Yeah, that's why I abandoned the bus
+> > notifier idea.
+> 
+> The notifier can be registered before the devices, though it's a little
+> bit fishy and fragile.
+> 
+> Easier I suppose to just have OF specific hooks in the bus code.
 
->On Tue, 21 Oct 2008 20:52:02 BST, Alex Howells said:
->> Requirements for me to put a kernel on a given server would be:
->
->>     *  supports the hardware
->The problem is that "supports" is often a fuzzy jello-like substance you
->try to nail to a tree.  You mention the R8169 and e1000 drivers - if they
->bring the device up, but have issues under corner cases, is that "supports"
->or not?
->
->>     *  no security holes [in options I enable]
->Similarly for "no security holes".  At *BEST*, you'll get "no *known* *major*
->security holes", unless you feel like auditing the entire source tree.  There's
->a whole slew of bugs that we can't even agree if they *are* security bugs or
->just plain bugs - see Linus's rant on the subject a few months back.
->
->>     *  works reliably, under load/stress.
->And you win the trifecta - I don't think we've *ever* shipped a Linux kernel
->that worked reliably under the proper "beat on the scheduler/VM corner case"
->load/stress testing.  Again, the best you can hope for is "doesn't fall over
->under non-pathological non-corner-case loads when sufficient resources are
->available so the kernel has a fighting chance".
+Every time I think about the problem, this is the conclusion that I come
+to.  Either have OF specific hooks in the probe/remove functions; or
+have separate probe/remove for OF created instances of a device.
 
->...  Doing 'make -j100' on a
->single Core2 Duo is gonna be painful, no matter what.
-
-Not painful at all, make -j100 is four seconds faster than a make -j5 on 
-a Core2Duo here with slamd64-12.1 (real: 3m21 vs 3m21).
-
-Grant.
--- 
-http://bugsplatter.id.au
+g.
