@@ -1,110 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbYJVKiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756287AbYJVKif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbYJVKiR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 06:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbYJVKhs
+	id S1756287AbYJVKif (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 06:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754816AbYJVKiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 06:37:48 -0400
-Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:8827 "EHLO
-	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753705AbYJVKhr (ORCPT
+	Wed, 22 Oct 2008 06:38:22 -0400
+Received: from bioshock.netsplit.com ([89.16.172.233]:51606 "EHLO
+	bioshock.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755407AbYJVKiT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 06:37:47 -0400
-From: Alexander van Heukelum <heukelum@fastmail.fm>
-To: Neil Horman <nhorman@tuxdriver.com>, Ingo Molnar <mingo@elte.hu>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       vgoyal@redhat.com, hbabu@us.ibm.com, hpa@zytor.com,
-       akpm@linux-foundation.org,
-       Alexander van Heukelum <heukelum@fastmail.fm>, ebiederm@xmission.com,
-       tglx@linutronix.de
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: [PATCH 4/7] x86, dumpstack: always call oops_exit from oops_end
-Date: Wed, 22 Oct 2008 12:00:11 +0200
-Message-Id: <1224669614-25863-5-git-send-email-heukelum@fastmail.fm>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1224669614-25863-4-git-send-email-heukelum@fastmail.fm>
-References: <1224669614-25863-1-git-send-email-heukelum@fastmail.fm>
- <1224669614-25863-2-git-send-email-heukelum@fastmail.fm>
- <1224669614-25863-3-git-send-email-heukelum@fastmail.fm>
- <1224669614-25863-4-git-send-email-heukelum@fastmail.fm>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Wed, 22 Oct 2008 12:36:43 +0200 (CEST)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.9.0.5; VDF: 7.0.7.72; host: AntiVir2)
+	Wed, 22 Oct 2008 06:38:19 -0400
+X-Greylist: delayed 2900 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Oct 2008 06:38:19 EDT
+Subject: Re: [PATCH v2] add MODULE_ALIAS to load ipmi_devintf with ipmi_si
+From: Scott James Remnant <scott@canonical.com>
+To: Corey Minyard <minyard@acm.org>
+Cc: Tim Gardner <timg@tpi.com>, kernel-team@lists.ubuntu.com,
+       linux-kernel@vger.kernel.org, openipmi-developer@lists.sourceforge.net
+In-Reply-To: <48FE3EE2.6040009@acm.org>
+References: <20081021161536.D7CD65A15E@sepang.rtg.net>
+	 <48FE3EE2.6040009@acm.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Fs0s2FKqjQH3fYHfRhql"
+Date: Wed, 22 Oct 2008 10:50:02 +0100
+Message-Id: <1224669002.8541.15.camel@quest>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Always call oops_exit from oops_end, even if signr==0.
 
-Also, move add_taint(TAINT_DIE) from __die to oops_end
-on x86_64 and interchange two lines to make oops_end
-more similar to the i386-version.
+--=-Fs0s2FKqjQH3fYHfRhql
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
----
- arch/x86/kernel/dumpstack_32.c |    2 +-
- arch/x86/kernel/dumpstack_64.c |   11 +++++------
- 2 files changed, 6 insertions(+), 7 deletions(-)
+On Tue, 2008-10-21 at 15:43 -0500, Corey Minyard wrote:
 
-diff --git a/arch/x86/kernel/dumpstack_32.c b/arch/x86/kernel/dumpstack_32.c
-index 7c22f99..a29b88f 100644
---- a/arch/x86/kernel/dumpstack_32.c
-+++ b/arch/x86/kernel/dumpstack_32.c
-@@ -318,6 +318,7 @@ void __kprobes oops_end(unsigned long flags, struct pt_regs *regs, int signr)
- 	__raw_spin_unlock(&die_lock);
- 	raw_local_irq_restore(flags);
- 
-+	oops_exit();
- 	if (!signr)
- 		return;
- 
-@@ -325,7 +326,6 @@ void __kprobes oops_end(unsigned long flags, struct pt_regs *regs, int signr)
- 		panic("Fatal exception in interrupt");
- 	if (panic_on_oops)
- 		panic("Fatal exception");
--	oops_exit();
- 	do_exit(signr);
- }
- 
-diff --git a/arch/x86/kernel/dumpstack_64.c b/arch/x86/kernel/dumpstack_64.c
-index 57ce11b..dc6162b 100644
---- a/arch/x86/kernel/dumpstack_64.c
-+++ b/arch/x86/kernel/dumpstack_64.c
-@@ -461,22 +461,22 @@ void __kprobes oops_end(unsigned long flags, struct pt_regs *regs, int signr)
- 	if (regs && kexec_should_crash(current))
- 		crash_kexec(regs);
- 
--	die_owner = -1;
- 	bust_spinlocks(0);
-+	die_owner = -1;
-+	add_taint(TAINT_DIE);
- 	die_nest_count--;
- 	if (!die_nest_count)
- 		/* Nest count reaches zero, release the lock. */
- 		__raw_spin_unlock(&die_lock);
- 	raw_local_irq_restore(flags);
--	if (!signr) {
--		oops_exit();
-+	oops_exit();
-+
-+	if (!signr)
- 		return;
--	}
- 	if (in_interrupt())
- 		panic("Fatal exception in interrupt");
- 	if (panic_on_oops)
- 		panic("Fatal exception");
--	oops_exit();
- 	do_exit(signr);
- }
- 
-@@ -499,7 +499,6 @@ int __kprobes __die(const char *str, struct pt_regs *regs, long err)
- 		return 1;
- 
- 	show_registers(regs);
--	add_taint(TAINT_DIE);
- 	/* Executive summary in case the oops scrolled away */
- 	printk(KERN_ALERT "RIP ");
- 	printk_address(regs->ip, 1);
--- 
-1.5.4.3
+> Yes, this is certainly a good idea.  I'm not 100% sure of the string,=20
+> but it looks reasonable.
+>=20
+The string matches the one in the platform device created by the ipmi_si
+module for each device:
+
+UEVENT[1224021721.100748] add      /devices/platform/ipmi_si.0 (platform)
+ACTION=3Dadd
+DEVPATH=3D/devices/platform/ipmi_si.0
+SUBSYSTEM=3Dplatform
+DRIVER=3Dipmi_si
+MODALIAS=3Dplatform:ipmi_si
+SEQNUM=3D2812
+
+You also get an "ipmi_bmc.NNNN.NN" device, with a platform:ipmi_bmc.NNNN
+MODALIAS, but it wasn't clear to me what that was.
+
+Scott
+--=20
+Scott James Remnant
+scott@canonical.com
+
+--=-Fs0s2FKqjQH3fYHfRhql
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkj+90oACgkQSnQiFMl4yK5jaACfXy3c/SrH2cTIrGH8Zug1ow8V
+D74An0yVtDJr9zHjy1FIjZ+is3XGEsk4
+=VFww
+-----END PGP SIGNATURE-----
+
+--=-Fs0s2FKqjQH3fYHfRhql--
 
