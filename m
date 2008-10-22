@@ -1,101 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbYJVTqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbYJVTtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756189AbYJVTqi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 15:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYJVTq1
+	id S1757403AbYJVTtT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 15:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbYJVTtD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 15:46:27 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:47503 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752703AbYJVTq0 (ORCPT
+	Wed, 22 Oct 2008 15:49:03 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:45338 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751873AbYJVTtA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 15:46:26 -0400
-To: cl@linux-foundation.org
-CC: miklos@szeredi.hu, penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au,
-       hugh@veritas.com, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-reply-to: <Pine.LNX.4.64.0810220822500.30851@quilx.com> (message from
-	Christoph Lameter on Wed, 22 Oct 2008 08:42:25 -0700 (PDT))
-Subject: Re: SLUB defrag pull request?
-References: <1223883004.31587.15.camel@penberg-laptop>
- <1223883164.31587.16.camel@penberg-laptop> <Pine.LNX.4.64.0810131227120.20511@blonde.site>
- <200810132354.30789.nickpiggin@yahoo.com.au> <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu>
- <E1KpOOL-0003Vf-9y@pomaz-ex.szeredi.hu> <48F378C6.7030206@linux-foundation.org>
- <E1KpOjX-0003dt-AY@pomaz-ex.szeredi.hu> <48FC9CCC.3040006@linux-foundation.org>
- <E1Krz4o-0002Fi-Pu@pomaz-ex.szeredi.hu> <48FCCC72.5020202@linux-foundation.org>
- <E1KrzgK-0002QS-Os@pomaz-ex.szeredi.hu> <48FCD7CB.4060505@linux-foundation.org>
- <E1Ks0QX-0002aC-SQ@pomaz-ex.szeredi.hu> <48FCE1C4.20807@linux-foundation.org>
- <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu> <48FE6306.6020806@linux-foundation.org>
- <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0810220822500.30851@quilx.com>
-Message-Id: <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 22 Oct 2008 21:46:03 +0200
+	Wed, 22 Oct 2008 15:49:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=sREFHJjdhNPlCoRgPJmRPvGXS+nKlILOFcLaI1A7F5sRstn2ZFMrI095uzRZVQ+y0B
+         N9Cn6eRFd19CrdQasSRFyKcc+z50YCc8HgoqVl5oFAkuvu5jdaZHLPx4CvVup9hxEoRC
+         n1N665zZNGLKbeX4XJVy6RmX2fLrxsjSVcN5I=
+Message-ID: <b637ec0b0810221248g40b02712n59e26c4f614657b@mail.gmail.com>
+Date: Wed, 22 Oct 2008 21:48:57 +0200
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: Re: Possible bug in SCSI Kconfig
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       sam@ravnborg.org, linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <1224704659.6851.28.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b637ec0b0810220929r2c889423ma92bef0ec7f9b3b0@mail.gmail.com>
+	 <1224702340.6851.20.camel@localhost.localdomain>
+	 <b637ec0b0810221225q589ed071i75f559d6fa76d96b@mail.gmail.com>
+	 <1224704659.6851.28.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Oct 2008, Christoph Lameter wrote:
-> On Wed, 22 Oct 2008, Miklos Szeredi wrote:
-> 
-> > On Tue, 21 Oct 2008, Christoph Lameter wrote:
-> >> The only way that a secure reference can be established is if the
-> >> slab page is locked. That requires a spinlock. The slab allocator
-> >> calls the get() functions while the slab lock guarantees object
-> >> existence. Then locks are dropped and reclaim actions can start with
-> >> the guarantee that the slab object will not suddenly vanish.
-> >
-> > Yes, you've made up your mind, that you want to do it this way.  But
-> > it's the _wrong_ way, this "want to get a secure reference for use
-> > later" leads to madness when applied to dentries or inodes.  Try for a
-> > minute to think outside this template.
-> >
-> > For example dcache_lock will protect against dentries moving to/from
-> > d_lru.  So you can do this:
-> >
-> >  take dcache_lock
-> >  check if d_lru is non-empty
-> 
-> The dentry could have been freed even before we take the dcache_lock. We 
-> cannot access d_lru without a stable reference to the dentry.
+Hi.
 
-Why?  The kmem_cache_free() doesn't touch the contents of the object,
-does it?
+On Wed, Oct 22, 2008 at 9:44 PM, James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+> On Wed, 2008-10-22 at 21:25 +0200, Fabio Comolli wrote:
+>> Hi.
+>>
+>> On Wed, Oct 22, 2008 at 9:05 PM, James Bottomley
+>> <James.Bottomley@hansenpartnership.com> wrote:
+>> > On Wed, 2008-10-22 at 18:29 +0200, Fabio Comolli wrote:
+>> >> Hi.
+>> >> In kernel 2.6.27.2 - drivers/scsi/Kconfig we have:
+>> >>
+>> >> config SCSI_WAIT_SCAN
+>> >>         tristate
+>> >>         default m
+>> >>         depends on SCSI
+>> >>         depends on MODULES
+>> >>
+>> >> The tristate field is empty. This has the effect that this option is
+>> >> not visible in menuconfig and so it's always selected. The default is
+>> >> "m" for all architectures and so this module is always compiled if
+>> >> SCSI and MODULES are both enabled.
+>> >>
+>> >> I'm using a patch like this one:
+>> >>
+>> >>  config SCSI_WAIT_SCAN
+>> >> -     tristate
+>> >> +     tristate "Wait until all the async scans are complete"
+>> >>       default m
+>> >>       depends on SCSI
+>> >>       depends on MODULES
+>> >>
+>> >> to get rid of that module.
+>> >>
+>> >> Of course, I have no idea if this is correct or the current behavior
+>> >> is the expected one.
+>> >
+>> > The point of all of this is that if you enable async scanning, you need
+>> > a method of waiting for the scans to complete, which is all this module
+>> > does (you insert it and it doesn't come back from the insertion until
+>> > all the pending async scans are complete).  It's tristate because really
+>> > it only makes sense to be M or N.  The consensus is that, given async
+>> > scanning is always an option, this function should always be built as a
+>> > module *if* modules and SCSI are enabled ... because you might have a
+>> > HBA module you enabled async scanning for and you need to wait.
+>>
+>> OK, I see your point.
+>>
+>> But in my case I have SCSI enabled only because it's SELECTed by ATA
+>> (it's just a laptop) and I don't have any hba's and never will. So no
+>> async scan.
+>
+> Presumably you have a laptop hard disk.  That's currently SCSI if you
+> use ATA ... although when ATA moves out of SCSI it will no longer be, so
+> you could regard this as a temporary condition.
 
-> >  take sb->s_umount
-> >  free dentry
-> >  release sb->s_umount
-> >  release dcache_lock
-> >
-> > Yeah, locking will be more complicated in reality.  Still, much less
-> > complicated than trying to do the same across two separate phases.
-> >
-> > Why can't something like that work?
-> 
-> Because the slab starts out with a series of objects left in a slab. It 
-> needs to do build a list of objects etc in a way that is independent as 
-> possible from the user of the slab page. It does that by locking the slab 
-> page so that free operations stall until the reference has been 
-> established. If it would not be shutting off frees then the objects could 
-> vanish under us.
+Ok.
 
-It doesn't matter.  All we care about is that the dentry is on the
-lru: it's cached but unused.  Every other state (being created,
-active, being freed, freed) is uninteresting.
+>
+>> Maybe this module should be enabled if async scan is.
+>
+> But that's the point: async scan is always "enabled" it just might not
+> be the default, that's what the CONFIG_SCSI_SCAN_ASYNC controls: the
+> default value (but you can always turn it on with the kernel boot or
+> SCSI module option).  Async scan is also functional for /drivers/ata and
+> other hot plug type busses, so it still makes sense for them as well.
+>
 
-> We could also avoid frees by calling some cache specific method that locks 
-> out frees before and after. But then frees would stall everywhere and 
-> every slab cache would have to check a global lock before freeing objects 
-> (there would be numerous complications with RCU free etc etc).
-> 
-> Slab defrag only stops frees on a particular slab page.
-> 
-> The slab defrag approach also allows the slab cache (dentry or inodes 
-> here) to do something else than free the object. It would be possible f.e. 
-> to move the object by allocating a new entry and moving the information to 
-> the new dentry. That would actually be better since it would preserve the 
-> objects and just move them into the same slab page.
+I see the point.
 
-Sure, and all that is possible without doing this messy 2 phase thing.
-Unless I'm still missing something obvious...
+>> > There's really not much point giving the user the choice, since this
+>> > module is part of the initrd sequence ... it's not really anything a
+>> > user would want to use stand alone, hence there's no point giving a
+>> > choice about it.
+>> >
+>>
+>> I don't use initrd at all. I just noticed the existence of this module
+>> while trying to have a non modular kernel. This failed because of
+>> ipw2200 and after having enabled modules again I just found this
+>> scsi_wait_scan.ko.
+>
+> Well, we do use CONFIG_MODULES to try to discern whether the user wants
+> modules or not.  However, if you enable modules, we'd need some
+> telepathic configurator to tell us if you plan to use SCSI HBA modules
+> or not, so the safest course is always to enable it.  The real point is
+> that you have to be a real power user to answer N correctly to this, so
+> it's better not to confuse the remaining 97% with the option because
+> they could easily get wrong ... the 3% who're sure they don't want it
+> can simply delete it.
+>
 
-Miklos
+Thanks for your explanation.
+
+> James
+>
+
+Regards,
+Fabio
+
+>
+>
