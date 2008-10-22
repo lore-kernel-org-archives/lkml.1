@@ -1,133 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbYJVKDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756115AbYJVKEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756012AbYJVKDz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 06:03:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753562AbYJVKDq
+	id S1756115AbYJVKEe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 06:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYJVKEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 06:03:46 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34028 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753547AbYJVKDp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 06:03:45 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/FcnsF9crF0rgy0DTLowNJXn5Hkil+GmdaZjYib7
-	wA+8a2JQ4Ej6Ke
-Subject: Re: [PATCH 0/4] pending scheduler updates
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081022094019.GG12453@elte.hu>
-References: <20081017172701.047939625@chello.nl>
-	 <20081020120538.GD10594@elte.hu>
-	 <20081021173529.GG11679@linux.vnet.ibm.com>
-	 <20081022094019.GG12453@elte.hu>
-Content-Type: multipart/mixed; boundary="=-ROcPLKR3FvRa4oX2UFvR"
-Date: Wed, 22 Oct 2008 12:03:41 +0200
-Message-Id: <1224669821.6871.16.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+	Wed, 22 Oct 2008 06:04:24 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:51166 "EHLO
+	VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753652AbYJVKEY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 06:04:24 -0400
+X-BigFish: VPS-34(zz1432R98dR4015M1805M936fOzzzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0K94XAZ-01-ISK-01
+Date: Wed, 22 Oct 2008 12:03:37 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: remove superfluous dmi_ignore_irq0_timer_override
+	quirks
+Message-ID: <20081022100337.GA13400@alberich.amd.com>
+References: <20081016105706.GC29183@alberich.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20081016105706.GC29183@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 22 Oct 2008 10:04:11.0885 (UTC) FILETIME=[8821A9D0:01C9342D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-ROcPLKR3FvRa4oX2UFvR
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-On Wed, 2008-10-22 at 11:40 +0200, Ingo Molnar wrote:
-> * Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
+On Thu, Oct 16, 2008 at 12:57:06PM +0200, Andreas Herrmann wrote:
+> The problem should be solved with commits:
 > 
-> > On Mon, Oct 20, 2008 at 02:05:38PM +0200, Ingo Molnar wrote:
-> > > 
-> > > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > 
-> > > > Please apply
-> > > 
-> > > applied these to tip/sched/urgent:
-> > > 
-> > >  f9c0b09: sched: revert back to per-rq vruntime
-> > >  a4c2f00: sched: fair scheduler should not resched rt tasks
-> > >  ffda12a: sched: optimize group load balancer
-> > > 
-> > > (will wait with 4/4 until you and Mike come to a verdict.)
-> > 
-> > Is there any conclusion on Patch 4/4? It looks sane to me!
+> x86: SB600: skip IRQ0 override if it is not routed to INT2 of IOAPIC
+> x86: SB450: skip IRQ0 override if it is not routed to INT2 of IOAPIC
 > 
-> Mike?
+> IMHO it does not make sense to check within a dmi-quirk
+> whether an early-quirk was applied. Boot sequence is as follows:
+> 
+> acpi_boot_table_init()   (it applies dmi-quirks)
+> ...
+> early_quirks()           (detect bogus IRQ0 override)
+> ...
+> acpi_boot_init()         (setup IO APIC)
+> 
+> Thus with current code we will always get following warnings for
+> Laptops that have this dmi_ignore_irq0_timer_override dmi quirk:
+> 
+>   WARNING: at arch/x86/kernel/acpi/boot.c:1410
+>   dmi_ignore_irq0_timer_override+0x30/0x60()
+>   ati_ixp4x0 quirk not complete.
+> 
+> ... just because the early-quirk (ati_ixp4x0) was not yet executed.
+> 
 
-Your call of course, but I don't think it's a good trade.  In testing,
-it does serious injury to mysql+oltp peak throughput, and slows down
-things which need frequent preemption in order to compete effectively
-against hogs.  (includes desktop, though that's not heavily tested)
+Hi Ingo,
 
-The attached starvation testcase, distilled from real app and posted to
-lkml a few years ago, it totally kills.  It's a worst case scenario to
-be sure, but that worst case is pretty dramatic.  I guesstimated it
-would take ~12 hours for it to do 10M signals with wakeup preemption so
-restricted, vs 43 seconds with preemption as is.  To me, that suggests
-that anything ultra fast/light will pay through the nose.
+How are chances that this patch will go into tip-tree?
+I'd like to see this fix in 2.6.28.
 
-It has positive effects too, but IMHO, the bad outweigh the good.
 
-	-Mike
+Thanks,
 
---=-ROcPLKR3FvRa4oX2UFvR
-Content-Disposition: attachment; filename=starve.c
-Content-Type: text/x-csrc; name=starve.c; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Andreas
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <signal.h>
-#include <unistd.h>
-
-#include <sys/types.h>
-#include <sys/wait.h>
-
-volatile unsigned long loop = 10000000;
-
-void
-handler (int n)
-{
-  if (loop > 0)
-    --loop;
-}
-
-static int
-child (void)
-{
-  pid_t ppid = getppid ();
-
-  sleep (1);
-  while (1)
-    kill (ppid, SIGUSR1);
-  return 0;
-}
-
-int
-main (int argc, char **argv)
-{
-  pid_t child_pid;
-  int r;
-
-  loop = argc > 1 ? strtoul (argv[1], NULL, 10) : 10000000;
-  printf ("expecting to receive %lu signals\n", loop);
-
-  if ((child_pid = fork ()) == 0)
-    exit (child ());
-
-  signal (SIGUSR1, handler);
-  while (loop)
-    sleep (1);
-  r = kill (child_pid, SIGTERM);
-  waitpid (child_pid, NULL, 0);
-  return 0;
-}
-
---=-ROcPLKR3FvRa4oX2UFvR--
 
