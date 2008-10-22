@@ -1,66 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759579AbYJVR5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758494AbYJVR6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759579AbYJVR5Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbYJVR5E
+	id S1758494AbYJVR6n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:58:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYJVR6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:57:04 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34373 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753568AbYJVR5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:57:01 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/FcawN0YfFTXZMkLtv81qWtr+BFSyIstTcBoQufj
-	LffGpzkwfryLRb
-Subject: Re: [PATCH 0/4] pending scheduler updates
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+	Wed, 22 Oct 2008 13:58:33 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:44260 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751631AbYJVR6c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 13:58:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=LLFdByfSM7ZTNHPs/5LCeBfncoFtsuaTB4UUjeDHrXA6cy3Uhor6YxAlZxHDLc+ncD
+         HpVfuvDx0Of+LwSUsr5tdIeHZYfGzkGY7MvYRqmcV3dqwn/LxTUuiCC/bNbglFf/9Vd0
+         TwxL2ttag3UFrk/poRHz5uON09tWbOTXQ0YGU=
+Date: Wed, 22 Oct 2008 21:58:27 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1224697094.20069.9.camel@twins>
-References: <20081017172701.047939625@chello.nl>
-	 <20081020120538.GD10594@elte.hu>
-	 <20081021173529.GG11679@linux.vnet.ibm.com>
-	 <20081022094019.GG12453@elte.hu>
-	 <1224669821.6871.16.camel@marge.simson.net>
-	 <1224671528.7511.11.camel@marge.simson.net>
-	 <1224697094.20069.9.camel@twins>
-Content-Type: text/plain
-Date: Wed, 22 Oct 2008 19:56:55 +0200
-Message-Id: <1224698215.4639.18.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.65
+Subject: Re: [RFC] SLUB - define OO_ macro instead of hardcoded numbers
+Message-ID: <20081022175827.GL9639@localhost>
+References: <20081022161836.GG9639@localhost> <Pine.LNX.4.64.0810220926130.7633@quilx.com> <20081022163530.GH9639@localhost> <20081022165354.GI9639@localhost> <20081022172103.GJ9639@localhost> <Pine.LNX.4.64.0810221037320.7633@quilx.com> <48FF6800.20705@cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48FF6800.20705@cs.helsinki.fi>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-22 at 19:38 +0200, Peter Zijlstra wrote:
-> On Wed, 2008-10-22 at 12:32 +0200, Mike Galbraith wrote:
-> > On Wed, 2008-10-22 at 12:03 +0200, Mike Galbraith wrote:
-> > 
-> > > It has positive effects too, but IMHO, the bad outweigh the good.
-> > 
-> > BTW, most dramatic on the other end of the spectrum is pgsql+oltp.  With
-> > preemption as is, it collapses as load climbs to heavy with preemption
-> > knobs at stock.  Postgres uses user-land spinlocks and _appears_ to wake
-> > others while these are still held.  For this load, there is such a thing
-> > as too much short-term fairness, preempting lock holder creates nasty
-> > gaggle of contended lock spinners.  It's curable with knobs, and I think
-> > it's postgres's own fault, but may be wrong.
-> > 
-> > With that patch, pgsql+oltp scales perfectly.
-> 
-> Are we talking about this patch, which re-instates the vruntime based
-> wakeup-preemption ?
+[Pekka Enberg - Wed, Oct 22, 2008 at 08:50:56PM +0300]
+> Christoph Lameter wrote:
+>> On Wed, 22 Oct 2008, Cyrill Gorcunov wrote:
+>>
+>>> Christoph how about this one?
+>>
+>> Ok. Looks a bit better but we still have two maxes here
+>>
+>> s->max which refers to the maximum number of objects per slab page for 
+>> a specific slab cache (depends on the runtime configuration). 
+>> OO_MAX_OBJS refers to the maximum number of objects per slab page that 
+>> any slab cache can be configured for which is a compile time limit.
+>>
+>> Maybe this is okay, Pekka?
+>
+> Maybe call the page->objects maximum MAX_OBJS_PER_PAGE as it's not  
+> strictly related to the other OO code?
+>
+> 		Pekka
+>
 
-No, if it was that one, I'd be tinkering with mysql+oltp.  Everything
-else I tested (limited time, but fairly wide spectrum) with that patch
-was fine, including interactivity.  Caveat: tbench/netperf test results
-I'm not comfortable with, would need to backport to 26 to feel at all
-confident with those.  (fwtw)
+Something like that?
 
-	-Mike
+		- Cyrill -
+---
 
+ mm/slub.c |   18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
+
+Index: linux-2.6.git/mm/slub.c
+===================================================================
+--- linux-2.6.git.orig/mm/slub.c	2008-10-22 21:11:26.000000000 +0400
++++ linux-2.6.git/mm/slub.c	2008-10-22 21:57:11.000000000 +0400
+@@ -153,6 +153,10 @@
+ #define ARCH_SLAB_MINALIGN __alignof__(unsigned long long)
+ #endif
+ 
++#define OO_SHIFT	16
++#define OO_MASK		((1 << OO_SHIFT) - 1)
++#define MAX_OBJS_PER_PAGE	65535 /* see struct page.objects */
++
+ /* Internal SLUB flags */
+ #define __OBJECT_POISON		0x80000000 /* Poison object */
+ #define __SYSFS_ADD_DEFERRED	0x40000000 /* Not yet visible via sysfs */
+@@ -290,7 +294,7 @@ static inline struct kmem_cache_order_ob
+ 						unsigned long size)
+ {
+ 	struct kmem_cache_order_objects x = {
+-		(order << 16) + (PAGE_SIZE << order) / size
++		(order << OO_SHIFT) + (PAGE_SIZE << order) / size
+ 	};
+ 
+ 	return x;
+@@ -298,12 +302,12 @@ static inline struct kmem_cache_order_ob
+ 
+ static inline int oo_order(struct kmem_cache_order_objects x)
+ {
+-	return x.x >> 16;
++	return x.x >> OO_SHIFT;
+ }
+ 
+ static inline int oo_objects(struct kmem_cache_order_objects x)
+ {
+-	return x.x & ((1 << 16) - 1);
++	return x.x & OO_MASK;
+ }
+ 
+ #ifdef CONFIG_SLUB_DEBUG
+@@ -764,8 +768,8 @@ static int on_freelist(struct kmem_cache
+ 	}
+ 
+ 	max_objects = (PAGE_SIZE << compound_order(page)) / s->size;
+-	if (max_objects > 65535)
+-		max_objects = 65535;
++	if (max_objects > MAX_OBJS_PER_PAGE)
++		max_objects = MAX_OBJS_PER_PAGE;
+ 
+ 	if (page->objects != max_objects) {
+ 		slab_err(s, page, "Wrong number of objects. Found %d but "
+@@ -1819,8 +1823,8 @@ static inline int slab_order(int size, i
+ 	int rem;
+ 	int min_order = slub_min_order;
+ 
+-	if ((PAGE_SIZE << min_order) / size > 65535)
+-		return get_order(size * 65535) - 1;
++	if ((PAGE_SIZE << min_order) / size > MAX_OBJS_PER_PAGE)
++		return get_order(size * MAX_OBJS_PER_PAGE) - 1;
+ 
+ 	for (order = max(min_order,
+ 				fls(min_objects * size - 1) - PAGE_SHIFT);
