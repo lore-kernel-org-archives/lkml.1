@@ -1,142 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbYJVN3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbYJVNas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756171AbYJVN3m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 09:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbYJVN3d
+	id S1756018AbYJVNas (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 09:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYJVNak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 09:29:33 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:36373 "EHLO
-	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752245AbYJVN3c (ORCPT
+	Wed, 22 Oct 2008 09:30:40 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:58646 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752245AbYJVNaj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 09:29:32 -0400
-X-BigFish: VPS-8(zz62a3L4015Mzzzzz32i6bh64h)
-X-Spam-TCS-SCL: 3:0
-X-WSS-ID: 0K956SP-01-QA9-01
-Date: Wed, 22 Oct 2008 15:28:59 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [git pull] OProfile for v2.6.28
-Message-ID: <20081022132858.GA11994@erda.amd.com>
+	Wed, 22 Oct 2008 09:30:39 -0400
+Date: Wed, 22 Oct 2008 15:30:32 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Simen Thoresen <simentt@dolphinics.no>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: File as generic block-device?
+In-Reply-To: <48FF2304.8070301@dolphinics.no>
+Message-ID: <Pine.LNX.4.64.0810221529200.29342@vixen.sonytel.be>
+References: <48FF2304.8070301@dolphinics.no>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 22 Oct 2008 13:29:16.0706 (UTC) FILETIME=[2E605820:01C9344A]
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-369450091-1224682232=:29342"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-here are all OProfile patches for v2.6.28. The patches are also in the
-tip tree. However, you can also pull from here to get the changes:
+---584349381-369450091-1224682232=:29342
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git for-linus
+On Wed, 22 Oct 2008, Simen Thoresen wrote:
+> I have a project where I require to treat a file as a block-device
+> (specifically, I want a file on an ext3 fs to act as one of the raid-members
+> in a md-based stripe-set. I know that I can make a /filesystem/ on a file
+> because both mkfs and mount (with -o loop) will accept a file as a
+> block-device, but I have found no such function for mdadm, and am thus asking
+> for a kernel-internal way to re-plug a file into the block-device layer.
+> 
+> Is this possible?
 
-Mostly cleanup patches and bug fixes. New features are arch-perfmon
-(Intel CPUs) and IBS (AMD Fam10h) support. There is one patch that
-reverts your change reporting Nehalem as core_2. This is not needed
-anymore since arch-perfmon is now used for Nehalem (requires updated
-oprofile userland).
+Sure! You just have to create the loop device (/dev/loop*) yourself using
+losetup(8). `mount -o loop' does it itself behind your back.
 
-Thanks,
+With kind regards,
 
--Robert
+Geert Uytterhoeven
+Software Architect
 
-Andi Kleen (4):
-      oprofile: drop const in num counters field
-      oprofile: Don't report Nehalem as core_2
-      oprofile: Implement Intel architectural perfmon support
-      oprofile: discover counters for op ppro too
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-Andrea Righi (1):
-      x86, oprofile: BUG: using smp_processor_id() in preemptible code
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-Barry Kasindorf (1):
-      OProfile: Fix buffer synchronization for IBS
-
-Chris J Arges (1):
-      oprofile: hotplug cpu fix
-
-Jason Yeh (1):
-      Oprofile Multiplexing Patch
-
-Robert Richter (12):
-      x86/oprofile: fix on_each_cpu build error
-      Revert "Oprofile Multiplexing Patch"
-      OProfile: Rework oprofile_add_ibs_sample() function
-      OProfile: Rework string handling in setup_ibs_files()
-      OProfile: Rename IBS sysfs dir into "ibs_op"
-      oprofile: whitespace fixes
-      oprofile: more whitespace fixes
-      x86/oprofile: removing unused function parameter in add_ibs_begin()
-      x86/oprofile: reordering functions in nmi_int.c
-      oprofile: fixing whitespaces in drivers/oprofile/*
-      oprofile: fixing whitespaces in arch/x86/oprofile/*
-      oprofile: fixing whitespaces in arch/x86/oprofile/*
-
-Suravee Suthikulpanit (1):
-      x86/oprofile: add the logic for enabling additional IBS bits
-
-(somehow diffstat does not work properly with git log -p --no-merges ..., anyway:)
-
- arch/x86/oprofile/backtrace.c           |    5 
- arch/x86/oprofile/nmi_int.c             |  230 ++++++++++++++++----------------
- arch/x86/oprofile/op_counter.h          |   24 +--
- arch/x86/oprofile/op_model_amd.c        |  215 +++++++++++++++--------------
- arch/x86/oprofile/op_model_p4.c         |    8 -
- arch/x86/oprofile/op_model_ppro.c       |  116 ++++++++++++----
- arch/x86/oprofile/op_x86_model.h        |   19 +-
- b/arch/alpha/oprofile/common.c          |    2 
- b/arch/ia64/oprofile/init.c             |    4 
- b/arch/ia64/oprofile/perfmon.c          |    4 
- b/arch/m32r/oprofile/init.c             |    2 
- b/arch/mips/oprofile/common.c           |    2 
- b/arch/mips/oprofile/op_impl.h          |    2 
- b/arch/mips/oprofile/op_model_rm9000.c  |    2 
- b/arch/parisc/oprofile/init.c           |    2 
- b/arch/powerpc/oprofile/op_model_cell.c |    2 
- b/arch/sparc/oprofile/init.c            |    2 
- b/arch/sparc64/oprofile/init.c          |    2 
- b/arch/x86/oprofile/backtrace.c         |    3 
- b/arch/x86/oprofile/nmi_int.c           |  147 +++++++++-----------
- b/arch/x86/oprofile/op_counter.h        |   18 +-
- b/arch/x86/oprofile/op_model_amd.c      |    4 
- b/arch/x86/oprofile/op_model_p4.c       |   32 ++--
- b/arch/x86/oprofile/op_model_ppro.c     |   16 +-
- b/arch/x86/oprofile/op_x86_model.h      |    4 
- b/drivers/oprofile/buffer_sync.c        |    8 -
- b/drivers/oprofile/buffer_sync.h        |    4 
- b/drivers/oprofile/cpu_buffer.c         |    9 -
- b/drivers/oprofile/cpu_buffer.h         |    6 
- b/drivers/oprofile/event_buffer.c       |   24 +--
- b/drivers/oprofile/event_buffer.h       |   10 -
- b/drivers/oprofile/oprof.c              |    2 
- b/drivers/oprofile/oprof.h              |    8 -
- b/drivers/oprofile/oprofile_files.c     |   20 +-
- b/drivers/oprofile/oprofile_stats.c     |   14 -
- b/drivers/oprofile/oprofile_stats.h     |    8 -
- b/drivers/oprofile/oprofilefs.c         |    6 
- b/drivers/oprofile/timer_int.c          |    2 
- b/include/linux/oprofile.h              |    3 
- drivers/oprofile/buffer_sync.c          |    9 -
- drivers/oprofile/cpu_buffer.c           |   86 ++++-------
- drivers/oprofile/cpu_buffer.h           |    6 
- drivers/oprofile/event_buffer.c         |   10 -
- drivers/oprofile/oprof.c                |  140 +++++++++----------
- drivers/oprofile/oprof.h                |   12 -
- drivers/oprofile/oprofile_files.c       |   94 ++++++-------
- drivers/oprofile/oprofile_stats.c       |   10 -
- drivers/oprofile/oprofile_stats.h       |    2 
- drivers/oprofile/oprofilefs.c           |   72 +++++-----
- drivers/oprofile/timer_int.c            |    2 
- include/linux/oprofile.h                |    3 
- 51 files changed, 748 insertions(+), 689 deletions(-)
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-369450091-1224682232=:29342--
