@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753129AbYJVQsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbYJVQyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753129AbYJVQsA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 12:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbYJVQru
+	id S1753807AbYJVQyQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 12:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbYJVQx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 12:47:50 -0400
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:46283 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751226AbYJVQrt (ORCPT
+	Wed, 22 Oct 2008 12:53:59 -0400
+Received: from gv-out-0910.google.com ([216.239.58.184]:17590 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751208AbYJVQx7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 12:47:49 -0400
-Message-ID: <48FF5933.3080501@lwfinger.net>
-Date: Wed, 22 Oct 2008 09:47:47 -0700
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Wed, 22 Oct 2008 12:53:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=dBckr/xJUrCbOjKvHifQhH3yUzXPT4Hop4oCsnowYhqHWmVH6tcp/kgrDx/axNisN8
+         yq76x/3nnZuCGmAK937vkLGRkz4cyT/erZhqmbbK4TQJJh/emEz9KYq4z00Rgq4/bt5q
+         AZ+XpSLX+RQHrSmwkLxnDQZDGEpaEht2ztKg8=
+Date: Wed, 22 Oct 2008 20:53:54 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] SLUB - define OO_ macro instead of hardcoded numbers
+Message-ID: <20081022165354.GI9639@localhost>
+References: <20081022161836.GG9639@localhost> <Pine.LNX.4.64.0810220926130.7633@quilx.com> <20081022163530.GH9639@localhost>
 MIME-Version: 1.0
-To: Jouni Malinen <j@w1.fi>
-CC: Jouni Malinen <jouni.malinen@atheros.com>,
-       wireless <linux-wireless@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       John Linville <linville@tuxdriver.com>
-Subject: Re: Regression in 2.6.27-git from commit 43ac2ca3840f64
-References: <48FDFCCA.8040604@lwfinger.net> <20081022072840.GD16005@jm.kir.nu>
-In-Reply-To: <20081022072840.GD16005@jm.kir.nu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081022163530.GH9639@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jouni Malinen wrote:
-> On Tue, Oct 21, 2008 at 09:01:14AM -0700, Larry Finger wrote:
-> 
->> On my x86_64 system, the mainline 2.6.27-git kernel (v2.6.27-6030-g6da0b38)
->> shows the following anomaly with the 'iwlist scan' command:
->>
->>           Cell 03 - Address: 00:14:BF:85:49:FA
->>                     ESSID:"lwfdjf"
->>                     Mode:Master
->>                     Channel:1
->>                     Frequency:2.412 GHz (Channel 1)
->>                     Quality=66/100  Signal level:-62 dBm  Noise level=-68 dBm
->>                     Encryption key:on
->>                     IE: Unknown: 00066C7766646A66
-> 
-> ...
-> 
->> This problem was bisected to commit 43ac2ca3840f64f699a239535c590fa7ebaaac27,
->> entitled "mac80211: Handle scan result IEs in one block". The same bug is
->> present in the wireless-testing tree.
-> 
-> Problem? Bug? This is by design. What does not work for you?
+[Cyrill Gorcunov - Wed, Oct 22, 2008 at 08:35:30PM +0400]
+| [Christoph Lameter - Wed, Oct 22, 2008 at 09:28:14AM -0700]
+| > On Wed, 22 Oct 2008, Cyrill Gorcunov wrote:
+| >
+| >> Please check -- wouldn't it be better to use such a macro?
+| >
+| > Looks good. But could you rename OO_MAX to something different? There is  
+| > already s->max which may cause confusion because s->max is the maximum  
+| > number of objects in a slab. OO_MAX is the maximum mask?
+| >
+| 
+| I supposed it would mean maximum object number inside page (ie quantity) which
+| is happen to be the same value as OO_MASK. Maybe OO_MAX_OBJ?
+| 
+| 		- Cyrill -
 
-When a utility starts spitting messages that it doesn't understand what the
-kernel is providing _AND_ the commit message does not mention that this will
-happen, can someone be blamed for thinking it is a bug?
+Btw Christoph fix me if I'm wrong but this 65535 is directly related to
+16 bit shift. If we change the first value without changing the second we
+just break the SLUB I guess. I didn't read/understand SLUB code in details
+so could be wrong.
 
-Clearly this is not a regression. Are there plans to update the wireless utilities?
-
-Larry
+		- Cyrill -
