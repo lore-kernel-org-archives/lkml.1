@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759104AbYJVRlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758137AbYJVRm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759104AbYJVRlo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757641AbYJVReS
+	id S1758137AbYJVRm2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757811AbYJVRec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:34:18 -0400
-Received: from kroah.org ([198.145.64.141]:53073 "EHLO coco.kroah.org"
+	Wed, 22 Oct 2008 13:34:32 -0400
+Received: from kroah.org ([198.145.64.141]:53082 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757583AbYJVReQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:34:16 -0400
+	id S1757828AbYJVRea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 13:34:30 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>, David Rowe <david@rowetel.com>,
        Steve Underwood <steveu@coppice.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 23/42] Staging: echo: remove dead code
-Date: Wed, 22 Oct 2008 10:29:04 -0700
-Message-Id: <1224696563-5170-23-git-send-email-gregkh@suse.de>
+Subject: [PATCH 25/42] Staging: echo: remove annoying "end of function" markers
+Date: Wed, 22 Oct 2008 10:29:06 -0700
+Message-Id: <1224696563-5170-25-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081022172203.GA4000@kroah.com>
 References: <20081022172203.GA4000@kroah.com>
@@ -26,72 +26,230 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-This patch removes dead code that is wrapped in #ifndef __KERNEL__.
+This patch removes the very noisy "end of function" markers that are
+very annoying when reading the driver code.
 
 Cc: David Rowe <david@rowetel.com>
 Cc: Steve Underwood <steveu@coppice.org>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/echo/fir.h |   45 --------------------------------------------
- 1 files changed, 0 insertions(+), 45 deletions(-)
+ drivers/staging/echo/bit_operations.h |   10 ----------
+ drivers/staging/echo/echo.c           |    7 -------
+ drivers/staging/echo/fir.h            |    9 ---------
+ 3 files changed, 0 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/staging/echo/fir.h b/drivers/staging/echo/fir.h
-index c29e1e2..19c20cd 100644
---- a/drivers/staging/echo/fir.h
-+++ b/drivers/staging/echo/fir.h
-@@ -312,51 +312,6 @@ static __inline__ int16_t fir32(fir32_state_t *fir, int16_t sample)
+diff --git a/drivers/staging/echo/bit_operations.h b/drivers/staging/echo/bit_operations.h
+index 04b55d2..abcd7a2 100644
+--- a/drivers/staging/echo/bit_operations.h
++++ b/drivers/staging/echo/bit_operations.h
+@@ -45,7 +45,6 @@ static __inline__ int top_bit(unsigned int bits)
+              : [bits] "rm" (bits));
+     return res;
  }
- /*- End of function --------------------------------------------------------*/
+-/*- End of function --------------------------------------------------------*/
  
--#ifndef __KERNEL__
--static __inline__ const float *fir_float_create(fir_float_state_t *fir,
--                                                const float *coeffs,
--    	    	    	                        int taps)
--{
--    fir->taps = taps;
--    fir->curr_pos = taps - 1;
--    fir->coeffs = coeffs;
--    fir->history = (float *) malloc(taps*sizeof(float));
--    if (fir->history)
--        memset(fir->history, '\0', taps*sizeof(float));
--    return fir->history;
--}
+ /*! \brief Find the bit position of the lowest set bit in a word
+     \param bits The word to be searched
+@@ -61,7 +60,6 @@ static __inline__ int bottom_bit(unsigned int bits)
+              : [bits] "rm" (bits));
+     return res;
+ }
 -/*- End of function --------------------------------------------------------*/
--
--static __inline__ void fir_float_free(fir_float_state_t *fir)
--{
--    free(fir->history);
--}
+ #else
+ static __inline__ int top_bit(unsigned int bits)
+ {
+@@ -97,7 +95,6 @@ static __inline__ int top_bit(unsigned int bits)
+     }
+     return i;
+ }
 -/*- End of function --------------------------------------------------------*/
--
--static __inline__ int16_t fir_float(fir_float_state_t *fir, int16_t sample)
--{
--    int i;
--    float y;
--    int offset1;
--    int offset2;
--
--    fir->history[fir->curr_pos] = sample;
--
--    offset2 = fir->curr_pos;
--    offset1 = fir->taps - offset2;
--    y = 0;
--    for (i = fir->taps - 1;  i >= offset1;  i--)
--        y += fir->coeffs[i]*fir->history[i - offset1];
--    for (  ;  i >= 0;  i--)
--        y += fir->coeffs[i]*fir->history[i + offset2];
--    if (fir->curr_pos <= 0)
--    	fir->curr_pos = fir->taps;
--    fir->curr_pos--;
--    return  (int16_t) y;
--}
+ 
+ static __inline__ int bottom_bit(unsigned int bits)
+ {
+@@ -133,7 +130,6 @@ static __inline__ int bottom_bit(unsigned int bits)
+     }
+     return i;
+ }
 -/*- End of function --------------------------------------------------------*/
--#endif
--
- #ifdef __cplusplus
+ #endif
+ 
+ /*! \brief Bit reverse a byte.
+@@ -151,7 +147,6 @@ static __inline__ uint8_t bit_reverse8(uint8_t x)
+     return ((x & 0xAA) >> 1) | ((x & 0x55) << 1);
+ #endif
+ }
+-/*- End of function --------------------------------------------------------*/
+ 
+ /*! \brief Bit reverse a 16 bit word.
+     \param data The word to be reversed.
+@@ -191,7 +186,6 @@ static __inline__ uint32_t least_significant_one32(uint32_t x)
+ {
+     return (x & (-(int32_t) x));
+ }
+-/*- End of function --------------------------------------------------------*/
+ 
+ /*! \brief Find the most significant one in a word, and return a word
+            with just that bit set.
+@@ -206,7 +200,6 @@ static __inline__ uint32_t most_significant_one32(uint32_t x)
+     return (x ^ (x >> 1));
+ #endif
+ }
+-/*- End of function --------------------------------------------------------*/
+ 
+ /*! \brief Find the parity of a byte.
+     \param x The byte to be checked.
+@@ -216,7 +209,6 @@ static __inline__ int parity8(uint8_t x)
+     x = (x ^ (x >> 4)) & 0x0F;
+     return (0x6996 >> x) & 1;
+ }
+-/*- End of function --------------------------------------------------------*/
+ 
+ /*! \brief Find the parity of a 16 bit word.
+     \param x The word to be checked.
+@@ -227,7 +219,6 @@ static __inline__ int parity16(uint16_t x)
+     x = (x ^ (x >> 4)) & 0x0F;
+     return (0x6996 >> x) & 1;
+ }
+-/*- End of function --------------------------------------------------------*/
+ 
+ /*! \brief Find the parity of a 32 bit word.
+     \param x The word to be checked.
+@@ -239,7 +230,6 @@ static __inline__ int parity32(uint32_t x)
+     x = (x ^ (x >> 4)) & 0x0F;
+     return (0x6996 >> x) & 1;
+ }
+-/*- End of function --------------------------------------------------------*/
+ 
+ #endif
+ /*- End of file ------------------------------------------------------------*/
+diff --git a/drivers/staging/echo/echo.c b/drivers/staging/echo/echo.c
+index a2d3078..ad18a95 100644
+--- a/drivers/staging/echo/echo.c
++++ b/drivers/staging/echo/echo.c
+@@ -230,7 +230,6 @@ static __inline__ void lms_adapt_bg(struct oslec_state *ec, int clean, int shift
  }
  #endif
+ 
+-/*- End of function --------------------------------------------------------*/
+ 
+ struct oslec_state *oslec_create(int len, int adaption_mode)
+ {
+@@ -288,7 +287,6 @@ error_oom:
+     return NULL;
+ }
+ EXPORT_SYMBOL_GPL(oslec_create);
+-/*- End of function --------------------------------------------------------*/
+ 
+ void oslec_free(struct oslec_state *ec)
+ {
+@@ -302,14 +300,12 @@ void oslec_free(struct oslec_state *ec)
+ 	kfree(ec);
+ }
+ EXPORT_SYMBOL_GPL(oslec_free);
+-/*- End of function --------------------------------------------------------*/
+ 
+ void oslec_adaption_mode(struct oslec_state *ec, int adaption_mode)
+ {
+     ec->adaption_mode = adaption_mode;
+ }
+ EXPORT_SYMBOL_GPL(oslec_adaption_mode);
+-/*- End of function --------------------------------------------------------*/
+ 
+ void oslec_flush(struct oslec_state *ec)
+ {
+@@ -336,13 +332,11 @@ void oslec_flush(struct oslec_state *ec)
+     ec->Pstates = 0;
+ }
+ EXPORT_SYMBOL_GPL(oslec_flush);
+-/*- End of function --------------------------------------------------------*/
+ 
+ void oslec_snapshot(struct oslec_state *ec) {
+     memcpy(ec->snapshot, ec->fir_taps16[0], ec->taps*sizeof(int16_t));
+ }
+ EXPORT_SYMBOL_GPL(oslec_snapshot);
+-/*- End of function --------------------------------------------------------*/
+ 
+ /* Dual Path Echo Canceller ------------------------------------------------*/
+ 
+@@ -588,7 +582,6 @@ int16_t oslec_update(struct oslec_state *ec, int16_t tx, int16_t rx)
+     return (int16_t) ec->clean_nlp << 1;
+ }
+ EXPORT_SYMBOL_GPL(oslec_update);
+-/*- End of function --------------------------------------------------------*/
+ 
+ /* This function is seperated from the echo canceller is it is usually called
+    as part of the tx process.  See rx HP (DC blocking) filter above, it's
+diff --git a/drivers/staging/echo/fir.h b/drivers/staging/echo/fir.h
+index d1df33c..e760471 100644
+--- a/drivers/staging/echo/fir.h
++++ b/drivers/staging/echo/fir.h
+@@ -119,7 +119,6 @@ static __inline__ const int16_t *fir16_create(fir16_state_t *fir,
+ #endif
+ 	return fir->history;
+ }
+-/*- End of function --------------------------------------------------------*/
+ 
+ static __inline__ void fir16_flush(fir16_state_t *fir)
+ {
+@@ -129,13 +128,11 @@ static __inline__ void fir16_flush(fir16_state_t *fir)
+     memset(fir->history, 0, fir->taps*sizeof(int16_t));
+ #endif
+ }
+-/*- End of function --------------------------------------------------------*/
+ 
+ static __inline__ void fir16_free(fir16_state_t *fir)
+ {
+ 	kfree(fir->history);
+ }
+-/*- End of function --------------------------------------------------------*/
+ 
+ #ifdef __bfin__
+ static inline int32_t dot_asm(short *x, short *y, int len)
+@@ -165,7 +162,6 @@ static inline int32_t dot_asm(short *x, short *y, int len)
+    return dot;
+ }
+ #endif
+-/*- End of function --------------------------------------------------------*/
+ 
+ static __inline__ int16_t fir16(fir16_state_t *fir, int16_t sample)
+ {
+@@ -260,7 +256,6 @@ static __inline__ int16_t fir16(fir16_state_t *fir, int16_t sample)
+     fir->curr_pos--;
+     return (int16_t) (y >> 15);
+ }
+-/*- End of function --------------------------------------------------------*/
+ 
+ static __inline__ const int16_t *fir32_create(fir32_state_t *fir,
+                                               const int32_t *coeffs,
+@@ -272,19 +267,16 @@ static __inline__ const int16_t *fir32_create(fir32_state_t *fir,
+     fir->history = kcalloc(taps, sizeof(int16_t), GFP_KERNEL);
+     return fir->history;
+ }
+-/*- End of function --------------------------------------------------------*/
+ 
+ static __inline__ void fir32_flush(fir32_state_t *fir)
+ {
+     memset(fir->history, 0, fir->taps*sizeof(int16_t));
+ }
+-/*- End of function --------------------------------------------------------*/
+ 
+ static __inline__ void fir32_free(fir32_state_t *fir)
+ {
+     kfree(fir->history);
+ }
+-/*- End of function --------------------------------------------------------*/
+ 
+ static __inline__ int16_t fir32(fir32_state_t *fir, int16_t sample)
+ {
+@@ -306,7 +298,6 @@ static __inline__ int16_t fir32(fir32_state_t *fir, int16_t sample)
+     fir->curr_pos--;
+     return (int16_t) (y >> 15);
+ }
+-/*- End of function --------------------------------------------------------*/
+ 
+ #endif
+ /*- End of file ------------------------------------------------------------*/
 -- 
 1.6.0.2
 
