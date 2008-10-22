@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759270AbYJVWab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbYJVWas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759270AbYJVWab (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 18:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbYJVWaN
+	id S1755371AbYJVWas (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 18:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759230AbYJVWaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 18:30:13 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:14058 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751529AbYJVWaL (ORCPT
+	Wed, 22 Oct 2008 18:30:30 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:28924 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758730AbYJVWa1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 18:30:11 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Am4DAM8S9kh5LE2tgWdsb2JhbACTYAEBFiKuDIFr
-X-IronPort-AV: E=Sophos;i="4.33,467,1220193000"; 
-   d="scan'208";a="216212234"
-Date: Thu, 23 Oct 2008 09:30:05 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Linda Walsh <lkml@tlinx.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
-Subject: Re: 2.6.27.[0,2] problems (v. 2.6.26.5): Samba & root-read-only
-Message-ID: <20081022223005.GV18495@disturbed>
-Mail-Followup-To: Linda Walsh <lkml@tlinx.org>,
-	LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
-References: <48FED90F.7030809@tlinx.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48FED90F.7030809@tlinx.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 22 Oct 2008 18:30:27 -0400
+X-YMail-OSG: sq3qyqMVM1nirSQK7I8BDPxvY4mrhtYtlaZAST724q3zLm0Gx8ah1hJ7gdFZDB.bfEizMnJt33aYpXodDaWksLYgiStiCZFXvrBmdriJFc3rVcUvk8y1BYCiV4OQBYhCr5MIMlH24WbWh_2ZgInPZkfkW0A.v__om.HS3Lc-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: PATCH] [ConfigFS]: Extend CONFIGFS_ATTR_STRUCT() and
+	CONFIGFS_ATTR_OPS() macros
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+In-Reply-To: <20081022221358.GA7621@mail.oracle.com>
+References: <1224713189.24358.111.camel@haakon2.linux-iscsi.org>
+	 <20081022221358.GA7621@mail.oracle.com>
+Content-Type: text/plain
+Date: Wed, 22 Oct 2008 15:30:25 -0700
+Message-Id: <1224714625.24358.125.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 12:41:03AM -0700, Linda Walsh wrote:
-> I am having to stay at 2.6.26.5 for now on my main home server.
->
-> Going to 2.6.27 (and just trying 2.6.27.2), I'm have two VERY weird (would
-> appear to be user-land probs from symptoms), problems. 
->
-> 1) Samba -- the system is a Samba domain controller.  When I boot using
-> the 2.6.27.2 kernel (or .0 before), I can no longer mount any file systems
-> from my windows client. 
-.....
->
-> 2) My root disk comes up READ-ONLY.  It uses XFS.  I am NOT able to remount
-> read/write (mount -o remount,rw /, fails writing to Read-only /etc/mtab,
-> mount -n -o remount,rw doesn't give an error message, but doesn't make the
-> drive R/W.  Root fs is on an adaptec FAST-SCSI (80MB/s) with an 18MB Seagate
-> (root, disk is oldest disk on the system). 
+On Wed, 2008-10-22 at 15:13 -0700, Joel Becker wrote:
+> On Wed, Oct 22, 2008 at 03:06:29PM -0700, Nicholas A. Bellinger wrote:
+> > Hi Joel,
+> > 
+> > What do you think..?
+> > 
+> > Also, here is the drivers/lio-core/iscsi_target_configfs.c commit to
+> > convert to use to new parameters for CONFIGFS_ATTR_STRUCT() and
+> > CONFIGFS_ATTR_OPS():
+> 
+> 	It seems even more complex, and inconsistent with what sysfs
+> and other users do.  Can you give me an example of using it?
+> 
 
-That XFS problem should be fixed in 2.6.27.3, whenever that is going
-to be released. It was sent and ACK'd by the stable team a week ago,
-but for some reason missed 2.6.27.2.
+Sure, my reasoning was as I was looking at converting as much code as
+possible in target_core_config.c and iscsi_target_configfs.c to use the
+include/linux/config.h wrappers, I have noticed I am running into a
+limitiation with existing code:
 
-Most likely is that the Samba problem will be caused by the smbd
-not being able to write to it's databases when clients try
-to connect because of the read-only root fs.
+Having the user's attribute set of macro's '_name' being synonymous with
+both the user's struct _item * and show()/store() defines with
+CONFIGFS_ATTR_OPS() was going to cause namespace pollution when you want
+to be able generic show()/store() on multiple struct config_groups
+hanging off the same original struct _item.
 
-If you want to patch your kernel, the patch is here:
+For me, this was looking like problems when you have multiple default
+struct config_groups off a single struct config_group,
+namely /sys/kernel/config/target/iscsi/$IQN/$TPGT amoung other places in
+LIO-Target.
 
-http://oss.sgi.com/archives/xfs/2008-10/msg00284.html
+Also, I would argue the patch makes the existing attribute macro in
+configfs.h slightly *LESS* complex for the users of the macro because
+you no longer have to define your own internal "to_<name>()" for each
+struct config_group you want to hang attributes off.
 
-Cheers,
+Thanks!
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+--nab
+
+> Joel
+> 
+
