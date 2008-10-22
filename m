@@ -1,518 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754561AbYJVI6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753025AbYJVI7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754561AbYJVI6r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 04:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbYJVI6e
+	id S1753025AbYJVI7I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 04:59:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbYJVI6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 04:58:34 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:10837 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753279AbYJVI6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 04:58:31 -0400
-From: Andrey Mirkin <major@openvz.org>
-To: devel@openvz.org, Louis.Rilling@kerlabs.com
-Subject: Re: [Devel] Re: [PATCH 06/10] Introduce functions to dump mm
-Date: Wed, 22 Oct 2008 12:58:43 +0400
-User-Agent: KMail/1.8.2
-Cc: Pavel Emelyanov <xemul@openvz.org>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <1224285098-573-1-git-send-email-major@openvz.org> <1224285098-573-7-git-send-email-major@openvz.org> <20081020122514.GR15171@hawkmoon.kerlabs.com>
-In-Reply-To: <20081020122514.GR15171@hawkmoon.kerlabs.com>
+	Wed, 22 Oct 2008 04:58:37 -0400
+Received: from bytemail.bytemark.co.uk ([80.68.81.165]:50308 "EHLO
+	bytemail.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753631AbYJVI6g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 04:58:36 -0400
+Message-ID: <48FEEB1E.1030809@bytemark.co.uk>
+Date: Wed, 22 Oct 2008 09:58:06 +0100
+From: Alex Howells <alex@bytemark.co.uk>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Valdis.Kletnieks@vt.edu
+CC: Greg KH <greg@kroah.com>, Alexandre Oliva <oliva@lsd.ic.unicamp.br>,
+       "H. Peter Anvin" <hpa@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+References: <20081016153053.GJ5834@nostromo.devel.redhat.com> <20081016154726.GA6331@kroah.com> <20081016171626.GB22554@cs181140183.pp.htv.fi> <20081017040239.GB28188@kroah.com> <20081017103138.1ca68d17@lxorguk.ukuu.org.uk> <48F8C000.8030003@kernel.org> <20081017174226.GF2221@kroah.com> <48F98DE2.8030205@kernel.org> <ortzb89bak.fsf@oliva.athome.lsd.ic.unicamp.br> <48FCD421.2010208@bytemark.co.uk> <20081020202147.GA20788@kroah.com>            <48FE32E2.5000601@bytemark.co.uk> <33098.1224636084@turing-police.cc.vt.edu>
+In-Reply-To: <33098.1224636084@turing-police.cc.vt.edu>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=B188A23A
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810221258.44447.major@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 20 October 2008 16:25 Louis Rilling wrote:
-> On Sat, Oct 18, 2008 at 03:11:34AM +0400, Andrey Mirkin wrote:
-> > Functions to dump mm struct, VMAs and mm context are added.
->
-> Again, a few little comments.
->
-> [...]
->
-> > diff --git a/checkpoint/cpt_mm.c b/checkpoint/cpt_mm.c
-> > new file mode 100644
-> > index 0000000..8a22c48
-> > --- /dev/null
-> > +++ b/checkpoint/cpt_mm.c
-> > @@ -0,0 +1,434 @@
-> > +/*
-> > + *  Copyright (C) 2008 Parallels, Inc.
-> > + *
-> > + *  Authors:	Andrey Mirkin <major@openvz.org>
-> > + *
-> > + *  This program is free software; you can redistribute it and/or
-> > + *  modify it under the terms of the GNU General Public License as
-> > + *  published by the Free Software Foundation, version 2 of the
-> > + *  License.
-> > + *
-> > + */
-> > +
-> > +#include <linux/sched.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/file.h>
-> > +#include <linux/mm.h>
-> > +#include <linux/errno.h>
-> > +#include <linux/major.h>
-> > +#include <linux/mman.h>
-> > +#include <linux/mnt_namespace.h>
-> > +#include <linux/mount.h>
-> > +#include <linux/namei.h>
-> > +#include <linux/pagemap.h>
-> > +#include <linux/hugetlb.h>
-> > +#include <asm/ldt.h>
-> > +
-> > +#include "checkpoint.h"
-> > +#include "cpt_image.h"
-> > +
-> > +struct page_area
-> > +{
-> > +	int type;
-> > +	unsigned long start;
-> > +	unsigned long end;
-> > +	pgoff_t pgoff;
-> > +	loff_t mm;
-> > +	__u64 list[16];
-> > +};
-> > +
-> > +struct page_desc
-> > +{
-> > +	int	type;
-> > +	pgoff_t	index;
-> > +	loff_t	mm;
-> > +	int	shared;
-> > +};
-> > +
-> > +enum {
-> > +	PD_ABSENT,
-> > +	PD_COPY,
-> > +	PD_FUNKEY,
-> > +};
-> > +
-> > +/* 0: page can be obtained from backstore, or still not mapped anonymous
-> >  page, +      or something else, which does not requre copy.
-> > +   1: page requires copy
-> > +   2: page requres copy but its content is zero. Quite useless.
-> > +   3: wp page is shared after fork(). It is to be COWed when modified.
-> > +   4: page is something unsupported... We copy it right now.
-> > + */
-> > +
-> > +static void page_get_desc(struct vm_area_struct *vma, unsigned long
-> > addr, +			  struct page_desc *pdesc, cpt_context_t * ctx)
-> > +{
-> > +	struct mm_struct *mm = vma->vm_mm;
-> > +	pgd_t *pgd;
-> > +	pud_t *pud;
-> > +	pmd_t *pmd;
-> > +	pte_t *ptep, pte;
-> > +	spinlock_t *ptl;
-> > +	struct page *pg = NULL;
-> > +	pgoff_t linear_index = (addr - vma->vm_start)/PAGE_SIZE +
-> > vma->vm_pgoff; +
-> > +	pdesc->index = linear_index;
-> > +	pdesc->shared = 0;
-> > +	pdesc->mm = CPT_NULL;
-> > +
-> > +	if (vma->vm_flags & VM_IO) {
-> > +		pdesc->type = PD_ABSENT;
-> > +		return;
-> > +	}
-> > +
-> > +	pgd = pgd_offset(mm, addr);
-> > +	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
-> > +		goto out_absent;
-> > +	pud = pud_offset(pgd, addr);
-> > +	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
-> > +		goto out_absent;
-> > +	pmd = pmd_offset(pud, addr);
-> > +	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
-> > +		goto out_absent;
-> > +#ifdef CONFIG_X86
-> > +	if (pmd_huge(*pmd)) {
-> > +		eprintk("page_huge\n");
-> > +		goto out_unsupported;
-> > +	}
-> > +#endif
-> > +	ptep = pte_offset_map_lock(mm, pmd, addr, &ptl);
-> > +	pte = *ptep;
-> > +	pte_unmap(ptep);
-> > +
-> > +	if (pte_none(pte))
-> > +		goto out_absent_unlock;
-> > +
-> > +	if ((pg = vm_normal_page(vma, addr, pte)) == NULL) {
-> > +		pdesc->type = PD_COPY;
-> > +		goto out_unlock;
-> > +	}
-> > +
-> > +	get_page(pg);
-> > +	spin_unlock(ptl);
-> > +
-> > +	if (pg->mapping && !PageAnon(pg)) {
-> > +		if (vma->vm_file == NULL) {
-> > +			eprintk("pg->mapping!=NULL for fileless vma: %08lx\n", addr);
-> > +			goto out_unsupported;
-> > +		}
-> > +		if (vma->vm_file->f_mapping != pg->mapping) {
-> > +			eprintk("pg->mapping!=f_mapping: %08lx %p %p\n",
-> > +				    addr, vma->vm_file->f_mapping, pg->mapping);
-> > +			goto out_unsupported;
-> > +		}
-> > +		pdesc->index = (pg->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT));
-> > +		/* Page is in backstore. For us it is like
-> > +		 * it is not present.
-> > +		 */
-> > +		goto out_absent;
-> > +	}
-> > +
-> > +	if (PageReserved(pg)) {
-> > +		/* Special case: ZERO_PAGE is used, when an
-> > +		 * anonymous page is accessed but not written. */
-> > +		if (pg == ZERO_PAGE(addr)) {
-> > +			if (pte_write(pte)) {
-> > +				eprintk("not funny already, writable ZERO_PAGE\n");
-> > +				goto out_unsupported;
-> > +			}
-> > +			/* Just copy it for now */
-> > +			pdesc->type = PD_COPY;
-> > +			goto out_put;
-> > +		}
-> > +		eprintk("reserved page %lu at %08lx\n", pg->index, addr);
-> > +		goto out_unsupported;
-> > +	}
-> > +
-> > +	if (!pg->mapping) {
-> > +		eprintk("page without mapping at %08lx\n", addr);
-> > +		goto out_unsupported;
-> > +	}
-> > +
-> > +	pdesc->type = PD_COPY;
-> > +
-> > +out_put:
-> > +	if (pg)
-> > +		put_page(pg);
-> > +	return;
-> > +
-> > +out_unlock:
-> > +	spin_unlock(ptl);
-> > +	goto out_put;
-> > +
-> > +out_absent_unlock:
-> > +	spin_unlock(ptl);
-> > +
-> > +out_absent:
-> > +	pdesc->type = PD_ABSENT;
-> > +	goto out_put;
-> > +
-> > +out_unsupported:
-> > +	pdesc->type = PD_FUNKEY;
-> > +	goto out_put;
-> > +}
-> > +
-> > +static int count_vma_pages(struct vm_area_struct *vma, struct
-> > cpt_context *ctx) +{
-> > +	unsigned long addr;
-> > +	int page_num = 0;
-> > +
-> > +	for (addr = vma->vm_start; addr < vma->vm_end; addr += PAGE_SIZE) {
-> > +		struct page_desc pd;
-> > +
-> > +		page_get_desc(vma, addr, &pd, ctx);
-> > +
-> > +		if (pd.type != PD_COPY) {
-> > +			return -EINVAL;
-> > +		} else {
-> > +			page_num += 1;
-> > +		}
-> > +
-> > +	}
-> > +	return page_num;
-> > +}
-> > +
-> > +/* ATTN: We give "current" to get_user_pages(). This is wrong, but
-> > get_user_pages() + * does not really need this thing. It just stores some
-> > page fault stats there. + *
-> > + * BUG: some archs (f.e. sparc64, but not Intel*) require flush cache
-> > pages + * before accessing vma.
-> > + */
-> > +static int dump_pages(struct vm_area_struct *vma, unsigned long start,
-> > +		unsigned long end, struct cpt_context *ctx)
-> > +{
-> > +#define MAX_PAGE_BATCH 16
-> > +	struct page *pg[MAX_PAGE_BATCH];
-> > +	int npages = (end - start)/PAGE_SIZE;
-> > +	int count = 0;
-> > +
-> > +	while (count < npages) {
-> > +		int copy = npages - count;
-> > +		int n;
-> > +
-> > +		if (copy > MAX_PAGE_BATCH)
-> > +			copy = MAX_PAGE_BATCH;
-> > +		n = get_user_pages(current, vma->vm_mm, start, copy,
-> > +				   0, 1, pg, NULL);
-> > +		if (n == copy) {
-> > +			int i;
-> > +			for (i=0; i<n; i++) {
-> > +				char *maddr = kmap(pg[i]);
-> > +				ctx->write(maddr, PAGE_SIZE, ctx);
-> > +				kunmap(pg[i]);
->
-> There is no error handling in this inner loop. Should be fixed imho.
+Hey Valdis
 
-Yes, you right. Already fixed in next version. I'll try to send it out 
-shortly.
+>> Requirements for me to put a kernel on a given server would be:
+> 
+>>     *  supports the hardware
+> The problem is that "supports" is often a fuzzy jello-like substance you
+> try to nail to a tree.  You mention the R8169 and e1000 drivers - if they
+> bring the device up, but have issues under corner cases, is that "supports"
+> or not?
 
->
-> > +			}
-> > +		} else {
-> > +			eprintk("get_user_pages fault");
-> > +			for ( ; n > 0; n--)
-> > +				page_cache_release(pg[n-1]);
-> > +			return -EFAULT;
-> > +		}
-> > +		start += n*PAGE_SIZE;
-> > +		count += n;
-> > +		for ( ; n > 0; n--)
-> > +			page_cache_release(pg[n-1]);
-> > +	}
-> > +	return 0;
-> > +}
-> > +
-> > +static int dump_page_block(struct vm_area_struct *vma,
-> > +			   struct cpt_page_block *pgb,
-> > +			   struct cpt_context *ctx)
-> > +{
-> > +	int err;
-> > +	pgb->cpt_len = sizeof(*pgb) + pgb->cpt_end - pgb->cpt_start;
-> > +	pgb->cpt_type = CPT_OBJ_PAGES;
-> > +	pgb->cpt_hdrlen = sizeof(*pgb);
-> > +	pgb->cpt_content = CPT_CONTENT_DATA;
-> > +
-> > +	err = ctx->write(pgb, sizeof(*pgb), ctx);
-> > +	if (!err)
-> > +		err = dump_pages(vma, pgb->cpt_start, pgb->cpt_end, ctx);
-> > +
-> > +	return err;
-> > +}
-> > +
-> > +static int cpt_dump_dentry(struct path *p, cpt_context_t *ctx)
-> > +{
-> > +	int len;
-> > +	char *path;
-> > +	char *buf;
-> > +	struct cpt_object_hdr o;
-> > +
-> > +	buf = (char *)__get_free_page(GFP_KERNEL);
-> > +	if (!buf)
-> > +		return -ENOMEM;
-> > +
-> > +	path = d_path(p, buf, PAGE_SIZE);
-> > +
-> > +	if (IS_ERR(path)) {
-> > +		free_page((unsigned long)buf);
-> > +		return PTR_ERR(path);
-> > +	}
-> > +
-> > +	len = buf + PAGE_SIZE - 1 - path;
-> > +	o.cpt_len = sizeof(o) + len + 1;
-> > +	o.cpt_type = CPT_OBJ_NAME;
-> > +	o.cpt_hdrlen = sizeof(o);
-> > +	o.cpt_content = CPT_CONTENT_NAME;
-> > +	path[len] = 0;
-> > +
-> > +	ctx->write(&o, sizeof(o), ctx);
-> > +	ctx->write(path, len + 1, ctx);
->
-> Error handling?
-Will fix it, thanks.
+Oh agreed, this is all very "use case" specific.  I'm making all of the
+following statements based on the specific hardware we use, and assuming
+'stability' based on the kernel/hardware passing a number of tests.
 
->
-> > +	free_page((unsigned long)buf);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int dump_one_vma(struct mm_struct *mm,
-> > +			struct vm_area_struct *vma, struct cpt_context *ctx)
-> > +{
-> > +	struct cpt_vma_image *v;
-> > +	unsigned long addr;
-> > +	int page_num;
-> > +	int err;
-> > +
-> > +	v = kzalloc(sizeof(*v), GFP_KERNEL);
-> > +	if (!v)
-> > +		return -ENOMEM;
-> > +
-> > +	v->cpt_len = sizeof(*v);
-> > +	v->cpt_type = CPT_OBJ_VMA;
-> > +	v->cpt_hdrlen = sizeof(*v);
-> > +	v->cpt_content = CPT_CONTENT_ARRAY;
-> > +
-> > +	v->cpt_start = vma->vm_start;
-> > +	v->cpt_end = vma->vm_end;
-> > +	v->cpt_flags = vma->vm_flags;
-> > +	if (vma->vm_flags & VM_HUGETLB) {
-> > +		eprintk("huge TLB VMAs are still not supported\n");
-> > +		kfree(v);
-> > +		return -EINVAL;
-> > +	}
-> > +	v->cpt_pgprot = vma->vm_page_prot.pgprot;
-> > +	v->cpt_pgoff = vma->vm_pgoff;
-> > +	v->cpt_file = CPT_NULL;
-> > +	v->cpt_vma_type = CPT_VMA_TYPE_0;
-> > +
-> > +	page_num = count_vma_pages(vma, ctx);
-> > +	if (page_num < 0) {
-> > +		kfree(v);
-> > +		return -EINVAL;
-> > +	}
->
-> AFAICS, since count_vma_pages only supports pages with PD_COPY, and since
-> get_page_desc() tags text segment pages (file-mapped and not anonymous
-> since not written to) as PD_ABSENT, no executable is checkpointable. So,
-> where is the trick? Am I completely missing something about page mapping?
-Oh, that's my fault, I have sent wrong version. I will send new patchset with 
-correct page mapping today.
+>>     *  no security holes [in options I enable]
+> Similarly for "no security holes".  At *BEST*, you'll get "no *known* *major*
+> security holes", unless you feel like auditing the entire source tree.  There's
+> a whole slew of bugs that we can't even agree if they *are* security bugs or
+> just plain bugs - see Linus's rant on the subject a few months back.
 
->
-> > +	v->cpt_page_num = page_num;
-> > +
-> > +	if (vma->vm_file) {
-> > +		v->cpt_file = 0;
-> > +		v->cpt_vma_type = CPT_VMA_FILE;
-> > +	}
-> > +
-> > +	ctx->write(v, sizeof(*v), ctx);
->
-> Error handling?
-Yes, will add it.
+Agreed. No *known* *major* security holes is fine here.
 
->
-> > +	kfree(v);
-> > +
-> > +	if (vma->vm_file) {
-> > +		err = cpt_dump_dentry(&vma->vm_file->f_path, ctx);
-> > +		if (err < 0)
-> > +			return err;
-> > +	}
-> > +
-> > +	for (addr = vma->vm_start; addr < vma->vm_end; addr += PAGE_SIZE) {
-> > +		struct page_desc pd;
-> > +		struct cpt_page_block pgb;
-> > +
-> > +		page_get_desc(vma, addr, &pd, ctx);
-> > +
-> > +		if (pd.type == PD_FUNKEY || pd.type == PD_ABSENT) {
-> > +			eprintk("dump_one_vma: funkey page\n");
-> > +			return -EINVAL;
-> > +		}
-> > +
-> > +		pgb.cpt_start = addr;
-> > +		pgb.cpt_end = addr + PAGE_SIZE;
-> > +		dump_page_block(vma, &pgb, ctx);
->
-> Error handling?
-Yeap, thanks.
+>>     *  works reliably, under load/stress.
+> And you win the trifecta - I don't think we've *ever* shipped a Linux kernel
+> that worked reliably under the proper "beat on the scheduler/VM corner case"
+> load/stress testing.  Again, the best you can hope for is "doesn't fall over
+> under non-pathological non-corner-case loads when sufficient resources are
+> available so the kernel has a fighting chance".  Doing 'make -j100' on a
+> single Core2 Duo is gonna be painful, no matter what.
 
->
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int cpt_dump_mm_context(struct mm_struct *mm, struct cpt_context
-> > *ctx) +{
-> > +#ifdef CONFIG_X86
-> > +	if (mm->context.size) {
-> > +		struct cpt_obj_bits b;
-> > +		int size;
-> > +
-> > +		mutex_lock(&mm->context.lock);
-> > +
-> > +		b.cpt_type = CPT_OBJ_BITS;
-> > +		b.cpt_len = sizeof(b);
-> > +		b.cpt_content = CPT_CONTENT_MM_CONTEXT;
-> > +		b.cpt_size = mm->context.size * LDT_ENTRY_SIZE;
-> > +
-> > +		ctx->write(&b, sizeof(b), ctx);
-> > +
-> > +		size = mm->context.size * LDT_ENTRY_SIZE;
-> > +
-> > +		ctx->write(mm->context.ldt, size, ctx);
->
-> Error handling?
-Thanks again!
+Well the typical tests outlined above are:
 
->
-> > +
-> > +		mutex_unlock(&mm->context.lock);
-> > +	}
-> > +#endif
-> > +	return 0;
-> > +}
-> > +
-> > +int cpt_dump_mm(struct task_struct *tsk, struct cpt_context *ctx)
-> > +{
-> > +	struct mm_struct *mm = tsk->mm;
-> > +	struct cpt_mm_image *v;
-> > +	struct vm_area_struct *vma;
-> > +	int err;
-> > +
-> > +	v = kzalloc(sizeof(*v), GFP_KERNEL);
-> > +	if (!v)
-> > +		return -ENOMEM;
-> > +
-> > +	v->cpt_len = sizeof(*v);
-> > +	v->cpt_type = CPT_OBJ_MM;
-> > +	v->cpt_hdrlen = sizeof(*v);
-> > +	v->cpt_content = CPT_CONTENT_ARRAY;
-> > +
-> > +	down_read(&mm->mmap_sem);
-> > +	v->cpt_start_code = mm->start_code;
-> > +	v->cpt_end_code = mm->end_code;
-> > +	v->cpt_start_data = mm->start_data;
-> > +	v->cpt_end_data = mm->end_data;
-> > +	v->cpt_start_brk = mm->start_brk;
-> > +	v->cpt_brk = mm->brk;
-> > +	v->cpt_start_stack = mm->start_stack;
-> > +	v->cpt_start_arg = mm->arg_start;
-> > +	v->cpt_end_arg = mm->arg_end;
-> > +	v->cpt_start_env = mm->env_start;
-> > +	v->cpt_end_env = mm->env_end;
-> > +	v->cpt_def_flags = mm->def_flags;
-> > +	v->cpt_flags = mm->flags;
-> > +	v->cpt_map_count = mm->map_count;
-> > +
-> > +	err = ctx->write(v, sizeof(*v), ctx);
-> > +	kfree(v);
-> > +
-> > +	if (err) {
-> > +		eprintk("error during writing mm\n");
-> > +		goto err_up;
-> > +	}
-> > +
-> > +	for (vma = mm->mmap; vma; vma = vma->vm_next) {
-> > +		if ((err = dump_one_vma(mm, vma, ctx)) != 0)
-> > +			goto err_up;
-> > +	}
-> > +
-> > +	err = cpt_dump_mm_context(mm, ctx);
-> > +
-> > +err_up:
-> > +	up_read(&mm->mmap_sem);
-> > +
-> > +	return err;
-> > +}
-> > +
->
-> [...]
->
-> Louis
+    *  random size file creation/deletion, lots of files
+    *  memory allocation, and freeing up again
+    *  stressing the CPU a bit with one process, then
+       forking 25-50 processes to (trivially) test scheduler
+    *  testing network I/O by rapidly/concurrently fetching
+       many small files via HTTP, and a few large ones.
+
+The end goal is simply to get a server which doesn't crash under
+"normal" operating conditions.  The bugs I referred to in
+e1000/forcedeth and r8169 either stop it PXE booting (a requirement for
+our environment!) or can *easily* be made to oops / stop working.
+
+Alex
+
