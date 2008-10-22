@@ -1,47 +1,52 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757339AbYJVUMt (ORCPT <rfc822;ralf@linux-mips.org>);
-	Wed, 22 Oct 2008 16:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759008AbYJVUMc
+	id S1756670AbYJVVfv (ORCPT <rfc822;ralf@linux-mips.org>);
+	Wed, 22 Oct 2008 17:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbYJVVfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 16:12:32 -0400
-Received: from www1.email.si ([81.24.97.10]:56529 "EHLO www1.email.si"
+	Wed, 22 Oct 2008 17:35:41 -0400
+Received: from www1.email.si ([81.24.97.10]:46708 "EHLO www1.email.si"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758869AbYJVUMb convert rfc822-to-8bit (ORCPT
+	id S1751575AbYJVVfk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 16:12:31 -0400
-Date: Thu, 23 Oct 2008 03:39:05 +0800
+	Wed, 22 Oct 2008 17:35:40 -0400
+Date: Thu, 23 Oct 2008 05:08:14 +0800
 Mime-version: 1.0
-Subject: The best money generator onlinebiz...
-From: Joshua Mactives <robinj2003@terra.es>
+Subject: Get Paid $200 by just working 60mins per Day !!!
+From: Cris Hooper <amierj01@gmail.com>
 To: <linux-kernel@vger.kernel.org>
-Message-Id: <1023339.PTUKSPLE@terra.es>
-Reply-To: bliezonline@walla.com
+Message-Id: <102358.YJBETRIB@gmail.com>
+Reply-To: william_2000@terra.es
 Content-Type: text/plain; charset=US-ASCII;
 	format=flowed
 Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757339AbYJVUMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756670AbYJVVfv@vger.kernel.org>
 
-Greetings!
+ Shallom,
 
-    Do you have the ambition to earn money online?
-  You can have it!Learn how to process customer rebates from home
-  and earn $15 each..
+     Do you want to be paid using your computer?
+  All you need to do is to fill in online form
+  and submit them daily..
 
-   This program is legimate,this is already guaranteed.It contains
- those 7 years of packaging including what you need to know and
- what you need to do to be very successful.All you have to do is
- follow the step by steps directions,then start earning money
- within 24 hours..
 
-   You are guaranteed to work this company.There is no approval
- process so will be assigned ID and start working right away!
-   So act now,dont waste your time.It is my pleasure help people
- like you..
+ click the link below..
+ http://u76.org/qb4
 
- Wishing your success,
- http://u76.org/qjh
- Joshua Mactives
+    This is amazing..This is not the traditional
+ home typist job,a lot of of people do not know
+ the system of making money..this is unique,its
+ a way of entering simple data online.The company
+ involved with this business want you to become
+ affiliate with them.Giving you step by step
+ instructions on how you become a successful
+ home typist person..Then log in to your account
+ and see how much you have made  anytime of a day...
+
+
+  Hopefully yours,
+  Cris Hooper
+  http://u76.org/qb4
+
 
