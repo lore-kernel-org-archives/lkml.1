@@ -1,70 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbYJVQI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbYJVQIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757267AbYJVQI2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 12:08:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757136AbYJVQHl
+	id S1756652AbYJVQIE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 12:08:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756900AbYJVQH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 12:07:41 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:4808 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757129AbYJVQHj (ORCPT
+	Wed, 22 Oct 2008 12:07:29 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40872 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756440AbYJVQH2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 12:07:39 -0400
-Date: Wed, 22 Oct 2008 11:07:36 -0500
-From: Mike Miller <mike.miller@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       LKML-scsi <linux-scsi@vger.kernel.org>
-Subject: [PATCH 1/1] cciss: new hardware support
-Message-ID: <20081022160736.GA11270@roadking.ldev.net>
+	Wed, 22 Oct 2008 12:07:28 -0400
+Date: Wed, 22 Oct 2008 19:07:26 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Greg Kroah-Hartman <greg@kroah.com>
+cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
+Subject: [PATCH 5/5] w35und: remove the no-op pa_stall_execution macro
+Message-ID: <Pine.LNX.4.64.0810221907030.1679@melkki.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch 1 of 1
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-This patch adds support for 2 new SAS/SATA controllers. Please consider this
-for inclusion.
+The pa_stall_execution() macro doesn't do anything so remove it from driver
+code.
 
-Signed-off-by: Mike Miller <mike.miller@hp.com>
+Cc: Pavel Machek <pavel@suse.cz>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ drivers/staging/winbond/phy_calibration.c |   23 -----------------------
+ drivers/staging/winbond/wbhal_f.h         |    1 -
+ 2 files changed, 0 insertions(+), 24 deletions(-)
 
-diff --git a/Documentation/cciss.txt b/Documentation/cciss.txt
-index 8244c64..48d80d9 100644
---- a/Documentation/cciss.txt
-+++ b/Documentation/cciss.txt
-@@ -26,6 +26,8 @@ This driver is known to work with the following cards:
- 	* SA P410i
- 	* SA P411
- 	* SA P812
-+	* SA P712m
-+	* SA P711m
+diff --git a/drivers/staging/winbond/phy_calibration.c b/drivers/staging/winbond/phy_calibration.c
+index 76183b2..e83c2f2 100644
+--- a/drivers/staging/winbond/phy_calibration.c
++++ b/drivers/staging/winbond/phy_calibration.c
+@@ -431,7 +431,6 @@ void _rxadc_dc_offset_cancellation_winbond(hw_data_t *phw_data, u32 frequency)
  
- Detecting drive failures:
- -------------------------
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index eb68f39..3c7316c 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -96,6 +96,8 @@ static const struct pci_device_id cciss_pci_device_id[] = {
- 	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSE,     0x103C, 0x3245},
- 	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSE,     0x103C, 0x3247},
- 	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSE,     0x103C, 0x3249},
-+	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSE,     0x103C, 0x324A},
-+	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSE,     0x103C, 0x324B},
- 	{PCI_VENDOR_ID_HP,     PCI_ANY_ID,	PCI_ANY_ID, PCI_ANY_ID,
- 		PCI_CLASS_STORAGE_RAID << 8, 0xffff << 8, 0},
- 	{0,}
-@@ -133,6 +135,8 @@ static struct board_type products[] = {
- 	{0x3245103C, "Smart Array P410i", &SA5_access},
- 	{0x3247103C, "Smart Array P411", &SA5_access},
- 	{0x3249103C, "Smart Array P812", &SA5_access},
-+	{0x324A103C, "Smart Array P712m", &SA5_access},
-+	{0x324B103C, "Smart Array P711m", &SA5_access},
- 	{0xFFFF103C, "Unknown Smart Array", &SA5_access},
- };
+ 	val |= MASK_ADC_DC_CAL_STR;
+ 	hw_set_dxx_reg(phw_data, REG_MODE_CTRL, val);
+-	pa_stall_execution(US); // *MUST* wait for a while
  
+ 	// e. The result are shown in "adc_dc_cal_i[8:0] and adc_dc_cal_q[8:0]"
+ #ifdef _DEBUG
+@@ -522,7 +521,6 @@ void _txidac_dc_offset_cancellation_winbond(hw_data_t *phw_data)
+ 	reg_mode_ctrl |= (MASK_CALIB_START|2|(2<<2));
+ 	hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
+ 	PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
+-	pa_stall_execution(US);
+ 
+ 	hw_get_dxx_reg(phw_data, 0x5C, &reg_dc_cancel);
+ 	PHY_DEBUG(("[CAL]    DC_CANCEL (read) = 0x%08X\n", reg_dc_cancel));
+@@ -536,7 +534,6 @@ void _txidac_dc_offset_cancellation_winbond(hw_data_t *phw_data)
+ 		reg_dc_cancel &= ~(0x03FF);
+ 		PHY_DEBUG(("[CAL]    DC_CANCEL (write) = 0x%08X\n", reg_dc_cancel));
+ 		hw_set_dxx_reg(phw_data, 0x5C, reg_dc_cancel);
+-		pa_stall_execution(US);
+ 
+ 		hw_get_dxx_reg(phw_data, REG_CALIB_READ2, &val);
+ 		PHY_DEBUG(("[CAL]    CALIB_READ2 = 0x%08X\n", val));
+@@ -552,7 +549,6 @@ void _txidac_dc_offset_cancellation_winbond(hw_data_t *phw_data)
+ 		reg_dc_cancel |= (1 << CANCEL_DC_I_SHIFT);
+ 		PHY_DEBUG(("[CAL]    DC_CANCEL (write) = 0x%08X\n", reg_dc_cancel));
+ 		hw_set_dxx_reg(phw_data, 0x5C, reg_dc_cancel);
+-		pa_stall_execution(US);
+ 
+ 		hw_get_dxx_reg(phw_data, REG_CALIB_READ2, &val);
+ 		PHY_DEBUG(("[CAL]    CALIB_READ2 = 0x%08X\n", val));
+@@ -600,7 +596,6 @@ void _txidac_dc_offset_cancellation_winbond(hw_data_t *phw_data)
+ 	reg_mode_ctrl &= ~MASK_CALIB_START;
+ 	hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
+ 	PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
+-	pa_stall_execution(US);
+ }
+ 
+ ///////////////////////////////////////////////////////
+@@ -651,7 +646,6 @@ void _txqdac_dc_offset_cacellation_winbond(hw_data_t *phw_data)
+ 	reg_mode_ctrl |= (MASK_CALIB_START|3);
+ 	hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
+ 	PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
+-	pa_stall_execution(US);
+ 
+ 	hw_get_dxx_reg(phw_data, 0x5C, &reg_dc_cancel);
+ 	PHY_DEBUG(("[CAL]    DC_CANCEL (read) = 0x%08X\n", reg_dc_cancel));
+@@ -665,11 +659,9 @@ void _txqdac_dc_offset_cacellation_winbond(hw_data_t *phw_data)
+ 		reg_dc_cancel &= ~(0x001F);
+ 		PHY_DEBUG(("[CAL]    DC_CANCEL (write) = 0x%08X\n", reg_dc_cancel));
+ 		hw_set_dxx_reg(phw_data, 0x5C, reg_dc_cancel);
+-		pa_stall_execution(US);
+ 
+ 		hw_get_dxx_reg(phw_data, REG_CALIB_READ2, &val);
+ 		PHY_DEBUG(("[CAL]    CALIB_READ2 = 0x%08X\n", val));
+-		pa_stall_execution(US);
+ 
+ 		iqcal_image_i = _s13_to_s32(val & 0x00001FFF);
+ 		iqcal_image_q = _s13_to_s32((val & 0x03FFE000) >> 13);
+@@ -682,11 +674,9 @@ void _txqdac_dc_offset_cacellation_winbond(hw_data_t *phw_data)
+ 		reg_dc_cancel |= (1 << CANCEL_DC_Q_SHIFT);
+ 		PHY_DEBUG(("[CAL]    DC_CANCEL (write) = 0x%08X\n", reg_dc_cancel));
+ 		hw_set_dxx_reg(phw_data, 0x5C, reg_dc_cancel);
+-		pa_stall_execution(US);
+ 
+ 		hw_get_dxx_reg(phw_data, REG_CALIB_READ2, &val);
+ 		PHY_DEBUG(("[CAL]    CALIB_READ2 = 0x%08X\n", val));
+-		pa_stall_execution(US);
+ 
+ 		iqcal_image_i = _s13_to_s32(val & 0x00001FFF);
+ 		iqcal_image_q = _s13_to_s32((val & 0x03FFE000) >> 13);
+@@ -732,7 +722,6 @@ void _txqdac_dc_offset_cacellation_winbond(hw_data_t *phw_data)
+ 	reg_mode_ctrl &= ~MASK_CALIB_START;
+ 	hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
+ 	PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
+-	pa_stall_execution(US);
+ }
+ 
+ //20060612.1.a 20060718.1 Modify
+@@ -792,12 +781,10 @@ u8 _tx_iq_calibration_loop_winbond(hw_data_t *phw_data,
+ 			reg_mode_ctrl |= (MASK_CALIB_START|0x02|2<<2);
+ 			hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
+ 			PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
+-			pa_stall_execution(US);
+ 
+ 			// b.
+ 			hw_get_dxx_reg(phw_data, REG_CALIB_READ1, &val);
+ 			PHY_DEBUG(("[CAL]    CALIB_READ1 = 0x%08X\n", val));
+-			pa_stall_execution(US);
+ 
+ 			iqcal_tone_i0 = _s13_to_s32(val & 0x00001FFF);
+ 			iqcal_tone_q0 = _s13_to_s32((val & 0x03FFE000) >> 13);
+@@ -813,7 +800,6 @@ u8 _tx_iq_calibration_loop_winbond(hw_data_t *phw_data,
+ 			reg_mode_ctrl &= ~MASK_CALIB_START;
+ 			hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
+ 			PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
+-			pa_stall_execution(US);
+ 
+ 			// d. Set iqcal_mode[1:0] to 0x3 and set "calib_start" to 0x1 to
+ 			//    enable "IQ alibration Mode II"
+@@ -823,12 +809,10 @@ u8 _tx_iq_calibration_loop_winbond(hw_data_t *phw_data,
+ 			reg_mode_ctrl |= (MASK_CALIB_START|0x03);
+ 			hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
+ 			PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
+-			pa_stall_execution(US);
+ 
+ 			// e.
+ 			hw_get_dxx_reg(phw_data, REG_CALIB_READ1, &val);
+ 			PHY_DEBUG(("[CAL]    CALIB_READ1 = 0x%08X\n", val));
+-			pa_stall_execution(US);
+ 
+ 			iqcal_tone_i = _s13_to_s32(val & 0x00001FFF);
+ 			iqcal_tone_q = _s13_to_s32((val & 0x03FFE000) >> 13);
+@@ -1282,13 +1266,11 @@ u8 _rx_iq_calibration_loop_winbond(hw_data_t *phw_data, u16 factor, u32 frequenc
+ 		if( !hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl) )//20060718.1 modify
+ 			return 0;
+ 		PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
+-		pa_stall_execution(US);
+ 
+ 		reg_mode_ctrl &= ~MASK_IQCAL_MODE;
+ 		reg_mode_ctrl |= (MASK_CALIB_START|0x1);
+ 		hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
+ 		PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
+-		pa_stall_execution(US);  //Should be read out after 450us
+ 
+ 		// c.
+ 		hw_get_dxx_reg(phw_data, REG_CALIB_READ1, &val);
+@@ -1697,7 +1679,6 @@ unsigned char adjust_TXVGA_for_iq_mag(hw_data_t *phw_data)
+ 		phy_set_rf_data(phw_data, 5, ((5<<24)|current_txvga) );
+ 		phw_data->txvga_setting_for_cal = current_txvga;
+ 
+-		//pa_stall_execution(30000);//Sleep(30);
+ 		msleep(30); // 20060612.1.a
+ 
+ 		if( !hw_get_dxx_reg(phw_data, REG_MODE_CTRL, &reg_mode_ctrl) ) // 20060718.1 modify
+@@ -1714,18 +1695,14 @@ unsigned char adjust_TXVGA_for_iq_mag(hw_data_t *phw_data)
+ 		hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
+ 		PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
+ 
+-		//pa_stall_execution(US);
+ 		udelay(1); // 20060612.1.a
+ 
+-		//pa_stall_execution(300);//Sleep(30);
+ 		udelay(300); // 20060612.1.a
+ 
+ 		// b.
+ 		hw_get_dxx_reg(phw_data, REG_CALIB_READ1, &val);
+ 
+ 		PHY_DEBUG(("[CAL]    CALIB_READ1 = 0x%08X\n", val));
+-		//pa_stall_execution(US);
+-		//pa_stall_execution(300);//Sleep(30);
+ 		udelay(300); // 20060612.1.a
+ 
+ 		iqcal_tone_i0 = _s13_to_s32(val & 0x00001FFF);
+diff --git a/drivers/staging/winbond/wbhal_f.h b/drivers/staging/winbond/wbhal_f.h
+index 9f0436b..239c301 100644
+--- a/drivers/staging/winbond/wbhal_f.h
++++ b/drivers/staging/winbond/wbhal_f.h
+@@ -111,7 +111,6 @@ unsigned char hal_set_LED(  phw_data_t pHwData,  u32 Mode ); // 20061108 for WPS
+ #define hal_ibss_disconnect(_A) hal_stop_sync_bss(_A)
+ #define hal_join_request_stop(_A)
+ unsigned char	hal_idle(  phw_data_t pHwData );
+-#define pa_stall_execution( _A )	//OS_SLEEP( 1 )
+ #define hw_get_cxx_reg( _A, _B, _C )
+ #define hw_set_cxx_reg( _A, _B, _C )
+ #define hw_get_dxx_reg( _A, _B, _C )	hal_get_dxx_reg( _A, _B, (u32 *)_C )
+-- 
+1.5.3.7
+
