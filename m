@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756115AbYJVKEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbYJVKFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756115AbYJVKEe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 06:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYJVKEY
+	id S1755872AbYJVKFo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 06:05:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbYJVKFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 06:04:24 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:51166 "EHLO
-	VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753652AbYJVKEY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 06:04:24 -0400
-X-BigFish: VPS-34(zz1432R98dR4015M1805M936fOzzzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0K94XAZ-01-ISK-01
-Date: Wed, 22 Oct 2008 12:03:37 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: remove superfluous dmi_ignore_irq0_timer_override
-	quirks
-Message-ID: <20081022100337.GA13400@alberich.amd.com>
-References: <20081016105706.GC29183@alberich.amd.com>
+	Wed, 22 Oct 2008 06:05:34 -0400
+Received: from venema.h4ckr.net ([217.24.1.135]:46646 "EHLO venema.h4ckr.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751727AbYJVKFd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 06:05:33 -0400
+Message-ID: <3448.194.45.26.221.1224669931.squirrel@webmail.madwifi.org>
+In-Reply-To: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com>
+References: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com>
+Date: Wed, 22 Oct 2008 12:05:31 +0200 (CEST)
+Subject: Re: Release of Atheros 802.11n USB Linux driver
+From: "Michael Renzmann" <mrenzmann@madwifi.org>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "Linux-Kernel" <linux-kernel@vger.kernel.org>,
+       "Johannes Berg" <johannes@sipsolutions.net>
+User-Agent: SquirrelMail/1.4.9a
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20081016105706.GC29183@alberich.amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 22 Oct 2008 10:04:11.0885 (UTC) FILETIME=[8821A9D0:01C9342D]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 12:57:06PM +0200, Andreas Herrmann wrote:
-> The problem should be solved with commits:
-> 
-> x86: SB600: skip IRQ0 override if it is not routed to INT2 of IOAPIC
-> x86: SB450: skip IRQ0 override if it is not routed to INT2 of IOAPIC
-> 
-> IMHO it does not make sense to check within a dmi-quirk
-> whether an early-quirk was applied. Boot sequence is as follows:
-> 
-> acpi_boot_table_init()   (it applies dmi-quirks)
-> ...
-> early_quirks()           (detect bogus IRQ0 override)
-> ...
-> acpi_boot_init()         (setup IO APIC)
-> 
-> Thus with current code we will always get following warnings for
-> Laptops that have this dmi_ignore_irq0_timer_override dmi quirk:
-> 
->   WARNING: at arch/x86/kernel/acpi/boot.c:1410
->   dmi_ignore_irq0_timer_override+0x30/0x60()
->   ati_ixp4x0 quirk not complete.
-> 
-> ... just because the early-quirk (ati_ixp4x0) was not yet executed.
-> 
+Hi all.
 
-Hi Ingo,
+Luis R. Rodriguez wrote:
+> We would like to see our Atheros 802.11n USB Linux driver upstream
+> however we need help with this so we are releasing our Atheros 11n USB
+> Otus Linux driver under the ISC to the community. The goal is to work
+> with the community to help move this forward upstream. We are hoping
+> for community help and leadership on this (*cough*).
 
-How are chances that this patch will go into tip-tree?
-I'd like to see this fix in 2.6.28.
+We have set up a mailing list for the new driver:
+otus-devel@lists.madwifi-project.org.
 
+No subscription required. However, the first post from unsubscribed users
+will be held back for moderation (which usually takes 24 to 48h) to
+protect the list from spam. The delay can be avoided by subscribing [1].
 
-Thanks,
+Please contact me if anything goes wrong with the list.
 
-Andreas
+Bye, Mike
 
+[1] https://lists.madwifi-project.org/mailman/listinfo/otus-devel
 
