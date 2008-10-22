@@ -1,48 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754720AbYJVUGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757396AbYJVUK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754720AbYJVUGg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 16:06:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYJVUG1
+	id S1757396AbYJVUK2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 16:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbYJVUKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 16:06:27 -0400
-Received: from www1.email.si ([81.24.97.10]:49965 "EHLO www1.email.si"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751701AbYJVUG1 convert rfc822-to-8bit (ORCPT
+	Wed, 22 Oct 2008 16:10:18 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42626 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754197AbYJVUKR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 16:06:27 -0400
-X-Greylist: delayed 1088 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Oct 2008 16:06:26 EDT
-Date: Thu, 23 Oct 2008 03:38:26 +0800
-Mime-version: 1.0
-Subject: Expand your wallet,...and do the process online..
-From: Lila Bird <robinj2003@terra.es>
-To: <linux-kernel@vger.kernel.org>
-Message-Id: <1023338.JFMVIBTM@terra.es>
-Reply-To: robinj2003@terra.es
-Content-Type: text/plain; charset=US-ASCII;
-	format=flowed
-Content-Transfer-Encoding: 7BIT
+	Wed, 22 Oct 2008 16:10:17 -0400
+Date: Wed, 22 Oct 2008 22:17:43 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alok Kataria <akataria@vmware.com>, Andi Kleen <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>
+Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is set.
+Message-ID: <20081022201743.GR12825@one.firstfloor.org>
+References: <1224552902.2640.88.camel@alok-dev1> <874p36fflp.fsf@basil.nowhere.org> <1224607284.6161.22.camel@alok-dev1> <20081021174008.GH12825@one.firstfloor.org> <1224612294.6161.43.camel@alok-dev1> <20081021181536.GI12825@one.firstfloor.org> <1224616236.6161.60.camel@alok-dev1> <20081021192746.GJ12825@one.firstfloor.org> <1224703427.13953.8.camel@alok-dev1> <20081022192622.GA30930@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081022192622.GA30930@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings!
+> the sync check is there to check the _offset_ between CPUs. CONSTANT_TSC 
+> is not a guarantee that the TSC will be coherent across all CPUs.
 
-    Do you have the ambition to earn money online?
-  You can have it!Learn how to process customer rebates from home
-  and earn $15 each..
+I cannot find a quote for it in the docs now, but iirc the AMD 
+definition of the bit guarantees offset, aka full synchronization
+over the system.
 
-   This program is legimate,this is already guaranteed.It contains
- those 7 years of packaging including what you need to know and
- what you need to do to be very successful.All you have to do is
- follow the step by steps directions,then start earning money
- within 24 hours..
-
-   You are guaranteed to work this company.There is no approval
- process so will be assigned ID and start working right away!
-   So act now,dont waste your time.It is my pleasure help people
- like you..
-
- Wishing your success,
- http://u76.org/q41
- Lila Bird
-
+-Andi
