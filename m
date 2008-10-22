@@ -1,100 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756406AbYJVJox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbYJVJpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756406AbYJVJox (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 05:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbYJVJlh
+	id S1753112AbYJVJpZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 05:45:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbYJVJmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 05:41:37 -0400
-Received: from mga09.intel.com ([134.134.136.24]:47879 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755298AbYJVJlg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 05:41:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,463,1220252400"; 
-   d="scan'208";a="351088229"
-Date: Wed, 22 Oct 2008 16:45:15 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Cc: "achiang@hp.com" <achiang@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "greg@kroah.com" <greg@kroah.com>, "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: [PATCH 15/16 v6] PCI: document the SR-IOV sysfs entries
-Message-ID: <20081022084515.GO3773@yzhao12-linux.sh.intel.com>
-References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com>
+	Wed, 22 Oct 2008 05:42:24 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:35988 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756009AbYJVJmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 05:42:23 -0400
+Date: Wed, 22 Oct 2008 11:44:54 +0200
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Roel Kluin <roel.kluin@gmail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [GIT] mfd pull request
+Message-ID: <20081022094453.GB2864@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081022083809.GA3757@yzhao12-linux.sh.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Document the SR-IOV sysfs entries.
+Hi Linus,
 
-Cc: Alex Chiang <achiang@hp.com>
-Cc: Grant Grundler <grundler@parisc-linux.org>
-Cc: Greg KH <greg@kroah.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Roland Dreier <rdreier@cisco.com>
-Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+Could you please pull this final rc1 patchset for mfd ?
+It contains one build fix from Stephen, for the wm8350.
 
----
- Documentation/ABI/testing/sysfs-bus-pci |   33 +++++++++++++++++++++++++++++++
- 1 files changed, 33 insertions(+), 0 deletions(-)
+The following changes since commit 2515ddc6db8eb49a79f0fe5e67ff09ac7c81eab4:
+  Paul Mundt (1):
+        binfmt_elf_fdpic: Update for cputime changes.
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-pci b/Documentation/ABI/testing/sysfs-bus-pci
-index ceddcff..41cce8f 100644
---- a/Documentation/ABI/testing/sysfs-bus-pci
-+++ b/Documentation/ABI/testing/sysfs-bus-pci
-@@ -9,3 +9,36 @@ Description:
- 		that some devices may have malformatted data.  If the
- 		underlying VPD has a writable section then the
- 		corresponding section of this file will be writable.
-+
-+What:		/sys/bus/pci/devices/.../iov/enable
-+Date:		October 2008
-+Contact:	Yu Zhao <yu.zhao@intel.com>
-+Description:
-+		This file appears when a device has the SR-IOV capability.
-+		It holds the status of the capability, and could be written
-+		(0/1) to disable and enable the capability if the PF driver
-+		supports this operation.
-+
-+What:		/sys/bus/pci/devices/.../iov/initialvfs
-+Date:		October 2008
-+Contact:	Yu Zhao <yu.zhao@intel.com>
-+Description:
-+		This file appears when a device has the SR-IOV capability.
-+		It holds the number of initial Virtual Functions (read-only).
-+
-+What:		/sys/bus/pci/devices/.../iov/totalvfs
-+Date:		October 2008
-+Contact:	Yu Zhao <yu.zhao@intel.com>
-+Description:
-+		This file appears when a device has the SR-IOV capability.
-+		It holds the number of total Virtual Functions (read-only).
-+
-+
-+What:		/sys/bus/pci/devices/.../iov/numvfs
-+Date:		October 2008
-+Contact:	Yu Zhao <yu.zhao@intel.com>
-+Description:
-+		This file appears when a device has the SR-IOV capability.
-+		It holds the number of available Virtual Functions, and
-+		could be written (1 ~ InitialVFs) to change the number if
-+		the PF driver supports this operation.
+are available in the git repository at:
+
+  git://git.o-hand.com/linux-mfd for-next
+
+Arjan van de Ven (1):
+      mfd: use pci_ioremap_bar() in sm501
+
+David Brownell (3):
+      mfd: twl4030 IRQ handling update
+      mfd: rtc-twl4030 driver
+      mfd: twl4030-gpio driver
+
+Mark Brown (1):
+      mfd: Don't store volatile bits in WM8350 register cache
+
+Roel Kluin (1):
+      mfd: check for platform_get_irq() return value in sm501
+
+Stephen Rothwell (1):
+      mfd: don't export wm3850 static functions
+
+ drivers/gpio/Kconfig        |    7 +
+ drivers/gpio/Makefile       |    1 +
+ drivers/gpio/twl4030-gpio.c |  521 ++++++++++++++++++++++++++++++
+ drivers/mfd/Makefile        |    2 +-
+ drivers/mfd/sm501.c         |   25 +-
+ drivers/mfd/twl4030-core.c  |  421 +-----------------------
+ drivers/mfd/twl4030-irq.c   |  743 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/mfd/wm8350-core.c   |    5 +-
+ drivers/rtc/Kconfig         |   10 +
+ drivers/rtc/Makefile        |    1 +
+ drivers/rtc/rtc-twl4030.c   |  564 ++++++++++++++++++++++++++++++++
+ include/linux/i2c/twl4030.h |   28 +-
+ 12 files changed, 1897 insertions(+), 431 deletions(-)
+ create mode 100644 drivers/gpio/twl4030-gpio.c
+ create mode 100644 drivers/mfd/twl4030-irq.c
+ create mode 100644 drivers/rtc/rtc-twl4030.c
+
 -- 
-1.5.6.4
-
+Intel Open Source Technology Centre
+http://oss.intel.com/
