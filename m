@@ -1,44 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYJVQOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756995AbYJVQO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbYJVQOO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 12:14:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbYJVQNz
+	id S1756995AbYJVQO2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 12:14:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbYJVQN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 12:13:55 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:43576 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753555AbYJVQNx (ORCPT
+	Wed, 22 Oct 2008 12:13:57 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:61986 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753527AbYJVQNy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 12:13:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=hAOupzAcK6BSqd60gvmv+LEsiecVfF6e9Tx3SEh9JfZEvvIWKytLy/0c1h/iQrFvBS
-         tZrvveXvYVFKtzudIjpNE5O5oFa89euUNgvyUSflCslmw5E+eikh2iD/q1LwrAnVZ3ZR
-         aVVYBoEUV2KVl1FHEAM8mzaBz0K8sMNzuuJvs=
-Message-ID: <43e72e890810220913s10debf60q8b5275ee92f03bd3@mail.gmail.com>
-Date: Wed, 22 Oct 2008 09:13:51 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: "Florian Fainelli" <florian@openwrt.org>
-Subject: Re: Release of Atheros 802.11n USB Linux driver
-Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       "Johannes Berg" <johannes@sipsolutions.net>
-In-Reply-To: <200810221028.18087.florian@openwrt.org>
+	Wed, 22 Oct 2008 12:13:54 -0400
+Date: Wed, 22 Oct 2008 18:13:52 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+cc: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tim.bird@am.sony.com
+Subject: Re: Subject: [PATCH 12/16] Squashfs: header files
+In-Reply-To: <E1KqrTX-0001y4-JE@dylan>
+Message-ID: <Pine.LNX.4.64.0810221801570.5634@vixen.sonytel.be>
+References: <E1KqrTX-0001y4-JE@dylan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com>
-	 <200810221028.18087.florian@openwrt.org>
-X-Google-Sender-Auth: 1c3ddb0ba0020e4e
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-483830937-1224691556=:5634"
+Content-ID: <Pine.LNX.4.64.0810221806000.5634@vixen.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m9MGELdq004266
 
-On Wed, Oct 22, 2008 at 1:28 AM, Florian Fainelli <florian@openwrt.org> wrote:> Hi Luis,>> Le Wednesday 22 October 2008 04:04:17 Luis R. Rodriguez, vous avez Ã©crit :>> We would like to see our Atheros 802.11n USB Linux driver upstream>> however we need help with this so we are releasing our Atheros 11n USB>> Otus Linux driver under the ISC to the community. The goal is to work>> with the community to help move this forward upstream. We are hoping>> for community help and leadership on this (*cough*).>> This is great news ! Any plans on supporting older sticks as well, like> AR5005UG/X based sticks ?
-Yeah, we've already provided documentation to a few select developers.
-   Luisÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---584349381-483830937-1224691556=:5634
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0810221806001.5634@vixen.sonytel.be>
+
+On Fri, 17 Oct 2008, Phillip Lougher wrote:
+> --- /dev/null
+> +++ b/fs/squashfs/squashfs.h
+
+> +#ifdef SQUASHFS_TRACE
+> +#define TRACE(s, args...)	printk(KERN_NOTICE "SQUASHFS: "s, ## args)
+> +#else
+> +#define TRACE(s, args...)	{}
+> +#endif
+
+Just use
+
+    #define TRACE(s, args...)	pr_debug("SQUASHFS: "s, ## args)
+
+so we always get printf()-format checking, irrespective of whether DEBUG is
+defined or not.
+
+If you really want to keep the KERN_NOTICE (and the SQUASHFS_TRACE), you can
+use
+
+    #ifdef SQUASHFS_TRACE
+    #define TRACE(s, args...)	pr_notice("SQUASHFS: "s, ## args)
+    #else
+    #define TRACE(s, args...)	pr_debug("SQUASHFS: "s, ## args)
+    #endif
+
+> +#define ERROR(s, args...)	printk(KERN_ERR "SQUASHFS error: "s, ## args)
+                                ^^^^^^^^^^^^^^^^
+				pr_err(
+> +
+> +#define SERROR(s, args...)	\
+> +		do { \
+> +			if (!silent) \
+> +				printk(KERN_ERR "SQUASHFS error: "s, ## args);\
+                                ^^^^^^^^^^^^^^^^
+				pr_err(
+> +		} while (0)
+
+(yes, I know SERROR() no longer exists in CVS)
+
+> +
+> +#define WARNING(s, args...)	printk(KERN_WARNING "SQUASHFS: "s, ## args)
+                                ^^^^^^^^^^^^^^^^
+				pr_warning(
+
+> --- /dev/null
+> +++ b/include/linux/squashfs_fs.h
+
+> +/* Filesystem flags */
+> +#define SQUASHFS_NOI			0
+> +#define SQUASHFS_NOD			1
+> +#define SQUASHFS_NOF			3
+> +#define SQUASHFS_NO_FRAG		4
+> +#define SQUASHFS_ALWAYS_FRAG		5
+> +#define SQUASHFS_DUPLICATE		6
+> +#define SQUASHFS_EXPORT			7
+> +
+> +#define SQUASHFS_BIT(flag, bit)		((flag >> bit) & 1)
+> +
+> +#define SQUASHFS_UNCOMPRESSED_INODES(flags)	SQUASHFS_BIT(flags, \
+> +						SQUASHFS_NOI)
+> +
+> +#define SQUASHFS_UNCOMPRESSED_DATA(flags)	SQUASHFS_BIT(flags, \
+> +						SQUASHFS_NOD)
+> +
+> +#define SQUASHFS_UNCOMPRESSED_FRAGMENTS(flags)	SQUASHFS_BIT(flags, \
+> +						SQUASHFS_NOF)
+> +
+> +#define SQUASHFS_NO_FRAGMENTS(flags)		SQUASHFS_BIT(flags, \
+> +						SQUASHFS_NO_FRAG)
+> +
+> +#define SQUASHFS_ALWAYS_FRAGMENTS(flags)	SQUASHFS_BIT(flags, \
+> +						SQUASHFS_ALWAYS_FRAG)
+> +
+> +#define SQUASHFS_DUPLICATES(flags)		SQUASHFS_BIT(flags, \
+> +						SQUASHFS_DUPLICATE)
+> +
+> +#define SQUASHFS_EXPORTABLE(flags)		SQUASHFS_BIT(flags, \
+> +						SQUASHFS_EXPORT)
+> +
+> +#define SQUASHFS_MKFLAGS(noi, nod, nof, no_frag, always_frag, \
+> +		duplicate_checking, exportable)	(noi | (nod << 1) \
+                                                               ^
+> +		| (nof << 3) | (no_frag << 4) | (always_frag << 5) | \
+                          ^                ^                    ^
+> +		(duplicate_checking << 6) | (exportable << 7))
+                                       ^                   ^
+For the shifts, you can use the SQUASHFS_* filesystem flags defined above
+instead of the hardcoded numbers.
+
+SQUASHFS_MKFLAGS() isn't used by the kernel, only by the tools (mksquashfs)?
+
+> +/* meta index cache */
+> +#define SQUASHFS_META_INDEXES	(SQUASHFS_METADATA_SIZE / sizeof(unsigned int))
+                                                                         ^^^^^^^^^^^^
+I was wondering whether a meta index is an `unsigned int' or an `__le32', but I
+couldn't find it easily.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village Â· Da Vincilaan 7-D1 Â· B-1935 Zaventem Â· Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 Â· RPR Brussels
+Fortis Â· BIC GEBABEBB Â· IBAN BE41293037680010
+---584349381-483830937-1224691556=:5634--
