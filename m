@@ -1,61 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbYJVQ6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756207AbYJVREh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755215AbYJVQ6j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 12:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbYJVQ6b
+	id S1756207AbYJVREh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:04:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbYJVRES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 12:58:31 -0400
-Received: from outbound-mail-144.bluehost.com ([67.222.38.34]:37724 "HELO
-	outbound-mail-144.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751949AbYJVQ6a (ORCPT
+	Wed, 22 Oct 2008 13:04:18 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:62954 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752906AbYJVRER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 12:58:30 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=r96C+jHAsBzVdPgfuwDzZhdU7fzwK3CUiuC2aHMxYVPeatN7KWyt6tmw+7GRSIWy7Zq0Bw8GGB+Xs6bC34ro7FXii7JVmC7lzHkBqORNXKVb9ZQoz/lP6O2OCKHxuXf3;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: eranian@gmail.com
-Subject: Re: [patch 00/24] perfmon3: introduction
-Date: Wed, 22 Oct 2008 09:58:22 -0700
-User-Agent: KMail/1.10.1 (Linux/2.6.26.5-45.fc9.x86_64; KDE/4.1.2; x86_64; ; )
-Cc: "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <48f8a9a3.0437560a.656a.57c5@mx.google.com> <20081021.212502.41487120.davem@davemloft.net> <7c86c4470810220139h49269138g844194bd5db3d5c2@mail.gmail.com>
-In-Reply-To: <7c86c4470810220139h49269138g844194bd5db3d5c2@mail.gmail.com>
+	Wed, 22 Oct 2008 13:04:17 -0400
+Message-ID: <48FF5C62.3020008@oracle.com>
+Date: Wed, 22 Oct 2008 10:01:22 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Yu Zhao <yu.zhao@intel.com>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "greg@kroah.com" <greg@kroah.com>, "mingo@elte.hu" <mingo@elte.hu>
+Subject: Re: [PATCH 16/16 v6] PCI: document the new PCI boot parameters
+References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com>	<20081022084531.GP3773@yzhao12-linux.sh.intel.com> <200810220827.33758.bjorn.helgaas@hp.com>
+In-Reply-To: <200810220827.33758.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810220958.23266.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010202.48FF5C67.0087:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, October 22, 2008 1:39 am stephane eranian wrote:
-> As you know, I have been involved with this project for quite some time
-> now. I have been through many ups and downs trying to get this merged
-> upstream. So rest assured of my full determination to bring this to the
-> point of success.
+Bjorn Helgaas wrote:
+> On Wednesday 22 October 2008 02:45:31 am Yu Zhao wrote:
+>> Document the new PCI[x86] boot parameters.
+>>
+>> Cc: Alex Chiang <achiang@hp.com>
+>> Cc: Grant Grundler <grundler@parisc-linux.org>
+>> Cc: Greg KH <greg@kroah.com>
+>> Cc: Ingo Molnar <mingo@elte.hu>
+>> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+>> Cc: Matthew Wilcox <matthew@wil.cx>
+>> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+>> Cc: Roland Dreier <rdreier@cisco.com>
+>> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+>>
+>> ---
+>>  Documentation/kernel-parameters.txt |   10 ++++++++++
+>>  1 files changed, 10 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+>> index 53ba7c7..5482ae0 100644
+>> --- a/Documentation/kernel-parameters.txt
+>> +++ b/Documentation/kernel-parameters.txt
+>> @@ -1677,6 +1677,16 @@ and is between 256 and 4096 characters. It is defined in the file
+>>  		cbmemsize=nn[KMG]	The fixed amount of bus space which is
+>>  				reserved for the CardBus bridge's memory
+>>  				window. The default value is 64 megabytes.
+>> +		assign-mmio=[dddd:]bb	[X86] reassign memory resources of all
+>> +				devices under bus [dddd:]bb (dddd is the domain
+>> +				number and bb is the bus number).
+>> +		assign-pio=[dddd:]bb	[X86] reassign io port resources of all
 
-I've been following this at a high level since using perfmon on ia64 several 
-years ago.  I have to say I'm impressed that you've put up with all the review 
-and code churn (which to me often seemed arbitrary) without burning out.
+"io" in text should be "IO" or "I/O".  (Small "io" is OK as a parameter placeholder.)
 
-Honestly I think it sucks that perfmonN isn't upstream yet supporting all the 
-various architectures you've been working with.  You've obviously proven to be 
-a much more responsive and end-user focused maintainer than several of the 
-other fly by night profiling infrastructures we currently have in the kernel 
-(the long abandoned oprofile and perfctr come to mind).
+>> +				devices under bus [dddd:]bb (dddd is the domain
+>> +				number and bb is the bus number).
+>> +		align-mmio=[dddd:]bb:dd.f  [X86] relocate memory resources of a
+>> +				device to minimum PAGE_SIZE alignment (dddd is
+>> +				the domain number and bb, dd and f is the bus,
 
-As I mentioned at KS, I think it's about time we had a single point of contact 
-for profiling in the kernel, to avoid the massive functional duplication we 
-have today and make sure some kind of code sharing occurs; seems to me you'd 
-be a good candidate for that sort of job.
+				                                   are the bus,
 
-But regardless, I think it's about time this got merged.  Linus?  Andrew?
+>> +				device and function number).
+>>  
+>>  	pcie_aspm=	[PCIE] Forcibly enable or disable PCIe Active State Power
+>>  			Management.
+> 
+> I think it's nicer to have the documentation change included in the
+> patch that implements the change.  For example, I think this and
+> patch 9/16 "add boot option to align ..." should be folded into
+> a single patch.  And similarly for the other documentation patches.
+> 
+> Bjorn
 
-Thanks,
-Jesse
