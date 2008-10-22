@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753061AbYJVORE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbYJVOR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753061AbYJVORE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 10:17:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYJVOQw
+	id S1755441AbYJVOR2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 10:17:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYJVORM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 10:16:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56792 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752616AbYJVOQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 10:16:51 -0400
-Date: Wed, 22 Oct 2008 16:16:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: remove redundant KERN_DEBUG on pr_debug
-Message-ID: <20081022141626.GB26372@elte.hu>
-References: <1224077824-28102-1-git-send-email-gustavo@las.ic.unicamp.br>
+	Wed, 22 Oct 2008 10:17:12 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:51378 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754338AbYJVORK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 10:17:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=dMLO9cDVi7KETqHm/wXK9xUCh/Bn008Y1p2KJe9MCgYZVz65Hdn8T5jbKpQNWCXCb3
+         M+Vf+5ZlOElpeaWVg6OuLZF14460dre2BGE+zWohC2Xx5KigoyX8VEatQSLBpBqtnAKq
+         1oZpCcTe5tGmzT294rJ70dt/Ds+BsR4LxDuoc=
+Message-ID: <5d6222a80810220717u758b69a9x5bdbc32385c81c52@mail.gmail.com>
+Date: Wed, 22 Oct 2008 12:17:07 -0200
+From: "Glauber Costa" <glommer@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH -tip] x86: do_boot_cpu - check if we have ESR register
+Cc: "Cyrill Gorcunov" <gorcunov@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+In-Reply-To: <20081022141354.GA26372@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1224077824-28102-1-git-send-email-gustavo@las.ic.unicamp.br>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.1287]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+References: <20081022140009.GA9639@localhost> <20081022141354.GA26372@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Oct 22, 2008 at 12:13 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+>
+>> We should touch ESR register if only we have it.
+>> The patch fixes the problem mentoined here
+>>
+>>       http://lkml.org/lkml/2008/10/17/147
+>>
+>> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+>> CC: Glauber Costa <glommer@gmail.com>
+>
+>> -             apic_write(APIC_ESR, 0);
+>> -             apic_read(APIC_ESR);
+>> +             if (APIC_INTEGRATED(apic_version[phys_apicid])) {
+>> +                     apic_write(APIC_ESR, 0);
+>> +                     apic_read(APIC_ESR);
+>> +             }
+>
+> i'm wondering - is the server there really that old, that it has no
+> integrated lapic? I.e. it's an i486 SMP box or so? Or perhaps some
+> other, weird SMP box?
 
-* Gustavo F. Padovan <gustavo@las.ic.unicamp.br> wrote:
+It's a Xeon, so probably just weird.
 
-> pr_debug don't need KERN_DEBUG.
-> 
-> Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
-> ---
->  arch/x86/kernel/acpi/boot.c    |    2 +-
->  arch/x86/kernel/setup_percpu.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+>
+>        Ingo
+>
 
-applied, thanks Gustavo!
 
-	Ingo
+
+-- 
+Glauber  Costa.
+"Free as in Freedom"
+http://glommer.net
+
+"The less confident you are, the more serious you have to act."
