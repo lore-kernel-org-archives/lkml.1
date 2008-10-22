@@ -1,65 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbYJVNFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbYJVNOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756175AbYJVNFw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 09:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYJVNFp
+	id S1754899AbYJVNOU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 09:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYJVNOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 09:05:45 -0400
-Received: from mail.gmx.net ([213.165.64.20]:44385 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752043AbYJVNFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 09:05:44 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18A7Bl+PPMAOE5Pdqa0X9xyIndkt2B40TOFmvk+Sg
-	cFepfHcVClZkS9
-Subject: Re: [PATCH 0/4] pending scheduler updates
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081022124240.GD25536@elte.hu>
-References: <20081017172701.047939625@chello.nl>
-	 <20081020120538.GD10594@elte.hu>
-	 <20081021173529.GG11679@linux.vnet.ibm.com>
-	 <20081022094019.GG12453@elte.hu>
-	 <1224669821.6871.16.camel@marge.simson.net>
-	 <1224671528.7511.11.camel@marge.simson.net> <20081022121007.GG8095@elte.hu>
-	 <1224679082.12294.15.camel@marge.simson.net>
-	 <20081022124240.GD25536@elte.hu>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 22 Oct 2008 15:05:12 +0200
-Message-Id: <1224680712.15904.21.camel@marge.simson.net>
+	Wed, 22 Oct 2008 09:14:07 -0400
+Received: from sh.osrg.net ([192.16.179.4]:33330 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752925AbYJVNOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 09:14:06 -0400
+Date: Wed, 22 Oct 2008 22:13:39 +0900
+To: tiwai@suse.de
+Cc: fujita.tomonori@lab.ntt.co.jp, svens@stackframe.org, joerg.roedel@amd.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: swiotlb_alloc_coherent: allocated memory is out of range for
+ device
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <s5hmygwn89z.wl%tiwai@suse.de>
+References: <s5htzb4nbnd.wl%tiwai@suse.de>
+	<20081022202809M.fujita.tomonori@lab.ntt.co.jp>
+	<s5hmygwn89z.wl%tiwai@suse.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.65
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20081022221321J.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-22 at 14:42 +0200, Ingo Molnar wrote:
-> * Mike Galbraith <efault@gmx.de> wrote:
-> 
-> > > > With that patch, pgsql+oltp scales perfectly.
-> > > 
-> > > hm, tempting.
+On Wed, 22 Oct 2008 14:06:48 +0200
+Takashi Iwai <tiwai@suse.de> wrote:
+
+> At Wed, 22 Oct 2008 20:29:24 +0900,
+> FUJITA Tomonori wrote:
 > > 
-> > I disagree.  Postgres's scaling problem is trivially corrected by 
-> > twiddling knobs (or whatnot). [...]
+> > On Wed, 22 Oct 2008 12:53:58 +0200
+> > Takashi Iwai <tiwai@suse.de> wrote:
+> > 
+> > > At Sun, 19 Oct 2008 12:09:32 +0200,
+> > > Sven Schnelle wrote:
+> > > > 
+> > > > Hi List,
+> > > > 
+> > > > my kernel dies while probing parport with the following last words:
+> > > > 
+> > > > [    3.672199] parport_pc 00:0b: reported by Plug and Play ACPI
+> > > > [    3.677969] parport0: PC-style at 0x378 (0x778), irq 7, dma 3 [PCSPP,TRISTATE,COMPAT,EPP,ECP,DMA]
+> > > > [    3.687691] hwdev DMA mask = 0x0000000000ffffff, dev_addr = 0x0000000020000000
+> > > > [    3.694916] Kernel panic - not syncing: swiotlb_alloc_coherent: allocated memory is out of range for device
+> > > > 
+> > > > I haven't started a bisection yet, but this seems to be introduced
+> > > > somewhere between 2.6.26 and 2.6.27, at least 2.6.26 was working without
+> > > > problems. The dmesg log + config was obtained from a kernel compiled
+> > > > from git on 10/16/2008.
+> > > 
+> > > This bug hits me, too.  Looks like swiotlb assumes that the alloc caller
+> > > must set GFP_DMA appropriately by itself since GFP_DMA hack was
+> > > removed.  The patch below should fix this particular case.
+> > 
+> > This happens with 2.6.27, right? GFP_DMA hack was removed post
+> > 2.6.27. What kernel version do you hit this problem?
 > 
-> okay, then we need to document it a bit more: what knobs need twiddling 
-> to make it scale perfectly?
+> 2.6.27 works fine, at least on my machine.
+> Likely a post-2.6.27 regression.
 
-Twiddle sched_wakeup_granularity_ns or just turn FAIR_SLEEPERS off for
-best pgsql+oltp scalability.﻿  Pgsql+oltp collapse is delicate.  It
-doesn't take much to send it one way or the other.  Cut preempt a wee
-bit, and it can snap right into shape.
+Ok, it makes sense because I don't see any major changes to swiotlb
+between 2.6.26 and 2.6.27.
 
-I think we need to penalize sleepers a wee bit as load climbs in general
-though, everybody begins to like preemption less as load increases.
-Mysql+oltp improves as well, and it loves preempt at modest load.
 
-	-Mike
+> > Post 2.6.27, x86's alloc_coherent works a bit differently, but neither
+> > require the caller set to GFP flag. arch/x86/kernel/pci-dma.c does
+> > with 2.6.27 and asm-x86/dma-mapping.h does with post 2.6.27.
+> > 
+> > 
+> > > HOWEVER: the fundamental problem appears to be in swiotlb itself.
+> > > It assumes that iotlb pages are in DMA area.  But, in this case, the
+> > > driver sets 24bit DMA (as of PnP) while iotlb pages are allocated 
+> > > under 32bit DMA via alloc_bootmem_low_pages().  This doesn't work, of
+> > > course.
+> > 
+> > If a device has 24bit dma mask, alloc_coherent is supposed to use
+> > GFP_DMA.
+> 
+> Yes.  But what happens if __get_free_pages() fails?  Then you get the
+> same problem.
 
+Yeah, but __get_free_pages() with GFP_DMA fails, what can we do in
+such case? You think that it's a good idea to change swiotlb to
+allocates < 16MB iotlb pages? I'm not sure it's worth to do
+that. 24bit dma mask devices are disappearing.
+
+About the bug that you hit, I suspect that dma_map_coherent() in
+asm-x86/dma-mapping.h doesn't set gfp flags correctly.
+
+dma_map_coherent() calls swiotlb_alloc_coherent with the flags GFP_DMA
+set? parport driver set dev->coherent_dma_mask properly?
+
+
+> > > So, even adding GFP_DMA works mostly, it has still potentially
+> > > breakage when you can't get the page and fall back to iotlb pages,
+> > > just like the panic above.
+> > > 
+> > > Also, the removal of GFP_DMA hack is a bad idea.  For example, if a
+> > > device requires 28bit DMA mask, it doesn't set always GFP_DMA for
+> > > allocation because pages in ZONE_NORMAL may be inside that DMA mask.
+> > > Normal allocators allow this behavior but swiotlb allocator doesn't.
+> > > (Correct me if I'm wrong here -- I haven't followed much the recent
+> > >  changes.)
+> > 
+> > 28bit DMA mask is supposed to be handled properly. Firstly, we try
+> > with DMA_32BIT_MASK and if an allocated address is not fit for 28bit
+> > mask, we try GFP_DMA again.
+> 
+> Yep, dma_generic_alloc_coherent() works like that for ages.
+> My point is about swiotlb_alloc_coherent(), and I don't see the
+> relevant code there...
+
+Oops, you are right. swiotlb doesn't try again with GFP_DMA now. Joerg
+changed the GFP_DMA retry mechanism work only for pci-nommu.c It broke
+GART IOMMU and x86's swiotlb. I modified dma_generic_alloc_coherent to
+work with pci-nommu and GART. I promised Ingo to fix swiotlb too but I
+forgot about it.
+
+Sorry, I'll fix this soon but your case (28bit mask) is supposed to
+work without the GFP_DMA retry mechanism. As I wrote above, I suspect
+that dma flag is not set correctly.
+
+
+> > > Last but not least, I think panic() in allocation error path is too
+> > > strict.  Usually returning NULL isn't always fatal error, so give some
+> > > more chance to debug, e.g. by calling WARN() (or whatever) instead of
+> > > panic().
+> > 
+> > Yeah, this was discussed several times. The problem is that many
+> > drivers assume that dma mapping operations, map_single, map_sg, and
+> > map_coherent, always succeed and doesn't even check the errors. So we
+> > have some panic() in IOMMU drivers to prevent really bad events like
+> > data corruption.
+> 
+> Well, but also for alloc_coherent()?  Returning NULL from
+> dma_alloc_coherent() is really no fatal error.  If the caller doesn't
+> check the return value, then it's a more serious bug, I'd say.
+
+Probably, the majority check dma_alloc_coherent failure. I'll check
+this later to remove panic() in alloc_coherent in IOMMUs.
