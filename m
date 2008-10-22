@@ -1,104 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYJVSFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756808AbYJVSIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbYJVSFA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 14:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbYJVSEu
+	id S1756808AbYJVSIw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 14:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYJVSIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 14:04:50 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:47464 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752738AbYJVSEt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 14:04:49 -0400
-Message-ID: <48FF6A5D.5060905@cs.helsinki.fi>
-Date: Wed, 22 Oct 2008 21:01:01 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+	Wed, 22 Oct 2008 14:08:43 -0400
+Received: from gcore.biz ([212.69.172.75]:39829 "HELO gcore.biz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751712AbYJVSIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 14:08:43 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Oct 2008 14:08:42 EDT
+Date: Wed, 22 Oct 2008 20:03:01 +0200
+From: Wolfgang Kroworsch <wolfgang@kroworsch.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] vt: incomplete initialization of vc_tab_stop
+Message-ID: <20081022180301.GA10627@kroworsch.de>
+References: <20081018114929.GA25554@kroworsch.de> <20081022112705.10f9aa4a@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Christoph Lameter <cl@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] SLUB - define OO_ macro instead of hardcoded numbers
-References: <20081022161836.GG9639@localhost> <Pine.LNX.4.64.0810220926130.7633@quilx.com> <20081022163530.GH9639@localhost> <20081022165354.GI9639@localhost> <20081022172103.GJ9639@localhost> <Pine.LNX.4.64.0810221037320.7633@quilx.com> <48FF6800.20705@cs.helsinki.fi> <20081022175827.GL9639@localhost>
-In-Reply-To: <20081022175827.GL9639@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081022112705.10f9aa4a@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov wrote:
-> Something like that?
+On Wed, Oct 22, 2008 at 11:27:05AM +0100 Alan Cox wrote:
+> On Sat, 18 Oct 2008 13:49:31 +0200 Wolfgang Kroworsch wrote:
+>
+> > Problem 1 (see patch below):
+> >   vc_tab_stop is declared as an array of 8 unsigned ints in struct
+> >   vc_data in include/linux/console_struct.h .
+> >   In drivers/char/vt.c only 5 of these 8 unsigned ints get initialized
+> >   leading to unintended tabulator placement on displays with more than
+> >   160 columns text.
 > 
-> 		- Cyrill -
-> ---
-> 
->  mm/slub.c |   18 +++++++++++-------
->  1 file changed, 11 insertions(+), 7 deletions(-)
-> 
-> Index: linux-2.6.git/mm/slub.c
-> ===================================================================
-> --- linux-2.6.git.orig/mm/slub.c	2008-10-22 21:11:26.000000000 +0400
-> +++ linux-2.6.git/mm/slub.c	2008-10-22 21:57:11.000000000 +0400
-> @@ -153,6 +153,10 @@
->  #define ARCH_SLAB_MINALIGN __alignof__(unsigned long long)
->  #endif
->  
-> +#define OO_SHIFT	16
-> +#define OO_MASK		((1 << OO_SHIFT) - 1)
-> +#define MAX_OBJS_PER_PAGE	65535 /* see struct page.objects */
-> +
->  /* Internal SLUB flags */
->  #define __OBJECT_POISON		0x80000000 /* Poison object */
->  #define __SYSFS_ADD_DEFERRED	0x40000000 /* Not yet visible via sysfs */
-> @@ -290,7 +294,7 @@ static inline struct kmem_cache_order_ob
->  						unsigned long size)
->  {
->  	struct kmem_cache_order_objects x = {
-> -		(order << 16) + (PAGE_SIZE << order) / size
-> +		(order << OO_SHIFT) + (PAGE_SIZE << order) / size
->  	};
->  
->  	return x;
-> @@ -298,12 +302,12 @@ static inline struct kmem_cache_order_ob
->  
->  static inline int oo_order(struct kmem_cache_order_objects x)
->  {
-> -	return x.x >> 16;
-> +	return x.x >> OO_SHIFT;
->  }
->  
->  static inline int oo_objects(struct kmem_cache_order_objects x)
->  {
-> -	return x.x & ((1 << 16) - 1);
-> +	return x.x & OO_MASK;
->  }
->  
->  #ifdef CONFIG_SLUB_DEBUG
-> @@ -764,8 +768,8 @@ static int on_freelist(struct kmem_cache
->  	}
->  
->  	max_objects = (PAGE_SIZE << compound_order(page)) / s->size;
-> -	if (max_objects > 65535)
-> -		max_objects = 65535;
-> +	if (max_objects > MAX_OBJS_PER_PAGE)
-> +		max_objects = MAX_OBJS_PER_PAGE;
->  
->  	if (page->objects != max_objects) {
->  		slab_err(s, page, "Wrong number of objects. Found %d but "
-> @@ -1819,8 +1823,8 @@ static inline int slab_order(int size, i
->  	int rem;
->  	int min_order = slub_min_order;
->  
-> -	if ((PAGE_SIZE << min_order) / size > 65535)
-> -		return get_order(size * 65535) - 1;
-> +	if ((PAGE_SIZE << min_order) / size > MAX_OBJS_PER_PAGE)
-> +		return get_order(size * MAX_OBJS_PER_PAGE) - 1;
->  
->  	for (order = max(min_order,
->  				fls(min_objects * size - 1) - PAGE_SHIFT);
+> Seems sensible enough - but need a Signed-off-by line to apply.
 
-Looks good to me. If Christoph ACKs this, please send me a proper patch 
-with your sign-off and I'll merge it to slab.git.
+Thx, Wolfgang
 
-		Pekka
+Signed-off-by: Wolfgang Kroworsch <wolfgang@kroworsch.de>
+---
+
+ drivers/char/vt.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index d8f83e2..a5af607 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -1644,7 +1644,10 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
+ 	vc->vc_tab_stop[1]	=
+ 	vc->vc_tab_stop[2]	=
+ 	vc->vc_tab_stop[3]	=
+-	vc->vc_tab_stop[4]	= 0x01010101;
++	vc->vc_tab_stop[4]	=
++	vc->vc_tab_stop[5]	=
++	vc->vc_tab_stop[6]	=
++	vc->vc_tab_stop[7]	= 0x01010101;
+ 
+ 	vc->vc_bell_pitch = DEFAULT_BELL_PITCH;
+ 	vc->vc_bell_duration = DEFAULT_BELL_DURATION;
+@@ -1935,7 +1938,10 @@ static void do_con_trol(struct tty_struct *tty, struct vc_data *vc, int c)
+ 					vc->vc_tab_stop[1] =
+ 					vc->vc_tab_stop[2] =
+ 					vc->vc_tab_stop[3] =
+-					vc->vc_tab_stop[4] = 0;
++					vc->vc_tab_stop[4] =
++					vc->vc_tab_stop[5] =
++					vc->vc_tab_stop[6] =
++					vc->vc_tab_stop[7] = 0;
+ 			}
+ 			return;
+ 		case 'm':
