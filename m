@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758796AbYJVVBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756439AbYJVVDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758796AbYJVVBS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 17:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbYJVVBD
+	id S1756439AbYJVVDM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 17:03:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbYJVVC5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 17:01:03 -0400
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:51887 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752357AbYJVVBC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 17:01:02 -0400
-Date: Wed, 22 Oct 2008 13:59:54 -0700 (PDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au, hugh@veritas.com,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: SLUB defrag pull request?
-In-Reply-To: <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu>
-Message-ID: <Pine.LNX.4.64.0810221341500.26671@quilx.com>
-References: <1223883004.31587.15.camel@penberg-laptop>
- <Pine.LNX.4.64.0810131227120.20511@blonde.site> <200810132354.30789.nickpiggin@yahoo.com.au>
- <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu> <E1KpOOL-0003Vf-9y@pomaz-ex.szeredi.hu>
- <48F378C6.7030206@linux-foundation.org> <E1KpOjX-0003dt-AY@pomaz-ex.szeredi.hu>
- <48FC9CCC.3040006@linux-foundation.org> <E1Krz4o-0002Fi-Pu@pomaz-ex.szeredi.hu>
- <48FCCC72.5020202@linux-foundation.org> <E1KrzgK-0002QS-Os@pomaz-ex.szeredi.hu>
- <48FCD7CB.4060505@linux-foundation.org> <E1Ks0QX-0002aC-SQ@pomaz-ex.szeredi.hu>
- <48FCE1C4.20807@linux-foundation.org> <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu>
- <48FE6306.6020806@linux-foundation.org> <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu>
- <Pine.LNX.4.64.0810220822500.30851@quilx.com> <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu>
- <Pine.LNX.4.64.0810221252570.3562@quilx.com> <E1Ksk3g-00027r-Lp@pomaz-ex.szeredi.hu>
- <Pine.LNX.4.64.0810221315080.26671@quilx.com> <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu>
+	Wed, 22 Oct 2008 17:02:57 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:34924 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752544AbYJVVC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 17:02:56 -0400
+Date: Wed, 22 Oct 2008 14:02:54 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
+       akpm@linux-foundation.org, dipankar@in.ibm.com,
+       josht@linux.vnet.ibm.com, schamp@sgi.com, niv@us.ibm.com,
+       dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
+       andi@firstfloor.org, tglx@linutronix.de
+Subject: Re: [PATCH, RFC] v7 scalable classic RCU implementation
+Message-ID: <20081022210254.GE6766@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080915160221.GA9660@linux.vnet.ibm.com> <20080923235340.GA12166@linux.vnet.ibm.com> <20081010160930.GA9777@linux.vnet.ibm.com> <48F21D58.3000404@colorfullife.com> <20081012224629.GA7353@linux.vnet.ibm.com> <48F38D73.8040804@colorfullife.com> <20081015011143.GE6874@linux.vnet.ibm.com> <48F5A638.8020003@colorfullife.com> <20081015152637.GA6739@linux.vnet.ibm.com> <48FF73C7.90709@colorfullife.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Spam-Score: -2.5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48FF73C7.90709@colorfullife.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Oct 2008, Miklos Szeredi wrote:
-
->> That is the impression that I got from you too. I have listed the options
->> to get a reliable reference to an object and you seem to just skip over
->> it.
+On Wed, Oct 22, 2008 at 08:41:11PM +0200, Manfred Spraul wrote:
+> Paul E. McKenney wrote:
+>> Only once per such CPU every grace period -- seems in the noise to me.
+>> But I should revisit, as I have changed things quite a bit since I
+>> made that decision many weeks ago.  ;-)
+>>
+>>   
+> Another small point:
+> Does your implementation support rcu_check_callbacks() with cpu != 
+> smp_processor_id()?
+> I don't think my locking would support it properly.
+> Thus:
+> - cpu != smp_processor_id() doesn't work.
+> - stack space for a useless parameter.
+> - the explicit cpu parameter prevents the rcu code from using 
+> get_cpu_var().
 >
-> Because you don't _need_ a reliable reference to access the contents
-> of the dentry.  The dentry is still there after being freed, as long
-> as the underlying slab is there and isn't being reused for some other
-> purpose.  But you can easily ensure that from the slab code.
+> What about modifying the rcu_check_callbacks() prototype? I'd propose to 
+> remove the cpu parameter.
 
-With the two callbacks that I described that would take the global 
-lock? That was already discussed before. Please read! It does not scale 
-and the lock would have to be acquired before objects in a slab page are 
-scanned and handled in any way.
+That would work fine for rcutree.c.  If I were to invoke
+rcu_check_callbacks() remotely, I would use something like
+smp_call_function() to make it happen.
 
-Without that locking any other processor can go into reclaim and start 
-evicting the dentries that we are operating upon.
+Hmmm...  Looks like rcu_pending is also always called with its cpu
+parameter set to the current CPU, and same for rcu_needs_cpu().
+And given that all the external uses of rcu_check_callbacks() are
+of the following form:
 
-Freeing in the slab sense means that a kfree ran to get rid of the 
-object.
+	if (rcu_pending(cpu))
+		rcu_check_callbacks(cpu, whatever);
+
+
+perhaps rcu_pending() should be an internal-to-RCU API invoked from
+rcu_check_callbacks().
+
+Thoughts?
+
+							Thanx, Paul
