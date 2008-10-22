@@ -1,123 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbYJVSXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756977AbYJVSYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756042AbYJVSXd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 14:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbYJVSXZ
+	id S1756977AbYJVSYU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 14:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbYJVSYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 14:23:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:64961 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751131AbYJVSXY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 14:23:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=GR6LY0h26BRay8k+nfGeM1Z2tNYo+vDcQcDdzOEzzS52XLRs4eCyQfU3jQm1zB1oaM
-         ETk8gQUoHD1yifIbwXHDrDORswFZNBH54uUpD3ccqXp1GJYzVBiZpK7EW1LjV3OHbl59
-         Dcz4ln2dBBl2+KwTRduvQZWPJUssonNKU7Fx8=
-Message-ID: <d9def9db0810221123s3cc27f6fhafcdb686df4a5bd9@mail.gmail.com>
-Date: Wed, 22 Oct 2008 20:23:22 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       em28xx@mcentral.de,
-       "Linux and Kernel Video" <video4linux-list@redhat.com>
-Subject: Re: [PATCH] em28xx patches against the latest git tree
-In-Reply-To: <d9def9db0810221038g156871e1u200abb90b774ad28@mail.gmail.com>
+	Wed, 22 Oct 2008 14:24:04 -0400
+Received: from nebensachen.de ([195.34.83.29]:45975 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751232AbYJVSYC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 14:24:02 -0400
+X-Hashcash: 1:20:081022:jens.axboe@oracle.com::ZNiMIoRSVrthFsgn:00000000000000000000000000000000000000001ZyG
+X-Hashcash: 1:20:081022:linux-ide@vger.kernel.org::2bBh6+CWyTJ2iE59:0000000000000000000000000000000000001AfJ
+X-Hashcash: 1:20:081022:linux-kernel@vger.kernel.org::MgIIZAt7CZqInr5f:0000000000000000000000000000000007U/p
+X-Hashcash: 1:20:081022:tj@kernel.org::0GJj4mCgom+eqgu/:0000JtIC
+X-Hashcash: 1:20:081022:jeff@garzik.org::MZ9tBihHlNUH3FbY:001KuT
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, tj@kernel.org,
+       jeff@garzik.org
+Subject: Re: [PATCH 1/2] libata: get rid of ATA_MAX_QUEUE loop in ata_qc_complete_multiple()
+References: <1224661243-7929-1-git-send-email-jens.axboe@oracle.com>
+	<1224661243-7929-2-git-send-email-jens.axboe@oracle.com>
+Date: Wed, 22 Oct 2008 20:23:50 +0200
+Message-ID: <878wsgqyix.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d9def9db0810221034v3bf4dabt6aa905b8a3ebd5a@mail.gmail.com>
-	 <d9def9db0810221038g156871e1u200abb90b774ad28@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 7:38 PM, Markus Rechberger
-<mrechberger@gmail.com> wrote:
-> On Wed, Oct 22, 2008 at 7:34 PM, Markus Rechberger
-> <mrechberger@gmail.com> wrote:
->> Following patch adds the latest em28xx driver from mcentral.de.
->>
->> merging mcentral.de/hg/~mrec/em28xx-new with upstream kernel
->>
->> * adding VBI support to most VBI capable devices
->> * radio support for cx25843 based devices
->> * extra cx25843 driver (registers match the em28xx configuration in
->> order to support proper VBI)
->> * all videostandards and inputs are tested with cx25843 based devices
->> * adding alternative audio driver for em28xx devices (independent
->> audio transfer, not depending on oss/alsa)
->> * adding em28xx-webcam support for videology webcams
->> * adding em28xx-audioep audio driver for alternate number 1 - if
->> vendor specific and not USB audio conform
->> * adding s921 driver (ISDB-T 1Seg support tunneling parameters through
->> DVB-T API setting specific registers to auto)
->> * adding xc3028 mostly original sourcecode from the manufacturer (most
->> recent version), merged xc3028/xc3028l into
->>  one external firmware blob - important for signal quality
->> * adding xc5000 mostly original sourcecode from the manufacturer (most
->> recent version) - important for signal quality
->> * adding lgdt3304, although currently disabled
->> * remote control handling *works* but is broken by design and disabled
->> since different rc5/rc6/nec remotes return
->>  different values. Handling can be done using interrupt transfers too (TODO)
->> * fixed a couple of bugs in the em28xx-audio driver which can lead to
->> system hangs.
->>
-
-one more thing which I forgot it also adds support for em2888 based
-which also support
-flash beside analog TV, digital TV and radio
-
->> ----
->>
->> as for testing:
->> * analog TV: patched tvtime (for analog TV) version available on
->> mcentral.de which supports 1. software rendering 2. digital
->> audio/alsa/aad
->> * FM radio: gqradio from mcentral.de, there's also an older radio
->> patch for vlc available.
->> * DVB-T: all applications should work with it
->> * ISDB-T: relevant for China and Brazil only, can be used with
->> dvbtune, dvbscan (the channel file cannot be used due problems with
->> the characters), for transferring the MPEG-TS stream dvbstream,
->> dvbsnoop, for playback gstreamer/mplayer (h264/aac isn't supported
->> well with it).
->>
->> commit history is available at:
->> http://mcentral.de/http://git.kernel.org/?p=linux/kernel/git/mrec/linux-2.6.git;a=commit;h=f1be9ae8f8489a6598417a194e0899ac00c7530ehg/~mrec/em28xx-new
->>
+Jens Axboe <jens.axboe@oracle.com> wrote:
+> We very rarely (if ever) complete more than one command in the
+> sactive mask at the time, even for extremely high IO rates. So
+> looping over the entire range of possible tags is pointless,
+> instead use __ffs() to just find the completed tags directly.
 >
-> this should be:
-> http://mcentral.de/hg/~mrec/em28xx-new/shortlog
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  drivers/ata/libata-core.c |   15 +++++++++------
+>  1 files changed, 9 insertions(+), 6 deletions(-)
 >
->> This patch adds a separate instance of the driver to the git
->> repository, not affecting anything existing.
->>
->> the full patch against the git repository:
->>
->>
->> Contributors:
->> user:        acano@fastmail.fm
->> user:        Andre Kelmanson <akelmanson@gmail.com>
->> user:        Bouwsma Barry <freebeer.bouwsma@gmail.com>
->> user:        Dan Kreiser <kreiser@informatik.hu-berlin.de>
->> user:        Frank Neuber <fn@kernelport.de>
->> user:        Jelle de Jong <jelledejong@powercraft.nl>
->> user:        John Stowers <john.stowers.lists@gmail.com>
->> user:        Lukas Kuna <lukas.kuna@evkanet.net>
->> user:        Stefan Vonolfen <stefan.vonolfen@gmail.com>
->> user:        Stephan Berberig <s.berberig@arcor.de>
->> user:        Thomas Giesecke <thomas.giesecke@ibgmbh-naumburg.de>
->> user:        Vitaly Wool <vwool@ru.mvista.com>
->> user:        Zhenyu Wang <zhen78@gmail.com>
->>
->> Signed-off-by: Markus Rechberger <mrechberger@sundtek.de>
->>
->
+> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+> index 1ee9499..c3c53e7 100644
+> --- a/drivers/ata/libata-core.c
+> +++ b/drivers/ata/libata-core.c
+> @@ -4799,9 +4799,9 @@ void ata_qc_complete(struct ata_queued_cmd *qc)
+>   */
+>  int ata_qc_complete_multiple(struct ata_port *ap, u32 qc_active)
+>  {
+> +	unsigned int i = 0;
+>  	int nr_done = 0;
+>  	u32 done_mask;
+> -	int i;
+>  
+>  	done_mask = ap->qc_active ^ qc_active;
+>  
+> @@ -4811,16 +4811,19 @@ int ata_qc_complete_multiple(struct ata_port *ap, u32 qc_active)
+>  		return -EINVAL;
+>  	}
+>  
+> -	for (i = 0; i < ATA_MAX_QUEUE; i++) {
+> +	while (done_mask) {
+>  		struct ata_queued_cmd *qc;
+> +		unsigned int next = __ffs(done_mask);
+>  
+> -		if (!(done_mask & (1 << i)))
+> -			continue;
+> -
+> -		if ((qc = ata_qc_from_tag(ap, i))) {
+> +		qc = ata_qc_from_tag(ap, i + next);
+> +		if (qc) {
+>  			ata_qc_complete(qc);
+>  			nr_done++;
+>  		}
+> +		if (++next >= ATA_MAX_QUEUE)
+> +			break;
 
-also adding video4linux-list
+If you think about it, this statement is equivalent to
+
+	if (ap->qc_active ^ qc_active == (1 << (ATA_MAX_QUEUE - 1)))
+
+To fix this, you could say
+
+	if (++next + i >= ATA_MAX_QUEUE)
+
+but perhaps it would be even more efficient (or not much worse) to skip
+this check entirely.
+
+Regards,
+
+Elias
