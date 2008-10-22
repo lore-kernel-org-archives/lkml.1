@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbYJVXQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbYJVXVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755333AbYJVXQR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 19:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbYJVXQC
+	id S1755989AbYJVXVZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 19:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbYJVXVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 19:16:02 -0400
-Received: from sous-sol.org ([216.99.217.87]:58174 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751908AbYJVXQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 19:16:00 -0400
-Date: Wed, 22 Oct 2008 16:15:45 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org
-Cc: stable@kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: update to the combined -stable tree
-Message-ID: <20081022231545.GD7646@sequoia.sous-sol.org>
+	Wed, 22 Oct 2008 19:21:15 -0400
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:59717 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753441AbYJVXVP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 19:21:15 -0400
+Date: Wed, 22 Oct 2008 16:20:35 -0700 (PDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au, hugh@veritas.com,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: SLUB defrag pull request?
+In-Reply-To: <E1KsluU-0002R1-Ow@pomaz-ex.szeredi.hu>
+Message-ID: <Pine.LNX.4.64.0810221619310.29044@quilx.com>
+References: <1223883004.31587.15.camel@penberg-laptop> 
+ <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu>  <48FE6306.6020806@linux-foundation.org>
+  <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810220822500.30851@quilx.com>
+  <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221252570.3562@quilx.com>
+  <E1Ksk3g-00027r-Lp@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221315080.26671@quilx.com>
+  <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu> <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>
+ <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0810221416130.26639@quilx.com>
+ <E1KsluU-0002R1-Ow@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Spam-Score: -2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For those people who are using the combined stable tree (all stable
-branches in a single git tree):
+On Thu, 23 Oct 2008, Miklos Szeredi wrote:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6-stable.git
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6-stable.git
+> So again, just checking d_lru should do work fine.  There's absolutely
+> no need to mess with extra references in a separate phase, which leads
+> to lots of complications.
 
-This is just a heads up that it has been replaced by a new tree.
+Then try it the way I outlined it by skipping the get() stage. You just 
+need to add checks for the poison in case debugging is on and then you 
+should be fine.
 
-The new tree has 2 new features.  First, the master branch is not some
-random stale 2.6.22.6 commit, it's following Linus' tree.  Second, the
-update mechanism is rewritten thanks to Peter, so it's kept much more
-up to date.
-
-Be prepared that despite the fact that the heads of each branch are the same,
-a reclone is the probably easiest way to reconcile the change in repo layout.
-
-thanks,
--chris
