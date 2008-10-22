@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbYJVLe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbYJVLgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754928AbYJVLe2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 07:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYJVLeU
+	id S1755177AbYJVLgl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 07:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbYJVLgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 07:34:20 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:29839 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751195AbYJVLeT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 07:34:19 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -9.389
-Message-ID: <48FF0FB7.5070706@tremplin-utc.net>
-Date: Wed, 22 Oct 2008 13:34:15 +0200
-From: Eric Piel <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.17) Gecko/20080929 Mandriva/2.0.0.17-2mdv2009.0 (2009.0) Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
+	Wed, 22 Oct 2008 07:36:33 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54777 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752709AbYJVLgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 07:36:32 -0400
+Date: Wed, 22 Oct 2008 13:36:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] kernel/resource: Fix reserve_region_with_split()
+	section mismatch.
+Message-ID: <20081022113622.GB4583@elte.hu>
+References: <20081022103111.GA14013@linux-sh.org>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       burman.yan@gmail.com, pau@eslack.org
-Subject: Re: [PATCH] LIS3LV02Dx Accelerometer driver (take 4)
-References: <48FA3368.1040605@tremplin-utc.net> <20081021083822.GG15782@atrey.karlin.mff.cuni.cz> <20081021114255.a7dabc2d.akpm@linux-foundation.org> <20081022102713.GA7843@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20081022102713.GA7843@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081022103111.GA14013@linux-sh.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek schreef:
-Hello,
 
+* Paul Mundt <lethal@linux-sh.org> wrote:
 
-> Ok, I guess you have better eyeballs. Yes, the locking was totaly
-> broken (and disabled by initing semaphore to 1 by default).
-To which value the semaphore should have been initialised? I can see
-DECLARE_MUTEX(name) declared as:
-	struct semaphore name = __SEMAPHORE_INITIALIZER(name, 1)
+> reserve_region_with_split() calls in to __reserve_region_with_split(), 
+> which is an __init function. [...]
 
-(I'm still learning about the locking in the kernel. To me, it looks
-like a maze, and I couldn't find one simple document detailing all the
-mechanisms.)
+applied to tip/core/urgent, thanks Paul!
 
-> Sorry
-> about that.
-> 
-> This strips some more code, turns semaphore into mutex, and should
-> solve more problems.
-> 
-> I killed the "power down on timer" thingie. I guess we can reintroduce
-> it when we get the basics right (and driver works just fine without
-> that... I did not detect unusual slowness).
-I inserted the timer thingie because I have a program on my laptop which
-reads the position twice per second. Using the joystick interface uses
-two much CPU (it's 20 Hz) and so it's using the sysfs interface.
-However, turning on and off the device twice per second is rather costly
-(especially due to the ACPI access). That's why I made it delayed... and
-I'd like to keep it this way.
+> [...] All callers of reserve_region_with_split() are also __init 
+> functions, so make it __init too.
 
-I'll send this evening a "delayed power down" based on workqueue. Within
-the  work of a workqueue, it's not possible to use a mutex, right? Only
-semaphores are allowed?
+... there's a single caller of that function ;-)
 
-Eric
+	Ingo
