@@ -1,80 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbYJVRGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756926AbYJVRHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756796AbYJVRGx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYJVRGn
+	id S1756926AbYJVRHe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:07:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbYJVRHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:06:43 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:53028 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752586AbYJVRGm (ORCPT
+	Wed, 22 Oct 2008 13:07:13 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:65025 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752500AbYJVRHK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:06:42 -0400
-Subject: Re: Regression in 2.6.27-git from commit 43ac2ca3840f64
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: Jouni Malinen <j@w1.fi>, Jouni Malinen <jouni.malinen@atheros.com>,
-       wireless <linux-wireless@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       John Linville <linville@tuxdriver.com>, Jean Tourrilhes <jt@hpl.hp.com>
-In-Reply-To: <48FF5933.3080501@lwfinger.net> (sfid-20081022_184755_577051_32659A3C)
-References: <48FDFCCA.8040604@lwfinger.net>
-	 <20081022072840.GD16005@jm.kir.nu>  <48FF5933.3080501@lwfinger.net>
-	 (sfid-20081022_184755_577051_32659A3C)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-1GFXvLdUWAt+Uo86/Kb7"
-Date: Wed, 22 Oct 2008 19:06:29 +0200
-Message-Id: <1224695189.30459.6.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 22 Oct 2008 13:07:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id:from;
+        b=xEduW5GcawmFg5ens66LtofJZV6bpSEv84P1omhY3pBGG9VCDhsWDYbcF575P1qrb/
+         5TGjvjxMhCVb8O5qu6JUUkZevw3ZHuSgInvcps9xhG82+WkkTfRADlkNE4SpSh1a7TfB
+         Nk8BJMzPJ0ghJ4yMwHGJD3O07HXHtfQNgKBnM=
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+Subject: Re: [PATCH] Fix debugfs_create_*'s error checking method for wireless/rt2x00/
+Date: Wed, 22 Oct 2008 19:07:04 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       rt2400-devel@lists.sourceforge.net,
+       "John W. Linville" <linville@tuxdriver.com>
+References: <48FEED4D.3000208@cn.fujitsu.com>
+In-Reply-To: <48FEED4D.3000208@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="gb2312"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810221907.04946.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 22 October 2008, Zhaolei wrote:
+> Hi,
+> 
+> debugfs_create_*() returns NULL if an error occurs, returns -ENODEV
+> when debugfs is not enabled in the kernel.
+> 
+> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
 
---=-1GFXvLdUWAt+Uo86/Kb7
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Looks good. Thanks.
+John, could you pull this into wireless-testing? Thanks!
 
-On Wed, 2008-10-22 at 09:47 -0700, Larry Finger wrote:
+Signed-off-by: Ivo van Doorn <IvDoorn@gmail.com>
 
-> When a utility starts spitting messages that it doesn't understand what t=
-he
-> kernel is providing _AND_ the commit message does not mention that this w=
-ill
-> happen, can someone be blamed for thinking it is a bug?
+> ---
+>  drivers/net/wireless/rt2x00/rt2x00debug.c |   21 ++++++++++++---------
+>  1 files changed, 12 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/net/wireless/rt2x00/rt2x00debug.c b/drivers/net/wireless/rt2x00/rt2x00debug.c
+> index 5cf4c85..b380cd3 100644
+> --- a/drivers/net/wireless/rt2x00/rt2x00debug.c
+> +++ b/drivers/net/wireless/rt2x00/rt2x00debug.c
+> @@ -587,29 +587,29 @@ void rt2x00debug_register(struct rt2x00_dev *rt2x00dev)
+>  	intf->driver_folder =
+>  	    debugfs_create_dir(intf->rt2x00dev->ops->name,
+>  			       rt2x00dev->hw->wiphy->debugfsdir);
+> -	if (IS_ERR(intf->driver_folder))
+> +	if (IS_ERR(intf->driver_folder) || !intf->driver_folder)
+>  		goto exit;
+>  
+>  	intf->driver_entry =
+>  	    rt2x00debug_create_file_driver("driver", intf, &intf->driver_blob);
+> -	if (IS_ERR(intf->driver_entry))
+> +	if (IS_ERR(intf->driver_entry) || !intf->driver_entry)
+>  		goto exit;
+>  
+>  	intf->chipset_entry =
+>  	    rt2x00debug_create_file_chipset("chipset",
+>  					    intf, &intf->chipset_blob);
+> -	if (IS_ERR(intf->chipset_entry))
+> +	if (IS_ERR(intf->chipset_entry) || !intf->chipset_entry)
+>  		goto exit;
+>  
+>  	intf->dev_flags = debugfs_create_file("dev_flags", S_IRUSR,
+>  					      intf->driver_folder, intf,
+>  					      &rt2x00debug_fop_dev_flags);
+> -	if (IS_ERR(intf->dev_flags))
+> +	if (IS_ERR(intf->dev_flags) || !intf->dev_flags)
+>  		goto exit;
+>  
+>  	intf->register_folder =
+>  	    debugfs_create_dir("register", intf->driver_folder);
+> -	if (IS_ERR(intf->register_folder))
+> +	if (IS_ERR(intf->register_folder) || !intf->register_folder)
+>  		goto exit;
+>  
+>  #define RT2X00DEBUGFS_CREATE_REGISTER_ENTRY(__intf, __name)	\
+> @@ -619,7 +619,8 @@ void rt2x00debug_register(struct rt2x00_dev *rt2x00dev)
+>  			       S_IRUSR | S_IWUSR,		\
+>  			       (__intf)->register_folder,	\
+>  			       &(__intf)->offset_##__name);	\
+> -	if (IS_ERR((__intf)->__name##_off_entry))		\
+> +	if (IS_ERR((__intf)->__name##_off_entry)		\
+> +			|| !(__intf)->__name##_off_entry)	\
+>  		goto exit;					\
+>  								\
+>  	(__intf)->__name##_val_entry =				\
+> @@ -627,7 +628,8 @@ void rt2x00debug_register(struct rt2x00_dev *rt2x00dev)
+>  				S_IRUSR | S_IWUSR,		\
+>  				(__intf)->register_folder,	\
+>  				(__intf), &rt2x00debug_fop_##__name);\
+> -	if (IS_ERR((__intf)->__name##_val_entry))		\
+> +	if (IS_ERR((__intf)->__name##_val_entry)		\
+> +			|| !(__intf)->__name##_val_entry)	\
+>  		goto exit;					\
+>  })
+>  
+> @@ -640,13 +642,14 @@ void rt2x00debug_register(struct rt2x00_dev *rt2x00dev)
+>  
+>  	intf->queue_folder =
+>  	    debugfs_create_dir("queue", intf->driver_folder);
+> -	if (IS_ERR(intf->queue_folder))
+> +	if (IS_ERR(intf->queue_folder) || !intf->queue_folder)
+>  		goto exit;
+>  
+>  	intf->queue_frame_dump_entry =
+>  	    debugfs_create_file("dump", S_IRUSR, intf->queue_folder,
+>  				intf, &rt2x00debug_fop_queue_dump);
+> -	if (IS_ERR(intf->queue_frame_dump_entry))
+> +	if (IS_ERR(intf->queue_frame_dump_entry)
+> +		|| !intf->queue_frame_dump_entry)
+>  		goto exit;
+>  
+>  	skb_queue_head_init(&intf->frame_dump_skbqueue);
+> -- 1.5.5.3 
+> 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-Heh, no, not really. It was fairly obvious us, but I guess we were just
-routine-blinded.
-
-> Clearly this is not a regression. Are there plans to update the wireless =
-utilities?
-
-I suspect it could just be made to ignore them. Or skip a select few,
-but obviously it will never be able to parse all of them...
-
-johannes
-
---=-1GFXvLdUWAt+Uo86/Kb7
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJI/12RAAoJEKVg1VMiehFYRQoP/0dTv6PJuwpCwwH8CEzDT6sM
-kc9m7SyYTK6x78KHzwXZT6npbntMTdkFtT/tXPkcGhqqHE6YboqRl0pkEDWg+FnE
-tg/ZmS7IYxmFE+pbqC8iZSHf1OKKycMK96sipj5baKaxEQH25hZdWmBItW0X/QwI
-J4JiP2QSnMb+VZK4qnn7zuIgYj2CVfRpax62rwjSVLHULWb3fe1IoxaQL9WgGIzI
-ozdlX+ce79mtaldfEabk1/i6bfJtnPbUeie1xJ1BNCTS8amAyzN83SHlam8dcuYz
-gZJ5VXLjaNFfMTcpkjBdlprs4p3zNuwQrbrFoS3feGftor7/5pYnJt4EWabmj8n1
-VN2XCBgIGaQMkULDsyIbP28WKctEginRDxx33o6yQGijcib/Q4PKr9kpnpa4cAeB
-A/BpUxT/6dLVyHhMv1ydxhBJ9RXgZ1J6W2vyyChoR6jFk7Ldc5ptKy/1uzOkS1uF
-go269JQfACIB+VJWKnmmfXOFKZrXNy4kVjHsAwDNNkHog2kWwi46h4hjvHXHixAU
-YEI9NFRa8v33j5phfSVdV7nq/X3tvbx9/jXC5GFuh9Xxrgtsdg+O4+CIR4O0D1UM
-lSdiFT7bh+B3G0zOIcljD2Wx461tFQ//NxhrA8VfGMAP6yCIHLxR4VVBwCPTf5h/
-abG2jVV/QLfIhuEBh0xM
-=FxQ0
------END PGP SIGNATURE-----
-
---=-1GFXvLdUWAt+Uo86/Kb7--
 
