@@ -1,67 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbYJVIGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYJVIOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755193AbYJVIGT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 04:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbYJVIFl
+	id S1754033AbYJVIOd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 04:14:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbYJVIOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 04:05:41 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:57576 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755077AbYJVIFh (ORCPT
+	Wed, 22 Oct 2008 04:14:17 -0400
+Received: from lutt.itea.ntnu.no ([129.241.18.234]:50715 "EHLO
+	lutt.itea.ntnu.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751148AbYJVIOP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 04:05:37 -0400
-Date: Wed, 22 Oct 2008 17:05:36 +0900 (JST)
-Message-Id: <20081022.170536.193712541.ryov@valinux.co.jp>
-To: zumeng.chen@windriver.com
-Cc: bruce.ashfield@windriver.com, haotian.zhang@windriver.com,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp
-Subject: Re: [PATCH 0/2] dm-ioband: I/O bandwidth controller v1.8.0:
- Introduction
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <48FEDC63.308@windriver.com>
-References: <20081017.160950.71109894.ryov@valinux.co.jp>
-	<48FDB8AC.9020707@windriver.com>
-	<48FEDC63.308@windriver.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 22 Oct 2008 04:14:15 -0400
+X-Greylist: delayed 723 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Oct 2008 04:14:15 EDT
+From: Henrik Austad <henrik@austad.us>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: sched: add CONFIG_SMP consistency
+Date: Wed, 22 Oct 2008 10:00:38 +0200
+User-Agent: KMail/1.9.10
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org
+References: <1224614719-14452-1-git-send-email-henrik@austad.us> <48FED566.7020907@cn.fujitsu.com> <20081022073640.GA31633@elte.hu>
+In-Reply-To: <20081022073640.GA31633@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810221000.38724.henrik@austad.us>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Chen,
-
-> Chen Zumeng wrote:
-> > Hi, Ryo Tsuruta
-> > And our test team want to test bio_tracking as your benchmark reports,
-> > so would you please send me your test codes? Thanks in advance.
-> Hi Ryo Tsuruta,
+On Wednesday 22 October 2008 09:36:40 Ingo Molnar wrote:
 > 
-> I wonder if you received last email, so I reply this email to ask
-> for your bio_tracking test codes to generate your benchmark reports
-> as shown in your website. Thanks in advance :)
+> * Li Zefan <lizf@cn.fujitsu.com> wrote:
+> 
+> > How about the following patch?
+> 
+> i've applied it in the form below. Peter, does it look good to you too?
+> 
+> 	Ingo
 
-I've uploaded two scripts here:
-http://people.valinux.co.jp/~ryov/dm-ioband/scripts/xdd-count.sh
-http://people.valinux.co.jp/~ryov/dm-ioband/scripts/xdd-size.sh
+FWIW:
+Acked-by Henrik Austad <henrik@austad.us>
 
-xdd-count.sh controls bandwidth based on the number of I/O requests,
-and xdd-size.sh controls bandwidth based onthe number of I/O sectors.
-Theses scritpts require xdd disk I/O testing tool which can be
-downloaded from here:
-http://www.ioperformance.com/products.htm
+Not boot-tested, just build-tested.
 
-Please feel free to ask me questions if you have any questions.
+> 
+> -------------->
+> From 667ff69f5a248fde6cf871f2c9c5c5d2aa182e71 Mon Sep 17 00:00:00 2001
+> From: Li Zefan <lizf@cn.fujitsu.com>
+> Date: Wed, 22 Oct 2008 15:25:26 +0800
+> Subject: [PATCH] sched: add CONFIG_SMP consistency
+> 
+> a patch from Henrik Austad did this:
+> 
+> >> Do not declare select_task_rq as part of sched_class when CONFIG_SMP is
+> >> not set.
+> 
+> Peter observed:
+> 
+> > While a proper cleanup, could you do it by re-arranging the methods so
+> > as to not create an additional ifdef?
+> 
+> Do not declare select_task_rq and some other methods as part of sched_class
+> when CONFIG_SMP is not set.
+> 
+> Also gather those methods to avoid CONFIG_SMP mess.
+> 
+> Idea-by: Henrik Austad <henrik.austad@gmail.com>
 
-> > P.S. The following are my changes to avoid schedule_timeout:
+can you change this to henrik@austad.us? (sorry for error in first patch.. :-))
 
-Thanks, but your patch seems to cause a problem when ioband devices
-which have the same name are created at the same time. I will fix the
-issue in the next release.
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> Acked-by: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  include/linux/sched.h   |   12 +++++++-----
+>  kernel/sched_fair.c     |    5 ++---
+>  kernel/sched_idletask.c |    5 ++---
+>  kernel/sched_rt.c       |    5 ++---
+>  4 files changed, 13 insertions(+), 14 deletions(-)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 4f59c8e..c05b45f 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -897,7 +897,6 @@ struct sched_class {
+>  	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup);
+>  	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int sleep);
+>  	void (*yield_task) (struct rq *rq);
+> -	int  (*select_task_rq)(struct task_struct *p, int sync);
+>  
+>  	void (*check_preempt_curr) (struct rq *rq, struct task_struct *p, int sync);
+>  
+> @@ -905,6 +904,8 @@ struct sched_class {
+>  	void (*put_prev_task) (struct rq *rq, struct task_struct *p);
+>  
+>  #ifdef CONFIG_SMP
+> +	int  (*select_task_rq)(struct task_struct *p, int sync);
+> +
+>  	unsigned long (*load_balance) (struct rq *this_rq, int this_cpu,
+>  			struct rq *busiest, unsigned long max_load_move,
+>  			struct sched_domain *sd, enum cpu_idle_type idle,
+> @@ -916,16 +917,17 @@ struct sched_class {
+>  	void (*pre_schedule) (struct rq *this_rq, struct task_struct *task);
+>  	void (*post_schedule) (struct rq *this_rq);
+>  	void (*task_wake_up) (struct rq *this_rq, struct task_struct *task);
+> -#endif
+>  
+> -	void (*set_curr_task) (struct rq *rq);
+> -	void (*task_tick) (struct rq *rq, struct task_struct *p, int queued);
+> -	void (*task_new) (struct rq *rq, struct task_struct *p);
+>  	void (*set_cpus_allowed)(struct task_struct *p,
+>  				 const cpumask_t *newmask);
+>  
+>  	void (*rq_online)(struct rq *rq);
+>  	void (*rq_offline)(struct rq *rq);
+> +#endif
+> +
+> +	void (*set_curr_task) (struct rq *rq);
+> +	void (*task_tick) (struct rq *rq, struct task_struct *p, int queued);
+> +	void (*task_new) (struct rq *rq, struct task_struct *p);
+>  
+>  	void (*switched_from) (struct rq *this_rq, struct task_struct *task,
+>  			       int running);
+> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> index a0aa38b..8de48a5 100644
+> --- a/kernel/sched_fair.c
+> +++ b/kernel/sched_fair.c
+> @@ -1593,9 +1593,6 @@ static const struct sched_class fair_sched_class = {
+>  	.enqueue_task		= enqueue_task_fair,
+>  	.dequeue_task		= dequeue_task_fair,
+>  	.yield_task		= yield_task_fair,
+> -#ifdef CONFIG_SMP
+> -	.select_task_rq		= select_task_rq_fair,
+> -#endif /* CONFIG_SMP */
+>  
+>  	.check_preempt_curr	= check_preempt_wakeup,
+>  
+> @@ -1603,6 +1600,8 @@ static const struct sched_class fair_sched_class = {
+>  	.put_prev_task		= put_prev_task_fair,
+>  
+>  #ifdef CONFIG_SMP
+> +	.select_task_rq		= select_task_rq_fair,
+> +
+>  	.load_balance		= load_balance_fair,
+>  	.move_one_task		= move_one_task_fair,
+>  #endif
+> diff --git a/kernel/sched_idletask.c b/kernel/sched_idletask.c
+> index dec4cca..8a21a2e 100644
+> --- a/kernel/sched_idletask.c
+> +++ b/kernel/sched_idletask.c
+> @@ -105,9 +105,6 @@ static const struct sched_class idle_sched_class = {
+>  
+>  	/* dequeue is not valid, we print a debug message there: */
+>  	.dequeue_task		= dequeue_task_idle,
+> -#ifdef CONFIG_SMP
+> -	.select_task_rq		= select_task_rq_idle,
+> -#endif /* CONFIG_SMP */
+>  
+>  	.check_preempt_curr	= check_preempt_curr_idle,
+>  
+> @@ -115,6 +112,8 @@ static const struct sched_class idle_sched_class = {
+>  	.put_prev_task		= put_prev_task_idle,
+>  
+>  #ifdef CONFIG_SMP
+> +	.select_task_rq		= select_task_rq_idle,
+> +
+>  	.load_balance		= load_balance_idle,
+>  	.move_one_task		= move_one_task_idle,
+>  #endif
+> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+> index cdf5740..c9aa5be 100644
+> --- a/kernel/sched_rt.c
+> +++ b/kernel/sched_rt.c
+> @@ -1502,9 +1502,6 @@ static const struct sched_class rt_sched_class = {
+>  	.enqueue_task		= enqueue_task_rt,
+>  	.dequeue_task		= dequeue_task_rt,
+>  	.yield_task		= yield_task_rt,
+> -#ifdef CONFIG_SMP
+> -	.select_task_rq		= select_task_rq_rt,
+> -#endif /* CONFIG_SMP */
+>  
+>  	.check_preempt_curr	= check_preempt_curr_rt,
+>  
+> @@ -1512,6 +1509,8 @@ static const struct sched_class rt_sched_class = {
+>  	.put_prev_task		= put_prev_task_rt,
+>  
+>  #ifdef CONFIG_SMP
+> +	.select_task_rq		= select_task_rq_rt,
+> +
+>  	.load_balance		= load_balance_rt,
+>  	.move_one_task		= move_one_task_rt,
+>  	.set_cpus_allowed       = set_cpus_allowed_rt,
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-Thanks,
-Ryo Tsuruta
+
