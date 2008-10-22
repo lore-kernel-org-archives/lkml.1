@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbYJVUbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759247AbYJVUbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757436AbYJVUbY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 16:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbYJVUa5
+	id S1759247AbYJVUbj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 16:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757205AbYJVUbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 16:30:57 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:35772 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753393AbYJVUa4 (ORCPT
+	Wed, 22 Oct 2008 16:31:20 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37515 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756743AbYJVUbS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 16:30:56 -0400
-Date: Wed, 22 Oct 2008 15:30:45 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Benjamin Thery <benjamin.thery@bull.net>, netdev <netdev@vger.kernel.org>,
-       Dave Miller <davem@davemloft.net>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Al Viro <viro@ftp.linux.org.uk>, Daniel Lezcano <dlezcano@fr.ibm.com>,
-       linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
-       Denis Lunev <den@openvz.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH 0/4][RFC] netns: sysfs: add a netns suffix to net
-	device sysfs entries
-Message-ID: <20081022203045.GA4633@us.ibm.com>
-References: <20081022152144.351965414@theryb.frec.bull.fr> <m1d4hso0ym.fsf@frodo.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1d4hso0ym.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 22 Oct 2008 16:31:18 -0400
+Date: Wed, 22 Oct 2008 13:31:02 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       johannes@sipsolutions.net, davem@davemloft.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] fix WARN() for PPC
+Message-ID: <20081022133102.5bd6e369@infradead.org>
+In-Reply-To: <48FF8BB9.7050506@goop.org>
+References: <20081020145056.24d84992@infradead.org>
+	<48FF8BB9.7050506@goop.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> Benjamin Thery <benjamin.thery@bull.net> writes:
+On Wed, 22 Oct 2008 13:23:21 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+> Arjan van de Ven wrote:
+> > From: Arjan van de Ven <arjan@linux.intel.com>
+> > Date: Mon, 20 Oct 2008 14:41:03 -0700
+> > Subject: [PATCH] fix WARN() for PPC
+> >
+> > powerpc doesn't use the generic WARN_ON infrastructure.
 > 
-> > Support for network namespaces in mainline is pretty complete for
-> > some time now, but there is still this issue with sysfs that prevents 
-> > more people to use it easily.
+> Hm, why's that now?  The generic infrastructure was taken from
+> powerpc, and I thought I'd converted it...
 > 
-> Ben your patchset is completely inappropriate.
-> 
-> Temporarily adding elements to the ABI that we intend to remove
-> is not a proper solution to this problem.
-> 
-> That user space visible ida you add is a namespace identifier that breaks
-> nested containers and migration.  It is very very very wrong.
 
-I disagree (not surprising :) completely.  The well-known userspace
-tools (ifconfig, ip, etc) will not see the lo@1, they'll see lo.
-Userspace in a container can either umount /sys completely, or do
+it uses a BUG like trap rather than the normal WARN_ON() being a
+function call to lib/bug.c
 
-	mount -t tmpfs none /sys/class/net
-	mount --bind /sys/devices/virtual/net/lo@1 /sys/class/net/lo
 
-if they really want to, in which case only their view
-of /sys/devices/virtual/net would be different.
-
-Eric, would you hate this less if it was under some
-
-	CONFIG_SYSFS_NETNS_HACK
-
-config variable?
-
--serge
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
