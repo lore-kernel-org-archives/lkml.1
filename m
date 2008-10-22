@@ -1,129 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753701AbYJVJZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753065AbYJVJbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753701AbYJVJZU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 05:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYJVJZH
+	id S1753065AbYJVJbg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 05:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbYJVJb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 05:25:07 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:42612 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751891AbYJVJZG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 05:25:06 -0400
-Date: Wed, 22 Oct 2008 11:25:02 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Andrey Mirkin <major@openvz.org>
-Cc: devel@openvz.org, Pavel Emelyanov <xemul@openvz.org>,
-       Cedric Le Goater <clg@fr.ibm.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [Devel] Re: [PATCH 08/10] Introduce functions to restart a
-	process
-Message-ID: <20081022092502.GW15171@hawkmoon.kerlabs.com>
-Reply-To: Louis.Rilling@kerlabs.com
-References: <1224285098-573-1-git-send-email-major@openvz.org> <1224285098-573-9-git-send-email-major@openvz.org> <48FC4E0C.7050008@fr.ibm.com> <200810221249.55600.major@openvz.org>
+	Wed, 22 Oct 2008 05:31:27 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52503 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751003AbYJVJb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 05:31:26 -0400
+Date: Wed, 22 Oct 2008 20:31:12 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus <torvalds@linux-foundation.org>,
+       ppc-dev <linuxppc-dev@ozlabs.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] mfd/wm8350: don't export static functions
+Message-Id: <20081022203112.5a213e8c.sfr@canb.auug.org.au>
+In-Reply-To: <20081016120416.GA5753@rakim.wolfsonmicro.main>
+References: <20081016204754.a41646e5.sfr@canb.auug.org.au>
+	<20081016120416.GA5753@rakim.wolfsonmicro.main>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-20975-1224667358-0001-2"
-Content-Disposition: inline
-In-Reply-To: <200810221249.55600.major@openvz.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__22_Oct_2008_20_31_12_+1100_r+.2wIY8=+WLXGWb"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
-
---=_bohort-20975-1224667358-0001-2
-Content-Type: text/plain; charset=us-ascii
+--Signature=_Wed__22_Oct_2008_20_31_12_+1100_r+.2wIY8=+WLXGWb
+Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Oct 22, 2008 at 12:49:54PM +0400, Andrey Mirkin wrote:
-> On Monday 20 October 2008 13:23 Cedric Le Goater wrote:
-> > Hello Andrey !
-> >
-> > > diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
-> > > index 109792b..a4848a3 100644
-> > > --- a/arch/x86/kernel/entry_32.S
-> > > +++ b/arch/x86/kernel/entry_32.S
-> > > @@ -225,6 +225,7 @@ ENTRY(ret_from_fork)
-> > >  	GET_THREAD_INFO(%ebp)
-> > >  	popl %eax
-> > >  	CFI_ADJUST_CFA_OFFSET -4
-> > > +ret_from_fork_tail:
-> > >  	pushl $0x0202			# Reset kernel eflags
-> > >  	CFI_ADJUST_CFA_OFFSET 4
-> > >  	popfl
-> > > @@ -233,6 +234,26 @@ ENTRY(ret_from_fork)
-> > >  	CFI_ENDPROC
-> > >  END(ret_from_fork)
-> > >
-> > > +ENTRY(i386_ret_from_resume)
-> > > +	CFI_STARTPROC
-> > > +	pushl %eax
-> > > +	CFI_ADJUST_CFA_OFFSET 4
-> > > +	call schedule_tail
-> > > +	GET_THREAD_INFO(%ebp)
-> > > +	popl %eax
-> > > +	CFI_ADJUST_CFA_OFFSET -4
-> > > +	movl (%esp), %eax
-> > > +	testl %eax, %eax
-> > > +	jz    1f
-> > > +	pushl %esp
-> > > +	call  *%eax
-> > > +	addl  $4, %esp
-> > > +1:
-> > > +	addl  $256, %esp
-> > > +	jmp   ret_from_fork_tail
-> > > +	CFI_ENDPROC
-> > > +END(i386_ret_from_resume)
-> >
-> > Could you explain why you need to do this
-> >
-> > 	call  *%eax
-> >
-> > is it related to the freezer code ?
+Hi Mark,
+
+On Thu, 16 Oct 2008 13:04:16 +0100 Mark Brown <broonie@opensource.wolfsonmi=
+cro.com> wrote:
+>
+> On Thu, Oct 16, 2008 at 08:47:54PM +1100, Stephen Rothwell wrote:
+> > Today's linux-next build (powerpc allyesconfig) failed like this:
 >=20
-> It is not related to the freezer code actually.
-> That is needed to restart syscalls. Right now I don't have a code in my=
-=20
-> patchset which restarts a syscall, but later I plan to add it.
-> In OpenVZ checkpointing we restart syscalls if process was caught in sysc=
-all=20
-> during checkpointing.
+> > drivers/mfd/wm8350-core.c:1131: error: __ksymtab_wm8350_create_cache ca=
+uses a section type conflict
+>=20
+> > Caused by commit 89b4012befb1abca5e86d232bc0e2a797b0d9825 ("mfd: Core
+> > support for the WM8350 AudioPlus PMIC"). wm8350_create_cache is not used
+> > elsewhere, so remove the EXPORT_SYMBOL.
+>=20
+> Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-Do you checkpoint uninterruptible syscalls as well? If only interruptible
-syscalls are checkpointed, I'd say that either this syscall uses ERESTARTSY=
-S or
-ERESTART_RESTARTBLOCK, and then signal handling code already does the trick=
-, or
-this syscall does not restart itself when interrupted, and well, this is li=
-fe,
-userspace just sees -EINTR, which is allowed by the syscall spec.
-Actually this is how we checkpoint/migrate tasks in interruptible syscalls =
-in
-Kerrighed and this works.
-
-Louis
+I thought that this had been applied, but I have had to apply it to my
+tree today again.
 
 --=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
---=_bohort-20975-1224667358-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
+--Signature=_Wed__22_Oct_2008_20_31_12_+1100_r+.2wIY8=+WLXGWb
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-iD8DBQFI/vFuVKcRuvQ9Q1QRAjIRAKCoR0VUnHwiEJ57zm6Vw/5IJsx9xACgi7+U
-gM14Y8eKgo+xAz7qEGvFElo=
-=ymRV
+iEYEARECAAYFAkj+8uAACgkQjjKRsyhoI8xNjwCdETtkt2Q6PjaPlVDF/CxyyqLy
+mEMAn2DX14shHWmFTfYwge1Tv6Q2KbDt
+=Mztl
 -----END PGP SIGNATURE-----
 
---=_bohort-20975-1224667358-0001-2--
+--Signature=_Wed__22_Oct_2008_20_31_12_+1100_r+.2wIY8=+WLXGWb--
