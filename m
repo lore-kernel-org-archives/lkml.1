@@ -1,81 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYJVMiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbYJVMin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbYJVMiT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 08:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYJVMiI
+	id S1755912AbYJVMin (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 08:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYJVMid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 08:38:08 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59294 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751704AbYJVMiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 08:38:06 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/nLwdQeyfnl76NrSQHtLpNiC6sVFvHOSQ3UMmyku
-	56hD/2ceTW2ofG
-Subject: Re: [PATCH 0/4] pending scheduler updates
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081022121007.GG8095@elte.hu>
-References: <20081017172701.047939625@chello.nl>
-	 <20081020120538.GD10594@elte.hu>
-	 <20081021173529.GG11679@linux.vnet.ibm.com>
-	 <20081022094019.GG12453@elte.hu>
-	 <1224669821.6871.16.camel@marge.simson.net>
-	 <1224671528.7511.11.camel@marge.simson.net> <20081022121007.GG8095@elte.hu>
-Content-Type: text/plain
-Date: Wed, 22 Oct 2008 14:38:02 +0200
-Message-Id: <1224679082.12294.15.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.62
+	Wed, 22 Oct 2008 08:38:33 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:56989 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752778AbYJVMic (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 08:38:32 -0400
+Date: Wed, 22 Oct 2008 08:36:20 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+Cc: Ingo Molnar <mingo@elte.hu>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, vgoyal@redhat.com, hbabu@us.ibm.com,
+       hpa@zytor.com, akpm@linux-foundation.org, ebiederm@xmission.com,
+       tglx@linutronix.de
+Subject: Re: [PATCH 6/7] i386, dumpstack: use oops_begin/oops_end in die_nmi
+Message-ID: <20081022123620.GG18951@hmsreliant.think-freely.org>
+References: <1224669614-25863-1-git-send-email-heukelum@fastmail.fm> <1224669614-25863-2-git-send-email-heukelum@fastmail.fm> <1224669614-25863-3-git-send-email-heukelum@fastmail.fm> <1224669614-25863-4-git-send-email-heukelum@fastmail.fm> <1224669614-25863-5-git-send-email-heukelum@fastmail.fm> <1224669614-25863-6-git-send-email-heukelum@fastmail.fm> <1224669614-25863-7-git-send-email-heukelum@fastmail.fm>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1224669614-25863-7-git-send-email-heukelum@fastmail.fm>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-22 at 14:10 +0200, Ingo Molnar wrote:
-> * Mike Galbraith <efault@gmx.de> wrote:
+On Wed, Oct 22, 2008 at 12:00:13PM +0200, Alexander van Heukelum wrote:
+> Use oops_begin and oops_end in die_nmi.
 > 
-> > On Wed, 2008-10-22 at 12:03 +0200, Mike Galbraith wrote:
-> > 
-> > > It has positive effects too, but IMHO, the bad outweigh the good.
-> > 
-> > BTW, most dramatic on the other end of the spectrum is pgsql+oltp.  
-> > With preemption as is, it collapses as load climbs to heavy with 
-> > preemption knobs at stock.  Postgres uses user-land spinlocks and 
-> > _appears_ to wake others while these are still held.  For this load, 
-> > there is such a thing as too much short-term fairness, preempting lock 
-> > holder creates nasty gaggle of contended lock spinners.  It's curable 
-> > with knobs, and I think it's postgres's own fault, but may be wrong.
-> > 
-> > With that patch, pgsql+oltp scales perfectly.
+> Whitespace-only changes on x86_64, to make it equal to i386's
+> version.
 > 
-> hm, tempting.
+> Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
-I disagree.  Postgres's scaling problem is trivially corrected by
-twiddling knobs (or whatnot).  With that patch, you can't twiddle mysql
-throughput back, or disk intensive loads for that matter.  You can tweak
-the preempt number, but it has nothing to do with lag, so anybody can
-preempt anybody else as you turn the knob toward zero.  Chaos.
-  
-> Have you tried to hack/fix pgsql to do proper wakeups?
+Acked-by: Neil Horman <nhorman@tuxdriver.com>
 
-No, I tried to build without spinlocks to verify, but build croaked.
-Never went back to slogging through the code.
-
-> Right now pgsql it punishes schedulers that preempt it while it is 
-> holding totally undeclared (to the kernel) user-space spinlocks ... 
+> ---
+>  arch/x86/kernel/dumpstack_32.c |   33 +++++++++++----------------------
+>  arch/x86/kernel/dumpstack_64.c |    4 ++--
+>  2 files changed, 13 insertions(+), 24 deletions(-)
 > 
-> Hence postgresql is rewarding a _bad_ scheduler policy in essence. And 
-> pgsql scalability seems to fall totally apart above 16 cpus - regardless 
-> of scheduler policy.
+> diff --git a/arch/x86/kernel/dumpstack_32.c b/arch/x86/kernel/dumpstack_32.c
+> index 7c7d691..e91ae34 100644
+> --- a/arch/x86/kernel/dumpstack_32.c
+> +++ b/arch/x86/kernel/dumpstack_32.c
+> @@ -390,40 +390,29 @@ void die(const char *str, struct pt_regs *regs, long err)
+>  	oops_end(flags, regs, sig);
+>  }
+>  
+> -static DEFINE_SPINLOCK(nmi_print_lock);
+> -
+>  void notrace __kprobes
+>  die_nmi(char *str, struct pt_regs *regs, int do_panic)
+>  {
+> +	unsigned long flags;
+> +
+>  	if (notify_die(DIE_NMIWATCHDOG, str, regs, 0, 2, SIGINT) == NOTIFY_STOP)
+>  		return;
+>  
+> -	spin_lock(&nmi_print_lock);
+>  	/*
+> -	* We are in trouble anyway, lets at least try
+> -	* to get a message out:
+> -	*/
+> -	bust_spinlocks(1);
+> +	 * We are in trouble anyway, lets at least try
+> +	 * to get a message out.
+> +	 */
+> +	flags = oops_begin();
+>  	printk(KERN_EMERG "%s", str);
+>  	printk(" on CPU%d, ip %08lx, registers:\n",
+>  		smp_processor_id(), regs->ip);
+>  	show_registers(regs);
+> -	if (do_panic)
+> +	oops_end(flags, regs, 0);
+> +	if (do_panic || panic_on_oops)
+>  		panic("Non maskable interrupt");
+> -	console_silent();
+> -	spin_unlock(&nmi_print_lock);
+> -
+> -	/*
+> -	 * If we are in kernel we are probably nested up pretty bad
+> -	 * and might aswell get out now while we still can:
+> -	 */
+> -	if (!user_mode_vm(regs)) {
+> -		current->thread.trap_no = 2;
+> -		crash_kexec(regs);
+> -	}
+> -
+> -	bust_spinlocks(0);
+> -	do_exit(SIGSEGV);
+> +	nmi_exit();
+> +	local_irq_enable();
+> +	do_exit(SIGBUS);
+>  }
+>  
+>  static int __init oops_setup(char *s)
+> diff --git a/arch/x86/kernel/dumpstack_64.c b/arch/x86/kernel/dumpstack_64.c
+> index dc6162b..831e1e1 100644
+> --- a/arch/x86/kernel/dumpstack_64.c
+> +++ b/arch/x86/kernel/dumpstack_64.c
+> @@ -519,7 +519,7 @@ void die(const char *str, struct pt_regs *regs, long err)
+>  	oops_end(flags, regs, sig);
+>  }
+>  
+> -notrace __kprobes void
+> +void notrace __kprobes
+>  die_nmi(char *str, struct pt_regs *regs, int do_panic)
+>  {
+>  	unsigned long flags;
+> @@ -527,11 +527,11 @@ die_nmi(char *str, struct pt_regs *regs, int do_panic)
+>  	if (notify_die(DIE_NMIWATCHDOG, str, regs, 0, 2, SIGINT) == NOTIFY_STOP)
+>  		return;
+>  
+> -	flags = oops_begin();
+>  	/*
+>  	 * We are in trouble anyway, lets at least try
+>  	 * to get a message out.
+>  	 */
+> +	flags = oops_begin();
+>  	printk(KERN_EMERG "%s", str);
+>  	printk(" on CPU%d, ip %08lx, registers:\n",
+>  		smp_processor_id(), regs->ip);
+> -- 
+> 1.5.4.3
+> 
+> 
 
-If someone gives me that problem, and a credit card for electric
-company, I'll do my very extra special best to defeat it ;-)
-
-	-Mike
-
+-- 
+/****************************************************
+ * Neil Horman <nhorman@tuxdriver.com>
+ * Software Engineer, Red Hat
+ ****************************************************/
