@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758080AbYJVWPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755114AbYJVWPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758080AbYJVWPb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 18:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbYJVWPX
+	id S1755114AbYJVWPt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 18:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758716AbYJVWPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 18:15:23 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42303 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752466AbYJVWPW (ORCPT
+	Wed, 22 Oct 2008 18:15:33 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:16528 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757845AbYJVWPb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 18:15:22 -0400
-Date: Wed, 22 Oct 2008 23:15:00 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: akataria@vmware.com
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is
- set.
-Message-ID: <20081022231500.4172bba3@lxorguk.ukuu.org.uk>
-In-Reply-To: <1224712846.13953.37.camel@alok-dev1>
-References: <1224552902.2640.88.camel@alok-dev1>
-	<874p36fflp.fsf@basil.nowhere.org>
-	<1224607284.6161.22.camel@alok-dev1>
-	<20081021174008.GH12825@one.firstfloor.org>
-	<1224612294.6161.43.camel@alok-dev1>
-	<20081021181536.GI12825@one.firstfloor.org>
-	<1224616236.6161.60.camel@alok-dev1>
-	<20081021192746.GJ12825@one.firstfloor.org>
-	<1224703427.13953.8.camel@alok-dev1>
-	<20081022195845.GP12825@one.firstfloor.org>
-	<1224712846.13953.37.camel@alok-dev1>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Oct 2008 18:15:31 -0400
+Date: Wed, 22 Oct 2008 15:13:58 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Subject: Re: PATCH] [ConfigFS]: Extend CONFIGFS_ATTR_STRUCT() and
+	CONFIGFS_ATTR_OPS() macros
+Message-ID: <20081022221358.GA7621@mail.oracle.com>
+Mail-Followup-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+	Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	linux-scsi <linux-scsi@vger.kernel.org>,
+	"Linux-iSCSI.org Target Dev" <linux-iscsi-target-dev@googlegroups.com>
+References: <1224713189.24358.111.camel@haakon2.linux-iscsi.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1224713189.24358.111.camel@haakon2.linux-iscsi.org>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Oct 2008 15:00:46 -0700
-Alok Kataria <akataria@vmware.com> wrote:
+On Wed, Oct 22, 2008 at 03:06:29PM -0700, Nicholas A. Bellinger wrote:
+> Hi Joel,
+> 
+> What do you think..?
+> 
+> Also, here is the drivers/lio-core/iscsi_target_configfs.c commit to
+> convert to use to new parameters for CONFIGFS_ATTR_STRUCT() and
+> CONFIGFS_ATTR_OPS():
 
-> [dropped LKML of the cc list]
+	It seems even more complex, and inconsistent with what sysfs
+and other users do.  Can you give me an example of using it?
 
-Sorry this discussion belongs on the LKML list. Please take it back to
-the list.
+Joel
+
+-- 
+
+"Not everything that can be counted counts, and not everything
+ that counts can be counted."
+        - Albert Einstein 
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
