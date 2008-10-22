@@ -1,165 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbYJVWHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756655AbYJVWLG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758260AbYJVWHn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 18:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbYJVWHd
+	id S1756655AbYJVWLG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 18:11:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYJVWKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 18:07:33 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:47325 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753415AbYJVWHc (ORCPT
+	Wed, 22 Oct 2008 18:10:51 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:34271 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751850AbYJVWKu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 18:07:32 -0400
-X-YMail-OSG: ihxQ9SIVM1lc8uRb.W9gkAI7a4VS3SbzEtAoOJ1IchCm6JrJUD2mqt8KIUDtRx2hLIxpuPtWwwJc39khcHyknBTZ5DuSFh6xjzQajpJIah.8x_nQdcr84QTSvrQ5dRdRBqK.1eoqeXTGomzITwRTvynTZF9raovTRFsd6I9H_Gz7loqS2d2vFlcrkCo-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH] [LIO-Target/ConfigFS]: Convert TPG and Node attributes to
-	use updated ConfigFS macros
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 22 Oct 2008 15:07:29 -0700
-Message-Id: <1224713249.24358.113.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Oct 2008 18:10:50 -0400
+To: cl@linux-foundation.org
+CC: miklos@szeredi.hu, penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au,
+       hugh@veritas.com, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-reply-to: <Pine.LNX.4.64.0810221416130.26639@quilx.com> (message from
+	Christoph Lameter on Wed, 22 Oct 2008 14:28:57 -0700 (PDT))
+Subject: Re: SLUB defrag pull request?
+References: <1223883004.31587.15.camel@penberg-laptop> 
+ <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu>  <48FE6306.6020806@linux-foundation.org>
+  <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810220822500.30851@quilx.com>
+  <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221252570.3562@quilx.com>
+  <E1Ksk3g-00027r-Lp@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221315080.26671@quilx.com>
+  <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu> <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>
+ <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0810221416130.26639@quilx.com>
+Message-Id: <E1KsluU-0002R1-Ow@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 23 Oct 2008 00:10:34 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From e305460ebaa92ce1f8542a55bd62648904fb2fd6 Mon Sep 17 00:00:00 2001
-From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Wed, 22 Oct 2008 14:54:36 -0700
-Subject: [PATCH] [LIO-Target/ConfigFS]: Convert TPG and Node attributes to use updated ConfigFS macros
+On Wed, 22 Oct 2008, Christoph Lameter wrote:
+> On Wed, 22 Oct 2008, Miklos Szeredi wrote:
+> 
+> >> Actually, when debugging is enabled, it's customary to poison the
+> >> object, for example (see free_debug_processing() in mm/slub.c). So we
+> >> really can't "easily ensure" that in the allocator unless we by-pass
+> >> all the current debugging code.
+> 
+> Plus the allocator may be reusing parts of the freed object for a freelist 
+> etc even if the object is not poisoned.
 
-Use updated include/linux/configfs.h macros from commit 71fc659e337dcc5941f6f64f6c8abfb6b477fd7c
+Actually, no: looking at the slub code it already makes sure that
+objects are neither poisoned, nor touched in any way _if_ there is a
+constructor for the object.  And for good reason too, otherwise a
+reused object would contain rubbish after a second allocation.
 
-This commit removed the need for our internal 'to_<name>()' functions, and renames
-the TPG and Node attribute code to not be dependent on structure name.
+Come on guys, you should be the experts in this thing!
 
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/lio-core/iscsi_target_configfs.c |   64 ++++++++++++------------------
- 1 files changed, 26 insertions(+), 38 deletions(-)
+So again, just checking d_lru should do work fine.  There's absolutely
+no need to mess with extra references in a separate phase, which leads
+to lots of complications.
 
-diff --git a/drivers/lio-core/iscsi_target_configfs.c b/drivers/lio-core/iscsi_target_configfs.c
-index bdcd981..9d5319c 100644
---- a/drivers/lio-core/iscsi_target_configfs.c
-+++ b/drivers/lio-core/iscsi_target_configfs.c
-@@ -722,18 +722,12 @@ static ssize_t lio_target_store_nacl_attrib_##name (			\
- 	return(count);							\
- }
- 
--static struct iscsi_node_attrib_s *to_iscsi_node_attrib_s (struct config_item *item)
--{
--	return((item) ? container_of(to_config_group(item), struct iscsi_node_attrib_s,
--		acl_attrib_group) : NULL);
--}
--
- /*
-  * Define the iSCSI Node attributes using hybrid wrappers from include/linux/configfs.h
-  */
--CONFIGFS_ATTR_STRUCT(iscsi_node_attrib_s);
--#define NACL_ATTR(_name, _mode, _show, _store)					\
--static struct iscsi_node_attrib_s_attribute iscsi_node_attrib_s_##_name =	\
-+CONFIGFS_ATTR_STRUCT(iscsi_node_attrib, iscsi_node_attrib_s);
-+#define NACL_ATTR(_name, _mode, _show, _store)				\
-+static struct iscsi_node_attrib_attribute iscsi_node_attrib_##_name =	\
- 		__CONFIGFS_ATTR(_name, _mode, _show, _store)
- /*
-  * Define iscsi_node_attrib_s_dataout_timeout
-@@ -796,23 +790,23 @@ NACL_ATTR(random_r2t_offsets, S_IRUGO | S_IWUSR,
-  * Finally, define functions iscsi_node_attrib_s_attr_show() and
-  * iscsi_node_attrib_s_attr_store() for lio_target_nacl_attrib_ops below..
-  */
--CONFIGFS_ATTR_OPS(iscsi_node_attrib_s);
-+CONFIGFS_ATTR_OPS(iscsi_node_attrib, iscsi_node_attrib_s, acl_attrib_group);
- 
- static struct configfs_attribute *lio_target_nacl_attrib_attrs[] = {
--	&iscsi_node_attrib_s_dataout_timeout.attr,
--	&iscsi_node_attrib_s_dataout_timeout_retries.attr,
--	&iscsi_node_attrib_s_default_erl.attr,
--	&iscsi_node_attrib_s_nopin_timeout.attr,
--	&iscsi_node_attrib_s_nopin_response_timeout.attr,
--	&iscsi_node_attrib_s_random_datain_pdu_offsets.attr,
--	&iscsi_node_attrib_s_random_datain_seq_offsets.attr,
--	&iscsi_node_attrib_s_random_r2t_offsets.attr,
-+	&iscsi_node_attrib_dataout_timeout.attr,
-+	&iscsi_node_attrib_dataout_timeout_retries.attr,
-+	&iscsi_node_attrib_default_erl.attr,
-+	&iscsi_node_attrib_nopin_timeout.attr,
-+	&iscsi_node_attrib_nopin_response_timeout.attr,
-+	&iscsi_node_attrib_random_datain_pdu_offsets.attr,
-+	&iscsi_node_attrib_random_datain_seq_offsets.attr,
-+	&iscsi_node_attrib_random_r2t_offsets.attr,
- 	NULL,
- };
- 
- static struct configfs_item_operations lio_target_nacl_attrib_ops = {
--	.show_attribute		= iscsi_node_attrib_s_attr_show,
--	.store_attribute	= iscsi_node_attrib_s_attr_store,
-+	.show_attribute		= iscsi_node_attrib_attr_show,
-+	.store_attribute	= iscsi_node_attrib_attr_store,
- };
- 
- static struct config_item_type lio_target_nacl_attrib_cit = {
-@@ -1519,18 +1513,12 @@ out:									\
- 	return(ret);							\
- }
- 
--static struct iscsi_tpg_attrib_s *to_iscsi_tpg_attrib_s (struct config_item *item)
--{
--	return((item) ? container_of(to_config_group(item), struct iscsi_tpg_attrib_s,
--		tpg_attrib_group) : NULL);	
--}
--
- /*
-  * Define the iSCSI TPG attributes using hybrid wrappers from include/linux/configfs.h
-  */
--CONFIGFS_ATTR_STRUCT(iscsi_tpg_attrib_s);
-+CONFIGFS_ATTR_STRUCT(iscsi_tpg_attrib, iscsi_tpg_attrib_s);
- #define TPG_ATTR(_name, _mode, _show, _store)				\
--static struct iscsi_tpg_attrib_s_attribute iscsi_tpg_attrib_s_##_name =	\
-+static struct iscsi_tpg_attrib_attribute iscsi_tpg_attrib_##_name =	\
- 	__CONFIGFS_ATTR(_name, _mode, _show, _store)
- 
- /*
-@@ -1587,21 +1575,21 @@ TPG_ATTR(demo_mode_lun_access, S_IRUGO | S_IWUSR,
-  * Finally, define functions iscsi_tpg_attrib_s_attr_show() and
-  * iscsi_tpg_attrib_s_attr_store() for lio_target_tpg_attrib_ops below..
-  */
--CONFIGFS_ATTR_OPS(iscsi_tpg_attrib_s);
-+CONFIGFS_ATTR_OPS(iscsi_tpg_attrib, iscsi_tpg_attrib_s, tpg_attrib_group);
- 
- static struct configfs_attribute *lio_target_tpg_attrib_attrs[] = {
--	&iscsi_tpg_attrib_s_authentication.attr,
--	&iscsi_tpg_attrib_s_login_timeout.attr,
--	&iscsi_tpg_attrib_s_netif_timeout.attr,
--	&iscsi_tpg_attrib_s_generate_node_acls.attr,
--	&iscsi_tpg_attrib_s_default_cmdsn_depth.attr,
--	&iscsi_tpg_attrib_s_cache_dynamic_acls.attr,
--	&iscsi_tpg_attrib_s_demo_mode_lun_access.attr,
-+	&iscsi_tpg_attrib_authentication.attr,
-+	&iscsi_tpg_attrib_login_timeout.attr,
-+	&iscsi_tpg_attrib_netif_timeout.attr,
-+	&iscsi_tpg_attrib_generate_node_acls.attr,
-+	&iscsi_tpg_attrib_default_cmdsn_depth.attr,
-+	&iscsi_tpg_attrib_cache_dynamic_acls.attr,
-+	&iscsi_tpg_attrib_demo_mode_lun_access.attr,
- };
- 
- static struct configfs_item_operations lio_target_tpg_attrib_ops = {
--	.show_attribute		= iscsi_tpg_attrib_s_attr_show,
--	.store_attribute	= iscsi_tpg_attrib_s_attr_store,
-+	.show_attribute		= iscsi_tpg_attrib_attr_show,
-+	.store_attribute	= iscsi_tpg_attrib_attr_store,
- };
- 
- static struct config_item_type lio_target_tpg_attrib_cit = {
--- 
-1.5.4.1
-
-
-
+Miklos
