@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbYJVJQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbYJVJU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754498AbYJVJQN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 05:16:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYJVJP5
+	id S1753832AbYJVJU7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 05:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbYJVJUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 05:15:57 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48069 "EHLO mx3.mail.elte.hu"
+	Wed, 22 Oct 2008 05:20:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38712 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751079AbYJVJP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 05:15:57 -0400
-Date: Wed, 22 Oct 2008 11:15:44 +0200
+	id S1751238AbYJVJUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 05:20:49 -0400
+Date: Wed, 22 Oct 2008 11:20:24 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2] Breaks the redundant loop in kernel/marker.c
-Message-ID: <20081022091542.GB12453@elte.hu>
-References: <48FC273B.3030300@cn.fujitsu.com> <20081020065205.GA12927@elte.hu> <48FC3083.8020104@cn.fujitsu.com> <20081020072520.GE12131@elte.hu> <20081020153850.GB27993@Krystal> <48FEA019.10606@cn.fujitsu.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Oren Laadan <orenl@cs.columbia.edu>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, viro@zeniv.linux.org.uk, hpa@zytor.com,
+       tglx@linutronix.de, torvalds@linux-foundation.org
+Subject: Re: [RFC v7][PATCH 0/9] Kernel based checkpoint/restart
+Message-ID: <20081022092024.GC12453@elte.hu>
+References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu> <20081021122135.4bce362c.akpm@linux-foundation.org> <1224621667.1848.228.camel@nimitz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48FEA019.10606@cn.fujitsu.com>
+In-Reply-To: <1224621667.1848.228.camel@nimitz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,18 +40,31 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Zhaolei <zhaolei@cn.fujitsu.com> wrote:
+* Dave Hansen <dave@linux.vnet.ibm.com> wrote:
 
-> Because e->name is unique in list, we don't need to continue the iteration
-> after matched.
+> On Tue, 2008-10-21 at 12:21 -0700, Andrew Morton wrote:
+> > On Mon, 20 Oct 2008 01:40:28 -0400
+> > Oren Laadan <orenl@cs.columbia.edu> wrote:
+> > > These patches implement basic checkpoint-restart [CR]. This version
+> > > (v7) supports basic tasks with simple private memory, and open files
+> > > (regular files and directories only).
+> > 
+> > - how useful is this code as it stands in real-world usage?
 > 
-> Impact: cleanup, no functionality changed
+> Right now, an application must be specifically written to use these 
+> mew system calls.  It must be a single process and not share any 
+> resources with other processes.  The only file descriptors that may be 
+> open are simple files and may not include sockets or pipes.
 > 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  kernel/marker.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
+> What this means in practice is that it is useful for a simple app 
+> doing computational work.
 
-applied to tip/tracing/markers, thanks! (also added Mathieu's ack)
+say a chemistry application doing calculations. Or a raytracer with a 
+large job. Both can take many hours (days!) even on very fast machine 
+and the restrictions on rebootability can hurt in such cases.
+
+You should reach a minimal level of initial practical utility: say some 
+helper tool that allows testers to checkpoint and restore a real PovRay 
+session - without any modification to a stock distro PovRay.
 
 	Ingo
