@@ -1,101 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328AbYJVVEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbYJVVFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756328AbYJVVEv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 17:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbYJVVEf
+	id S1754349AbYJVVFv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 17:05:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757501AbYJVVEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 17:04:35 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:46659 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757429AbYJVVEd (ORCPT
+	Wed, 22 Oct 2008 17:04:51 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:60961 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758498AbYJVVEt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 17:04:33 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Benjamin Thery <benjamin.thery@bull.net>, netdev <netdev@vger.kernel.org>,
-       Dave Miller <davem@davemloft.net>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Al Viro <viro@ftp.linux.org.uk>, Daniel Lezcano <dlezcano@fr.ibm.com>,
-       linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
-       Denis Lunev <den@openvz.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-References: <20081022152144.351965414@theryb.frec.bull.fr>
-	<m1d4hso0ym.fsf@frodo.ebiederm.org> <20081022203045.GA4633@us.ibm.com>
-Date: Wed, 22 Oct 2008 14:01:59 -0700
-In-Reply-To: <20081022203045.GA4633@us.ibm.com> (Serge E. Hallyn's message of
-	"Wed, 22 Oct 2008 15:30:45 -0500")
-Message-ID: <m18wsgmji0.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;"Serge E. Hallyn" <serue@us.ibm.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
-	*      [score: 0.3864]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 0/4][RFC] netns: sysfs: add a netns suffix to net device sysfs entries
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Wed, 22 Oct 2008 17:04:49 -0400
+To: penberg@cs.helsinki.fi
+CC: miklos@szeredi.hu, cl@linux-foundation.org, nickpiggin@yahoo.com.au,
+       hugh@veritas.com, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-reply-to: <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>
+	(penberg@cs.helsinki.fi)
+Subject: Re: SLUB defrag pull request?
+References: <1223883004.31587.15.camel@penberg-laptop>
+	 <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu>
+	 <48FE6306.6020806@linux-foundation.org>
+	 <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu>
+	 <Pine.LNX.4.64.0810220822500.30851@quilx.com>
+	 <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu>
+	 <Pine.LNX.4.64.0810221252570.3562@quilx.com>
+	 <E1Ksk3g-00027r-Lp@pomaz-ex.szeredi.hu>
+	 <Pine.LNX.4.64.0810221315080.26671@quilx.com>
+	 <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu> <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>
+Message-Id: <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 22 Oct 2008 23:04:32 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serue@us.ibm.com> writes:
+On Wed, 22 Oct 2008, Pekka Enberg wrote:
+> On Wed, Oct 22, 2008 at 11:26 PM, Miklos Szeredi <miklos@szeredi.hu> wrote:
+> > Because you don't _need_ a reliable reference to access the contents
+> > of the dentry.  The dentry is still there after being freed, as long
+> > as the underlying slab is there and isn't being reused for some other
+> > purpose.  But you can easily ensure that from the slab code.
+> >
+> > Hmm?
+> 
+> Actually, when debugging is enabled, it's customary to poison the
+> object, for example (see free_debug_processing() in mm/slub.c). So we
+> really can't "easily ensure" that in the allocator unless we by-pass
+> all the current debugging code.
 
-> Quoting Eric W. Biederman (ebiederm@xmission.com):
->> Benjamin Thery <benjamin.thery@bull.net> writes:
->> 
->> > Support for network namespaces in mainline is pretty complete for
->> > some time now, but there is still this issue with sysfs that prevents 
->> > more people to use it easily.
->> 
->> Ben your patchset is completely inappropriate.
->> 
->> Temporarily adding elements to the ABI that we intend to remove
->> is not a proper solution to this problem.
->> 
->> That user space visible ida you add is a namespace identifier that breaks
->> nested containers and migration.  It is very very very wrong.
->
-> I disagree (not surprising :) completely.  The well-known userspace
-> tools (ifconfig, ip, etc) will not see the lo@1, they'll see lo.
-> Userspace in a container can either umount /sys completely, or do
+Thank you, that does actually answer my question.  I would still think
+it's a good sacrifice to no let the dentries be poisoned for the sake
+of a simpler dentry defragmenter.
 
-The well-known user space tools don't use /sys at all.  Modern
-network tools use rtnetlink (ip) old network tools use /proc/net.
-
-Very few things actually use /sys and for those things lo@1 or
-eth0@1 are completely useless except for implementing a FUSE
-mock up of sysfs.  But you don't need anything in sysfs to do
-that as all of the interesting information is available through
-/proc/net or rtnetlink.
-
->
-> 	mount -t tmpfs none /sys/class/net
-> 	mount --bind /sys/devices/virtual/net/lo@1 /sys/class/net/lo
->
-> if they really want to, in which case only their view
-> of /sys/devices/virtual/net would be different.
->
-> Eric, would you hate this less if it was under some
->
-> 	CONFIG_SYSFS_NETNS_HACK
->
-> config variable?
-
-No.  ABI decisions are almost certainly irreversible.
-
-If we need an immediate hack please see the patch I sent
-in follow up.  We can achieve everything Ben is doing by simply
-keeping virtual devices out of the kobject tree.  Keeping them
-from showing up in sysfs.
-
-Eric
+Miklos
