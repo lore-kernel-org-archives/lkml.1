@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752140AbYJVEM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536AbYJVENs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752140AbYJVEM2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 00:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750725AbYJVEMP
+	id S1752536AbYJVENs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 00:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750725AbYJVENk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 00:12:15 -0400
-Received: from vms172069pub.verizon.net ([206.46.172.69]:45412 "EHLO
-	vms172069pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbYJVEMO (ORCPT
+	Wed, 22 Oct 2008 00:13:40 -0400
+Received: from ti-out-0910.google.com ([209.85.142.188]:34379 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbYJVENj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 00:12:14 -0400
-Date: Wed, 22 Oct 2008 00:11:51 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [announce] new tree: "fix all build warnings, on all configs"
-In-reply-to: <200810212137.58020.rjw@sisk.pl>
-X-X-Sender: lenb@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Howells <dhowells@redhat.com>
-Message-id: <alpine.LFD.1.10.0810220008050.2984@localhost.localdomain>
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary="Boundary_(ID_vc5q/OpJuzKVOLp+ZFuIHg)"
-References: <20081017171139.GA1792@elte.hu> <87r66ejqla.fsf@basil.nowhere.org>
- <20081021111716.GA4476@elte.hu> <200810212137.58020.rjw@sisk.pl>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 22 Oct 2008 00:13:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=FGPnf+LBw2ueYn/XQ9L7CCb4KtEHUCXQmJXjoNYjst9tb1NVGMf9GWafJ8dVcV/yAa
+         PvUQYy3aM/ymTLcubF6KIrj5kWCJZ3bINhCyIvzDIgXD95EIa5oE4raGEY/x9C92VIoo
+         2xzRDVaQU51wNKlbMoj1b58iTeUECTz0DvqK0=
+Message-ID: <48FEA86C.9030909@gmail.com>
+Date: Wed, 22 Oct 2008 13:13:32 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Linda Walsh <smartmontools@tlinx.org>
+CC: Smartmontools Mailing List 
+	<smartmontools-support@lists.sourceforge.net>,
+       Bruce Allen <ballen@gravity.phys.uwm.edu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Promise SATA-standby +selftest=hungdrive; Sil works...
+References: <Pine.LNX.4.64.0809142159550.18213@gc.phys.uwm.edu> <48E1B8F8.3090205@gmail.com> <48E26BDA.8080804@tlinx.org> <48E26E61.2010705@gmail.com> <48E34BC8.3050009@tlinx.org> <48E6DE07.70706@gmail.com> <48EAAF2E.4060407@tlinx.org> <48EAB672.3010209@gmail.com> <48EABD07.6030506@tlinx.org> <48EABE8E.9070809@gmail.com> <48EBE263.8000500@tlinx.org> <48EBF7F7.8080908@gmail.com> <48FEA0C5.5000802@tlinx.org>
+In-Reply-To: <48FEA0C5.5000802@tlinx.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---Boundary_(ID_vc5q/OpJuzKVOLp+ZFuIHg)
-Content-type: TEXT/PLAIN; charset=utf-8
-Content-transfer-encoding: 8BIT
-
-
-
-> >   drivers/acpi/sleep/main.c:67: warning: ‘acpi_pm_disable_gpes’ defined but not used
-
-> > 
-> > Shows that this code has an identity crisis due to a maze of #ifdefs, in
-> > the PM_SLEEP && !SUSPEND && !HIBERNATION case for example.
+Linda Walsh wrote:
+> This is with 2.6.26.5  (there are multiple other problems with 2.6.27[.0]).
 > 
-> This case is invalid, because PM_SLEEP == SUSPEND || HIBERNATION !
+> The problem with the drive going "offline" doesn't happen with a
+> sil_sata(3124) controller -- so no need to unplug and replug...
+> 
+> 
+> I.e. when the drives are in standby, if smartd or a smartctl command
+> attempts to run a drive self-test (short), I get timeout errors from the
+> Promise controller (which hangs the sys if I try unplugging/replugging
+> the cable to the hung drive).
+> The drives correctly spin up to speed and perform the short-test with
+> the sil controller.
+> 
+> It would seem there is a problem with the Promise controller or driver?
 
-I though so too, but 2.6.27 appears to have added XEN to the mix:
+Yeah, Mikael found out that hardreset requires controller reset before
+it.  Hopefully, it will be fixed soon.
 
-config PM_SLEEP
-        bool
-        depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
+Thanks.
 
--Len
-
---Boundary_(ID_vc5q/OpJuzKVOLp+ZFuIHg)--
+-- 
+tejun
