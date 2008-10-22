@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbYJVWMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759607AbYJVWMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754868AbYJVWMP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 18:12:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbYJVWMA
+	id S1759607AbYJVWMp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 18:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758241AbYJVWM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 18:12:00 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:60924 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752466AbYJVWMA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 18:12:00 -0400
-Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is
-	set.
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-In-Reply-To: <20081022221316.GW12825@one.firstfloor.org>
-References: <874p36fflp.fsf@basil.nowhere.org>
-	 <1224607284.6161.22.camel@alok-dev1>
-	 <20081021174008.GH12825@one.firstfloor.org>
-	 <1224612294.6161.43.camel@alok-dev1>
-	 <20081021181536.GI12825@one.firstfloor.org>
-	 <1224616236.6161.60.camel@alok-dev1>
-	 <20081021192746.GJ12825@one.firstfloor.org>
-	 <1224703427.13953.8.camel@alok-dev1>
-	 <20081022195845.GP12825@one.firstfloor.org>
-	 <1224712846.13953.37.camel@alok-dev1>
-	 <20081022221316.GW12825@one.firstfloor.org>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Wed, 22 Oct 2008 15:11:58 -0700
-Message-Id: <1224713518.13953.46.camel@alok-dev1>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Oct 2008 18:12:28 -0400
+Received: from kroah.org ([198.145.64.141]:49129 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751850AbYJVWM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 18:12:27 -0400
+Date: Wed, 22 Oct 2008 15:09:03 -0700
+From: Greg KH <greg@kroah.com>
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       em28xx <em28xx@mcentral.de>, acano@fastmail.fm,
+       Andre Kelmanson <akelmanson@gmail.com>,
+       Bouwsma Barry <freebeer.bouwsma@gmail.com>,
+       Dan Kreiser <kreiser@informatik.hu-berlin.de>,
+       Frank Neuber <fn@kernelport.de>,
+       Jelle de Jong <jelledejong@powercraft.nl>,
+       John Stowers <john.stowers.lists@gmail.com>,
+       Lukas Kuna <lukas.kuna@evkanet.net>,
+       Stefan Vonolfen <stefan.vonolfen@gmail.com>,
+       Stephan Berberig <s.berberig@arcor.de>,
+       Thomas Giesecke <thomas.giesecke@ibgmbh-naumburg.de>,
+       Vitaly Wool <vwool@ru.mvista.com>, Zhenyu Wang <zhen78@gmail.com>
+Subject: Re: [PATCH 1/7] Adding empia base driver
+Message-ID: <20081022220903.GA15278@kroah.com>
+References: <d9def9db0810221414w5348acf3re31a033ea7179462@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d9def9db0810221414w5348acf3re31a033ea7179462@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-22 at 15:13 -0700, Andi Kleen wrote:
-> > > Adding it with vmware detection code is not useful.
-> >
-> > The VMware detection code is something that's needed anyways for other
-> > purposes(getting tsc_freq right now). So the code which force sets this
-> > TSC_CONSTANT bit is trivial.
-> 
-> It would be better to eliminate that too. Why do you need it anyways?
-> 
-> > Apart from that, as i said yesterday, this should be viewed as a special
-> > case for VMware products which don't already set this bit. Changing the
-> > behavior for already existing products is not feasible.
-> 
-> On old hypervisors Linux already runs fine without TSC, doesn't it?
+On Wed, Oct 22, 2008 at 11:14:36PM +0200, Markus Rechberger wrote:
+>     em2880-dvb:
+>     * supporting the digital part of Empia based devices, which
+> includes ATSC, ISDB-T and DVB-T
 
-Not really, there are problems with the pm timer too, the one about
-missing the counter wrap and time dropping in chunks of 4 seconds.
-Tried to explain it over here, http://lkml.org/lkml/2008/10/22/525
+<snip>
 
-So TSC is the ideal clocksource from performance and correctness point
-of view for VMware. 
+Doesn't this driver duplicate some of the existing devices we already
+support with the current in-kernel driver?  If so, why not just add the
+new device support to the existing driver instead of duplicating
+everything?
 
-Thanks,
-Alok
+This is going to cause a big problem for distros as they will not know
+which to enable, so they will probably just disable this one, which is
+what I don't think you want to have happen :(
 
-> 
-> -Andi
+thanks,
 
+greg k-h
