@@ -1,107 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758105AbYJVTZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbYJVT0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758105AbYJVTZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 15:25:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbYJVTZt
+	id S1756806AbYJVT0i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 15:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbYJVT03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 15:25:49 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:63162 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754545AbYJVTZs (ORCPT
+	Wed, 22 Oct 2008 15:26:29 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:52270 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751572AbYJVT02 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 15:25:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=j15YZo/WavqzTwsyIMeySUJHWn6QYT2y5W1AWLGEboMuwB2pwtSksOIV/NH/3n1Y2X
-         TfYPABlkhoSgU8yvQIRrrO8i/McbsHKwSKUlkuhtLDE460Minnp8DWmoUETO7xW5tfqf
-         VvjgkXAWm5qJ4y43V2i8SMBg1RJFaxQjnKo5w=
-Message-ID: <b637ec0b0810221225q589ed071i75f559d6fa76d96b@mail.gmail.com>
-Date: Wed, 22 Oct 2008 21:25:46 +0200
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
-Subject: Re: Possible bug in SCSI Kconfig
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       sam@ravnborg.org, linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <1224702340.6851.20.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Wed, 22 Oct 2008 15:26:28 -0400
+Subject: Re: [PATCH 0/3] Improve TSC as a clocksource under VMware
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Chris Snook <csnook@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>, Jeff Hansen <x@jeffhansen.com>
+In-Reply-To: <48FD6EDC.5010801@redhat.com>
+References: <1224552902.2640.88.camel@alok-dev1>
+	 <48FD6EDC.5010801@redhat.com>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Wed, 22 Oct 2008 12:26:26 -0700
+Message-Id: <1224703586.13953.12.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b637ec0b0810220929r2c889423ma92bef0ec7f9b3b0@mail.gmail.com>
-	 <1224702340.6851.20.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Jeff, i have kept your Signed-off-by with this slightly modified patch,
+incase you have any objections to that please let me know.
 
-On Wed, Oct 22, 2008 at 9:05 PM, James Bottomley
-<James.Bottomley@hansenpartnership.com> wrote:
-> On Wed, 2008-10-22 at 18:29 +0200, Fabio Comolli wrote:
->> Hi.
->> In kernel 2.6.27.2 - drivers/scsi/Kconfig we have:
->>
->> config SCSI_WAIT_SCAN
->>         tristate
->>         default m
->>         depends on SCSI
->>         depends on MODULES
->>
->> The tristate field is empty. This has the effect that this option is
->> not visible in menuconfig and so it's always selected. The default is
->> "m" for all architectures and so this module is always compiled if
->> SCSI and MODULES are both enabled.
->>
->> I'm using a patch like this one:
->>
->>  config SCSI_WAIT_SCAN
->> -     tristate
->> +     tristate "Wait until all the async scans are complete"
->>       default m
->>       depends on SCSI
->>       depends on MODULES
->>
->> to get rid of that module.
->>
->> Of course, I have no idea if this is correct or the current behavior
->> is the expected one.
->
-> The point of all of this is that if you enable async scanning, you need
-> a method of waiting for the scans to complete, which is all this module
-> does (you insert it and it doesn't come back from the insertion until
-> all the pending async scans are complete).  It's tristate because really
-> it only makes sense to be M or N.  The consensus is that, given async
-> scanning is always an option, this function should always be built as a
-> module *if* modules and SCSI are enabled ... because you might have a
-> HBA module you enabled async scanning for and you need to wait.
+--
+[X86] Skip verification by the watchdog for TSC clocksource.
 
-OK, I see your point.
+From: Alok N Kataria <akataria@vmware.com>
 
-But in my case I have SCSI enabled only because it's SELECTed by ATA
-(it's just a laptop) and I don't have any hba's and never will. So no
-async scan.
+This is achieved by resetting the CLOCKSOURCE_MUST_VERIFY flag.
 
-Maybe this module should be enabled if async scan is.
+We add a tsc=reliable commandline option to enable this.
+This enables legacy hardware without HPET, LAPIC, or ACPI timers
+to enter high-resolution timer mode.
 
->
-> There's really not much point giving the user the choice, since this
-> module is part of the initrd sequence ... it's not really anything a
-> user would want to use stand alone, hence there's no point giving a
-> choice about it.
->
+Along with that have extended this to be used in virtualization
+environment, just for VMware as yet. This is important since there
+is a wrap-around problem with the acpi_pm timer.
+The acpi_pm counter is just 24bits and this can overflow in 4 seconds.
+With the NO_HZ kernels in virtualized environment, there can be situations
+when the guest is descheduled for longer duration, as a result we may miss
+the wrap of the acpi counter. When TSC is used as a clocksource and acpi_pm
+timer is being used as the watchdog clocksource this error in acpi_pm
+results in TSC being marked as unstable, and essentially results in time
+dropping in chunks of 4 seconds whenever this wrap is missed. Since the
+virtualized TSC is reliable on VMware, we should always use the TSCs
+clocksource on VMware, so we skip the verfication at runtime.
 
-I don't use initrd at all. I just noticed the existence of this module
-while trying to have a non modular kernel. This failed because of
-ipw2200 and after having enabled modules again I just found this
-scsi_wait_scan.ko.
+Since we reset the flag for mgeode systems too, i have combined
+the mgeode case with the check for VMware.
 
-> James
->
->
->
+Signed-off-by: Jeff Hansen <jhansen@cardaccess-inc.com>
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
+Cc: Chris Snook <csnook@redhat.com>
+---
 
-Regards,
-Fabio
+ Documentation/kernel-parameters.txt |    7 +++++++
+ arch/x86/kernel/tsc.c               |   33 +++++++++++++++++++++------------
+ 2 files changed, 28 insertions(+), 12 deletions(-)
+
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index e82c5bc..c5eb028 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2230,6 +2230,13 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			Format:
+ 			<io>,<irq>,<dma>,<dma2>,<sb_io>,<sb_irq>,<sb_dma>,<mpu_io>,<mpu_irq>
+ 
++	tsc=		Disable clocksource-must-verify flag for TSC.
++			Format: <string>
++			[x86] reliable: mark tsc clocksource as reliable, this
++			disables clocksource verification at runtime.
++			Used to enable high-resolution timer mode on older
++			hardware, and in virtualized environment.
++
+ 	turbografx.map[2|3]=	[HW,JOY]
+ 			TurboGraFX parallel port interface
+ 			Format:
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 4ae207c..24eff09 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -32,6 +32,7 @@ static int tsc_unstable;
+    erroneous rdtsc usage on !cpu_has_tsc processors */
+ static int tsc_disabled = -1;
+ 
++static int tsc_clocksource_reliable;
+ /*
+  * Scheduler clock - returns current time in nanosec units.
+  */
+@@ -99,6 +100,15 @@ int __init notsc_setup(char *str)
+ 
+ __setup("notsc", notsc_setup);
+ 
++static int __init tsc_setup(char *str)
++{
++	if (!strcmp(str, "reliable"))
++		tsc_clocksource_reliable = 1;
++	return 1;
++}
++
++__setup("tsc=", tsc_setup);
++
+ #define MAX_RETRIES     5
+ #define SMI_TRESHOLD    50000
+ 
+@@ -745,24 +755,21 @@ static struct dmi_system_id __initdata bad_tsc_dmi_table[] = {
+ 	{}
+ };
+ 
+-/*
+- * Geode_LX - the OLPC CPU has a possibly a very reliable TSC
+- */
++static void __init check_system_tsc_reliable(void)
++{
+ #ifdef CONFIG_MGEODE_LX
+-/* RTSC counts during suspend */
++	/* RTSC counts during suspend */
+ #define RTSC_SUSP 0x100
+-
+-static void __init check_geode_tsc_reliable(void)
+-{
+ 	unsigned long res_low, res_high;
+ 
+ 	rdmsr_safe(MSR_GEODE_BUSCONT_CONF0, &res_low, &res_high);
++	/* Geode_LX - the OLPC CPU has a possibly a very reliable TSC */
+ 	if (res_low & RTSC_SUSP)
+-		clocksource_tsc.flags &= ~CLOCK_SOURCE_MUST_VERIFY;
+-}
+-#else
+-static inline void check_geode_tsc_reliable(void) { }
++		tsc_clocksource_reliable = 1;
+ #endif
++	if (boot_cpu_data.x86_hyper_vendor == X86_HYPER_VENDOR_VMWARE)
++		tsc_clocksource_reliable = 1;
++}
+ 
+ /*
+  * Make an educated guess if the TSC is trustworthy and synchronized
+@@ -797,6 +804,8 @@ static void __init init_tsc_clocksource(void)
+ {
+ 	clocksource_tsc.mult = clocksource_khz2mult(tsc_khz,
+ 			clocksource_tsc.shift);
++	if (tsc_clocksource_reliable)
++		clocksource_tsc.flags &= ~CLOCK_SOURCE_MUST_VERIFY;
+ 	/* lower the rating if we already know its unstable: */
+ 	if (check_tsc_unstable()) {
+ 		clocksource_tsc.rating = 0;
+@@ -857,7 +866,7 @@ void __init tsc_init(void)
+ 	if (unsynchronized_tsc())
+ 		mark_tsc_unstable("TSCs unsynchronized");
+ 
+-	check_geode_tsc_reliable();
++	check_system_tsc_reliable();
+ 	init_tsc_clocksource();
+ }
+ 
+
+
