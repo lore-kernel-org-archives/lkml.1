@@ -1,20 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757335AbYJVRjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758631AbYJVRlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757335AbYJVRjf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757614AbYJVRdn
+	id S1758631AbYJVRlA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757619AbYJVReK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:33:43 -0400
-Received: from kroah.org ([198.145.64.141]:53055 "EHLO coco.kroah.org"
+	Wed, 22 Oct 2008 13:34:10 -0400
+Received: from kroah.org ([198.145.64.141]:53067 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757460AbYJVRdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:33:42 -0400
+	id S1757680AbYJVReJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 13:34:09 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Tzafrir Cohen <tzafrir@cohens.org.il>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 18/42] Staging: echo: Export interface functions. Add module headers.
-Date: Wed, 22 Oct 2008 10:28:59 -0700
-Message-Id: <1224696563-5170-18-git-send-email-gregkh@suse.de>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, David Rowe <david@rowetel.com>,
+       Steve Underwood <steveu@coppice.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 22/42] Staging: echo: fix kmalloc()/kfree() uses
+Date: Wed, 22 Oct 2008 10:29:03 -0700
+Message-Id: <1224696563-5170-22-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081022172203.GA4000@kroah.com>
 References: <20081022172203.GA4000@kroah.com>
@@ -22,74 +24,143 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tzafrir Cohen <tzafrir@cohens.org.il>
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Signed-off-by: Tzafrir Cohen <tzafrir@cohens.org.il>
+This patch removes the malloc()/free() macro wrappers and converts
+call-sites to use kcalloc() and kzalloc() where appropriate. I also
+fixed up out-of-memory error handling in couple of places where it was
+broken.
+
+Cc: David Rowe <david@rowetel.com>
+Cc: Steve Underwood <steveu@coppice.org>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/echo/echo.c |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
+ drivers/staging/echo/echo.c |   36 +++++++++++++++++-------------------
+ drivers/staging/echo/fir.h  |   14 +++++---------
+ 2 files changed, 22 insertions(+), 28 deletions(-)
 
 diff --git a/drivers/staging/echo/echo.c b/drivers/staging/echo/echo.c
-index 4a281b1..0a03eed 100644
+index 140f3f0..a2d3078 100644
 --- a/drivers/staging/echo/echo.c
 +++ b/drivers/staging/echo/echo.c
-@@ -289,6 +289,7 @@ echo_can_state_t *echo_can_create(int len, int adaption_mode)
+@@ -109,8 +109,6 @@
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+-#define malloc(a) kmalloc((a), GFP_KERNEL)
+-#define free(a) kfree(a)
+ 
+ #include "bit_operations.h"
+ #include "echo.h"
+@@ -238,27 +236,19 @@ struct oslec_state *oslec_create(int len, int adaption_mode)
+ {
+     struct oslec_state *ec;
+     int i;
+-    int j;
+ 
+-    ec = kmalloc(sizeof(*ec), GFP_KERNEL);
+-    if (ec == NULL)
+-        return  NULL;
+-    memset(ec, 0, sizeof(*ec));
++    ec = kzalloc(sizeof(*ec), GFP_KERNEL);
++    if (!ec)
++        return NULL;
+ 
+     ec->taps = len;
+     ec->log2taps = top_bit(len);
+     ec->curr_pos = ec->taps - 1;
+ 
+-    for (i = 0;  i < 2;  i++)
+-    {
+-        if ((ec->fir_taps16[i] = (int16_t *) malloc((ec->taps)*sizeof(int16_t))) == NULL)
+-        {
+-            for (j = 0;  j < i;  j++)
+-                kfree(ec->fir_taps16[j]);
+-            kfree(ec);
+-            return  NULL;
+-        }
+-        memset(ec->fir_taps16[i], 0, (ec->taps)*sizeof(int16_t));
++    for (i = 0; i < 2; i++) {
++        ec->fir_taps16[i] = kcalloc(ec->taps, sizeof(int16_t), GFP_KERNEL);
++        if (!ec->fir_taps16[i])
++	    goto error_oom;
+     }
+ 
+     fir16_create(&ec->fir_state,
+@@ -275,8 +265,9 @@ struct oslec_state *oslec_create(int len, int adaption_mode)
+     ec->cng_level = 1000;
+     oslec_adaption_mode(ec, adaption_mode);
+ 
+-    ec->snapshot = (int16_t*)malloc(ec->taps*sizeof(int16_t));
+-    memset(ec->snapshot, 0, sizeof(int16_t)*ec->taps);
++    ec->snapshot = kcalloc(ec->taps, sizeof(int16_t), GFP_KERNEL);
++    if (!ec->snapshot)
++        goto error_oom;
+ 
+     ec->cond_met = 0;
+     ec->Pstates = 0;
+@@ -288,6 +279,13 @@ struct oslec_state *oslec_create(int len, int adaption_mode)
+     ec->Lbgn_upper_acc = ec->Lbgn_upper << 13;
  
      return  ec;
- }
-+EXPORT_SYMBOL_GPL(echo_can_create);
- /*- End of function --------------------------------------------------------*/
- 
- void echo_can_free(echo_can_state_t *ec)
-@@ -302,12 +303,14 @@ void echo_can_free(echo_can_state_t *ec)
- 	kfree(ec->snapshot);
- 	kfree(ec);
- }
-+EXPORT_SYMBOL_GPL(echo_can_free);
- /*- End of function --------------------------------------------------------*/
- 
- void echo_can_adaption_mode(echo_can_state_t *ec, int adaption_mode)
- {
-     ec->adaption_mode = adaption_mode;
- }
-+EXPORT_SYMBOL_GPL(echo_can_adaption_mode);
- /*- End of function --------------------------------------------------------*/
- 
- void echo_can_flush(echo_can_state_t *ec)
-@@ -334,11 +337,13 @@ void echo_can_flush(echo_can_state_t *ec)
-     ec->curr_pos = ec->taps - 1;
-     ec->Pstates = 0;
- }
-+EXPORT_SYMBOL_GPL(echo_can_flush);
- /*- End of function --------------------------------------------------------*/
- 
- void echo_can_snapshot(echo_can_state_t *ec) {
-     memcpy(ec->snapshot, ec->fir_taps16[0], ec->taps*sizeof(int16_t));
- }
-+EXPORT_SYMBOL_GPL(echo_can_snapshot);
- /*- End of function --------------------------------------------------------*/
- 
- /* Dual Path Echo Canceller ------------------------------------------------*/
-@@ -584,7 +589,7 @@ int16_t echo_can_update(echo_can_state_t *ec, int16_t tx, int16_t rx)
- 
-     return (int16_t) ec->clean_nlp << 1;
- }
--
-+EXPORT_SYMBOL_GPL(echo_can_update);
- /*- End of function --------------------------------------------------------*/
- 
- /* This function is seperated from the echo canceller is it is usually called
-@@ -630,3 +635,9 @@ int16_t echo_can_hpf_tx(echo_can_state_t *ec, int16_t tx) {
- 
-     return tx;
- }
-+EXPORT_SYMBOL_GPL(echo_can_hpf_tx);
 +
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("David Rowe");
-+MODULE_DESCRIPTION("Open Source Line Echo Canceller");
-+MODULE_VERSION("0.3.0");
++error_oom:
++    for (i = 0; i < 2; i++)
++        kfree(ec->fir_taps16[i]);
++
++    kfree(ec);
++    return NULL;
+ }
+ EXPORT_SYMBOL_GPL(oslec_create);
+ /*- End of function --------------------------------------------------------*/
+diff --git a/drivers/staging/echo/fir.h b/drivers/staging/echo/fir.h
+index 277d20e..c29e1e2 100644
+--- a/drivers/staging/echo/fir.h
++++ b/drivers/staging/echo/fir.h
+@@ -117,11 +117,9 @@ static __inline__ const int16_t *fir16_create(fir16_state_t *fir,
+ 	fir->curr_pos = taps - 1;
+ 	fir->coeffs = coeffs;
+ #if defined(USE_MMX)  ||  defined(USE_SSE2) || defined(__bfin__)
+-	if ((fir->history = malloc(2*taps*sizeof(int16_t))))
+-		memset(fir->history, 0, 2*taps*sizeof(int16_t));
++	fir->history = kcalloc(2*taps, sizeof(int16_t), GFP_KERNEL);
+ #else
+-	if ((fir->history = (int16_t *) malloc(taps*sizeof(int16_t))))
+-		memset(fir->history, 0, taps*sizeof(int16_t));
++	fir->history = kcalloc(taps, sizeof(int16_t), GFP_KERNEL);
+ #endif
+ 	return fir->history;
+ }
+@@ -139,7 +137,7 @@ static __inline__ void fir16_flush(fir16_state_t *fir)
+ 
+ static __inline__ void fir16_free(fir16_state_t *fir)
+ {
+-	free(fir->history);
++	kfree(fir->history);
+ }
+ /*- End of function --------------------------------------------------------*/
+ 
+@@ -275,9 +273,7 @@ static __inline__ const int16_t *fir32_create(fir32_state_t *fir,
+     fir->taps = taps;
+     fir->curr_pos = taps - 1;
+     fir->coeffs = coeffs;
+-    fir->history = (int16_t *) malloc(taps*sizeof(int16_t));
+-    if (fir->history)
+-    	memset(fir->history, '\0', taps*sizeof(int16_t));
++    fir->history = kcalloc(taps, sizeof(int16_t), GFP_KERNEL);
+     return fir->history;
+ }
+ /*- End of function --------------------------------------------------------*/
+@@ -290,7 +286,7 @@ static __inline__ void fir32_flush(fir32_state_t *fir)
+ 
+ static __inline__ void fir32_free(fir32_state_t *fir)
+ {
+-    free(fir->history);
++    kfree(fir->history);
+ }
+ /*- End of function --------------------------------------------------------*/
+ 
 -- 
 1.6.0.2
 
