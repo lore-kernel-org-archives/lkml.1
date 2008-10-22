@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbYJVO7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756471AbYJVO7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756245AbYJVO7a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 10:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbYJVO7W
+	id S1756471AbYJVO7o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 10:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbYJVO73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 10:59:22 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:26283 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752657AbYJVO7V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 10:59:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=P/G9Q0bSD1zBl7X200dqbttIM0LUGB+qNE0/Jz7ni7I575HjNHxExf3ya6VWBw8BuV
-         JSFspp/p7iUAlIYrs35i9c20Hd1NWXceN1AkVam0fxON/HjZgKJkZnBT1tNauzl7aoVQ
-         frwWGpJgqCEwcrOWqilW7JR2R9LGlqJbxtHqE=
-Message-ID: <8bd0f97a0810220759h837794eo76c4413d6072dcf9@mail.gmail.com>
-Date: Wed, 22 Oct 2008 10:59:20 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Bryan Wu" <cooloney@kernel.org>
-Subject: Re: [BUG] re-modprobe a nand controller driver module will cause system crash.
-Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <386072610810212024l52cd86cen79061d7111c421ba@mail.gmail.com>
+	Wed, 22 Oct 2008 10:59:29 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33937 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755713AbYJVO72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 10:59:28 -0400
+Date: Wed, 22 Oct 2008 16:59:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Glauber Costa <glommer@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Max Kellermann <mk@cm4all.com>
+Subject: Re: [PATCH -tip] x86: do_boot_cpu - check if we have ESR register
+Message-ID: <20081022145909.GA7224@elte.hu>
+References: <20081022140009.GA9639@localhost> <20081022141354.GA26372@elte.hu> <20081022141720.GB9639@localhost> <20081022142312.GC26372@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <386072610810160356p3807f538la5087debe0c76866@mail.gmail.com>
-	 <386072610810212024l52cd86cen79061d7111c421ba@mail.gmail.com>
+In-Reply-To: <20081022142312.GC26372@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 21, 2008 at 23:24, Bryan Wu wrote:
-> Did anyone meet this issue before?
 
-actually i think we can see the same issue with the m25p80 driver ?
-if i build it as a module and load/unload it, it crashes with same
-name errors ...
+> > | > -		apic_write(APIC_ESR, 0);
+> > | > -		apic_read(APIC_ESR);
+> > | > +		if (APIC_INTEGRATED(apic_version[phys_apicid])) {
+> > | > +			apic_write(APIC_ESR, 0);
+> > | > +			apic_read(APIC_ESR);
+> > | > +		}
 
-root:/> rmmod m25p80
-root:/> modprobe m25p80
-m25p80 spi0.2: w25x10 (128 Kbytes)
-Creating 3 MTD partitions on "m25p80":
-0x00000000-0x00040000 : "bootloader(spi)"
-mtd: partition "bootloader(spi)" extends beyond the end of device
-"m25p80" -- size truncated to 0x20000
-kobject_add_internal failed for 31:0 with -EEXIST, don't try to
-register things with the same name in the same directory.
-<crash message>
--mike
+this wouldnt build with certain configs:
+
+arch/x86/kernel/smpboot.c: In function 'do_boot_cpu':
+arch/x86/kernel/smpboot.c:897: error: 'phys_apicid' undeclared (first use in this function)
+arch/x86/kernel/smpboot.c:897: error: (Each undeclared identifier is reported only once
+arch/x86/kernel/smpboot.c:897: error: for each function it appears in.)
+include/asm/io_32.h: In function 'memcpy_fromio':
+
+because phys_apicid is not available in the !WAKE_SECONDARY_VIA_INIT 
+case. Changed it to boot_cpu_physical_apicid - that should be good 
+enough.
+
+	Ingo
