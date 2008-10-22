@@ -1,91 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbYJVVFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752432AbYJVVGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757710AbYJVVFX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 17:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757527AbYJVVEl
+	id S1752432AbYJVVGR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 17:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758411AbYJVVE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 17:04:41 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:3718 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753547AbYJVVEi (ORCPT
+	Wed, 22 Oct 2008 17:04:57 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:42545 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758864AbYJVVEz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 17:04:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=WWaDUIWEU2GfjcmEQojT93BS0brRaKK7i9aSuPXKqtZRpBgEcgsuUkNsVb4KFAYvYf
-         P5GHsC+iiWIdHRlSnNBCuLjk9eZBG91/sReK4b0TQT6ZAkac88Ro7Is5mSSMle85su7H
-         ciQSOwojqDehJ1dHmJrZYipNYCV0LoMkGOipg=
-Message-ID: <c62985530810221404k2987da81q3e158e203c379b89@mail.gmail.com>
-Date: Wed, 22 Oct 2008 23:04:35 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: sbs <gexlie@gmail.com>
-Subject: Re: high %CPU values after upgrading to the last stable kernel
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <53cc795f0810221237u1b5ece4dq477be67903dd5879@mail.gmail.com>
+	Wed, 22 Oct 2008 17:04:55 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ZRroEtRQDDXXh8SQpr2oV9oogLNhG9o+I2/XbhPN4h7nXNIN1Dcv8tryDedD0xtqHBfj/DkjTGy2jnBu/sOhUI+vxVBYQ5JhVT5MuMJEpXkEae5k7kbncc1T2zrKOAp8qGnxaH3RDAXWZPQ5PNfbLfIo61fSZXzHx/SQNCNDJKw=  ;
+X-YMail-OSG: YEDn0UgVM1mLvvdXPdrkFFn35WNMXasBZT0C4MbagnoRiGUPViYJkBP8JlcwEPf.4i6fpwSo89tRDXO_DZC64q2qW83mQrNvWIBgdkJQoyLevhMUBc86ro3sh6DXbEFa.RA-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
+Date: Wed, 22 Oct 2008 14:04:52 -0700
+User-Agent: KMail/1.9.10
+Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
+       Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru> <20081022104606.GA510@oksana.dev.rtsoft.ru> <20081022183218.GA19025@oksana.dev.rtsoft.ru>
+In-Reply-To: <20081022183218.GA19025@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <53cc795f0810221237u1b5ece4dq477be67903dd5879@mail.gmail.com>
+Message-Id: <200810221404.52798.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/22 sbs <gexlie@gmail.com>:
-> after upgrading from 2.6.16 to 2.6.27 kernel top shows a strange
-> picture of extremely highly %CPU values.
->
-> # top -V
->        top: procps version 3.2.6
->
->
-> # top
-> top - 04:24:06 up 7 days,  1:12,  1 user,  load average: 2.28, 2.03, 2.00
-> Tasks: 183 total,   2 running, 181 sleeping,   0 stopped,   0 zombie
-> Cpu(s): 36.2% us,  2.4% sy,  0.0% ni, 56.1% id,  4.7% wa,  0.1% hi,  0.5% si
-> Mem:  12473092k total, 11169060k used,  1304032k free,       16k buffers
-> Swap:  2048248k total,      636k used,  2047612k free,  1257988k cached
->
->  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-> 19824 b      20   0 92212  17m 5420 S 4308  0.1   1:39.49 httpd
-> 14396 b      20   0 92716  28m  16m S 3721  0.2  38:47.38 httpd
-> 14024 b      20   0 92376  28m  16m S 2437  0.2  51:49.68 httpd
->  7415 b      20   0 96876  40m  24m D 2146  0.3  93:59.72 httpd
->  8182 b      20   0 94500  36m  21m S 1997  0.3 111:41.60 httpd
-> 13461 b      20   0 94240  31m  17m S 1439  0.3  48:43.71 httpd
->  8466 b      20   0 92036  32m  21m S 1136  0.3 107:37.90 httpd
-> 17620 b      20   0 92660  23m  11m S 1003  0.2  10:55.03 httpd
-> 14025 b      20   0 92000  28m  16m S  720  0.2  51:49.49 httpd
->  3808 nobody    20   0 3013m 2.9g  592 S  714 24.7 343030:50 memcached
->   10 root     15  -5     0    0    0 S  714  0.0  11881:28 ksoftirqd/3
-> 18487 b      20   0 91416  20m 9572 S  580  0.2   8:29.20 httpd
-> 13252 b      20   0 93408  30m  17m S  580  0.3  45:19.69 httpd
-> 17525 b      20   0 93208  23m  10m S  566  0.2  18:34.40 httpd
-> 14760 b      20   0 93452  28m  15m S  534  0.2  57:34.65 httpd
->  3804 nobody    20   0 2995m 2.9g  592 S  441 24.6 378908:26 memcached
-> 12209 b      20   0 92312  28m  16m S  279  0.2  63:28.45 httpd
->
->
->
-> %CPU is 4308 here and it's not the highest value.
-> i havent seen that on any previous kernel on the same server.
->
-> should i upgrade procps or downgrade kernel then to get proper values back? :)
-> or is it a feature of the new kernel?
->
-> thank you
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+On Wednesday 22 October 2008, Anton Vorontsov wrote:
+> 
+> > > The board info has another problem though. We can't remove it, thus
+> > > we can't implement module_exit() for the 'OF glue'.
 
-Hi,
+That's not a problem.  Why would you want to remove it?
 
-It really depends on what your box is doing at the time you capture
-the cpu usage.
-And it really depends too of your kernel config...
+
+> > And try to solve this problem... maybe then things will begin to
+> > move forward.
+> 
+> There is another problem: board infos are scanned at the controller
+> registration time only.
+
+Right.  Such board description data should be made available
+early in boot.  As a rule:  before arch_initcall() finishes,
+so that subsys_initcall() code can use the associated GPIOs.
+
+(It's fairly well acknowledged that init dependency handling
+has a lot of problems.  Until that's fixed ... for GPIOs, the
+general advice is to make sure everything is available by
+subsys_initcall time,  so the subsystems which rely on GPIOs
+to initialize -- power switches, resets, etc -- can initialize.
+That can require i2c adapter drivers to use subsys_initcall,
+for example.)
+
+
+> So if we register the board infos after 
+> the controller registered, then nobody will probe the board infos.
+
+See above.  If you're doing it right, there's no problem.
+That is, scan the OF tables early.  Just like PNP tables
+get scanned early, for example.
+
+- Dave
+
+
+
