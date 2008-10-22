@@ -1,74 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbYJVThw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757203AbYJVToi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758260AbYJVThw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 15:37:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbYJVThn
+	id S1757203AbYJVToi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 15:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbYJVTo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 15:37:43 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:35007 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752245AbYJVThm (ORCPT
+	Wed, 22 Oct 2008 15:44:28 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:54179 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752064AbYJVTo1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 15:37:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=aGytoUwL0y3kXoEVytAOrCz2O5GprSYIatjAHoITrPcrnewTgigPUTe/t9/wUHntN9
-         uGlJg6VwB0HK+E6dClsQb+S1Bkahbay2sbRJ5yXp112W9ACeGut//VQK8+h3Hu2hy7Ht
-         kyG8oQPCrtIio21mmkzSKCWgreVOPcbzXsJPc=
-Message-ID: <53cc795f0810221237u1b5ece4dq477be67903dd5879@mail.gmail.com>
-Date: Wed, 22 Oct 2008 23:37:40 +0400
-From: sbs <gexlie@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: high %CPU values after upgrading to the last stable kernel
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 22 Oct 2008 15:44:27 -0400
+Subject: Re: Possible bug in SCSI Kconfig
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, sam@ravnborg.org,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <b637ec0b0810221225q589ed071i75f559d6fa76d96b@mail.gmail.com>
+References: <b637ec0b0810220929r2c889423ma92bef0ec7f9b3b0@mail.gmail.com>
+	 <1224702340.6851.20.camel@localhost.localdomain>
+	 <b637ec0b0810221225q589ed071i75f559d6fa76d96b@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 22 Oct 2008 13:44:19 -0600
+Message-Id: <1224704659.6851.28.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-after upgrading from 2.6.16 to 2.6.27 kernel top shows a strange
-picture of extremely highly %CPU values.
+On Wed, 2008-10-22 at 21:25 +0200, Fabio Comolli wrote:
+> Hi.
+> 
+> On Wed, Oct 22, 2008 at 9:05 PM, James Bottomley
+> <James.Bottomley@hansenpartnership.com> wrote:
+> > On Wed, 2008-10-22 at 18:29 +0200, Fabio Comolli wrote:
+> >> Hi.
+> >> In kernel 2.6.27.2 - drivers/scsi/Kconfig we have:
+> >>
+> >> config SCSI_WAIT_SCAN
+> >>         tristate
+> >>         default m
+> >>         depends on SCSI
+> >>         depends on MODULES
+> >>
+> >> The tristate field is empty. This has the effect that this option is
+> >> not visible in menuconfig and so it's always selected. The default is
+> >> "m" for all architectures and so this module is always compiled if
+> >> SCSI and MODULES are both enabled.
+> >>
+> >> I'm using a patch like this one:
+> >>
+> >>  config SCSI_WAIT_SCAN
+> >> -     tristate
+> >> +     tristate "Wait until all the async scans are complete"
+> >>       default m
+> >>       depends on SCSI
+> >>       depends on MODULES
+> >>
+> >> to get rid of that module.
+> >>
+> >> Of course, I have no idea if this is correct or the current behavior
+> >> is the expected one.
+> >
+> > The point of all of this is that if you enable async scanning, you need
+> > a method of waiting for the scans to complete, which is all this module
+> > does (you insert it and it doesn't come back from the insertion until
+> > all the pending async scans are complete).  It's tristate because really
+> > it only makes sense to be M or N.  The consensus is that, given async
+> > scanning is always an option, this function should always be built as a
+> > module *if* modules and SCSI are enabled ... because you might have a
+> > HBA module you enabled async scanning for and you need to wait.
+> 
+> OK, I see your point.
+> 
+> But in my case I have SCSI enabled only because it's SELECTed by ATA
+> (it's just a laptop) and I don't have any hba's and never will. So no
+> async scan.
 
-# top -V
-        top: procps version 3.2.6
+Presumably you have a laptop hard disk.  That's currently SCSI if you
+use ATA ... although when ATA moves out of SCSI it will no longer be, so
+you could regard this as a temporary condition.
+
+> Maybe this module should be enabled if async scan is.
+
+But that's the point: async scan is always "enabled" it just might not
+be the default, that's what the CONFIG_SCSI_SCAN_ASYNC controls: the
+default value (but you can always turn it on with the kernel boot or
+SCSI module option).  Async scan is also functional for /drivers/ata and
+other hot plug type busses, so it still makes sense for them as well.
+
+> > There's really not much point giving the user the choice, since this
+> > module is part of the initrd sequence ... it's not really anything a
+> > user would want to use stand alone, hence there's no point giving a
+> > choice about it.
+> >
+> 
+> I don't use initrd at all. I just noticed the existence of this module
+> while trying to have a non modular kernel. This failed because of
+> ipw2200 and after having enabled modules again I just found this
+> scsi_wait_scan.ko.
+
+Well, we do use CONFIG_MODULES to try to discern whether the user wants
+modules or not.  However, if you enable modules, we'd need some
+telepathic configurator to tell us if you plan to use SCSI HBA modules
+or not, so the safest course is always to enable it.  The real point is
+that you have to be a real power user to answer N correctly to this, so
+it's better not to confuse the remaining 97% with the option because
+they could easily get wrong ... the 3% who're sure they don't want it
+can simply delete it.
+
+James
 
 
-# top
-top - 04:24:06 up 7 days,  1:12,  1 user,  load average: 2.28, 2.03, 2.00
-Tasks: 183 total,   2 running, 181 sleeping,   0 stopped,   0 zombie
-Cpu(s): 36.2% us,  2.4% sy,  0.0% ni, 56.1% id,  4.7% wa,  0.1% hi,  0.5% si
-Mem:  12473092k total, 11169060k used,  1304032k free,       16k buffers
-Swap:  2048248k total,      636k used,  2047612k free,  1257988k cached
-
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-19824 b      20   0 92212  17m 5420 S 4308  0.1   1:39.49 httpd
-14396 b      20   0 92716  28m  16m S 3721  0.2  38:47.38 httpd
-14024 b      20   0 92376  28m  16m S 2437  0.2  51:49.68 httpd
- 7415 b      20   0 96876  40m  24m D 2146  0.3  93:59.72 httpd
- 8182 b      20   0 94500  36m  21m S 1997  0.3 111:41.60 httpd
-13461 b      20   0 94240  31m  17m S 1439  0.3  48:43.71 httpd
- 8466 b      20   0 92036  32m  21m S 1136  0.3 107:37.90 httpd
-17620 b      20   0 92660  23m  11m S 1003  0.2  10:55.03 httpd
-14025 b      20   0 92000  28m  16m S  720  0.2  51:49.49 httpd
- 3808 nobody    20   0 3013m 2.9g  592 S  714 24.7 343030:50 memcached
-   10 root     15  -5     0    0    0 S  714  0.0  11881:28 ksoftirqd/3
-18487 b      20   0 91416  20m 9572 S  580  0.2   8:29.20 httpd
-13252 b      20   0 93408  30m  17m S  580  0.3  45:19.69 httpd
-17525 b      20   0 93208  23m  10m S  566  0.2  18:34.40 httpd
-14760 b      20   0 93452  28m  15m S  534  0.2  57:34.65 httpd
- 3804 nobody    20   0 2995m 2.9g  592 S  441 24.6 378908:26 memcached
-12209 b      20   0 92312  28m  16m S  279  0.2  63:28.45 httpd
-
-
-
-%CPU is 4308 here and it's not the highest value.
-i havent seen that on any previous kernel on the same server.
-
-should i upgrade procps or downgrade kernel then to get proper values back? :)
-or is it a feature of the new kernel?
-
-thank you
