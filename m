@@ -1,81 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbYJVJdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752499AbYJVJdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754381AbYJVJdW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 05:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbYJVJdM
+	id S1752499AbYJVJdi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 05:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbYJVJdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 05:33:12 -0400
-Received: from mga09.intel.com ([134.134.136.24]:59636 "EHLO mga09.intel.com"
+	Wed, 22 Oct 2008 05:33:23 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38694 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751906AbYJVJdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 05:33:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,463,1220252400"; 
-   d="scan'208";a="454253967"
-Date: Wed, 22 Oct 2008 16:38:09 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: linux-pci@vger.kernel.org
-Cc: achiang@hp.com, grundler@parisc-linux.org, greg@kroah.com, mingo@elte.hu,
-       jbarnes@virtuousgeek.org, matthew@wil.cx, randy.dunlap@oracle.com,
-       rdreier@cisco.com, linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       virtualization@lists.linux-foundation.org
-Subject: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-Message-ID: <20081022083809.GA3757@yzhao12-linux.sh.intel.com>
+	id S1754178AbYJVJdV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 05:33:21 -0400
+Date: Wed, 22 Oct 2008 11:33:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexey Fisher <bug-track@fisher-privat.net>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Ricardo Cerqueira <v4l@cerqueira.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Hartmut Hackmann <hartmut.hackmann@t-online.de>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] saa7134: fix resource map sanity check conflict
+Message-ID: <20081022093302.GE12453@elte.hu>
+References: <1224340447.5325.4.camel@zwerg> <20081020205702.GI7829@linux-os.sc.intel.com> <1224570426.5287.1.camel@zwerg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1224570426.5287.1.camel@zwerg>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
 
-Following patches are intended to support SR-IOV capability in the
-Linux kernel. With these patches, people can turn a PCI device with
-the capability into multiple ones from software perspective, which
-will benefit KVM and achieve other purposes such as QoS, security,
-and etc.
+* Alexey Fisher <bug-track@fisher-privat.net> wrote:
 
-Changes from v5 to v6:
-1, update ABI document to include SR-IOV sysfs entries (Greg KH)
-2, fix two coding style problems (Ingo Molnar)
+> Thanks, suresh! this patch working for me. dmesg is attached.
 
+thanks Alexey!
+
+I've Cc:-ed the saa7134 developers - please pick up Suresh's fix below. 
+A new debug check in ioremap() caught a bug in the saa7134 driver.
+
+	Ingo
+
+---------------->
+>From afed66317accd2fdfeb57061102c20796fb9ff66 Mon Sep 17 00:00:00 2001
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Date: Mon, 20 Oct 2008 13:57:02 -0700
+Subject: [PATCH] saa7134: fix resource map sanity check conflict
+
+Impact: driver could possibly stomp on resources outside of its scope
+
+Alexey Fisher reported:
+
+> resource map sanity check conflict: 0xcfeff800 0xcff007ff 0xcfe00000
+> 0xcfefffff PCI Bus 0000:01
+
+BAR base is located in the middle of the 4K page and the hardcoded
+size argument makes the request span two pages causing the conflict.
+
+Fix the hard coded size argument in ioremap().
+
+Reported-by: Alexey Fisher <bug-track@fisher-privat.net>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Tested-by: Alexey Fisher <bug-track@fisher-privat.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ drivers/media/video/saa7134/saa7134-core.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-[PATCH 1/16 v6] PCI: remove unnecessary arg of pci_update_resource()
-[PATCH 2/16 v6] PCI: define PCI resource names in an 'enum'
-[PATCH 3/16 v6] PCI: export __pci_read_base
-[PATCH 4/16 v6] PCI: make pci_alloc_child_bus() be able to handle NULL bridge
-[PATCH 5/16 v6] PCI: add a wrapper for resource_alignment()
-[PATCH 6/16 v6] PCI: add a new function to map BAR offset
-[PATCH 7/16 v6] PCI: cleanup pcibios_allocate_resources()
-[PATCH 8/16 v6] PCI: add boot options to reassign resources
-[PATCH 9/16 v6] PCI: add boot option to align MMIO resources
-[PATCH 10/16 v6] PCI: cleanup pci_bus_add_devices()
-[PATCH 11/16 v6] PCI: split a new function from pci_bus_add_devices()
-[PATCH 12/16 v6] PCI: support the SR-IOV capability
-[PATCH 13/16 v6] PCI: reserve bus range for SR-IOV device
-[PATCH 14/16 v6] PCI: document for SR-IOV user and developer
-[PATCH 15/16 v6] PCI: document the SR-IOV sysfs entries
-[PATCH 16/16 v6] PCI: document the new PCI boot parameters
+diff --git a/drivers/media/video/saa7134/saa7134-core.c b/drivers/media/video/saa7134/saa7134-core.c
+index b686bfa..0c13821 100644
+--- a/drivers/media/video/saa7134/saa7134-core.c
++++ b/drivers/media/video/saa7134/saa7134-core.c
+@@ -941,7 +941,8 @@ static int __devinit saa7134_initdev(struct pci_dev *pci_dev,
+ 		       dev->name,(unsigned long long)pci_resource_start(pci_dev,0));
+ 		goto fail1;
+ 	}
+-	dev->lmmio = ioremap(pci_resource_start(pci_dev,0), 0x1000);
++	dev->lmmio = ioremap(pci_resource_start(pci_dev, 0),
++			     pci_resource_len(pci_dev, 0));
+ 	dev->bmmio = (__u8 __iomem *)dev->lmmio;
+ 	if (NULL == dev->lmmio) {
+ 		err = -EIO;
 
----
-
-Single Root I/O Virtualization (SR-IOV) capability defined by PCI-SIG
-is intended to enable multiple system software to share PCI hardware
-resources.  PCI device that supports this capability can be extended
-to one Physical Functions plus multiple Virtual Functions. Physical
-Function, which could be considered as the "real" PCI device, reflects
-the hardware instance and manages all physical resources. Virtual
-Functions are associated with a Physical Function and shares physical
-resources with the Physical Function.Software can control allocation of
-Virtual Functions via registers encapsulated in the capability structure.
-
-SR-IOV specification can be found at
-http://www.pcisig.com/members/downloads/specifications/iov/sr-iov1.0_11Sep07.pdf
-
-Devices that support SR-IOV are available from following vendors:
-http://download.intel.com/design/network/ProdBrf/320025.pdf
-http://www.netxen.com/products/chipsolutions/NX3031.html
-http://www.neterion.com/products/x3100.html
