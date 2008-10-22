@@ -1,211 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbYJVQIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757145AbYJVQJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756652AbYJVQIE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 12:08:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756900AbYJVQH3
+	id S1757145AbYJVQJR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 12:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbYJVQJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 12:07:29 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:40872 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756440AbYJVQH2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 12:07:28 -0400
-Date: Wed, 22 Oct 2008 19:07:26 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Greg Kroah-Hartman <greg@kroah.com>
-cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] w35und: remove the no-op pa_stall_execution macro
-Message-ID: <Pine.LNX.4.64.0810221907030.1679@melkki.cs.Helsinki.FI>
-Mime-Version: 1.0
+	Wed, 22 Oct 2008 12:09:00 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:49414 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754049AbYJVQI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 12:08:59 -0400
+Date: Wed, 22 Oct 2008 09:49:44 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/3] integrity: TPM internel kernel interface
+Message-ID: <20081022144944.GC21612@us.ibm.com>
+References: <cover.1223869200.git.zohar@localhost.localdomain> <c7ae4dc26c0c2897218851c7bdb056b4a4b49f26.1223869200.git.zohar@localhost.localdomain> <20081014222312.GA18343@hallyn.com> <1224679633.2786.20.camel@dyn536723.br.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1224679633.2786.20.camel@dyn536723.br.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+Quoting Rajiv Andrade (srajiv@linux.vnet.ibm.com):
+> On Tue, 2008-10-14 at 17:23 -0500, Serge E. Hallyn wrote:
+> > Quoting Mimi Zohar (zohar@linux.vnet.ibm.com):
+> > > The internal TPM kernel interface did not protect itself from
+> > > the removal of the TPM driver, while being used.  We continue
+> > > to protect the tpm_chip_list using the driver_lock as before,
+> > > and are using an rcu lock to protect readers. The internal TPM
+> > 
+> > I still would like to see this spelled out somewhere - correct me
+> > if I'm wrong but none of the patches sent so far have this spelled
+> > out in in-line comments, do they?
+> > 
+> > It does look sane:
+> > 
+> > 	1. writes to tpm_chip_list are protected by driver_lock
+> > 	2. readers of the list are protected by rcu
+> > 	3. chips which are read from the tpm_chip_list, if they
+> > 	   are used outside of the rcu_read_lock(), are pinned
+> > 	   using get_device(chip->dev) before releasing the
+> > 	   rcu_read_lock.
+> > 
+> > Like I say it looks sane, but something like the above summary
+> > could stand to be in a comment on top of tpm.c or something.
+> > 
+> No problem, I'll submit a patch containing a proper comment section to
+> be applied on top of these, maybe after they get accepted.
 
-The pa_stall_execution() macro doesn't do anything so remove it from driver
-code.
+Great, thanks.
 
-Cc: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- drivers/staging/winbond/phy_calibration.c |   23 -----------------------
- drivers/staging/winbond/wbhal_f.h         |    1 -
- 2 files changed, 0 insertions(+), 24 deletions(-)
+> > > kernel interface now protects itself from the driver being
+> > > removed by incrementing the module reference count.
+> > > 
+> > > Resubmitting integrity-tpm-internal-kernel-interface.patch, which
+> > > was previously Signed-off-by Kylene Hall.
+> > > Updated per feedback:
+> > > 
+> > > Adds the following support:
+> > >   - make internal kernel interface to transmit TPM commands global
+> > >   - adds reading a pcr value
+> > >   - adds extending a pcr value
+> > >   - adds lookup the tpm_chip for given chip number and type
+> > > 
+> > > Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
+> > > Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+> > 
+> > Now there are other, existing callers of tpm_transmit.  Are they
+> > all protected by sysfs pinning the kobject and thereby the device,
+> > for the duration of the call?
+> > 
+> 
+> They aren't called through sysfs, but are still protected. These new
+> functions get chip data consistently by using rcu_read. Then, after
+> computing what's intended to be written back to the chip, tpm_transmit
+> sends the new data while using tpm_mutex, so both operations are
+> performed without the risk of a race condition.
 
-diff --git a/drivers/staging/winbond/phy_calibration.c b/drivers/staging/winbond/phy_calibration.c
-index 76183b2..e83c2f2 100644
---- a/drivers/staging/winbond/phy_calibration.c
-+++ b/drivers/staging/winbond/phy_calibration.c
-@@ -431,7 +431,6 @@ void _rxadc_dc_offset_cancellation_winbond(hw_data_t *phw_data, u32 frequency)
- 
- 	val |= MASK_ADC_DC_CAL_STR;
- 	hw_set_dxx_reg(phw_data, REG_MODE_CTRL, val);
--	pa_stall_execution(US); // *MUST* wait for a while
- 
- 	// e. The result are shown in "adc_dc_cal_i[8:0] and adc_dc_cal_q[8:0]"
- #ifdef _DEBUG
-@@ -522,7 +521,6 @@ void _txidac_dc_offset_cancellation_winbond(hw_data_t *phw_data)
- 	reg_mode_ctrl |= (MASK_CALIB_START|2|(2<<2));
- 	hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 	PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--	pa_stall_execution(US);
- 
- 	hw_get_dxx_reg(phw_data, 0x5C, &reg_dc_cancel);
- 	PHY_DEBUG(("[CAL]    DC_CANCEL (read) = 0x%08X\n", reg_dc_cancel));
-@@ -536,7 +534,6 @@ void _txidac_dc_offset_cancellation_winbond(hw_data_t *phw_data)
- 		reg_dc_cancel &= ~(0x03FF);
- 		PHY_DEBUG(("[CAL]    DC_CANCEL (write) = 0x%08X\n", reg_dc_cancel));
- 		hw_set_dxx_reg(phw_data, 0x5C, reg_dc_cancel);
--		pa_stall_execution(US);
- 
- 		hw_get_dxx_reg(phw_data, REG_CALIB_READ2, &val);
- 		PHY_DEBUG(("[CAL]    CALIB_READ2 = 0x%08X\n", val));
-@@ -552,7 +549,6 @@ void _txidac_dc_offset_cancellation_winbond(hw_data_t *phw_data)
- 		reg_dc_cancel |= (1 << CANCEL_DC_I_SHIFT);
- 		PHY_DEBUG(("[CAL]    DC_CANCEL (write) = 0x%08X\n", reg_dc_cancel));
- 		hw_set_dxx_reg(phw_data, 0x5C, reg_dc_cancel);
--		pa_stall_execution(US);
- 
- 		hw_get_dxx_reg(phw_data, REG_CALIB_READ2, &val);
- 		PHY_DEBUG(("[CAL]    CALIB_READ2 = 0x%08X\n", val));
-@@ -600,7 +596,6 @@ void _txidac_dc_offset_cancellation_winbond(hw_data_t *phw_data)
- 	reg_mode_ctrl &= ~MASK_CALIB_START;
- 	hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 	PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--	pa_stall_execution(US);
- }
- 
- ///////////////////////////////////////////////////////
-@@ -651,7 +646,6 @@ void _txqdac_dc_offset_cacellation_winbond(hw_data_t *phw_data)
- 	reg_mode_ctrl |= (MASK_CALIB_START|3);
- 	hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 	PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--	pa_stall_execution(US);
- 
- 	hw_get_dxx_reg(phw_data, 0x5C, &reg_dc_cancel);
- 	PHY_DEBUG(("[CAL]    DC_CANCEL (read) = 0x%08X\n", reg_dc_cancel));
-@@ -665,11 +659,9 @@ void _txqdac_dc_offset_cacellation_winbond(hw_data_t *phw_data)
- 		reg_dc_cancel &= ~(0x001F);
- 		PHY_DEBUG(("[CAL]    DC_CANCEL (write) = 0x%08X\n", reg_dc_cancel));
- 		hw_set_dxx_reg(phw_data, 0x5C, reg_dc_cancel);
--		pa_stall_execution(US);
- 
- 		hw_get_dxx_reg(phw_data, REG_CALIB_READ2, &val);
- 		PHY_DEBUG(("[CAL]    CALIB_READ2 = 0x%08X\n", val));
--		pa_stall_execution(US);
- 
- 		iqcal_image_i = _s13_to_s32(val & 0x00001FFF);
- 		iqcal_image_q = _s13_to_s32((val & 0x03FFE000) >> 13);
-@@ -682,11 +674,9 @@ void _txqdac_dc_offset_cacellation_winbond(hw_data_t *phw_data)
- 		reg_dc_cancel |= (1 << CANCEL_DC_Q_SHIFT);
- 		PHY_DEBUG(("[CAL]    DC_CANCEL (write) = 0x%08X\n", reg_dc_cancel));
- 		hw_set_dxx_reg(phw_data, 0x5C, reg_dc_cancel);
--		pa_stall_execution(US);
- 
- 		hw_get_dxx_reg(phw_data, REG_CALIB_READ2, &val);
- 		PHY_DEBUG(("[CAL]    CALIB_READ2 = 0x%08X\n", val));
--		pa_stall_execution(US);
- 
- 		iqcal_image_i = _s13_to_s32(val & 0x00001FFF);
- 		iqcal_image_q = _s13_to_s32((val & 0x03FFE000) >> 13);
-@@ -732,7 +722,6 @@ void _txqdac_dc_offset_cacellation_winbond(hw_data_t *phw_data)
- 	reg_mode_ctrl &= ~MASK_CALIB_START;
- 	hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 	PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--	pa_stall_execution(US);
- }
- 
- //20060612.1.a 20060718.1 Modify
-@@ -792,12 +781,10 @@ u8 _tx_iq_calibration_loop_winbond(hw_data_t *phw_data,
- 			reg_mode_ctrl |= (MASK_CALIB_START|0x02|2<<2);
- 			hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 			PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--			pa_stall_execution(US);
- 
- 			// b.
- 			hw_get_dxx_reg(phw_data, REG_CALIB_READ1, &val);
- 			PHY_DEBUG(("[CAL]    CALIB_READ1 = 0x%08X\n", val));
--			pa_stall_execution(US);
- 
- 			iqcal_tone_i0 = _s13_to_s32(val & 0x00001FFF);
- 			iqcal_tone_q0 = _s13_to_s32((val & 0x03FFE000) >> 13);
-@@ -813,7 +800,6 @@ u8 _tx_iq_calibration_loop_winbond(hw_data_t *phw_data,
- 			reg_mode_ctrl &= ~MASK_CALIB_START;
- 			hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 			PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--			pa_stall_execution(US);
- 
- 			// d. Set iqcal_mode[1:0] to 0x3 and set "calib_start" to 0x1 to
- 			//    enable "IQ alibration Mode II"
-@@ -823,12 +809,10 @@ u8 _tx_iq_calibration_loop_winbond(hw_data_t *phw_data,
- 			reg_mode_ctrl |= (MASK_CALIB_START|0x03);
- 			hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 			PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--			pa_stall_execution(US);
- 
- 			// e.
- 			hw_get_dxx_reg(phw_data, REG_CALIB_READ1, &val);
- 			PHY_DEBUG(("[CAL]    CALIB_READ1 = 0x%08X\n", val));
--			pa_stall_execution(US);
- 
- 			iqcal_tone_i = _s13_to_s32(val & 0x00001FFF);
- 			iqcal_tone_q = _s13_to_s32((val & 0x03FFE000) >> 13);
-@@ -1282,13 +1266,11 @@ u8 _rx_iq_calibration_loop_winbond(hw_data_t *phw_data, u16 factor, u32 frequenc
- 		if( !hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl) )//20060718.1 modify
- 			return 0;
- 		PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--		pa_stall_execution(US);
- 
- 		reg_mode_ctrl &= ~MASK_IQCAL_MODE;
- 		reg_mode_ctrl |= (MASK_CALIB_START|0x1);
- 		hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 		PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--		pa_stall_execution(US);  //Should be read out after 450us
- 
- 		// c.
- 		hw_get_dxx_reg(phw_data, REG_CALIB_READ1, &val);
-@@ -1697,7 +1679,6 @@ unsigned char adjust_TXVGA_for_iq_mag(hw_data_t *phw_data)
- 		phy_set_rf_data(phw_data, 5, ((5<<24)|current_txvga) );
- 		phw_data->txvga_setting_for_cal = current_txvga;
- 
--		//pa_stall_execution(30000);//Sleep(30);
- 		msleep(30); // 20060612.1.a
- 
- 		if( !hw_get_dxx_reg(phw_data, REG_MODE_CTRL, &reg_mode_ctrl) ) // 20060718.1 modify
-@@ -1714,18 +1695,14 @@ unsigned char adjust_TXVGA_for_iq_mag(hw_data_t *phw_data)
- 		hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 		PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
- 
--		//pa_stall_execution(US);
- 		udelay(1); // 20060612.1.a
- 
--		//pa_stall_execution(300);//Sleep(30);
- 		udelay(300); // 20060612.1.a
- 
- 		// b.
- 		hw_get_dxx_reg(phw_data, REG_CALIB_READ1, &val);
- 
- 		PHY_DEBUG(("[CAL]    CALIB_READ1 = 0x%08X\n", val));
--		//pa_stall_execution(US);
--		//pa_stall_execution(300);//Sleep(30);
- 		udelay(300); // 20060612.1.a
- 
- 		iqcal_tone_i0 = _s13_to_s32(val & 0x00001FFF);
-diff --git a/drivers/staging/winbond/wbhal_f.h b/drivers/staging/winbond/wbhal_f.h
-index 9f0436b..239c301 100644
---- a/drivers/staging/winbond/wbhal_f.h
-+++ b/drivers/staging/winbond/wbhal_f.h
-@@ -111,7 +111,6 @@ unsigned char hal_set_LED(  phw_data_t pHwData,  u32 Mode ); // 20061108 for WPS
- #define hal_ibss_disconnect(_A) hal_stop_sync_bss(_A)
- #define hal_join_request_stop(_A)
- unsigned char	hal_idle(  phw_data_t pHwData );
--#define pa_stall_execution( _A )	//OS_SLEEP( 1 )
- #define hw_get_cxx_reg( _A, _B, _C )
- #define hw_set_cxx_reg( _A, _B, _C )
- #define hw_get_dxx_reg( _A, _B, _C )	hal_get_dxx_reg( _A, _B, (u32 *)_C )
--- 
-1.5.3.7
+Can you show me where the refcount for dev is incremented (under the
+rcu_read_lock), either in sysfs code or tpm code?  I'm not finding
+it, but it may just be done in some subtle way that I'm glossing over.
 
+thanks,
+-serge
