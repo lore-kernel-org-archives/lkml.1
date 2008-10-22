@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbYJVIvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbYJVI6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753561AbYJVIvV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 04:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYJVIvN
+	id S1753295AbYJVI6a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 04:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbYJVI6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 04:51:13 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:48201 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752061AbYJVIvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 04:51:13 -0400
-From: Andrey Mirkin <major@openvz.org>
-To: devel@openvz.org, Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [Devel] Re: [PATCH 08/10] Introduce functions to restart a process
-Date: Wed, 22 Oct 2008 12:49:54 +0400
-User-Agent: KMail/1.8.2
-Cc: Cedric Le Goater <clg@fr.ibm.com>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <1224285098-573-1-git-send-email-major@openvz.org> <1224285098-573-9-git-send-email-major@openvz.org> <48FC4E0C.7050008@fr.ibm.com>
-In-Reply-To: <48FC4E0C.7050008@fr.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 22 Oct 2008 04:58:21 -0400
+Received: from styx.suse.cz ([82.119.242.94]:35375 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751079AbYJVI6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 04:58:20 -0400
+Subject: Re: [PATCH 1/2] Allow rwlocks to re-enable interrupts
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org, tee@sgi.com,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1224665128.15448.4.camel@twins>
+References: <1224664414.4430.33.camel@elijah.suse.cz>
+	 <1224664476.4430.38.camel@elijah.suse.cz>  <1224665128.15448.4.camel@twins>
+Content-Type: text/plain
+Organization: SUSE LINUX
+Date: Wed, 22 Oct 2008 10:58:19 +0200
+Message-Id: <1224665899.4430.48.camel@elijah.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810221249.55600.major@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 20 October 2008 13:23 Cedric Le Goater wrote:
-> Hello Andrey !
->
-> > diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
-> > index 109792b..a4848a3 100644
-> > --- a/arch/x86/kernel/entry_32.S
-> > +++ b/arch/x86/kernel/entry_32.S
-> > @@ -225,6 +225,7 @@ ENTRY(ret_from_fork)
-> >  	GET_THREAD_INFO(%ebp)
-> >  	popl %eax
-> >  	CFI_ADJUST_CFA_OFFSET -4
-> > +ret_from_fork_tail:
-> >  	pushl $0x0202			# Reset kernel eflags
-> >  	CFI_ADJUST_CFA_OFFSET 4
-> >  	popfl
-> > @@ -233,6 +234,26 @@ ENTRY(ret_from_fork)
-> >  	CFI_ENDPROC
-> >  END(ret_from_fork)
-> >
-> > +ENTRY(i386_ret_from_resume)
-> > +	CFI_STARTPROC
-> > +	pushl %eax
-> > +	CFI_ADJUST_CFA_OFFSET 4
-> > +	call schedule_tail
-> > +	GET_THREAD_INFO(%ebp)
-> > +	popl %eax
-> > +	CFI_ADJUST_CFA_OFFSET -4
-> > +	movl (%esp), %eax
-> > +	testl %eax, %eax
-> > +	jz    1f
-> > +	pushl %esp
-> > +	call  *%eax
-> > +	addl  $4, %esp
-> > +1:
-> > +	addl  $256, %esp
-> > +	jmp   ret_from_fork_tail
-> > +	CFI_ENDPROC
-> > +END(i386_ret_from_resume)
->
-> Could you explain why you need to do this
->
-> 	call  *%eax
->
-> is it related to the freezer code ?
+On Wed, 2008-10-22 at 10:45 +0200, Peter Zijlstra wrote:
+> On Wed, 2008-10-22 at 10:34 +0200, Petr Tesarik wrote:
+> > c b/kernel/spinlock.c
+> > index 29ab207..f769d8a 100644
+> > --- a/kernel/spinlock.c
+> > +++ b/kernel/spinlock.c
+> > @@ -121,7 +121,11 @@ unsigned long __lockfunc _read_lock_irqsave(rwlock_t *lock)
+> >  	local_irq_save(flags);
+> >  	preempt_disable();
+> >  	rwlock_acquire_read(&lock->dep_map, 0, 0, _RET_IP_);
+> > +#ifdef CONFIG_LOCKDEP
+> >  	LOCK_CONTENDED(lock, _raw_read_trylock, _raw_read_lock);
+> > +#else
+> > +	_raw_read_lock_flags(lock, &flags);
+> > +#endif
+> >  	return flags;
+> >  }
+> 
+> That should be CONFIG_LOCK_STAT.
 
-It is not related to the freezer code actually.
-That is needed to restart syscalls. Right now I don't have a code in my 
-patchset which restarts a syscall, but later I plan to add it.
-In OpenVZ checkpointing we restart syscalls if process was caught in syscall 
-during checkpointing.
+Ugh. Fine with me, but is CONFIG_LOCKDEP correct in _spin_lock_irqsave,
+or should it also read CONFIG_LOCK_STAT?
 
-Andrey
+> But aside from that, I really don't like this change, I'd rather you'd
+> create a LOCK_CONTENDED_FLAGS() that can deal with this.
+
+No problem. I could then also use it for _spin_lock_irqsave, if the
+answer to the above question is use CONFIG_LOCK_STAT there as well.
+
+Petr Tesarik
+
+
