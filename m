@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759291AbYJVSyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbYJVSzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759291AbYJVSyr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 14:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758165AbYJVSvs
+	id S1757529AbYJVSzh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 14:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756980AbYJVSvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 14:51:48 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51068 "EHLO
+	Wed, 22 Oct 2008 14:51:47 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:53670 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757992AbYJVSvi (ORCPT
+	with ESMTP id S1757997AbYJVSvj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 14:51:38 -0400
-Message-Id: <20081022185136.842543815@goodmis.org>
+	Wed, 22 Oct 2008 14:51:39 -0400
+Message-Id: <20081022185137.247900443@goodmis.org>
 References: <20081022184313.179487464@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Oct 2008 14:43:21 -0400
+Date: Wed, 22 Oct 2008 14:43:23 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
@@ -24,66 +24,132 @@ Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 08/11] ftrace: disable dynamic ftrace for all archs that use daemon
-Content-Disposition: inline; filename=ftrace-remove-non-x86-dynamic-ftrace.patch
+Subject: [PATCH 10/11] ftrace: remove mcount set
+Content-Disposition: inline; filename=ftrace-remove-mcount-set.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ftrace daemon is complex and can cause nasty races if something goes
-wrong. Since it affects all of the kernel, this patch disables dynamic 
-ftrace from any arch that depends on the daemon. Until the archs are
-ported over to the new MCOUNT_RECORD method, I am disabling dynamic
-ftrace from them.
-
-Note: I am leaving in the arch/<arch>/kernel/ftrace.c code alone since
-that can be used when the arch is ported to MCOUNT_RECORD. To port
-the arch to MCOUNT_RECORD, the scripts/recordmcount.pl needs to be
-updated. I will make that easier to do for 2.6.29. For 28, we will keep
-the archs disabled.
+The arch dependent function ftrace_mcount_set was only used by the daemon
+start up code. This patch removes it.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/arm/Kconfig     |    1 -
- arch/powerpc/Kconfig |    1 -
- arch/sparc64/Kconfig |    1 -
- 3 files changed, 3 deletions(-)
+ arch/arm/kernel/ftrace.c     |   13 -------------
+ arch/powerpc/kernel/ftrace.c |   17 -----------------
+ arch/x86/kernel/ftrace.c     |    7 -------
+ include/linux/ftrace.h       |    1 -
+ kernel/trace/ftrace.c        |    9 ---------
+ 5 files changed, 47 deletions(-)
 
-Index: linux-compile.git/arch/arm/Kconfig
+Index: linux-compile.git/arch/arm/kernel/ftrace.c
 ===================================================================
---- linux-compile.git.orig/arch/arm/Kconfig	2008-10-22 13:10:52.000000000 -0400
-+++ linux-compile.git/arch/arm/Kconfig	2008-10-22 13:20:55.000000000 -0400
-@@ -17,7 +17,6 @@ config ARM
- 	select HAVE_KPROBES if (!XIP_KERNEL)
- 	select HAVE_KRETPROBES if (HAVE_KPROBES)
- 	select HAVE_FTRACE if (!XIP_KERNEL)
--	select HAVE_DYNAMIC_FTRACE if (HAVE_FTRACE)
- 	select HAVE_GENERIC_DMA_COHERENT
- 	help
- 	  The ARM series is a line of low-power-consumption RISC chip designs
-Index: linux-compile.git/arch/powerpc/Kconfig
+--- linux-compile.git.orig/arch/arm/kernel/ftrace.c	2008-10-22 13:10:52.000000000 -0400
++++ linux-compile.git/arch/arm/kernel/ftrace.c	2008-10-22 13:23:54.000000000 -0400
+@@ -95,19 +95,6 @@ int ftrace_update_ftrace_func(ftrace_fun
+ 	return ret;
+ }
+ 
+-int ftrace_mcount_set(unsigned long *data)
+-{
+-	unsigned long pc, old;
+-	unsigned long *addr = data;
+-	unsigned char *new;
+-
+-	pc = (unsigned long)&mcount_call;
+-	memcpy(&old, &mcount_call, MCOUNT_INSN_SIZE);
+-	new = ftrace_call_replace(pc, *addr);
+-	*addr = ftrace_modify_code(pc, (unsigned char *)&old, new);
+-	return 0;
+-}
+-
+ /* run from kstop_machine */
+ int __init ftrace_dyn_arch_init(void *data)
+ {
+Index: linux-compile.git/arch/powerpc/kernel/ftrace.c
 ===================================================================
---- linux-compile.git.orig/arch/powerpc/Kconfig	2008-10-22 13:10:52.000000000 -0400
-+++ linux-compile.git/arch/powerpc/Kconfig	2008-10-22 13:20:55.000000000 -0400
-@@ -111,7 +111,6 @@ config ARCH_NO_VIRT_TO_BUS
- config PPC
- 	bool
- 	default y
--	select HAVE_DYNAMIC_FTRACE
- 	select HAVE_FTRACE
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
- 	select HAVE_IDE
-Index: linux-compile.git/arch/sparc64/Kconfig
+--- linux-compile.git.orig/arch/powerpc/kernel/ftrace.c	2008-10-22 13:10:52.000000000 -0400
++++ linux-compile.git/arch/powerpc/kernel/ftrace.c	2008-10-22 13:23:54.000000000 -0400
+@@ -126,23 +126,6 @@ notrace int ftrace_update_ftrace_func(ft
+ 	return ret;
+ }
+ 
+-notrace int ftrace_mcount_set(unsigned long *data)
+-{
+-	unsigned long ip = (long)(&mcount_call);
+-	unsigned long *addr = data;
+-	unsigned char old[MCOUNT_INSN_SIZE], *new;
+-
+-	/*
+-	 * Replace the mcount stub with a pointer to the
+-	 * ip recorder function.
+-	 */
+-	memcpy(old, &mcount_call, MCOUNT_INSN_SIZE);
+-	new = ftrace_call_replace(ip, *addr);
+-	*addr = ftrace_modify_code(ip, old, new);
+-
+-	return 0;
+-}
+-
+ int __init ftrace_dyn_arch_init(void *data)
+ {
+ 	/* This is running in kstop_machine */
+Index: linux-compile.git/arch/x86/kernel/ftrace.c
 ===================================================================
---- linux-compile.git.orig/arch/sparc64/Kconfig	2008-10-22 13:10:52.000000000 -0400
-+++ linux-compile.git/arch/sparc64/Kconfig	2008-10-22 13:20:55.000000000 -0400
-@@ -11,7 +11,6 @@ config SPARC
- config SPARC64
- 	bool
- 	default y
--	select HAVE_DYNAMIC_FTRACE
- 	select HAVE_FTRACE
- 	select HAVE_IDE
- 	select HAVE_LMB
+--- linux-compile.git.orig/arch/x86/kernel/ftrace.c	2008-10-22 13:16:35.000000000 -0400
++++ linux-compile.git/arch/x86/kernel/ftrace.c	2008-10-22 13:23:54.000000000 -0400
+@@ -105,13 +105,6 @@ notrace int ftrace_update_ftrace_func(ft
+ 	return ret;
+ }
+ 
+-notrace int ftrace_mcount_set(unsigned long *data)
+-{
+-	/* mcount is initialized as a nop */
+-	*data = 0;
+-	return 0;
+-}
+-
+ int __init ftrace_dyn_arch_init(void *data)
+ {
+ 	extern const unsigned char ftrace_test_p6nop[];
+Index: linux-compile.git/include/linux/ftrace.h
+===================================================================
+--- linux-compile.git.orig/include/linux/ftrace.h	2008-10-22 13:17:29.000000000 -0400
++++ linux-compile.git/include/linux/ftrace.h	2008-10-22 13:23:54.000000000 -0400
+@@ -71,7 +71,6 @@ extern int ftrace_ip_converted(unsigned 
+ extern unsigned char *ftrace_nop_replace(void);
+ extern unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr);
+ extern int ftrace_dyn_arch_init(void *data);
+-extern int ftrace_mcount_set(unsigned long *data);
+ extern int ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+ 			      unsigned char *new_code);
+ extern int ftrace_update_ftrace_func(ftrace_func_t func);
+Index: linux-compile.git/kernel/trace/ftrace.c
+===================================================================
+--- linux-compile.git.orig/kernel/trace/ftrace.c	2008-10-22 13:21:46.000000000 -0400
++++ linux-compile.git/kernel/trace/ftrace.c	2008-10-22 13:23:54.000000000 -0400
+@@ -606,7 +606,6 @@ static int ftrace_update_code(void *igno
+ 
+ static int __ftrace_modify_code(void *data)
+ {
+-	unsigned long addr;
+ 	int *command = data;
+ 
+ 	if (*command & FTRACE_ENABLE_CALLS) {
+@@ -625,14 +624,6 @@ static int __ftrace_modify_code(void *da
+ 	if (*command & FTRACE_UPDATE_TRACE_FUNC)
+ 		ftrace_update_ftrace_func(ftrace_trace_function);
+ 
+-	if (*command & FTRACE_ENABLE_MCOUNT) {
+-		addr = (unsigned long)ftrace_record_ip;
+-		ftrace_mcount_set(&addr);
+-	} else if (*command & FTRACE_DISABLE_MCOUNT) {
+-		addr = (unsigned long)ftrace_stub;
+-		ftrace_mcount_set(&addr);
+-	}
+-
+ 	return 0;
+ }
+ 
 
 -- 
