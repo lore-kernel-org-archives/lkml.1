@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756655AbYJVWLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759303AbYJVWLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756655AbYJVWLG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 18:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYJVWKv
+	id S1759303AbYJVWLY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 18:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbYJVWK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 18:10:51 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:34271 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751850AbYJVWKu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 18:10:50 -0400
-To: cl@linux-foundation.org
-CC: miklos@szeredi.hu, penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au,
-       hugh@veritas.com, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-reply-to: <Pine.LNX.4.64.0810221416130.26639@quilx.com> (message from
-	Christoph Lameter on Wed, 22 Oct 2008 14:28:57 -0700 (PDT))
-Subject: Re: SLUB defrag pull request?
-References: <1223883004.31587.15.camel@penberg-laptop> 
- <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu>  <48FE6306.6020806@linux-foundation.org>
-  <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810220822500.30851@quilx.com>
-  <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221252570.3562@quilx.com>
-  <E1Ksk3g-00027r-Lp@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221315080.26671@quilx.com>
-  <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu> <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>
- <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0810221416130.26639@quilx.com>
-Message-Id: <E1KsluU-0002R1-Ow@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 23 Oct 2008 00:10:34 +0200
+	Wed, 22 Oct 2008 18:10:57 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34340 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754729AbYJVWK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 18:10:56 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Michel Lespinasse <walken@zoy.org>
+Subject: Re: NFS 5-minute hangs upon S3 resume using 2.6.27 client
+Date: Thu, 23 Oct 2008 00:15:20 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+References: <20081022212934.GA24143@zoy.org>
+In-Reply-To: <20081022212934.GA24143@zoy.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810230015.20493.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Oct 2008, Christoph Lameter wrote:
-> On Wed, 22 Oct 2008, Miklos Szeredi wrote:
+On Wednesday, 22 of October 2008, Michel Lespinasse wrote:
+> Hi,
+
+Hi,
+
+> This has been mentionned in bugzilla already, but I'd like to draw attention
+> before it gets too late for 2.6.28.
+
+I'm afraid it already is too late.
+
+> The following is a common cause of 5-minute NFS hangs here:
 > 
-> >> Actually, when debugging is enabled, it's customary to poison the
-> >> object, for example (see free_debug_processing() in mm/slub.c). So we
-> >> really can't "easily ensure" that in the allocator unless we by-pass
-> >> all the current debugging code.
+> * Client has TCP connections to the NFS server, goes to S3 sleep for few hours.
+> * TCP connections die on the server side.
+>   (not 100% sure why, do they use some kind of keepalive ???)
+> * Client resumes from S3.
+> * Client sends NFS requests down its TCP connections, gets back RST packet.
+> * [Client hangs for exactly 300 seconds here]
+> * Client establishes new TCP connections to the NFS server,
+>   and recovers from the hang.
 > 
-> Plus the allocator may be reusing parts of the freed object for a freelist 
-> etc even if the object is not poisoned.
+> A tcpdump trace is attached at the end of bugzilla bug 11154:
+> http://bugzilla.kernel.org/show_bug.cgi?id=11154
+> 
+> Should the client immediately try to reconnect when its existing connection
+> receives an RST packet ? (the 5 minute delay would make sense to me if
+> RST was received in reply to a SYN, but I'm not sure about it in the case
+> of an existing open TCP connection).
+> 
+> If the 5 minute delay after an RST is necessary, could the client avoid it
+> by explicitly closing/reopening its connections using suspend/resume hooks ?
+> 
+> (I can not work around the issue locally by mounting/unmounting my NFS
+> shares around the suspend/resume because rootfs also on NFS...)
+> 
+> This NFS setup was working fine in 2.6.24. There has been issues with
+> 2.6.25 and 2.6.26, but I did not confirm if they are the same bug.
+> 2.6.25 usualy recovers after some variable delay and 2.6.26 usualy
+> does not recover. Bugs 11154 and 11061 have more details about this,
+> also Ian Campbell has been tracking an NFS issue under load that
+> appeared at around the same time.
+> 
+> Hope this helps,
 
-Actually, no: looking at the slub code it already makes sure that
-objects are neither poisoned, nor touched in any way _if_ there is a
-constructor for the object.  And for good reason too, otherwise a
-reused object would contain rubbish after a second allocation.
+Thanks for the info, but I'm not a networking expert.
 
-Come on guys, you should be the experts in this thing!
+You should have CCed the NFS people, but it looks like they already know.
 
-So again, just checking d_lru should do work fine.  There's absolutely
-no need to mess with extra references in a separate phase, which leads
-to lots of complications.
-
-Miklos
+Thanks,
+Rafael
