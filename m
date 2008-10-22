@@ -1,97 +1,441 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbYJVH6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbYJVIBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754599AbYJVH6z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 03:58:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbYJVH6r
+	id S1754186AbYJVIBn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 04:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYJVIBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 03:58:47 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:37881 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752219AbYJVH6q (ORCPT
+	Wed, 22 Oct 2008 04:01:34 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:55810 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750939AbYJVIBd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 03:58:46 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAM8S9kh5LE2t/2dsb2JhbAC7CAGHHXABeg
-X-IronPort-AV: E=Sophos;i="4.33,463,1220193000"; 
-   d="scan'208";a="215840853"
-Date: Wed, 22 Oct 2008 18:58:38 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: lachlan@sgi.com, Christoph Hellwig <hch@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>, xfs@oss.sgi.com,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: BUG: sleeping function called from invalid context at
-	kernel/rwsem.c:131 XFS? (was: Re: linux-next: Tree for October 17)
-Message-ID: <20081022075838.GK18495@disturbed>
-Mail-Followup-To: Alexander Beregalov <a.beregalov@gmail.com>,
-	lachlan@sgi.com, Christoph Hellwig <hch@infradead.org>,
-	Arjan van de Ven <arjan@infradead.org>, xfs@oss.sgi.com,
-	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <a4423d670810170954h7ca130aaw8895380a4c6b125@mail.gmail.com> <20081017165738.GA20818@infradead.org> <a4423d670810171013g5bc19c1cm3f7d9c014ee70349@mail.gmail.com> <20081017203710.GA27187@infradead.org> <20081017135510.7127c4e7@infradead.org> <a4423d670810200758m3cea3841h40988afc8eaf81@mail.gmail.com> <20081020163327.GA15651@infradead.org> <a4423d670810201013w6448cb38w402771799cefb5f5@mail.gmail.com> <20081020223549.GA21152@disturbed> <a4423d670810210442y51b62fc2naf6cb649e6b26942@mail.gmail.com>
-MIME-Version: 1.0
+	Wed, 22 Oct 2008 04:01:33 -0400
+Date: Wed, 22 Oct 2008 11:01:16 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Greg Kroah-Hartman <greg@kroah.com>
+cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/6] w35und: purb typedef removal
+Message-ID: <Pine.LNX.4.64.0810221100400.13366@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a4423d670810210442y51b62fc2naf6cb649e6b26942@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 21, 2008 at 03:42:16PM +0400, Alexander Beregalov wrote:
-> 2008/10/21 Dave Chinner <david@fromorbit.com>:
-> > On Mon, Oct 20, 2008 at 09:13:05PM +0400, Alexander Beregalov wrote:
-> >> 2008/10/20 Christoph Hellwig <hch@infradead.org>:
-> >> > On Mon, Oct 20, 2008 at 06:58:09PM +0400, Alexander Beregalov wrote:
-> >> >> Hi Christoph
-> >> >>
-> >> >> I have the same result with next-1020 and today's xfs-2.6.git/master
-> >> >> (
-> >> >> commit bfd2bd10da76378dc4afd87d7d204a1d3d70b347
-> >> >> Author: David Chinner <david@fromorbit.com>
-> >> >> Date:   Fri Oct 17 15:36:23 2008 +1000
-> >> >>     Inode: Allow external list initialisation
-> >> >> )
-> >> Ha, that kernel (xfs/master) has made my system dead locked.
-> >> SysRQ-d:
-> >> Show all locks held in the system
-> >> 1 lock held by pdflush
-> >> (&type->s_umount_key#18{----}, at writeback_inodes
-> >> 1 lock held by login
-> >> (&(&ip->i_iolock)->mr_lock){----} at xfs_ilock
-> >> and so on ( many locks at xfs_ilock)
-> >
-> > Curious. Can you post the full stack traces?
-> I can not reproduce it, yet.
-> 
-> Bisected to:
-> dd509097cb0b76d3836385f80d6b2d6fd3b97757 is first bad commit
-> commit dd509097cb0b76d3836385f80d6b2d6fd3b97757
-> Author: Lachlan McIlroy <lachlan@sgi.com>
-> Date:   Mon Sep 29 14:56:40 2008 +1000
-> 
->     [XFS] Unlock inode before calling xfs_idestroy()
-> 
->     Lock debugging reported the ilock was being destroyed without being
->     unlocked. We don't need to lock the inode until we are going to insert it
->     into the radix tree.
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Ah, OK, I see the problem, though I don't understand why I'm not
-seeing the might_sleep() triggering all the time given that I always
-build with:
+This patch removes the struct urb pointer typedef from the driver code and
+fixes up variable names that use the typedef while we're at it.
 
-$ grep SLEEP .config
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
+Cc: Pavel Machek <pavel@suse.cz>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ drivers/staging/winbond/linux/common.h    |    4 --
+ drivers/staging/winbond/linux/wb35reg.c   |   74 ++++++++++++++--------------
+ drivers/staging/winbond/linux/wb35reg_f.h |    2 +-
+ drivers/staging/winbond/linux/wb35reg_s.h |    2 +-
+ drivers/staging/winbond/linux/wb35rx.c    |   14 +++---
+ drivers/staging/winbond/linux/wb35rx_f.h  |    2 +-
+ drivers/staging/winbond/linux/wb35tx_f.h  |    4 +-
+ drivers/staging/winbond/linux/wbusb_s.h   |    2 +-
+ 8 files changed, 50 insertions(+), 54 deletions(-)
 
-Basically the above commit moved xfs_ilock() inside
-radix_tree_preload()/radix_tree_preload_end(), which means we are
-taking a rwsem() while we have an elevated preempt count. I'll
-get a patch out to fix it.
-
-The question is why isn't this triggering for me during QA runs?
-
-Cheers,
-
-Dave.
+diff --git a/drivers/staging/winbond/linux/common.h b/drivers/staging/winbond/linux/common.h
+index 712a86c..64bd1c7 100644
+--- a/drivers/staging/winbond/linux/common.h
++++ b/drivers/staging/winbond/linux/common.h
+@@ -69,10 +69,6 @@
+ #define BIT(x)                  (1 << (x))
+ #endif
+ 
+-typedef struct urb * PURB;
+-
+-
+-
+ //==================================================================================================
+ // Common function definition
+ //==================================================================================================
+diff --git a/drivers/staging/winbond/linux/wb35reg.c b/drivers/staging/winbond/linux/wb35reg.c
+index ebb6db5..4383a61 100644
+--- a/drivers/staging/winbond/linux/wb35reg.c
++++ b/drivers/staging/winbond/linux/wb35reg.c
+@@ -13,7 +13,7 @@ unsigned char
+ Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 NumberOfData, u8 Flag)
+ {
+ 	PWB35REG pWb35Reg = &pHwData->Wb35Reg;
+-	PURB		pUrb = NULL;
++	struct urb	*urb = NULL;
+ 	PREG_QUEUE	pRegQueue = NULL;
+ 	u16		UrbSize;
+ 	struct      usb_ctrlrequest *dr;
+@@ -26,8 +26,8 @@ Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 N
+ 	// Trying to use burst write function if use new hardware
+ 	UrbSize = sizeof(REG_QUEUE) + DataSize + sizeof(struct usb_ctrlrequest);
+ 	OS_MEMORY_ALLOC( (void* *)&pRegQueue, UrbSize );
+-	pUrb = wb_usb_alloc_urb(0);
+-	if( pUrb && pRegQueue ) {
++	urb = wb_usb_alloc_urb(0);
++	if( urb && pRegQueue ) {
+ 		pRegQueue->DIRECT = 2;// burst write register
+ 		pRegQueue->INDEX = RegisterNo;
+ 		pRegQueue->pBuffer = (u32 *)((u8 *)pRegQueue + sizeof(REG_QUEUE));
+@@ -44,7 +44,7 @@ Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 N
+ 		dr->wLength = cpu_to_le16( DataSize );
+ 		pRegQueue->Next = NULL;
+ 		pRegQueue->pUsbReq = dr;
+-		pRegQueue->pUrb = pUrb;
++		pRegQueue->urb = urb;
+ 
+ 		spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
+ 		if (pWb35Reg->pRegFirst == NULL)
+@@ -60,8 +60,8 @@ Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 N
+ 
+ 		return TRUE;
+ 	} else {
+-		if (pUrb)
+-			usb_free_urb(pUrb);
++		if (urb)
++			usb_free_urb(urb);
+ 		if (pRegQueue)
+ 			kfree(pRegQueue);
+ 		return FALSE;
+@@ -163,7 +163,7 @@ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+ {
+ 	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
+ 	struct usb_ctrlrequest *dr;
+-	PURB		pUrb = NULL;
++	struct urb	*urb = NULL;
+ 	PREG_QUEUE	pRegQueue = NULL;
+ 	u16		UrbSize;
+ 
+@@ -175,8 +175,8 @@ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+ 	// update the register by send urb request------------------------------------
+ 	UrbSize = sizeof(REG_QUEUE) + sizeof(struct usb_ctrlrequest);
+ 	OS_MEMORY_ALLOC( (void* *)&pRegQueue, UrbSize );
+-	pUrb = wb_usb_alloc_urb(0);
+-	if (pUrb && pRegQueue) {
++	urb = wb_usb_alloc_urb(0);
++	if (urb && pRegQueue) {
+ 		pRegQueue->DIRECT = 1;// burst write register
+ 		pRegQueue->INDEX = RegisterNo;
+ 		pRegQueue->VALUE = cpu_to_le32(RegisterValue);
+@@ -191,7 +191,7 @@ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+ 		// Enter the sending queue
+ 		pRegQueue->Next = NULL;
+ 		pRegQueue->pUsbReq = dr;
+-		pRegQueue->pUrb = pUrb;
++		pRegQueue->urb = urb;
+ 
+ 		spin_lock_irq(&pWb35Reg->EP0VM_spin_lock );
+ 		if (pWb35Reg->pRegFirst == NULL)
+@@ -207,8 +207,8 @@ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+ 
+ 		return TRUE;
+ 	} else {
+-		if (pUrb)
+-			usb_free_urb(pUrb);
++		if (urb)
++			usb_free_urb(urb);
+ 		kfree(pRegQueue);
+ 		return FALSE;
+ 	}
+@@ -224,7 +224,7 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
+ {
+ 	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
+ 	struct usb_ctrlrequest *dr;
+-	PURB		pUrb = NULL;
++	struct urb	*urb = NULL;
+ 	PREG_QUEUE	pRegQueue = NULL;
+ 	u16		UrbSize;
+ 
+@@ -235,8 +235,8 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
+ 	// update the register by send urb request------------------------------------
+ 	UrbSize = sizeof(REG_QUEUE) + sizeof(struct usb_ctrlrequest);
+ 	OS_MEMORY_ALLOC((void* *) &pRegQueue, UrbSize );
+-	pUrb = wb_usb_alloc_urb(0);
+-	if (pUrb && pRegQueue) {
++	urb = wb_usb_alloc_urb(0);
++	if (urb && pRegQueue) {
+ 		pRegQueue->DIRECT = 1;// burst write register
+ 		pRegQueue->INDEX = RegisterNo;
+ 		pRegQueue->VALUE = cpu_to_le32(RegisterValue);
+@@ -253,7 +253,7 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
+ 		// Enter the sending queue
+ 		pRegQueue->Next = NULL;
+ 		pRegQueue->pUsbReq = dr;
+-		pRegQueue->pUrb = pUrb;
++		pRegQueue->urb = urb;
+ 		spin_lock_irq (&pWb35Reg->EP0VM_spin_lock );
+ 		if( pWb35Reg->pRegFirst == NULL )
+ 			pWb35Reg->pRegFirst = pRegQueue;
+@@ -267,8 +267,8 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
+ 		Wb35Reg_EP0VM_start(pHwData);
+ 		return TRUE;
+ 	} else {
+-		if (pUrb)
+-			usb_free_urb(pUrb);
++		if (urb)
++			usb_free_urb(urb);
+ 		kfree(pRegQueue);
+ 		return FALSE;
+ 	}
+@@ -331,7 +331,7 @@ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
+ {
+ 	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
+ 	struct usb_ctrlrequest * dr;
+-	PURB		pUrb;
++	struct urb	*urb;
+ 	PREG_QUEUE	pRegQueue;
+ 	u16		UrbSize;
+ 
+@@ -342,8 +342,8 @@ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
+ 	// update the variable by send Urb to read register ------------------------------------
+ 	UrbSize = sizeof(REG_QUEUE) + sizeof(struct usb_ctrlrequest);
+ 	OS_MEMORY_ALLOC( (void* *)&pRegQueue, UrbSize );
+-	pUrb = wb_usb_alloc_urb(0);
+-	if( pUrb && pRegQueue )
++	urb = wb_usb_alloc_urb(0);
++	if( urb && pRegQueue )
+ 	{
+ 		pRegQueue->DIRECT = 0;// read register
+ 		pRegQueue->INDEX = RegisterNo;
+@@ -358,7 +358,7 @@ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
+ 		// Enter the sending queue
+ 		pRegQueue->Next = NULL;
+ 		pRegQueue->pUsbReq = dr;
+-		pRegQueue->pUrb = pUrb;
++		pRegQueue->urb = urb;
+ 		spin_lock_irq ( &pWb35Reg->EP0VM_spin_lock );
+ 		if( pWb35Reg->pRegFirst == NULL )
+ 			pWb35Reg->pRegFirst = pRegQueue;
+@@ -373,8 +373,8 @@ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
+ 
+ 		return TRUE;
+ 	} else {
+-		if (pUrb)
+-			usb_free_urb( pUrb );
++		if (urb)
++			usb_free_urb( urb );
+ 		kfree(pRegQueue);
+ 		return FALSE;
+ 	}
+@@ -397,7 +397,7 @@ void
+ Wb35Reg_EP0VM(phw_data_t pHwData )
+ {
+ 	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
+-	PURB		pUrb;
++	struct urb	*urb;
+ 	struct usb_ctrlrequest *dr;
+ 	u32 *		pBuffer;
+ 	int			ret = -1;
+@@ -419,22 +419,22 @@ Wb35Reg_EP0VM(phw_data_t pHwData )
+ 		goto cleanup;
+ 
+ 	// Get an Urb, send it
+-	pUrb = (PURB)pRegQueue->pUrb;
++	urb = (struct urb *)pRegQueue->urb;
+ 
+ 	dr = pRegQueue->pUsbReq;
+-	pUrb = pRegQueue->pUrb;
++	urb = pRegQueue->urb;
+ 	pBuffer = pRegQueue->pBuffer;
+ 	if (pRegQueue->DIRECT == 1) // output
+ 		pBuffer = &pRegQueue->VALUE;
+ 
+-	usb_fill_control_urb( pUrb, pHwData->WbUsb.udev,
++	usb_fill_control_urb( urb, pHwData->WbUsb.udev,
+ 			      REG_DIRECTION(pHwData->WbUsb.udev,pRegQueue),
+ 			      (u8 *)dr,pBuffer,cpu_to_le16(dr->wLength),
+ 			      Wb35Reg_EP0VM_complete, (void*)pHwData);
+ 
+ 	pWb35Reg->EP0vm_state = VM_RUNNING;
+ 
+-	ret = wb_usb_submit_urb( pUrb );
++	ret = wb_usb_submit_urb( urb );
+ 
+ 	if (ret < 0) {
+ #ifdef _PE_REG_DUMP_
+@@ -452,16 +452,16 @@ Wb35Reg_EP0VM(phw_data_t pHwData )
+ 
+ 
+ void
+-Wb35Reg_EP0VM_complete(PURB pUrb)
++Wb35Reg_EP0VM_complete(struct urb *urb)
+ {
+-	phw_data_t  pHwData = (phw_data_t)pUrb->context;
++	phw_data_t  pHwData = (phw_data_t)urb->context;
+ 	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
+ 	PREG_QUEUE	pRegQueue;
+ 
+ 
+ 	// Variable setting
+ 	pWb35Reg->EP0vm_state = VM_COMPLETED;
+-	pWb35Reg->EP0VM_status = pUrb->status;
++	pWb35Reg->EP0VM_status = urb->status;
+ 
+ 	if (pHwData->SurpriseRemove) { // Let WbWlanHalt to handle surprise remove
+ 		pWb35Reg->EP0vm_state = VM_STOP;
+@@ -492,7 +492,7 @@ Wb35Reg_EP0VM_complete(PURB pUrb)
+    		kfree(pRegQueue);
+ 	}
+ 
+-	usb_free_urb(pUrb);
++	usb_free_urb(urb);
+ }
+ 
+ 
+@@ -500,7 +500,7 @@ void
+ Wb35Reg_destroy(phw_data_t pHwData)
+ {
+ 	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
+-	PURB		pUrb;
++	struct urb	*urb;
+ 	PREG_QUEUE	pRegQueue;
+ 
+ 
+@@ -520,10 +520,10 @@ Wb35Reg_destroy(phw_data_t pHwData)
+ 			pWb35Reg->pRegLast = NULL;
+ 		pWb35Reg->pRegFirst = pWb35Reg->pRegFirst->Next;
+ 
+-		pUrb = pRegQueue->pUrb;
++		urb = pRegQueue->urb;
+ 		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
+-		if (pUrb) {
+-			usb_free_urb(pUrb);
++		if (urb) {
++			usb_free_urb(urb);
+ 			kfree(pRegQueue);
+ 		} else {
+ 			#ifdef _PE_REG_DUMP_
+diff --git a/drivers/staging/winbond/linux/wb35reg_f.h b/drivers/staging/winbond/linux/wb35reg_f.h
+index 3006cfe..fc94091 100644
+--- a/drivers/staging/winbond/linux/wb35reg_f.h
++++ b/drivers/staging/winbond/linux/wb35reg_f.h
+@@ -42,7 +42,7 @@ unsigned char Wb35Reg_BurstWrite(  phw_data_t pHwData,  u16 RegisterNo,  u32 * p
+ 
+ void Wb35Reg_EP0VM(  phw_data_t pHwData );
+ void Wb35Reg_EP0VM_start(  phw_data_t pHwData );
+-void Wb35Reg_EP0VM_complete(  PURB pUrb );
++void Wb35Reg_EP0VM_complete(struct urb *urb);
+ 
+ u32 BitReverse( u32 dwData, u32 DataLength);
+ 
+diff --git a/drivers/staging/winbond/linux/wb35reg_s.h b/drivers/staging/winbond/linux/wb35reg_s.h
+index 8b35b93..c633b92 100644
+--- a/drivers/staging/winbond/linux/wb35reg_s.h
++++ b/drivers/staging/winbond/linux/wb35reg_s.h
+@@ -69,7 +69,7 @@
+ 
+ typedef struct _REG_QUEUE
+ {
+-    struct  urb *pUrb;
++    struct  urb *urb;
+ 	void*	pUsbReq;
+ 	void*	Next;
+ 	union
+diff --git a/drivers/staging/winbond/linux/wb35rx.c b/drivers/staging/winbond/linux/wb35rx.c
+index b4b9f5f..f286019 100644
+--- a/drivers/staging/winbond/linux/wb35rx.c
++++ b/drivers/staging/winbond/linux/wb35rx.c
+@@ -28,7 +28,7 @@ void Wb35Rx(  phw_data_t pHwData )
+ {
+ 	PWB35RX	pWb35Rx = &pHwData->Wb35Rx;
+ 	u8 *	pRxBufferAddress;
+-	PURB	pUrb = (PURB)pWb35Rx->RxUrb;
++	struct urb *urb = pWb35Rx->RxUrb;
+ 	int	retv;
+ 	u32	RxBufferId;
+ 
+@@ -63,14 +63,14 @@ void Wb35Rx(  phw_data_t pHwData )
+ 	}
+ 	pRxBufferAddress = pWb35Rx->pDRx;
+ 
+-	usb_fill_bulk_urb(pUrb, pHwData->WbUsb.udev,
++	usb_fill_bulk_urb(urb, pHwData->WbUsb.udev,
+ 			  usb_rcvbulkpipe(pHwData->WbUsb.udev, 3),
+ 			  pRxBufferAddress, MAX_USB_RX_BUFFER,
+ 			  Wb35Rx_Complete, pHwData);
+ 
+ 	pWb35Rx->EP3vm_state = VM_RUNNING;
+ 
+-	retv = wb_usb_submit_urb(pUrb);
++	retv = wb_usb_submit_urb(urb);
+ 
+ 	if (retv != 0) {
+ 		printk("Rx URB sending error\n");
+@@ -84,9 +84,9 @@ error:
+ 	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Rx->RxFireCounter );
+ }
+ 
+-void Wb35Rx_Complete(PURB pUrb)
++void Wb35Rx_Complete(struct urb *urb)
+ {
+-	phw_data_t	pHwData = pUrb->context;
++	phw_data_t	pHwData = urb->context;
+ 	PWB35RX		pWb35Rx = &pHwData->Wb35Rx;
+ 	u8 *		pRxBufferAddress;
+ 	u32		SizeCheck;
+@@ -96,12 +96,12 @@ void Wb35Rx_Complete(PURB pUrb)
+ 
+ 	// Variable setting
+ 	pWb35Rx->EP3vm_state = VM_COMPLETED;
+-	pWb35Rx->EP3VM_status = pUrb->status;//Store the last result of Irp
++	pWb35Rx->EP3VM_status = urb->status;//Store the last result of Irp
+ 
+ 	RxBufferId = pWb35Rx->CurrentRxBufferId;
+ 
+ 	pRxBufferAddress = pWb35Rx->pDRx;
+-	BulkLength = (u16)pUrb->actual_length;
++	BulkLength = (u16)urb->actual_length;
+ 
+ 	// The IRP is completed
+ 	pWb35Rx->EP3vm_state = VM_COMPLETED;
+diff --git a/drivers/staging/winbond/linux/wb35rx_f.h b/drivers/staging/winbond/linux/wb35rx_f.h
+index daa3e73..565280e 100644
+--- a/drivers/staging/winbond/linux/wb35rx_f.h
++++ b/drivers/staging/winbond/linux/wb35rx_f.h
+@@ -10,7 +10,7 @@ void		Wb35Rx_adjust(  PDESCRIPTOR pRxDes );
+ void		Wb35Rx_start(  phw_data_t pHwData );
+ 
+ void		Wb35Rx(  phw_data_t pHwData );
+-void		Wb35Rx_Complete(  PURB pUrb );
++void		Wb35Rx_Complete(struct urb *urb);
+ 
+ 
+ 
+diff --git a/drivers/staging/winbond/linux/wb35tx_f.h b/drivers/staging/winbond/linux/wb35tx_f.h
+index 107b129..1815c10 100644
+--- a/drivers/staging/winbond/linux/wb35tx_f.h
++++ b/drivers/staging/winbond/linux/wb35tx_f.h
+@@ -7,12 +7,12 @@ unsigned char Wb35Tx_get_tx_buffer(  phw_data_t pHwData,  u8 **pBuffer );
+ 
+ void Wb35Tx_EP2VM(  phw_data_t pHwData );
+ void Wb35Tx_EP2VM_start(  phw_data_t pHwData );
+-void Wb35Tx_EP2VM_complete(  PURB purb );
++void Wb35Tx_EP2VM_complete(struct urb *urb);
+ 
+ void Wb35Tx_start(  phw_data_t pHwData );
+ void Wb35Tx_stop(  phw_data_t pHwData );
+ void Wb35Tx(  phw_data_t pHwData );
+-void Wb35Tx_complete(  PURB purb );
++void Wb35Tx_complete(struct urb *urb);
+ void Wb35Tx_reset_descriptor(  phw_data_t pHwData );
+ 
+ void Wb35Tx_CurrentTime(  phw_data_t pHwData,  u32 TimeCount );
+diff --git a/drivers/staging/winbond/linux/wbusb_s.h b/drivers/staging/winbond/linux/wbusb_s.h
+index d5c1d53..562ddc0 100644
+--- a/drivers/staging/winbond/linux/wbusb_s.h
++++ b/drivers/staging/winbond/linux/wbusb_s.h
+@@ -23,7 +23,7 @@
+ typedef struct _RW_CONTEXT
+ {
+ 	void*			pHwData;
+-	PURB			pUrb;
++	struct urb		*urb;
+ 	void*			pCallBackFunctionParameter;
+ } RW_CONTEXT, *PRW_CONTEXT;
+ 
 -- 
-Dave Chinner
-david@fromorbit.com
+1.5.3.7
+
