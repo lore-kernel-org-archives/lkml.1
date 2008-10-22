@@ -1,56 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753052AbYJVNio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbYJVNjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753052AbYJVNio (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 09:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbYJVNif
+	id S1753748AbYJVNjl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 09:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbYJVNjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 09:38:35 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:60550 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751585AbYJVNif (ORCPT
+	Wed, 22 Oct 2008 09:39:31 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:39146 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbYJVNjb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 09:38:35 -0400
-Message-ID: <48FF2DDC.5010600@gmail.com>
-Date: Wed, 22 Oct 2008 09:42:52 -0400
-From: Gregory Haskins <gregory.haskins.ml@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Wed, 22 Oct 2008 09:39:31 -0400
+Date: Wed, 22 Oct 2008 09:37:14 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+Cc: Ingo Molnar <mingo@elte.hu>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, vgoyal@redhat.com, hbabu@us.ibm.com,
+       hpa@zytor.com, akpm@linux-foundation.org, ebiederm@xmission.com,
+       tglx@linutronix.de
+Subject: Re: [PATCH 7/7] i386, dumpstack: unify die()
+Message-ID: <20081022133714.GH18951@hmsreliant.think-freely.org>
+References: <1224669614-25863-1-git-send-email-heukelum@fastmail.fm> <1224669614-25863-2-git-send-email-heukelum@fastmail.fm> <1224669614-25863-3-git-send-email-heukelum@fastmail.fm> <1224669614-25863-4-git-send-email-heukelum@fastmail.fm> <1224669614-25863-5-git-send-email-heukelum@fastmail.fm> <1224669614-25863-6-git-send-email-heukelum@fastmail.fm> <1224669614-25863-7-git-send-email-heukelum@fastmail.fm> <1224669614-25863-8-git-send-email-heukelum@fastmail.fm>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: sched: deep power-saving states
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1224669614-25863-8-git-send-email-heukelum@fastmail.fm>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arjan,
-  I was giving some thought to that topic you brought up at our
-LF-end-user session on RT w.r.t. deep power state wakeup adding latency.
+On Wed, Oct 22, 2008 at 12:00:14PM +0200, Alexander van Heukelum wrote:
+> Make i386's die() equal to x86_64's version.
+> 
+> Whitespace-only changes on x86_64, to make it equal to i386's
+> version. (user_mode and user_mode_vm are equal on x86_64.)
+> 
+> Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
-As Steven mentioned, we currently have this thing called "cpupri"
-(kernel/sched_cpupri.c) in the scheduler which allows us to classify
-each core (on a per disjoint cpuset basis) as being either IDLE,
-SCHED_OTHER, or RT1 - RT99.  (Note that currently we lump both IDLE and
-SCHED_OTHER together as SCHED_OTHER because we don't yet care to
-differentiate between them, but I have patches to fix this that I can
-submit).
+Acked-by: Neil Horman <nhorman@tuxdriver.com>
 
-What I was thinking is that a simple mechanism to quantify the
-power-state penalty would be to add those states as priority levels in
-the cpupri namespace.  E.g. We could substitute IDLE-RUNNING for IDLE,
-and add IDLE-PS1, IDLE-PS2, .. IDLE-PSn, OTHER, RT1, .. RT99.  This
-means the scheduler would favor waking an IDLE-RUNNING core over an
-IDLE-PS1-PSn, etc.  The question in my mind is: can the power-states be
-determined in a static fashion such that we know what value to quantify
-the idle state before we enter it?  Or is it more dynamic (e.g. the
-longer it is in an MWAIT, the deeper the sleep gets).
+> ---
+>  arch/x86/kernel/dumpstack_32.c |   10 +++-------
+>  arch/x86/kernel/dumpstack_64.c |    6 +++++-
+>  2 files changed, 8 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/dumpstack_32.c b/arch/x86/kernel/dumpstack_32.c
+> index e91ae34..f2046c5 100644
+> --- a/arch/x86/kernel/dumpstack_32.c
+> +++ b/arch/x86/kernel/dumpstack_32.c
+> @@ -378,15 +378,11 @@ void die(const char *str, struct pt_regs *regs, long err)
+>  	unsigned long flags = oops_begin();
+>  	int sig = SIGSEGV;
+>  
+> -	if (die_nest_count < 3) {
+> +	if (!user_mode_vm(regs))
+>  		report_bug(regs->ip, regs);
+>  
+> -		if (__die(str, regs, err))
+> -			sig = 0;
+> -	} else {
+> -		printk(KERN_EMERG "Recursive die() failure, output suppressed\n");
+> -	}
+> -
+> +	if (__die(str, regs, err))
+> +		sig = 0;
+>  	oops_end(flags, regs, sig);
+>  }
+>  
+> diff --git a/arch/x86/kernel/dumpstack_64.c b/arch/x86/kernel/dumpstack_64.c
+> index 831e1e1..28c67aa 100644
+> --- a/arch/x86/kernel/dumpstack_64.c
+> +++ b/arch/x86/kernel/dumpstack_64.c
+> @@ -506,12 +506,16 @@ int __kprobes __die(const char *str, struct pt_regs *regs, long err)
+>  	return 0;
+>  }
+>  
+> +/*
+> + * This is gone through when something in the kernel has done something bad
+> + * and is about to be terminated:
+> + */
+>  void die(const char *str, struct pt_regs *regs, long err)
+>  {
+>  	unsigned long flags = oops_begin();
+>  	int sig = SIGSEGV;
+>  
+> -	if (!user_mode(regs))
+> +	if (!user_mode_vm(regs))
+>  		report_bug(regs->ip, regs);
+>  
+>  	if (__die(str, regs, err))
+> -- 
+> 1.5.4.3
+> 
+> 
 
-If its dynamic, is there a deterministic algorithm that could be applied
-so that, say, a timer on a different CPU (bsp makes sense to me) could
-advance the IDLE-PSx state in cpupri on behalf of the low-power core as
-time goes on?
-
-Thoughts?
--Greg
+-- 
+/****************************************************
+ * Neil Horman <nhorman@tuxdriver.com>
+ * Software Engineer, Red Hat
+ ****************************************************/
