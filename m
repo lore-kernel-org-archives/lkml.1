@@ -1,75 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757854AbYJVTLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbYJVTMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757854AbYJVTLt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 15:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbYJVTLk
+	id S1755890AbYJVTMT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 15:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756466AbYJVTME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 15:11:40 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:48927 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753141AbYJVTLj (ORCPT
+	Wed, 22 Oct 2008 15:12:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35590 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753701AbYJVTMC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 15:11:39 -0400
-Subject: Re: Possible bug in SCSI Kconfig
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Fabio Comolli <fabio.comolli@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, sam@ravnborg.org,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <b637ec0b0810220929r2c889423ma92bef0ec7f9b3b0@mail.gmail.com>
-References: <b637ec0b0810220929r2c889423ma92bef0ec7f9b3b0@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 22 Oct 2008 13:05:40 -0600
-Message-Id: <1224702340.6851.20.camel@localhost.localdomain>
+	Wed, 22 Oct 2008 15:12:02 -0400
+Date: Wed, 22 Oct 2008 12:11:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
+       sagar.abhishek@gmail.com, davem@davemloft.net, tglx@linutronix.de,
+       peterz@infradead.org, torvalds@linux-foundation.org,
+       srostedt@redhat.com
+Subject: Re: [PATCH 05/11] ftrace: only have ftrace_kill atomic
+Message-Id: <20081022121128.5acc9ae0.akpm@linux-foundation.org>
+In-Reply-To: <20081022185136.312667539@goodmis.org>
+References: <20081022184313.179487464@goodmis.org>
+	<20081022185136.312667539@goodmis.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-22 at 18:29 +0200, Fabio Comolli wrote:
-> Hi.
-> In kernel 2.6.27.2 - drivers/scsi/Kconfig we have:
-> 
-> config SCSI_WAIT_SCAN
->         tristate
->         default m
->         depends on SCSI
->         depends on MODULES
-> 
-> The tristate field is empty. This has the effect that this option is
-> not visible in menuconfig and so it's always selected. The default is
-> "m" for all architectures and so this module is always compiled if
-> SCSI and MODULES are both enabled.
-> 
-> I'm using a patch like this one:
-> 
->  config SCSI_WAIT_SCAN
-> -	tristate
-> +	tristate "Wait until all the async scans are complete"
->  	default m
->  	depends on SCSI
->  	depends on MODULES
-> 
-> to get rid of that module.
-> 
-> Of course, I have no idea if this is correct or the current behavior
-> is the expected one.
+On Wed, 22 Oct 2008 14:43:18 -0400
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
-The point of all of this is that if you enable async scanning, you need
-a method of waiting for the scans to complete, which is all this module
-does (you insert it and it doesn't come back from the insertion until
-all the pending async scans are complete).  It's tristate because really
-it only makes sense to be M or N.  The consensus is that, given async
-scanning is always an option, this function should always be built as a
-module *if* modules and SCSI are enabled ... because you might have a
-HBA module you enabled async scanning for and you need to wait.
+> Only have a way to completely disable ftrace in atomic sections.
+> 
 
-There's really not much point giving the user the choice, since this
-module is part of the initrd sequence ... it's not really anything a
-user would want to use stand alone, hence there's no point giving a
-choice about it.
+I have NFI what that means.
 
-James
+More importantly there is no explanation for *why* this change is being
+made.
 
 
