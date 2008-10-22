@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbYJVJpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbYJVJtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753112AbYJVJpZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 05:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbYJVJmY
+	id S1755253AbYJVJtQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 05:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbYJVJtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 05:42:24 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:35988 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756009AbYJVJmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 05:42:23 -0400
-Date: Wed, 22 Oct 2008 11:44:54 +0200
-From: Samuel Ortiz <sameo@openedhand.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Roel Kluin <roel.kluin@gmail.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: [GIT] mfd pull request
-Message-ID: <20081022094453.GB2864@sortiz.org>
-Reply-To: Samuel Ortiz <sameo@openedhand.com>
+	Wed, 22 Oct 2008 05:49:00 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51540 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750873AbYJVJs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 05:48:59 -0400
+Date: Wed, 22 Oct 2008 11:47:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland Dreier <rdreier@cisco.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [announce] new tree: "fix all build warnings, on all configs"
+Message-ID: <20081022094759.GH12453@elte.hu>
+References: <20081017171139.GA1792@elte.hu> <ada3aiv9k6j.fsf@cisco.com> <20081017180523.GA11590@elte.hu> <adatzbbrrcf.fsf@cisco.com> <20081017191202.GA5396@elte.hu> <adaiqrrrp2h.fsf@cisco.com> <20081018082209.GA24220@elte.hu> <alpine.LFD.2.00.0810200933470.3518@nehalem.linux-foundation.org> <20081020192110.GA28736@elte.hu> <20081021064144.GC30563@logfs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081021064144.GC30563@logfs.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-Could you please pull this final rc1 patchset for mfd ?
-It contains one build fix from Stephen, for the wm8350.
+* Jörn Engel <joern@logfs.org> wrote:
 
-The following changes since commit 2515ddc6db8eb49a79f0fe5e67ff09ac7c81eab4:
-  Paul Mundt (1):
-        binfmt_elf_fdpic: Update for cputime changes.
+> On Mon, 20 October 2008 21:21:10 +0200, Ingo Molnar wrote:
+> >  
+> >  /* Alas, no aliases. Too much hassle with bringing module.h everywhere */
+> >  #define fops_get(fops) \
+> > -	(((fops) && try_module_get((fops)->owner) ? (fops) : NULL))
+> > +	(((fops != NULL) && try_module_get((fops)->owner) ? (fops) : NULL))
+> >  #define fops_put(fops) \
+> > -	do { if (fops) module_put((fops)->owner); } while(0)
+> > +	do { if (fops != NULL) module_put((fops)->owner); } while(0)
+> 
+> This, I would argue, makes the code worse.
 
-are available in the git repository at:
+Have a look at:
 
-  git://git.o-hand.com/linux-mfd for-next
+   $ git log -p --grep="NULL noise"
 
-Arjan van de Ven (1):
-      mfd: use pci_ioremap_bar() in sm501
+for example:
 
-David Brownell (3):
-      mfd: twl4030 IRQ handling update
-      mfd: rtc-twl4030 driver
-      mfd: twl4030-gpio driver
+        for (i = 0; i < MAX_FEB_SIZE; i++)
+-               if (tb->FEB[i] != 0)
++               if (tb->FEB[i] != NULL)
+                        break;
 
-Mark Brown (1):
-      mfd: Don't store volatile bits in WM8350 register cache
+so checking for != NULL is a valid way of testing a pointer's existence. 
+The "if (tb->FEB[i])" is a valid shortcut for the same thing as well.
 
-Roel Kluin (1):
-      mfd: check for platform_get_irq() return value in sm501
+In this specific case the issue is that the 'fops' parameter can 
+occasionally be a constant pointer (turning the test into always-true) 
+so the compiler is at least minimally correct at asking the "are you 
+sure you want this" question - which we answer in the affirmative via 
+the explicit NULL check. But these are really nuances.
 
-Stephen Rothwell (1):
-      mfd: don't export wm3850 static functions
-
- drivers/gpio/Kconfig        |    7 +
- drivers/gpio/Makefile       |    1 +
- drivers/gpio/twl4030-gpio.c |  521 ++++++++++++++++++++++++++++++
- drivers/mfd/Makefile        |    2 +-
- drivers/mfd/sm501.c         |   25 +-
- drivers/mfd/twl4030-core.c  |  421 +-----------------------
- drivers/mfd/twl4030-irq.c   |  743 +++++++++++++++++++++++++++++++++++++++++++
- drivers/mfd/wm8350-core.c   |    5 +-
- drivers/rtc/Kconfig         |   10 +
- drivers/rtc/Makefile        |    1 +
- drivers/rtc/rtc-twl4030.c   |  564 ++++++++++++++++++++++++++++++++
- include/linux/i2c/twl4030.h |   28 +-
- 12 files changed, 1897 insertions(+), 431 deletions(-)
- create mode 100644 drivers/gpio/twl4030-gpio.c
- create mode 100644 drivers/mfd/twl4030-irq.c
- create mode 100644 drivers/rtc/rtc-twl4030.c
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+	Ingo
