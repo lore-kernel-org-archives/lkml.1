@@ -1,98 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756622AbYJVKO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714AbYJVKST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756622AbYJVKO0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 06:14:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbYJVKN4
+	id S1754714AbYJVKST (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 06:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbYJVKSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 06:13:56 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:45964 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752085AbYJVKNz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 06:13:55 -0400
-From: Andrey Mirkin <major@openvz.org>
-To: Louis.Rilling@kerlabs.com
-Subject: Re: [Devel] Re: [PATCH 08/10] Introduce functions to restart a process
-Date: Wed, 22 Oct 2008 14:12:12 +0400
-User-Agent: KMail/1.8.2
-Cc: devel@openvz.org, Pavel Emelyanov <xemul@openvz.org>,
-       Cedric Le Goater <clg@fr.ibm.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <1224285098-573-1-git-send-email-major@openvz.org> <200810221249.55600.major@openvz.org> <20081022092502.GW15171@hawkmoon.kerlabs.com>
-In-Reply-To: <20081022092502.GW15171@hawkmoon.kerlabs.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810221412.14174.major@openvz.org>
+	Wed, 22 Oct 2008 06:18:08 -0400
+Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:13923 "EHLO
+	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751794AbYJVKSH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 06:18:07 -0400
+From: Alexander van Heukelum <heukelum@fastmail.fm>
+To: Neil Horman <nhorman@tuxdriver.com>, Ingo Molnar <mingo@elte.hu>,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       vgoyal@redhat.com, hbabu@us.ibm.com, hpa@zytor.com,
+       akpm@linux-foundation.org,
+       Alexander van Heukelum <heukelum@fastmail.fm>, ebiederm@xmission.com,
+       tglx@linutronix.de
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: [PATCH 7/7] i386, dumpstack: unify die()
+Date: Wed, 22 Oct 2008 12:00:14 +0200
+Message-Id: <1224669614-25863-8-git-send-email-heukelum@fastmail.fm>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1224669614-25863-7-git-send-email-heukelum@fastmail.fm>
+References: <1224669614-25863-1-git-send-email-heukelum@fastmail.fm>
+ <1224669614-25863-2-git-send-email-heukelum@fastmail.fm>
+ <1224669614-25863-3-git-send-email-heukelum@fastmail.fm>
+ <1224669614-25863-4-git-send-email-heukelum@fastmail.fm>
+ <1224669614-25863-5-git-send-email-heukelum@fastmail.fm>
+ <1224669614-25863-6-git-send-email-heukelum@fastmail.fm>
+ <1224669614-25863-7-git-send-email-heukelum@fastmail.fm>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Wed, 22 Oct 2008 12:16:43 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.9.0.5; VDF: 7.0.7.72; host: AntiVir2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 October 2008 13:25 Louis Rilling wrote:
-> On Wed, Oct 22, 2008 at 12:49:54PM +0400, Andrey Mirkin wrote:
-> > On Monday 20 October 2008 13:23 Cedric Le Goater wrote:
-> > > Hello Andrey !
-> > >
-> > > > diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
-> > > > index 109792b..a4848a3 100644
-> > > > --- a/arch/x86/kernel/entry_32.S
-> > > > +++ b/arch/x86/kernel/entry_32.S
-> > > > @@ -225,6 +225,7 @@ ENTRY(ret_from_fork)
-> > > >  	GET_THREAD_INFO(%ebp)
-> > > >  	popl %eax
-> > > >  	CFI_ADJUST_CFA_OFFSET -4
-> > > > +ret_from_fork_tail:
-> > > >  	pushl $0x0202			# Reset kernel eflags
-> > > >  	CFI_ADJUST_CFA_OFFSET 4
-> > > >  	popfl
-> > > > @@ -233,6 +234,26 @@ ENTRY(ret_from_fork)
-> > > >  	CFI_ENDPROC
-> > > >  END(ret_from_fork)
-> > > >
-> > > > +ENTRY(i386_ret_from_resume)
-> > > > +	CFI_STARTPROC
-> > > > +	pushl %eax
-> > > > +	CFI_ADJUST_CFA_OFFSET 4
-> > > > +	call schedule_tail
-> > > > +	GET_THREAD_INFO(%ebp)
-> > > > +	popl %eax
-> > > > +	CFI_ADJUST_CFA_OFFSET -4
-> > > > +	movl (%esp), %eax
-> > > > +	testl %eax, %eax
-> > > > +	jz    1f
-> > > > +	pushl %esp
-> > > > +	call  *%eax
-> > > > +	addl  $4, %esp
-> > > > +1:
-> > > > +	addl  $256, %esp
-> > > > +	jmp   ret_from_fork_tail
-> > > > +	CFI_ENDPROC
-> > > > +END(i386_ret_from_resume)
-> > >
-> > > Could you explain why you need to do this
-> > >
-> > > 	call  *%eax
-> > >
-> > > is it related to the freezer code ?
-> >
-> > It is not related to the freezer code actually.
-> > That is needed to restart syscalls. Right now I don't have a code in my
-> > patchset which restarts a syscall, but later I plan to add it.
-> > In OpenVZ checkpointing we restart syscalls if process was caught in
-> > syscall during checkpointing.
->
-> Do you checkpoint uninterruptible syscalls as well? If only interruptible
-> syscalls are checkpointed, I'd say that either this syscall uses
-> ERESTARTSYS or ERESTART_RESTARTBLOCK, and then signal handling code already
-> does the trick, or this syscall does not restart itself when interrupted,
-> and well, this is life, userspace just sees -EINTR, which is allowed by the
-> syscall spec.
-> Actually this is how we checkpoint/migrate tasks in interruptible syscalls
-> in Kerrighed and this works.
+Make i386's die() equal to x86_64's version.
 
-We checkpoint only interruptible syscalls. Some syscalls do not restart 
-themself, that is why after restarting a process we restart syscall to 
-complete it.
+Whitespace-only changes on x86_64, to make it equal to i386's
+version. (user_mode and user_mode_vm are equal on x86_64.)
 
-Andrey
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+---
+ arch/x86/kernel/dumpstack_32.c |   10 +++-------
+ arch/x86/kernel/dumpstack_64.c |    6 +++++-
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/arch/x86/kernel/dumpstack_32.c b/arch/x86/kernel/dumpstack_32.c
+index e91ae34..f2046c5 100644
+--- a/arch/x86/kernel/dumpstack_32.c
++++ b/arch/x86/kernel/dumpstack_32.c
+@@ -378,15 +378,11 @@ void die(const char *str, struct pt_regs *regs, long err)
+ 	unsigned long flags = oops_begin();
+ 	int sig = SIGSEGV;
+ 
+-	if (die_nest_count < 3) {
++	if (!user_mode_vm(regs))
+ 		report_bug(regs->ip, regs);
+ 
+-		if (__die(str, regs, err))
+-			sig = 0;
+-	} else {
+-		printk(KERN_EMERG "Recursive die() failure, output suppressed\n");
+-	}
+-
++	if (__die(str, regs, err))
++		sig = 0;
+ 	oops_end(flags, regs, sig);
+ }
+ 
+diff --git a/arch/x86/kernel/dumpstack_64.c b/arch/x86/kernel/dumpstack_64.c
+index 831e1e1..28c67aa 100644
+--- a/arch/x86/kernel/dumpstack_64.c
++++ b/arch/x86/kernel/dumpstack_64.c
+@@ -506,12 +506,16 @@ int __kprobes __die(const char *str, struct pt_regs *regs, long err)
+ 	return 0;
+ }
+ 
++/*
++ * This is gone through when something in the kernel has done something bad
++ * and is about to be terminated:
++ */
+ void die(const char *str, struct pt_regs *regs, long err)
+ {
+ 	unsigned long flags = oops_begin();
+ 	int sig = SIGSEGV;
+ 
+-	if (!user_mode(regs))
++	if (!user_mode_vm(regs))
+ 		report_bug(regs->ip, regs);
+ 
+ 	if (__die(str, regs, err))
+-- 
+1.5.4.3
+
