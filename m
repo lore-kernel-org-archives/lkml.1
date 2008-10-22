@@ -1,73 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760048AbYJVRwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760659AbYJVRvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760048AbYJVRwX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759385AbYJVRtS
+	id S1760659AbYJVRvk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759942AbYJVRr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:49:18 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:50861 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759243AbYJVRtR (ORCPT
+	Wed, 22 Oct 2008 13:47:28 -0400
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:53113 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759937AbYJVRr1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:49:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=M2833+9IUGVlnHsjIN2Nc0DXabcB2J6n+EVOndiHaFLAWOetILvX6Hn8y9AeCIQ+Gp
-         OLJqNtCSt/tkdI0IE2cnVubmOUqrTh67cX/zXZKBI6OJrlRjGnLh+urVaXWllujC79FW
-         py9F/QuRvbyT5bXLDlUTEmorjwe5aQOExzQ7c=
-Message-ID: <48FF6799.2080209@gmail.com>
-Date: Wed, 22 Oct 2008 19:49:13 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Wed, 22 Oct 2008 13:47:27 -0400
+Date: Wed, 22 Oct 2008 10:47:09 -0700 (PDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] SLUB - define OO_ macro instead of hardcoded numbers
+In-Reply-To: <20081022172103.GJ9639@localhost>
+Message-ID: <Pine.LNX.4.64.0810221037320.7633@quilx.com>
+References: <20081022161836.GG9639@localhost> <Pine.LNX.4.64.0810220926130.7633@quilx.com>
+ <20081022163530.GH9639@localhost> <20081022165354.GI9639@localhost>
+ <20081022172103.GJ9639@localhost>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH] [RESEND] tracing/ftrace: Fix a bug when switch current tracer
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Spam-Score: -2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a bug that made the sched_switch tracer unable to run
-if set as the current_tracer after the boot tracer.
+On Wed, 22 Oct 2008, Cyrill Gorcunov wrote:
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace_boot.c         |    4 ++--
- kernel/trace/trace_sched_switch.c |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+> Christoph how about this one?
 
-diff --git a/kernel/trace/trace_boot.c b/kernel/trace/trace_boot.c
-index 6bbc879..bd5046c 100644
---- a/kernel/trace/trace_boot.c
-+++ b/kernel/trace/trace_boot.c
-@@ -37,9 +37,9 @@ void disable_boot_trace(void)
- 		tracing_stop_cmdline_record();
- }
+Ok. Looks a bit better but we still have two maxes here
 
--void reset_boot_trace(struct trace_array *tr)
-+static void reset_boot_trace(struct trace_array *tr)
- {
--	disable_boot_trace();
-+	sched_switch_trace.reset(tr);
- }
+s->max which refers to the maximum number of objects per slab page for 
+a specific slab cache (depends on the runtime configuration). OO_MAX_OBJS 
+refers to the maximum number of objects per slab page that any slab cache 
+can be configured for which is a compile time limit.
 
- static void boot_trace_init(struct trace_array *tr)
-diff --git a/kernel/trace/trace_sched_switch.c
-b/kernel/trace/trace_sched_switch.c
-index 969953b..888944d 100644
---- a/kernel/trace/trace_sched_switch.c
-+++ b/kernel/trace/trace_sched_switch.c
-@@ -173,7 +173,7 @@ static void sched_switch_trace_init(struct trace_array *tr)
+Maybe this is okay, Pekka?
 
- static void sched_switch_trace_reset(struct trace_array *tr)
- {
--	if (tr->ctrl)
-+	if (tr->ctrl && sched_ref)
- 		stop_sched_trace(tr);
- }
