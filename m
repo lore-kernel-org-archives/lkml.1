@@ -1,146 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbYJVNOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbYJVNTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754899AbYJVNOU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 09:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYJVNOH
+	id S1754910AbYJVNTs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 09:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbYJVNTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 09:14:07 -0400
-Received: from sh.osrg.net ([192.16.179.4]:33330 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752925AbYJVNOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 09:14:06 -0400
-Date: Wed, 22 Oct 2008 22:13:39 +0900
-To: tiwai@suse.de
-Cc: fujita.tomonori@lab.ntt.co.jp, svens@stackframe.org, joerg.roedel@amd.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: swiotlb_alloc_coherent: allocated memory is out of range for
- device
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <s5hmygwn89z.wl%tiwai@suse.de>
-References: <s5htzb4nbnd.wl%tiwai@suse.de>
-	<20081022202809M.fujita.tomonori@lab.ntt.co.jp>
-	<s5hmygwn89z.wl%tiwai@suse.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 22 Oct 2008 09:19:40 -0400
+Received: from poesci.dolphinics.no ([81.175.23.36]:43875 "EHLO
+	poesci.dolphinics.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750944AbYJVNTk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 09:19:40 -0400
+X-Greylist: delayed 1375 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Oct 2008 09:19:40 EDT
+Message-ID: <48FF2304.8070301@dolphinics.no>
+Date: Wed, 22 Oct 2008 14:56:36 +0200
+From: Simen Thoresen <simentt@dolphinics.no>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: File as generic block-device?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20081022221321J.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Oct 2008 14:06:48 +0200
-Takashi Iwai <tiwai@suse.de> wrote:
+Hi all,
 
-> At Wed, 22 Oct 2008 20:29:24 +0900,
-> FUJITA Tomonori wrote:
-> > 
-> > On Wed, 22 Oct 2008 12:53:58 +0200
-> > Takashi Iwai <tiwai@suse.de> wrote:
-> > 
-> > > At Sun, 19 Oct 2008 12:09:32 +0200,
-> > > Sven Schnelle wrote:
-> > > > 
-> > > > Hi List,
-> > > > 
-> > > > my kernel dies while probing parport with the following last words:
-> > > > 
-> > > > [    3.672199] parport_pc 00:0b: reported by Plug and Play ACPI
-> > > > [    3.677969] parport0: PC-style at 0x378 (0x778), irq 7, dma 3 [PCSPP,TRISTATE,COMPAT,EPP,ECP,DMA]
-> > > > [    3.687691] hwdev DMA mask = 0x0000000000ffffff, dev_addr = 0x0000000020000000
-> > > > [    3.694916] Kernel panic - not syncing: swiotlb_alloc_coherent: allocated memory is out of range for device
-> > > > 
-> > > > I haven't started a bisection yet, but this seems to be introduced
-> > > > somewhere between 2.6.26 and 2.6.27, at least 2.6.26 was working without
-> > > > problems. The dmesg log + config was obtained from a kernel compiled
-> > > > from git on 10/16/2008.
-> > > 
-> > > This bug hits me, too.  Looks like swiotlb assumes that the alloc caller
-> > > must set GFP_DMA appropriately by itself since GFP_DMA hack was
-> > > removed.  The patch below should fix this particular case.
-> > 
-> > This happens with 2.6.27, right? GFP_DMA hack was removed post
-> > 2.6.27. What kernel version do you hit this problem?
-> 
-> 2.6.27 works fine, at least on my machine.
-> Likely a post-2.6.27 regression.
+I have a project where I require to treat a file as a block-device 
+(specifically, I want a file on an ext3 fs to act as one of the 
+raid-members in a md-based stripe-set. I know that I can make a 
+/filesystem/ on a file because both mkfs and mount (with -o loop) will 
+accept a file as a block-device, but I have found no such function for 
+mdadm, and am thus asking for a kernel-internal way to re-plug a file 
+into the block-device layer.
 
-Ok, it makes sense because I don't see any major changes to swiotlb
-between 2.6.26 and 2.6.27.
+Is this possible?
 
+My current platform i CentOS5, a RHEL5 rebuild (modified 2.6.18-kernel).
 
-> > Post 2.6.27, x86's alloc_coherent works a bit differently, but neither
-> > require the caller set to GFP flag. arch/x86/kernel/pci-dma.c does
-> > with 2.6.27 and asm-x86/dma-mapping.h does with post 2.6.27.
-> > 
-> > 
-> > > HOWEVER: the fundamental problem appears to be in swiotlb itself.
-> > > It assumes that iotlb pages are in DMA area.  But, in this case, the
-> > > driver sets 24bit DMA (as of PnP) while iotlb pages are allocated 
-> > > under 32bit DMA via alloc_bootmem_low_pages().  This doesn't work, of
-> > > course.
-> > 
-> > If a device has 24bit dma mask, alloc_coherent is supposed to use
-> > GFP_DMA.
-> 
-> Yes.  But what happens if __get_free_pages() fails?  Then you get the
-> same problem.
-
-Yeah, but __get_free_pages() with GFP_DMA fails, what can we do in
-such case? You think that it's a good idea to change swiotlb to
-allocates < 16MB iotlb pages? I'm not sure it's worth to do
-that. 24bit dma mask devices are disappearing.
-
-About the bug that you hit, I suspect that dma_map_coherent() in
-asm-x86/dma-mapping.h doesn't set gfp flags correctly.
-
-dma_map_coherent() calls swiotlb_alloc_coherent with the flags GFP_DMA
-set? parport driver set dev->coherent_dma_mask properly?
-
-
-> > > So, even adding GFP_DMA works mostly, it has still potentially
-> > > breakage when you can't get the page and fall back to iotlb pages,
-> > > just like the panic above.
-> > > 
-> > > Also, the removal of GFP_DMA hack is a bad idea.  For example, if a
-> > > device requires 28bit DMA mask, it doesn't set always GFP_DMA for
-> > > allocation because pages in ZONE_NORMAL may be inside that DMA mask.
-> > > Normal allocators allow this behavior but swiotlb allocator doesn't.
-> > > (Correct me if I'm wrong here -- I haven't followed much the recent
-> > >  changes.)
-> > 
-> > 28bit DMA mask is supposed to be handled properly. Firstly, we try
-> > with DMA_32BIT_MASK and if an allocated address is not fit for 28bit
-> > mask, we try GFP_DMA again.
-> 
-> Yep, dma_generic_alloc_coherent() works like that for ages.
-> My point is about swiotlb_alloc_coherent(), and I don't see the
-> relevant code there...
-
-Oops, you are right. swiotlb doesn't try again with GFP_DMA now. Joerg
-changed the GFP_DMA retry mechanism work only for pci-nommu.c It broke
-GART IOMMU and x86's swiotlb. I modified dma_generic_alloc_coherent to
-work with pci-nommu and GART. I promised Ingo to fix swiotlb too but I
-forgot about it.
-
-Sorry, I'll fix this soon but your case (28bit mask) is supposed to
-work without the GFP_DMA retry mechanism. As I wrote above, I suspect
-that dma flag is not set correctly.
-
-
-> > > Last but not least, I think panic() in allocation error path is too
-> > > strict.  Usually returning NULL isn't always fatal error, so give some
-> > > more chance to debug, e.g. by calling WARN() (or whatever) instead of
-> > > panic().
-> > 
-> > Yeah, this was discussed several times. The problem is that many
-> > drivers assume that dma mapping operations, map_single, map_sg, and
-> > map_coherent, always succeed and doesn't even check the errors. So we
-> > have some panic() in IOMMU drivers to prevent really bad events like
-> > data corruption.
-> 
-> Well, but also for alloc_coherent()?  Returning NULL from
-> dma_alloc_coherent() is really no fatal error.  If the caller doesn't
-> check the return value, then it's a more serious bug, I'd say.
-
-Probably, the majority check dma_alloc_coherent failure. I'll check
-this later to remove panic() in alloc_coherent in IOMMUs.
+-S
+-- 
+Simen Thoresen - Dolphin ICS Systems Administrator
