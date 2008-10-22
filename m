@@ -1,121 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbYJVSdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752364AbYJVSdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757899AbYJVSdY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 14:33:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbYJVSdQ
+	id S1752364AbYJVSdt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 14:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755784AbYJVSdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 14:33:16 -0400
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:37773 "EHLO
-	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752657AbYJVSdP (ORCPT
+	Wed, 22 Oct 2008 14:33:38 -0400
+Received: from node03.cambriumhosting.nl ([217.19.16.164]:56255 "EHLO
+	node03.cambriumhosting.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753522AbYJVSdh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 14:33:15 -0400
-Message-ID: <48FF71D3.8060505@cs.columbia.edu>
-Date: Wed, 22 Oct 2008 14:32:51 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Wed, 22 Oct 2008 14:33:37 -0400
+X-Greylist: delayed 1842 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Oct 2008 14:33:37 EDT
+Message-ID: <48FF6AC8.6020103@powercraft.nl>
+Date: Wed, 22 Oct 2008 20:02:48 +0200
+From: Jelle de Jong <jelledejong@powercraft.nl>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080724 Thunderbird/2.0.0.16 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-api@vger.kernel.org, tglx@linutronix.de,
-       dave@linux.vnet.ibm.com, mingo@elte.hu, hpa@zytor.com,
-       viro@zeniv.linux.org.uk
-Subject: Re: [RFC v7][PATCH 2/9] General infrastructure for checkpoint	restart
-References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu> <1224481237-4892-3-git-send-email-orenl@cs.columbia.edu> <20081021124130.a002e838.akpm@linux-foundation.org> <20081021202410.GA10423@us.ibm.com> <48FE82DF.6030005@cs.columbia.edu> <20081022152804.GA23821@us.ibm.com> <48FF4EB2.5060206@cs.columbia.edu> <20081022170325.GA4908@us.ibm.com>
-In-Reply-To: <20081022170325.GA4908@us.ibm.com>
+To: Markus Rechberger <mrechberger@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       em28xx@mcentral.de
+Subject: Re: [Em28xx] [PATCH] em28xx patches against the latest git tree
+References: <d9def9db0810221034v3bf4dabt6aa905b8a3ebd5a@mail.gmail.com> <d9def9db0810221038g156871e1u200abb90b774ad28@mail.gmail.com>
+In-Reply-To: <d9def9db0810221038g156871e1u200abb90b774ad28@mail.gmail.com>
 X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Serge E. Hallyn wrote:
-> Quoting Oren Laadan (orenl@cs.columbia.edu):
+Markus Rechberger wrote:
+> On Wed, Oct 22, 2008 at 7:34 PM, Markus Rechberger
+> <mrechberger@gmail.com> wrote:
+>> Following patch adds the latest em28xx driver from mcentral.de.
 >>
->> Serge E. Hallyn wrote:
->>> Quoting Oren Laadan (orenl@cs.columbia.edu):
->>> Just thinking aloud...
->>>
->>> Is read mode appropriate?  The user can edit the statefile and restart
->>> it.  Admittedly the restart code should then do all the appropriate
->>> checks for recreating resources, but I'm having a hard time thinking
->>> through this straight.
->>>
->>> Let's say hallyn is running passwd.  ruid=500,euid=0.  He quickly
->>> checkpoints.  Then he restarts.  Will restart say "ok, the /bin/passwd
->>> binary is setuid 0 so let hallyn take euid=0 for this?"  I guess not.
->>> But are there other resources for which this is harder to get right?
->> I'd say that checkpoint and restart are separate.
+>> merging mcentral.de/hg/~mrec/em28xx-new with upstream kernel
 >>
->> In checkpoint, you read the state and save it somewhere; you don't
->> modify anything in the target task (container). This equivalent to
->> ptrace read-mode. If you could do ptrace, you could save all that
->> state. In fact, you could save it in a format that is suitable for
->> a future restart ... (or just forge one !)
-> 
-> Yeah, that's convincing.
-> 
->> In restart, we either don't trust the user and keep everything to
->> be done with her credentials, of we trust the root user and allow
->> all operations (like loading a kernel module).
+>> * adding VBI support to most VBI capable devices
+>> * radio support for cx25843 based devices
+>> * extra cx25843 driver (registers match the em28xx configuration in
+>> order to support proper VBI)
+>> * all videostandards and inputs are tested with cx25843 based devices
+>> * adding alternative audio driver for em28xx devices (independent
+>> audio transfer, not depending on oss/alsa)
+>> * adding em28xx-webcam support for videology webcams
+>> * adding em28xx-audioep audio driver for alternate number 1 - if
+>> vendor specific and not USB audio conform
+>> * adding s921 driver (ISDB-T 1Seg support tunneling parameters through
+>> DVB-T API setting specific registers to auto)
+>> * adding xc3028 mostly original sourcecode from the manufacturer (most
+>> recent version), merged xc3028/xc3028l into
+>>  one external firmware blob - important for signal quality
+>> * adding xc5000 mostly original sourcecode from the manufacturer (most
+>> recent version) - important for signal quality
+>> * adding lgdt3304, although currently disabled
+>> * remote control handling *works* but is broken by design and disabled
+>> since different rc5/rc6/nec remotes return
+>>  different values. Handling can be done using interrupt transfers too (TODO)
+>> * fixed a couple of bugs in the em28xx-audio driver which can lead to
+>> system hangs.
 >>
->> We can actually have both modes of operations. How to decide that
->> we trust the user is a separate question:  one option is to have
->> both checkpoint and restart executables setuid - checkpoint will
->> sign (in user space) the output image, and restart (in user space)
->> will validate the signature, before passing it to the kenrel. Surely
->> there are other ways...
+>> ----
+>>
+>> as for testing:
+>> * analog TV: patched tvtime (for analog TV) version available on
+>> mcentral.de which supports 1. software rendering 2. digital
+>> audio/alsa/aad
+>> * FM radio: gqradio from mcentral.de, there's also an older radio
+>> patch for vlc available.
+>> * DVB-T: all applications should work with it
+>> * ISDB-T: relevant for China and Brazil only, can be used with
+>> dvbtune, dvbscan (the channel file cannot be used due problems with
+>> the characters), for transferring the MPEG-TS stream dvbstream,
+>> dvbsnoop, for playback gstreamer/mplayer (h264/aac isn't supported
+>> well with it).
+>>
+>> commit history is available at:
+>> http://mcentral.de/http://git.kernel.org/?p=linux/kernel/git/mrec/linux-2.6.git;a=commit;h=f1be9ae8f8489a6598417a194e0899ac00c7530ehg/~mrec/em28xx-new
+>>
 > 
-> Makes sense.
+> this should be:
+> http://mcentral.de/hg/~mrec/em28xx-new/shortlog
 > 
-> ...
+>> This patch adds a separate instance of the driver to the git
+>> repository, not affecting anything existing.
+>>
+>> the full patch against the git repository:
+>>
+>>
+>> Contributors:
+>> user:        acano@fastmail.fm
+>> user:        Andre Kelmanson <akelmanson@gmail.com>
+>> user:        Bouwsma Barry <freebeer.bouwsma@gmail.com>
+>> user:        Dan Kreiser <kreiser@informatik.hu-berlin.de>
+>> user:        Frank Neuber <fn@kernelport.de>
+>> user:        Jelle de Jong <jelledejong@powercraft.nl>
+>> user:        John Stowers <john.stowers.lists@gmail.com>
+>> user:        Lukas Kuna <lukas.kuna@evkanet.net>
+>> user:        Stefan Vonolfen <stefan.vonolfen@gmail.com>
+>> user:        Stephan Berberig <s.berberig@arcor.de>
+>> user:        Thomas Giesecke <thomas.giesecke@ibgmbh-naumburg.de>
+>> user:        Vitaly Wool <vwool@ru.mvista.com>
+>> user:        Zhenyu Wang <zhen78@gmail.com>
+>>
+>> Signed-off-by: Markus Rechberger <mrechberger@sundtek.de>
+>>
 > 
->>> Hmm, so do you think we just always use the caller's credentials?
->> Nope, since we will fail to restart in many cases. We will need a way
->> to move from caller's credentials to saved credentials, and even from
->> caller's credentials to privileged credentials (e.g. to reopen a file
->> that was created by a setuid program prior to dropping privileges).
-> 
-> Can we agree to worry about that much much later? :)  Would you agree
 
-Definitely. Even more so - I believe that's a user-space issue :)
+Thumbs up for the git merge process, keep up the good work!
 
-> that for the majority of use-cases, restarting with caller's credentials
-> will work?  Or am I wrong about that?
+Kind regards,
 
-That depends on your target audience. For HPC you're probably right.
-For server applications this may not be the case (e.g. apache needs
-a privileged port, and then it drops privileges).
-
-I agree that we may safely (...) defer this discussion until the
-implementation gets much beefier.
-
-> 
->> To do that, we will need to agree on a way to escalate/change the
->> credentials. This however belongs to user-space (and then the binaries
->> for checkpoint/restart will be setuid themselves).
-> 
-> Ok those are less scary, and I have no problem with those.
-> 
->> There will also be the issue of mapping credentials: a user A may have
->> one UID/GID on once system and another UID/GID on another system, and
->> we may want to do the conversion. This, too, can be done in user space
->> prior to restart by using an appropriate filter through the checkpoint
->> stream.
-> 
-> User namespaces may help here too.  So user A can create a new user
-> namespace and restart as user B in that namespace.  But right now that
-> sounds like overkill.
-
-Indeed, virtualization is probably the solution. Here, too, I think
-it's safe to defer the discussion.
-
-Oren.
-
-
+Jelle
