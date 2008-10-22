@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbYJVU00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbYJVUbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758136AbYJVU00 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 16:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYJVU0Q
+	id S1757436AbYJVUbY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 16:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbYJVUa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 16:26:16 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:56750 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751416AbYJVU0P (ORCPT
+	Wed, 22 Oct 2008 16:30:57 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:35772 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753393AbYJVUa4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 16:26:15 -0400
-To: cl@linux-foundation.org
-CC: miklos@szeredi.hu, penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au,
-       hugh@veritas.com, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-reply-to: <Pine.LNX.4.64.0810221315080.26671@quilx.com> (message from
-	Christoph Lameter on Wed, 22 Oct 2008 13:19:15 -0700 (PDT))
-Subject: Re: SLUB defrag pull request?
-References: <1223883004.31587.15.camel@penberg-laptop>
- <1223883164.31587.16.camel@penberg-laptop> <Pine.LNX.4.64.0810131227120.20511@blonde.site>
- <200810132354.30789.nickpiggin@yahoo.com.au> <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu>
- <E1KpOOL-0003Vf-9y@pomaz-ex.szeredi.hu> <48F378C6.7030206@linux-foundation.org>
- <E1KpOjX-0003dt-AY@pomaz-ex.szeredi.hu> <48FC9CCC.3040006@linux-foundation.org>
- <E1Krz4o-0002Fi-Pu@pomaz-ex.szeredi.hu> <48FCCC72.5020202@linux-foundation.org>
- <E1KrzgK-0002QS-Os@pomaz-ex.szeredi.hu> <48FCD7CB.4060505@linux-foundation.org>
- <E1Ks0QX-0002aC-SQ@pomaz-ex.szeredi.hu> <48FCE1C4.20807@linux-foundation.org>
- <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu> <48FE6306.6020806@linux-foundation.org>
- <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0810220822500.30851@quilx.com>
- <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0810221252570.3562@quilx.com>
- <E1Ksk3g-00027r-Lp@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0810221315080.26671@quilx.com>
-Message-Id: <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 22 Oct 2008 22:26:00 +0200
+	Wed, 22 Oct 2008 16:30:56 -0400
+Date: Wed, 22 Oct 2008 15:30:45 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Benjamin Thery <benjamin.thery@bull.net>, netdev <netdev@vger.kernel.org>,
+       Dave Miller <davem@davemloft.net>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Al Viro <viro@ftp.linux.org.uk>, Daniel Lezcano <dlezcano@fr.ibm.com>,
+       linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
+       Denis Lunev <den@openvz.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [PATCH 0/4][RFC] netns: sysfs: add a netns suffix to net
+	device sysfs entries
+Message-ID: <20081022203045.GA4633@us.ibm.com>
+References: <20081022152144.351965414@theryb.frec.bull.fr> <m1d4hso0ym.fsf@frodo.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1d4hso0ym.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Oct 2008, Christoph Lameter wrote:
-> On Wed, 22 Oct 2008, Miklos Szeredi wrote:
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> Benjamin Thery <benjamin.thery@bull.net> writes:
 > 
-> > You are not actually listening to what I'm saying.  Please read the
-> > question carefully again.
+> > Support for network namespaces in mainline is pretty complete for
+> > some time now, but there is still this issue with sysfs that prevents 
+> > more people to use it easily.
 > 
-> That is the impression that I got from you too. I have listed the options 
-> to get a reliable reference to an object and you seem to just skip over 
-> it.
+> Ben your patchset is completely inappropriate.
+> 
+> Temporarily adding elements to the ABI that we intend to remove
+> is not a proper solution to this problem.
+> 
+> That user space visible ida you add is a namespace identifier that breaks
+> nested containers and migration.  It is very very very wrong.
 
-Because you don't _need_ a reliable reference to access the contents
-of the dentry.  The dentry is still there after being freed, as long
-as the underlying slab is there and isn't being reused for some other
-purpose.  But you can easily ensure that from the slab code.
+I disagree (not surprising :) completely.  The well-known userspace
+tools (ifconfig, ip, etc) will not see the lo@1, they'll see lo.
+Userspace in a container can either umount /sys completely, or do
 
-Hmm?
+	mount -t tmpfs none /sys/class/net
+	mount --bind /sys/devices/virtual/net/lo@1 /sys/class/net/lo
 
-Miklos
+if they really want to, in which case only their view
+of /sys/devices/virtual/net would be different.
+
+Eric, would you hate this less if it was under some
+
+	CONFIG_SYSFS_NETNS_HACK
+
+config variable?
+
+-serge
