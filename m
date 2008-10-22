@@ -1,100 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757180AbYJVUsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758105AbYJVUtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757180AbYJVUsV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 16:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYJVUsM
+	id S1758105AbYJVUtP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 16:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbYJVUs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 16:48:12 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:33971 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752349AbYJVUsL (ORCPT
+	Wed, 22 Oct 2008 16:48:58 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:22043 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753249AbYJVUs5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 16:48:11 -0400
-Date: Wed, 22 Oct 2008 22:48:01 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org
-Message-ID: <20081022204800.GT4390@tekkaman>
-References: <1224683240-15439-1-git-send-email-giometti@linux.it> <1224683240-15439-2-git-send-email-giometti@linux.it> <20081022174004.GB10587@kroah.com> <20081022111145.e5f3c632.akpm@linux-foundation.org> <20081022195245.GS4390@tekkaman> <20081022130150.00836eba.akpm@linux-foundation.org>
+	Wed, 22 Oct 2008 16:48:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=gJf4MSu3xC8FzRPXgnbFF4wxXbz9tRFUiXeM/mjIJTUX5nRECg7krNamuBrFfHD1uq
+         FM13yVp/sBrAkFSCO+LDxjSQy+70a8h3NBr1ficQY+TeoyJRqPqHYijB/+GQr2BLLnCm
+         LUuIFAh4PDAw/8M4/Dj5Ji5/Uufi0mQTGpIFQ=
+Message-ID: <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>
+Date: Wed, 22 Oct 2008 23:48:56 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Miklos Szeredi" <miklos@szeredi.hu>
+Subject: Re: SLUB defrag pull request?
+Cc: cl@linux-foundation.org, nickpiggin@yahoo.com.au, hugh@veritas.com,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081022130150.00836eba.akpm@linux-foundation.org>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: 192.168.32.254
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 1/2] Add c2 port support.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+References: <1223883004.31587.15.camel@penberg-laptop>
+	 <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu>
+	 <48FE6306.6020806@linux-foundation.org>
+	 <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu>
+	 <Pine.LNX.4.64.0810220822500.30851@quilx.com>
+	 <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu>
+	 <Pine.LNX.4.64.0810221252570.3562@quilx.com>
+	 <E1Ksk3g-00027r-Lp@pomaz-ex.szeredi.hu>
+	 <Pine.LNX.4.64.0810221315080.26671@quilx.com>
+	 <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu>
+X-Google-Sender-Auth: 6a83c5c8eccd3233
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 01:01:50PM -0700, Andrew Morton wrote:
-> > > <wonders what local_irq_disable() is supposed to achieve on SMP>
-> > 
-> > The SMP is achieved by mutex_lock(), the local_irq_disable() is used
-> > to avoid interructions in code execution. C2 port has very stringent
-> > timings.
-> 
-> Please add code comments explaning this (unless I missed them).
+On Wed, Oct 22, 2008 at 11:26 PM, Miklos Szeredi <miklos@szeredi.hu> wrote:
+> Because you don't _need_ a reliable reference to access the contents
+> of the dentry.  The dentry is still there after being freed, as long
+> as the underlying slab is there and isn't being reused for some other
+> purpose.  But you can easily ensure that from the slab code.
+>
+> Hmm?
 
-Ok.
-
-> > +	if (!ret)
-> > +		return ERR_PTR(-ENOMEM);
-> 
-> 		^^ leaks c2dev
-
-Fixed.
-
-> > +	if (unlikely(!c2dev->dev)) {
-> > +		ret = -ENOMEM;
-> > +		goto error_device_create;
-> > +	};
-> 
->          ^
-
-Fixed.
-
-> > > What I haven't yet got my head around is this:
-> > > 
-> > >   Currently this code supports only flash programming through sysfs
-> > >   interface but extensions shoud be easy to add.
-> > > 
-> > > is that really what we want to use sysfs for?  As the prime interface
-> > > to a device driver (or is it a bus driver?) Didn't we used to use
-> > > device nodes for that sort of thing?
-> > 
-> > I decided to use this interface since the C2 ports are simple and very
-> > easy to manage with such files abstraction.
-> 
-> well..  what _is_ the implemented interface?  What alternatives were
-> considered and why were they judged inappropriate?  What interfaces do
-> any similar in-tree drivers use?
-
-Well... main reasons in using sysfs support are:
-
-* no more char devices and new ioctls to define,
-
-* the microcontrollers on-board flash can be easily programmed by
-using only the "echo" and "cat" commands, so no more tools are needed
-and even simply busybox can be used.
-
-> > Whould you like I repropose the code with the fixed issues for your
-> > review?
-
-I repost the code.
-
-Thanks,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail: giometti@enneenne.com
-Linux Device Driver                          giometti@linux.it
-Embedded Systems                     phone:  +39 349 2432127
-UNIX programming                     skype:  rodolfo.giometti
+Actually, when debugging is enabled, it's customary to poison the
+object, for example (see free_debug_processing() in mm/slub.c). So we
+really can't "easily ensure" that in the allocator unless we by-pass
+all the current debugging code.
