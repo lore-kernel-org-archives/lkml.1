@@ -1,65 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbYJVKGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369AbYJVKGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756198AbYJVKGU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 06:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbYJVKGJ
+	id S1756369AbYJVKGq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 06:06:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbYJVKGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 06:06:09 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:9359 "EHLO
-	WA4EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754102AbYJVKGI (ORCPT
+	Wed, 22 Oct 2008 06:06:37 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44726 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752950AbYJVKGg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 06:06:08 -0400
-X-BigFish: VPS-36(zz1432R98dR4015M1805M936fOzzzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K94XDW-02-EMH-01
-Date: Wed, 22 Oct 2008 12:05:23 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: x86: SB600: skip IRQ0 override if it is not routed to INT2 of
-	IOAPIC
-Message-ID: <20081022100523.GB13400@alberich.amd.com>
-References: <20081015095153.GG29098@alberich.amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20081015095153.GG29098@alberich.amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 22 Oct 2008 10:05:57.0290 (UTC) FILETIME=[C6F530A0:01C9342D]
+	Wed, 22 Oct 2008 06:06:36 -0400
+Date: Wed, 22 Oct 2008 11:06:42 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: roel kluin <roel.kluin@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Make static
+Message-ID: <20081022110642.5140c670@lxorguk.ukuu.org.uk>
+In-Reply-To: <48FE6A75.5080004@gmail.com>
+References: <48FE6A75.5080004@gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 15, 2008 at 11:51:53AM +0200, Andreas Herrmann wrote:
-> On some more HP laptops BIOS reports an IRQ0 override
-> but the SB600 chipset is configured such that timer
-> interrupts go to INT0 of IOAPIC.
-> 
-> Check IRQ0 routing and if it is routed to INT0 of IOAPIC skip the
-> timer override.
-> 
-> See following bug reports:
-> http://bugzilla.kernel.org/show_bug.cgi?id=11715
-> http://bugzilla.kernel.org/show_bug.cgi?id=11516
-> 
-> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> ---
->  arch/x86/kernel/early-quirks.c |   55 +++++++++++++++++++++++++++++++++++++--
->  1 files changed, 52 insertions(+), 3 deletions(-)
-> 
-> Patch is against v2.6.27-3977-gc166ab7 (yesterday's Linus git).
-> Please apply.
+> Building an allnoconfig, sparse asked whether these could be static, so I checked,
+> and they are only used in the file where they are declared. This means that they
+> can be static, am I forgetting something? This was build and checkpatch tested.
 
+The tty ones look correct. The tty_io one is already fixed (Jason beat
+you to it). The pty one is a result of some code tidying and correct as
+is the vt one. I'll merge the vt/pty bits
 
-Hi Ingo,
-
-any chance that this fix makes it into tip asap?
-I'd like to see it in 2.6.28.
-
-
-Thanks,
-
-Andreas
-
-
+Alan
