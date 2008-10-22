@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbYJVTTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758424AbYJVTTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757209AbYJVTTW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 15:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbYJVTTO
+	id S1758424AbYJVTTz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 15:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbYJVTTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 15:19:14 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:65232 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751086AbYJVTTN (ORCPT
+	Wed, 22 Oct 2008 15:19:44 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:34301 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754241AbYJVTTo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 15:19:13 -0400
-Date: Wed, 22 Oct 2008 15:18:39 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       sagar.abhishek@gmail.com, davem@davemloft.net, tglx@linutronix.de,
-       peterz@infradead.org, torvalds@linux-foundation.org,
-       srostedt@redhat.com
-Subject: Re: [PATCH 05/11] ftrace: only have ftrace_kill atomic
-In-Reply-To: <20081022121128.5acc9ae0.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0810221516410.25759@gandalf.stny.rr.com>
-References: <20081022184313.179487464@goodmis.org> <20081022185136.312667539@goodmis.org> <20081022121128.5acc9ae0.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 22 Oct 2008 15:19:44 -0400
+Subject: Re: [PATCH 1/2] Allow rwlocks to re-enable interrupts
+From: Peter Zijlstra <peterz@infradead.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Petr Tesarik <ptesarik@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org, tee@sgi.com, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20081022190510.GH26094@parisc-linux.org>
+References: <1224664414.4430.33.camel@elijah.suse.cz>
+	 <1224664476.4430.38.camel@elijah.suse.cz> <1224665128.15448.4.camel@twins>
+	 <1224665899.4430.48.camel@elijah.suse.cz> <1224696271.20069.8.camel@twins>
+	 <20081022190510.GH26094@parisc-linux.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 22 Oct 2008 21:19:43 +0200
+Message-Id: <1224703183.20069.55.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 22 Oct 2008, Andrew Morton wrote:
-
-> On Wed, 22 Oct 2008 14:43:18 -0400
-> Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > Only have a way to completely disable ftrace in atomic sections.
+On Wed, 2008-10-22 at 13:05 -0600, Matthew Wilcox wrote:
+> On Wed, Oct 22, 2008 at 07:24:31PM +0200, Peter Zijlstra wrote:
+> > > No problem. I could then also use it for _spin_lock_irqsave, if the
+> > > answer to the above question is use CONFIG_LOCK_STAT there as well.
 > > 
-> 
-> I have NFI what that means.
-> 
-> More importantly there is no explanation for *why* this change is being
-> made.
+> > If you create LOCK_CONTEDED_FLAGS() the whole issue goes away nicely.
 
-Sorry, I'll explain it better in the next release. This was just something 
-that Ingo wanted cleaned up. He prefers the name "ftrace_turn_off". I 
-really don't care what the name is, but the "atomic" part was something 
-that had to go.
+Gah, I looked at it again, and that #ifdef isn't only to select between
+LOCK_CONTENDED and not, but we can't actually have the re-enable for
+anything lockdep.
 
-What's your preference fo a name of a function that should completely 
-disable ftrace on anomaly detection?  Unfortunately, ftrace_stop, 
-ftrace_disable, and ftrace_shutdown are already in use.
+So I was wrong.
 
--- Steve
+> Should it also be used for _spin_lock_irq()?  I'm puzzled why it's only
+> used for _irqsave().
 
+Right, not sure how this maze is done.
+
+The thing is, with spin_lock_irq() you know the irq state and can do the
+enable unconditionally - then again, with ticket locks we cannot do it
+at all.
+
+The _flags() version needs the flags to see if irqs was enabled before
+we entered the op, if it wasn't we cannot go around enabling them.
+
+> (should _spin_lock_bh() re-enable BHs while waiting?  Is it just not big
+> enough of a deal?)
+
+Doubt it.. dunno.. personally I'd rather see softirqs die sooner rather
+than later.
