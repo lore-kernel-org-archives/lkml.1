@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759030AbYJVSyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759291AbYJVSyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759030AbYJVSyN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 14:54:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbYJVSvn
+	id S1759291AbYJVSyr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 14:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758165AbYJVSvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 14:51:43 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42115 "EHLO
+	Wed, 22 Oct 2008 14:51:48 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51068 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754759AbYJVSvi (ORCPT
+	with ESMTP id S1757992AbYJVSvi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 22 Oct 2008 14:51:38 -0400
-Message-Id: <20081022185136.669215296@goodmis.org>
+Message-Id: <20081022185136.842543815@goodmis.org>
 References: <20081022184313.179487464@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Oct 2008 14:43:20 -0400
+Date: Wed, 22 Oct 2008 14:43:21 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
@@ -24,72 +24,66 @@ Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 07/11] ftrace: do not trace init sections
-Content-Disposition: inline; filename=ftrace-notrace-init-sects.patch
+Subject: [PATCH 08/11] ftrace: disable dynamic ftrace for all archs that use daemon
+Content-Disposition: inline; filename=ftrace-remove-non-x86-dynamic-ftrace.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The recordmcount script is now robust enough not to process any sections
-but the .text section. But the gcc compiler still adds a call to mcount.
+The ftrace daemon is complex and can cause nasty races if something goes
+wrong. Since it affects all of the kernel, this patch disables dynamic 
+ftrace from any arch that depends on the daemon. Until the archs are
+ported over to the new MCOUNT_RECORD method, I am disabling dynamic
+ftrace from them.
 
-Note: The function mcount looks like:
-
-  ENTRY(mcount)
-	ret
-  END(mcount)
-
-Which means the overhead is just a return.
-
-This patch adds notrace to the init sections to not even bother calling
-mcount (which simply returns).
-
+Note: I am leaving in the arch/<arch>/kernel/ftrace.c code alone since
+that can be used when the arch is ported to MCOUNT_RECORD. To port
+the arch to MCOUNT_RECORD, the scripts/recordmcount.pl needs to be
+updated. I will make that easier to do for 2.6.29. For 28, we will keep
+the archs disabled.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- include/linux/init.h |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ arch/arm/Kconfig     |    1 -
+ arch/powerpc/Kconfig |    1 -
+ arch/sparc64/Kconfig |    1 -
+ 3 files changed, 3 deletions(-)
 
-Index: linux-compile.git/include/linux/init.h
+Index: linux-compile.git/arch/arm/Kconfig
 ===================================================================
---- linux-compile.git.orig/include/linux/init.h	2008-10-22 11:49:44.000000000 -0400
-+++ linux-compile.git/include/linux/init.h	2008-10-22 12:27:19.000000000 -0400
-@@ -75,15 +75,15 @@
- 
- 
- #ifdef MODULE
--#define __exitused
-+#define __exitused notrace
- #else
--#define __exitused  __used
-+#define __exitused  __used notrace
- #endif
- 
- #define __exit          __section(.exit.text) __exitused __cold
- 
- /* Used for HOTPLUG */
--#define __devinit        __section(.devinit.text) __cold
-+#define __devinit        __section(.devinit.text) __cold notrace
- #define __devinitdata    __section(.devinit.data)
- #define __devinitconst   __section(.devinit.rodata)
- #define __devexit        __section(.devexit.text) __exitused __cold
-@@ -91,7 +91,7 @@
- #define __devexitconst   __section(.devexit.rodata)
- 
- /* Used for HOTPLUG_CPU */
--#define __cpuinit        __section(.cpuinit.text) __cold
-+#define __cpuinit        __section(.cpuinit.text) __cold notrace
- #define __cpuinitdata    __section(.cpuinit.data)
- #define __cpuinitconst   __section(.cpuinit.rodata)
- #define __cpuexit        __section(.cpuexit.text) __exitused __cold
-@@ -99,7 +99,7 @@
- #define __cpuexitconst   __section(.cpuexit.rodata)
- 
- /* Used for MEMORY_HOTPLUG */
--#define __meminit        __section(.meminit.text) __cold
-+#define __meminit        __section(.meminit.text) __cold notrace
- #define __meminitdata    __section(.meminit.data)
- #define __meminitconst   __section(.meminit.rodata)
- #define __memexit        __section(.memexit.text) __exitused __cold
+--- linux-compile.git.orig/arch/arm/Kconfig	2008-10-22 13:10:52.000000000 -0400
++++ linux-compile.git/arch/arm/Kconfig	2008-10-22 13:20:55.000000000 -0400
+@@ -17,7 +17,6 @@ config ARM
+ 	select HAVE_KPROBES if (!XIP_KERNEL)
+ 	select HAVE_KRETPROBES if (HAVE_KPROBES)
+ 	select HAVE_FTRACE if (!XIP_KERNEL)
+-	select HAVE_DYNAMIC_FTRACE if (HAVE_FTRACE)
+ 	select HAVE_GENERIC_DMA_COHERENT
+ 	help
+ 	  The ARM series is a line of low-power-consumption RISC chip designs
+Index: linux-compile.git/arch/powerpc/Kconfig
+===================================================================
+--- linux-compile.git.orig/arch/powerpc/Kconfig	2008-10-22 13:10:52.000000000 -0400
++++ linux-compile.git/arch/powerpc/Kconfig	2008-10-22 13:20:55.000000000 -0400
+@@ -111,7 +111,6 @@ config ARCH_NO_VIRT_TO_BUS
+ config PPC
+ 	bool
+ 	default y
+-	select HAVE_DYNAMIC_FTRACE
+ 	select HAVE_FTRACE
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select HAVE_IDE
+Index: linux-compile.git/arch/sparc64/Kconfig
+===================================================================
+--- linux-compile.git.orig/arch/sparc64/Kconfig	2008-10-22 13:10:52.000000000 -0400
++++ linux-compile.git/arch/sparc64/Kconfig	2008-10-22 13:20:55.000000000 -0400
+@@ -11,7 +11,6 @@ config SPARC
+ config SPARC64
+ 	bool
+ 	default y
+-	select HAVE_DYNAMIC_FTRACE
+ 	select HAVE_FTRACE
+ 	select HAVE_IDE
+ 	select HAVE_LMB
 
 -- 
