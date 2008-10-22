@@ -1,129 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbYJVRVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756647AbYJVRWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755288AbYJVRVT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbYJVRVK
+	id S1756647AbYJVRWi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbYJVRW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:21:10 -0400
-Received: from ik-out-1112.google.com ([66.249.90.179]:18120 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751460AbYJVRVI (ORCPT
+	Wed, 22 Oct 2008 13:22:29 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:36261 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752149AbYJVRW3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:21:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=pZfpXk6uuVugKxF/haE4IZsF1UJIW6IyU6zzA58qInZbp8t+uspSeS5e0bvM07AKSR
-         5TXn8PuafYCMFtoqgPqSYmtVPrulcmtGg/pUsqrUTJaBZS2zokJwJa+H3zo0mzxCQd/B
-         zkPit0EYCNqlF40TFImXtXUUbtxVIiDMjNd5g=
-Date: Wed, 22 Oct 2008 21:21:03 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] SLUB - define OO_ macro instead of hardcoded numbers
-Message-ID: <20081022172103.GJ9639@localhost>
-References: <20081022161836.GG9639@localhost> <Pine.LNX.4.64.0810220926130.7633@quilx.com> <20081022163530.GH9639@localhost> <20081022165354.GI9639@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081022165354.GI9639@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 22 Oct 2008 13:22:29 -0400
+X-SourceIP: 213.46.9.244
+Subject: Re: [PATCH 4/4] Implement semaphore latency tracer
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: =?ISO-8859-1?Q?T=F6r=F6k?= Edwin <edwintorok@gmail.com>,
+       sandmann@daimi.au.dk, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20081022154851.GL23060@elte.hu>
+References: <1223817124-27239-1-git-send-email-edwintorok@gmail.com>
+	 <1223817124-27239-6-git-send-email-edwintorok@gmail.com>
+	 <1223838786.8634.8.camel@lappy.programming.kicks-ass.net>
+	 <48F259A7.2030800@gmail.com> <20081022152842.GI23060@elte.hu>
+	 <48FF49BD.8000608@gmail.com>  <20081022154851.GL23060@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 22 Oct 2008 19:22:17 +0200
+Message-Id: <1224696137.20069.6.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Wed, Oct 22, 2008 at 08:53:54PM +0400]
-| [Cyrill Gorcunov - Wed, Oct 22, 2008 at 08:35:30PM +0400]
-| | [Christoph Lameter - Wed, Oct 22, 2008 at 09:28:14AM -0700]
-| | > On Wed, 22 Oct 2008, Cyrill Gorcunov wrote:
-| | >
-| | >> Please check -- wouldn't it be better to use such a macro?
-| | >
-| | > Looks good. But could you rename OO_MAX to something different? There is  
-| | > already s->max which may cause confusion because s->max is the maximum  
-| | > number of objects in a slab. OO_MAX is the maximum mask?
-| | >
-| | 
-| | I supposed it would mean maximum object number inside page (ie quantity) which
-| | is happen to be the same value as OO_MASK. Maybe OO_MAX_OBJ?
-| | 
-| | 		- Cyrill -
-| 
-| Btw Christoph fix me if I'm wrong but this 65535 is directly related to
-| 16 bit shift. If we change the first value without changing the second we
-| just break the SLUB I guess. I didn't read/understand SLUB code in details
-| so could be wrong.
-| 
-| 		- Cyrill -
+On Wed, 2008-10-22 at 17:48 +0200, Ingo Molnar wrote:
+> * Török Edwin <edwintorok@gmail.com> wrote:
+> 
+> > On 2008-10-22 18:28, Ingo Molnar wrote:
+> > > hm, but the most common synchronization primitive are mutexes - and 
+> > > those are not covered by your patchset.
+> > >   
+> > 
+> > Indeed. I've seen a patch from Jason Baron to introduce tracepoints 
+> > for mutexes, but the conclusion was that the tracepoints should be in 
+> > lockstat instead.
+> > 
+> > And if lockstat is enabled Peter Zijlstra's 'contend with points' 
+> > patch seems to do exactly what I want to.
+> > 
+> > However I think it would be useful to have (a tracepoints based?) 
+> > latency tracker, which can be enabled/disabled at runtime, and which 
+> > doesn't add any data to the mutex/semaphore structures. My patchset 
+> > was a first attempt towards that, but it seems that such use of 
+> > tracepoints is not welcome at this time?
+> > 
+> > Please tell me if I should continue working on this, or if I my 
+> > patches are designed totally on the wrong way.
+> 
+> i think if you hook into Peter's lockstat APIs that should give us a 
+> pretty good tracer, with no ugliness introduced. That would be rather 
+> interesting. Peter, do you concur?
 
-Christoph how about this one?
+Yes, I've already suggested this. Use the exact same hooks that
+lockdep/lockstat use.
 
-		- Cyrill -
----
-
- mm/slub.c |   18 +++++++++++-------
- 1 file changed, 11 insertions(+), 7 deletions(-)
-
-Index: linux-2.6.git/mm/slub.c
-===================================================================
---- linux-2.6.git.orig/mm/slub.c	2008-10-22 21:11:26.000000000 +0400
-+++ linux-2.6.git/mm/slub.c	2008-10-22 21:19:12.000000000 +0400
-@@ -153,6 +153,10 @@
- #define ARCH_SLAB_MINALIGN __alignof__(unsigned long long)
- #endif
- 
-+#define OO_SHIFT	16
-+#define OO_MASK		((1 << OO_SHIFT) - 1)
-+#define OO_MAX_OBJS	65535 /* see struct page.objects */
-+
- /* Internal SLUB flags */
- #define __OBJECT_POISON		0x80000000 /* Poison object */
- #define __SYSFS_ADD_DEFERRED	0x40000000 /* Not yet visible via sysfs */
-@@ -290,7 +294,7 @@ static inline struct kmem_cache_order_ob
- 						unsigned long size)
- {
- 	struct kmem_cache_order_objects x = {
--		(order << 16) + (PAGE_SIZE << order) / size
-+		(order << OO_SHIFT) + (PAGE_SIZE << order) / size
- 	};
- 
- 	return x;
-@@ -298,12 +302,12 @@ static inline struct kmem_cache_order_ob
- 
- static inline int oo_order(struct kmem_cache_order_objects x)
- {
--	return x.x >> 16;
-+	return x.x >> OO_SHIFT;
- }
- 
- static inline int oo_objects(struct kmem_cache_order_objects x)
- {
--	return x.x & ((1 << 16) - 1);
-+	return x.x & OO_MASK;
- }
- 
- #ifdef CONFIG_SLUB_DEBUG
-@@ -764,8 +768,8 @@ static int on_freelist(struct kmem_cache
- 	}
- 
- 	max_objects = (PAGE_SIZE << compound_order(page)) / s->size;
--	if (max_objects > 65535)
--		max_objects = 65535;
-+	if (max_objects > OO_MAX_OBJS)
-+		max_objects = OO_MAX_OBJS;
- 
- 	if (page->objects != max_objects) {
- 		slab_err(s, page, "Wrong number of objects. Found %d but "
-@@ -1819,8 +1823,8 @@ static inline int slab_order(int size, i
- 	int rem;
- 	int min_order = slub_min_order;
- 
--	if ((PAGE_SIZE << min_order) / size > 65535)
--		return get_order(size * 65535) - 1;
-+	if ((PAGE_SIZE << min_order) / size > OO_MAX_OBJS)
-+		return get_order(size * OO_MAX_OBJS) - 1;
- 
- 	for (order = max(min_order,
- 				fls(min_objects * size - 1) - PAGE_SHIFT);
