@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758631AbYJVRlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758685AbYJVRmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758631AbYJVRlA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757619AbYJVReK
+	id S1758685AbYJVRmA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756771AbYJVReZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:34:10 -0400
-Received: from kroah.org ([198.145.64.141]:53067 "EHLO coco.kroah.org"
+	Wed, 22 Oct 2008 13:34:25 -0400
+Received: from kroah.org ([198.145.64.141]:53078 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757680AbYJVReJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:34:09 -0400
+	id S1757592AbYJVReX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 13:34:23 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>, David Rowe <david@rowetel.com>,
        Steve Underwood <steveu@coppice.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 22/42] Staging: echo: fix kmalloc()/kfree() uses
-Date: Wed, 22 Oct 2008 10:29:03 -0700
-Message-Id: <1224696563-5170-22-git-send-email-gregkh@suse.de>
+Subject: [PATCH 24/42] Staging: echo: remove __cplusplus macro magic
+Date: Wed, 22 Oct 2008 10:29:05 -0700
+Message-Id: <1224696563-5170-24-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081022172203.GA4000@kroah.com>
 References: <20081022172203.GA4000@kroah.com>
@@ -26,141 +26,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-This patch removes the malloc()/free() macro wrappers and converts
-call-sites to use kcalloc() and kzalloc() where appropriate. I also
-fixed up out-of-memory error handling in couple of places where it was
-broken.
+The kernel is written in C, so remove the __cplusplus macro magic from the
+driver.
 
 Cc: David Rowe <david@rowetel.com>
 Cc: Steve Underwood <steveu@coppice.org>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/echo/echo.c |   36 +++++++++++++++++-------------------
- drivers/staging/echo/fir.h  |   14 +++++---------
- 2 files changed, 22 insertions(+), 28 deletions(-)
+ drivers/staging/echo/bit_operations.h |    8 --------
+ drivers/staging/echo/fir.h            |    8 --------
+ 2 files changed, 0 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/staging/echo/echo.c b/drivers/staging/echo/echo.c
-index 140f3f0..a2d3078 100644
---- a/drivers/staging/echo/echo.c
-+++ b/drivers/staging/echo/echo.c
-@@ -109,8 +109,6 @@
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/slab.h>
--#define malloc(a) kmalloc((a), GFP_KERNEL)
--#define free(a) kfree(a)
+diff --git a/drivers/staging/echo/bit_operations.h b/drivers/staging/echo/bit_operations.h
+index b32f4bf..04b55d2 100644
+--- a/drivers/staging/echo/bit_operations.h
++++ b/drivers/staging/echo/bit_operations.h
+@@ -30,10 +30,6 @@
+ #if !defined(_BIT_OPERATIONS_H_)
+ #define _BIT_OPERATIONS_H_
  
- #include "bit_operations.h"
- #include "echo.h"
-@@ -238,27 +236,19 @@ struct oslec_state *oslec_create(int len, int adaption_mode)
- {
-     struct oslec_state *ec;
-     int i;
--    int j;
- 
--    ec = kmalloc(sizeof(*ec), GFP_KERNEL);
--    if (ec == NULL)
--        return  NULL;
--    memset(ec, 0, sizeof(*ec));
-+    ec = kzalloc(sizeof(*ec), GFP_KERNEL);
-+    if (!ec)
-+        return NULL;
- 
-     ec->taps = len;
-     ec->log2taps = top_bit(len);
-     ec->curr_pos = ec->taps - 1;
- 
--    for (i = 0;  i < 2;  i++)
--    {
--        if ((ec->fir_taps16[i] = (int16_t *) malloc((ec->taps)*sizeof(int16_t))) == NULL)
--        {
--            for (j = 0;  j < i;  j++)
--                kfree(ec->fir_taps16[j]);
--            kfree(ec);
--            return  NULL;
--        }
--        memset(ec->fir_taps16[i], 0, (ec->taps)*sizeof(int16_t));
-+    for (i = 0; i < 2; i++) {
-+        ec->fir_taps16[i] = kcalloc(ec->taps, sizeof(int16_t), GFP_KERNEL);
-+        if (!ec->fir_taps16[i])
-+	    goto error_oom;
-     }
- 
-     fir16_create(&ec->fir_state,
-@@ -275,8 +265,9 @@ struct oslec_state *oslec_create(int len, int adaption_mode)
-     ec->cng_level = 1000;
-     oslec_adaption_mode(ec, adaption_mode);
- 
--    ec->snapshot = (int16_t*)malloc(ec->taps*sizeof(int16_t));
--    memset(ec->snapshot, 0, sizeof(int16_t)*ec->taps);
-+    ec->snapshot = kcalloc(ec->taps, sizeof(int16_t), GFP_KERNEL);
-+    if (!ec->snapshot)
-+        goto error_oom;
- 
-     ec->cond_met = 0;
-     ec->Pstates = 0;
-@@ -288,6 +279,13 @@ struct oslec_state *oslec_create(int len, int adaption_mode)
-     ec->Lbgn_upper_acc = ec->Lbgn_upper << 13;
- 
-     return  ec;
-+
-+error_oom:
-+    for (i = 0; i < 2; i++)
-+        kfree(ec->fir_taps16[i]);
-+
-+    kfree(ec);
-+    return NULL;
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+ #if defined(__i386__)  ||  defined(__x86_64__)
+ /*! \brief Find the bit position of the highest set bit in a word
+     \param bits The word to be searched
+@@ -245,9 +241,5 @@ static __inline__ int parity32(uint32_t x)
  }
- EXPORT_SYMBOL_GPL(oslec_create);
  /*- End of function --------------------------------------------------------*/
+ 
+-#ifdef __cplusplus
+-}
+-#endif
+-
+ #endif
+ /*- End of file ------------------------------------------------------------*/
 diff --git a/drivers/staging/echo/fir.h b/drivers/staging/echo/fir.h
-index 277d20e..c29e1e2 100644
+index 19c20cd..d1df33c 100644
 --- a/drivers/staging/echo/fir.h
 +++ b/drivers/staging/echo/fir.h
-@@ -117,11 +117,9 @@ static __inline__ const int16_t *fir16_create(fir16_state_t *fir,
- 	fir->curr_pos = taps - 1;
- 	fir->coeffs = coeffs;
- #if defined(USE_MMX)  ||  defined(USE_SSE2) || defined(__bfin__)
--	if ((fir->history = malloc(2*taps*sizeof(int16_t))))
--		memset(fir->history, 0, 2*taps*sizeof(int16_t));
-+	fir->history = kcalloc(2*taps, sizeof(int16_t), GFP_KERNEL);
- #else
--	if ((fir->history = (int16_t *) malloc(taps*sizeof(int16_t))))
--		memset(fir->history, 0, taps*sizeof(int16_t));
-+	fir->history = kcalloc(taps, sizeof(int16_t), GFP_KERNEL);
+@@ -105,10 +105,6 @@ typedef struct
+ 	float *history;
+ } fir_float_state_t;
+ 
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+ static __inline__ const int16_t *fir16_create(fir16_state_t *fir,
+                                               const int16_t *coeffs,
+                                               int taps)
+@@ -312,9 +308,5 @@ static __inline__ int16_t fir32(fir32_state_t *fir, int16_t sample)
+ }
+ /*- End of function --------------------------------------------------------*/
+ 
+-#ifdef __cplusplus
+-}
+-#endif
+-
  #endif
- 	return fir->history;
- }
-@@ -139,7 +137,7 @@ static __inline__ void fir16_flush(fir16_state_t *fir)
- 
- static __inline__ void fir16_free(fir16_state_t *fir)
- {
--	free(fir->history);
-+	kfree(fir->history);
- }
- /*- End of function --------------------------------------------------------*/
- 
-@@ -275,9 +273,7 @@ static __inline__ const int16_t *fir32_create(fir32_state_t *fir,
-     fir->taps = taps;
-     fir->curr_pos = taps - 1;
-     fir->coeffs = coeffs;
--    fir->history = (int16_t *) malloc(taps*sizeof(int16_t));
--    if (fir->history)
--    	memset(fir->history, '\0', taps*sizeof(int16_t));
-+    fir->history = kcalloc(taps, sizeof(int16_t), GFP_KERNEL);
-     return fir->history;
- }
- /*- End of function --------------------------------------------------------*/
-@@ -290,7 +286,7 @@ static __inline__ void fir32_flush(fir32_state_t *fir)
- 
- static __inline__ void fir32_free(fir32_state_t *fir)
- {
--    free(fir->history);
-+    kfree(fir->history);
- }
- /*- End of function --------------------------------------------------------*/
- 
+ /*- End of file ------------------------------------------------------------*/
 -- 
 1.6.0.2
 
