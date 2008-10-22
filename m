@@ -1,218 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbYJVUws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758086AbYJVUxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757461AbYJVUws (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 16:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYJVUwi
+	id S1758086AbYJVUxj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 16:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbYJVUx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 16:52:38 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:60981 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753046AbYJVUwh (ORCPT
+	Wed, 22 Oct 2008 16:53:29 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38063 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752099AbYJVUx2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 16:52:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=De/gvOBNXo2kLer0vFqtlrlxHYi2GcGWN+VpMvbWO5QDWqdW9VXrmoBaL5i4cGCVyP
-         z6yyCDMMSI4NFE5Dz5giPgq9UNS+8AIb9hremmwInBPLsDc/uGHCRLjWIRjhp9Tloosu
-         F7PLkR0V4lHS0H0XeL1ynuzuN0AlCIVd8gQfU=
-Message-ID: <48FF928F.1010300@gmail.com>
-Date: Wed, 22 Oct 2008 22:52:31 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] [RESEND v2] tracing/ftrace: Introduce the big kernel lock
- tracer
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Oct 2008 16:53:28 -0400
+From: Rodolfo Giometti <giometti@linux.it>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Rodolfo Giometti <giometti@linux.it>
+Date: Wed, 22 Oct 2008 22:53:21 +0200
+Message-Id: <1224708801-16675-3-git-send-email-giometti@linux.it>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1224708801-16675-2-git-send-email-giometti@linux.it>
+References: <>
+ <1224708801-16675-1-git-send-email-giometti@linux.it>
+ <1224708801-16675-2-git-send-email-giometti@linux.it>
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: [PATCH 2/2] c2port: add c2port support for Eurotech Duramar 2150.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce the Big Kernel Lock tracer.
-This new tracer lets one to observe the latencies caused
-by the lock_kernel() function.
-It captures the time when the task request the spinlock,
-the time when the spinlock is hold and the time it is released.
-This way we can measure the latency for a task that wait for this
-spinlock and the latency caused by the time this lock is hold.
-
-I will surely add some improvements like:
-
-_ Adding a stack trace to know which function locked or unlocked the kernel.
-_ Adding a script to get some statistics about this: which functions hold it
-often, which hold it for a long time and some other things....
-
-Changes in this V2:
-
-_ Correction of comments
-_ Make static inline the insertion functions when the tracer is not configured
-_ Remove FTRACE and HAVE_FTRACE as dependencies. Bkl Tracer only depends on TRACING and
-  STACKTRACE for further features.
-_ Use trace_assign_type instead of unsure cast
-_ Several cleanups...
-
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 ---
- kernel/trace/Kconfig  |   10 ++++++++++
- kernel/trace/Makefile |    1 +
- kernel/trace/trace.h  |   18 ++++++++++++++++++
- lib/kernel_lock.c     |   36 ++++++++++++++++++++++++++++++++++--
- 4 files changed, 63 insertions(+), 2 deletions(-)
+ drivers/misc/c2port/Kconfig              |   11 ++
+ drivers/misc/c2port/Makefile             |    2 +
+ drivers/misc/c2port/c2port-duramar2150.c |  158 ++++++++++++++++++++++++++++++
+ 3 files changed, 171 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/misc/c2port/c2port-duramar2150.c
 
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 396aea1..a87484d 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -144,6 +144,16 @@ config STACK_TRACER
- 	  This tracer records the max stack of the kernel, and displays
- 	  it in debugfs/tracing/stack_trace
+diff --git a/drivers/misc/c2port/Kconfig b/drivers/misc/c2port/Kconfig
+index f1bad2b..e46af9a 100644
+--- a/drivers/misc/c2port/Kconfig
++++ b/drivers/misc/c2port/Kconfig
+@@ -21,4 +21,15 @@ menuconfig C2PORT
  
-+config BKL_TRACER
-+	bool "Trace Big Kernel Lock latencies"
-+	depends on DEBUG_KERNEL
-+	select TRACING
-+	select STACKTRACE
+ if C2PORT
+ 
++config C2PORT_DURAMAR_2150
++	tristate "C2 port support for Eurotech's Duramar 2150 (EXPERIMENTAL)"
++	depends on X86 && C2PORT
++	default no
 +	help
-+	  This tracer records the latencies issued by the Big Kernel Lock.
-+	  It traces the time when a task requests the bkl, the time when it
-+	  acquires it and the time when it releases it.
++	  This option enables C2 support for the Eurotech's Duramar 2150
++	  on board micro controller.
 +
- config DYNAMIC_FTRACE
- 	bool "enable/disable ftrace tracepoints dynamically"
- 	depends on FTRACE
-diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-index a85dfba..2ba8904 100644
---- a/kernel/trace/Makefile
-+++ b/kernel/trace/Makefile
-@@ -24,5 +24,6 @@ obj-$(CONFIG_NOP_TRACER) += trace_nop.o
- obj-$(CONFIG_STACK_TRACER) += trace_stack.o
- obj-$(CONFIG_MMIOTRACE) += trace_mmiotrace.o
- obj-$(CONFIG_BOOT_TRACER) += trace_boot.o
-+obj-$(CONFIG_BKL_TRACER) += trace_bkl.o
- 
- libftrace-y := ftrace.o
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index f1f9957..8660336 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -8,6 +8,7 @@
- #include <linux/ring_buffer.h>
- #include <linux/mmiotrace.h>
- #include <linux/ftrace.h>
-+#include <trace/bkl.h>
- 
- enum trace_type {
- 	__TRACE_FIRST_TYPE = 0,
-@@ -22,6 +23,8 @@ enum trace_type {
- 	TRACE_MMIO_RW,
- 	TRACE_MMIO_MAP,
- 	TRACE_BOOT,
-+	TRACE_BKL_ACQ,
-+	TRACE_BKL_REL,
- 
- 	__TRACE_LAST_TYPE
- };
-@@ -117,6 +120,17 @@ struct trace_boot {
- 	struct boot_trace	initcall;
- };
- 
-+/* Trace bkl entries */
-+struct trace_bkl_acq {
-+	struct trace_entry		ent;
-+	struct bkl_trace_acquire	bkl_acq;
-+};
++	  To compile this driver as a module, choose M here: the module will
++	  be called c2port-duramar2150.
 +
-+struct trace_bkl_rel {
-+	struct trace_entry		ent;
-+	struct bkl_trace_release	bkl_rel;
-+};
+ endif # C2PORT
+diff --git a/drivers/misc/c2port/Makefile b/drivers/misc/c2port/Makefile
+index 3c610a2..3b2cf43 100644
+--- a/drivers/misc/c2port/Makefile
++++ b/drivers/misc/c2port/Makefile
+@@ -1 +1,3 @@
+ obj-$(CONFIG_C2PORT)		+= core.o
 +
- /*
-  * trace_flag_type is an enumeration that holds different
-  * states when a trace occurs. These are:
-@@ -217,6 +231,10 @@ extern void __ftrace_bad_type(void);
- 		IF_ASSIGN(var, ent, struct trace_mmiotrace_map,		\
- 			  TRACE_MMIO_MAP);				\
- 		IF_ASSIGN(var, ent, struct trace_boot, TRACE_BOOT);	\
-+		IF_ASSIGN(var, ent, struct trace_bkl_acq,               \
-+			  TRACE_BKL_ACQ);				\
-+		IF_ASSIGN(var, ent, struct trace_bkl_rel,		\
-+			  TRACE_BKL_REL);				\
- 		__ftrace_bad_type();					\
- 	} while (0)
- 
-diff --git a/lib/kernel_lock.c b/lib/kernel_lock.c
-index 01a3c22..45828b2 100644
---- a/lib/kernel_lock.c
-+++ b/lib/kernel_lock.c
-@@ -9,6 +9,7 @@
- #include <linux/module.h>
- #include <linux/kallsyms.h>
- #include <linux/semaphore.h>
-+#include <trace/bkl.h>
- 
- /*
-  * The 'big kernel lock'
-@@ -107,6 +108,37 @@ static inline void __unlock_kernel(void)
- 	preempt_enable();
- }
- 
-+#ifdef CONFIG_BKL_TRACER
-+static void lock_kernel_trace(void)
++obj-$(CONFIG_C2PORT_DURAMAR_2150)	+= c2port-duramar2150.o
+diff --git a/drivers/misc/c2port/c2port-duramar2150.c b/drivers/misc/c2port/c2port-duramar2150.c
+new file mode 100644
+index 0000000..338dcc1
+--- /dev/null
++++ b/drivers/misc/c2port/c2port-duramar2150.c
+@@ -0,0 +1,158 @@
++/*
++ *  Silicon Labs C2 port Linux support for Eurotech Duramar 2150
++ *
++ *  Copyright (c) 2008 Rodolfo Giometti <giometti@linux.it>
++ *  Copyright (c) 2008 Eurotech S.p.A. <info@eurotech.it>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation
++ */
++
++#include <linux/errno.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/delay.h>
++#include <linux/io.h>
++#include <linux/c2port.h>
++
++#define DATA_PORT	0x325
++#define DIR_PORT	0x326
++#define    C2D		   (1 << 0)
++#define    C2CK		   (1 << 1)
++
++static DEFINE_MUTEX(update_lock);
++
++/*
++ * C2 port operations
++ */
++
++static void duramar2150_c2port_access(struct c2port_device *dev, int status)
 +{
-+	int cpu;
-+	struct bkl_trace_acquire trace;
++	u8 v;
 +
-+	preempt_disable();
-+	cpu = raw_smp_processor_id();
-+	preempt_enable();
++	mutex_lock(&update_lock);
 +
-+	trace.acquire_req_time = cpu_clock(cpu);
-+	__lock_kernel();
-+	trace.acquire_time = cpu_clock(cpu);
-+	trace_bkl_acquire(&trace);
++	v = inb(DIR_PORT);
++
++	/* 0 = input, 1 = output */
++	if (status)
++		outb(v | (C2D | C2CK), DIR_PORT);
++	else
++		/* When access is "off" is important that both lines are set
++		 * as inputs or hi-impedence */
++		outb(v & ~(C2D | C2CK), DIR_PORT);
++
++	mutex_unlock(&update_lock);
 +}
 +
-+static void unlock_kernel_trace(void)
++static void duramar2150_c2port_c2d_dir(struct c2port_device *dev, int dir)
 +{
-+	struct bkl_trace_release trace;
-+	trace.release_time = cpu_clock(raw_smp_processor_id());
-+	trace_bkl_release(&trace);
-+	__unlock_kernel();
++	u8 v;
++
++	mutex_lock(&update_lock);
++
++	v = inb(DIR_PORT);
++
++	if (dir)
++		outb(v & ~C2D, DIR_PORT);
++	else
++		outb(v | C2D, DIR_PORT);
++
++	mutex_unlock(&update_lock);
 +}
 +
-+#else
++static int duramar2150_c2port_c2d_get(struct c2port_device *dev)
++{
++	return inb(DATA_PORT) & C2D;
++}
 +
-+#define lock_kernel_trace() __lock_kernel()
-+#define unlock_kernel_trace() __unlock_kernel()
++static void duramar2150_c2port_c2d_set(struct c2port_device *dev, int status)
++{
++	u8 v;
 +
-+#endif
++	mutex_lock(&update_lock);
 +
- /*
-  * Getting the big kernel lock.
-  *
-@@ -117,7 +149,7 @@ void __lockfunc lock_kernel(void)
- {
- 	int depth = current->lock_depth+1;
- 	if (likely(!depth))
--		__lock_kernel();
-+		lock_kernel_trace();
- 	current->lock_depth = depth;
- }
- 
-@@ -125,7 +157,7 @@ void __lockfunc unlock_kernel(void)
- {
- 	BUG_ON(current->lock_depth < 0);
- 	if (likely(--current->lock_depth < 0))
--		__unlock_kernel();
-+		unlock_kernel_trace();
- }
- 
- EXPORT_SYMBOL(lock_kernel);
++	v = inb(DATA_PORT);
++
++	if (status)
++		outb(v | C2D, DATA_PORT);
++	else
++		outb(v & ~C2D, DATA_PORT);
++
++	mutex_unlock(&update_lock);
++}
++
++static void duramar2150_c2port_c2ck_set(struct c2port_device *dev, int status)
++{
++	u8 v;
++
++	mutex_lock(&update_lock);
++
++	v = inb(DATA_PORT);
++
++	if (status)
++		outb(v | C2CK, DATA_PORT);
++	else
++		outb(v & ~C2CK, DATA_PORT);
++
++	mutex_unlock(&update_lock);
++}
++
++static struct c2port_ops duramar2150_c2port_ops = {
++	.block_size	= 512,	/* bytes */
++	.blocks_num	= 30,	/* total flash size: 15360 bytes */
++
++	.access		= duramar2150_c2port_access,
++	.c2d_dir	= duramar2150_c2port_c2d_dir,
++	.c2d_get	= duramar2150_c2port_c2d_get,
++	.c2d_set	= duramar2150_c2port_c2d_set,
++	.c2ck_set	= duramar2150_c2port_c2ck_set,
++};
++
++static struct c2port_device *duramar2150_c2port_dev;
++
++/*
++ * Module stuff
++ */
++
++static int __init duramar2150_c2port_init(void)
++{
++	struct resource *res;
++	int ret = 0;
++
++	res = request_region(0x325, 2, "c2port");
++	if (!res)
++		return -EBUSY;
++
++	duramar2150_c2port_dev = c2port_device_register("uc",
++					&duramar2150_c2port_ops, NULL);
++	if (!duramar2150_c2port_dev) {
++		ret = -ENODEV;
++		goto free_region;
++	}
++
++	return 0;
++
++free_region:
++	release_region(0x325, 2);
++	return ret;
++}
++
++static void __exit duramar2150_c2port_exit(void)
++{
++	/* Setup the GPIOs as input by default (access = 0) */
++	duramar2150_c2port_access(duramar2150_c2port_dev, 0);
++
++	c2port_device_unregister(duramar2150_c2port_dev);
++
++	release_region(0x325, 2);
++}
++
++module_init(duramar2150_c2port_init);
++module_exit(duramar2150_c2port_exit);
++
++MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
++MODULE_DESCRIPTION("Silicon Labs C2 port Linux support for Duramar 2150");
++MODULE_LICENSE("GPL");
+-- 
+1.5.4.3
+
