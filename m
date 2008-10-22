@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758634AbYJVTUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757783AbYJVTWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758634AbYJVTUg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 15:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbYJVTU2
+	id S1757783AbYJVTWT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 15:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbYJVTWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 15:20:28 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:64307 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752306AbYJVTU1 (ORCPT
+	Wed, 22 Oct 2008 15:22:05 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:42507 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755142AbYJVTWD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 15:20:27 -0400
-Date: Wed, 22 Oct 2008 15:20:08 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       sagar.abhishek@gmail.com, davem@davemloft.net, tglx@linutronix.de,
-       peterz@infradead.org, torvalds@linux-foundation.org,
-       srostedt@redhat.com
-Subject: Re: [PATCH 06/11] ftrace: add ftrace warn on to disable ftrace
-In-Reply-To: <20081022121257.9a10513e.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0810221519350.25759@gandalf.stny.rr.com>
-References: <20081022184313.179487464@goodmis.org> <20081022185136.489385614@goodmis.org> <20081022121257.9a10513e.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 22 Oct 2008 15:22:03 -0400
+Date: Wed, 22 Oct 2008 15:19:48 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       vgoyal@redhat.com, hbabu@us.ibm.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86: make oops_begin and oops_end equal
+Message-ID: <20081022191948.GB20423@hmsreliant.think-freely.org>
+References: <20081017210013.GD23591@hmsreliant.think-freely.org> <20081020121339.GE10594@elte.hu> <20081020134211.GA15574@hmsreliant.think-freely.org> <20081020150731.GA25999@mailshack.com> <20081020150834.GA26018@mailshack.com> <20081021144505.GA25750@hmsreliant.think-freely.org> <1224670721.25843.1280616145@webmail.messagingengine.com> <20081022104513.GA18951@hmsreliant.think-freely.org> <20081022120222.GE8095@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081022120222.GE8095@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Oct 22, 2008 at 02:02:22PM +0200, Ingo Molnar wrote:
+> 
+> * Neil Horman <nhorman@tuxdriver.com> wrote:
+> 
+> > > Thanks for the review. I've sent a redone patch series just a moment 
+> > > ago, based on your comments. There was also another problem with 
+> > > these two patches: oops_end(flags, regs, signr) had special 
+> > > behaviour for regs=NULL that I did not consider before. The series 
+> > > has grown due to this issue...
+> 
+> [...]
+> > Copy that.  Thanks for the quick turn-around.
+> 
+> applied to tip/x86/dumpstack, thanks guys!
+> 
+> Could you please also create arch/x86/kernel/dumpstack.c and move all 
+> the now-unified bits there - before they get out of sync again?
+> 
+I can do this in the next day or so, unless you have an urge to Alexander
+Neil
 
-On Wed, 22 Oct 2008, Andrew Morton wrote:
-> > Index: linux-compile.git/kernel/trace/ftrace.c
-> > ===================================================================
-> > --- linux-compile.git.orig/kernel/trace/ftrace.c	2008-10-22 13:17:29.000000000 -0400
-> > +++ linux-compile.git/kernel/trace/ftrace.c	2008-10-22 13:20:11.000000000 -0400
-> > @@ -32,6 +32,24 @@
-> >  
-> >  #include "trace.h"
-> >  
-> > +#define FTRACE_WARN_ON(cond)			\
-> > +	do {					\
-> > +		if (unlikely(cond)) {		\
-> > +			WARN_ON(1);		\
-> > +			ftrace_kill();		\
-> > +		}				\
-> > +	} while (0)
+> 	Ingo
 > 
-> This could be coded as
-> 
-> 	if (WARN_ON(cond))
-> 		ftrace_kill();
 
-Ah, I didn't realize that WARN_ON returned the value of the condition.
-Will update in v2.
-
--- Steve
-
-> 
-> > +#define FTRACE_WARN_ON_ONCE(cond)		\
-> > +	do {					\
-> > +		static int once;		\
-> > +		if (unlikely(cond) && !once) {	\
-> > +			once++;			\
-> > +			WARN_ON(1);		\
-> > +			ftrace_kill();		\
-> > +		}				\
-> > +	} while (0)
-> 
-> 
-> 	if (WARN_ON_ONCE(cond))
-> 		ftrace_kill();
-> 
-> 
-> 
-> 
+-- 
+/****************************************************
+ * Neil Horman <nhorman@tuxdriver.com>
+ * Software Engineer, Red Hat
+ ****************************************************/
