@@ -1,46 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbYJVWF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758846AbYJVWGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756266AbYJVWF7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 18:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbYJVWFv
+	id S1758846AbYJVWGp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 18:06:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbYJVWGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 18:05:51 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34221 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752980AbYJVWFv (ORCPT
+	Wed, 22 Oct 2008 18:06:33 -0400
+Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:26140 "HELO
+	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751261AbYJVWGc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 18:05:51 -0400
-Date: Thu, 23 Oct 2008 00:13:16 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Alok Kataria <akataria@vmware.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is set.
-Message-ID: <20081022221316.GW12825@one.firstfloor.org>
-References: <874p36fflp.fsf@basil.nowhere.org> <1224607284.6161.22.camel@alok-dev1> <20081021174008.GH12825@one.firstfloor.org> <1224612294.6161.43.camel@alok-dev1> <20081021181536.GI12825@one.firstfloor.org> <1224616236.6161.60.camel@alok-dev1> <20081021192746.GJ12825@one.firstfloor.org> <1224703427.13953.8.camel@alok-dev1> <20081022195845.GP12825@one.firstfloor.org> <1224712846.13953.37.camel@alok-dev1>
+	Wed, 22 Oct 2008 18:06:32 -0400
+X-YMail-OSG: rAKWlB0VM1kDpJFDN5zoRvQBs6EApQ69Jk9coNcgUjGudIphOREqrAiszaPoYOg_Gr5NlIEzimDyPPdMzFLNhq3az05YQkkpSYhTMFsq2NEDzqLytyc37m3kFdZXVmr6PJuFmz52KiHVdzXC_mXyEt4Tjh.a1XdGQYvVPU6IIopyJjsRou.HtqhFB98-
+X-Yahoo-Newman-Property: ymail-3
+Subject: PATCH] [ConfigFS]: Extend CONFIGFS_ATTR_STRUCT() and
+	CONFIGFS_ATTR_OPS() macros
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Joel Becker <joel.becker@oracle.com>,
+       Linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Content-Type: text/plain
+Date: Wed, 22 Oct 2008 15:06:29 -0700
+Message-Id: <1224713189.24358.111.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1224712846.13953.37.camel@alok-dev1>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Adding it with vmware detection code is not useful.
-> 
-> The VMware detection code is something that's needed anyways for other
-> purposes(getting tsc_freq right now). So the code which force sets this
-> TSC_CONSTANT bit is trivial.
+Hi Joel,
 
-It would be better to eliminate that too. Why do you need it anyways?
+What do you think..?
 
-> Apart from that, as i said yesterday, this should be viewed as a special
-> case for VMware products which don't already set this bit. Changing the
-> behavior for already existing products is not feasible.
+Also, here is the drivers/lio-core/iscsi_target_configfs.c commit to
+convert to use to new parameters for CONFIGFS_ATTR_STRUCT() and
+CONFIGFS_ATTR_OPS():
 
-On old hypervisors Linux already runs fine without TSC, doesn't it?
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=commitdiff;h=e305460ebaa92ce1f8542a55bd62648904fb2fd6
 
--Andi
+I don't see anyone except for drivers/lio-core and
+Documentation/filesystems/configfs/ using these macros..  If I can get
+an ACK I would be happy to update the examples.
+
+--nab
+
+
+>From 71fc659e337dcc5941f6f64f6c8abfb6b477fd7c Mon Sep 17 00:00:00 2001
+From: Nicholas Bellinger <nab@linux-iscsi.org>
+Date: Wed, 22 Oct 2008 14:49:01 -0700
+Subject: [PATCH] [ConfigFS]: Extend CONFIGFS_ATTR_STRUCT() and CONFIGFS_ATTR_OPS() macros
+
+Extend CONFIGFS_ATTR_STRUCT() and CONFIGFS_ATTR_OPS() macros to allow
+multiple struct config_item or struct config_group to hang off the same
+structure.  This means the previous '_item' arguement gets split into
+'_name' (for function and attribute structure names) and '_item' (the
+struct _item used throughout the macros that contains
+struct _item->my_config_group.
+
+This patch also removed the requirement for code using these macros to
+provide their own 'to_<name>()' function, which is now defined by
+CONFIGFS_ATTR_OPS() by passing the '_item_member' argument which is
+used inside of to_##_name() for locating struct _item *_item = container_of().
+
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+---
+ include/linux/configfs.h |   51 ++++++++++++++++++++++++++++------------------
+ 1 files changed, 31 insertions(+), 20 deletions(-)
+
+diff --git a/include/linux/configfs.h b/include/linux/configfs.h
+index 7f62777..2eab7ef 100644
+--- a/include/linux/configfs.h
++++ b/include/linux/configfs.h
+@@ -132,11 +132,13 @@ struct configfs_attribute {
+  * attributes, containing a configfs_attribute member and function pointers
+  * for the show() and store() operations on that attribute. If they don't
+  * need anything else on the extended attribute structure, they can use
+- * this macro to define it  The argument _item is the name of the
+- * config_item structure.
++ * this macro to define it.  The argument _name isends up as
++ * 'struct _name_attribute, as well as names of to CONFIGFS_ATTR_OPS() below.
++ * The argument _item is the name of the structure containing the
++ * struct config_item or struct config_group structure members
+  */
+-#define CONFIGFS_ATTR_STRUCT(_item)					\
+-struct _item##_attribute {						\
++#define CONFIGFS_ATTR_STRUCT(_name, _item)				\
++struct _name##_attribute {						\
+ 	struct configfs_attribute attr;					\
+ 	ssize_t (*show)(struct _item *, char *);			\
+ 	ssize_t (*store)(struct _item *, const char *, size_t);		\
+@@ -175,35 +177,44 @@ struct _item##_attribute {						\
+  * With these extended attributes, the simple show_attribute() and
+  * store_attribute() operations need to call the show() and store() of the
+  * attributes.  This is a common pattern, so we provide a macro to define
+- * them.  The argument _item is the name of the config_item structure.
+- * This macro expects the attributes to be named "struct <name>_attribute"
+- * and the function to_<name>() to exist;
++ * them.  The argument _name is the name of the attribute defined by
++ * CONFIGFS_ATTR_STRUCT(). The argument _item is the name of the structure
++ * containing the struct config_item or struct config_group structure member.
++ * The argument _item_member is the actual name of the struct config_* struct
++ * in your _item structure.  Meaning  my_structure->some_config_group.
++ *		                      ^^_item^^^^^  ^^_item_member^^^
++ * This macro expects the attributes to be named "struct <name>_attribute".
+  */
+-#define CONFIGFS_ATTR_OPS(_item)					\
+-static ssize_t _item##_attr_show(struct config_item *item,		\
++#define CONFIGFS_ATTR_OPS(_name, _item, _item_member)			\
++static struct _item *to_##_name(struct config_item *ci)			\
++{									\
++	return((ci) ? container_of(to_config_group(ci), struct _item,	\
++		_item_member) : NULL);					\
++}									\
++static ssize_t _name##_attr_show(struct config_item *item,		\
+ 				 struct configfs_attribute *attr,	\
+ 				 char *page)				\
+ {									\
+-	struct _item *_item = to_##_item(item);				\
+-	struct _item##_attribute *_item##_attr =			\
+-		container_of(attr, struct _item##_attribute, attr);	\
++	struct _item *_item = to_##_name(item);				\
++	struct _name##_attribute *_name##_attr =			\
++		container_of(attr, struct _name##_attribute, attr);	\
+ 	ssize_t ret = 0;						\
+ 									\
+-	if (_item##_attr->show)						\
+-		ret = _item##_attr->show(_item, page);			\
++	if (_name##_attr->show)						\
++		ret = _name##_attr->show(_item, page);			\
+ 	return ret;							\
+ }									\
+-static ssize_t _item##_attr_store(struct config_item *item,		\
++static ssize_t _name##_attr_store(struct config_item *item,		\
+ 				  struct configfs_attribute *attr,	\
+ 				  const char *page, size_t count)	\
+ {									\
+-	struct _item *_item = to_##_item(item);				\
+-	struct _item##_attribute *_item##_attr =			\
+-		container_of(attr, struct _item##_attribute, attr);	\
++	struct _item *_item = to_##_name(item);				\
++	struct _name##_attribute *_name##_attr =			\
++		container_of(attr, struct _name##_attribute, attr);	\
+ 	ssize_t ret = -EINVAL;						\
+ 									\
+-	if (_item##_attr->store)					\
+-		ret = _item##_attr->store(_item, page, count);		\
++	if (_name##_attr->store)					\
++		ret = _name##_attr->store(_item, page, count);		\
+ 	return ret;							\
+ }
+ 
+-- 
+1.5.4.1
+
+
+
