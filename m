@@ -1,185 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbYJVIFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbYJVIGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755104AbYJVIFy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 04:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYJVIEg
+	id S1755193AbYJVIGT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 04:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbYJVIFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 04:04:36 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55810 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754324AbYJVIEd (ORCPT
+	Wed, 22 Oct 2008 04:05:41 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:57576 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755077AbYJVIFh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 04:04:33 -0400
-Date: Wed, 22 Oct 2008 11:04:23 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Greg Kroah-Hartman <greg@kroah.com>
-cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-Subject: [PATCH 6/6] w35und: wb35_probe() cleanup
-Message-ID: <Pine.LNX.4.64.0810221103550.13366@melkki.cs.Helsinki.FI>
+	Wed, 22 Oct 2008 04:05:37 -0400
+Date: Wed, 22 Oct 2008 17:05:36 +0900 (JST)
+Message-Id: <20081022.170536.193712541.ryov@valinux.co.jp>
+To: zumeng.chen@windriver.com
+Cc: bruce.ashfield@windriver.com, haotian.zhang@windriver.com,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp
+Subject: Re: [PATCH 0/2] dm-ioband: I/O bandwidth controller v1.8.0:
+ Introduction
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <48FEDC63.308@windriver.com>
+References: <20081017.160950.71109894.ryov@valinux.co.jp>
+	<48FDB8AC.9020707@windriver.com>
+	<48FEDC63.308@windriver.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+Hi Chen,
 
-Fix error handling in wb35_probe() function and clean it up a bit.
+> Chen Zumeng wrote:
+> > Hi, Ryo Tsuruta
+> > And our test team want to test bio_tracking as your benchmark reports,
+> > so would you please send me your test codes? Thanks in advance.
+> Hi Ryo Tsuruta,
+> 
+> I wonder if you received last email, so I reply this email to ask
+> for your bio_tracking test codes to generate your benchmark reports
+> as shown in your website. Thanks in advance :)
 
-Cc: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- drivers/staging/winbond/linux/wbusb.c |  101 +++++++++++++++------------------
- 1 files changed, 45 insertions(+), 56 deletions(-)
+I've uploaded two scripts here:
+http://people.valinux.co.jp/~ryov/dm-ioband/scripts/xdd-count.sh
+http://people.valinux.co.jp/~ryov/dm-ioband/scripts/xdd-size.sh
 
-diff --git a/drivers/staging/winbond/linux/wbusb.c b/drivers/staging/winbond/linux/wbusb.c
-index 9f1064d..b4be0d8 100644
---- a/drivers/staging/winbond/linux/wbusb.c
-+++ b/drivers/staging/winbond/linux/wbusb.c
-@@ -181,26 +181,32 @@ int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
- 	PWBUSB		pWbUsb;
-         struct usb_host_interface *interface;
- 	struct usb_endpoint_descriptor *endpoint;
--	int	ret = -1;
- 	u32	ltmp;
- 	struct usb_device *udev = interface_to_usbdev(intf);
-+	struct wbsoft_priv *priv;
-+	struct ieee80211_hw *dev;
-+	int err;
- 
- 	usb_get_dev(udev);
- 
--	printk("[w35und]wb35_probe ->\n");
--
- 	// 20060630.2 Check the device if it already be opened
--	ret = usb_control_msg(udev, usb_rcvctrlpipe( udev, 0 ),
-+	err = usb_control_msg(udev, usb_rcvctrlpipe( udev, 0 ),
- 			      0x01, USB_TYPE_VENDOR|USB_RECIP_DEVICE|USB_DIR_IN,
- 			      0x0, 0x400, &ltmp, 4, HZ*100 );
--	if (ret < 0)
-+	if (err)
- 		goto error;
- 
- 	ltmp = cpu_to_le32(ltmp);
--	if (ltmp)  // Is already initialized?
-+	if (ltmp) {  // Is already initialized?
-+		err = -EBUSY;
- 		goto error;
-+	}
- 
- 	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
-+	if (!adapter) {
-+		err = -ENOMEM;
-+		goto error;
-+	}
- 
- 	my_adapter = adapter;
- 	pWbUsb = &adapter->sHwData.WbUsb;
-@@ -215,70 +221,53 @@ int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
- 	}
- 
- 	if (!WbWLanInitialize(adapter)) {
--		printk("[w35und]WbWLanInitialize fail\n");
--		goto error;
-+		err = -EINVAL;
-+		goto error_free_adapter;
- 	}
- 
--	{
--		struct wbsoft_priv *priv;
--		struct ieee80211_hw *dev;
--		int res;
--
--		dev = ieee80211_alloc_hw(sizeof(*priv), &wbsoft_ops);
--
--		if (!dev) {
--			printk("w35und: ieee80211 alloc failed\n" );
--			BUG();
--		}
-+	dev = ieee80211_alloc_hw(sizeof(*priv), &wbsoft_ops);
-+	if (!dev)
-+		goto error_free_adapter;
- 
--		my_dev = dev;
-+	my_dev = dev;
- 
--		SET_IEEE80211_DEV(dev, &udev->dev);
--		{
--			phw_data_t pHwData = &adapter->sHwData;
--			unsigned char		dev_addr[MAX_ADDR_LEN];
--			hal_get_permanent_address(pHwData, dev_addr);
--			SET_IEEE80211_PERM_ADDR(dev, dev_addr);
--		}
--
--
--		dev->extra_tx_headroom = 12;	/* FIXME */
--		dev->flags = 0;
--
--		dev->channel_change_time = 1000;
--//		dev->max_rssi = 100;
-+	SET_IEEE80211_DEV(dev, &udev->dev);
-+	{
-+		phw_data_t pHwData = &adapter->sHwData;
-+		unsigned char		dev_addr[MAX_ADDR_LEN];
-+		hal_get_permanent_address(pHwData, dev_addr);
-+		SET_IEEE80211_PERM_ADDR(dev, dev_addr);
-+	}
- 
--		dev->queues = 1;
-+	dev->extra_tx_headroom = 12;	/* FIXME */
-+	dev->flags = 0;
- 
--		static struct ieee80211_supported_band band;
-+	dev->channel_change_time = 1000;
-+	dev->queues = 1;
- 
--		band.channels = wbsoft_channels;
--		band.n_channels = ARRAY_SIZE(wbsoft_channels);
--		band.bitrates = wbsoft_rates;
--		band.n_bitrates = ARRAY_SIZE(wbsoft_rates);
-+	static struct ieee80211_supported_band band;
- 
--		dev->wiphy->bands[IEEE80211_BAND_2GHZ] = &band;
--#if 0
--		wbsoft_modes[0].num_channels = 1;
--		wbsoft_modes[0].channels = wbsoft_channels;
--		wbsoft_modes[0].mode = MODE_IEEE80211B;
--		wbsoft_modes[0].num_rates = ARRAY_SIZE(wbsoft_rates);
--		wbsoft_modes[0].rates = wbsoft_rates;
-+	band.channels = wbsoft_channels;
-+	band.n_channels = ARRAY_SIZE(wbsoft_channels);
-+	band.bitrates = wbsoft_rates;
-+	band.n_bitrates = ARRAY_SIZE(wbsoft_rates);
- 
--		res = ieee80211_register_hwmode(dev, &wbsoft_modes[0]);
--		BUG_ON(res);
--#endif
-+	dev->wiphy->bands[IEEE80211_BAND_2GHZ] = &band;
- 
--		res = ieee80211_register_hw(dev);
--		BUG_ON(res);
--	}
-+	err = ieee80211_register_hw(dev);
-+	if (err)
-+		goto error_free_hw;
- 
--	usb_set_intfdata( intf, adapter );
-+	usb_set_intfdata(intf, adapter);
- 
--	printk("[w35und] _probe OK\n");
- 	return 0;
-+
-+error_free_hw:
-+	ieee80211_free_hw(dev);
-+error_free_adapter:
-+	kfree(adapter);
- error:
--	return -ENOMEM;
-+	return err;
- }
- 
- void packet_came(char *pRxBufferAddress, int PacketSize)
--- 
-1.5.3.7
+xdd-count.sh controls bandwidth based on the number of I/O requests,
+and xdd-size.sh controls bandwidth based onthe number of I/O sectors.
+Theses scritpts require xdd disk I/O testing tool which can be
+downloaded from here:
+http://www.ioperformance.com/products.htm
 
+Please feel free to ask me questions if you have any questions.
+
+> > P.S. The following are my changes to avoid schedule_timeout:
+
+Thanks, but your patch seems to cause a problem when ioband devices
+which have the same name are created at the same time. I will fix the
+issue in the next release.
+
+Thanks,
+Ryo Tsuruta
