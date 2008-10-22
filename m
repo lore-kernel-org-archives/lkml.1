@@ -1,45 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbYJVHmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753580AbYJVH4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753983AbYJVHmX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 03:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbYJVHlv
+	id S1753580AbYJVH4W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 03:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYJVH4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 03:41:51 -0400
-Received: from inhex.net ([193.33.178.145]:45680 "EHLO inhex.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754742AbYJVHlu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 03:41:50 -0400
-Date: Wed, 22 Oct 2008 10:41:49 +0300
-From: Dmitry Nezhevenko <dion@inhex.net>
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: Strange ACPI errors sometimes after resume from s2disk
-Message-ID: <20081022074149.GA6066@laptop.local>
-References: <20081021220034.GA18248@laptop.local> <200810220044.01259.rjw@sisk.pl> <48FED672.4060008@suse.de>
+	Wed, 22 Oct 2008 03:56:13 -0400
+Received: from tallyho.bytemark.co.uk ([80.68.81.166]:38216 "EHLO
+	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751149AbYJVH4N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 03:56:13 -0400
+Date: Wed, 22 Oct 2008 08:56:17 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: penguin-kernel@i-love.sakura.ne.jp
+Cc: rdunlap@xenotime.net, jschopp@austin.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: */ in string confuses checkpatch.pl
+Message-ID: <20081022075617.GA22344@brain>
+References: <200810210057.m9L0vQ7i012829@www262.sakura.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <48FED672.4060008@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200810210057.m9L0vQ7i012829@www262.sakura.ne.jp>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 11:29:54AM +0400, Alexey Starikovskiy wrote:
-> Please try changing msleep(1) to udelay(50) in drivers/acpi/ec.c
+On Tue, Oct 21, 2008 at 09:57:26AM +0900, penguin-kernel@i-love.sakura.ne.jp wrote:
+> Hello.
+> 
+> The below code confuses checkpatch.pl ver 0.21.
+> 
+> Regards.
+> ----------
+> # cat /tmp/foo.c
+> void foo(void)
+> {
+> 	bar(\" /proc/\\\\*/\");
+> 	bar(\" /proc/\\\\$/\");
+> }
+> # /usr/src/vanilla/linux-2.6.27.2/scripts/checkpatch.pl --file /tmp/foo.c
+> ERROR: need consistent spacing around \'/\' (ctx:WxV)
+> #4: FILE: tmp/foo.c:4:
+> +       bar(\" /proc/\\\\$/\");
+>               ^
+> 
+> total: 1 errors, 0 warnings, 5 lines checked
+> 
+> /tmp/foo.c has style problems, please review.  If any of these errors
+> are false positives report them to the maintainer, see
+> CHECKPATCH in MAINTAINERS.
 
-Ok. Will try this. However as I said issue is not easy to reproduce.. So
-I'll just change it and wait a bit.
+I am unable to reproduce this here with any version from current back to
+v0.19, nor with the one I find in v2.6.27.2 (see below).  Though looking at
+the code as presented in your example I can see how it might be interpreted
+incorrectly.  That said the compiler doesn't seem to be able to understand
+this either (also below).  In particular you effectivly open a quote on
+the third line and never close it.
 
-> have msi-laptop module loaded?
+Could you send me both the checkpatch script and the foo.c as attachments
+so I can be sure I have them without some emailer somewhere mushing
+them up.
 
-No. I don't use it.
+Thanks for you report.
 
-> Please fill a bugreport and attach all the information there.
+-apw
 
-Ok. Will do this soon
- 
--- 
-WBR, Dmitry
+$ cat ../checkpatch/Z213.c
+void foo(void)
+{
+	bar(\" /proc/\\\\*/\");
+	bar(\" /proc/\\\\$/\");
+}
+$ cc -c Z213.c
+Z213.c: In function ‘foo’:
+Z213.c:3: error: stray ‘\’ in program
+Z213.c:3:7: warning: missing terminating " character
+Z213.c:3: error: missing terminating " character
+Z213.c:4: error: stray ‘\’ in program
+Z213.c:4:7: warning: missing terminating " character
+Z213.c:4: error: missing terminating " character
+Z213.c:5: error: expected expression before ‘}’ token
+Z213.c:5: error: expected ‘)’ before ‘}’ token
+Z213.c:5: error: expected ‘;’ before ‘}’ token
+
+$ git checkout v2.6.27.2
+HEAD is now at 6bcd6d7... Linux 2.6.27.2
+apw@brain$ ./scripts/checkpatch.pl  --file ../checkpatch/Z213.c
+total: 0 errors, 0 warnings, 5 lines checked
+
+../checkpatch/Z213.c has no obvious style problems and is ready for submission.
+$
