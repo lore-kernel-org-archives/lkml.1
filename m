@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757483AbYJVW3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759270AbYJVWab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757483AbYJVW3w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 18:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYJVW3n
+	id S1759270AbYJVWab (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 18:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbYJVWaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 18:29:43 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:33576 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751380AbYJVW3m (ORCPT
+	Wed, 22 Oct 2008 18:30:13 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:14058 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751529AbYJVWaL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 18:29:42 -0400
-Date: Thu, 23 Oct 2008 02:29:40 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
-       Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
-Message-ID: <20081022222940.GA14636@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20081016171222.GA24812@oksana.dev.rtsoft.ru> <200810221404.52798.david-b@pacbell.net> <20081022212217.GA32378@oksana.dev.rtsoft.ru> <200810221452.46786.david-b@pacbell.net>
+	Wed, 22 Oct 2008 18:30:11 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Am4DAM8S9kh5LE2tgWdsb2JhbACTYAEBFiKuDIFr
+X-IronPort-AV: E=Sophos;i="4.33,467,1220193000"; 
+   d="scan'208";a="216212234"
+Date: Thu, 23 Oct 2008 09:30:05 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Linda Walsh <lkml@tlinx.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+Subject: Re: 2.6.27.[0,2] problems (v. 2.6.26.5): Samba & root-read-only
+Message-ID: <20081022223005.GV18495@disturbed>
+Mail-Followup-To: Linda Walsh <lkml@tlinx.org>,
+	LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+References: <48FED90F.7030809@tlinx.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200810221452.46786.david-b@pacbell.net>
+In-Reply-To: <48FED90F.7030809@tlinx.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 02:52:46PM -0700, David Brownell wrote:
-> On Wednesday 22 October 2008, Anton Vorontsov wrote:
-> > > 
-> > > > So if we register the board infos after 
-> > > > the controller registered, then nobody will probe the board infos.
-> > > 
-> > > See above.  If you're doing it right, there's no problem.
-> > > That is, scan the OF tables early.  Just like PNP tables
-> > > get scanned early, for example.
-> > 
-> > Heh. If we don't want to be able to make the OF-parsing code
-> > be a module then there is no problem at all. I can use the bus
-> > notifiers. And it is most straightforward solution then.
-> > 
-> > But I quite dislike to bloat the kernel image with
-> > maybe-never-used-on-this-board code.
-> 
-> So have it live in the __init text section.  If you're
-> building a kernel with support for several boards, you
-> know it's necessarily going to be larger than it would
-> be if only one board were supported.  But you can shrink
-> kernel size by judicious use of __init sections..
+On Wed, Oct 22, 2008 at 12:41:03AM -0700, Linda Walsh wrote:
+> I am having to stay at 2.6.26.5 for now on my main home server.
+>
+> Going to 2.6.27 (and just trying 2.6.27.2), I'm have two VERY weird (would
+> appear to be user-land probs from symptoms), problems. 
+>
+> 1) Samba -- the system is a Samba domain controller.  When I boot using
+> the 2.6.27.2 kernel (or .0 before), I can no longer mount any file systems
+> from my windows client. 
+.....
+>
+> 2) My root disk comes up READ-ONLY.  It uses XFS.  I am NOT able to remount
+> read/write (mount -o remount,rw /, fails writing to Read-only /etc/mtab,
+> mount -n -o remount,rw doesn't give an error message, but doesn't make the
+> drive R/W.  Root fs is on an adaptec FAST-SCSI (80MB/s) with an 18MB Seagate
+> (root, disk is oldest disk on the system). 
 
-Won't work, unfortunately. I2C devices are created by the
-i2c controllers, via drivers/of_i2c.c  of_register_i2c_devices().
+That XFS problem should be fixed in 2.6.27.3, whenever that is going
+to be released. It was sent and ACK'd by the stable team a week ago,
+but for some reason missed 2.6.27.2.
 
-There is a good reason to do so, the code needs to know
-controller's OF node to walk down and register the child nodes
-(devices). See drivers/i2c/busses/i2c-mpc.c -- it calls
-of_register_i2c_devices() at the end of the probe().
+Most likely is that the Samba problem will be caused by the smbd
+not being able to write to it's databases when clients try
+to connect because of the read-only root fs.
 
-Since we can't call __init stuff from non-__init, the scheme
-you purpose won't work.
+If you want to patch your kernel, the patch is here:
 
-The same is for SPI (drivers/of_spi.c of_register_spi_devices()).
+http://oss.sgi.com/archives/xfs/2008-10/msg00284.html
 
-> > My aim was to make the 
-> > OF-parsing part be a module too. Because in the long run we
-> > need the OF-parsing stuff for _every_ driver that needs
-> > platform data. It's quite expensive to have it always built-in,
-> > don't you think?
-> 
-> If it's discarded early, after translating the data from
-> OF format into what the drivers need, there will be no
-> RAM footprint.
+Cheers,
 
-There is also kernel image size that matters...
-
+Dave.
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Dave Chinner
+david@fromorbit.com
