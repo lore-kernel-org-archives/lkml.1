@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbYJVNX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754915AbYJVN3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbYJVNX4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 09:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYJVNXs
+	id S1754915AbYJVN3S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 09:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbYJVN3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 09:23:48 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:39058 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752917AbYJVNXs (ORCPT
+	Wed, 22 Oct 2008 09:29:06 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:49630 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751983AbYJVN3F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 09:23:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=i+jtMYI9H/zLJyIlNKVY01V8EhGUYAa2BNFnfKo4r+2AXmoIQ/bY1rtu/gVInq+zef
-         riQPyZPO8eCet4WfS0xheE83Y6wbwrjkL6QNvNP8A/CzH4VR36k9U6ho+0TJWf0fHxO4
-         QSVlw/0fFGS2uJAEOGnTMd6Rgzf8bov4hy3Uk=
-Message-ID: <94a0d4530810220623w150af153n68889bfd199be8ce@mail.gmail.com>
-Date: Wed, 22 Oct 2008 16:23:47 +0300
-From: "Felipe Contreras" <felipe.contreras@gmail.com>
-To: "Tony Vroon" <tony@vroon.org>
-Subject: Re: Issue with e1000
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1224679411.4001.25.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <94a0d4530810220448x41241926r8f93cde4463b9864@mail.gmail.com>
-	 <1224679411.4001.25.camel@localhost>
+	Wed, 22 Oct 2008 09:29:05 -0400
+To: linux-kernel@vger.kernel.org
+Subject: e1000e fails after several S3 resumes (2.6.26 Debian, TP T60)
+X-Mailer: MH-E 8.1; nmh 1.2; GNU Emacs 22.2.1
+Date: Wed, 22 Oct 2008 09:28:58 -0400
+From: Sanjoy Mahajan <sanjoy@MIT.EDU>
+Message-Id: <E1Ksdli-0005Os-MP@approx.mit.edu>
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 3:43 PM, Tony Vroon <tony@vroon.org> wrote:
-> On Wed, 2008-10-22 at 14:48 +0300, Felipe Contreras wrote:
->> I've been trying 2.6.27 and 2.6.27.2, and I haven't been able to use
->> the e1000 module.
->
-> Perhaps your device is new enough to be PCI-express, and as such needs
-> the new e1000e driver? I would advise to have both drivers enabled or
-> modular, so you can try which one works.
-> (It is true that the e1000 driver attached to some PCIe hardware in the
-> past, this has been changed)
+Once in a while after resuming from S3 sleep, the Ethernet driver
+gets confused, whereupon dhcp'ing for an IP address fails, e.g.
 
-Hehe, yeap, that was it.
+  /* doing the dhcp: */
+  Listening on LPF/eth0/00:16:41:52:50:de
+  Sending on   LPF/eth0/00:16:41:52:50:de
+  Sending on   Socket/fallback
+  DHCPDISCOVER on eth0 to 255.255.255.255 port 67 interval 7
+  /* and so on with various intervals */
 
-Thanks.
+I workaround it with
 
--- 
-Felipe Contreras
+  modprobe -rv e1000e ; modprobe -v e1000e
+(the '-v' options to make sure the module does vanish and return)
+
+and then try again to get an address, which works.  A similar failure
+mode happens with the iwl3945 driver (and a similar workaround usually
+succeeds).
+
+How can I debug this issue the next time that it happens (it's about
+once every two weeks)?  Using 'ethtool' or 'lspci -vvvv'?
+
+  $ uname -a
+  Linux approx 2.6.26-1-686 #1 SMP Thu Oct 9 15:18:09 UTC 2008 i686 GNU/Linux
+
+It's Debian unstable's kernel 2.6.26 based on 2.6.26.4.  The laptop is a
+Thinkpad T60 whose network controllers are given by lspci as
+
+  02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit Ethernet Controller
+  03:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG [Golan] Network Connection (rev 02)
+
+Could it be caused by the kernel (and modules) getting upgraded
+underneath a running system?  In which case I'll just 'not do that
+again' as the simplest fix, and reboot after a kernel upgrade.  My
+installed kernel is based on 2.6.26.6, but the running kernel is based
+on 2.6.26.4 [where based on means 'with Debian's patches'].
+
+Please CC me on any responses.
+
+-Sanjoy
+
+`Until lions have their historians, tales of the hunt shall always
+ glorify the hunters.'  --African Proverb
