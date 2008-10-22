@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbYJVCpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752306AbYJVDC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753845AbYJVCpd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 22:45:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbYJVCpY
+	id S1752306AbYJVDC5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 23:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYJVDCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 22:45:24 -0400
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:45464 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751193AbYJVCpX (ORCPT
+	Tue, 21 Oct 2008 23:02:48 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:44803 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751014AbYJVDCr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 22:45:23 -0400
-Message-ID: <48FE93C1.6030407@lwfinger.net>
-Date: Tue, 21 Oct 2008 19:45:21 -0700
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: "John W. Linville" <linville@tuxdriver.com>
-CC: Jouni Malinen <jouni.malinen@atheros.com>,
-       wireless <linux-wireless@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Regression in 2.6.27-git from commit 43ac2ca3840f64
-References: <48FDFCCA.8040604@lwfinger.net> <20081021213723.GL17268@tuxdriver.com>
-In-Reply-To: <20081021213723.GL17268@tuxdriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 21 Oct 2008 23:02:47 -0400
+Subject: Re: [RFC v7][PATCH 2/9] General infrastructure for checkpoint
+	restart
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Daniel Jacobowitz <dan@debian.org>
+Cc: Oren Laadan <orenl@cs.columbia.edu>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       viro@zeniv.linux.org.uk, hpa@zytor.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, tglx@linutronix.de
+In-Reply-To: <20081022025513.GA7504@caradoc.them.org>
+References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu>
+	 <1224481237-4892-3-git-send-email-orenl@cs.columbia.edu>
+	 <20081021124130.a002e838.akpm@linux-foundation.org>
+	 <20081021202410.GA10423@us.ibm.com> <48FE82DF.6030005@cs.columbia.edu>
+	 <20081022025513.GA7504@caradoc.them.org>
+Content-Type: text/plain
+Date: Tue, 21 Oct 2008 20:02:43 -0700
+Message-Id: <1224644563.1848.232.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John W. Linville wrote:
-> From: John W. Linville <linville@tuxdriver.com>
-> Subject: [PATCH] mac80211: do not aggregate IEs from scan results
-> 
-> Signed-off-by: John W. Linville <linville@tuxdriver.com>
-> ---
->  net/mac80211/scan.c |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
-> 
-> diff --git a/net/mac80211/scan.c b/net/mac80211/scan.c
-> index 416bb41..51ed74d 100644
-> --- a/net/mac80211/scan.c
-> +++ b/net/mac80211/scan.c
-> @@ -728,8 +728,6 @@ static void ieee80211_scan_add_ies(struct iw_request_info *info,
->  
->  	while (end - pos > IW_GENERIC_IE_MAX) {
->  		next = pos + 2 + pos[1];
-> -		while (next + 2 + next[1] - pos < IW_GENERIC_IE_MAX)
-> -			next = next + 2 + next[1];
->  
->  		memset(&iwe, 0, sizeof(iwe));
->  		iwe.cmd = IWEVGENIE;
+On Tue, 2008-10-21 at 22:55 -0400, Daniel Jacobowitz wrote:
+> I haven't been following - but why this whole container restriction?
+> Checkpoint/restart of individual processes is very useful too.
+> There are issues with e.g. IPC, but I'm not convinced they're
+> substantially different than the issues already present for a
+> container.
 
-No, this patch does not fix the problem.
+Containers provide isolation.  Once you have isolation, you have a
+discrete set of resources which you can checkpoint/restart.
 
-Larry
+Let's say you have a process you want to checkpoint.  If it uses a
+completely discrete IPC namespace, you *know* that nothing else depends
+on those IPC ids.  We don't even have to worry about who might have been
+using them and when.
+
+Also think about pids.  Without containers, how can you guarantee a
+restarted process that it can regain the same pid?
+
+-- Dave
+
