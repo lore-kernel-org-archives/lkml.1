@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbYJVMot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756017AbYJVMpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753370AbYJVMot (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 08:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYJVMoj
+	id S1756017AbYJVMpY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 08:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYJVMpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 08:44:39 -0400
-Received: from ganymede.vroon.org ([195.66.242.11]:42103 "EHLO
-	ganymede.vroon.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750873AbYJVMoi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 08:44:38 -0400
-Subject: Re: Issue with e1000
-From: Tony Vroon <tony@vroon.org>
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <94a0d4530810220448x41241926r8f93cde4463b9864@mail.gmail.com>
-References: <94a0d4530810220448x41241926r8f93cde4463b9864@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Vs2Rb2mmN4hCBraLTyFO"
-Date: Wed, 22 Oct 2008 13:43:31 +0100
-Message-Id: <1224679411.4001.25.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 22 Oct 2008 08:45:04 -0400
+Received: from h155.mvista.com ([63.81.120.155]:35327 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752451AbYJVMpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 08:45:03 -0400
+Message-ID: <48FF2047.6000509@ru.mvista.com>
+Date: Wed, 22 Oct 2008 16:44:55 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git pull] IDE updates #4
+References: <200810212100.52985.bzolnier@gmail.com>	 <48FF134F.2070509@ru.mvista.com> <58cb370e0810220514x419c9669jba1b7be942d3644a@mail.gmail.com>
+In-Reply-To: <58cb370e0810220514x419c9669jba1b7be942d3644a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
---=-Vs2Rb2mmN4hCBraLTyFO
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Bartlomiej Zolnierkiewicz wrote:
 
-On Wed, 2008-10-22 at 14:48 +0300, Felipe Contreras wrote:
-> I've been trying 2.6.27 and 2.6.27.2, and I haven't been able to use
-> the e1000 module.
+>>> Remove needless/confusing subdirs from drivers/ide/.
+>> I think that with 2 new drivers being submitted/reworked based on feedback
+>> and several patches submitted and pending submission to the pata-2.6 series
+>> this really could have waited till 2.6.29...
+>>     
+>
+> The situation is perfect right now for this change as there are no outstanding
+> patches in pata-2.6 tree 
 
-Perhaps your device is new enough to be PCI-express, and as such needs
-the new e1000e driver? I would advise to have both drivers enabled or
-modular, so you can try which one works.
-(It is true that the e1000 driver attached to some PCIe hardware in the
-past, this has been changed)
+   There was one patch (already stale TX4939 version driver) as of 
+yesterday.
 
-Regards,
-Tony V.
+> and number of new submitted patches is < 10 (I'll take
+> care of fixing them up, ditto for all other new stuff that will be using old
+> naming scheme).
+>   
 
---=-Vs2Rb2mmN4hCBraLTyFO
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+   Thanks for clarifying this.
+   This rename only added more uncertainty for my pending patchset 
+(which had been already dependant on at least TX4939 driver which keeps 
+being recast by Atsushi and being stale in pata-2.6 series) as I can't 
+predict when you and Linus will merge the changes and this is getting on 
+my nerves, as I don't have time on any extra rework and I'm running out 
+of time with the submission. I know I should have done this earlier and 
+I'd have done this if its not for my unfortunate vacations... I aslso 
+kept finding new issues looking on the IOC4 driver. :-/
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+> Thanks,
+> Bart
+>   
 
-iEYEABECAAYFAkj/H/IACgkQp5vW4rUFj5qVGwCcCUiu1Wie3Tyk3ZVNzke7AsSP
-D6cAoIPOKBqWQpcObMm0111ab7hemqCX
-=OvGX
------END PGP SIGNATURE-----
+MBR. Sergei
 
---=-Vs2Rb2mmN4hCBraLTyFO--
 
