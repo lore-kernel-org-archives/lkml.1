@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbYJVSzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758387AbYJVSzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757529AbYJVSzh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 14:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756980AbYJVSvr
+	id S1758387AbYJVSzL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 14:55:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757992AbYJVSvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 14:51:47 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:53670 "EHLO
+	Wed, 22 Oct 2008 14:51:48 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:53611 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757997AbYJVSvj (ORCPT
+	with ESMTP id S1757972AbYJVSvi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 14:51:39 -0400
-Message-Id: <20081022185137.247900443@goodmis.org>
+	Wed, 22 Oct 2008 14:51:38 -0400
+Message-Id: <20081022185135.782875066@goodmis.org>
 References: <20081022184313.179487464@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Oct 2008 14:43:23 -0400
+Date: Wed, 22 Oct 2008 14:43:15 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
@@ -24,132 +24,73 @@ Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 10/11] ftrace: remove mcount set
-Content-Disposition: inline; filename=ftrace-remove-mcount-set.patch
+Subject: [PATCH 02/11] ftrace: dynamic ftrace process only text section
+Content-Disposition: inline; filename=ftrace-record-only-text.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The arch dependent function ftrace_mcount_set was only used by the daemon
-start up code. This patch removes it.
+The text section stays in memory without ever leaving. With the exception
+of modules, but modules know how to handle that case. With the dynamic
+ftrace tracer, we need to make sure that it does not try to modify code
+that no longer exists. The only safe section is .text.
+
+This patch changes the recordmcount script to only record the mcount calls
+in the .text sections.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/arm/kernel/ftrace.c     |   13 -------------
- arch/powerpc/kernel/ftrace.c |   17 -----------------
- arch/x86/kernel/ftrace.c     |    7 -------
- include/linux/ftrace.h       |    1 -
- kernel/trace/ftrace.c        |    9 ---------
- 5 files changed, 47 deletions(-)
+ scripts/recordmcount.pl |   17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
 
-Index: linux-compile.git/arch/arm/kernel/ftrace.c
+Index: linux-compile.git/scripts/recordmcount.pl
 ===================================================================
---- linux-compile.git.orig/arch/arm/kernel/ftrace.c	2008-10-22 13:10:52.000000000 -0400
-+++ linux-compile.git/arch/arm/kernel/ftrace.c	2008-10-22 13:23:54.000000000 -0400
-@@ -95,19 +95,6 @@ int ftrace_update_ftrace_func(ftrace_fun
- 	return ret;
+--- linux-compile.git.orig/scripts/recordmcount.pl	2008-10-22 11:45:59.000000000 -0400
++++ linux-compile.git/scripts/recordmcount.pl	2008-10-22 11:46:33.000000000 -0400
+@@ -109,6 +109,11 @@ if ($#ARGV < 6) {
+ my ($arch, $bits, $objdump, $objcopy, $cc,
+     $ld, $nm, $rm, $mv, $inputfile) = @ARGV;
+ 
++# Acceptible sections to record.
++my %text_sections = (
++     ".text" => 1,
++);
++
+ $objdump = "objdump" if ((length $objdump) == 0);
+ $objcopy = "objcopy" if ((length $objcopy) == 0);
+ $cc = "gcc" if ((length $cc) == 0);
+@@ -139,7 +144,7 @@ if ($arch eq "x86") {
  }
  
--int ftrace_mcount_set(unsigned long *data)
--{
--	unsigned long pc, old;
--	unsigned long *addr = data;
--	unsigned char *new;
--
--	pc = (unsigned long)&mcount_call;
--	memcpy(&old, &mcount_call, MCOUNT_INSN_SIZE);
--	new = ftrace_call_replace(pc, *addr);
--	*addr = ftrace_modify_code(pc, (unsigned char *)&old, new);
--	return 0;
--}
--
- /* run from kstop_machine */
- int __init ftrace_dyn_arch_init(void *data)
- {
-Index: linux-compile.git/arch/powerpc/kernel/ftrace.c
-===================================================================
---- linux-compile.git.orig/arch/powerpc/kernel/ftrace.c	2008-10-22 13:10:52.000000000 -0400
-+++ linux-compile.git/arch/powerpc/kernel/ftrace.c	2008-10-22 13:23:54.000000000 -0400
-@@ -126,23 +126,6 @@ notrace int ftrace_update_ftrace_func(ft
- 	return ret;
- }
+ if ($arch eq "x86_64") {
+-    $section_regex = "Disassembly of section";
++    $section_regex = "Disassembly of section\\s+(\\S+):";
+     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount([+-]0x[0-9a-zA-Z]+)?\$";
+     $type = ".quad";
+@@ -151,7 +156,7 @@ if ($arch eq "x86_64") {
+     $cc .= " -m64";
  
--notrace int ftrace_mcount_set(unsigned long *data)
--{
--	unsigned long ip = (long)(&mcount_call);
--	unsigned long *addr = data;
--	unsigned char old[MCOUNT_INSN_SIZE], *new;
--
--	/*
--	 * Replace the mcount stub with a pointer to the
--	 * ip recorder function.
--	 */
--	memcpy(old, &mcount_call, MCOUNT_INSN_SIZE);
--	new = ftrace_call_replace(ip, *addr);
--	*addr = ftrace_modify_code(ip, old, new);
--
--	return 0;
--}
--
- int __init ftrace_dyn_arch_init(void *data)
- {
- 	/* This is running in kstop_machine */
-Index: linux-compile.git/arch/x86/kernel/ftrace.c
-===================================================================
---- linux-compile.git.orig/arch/x86/kernel/ftrace.c	2008-10-22 13:16:35.000000000 -0400
-+++ linux-compile.git/arch/x86/kernel/ftrace.c	2008-10-22 13:23:54.000000000 -0400
-@@ -105,13 +105,6 @@ notrace int ftrace_update_ftrace_func(ft
- 	return ret;
- }
- 
--notrace int ftrace_mcount_set(unsigned long *data)
--{
--	/* mcount is initialized as a nop */
--	*data = 0;
--	return 0;
--}
--
- int __init ftrace_dyn_arch_init(void *data)
- {
- 	extern const unsigned char ftrace_test_p6nop[];
-Index: linux-compile.git/include/linux/ftrace.h
-===================================================================
---- linux-compile.git.orig/include/linux/ftrace.h	2008-10-22 13:17:29.000000000 -0400
-+++ linux-compile.git/include/linux/ftrace.h	2008-10-22 13:23:54.000000000 -0400
-@@ -71,7 +71,6 @@ extern int ftrace_ip_converted(unsigned 
- extern unsigned char *ftrace_nop_replace(void);
- extern unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr);
- extern int ftrace_dyn_arch_init(void *data);
--extern int ftrace_mcount_set(unsigned long *data);
- extern int ftrace_modify_code(unsigned long ip, unsigned char *old_code,
- 			      unsigned char *new_code);
- extern int ftrace_update_ftrace_func(ftrace_func_t func);
-Index: linux-compile.git/kernel/trace/ftrace.c
-===================================================================
---- linux-compile.git.orig/kernel/trace/ftrace.c	2008-10-22 13:21:46.000000000 -0400
-+++ linux-compile.git/kernel/trace/ftrace.c	2008-10-22 13:23:54.000000000 -0400
-@@ -606,7 +606,6 @@ static int ftrace_update_code(void *igno
- 
- static int __ftrace_modify_code(void *data)
- {
--	unsigned long addr;
- 	int *command = data;
- 
- 	if (*command & FTRACE_ENABLE_CALLS) {
-@@ -625,14 +624,6 @@ static int __ftrace_modify_code(void *da
- 	if (*command & FTRACE_UPDATE_TRACE_FUNC)
- 		ftrace_update_ftrace_func(ftrace_trace_function);
- 
--	if (*command & FTRACE_ENABLE_MCOUNT) {
--		addr = (unsigned long)ftrace_record_ip;
--		ftrace_mcount_set(&addr);
--	} else if (*command & FTRACE_DISABLE_MCOUNT) {
--		addr = (unsigned long)ftrace_stub;
--		ftrace_mcount_set(&addr);
--	}
--
- 	return 0;
- }
+ } elsif ($arch eq "i386") {
+-    $section_regex = "Disassembly of section";
++    $section_regex = "Disassembly of section\\s+(\\S+):";
+     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
+     $type = ".long";
+@@ -298,7 +303,13 @@ my $text;
+ while (<IN>) {
+     # is it a section?
+     if (/$section_regex/) {
+-	$read_function = 1;
++
++	# Only record text sections that we know are safe
++	if (defined($text_sections{$1})) {
++	    $read_function = 1;
++	} else {
++	    $read_function = 0;
++	}
+ 	# print out any recorded offsets
+ 	update_funcs() if ($text_found);
  
 
 -- 
