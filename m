@@ -1,86 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756737AbYJVS1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757376AbYJVS3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756737AbYJVS1d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 14:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYJVS1Y
+	id S1757376AbYJVS3h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 14:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbYJVS33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 14:27:24 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:7392 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752064AbYJVS1X (ORCPT
+	Wed, 22 Oct 2008 14:29:29 -0400
+Received: from mo-p05-ob.rzone.de ([81.169.146.180]:16605 "EHLO
+	mo-p05-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753721AbYJVS32 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 14:27:23 -0400
-Date: Wed, 22 Oct 2008 20:27:02 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux I2C <i2c@lm-sensors.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] i2c updates for 2.6.28, round 2
-Message-ID: <20081022202702.77ee9e44@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Oct 2008 14:29:28 -0400
+X-RZG-CLASS-ID: mo05
+X-RZG-AUTH: :Pm0FVUW6aauhRGJJc5OfA4AU8DM8ZlijdmJYxKn/UQvEQQx8AU81rZ3v
+Date: Wed, 22 Oct 2008 20:29:24 +0200
+From: Alex Riesen <raa.lkml@gmail.com>
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       em28xx@mcentral.de
+Subject: Re: [PATCH] em28xx patches against the latest git tree
+Message-ID: <20081022182924.GA4626@blimp.localdomain>
+Reply-To: Alex Riesen <raa.lkml@gmail.com>
+References: <d9def9db0810221034v3bf4dabt6aa905b8a3ebd5a@mail.gmail.com> <d9def9db0810221038g156871e1u200abb90b774ad28@mail.gmail.com> <81b0412b0810221059w2e02b1c1ubd894b22f7991242@mail.gmail.com> <d9def9db0810221110g6f104b17g36a74704d43c5693@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d9def9db0810221110g6f104b17g36a74704d43c5693@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Markus Rechberger, Wed, Oct 22, 2008 20:10:49 +0200:
+> On Wed, Oct 22, 2008 at 7:59 PM, Alex Riesen <raa.lkml@gmail.com> wrote:
+> > 2008/10/22 Markus Rechberger <mrechberger@gmail.com>:
+> >>> commit history is available at:
+> >> http://mcentral.de/hg/~mrec/em28xx-new/shortlog
+> >>
+> >
+> > There is already an Empia EM28XX driver in the official tree. If your driver
+> > is based on it, could you point at the first commit in *your* tree at
+> > mcentral.de which
+> > corresponds to that driver? (if you do, your history can be moved into
+> > central Git
+> > repo completely, every commit of it)
+> >
+> 
+> The development has been split off for 3 years from the original
+> repository. The internal driver differs alot.
 
-Please pull the second round of i2c subsystem updates for Linux 2.6.28
-from:
+So it is more like a new driver. I tried merging them about half a
+year ago (unsuccessfully, of course). In the end your driver worked
+with that piece of hardware I have (it seem to produce an awful lot of
+tracing though) and I stayed with it.
 
-git://jdelvare.pck.nerim.net/jdelvare-2.6 i2c-for-linus
+> The driver has a long and rather bad history, which I'd like to avoid
+> by using the different directory.
 
-There are fixes to the i2c-algo-pcf driver, support for a new Intel
-chip (Ibex Peak), documentation updates and a few other fixes.
+You could submit patches depricating it. Does the old driver support
+something yours does not?
 
- Documentation/feature-removal-schedule.txt |    8 +
- Documentation/i2c/busses/i2c-i801          |    7 +-
- Documentation/i2c/porting-clients          |  160 ---------
- Documentation/i2c/writing-clients          |  495 +++++++---------------------
- drivers/i2c/algos/i2c-algo-pcf.c           |   21 +-
- drivers/i2c/busses/Kconfig                 |    1 +
- drivers/i2c/busses/i2c-elektor.c           |    3 +-
- drivers/i2c/busses/i2c-hydra.c             |    2 +-
- drivers/i2c/busses/i2c-i801.c              |    3 +
- drivers/i2c/chips/Kconfig                  |    2 +
- drivers/i2c/chips/Makefile                 |    3 +-
- drivers/i2c/i2c-core.c                     |    3 +
- include/linux/device.h                     |    2 +-
- include/linux/i2c-algo-pcf.h               |    5 +-
- include/linux/i2c.h                        |  163 +++++-----
- 15 files changed, 245 insertions(+), 633 deletions(-)
- delete mode 100644 Documentation/i2c/porting-clients
+> Some patches got ported from my repository into the kernel although
+> most devices don't work at all with the current inkernel driver (eg.
+> em2888, flash based, isdb-t, cx25843, some saa7114.. based devices).
 
----------------
+Mine (a Pinnacle-Apple-something, USB) does not work with it at all.
 
-Anton Vorontsov (1):
-      i2c: Add info->archdata field
-
-Arjan van de Ven (1):
-      i2c: Use pci_ioremap_bar()
-
-David Miller (3):
-      i2c-algo-pcf: Pass adapter data into ->waitforpin() method
-      i2c-algo-pcf: Add adapter hooks around xfer begin and end
-      i2c-algo-pcf: Fix typo in debugging log message
-
-Jean Delvare (7):
-      i2c: Delete outdated client porting guide
-      i2c: Constify i2c_get_clientdata's parameter
-      i2c: Delete legacy model documentation
-      i2c: Drop 2-byte address block transfer defines
-      i2c: Update and clean up writing-clients document
-      i2c: Clean up <linux/i2c.h>
-      Schedule removal of the legacy i2c device driver binding model
-
-Seth Heasley (1):
-      i2c-i801: Add support for Intel Ibex Peak
-
-Wolfram Sang (2):
-      i2c: Make clear what the class field of i2c_adapter is good for
-      i2c: Inform about deprecated chips directory
-
-Thanks,
--- 
-Jean Delvare
