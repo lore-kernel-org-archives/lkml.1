@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbYJVRkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758523AbYJVRkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758852AbYJVRkm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757519AbYJVReG
+	id S1758523AbYJVRkU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:40:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757737AbYJVRd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:34:06 -0400
-Received: from kroah.org ([198.145.64.141]:53065 "EHLO coco.kroah.org"
+	Wed, 22 Oct 2008 13:33:56 -0400
+Received: from kroah.org ([198.145.64.141]:53062 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757518AbYJVReE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:34:04 -0400
+	id S1757724AbYJVRdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 13:33:55 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Tzafrir Cohen <tzafrir@cohens.org.il>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 21/42] Staging: echo: Replace __BLACKFIN__ASM__ with __bfin__
-Date: Wed, 22 Oct 2008 10:29:02 -0700
-Message-Id: <1224696563-5170-21-git-send-email-gregkh@suse.de>
+Subject: [PATCH 20/42] Staging: echo: Changed preffix from echo_can_ to oslec_
+Date: Wed, 22 Oct 2008 10:29:01 -0700
+Message-Id: <1224696563-5170-20-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081022172203.GA4000@kroah.com>
 References: <20081022172203.GA4000@kroah.com>
@@ -27,63 +27,210 @@ From: Tzafrir Cohen <tzafrir@cohens.org.il>
 Signed-off-by: Tzafrir Cohen <tzafrir@cohens.org.il>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/echo/echo.c |    2 +-
- drivers/staging/echo/fir.h  |    8 ++++----
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/staging/echo/echo.c  |   36 ++++++++++++++++++------------------
+ drivers/staging/echo/echo.h  |    2 +-
+ drivers/staging/echo/oslec.h |   16 ++++++++--------
+ 3 files changed, 27 insertions(+), 27 deletions(-)
 
 diff --git a/drivers/staging/echo/echo.c b/drivers/staging/echo/echo.c
-index 13792ef..140f3f0 100644
+index a408b62..13792ef 100644
 --- a/drivers/staging/echo/echo.c
 +++ b/drivers/staging/echo/echo.c
-@@ -127,7 +127,7 @@
- /* adapting coeffs using the traditional stochastic descent (N)LMS algorithm */
+@@ -128,7 +128,7 @@
  
  
--#ifdef __BLACKFIN_ASM__
-+#ifdef __bfin__
- static void __inline__ lms_adapt_bg(struct oslec_state *ec, int clean, int shift)
+ #ifdef __BLACKFIN_ASM__
+-static void __inline__ lms_adapt_bg(struct echo_can_state *ec, int clean, int shift)
++static void __inline__ lms_adapt_bg(struct oslec_state *ec, int clean, int shift)
  {
      int i, j;
-diff --git a/drivers/staging/echo/fir.h b/drivers/staging/echo/fir.h
-index e1bfc49..277d20e 100644
---- a/drivers/staging/echo/fir.h
-+++ b/drivers/staging/echo/fir.h
-@@ -116,7 +116,7 @@ static __inline__ const int16_t *fir16_create(fir16_state_t *fir,
- 	fir->taps = taps;
- 	fir->curr_pos = taps - 1;
- 	fir->coeffs = coeffs;
--#if defined(USE_MMX)  ||  defined(USE_SSE2) || defined(__BLACKFIN_ASM__)
-+#if defined(USE_MMX)  ||  defined(USE_SSE2) || defined(__bfin__)
- 	if ((fir->history = malloc(2*taps*sizeof(int16_t))))
- 		memset(fir->history, 0, 2*taps*sizeof(int16_t));
- #else
-@@ -129,7 +129,7 @@ static __inline__ const int16_t *fir16_create(fir16_state_t *fir,
+     int offset1;
+@@ -200,7 +200,7 @@ static void __inline__ lms_adapt_bg(struct echo_can_state *ec, int clean, int sh
+ */
  
- static __inline__ void fir16_flush(fir16_state_t *fir)
- {
--#if defined(USE_MMX)  ||  defined(USE_SSE2) || defined(__BLACKFIN_ASM__)
-+#if defined(USE_MMX)  ||  defined(USE_SSE2) || defined(__bfin__)
-     memset(fir->history, 0, 2*fir->taps*sizeof(int16_t));
  #else
-     memset(fir->history, 0, fir->taps*sizeof(int16_t));
-@@ -143,7 +143,7 @@ static __inline__ void fir16_free(fir16_state_t *fir)
- }
+-static __inline__ void lms_adapt_bg(struct echo_can_state *ec, int clean, int shift)
++static __inline__ void lms_adapt_bg(struct oslec_state *ec, int clean, int shift)
+ {
+     int i;
+ 
+@@ -234,9 +234,9 @@ static __inline__ void lms_adapt_bg(struct echo_can_state *ec, int clean, int sh
+ 
  /*- End of function --------------------------------------------------------*/
  
--#ifdef __BLACKFIN_ASM__
-+#ifdef __bfin__
- static inline int32_t dot_asm(short *x, short *y, int len)
+-struct echo_can_state *echo_can_create(int len, int adaption_mode)
++struct oslec_state *oslec_create(int len, int adaption_mode)
  {
-    int dot;
-@@ -242,7 +242,7 @@ static __inline__ int16_t fir16(fir16_state_t *fir, int16_t sample)
-     psrldq_i2r(4, xmm0);
-     paddd_r2r(xmm0, xmm4);
-     movd_r2m(xmm4, y);
--#elif defined(__BLACKFIN_ASM__)
-+#elif defined(__bfin__)
-     fir->history[fir->curr_pos] = sample;
-     fir->history[fir->curr_pos + fir->taps] = sample;
-     y = dot_asm((int16_t*)fir->coeffs, &fir->history[fir->curr_pos], fir->taps);
+-    struct echo_can_state *ec;
++    struct oslec_state *ec;
+     int i;
+     int j;
+ 
+@@ -273,7 +273,7 @@ struct echo_can_state *echo_can_create(int len, int adaption_mode)
+     }
+ 
+     ec->cng_level = 1000;
+-    echo_can_adaption_mode(ec, adaption_mode);
++    oslec_adaption_mode(ec, adaption_mode);
+ 
+     ec->snapshot = (int16_t*)malloc(ec->taps*sizeof(int16_t));
+     memset(ec->snapshot, 0, sizeof(int16_t)*ec->taps);
+@@ -289,10 +289,10 @@ struct echo_can_state *echo_can_create(int len, int adaption_mode)
+ 
+     return  ec;
+ }
+-EXPORT_SYMBOL_GPL(echo_can_create);
++EXPORT_SYMBOL_GPL(oslec_create);
+ /*- End of function --------------------------------------------------------*/
+ 
+-void echo_can_free(struct echo_can_state *ec)
++void oslec_free(struct oslec_state *ec)
+ {
+ 	int i;
+ 
+@@ -303,17 +303,17 @@ void echo_can_free(struct echo_can_state *ec)
+ 	kfree(ec->snapshot);
+ 	kfree(ec);
+ }
+-EXPORT_SYMBOL_GPL(echo_can_free);
++EXPORT_SYMBOL_GPL(oslec_free);
+ /*- End of function --------------------------------------------------------*/
+ 
+-void echo_can_adaption_mode(struct echo_can_state *ec, int adaption_mode)
++void oslec_adaption_mode(struct oslec_state *ec, int adaption_mode)
+ {
+     ec->adaption_mode = adaption_mode;
+ }
+-EXPORT_SYMBOL_GPL(echo_can_adaption_mode);
++EXPORT_SYMBOL_GPL(oslec_adaption_mode);
+ /*- End of function --------------------------------------------------------*/
+ 
+-void echo_can_flush(struct echo_can_state *ec)
++void oslec_flush(struct oslec_state *ec)
+ {
+     int i;
+ 
+@@ -337,18 +337,18 @@ void echo_can_flush(struct echo_can_state *ec)
+     ec->curr_pos = ec->taps - 1;
+     ec->Pstates = 0;
+ }
+-EXPORT_SYMBOL_GPL(echo_can_flush);
++EXPORT_SYMBOL_GPL(oslec_flush);
+ /*- End of function --------------------------------------------------------*/
+ 
+-void echo_can_snapshot(struct echo_can_state *ec) {
++void oslec_snapshot(struct oslec_state *ec) {
+     memcpy(ec->snapshot, ec->fir_taps16[0], ec->taps*sizeof(int16_t));
+ }
+-EXPORT_SYMBOL_GPL(echo_can_snapshot);
++EXPORT_SYMBOL_GPL(oslec_snapshot);
+ /*- End of function --------------------------------------------------------*/
+ 
+ /* Dual Path Echo Canceller ------------------------------------------------*/
+ 
+-int16_t echo_can_update(struct echo_can_state *ec, int16_t tx, int16_t rx)
++int16_t oslec_update(struct oslec_state *ec, int16_t tx, int16_t rx)
+ {
+     int32_t echo_value;
+     int clean_bg;
+@@ -589,7 +589,7 @@ int16_t echo_can_update(struct echo_can_state *ec, int16_t tx, int16_t rx)
+ 
+     return (int16_t) ec->clean_nlp << 1;
+ }
+-EXPORT_SYMBOL_GPL(echo_can_update);
++EXPORT_SYMBOL_GPL(oslec_update);
+ /*- End of function --------------------------------------------------------*/
+ 
+ /* This function is seperated from the echo canceller is it is usually called
+@@ -613,7 +613,7 @@ EXPORT_SYMBOL_GPL(echo_can_update);
+    precision, which noise shapes things, giving very clean DC removal.
+ */
+ 
+-int16_t echo_can_hpf_tx(struct echo_can_state *ec, int16_t tx) {
++int16_t oslec_hpf_tx(struct oslec_state *ec, int16_t tx) {
+     int tmp, tmp1;
+ 
+     if (ec->adaption_mode & ECHO_CAN_USE_TX_HPF) {
+@@ -635,7 +635,7 @@ int16_t echo_can_hpf_tx(struct echo_can_state *ec, int16_t tx) {
+ 
+     return tx;
+ }
+-EXPORT_SYMBOL_GPL(echo_can_hpf_tx);
++EXPORT_SYMBOL_GPL(oslec_hpf_tx);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("David Rowe");
+diff --git a/drivers/staging/echo/echo.h b/drivers/staging/echo/echo.h
+index 5c8b515..2a1d1d8 100644
+--- a/drivers/staging/echo/echo.h
++++ b/drivers/staging/echo/echo.h
+@@ -124,7 +124,7 @@ a minor burden.
+     G.168 echo canceller descriptor. This defines the working state for a line
+     echo canceller.
+ */
+-struct echo_can_state
++struct oslec_state
+ {
+ 	int16_t tx,rx;
+ 	int16_t clean;
+diff --git a/drivers/staging/echo/oslec.h b/drivers/staging/echo/oslec.h
+index 8227013..e41de61 100644
+--- a/drivers/staging/echo/oslec.h
++++ b/drivers/staging/echo/oslec.h
+@@ -42,31 +42,31 @@
+     G.168 echo canceller descriptor. This defines the working state for a line
+     echo canceller.
+ */
+-struct echo_can_state;
++struct oslec_state;
+ 
+ /*! Create a voice echo canceller context.
+     \param len The length of the canceller, in samples.
+     \return The new canceller context, or NULL if the canceller could not be created.
+ */
+-struct echo_can_state *echo_can_create(int len, int adaption_mode);
++struct oslec_state *oslec_create(int len, int adaption_mode);
+ 
+ /*! Free a voice echo canceller context.
+     \param ec The echo canceller context.
+ */
+-void echo_can_free(struct echo_can_state *ec);
++void oslec_free(struct oslec_state *ec);
+ 
+ /*! Flush (reinitialise) a voice echo canceller context.
+     \param ec The echo canceller context.
+ */
+-void echo_can_flush(struct echo_can_state *ec);
++void oslec_flush(struct oslec_state *ec);
+ 
+ /*! Set the adaption mode of a voice echo canceller context.
+     \param ec The echo canceller context.
+     \param adapt The mode.
+ */
+-void echo_can_adaption_mode(struct echo_can_state *ec, int adaption_mode);
++void oslec_adaption_mode(struct oslec_state *ec, int adaption_mode);
+ 
+-void echo_can_snapshot(struct echo_can_state *ec);
++void oslec_snapshot(struct oslec_state *ec);
+ 
+ /*! Process a sample through a voice echo canceller.
+     \param ec The echo canceller context.
+@@ -74,13 +74,13 @@ void echo_can_snapshot(struct echo_can_state *ec);
+     \param rx The received audio sample.
+     \return The clean (echo cancelled) received sample.
+ */
+-int16_t echo_can_update(struct echo_can_state *ec, int16_t tx, int16_t rx);
++int16_t oslec_update(struct oslec_state *ec, int16_t tx, int16_t rx);
+ 
+ /*! Process to high pass filter the tx signal.
+     \param ec The echo canceller context.
+     \param tx The transmitted auio sample.
+     \return The HP filtered transmit sample, send this to your D/A.
+ */
+-int16_t echo_can_hpf_tx(struct echo_can_state *ec, int16_t tx);
++int16_t oslec_hpf_tx(struct oslec_state *ec, int16_t tx);
+ 
+ #endif	/* __OSLEC_H */
 -- 
 1.6.0.2
 
