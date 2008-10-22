@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbYJVG2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752767AbYJVGgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753136AbYJVG2f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 02:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbYJVG20
+	id S1752767AbYJVGgp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 02:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbYJVGgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 02:28:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48038 "EHLO mx2.mail.elte.hu"
+	Wed, 22 Oct 2008 02:36:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43309 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751560AbYJVG2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 02:28:25 -0400
-Date: Wed, 22 Oct 2008 08:28:02 +0200
+	id S1750874AbYJVGgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 02:36:35 -0400
+Date: Wed, 22 Oct 2008 08:36:13 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: akpm@linux-foundation.org
-Cc: mm-commits@vger.kernel.org, npiggin@suse.de, jdike@addtoit.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: + mm-invoke-oom-killer-from-page-fault.patch added to -mm tree
-Message-ID: <20081022062802.GF651@elte.hu>
-References: <200810212140.m9LLeq1B026364@imap1.linux-foundation.org>
+To: Dimitri Sivanich <sivanich@sgi.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/3] SGI RTC: add clocksource/clockevent driver and
+	timer bios calls
+Message-ID: <20081022063613.GH651@elte.hu>
+References: <20081021211740.GA3936@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200810212140.m9LLeq1B026364@imap1.linux-foundation.org>
+In-Reply-To: <20081021211740.GA3936@sgi.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,62 +39,25 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
+* Dimitri Sivanich <sivanich@sgi.com> wrote:
 
+> The following patchset provides a driver and bios call framework for
+> synchronized RTC clocksource and clockevents for SGI systems.
 > 
-> The patch titled
->      mm: invoke oom-killer from page fault
-> has been added to the -mm tree.  Its filename is
->      mm-invoke-oom-killer-from-page-fault.patch
+> With these patches, a module can be installed that registers the system-wide
+> synchronized RTC clocksource and timers as both a clocksource and clockevents
+> device running in high resolution mode.
 > 
-> Before you just go and hit "reply", please:
->    a) Consider who else should be cc'ed
->    b) Prefer to cc a suitable mailing list as well
->    c) Ideally: find the original patch on the mailing list and do a
->       reply-to-all to that, adding suitable additional cc's
 > 
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> 
-> See http://userweb.kernel.org/~akpm/added-to-mm.txt to find
-> out what to do about this
-> 
-> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
-> 
-> ------------------------------------------------------
-> Subject: mm: invoke oom-killer from page fault
-> From: Nick Piggin <npiggin@suse.de>
-> 
-> Rather than have the pagefault handler kill a process directly if it gets
-> a VM_FAULT_OOM, have it call into the OOM killer.
-> 
-> With increasingly sophisticated oom behaviour (cpusets, memory cgroups,
-> oom killing throttling, oom priority adjustment or selective disabling,
-> panic on oom, etc), it's silly to unconditionally kill the faulting
-> process at page fault time.  Create a hook for pagefault oom path to call
-> into instead.
-> 
-> Only converted x86 and uml so far.
-> 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-> Cc: Jeff Dike <jdike@addtoit.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> [PATCH 1/3] SGI RTC: add clocksource driver
+> [PATCH 2/3] SGI RTC: add bios framework for RTC timer operations
+> [PATCH 3/3] SGI RTC: add RTC system interrupt
 
-the x86 bits look sane in principle. Needs a lot of testing obviously.
+hm, i dont really like the direction of this.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-a small nit:
-
-> +	/*
-> +	 * Give "p" a good chance of killing itself before we
-> +	 * retry to allocate memory unless "p" is current
-> +	 */
-> +	if (!test_thread_flag(TIF_MEMDIE))
-> +		schedule_timeout_uninterruptible(1);
-
-comment does not match up the code anymore, we only deal with 'current' 
-here.
+Why isnt there a native Linux driver offered for this? This isnt about 
+memory discovery or device discovery, where BIOS interaction might be 
+acceptable (and might be unavoidable). This is about hardware interfaces 
+and drivers, and the last thing we want there is BIOSes.
 
 	Ingo
