@@ -1,92 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757145AbYJVQJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYJVQOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757145AbYJVQJR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 12:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbYJVQJA
+	id S1756541AbYJVQOO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 12:14:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbYJVQNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 12:09:00 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:49414 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754049AbYJVQI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 12:08:59 -0400
-Date: Wed, 22 Oct 2008 09:49:44 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       James Morris <jmorris@namei.org>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] integrity: TPM internel kernel interface
-Message-ID: <20081022144944.GC21612@us.ibm.com>
-References: <cover.1223869200.git.zohar@localhost.localdomain> <c7ae4dc26c0c2897218851c7bdb056b4a4b49f26.1223869200.git.zohar@localhost.localdomain> <20081014222312.GA18343@hallyn.com> <1224679633.2786.20.camel@dyn536723.br.ibm.com>
+	Wed, 22 Oct 2008 12:13:55 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:43576 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753555AbYJVQNx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 12:13:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=hAOupzAcK6BSqd60gvmv+LEsiecVfF6e9Tx3SEh9JfZEvvIWKytLy/0c1h/iQrFvBS
+         tZrvveXvYVFKtzudIjpNE5O5oFa89euUNgvyUSflCslmw5E+eikh2iD/q1LwrAnVZ3ZR
+         aVVYBoEUV2KVl1FHEAM8mzaBz0K8sMNzuuJvs=
+Message-ID: <43e72e890810220913s10debf60q8b5275ee92f03bd3@mail.gmail.com>
+Date: Wed, 22 Oct 2008 09:13:51 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: "Florian Fainelli" <florian@openwrt.org>
+Subject: Re: Release of Atheros 802.11n USB Linux driver
+Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       "Johannes Berg" <johannes@sipsolutions.net>
+In-Reply-To: <200810221028.18087.florian@openwrt.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1224679633.2786.20.camel@dyn536723.br.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com>
+	 <200810221028.18087.florian@openwrt.org>
+X-Google-Sender-Auth: 1c3ddb0ba0020e4e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m9MGELdq004266
 
-Quoting Rajiv Andrade (srajiv@linux.vnet.ibm.com):
-> On Tue, 2008-10-14 at 17:23 -0500, Serge E. Hallyn wrote:
-> > Quoting Mimi Zohar (zohar@linux.vnet.ibm.com):
-> > > The internal TPM kernel interface did not protect itself from
-> > > the removal of the TPM driver, while being used.  We continue
-> > > to protect the tpm_chip_list using the driver_lock as before,
-> > > and are using an rcu lock to protect readers. The internal TPM
-> > 
-> > I still would like to see this spelled out somewhere - correct me
-> > if I'm wrong but none of the patches sent so far have this spelled
-> > out in in-line comments, do they?
-> > 
-> > It does look sane:
-> > 
-> > 	1. writes to tpm_chip_list are protected by driver_lock
-> > 	2. readers of the list are protected by rcu
-> > 	3. chips which are read from the tpm_chip_list, if they
-> > 	   are used outside of the rcu_read_lock(), are pinned
-> > 	   using get_device(chip->dev) before releasing the
-> > 	   rcu_read_lock.
-> > 
-> > Like I say it looks sane, but something like the above summary
-> > could stand to be in a comment on top of tpm.c or something.
-> > 
-> No problem, I'll submit a patch containing a proper comment section to
-> be applied on top of these, maybe after they get accepted.
-
-Great, thanks.
-
-> > > kernel interface now protects itself from the driver being
-> > > removed by incrementing the module reference count.
-> > > 
-> > > Resubmitting integrity-tpm-internal-kernel-interface.patch, which
-> > > was previously Signed-off-by Kylene Hall.
-> > > Updated per feedback:
-> > > 
-> > > Adds the following support:
-> > >   - make internal kernel interface to transmit TPM commands global
-> > >   - adds reading a pcr value
-> > >   - adds extending a pcr value
-> > >   - adds lookup the tpm_chip for given chip number and type
-> > > 
-> > > Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
-> > > Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-> > 
-> > Now there are other, existing callers of tpm_transmit.  Are they
-> > all protected by sysfs pinning the kobject and thereby the device,
-> > for the duration of the call?
-> > 
-> 
-> They aren't called through sysfs, but are still protected. These new
-> functions get chip data consistently by using rcu_read. Then, after
-> computing what's intended to be written back to the chip, tpm_transmit
-> sends the new data while using tpm_mutex, so both operations are
-> performed without the risk of a race condition.
-
-Can you show me where the refcount for dev is incremented (under the
-rcu_read_lock), either in sysfs code or tpm code?  I'm not finding
-it, but it may just be done in some subtle way that I'm glossing over.
-
-thanks,
--serge
+On Wed, Oct 22, 2008 at 1:28 AM, Florian Fainelli <florian@openwrt.org> wrote:> Hi Luis,>> Le Wednesday 22 October 2008 04:04:17 Luis R. Rodriguez, vous avez Ã©crit :>> We would like to see our Atheros 802.11n USB Linux driver upstream>> however we need help with this so we are releasing our Atheros 11n USB>> Otus Linux driver under the ISC to the community. The goal is to work>> with the community to help move this forward upstream. We are hoping>> for community help and leadership on this (*cough*).>> This is great news ! Any plans on supporting older sticks as well, like> AR5005UG/X based sticks ?
+Yeah, we've already provided documentation to a few select developers.
+   Luisÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
