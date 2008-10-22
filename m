@@ -1,1255 +1,1741 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYJVLho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbYJVLld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbYJVLho (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 07:37:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbYJVLhP
+	id S1755351AbYJVLld (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 07:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbYJVLl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 07:37:15 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:59491 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752873AbYJVLhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 07:37:07 -0400
-Date: Wed, 22 Oct 2008 07:37:04 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches v2] net driver updates
-Message-ID: <20081022113704.GA12431@havoc.gtf.org>
+	Wed, 22 Oct 2008 07:41:26 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47490 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752463AbYJVLlX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 07:41:23 -0400
+Date: Wed, 22 Oct 2008 13:41:21 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/6] w35und: padapter struct typedef removal
+Message-ID: <20081022114121.GE7843@atrey.karlin.mff.cuni.cz>
+References: <Pine.LNX.4.64.0810221102440.13366@melkki.cs.Helsinki.FI>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <Pine.LNX.4.64.0810221102440.13366@melkki.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a complete redo of the previous push, with new commit ids etc.
-It also includes a few new csets over and above the last push.
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
+> Remove the PADAPTER typedef and its strange variants. Also fix up variable
+> names that use the type while we're at it.
+> 
+> Cc: Pavel Machek <pavel@suse.cz>
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Please pull from 'davem-fixes' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git davem-fixes
+ACK.
 
-to receive the following updates:
+> ---
+>  drivers/staging/winbond/adapter.h       |   10 ++--
+>  drivers/staging/winbond/bss_f.h         |   68 +++++++++++-----------
+>  drivers/staging/winbond/bssdscpt.h      |    8 +-
+>  drivers/staging/winbond/ds_tkip.h       |    4 +-
+>  drivers/staging/winbond/linux/wb35reg.c |    8 +-
+>  drivers/staging/winbond/linux/wb35rx.c  |    8 +-
+>  drivers/staging/winbond/linux/wb35tx.c  |   30 +++++-----
+>  drivers/staging/winbond/linux/wbusb.c   |   28 ++++----
+>  drivers/staging/winbond/linux/wbusb_f.h |    2 +-
+>  drivers/staging/winbond/localpara.h     |    2 +-
+>  drivers/staging/winbond/mds.c           |   64 ++++++++++----------
+>  drivers/staging/winbond/mds_f.h         |   40 ++++++------
+>  drivers/staging/winbond/mds_s.h         |   20 +++---
+>  drivers/staging/winbond/mlme_mib.h      |   20 +++---
+>  drivers/staging/winbond/mlmetxrx.c      |   72 +++++++++++-----------
+>  drivers/staging/winbond/mlmetxrx_f.h    |   20 +++---
+>  drivers/staging/winbond/mto.c           |    8 +-
+>  drivers/staging/winbond/mto.h           |   22 ++++----
+>  drivers/staging/winbond/mto_f.h         |    6 +-
+>  drivers/staging/winbond/rxisr.c         |   18 +++---
+>  drivers/staging/winbond/scan_s.h        |   12 ++--
+>  drivers/staging/winbond/sme_s.h         |    4 +-
+>  drivers/staging/winbond/wbhal.c         |   24 ++++----
+>  drivers/staging/winbond/wbhal_f.h       |    6 +-
+>  drivers/staging/winbond/wbhal_s.h       |    6 +-
+>  drivers/staging/winbond/wblinux.c       |  100 +++++++++++++++---------------
+>  drivers/staging/winbond/wblinux_f.h     |   22 ++++----
+>  drivers/staging/winbond/wblinux_s.h     |    2 +-
+>  28 files changed, 317 insertions(+), 317 deletions(-)
+> 
+> diff --git a/drivers/staging/winbond/adapter.h b/drivers/staging/winbond/adapter.h
+> index 609701d..8925dad 100644
+> --- a/drivers/staging/winbond/adapter.h
+> +++ b/drivers/staging/winbond/adapter.h
+> @@ -1,11 +1,11 @@
+>  //
+>  // ADAPTER.H -
+> -// Windows NDIS global variable 'Adapter' typedef
+> +// Windows NDIS global variable 'adapter' typedef
+>  //
+>  #define MAX_ANSI_STRING		40
+> -typedef struct WB32_ADAPTER
+> -{
+> -	u32 AdapterIndex; // 20060703.4 Add for using pAdapterContext global Adapter point
+> +
+> +struct wb35_adapter {
+> +	u32 adapterIndex; // 20060703.4 Add for using padapterContext global adapter point
+>  
+>  	WB_LOCALDESCRIPT	sLocalPara;		// Myself connected parameters
+>  	PWB_BSSDESCRIPTION	asBSSDescriptElement;
+> @@ -20,4 +20,4 @@ typedef struct WB32_ADAPTER
+>          struct iw_statistics iw_stats;
+>  
+>  	u8	LinkName[MAX_ANSI_STRING];
+> -} WB32_ADAPTER, ADAPTER, *PWB32_ADAPTER, *PADAPTER;
+> +};
+> diff --git a/drivers/staging/winbond/bss_f.h b/drivers/staging/winbond/bss_f.h
+> index 0131831..a7ef3de 100644
+> --- a/drivers/staging/winbond/bss_f.h
+> +++ b/drivers/staging/winbond/bss_f.h
+> @@ -2,54 +2,54 @@
+>  // BSS descriptor DataBase management global function
+>  //
+>  
+> -void vBSSdescriptionInit(PWB32_ADAPTER Adapter);
+> -void vBSSfoundList(PWB32_ADAPTER Adapter);
+> -u8 boChanFilter(PWB32_ADAPTER Adapter, u8 ChanNo);
+> -u16 wBSSallocateEntry(PWB32_ADAPTER Adapter);
+> -u16 wBSSGetEntry(PWB32_ADAPTER Adapter);
+> -void vSimpleHouseKeeping(PWB32_ADAPTER Adapter);
+> -u16 wBSShouseKeeping(PWB32_ADAPTER Adapter);
+> -void ClearBSSdescpt(PWB32_ADAPTER Adapter, u16 i);
+> -u16 wBSSfindBssID(PWB32_ADAPTER Adapter, u8 *pbBssid);
+> -u16 wBSSfindDedicateCandidate(PWB32_ADAPTER Adapter, struct SSID_Element *psSsid, u8 *pbBssid);
+> -u16 wBSSfindMACaddr(PWB32_ADAPTER Adapter, u8 *pbMacAddr);
+> -u16 wBSSsearchMACaddr(PWB32_ADAPTER Adapter, u8 *pbMacAddr, u8 band);
+> -u16 wBSSaddScanData(PWB32_ADAPTER, u16, psRXDATA);
+> -u16 wBSSUpdateScanData(PWB32_ADAPTER Adapter, u16 wBssIdx, psRXDATA psRcvData);
+> -u16 wBSScreateIBSSdata(PWB32_ADAPTER Adapter, PWB_BSSDESCRIPTION psDesData);
+> -void DesiredRate2BSSdescriptor(PWB32_ADAPTER Adapter, PWB_BSSDESCRIPTION psDesData,
+> +void vBSSdescriptionInit(struct wb35_adapter * adapter);
+> +void vBSSfoundList(struct wb35_adapter * adapter);
+> +u8 boChanFilter(struct wb35_adapter * adapter, u8 ChanNo);
+> +u16 wBSSallocateEntry(struct wb35_adapter * adapter);
+> +u16 wBSSGetEntry(struct wb35_adapter * adapter);
+> +void vSimpleHouseKeeping(struct wb35_adapter * adapter);
+> +u16 wBSShouseKeeping(struct wb35_adapter * adapter);
+> +void ClearBSSdescpt(struct wb35_adapter * adapter, u16 i);
+> +u16 wBSSfindBssID(struct wb35_adapter * adapter, u8 *pbBssid);
+> +u16 wBSSfindDedicateCandidate(struct wb35_adapter * adapter, struct SSID_Element *psSsid, u8 *pbBssid);
+> +u16 wBSSfindMACaddr(struct wb35_adapter * adapter, u8 *pbMacAddr);
+> +u16 wBSSsearchMACaddr(struct wb35_adapter * adapter, u8 *pbMacAddr, u8 band);
+> +u16 wBSSaddScanData(struct wb35_adapter *, u16, psRXDATA);
+> +u16 wBSSUpdateScanData(struct wb35_adapter * adapter, u16 wBssIdx, psRXDATA psRcvData);
+> +u16 wBSScreateIBSSdata(struct wb35_adapter * adapter, PWB_BSSDESCRIPTION psDesData);
+> +void DesiredRate2BSSdescriptor(struct wb35_adapter * adapter, PWB_BSSDESCRIPTION psDesData,
+>  							 u8 *pBasicRateSet, u8 BasicRateCount,
+>  							 u8 *pOperationRateSet, u8 OperationRateCount);
+> -void DesiredRate2InfoElement(PWB32_ADAPTER Adapter, u8	*addr, u16 *iFildOffset,
+> +void DesiredRate2InfoElement(struct wb35_adapter * adapter, u8	*addr, u16 *iFildOffset,
+>  							 u8 *pBasicRateSet, u8 BasicRateCount,
+>  							 u8 *pOperationRateSet, u8 OperationRateCount);
+> -void BSSAddIBSSdata(PWB32_ADAPTER Adapter, PWB_BSSDESCRIPTION psDesData);
+> +void BSSAddIBSSdata(struct wb35_adapter * adapter, PWB_BSSDESCRIPTION psDesData);
+>  unsigned char boCmpMacAddr( u8 *, u8 *);
+>  unsigned char boCmpSSID(struct SSID_Element *psSSID1, struct SSID_Element *psSSID2);
+> -u16 wBSSfindSSID(PWB32_ADAPTER Adapter, struct SSID_Element *psSsid);
+> -u16 wRoamingQuery(PWB32_ADAPTER Adapter);
+> -void vRateToBitmap(PWB32_ADAPTER Adapter, u16 index);
+> -u8 bRateToBitmapIndex(PWB32_ADAPTER Adapter, u8 bRate);
+> +u16 wBSSfindSSID(struct wb35_adapter * adapter, struct SSID_Element *psSsid);
+> +u16 wRoamingQuery(struct wb35_adapter * adapter);
+> +void vRateToBitmap(struct wb35_adapter * adapter, u16 index);
+> +u8 bRateToBitmapIndex(struct wb35_adapter * adapter, u8 bRate);
+>  u8 bBitmapToRate(u8 i);
+> -unsigned char boIsERPsta(PWB32_ADAPTER Adapter, u16 i);
+> -unsigned char boCheckConnect(PWB32_ADAPTER Adapter);
+> -unsigned char boCheckSignal(PWB32_ADAPTER Adapter);
+> -void AddIBSSIe(PWB32_ADAPTER Adapter,PWB_BSSDESCRIPTION psDesData );//added by ws for WPA_None06/01/04
+> -void BssScanUpToDate(PWB32_ADAPTER Adapter);
+> -void BssUpToDate(PWB32_ADAPTER Adapter);
+> +unsigned char boIsERPsta(struct wb35_adapter * adapter, u16 i);
+> +unsigned char boCheckConnect(struct wb35_adapter * adapter);
+> +unsigned char boCheckSignal(struct wb35_adapter * adapter);
+> +void AddIBSSIe(struct wb35_adapter * adapter,PWB_BSSDESCRIPTION psDesData );//added by ws for WPA_None06/01/04
+> +void BssScanUpToDate(struct wb35_adapter * adapter);
+> +void BssUpToDate(struct wb35_adapter * adapter);
+>  void RateSort(u8 *RateArray, u8 num, u8 mode);
+> -void RateReSortForSRate(PWB32_ADAPTER Adapter, u8 *RateArray, u8 num);
+> -void Assemble_IE(PWB32_ADAPTER Adapter, u16 wBssIdx);
+> -void SetMaxTxRate(PWB32_ADAPTER Adapter);
+> +void RateReSortForSRate(struct wb35_adapter * adapter, u8 *RateArray, u8 num);
+> +void Assemble_IE(struct wb35_adapter * adapter, u16 wBssIdx);
+> +void SetMaxTxRate(struct wb35_adapter * adapter);
+>  
+> -void CreateWpaIE(PWB32_ADAPTER Adapter, u16* iFildOffset, u8 *msg, struct  Management_Frame* msgHeader,
+> +void CreateWpaIE(struct wb35_adapter * adapter, u16* iFildOffset, u8 *msg, struct  Management_Frame* msgHeader,
+>  				 struct Association_Request_Frame_Body* msgBody, u16 iMSindex); //added by WS 05/14/05
+>  
+>  #ifdef _WPA2_
+> -void CreateRsnIE(PWB32_ADAPTER Adapter, u16* iFildOffset, u8 *msg, struct  Management_Frame* msgHeader,
+> +void CreateRsnIE(struct wb35_adapter * adapter, u16* iFildOffset, u8 *msg, struct  Management_Frame* msgHeader,
+>  				 struct Association_Request_Frame_Body* msgBody, u16 iMSindex);//added by WS 05/14/05
+>  
+> -u16 SearchPmkid(PWB32_ADAPTER Adapter, struct  Management_Frame* msgHeader,
+> +u16 SearchPmkid(struct wb35_adapter * adapter, struct  Management_Frame* msgHeader,
+>  				   struct PMKID_Information_Element * AssoReq_PMKID );
+>  #endif
+>  
+> diff --git a/drivers/staging/winbond/bssdscpt.h b/drivers/staging/winbond/bssdscpt.h
+> index 97150a2..6f557cb 100644
+> --- a/drivers/staging/winbond/bssdscpt.h
+> +++ b/drivers/staging/winbond/bssdscpt.h
+> @@ -78,7 +78,7 @@ typedef struct BSSDescriptionElement
+>      u16		wState;			// the current state of the system
+>  	u16		wIndex;			// THIS BSS element entry index
+>  
+> -	void*	psAdapter;		// pointer to THIS Adapter
+> +	void*	psadapter;		// pointer to THIS adapter
+>  	OS_TIMER	nTimer;  // MLME timer
+>  
+>      // Authentication
+> @@ -148,9 +148,9 @@ typedef struct BSSDescriptionElement
+>  
+>  } WB_BSSDESCRIPTION, *PWB_BSSDESCRIPTION;
+>  
+> -#define wBSSConnectedSTA(Adapter)             \
+> -    ((u16)(Adapter)->sLocalPara.wConnectedSTAindex)
+> +#define wBSSConnectedSTA(adapter)             \
+> +    ((u16)(adapter)->sLocalPara.wConnectedSTAindex)
+>  
+> -#define psBSS(i)			(&(Adapter->asBSSDescriptElement[(i)]))
+> +#define psBSS(i)			(&(adapter->asBSSDescriptElement[(i)]))
+>  
+>  
+> diff --git a/drivers/staging/winbond/ds_tkip.h b/drivers/staging/winbond/ds_tkip.h
+> index 6841d66..6cfe3de 100644
+> --- a/drivers/staging/winbond/ds_tkip.h
+> +++ b/drivers/staging/winbond/ds_tkip.h
+> @@ -26,8 +26,8 @@ typedef struct tkip
+>  } tkip_t;
+>  
+>  //void _append_data( u8 *pData, u16 size, tkip_t *p );
+> -void Mds_MicGet(  void* Adapter,  void* pRxLayer1,  u8 *pKey,  u8 *pMic );
+> -void Mds_MicFill(  void* Adapter,  void* pDes,  u8 *XmitBufAddress );
+> +void Mds_MicGet(  void* adapter,  void* pRxLayer1,  u8 *pKey,  u8 *pMic );
+> +void Mds_MicFill(  void* adapter,  void* pDes,  u8 *XmitBufAddress );
+>  
+>  
+>  
+> diff --git a/drivers/staging/winbond/linux/wb35reg.c b/drivers/staging/winbond/linux/wb35reg.c
+> index b02f4d0..d716c19 100644
+> --- a/drivers/staging/winbond/linux/wb35reg.c
+> +++ b/drivers/staging/winbond/linux/wb35reg.c
+> @@ -386,11 +386,11 @@ Wb35Reg_EP0VM_start(  phw_data_t pHwData )
+>  {
+>  	struct wb35_reg *reg = &pHwData->reg;
+>  
+> -	if (OS_ATOMIC_INC( pHwData->Adapter, &reg->RegFireCount) == 1) {
+> +	if (OS_ATOMIC_INC( pHwData->adapter, &reg->RegFireCount) == 1) {
+>  		reg->EP0vm_state = VM_RUNNING;
+>  		Wb35Reg_EP0VM(pHwData);
+>  	} else
+> -		OS_ATOMIC_DEC( pHwData->Adapter, &reg->RegFireCount );
+> +		OS_ATOMIC_DEC( pHwData->adapter, &reg->RegFireCount );
+>  }
+>  
+>  void
+> @@ -447,7 +447,7 @@ Wb35Reg_EP0VM(phw_data_t pHwData )
+>  
+>   cleanup:
+>  	reg->EP0vm_state = VM_STOP;
+> -	OS_ATOMIC_DEC( pHwData->Adapter, &reg->RegFireCount );
+> +	OS_ATOMIC_DEC( pHwData->adapter, &reg->RegFireCount );
+>  }
+>  
+>  
+> @@ -465,7 +465,7 @@ Wb35Reg_EP0VM_complete(struct urb *urb)
+>  
+>  	if (pHwData->SurpriseRemove) { // Let WbWlanHalt to handle surprise remove
+>  		reg->EP0vm_state = VM_STOP;
+> -		OS_ATOMIC_DEC( pHwData->Adapter, &reg->RegFireCount );
+> +		OS_ATOMIC_DEC( pHwData->adapter, &reg->RegFireCount );
+>  	} else {
+>  		// Complete to send, remove the URB from the first
+>  		spin_lock_irq( &reg->EP0VM_spin_lock );
+> diff --git a/drivers/staging/winbond/linux/wb35rx.c b/drivers/staging/winbond/linux/wb35rx.c
+> index f286019..4fee835 100644
+> --- a/drivers/staging/winbond/linux/wb35rx.c
+> +++ b/drivers/staging/winbond/linux/wb35rx.c
+> @@ -16,11 +16,11 @@ void Wb35Rx_start(phw_data_t pHwData)
+>  	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
+>  
+>  	// Allow only one thread to run into the Wb35Rx() function
+> -	if (OS_ATOMIC_INC(pHwData->Adapter, &pWb35Rx->RxFireCounter) == 1) {
+> +	if (OS_ATOMIC_INC(pHwData->adapter, &pWb35Rx->RxFireCounter) == 1) {
+>  		pWb35Rx->EP3vm_state = VM_RUNNING;
+>  		Wb35Rx(pHwData);
+>  	} else
+> -		OS_ATOMIC_DEC(pHwData->Adapter, &pWb35Rx->RxFireCounter);
+> +		OS_ATOMIC_DEC(pHwData->adapter, &pWb35Rx->RxFireCounter);
+>  }
+>  
+>  // This function cannot reentrain
+> @@ -81,7 +81,7 @@ void Wb35Rx(  phw_data_t pHwData )
+>  error:
+>  	// VM stop
+>  	pWb35Rx->EP3vm_state = VM_STOP;
+> -	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Rx->RxFireCounter );
+> +	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Rx->RxFireCounter );
+>  }
+>  
+>  void Wb35Rx_Complete(struct urb *urb)
+> @@ -156,7 +156,7 @@ void Wb35Rx_Complete(struct urb *urb)
+>  
+>  error:
+>  	pWb35Rx->RxOwner[ RxBufferId ] = 1; // Set the owner to hardware
+> -	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Rx->RxFireCounter );
+> +	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Rx->RxFireCounter );
+>  	pWb35Rx->EP3vm_state = VM_STOP;
+>  }
+>  
+> diff --git a/drivers/staging/winbond/linux/wb35tx.c b/drivers/staging/winbond/linux/wb35tx.c
+> index ba9d512..8de0783 100644
+> --- a/drivers/staging/winbond/linux/wb35tx.c
+> +++ b/drivers/staging/winbond/linux/wb35tx.c
+> @@ -25,20 +25,20 @@ void Wb35Tx_start(phw_data_t pHwData)
+>  	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
+>  
+>  	// Allow only one thread to run into function
+> -	if (OS_ATOMIC_INC(pHwData->Adapter, &pWb35Tx->TxFireCounter) == 1) {
+> +	if (OS_ATOMIC_INC(pHwData->adapter, &pWb35Tx->TxFireCounter) == 1) {
+>  		pWb35Tx->EP4vm_state = VM_RUNNING;
+>  		Wb35Tx(pHwData);
+>  	} else
+> -		OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Tx->TxFireCounter );
+> +		OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxFireCounter );
+>  }
+>  
+>  
+>  void Wb35Tx(phw_data_t pHwData)
+>  {
+>  	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
+> -	PADAPTER	Adapter = pHwData->Adapter;
+> +	struct wb35_adapter *adapter = pHwData->adapter;
+>  	u8		*pTxBufferAddress;
+> -	PMDS		pMds = &Adapter->Mds;
+> +	PMDS		pMds = &adapter->Mds;
+>  	struct urb *	pUrb = (struct urb *)pWb35Tx->Tx4Urb;
+>  	int         	retv;
+>  	u32		SendIndex;
+> @@ -81,16 +81,16 @@ void Wb35Tx(phw_data_t pHwData)
+>  
+>   cleanup:
+>  	pWb35Tx->EP4vm_state = VM_STOP;
+> -	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Tx->TxFireCounter );
+> +	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxFireCounter );
+>  }
+>  
+>  
+>  void Wb35Tx_complete(struct urb * pUrb)
+>  {
+>  	phw_data_t	pHwData = pUrb->context;
+> -	PADAPTER	Adapter = (PADAPTER)pHwData->Adapter;
+> +	struct wb35_adapter *adapter = pHwData->adapter;
+>  	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
+> -	PMDS		pMds = &Adapter->Mds;
+> +	PMDS		pMds = &adapter->Mds;
+>  
+>  	printk("wb35: tx complete\n");
+>  	// Variable setting
+> @@ -113,12 +113,12 @@ void Wb35Tx_complete(struct urb * pUrb)
+>  		goto error;
+>  	}
+>  
+> -	Mds_Tx(Adapter);
+> +	Mds_Tx(adapter);
+>  	Wb35Tx(pHwData);
+>  	return;
+>  
+>  error:
+> -	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Tx->TxFireCounter );
+> +	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxFireCounter );
+>  	pWb35Tx->EP4vm_state = VM_STOP;
+>  }
+>  
+> @@ -211,12 +211,12 @@ void Wb35Tx_EP2VM_start(phw_data_t pHwData)
+>  	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
+>  
+>  	// Allow only one thread to run into function
+> -	if (OS_ATOMIC_INC( pHwData->Adapter, &pWb35Tx->TxResultCount ) == 1) {
+> +	if (OS_ATOMIC_INC( pHwData->adapter, &pWb35Tx->TxResultCount ) == 1) {
+>  		pWb35Tx->EP2vm_state = VM_RUNNING;
+>  		Wb35Tx_EP2VM( pHwData );
+>  	}
+>  	else
+> -		OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Tx->TxResultCount );
+> +		OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxResultCount );
+>  }
+>  
+>  
+> @@ -252,7 +252,7 @@ void Wb35Tx_EP2VM(phw_data_t pHwData)
+>  	return;
+>  error:
+>  	pWb35Tx->EP2vm_state = VM_STOP;
+> -	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Tx->TxResultCount );
+> +	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxResultCount );
+>  }
+>  
+>  
+> @@ -260,7 +260,7 @@ void Wb35Tx_EP2VM_complete(struct urb * pUrb)
+>  {
+>  	phw_data_t	pHwData = pUrb->context;
+>  	T02_DESCRIPTOR	T02, TSTATUS;
+> -	PADAPTER	Adapter = (PADAPTER)pHwData->Adapter;
+> +	struct wb35_adapter *adapter = pHwData->adapter;
+>  	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
+>  	u32 *		pltmp = (u32 *)pWb35Tx->EP2_buf;
+>  	u32		i;
+> @@ -295,13 +295,13 @@ void Wb35Tx_EP2VM_complete(struct urb * pUrb)
+>  		T02.value |= ((cpu_to_le32(pltmp[i]) & 0xff) << 24);
+>  
+>  		TSTATUS.value = T02.value;  //20061009 anson's endian
+> -		Mds_SendComplete( Adapter, &TSTATUS );
+> +		Mds_SendComplete( adapter, &TSTATUS );
+>  		T02.value = cpu_to_le32(pltmp[i]) >> 8;
+>  	}
+>  
+>  	return;
+>  error:
+> -	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Tx->TxResultCount );
+> +	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxResultCount );
+>  	pWb35Tx->EP2vm_state = VM_STOP;
+>  }
+>  
+> diff --git a/drivers/staging/winbond/linux/wbusb.c b/drivers/staging/winbond/linux/wbusb.c
+> index 8f0f923..245021d 100644
+> --- a/drivers/staging/winbond/linux/wbusb.c
+> +++ b/drivers/staging/winbond/linux/wbusb.c
+> @@ -34,7 +34,7 @@ static const struct ieee80211_channel wbsoft_channels[] = {
+>  
+>  int wbsoft_enabled;
+>  struct ieee80211_hw *my_dev;
+> -PADAPTER my_adapter;
+> +struct wb35_adapter * my_adapter;
+>  
+>  static int wbsoft_add_interface(struct ieee80211_hw *dev,
+>  				 struct ieee80211_if_init_conf *conf)
+> @@ -177,7 +177,7 @@ struct wbsoft_priv {
+>  // Usb kernel subsystem will call this function when a new device is plugged into.
+>  int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
+>  {
+> -	PADAPTER	Adapter;
+> +	struct wb35_adapter *adapter;
+>  	PWBLINUX	pWbLinux;
+>  	PWBUSB		pWbUsb;
+>          struct usb_host_interface *interface;
+> @@ -201,11 +201,11 @@ int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
+>  	if (ltmp)  // Is already initialized?
+>  		goto error;
+>  
+> -	Adapter = kzalloc(sizeof(ADAPTER), GFP_KERNEL);
+> +	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
+>  
+> -	my_adapter = Adapter;
+> -	pWbLinux = &Adapter->WbLinux;
+> -	pWbUsb = &Adapter->sHwData.WbUsb;
+> +	my_adapter = adapter;
+> +	pWbLinux = &adapter->WbLinux;
+> +	pWbUsb = &adapter->sHwData.WbUsb;
+>  	pWbUsb->udev = udev;
+>  
+>          interface = intf->cur_altsetting;
+> @@ -216,7 +216,7 @@ int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
+>  		pWbUsb->IsUsb20 = 1;
+>  	}
+>  
+> -	if (!WbWLanInitialize(Adapter)) {
+> +	if (!WbWLanInitialize(adapter)) {
+>  		printk("[w35und]WbWLanInitialize fail\n");
+>  		goto error;
+>  	}
+> @@ -237,7 +237,7 @@ int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
+>  
+>  		SET_IEEE80211_DEV(dev, &udev->dev);
+>  		{
+> -			phw_data_t pHwData = &Adapter->sHwData;
+> +			phw_data_t pHwData = &adapter->sHwData;
+>  			unsigned char		dev_addr[MAX_ADDR_LEN];
+>  			hal_get_permanent_address(pHwData, dev_addr);
+>  			SET_IEEE80211_PERM_ADDR(dev, dev_addr);
+> @@ -275,7 +275,7 @@ int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
+>  		BUG_ON(res);
+>  	}
+>  
+> -	usb_set_intfdata( intf, Adapter );
+> +	usb_set_intfdata( intf, adapter );
+>  
+>  	printk("[w35und] _probe OK\n");
+>  	return 0;
+> @@ -325,8 +325,8 @@ WbUsb_destroy(phw_data_t pHwData)
+>  
+>  int wb35_open(struct net_device *netdev)
+>  {
+> -	PADAPTER Adapter = (PADAPTER)netdev->priv;
+> -	phw_data_t pHwData = &Adapter->sHwData;
+> +	struct wb35_adapter * adapter = (struct wb35_adapter *)netdev->priv;
+> +	phw_data_t pHwData = &adapter->sHwData;
+>  
+>          netif_start_queue(netdev);
+>  
+> @@ -345,13 +345,13 @@ int wb35_close(struct net_device *netdev)
+>  void wb35_disconnect(struct usb_interface *intf)
+>  {
+>  	PWBLINUX pWbLinux;
+> -	PADAPTER Adapter = usb_get_intfdata(intf);
+> +	struct wb35_adapter * adapter = usb_get_intfdata(intf);
+>  	usb_set_intfdata(intf, NULL);
+>  
+> -        pWbLinux = &Adapter->WbLinux;
+> +        pWbLinux = &adapter->WbLinux;
+>  
+>  	// Card remove
+> -	WbWlanHalt(Adapter);
+> +	WbWlanHalt(adapter);
+>  
+>  }
+>  
+> diff --git a/drivers/staging/winbond/linux/wbusb_f.h b/drivers/staging/winbond/linux/wbusb_f.h
+> index cae29e1..0392707 100644
+> --- a/drivers/staging/winbond/linux/wbusb_f.h
+> +++ b/drivers/staging/winbond/linux/wbusb_f.h
+> @@ -15,7 +15,7 @@ int wb35_open(struct net_device *netdev);
+>  int wb35_close(struct net_device *netdev);
+>  unsigned char WbUsb_initial(phw_data_t pHwData);
+>  void WbUsb_destroy(phw_data_t pHwData);
+> -unsigned char WbWLanInitialize(PADAPTER Adapter);
+> +unsigned char WbWLanInitialize(struct wb35_adapter *adapter);
+>  #define	WbUsb_Stop( _A )
+>  
+>  int wb35_probe(struct usb_interface *intf,const struct usb_device_id *id_table);
+> diff --git a/drivers/staging/winbond/localpara.h b/drivers/staging/winbond/localpara.h
+> index 268cf91..087f486 100644
+> --- a/drivers/staging/winbond/localpara.h
+> +++ b/drivers/staging/winbond/localpara.h
+> @@ -25,7 +25,7 @@
+>  #define LOCAL_UNKNOWN_5_CHANNEL_NUM			34	//not include 165
+>  
+>  
+> -#define psLOCAL			(&(Adapter->sLocalPara))
+> +#define psLOCAL			(&(adapter->sLocalPara))
+>  
+>  #define MODE_802_11_BG			0
+>  #define MODE_802_11_A			1
+> diff --git a/drivers/staging/winbond/mds.c b/drivers/staging/winbond/mds.c
+> index 400397c..34e1b23 100644
+> --- a/drivers/staging/winbond/mds.c
+> +++ b/drivers/staging/winbond/mds.c
+> @@ -1,9 +1,9 @@
+>  #include "os_common.h"
+>  
+>  void
+> -Mds_reset_descriptor(PADAPTER Adapter)
+> +Mds_reset_descriptor(struct wb35_adapter * adapter)
+>  {
+> -	PMDS pMds = &Adapter->Mds;
+> +	PMDS pMds = &adapter->Mds;
+>  
+>  	pMds->TxPause = 0;
+>  	pMds->TxThreadCount = 0;
+> @@ -14,30 +14,30 @@ Mds_reset_descriptor(PADAPTER Adapter)
+>  }
+>  
+>  unsigned char
+> -Mds_initial(PADAPTER Adapter)
+> +Mds_initial(struct wb35_adapter * adapter)
+>  {
+> -	PMDS pMds = &Adapter->Mds;
+> +	PMDS pMds = &adapter->Mds;
+>  
+>  	pMds->TxPause = FALSE;
+>  	pMds->TxRTSThreshold = DEFAULT_RTSThreshold;
+>  	pMds->TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
+>  
+> -	vRxTimerInit(Adapter);//for WPA countermeasure
+> +	vRxTimerInit(adapter);//for WPA countermeasure
+>  
+> -	return hal_get_tx_buffer( &Adapter->sHwData, &pMds->pTxBuffer );
+> +	return hal_get_tx_buffer( &adapter->sHwData, &pMds->pTxBuffer );
+>  }
+>  
+>  void
+> -Mds_Destroy(PADAPTER Adapter)
+> +Mds_Destroy(struct wb35_adapter * adapter)
+>  {
+> -	vRxTimerStop(Adapter);
+> +	vRxTimerStop(adapter);
+>  }
+>  
+>  void
+> -Mds_Tx(PADAPTER Adapter)
+> +Mds_Tx(struct wb35_adapter * adapter)
+>  {
+> -	phw_data_t	pHwData = &Adapter->sHwData;
+> -	PMDS		pMds = &Adapter->Mds;
+> +	phw_data_t	pHwData = &adapter->sHwData;
+> +	PMDS		pMds = &adapter->Mds;
+>  	DESCRIPTOR	TxDes;
+>  	PDESCRIPTOR	pTxDes = &TxDes;
+>  	u8		*XmitBufAddress;
+> @@ -52,7 +52,7 @@ Mds_Tx(PADAPTER Adapter)
+>  		return;
+>  
+>  	//Only one thread can be run here
+> -	if (!OS_ATOMIC_INC( Adapter, &pMds->TxThreadCount) == 1)
+> +	if (!OS_ATOMIC_INC( adapter, &pMds->TxThreadCount) == 1)
+>  		goto cleanup;
+>  
+>  	// Start to fill the data
+> @@ -69,7 +69,7 @@ Mds_Tx(PADAPTER Adapter)
+>  		XmitBufSize = 0;
+>  		FillCount = 0;
+>  		do {
+> -			PacketSize = Adapter->sMlmeFrame.len;
+> +			PacketSize = adapter->sMlmeFrame.len;
+>  			if (!PacketSize)
+>  				break;
+>  
+> @@ -98,10 +98,10 @@ Mds_Tx(PADAPTER Adapter)
+>  			pMds->TxDesIndex++;
+>  			pMds->TxDesIndex %= MAX_USB_TX_DESCRIPTOR;
+>  
+> -			MLME_GetNextPacket( Adapter, pTxDes );
+> +			MLME_GetNextPacket( adapter, pTxDes );
+>  
+>  			// Copy header. 8byte USB + 24byte 802.11Hdr. Set TxRate, Preamble type
+> -			Mds_HeaderCopy( Adapter, pTxDes, XmitBufAddress );
+> +			Mds_HeaderCopy( adapter, pTxDes, XmitBufAddress );
+>  
+>  			// For speed up Key setting
+>  			if (pTxDes->EapFix) {
+> @@ -112,16 +112,16 @@ Mds_Tx(PADAPTER Adapter)
+>  			}
+>  
+>  			// Copy (fragment) frame body, and set USB, 802.11 hdr flag
+> -			CurrentSize = Mds_BodyCopy(Adapter, pTxDes, XmitBufAddress);
+> +			CurrentSize = Mds_BodyCopy(adapter, pTxDes, XmitBufAddress);
+>  
+>  			// Set RTS/CTS and Normal duration field into buffer
+> -			Mds_DurationSet(Adapter, pTxDes, XmitBufAddress);
+> +			Mds_DurationSet(adapter, pTxDes, XmitBufAddress);
+>  
+>  			//
+>  			// Calculation MIC from buffer which maybe fragment, then fill into temporary address 8 byte
+>  			// 931130.5.e
+>  			if (MICAdd)
+> -				Mds_MicFill( Adapter, pTxDes, XmitBufAddress );
+> +				Mds_MicFill( adapter, pTxDes, XmitBufAddress );
+>  
+>  			//Shift to the next address
+>  			XmitBufSize += CurrentSize;
+> @@ -133,7 +133,7 @@ Mds_Tx(PADAPTER Adapter)
+>  				pMds->TxToggle = TRUE;
+>  
+>  			// Get packet to transmit completed, 1:TESTSTA 2:MLME 3: Ndis data
+> -			MLME_SendComplete(Adapter, 0, TRUE);
+> +			MLME_SendComplete(adapter, 0, TRUE);
+>  
+>  			// Software TSC count 20060214
+>  			pMds->TxTsc++;
+> @@ -172,14 +172,14 @@ Mds_Tx(PADAPTER Adapter)
+>  		Wb35Tx_start(pHwData);
+>  
+>   cleanup:
+> -	OS_ATOMIC_DEC( Adapter, &pMds->TxThreadCount );
+> +	OS_ATOMIC_DEC( adapter, &pMds->TxThreadCount );
+>  }
+>  
+>  void
+> -Mds_SendComplete(PADAPTER Adapter, PT02_DESCRIPTOR pT02)
+> +Mds_SendComplete(struct wb35_adapter * adapter, PT02_DESCRIPTOR pT02)
+>  {
+> -	PMDS	pMds = &Adapter->Mds;
+> -	phw_data_t	pHwData = &Adapter->sHwData;
+> +	PMDS	pMds = &adapter->Mds;
+> +	phw_data_t	pHwData = &adapter->sHwData;
+>  	u8	PacketId = (u8)pT02->T02_Tx_PktID;
+>  	unsigned char	SendOK = TRUE;
+>  	u8	RetryCount, TxRate;
+> @@ -205,7 +205,7 @@ Mds_SendComplete(PADAPTER Adapter, PT02_DESCRIPTOR pT02)
+>  				#ifdef _PE_STATE_DUMP_
+>  				WBDEBUG(("dto_tx_retry_count =%d\n", pHwData->dto_tx_retry_count));
+>  				#endif
+> -				MTO_SetTxCount(Adapter, TxRate, RetryCount);
+> +				MTO_SetTxCount(adapter, TxRate, RetryCount);
+>  			}
+>  			pHwData->dto_tx_frag_count += (RetryCount+1);
+>  
+> @@ -219,7 +219,7 @@ Mds_SendComplete(PADAPTER Adapter, PT02_DESCRIPTOR pT02)
+>  		} else {
+>  			if (pT02->T02_effective_transmission_rate)
+>  				pHwData->tx_ETR_count++;
+> -			MTO_SetTxCount(Adapter, TxRate, RetryCount);
+> +			MTO_SetTxCount(adapter, TxRate, RetryCount);
+>  		}
+>  
+>  		// Clear send result buffer
+> @@ -229,9 +229,9 @@ Mds_SendComplete(PADAPTER Adapter, PT02_DESCRIPTOR pT02)
+>  }
+>  
+>  void
+> -Mds_HeaderCopy(PADAPTER Adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
+> +Mds_HeaderCopy(struct wb35_adapter * adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
+>  {
+> -	PMDS	pMds = &Adapter->Mds;
+> +	PMDS	pMds = &adapter->Mds;
+>  	u8	*src_buffer = pDes->buffer_address[0];//931130.5.g
+>  	PT00_DESCRIPTOR	pT00;
+>  	PT01_DESCRIPTOR	pT01;
+> @@ -326,10 +326,10 @@ Mds_HeaderCopy(PADAPTER Adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
+>  
+>  // The function return the 4n size of usb pk
+>  u16
+> -Mds_BodyCopy(PADAPTER Adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
+> +Mds_BodyCopy(struct wb35_adapter * adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
+>  {
+>  	PT00_DESCRIPTOR	pT00;
+> -	PMDS	pMds = &Adapter->Mds;
+> +	PMDS	pMds = &adapter->Mds;
+>  	u8	*buffer;
+>  	u8	*src_buffer;
+>  	u8	*pctmp;
+> @@ -429,7 +429,7 @@ Mds_BodyCopy(PADAPTER Adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
+>  
+>  
+>  void
+> -Mds_DurationSet(  PADAPTER Adapter,  PDESCRIPTOR pDes,  u8 *buffer )
+> +Mds_DurationSet(  struct wb35_adapter * adapter,  PDESCRIPTOR pDes,  u8 *buffer )
+>  {
+>  	PT00_DESCRIPTOR	pT00;
+>  	PT01_DESCRIPTOR	pT01;
+> @@ -624,9 +624,9 @@ Mds_DurationSet(  PADAPTER Adapter,  PDESCRIPTOR pDes,  u8 *buffer )
+>  
+>  }
+>  
+> -void MDS_EthernetPacketReceive(  PADAPTER Adapter,  PRXLAYER1 pRxLayer1 )
+> +void MDS_EthernetPacketReceive(  struct wb35_adapter * adapter,  PRXLAYER1 pRxLayer1 )
+>  {
+> -		OS_RECEIVE_PACKET_INDICATE( Adapter, pRxLayer1 );
+> +		OS_RECEIVE_PACKET_INDICATE( adapter, pRxLayer1 );
+>  }
+>  
+>  
+> diff --git a/drivers/staging/winbond/mds_f.h b/drivers/staging/winbond/mds_f.h
+> index 7a682d4..0733b9f 100644
+> --- a/drivers/staging/winbond/mds_f.h
+> +++ b/drivers/staging/winbond/mds_f.h
+> @@ -1,33 +1,33 @@
+> -unsigned char Mds_initial(  PADAPTER Adapter );
+> -void Mds_Destroy(  PADAPTER Adapter );
+> -void Mds_Tx(  PADAPTER Adapter );
+> -void Mds_HeaderCopy(  PADAPTER Adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
+> -u16 Mds_BodyCopy(  PADAPTER Adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
+> -void Mds_DurationSet(  PADAPTER Adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
+> -void Mds_SendComplete(  PADAPTER Adapter,  PT02_DESCRIPTOR pT02 );
+> -void Mds_MpduProcess(  PADAPTER Adapter,  PDESCRIPTOR pRxDes );
+> -void Mds_reset_descriptor(  PADAPTER Adapter );
+> +unsigned char Mds_initial(  struct wb35_adapter *adapter );
+> +void Mds_Destroy(  struct wb35_adapter *adapter );
+> +void Mds_Tx(  struct wb35_adapter *adapter );
+> +void Mds_HeaderCopy(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
+> +u16 Mds_BodyCopy(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
+> +void Mds_DurationSet(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
+> +void Mds_SendComplete(  struct wb35_adapter *adapter,  PT02_DESCRIPTOR pT02 );
+> +void Mds_MpduProcess(  struct wb35_adapter *adapter,  PDESCRIPTOR pRxDes );
+> +void Mds_reset_descriptor(  struct wb35_adapter *adapter );
+>  extern void DataDmp(u8 *pdata, u32 len, u32 offset);
+>  
+>  
+> -void vRxTimerInit(PWB32_ADAPTER Adapter);
+> -void vRxTimerStart(PWB32_ADAPTER Adapter, int timeout_value);
+> -void RxTimerHandler_1a( PADAPTER Adapter);
+> -void vRxTimerStop(PWB32_ADAPTER Adapter);
+> +void vRxTimerInit(struct wb35_adapter *adapter);
+> +void vRxTimerStart(struct wb35_adapter *adapter, int timeout_value);
+> +void RxTimerHandler_1a( struct wb35_adapter *adapter);
+> +void vRxTimerStop(struct wb35_adapter *adapter);
+>  void RxTimerHandler( void*			SystemSpecific1,
+> -					   PWB32_ADAPTER 	Adapter,
+> +					   struct wb35_adapter * 	adapter,
+>  					   void*			SystemSpecific2,
+>  					   void*			SystemSpecific3);
+>  
+>  
+>  // For Asynchronous indicating. The routine collocates with USB.
+> -void Mds_MsduProcess(  PWB32_ADAPTER Adapter,  PRXLAYER1 pRxLayer1,  u8 SlotIndex);
+> +void Mds_MsduProcess(  struct wb35_adapter *adapter,  PRXLAYER1 pRxLayer1,  u8 SlotIndex);
+>  
+>  // For data frame sending 20060802
+> -u16 MDS_GetPacketSize(  PADAPTER Adapter );
+> -void MDS_GetNextPacket(  PADAPTER Adapter,  PDESCRIPTOR pDes );
+> -void MDS_GetNextPacketComplete(  PADAPTER Adapter,  PDESCRIPTOR pDes );
+> -void MDS_SendResult(  PADAPTER Adapter,  u8 PacketId,  unsigned char SendOK );
+> -void MDS_EthernetPacketReceive(  PADAPTER Adapter,  PRXLAYER1 pRxLayer1 );
+> +u16 MDS_GetPacketSize(  struct wb35_adapter *adapter );
+> +void MDS_GetNextPacket(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes );
+> +void MDS_GetNextPacketComplete(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes );
+> +void MDS_SendResult(  struct wb35_adapter *adapter,  u8 PacketId,  unsigned char SendOK );
+> +void MDS_EthernetPacketReceive(  struct wb35_adapter *adapter,  PRXLAYER1 pRxLayer1 );
+>  
+>  
+> diff --git a/drivers/staging/winbond/mds_s.h b/drivers/staging/winbond/mds_s.h
+> index 9df2e09..283945c 100644
+> --- a/drivers/staging/winbond/mds_s.h
+> +++ b/drivers/staging/winbond/mds_s.h
+> @@ -21,20 +21,20 @@
+>  #define CURRENT_PAIRWISE_KEY			psSME->tx_mic_key
+>  #define CURRENT_GROUP_KEY				psSME->group_tx_mic_key
+>  #define CURRENT_ENCRYPT_STATUS			psSME->encrypt_status
+> -#define CURRENT_WEP_ID					Adapter->sSmePara._dot11WEPDefaultKeyID
+> -#define CURRENT_CONTROL_PORT_BLOCK		( psSME->wpa_ok!=1 || (Adapter->Mds.boCounterMeasureBlock==1 && (CURRENT_ENCRYPT_STATUS==ENCRYPT_TKIP)) )
+> -#define CURRENT_FRAGMENT_THRESHOLD		(Adapter->Mds.TxFragmentThreshold & ~0x1)
+> +#define CURRENT_WEP_ID					adapter->sSmePara._dot11WEPDefaultKeyID
+> +#define CURRENT_CONTROL_PORT_BLOCK		( psSME->wpa_ok!=1 || (adapter->Mds.boCounterMeasureBlock==1 && (CURRENT_ENCRYPT_STATUS==ENCRYPT_TKIP)) )
+> +#define CURRENT_FRAGMENT_THRESHOLD		(adapter->Mds.TxFragmentThreshold & ~0x1)
+>  #define CURRENT_PREAMBLE_MODE			psLOCAL->boShortPreamble?WLAN_PREAMBLE_TYPE_SHORT:WLAN_PREAMBLE_TYPE_LONG
+>  #define CURRENT_LINK_ON					OS_LINK_STATUS
+> -#define CURRENT_TX_RATE					Adapter->sLocalPara.CurrentTxRate
+> -#define CURRENT_FALL_BACK_TX_RATE		Adapter->sLocalPara.CurrentTxFallbackRate
+> -#define CURRENT_TX_RATE_FOR_MNG			Adapter->sLocalPara.CurrentTxRateForMng
+> +#define CURRENT_TX_RATE					adapter->sLocalPara.CurrentTxRate
+> +#define CURRENT_FALL_BACK_TX_RATE		adapter->sLocalPara.CurrentTxFallbackRate
+> +#define CURRENT_TX_RATE_FOR_MNG			adapter->sLocalPara.CurrentTxRateForMng
+>  #define CURRENT_PROTECT_MECHANISM		psLOCAL->boProtectMechanism
+> -#define CURRENT_RTS_THRESHOLD			Adapter->Mds.TxRTSThreshold
+> +#define CURRENT_RTS_THRESHOLD			adapter->Mds.TxRTSThreshold
+>  
+> -#define MIB_GS_XMIT_OK_INC				Adapter->sLocalPara.GS_XMIT_OK++
+> -#define MIB_GS_RCV_OK_INC				Adapter->sLocalPara.GS_RCV_OK++
+> -#define MIB_GS_XMIT_ERROR_INC			Adapter->sLocalPara.GS_XMIT_ERROR
+> +#define MIB_GS_XMIT_OK_INC				adapter->sLocalPara.GS_XMIT_OK++
+> +#define MIB_GS_RCV_OK_INC				adapter->sLocalPara.GS_RCV_OK++
+> +#define MIB_GS_XMIT_ERROR_INC			adapter->sLocalPara.GS_XMIT_ERROR
+>  
+>  //---------- TX -----------------------------------
+>  #define ETHERNET_TX_DESCRIPTORS         MAX_USB_TX_BUFFER_NUMBER
+> diff --git a/drivers/staging/winbond/mlme_mib.h b/drivers/staging/winbond/mlme_mib.h
+> index 8975973..ca8922e 100644
+> --- a/drivers/staging/winbond/mlme_mib.h
+> +++ b/drivers/staging/winbond/mlme_mib.h
+> @@ -22,15 +22,15 @@
+>  //   Set the dot11ExcludeUnencrypted value.
+>  //
+>  // Arguments:
+> -//   Adapter        - The pointer to the miniport adapter context.
+> +//   adapter        - The pointer to the miniport adapter context.
+>  //   ExUnencrypted  - unsigned char type. The value to be set.
+>  //
+>  // Return values:
+>  //   None.
+>  //============================================================================
+> -#define MLMESetExcludeUnencrypted(Adapter, ExUnencrypted)     \
+> +#define MLMESetExcludeUnencrypted(adapter, ExUnencrypted)     \
+>  {                                                              \
+> -    (Adapter)->sLocalPara.ExcludeUnencrypted = ExUnencrypted;             \
+> +    (adapter)->sLocalPara.ExcludeUnencrypted = ExUnencrypted;             \
+>  }
+>  
+>  //============================================================================
+> @@ -40,12 +40,12 @@
+>  //   Get the dot11ExcludeUnencrypted value.
+>  //
+>  // Arguments:
+> -//   Adapter        - The pointer to the miniport adapter context.
+> +//   adapter        - The pointer to the miniport adapter context.
+>  //
+>  // Return values:
+>  //   unsigned char type. The current dot11ExcludeUnencrypted value.
+>  //============================================================================
+> -#define MLMEGetExcludeUnencrypted(Adapter) ((unsigned char) (Adapter)->sLocalPara.ExcludeUnencrypted)
+> +#define MLMEGetExcludeUnencrypted(adapter) ((unsigned char) (adapter)->sLocalPara.ExcludeUnencrypted)
+>  
+>  //============================================================================
+>  // MLMESetMaxReceiveLifeTime --
+> @@ -54,15 +54,15 @@
+>  //   Set the dot11MaxReceiveLifeTime value.
+>  //
+>  // Arguments:
+> -//   Adapter        - The pointer to the miniport adapter context.
+> +//   adapter        - The pointer to the miniport adapter context.
+>  //   ReceiveLifeTime- u32 type. The value to be set.
+>  //
+>  // Return values:
+>  //   None.
+>  //============================================================================
+> -#define MLMESetMaxReceiveLifeTime(Adapter, ReceiveLifeTime)    \
+> +#define MLMESetMaxReceiveLifeTime(adapter, ReceiveLifeTime)    \
+>  {                                                               \
+> -    (Adapter)->Mds.MaxReceiveTime = ReceiveLifeTime;                \
+> +    (adapter)->Mds.MaxReceiveTime = ReceiveLifeTime;                \
+>  }
+>  
+>  //============================================================================
+> @@ -72,12 +72,12 @@
+>  //   Get the dot11MaxReceiveLifeTime value.
+>  //
+>  // Arguments:
+> -//   Adapter        - The pointer to the miniport adapter context.
+> +//   adapter        - The pointer to the miniport adapter context.
+>  //
+>  // Return values:
+>  //   u32 type. The current dot11MaxReceiveLifeTime value.
+>  //============================================================================
+> -#define MLMEGetMaxReceiveLifeTime(Adapter) ((u32) (Adapter)->Mds.MaxReceiveTime)
+> +#define MLMEGetMaxReceiveLifeTime(adapter) ((u32) (adapter)->Mds.MaxReceiveTime)
+>  
+>  #endif
+>  
+> diff --git a/drivers/staging/winbond/mlmetxrx.c b/drivers/staging/winbond/mlmetxrx.c
+> index e8533b8..341e4b2 100644
+> --- a/drivers/staging/winbond/mlmetxrx.c
+> +++ b/drivers/staging/winbond/mlmetxrx.c
+> @@ -17,23 +17,23 @@
+>  //============================================================================
+>  #include "os_common.h"
+>  
+> -void MLMEResetTxRx(PWB32_ADAPTER Adapter)
+> +void MLMEResetTxRx(struct wb35_adapter * adapter)
+>  {
+>  	s32     i;
+>  
+>  	// Reset the interface between MDS and MLME
+>  	for (i = 0; i < MAX_NUM_TX_MMPDU; i++)
+> -		Adapter->sMlmeFrame.TxMMPDUInUse[i] = FALSE;
+> +		adapter->sMlmeFrame.TxMMPDUInUse[i] = FALSE;
+>  	for (i = 0; i < MAX_NUM_RX_MMPDU; i++)
+> -		Adapter->sMlmeFrame.SaveRxBufSlotInUse[i] = FALSE;
+> -
+> -	Adapter->sMlmeFrame.wNumRxMMPDUInMLME   = 0;
+> -	Adapter->sMlmeFrame.wNumRxMMPDUDiscarded = 0;
+> -	Adapter->sMlmeFrame.wNumRxMMPDU          = 0;
+> -	Adapter->sMlmeFrame.wNumTxMMPDUDiscarded = 0;
+> -	Adapter->sMlmeFrame.wNumTxMMPDU          = 0;
+> -	Adapter->sLocalPara.boCCAbusy    = FALSE;
+> -	Adapter->sLocalPara.iPowerSaveMode     = PWR_ACTIVE;     // Power active
+> +		adapter->sMlmeFrame.SaveRxBufSlotInUse[i] = FALSE;
+> +
+> +	adapter->sMlmeFrame.wNumRxMMPDUInMLME   = 0;
+> +	adapter->sMlmeFrame.wNumRxMMPDUDiscarded = 0;
+> +	adapter->sMlmeFrame.wNumRxMMPDU          = 0;
+> +	adapter->sMlmeFrame.wNumTxMMPDUDiscarded = 0;
+> +	adapter->sMlmeFrame.wNumTxMMPDU          = 0;
+> +	adapter->sLocalPara.boCCAbusy    = FALSE;
+> +	adapter->sLocalPara.iPowerSaveMode     = PWR_ACTIVE;     // Power active
+>  }
+>  
+>  //=============================================================================
+> @@ -45,7 +45,7 @@ void MLMEResetTxRx(PWB32_ADAPTER Adapter)
+>  //    the size MAX_MMPDU_SIZE for a MMPDU.
+>  //
+>  //  Arguments:
+> -//    Adapter   - pointer to the miniport adapter context.
+> +//    adapter   - pointer to the miniport adapter context.
+>  //
+>  //	Return value:
+>  //    NULL     : No available data buffer available
+> @@ -53,51 +53,51 @@ void MLMEResetTxRx(PWB32_ADAPTER Adapter)
+>  //=============================================================================
+>  
+>  /* FIXME: Should this just be replaced with kmalloc() and kfree()? */
+> -u8 *MLMEGetMMPDUBuffer(PWB32_ADAPTER Adapter)
+> +u8 *MLMEGetMMPDUBuffer(struct wb35_adapter * adapter)
+>  {
+>  	s32 i;
+>  	u8 *returnVal;
+>  
+>  	for (i = 0; i< MAX_NUM_TX_MMPDU; i++) {
+> -		if (Adapter->sMlmeFrame.TxMMPDUInUse[i] == FALSE)
+> +		if (adapter->sMlmeFrame.TxMMPDUInUse[i] == FALSE)
+>  			break;
+>  	}
+>  	if (i >= MAX_NUM_TX_MMPDU) return NULL;
+>  
+> -	returnVal = (u8 *)&(Adapter->sMlmeFrame.TxMMPDU[i]);
+> -	Adapter->sMlmeFrame.TxMMPDUInUse[i] = TRUE;
+> +	returnVal = (u8 *)&(adapter->sMlmeFrame.TxMMPDU[i]);
+> +	adapter->sMlmeFrame.TxMMPDUInUse[i] = TRUE;
+>  
+>  	return returnVal;
+>  }
+>  
+>  //=============================================================================
+> -u8 MLMESendFrame(PWB32_ADAPTER Adapter, u8 *pMMPDU, u16 len, u8 DataType)
+> +u8 MLMESendFrame(struct wb35_adapter * adapter, u8 *pMMPDU, u16 len, u8 DataType)
+>  /*	DataType : FRAME_TYPE_802_11_MANAGEMENT, FRAME_TYPE_802_11_MANAGEMENT_CHALLENGE,
+>  				FRAME_TYPE_802_11_DATA */
+>  {
+> -	if (Adapter->sMlmeFrame.IsInUsed != PACKET_FREE_TO_USE) {
+> -		Adapter->sMlmeFrame.wNumTxMMPDUDiscarded++;
+> +	if (adapter->sMlmeFrame.IsInUsed != PACKET_FREE_TO_USE) {
+> +		adapter->sMlmeFrame.wNumTxMMPDUDiscarded++;
+>  		return FALSE;
+>  	}
+> -	Adapter->sMlmeFrame.IsInUsed = PACKET_COME_FROM_MLME;
+> +	adapter->sMlmeFrame.IsInUsed = PACKET_COME_FROM_MLME;
+>  
+>  	// Keep information for sending
+> -	Adapter->sMlmeFrame.pMMPDU = pMMPDU;
+> -	Adapter->sMlmeFrame.DataType = DataType;
+> +	adapter->sMlmeFrame.pMMPDU = pMMPDU;
+> +	adapter->sMlmeFrame.DataType = DataType;
+>  	// len must be the last setting due to QUERY_SIZE_SECOND of Mds
+> -	Adapter->sMlmeFrame.len = len;
+> -	Adapter->sMlmeFrame.wNumTxMMPDU++;
+> +	adapter->sMlmeFrame.len = len;
+> +	adapter->sMlmeFrame.wNumTxMMPDU++;
+>  
+>  	// H/W will enter power save by set the register. S/W don't send null frame
+>  	//with PWRMgt bit enbled to enter power save now.
+>  
+>  	// Transmit NDIS packet
+> -	Mds_Tx(Adapter);
+> +	Mds_Tx(adapter);
+>  	return TRUE;
+>  }
+>  
+>  void
+> -MLME_GetNextPacket(PADAPTER Adapter, PDESCRIPTOR pDes)
+> +MLME_GetNextPacket(struct wb35_adapter * adapter, PDESCRIPTOR pDes)
+>  {
+>  #define DESCRIPTOR_ADD_BUFFER( _D, _A, _S ) \
+>  {\
+> @@ -109,21 +109,21 @@ MLME_GetNextPacket(PADAPTER Adapter, PDESCRIPTOR pDes)
+>  	_D->buffer_number++;\
+>  }
+>  
+> -	DESCRIPTOR_ADD_BUFFER( pDes, Adapter->sMlmeFrame.pMMPDU, Adapter->sMlmeFrame.len );
+> -	pDes->Type = Adapter->sMlmeFrame.DataType;
+> +	DESCRIPTOR_ADD_BUFFER( pDes, adapter->sMlmeFrame.pMMPDU, adapter->sMlmeFrame.len );
+> +	pDes->Type = adapter->sMlmeFrame.DataType;
+>  }
+>  
+> -void MLMEfreeMMPDUBuffer(PWB32_ADAPTER Adapter, s8 *pData)
+> +void MLMEfreeMMPDUBuffer(struct wb35_adapter * adapter, s8 *pData)
+>  {
+>  	int i;
+>  
+>  	// Reclaim the data buffer
+>  	for (i = 0; i < MAX_NUM_TX_MMPDU; i++) {
+> -		if (pData == (s8 *)&(Adapter->sMlmeFrame.TxMMPDU[i]))
+> +		if (pData == (s8 *)&(adapter->sMlmeFrame.TxMMPDU[i]))
+>  			break;
+>  	}
+> -	if (Adapter->sMlmeFrame.TxMMPDUInUse[i])
+> -		Adapter->sMlmeFrame.TxMMPDUInUse[i] = FALSE;
+> +	if (adapter->sMlmeFrame.TxMMPDUInUse[i])
+> +		adapter->sMlmeFrame.TxMMPDUInUse[i] = FALSE;
+>  	else  {
+>  		// Something wrong
+>  		// PD43 Add debug code here???
+> @@ -131,19 +131,19 @@ void MLMEfreeMMPDUBuffer(PWB32_ADAPTER Adapter, s8 *pData)
+>  }
+>  
+>  void
+> -MLME_SendComplete(PADAPTER Adapter, u8 PacketID, unsigned char SendOK)
+> +MLME_SendComplete(struct wb35_adapter * adapter, u8 PacketID, unsigned char SendOK)
+>  {
+>  	MLME_TXCALLBACK	TxCallback;
+>  
+>      // Reclaim the data buffer
+> -	Adapter->sMlmeFrame.len = 0;
+> -	MLMEfreeMMPDUBuffer( Adapter, Adapter->sMlmeFrame.pMMPDU );
+> +	adapter->sMlmeFrame.len = 0;
+> +	MLMEfreeMMPDUBuffer( adapter, adapter->sMlmeFrame.pMMPDU );
+>  
+>  
+>  	TxCallback.bResult = MLME_SUCCESS;
+>  
+>  	// Return resource
+> -	Adapter->sMlmeFrame.IsInUsed = PACKET_FREE_TO_USE;
+> +	adapter->sMlmeFrame.IsInUsed = PACKET_FREE_TO_USE;
+>  }
+>  
+>  
+> diff --git a/drivers/staging/winbond/mlmetxrx_f.h b/drivers/staging/winbond/mlmetxrx_f.h
+> index 24cd5f3..5f108d8 100644
+> --- a/drivers/staging/winbond/mlmetxrx_f.h
+> +++ b/drivers/staging/winbond/mlmetxrx_f.h
+> @@ -10,30 +10,30 @@
+>  
+>  void
+>  MLMEProcThread(
+> -     PWB32_ADAPTER    Adapter
+> +     struct wb35_adapter *    adapter
+>  	);
+>  
+> -void MLMEResetTxRx( PWB32_ADAPTER Adapter);
+> +void MLMEResetTxRx( struct wb35_adapter * adapter);
+>  
+>  u8 *
+>  MLMEGetMMPDUBuffer(
+> -     PWB32_ADAPTER    Adapter
+> +     struct wb35_adapter *    adapter
+>     );
+>  
+> -void MLMEfreeMMPDUBuffer( PWB32_ADAPTER Adapter,  s8 * pData);
+> +void MLMEfreeMMPDUBuffer( struct wb35_adapter * adapter,  s8 * pData);
+>  
+> -void MLME_GetNextPacket(  PADAPTER Adapter,  PDESCRIPTOR pDes );
+> -u8 MLMESendFrame( PWB32_ADAPTER Adapter,
+> +void MLME_GetNextPacket(  struct wb35_adapter * adapter,  PDESCRIPTOR pDes );
+> +u8 MLMESendFrame( struct wb35_adapter * adapter,
+>  					u8	*pMMPDU,
+>  					u16	len,
+>  					 u8	DataType);
+>  
+>  void
+> -MLME_SendComplete(  PWB32_ADAPTER Adapter,  u8 PacketID,  unsigned char SendOK );
+> +MLME_SendComplete(  struct wb35_adapter * adapter,  u8 PacketID,  unsigned char SendOK );
+>  
+>  void
+>  MLMERcvFrame(
+> -     PWB32_ADAPTER    Adapter,
+> +     struct wb35_adapter *    adapter,
+>       PRXBUFFER        pRxBufferArray,
+>       u8            NumOfBuffer,
+>       u8            ReturnSlotIndex
+> @@ -41,11 +41,11 @@ MLMERcvFrame(
+>  
+>  void
+>  MLMEReturnPacket(
+> -     PWB32_ADAPTER    Adapter,
+> +     struct wb35_adapter *    adapter,
+>       u8 *          pRxBufer
+>     );
+>  #ifdef _IBSS_BEACON_SEQ_STICK_
+> -s8 SendBCNullData(PWB32_ADAPTER Adapter, u16 wIdx);
+> +s8 SendBCNullData(struct wb35_adapter * adapter, u16 wIdx);
+>  #endif
+>  
+>  #endif
+> diff --git a/drivers/staging/winbond/mto.c b/drivers/staging/winbond/mto.c
+> index 2ef60e5..70d2a50 100644
+> --- a/drivers/staging/winbond/mto.c
+> +++ b/drivers/staging/winbond/mto.c
+> @@ -353,7 +353,7 @@ void MTO_SetDTORateRange(MTO_FUNC_INPUT,u8 *pRateArray, u8 ArraySize)
+>  //    This function should be invoked during system initialization.
+>  //
+>  //  Arguments:
+> -//    Adapter      - The pointer to the Miniport Adapter Context
+> +//    adapter      - The pointer to the Miniport adapter Context
+>  //
+>  //  Return Value:
+>  //    None
+> @@ -393,8 +393,8 @@ void MTO_Init(MTO_FUNC_INPUT)
+>      MTO_SQ_ANT(0)       = 0;
+>      MTO_SQ_ANT(1)       = 0;
+>      MTO_ANT_DIVERSITY() = MTO_ANTENNA_DIVERSITY_ON;
+> -    //CardSet_AntennaDiversity(Adapter, MTO_ANT_DIVERSITY());
+> -    //PLMESetAntennaDiversity( Adapter, MTO_ANT_DIVERSITY());
+> +    //CardSet_AntennaDiversity(adapter, MTO_ANT_DIVERSITY());
+> +    //PLMESetAntennaDiversity( adapter, MTO_ANT_DIVERSITY());
+>  
+>      MTO_AGING_TIMEOUT() = 0;//MTO_TMR_AGING() / MTO_TMR_PERIODIC();
+>  
+> @@ -1210,7 +1210,7 @@ u8 MTO_GetTxFallbackRate(MTO_FUNC_INPUT)
+>  //    to transmit a packet or when MSDULifeTime expired.
+>  //
+>  //  Arguments:
+> -//    Adapter      - The pointer to the Miniport Adapter Context
+> +//    adapter      - The pointer to the Miniport adapter Context
+>  //
+>  //  Return Value:
+>  //    None
+> diff --git a/drivers/staging/winbond/mto.h b/drivers/staging/winbond/mto.h
+> index f47936f..4ed15b0 100644
+> --- a/drivers/staging/winbond/mto.h
+> +++ b/drivers/staging/winbond/mto.h
+> @@ -129,17 +129,17 @@ typedef struct _MTO_PARAMETERS
+>  } MTO_PARAMETERS, *PMTO_PARAMETERS;
+>  
+>  
+> -#define MTO_FUNC_INPUT              PWB32_ADAPTER	Adapter
+> -#define MTO_FUNC_INPUT_DATA         Adapter
+> -#define MTO_DATA()                  (Adapter->sMtoPara)
+> -#define MTO_HAL()                   (&Adapter->sHwData)
+> +#define MTO_FUNC_INPUT              struct wb35_adapter *	adapter
+> +#define MTO_FUNC_INPUT_DATA         adapter
+> +#define MTO_DATA()                  (adapter->sMtoPara)
+> +#define MTO_HAL()                   (&adapter->sHwData)
+>  #define MTO_SET_PREAMBLE_TYPE(x)    // 20040511 Turbo mark LM_PREAMBLE_TYPE(&pcore_data->lm_data) = (x)
+> -#define MTO_ENABLE					(Adapter->sLocalPara.TxRateMode == RATE_AUTO)
+> -#define MTO_TXPOWER_FROM_EEPROM		(Adapter->sHwData.PowerIndexFromEEPROM)
+> -#define LOCAL_ANTENNA_NO()			(Adapter->sLocalPara.bAntennaNo)
+> -#define LOCAL_IS_CONNECTED()		(Adapter->sLocalPara.wConnectedSTAindex != 0)
+> -#define LOCAL_IS_IBSS_MODE()		(Adapter->asBSSDescriptElement[Adapter->sLocalPara.wConnectedSTAindex].bBssType == IBSS_NET)
+> -#define MTO_INITTXRATE_MODE			(Adapter->sHwData.SoftwareSet&0x2)	//bit 1
+> +#define MTO_ENABLE					(adapter->sLocalPara.TxRateMode == RATE_AUTO)
+> +#define MTO_TXPOWER_FROM_EEPROM		(adapter->sHwData.PowerIndexFromEEPROM)
+> +#define LOCAL_ANTENNA_NO()			(adapter->sLocalPara.bAntennaNo)
+> +#define LOCAL_IS_CONNECTED()		(adapter->sLocalPara.wConnectedSTAindex != 0)
+> +#define LOCAL_IS_IBSS_MODE()		(adapter->asBSSDescriptElement[adapter->sLocalPara.wConnectedSTAindex].bBssType == IBSS_NET)
+> +#define MTO_INITTXRATE_MODE			(adapter->sHwData.SoftwareSet&0x2)	//bit 1
+>  // 20040510 Turbo add
+>  #define MTO_TMR_CNT()               MTO_DATA().TmrCnt
+>  #define MTO_TOGGLE_STATE()          MTO_DATA().ToggleState
+> @@ -157,7 +157,7 @@ typedef struct _MTO_PARAMETERS
+>  #define MTO_TMR_PERIODIC()          MTO_DATA().Tmr_Periodic
+>  
+>  #define MTO_POWER_CHANGE_ENABLE()   MTO_DATA().PowerChangeEnable
+> -#define MTO_ANT_DIVERSITY_ENABLE()  Adapter->sLocalPara.boAntennaDiversity
+> +#define MTO_ANT_DIVERSITY_ENABLE()  adapter->sLocalPara.boAntennaDiversity
+>  #define MTO_ANT_MAC()               MTO_DATA().Ant_mac
+>  #define MTO_ANT_DIVERSITY()         MTO_DATA().Ant_div
+>  #define MTO_CCA_MODE()              MTO_DATA().CCA_Mode
+> diff --git a/drivers/staging/winbond/mto_f.h b/drivers/staging/winbond/mto_f.h
+> index 30b3df2..de3d8d4 100644
+> --- a/drivers/staging/winbond/mto_f.h
+> +++ b/drivers/staging/winbond/mto_f.h
+> @@ -1,6 +1,6 @@
+> -extern void MTO_Init(PWB32_ADAPTER);
+> -extern void MTO_PeriodicTimerExpired(PWB32_ADAPTER);
+> -extern void MTO_SetDTORateRange(PWB32_ADAPTER, u8 *, u8);
+> +extern void MTO_Init(struct wb35_adapter *);
+> +extern void MTO_PeriodicTimerExpired(struct wb35_adapter *);
+> +extern void MTO_SetDTORateRange(struct wb35_adapter *, u8 *, u8);
+>  extern u8 MTO_GetTxRate(MTO_FUNC_INPUT, u32 fpdu_len);
+>  extern u8 MTO_GetTxFallbackRate(MTO_FUNC_INPUT);
+>  extern void MTO_SetTxCount(MTO_FUNC_INPUT, u8 t0, u8 index);
+> diff --git a/drivers/staging/winbond/rxisr.c b/drivers/staging/winbond/rxisr.c
+> index 18e942c..6678660 100644
+> --- a/drivers/staging/winbond/rxisr.c
+> +++ b/drivers/staging/winbond/rxisr.c
+> @@ -1,29 +1,29 @@
+>  #include "os_common.h"
+>  
+> -void vRxTimerInit(PWB32_ADAPTER Adapter)
+> +void vRxTimerInit(struct wb35_adapter * adapter)
+>  {
+> -	OS_TIMER_INITIAL(&(Adapter->Mds.nTimer), (void*) RxTimerHandler, (void*) Adapter);
+> +	OS_TIMER_INITIAL(&(adapter->Mds.nTimer), (void*) RxTimerHandler, (void*) adapter);
+>  }
+>  
+> -void vRxTimerStart(PWB32_ADAPTER Adapter, int timeout_value)
+> +void vRxTimerStart(struct wb35_adapter * adapter, int timeout_value)
+>  {
+>  	if (timeout_value<MIN_TIMEOUT_VAL)
+>  		timeout_value=MIN_TIMEOUT_VAL;
+>  
+> -	OS_TIMER_SET( &(Adapter->Mds.nTimer), timeout_value );
+> +	OS_TIMER_SET( &(adapter->Mds.nTimer), timeout_value );
+>  }
+>  
+> -void vRxTimerStop(PWB32_ADAPTER Adapter)
+> +void vRxTimerStop(struct wb35_adapter * adapter)
+>  {
+> -	OS_TIMER_CANCEL( &(Adapter->Mds.nTimer), 0 );
+> +	OS_TIMER_CANCEL( &(adapter->Mds.nTimer), 0 );
+>  }
+>  
+> -void RxTimerHandler_1a( PADAPTER Adapter)
+> +void RxTimerHandler_1a( struct wb35_adapter * adapter)
+>  {
+> -	RxTimerHandler(NULL, Adapter, NULL, NULL);
+> +	RxTimerHandler(NULL, adapter, NULL, NULL);
+>  }
+>  
+> -void RxTimerHandler(void* SystemSpecific1, PWB32_ADAPTER Adapter,
+> +void RxTimerHandler(void* SystemSpecific1, struct wb35_adapter * adapter,
+>  		    void* SystemSpecific2, void* SystemSpecific3)
+>  {
+>  	WARN_ON(1);
+> diff --git a/drivers/staging/winbond/scan_s.h b/drivers/staging/winbond/scan_s.h
+> index 1d1b0c4..a7489cb 100644
+> --- a/drivers/staging/winbond/scan_s.h
+> +++ b/drivers/staging/winbond/scan_s.h
+> @@ -78,9 +78,9 @@ typedef struct _SCAN_PARAMETERS
+>  
+>  } SCAN_PARAMETERS, *psSCAN_PARAMETERS;
+>  
+> -// Encapsulate 'Adapter' data structure
+> -#define psSCAN			(&(Adapter->sScanPara))
+> -#define psSCANREQ			(&(Adapter->sScanPara.sScanReq))
+> +// Encapsulate 'adapter' data structure
+> +#define psSCAN			(&(adapter->sScanPara))
+> +#define psSCANREQ			(&(adapter->sScanPara.sScanReq))
+>  
+>  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  //	scan.h
+> @@ -109,7 +109,7 @@ typedef struct _SCAN_PARAMETERS
+>  
+>  // static functions
+>  
+> -//static void ScanTimerHandler(PWB32_ADAPTER Adapter);
+> -//static void vScanTimerStart(PWB32_ADAPTER	Adapter, int timeout_value);
+> -//static void vScanTimerStop(PWB32_ADAPTER Adapter);
+> +//static void ScanTimerHandler(struct wb35_adapter * adapter);
+> +//static void vScanTimerStart(struct wb35_adapter *	adapter, int timeout_value);
+> +//static void vScanTimerStop(struct wb35_adapter * adapter);
+>  
+> diff --git a/drivers/staging/winbond/sme_s.h b/drivers/staging/winbond/sme_s.h
+> index dfd2fbc..de4efa1 100644
+> --- a/drivers/staging/winbond/sme_s.h
+> +++ b/drivers/staging/winbond/sme_s.h
+> @@ -196,9 +196,9 @@ typedef struct _SME_PARAMETERS
+>  
+>  } SME_PARAMETERS, *PSME_PARAMETERS;
+>  
+> -#define psSME			(&(Adapter->sSmePara))
+> +#define psSME			(&(adapter->sSmePara))
+>  
+> -#define wSMEGetCurrentSTAState(Adapter)		((u16)(Adapter)->sSmePara.wState)
+> +#define wSMEGetCurrentSTAState(adapter)		((u16)(adapter)->sSmePara.wState)
+>  
+>  
+>  
+> diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
+> index ed03f1e..8da441c 100644
+> --- a/drivers/staging/winbond/wbhal.c
+> +++ b/drivers/staging/winbond/wbhal.c
+> @@ -28,10 +28,10 @@ void hal_get_permanent_address( phw_data_t pHwData, u8 *pethernet_address )
+>  	memcpy( pethernet_address, pHwData->PermanentMacAddress, 6 );
+>  }
+>  
+> -u8 hal_init_hardware(phw_data_t pHwData, PWB32_ADAPTER Adapter)
+> +u8 hal_init_hardware(phw_data_t pHwData, struct wb35_adapter * adapter)
+>  {
+>  	u16 SoftwareSet;
+> -	pHwData->Adapter = Adapter;
+> +	pHwData->adapter = adapter;
+>  
+>  	// Initial the variable
+>  	pHwData->MaxReceiveLifeTime = DEFAULT_MSDU_LIFE_TIME; // Setting Rx maximum MSDU life time
+> @@ -392,7 +392,7 @@ s32 hal_get_rssi_bss(  phw_data_t pHwData,  u16 idx,  u8 Count )
+>  	R01_DESCRIPTOR	r01;
+>  	s32 ltmp = 0, tmp;
+>  	u8	i, j;
+> -	PADAPTER	Adapter = pHwData->Adapter;
+> +	struct wb35_adapter *	adapter = pHwData->adapter;
+>  //	u32 *HalRssiArry = psBSS(idx)->HalRssi;
+>  
+>  	if( pHwData->SurpriseRemove ) return -200;
+> @@ -443,7 +443,7 @@ void hal_led_control_1a(  phw_data_t pHwData )
+>  
+>  void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
+>  {
+> -	PADAPTER	Adapter = pHwData->Adapter;
+> +	struct wb35_adapter *	adapter = pHwData->adapter;
+>  	struct wb35_reg *reg = &pHwData->reg;
+>  	u32	LEDSet = (pHwData->SoftwareSet & HAL_LED_SET_MASK) >> HAL_LED_SET_SHIFT;
+>  	u8	LEDgray[20] = { 0,3,4,6,8,10,11,12,13,14,15,14,13,12,11,10,8,6,4,2 };
+> @@ -633,8 +633,8 @@ void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
+>  				else
+>  				{
+>  					// Is transmitting/receiving ??
+> -					if( (OS_CURRENT_RX_BYTE( Adapter ) != pHwData->RxByteCountLast ) ||
+> -						(OS_CURRENT_TX_BYTE( Adapter ) != pHwData->TxByteCountLast ) )
+> +					if( (OS_CURRENT_RX_BYTE( adapter ) != pHwData->RxByteCountLast ) ||
+> +						(OS_CURRENT_TX_BYTE( adapter ) != pHwData->TxByteCountLast ) )
+>  					{
+>  						if( (reg->U1BC_LEDConfigure & 0x3000) != 0x3000 )
+>  						{
+> @@ -643,8 +643,8 @@ void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
+>  						}
+>  
+>  						// Update variable
+> -						pHwData->RxByteCountLast = OS_CURRENT_RX_BYTE( Adapter );
+> -						pHwData->TxByteCountLast = OS_CURRENT_TX_BYTE( Adapter );
+> +						pHwData->RxByteCountLast = OS_CURRENT_RX_BYTE( adapter );
+> +						pHwData->TxByteCountLast = OS_CURRENT_TX_BYTE( adapter );
+>  						TimeInterval = 200;
+>  					}
+>  					else
+> @@ -846,18 +846,18 @@ void hal_system_power_change(phw_data_t pHwData, u32 PowerState)
+>  
+>  void hal_surprise_remove(  phw_data_t pHwData )
+>  {
+> -	PADAPTER Adapter = pHwData->Adapter;
+> -	if (OS_ATOMIC_INC( Adapter, &pHwData->SurpriseRemoveCount ) == 1) {
+> +	struct wb35_adapter * adapter = pHwData->adapter;
+> +	if (OS_ATOMIC_INC( adapter, &pHwData->SurpriseRemoveCount ) == 1) {
+>  		#ifdef _PE_STATE_DUMP_
+>  		WBDEBUG(("Calling hal_surprise_remove\n"));
+>  		#endif
+> -		OS_STOP( Adapter );
+> +		OS_STOP( adapter );
+>  	}
+>  }
+>  
+>  void hal_rate_change(  phw_data_t pHwData ) // Notify the HAL rate is changing 20060613.1
+>  {
+> -	PADAPTER	Adapter = pHwData->Adapter;
+> +	struct wb35_adapter *	adapter = pHwData->adapter;
+>  	u8		rate = CURRENT_TX_RATE;
+>  
+>  	BBProcessor_RateChanging( pHwData, rate );
+> diff --git a/drivers/staging/winbond/wbhal_f.h b/drivers/staging/winbond/wbhal_f.h
+> index 2c38f6c..4ecf191 100644
+> --- a/drivers/staging/winbond/wbhal_f.h
+> +++ b/drivers/staging/winbond/wbhal_f.h
+> @@ -18,8 +18,8 @@
+>  //====================================================================================
+>  void hal_remove_mapping_key(  phw_data_t pHwData,  u8 *pmac_addr );
+>  void hal_remove_default_key(  phw_data_t pHwData,  u32 index );
+> -unsigned char hal_set_mapping_key(  phw_data_t Adapter,  u8 *pmac_addr,  u8 null_key,  u8 wep_on,  u8 *ptx_tsc,  u8 *prx_tsc,  u8 key_type,  u8 key_len,  u8 *pkey_data );
+> -unsigned char hal_set_default_key(  phw_data_t Adapter,  u8 index,  u8 null_key,  u8 wep_on,  u8 *ptx_tsc,  u8 *prx_tsc,  u8 key_type,  u8 key_len,  u8 *pkey_data );
+> +unsigned char hal_set_mapping_key(  phw_data_t adapter,  u8 *pmac_addr,  u8 null_key,  u8 wep_on,  u8 *ptx_tsc,  u8 *prx_tsc,  u8 key_type,  u8 key_len,  u8 *pkey_data );
+> +unsigned char hal_set_default_key(  phw_data_t adapter,  u8 index,  u8 null_key,  u8 wep_on,  u8 *ptx_tsc,  u8 *prx_tsc,  u8 key_type,  u8 key_len,  u8 *pkey_data );
+>  void hal_clear_all_default_key(  phw_data_t pHwData );
+>  void hal_clear_all_group_key(  phw_data_t pHwData );
+>  void hal_clear_all_mapping_key(  phw_data_t pHwData );
+> @@ -27,7 +27,7 @@ void hal_clear_all_key(  phw_data_t pHwData );
+>  void hal_get_ethernet_address(  phw_data_t pHwData,  u8 *current_address );
+>  void hal_set_ethernet_address(  phw_data_t pHwData,  u8 *current_address );
+>  void hal_get_permanent_address(  phw_data_t pHwData,  u8 *pethernet_address );
+> -unsigned char hal_init_hardware(  phw_data_t pHwData,  PADAPTER Adapter );
+> +unsigned char hal_init_hardware(  phw_data_t pHwData,  struct wb35_adapter * adapter );
+>  void hal_set_power_save_mode(  phw_data_t pHwData,  unsigned char power_save,  unsigned char wakeup,  unsigned char dtim );
+>  void hal_get_power_save_mode(  phw_data_t pHwData,   u8 *pin_pwr_save );
+>  void hal_set_slot_time(  phw_data_t pHwData,  u8 type );
+> diff --git a/drivers/staging/winbond/wbhal_s.h b/drivers/staging/winbond/wbhal_s.h
+> index 86b66be..47f99e1 100644
+> --- a/drivers/staging/winbond/wbhal_s.h
+> +++ b/drivers/staging/winbond/wbhal_s.h
+> @@ -445,12 +445,12 @@ typedef struct _HW_DATA_T
+>  	//=======================================================================================
+>  	// For USB driver, hal need more variables. Due to
+>  	//	1. NDIS-WDM operation
+> -	//	2. The SME, MLME and OLD MDS need Adapter structure, but the driver under HAL doesn't
+> +	//	2. The SME, MLME and OLD MDS need adapter structure, but the driver under HAL doesn't
+>  	//		have that parameter when receiving and indicating packet.
+> -	//		The MDS must input the Adapter pointer as the second parameter of hal_init_hardware.
+> +	//		The MDS must input the adapter pointer as the second parameter of hal_init_hardware.
+>  	//		The function usage is different than PCI driver.
+>  	//=======================================================================================
+> -	void* Adapter;
+> +	void* adapter;
+>  
+>  	//===============================================
+>  	// Definition for MAC address
+> diff --git a/drivers/staging/winbond/wblinux.c b/drivers/staging/winbond/wblinux.c
+> index 4ed45e4..4e6f8cf 100644
+> --- a/drivers/staging/winbond/wblinux.c
+> +++ b/drivers/staging/winbond/wblinux.c
+> @@ -21,9 +21,9 @@ WBLINUX_MemoryAlloc(void* *VirtualAddress, u32 Length)
+>  }
+>  
+>  s32
+> -EncapAtomicInc(PADAPTER Adapter, void* pAtomic)
+> +EncapAtomicInc(struct wb35_adapter * adapter, void* pAtomic)
+>  {
+> -	PWBLINUX pWbLinux = &Adapter->WbLinux;
+> +	PWBLINUX pWbLinux = &adapter->WbLinux;
+>  	u32	ltmp;
+>  	u32 *	pltmp = (u32 *)pAtomic;
+>  	spin_lock_irq( &pWbLinux->AtomicSpinLock );
+> @@ -34,9 +34,9 @@ EncapAtomicInc(PADAPTER Adapter, void* pAtomic)
+>  }
+>  
+>  s32
+> -EncapAtomicDec(PADAPTER Adapter, void* pAtomic)
+> +EncapAtomicDec(struct wb35_adapter * adapter, void* pAtomic)
+>  {
+> -	PWBLINUX pWbLinux = &Adapter->WbLinux;
+> +	PWBLINUX pWbLinux = &adapter->WbLinux;
+>  	u32	ltmp;
+>  	u32 *	pltmp = (u32 *)pAtomic;
+>  	spin_lock_irq( &pWbLinux->AtomicSpinLock );
+> @@ -47,9 +47,9 @@ EncapAtomicDec(PADAPTER Adapter, void* pAtomic)
+>  }
+>  
+>  unsigned char
+> -WBLINUX_Initial(PADAPTER Adapter)
+> +WBLINUX_Initial(struct wb35_adapter * adapter)
+>  {
+> -	PWBLINUX pWbLinux = &Adapter->WbLinux;
+> +	PWBLINUX pWbLinux = &adapter->WbLinux;
+>  
+>  	spin_lock_init( &pWbLinux->SpinLock );
+>  	spin_lock_init( &pWbLinux->AtomicSpinLock );
+> @@ -57,40 +57,40 @@ WBLINUX_Initial(PADAPTER Adapter)
+>  }
+>  
+>  void
+> -WBLinux_ReceivePacket(PADAPTER Adapter, PRXLAYER1 pRxLayer1)
+> +WBLinux_ReceivePacket(struct wb35_adapter * adapter, PRXLAYER1 pRxLayer1)
+>  {
+>  	BUG();
+>  }
+>  
+>  
+>  void
+> -WBLINUX_GetNextPacket(PADAPTER Adapter,  PDESCRIPTOR pDes)
+> +WBLINUX_GetNextPacket(struct wb35_adapter * adapter,  PDESCRIPTOR pDes)
+>  {
+>  	BUG();
+>  }
+>  
+>  void
+> -WBLINUX_GetNextPacketCompleted(PADAPTER Adapter, PDESCRIPTOR pDes)
+> +WBLINUX_GetNextPacketCompleted(struct wb35_adapter * adapter, PDESCRIPTOR pDes)
+>  {
+>  	BUG();
+>  }
+>  
+>  void
+> -WBLINUX_Destroy(PADAPTER Adapter)
+> +WBLINUX_Destroy(struct wb35_adapter * adapter)
+>  {
+> -	WBLINUX_stop( Adapter );
+> +	WBLINUX_stop( adapter );
+>  #ifdef _PE_USB_INI_DUMP_
+>  	WBDEBUG(("[w35und] unregister_netdev!\n"));
+>  #endif
+>  }
+>  
+>  void
+> -WBLINUX_stop(  PADAPTER Adapter )
+> +WBLINUX_stop(  struct wb35_adapter * adapter )
+>  {
+> -	PWBLINUX	pWbLinux = &Adapter->WbLinux;
+> +	PWBLINUX	pWbLinux = &adapter->WbLinux;
+>  	struct sk_buff *pSkb;
+>  
+> -	if (OS_ATOMIC_INC( Adapter, &pWbLinux->ThreadCount ) == 1) {
+> +	if (OS_ATOMIC_INC( adapter, &pWbLinux->ThreadCount ) == 1) {
+>  		// Shutdown module immediately
+>  		pWbLinux->shutdown = 1;
+>  
+> @@ -112,33 +112,33 @@ WBLINUX_stop(  PADAPTER Adapter )
+>  #endif
+>  	}
+>  
+> -	OS_ATOMIC_DEC( Adapter, &pWbLinux->ThreadCount );
+> +	OS_ATOMIC_DEC( adapter, &pWbLinux->ThreadCount );
+>  }
+>  
+>  void
+> -WbWlanHalt(  PADAPTER Adapter )
+> +WbWlanHalt(  struct wb35_adapter * adapter )
+>  {
+>  	//---------------------
+> -	Adapter->sLocalPara.ShutDowned = TRUE;
+> +	adapter->sLocalPara.ShutDowned = TRUE;
+>  
+> -	Mds_Destroy( Adapter );
+> +	Mds_Destroy( adapter );
+>  
+>  	// Turn off Rx and Tx hardware ability
+> -	hal_stop( &Adapter->sHwData );
+> +	hal_stop( &adapter->sHwData );
+>  #ifdef _PE_USB_INI_DUMP_
+>  	WBDEBUG(("[w35und] Hal_stop O.K.\n"));
+>  #endif
+>  	OS_SLEEP(100000);// Waiting Irp completed
+>  
+>  	// Destroy the NDIS module
+> -	WBLINUX_Destroy( Adapter );
+> +	WBLINUX_Destroy( adapter );
+>  
+>  	// Halt the HAL
+> -	hal_halt(&Adapter->sHwData, NULL);
+> +	hal_halt(&adapter->sHwData, NULL);
+>  }
+>  
+>  unsigned char
+> -WbWLanInitialize(PADAPTER Adapter)
+> +WbWLanInitialize(struct wb35_adapter * adapter)
+>  {
+>  	phw_data_t	pHwData;
+>  	u8		*pMacAddr;
+> @@ -150,22 +150,22 @@ WbWLanInitialize(PADAPTER Adapter)
+>  	//
+>  	// Setting default value for Linux
+>  	//
+> -	Adapter->sLocalPara.region_INF = REGION_AUTO;
+> -	Adapter->sLocalPara.TxRateMode = RATE_AUTO;
+> +	adapter->sLocalPara.region_INF = REGION_AUTO;
+> +	adapter->sLocalPara.TxRateMode = RATE_AUTO;
+>  	psLOCAL->bMacOperationMode = MODE_802_11_BG;	// B/G mode
+> -	Adapter->Mds.TxRTSThreshold = DEFAULT_RTSThreshold;
+> -	Adapter->Mds.TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
+> -	hal_set_phy_type( &Adapter->sHwData, RF_WB_242_1 );
+> -	Adapter->sLocalPara.MTUsize = MAX_ETHERNET_PACKET_SIZE;
+> +	adapter->Mds.TxRTSThreshold = DEFAULT_RTSThreshold;
+> +	adapter->Mds.TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
+> +	hal_set_phy_type( &adapter->sHwData, RF_WB_242_1 );
+> +	adapter->sLocalPara.MTUsize = MAX_ETHERNET_PACKET_SIZE;
+>  	psLOCAL->bPreambleMode = AUTO_MODE;
+> -	Adapter->sLocalPara.RadioOffStatus.boSwRadioOff = FALSE;
+> -	pHwData = &Adapter->sHwData;
+> +	adapter->sLocalPara.RadioOffStatus.boSwRadioOff = FALSE;
+> +	pHwData = &adapter->sHwData;
+>  	hal_set_phy_type( pHwData, RF_DECIDE_BY_INF );
+>  
+>  	//
+>  	// Initial each module and variable
+>  	//
+> -	if (!WBLINUX_Initial(Adapter)) {
+> +	if (!WBLINUX_Initial(adapter)) {
+>  #ifdef _PE_USB_INI_DUMP_
+>  		WBDEBUG(("[w35und]WBNDIS initialization failed\n"));
+>  #endif
+> @@ -173,17 +173,17 @@ WbWLanInitialize(PADAPTER Adapter)
+>  	}
+>  
+>  	// Initial Software variable
+> -	Adapter->sLocalPara.ShutDowned = FALSE;
+> +	adapter->sLocalPara.ShutDowned = FALSE;
+>  
+>  	//added by ws for wep key error detection
+> -	Adapter->sLocalPara.bWepKeyError= FALSE;
+> -	Adapter->sLocalPara.bToSelfPacketReceived = FALSE;
+> -	Adapter->sLocalPara.WepKeyDetectTimerCount= 2 * 100; /// 2 seconds
+> +	adapter->sLocalPara.bWepKeyError= FALSE;
+> +	adapter->sLocalPara.bToSelfPacketReceived = FALSE;
+> +	adapter->sLocalPara.WepKeyDetectTimerCount= 2 * 100; /// 2 seconds
+>  
+>  	// Initial USB hal
+>  	InitStep = 1;
+> -	pHwData = &Adapter->sHwData;
+> -	if (!hal_init_hardware(pHwData, Adapter))
+> +	pHwData = &adapter->sHwData;
+> +	if (!hal_init_hardware(pHwData, adapter))
+>  		goto error;
+>  
+>  	EEPROM_region = hal_get_region_from_EEPROM( pHwData );
+> @@ -197,9 +197,9 @@ WbWLanInitialize(PADAPTER Adapter)
+>  	}
+>  
+>  	// Get Software setting flag from hal
+> -	Adapter->sLocalPara.boAntennaDiversity = FALSE;
+> +	adapter->sLocalPara.boAntennaDiversity = FALSE;
+>  	if (hal_software_set(pHwData) & 0x00000001)
+> -		Adapter->sLocalPara.boAntennaDiversity = TRUE;
+> +		adapter->sLocalPara.boAntennaDiversity = TRUE;
+>  
+>  	//
+>  	// For TS module
+> @@ -208,7 +208,7 @@ WbWLanInitialize(PADAPTER Adapter)
+>  
+>  	// For MDS module
+>  	InitStep = 3;
+> -	Mds_initial(Adapter);
+> +	Mds_initial(adapter);
+>  
+>  	//=======================================
+>  	// Initialize the SME, SCAN, MLME, ROAM
+> @@ -218,15 +218,15 @@ WbWLanInitialize(PADAPTER Adapter)
+>  	InitStep = 6;
+>  
+>  	// If no user-defined address in the registry, use the addresss "burned" on the NIC instead.
+> -	pMacAddr = Adapter->sLocalPara.ThisMacAddress;
+> -	pMacAddr2 = Adapter->sLocalPara.PermanentAddress;
+> -	hal_get_permanent_address( pHwData, Adapter->sLocalPara.PermanentAddress );// Reading ethernet address from EEPROM
+> +	pMacAddr = adapter->sLocalPara.ThisMacAddress;
+> +	pMacAddr2 = adapter->sLocalPara.PermanentAddress;
+> +	hal_get_permanent_address( pHwData, adapter->sLocalPara.PermanentAddress );// Reading ethernet address from EEPROM
+>  	if (OS_MEMORY_COMPARE(pMacAddr, "\x00\x00\x00\x00\x00\x00", MAC_ADDR_LENGTH )) // Is equal
+>  	{
+>  		memcpy( pMacAddr, pMacAddr2, MAC_ADDR_LENGTH );
+>  	} else {
+>  		// Set the user define MAC address
+> -		hal_set_ethernet_address( pHwData, Adapter->sLocalPara.ThisMacAddress );
+> +		hal_set_ethernet_address( pHwData, adapter->sLocalPara.ThisMacAddress );
+>  	}
+>  
+>  	//get current antenna
+> @@ -240,7 +240,7 @@ WbWLanInitialize(PADAPTER Adapter)
+>  	while (!hal_idle(pHwData))
+>  		OS_SLEEP(10000);
+>  
+> -	MTO_Init(Adapter);
+> +	MTO_Init(adapter);
+>  
+>  	HwRadioOff = hal_get_hw_radio_off( pHwData );
+>  	psLOCAL->RadioOffStatus.boHwRadioOff = !!HwRadioOff;
+> @@ -249,16 +249,16 @@ WbWLanInitialize(PADAPTER Adapter)
+>  
+>  	hal_driver_init_OK(pHwData) = 1; // Notify hal that the driver is ready now.
+>  	//set a tx power for reference.....
+> -//	sme_set_tx_power_level(Adapter, 12);	FIXME?
+> +//	sme_set_tx_power_level(adapter, 12);	FIXME?
+>  	return TRUE;
+>  
+>  error:
+>  	switch (InitStep) {
+>  	case 5:
+>  	case 4:
+> -	case 3: Mds_Destroy( Adapter );
+> +	case 3: Mds_Destroy( adapter );
+>  	case 2:
+> -	case 1: WBLINUX_Destroy( Adapter );
+> +	case 1: WBLINUX_Destroy( adapter );
+>  		hal_halt( pHwData, NULL );
+>  	case 0: break;
+>  	}
+> @@ -266,9 +266,9 @@ error:
+>  	return FALSE;
+>  }
+>  
+> -void WBLINUX_ConnectStatus(PADAPTER Adapter, u32 flag)
+> +void WBLINUX_ConnectStatus(struct wb35_adapter * adapter, u32 flag)
+>  {
+> -	PWBLINUX	pWbLinux = &Adapter->WbLinux;
+> +	PWBLINUX	pWbLinux = &adapter->WbLinux;
+>  
+>  	pWbLinux->LinkStatus = flag; // OS_DISCONNECTED	or  OS_CONNECTED
+>  }
+> diff --git a/drivers/staging/winbond/wblinux_f.h b/drivers/staging/winbond/wblinux_f.h
+> index 68240c5..446ace9 100644
+> --- a/drivers/staging/winbond/wblinux_f.h
+> +++ b/drivers/staging/winbond/wblinux_f.h
+> @@ -4,20 +4,20 @@
+>  // wblinux_f.h
+>  //
+>  u32 WBLINUX_MemoryAlloc(  void* *VirtualAddress,  u32 Length );
+> -s32 EncapAtomicInc(  PADAPTER Adapter,  void* pAtomic );
+> -s32 EncapAtomicDec(  PADAPTER Adapter,  void* pAtomic );
+> -void WBLinux_ReceivePacket(  PADAPTER Adapter,  PRXLAYER1 pRxLayer1 );
+> -unsigned char WBLINUX_Initial(  PADAPTER Adapter );
+> +s32 EncapAtomicInc(  struct wb35_adapter *adapter,  void* pAtomic );
+> +s32 EncapAtomicDec(  struct wb35_adapter *adapter,  void* pAtomic );
+> +void WBLinux_ReceivePacket(  struct wb35_adapter *adapter,  PRXLAYER1 pRxLayer1 );
+> +unsigned char WBLINUX_Initial(  struct wb35_adapter *adapter );
+>  int wb35_start_xmit(struct sk_buff *skb, struct net_device *netdev );
+> -void WBLINUX_GetNextPacket(  PADAPTER Adapter,  PDESCRIPTOR pDes );
+> -void WBLINUX_GetNextPacketCompleted(  PADAPTER Adapter,  PDESCRIPTOR pDes );
+> -void WBLINUX_stop(  PADAPTER Adapter );
+> -void WBLINUX_Destroy(  PADAPTER Adapter );
+> +void WBLINUX_GetNextPacket(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes );
+> +void WBLINUX_GetNextPacketCompleted(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes );
+> +void WBLINUX_stop(  struct wb35_adapter *adapter );
+> +void WBLINUX_Destroy(  struct wb35_adapter *adapter );
+>  void wb35_set_multicast( struct net_device *netdev );
+>  struct net_device_stats * wb35_netdev_stats( struct net_device *netdev );
+> -void WBLINUX_stop(  PADAPTER Adapter );
+> -void WbWlanHalt(  PADAPTER Adapter );
+> -void WBLINUX_ConnectStatus(  PADAPTER Adapter,  u32 flag );
+> +void WBLINUX_stop(  struct wb35_adapter *adapter );
+> +void WbWlanHalt(  struct wb35_adapter *adapter );
+> +void WBLINUX_ConnectStatus(  struct wb35_adapter *adapter,  u32 flag );
+>  
+>  
+>  
+> diff --git a/drivers/staging/winbond/wblinux_s.h b/drivers/staging/winbond/wblinux_s.h
+> index fd2bb43..619843f 100644
+> --- a/drivers/staging/winbond/wblinux_s.h
+> +++ b/drivers/staging/winbond/wblinux_s.h
+> @@ -2,7 +2,7 @@
+>  // wblinux_s.h
+>  //
+>  #define OS_MEMORY_ALLOC( _V, _S )	WBLINUX_MemoryAlloc( _V, _S )
+> -#define OS_LINK_STATUS			(Adapter->WbLinux.LinkStatus == OS_CONNECTED)
+> +#define OS_LINK_STATUS			(adapter->WbLinux.LinkStatus == OS_CONNECTED)
+>  #define OS_SET_SHUTDOWN( _A )		_A->WbLinux.shutdown=1
+>  #define OS_SET_RESUME( _A )		_A->WbLinux.shutdown=0
+>  #define OS_CONNECT_STATUS_INDICATE( _A, _F )		WBLINUX_ConnectStatus( _A, _F )
 
- drivers/net/8139cp.c            |    5 +-
- drivers/net/8139too.c           |    5 +-
- drivers/net/Kconfig             |    9 ++-
- drivers/net/ax88796.c           |    6 +-
- drivers/net/cxgb3/l2t.c         |    1 +
- drivers/net/dm9000.c            |    9 ---
- drivers/net/ehea/ehea.h         |    2 +-
- drivers/net/ehea/ehea_main.c    |   25 +++++---
- drivers/net/ehea/ehea_qmr.c     |  131 ++++++++++++++++++++++++++++++---------
- drivers/net/ehea/ehea_qmr.h     |    2 +
- drivers/net/fec_mpc52xx.c       |   18 +++++
- drivers/net/gianfar.c           |   24 +++++--
- drivers/net/igb/igb_main.c      |   60 ++++++++++++-----
- drivers/net/myri10ge/myri10ge.c |    6 ++-
- drivers/net/qlge/qlge.h         |    5 +-
- drivers/net/qlge/qlge_main.c    |   89 ++++++++++++++-------------
- drivers/net/r8169.c             |   38 +++++++++---
- drivers/net/sis190.c            |    1 +
- drivers/net/smc911x.c           |   38 +++++------
- drivers/net/smc911x.h           |    6 +-
- include/linux/smc911x.h         |    1 +
- 21 files changed, 316 insertions(+), 165 deletions(-)
-
-Alexander Duyck (1):
-      igb: fix tx data corruption with transition to L0s on 82575
-
-Atsushi Nemoto (1):
-      net: Make SMC91X selectable on other MIPS boards
-
-Brice Goglin (1):
-      myri10ge: disable NAPI on failure to setup the interface
-
-Bryan Wu (1):
-      netdev: DM9000: remove BLACKFIN hacking in DM9000 netdev driver
-
-Catalin Marinas (3):
-      smc911x: Allow Kconfig dependency on ARM
-      smc911x: Add IRQ polarity configuration
-      smc911x: Make the driver safer on SMP
-
-Dmitry Baryshkov (1):
-      SMC911x: unbreak PXA builds
-
-Francois Romieu (3):
-      r8169: verbose mac address init
-      r8169: checks against wrong mac addresse init
-      sis190: add identifier for Atheros AR8021 PHY
-
-Hannes Hering (1):
-      ehea: Fix memory hotplug support
-
-Jeff Kirsher (1):
-      igb: add IGB_DCA instead of selecting INTEL_IOATDMA
-
-Jon Smirl (1):
-      [netdrvr] fec_mpc52xx: Implement polling, to make netconsole work.
-
-Roland Dreier (1):
-      cxgb3: Fix kernel crash caused by uninitialized l2t_entry.arpq
-
-Ron Mercer (1):
-      qlge: Fix MSI/legacy single interrupt bug.
-
-Stephen Hemminger (1):
-      8139x: reduce message severity on driver overlap
-
-roel kluin (2):
-      gianfar: fix handle errors returned by platform_get_irq*()
-      AX88796: ax_probe() fix irq assignment
-
-diff --git a/drivers/net/8139cp.c b/drivers/net/8139cp.c
-index 85fa40a..9ba1f0b 100644
---- a/drivers/net/8139cp.c
-+++ b/drivers/net/8139cp.c
-@@ -1836,10 +1836,9 @@ static int cp_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	if (pdev->vendor == PCI_VENDOR_ID_REALTEK &&
- 	    pdev->device == PCI_DEVICE_ID_REALTEK_8139 && pdev->revision < 0x20) {
--		dev_err(&pdev->dev,
--			   "This (id %04x:%04x rev %02x) is not an 8139C+ compatible chip\n",
-+		dev_info(&pdev->dev,
-+			   "This (id %04x:%04x rev %02x) is not an 8139C+ compatible chip, use 8139too\n",
- 		           pdev->vendor, pdev->device, pdev->revision);
--		dev_err(&pdev->dev, "Try the \"8139too\" driver instead.\n");
- 		return -ENODEV;
- 	}
- 
-diff --git a/drivers/net/8139too.c b/drivers/net/8139too.c
-index 0daf8c1..63f906b 100644
---- a/drivers/net/8139too.c
-+++ b/drivers/net/8139too.c
-@@ -946,10 +946,9 @@ static int __devinit rtl8139_init_one (struct pci_dev *pdev,
- 	if (pdev->vendor == PCI_VENDOR_ID_REALTEK &&
- 	    pdev->device == PCI_DEVICE_ID_REALTEK_8139 && pdev->revision >= 0x20) {
- 		dev_info(&pdev->dev,
--			   "This (id %04x:%04x rev %02x) is an enhanced 8139C+ chip\n",
-+			   "This (id %04x:%04x rev %02x) is an enhanced 8139C+ chip, use 8139cp\n",
- 		       	   pdev->vendor, pdev->device, pdev->revision);
--		dev_info(&pdev->dev,
--			   "Use the \"8139cp\" driver for improved performance and stability.\n");
-+		return -ENODEV;
- 	}
- 
- 	if (pdev->vendor == PCI_VENDOR_ID_REALTEK &&
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index ad301ac..a76ca75 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -888,7 +888,7 @@ config SMC91X
- 	select CRC32
- 	select MII
- 	depends on ARM || REDWOOD_5 || REDWOOD_6 || M32R || SUPERH || \
--		SOC_AU1X00 || BLACKFIN || MN10300
-+		MIPS || BLACKFIN || MN10300
- 	help
- 	  This is a driver for SMC's 91x series of Ethernet chipsets,
- 	  including the SMC91C94 and the SMC91C111. Say Y if you want it
-@@ -960,7 +960,7 @@ config SMC911X
- 	tristate "SMSC LAN911[5678] support"
- 	select CRC32
- 	select MII
--	depends on ARCH_PXA || SUPERH
-+	depends on ARM || SUPERH
- 	help
- 	  This is a driver for SMSC's LAN911x series of Ethernet chipsets
- 	  including the new LAN9115, LAN9116, LAN9117, and LAN9118.
-@@ -2003,6 +2003,11 @@ config IGB_LRO
- 
- 	  If in doubt, say N.
- 
-+config IGB_DCA
-+	bool "Enable DCA"
-+	default y
-+	depends on IGB && DCA && !(IGB=y && DCA=m)
-+
- source "drivers/net/ixp2000/Kconfig"
- 
- config MYRI_SBUS
-diff --git a/drivers/net/ax88796.c b/drivers/net/ax88796.c
-index 4207d6e..9a314d8 100644
---- a/drivers/net/ax88796.c
-+++ b/drivers/net/ax88796.c
-@@ -838,12 +838,12 @@ static int ax_probe(struct platform_device *pdev)
- 
- 	/* find the platform resources */
- 
--	dev->irq  = platform_get_irq(pdev, 0);
--	if (dev->irq < 0) {
-+	ret  = platform_get_irq(pdev, 0);
-+	if (ret < 0) {
- 		dev_err(&pdev->dev, "no IRQ specified\n");
--		ret = -ENXIO;
- 		goto exit_mem;
- 	}
-+	dev->irq = ret;
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (res == NULL) {
-diff --git a/drivers/net/cxgb3/l2t.c b/drivers/net/cxgb3/l2t.c
-index 4407ac9..ff1611f 100644
---- a/drivers/net/cxgb3/l2t.c
-+++ b/drivers/net/cxgb3/l2t.c
-@@ -431,6 +431,7 @@ struct l2t_data *t3_init_l2t(unsigned int l2t_capacity)
- 	for (i = 0; i < l2t_capacity; ++i) {
- 		d->l2tab[i].idx = i;
- 		d->l2tab[i].state = L2T_STATE_UNUSED;
-+		__skb_queue_head_init(&d->l2tab[i].arpq);
- 		spin_lock_init(&d->l2tab[i].lock);
- 		atomic_set(&d->l2tab[i].refcnt, 0);
- 	}
-diff --git a/drivers/net/dm9000.c b/drivers/net/dm9000.c
-index f42c23f..5a9083e 100644
---- a/drivers/net/dm9000.c
-+++ b/drivers/net/dm9000.c
-@@ -47,15 +47,6 @@
- #define CARDNAME	"dm9000"
- #define DRV_VERSION	"1.31"
- 
--#ifdef CONFIG_BLACKFIN
--#define readsb	insb
--#define readsw	insw
--#define readsl	insl
--#define writesb	outsb
--#define writesw	outsw
--#define writesl	outsl
--#endif
--
- /*
-  * Transmit timeout, default 5 seconds.
-  */
-diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
-index 5524271..82dd1a8 100644
---- a/drivers/net/ehea/ehea.h
-+++ b/drivers/net/ehea/ehea.h
-@@ -40,7 +40,7 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0093"
-+#define DRV_VERSION	"EHEA_0094"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index b70c531..422fcb9 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -2863,7 +2863,7 @@ static void ehea_rereg_mrs(struct work_struct *work)
- 	struct ehea_adapter *adapter;
- 
- 	mutex_lock(&dlpar_mem_lock);
--	ehea_info("LPAR memory enlarged - re-initializing driver");
-+	ehea_info("LPAR memory changed - re-initializing driver");
- 
- 	list_for_each_entry(adapter, &adapter_list, list)
- 		if (adapter->active_ports) {
-@@ -2900,13 +2900,6 @@ static void ehea_rereg_mrs(struct work_struct *work)
- 			}
- 		}
- 
--	ehea_destroy_busmap();
--	ret = ehea_create_busmap();
--	if (ret) {
--		ehea_error("creating ehea busmap failed");
--		goto out;
--	}
--
- 	clear_bit(__EHEA_STOP_XFER, &ehea_driver_flags);
- 
- 	list_for_each_entry(adapter, &adapter_list, list)
-@@ -3519,9 +3512,21 @@ void ehea_crash_handler(void)
- static int ehea_mem_notifier(struct notifier_block *nb,
-                              unsigned long action, void *data)
- {
-+	struct memory_notify *arg = data;
- 	switch (action) {
--	case MEM_OFFLINE:
--		ehea_info("memory has been removed");
-+	case MEM_CANCEL_OFFLINE:
-+		ehea_info("memory offlining canceled");
-+		/* Readd canceled memory block */
-+	case MEM_ONLINE:
-+		ehea_info("memory is going online");
-+		if (ehea_add_sect_bmap(arg->start_pfn, arg->nr_pages))
-+			return NOTIFY_BAD;
-+		ehea_rereg_mrs(NULL);
-+		break;
-+	case MEM_GOING_OFFLINE:
-+		ehea_info("memory is going offline");
-+		if (ehea_rem_sect_bmap(arg->start_pfn, arg->nr_pages))
-+			return NOTIFY_BAD;
- 		ehea_rereg_mrs(NULL);
- 		break;
- 	default:
-diff --git a/drivers/net/ehea/ehea_qmr.c b/drivers/net/ehea/ehea_qmr.c
-index db8a925..9b61dc9 100644
---- a/drivers/net/ehea/ehea_qmr.c
-+++ b/drivers/net/ehea/ehea_qmr.c
-@@ -567,7 +567,7 @@ static inline int ehea_calc_index(unsigned long i, unsigned long s)
- static inline int ehea_init_top_bmap(struct ehea_top_bmap *ehea_top_bmap,
- 				     int dir)
- {
--	if(!ehea_top_bmap->dir[dir]) {
-+	if (!ehea_top_bmap->dir[dir]) {
- 		ehea_top_bmap->dir[dir] =
- 			kzalloc(sizeof(struct ehea_dir_bmap), GFP_KERNEL);
- 		if (!ehea_top_bmap->dir[dir])
-@@ -578,7 +578,7 @@ static inline int ehea_init_top_bmap(struct ehea_top_bmap *ehea_top_bmap,
- 
- static inline int ehea_init_bmap(struct ehea_bmap *ehea_bmap, int top, int dir)
- {
--	if(!ehea_bmap->top[top]) {
-+	if (!ehea_bmap->top[top]) {
- 		ehea_bmap->top[top] =
- 			kzalloc(sizeof(struct ehea_top_bmap), GFP_KERNEL);
- 		if (!ehea_bmap->top[top])
-@@ -587,53 +587,124 @@ static inline int ehea_init_bmap(struct ehea_bmap *ehea_bmap, int top, int dir)
- 	return ehea_init_top_bmap(ehea_bmap->top[top], dir);
- }
- 
--static int ehea_create_busmap_callback(unsigned long pfn,
--				       unsigned long nr_pages, void *arg)
--{
--	unsigned long i, mr_len, start_section, end_section;
--	start_section = (pfn * PAGE_SIZE) / EHEA_SECTSIZE;
--	end_section = start_section + ((nr_pages * PAGE_SIZE) / EHEA_SECTSIZE);
--	mr_len = *(unsigned long *)arg;
-+static DEFINE_MUTEX(ehea_busmap_mutex);
-+static unsigned long ehea_mr_len;
- 
--	if (!ehea_bmap)
--		ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
--	if (!ehea_bmap)
--		return -ENOMEM;
-+#define EHEA_BUSMAP_ADD_SECT 1
-+#define EHEA_BUSMAP_REM_SECT 0
- 
--	for (i = start_section; i < end_section; i++) {
--		int ret;
--		int top, dir, idx;
--		u64 vaddr;
-+static void ehea_rebuild_busmap(void)
-+{
-+	u64 vaddr = EHEA_BUSMAP_START;
-+	int top, dir, idx;
-+
-+	for (top = 0; top < EHEA_MAP_ENTRIES; top++) {
-+		struct ehea_top_bmap *ehea_top;
-+		int valid_dir_entries = 0;
- 
--		top = ehea_calc_index(i, EHEA_TOP_INDEX_SHIFT);
--		dir = ehea_calc_index(i, EHEA_DIR_INDEX_SHIFT);
-+		if (!ehea_bmap->top[top])
-+			continue;
-+		ehea_top = ehea_bmap->top[top];
-+		for (dir = 0; dir < EHEA_MAP_ENTRIES; dir++) {
-+			struct ehea_dir_bmap *ehea_dir;
-+			int valid_entries = 0;
- 
--		ret = ehea_init_bmap(ehea_bmap, top, dir);
--		if(ret)
--			return ret;
-+			if (!ehea_top->dir[dir])
-+				continue;
-+			valid_dir_entries++;
-+			ehea_dir = ehea_top->dir[dir];
-+			for (idx = 0; idx < EHEA_MAP_ENTRIES; idx++) {
-+				if (!ehea_dir->ent[idx])
-+					continue;
-+				valid_entries++;
-+				ehea_dir->ent[idx] = vaddr;
-+				vaddr += EHEA_SECTSIZE;
-+			}
-+			if (!valid_entries) {
-+				ehea_top->dir[dir] = NULL;
-+				kfree(ehea_dir);
-+			}
-+		}
-+		if (!valid_dir_entries) {
-+			ehea_bmap->top[top] = NULL;
-+			kfree(ehea_top);
-+		}
-+	}
-+}
- 
--		idx = i & EHEA_INDEX_MASK;
--		vaddr = EHEA_BUSMAP_START + mr_len + i * EHEA_SECTSIZE;
-+static int ehea_update_busmap(unsigned long pfn, unsigned long pgnum, int add)
-+{
-+	unsigned long i, start_section, end_section;
- 
--		ehea_bmap->top[top]->dir[dir]->ent[idx] = vaddr;
-+	if (!ehea_bmap) {
-+		ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
-+		if (!ehea_bmap)
-+			return -ENOMEM;
- 	}
- 
--	mr_len += nr_pages * PAGE_SIZE;
--	*(unsigned long *)arg = mr_len;
-+	start_section = (pfn * PAGE_SIZE) / EHEA_SECTSIZE;
-+	end_section = start_section + ((pgnum * PAGE_SIZE) / EHEA_SECTSIZE);
-+	/* Mark entries as valid or invalid only; address is assigned later */
-+	for (i = start_section; i < end_section; i++) {
-+		u64 flag;
-+		int top = ehea_calc_index(i, EHEA_TOP_INDEX_SHIFT);
-+		int dir = ehea_calc_index(i, EHEA_DIR_INDEX_SHIFT);
-+		int idx = i & EHEA_INDEX_MASK;
-+		
-+		if (add) {
-+			int ret = ehea_init_bmap(ehea_bmap, top, dir);
-+			if (ret)
-+				return ret;
-+			flag = 1; /* valid */
-+			ehea_mr_len += EHEA_SECTSIZE;
-+		} else {
-+			if (!ehea_bmap->top[top])
-+				continue;
-+			if (!ehea_bmap->top[top]->dir[dir])
-+				continue;
-+			flag = 0; /* invalid */
-+			ehea_mr_len -= EHEA_SECTSIZE;
-+		}
- 
-+		ehea_bmap->top[top]->dir[dir]->ent[idx] = flag;
-+	}
-+	ehea_rebuild_busmap(); /* Assign contiguous addresses for mr */
- 	return 0;
- }
- 
--static unsigned long ehea_mr_len;
-+int ehea_add_sect_bmap(unsigned long pfn, unsigned long nr_pages)
-+{
-+	int ret;
- 
--static DEFINE_MUTEX(ehea_busmap_mutex);
-+	mutex_lock(&ehea_busmap_mutex);
-+	ret = ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
-+	mutex_unlock(&ehea_busmap_mutex);
-+	return ret;
-+}
-+
-+int ehea_rem_sect_bmap(unsigned long pfn, unsigned long nr_pages)
-+{
-+	int ret;
-+
-+	mutex_lock(&ehea_busmap_mutex);
-+	ret = ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_REM_SECT);
-+	mutex_unlock(&ehea_busmap_mutex);
-+	return ret;
-+}
-+
-+static int ehea_create_busmap_callback(unsigned long pfn,
-+				       unsigned long nr_pages, void *arg)
-+{
-+	return ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
-+}
- 
- int ehea_create_busmap(void)
- {
- 	int ret;
-+
- 	mutex_lock(&ehea_busmap_mutex);
- 	ehea_mr_len = 0;
--	ret = walk_memory_resource(0, 1ULL << MAX_PHYSMEM_BITS, &ehea_mr_len,
-+	ret = walk_memory_resource(0, 1ULL << MAX_PHYSMEM_BITS, NULL,
- 				   ehea_create_busmap_callback);
- 	mutex_unlock(&ehea_busmap_mutex);
- 	return ret;
-diff --git a/drivers/net/ehea/ehea_qmr.h b/drivers/net/ehea/ehea_qmr.h
-index 0bb6f92..1e58dc0 100644
---- a/drivers/net/ehea/ehea_qmr.h
-+++ b/drivers/net/ehea/ehea_qmr.h
-@@ -378,6 +378,8 @@ int ehea_rem_mr(struct ehea_mr *mr);
- 
- void ehea_error_data(struct ehea_adapter *adapter, u64 res_handle);
- 
-+int ehea_add_sect_bmap(unsigned long pfn, unsigned long nr_pages);
-+int ehea_rem_sect_bmap(unsigned long pfn, unsigned long nr_pages);
- int ehea_create_busmap(void);
- void ehea_destroy_busmap(void);
- u64 ehea_map_vaddr(void *caddr);
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index 4e4f683..aec3b97 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -401,6 +401,21 @@ static int mpc52xx_fec_hard_start_xmit(struct sk_buff *skb, struct net_device *d
- 	return 0;
- }
- 
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+static void mpc52xx_fec_poll_controller(struct net_device *dev)
-+{
-+	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-+
-+	disable_irq(priv->t_irq);
-+	mpc52xx_fec_tx_interrupt(priv->t_irq, dev);
-+	enable_irq(priv->t_irq);
-+	disable_irq(priv->r_irq);
-+	mpc52xx_fec_rx_interrupt(priv->r_irq, dev);
-+	enable_irq(priv->r_irq);
-+}
-+#endif
-+
-+
- /* This handles BestComm transmit task interrupts
-  */
- static irqreturn_t mpc52xx_fec_tx_interrupt(int irq, void *dev_id)
-@@ -926,6 +941,9 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
- 	ndev->tx_timeout	= mpc52xx_fec_tx_timeout;
- 	ndev->watchdog_timeo	= FEC_WATCHDOG_TIMEOUT;
- 	ndev->base_addr		= mem.start;
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+	ndev->poll_controller = mpc52xx_fec_poll_controller;
-+#endif
- 
- 	priv->t_irq = priv->r_irq = ndev->irq = NO_IRQ; /* IRQ are free for now */
- 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index b5bb7ae..64b2011 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -161,7 +161,7 @@ static int gfar_probe(struct platform_device *pdev)
- 	struct gfar_private *priv = NULL;
- 	struct gianfar_platform_data *einfo;
- 	struct resource *r;
--	int err = 0;
-+	int err = 0, irq;
- 	DECLARE_MAC_BUF(mac);
- 
- 	einfo = (struct gianfar_platform_data *) pdev->dev.platform_data;
-@@ -187,15 +187,25 @@ static int gfar_probe(struct platform_device *pdev)
- 
- 	/* fill out IRQ fields */
- 	if (einfo->device_flags & FSL_GIANFAR_DEV_HAS_MULTI_INTR) {
--		priv->interruptTransmit = platform_get_irq_byname(pdev, "tx");
--		priv->interruptReceive = platform_get_irq_byname(pdev, "rx");
--		priv->interruptError = platform_get_irq_byname(pdev, "error");
--		if (priv->interruptTransmit < 0 || priv->interruptReceive < 0 || priv->interruptError < 0)
-+		irq = platform_get_irq_byname(pdev, "tx");
-+		if (irq < 0)
-+			goto regs_fail;
-+		priv->interruptTransmit = irq;
-+
-+		irq = platform_get_irq_byname(pdev, "rx");
-+		if (irq < 0)
-+			goto regs_fail;
-+		priv->interruptReceive = irq;
-+
-+		irq = platform_get_irq_byname(pdev, "error");
-+		if (irq < 0)
- 			goto regs_fail;
-+		priv->interruptError = irq;
- 	} else {
--		priv->interruptTransmit = platform_get_irq(pdev, 0);
--		if (priv->interruptTransmit < 0)
-+		irq = platform_get_irq(pdev, 0);
-+		if (irq < 0)
- 			goto regs_fail;
-+		priv->interruptTransmit = irq;
- 	}
- 
- 	/* get a pointer to the register memory */
-diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
-index 93d02ef..1f397cd 100644
---- a/drivers/net/igb/igb_main.c
-+++ b/drivers/net/igb/igb_main.c
-@@ -38,10 +38,11 @@
- #include <linux/ethtool.h>
- #include <linux/if_vlan.h>
- #include <linux/pci.h>
-+#include <linux/pci-aspm.h>
- #include <linux/delay.h>
- #include <linux/interrupt.h>
- #include <linux/if_ether.h>
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- #include <linux/dca.h>
- #endif
- #include "igb.h"
-@@ -106,11 +107,11 @@ static irqreturn_t igb_msix_other(int irq, void *);
- static irqreturn_t igb_msix_rx(int irq, void *);
- static irqreturn_t igb_msix_tx(int irq, void *);
- static int igb_clean_rx_ring_msix(struct napi_struct *, int);
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- static void igb_update_rx_dca(struct igb_ring *);
- static void igb_update_tx_dca(struct igb_ring *);
- static void igb_setup_dca(struct igb_adapter *);
--#endif /* CONFIG_DCA */
-+#endif /* CONFIG_IGB_DCA */
- static bool igb_clean_tx_irq(struct igb_ring *);
- static int igb_poll(struct napi_struct *, int);
- static bool igb_clean_rx_irq_adv(struct igb_ring *, int *, int);
-@@ -131,7 +132,7 @@ static int igb_suspend(struct pci_dev *, pm_message_t);
- static int igb_resume(struct pci_dev *);
- #endif
- static void igb_shutdown(struct pci_dev *);
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- static int igb_notify_dca(struct notifier_block *, unsigned long, void *);
- static struct notifier_block dca_notifier = {
- 	.notifier_call	= igb_notify_dca,
-@@ -207,7 +208,7 @@ static int __init igb_init_module(void)
- 	global_quad_port_a = 0;
- 
- 	ret = pci_register_driver(&igb_driver);
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	dca_register_notify(&dca_notifier);
- #endif
- 	return ret;
-@@ -223,7 +224,7 @@ module_init(igb_init_module);
-  **/
- static void __exit igb_exit_module(void)
- {
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	dca_unregister_notify(&dca_notifier);
- #endif
- 	pci_unregister_driver(&igb_driver);
-@@ -966,10 +967,11 @@ static int __devinit igb_probe(struct pci_dev *pdev,
- 	struct net_device *netdev;
- 	struct igb_adapter *adapter;
- 	struct e1000_hw *hw;
-+	struct pci_dev *us_dev;
- 	const struct e1000_info *ei = igb_info_tbl[ent->driver_data];
- 	unsigned long mmio_start, mmio_len;
--	int i, err, pci_using_dac;
--	u16 eeprom_data = 0;
-+	int i, err, pci_using_dac, pos;
-+	u16 eeprom_data = 0, state = 0;
- 	u16 eeprom_apme_mask = IGB_EEPROM_APME;
- 	u32 part_num;
- 	int bars, need_ioport;
-@@ -1004,6 +1006,28 @@ static int __devinit igb_probe(struct pci_dev *pdev,
- 		}
- 	}
- 
-+	/* 82575 requires that the pci-e link partner disable the L0s state */
-+	switch (pdev->device) {
-+	case E1000_DEV_ID_82575EB_COPPER:
-+	case E1000_DEV_ID_82575EB_FIBER_SERDES:
-+	case E1000_DEV_ID_82575GB_QUAD_COPPER:
-+		us_dev = pdev->bus->self;
-+		pos = pci_find_capability(us_dev, PCI_CAP_ID_EXP);
-+		if (pos) {
-+			pci_read_config_word(us_dev, pos + PCI_EXP_LNKCTL,
-+			                     &state);
-+			state &= ~PCIE_LINK_STATE_L0S;
-+			pci_write_config_word(us_dev, pos + PCI_EXP_LNKCTL,
-+			                      state);
-+			printk(KERN_INFO "Disabling ASPM L0s upstream switch "
-+			       "port %x:%x.%x\n", us_dev->bus->number,
-+			       PCI_SLOT(us_dev->devfn),
-+			       PCI_FUNC(us_dev->devfn));
-+		}
-+	default:
-+		break;
-+	}
-+
- 	err = pci_request_selected_regions(pdev, bars, igb_driver_name);
- 	if (err)
- 		goto err_pci_reg;
-@@ -1237,7 +1261,7 @@ static int __devinit igb_probe(struct pci_dev *pdev,
- 	if (err)
- 		goto err_register;
- 
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	if ((adapter->flags & IGB_FLAG_HAS_DCA) &&
- 	    (dca_add_requester(&pdev->dev) == 0)) {
- 		adapter->flags |= IGB_FLAG_DCA_ENABLED;
-@@ -1311,7 +1335,7 @@ static void __devexit igb_remove(struct pci_dev *pdev)
- {
- 	struct net_device *netdev = pci_get_drvdata(pdev);
- 	struct igb_adapter *adapter = netdev_priv(netdev);
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	struct e1000_hw *hw = &adapter->hw;
- #endif
- 
-@@ -1323,7 +1347,7 @@ static void __devexit igb_remove(struct pci_dev *pdev)
- 
- 	flush_scheduled_work();
- 
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	if (adapter->flags & IGB_FLAG_DCA_ENABLED) {
- 		dev_info(&pdev->dev, "DCA disabled\n");
- 		dca_remove_requester(&pdev->dev);
-@@ -3271,7 +3295,7 @@ static irqreturn_t igb_msix_tx(int irq, void *data)
- 	struct igb_adapter *adapter = tx_ring->adapter;
- 	struct e1000_hw *hw = &adapter->hw;
- 
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	if (adapter->flags & IGB_FLAG_DCA_ENABLED)
- 		igb_update_tx_dca(tx_ring);
- #endif
-@@ -3323,14 +3347,14 @@ static irqreturn_t igb_msix_rx(int irq, void *data)
- 	if (netif_rx_schedule_prep(adapter->netdev, &rx_ring->napi))
- 		__netif_rx_schedule(adapter->netdev, &rx_ring->napi);
- 
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	if (adapter->flags & IGB_FLAG_DCA_ENABLED)
- 		igb_update_rx_dca(rx_ring);
- #endif
- 		return IRQ_HANDLED;
- }
- 
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- static void igb_update_rx_dca(struct igb_ring *rx_ring)
- {
- 	u32 dca_rxctrl;
-@@ -3450,7 +3474,7 @@ static int igb_notify_dca(struct notifier_block *nb, unsigned long event,
- 
- 	return ret_val ? NOTIFY_BAD : NOTIFY_DONE;
- }
--#endif /* CONFIG_DCA */
-+#endif /* CONFIG_IGB_DCA */
- 
- /**
-  * igb_intr_msi - Interrupt Handler
-@@ -3529,13 +3553,13 @@ static int igb_poll(struct napi_struct *napi, int budget)
- 	int tx_clean_complete, work_done = 0;
- 
- 	/* this poll routine only supports one tx and one rx queue */
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	if (adapter->flags & IGB_FLAG_DCA_ENABLED)
- 		igb_update_tx_dca(&adapter->tx_ring[0]);
- #endif
- 	tx_clean_complete = igb_clean_tx_irq(&adapter->tx_ring[0]);
- 
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	if (adapter->flags & IGB_FLAG_DCA_ENABLED)
- 		igb_update_rx_dca(&adapter->rx_ring[0]);
- #endif
-@@ -3563,7 +3587,7 @@ static int igb_clean_rx_ring_msix(struct napi_struct *napi, int budget)
- 	struct net_device *netdev = adapter->netdev;
- 	int work_done = 0;
- 
--#ifdef CONFIG_DCA
-+#ifdef CONFIG_IGB_DCA
- 	if (adapter->flags & IGB_FLAG_DCA_ENABLED)
- 		igb_update_rx_dca(rx_ring);
- #endif
-diff --git a/drivers/net/myri10ge/myri10ge.c b/drivers/net/myri10ge/myri10ge.c
-index a9aebad..b1556b2 100644
---- a/drivers/net/myri10ge/myri10ge.c
-+++ b/drivers/net/myri10ge/myri10ge.c
-@@ -75,7 +75,7 @@
- #include "myri10ge_mcp.h"
- #include "myri10ge_mcp_gen_header.h"
- 
--#define MYRI10GE_VERSION_STR "1.4.3-1.369"
-+#define MYRI10GE_VERSION_STR "1.4.3-1.371"
- 
- MODULE_DESCRIPTION("Myricom 10G driver (10GbE)");
- MODULE_AUTHOR("Maintainer: help@myri.com");
-@@ -2497,6 +2497,10 @@ static int myri10ge_open(struct net_device *dev)
- 	return 0;
- 
- abort_with_rings:
-+	while (slice) {
-+		slice--;
-+		napi_disable(&mgp->ss[slice].napi);
-+	}
- 	for (i = 0; i < mgp->num_slices; i++)
- 		myri10ge_free_rings(&mgp->ss[i]);
- 
-diff --git a/drivers/net/qlge/qlge.h b/drivers/net/qlge/qlge.h
-index 38116f9..ba2e1c5 100644
---- a/drivers/net/qlge/qlge.h
-+++ b/drivers/net/qlge/qlge.h
-@@ -1375,7 +1375,6 @@ struct ql_adapter {
- 	spinlock_t adapter_lock;
- 	spinlock_t hw_lock;
- 	spinlock_t stats_lock;
--	spinlock_t legacy_lock;	/* used for maintaining legacy intr sync */
- 
- 	/* PCI Bus Relative Register Addresses */
- 	void __iomem *reg_base;
-@@ -1399,8 +1398,6 @@ struct ql_adapter {
- 	struct msix_entry *msi_x_entry;
- 	struct intr_context intr_context[MAX_RX_RINGS];
- 
--	int (*legacy_check) (struct ql_adapter *);
--
- 	int tx_ring_count;	/* One per online CPU. */
- 	u32 rss_ring_first_cq_id;/* index of first inbound (rss) rx_ring */
- 	u32 rss_ring_count;	/* One per online CPU.  */
-@@ -1502,7 +1499,7 @@ void ql_mpi_work(struct work_struct *work);
- void ql_mpi_reset_work(struct work_struct *work);
- int ql_wait_reg_rdy(struct ql_adapter *qdev, u32 reg, u32 bit, u32 ebit);
- void ql_queue_asic_error(struct ql_adapter *qdev);
--void ql_enable_completion_interrupt(struct ql_adapter *qdev, u32 intr);
-+u32 ql_enable_completion_interrupt(struct ql_adapter *qdev, u32 intr);
- void ql_set_ethtool_ops(struct net_device *ndev);
- int ql_read_xgmac_reg64(struct ql_adapter *qdev, u32 reg, u64 *data);
- 
-diff --git a/drivers/net/qlge/qlge_main.c b/drivers/net/qlge/qlge_main.c
-index 4b2caa6..b83a9c9 100644
---- a/drivers/net/qlge/qlge_main.c
-+++ b/drivers/net/qlge/qlge_main.c
-@@ -577,41 +577,53 @@ static void ql_disable_interrupts(struct ql_adapter *qdev)
-  * incremented everytime we queue a worker and decremented everytime
-  * a worker finishes.  Once it hits zero we enable the interrupt.
-  */
--void ql_enable_completion_interrupt(struct ql_adapter *qdev, u32 intr)
-+u32 ql_enable_completion_interrupt(struct ql_adapter *qdev, u32 intr)
- {
--	if (likely(test_bit(QL_MSIX_ENABLED, &qdev->flags)))
-+	u32 var = 0;
-+	unsigned long hw_flags = 0;
-+	struct intr_context *ctx = qdev->intr_context + intr;
-+
-+	if (likely(test_bit(QL_MSIX_ENABLED, &qdev->flags) && intr)) {
-+		/* Always enable if we're MSIX multi interrupts and
-+		 * it's not the default (zeroeth) interrupt.
-+		 */
- 		ql_write32(qdev, INTR_EN,
--			   qdev->intr_context[intr].intr_en_mask);
--	else {
--		if (qdev->legacy_check)
--			spin_lock(&qdev->legacy_lock);
--		if (atomic_dec_and_test(&qdev->intr_context[intr].irq_cnt)) {
--			QPRINTK(qdev, INTR, ERR, "Enabling interrupt %d.\n",
--				intr);
--			ql_write32(qdev, INTR_EN,
--				   qdev->intr_context[intr].intr_en_mask);
--		} else {
--			QPRINTK(qdev, INTR, ERR,
--				"Skip enable, other queue(s) are active.\n");
--		}
--		if (qdev->legacy_check)
--			spin_unlock(&qdev->legacy_lock);
-+			   ctx->intr_en_mask);
-+		var = ql_read32(qdev, STS);
-+		return var;
- 	}
-+
-+	spin_lock_irqsave(&qdev->hw_lock, hw_flags);
-+	if (atomic_dec_and_test(&ctx->irq_cnt)) {
-+		ql_write32(qdev, INTR_EN,
-+			   ctx->intr_en_mask);
-+		var = ql_read32(qdev, STS);
-+	}
-+	spin_unlock_irqrestore(&qdev->hw_lock, hw_flags);
-+	return var;
- }
- 
- static u32 ql_disable_completion_interrupt(struct ql_adapter *qdev, u32 intr)
- {
- 	u32 var = 0;
-+	unsigned long hw_flags;
-+	struct intr_context *ctx;
- 
--	if (likely(test_bit(QL_MSIX_ENABLED, &qdev->flags)))
--		goto exit;
--	else if (!atomic_read(&qdev->intr_context[intr].irq_cnt)) {
-+	/* HW disables for us if we're MSIX multi interrupts and
-+	 * it's not the default (zeroeth) interrupt.
-+	 */
-+	if (likely(test_bit(QL_MSIX_ENABLED, &qdev->flags) && intr))
-+		return 0;
-+
-+	ctx = qdev->intr_context + intr;
-+	spin_lock_irqsave(&qdev->hw_lock, hw_flags);
-+	if (!atomic_read(&ctx->irq_cnt)) {
- 		ql_write32(qdev, INTR_EN,
--			   qdev->intr_context[intr].intr_dis_mask);
-+		ctx->intr_dis_mask);
- 		var = ql_read32(qdev, STS);
- 	}
--	atomic_inc(&qdev->intr_context[intr].irq_cnt);
--exit:
-+	atomic_inc(&ctx->irq_cnt);
-+	spin_unlock_irqrestore(&qdev->hw_lock, hw_flags);
- 	return var;
- }
- 
-@@ -623,7 +635,9 @@ static void ql_enable_all_completion_interrupts(struct ql_adapter *qdev)
- 		 * and enables only if the result is zero.
- 		 * So we precharge it here.
- 		 */
--		atomic_set(&qdev->intr_context[i].irq_cnt, 1);
-+		if (unlikely(!test_bit(QL_MSIX_ENABLED, &qdev->flags) ||
-+			i == 0))
-+			atomic_set(&qdev->intr_context[i].irq_cnt, 1);
- 		ql_enable_completion_interrupt(qdev, i);
- 	}
- 
-@@ -1725,19 +1739,6 @@ static irqreturn_t qlge_msix_rx_isr(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
--/* We check here to see if we're already handling a legacy
-- * interrupt.  If we are, then it must belong to another
-- * chip with which we're sharing the interrupt line.
-- */
--int ql_legacy_check(struct ql_adapter *qdev)
--{
--	int err;
--	spin_lock(&qdev->legacy_lock);
--	err = atomic_read(&qdev->intr_context[0].irq_cnt);
--	spin_unlock(&qdev->legacy_lock);
--	return err;
--}
--
- /* This handles a fatal error, MPI activity, and the default
-  * rx_ring in an MSI-X multiple vector environment.
-  * In MSI/Legacy environment it also process the rest of
-@@ -1752,12 +1753,15 @@ static irqreturn_t qlge_isr(int irq, void *dev_id)
- 	int i;
- 	int work_done = 0;
- 
--	if (qdev->legacy_check && qdev->legacy_check(qdev)) {
--		QPRINTK(qdev, INTR, INFO, "Already busy, not our interrupt.\n");
--		return IRQ_NONE;	/* Not our interrupt */
-+	spin_lock(&qdev->hw_lock);
-+	if (atomic_read(&qdev->intr_context[0].irq_cnt)) {
-+		QPRINTK(qdev, INTR, DEBUG, "Shared Interrupt, Not ours!\n");
-+		spin_unlock(&qdev->hw_lock);
-+		return IRQ_NONE;
- 	}
-+	spin_unlock(&qdev->hw_lock);
- 
--	var = ql_read32(qdev, STS);
-+	var = ql_disable_completion_interrupt(qdev, intr_context->intr);
- 
- 	/*
- 	 * Check for fatal error.
-@@ -1823,6 +1827,7 @@ static irqreturn_t qlge_isr(int irq, void *dev_id)
- 			}
- 		}
- 	}
-+	ql_enable_completion_interrupt(qdev, intr_context->intr);
- 	return work_done ? IRQ_HANDLED : IRQ_NONE;
- }
- 
-@@ -2701,8 +2706,6 @@ msi:
- 		}
- 	}
- 	irq_type = LEG_IRQ;
--	spin_lock_init(&qdev->legacy_lock);
--	qdev->legacy_check = ql_legacy_check;
- 	QPRINTK(qdev, IFUP, DEBUG, "Running with legacy interrupts.\n");
- }
- 
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index c821da2..2b4e975 100644
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -81,6 +81,10 @@ static const int multicast_filter_limit = 32;
- #define RTL8169_TX_TIMEOUT	(6*HZ)
- #define RTL8169_PHY_TIMEOUT	(10*HZ)
- 
-+#define RTL_EEPROM_SIG		cpu_to_le32(0x8129)
-+#define RTL_EEPROM_SIG_MASK	cpu_to_le32(0xffff)
-+#define RTL_EEPROM_SIG_ADDR	0x0000
-+
- /* write/read MMIO register */
- #define RTL_W8(reg, val8)	writeb ((val8), ioaddr + (reg))
- #define RTL_W16(reg, val16)	writew ((val16), ioaddr + (reg))
-@@ -1944,14 +1948,15 @@ static void rtl_init_mac_address(struct rtl8169_private *tp,
- 				 void __iomem *ioaddr)
- {
- 	struct pci_dev *pdev = tp->pci_dev;
--	u8 cfg1;
- 	int vpd_cap;
-+	__le32 sig;
- 	u8 mac[8];
--	DECLARE_MAC_BUF(buf);
-+	u8 cfg1;
- 
- 	cfg1 = RTL_R8(Config1);
- 	if (!(cfg1  & VPD)) {
--		dprintk("VPD access not enabled, enabling\n");
-+		if (netif_msg_probe(tp))
-+			dev_info(&pdev->dev, "VPD access disabled, enabling\n");
- 		RTL_W8(Cfg9346, Cfg9346_Unlock);
- 		RTL_W8(Config1, cfg1 | VPD);
- 		RTL_W8(Cfg9346, Cfg9346_Lock);
-@@ -1961,7 +1966,16 @@ static void rtl_init_mac_address(struct rtl8169_private *tp,
- 	if (!vpd_cap)
- 		return;
- 
--	/* MAC address is stored in EEPROM at offset 0x0e
-+	if (rtl_eeprom_read(pdev, vpd_cap, RTL_EEPROM_SIG_ADDR, &sig) < 0)
-+		return;
-+
-+	if ((sig & RTL_EEPROM_SIG_MASK) != RTL_EEPROM_SIG) {
-+		dev_info(&pdev->dev, "Missing EEPROM signature: %08x\n", sig);
-+		return;
-+	}
-+
-+	/*
-+	 * MAC address is stored in EEPROM at offset 0x0e
- 	 * Realtek says: "The VPD address does not have to be a DWORD-aligned
- 	 * address as defined in the PCI 2.2 Specifications, but the VPD data
- 	 * is always consecutive 4-byte data starting from the VPD address
-@@ -1969,14 +1983,22 @@ static void rtl_init_mac_address(struct rtl8169_private *tp,
- 	 */
- 	if (rtl_eeprom_read(pdev, vpd_cap, 0x000e, (__le32*)&mac[0]) < 0 ||
- 	    rtl_eeprom_read(pdev, vpd_cap, 0x0012, (__le32*)&mac[4]) < 0) {
--		dprintk("Reading MAC address from EEPROM failed\n");
-+		if (netif_msg_probe(tp)) {
-+			dev_warn(&pdev->dev,
-+				 "reading MAC address from EEPROM failed\n");
-+		}
- 		return;
- 	}
- 
--	dprintk("MAC address found in EEPROM: %s\n", print_mac(buf, mac));
-+	if (netif_msg_probe(tp)) {
-+		DECLARE_MAC_BUF(buf);
-+
-+		dev_info(&pdev->dev, "MAC address found in EEPROM: %s\n",
-+			 print_mac(buf, mac));
-+	}
- 
--	/* Write MAC address */
--	rtl_rar_set(tp, mac);
-+	if (is_valid_ether_addr(mac))
-+		rtl_rar_set(tp, mac);
- }
- 
- static int __devinit
-diff --git a/drivers/net/sis190.c b/drivers/net/sis190.c
-index 3fe0176..e6e3bf5 100644
---- a/drivers/net/sis190.c
-+++ b/drivers/net/sis190.c
-@@ -317,6 +317,7 @@ static struct mii_chip_info {
-         unsigned int type;
- 	u32 feature;
- } mii_chip_table[] = {
-+	{ "Atheros PHY AR8012",   { 0x004d, 0xd020 }, LAN, 0 },
- 	{ "Broadcom PHY BCM5461", { 0x0020, 0x60c0 }, LAN, F_PHY_BCM5461 },
- 	{ "Broadcom PHY AC131",   { 0x0143, 0xbc70 }, LAN, 0 },
- 	{ "Agere PHY ET1101B",    { 0x0282, 0xf010 }, LAN, 0 },
-diff --git a/drivers/net/smc911x.c b/drivers/net/smc911x.c
-index 8aa7460..f59c777 100644
---- a/drivers/net/smc911x.c
-+++ b/drivers/net/smc911x.c
-@@ -155,23 +155,17 @@ static void PRINT_PKT(u_char *buf, int length)
- /* this enables an interrupt in the interrupt mask register */
- #define SMC_ENABLE_INT(lp, x) do {			\
- 	unsigned int  __mask;				\
--	unsigned long __flags;				\
--	spin_lock_irqsave(&lp->lock, __flags);		\
- 	__mask = SMC_GET_INT_EN((lp));			\
- 	__mask |= (x);					\
- 	SMC_SET_INT_EN((lp), __mask);			\
--	spin_unlock_irqrestore(&lp->lock, __flags);	\
- } while (0)
- 
- /* this disables an interrupt from the interrupt mask register */
- #define SMC_DISABLE_INT(lp, x) do {			\
- 	unsigned int  __mask;				\
--	unsigned long __flags;				\
--	spin_lock_irqsave(&lp->lock, __flags);		\
- 	__mask = SMC_GET_INT_EN((lp));			\
- 	__mask &= ~(x);					\
- 	SMC_SET_INT_EN((lp), __mask);			\
--	spin_unlock_irqrestore(&lp->lock, __flags);	\
- } while (0)
- 
- /*
-@@ -180,7 +174,7 @@ static void PRINT_PKT(u_char *buf, int length)
- static void smc911x_reset(struct net_device *dev)
- {
- 	struct smc911x_local *lp = netdev_priv(dev);
--	unsigned int reg, timeout=0, resets=1;
-+	unsigned int reg, timeout=0, resets=1, irq_cfg;
- 	unsigned long flags;
- 
- 	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
-@@ -252,7 +246,12 @@ static void smc911x_reset(struct net_device *dev)
- 	 * Deassert IRQ for 1*10us for edge type interrupts
- 	 * and drive IRQ pin push-pull
- 	 */
--	SMC_SET_IRQ_CFG(lp, (1 << 24) | INT_CFG_IRQ_EN_ | INT_CFG_IRQ_TYPE_);
-+	irq_cfg = (1 << 24) | INT_CFG_IRQ_EN_ | INT_CFG_IRQ_TYPE_;
-+#ifdef SMC_DYNAMIC_BUS_CONFIG
-+	if (lp->cfg.irq_polarity)
-+		irq_cfg |= INT_CFG_IRQ_POL_;
-+#endif
-+	SMC_SET_IRQ_CFG(lp, irq_cfg);
- 
- 	/* clear anything saved */
- 	if (lp->pending_tx_skb != NULL) {
-@@ -274,6 +273,8 @@ static void smc911x_enable(struct net_device *dev)
- 
- 	DBG(SMC_DEBUG_FUNC, "%s: --> %s\n", dev->name, __func__);
- 
-+	spin_lock_irqsave(&lp->lock, flags);
-+
- 	SMC_SET_MAC_ADDR(lp, dev->dev_addr);
- 
- 	/* Enable TX */
-@@ -286,12 +287,10 @@ static void smc911x_enable(struct net_device *dev)
- 	SMC_SET_FIFO_TSL(lp, 64);
- 	SMC_SET_GPT_CFG(lp, GPT_CFG_TIMER_EN_ | 10000);
- 
--	spin_lock_irqsave(&lp->lock, flags);
- 	SMC_GET_MAC_CR(lp, cr);
- 	cr |= MAC_CR_TXEN_ | MAC_CR_HBDIS_;
- 	SMC_SET_MAC_CR(lp, cr);
- 	SMC_SET_TX_CFG(lp, TX_CFG_TX_ON_);
--	spin_unlock_irqrestore(&lp->lock, flags);
- 
- 	/* Add 2 byte padding to start of packets */
- 	SMC_SET_RX_CFG(lp, (2<<8) & RX_CFG_RXDOFF_);
-@@ -300,9 +299,7 @@ static void smc911x_enable(struct net_device *dev)
- 	if (cr & MAC_CR_RXEN_)
- 		DBG(SMC_DEBUG_RX, "%s: Receiver already enabled\n", dev->name);
- 
--	spin_lock_irqsave(&lp->lock, flags);
- 	SMC_SET_MAC_CR(lp, cr | MAC_CR_RXEN_);
--	spin_unlock_irqrestore(&lp->lock, flags);
- 
- 	/* Interrupt on every received packet */
- 	SMC_SET_FIFO_RSA(lp, 0x01);
-@@ -318,6 +315,8 @@ static void smc911x_enable(struct net_device *dev)
- 		mask|=INT_EN_RDFO_EN_;
- 	}
- 	SMC_ENABLE_INT(lp, mask);
-+
-+	spin_unlock_irqrestore(&lp->lock, flags);
- }
- 
- /*
-@@ -458,7 +457,6 @@ static void smc911x_hardware_send_pkt(struct net_device *dev)
- 	struct sk_buff *skb;
- 	unsigned int cmdA, cmdB, len;
- 	unsigned char *buf;
--	unsigned long flags;
- 
- 	DBG(SMC_DEBUG_FUNC | SMC_DEBUG_TX, "%s: --> %s\n", dev->name, __func__);
- 	BUG_ON(lp->pending_tx_skb == NULL);
-@@ -503,11 +501,9 @@ static void smc911x_hardware_send_pkt(struct net_device *dev)
- 	dev->trans_start = jiffies;
- 	dev_kfree_skb(skb);
- #endif
--	spin_lock_irqsave(&lp->lock, flags);
- 	if (!lp->tx_throttle) {
- 		netif_wake_queue(dev);
- 	}
--	spin_unlock_irqrestore(&lp->lock, flags);
- 	SMC_ENABLE_INT(lp, INT_EN_TDFA_EN_ | INT_EN_TSFL_EN_);
- }
- 
-@@ -526,6 +522,8 @@ static int smc911x_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	DBG(SMC_DEBUG_FUNC | SMC_DEBUG_TX, "%s: --> %s\n",
- 		dev->name, __func__);
- 
-+	spin_lock_irqsave(&lp->lock, flags);
-+
- 	BUG_ON(lp->pending_tx_skb != NULL);
- 
- 	free = SMC_GET_TX_FIFO_INF(lp) & TX_FIFO_INF_TDFREE_;
-@@ -535,12 +533,10 @@ static int smc911x_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	if (free <= SMC911X_TX_FIFO_LOW_THRESHOLD) {
- 		DBG(SMC_DEBUG_TX, "%s: Disabling data flow due to low FIFO space (%d)\n",
- 			dev->name, free);
--		spin_lock_irqsave(&lp->lock, flags);
- 		/* Reenable when at least 1 packet of size MTU present */
- 		SMC_SET_FIFO_TDA(lp, (SMC911X_TX_FIFO_LOW_THRESHOLD)/64);
- 		lp->tx_throttle = 1;
- 		netif_stop_queue(dev);
--		spin_unlock_irqrestore(&lp->lock, flags);
- 	}
- 
- 	/* Drop packets when we run out of space in TX FIFO
-@@ -556,6 +552,7 @@ static int smc911x_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 		lp->pending_tx_skb = NULL;
- 		dev->stats.tx_errors++;
- 		dev->stats.tx_dropped++;
-+		spin_unlock_irqrestore(&lp->lock, flags);
- 		dev_kfree_skb(skb);
- 		return 0;
- 	}
-@@ -565,7 +562,6 @@ static int smc911x_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 		/* If the DMA is already running then defer this packet Tx until
- 		 * the DMA IRQ starts it
- 		 */
--		spin_lock_irqsave(&lp->lock, flags);
- 		if (lp->txdma_active) {
- 			DBG(SMC_DEBUG_TX | SMC_DEBUG_DMA, "%s: Tx DMA running, deferring packet\n", dev->name);
- 			lp->pending_tx_skb = skb;
-@@ -576,11 +572,11 @@ static int smc911x_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 			DBG(SMC_DEBUG_TX | SMC_DEBUG_DMA, "%s: Activating Tx DMA\n", dev->name);
- 			lp->txdma_active = 1;
- 		}
--		spin_unlock_irqrestore(&lp->lock, flags);
- 	}
- #endif
- 	lp->pending_tx_skb = skb;
- 	smc911x_hardware_send_pkt(dev);
-+	spin_unlock_irqrestore(&lp->lock, flags);
- 
- 	return 0;
- }
-@@ -1242,7 +1238,7 @@ smc911x_rx_dma_irq(int dma, void *data)
- 	netif_rx(skb);
- 
- 	spin_lock_irqsave(&lp->lock, flags);
--	pkts = (SMC_GET_RX_FIFO_INF() & RX_FIFO_INF_RXSUSED_) >> 16;
-+	pkts = (SMC_GET_RX_FIFO_INF(lp) & RX_FIFO_INF_RXSUSED_) >> 16;
- 	if (pkts != 0) {
- 		smc911x_rcv(dev);
- 	}else {
-@@ -2054,7 +2050,7 @@ err_out:
-  */
- static int smc911x_drv_probe(struct platform_device *pdev)
- {
--	struct smc91x_platdata *pd = pdev->dev.platform_data;
-+	struct smc911x_platdata *pd = pdev->dev.platform_data;
- 	struct net_device *ndev;
- 	struct resource *res;
- 	struct smc911x_local *lp;
-diff --git a/drivers/net/smc911x.h b/drivers/net/smc911x.h
-index bf6240f..cc7d85b 100644
---- a/drivers/net/smc911x.h
-+++ b/drivers/net/smc911x.h
-@@ -50,6 +50,10 @@
- #define SMC_DYNAMIC_BUS_CONFIG
- #endif
- 
-+#ifdef SMC_USE_PXA_DMA
-+#define SMC_USE_DMA
-+#endif
-+
- /* store this information for the driver.. */
- struct smc911x_local {
- 	/*
-@@ -196,8 +200,6 @@ static inline void SMC_outsl(struct smc911x_local *lp, int reg,
- 
- 
- #ifdef SMC_USE_PXA_DMA
--#define SMC_USE_DMA
--
- /*
-  * Define the request and free functions
-  * These are unfortunately architecture specific as no generic allocation
-diff --git a/include/linux/smc911x.h b/include/linux/smc911x.h
-index b58f54c..521f371 100644
---- a/include/linux/smc911x.h
-+++ b/include/linux/smc911x.h
-@@ -7,6 +7,7 @@
- struct smc911x_platdata {
- 	unsigned long flags;
- 	unsigned long irq_flags; /* IRQF_... */
-+	int irq_polarity;
- };
- 
- #endif /* __SMC911X_H__ */
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
