@@ -1,73 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756287AbYJVKif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbYJVKiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756287AbYJVKif (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 06:38:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754816AbYJVKiW
+	id S1756596AbYJVKiu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 06:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755931AbYJVKid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 06:38:22 -0400
-Received: from bioshock.netsplit.com ([89.16.172.233]:51606 "EHLO
-	bioshock.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755407AbYJVKiT (ORCPT
+	Wed, 22 Oct 2008 06:38:33 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:52586 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756242AbYJVKic (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 06:38:19 -0400
-X-Greylist: delayed 2900 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Oct 2008 06:38:19 EDT
-Subject: Re: [PATCH v2] add MODULE_ALIAS to load ipmi_devintf with ipmi_si
-From: Scott James Remnant <scott@canonical.com>
-To: Corey Minyard <minyard@acm.org>
-Cc: Tim Gardner <timg@tpi.com>, kernel-team@lists.ubuntu.com,
-       linux-kernel@vger.kernel.org, openipmi-developer@lists.sourceforge.net
-In-Reply-To: <48FE3EE2.6040009@acm.org>
-References: <20081021161536.D7CD65A15E@sepang.rtg.net>
-	 <48FE3EE2.6040009@acm.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Fs0s2FKqjQH3fYHfRhql"
-Date: Wed, 22 Oct 2008 10:50:02 +0100
-Message-Id: <1224669002.8541.15.camel@quest>
+	Wed, 22 Oct 2008 06:38:32 -0400
+Date: Wed, 22 Oct 2008 19:38:31 +0900 (JST)
+Message-Id: <20081022.193831.193716981.ryov@valinux.co.jp>
+To: zumeng.chen@windriver.com
+Cc: agk@redhat.com, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp
+Subject: Re: [PATCH 0/2] dm-ioband: I/O bandwidth controller v1.8.0:
+ Introduction
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <48FDB8AC.9020707@windriver.com>
+References: <20081017.160950.71109894.ryov@valinux.co.jp>
+	<48FDB8AC.9020707@windriver.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.0 
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Chen,
 
---=-Fs0s2FKqjQH3fYHfRhql
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> I applied your patches(both) into the latest kernel(27), and dm-ioband
+> looks work well(other than schedule_timeout in alloc_ioband_device);
+> But I think you are the author of bio_tracking, so it is high
+> appreciated if you can give your comments and advices for potential
+> difference between 27-rc5-mm1 and 2.6.27 to me.
 
-On Tue, 2008-10-21 at 15:43 -0500, Corey Minyard wrote:
+There is no major difference between both version, but I have no time
+to port and test bio-cgroup to/on 2.6.27.
 
-> Yes, this is certainly a good idea.  I'm not 100% sure of the string,=20
-> but it looks reasonable.
->=20
-The string matches the one in the platform device created by the ipmi_si
-module for each device:
+Kamezawa-san said
+> the newest mmotm has the newest *big* change. enjoy it ;)
 
-UEVENT[1224021721.100748] add      /devices/platform/ipmi_si.0 (platform)
-ACTION=3Dadd
-DEVPATH=3D/devices/platform/ipmi_si.0
-SUBSYSTEM=3Dplatform
-DRIVER=3Dipmi_si
-MODALIAS=3Dplatform:ipmi_si
-SEQNUM=3D2812
+The next bio-cgroup patch will be based on this newest change.
 
-You also get an "ipmi_bmc.NNNN.NN" device, with a platform:ipmi_bmc.NNNN
-MODALIAS, but it wasn't clear to me what that was.
-
-Scott
---=20
-Scott James Remnant
-scott@canonical.com
-
---=-Fs0s2FKqjQH3fYHfRhql
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkj+90oACgkQSnQiFMl4yK5jaACfXy3c/SrH2cTIrGH8Zug1ow8V
-D74An0yVtDJr9zHjy1FIjZ+is3XGEsk4
-=VFww
------END PGP SIGNATURE-----
-
---=-Fs0s2FKqjQH3fYHfRhql--
-
+Thanks,
+Ryo Tsuruta
