@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbYJVVhO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759794AbYJVVhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757340AbYJVVhO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 17:37:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757637AbYJVVf5
+	id S1759794AbYJVVhn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 17:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757813AbYJVVf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 17:35:57 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:54795 "EHLO
+	Wed, 22 Oct 2008 17:35:58 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33407 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757051AbYJVVfx (ORCPT
+	with ESMTP id S1755949AbYJVVfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 22 Oct 2008 17:35:53 -0400
-Message-Id: <20081022213552.440512191@goodmis.org>
+Message-Id: <20081022213552.103446927@goodmis.org>
 References: <20081022212721.167005680@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Oct 2008 17:27:29 -0400
+Date: Wed, 22 Oct 2008 17:27:27 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
@@ -24,72 +24,135 @@ Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 08/13 v2] ftrace: do not trace init sections
-Content-Disposition: inline; filename=ftrace-notrace-init-sects.patch
+Subject: [PATCH 06/13 v2] ftrace: only have ftrace_kill atomic
+Content-Disposition: inline; filename=ftrace-only-kill-atomic.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The recordmcount script is now robust enough not to process any sections
-but the .text section. But the gcc compiler still adds a call to mcount.
+When an anomaly is detected, we need a way to completely disable
+ftrace. Right now we have two functions: ftrace_kill and ftrace_kill_atomic.
+The ftrace_kill tries to do it in a "nice" way by converting everything
+back to a nop.
 
-Note: The function mcount looks like:
-
-  ENTRY(mcount)
-	ret
-  END(mcount)
-
-Which means the overhead is just a return.
-
-This patch adds notrace to the init sections to not even bother calling
-mcount (which simply returns).
-
+The "nice" way is dangerous itself, so this patch removes it and only
+has the "atomic" version, which is all that is needed.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- include/linux/init.h |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ include/linux/ftrace.h |    3 +--
+ kernel/trace/ftrace.c  |   42 ++----------------------------------------
+ kernel/trace/trace.c   |    2 +-
+ 3 files changed, 4 insertions(+), 43 deletions(-)
 
-Index: linux-compile.git/include/linux/init.h
+Index: linux-compile.git/include/linux/ftrace.h
 ===================================================================
---- linux-compile.git.orig/include/linux/init.h	2008-10-22 11:49:44.000000000 -0400
-+++ linux-compile.git/include/linux/init.h	2008-10-22 12:27:19.000000000 -0400
-@@ -75,15 +75,15 @@
+--- linux-compile.git.orig/include/linux/ftrace.h	2008-10-22 15:57:31.000000000 -0400
++++ linux-compile.git/include/linux/ftrace.h	2008-10-22 15:58:35.000000000 -0400
+@@ -40,7 +40,7 @@ extern void ftrace_stub(unsigned long a0
+ # define register_ftrace_function(ops) do { } while (0)
+ # define unregister_ftrace_function(ops) do { } while (0)
+ # define clear_ftrace_function(ops) do { } while (0)
+-static inline void ftrace_kill_atomic(void) { }
++static inline void ftrace_kill(void) { }
+ #endif /* CONFIG_FTRACE */
  
+ #ifdef CONFIG_DYNAMIC_FTRACE
+@@ -117,7 +117,6 @@ static inline void ftrace_release(void *
  
- #ifdef MODULE
--#define __exitused
-+#define __exitused notrace
- #else
--#define __exitused  __used
-+#define __exitused  __used notrace
- #endif
+ /* totally disable ftrace - can not re-enable after this */
+ void ftrace_kill(void);
+-void ftrace_kill_atomic(void);
  
- #define __exit          __section(.exit.text) __exitused __cold
+ static inline void tracer_disable(void)
+ {
+Index: linux-compile.git/kernel/trace/ftrace.c
+===================================================================
+--- linux-compile.git.orig/kernel/trace/ftrace.c	2008-10-22 15:49:49.000000000 -0400
++++ linux-compile.git/kernel/trace/ftrace.c	2008-10-22 15:58:35.000000000 -0400
+@@ -1544,22 +1544,6 @@ int ftrace_force_update(void)
+ 	return ret;
+ }
  
- /* Used for HOTPLUG */
--#define __devinit        __section(.devinit.text) __cold
-+#define __devinit        __section(.devinit.text) __cold notrace
- #define __devinitdata    __section(.devinit.data)
- #define __devinitconst   __section(.devinit.rodata)
- #define __devexit        __section(.devexit.text) __exitused __cold
-@@ -91,7 +91,7 @@
- #define __devexitconst   __section(.devexit.rodata)
+-static void ftrace_force_shutdown(void)
+-{
+-	struct task_struct *task;
+-	int command = FTRACE_DISABLE_CALLS | FTRACE_UPDATE_TRACE_FUNC;
+-
+-	mutex_lock(&ftraced_lock);
+-	task = ftraced_task;
+-	ftraced_task = NULL;
+-	ftraced_suspend = -1;
+-	ftrace_run_update_code(command);
+-	mutex_unlock(&ftraced_lock);
+-
+-	if (task)
+-		kthread_stop(task);
+-}
+-
+ static __init int ftrace_init_debugfs(void)
+ {
+ 	struct dentry *d_tracer;
+@@ -1752,17 +1736,16 @@ core_initcall(ftrace_dynamic_init);
+ # define ftrace_shutdown()		do { } while (0)
+ # define ftrace_startup_sysctl()	do { } while (0)
+ # define ftrace_shutdown_sysctl()	do { } while (0)
+-# define ftrace_force_shutdown()	do { } while (0)
+ #endif /* CONFIG_DYNAMIC_FTRACE */
  
- /* Used for HOTPLUG_CPU */
--#define __cpuinit        __section(.cpuinit.text) __cold
-+#define __cpuinit        __section(.cpuinit.text) __cold notrace
- #define __cpuinitdata    __section(.cpuinit.data)
- #define __cpuinitconst   __section(.cpuinit.rodata)
- #define __cpuexit        __section(.cpuexit.text) __exitused __cold
-@@ -99,7 +99,7 @@
- #define __cpuexitconst   __section(.cpuexit.rodata)
+ /**
+- * ftrace_kill_atomic - kill ftrace from critical sections
++ * ftrace_kill - kill ftrace
+  *
+  * This function should be used by panic code. It stops ftrace
+  * but in a not so nice way. If you need to simply kill ftrace
+  * from a non-atomic section, use ftrace_kill.
+  */
+-void ftrace_kill_atomic(void)
++void ftrace_kill(void)
+ {
+ 	ftrace_disabled = 1;
+ 	ftrace_enabled = 0;
+@@ -1773,27 +1756,6 @@ void ftrace_kill_atomic(void)
+ }
  
- /* Used for MEMORY_HOTPLUG */
--#define __meminit        __section(.meminit.text) __cold
-+#define __meminit        __section(.meminit.text) __cold notrace
- #define __meminitdata    __section(.meminit.data)
- #define __meminitconst   __section(.meminit.rodata)
- #define __memexit        __section(.memexit.text) __exitused __cold
+ /**
+- * ftrace_kill - totally shutdown ftrace
+- *
+- * This is a safety measure. If something was detected that seems
+- * wrong, calling this function will keep ftrace from doing
+- * any more modifications, and updates.
+- * used when something went wrong.
+- */
+-void ftrace_kill(void)
+-{
+-	mutex_lock(&ftrace_sysctl_lock);
+-	ftrace_disabled = 1;
+-	ftrace_enabled = 0;
+-
+-	clear_ftrace_function();
+-	mutex_unlock(&ftrace_sysctl_lock);
+-
+-	/* Try to totally disable ftrace */
+-	ftrace_force_shutdown();
+-}
+-
+-/**
+  * register_ftrace_function - register a function for profiling
+  * @ops - ops structure that holds the function for profiling.
+  *
+Index: linux-compile.git/kernel/trace/trace.c
+===================================================================
+--- linux-compile.git.orig/kernel/trace/trace.c	2008-10-22 15:09:04.000000000 -0400
++++ linux-compile.git/kernel/trace/trace.c	2008-10-22 15:58:35.000000000 -0400
+@@ -3097,7 +3097,7 @@ void ftrace_dump(void)
+ 	dump_ran = 1;
+ 
+ 	/* No turning back! */
+-	ftrace_kill_atomic();
++	ftrace_kill();
+ 
+ 	for_each_tracing_cpu(cpu) {
+ 		atomic_inc(&global_trace.data[cpu]->disabled);
 
 -- 
