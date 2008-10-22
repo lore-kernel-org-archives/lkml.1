@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbYJVRuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbYJVRu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757958AbYJVRuF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:50:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758881AbYJVRnk
+	id S1758266AbYJVRu5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759520AbYJVRob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:43:40 -0400
-Received: from kroah.org ([198.145.64.141]:49739 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757888AbYJVRnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:43:39 -0400
-Date: Wed, 22 Oct 2008 10:40:04 -0700
-From: Greg KH <greg@kroah.com>
-To: Rodolfo Giometti <giometti@linux.it>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] Add c2 port support.
-Message-ID: <20081022174004.GB10587@kroah.com>
-References: <1224683240-15439-1-git-send-email-giometti@linux.it> <1224683240-15439-2-git-send-email-giometti@linux.it>
+	Wed, 22 Oct 2008 13:44:31 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:41884 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759512AbYJVRo3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 13:44:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=oDcuVyzYmrb57YByBmyCTl0HRNqh+upVdaSpBKsqOFrOF1CY4mUqOtA2hBLzsunJB3
+         YmB/fSpBuK59byITQKRDyG+JrgPc99GTV0iYdbLToE7A1ZkEA2JqY9OMgfONLwnGAThq
+         yiT2ML6hIFUQNPBybtj4lhpMeCIT76TW1WChM=
+Message-ID: <c62985530810221044v342ce186x51d4c8eaf48a8ed8@mail.gmail.com>
+Date: Wed, 22 Oct 2008 19:44:27 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [PATCH][RESEND] tracing/ftrace: Introduce the big kernel lock tracer
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <48FF628A.2080405@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1224683240-15439-2-git-send-email-giometti@linux.it>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <48FF5E54.7000101@gmail.com> <48FF628A.2080405@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 03:47:19PM +0200, Rodolfo Giometti wrote:
-> C2port implements a two wire serial communication protocol (bit
-> banging) designed to enable in-system programming, debugging, and
-> boundary-scan testing on low pin-count Silicon Labs devices.
-> 
-> Currently this code supports only flash programming through sysfs
-> interface but extensions shoud be easy to add.
-> 
-> Signed-off-by: Rodolfo Giometti <giometti@linux.it>
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+2008/10/22 Randy Dunlap <randy.dunlap@oracle.com>
+>
+> Please use the more common/accepted long-comment style:
+>
+> /*
+>  * comment line 1
+>  * comment line 2
+>  */
+>
 
-Nice job.
+Ok, I will correct it.
 
-Andrew, no reason why these 2 patches can't go into 2.6.28, they are
-self-contained and are new drivers.
 
-Do you want to send them to Linus, or want me to?
+>                                         requests
 
-thanks,
+Oops....
 
-greg k-h
+
+> what is <bkl_trace> used for?  or unused?
+
+It is used on trace_bkl_acquire and trace_bkl_release functions. It is
+really necessary
+to keep a reference to the global trace array.
+
+I can send a new patch with the corrections or send a new one which
+applies on this one
+if it is accepted.
+As you want Ingo...
