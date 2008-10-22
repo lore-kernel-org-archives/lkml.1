@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758959AbYJVU7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758796AbYJVVBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758959AbYJVU7X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 16:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbYJVU7P
+	id S1758796AbYJVVBS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 17:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbYJVVBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 16:59:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60780 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752707AbYJVU7P (ORCPT
+	Wed, 22 Oct 2008 17:01:03 -0400
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:51887 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752357AbYJVVBC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 16:59:15 -0400
-Date: Wed, 22 Oct 2008 13:58:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Add c2 port support.
-Message-Id: <20081022135810.37c564f8.akpm@linux-foundation.org>
-In-Reply-To: <20081022204800.GT4390@tekkaman>
-References: <1224683240-15439-1-git-send-email-giometti@linux.it>
-	<1224683240-15439-2-git-send-email-giometti@linux.it>
-	<20081022174004.GB10587@kroah.com>
-	<20081022111145.e5f3c632.akpm@linux-foundation.org>
-	<20081022195245.GS4390@tekkaman>
-	<20081022130150.00836eba.akpm@linux-foundation.org>
-	<20081022204800.GT4390@tekkaman>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Oct 2008 17:01:02 -0400
+Date: Wed, 22 Oct 2008 13:59:54 -0700 (PDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au, hugh@veritas.com,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: SLUB defrag pull request?
+In-Reply-To: <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu>
+Message-ID: <Pine.LNX.4.64.0810221341500.26671@quilx.com>
+References: <1223883004.31587.15.camel@penberg-laptop>
+ <Pine.LNX.4.64.0810131227120.20511@blonde.site> <200810132354.30789.nickpiggin@yahoo.com.au>
+ <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu> <E1KpOOL-0003Vf-9y@pomaz-ex.szeredi.hu>
+ <48F378C6.7030206@linux-foundation.org> <E1KpOjX-0003dt-AY@pomaz-ex.szeredi.hu>
+ <48FC9CCC.3040006@linux-foundation.org> <E1Krz4o-0002Fi-Pu@pomaz-ex.szeredi.hu>
+ <48FCCC72.5020202@linux-foundation.org> <E1KrzgK-0002QS-Os@pomaz-ex.szeredi.hu>
+ <48FCD7CB.4060505@linux-foundation.org> <E1Ks0QX-0002aC-SQ@pomaz-ex.szeredi.hu>
+ <48FCE1C4.20807@linux-foundation.org> <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu>
+ <48FE6306.6020806@linux-foundation.org> <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu>
+ <Pine.LNX.4.64.0810220822500.30851@quilx.com> <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu>
+ <Pine.LNX.4.64.0810221252570.3562@quilx.com> <E1Ksk3g-00027r-Lp@pomaz-ex.szeredi.hu>
+ <Pine.LNX.4.64.0810221315080.26671@quilx.com> <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Spam-Score: -2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Oct 2008 22:48:01 +0200
-Rodolfo Giometti <giometti@enneenne.com> wrote:
+On Wed, 22 Oct 2008, Miklos Szeredi wrote:
 
-> > > > What I haven't yet got my head around is this:
-> > > > 
-> > > >   Currently this code supports only flash programming through sysfs
-> > > >   interface but extensions shoud be easy to add.
-> > > > 
-> > > > is that really what we want to use sysfs for?  As the prime interface
-> > > > to a device driver (or is it a bus driver?) Didn't we used to use
-> > > > device nodes for that sort of thing?
-> > > 
-> > > I decided to use this interface since the C2 ports are simple and very
-> > > easy to manage with such files abstraction.
-> > 
-> > well..  what _is_ the implemented interface?  What alternatives were
-> > considered and why were they judged inappropriate?  What interfaces do
-> > any similar in-tree drivers use?
-> 
-> Well... main reasons in using sysfs support are:
-> 
-> * no more char devices and new ioctls to define,
-> 
+>> That is the impression that I got from you too. I have listed the options
+>> to get a reliable reference to an object and you seem to just skip over
+>> it.
+>
+> Because you don't _need_ a reliable reference to access the contents
+> of the dentry.  The dentry is still there after being freed, as long
+> as the underlying slab is there and isn't being reused for some other
+> purpose.  But you can easily ensure that from the slab code.
 
-Why is that good?  We have hundreds and hundreds of drivers which use a
-device node interface and they work OK.
+With the two callbacks that I described that would take the global 
+lock? That was already discussed before. Please read! It does not scale 
+and the lock would have to be acquired before objects in a slab page are 
+scanned and handled in any way.
 
-sysfs was never intended for use as the sole interface between device
-drivers and userspace.  Using it that way is somewhat unconventional. 
-At the very least I do think it needs more justification and
-explanation than we're being provded here.
+Without that locking any other processor can go into reclaim and start 
+evicting the dentries that we are operating upon.
 
-Device nodes and ioctls and such do have a number of problems, and
-perhaps we should sit down and invent a new way of wiring drivers up to
-userspace.  But whether that would end up being identical to the
-present sysfs code is not obvious.
-
-> * the microcontrollers on-board flash can be easily programmed by
-> using only the "echo" and "cat" commands, so no more tools are needed
-> and even simply busybox can be used.
-
-A system which is using busybox might want to set CONFIG_SYSFS=n for
-memory savings.  Now what?
-
+Freeing in the slab sense means that a kfree ran to get rid of the 
+object.
