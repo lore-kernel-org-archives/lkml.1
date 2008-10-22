@@ -1,75 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753065AbYJVJbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbYJVJdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753065AbYJVJbg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 05:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbYJVJb1
+	id S1754381AbYJVJdW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 05:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbYJVJdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 05:31:27 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:52503 "EHLO smtps.tip.net.au"
+	Wed, 22 Oct 2008 05:33:12 -0400
+Received: from mga09.intel.com ([134.134.136.24]:59636 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751003AbYJVJb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 05:31:26 -0400
-Date: Wed, 22 Oct 2008 20:31:12 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus <torvalds@linux-foundation.org>,
-       ppc-dev <linuxppc-dev@ozlabs.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mfd/wm8350: don't export static functions
-Message-Id: <20081022203112.5a213e8c.sfr@canb.auug.org.au>
-In-Reply-To: <20081016120416.GA5753@rakim.wolfsonmicro.main>
-References: <20081016204754.a41646e5.sfr@canb.auug.org.au>
-	<20081016120416.GA5753@rakim.wolfsonmicro.main>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__22_Oct_2008_20_31_12_+1100_r+.2wIY8=+WLXGWb"
+	id S1751906AbYJVJdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 05:33:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,463,1220252400"; 
+   d="scan'208";a="454253967"
+Date: Wed, 22 Oct 2008 16:38:09 +0800
+From: Yu Zhao <yu.zhao@intel.com>
+To: linux-pci@vger.kernel.org
+Cc: achiang@hp.com, grundler@parisc-linux.org, greg@kroah.com, mingo@elte.hu,
+       jbarnes@virtuousgeek.org, matthew@wil.cx, randy.dunlap@oracle.com,
+       rdreier@cisco.com, linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       virtualization@lists.linux-foundation.org
+Subject: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
+Message-ID: <20081022083809.GA3757@yzhao12-linux.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__22_Oct_2008_20_31_12_+1100_r+.2wIY8=+WLXGWb
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Greetings,
 
-Hi Mark,
+Following patches are intended to support SR-IOV capability in the
+Linux kernel. With these patches, people can turn a PCI device with
+the capability into multiple ones from software perspective, which
+will benefit KVM and achieve other purposes such as QoS, security,
+and etc.
 
-On Thu, 16 Oct 2008 13:04:16 +0100 Mark Brown <broonie@opensource.wolfsonmi=
-cro.com> wrote:
->
-> On Thu, Oct 16, 2008 at 08:47:54PM +1100, Stephen Rothwell wrote:
-> > Today's linux-next build (powerpc allyesconfig) failed like this:
->=20
-> > drivers/mfd/wm8350-core.c:1131: error: __ksymtab_wm8350_create_cache ca=
-uses a section type conflict
->=20
-> > Caused by commit 89b4012befb1abca5e86d232bc0e2a797b0d9825 ("mfd: Core
-> > support for the WM8350 AudioPlus PMIC"). wm8350_create_cache is not used
-> > elsewhere, so remove the EXPORT_SYMBOL.
->=20
-> Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Changes from v5 to v6:
+1, update ABI document to include SR-IOV sysfs entries (Greg KH)
+2, fix two coding style problems (Ingo Molnar)
 
-I thought that this had been applied, but I have had to apply it to my
-tree today again.
+---
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+[PATCH 1/16 v6] PCI: remove unnecessary arg of pci_update_resource()
+[PATCH 2/16 v6] PCI: define PCI resource names in an 'enum'
+[PATCH 3/16 v6] PCI: export __pci_read_base
+[PATCH 4/16 v6] PCI: make pci_alloc_child_bus() be able to handle NULL bridge
+[PATCH 5/16 v6] PCI: add a wrapper for resource_alignment()
+[PATCH 6/16 v6] PCI: add a new function to map BAR offset
+[PATCH 7/16 v6] PCI: cleanup pcibios_allocate_resources()
+[PATCH 8/16 v6] PCI: add boot options to reassign resources
+[PATCH 9/16 v6] PCI: add boot option to align MMIO resources
+[PATCH 10/16 v6] PCI: cleanup pci_bus_add_devices()
+[PATCH 11/16 v6] PCI: split a new function from pci_bus_add_devices()
+[PATCH 12/16 v6] PCI: support the SR-IOV capability
+[PATCH 13/16 v6] PCI: reserve bus range for SR-IOV device
+[PATCH 14/16 v6] PCI: document for SR-IOV user and developer
+[PATCH 15/16 v6] PCI: document the SR-IOV sysfs entries
+[PATCH 16/16 v6] PCI: document the new PCI boot parameters
 
---Signature=_Wed__22_Oct_2008_20_31_12_+1100_r+.2wIY8=+WLXGWb
-Content-Type: application/pgp-signature
+---
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Single Root I/O Virtualization (SR-IOV) capability defined by PCI-SIG
+is intended to enable multiple system software to share PCI hardware
+resources.  PCI device that supports this capability can be extended
+to one Physical Functions plus multiple Virtual Functions. Physical
+Function, which could be considered as the "real" PCI device, reflects
+the hardware instance and manages all physical resources. Virtual
+Functions are associated with a Physical Function and shares physical
+resources with the Physical Function.Software can control allocation of
+Virtual Functions via registers encapsulated in the capability structure.
 
-iEYEARECAAYFAkj+8uAACgkQjjKRsyhoI8xNjwCdETtkt2Q6PjaPlVDF/CxyyqLy
-mEMAn2DX14shHWmFTfYwge1Tv6Q2KbDt
-=Mztl
------END PGP SIGNATURE-----
+SR-IOV specification can be found at
+http://www.pcisig.com/members/downloads/specifications/iov/sr-iov1.0_11Sep07.pdf
 
---Signature=_Wed__22_Oct_2008_20_31_12_+1100_r+.2wIY8=+WLXGWb--
+Devices that support SR-IOV are available from following vendors:
+http://download.intel.com/design/network/ProdBrf/320025.pdf
+http://www.netxen.com/products/chipsolutions/NX3031.html
+http://www.neterion.com/products/x3100.html
