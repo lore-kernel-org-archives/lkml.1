@@ -1,80 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbYJVCE3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbYJVCK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753250AbYJVCE3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 22:04:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbYJVCET
+	id S1753716AbYJVCK0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 22:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbYJVCKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 22:04:19 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:52494 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752029AbYJVCES (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 22:04:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=EJh6j+oOMxgcAlglPMpm4Ej9IESRhvKeGY50diMjykWQmKgBCGfuuOjxYOzutlx5QM
-         gcHylCn4TqUrEEcMGs+91Jhfw3QXl46FUO19yBBT0xvdiz9PRedfhHhh3A+vvWWARC26
-         L03hPnC9lsk7A5B+dSk/O/+HYeK3vM6U7ZnrM=
-Message-ID: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com>
-Date: Tue, 21 Oct 2008 19:04:17 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Release of Atheros 802.11n USB Linux driver
-Cc: "Johannes Berg" <johannes@sipsolutions.net>
+	Tue, 21 Oct 2008 22:10:14 -0400
+Received: from mail.windriver.com ([147.11.1.11]:48290 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752102AbYJVCKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 22:10:12 -0400
+Message-ID: <48FE8B6F.3050406@windriver.com>
+Date: Tue, 21 Oct 2008 21:09:51 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: kgdb 2.6.28 merge plans
+References: <1224616493-23237-1-git-send-email-jason.wessel@windriver.com> <20081021234911.3813f17d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081021234911.3813f17d@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: abe19238da7ddf07
+X-OriginalArrivalTime: 22 Oct 2008 02:09:51.0807 (UTC) FILETIME=[449A64F0:01C933EB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We would like to see our Atheros 802.11n USB Linux driver upstream
-however we need help with this so we are releasing our Atheros 11n USB
-Otus Linux driver under the ISC to the community. The goal is to work
-with the community to help move this forward upstream. We are hoping
-for community help and leadership on this (*cough*).
+Alan Cox wrote:
+>> * kgdboc will request/allocate a tty so as to sync with
+>>   the user space with respect to having only one
+>>   invocation of the low level start up code.
+>
+> The tty stuff for this is not 2.6.28 material
+>
 
-In the meantime users should be able to use this driver and patches
-are welcomed to add newer wireless extension support so users on newer
-kernels can get their devices working. The focus should be upstream
-though :)
+Anything related to tty allocation has been removed from the merge
+request queue, and regression testing is taking place on the revised
+patch set at:
 
-Anyway, some more details.
+git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git
+for_linus
 
-Supported hardware:
+The rx_poll callback support is still on the docket to request a
+merge for 2.6.28.
 
-Atheros 802.11n hardware: UB81, UB82, UB83
+Cheers,
+Jason.
 
-Requirements:
+---
+Atsushi Nemoto (1):
+      kgdb: kgdboc console poll hooks for serial_txx9 uart
 
-Kernel 2.4 - 2.6.24
+Jason Wessel (5):
+      kgdb: Add the ability to schedule a breakpoint via a tasklet
+      tty: Fix sparse static warning for tty_driver_lookup_tty
+      kgdboc, tty: Add the rx polling call back capability
+      kgdboc, 8250: rx polling hook for the 8250 driver
+      kgdboc, amba-pl011: rx polling hook for the amba-pl011 driver
 
-Get the driver:
+Sonic Zhang (1):
+      kgdb: Make mem access function weak in kgdb.c and kgdb.h
 
-git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/otus.git
+ Documentation/DocBook/kgdb.tmpl |   49 ++++++++++++++---
+ drivers/char/tty_io.c           |    9 +---
+ drivers/serial/8250.c           |    4 ++
+ drivers/serial/amba-pl011.c     |    5 ++-
+ drivers/serial/kgdboc.c         |   72 ++++++++++++++++++++++++-
+ drivers/serial/serial_core.c    |   24 ++++++++-
+ drivers/serial/serial_txx9.c    |  113
++++++++++++++++++++++++++++++++-------
+ include/linux/kgdb.h            |   43 ++++++++++++++-
+ include/linux/serial_core.h     |    3 +
+ include/linux/tty_driver.h      |    3 +-
+ kernel/kgdb.c                   |   33 ++++++++++-
+ 11 files changed, 312 insertions(+), 46 deletions(-)
 
-Features supported:
 
-  * IEEE standard compliance
-  * IEEE 802.11a/b/g
-  * IEEE 802.11h, 802.11d
-  * IEEE 80211i
-  * IEEE Draft 2.0 802.11n
-  * Ad Hoc
-        join (2.4GHz, 5GHz if SKU allows), create (2.4GHz , 5GHz if SKU allows)
-        Adhoc security:  WEP
-  * Security
-    Authentication: WPA/WPA2 (Personal / Enterprise),
-        802.1x Encryption: none, AES, TKIP, WEP40, WEP104
-
-wpa_supplicant otus driver:
-
-This driver requires its own supplicant driver for wpa_supplicant
-0.4.8. For your convenience you can find the tarball here:
-
-http://www.kernel.org/pub/linux/kernel/people/mcgrof/otus/wpa_supplicant-0.4.8_otus.tar.bz2
