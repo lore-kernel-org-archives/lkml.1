@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757783AbYJVTWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758740AbYJVTWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757783AbYJVTWT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 15:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbYJVTWF
+	id S1758740AbYJVTWk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 15:22:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbYJVTWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 15:22:05 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:42507 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755142AbYJVTWD (ORCPT
+	Wed, 22 Oct 2008 15:22:20 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:53664 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756971AbYJVTWT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 15:22:03 -0400
-Date: Wed, 22 Oct 2008 15:19:48 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       vgoyal@redhat.com, hbabu@us.ibm.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86: make oops_begin and oops_end equal
-Message-ID: <20081022191948.GB20423@hmsreliant.think-freely.org>
-References: <20081017210013.GD23591@hmsreliant.think-freely.org> <20081020121339.GE10594@elte.hu> <20081020134211.GA15574@hmsreliant.think-freely.org> <20081020150731.GA25999@mailshack.com> <20081020150834.GA26018@mailshack.com> <20081021144505.GA25750@hmsreliant.think-freely.org> <1224670721.25843.1280616145@webmail.messagingengine.com> <20081022104513.GA18951@hmsreliant.think-freely.org> <20081022120222.GE8095@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081022120222.GE8095@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+	Wed, 22 Oct 2008 15:22:19 -0400
+To: "Jesse Brandeburg" <jesse.brandeburg@gmail.com>
+cc: linux-kernel@vger.kernel.org, "NetDEV list" <netdev@vger.kernel.org>,
+       e1000-devel@lists.sourceforge.net
+Subject: Re: e1000e fails after several S3 resumes (2.6.26 Debian, TP T60) 
+In-Reply-To: Your message of "Wed, 22 Oct 2008 09:29:21 PDT."
+             <4807377b0810220929v5906b42bgf9d63215370e5ab5@mail.gmail.com> (sfid-20081022_141704_643135_AA4BDC9C) 
+X-Mailer: MH-E 8.1; nmh 1.2; GNU Emacs 22.2.1
+Date: Wed, 22 Oct 2008 15:21:43 -0400
+From: Sanjoy Mahajan <sanjoy@MIT.EDU>
+Message-Id: <E1KsjH5-0007Mg-0R@approx.mit.edu>
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 02:02:22PM +0200, Ingo Molnar wrote:
-> 
-> * Neil Horman <nhorman@tuxdriver.com> wrote:
-> 
-> > > Thanks for the review. I've sent a redone patch series just a moment 
-> > > ago, based on your comments. There was also another problem with 
-> > > these two patches: oops_end(flags, regs, signr) had special 
-> > > behaviour for regs=NULL that I did not consider before. The series 
-> > > has grown due to this issue...
-> 
-> [...]
-> > Copy that.  Thanks for the quick turn-around.
-> 
-> applied to tip/x86/dumpstack, thanks guys!
-> 
-> Could you please also create arch/x86/kernel/dumpstack.c and move all 
-> the now-unified bits there - before they get out of sync again?
-> 
-I can do this in the next day or so, unless you have an urge to Alexander
-Neil
+Thanks.  I'll use 'ethregs' and 'ethtool -d eth0' at the next
+opportunity, though it might take a few weeks for the problem to recur,
 
-> 	Ingo
-> 
+> you'll have to build ethregs which I haven't tried to do on debian,
+> but it should be possible.
 
--- 
-/****************************************************
- * Neil Horman <nhorman@tuxdriver.com>
- * Software Engineer, Red Hat
- ****************************************************/
+It needed the 'libpci-dev' package and built smoothly.
+
+> There is also lots of opportunity for BIOS bugs to be effecting things
+> so please make sure that you have the latest bios.
+
+It has BIOS 2.20 (79ETE3WW), the latest version when I last upgraded the
+BIOS, but I see that 2.23 is available.  I'll upgrade as soon as I
+remember how on a Windowless (TM) machine.
+
+-Sanjoy
+
+`Until lions have their historians, tales of the hunt shall always
+ glorify the hunters.'  --African Proverb
