@@ -1,24 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757819AbYJVRnC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758472AbYJVRpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757819AbYJVRnC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:43:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757886AbYJVRes
+	id S1758472AbYJVRpY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757598AbYJVRfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:34:48 -0400
-Received: from kroah.org ([198.145.64.141]:53090 "EHLO coco.kroah.org"
+	Wed, 22 Oct 2008 13:35:50 -0400
+Received: from kroah.org ([198.145.64.141]:50446 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757255AbYJVReo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:34:44 -0400
+	id S1757725AbYJVRfo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 13:35:44 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Vijay Kumar <vijaykumar@bravegnu.org>,
-       Alexey Zaytsev <alexey.zaytsev@gmail.com>,
-       Jaya Kumar <jayakumar.lkml@gmail.com>,
-       Ken Sienski <sienski@redrapids.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 27/42] Staging: add poch driver
-Date: Wed, 22 Oct 2008 10:29:08 -0700
-Message-Id: <1224696563-5170-27-git-send-email-gregkh@suse.de>
+Cc: "J.R. Mauro" <jrm8005@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 33/42] Staging: Lindent the echo driver
+Date: Wed, 22 Oct 2008 10:29:14 -0700
+Message-Id: <1224696563-5170-33-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081022172203.GA4000@kroah.com>
 References: <20081022172203.GA4000@kroah.com>
@@ -26,1554 +22,1680 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Vijay Kumar <vijaykumar@bravegnu.org>
+From: J.R. Mauro <jrm8005@gmail.com>
 
-This is the first cut at a driver for the Redrapids Pocket Change
-CardBus devices.
+Lindent drivers/staging/echo*
 
-Receiving data seems to work properly, but overflows happen on transmit.
-Still needs more hardware debugging to work properly.
-
-(cleaned up to use proper driver core api functions by Greg)
-
-From: Vijay Kumar <vijaykumar@bravegnu.org>
-Cc: Alexey Zaytsev <alexey.zaytsev@gmail.com>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: Ken Sienski <sienski@redrapids.com>
+Signed-off by: J.R. Mauro <jrm8005@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/Kconfig       |    2 +
- drivers/staging/Makefile      |    1 +
- drivers/staging/poch/Kconfig  |    6 +
- drivers/staging/poch/Makefile |    1 +
- drivers/staging/poch/README   |    7 +
- drivers/staging/poch/poch.c   | 1425 +++++++++++++++++++++++++++++++++++++++++
- drivers/staging/poch/poch.h   |   29 +
- 7 files changed, 1471 insertions(+), 0 deletions(-)
- create mode 100644 drivers/staging/poch/Kconfig
- create mode 100644 drivers/staging/poch/Makefile
- create mode 100644 drivers/staging/poch/README
- create mode 100644 drivers/staging/poch/poch.c
- create mode 100644 drivers/staging/poch/poch.h
+ drivers/staging/echo/bit_operations.h |  187 ++++----
+ drivers/staging/echo/echo.c           |  815 +++++++++++++++++----------------
+ drivers/staging/echo/echo.h           |    7 +-
+ drivers/staging/echo/fir.h            |  298 ++++++------
+ drivers/staging/echo/mmx.h            |   29 +-
+ drivers/staging/echo/oslec.h          |    2 +-
+ 6 files changed, 660 insertions(+), 678 deletions(-)
 
-diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
-index 65a86b7..c4eff44 100644
---- a/drivers/staging/Kconfig
-+++ b/drivers/staging/Kconfig
-@@ -45,4 +45,6 @@ source "drivers/staging/at76_usb/Kconfig"
+diff --git a/drivers/staging/echo/bit_operations.h b/drivers/staging/echo/bit_operations.h
+index abcd7a2..cecdcf3 100644
+--- a/drivers/staging/echo/bit_operations.h
++++ b/drivers/staging/echo/bit_operations.h
+@@ -36,14 +36,15 @@
+     \return The bit number of the highest set bit, or -1 if the word is zero. */
+ static __inline__ int top_bit(unsigned int bits)
+ {
+-    int res;
+-
+-    __asm__ (" xorl %[res],%[res];\n"
+-             " decl %[res];\n"
+-             " bsrl %[bits],%[res]\n"
+-             : [res] "=&r" (res)
+-             : [bits] "rm" (bits));
+-    return res;
++	int res;
++
++	__asm__(" xorl %[res],%[res];\n"
++		" decl %[res];\n"
++		" bsrl %[bits],%[res]\n"
++		:[res] "=&r" (res)
++		:[bits] "rm"(bits)
++	);
++	return res;
+ }
  
- source "drivers/staging/pcc-acpi/Kconfig"
+ /*! \brief Find the bit position of the lowest set bit in a word
+@@ -51,84 +52,75 @@ static __inline__ int top_bit(unsigned int bits)
+     \return The bit number of the lowest set bit, or -1 if the word is zero. */
+ static __inline__ int bottom_bit(unsigned int bits)
+ {
+-    int res;
+-
+-    __asm__ (" xorl %[res],%[res];\n"
+-             " decl %[res];\n"
+-             " bsfl %[bits],%[res]\n"
+-             : [res] "=&r" (res)
+-             : [bits] "rm" (bits));
+-    return res;
++	int res;
++
++	__asm__(" xorl %[res],%[res];\n"
++		" decl %[res];\n"
++		" bsfl %[bits],%[res]\n"
++		:[res] "=&r" (res)
++		:[bits] "rm"(bits)
++	);
++	return res;
+ }
+ #else
+ static __inline__ int top_bit(unsigned int bits)
+ {
+-    int i;
+-
+-    if (bits == 0)
+-        return -1;
+-    i = 0;
+-    if (bits & 0xFFFF0000)
+-    {
+-        bits &= 0xFFFF0000;
+-        i += 16;
+-    }
+-    if (bits & 0xFF00FF00)
+-    {
+-        bits &= 0xFF00FF00;
+-        i += 8;
+-    }
+-    if (bits & 0xF0F0F0F0)
+-    {
+-        bits &= 0xF0F0F0F0;
+-        i += 4;
+-    }
+-    if (bits & 0xCCCCCCCC)
+-    {
+-        bits &= 0xCCCCCCCC;
+-        i += 2;
+-    }
+-    if (bits & 0xAAAAAAAA)
+-    {
+-        bits &= 0xAAAAAAAA;
+-        i += 1;
+-    }
+-    return i;
++	int i;
++
++	if (bits == 0)
++		return -1;
++	i = 0;
++	if (bits & 0xFFFF0000) {
++		bits &= 0xFFFF0000;
++		i += 16;
++	}
++	if (bits & 0xFF00FF00) {
++		bits &= 0xFF00FF00;
++		i += 8;
++	}
++	if (bits & 0xF0F0F0F0) {
++		bits &= 0xF0F0F0F0;
++		i += 4;
++	}
++	if (bits & 0xCCCCCCCC) {
++		bits &= 0xCCCCCCCC;
++		i += 2;
++	}
++	if (bits & 0xAAAAAAAA) {
++		bits &= 0xAAAAAAAA;
++		i += 1;
++	}
++	return i;
+ }
  
-+source "drivers/staging/poch/Kconfig"
-+
- endif # STAGING
-diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
-index e5c4a38..7cb8701 100644
---- a/drivers/staging/Makefile
-+++ b/drivers/staging/Makefile
-@@ -14,3 +14,4 @@ obj-$(CONFIG_PRISM2_USB)	+= wlan-ng/
- obj-$(CONFIG_ECHO)		+= echo/
- obj-$(CONFIG_USB_ATMEL)		+= at76_usb/
- obj-$(CONFIG_PCC_ACPI)		+= pcc-acpi/
-+obj-$(CONFIG_POCH)		+= poch/
-diff --git a/drivers/staging/poch/Kconfig b/drivers/staging/poch/Kconfig
-new file mode 100644
-index 0000000..b3b33b9
---- /dev/null
-+++ b/drivers/staging/poch/Kconfig
-@@ -0,0 +1,6 @@
-+config POCH
-+	tristate "Redrapids Pocket Change CardBus support"
-+	depends on PCI && UIO
-+	default N
-+	---help---
-+	  Enable support for Redrapids Pocket Change CardBus devices.
-diff --git a/drivers/staging/poch/Makefile b/drivers/staging/poch/Makefile
-new file mode 100644
-index 0000000..d2b9680
---- /dev/null
-+++ b/drivers/staging/poch/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_POCH)		+= poch.o
-diff --git a/drivers/staging/poch/README b/drivers/staging/poch/README
-new file mode 100644
-index 0000000..f65e979
---- /dev/null
-+++ b/drivers/staging/poch/README
-@@ -0,0 +1,7 @@
-+TODO:
-+	- fix transmit overflows
-+	- audit userspace interfaces
-+	- get reserved major/minor if needed
-+
-+Please send patches to Greg Kroah-Hartman <greg@kroah.com> and
-+Vijay Kumar <vijaykumar@bravegnu.org> and Jaya Kumar <jayakumar.lkml@gmail.com>
-diff --git a/drivers/staging/poch/poch.c b/drivers/staging/poch/poch.c
-new file mode 100644
-index 0000000..0e113f9
---- /dev/null
-+++ b/drivers/staging/poch/poch.c
-@@ -0,0 +1,1425 @@
-+/*
-+ * User-space DMA and UIO based Redrapids Pocket Change CardBus driver
-+ *
-+ * Copyright 2008 Vijay Kumar <vijaykumar@bravegnu.org>
-+ *
-+ * Licensed under GPL version 2 only.
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/uio_driver.h>
-+#include <linux/spinlock.h>
-+#include <linux/cdev.h>
-+#include <linux/delay.h>
-+#include <linux/sysfs.h>
-+#include <linux/poll.h>
-+#include <linux/idr.h>
-+#include <linux/interrupt.h>
-+#include <linux/init.h>
-+#include <linux/ioctl.h>
-+#include <linux/io.h>
-+
-+#include "poch.h"
-+
-+#include <asm/cacheflush.h>
-+
-+#ifndef PCI_VENDOR_ID_RRAPIDS
-+#define PCI_VENDOR_ID_RRAPIDS 0x17D2
-+#endif
-+
-+#ifndef PCI_DEVICE_ID_RRAPIDS_POCKET_CHANGE
-+#define PCI_DEVICE_ID_RRAPIDS_POCKET_CHANGE 0x0351
-+#endif
-+
-+#define POCH_NCHANNELS 2
-+
-+#define MAX_POCH_CARDS 8
-+#define MAX_POCH_DEVICES (MAX_POCH_CARDS * POCH_NCHANNELS)
-+
-+#define DRV_NAME "poch"
-+#define PFX      DRV_NAME ": "
-+
-+/*
-+ * BAR0 Bridge Register Definitions
-+ */
-+
-+#define BRIDGE_REV_REG			0x0
-+#define BRIDGE_INT_MASK_REG		0x4
-+#define BRIDGE_INT_STAT_REG		0x8
-+
-+#define BRIDGE_INT_ACTIVE		(0x1 << 31)
-+#define BRIDGE_INT_FPGA		        (0x1 << 2)
-+#define BRIDGE_INT_TEMP_FAIL		(0x1 << 1)
-+#define	BRIDGE_INT_TEMP_WARN		(0x1 << 0)
-+
-+#define BRIDGE_FPGA_RESET_REG		0xC
-+
-+#define BRIDGE_CARD_POWER_REG		0x10
-+#define BRIDGE_CARD_POWER_EN            (0x1 << 0)
-+#define BRIDGE_CARD_POWER_PROG_DONE     (0x1 << 31)
-+
-+#define BRIDGE_JTAG_REG			0x14
-+#define BRIDGE_DMA_GO_REG		0x18
-+#define BRIDGE_STAT_0_REG		0x1C
-+#define BRIDGE_STAT_1_REG		0x20
-+#define BRIDGE_STAT_2_REG		0x24
-+#define BRIDGE_STAT_3_REG		0x28
-+#define BRIDGE_TEMP_STAT_REG		0x2C
-+#define BRIDGE_TEMP_THRESH_REG		0x30
-+#define BRIDGE_EEPROM_REVSEL_REG	0x34
-+#define BRIDGE_CIS_STRUCT_REG		0x100
-+#define BRIDGE_BOARDREV_REG		0x124
-+
-+/*
-+ * BAR1 FPGA Register Definitions
-+ */
-+
-+#define FPGA_IFACE_REV_REG		0x0
-+#define FPGA_RX_BLOCK_SIZE_REG		0x8
-+#define FPGA_TX_BLOCK_SIZE_REG		0xC
-+#define FPGA_RX_BLOCK_COUNT_REG		0x10
-+#define FPGA_TX_BLOCK_COUNT_REG		0x14
-+#define FPGA_RX_CURR_DMA_BLOCK_REG	0x18
-+#define FPGA_TX_CURR_DMA_BLOCK_REG	0x1C
-+#define FPGA_RX_GROUP_COUNT_REG		0x20
-+#define FPGA_TX_GROUP_COUNT_REG		0x24
-+#define FPGA_RX_CURR_GROUP_REG		0x28
-+#define FPGA_TX_CURR_GROUP_REG		0x2C
-+#define FPGA_RX_CURR_PCI_REG		0x38
-+#define FPGA_TX_CURR_PCI_REG		0x3C
-+#define FPGA_RX_GROUP0_START_REG	0x40
-+#define FPGA_TX_GROUP0_START_REG	0xC0
-+#define FPGA_DMA_DESC_1_REG		0x140
-+#define FPGA_DMA_DESC_2_REG		0x144
-+#define FPGA_DMA_DESC_3_REG		0x148
-+#define FPGA_DMA_DESC_4_REG		0x14C
-+
-+#define FPGA_DMA_INT_STAT_REG		0x150
-+#define FPGA_DMA_INT_MASK_REG		0x154
-+#define FPGA_DMA_INT_RX		(1 << 0)
-+#define FPGA_DMA_INT_TX		(1 << 1)
-+
-+#define FPGA_RX_GROUPS_PER_INT_REG	0x158
-+#define FPGA_TX_GROUPS_PER_INT_REG	0x15C
-+#define FPGA_DMA_ADR_PAGE_REG		0x160
-+#define FPGA_FPGA_REV_REG		0x200
-+
-+#define FPGA_ADC_CLOCK_CTL_REG		0x204
-+#define FPGA_ADC_CLOCK_CTL_OSC_EN	(0x1 << 3)
-+#define FPGA_ADC_CLOCK_LOCAL_CLK	(0x1 | FPGA_ADC_CLOCK_CTL_OSC_EN)
-+#define FPGA_ADC_CLOCK_EXT_SAMP_CLK	0X0
-+
-+#define FPGA_ADC_DAC_EN_REG		0x208
-+#define FPGA_ADC_DAC_EN_DAC_OFF         (0x1 << 1)
-+#define FPGA_ADC_DAC_EN_ADC_OFF         (0x1 << 0)
-+
-+#define FPGA_INT_STAT_REG		0x20C
-+#define FPGA_INT_MASK_REG		0x210
-+#define FPGA_INT_PLL_UNLOCKED		(0x1 << 9)
-+#define FPGA_INT_DMA_CORE		(0x1 << 8)
-+#define FPGA_INT_TX_FF_EMPTY		(0x1 << 7)
-+#define FPGA_INT_RX_FF_EMPTY		(0x1 << 6)
-+#define FPGA_INT_TX_FF_OVRFLW		(0x1 << 3)
-+#define FPGA_INT_RX_FF_OVRFLW		(0x1 << 2)
-+#define FPGA_INT_TX_ACQ_DONE		(0x1 << 1)
-+#define FPGA_INT_RX_ACQ_DONE		(0x1)
-+
-+#define FPGA_RX_ADC_CTL_REG		0x214
-+#define FPGA_RX_ADC_CTL_CONT_CAP	(0x0)
-+#define FPGA_RX_ADC_CTL_SNAP_CAP	(0x1)
-+
-+#define FPGA_RX_ARM_REG			0x21C
-+
-+#define FPGA_DOM_REG			0x224
-+#define	FPGA_DOM_DCM_RESET		(0x1 << 5)
-+#define FPGA_DOM_SOFT_RESET		(0x1 << 4)
-+#define FPGA_DOM_DUAL_M_SG_DMA		(0x0)
-+#define FPGA_DOM_TARGET_ACCESS		(0x1)
-+
-+#define FPGA_TX_CTL_REG			0x228
-+#define FPGA_TX_CTL_FIFO_FLUSH          (0x1 << 9)
-+#define FPGA_TX_CTL_OUTPUT_ZERO         (0x0 << 2)
-+#define FPGA_TX_CTL_OUTPUT_CARDBUS      (0x1 << 2)
-+#define FPGA_TX_CTL_OUTPUT_ADC          (0x2 << 2)
-+#define FPGA_TX_CTL_OUTPUT_SNAPSHOT     (0x3 << 2)
-+#define FPGA_TX_CTL_LOOPBACK            (0x1 << 0)
-+
-+#define FPGA_ENDIAN_MODE_REG		0x22C
-+#define FPGA_RX_FIFO_COUNT_REG		0x28C
-+#define FPGA_TX_ENABLE_REG		0x298
-+#define FPGA_TX_TRIGGER_REG		0x29C
-+#define FPGA_TX_DATAMEM_COUNT_REG	0x2A8
-+#define FPGA_CAP_FIFO_REG		0x300
-+#define FPGA_TX_SNAPSHOT_REG		0x8000
-+
-+/*
-+ * Channel Index Definitions
-+ */
-+
-+enum {
-+	CHNO_RX_CHANNEL,
-+	CHNO_TX_CHANNEL,
-+};
-+
-+struct poch_dev;
-+
-+enum channel_dir {
-+	CHANNEL_DIR_RX,
-+	CHANNEL_DIR_TX,
-+};
-+
-+struct poch_group_info {
-+	struct page *pg;
-+	dma_addr_t dma_addr;
-+	unsigned long user_offset;
-+};
-+
-+struct channel_info {
-+	unsigned int chno;
-+
-+	atomic_t sys_block_size;
-+	atomic_t sys_group_size;
-+	atomic_t sys_group_count;
-+
-+	enum channel_dir dir;
-+
-+	unsigned long block_size;
-+	unsigned long group_size;
-+	unsigned long group_count;
-+
-+	/* Contains the DMA address and VM offset of each group. */
-+	struct poch_group_info *groups;
-+
-+	/* Contains the header and circular buffer exported to userspace. */
-+	spinlock_t group_offsets_lock;
-+	struct poch_cbuf_header *header;
-+	struct page *header_pg;
-+	unsigned long header_size;
-+
-+	/* Last group indicated as 'complete' to user space. */
-+	unsigned int transfer;
-+
-+	wait_queue_head_t wq;
-+
-+	union {
-+		unsigned int data_available;
-+		unsigned int space_available;
-+	};
-+
-+	void __iomem *bridge_iomem;
-+	void __iomem *fpga_iomem;
-+	spinlock_t *iomem_lock;
-+
-+	atomic_t free;
-+	atomic_t inited;
-+
-+	/* Error counters */
-+	struct poch_counters counters;
-+	spinlock_t counters_lock;
-+
-+	struct device *dev;
-+};
-+
-+struct poch_dev {
-+	struct uio_info uio;
-+	struct pci_dev *pci_dev;
-+	unsigned int nchannels;
-+	struct channel_info channels[POCH_NCHANNELS];
-+	struct cdev cdev;
-+
-+	/* Counts the no. of channels that have been opened. On first
-+	 * open, the card is powered on. On last channel close, the
-+	 * card is powered off.
-+	 */
-+	atomic_t usage;
-+
-+	void __iomem *bridge_iomem;
-+	void __iomem *fpga_iomem;
-+	spinlock_t iomem_lock;
-+
-+	struct device *dev;
-+};
-+
-+static dev_t poch_first_dev;
-+static struct class *poch_cls;
-+static DEFINE_IDR(poch_ids);
-+
-+static ssize_t store_block_size(struct device *dev,
-+				struct device_attribute *attr,
-+				const char *buf, size_t count)
-+{
-+	struct channel_info *channel = dev_get_drvdata(dev);
-+	unsigned long block_size;
-+
-+	sscanf(buf, "%lu", &block_size);
-+	atomic_set(&channel->sys_block_size, block_size);
-+
-+	return count;
-+}
-+static DEVICE_ATTR(block_size, S_IWUSR|S_IWGRP, NULL, store_block_size);
-+
-+static ssize_t store_group_size(struct device *dev,
-+				struct device_attribute *attr,
-+				const char *buf, size_t count)
-+{
-+	struct channel_info *channel = dev_get_drvdata(dev);
-+	unsigned long group_size;
-+
-+	sscanf(buf, "%lu", &group_size);
-+	atomic_set(&channel->sys_group_size, group_size);
-+
-+	return count;
-+}
-+static DEVICE_ATTR(group_size, S_IWUSR|S_IWGRP, NULL, store_group_size);
-+
-+static ssize_t store_group_count(struct device *dev,
-+				struct device_attribute *attr,
-+				 const char *buf, size_t count)
-+{
-+	struct channel_info *channel = dev_get_drvdata(dev);
-+	unsigned long group_count;
-+
-+	sscanf(buf, "%lu", &group_count);
-+	atomic_set(&channel->sys_group_count, group_count);
-+
-+	return count;
-+}
-+static DEVICE_ATTR(group_count, S_IWUSR|S_IWGRP, NULL, store_group_count);
-+
-+static ssize_t show_direction(struct device *dev,
-+			      struct device_attribute *attr, char *buf)
-+{
-+	struct channel_info *channel = dev_get_drvdata(dev);
-+	int len;
-+
-+	len = sprintf(buf, "%s\n", (channel->dir ? "tx" : "rx"));
-+	return len;
-+}
-+static DEVICE_ATTR(dir, S_IRUSR|S_IRGRP, show_direction, NULL);
-+
-+static ssize_t show_mmap_size(struct device *dev,
-+			      struct device_attribute *attr, char *buf)
-+{
-+	struct channel_info *channel = dev_get_drvdata(dev);
-+	int len;
-+	unsigned long mmap_size;
-+	unsigned long group_pages;
-+	unsigned long header_pages;
-+	unsigned long total_group_pages;
-+
-+	/* FIXME: We do not have to add 1, if group_size a multiple of
-+	   PAGE_SIZE. */
-+	group_pages = (channel->group_size / PAGE_SIZE) + 1;
-+	header_pages = (channel->header_size / PAGE_SIZE) + 1;
-+	total_group_pages = group_pages * channel->group_count;
-+
-+	mmap_size = (header_pages + total_group_pages) * PAGE_SIZE;
-+	len = sprintf(buf, "%lu\n", mmap_size);
-+	return len;
-+}
-+static DEVICE_ATTR(mmap_size, S_IRUSR|S_IRGRP, show_mmap_size, NULL);
-+
-+static struct device_attribute *poch_class_attrs[] = {
-+	&dev_attr_block_size,
-+	&dev_attr_group_size,
-+	&dev_attr_group_count,
-+	&dev_attr_dir,
-+	&dev_attr_mmap_size,
-+};
-+
-+static void poch_channel_free_groups(struct channel_info *channel)
-+{
-+	unsigned long i;
-+
-+	for (i = 0; i < channel->group_count; i++) {
-+		struct poch_group_info *group;
-+		unsigned int order;
-+
-+		group = &channel->groups[i];
-+		order = get_order(channel->group_size);
-+		if (group->pg)
-+			__free_pages(group->pg, order);
-+	}
-+}
-+
-+static int poch_channel_alloc_groups(struct channel_info *channel)
-+{
-+	unsigned long i;
-+	unsigned long group_pages;
-+	unsigned long header_pages;
-+
-+	group_pages = (channel->group_size / PAGE_SIZE) + 1;
-+	header_pages = (channel->header_size / PAGE_SIZE) + 1;
-+
-+	for (i = 0; i < channel->group_count; i++) {
-+		struct poch_group_info *group;
-+		unsigned int order;
-+		gfp_t gfp_mask;
-+
-+		group = &channel->groups[i];
-+		order = get_order(channel->group_size);
-+
-+		/*
-+		 * __GFP_COMP is required here since we are going to
-+		 * perform non-linear mapping to userspace. For more
-+		 * information read the vm_insert_page() function
-+		 * comments.
-+		 */
-+
-+		gfp_mask = GFP_KERNEL | GFP_DMA32 | __GFP_ZERO;
-+		group->pg = alloc_pages(gfp_mask, order);
-+		if (!group->pg) {
-+			poch_channel_free_groups(channel);
-+			return -ENOMEM;
-+		}
-+
-+		/* FIXME: This is the physical address not the bus
-+		 * address!  This won't work in architectures that
-+		 * have an IOMMU. Can we use pci_map_single() for
-+		 * this?
-+		 */
-+		group->dma_addr = page_to_pfn(group->pg) * PAGE_SIZE;
-+		group->user_offset =
-+			(header_pages + (i * group_pages)) * PAGE_SIZE;
-+
-+		printk(KERN_INFO PFX "%ld: user_offset: 0x%lx dma: 0x%x\n", i,
-+		       group->user_offset, group->dma_addr);
-+	}
-+
-+	return 0;
-+}
-+
-+static void channel_latch_attr(struct channel_info *channel)
-+{
-+	channel->group_count = atomic_read(&channel->sys_group_count);
-+	channel->group_size = atomic_read(&channel->sys_group_size);
-+	channel->block_size = atomic_read(&channel->sys_block_size);
-+}
-+
-+/*
-+ * Configure DMA group registers
-+ */
-+static void channel_dma_init(struct channel_info *channel)
-+{
-+	void __iomem *fpga = channel->fpga_iomem;
-+	u32 group_regs_base;
-+	u32 group_reg;
-+	unsigned int page;
-+	unsigned int group_in_page;
-+	unsigned long i;
-+	u32 block_size_reg;
-+	u32 block_count_reg;
-+	u32 group_count_reg;
-+	u32 groups_per_int_reg;
-+	u32 curr_pci_reg;
-+
-+	if (channel->chno == CHNO_RX_CHANNEL) {
-+		group_regs_base = FPGA_RX_GROUP0_START_REG;
-+		block_size_reg = FPGA_RX_BLOCK_SIZE_REG;
-+		block_count_reg = FPGA_RX_BLOCK_COUNT_REG;
-+		group_count_reg = FPGA_RX_GROUP_COUNT_REG;
-+		groups_per_int_reg = FPGA_RX_GROUPS_PER_INT_REG;
-+		curr_pci_reg = FPGA_RX_CURR_PCI_REG;
-+	} else {
-+		group_regs_base = FPGA_TX_GROUP0_START_REG;
-+		block_size_reg = FPGA_TX_BLOCK_SIZE_REG;
-+		block_count_reg = FPGA_TX_BLOCK_COUNT_REG;
-+		group_count_reg = FPGA_TX_GROUP_COUNT_REG;
-+		groups_per_int_reg = FPGA_TX_GROUPS_PER_INT_REG;
-+		curr_pci_reg = FPGA_TX_CURR_PCI_REG;
-+	}
-+
-+	printk(KERN_WARNING "block_size, group_size, group_count\n");
-+	iowrite32(channel->block_size, fpga + block_size_reg);
-+	iowrite32(channel->group_size / channel->block_size,
-+		  fpga + block_count_reg);
-+	iowrite32(channel->group_count, fpga + group_count_reg);
-+	/* FIXME: Hardcoded groups per int. Get it from sysfs? */
-+	iowrite32(1, fpga + groups_per_int_reg);
-+
-+	/* Unlock PCI address? Not defined in the data sheet, but used
-+	 * in the reference code by Redrapids.
-+	 */
-+	iowrite32(0x1, fpga + curr_pci_reg);
-+
-+	/* The DMA address page register is shared between the RX and
-+	 * TX channels, so acquire lock.
-+	 */
-+	spin_lock(channel->iomem_lock);
-+	for (i = 0; i < channel->group_count; i++) {
-+		page = i / 32;
-+		group_in_page = i % 32;
-+
-+		group_reg = group_regs_base + (group_in_page * 4);
-+
-+		iowrite32(page, fpga + FPGA_DMA_ADR_PAGE_REG);
-+		iowrite32(channel->groups[i].dma_addr, fpga + group_reg);
-+	}
-+	for (i = 0; i < channel->group_count; i++) {
-+		page = i / 32;
-+		group_in_page = i % 32;
-+
-+		group_reg = group_regs_base + (group_in_page * 4);
-+
-+		iowrite32(page, fpga + FPGA_DMA_ADR_PAGE_REG);
-+		printk(KERN_INFO PFX "%ld: read dma_addr: 0x%x\n", i,
-+		       ioread32(fpga + group_reg));
-+	}
-+	spin_unlock(channel->iomem_lock);
-+
-+}
-+
-+static int poch_channel_alloc_header(struct channel_info *channel)
-+{
-+	struct poch_cbuf_header *header = channel->header;
-+	unsigned long group_offset_size;
-+	unsigned long tot_group_offsets_size;
-+
-+	/* Allocate memory to hold header exported userspace */
-+	group_offset_size = sizeof(header->group_offsets[0]);
-+	tot_group_offsets_size = group_offset_size * channel->group_count;
-+	channel->header_size = sizeof(*header) + tot_group_offsets_size;
-+	channel->header_pg = alloc_pages(GFP_KERNEL | __GFP_ZERO,
-+					 get_order(channel->header_size));
-+	if (!channel->header_pg)
-+		return -ENOMEM;
-+
-+	channel->header = page_address(channel->header_pg);
-+
-+	return 0;
-+}
-+
-+static void poch_channel_free_header(struct channel_info *channel)
-+{
-+	unsigned int order;
-+
-+	order = get_order(channel->header_size);
-+	__free_pages(channel->header_pg, order);
-+}
-+
-+static void poch_channel_init_header(struct channel_info *channel)
-+{
-+	int i;
-+	struct poch_group_info *groups;
-+	s32 *group_offsets;
-+
-+	channel->header->group_size_bytes = channel->group_size;
-+	channel->header->group_count = channel->group_count;
-+
-+	spin_lock_init(&channel->group_offsets_lock);
-+
-+	group_offsets = channel->header->group_offsets;
-+	groups = channel->groups;
-+
-+	for (i = 0; i < channel->group_count; i++) {
-+		if (channel->dir == CHANNEL_DIR_RX)
-+			group_offsets[i] = -1;
-+		else
-+			group_offsets[i] = groups[i].user_offset;
-+	}
-+}
-+
-+static void __poch_channel_clear_counters(struct channel_info *channel)
-+{
-+	channel->counters.pll_unlock = 0;
-+	channel->counters.fifo_empty = 0;
-+	channel->counters.fifo_overflow = 0;
-+}
-+
-+static int poch_channel_init(struct channel_info *channel,
-+			     struct poch_dev *poch_dev)
-+{
-+	struct pci_dev *pdev = poch_dev->pci_dev;
-+	struct device *dev = &pdev->dev;
-+	unsigned long alloc_size;
-+	int ret;
-+
-+	printk(KERN_WARNING "channel_latch_attr\n");
-+
-+	channel_latch_attr(channel);
-+
-+	channel->transfer = 0;
-+
-+	/* Allocate memory to hold group information. */
-+	alloc_size = channel->group_count * sizeof(struct poch_group_info);
-+	channel->groups = kzalloc(alloc_size, GFP_KERNEL);
-+	if (!channel->groups) {
-+		dev_err(dev, "error allocating memory for group info\n");
-+		ret = -ENOMEM;
-+		goto out;
-+	}
-+
-+	printk(KERN_WARNING "poch_channel_alloc_groups\n");
-+
-+	ret = poch_channel_alloc_groups(channel);
-+	if (ret) {
-+		dev_err(dev, "error allocating groups of order %d\n",
-+			get_order(channel->group_size));
-+		goto out_free_group_info;
-+	}
-+
-+	ret = poch_channel_alloc_header(channel);
-+	if (ret) {
-+		dev_err(dev, "error allocating user space header\n");
-+		goto out_free_groups;
-+	}
-+
-+	channel->fpga_iomem = poch_dev->fpga_iomem;
-+	channel->bridge_iomem = poch_dev->bridge_iomem;
-+	channel->iomem_lock = &poch_dev->iomem_lock;
-+	spin_lock_init(&channel->counters_lock);
-+
-+	__poch_channel_clear_counters(channel);
-+
-+	printk(KERN_WARNING "poch_channel_init_header\n");
-+
-+	poch_channel_init_header(channel);
-+
-+	return 0;
-+
-+ out_free_groups:
-+	poch_channel_free_groups(channel);
-+ out_free_group_info:
-+	kfree(channel->groups);
-+ out:
-+	return ret;
-+}
-+
-+static int poch_wait_fpga_prog(void __iomem *bridge)
-+{
-+	unsigned long total_wait;
-+	const unsigned long wait_period = 100;
-+	/* FIXME: Get the actual timeout */
-+	const unsigned long prog_timeo = 10000; /* 10 Seconds */
-+	u32 card_power;
-+
-+	printk(KERN_WARNING "poch_wait_fpg_prog\n");
-+
-+	printk(KERN_INFO PFX "programming fpga ...\n");
-+	total_wait = 0;
-+	while (1) {
-+		msleep(wait_period);
-+		total_wait += wait_period;
-+
-+		card_power = ioread32(bridge + BRIDGE_CARD_POWER_REG);
-+		if (card_power & BRIDGE_CARD_POWER_PROG_DONE) {
-+			printk(KERN_INFO PFX "programming done\n");
-+			return 0;
-+		}
-+		if (total_wait > prog_timeo) {
-+			printk(KERN_ERR PFX
-+			       "timed out while programming FPGA\n");
-+			return -EIO;
-+		}
-+	}
-+}
-+
-+static void poch_card_power_off(struct poch_dev *poch_dev)
-+{
-+	void __iomem *bridge = poch_dev->bridge_iomem;
-+	u32 card_power;
-+
-+	iowrite32(0, bridge + BRIDGE_INT_MASK_REG);
-+	iowrite32(0, bridge + BRIDGE_DMA_GO_REG);
-+
-+	card_power = ioread32(bridge + BRIDGE_CARD_POWER_REG);
-+	iowrite32(card_power & ~BRIDGE_CARD_POWER_EN,
-+		  bridge + BRIDGE_CARD_POWER_REG);
-+}
-+
-+enum clk_src {
-+	CLK_SRC_ON_BOARD,
-+	CLK_SRC_EXTERNAL
-+};
-+
-+static void poch_card_clock_on(void __iomem *fpga)
-+{
-+	/* FIXME: Get this data through sysfs? */
-+	enum clk_src clk_src = CLK_SRC_ON_BOARD;
-+
-+	if (clk_src == CLK_SRC_ON_BOARD) {
-+		iowrite32(FPGA_ADC_CLOCK_LOCAL_CLK | FPGA_ADC_CLOCK_CTL_OSC_EN,
-+			  fpga + FPGA_ADC_CLOCK_CTL_REG);
-+	} else if (clk_src == CLK_SRC_EXTERNAL) {
-+		iowrite32(FPGA_ADC_CLOCK_EXT_SAMP_CLK,
-+			  fpga + FPGA_ADC_CLOCK_CTL_REG);
-+	}
-+}
-+
-+static int poch_card_power_on(struct poch_dev *poch_dev)
-+{
-+	void __iomem *bridge = poch_dev->bridge_iomem;
-+	void __iomem *fpga = poch_dev->fpga_iomem;
-+
-+	iowrite32(BRIDGE_CARD_POWER_EN, bridge + BRIDGE_CARD_POWER_REG);
-+
-+	if (poch_wait_fpga_prog(bridge) != 0) {
-+		poch_card_power_off(poch_dev);
-+		return -EIO;
-+	}
-+
-+	poch_card_clock_on(fpga);
-+
-+	/* Sync to new clock, reset state machines, set DMA mode. */
-+	iowrite32(FPGA_DOM_DCM_RESET | FPGA_DOM_SOFT_RESET
-+		  | FPGA_DOM_DUAL_M_SG_DMA, fpga + FPGA_DOM_REG);
-+
-+	/* FIXME: The time required for sync. needs to be tuned. */
-+	msleep(1000);
-+
-+	return 0;
-+}
-+
-+static void poch_channel_analog_on(struct channel_info *channel)
-+{
-+	void __iomem *fpga = channel->fpga_iomem;
-+	u32 adc_dac_en;
-+
-+	spin_lock(channel->iomem_lock);
-+	adc_dac_en = ioread32(fpga + FPGA_ADC_DAC_EN_REG);
-+	switch (channel->chno) {
-+	case CHNO_RX_CHANNEL:
-+		iowrite32(adc_dac_en & ~FPGA_ADC_DAC_EN_ADC_OFF,
-+			  fpga + FPGA_ADC_DAC_EN_REG);
-+		break;
-+	case CHNO_TX_CHANNEL:
-+		iowrite32(adc_dac_en & ~FPGA_ADC_DAC_EN_DAC_OFF,
-+			  fpga + FPGA_ADC_DAC_EN_REG);
-+		break;
-+	}
-+	spin_unlock(channel->iomem_lock);
-+}
-+
-+static int poch_open(struct inode *inode, struct file *filp)
-+{
-+	struct poch_dev *poch_dev;
-+	struct channel_info *channel;
-+	void __iomem *bridge;
-+	void __iomem *fpga;
-+	int chno;
-+	int usage;
-+	int ret;
-+
-+	poch_dev = container_of(inode->i_cdev, struct poch_dev, cdev);
-+	bridge = poch_dev->bridge_iomem;
-+	fpga = poch_dev->fpga_iomem;
-+
-+	chno = iminor(inode) % poch_dev->nchannels;
-+	channel = &poch_dev->channels[chno];
-+
-+	if (!atomic_dec_and_test(&channel->free)) {
-+		atomic_inc(&channel->free);
-+		ret = -EBUSY;
-+		goto out;
-+	}
-+
-+	usage = atomic_inc_return(&poch_dev->usage);
-+
-+	printk(KERN_WARNING "poch_card_power_on\n");
-+
-+	if (usage == 1) {
-+		ret = poch_card_power_on(poch_dev);
-+		if (ret)
-+			goto out_dec_usage;
-+	}
-+
-+	printk(KERN_INFO "CardBus Bridge Revision: %x\n",
-+	       ioread32(bridge + BRIDGE_REV_REG));
-+	printk(KERN_INFO "CardBus Interface Revision: %x\n",
-+	       ioread32(fpga + FPGA_IFACE_REV_REG));
-+
-+	channel->chno = chno;
-+	filp->private_data = channel;
-+
-+	printk(KERN_WARNING "poch_channel_init\n");
-+
-+	ret = poch_channel_init(channel, poch_dev);
-+	if (ret)
-+		goto out_power_off;
-+
-+	poch_channel_analog_on(channel);
-+
-+	printk(KERN_WARNING "channel_dma_init\n");
-+
-+	channel_dma_init(channel);
-+
-+	printk(KERN_WARNING "poch_channel_analog_on\n");
-+
-+	if (usage == 1) {
-+		printk(KERN_WARNING "setting up DMA\n");
-+
-+		/* Initialize DMA Controller. */
-+		iowrite32(FPGA_CAP_FIFO_REG, bridge + BRIDGE_STAT_2_REG);
-+		iowrite32(FPGA_DMA_DESC_1_REG, bridge + BRIDGE_STAT_3_REG);
-+
-+		ioread32(fpga + FPGA_DMA_INT_STAT_REG);
-+		ioread32(fpga + FPGA_INT_STAT_REG);
-+		ioread32(bridge + BRIDGE_INT_STAT_REG);
-+
-+		/* Initialize Interrupts. FIXME: Enable temperature
-+		 * handling We are enabling both Tx and Rx channel
-+		 * interrupts here. Do we need to enable interrupts
-+		 * only for the current channel? Anyways we won't get
-+		 * the interrupt unless the DMA is activated.
-+		 */
-+		iowrite32(BRIDGE_INT_FPGA, bridge + BRIDGE_INT_MASK_REG);
-+		iowrite32(FPGA_INT_DMA_CORE
-+			  | FPGA_INT_PLL_UNLOCKED
-+			  | FPGA_INT_TX_FF_EMPTY
-+			  | FPGA_INT_RX_FF_EMPTY
-+			  | FPGA_INT_TX_FF_OVRFLW
-+			  | FPGA_INT_RX_FF_OVRFLW,
-+			  fpga + FPGA_INT_MASK_REG);
-+		iowrite32(FPGA_DMA_INT_RX | FPGA_DMA_INT_TX,
-+			  fpga + FPGA_DMA_INT_MASK_REG);
-+	}
-+
-+	if (channel->dir == CHANNEL_DIR_TX) {
-+		/* Flush TX FIFO and output data from cardbus. */
-+		iowrite32(FPGA_TX_CTL_FIFO_FLUSH
-+			  | FPGA_TX_CTL_OUTPUT_CARDBUS,
-+			  fpga + FPGA_TX_CTL_REG);
-+	}
-+
-+	atomic_inc(&channel->inited);
-+
-+	return 0;
-+
-+ out_power_off:
-+	if (usage == 1)
-+		poch_card_power_off(poch_dev);
-+ out_dec_usage:
-+	atomic_dec(&poch_dev->usage);
-+	atomic_inc(&channel->free);
-+ out:
-+	return ret;
-+}
-+
-+static int poch_release(struct inode *inode, struct file *filp)
-+{
-+	struct channel_info *channel = filp->private_data;
-+	struct poch_dev *poch_dev;
-+	int usage;
-+
-+	poch_dev = container_of(inode->i_cdev, struct poch_dev, cdev);
-+
-+	usage = atomic_dec_return(&poch_dev->usage);
-+	if (usage == 0) {
-+		printk(KERN_WARNING "poch_card_power_off\n");
-+		poch_card_power_off(poch_dev);
-+	}
-+
-+	atomic_dec(&channel->inited);
-+	poch_channel_free_header(channel);
-+	poch_channel_free_groups(channel);
-+	kfree(channel->groups);
-+	atomic_inc(&channel->free);
-+
-+	return 0;
-+}
-+
-+/*
-+ * Map the header and the group buffers, to user space.
-+ */
-+static int poch_mmap(struct file *filp, struct vm_area_struct *vma)
-+{
-+	struct channel_info *channel = filp->private_data;
-+
-+	unsigned long start;
-+	unsigned long size;
-+
-+	unsigned long group_pages;
-+	unsigned long header_pages;
-+	unsigned long total_group_pages;
-+
-+	int pg_num;
-+	struct page *pg;
-+
-+	int i;
-+	int ret;
-+
-+	printk(KERN_WARNING "poch_mmap\n");
-+
-+	if (vma->vm_pgoff) {
-+		printk(KERN_WARNING PFX "page offset: %lu\n", vma->vm_pgoff);
-+		return -EINVAL;
-+	}
-+
-+	group_pages = (channel->group_size / PAGE_SIZE) + 1;
-+	header_pages = (channel->header_size / PAGE_SIZE) + 1;
-+	total_group_pages = group_pages * channel->group_count;
-+
-+	size = vma->vm_end - vma->vm_start;
-+	if (size != (header_pages + total_group_pages) * PAGE_SIZE) {
-+		printk(KERN_WARNING PFX "required %lu bytes\n", size);
-+		return -EINVAL;
-+	}
-+
-+	start = vma->vm_start;
-+
-+	/* FIXME: Cleanup required on failure? */
-+	pg = channel->header_pg;
-+	for (pg_num = 0; pg_num < header_pages; pg_num++, pg++) {
-+		printk(KERN_DEBUG PFX "page_count: %d\n", page_count(pg));
-+		printk(KERN_DEBUG PFX "%d: header: 0x%lx\n", pg_num, start);
-+		ret = vm_insert_page(vma, start, pg);
-+		if (ret) {
-+			printk(KERN_DEBUG "vm_insert 1 failed at %lx\n", start);
-+			return ret;
-+		}
-+		start += PAGE_SIZE;
-+	}
-+
-+	for (i = 0; i < channel->group_count; i++) {
-+		pg = channel->groups[i].pg;
-+		for (pg_num = 0; pg_num < group_pages; pg_num++, pg++) {
-+			printk(KERN_DEBUG PFX "%d: group %d: 0x%lx\n",
-+			       pg_num, i, start);
-+			ret = vm_insert_page(vma, start, pg);
-+			if (ret) {
-+				printk(KERN_DEBUG PFX
-+				       "vm_insert 2 failed at %d\n", pg_num);
-+				return ret;
-+			}
-+			start += PAGE_SIZE;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-+ * Check whether there is some group that the user space has not
-+ * consumed yet. When the user space consumes a group, it sets it to
-+ * -1. Cosuming could be reading data in case of RX and filling a
-+ * buffer in case of TX.
-+ */
-+static int poch_channel_available(struct channel_info *channel)
-+{
+ static __inline__ int bottom_bit(unsigned int bits)
+ {
+-    int i;
+-
+-    if (bits == 0)
+-        return -1;
+-    i = 32;
+-    if (bits & 0x0000FFFF)
+-    {
+-        bits &= 0x0000FFFF;
+-        i -= 16;
+-    }
+-    if (bits & 0x00FF00FF)
+-    {
+-        bits &= 0x00FF00FF;
+-        i -= 8;
+-    }
+-    if (bits & 0x0F0F0F0F)
+-    {
+-        bits &= 0x0F0F0F0F;
+-        i -= 4;
+-    }
+-    if (bits & 0x33333333)
+-    {
+-        bits &= 0x33333333;
+-        i -= 2;
+-    }
+-    if (bits & 0x55555555)
+-    {
+-        bits &= 0x55555555;
+-        i -= 1;
+-    }
+-    return i;
 +	int i;
 +
-+	spin_lock_irq(&channel->group_offsets_lock);
-+
-+	for (i = 0; i < channel->group_count; i++) {
-+		if (channel->dir == CHANNEL_DIR_RX
-+		    && channel->header->group_offsets[i] == -1) {
-+			spin_unlock_irq(&channel->group_offsets_lock);
-+			return 1;
-+		}
-+
-+		if (channel->dir == CHANNEL_DIR_TX
-+		    && channel->header->group_offsets[i] != -1) {
-+			spin_unlock_irq(&channel->group_offsets_lock);
-+			return 1;
-+		}
++	if (bits == 0)
++		return -1;
++	i = 32;
++	if (bits & 0x0000FFFF) {
++		bits &= 0x0000FFFF;
++		i -= 16;
 +	}
-+
-+	spin_unlock_irq(&channel->group_offsets_lock);
-+
-+	return 0;
-+}
-+
-+static unsigned int poch_poll(struct file *filp, poll_table *pt)
-+{
-+	struct channel_info *channel = filp->private_data;
-+	unsigned int ret = 0;
-+
-+	poll_wait(filp, &channel->wq, pt);
-+
-+	if (poch_channel_available(channel)) {
-+		if (channel->dir == CHANNEL_DIR_RX)
-+			ret = POLLIN | POLLRDNORM;
-+		else
-+			ret = POLLOUT | POLLWRNORM;
++	if (bits & 0x00FF00FF) {
++		bits &= 0x00FF00FF;
++		i -= 8;
 +	}
-+
-+	return ret;
-+}
-+
-+static int poch_ioctl(struct inode *inode, struct file *filp,
-+		      unsigned int cmd, unsigned long arg)
-+{
-+	struct channel_info *channel = filp->private_data;
-+	void __iomem *fpga = channel->fpga_iomem;
-+	void __iomem *bridge = channel->bridge_iomem;
-+	void __user *argp = (void __user *)arg;
-+	struct vm_area_struct *vms;
-+	struct poch_counters counters;
-+	int ret;
-+
-+	switch (cmd) {
-+	case POCH_IOC_TRANSFER_START:
-+		switch (channel->chno) {
-+		case CHNO_TX_CHANNEL:
-+			printk(KERN_INFO PFX "ioctl: Tx start\n");
-+			iowrite32(0x1, fpga + FPGA_TX_TRIGGER_REG);
-+			iowrite32(0x1, fpga + FPGA_TX_ENABLE_REG);
-+
-+			/* FIXME: Does it make sense to do a DMA GO
-+			 * twice, once in Tx and once in Rx.
-+			 */
-+			iowrite32(0x1, bridge + BRIDGE_DMA_GO_REG);
-+			break;
-+		case CHNO_RX_CHANNEL:
-+			printk(KERN_INFO PFX "ioctl: Rx start\n");
-+			iowrite32(0x1, fpga + FPGA_RX_ARM_REG);
-+			iowrite32(0x1, bridge + BRIDGE_DMA_GO_REG);
-+			break;
-+		}
-+		break;
-+	case POCH_IOC_TRANSFER_STOP:
-+		switch (channel->chno) {
-+		case CHNO_TX_CHANNEL:
-+			printk(KERN_INFO PFX "ioctl: Tx stop\n");
-+			iowrite32(0x0, fpga + FPGA_TX_ENABLE_REG);
-+			iowrite32(0x0, fpga + FPGA_TX_TRIGGER_REG);
-+			iowrite32(0x0, bridge + BRIDGE_DMA_GO_REG);
-+			break;
-+		case CHNO_RX_CHANNEL:
-+			printk(KERN_INFO PFX "ioctl: Rx stop\n");
-+			iowrite32(0x0, fpga + FPGA_RX_ARM_REG);
-+			iowrite32(0x0, bridge + BRIDGE_DMA_GO_REG);
-+			break;
-+		}
-+		break;
-+	case POCH_IOC_GET_COUNTERS:
-+		if (access_ok(VERIFY_WRITE, argp, sizeof(struct poch_counters)))
-+			return -EFAULT;
-+
-+		spin_lock_irq(&channel->counters_lock);
-+		counters = channel->counters;
-+		__poch_channel_clear_counters(channel);
-+		spin_unlock_irq(&channel->counters_lock);
-+
-+		ret = copy_to_user(argp, &counters,
-+				   sizeof(struct poch_counters));
-+		if (ret)
-+			return ret;
-+
-+		break;
-+	case POCH_IOC_SYNC_GROUP_FOR_USER:
-+	case POCH_IOC_SYNC_GROUP_FOR_DEVICE:
-+		vms = find_vma(current->mm, arg);
-+		if (!vms)
-+			/* Address not mapped. */
-+			return -EINVAL;
-+		if (vms->vm_file != filp)
-+			/* Address mapped from different device/file. */
-+			return -EINVAL;
-+
-+		flush_cache_range(vms, arg, arg + channel->group_size);
-+		break;
++	if (bits & 0x0F0F0F0F) {
++		bits &= 0x0F0F0F0F;
++		i -= 4;
 +	}
-+	return 0;
-+}
++	if (bits & 0x33333333) {
++		bits &= 0x33333333;
++		i -= 2;
++	}
++	if (bits & 0x55555555) {
++		bits &= 0x55555555;
++		i -= 1;
++	}
++	return i;
+ }
+ #endif
+ 
+@@ -138,13 +130,14 @@ static __inline__ int bottom_bit(unsigned int bits)
+ static __inline__ uint8_t bit_reverse8(uint8_t x)
+ {
+ #if defined(__i386__)  ||  defined(__x86_64__)
+-    /* If multiply is fast */
+-    return ((x*0x0802U & 0x22110U) | (x*0x8020U & 0x88440U))*0x10101U >> 16;
++	/* If multiply is fast */
++	return ((x * 0x0802U & 0x22110U) | (x * 0x8020U & 0x88440U)) *
++	    0x10101U >> 16;
+ #else
+-    /* If multiply is slow, but we have a barrel shifter */
+-    x = (x >> 4) | (x << 4);
+-    x = ((x & 0xCC) >> 2) | ((x & 0x33) << 2);
+-    return ((x & 0xAA) >> 1) | ((x & 0x55) << 1);
++	/* If multiply is slow, but we have a barrel shifter */
++	x = (x >> 4) | (x << 4);
++	x = ((x & 0xCC) >> 2) | ((x & 0x33) << 2);
++	return ((x & 0xAA) >> 1) | ((x & 0x55) << 1);
+ #endif
+ }
+ 
+@@ -184,7 +177,7 @@ uint16_t make_mask16(uint16_t x);
+     \return The word with the single set bit. */
+ static __inline__ uint32_t least_significant_one32(uint32_t x)
+ {
+-    return (x & (-(int32_t) x));
++	return (x & (-(int32_t) x));
+ }
+ 
+ /*! \brief Find the most significant one in a word, and return a word
+@@ -194,10 +187,10 @@ static __inline__ uint32_t least_significant_one32(uint32_t x)
+ static __inline__ uint32_t most_significant_one32(uint32_t x)
+ {
+ #if defined(__i386__)  ||  defined(__x86_64__)
+-    return 1 << top_bit(x);
++	return 1 << top_bit(x);
+ #else
+-    x = make_mask32(x);
+-    return (x ^ (x >> 1));
++	x = make_mask32(x);
++	return (x ^ (x >> 1));
+ #endif
+ }
+ 
+@@ -206,8 +199,8 @@ static __inline__ uint32_t most_significant_one32(uint32_t x)
+     \return 1 for odd, or 0 for even. */
+ static __inline__ int parity8(uint8_t x)
+ {
+-    x = (x ^ (x >> 4)) & 0x0F;
+-    return (0x6996 >> x) & 1;
++	x = (x ^ (x >> 4)) & 0x0F;
++	return (0x6996 >> x) & 1;
+ }
+ 
+ /*! \brief Find the parity of a 16 bit word.
+@@ -215,9 +208,9 @@ static __inline__ int parity8(uint8_t x)
+     \return 1 for odd, or 0 for even. */
+ static __inline__ int parity16(uint16_t x)
+ {
+-    x ^= (x >> 8);
+-    x = (x ^ (x >> 4)) & 0x0F;
+-    return (0x6996 >> x) & 1;
++	x ^= (x >> 8);
++	x = (x ^ (x >> 4)) & 0x0F;
++	return (0x6996 >> x) & 1;
+ }
+ 
+ /*! \brief Find the parity of a 32 bit word.
+@@ -225,10 +218,10 @@ static __inline__ int parity16(uint16_t x)
+     \return 1 for odd, or 0 for even. */
+ static __inline__ int parity32(uint32_t x)
+ {
+-    x ^= (x >> 16);
+-    x ^= (x >> 8);
+-    x = (x ^ (x >> 4)) & 0x0F;
+-    return (0x6996 >> x) & 1;
++	x ^= (x >> 16);
++	x ^= (x >> 8);
++	x = (x ^ (x >> 4)) & 0x0F;
++	return (0x6996 >> x) & 1;
+ }
+ 
+ #endif
+diff --git a/drivers/staging/echo/echo.c b/drivers/staging/echo/echo.c
+index ad18a95..b8f2c5e 100644
+--- a/drivers/staging/echo/echo.c
++++ b/drivers/staging/echo/echo.c
+@@ -74,7 +74,6 @@
+ 
+    Steve also has some nice notes on echo cancellers in echo.h
+ 
+-
+    References:
+ 
+    [1] Ochiai, Areseki, and Ogihara, "Echo Canceller with Two Echo
+@@ -105,7 +104,7 @@
+    Mark, Pawel, and Pavel.
+ */
+ 
+-#include <linux/kernel.h>       /* We're doing kernel work */
++#include <linux/kernel.h>	/* We're doing kernel work */
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+@@ -115,8 +114,8 @@
+ 
+ #define MIN_TX_POWER_FOR_ADAPTION   64
+ #define MIN_RX_POWER_FOR_ADAPTION   64
+-#define DTD_HANGOVER               600     /* 600 samples, or 75ms     */
+-#define DC_LOG2BETA                  3     /* log2() of DC filter Beta */
++#define DTD_HANGOVER               600	/* 600 samples, or 75ms     */
++#define DC_LOG2BETA                  3	/* log2() of DC filter Beta */
+ 
+ /*-----------------------------------------------------------------------*\
+                                FUNCTIONS
+@@ -124,59 +123,58 @@
+ 
+ /* adapting coeffs using the traditional stochastic descent (N)LMS algorithm */
+ 
+-
+ #ifdef __bfin__
+-static void __inline__ lms_adapt_bg(struct oslec_state *ec, int clean, int shift)
++static void __inline__ lms_adapt_bg(struct oslec_state *ec, int clean,
++				    int shift)
+ {
+-    int i, j;
+-    int offset1;
+-    int offset2;
+-    int factor;
+-    int exp;
+-    int16_t *phist;
+-    int n;
+-
+-    if (shift > 0)
+-	factor = clean << shift;
+-    else
+-	factor = clean >> -shift;
+-
+-    /* Update the FIR taps */
+-
+-    offset2 = ec->curr_pos;
+-    offset1 = ec->taps - offset2;
+-    phist = &ec->fir_state_bg.history[offset2];
+-
+-    /* st: and en: help us locate the assembler in echo.s */
+-
+-    //asm("st:");
+-    n = ec->taps;
+-    for (i = 0, j = offset2;  i < n;  i++, j++)
+-    {
+-       exp = *phist++ * factor;
+-       ec->fir_taps16[1][i] += (int16_t) ((exp+(1<<14)) >> 15);
+-    }
+-    //asm("en:");
+-
+-    /* Note the asm for the inner loop above generated by Blackfin gcc
+-       4.1.1 is pretty good (note even parallel instructions used):
+-
+-    	R0 = W [P0++] (X);
+-	R0 *= R2;
+-	R0 = R0 + R3 (NS) ||
+-	R1 = W [P1] (X) ||
+-	nop;
+-	R0 >>>= 15;
+-	R0 = R0 + R1;
+-	W [P1++] = R0;
+-
+-	A block based update algorithm would be much faster but the
+-	above can't be improved on much.  Every instruction saved in
+-	the loop above is 2 MIPs/ch!  The for loop above is where the
+-	Blackfin spends most of it's time - about 17 MIPs/ch measured
+-	with speedtest.c with 256 taps (32ms).  Write-back and
+-	Write-through cache gave about the same performance.
+-    */
++	int i, j;
++	int offset1;
++	int offset2;
++	int factor;
++	int exp;
++	int16_t *phist;
++	int n;
 +
-+static struct file_operations poch_fops = {
-+	.owner = THIS_MODULE,
-+	.open = poch_open,
-+	.release = poch_release,
-+	.ioctl = poch_ioctl,
-+	.poll = poch_poll,
-+	.mmap = poch_mmap
-+};
-+
-+static void poch_irq_dma(struct channel_info *channel)
-+{
-+	u32 prev_transfer;
-+	u32 curr_transfer;
-+	long groups_done;
-+	unsigned long i, j;
-+	struct poch_group_info *groups;
-+	s32 *group_offsets;
-+	u32 curr_group_reg;
-+
-+	if (!atomic_read(&channel->inited))
-+		return;
-+
-+	prev_transfer = channel->transfer;
-+
-+	if (channel->chno == CHNO_RX_CHANNEL)
-+		curr_group_reg = FPGA_RX_CURR_GROUP_REG;
++	if (shift > 0)
++		factor = clean << shift;
 +	else
-+		curr_group_reg = FPGA_TX_CURR_GROUP_REG;
++		factor = clean >> -shift;
 +
-+	curr_transfer = ioread32(channel->fpga_iomem + curr_group_reg);
++	/* Update the FIR taps */
 +
-+	groups_done = curr_transfer - prev_transfer;
-+	/* Check wrap over, and handle it. */
-+	if (groups_done <= 0)
-+		groups_done += channel->group_count;
++	offset2 = ec->curr_pos;
++	offset1 = ec->taps - offset2;
++	phist = &ec->fir_state_bg.history[offset2];
 +
-+	group_offsets = channel->header->group_offsets;
-+	groups = channel->groups;
++	/* st: and en: help us locate the assembler in echo.s */
 +
-+	spin_lock(&channel->group_offsets_lock);
++	//asm("st:");
++	n = ec->taps;
++	for (i = 0, j = offset2; i < n; i++, j++) {
++		exp = *phist++ * factor;
++		ec->fir_taps16[1][i] += (int16_t) ((exp + (1 << 14)) >> 15);
++	}
++	//asm("en:");
 +
-+	for (i = 0; i < groups_done; i++) {
-+		j = (prev_transfer + i) % channel->group_count;
-+		if (channel->dir == CHANNEL_DIR_RX)
-+			group_offsets[j] = -1;
-+		else
-+			group_offsets[j] = groups[j].user_offset;
++	/* Note the asm for the inner loop above generated by Blackfin gcc
++	   4.1.1 is pretty good (note even parallel instructions used):
++
++	   R0 = W [P0++] (X);
++	   R0 *= R2;
++	   R0 = R0 + R3 (NS) ||
++	   R1 = W [P1] (X) ||
++	   nop;
++	   R0 >>>= 15;
++	   R0 = R0 + R1;
++	   W [P1++] = R0;
++
++	   A block based update algorithm would be much faster but the
++	   above can't be improved on much.  Every instruction saved in
++	   the loop above is 2 MIPs/ch!  The for loop above is where the
++	   Blackfin spends most of it's time - about 17 MIPs/ch measured
++	   with speedtest.c with 256 taps (32ms).  Write-back and
++	   Write-through cache gave about the same performance.
++	 */
+ }
+ 
+ /*
+@@ -198,94 +196,90 @@ static void __inline__ lms_adapt_bg(struct oslec_state *ec, int clean, int shift
+ */
+ 
+ #else
+-static __inline__ void lms_adapt_bg(struct oslec_state *ec, int clean, int shift)
++static __inline__ void lms_adapt_bg(struct oslec_state *ec, int clean,
++				    int shift)
+ {
+-    int i;
+-
+-    int offset1;
+-    int offset2;
+-    int factor;
+-    int exp;
+-
+-    if (shift > 0)
+-	factor = clean << shift;
+-    else
+-	factor = clean >> -shift;
+-
+-    /* Update the FIR taps */
+-
+-    offset2 = ec->curr_pos;
+-    offset1 = ec->taps - offset2;
+-
+-    for (i = ec->taps - 1;  i >= offset1;  i--)
+-    {
+-       exp = (ec->fir_state_bg.history[i - offset1]*factor);
+-       ec->fir_taps16[1][i] += (int16_t) ((exp+(1<<14)) >> 15);
+-    }
+-    for (  ;  i >= 0;  i--)
+-    {
+-       exp = (ec->fir_state_bg.history[i + offset2]*factor);
+-       ec->fir_taps16[1][i] += (int16_t) ((exp+(1<<14)) >> 15);
+-    }
++	int i;
++
++	int offset1;
++	int offset2;
++	int factor;
++	int exp;
++
++	if (shift > 0)
++		factor = clean << shift;
++	else
++		factor = clean >> -shift;
++
++	/* Update the FIR taps */
++
++	offset2 = ec->curr_pos;
++	offset1 = ec->taps - offset2;
++
++	for (i = ec->taps - 1; i >= offset1; i--) {
++		exp = (ec->fir_state_bg.history[i - offset1] * factor);
++		ec->fir_taps16[1][i] += (int16_t) ((exp + (1 << 14)) >> 15);
++	}
++	for (; i >= 0; i--) {
++		exp = (ec->fir_state_bg.history[i + offset2] * factor);
++		ec->fir_taps16[1][i] += (int16_t) ((exp + (1 << 14)) >> 15);
++	}
+ }
+ #endif
+ 
+-
+ struct oslec_state *oslec_create(int len, int adaption_mode)
+ {
+-    struct oslec_state *ec;
+-    int i;
+-
+-    ec = kzalloc(sizeof(*ec), GFP_KERNEL);
+-    if (!ec)
+-        return NULL;
+-
+-    ec->taps = len;
+-    ec->log2taps = top_bit(len);
+-    ec->curr_pos = ec->taps - 1;
+-
+-    for (i = 0; i < 2; i++) {
+-        ec->fir_taps16[i] = kcalloc(ec->taps, sizeof(int16_t), GFP_KERNEL);
+-        if (!ec->fir_taps16[i])
+-	    goto error_oom;
+-    }
+-
+-    fir16_create(&ec->fir_state,
+-                 ec->fir_taps16[0],
+-                 ec->taps);
+-    fir16_create(&ec->fir_state_bg,
+-                 ec->fir_taps16[1],
+-                 ec->taps);
+-
+-    for(i=0; i<5; i++) {
+-      ec->xvtx[i] = ec->yvtx[i] = ec->xvrx[i] = ec->yvrx[i] = 0;
+-    }
+-
+-    ec->cng_level = 1000;
+-    oslec_adaption_mode(ec, adaption_mode);
+-
+-    ec->snapshot = kcalloc(ec->taps, sizeof(int16_t), GFP_KERNEL);
+-    if (!ec->snapshot)
+-        goto error_oom;
+-
+-    ec->cond_met = 0;
+-    ec->Pstates = 0;
+-    ec->Ltxacc = ec->Lrxacc = ec->Lcleanacc = ec->Lclean_bgacc = 0;
+-    ec->Ltx = ec->Lrx = ec->Lclean = ec->Lclean_bg = 0;
+-    ec->tx_1 = ec->tx_2 = ec->rx_1 = ec->rx_2 = 0;
+-    ec->Lbgn = ec->Lbgn_acc = 0;
+-    ec->Lbgn_upper = 200;
+-    ec->Lbgn_upper_acc = ec->Lbgn_upper << 13;
+-
+-    return  ec;
+-
+-error_oom:
+-    for (i = 0; i < 2; i++)
+-        kfree(ec->fir_taps16[i]);
+-
+-    kfree(ec);
+-    return NULL;
++	struct oslec_state *ec;
++	int i;
++
++	ec = kzalloc(sizeof(*ec), GFP_KERNEL);
++	if (!ec)
++		return NULL;
++
++	ec->taps = len;
++	ec->log2taps = top_bit(len);
++	ec->curr_pos = ec->taps - 1;
++
++	for (i = 0; i < 2; i++) {
++		ec->fir_taps16[i] =
++		    kcalloc(ec->taps, sizeof(int16_t), GFP_KERNEL);
++		if (!ec->fir_taps16[i])
++			goto error_oom;
 +	}
 +
-+	spin_unlock(&channel->group_offsets_lock);
++	fir16_create(&ec->fir_state, ec->fir_taps16[0], ec->taps);
++	fir16_create(&ec->fir_state_bg, ec->fir_taps16[1], ec->taps);
 +
-+	channel->transfer = curr_transfer;
++	for (i = 0; i < 5; i++) {
++		ec->xvtx[i] = ec->yvtx[i] = ec->xvrx[i] = ec->yvrx[i] = 0;
++	}
 +
-+	wake_up_interruptible(&channel->wq);
-+}
++	ec->cng_level = 1000;
++	oslec_adaption_mode(ec, adaption_mode);
 +
-+static irqreturn_t poch_irq_handler(int irq, void *p)
++	ec->snapshot = kcalloc(ec->taps, sizeof(int16_t), GFP_KERNEL);
++	if (!ec->snapshot)
++		goto error_oom;
++
++	ec->cond_met = 0;
++	ec->Pstates = 0;
++	ec->Ltxacc = ec->Lrxacc = ec->Lcleanacc = ec->Lclean_bgacc = 0;
++	ec->Ltx = ec->Lrx = ec->Lclean = ec->Lclean_bg = 0;
++	ec->tx_1 = ec->tx_2 = ec->rx_1 = ec->rx_2 = 0;
++	ec->Lbgn = ec->Lbgn_acc = 0;
++	ec->Lbgn_upper = 200;
++	ec->Lbgn_upper_acc = ec->Lbgn_upper << 13;
++
++	return ec;
++
++      error_oom:
++	for (i = 0; i < 2; i++)
++		kfree(ec->fir_taps16[i]);
++
++	kfree(ec);
++	return NULL;
+ }
++
+ EXPORT_SYMBOL_GPL(oslec_create);
+ 
+ void oslec_free(struct oslec_state *ec)
+@@ -294,293 +288,300 @@ void oslec_free(struct oslec_state *ec)
+ 
+ 	fir16_free(&ec->fir_state);
+ 	fir16_free(&ec->fir_state_bg);
+-	for (i = 0;  i < 2;  i++)
++	for (i = 0; i < 2; i++)
+ 		kfree(ec->fir_taps16[i]);
+ 	kfree(ec->snapshot);
+ 	kfree(ec);
+ }
++
+ EXPORT_SYMBOL_GPL(oslec_free);
+ 
+ void oslec_adaption_mode(struct oslec_state *ec, int adaption_mode)
+ {
+-    ec->adaption_mode = adaption_mode;
++	ec->adaption_mode = adaption_mode;
+ }
++
+ EXPORT_SYMBOL_GPL(oslec_adaption_mode);
+ 
+ void oslec_flush(struct oslec_state *ec)
+ {
+-    int i;
++	int i;
+ 
+-    ec->Ltxacc = ec->Lrxacc = ec->Lcleanacc = ec->Lclean_bgacc = 0;
+-    ec->Ltx = ec->Lrx = ec->Lclean = ec->Lclean_bg = 0;
+-    ec->tx_1 = ec->tx_2 = ec->rx_1 = ec->rx_2 = 0;
++	ec->Ltxacc = ec->Lrxacc = ec->Lcleanacc = ec->Lclean_bgacc = 0;
++	ec->Ltx = ec->Lrx = ec->Lclean = ec->Lclean_bg = 0;
++	ec->tx_1 = ec->tx_2 = ec->rx_1 = ec->rx_2 = 0;
+ 
+-    ec->Lbgn = ec->Lbgn_acc = 0;
+-    ec->Lbgn_upper = 200;
+-    ec->Lbgn_upper_acc = ec->Lbgn_upper << 13;
++	ec->Lbgn = ec->Lbgn_acc = 0;
++	ec->Lbgn_upper = 200;
++	ec->Lbgn_upper_acc = ec->Lbgn_upper << 13;
+ 
+-    ec->nonupdate_dwell = 0;
++	ec->nonupdate_dwell = 0;
+ 
+-    fir16_flush(&ec->fir_state);
+-    fir16_flush(&ec->fir_state_bg);
+-    ec->fir_state.curr_pos = ec->taps - 1;
+-    ec->fir_state_bg.curr_pos = ec->taps - 1;
+-    for (i = 0;  i < 2;  i++)
+-        memset(ec->fir_taps16[i], 0, ec->taps*sizeof(int16_t));
++	fir16_flush(&ec->fir_state);
++	fir16_flush(&ec->fir_state_bg);
++	ec->fir_state.curr_pos = ec->taps - 1;
++	ec->fir_state_bg.curr_pos = ec->taps - 1;
++	for (i = 0; i < 2; i++)
++		memset(ec->fir_taps16[i], 0, ec->taps * sizeof(int16_t));
+ 
+-    ec->curr_pos = ec->taps - 1;
+-    ec->Pstates = 0;
++	ec->curr_pos = ec->taps - 1;
++	ec->Pstates = 0;
+ }
++
+ EXPORT_SYMBOL_GPL(oslec_flush);
+ 
+-void oslec_snapshot(struct oslec_state *ec) {
+-    memcpy(ec->snapshot, ec->fir_taps16[0], ec->taps*sizeof(int16_t));
++void oslec_snapshot(struct oslec_state *ec)
 +{
-+	struct poch_dev *poch_dev = p;
-+	void __iomem *bridge = poch_dev->bridge_iomem;
-+	void __iomem *fpga = poch_dev->fpga_iomem;
-+	struct channel_info *channel_rx = &poch_dev->channels[CHNO_RX_CHANNEL];
-+	struct channel_info *channel_tx = &poch_dev->channels[CHNO_TX_CHANNEL];
-+	u32 bridge_stat;
-+	u32 fpga_stat;
-+	u32 dma_stat;
++	memcpy(ec->snapshot, ec->fir_taps16[0], ec->taps * sizeof(int16_t));
+ }
 +
-+	bridge_stat = ioread32(bridge + BRIDGE_INT_STAT_REG);
-+	fpga_stat = ioread32(fpga + FPGA_INT_STAT_REG);
-+	dma_stat = ioread32(fpga + FPGA_DMA_INT_STAT_REG);
+ EXPORT_SYMBOL_GPL(oslec_snapshot);
+ 
+ /* Dual Path Echo Canceller ------------------------------------------------*/
+ 
+ int16_t oslec_update(struct oslec_state *ec, int16_t tx, int16_t rx)
+ {
+-    int32_t echo_value;
+-    int clean_bg;
+-    int tmp, tmp1;
+-
+-    /* Input scaling was found be required to prevent problems when tx
+-       starts clipping.  Another possible way to handle this would be the
+-       filter coefficent scaling. */
+-
+-    ec->tx = tx; ec->rx = rx;
+-    tx >>=1;
+-    rx >>=1;
+-
+-    /*
+-       Filter DC, 3dB point is 160Hz (I think), note 32 bit precision required
+-       otherwise values do not track down to 0. Zero at DC, Pole at (1-Beta)
+-       only real axis.  Some chip sets (like Si labs) don't need
+-       this, but something like a $10 X100P card does.  Any DC really slows
+-       down convergence.
+-
+-       Note: removes some low frequency from the signal, this reduces
+-       the speech quality when listening to samples through headphones
+-       but may not be obvious through a telephone handset.
+-
+-       Note that the 3dB frequency in radians is approx Beta, e.g. for
+-       Beta = 2^(-3) = 0.125, 3dB freq is 0.125 rads = 159Hz.
+-    */
+-
+-    if (ec->adaption_mode & ECHO_CAN_USE_RX_HPF) {
+-      tmp = rx << 15;
++	int32_t echo_value;
++	int clean_bg;
++	int tmp, tmp1;
 +
-+	ioread32(fpga + FPGA_DMA_INT_STAT_REG);
-+	ioread32(fpga + FPGA_INT_STAT_REG);
-+	ioread32(bridge + BRIDGE_INT_STAT_REG);
++	/* Input scaling was found be required to prevent problems when tx
++	   starts clipping.  Another possible way to handle this would be the
++	   filter coefficent scaling. */
 +
-+	if (bridge_stat & BRIDGE_INT_FPGA) {
-+		if (fpga_stat & FPGA_INT_DMA_CORE) {
-+			if (dma_stat & FPGA_DMA_INT_RX)
-+				poch_irq_dma(channel_rx);
-+			if (dma_stat & FPGA_DMA_INT_TX)
-+				poch_irq_dma(channel_tx);
-+		}
-+		if (fpga_stat & FPGA_INT_PLL_UNLOCKED) {
-+			channel_tx->counters.pll_unlock++;
-+			channel_rx->counters.pll_unlock++;
-+			if (printk_ratelimit())
-+				printk(KERN_WARNING PFX "PLL unlocked\n");
-+		}
-+		if (fpga_stat & FPGA_INT_TX_FF_EMPTY)
-+			channel_tx->counters.fifo_empty++;
-+		if (fpga_stat & FPGA_INT_TX_FF_OVRFLW)
-+			channel_tx->counters.fifo_overflow++;
-+		if (fpga_stat & FPGA_INT_RX_FF_EMPTY)
-+			channel_rx->counters.fifo_empty++;
-+		if (fpga_stat & FPGA_INT_RX_FF_OVRFLW)
-+			channel_rx->counters.fifo_overflow++;
++	ec->tx = tx;
++	ec->rx = rx;
++	tx >>= 1;
++	rx >>= 1;
 +
-+		/*
-+		 * FIXME: These errors should be notified through the
-+		 * poll interface as POLLERR.
++	/*
++	   Filter DC, 3dB point is 160Hz (I think), note 32 bit precision required
++	   otherwise values do not track down to 0. Zero at DC, Pole at (1-Beta)
++	   only real axis.  Some chip sets (like Si labs) don't need
++	   this, but something like a $10 X100P card does.  Any DC really slows
++	   down convergence.
++
++	   Note: removes some low frequency from the signal, this reduces
++	   the speech quality when listening to samples through headphones
++	   but may not be obvious through a telephone handset.
++
++	   Note that the 3dB frequency in radians is approx Beta, e.g. for
++	   Beta = 2^(-3) = 0.125, 3dB freq is 0.125 rads = 159Hz.
++	 */
++
++	if (ec->adaption_mode & ECHO_CAN_USE_RX_HPF) {
++		tmp = rx << 15;
+ #if 1
+-        /* Make sure the gain of the HPF is 1.0. This can still saturate a little under
+-           impulse conditions, and it might roll to 32768 and need clipping on sustained peak
+-           level signals. However, the scale of such clipping is small, and the error due to
+-           any saturation should not markedly affect the downstream processing. */
+-        tmp -= (tmp >> 4);
++		/* Make sure the gain of the HPF is 1.0. This can still saturate a little under
++		   impulse conditions, and it might roll to 32768 and need clipping on sustained peak
++		   level signals. However, the scale of such clipping is small, and the error due to
++		   any saturation should not markedly affect the downstream processing. */
++		tmp -= (tmp >> 4);
+ #endif
+-      ec->rx_1 += -(ec->rx_1>>DC_LOG2BETA) + tmp - ec->rx_2;
+-
+-      /* hard limit filter to prevent clipping.  Note that at this stage
+-	 rx should be limited to +/- 16383 due to right shift above */
+-      tmp1 = ec->rx_1 >> 15;
+-      if (tmp1 > 16383) tmp1 = 16383;
+-      if (tmp1 < -16383) tmp1 = -16383;
+-      rx = tmp1;
+-      ec->rx_2 = tmp;
+-    }
+-
+-    /* Block average of power in the filter states.  Used for
+-       adaption power calculation. */
+-
+-    {
+-	int new, old;
+-
+-	/* efficient "out with the old and in with the new" algorithm so
+-	   we don't have to recalculate over the whole block of
+-	   samples. */
+-	new = (int)tx * (int)tx;
+-	old = (int)ec->fir_state.history[ec->fir_state.curr_pos] *
+-              (int)ec->fir_state.history[ec->fir_state.curr_pos];
+-	ec->Pstates += ((new - old) + (1<<ec->log2taps)) >> ec->log2taps;
+-	if (ec->Pstates < 0) ec->Pstates = 0;
+-    }
+-
+-    /* Calculate short term average levels using simple single pole IIRs */
+-
+-    ec->Ltxacc += abs(tx) - ec->Ltx;
+-    ec->Ltx = (ec->Ltxacc + (1<<4)) >> 5;
+-    ec->Lrxacc += abs(rx) - ec->Lrx;
+-    ec->Lrx = (ec->Lrxacc + (1<<4)) >> 5;
+-
+-    /* Foreground filter ---------------------------------------------------*/
+-
+-    ec->fir_state.coeffs = ec->fir_taps16[0];
+-    echo_value = fir16(&ec->fir_state, tx);
+-    ec->clean = rx - echo_value;
+-    ec->Lcleanacc += abs(ec->clean) - ec->Lclean;
+-    ec->Lclean = (ec->Lcleanacc + (1<<4)) >> 5;
+-
+-    /* Background filter ---------------------------------------------------*/
+-
+-    echo_value = fir16(&ec->fir_state_bg, tx);
+-    clean_bg = rx - echo_value;
+-    ec->Lclean_bgacc += abs(clean_bg) - ec->Lclean_bg;
+-    ec->Lclean_bg = (ec->Lclean_bgacc + (1<<4)) >> 5;
+-
+-    /* Background Filter adaption -----------------------------------------*/
+-
+-    /* Almost always adap bg filter, just simple DT and energy
+-       detection to minimise adaption in cases of strong double talk.
+-       However this is not critical for the dual path algorithm.
+-    */
+-    ec->factor = 0;
+-    ec->shift = 0;
+-    if ((ec->nonupdate_dwell == 0)) {
+-	int   P, logP, shift;
+-
+-	/* Determine:
+-
+-	   f = Beta * clean_bg_rx/P ------ (1)
+-
+-	   where P is the total power in the filter states.
+-
+-	   The Boffins have shown that if we obey (1) we converge
+-	   quickly and avoid instability.
+-
+-	   The correct factor f must be in Q30, as this is the fixed
+-	   point format required by the lms_adapt_bg() function,
+-	   therefore the scaled version of (1) is:
+-
+-	   (2^30) * f  = (2^30) * Beta * clean_bg_rx/P
+-	       factor  = (2^30) * Beta * clean_bg_rx/P         ----- (2)
+-
+-	   We have chosen Beta = 0.25 by experiment, so:
+-
+-	       factor  = (2^30) * (2^-2) * clean_bg_rx/P
+-
+-                                       (30 - 2 - log2(P))
+-	       factor  = clean_bg_rx 2                         ----- (3)
+-
+-	   To avoid a divide we approximate log2(P) as top_bit(P),
+-	   which returns the position of the highest non-zero bit in
+-	   P.  This approximation introduces an error as large as a
+-	   factor of 2, but the algorithm seems to handle it OK.
+-
+-	   Come to think of it a divide may not be a big deal on a
+-	   modern DSP, so its probably worth checking out the cycles
+-	   for a divide versus a top_bit() implementation.
+-	*/
+-
+-	P = MIN_TX_POWER_FOR_ADAPTION + ec->Pstates;
+-	logP = top_bit(P) + ec->log2taps;
+-	shift = 30 - 2 - logP;
+-	ec->shift = shift;
+-
+-	lms_adapt_bg(ec, clean_bg, shift);
+-    }
+-
+-    /* very simple DTD to make sure we dont try and adapt with strong
+-       near end speech */
+-
+-    ec->adapt = 0;
+-    if ((ec->Lrx > MIN_RX_POWER_FOR_ADAPTION) && (ec->Lrx > ec->Ltx))
+-	ec->nonupdate_dwell = DTD_HANGOVER;
+-    if (ec->nonupdate_dwell)
+-	ec->nonupdate_dwell--;
+-
+-    /* Transfer logic ------------------------------------------------------*/
+-
+-    /* These conditions are from the dual path paper [1], I messed with
+-       them a bit to improve performance. */
+-
+-    if ((ec->adaption_mode & ECHO_CAN_USE_ADAPTION) &&
+-	(ec->nonupdate_dwell == 0) &&
+-	(8*ec->Lclean_bg < 7*ec->Lclean) /* (ec->Lclean_bg < 0.875*ec->Lclean) */ &&
+-	(8*ec->Lclean_bg < ec->Ltx)      /* (ec->Lclean_bg < 0.125*ec->Ltx)    */ )
+-    {
+-	if (ec->cond_met == 6) {
+-	    /* BG filter has had better results for 6 consecutive samples */
+-	    ec->adapt = 1;
+-	    memcpy(ec->fir_taps16[0], ec->fir_taps16[1], ec->taps*sizeof(int16_t));
++		ec->rx_1 += -(ec->rx_1 >> DC_LOG2BETA) + tmp - ec->rx_2;
++
++		/* hard limit filter to prevent clipping.  Note that at this stage
++		   rx should be limited to +/- 16383 due to right shift above */
++		tmp1 = ec->rx_1 >> 15;
++		if (tmp1 > 16383)
++			tmp1 = 16383;
++		if (tmp1 < -16383)
++			tmp1 = -16383;
++		rx = tmp1;
++		ec->rx_2 = tmp;
+ 	}
+-	else
+-	    ec->cond_met++;
+-    }
+-    else
+-	ec->cond_met = 0;
+ 
+-    /* Non-Linear Processing ---------------------------------------------------*/
++	/* Block average of power in the filter states.  Used for
++	   adaption power calculation. */
+ 
+-    ec->clean_nlp = ec->clean;
+-    if (ec->adaption_mode & ECHO_CAN_USE_NLP)
+-    {
+-        /* Non-linear processor - a fancy way to say "zap small signals, to avoid
+-           residual echo due to (uLaw/ALaw) non-linearity in the channel.". */
+-
+-      if ((16*ec->Lclean < ec->Ltx))
+-      {
+-	/* Our e/c has improved echo by at least 24 dB (each factor of 2 is 6dB,
+-	   so 2*2*2*2=16 is the same as 6+6+6+6=24dB) */
+-        if (ec->adaption_mode & ECHO_CAN_USE_CNG)
+-	{
+-	    ec->cng_level = ec->Lbgn;
+-
+-	    /* Very elementary comfort noise generation.  Just random
+-	       numbers rolled off very vaguely Hoth-like.  DR: This
+-	       noise doesn't sound quite right to me - I suspect there
+-	       are some overlfow issues in the filtering as it's too
+-	       "crackly".  TODO: debug this, maybe just play noise at
+-	       high level or look at spectrum.
+-	    */
+-
+-	    ec->cng_rndnum = 1664525U*ec->cng_rndnum + 1013904223U;
+-	    ec->cng_filter = ((ec->cng_rndnum & 0xFFFF) - 32768 + 5*ec->cng_filter) >> 3;
+-	    ec->clean_nlp = (ec->cng_filter*ec->cng_level*8) >> 14;
+-
+-        }
+-        else if (ec->adaption_mode & ECHO_CAN_USE_CLIP)
+ 	{
+-	    /* This sounds much better than CNG */
+-	    if (ec->clean_nlp > ec->Lbgn)
+-	      ec->clean_nlp = ec->Lbgn;
+-	    if (ec->clean_nlp < -ec->Lbgn)
+-	      ec->clean_nlp = -ec->Lbgn;
++		int new, old;
++
++		/* efficient "out with the old and in with the new" algorithm so
++		   we don't have to recalculate over the whole block of
++		   samples. */
++		new = (int)tx *(int)tx;
++		old = (int)ec->fir_state.history[ec->fir_state.curr_pos] *
++		    (int)ec->fir_state.history[ec->fir_state.curr_pos];
++		ec->Pstates +=
++		    ((new - old) + (1 << ec->log2taps)) >> ec->log2taps;
++		if (ec->Pstates < 0)
++			ec->Pstates = 0;
+ 	}
+-	else
+-        {
+-	  /* just mute the residual, doesn't sound very good, used mainly
+-	     in G168 tests */
+-          ec->clean_nlp = 0;
+-        }
+-      }
+-      else {
+-	  /* Background noise estimator.  I tried a few algorithms
+-	     here without much luck.  This very simple one seems to
+-	     work best, we just average the level using a slow (1 sec
+-	     time const) filter if the current level is less than a
+-	     (experimentally derived) constant.  This means we dont
+-	     include high level signals like near end speech.  When
+-	     combined with CNG or especially CLIP seems to work OK.
+-	  */
+-	  if (ec->Lclean < 40) {
+-	      ec->Lbgn_acc += abs(ec->clean) - ec->Lbgn;
+-	      ec->Lbgn = (ec->Lbgn_acc + (1<<11)) >> 12;
+-	  }
+-       }
+-    }
+-
+-    /* Roll around the taps buffer */
+-    if (ec->curr_pos <= 0)
+-        ec->curr_pos = ec->taps;
+-    ec->curr_pos--;
+-
+-    if (ec->adaption_mode & ECHO_CAN_DISABLE)
+-      ec->clean_nlp = rx;
+-
+-    /* Output scaled back up again to match input scaling */
+-
+-    return (int16_t) ec->clean_nlp << 1;
++
++	/* Calculate short term average levels using simple single pole IIRs */
++
++	ec->Ltxacc += abs(tx) - ec->Ltx;
++	ec->Ltx = (ec->Ltxacc + (1 << 4)) >> 5;
++	ec->Lrxacc += abs(rx) - ec->Lrx;
++	ec->Lrx = (ec->Lrxacc + (1 << 4)) >> 5;
++
++	/* Foreground filter --------------------------------------------------- */
++
++	ec->fir_state.coeffs = ec->fir_taps16[0];
++	echo_value = fir16(&ec->fir_state, tx);
++	ec->clean = rx - echo_value;
++	ec->Lcleanacc += abs(ec->clean) - ec->Lclean;
++	ec->Lclean = (ec->Lcleanacc + (1 << 4)) >> 5;
++
++	/* Background filter --------------------------------------------------- */
++
++	echo_value = fir16(&ec->fir_state_bg, tx);
++	clean_bg = rx - echo_value;
++	ec->Lclean_bgacc += abs(clean_bg) - ec->Lclean_bg;
++	ec->Lclean_bg = (ec->Lclean_bgacc + (1 << 4)) >> 5;
++
++	/* Background Filter adaption ----------------------------------------- */
++
++	/* Almost always adap bg filter, just simple DT and energy
++	   detection to minimise adaption in cases of strong double talk.
++	   However this is not critical for the dual path algorithm.
++	 */
++	ec->factor = 0;
++	ec->shift = 0;
++	if ((ec->nonupdate_dwell == 0)) {
++		int P, logP, shift;
++
++		/* Determine:
++
++		   f = Beta * clean_bg_rx/P ------ (1)
++
++		   where P is the total power in the filter states.
++
++		   The Boffins have shown that if we obey (1) we converge
++		   quickly and avoid instability.
++
++		   The correct factor f must be in Q30, as this is the fixed
++		   point format required by the lms_adapt_bg() function,
++		   therefore the scaled version of (1) is:
++
++		   (2^30) * f  = (2^30) * Beta * clean_bg_rx/P
++		   factor  = (2^30) * Beta * clean_bg_rx/P         ----- (2)
++
++		   We have chosen Beta = 0.25 by experiment, so:
++
++		   factor  = (2^30) * (2^-2) * clean_bg_rx/P
++
++		   (30 - 2 - log2(P))
++		   factor  = clean_bg_rx 2                         ----- (3)
++
++		   To avoid a divide we approximate log2(P) as top_bit(P),
++		   which returns the position of the highest non-zero bit in
++		   P.  This approximation introduces an error as large as a
++		   factor of 2, but the algorithm seems to handle it OK.
++
++		   Come to think of it a divide may not be a big deal on a
++		   modern DSP, so its probably worth checking out the cycles
++		   for a divide versus a top_bit() implementation.
 +		 */
 +
-+		/* Re-enable interrupts. */
-+		iowrite32(BRIDGE_INT_FPGA, bridge + BRIDGE_INT_MASK_REG);
++		P = MIN_TX_POWER_FOR_ADAPTION + ec->Pstates;
++		logP = top_bit(P) + ec->log2taps;
++		shift = 30 - 2 - logP;
++		ec->shift = shift;
 +
-+		return IRQ_HANDLED;
++		lms_adapt_bg(ec, clean_bg, shift);
 +	}
 +
-+	return IRQ_NONE;
-+}
++	/* very simple DTD to make sure we dont try and adapt with strong
++	   near end speech */
 +
-+static void poch_class_dev_unregister(struct poch_dev *poch_dev, int id)
-+{
-+	int i, j;
-+	int nattrs;
-+	struct channel_info *channel;
-+	dev_t devno;
++	ec->adapt = 0;
++	if ((ec->Lrx > MIN_RX_POWER_FOR_ADAPTION) && (ec->Lrx > ec->Ltx))
++		ec->nonupdate_dwell = DTD_HANGOVER;
++	if (ec->nonupdate_dwell)
++		ec->nonupdate_dwell--;
 +
-+	if (poch_dev->dev == NULL)
-+		return;
++	/* Transfer logic ------------------------------------------------------ */
 +
-+	for (i = 0; i < poch_dev->nchannels; i++) {
-+		channel = &poch_dev->channels[i];
-+		devno = poch_first_dev + (id * poch_dev->nchannels) + i;
++	/* These conditions are from the dual path paper [1], I messed with
++	   them a bit to improve performance. */
 +
-+		if (!channel->dev)
-+			continue;
++	if ((ec->adaption_mode & ECHO_CAN_USE_ADAPTION) &&
++	    (ec->nonupdate_dwell == 0) &&
++	    (8 * ec->Lclean_bg <
++	     7 * ec->Lclean) /* (ec->Lclean_bg < 0.875*ec->Lclean) */ &&
++	    (8 * ec->Lclean_bg <
++	     ec->Ltx) /* (ec->Lclean_bg < 0.125*ec->Ltx)    */ ) {
++		if (ec->cond_met == 6) {
++			/* BG filter has had better results for 6 consecutive samples */
++			ec->adapt = 1;
++			memcpy(ec->fir_taps16[0], ec->fir_taps16[1],
++			       ec->taps * sizeof(int16_t));
++		} else
++			ec->cond_met++;
++	} else
++		ec->cond_met = 0;
 +
-+		nattrs = sizeof(poch_class_attrs)/sizeof(poch_class_attrs[0]);
-+		for (j = 0; j < nattrs; j++)
-+			device_remove_file(channel->dev, poch_class_attrs[j]);
++	/* Non-Linear Processing --------------------------------------------------- */
 +
-+		device_unregister(channel->dev);
-+	}
++	ec->clean_nlp = ec->clean;
++	if (ec->adaption_mode & ECHO_CAN_USE_NLP) {
++		/* Non-linear processor - a fancy way to say "zap small signals, to avoid
++		   residual echo due to (uLaw/ALaw) non-linearity in the channel.". */
 +
-+	device_unregister(poch_dev->dev);
-+}
++		if ((16 * ec->Lclean < ec->Ltx)) {
++			/* Our e/c has improved echo by at least 24 dB (each factor of 2 is 6dB,
++			   so 2*2*2*2=16 is the same as 6+6+6+6=24dB) */
++			if (ec->adaption_mode & ECHO_CAN_USE_CNG) {
++				ec->cng_level = ec->Lbgn;
 +
-+static int __devinit poch_class_dev_register(struct poch_dev *poch_dev,
-+					     int id)
-+{
-+	struct device *dev = &poch_dev->pci_dev->dev;
-+	int i, j;
-+	int nattrs;
-+	int ret;
-+	struct channel_info *channel;
-+	dev_t devno;
++				/* Very elementary comfort noise generation.  Just random
++				   numbers rolled off very vaguely Hoth-like.  DR: This
++				   noise doesn't sound quite right to me - I suspect there
++				   are some overlfow issues in the filtering as it's too
++				   "crackly".  TODO: debug this, maybe just play noise at
++				   high level or look at spectrum.
++				 */
 +
-+	poch_dev->dev = device_create(poch_cls, &poch_dev->pci_dev->dev,
-+				      MKDEV(0, 0), NULL, "poch%d", id);
-+	if (IS_ERR(poch_dev->dev)) {
-+		dev_err(dev, "error creating parent class device");
-+		ret = PTR_ERR(poch_dev->dev);
-+		poch_dev->dev = NULL;
-+		return ret;
-+	}
++				ec->cng_rndnum =
++				    1664525U * ec->cng_rndnum + 1013904223U;
++				ec->cng_filter =
++				    ((ec->cng_rndnum & 0xFFFF) - 32768 +
++				     5 * ec->cng_filter) >> 3;
++				ec->clean_nlp =
++				    (ec->cng_filter * ec->cng_level * 8) >> 14;
 +
-+	for (i = 0; i < poch_dev->nchannels; i++) {
-+		channel = &poch_dev->channels[i];
-+
-+		devno = poch_first_dev + (id * poch_dev->nchannels) + i;
-+		channel->dev = device_create(poch_cls, poch_dev->dev, devno,
-+					     NULL, "ch%d", i);
-+		if (IS_ERR(channel->dev)) {
-+			dev_err(dev, "error creating channel class device");
-+			ret = PTR_ERR(channel->dev);
-+			channel->dev = NULL;
-+			poch_class_dev_unregister(poch_dev, id);
-+			return ret;
-+		}
-+
-+		dev_set_drvdata(channel->dev, channel);
-+		nattrs = sizeof(poch_class_attrs)/sizeof(poch_class_attrs[0]);
-+		for (j = 0; j < nattrs; j++) {
-+			ret = device_create_file(channel->dev,
-+						 poch_class_attrs[j]);
-+			if (ret) {
-+				dev_err(dev, "error creating attribute file");
-+				poch_class_dev_unregister(poch_dev, id);
-+				return ret;
++			} else if (ec->adaption_mode & ECHO_CAN_USE_CLIP) {
++				/* This sounds much better than CNG */
++				if (ec->clean_nlp > ec->Lbgn)
++					ec->clean_nlp = ec->Lbgn;
++				if (ec->clean_nlp < -ec->Lbgn)
++					ec->clean_nlp = -ec->Lbgn;
++			} else {
++				/* just mute the residual, doesn't sound very good, used mainly
++				   in G168 tests */
++				ec->clean_nlp = 0;
++			}
++		} else {
++			/* Background noise estimator.  I tried a few algorithms
++			   here without much luck.  This very simple one seems to
++			   work best, we just average the level using a slow (1 sec
++			   time const) filter if the current level is less than a
++			   (experimentally derived) constant.  This means we dont
++			   include high level signals like near end speech.  When
++			   combined with CNG or especially CLIP seems to work OK.
++			 */
++			if (ec->Lclean < 40) {
++				ec->Lbgn_acc += abs(ec->clean) - ec->Lbgn;
++				ec->Lbgn = (ec->Lbgn_acc + (1 << 11)) >> 12;
 +			}
 +		}
 +	}
 +
-+	return 0;
-+}
++	/* Roll around the taps buffer */
++	if (ec->curr_pos <= 0)
++		ec->curr_pos = ec->taps;
++	ec->curr_pos--;
 +
-+static int __devinit poch_pci_probe(struct pci_dev *pdev,
-+				    const struct pci_device_id *pci_id)
++	if (ec->adaption_mode & ECHO_CAN_DISABLE)
++		ec->clean_nlp = rx;
++
++	/* Output scaled back up again to match input scaling */
++
++	return (int16_t) ec->clean_nlp << 1;
+ }
++
+ EXPORT_SYMBOL_GPL(oslec_update);
+ 
+ /* This function is seperated from the echo canceller is it is usually called
+@@ -604,28 +605,32 @@ EXPORT_SYMBOL_GPL(oslec_update);
+    precision, which noise shapes things, giving very clean DC removal.
+ */
+ 
+-int16_t oslec_hpf_tx(struct oslec_state *ec, int16_t tx) {
+-    int tmp, tmp1;
++int16_t oslec_hpf_tx(struct oslec_state * ec, int16_t tx)
 +{
-+	struct device *dev = &pdev->dev;
-+	struct poch_dev *poch_dev;
-+	struct uio_info *uio;
-+	int ret;
-+	int id;
++	int tmp, tmp1;
+ 
+-    if (ec->adaption_mode & ECHO_CAN_USE_TX_HPF) {
+-        tmp = tx << 15;
++	if (ec->adaption_mode & ECHO_CAN_USE_TX_HPF) {
++		tmp = tx << 15;
+ #if 1
+-        /* Make sure the gain of the HPF is 1.0. The first can still saturate a little under
+-           impulse conditions, and it might roll to 32768 and need clipping on sustained peak
+-           level signals. However, the scale of such clipping is small, and the error due to
+-           any saturation should not markedly affect the downstream processing. */
+-        tmp -= (tmp >> 4);
++		/* Make sure the gain of the HPF is 1.0. The first can still saturate a little under
++		   impulse conditions, and it might roll to 32768 and need clipping on sustained peak
++		   level signals. However, the scale of such clipping is small, and the error due to
++		   any saturation should not markedly affect the downstream processing. */
++		tmp -= (tmp >> 4);
+ #endif
+-        ec->tx_1 += -(ec->tx_1>>DC_LOG2BETA) + tmp - ec->tx_2;
+-        tmp1 = ec->tx_1 >> 15;
+-	if (tmp1 > 32767) tmp1 = 32767;
+-	if (tmp1 < -32767) tmp1 = -32767;
+-	tx = tmp1;
+-        ec->tx_2 = tmp;
+-    }
+-
+-    return tx;
++		ec->tx_1 += -(ec->tx_1 >> DC_LOG2BETA) + tmp - ec->tx_2;
++		tmp1 = ec->tx_1 >> 15;
++		if (tmp1 > 32767)
++			tmp1 = 32767;
++		if (tmp1 < -32767)
++			tmp1 = -32767;
++		tx = tmp1;
++		ec->tx_2 = tmp;
++	}
++
++	return tx;
+ }
++
+ EXPORT_SYMBOL_GPL(oslec_hpf_tx);
+ 
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/staging/echo/echo.h b/drivers/staging/echo/echo.h
+index 2a1d1d8..9fb9543 100644
+--- a/drivers/staging/echo/echo.h
++++ b/drivers/staging/echo/echo.h
+@@ -124,9 +124,8 @@ a minor burden.
+     G.168 echo canceller descriptor. This defines the working state for a line
+     echo canceller.
+ */
+-struct oslec_state
+-{
+-	int16_t tx,rx;
++struct oslec_state {
++	int16_t tx, rx;
+ 	int16_t clean;
+ 	int16_t clean_nlp;
+ 
+@@ -170,4 +169,4 @@ struct oslec_state
+ 	int16_t *snapshot;
+ };
+ 
+-#endif	/* __ECHO_H */
++#endif /* __ECHO_H */
+diff --git a/drivers/staging/echo/fir.h b/drivers/staging/echo/fir.h
+index e760471..5645cb1 100644
+--- a/drivers/staging/echo/fir.h
++++ b/drivers/staging/echo/fir.h
+@@ -72,8 +72,7 @@
+     16 bit integer FIR descriptor. This defines the working state for a single
+     instance of an FIR filter using 16 bit integer coefficients.
+ */
+-typedef struct
+-{
++typedef struct {
+ 	int taps;
+ 	int curr_pos;
+ 	const int16_t *coeffs;
+@@ -85,8 +84,7 @@ typedef struct
+     instance of an FIR filter using 32 bit integer coefficients, and filtering
+     16 bit integer data.
+ */
+-typedef struct
+-{
++typedef struct {
+ 	int taps;
+ 	int curr_pos;
+ 	const int32_t *coeffs;
+@@ -97,39 +95,37 @@ typedef struct
+     Floating point FIR descriptor. This defines the working state for a single
+     instance of an FIR filter using floating point coefficients and data.
+ */
+-typedef struct
+-{
++typedef struct {
+ 	int taps;
+ 	int curr_pos;
+ 	const float *coeffs;
+ 	float *history;
+ } fir_float_state_t;
+ 
+-static __inline__ const int16_t *fir16_create(fir16_state_t *fir,
+-                                              const int16_t *coeffs,
+-                                              int taps)
++static __inline__ const int16_t *fir16_create(fir16_state_t * fir,
++					      const int16_t * coeffs, int taps)
+ {
+ 	fir->taps = taps;
+ 	fir->curr_pos = taps - 1;
+ 	fir->coeffs = coeffs;
+ #if defined(USE_MMX)  ||  defined(USE_SSE2) || defined(__bfin__)
+-	fir->history = kcalloc(2*taps, sizeof(int16_t), GFP_KERNEL);
++	fir->history = kcalloc(2 * taps, sizeof(int16_t), GFP_KERNEL);
+ #else
+ 	fir->history = kcalloc(taps, sizeof(int16_t), GFP_KERNEL);
+ #endif
+ 	return fir->history;
+ }
+ 
+-static __inline__ void fir16_flush(fir16_state_t *fir)
++static __inline__ void fir16_flush(fir16_state_t * fir)
+ {
+ #if defined(USE_MMX)  ||  defined(USE_SSE2) || defined(__bfin__)
+-    memset(fir->history, 0, 2*fir->taps*sizeof(int16_t));
++	memset(fir->history, 0, 2 * fir->taps * sizeof(int16_t));
+ #else
+-    memset(fir->history, 0, fir->taps*sizeof(int16_t));
++	memset(fir->history, 0, fir->taps * sizeof(int16_t));
+ #endif
+ }
+ 
+-static __inline__ void fir16_free(fir16_state_t *fir)
++static __inline__ void fir16_free(fir16_state_t * fir)
+ {
+ 	kfree(fir->history);
+ }
+@@ -137,166 +133,162 @@ static __inline__ void fir16_free(fir16_state_t *fir)
+ #ifdef __bfin__
+ static inline int32_t dot_asm(short *x, short *y, int len)
+ {
+-   int dot;
+-
+-   len--;
+-
+-   __asm__
+-   (
+-   "I0 = %1;\n\t"
+-   "I1 = %2;\n\t"
+-   "A0 = 0;\n\t"
+-   "R0.L = W[I0++] || R1.L = W[I1++];\n\t"
+-   "LOOP dot%= LC0 = %3;\n\t"
+-   "LOOP_BEGIN dot%=;\n\t"
+-      "A0 += R0.L * R1.L (IS) || R0.L = W[I0++] || R1.L = W[I1++];\n\t"
+-   "LOOP_END dot%=;\n\t"
+-   "A0 += R0.L*R1.L (IS);\n\t"
+-   "R0 = A0;\n\t"
+-   "%0 = R0;\n\t"
+-   : "=&d" (dot)
+-   : "a" (x), "a" (y), "a" (len)
+-   : "I0", "I1", "A1", "A0", "R0", "R1"
+-   );
+-
+-   return dot;
++	int dot;
++
++	len--;
++
++	__asm__("I0 = %1;\n\t"
++		"I1 = %2;\n\t"
++		"A0 = 0;\n\t"
++		"R0.L = W[I0++] || R1.L = W[I1++];\n\t"
++		"LOOP dot%= LC0 = %3;\n\t"
++		"LOOP_BEGIN dot%=;\n\t"
++		"A0 += R0.L * R1.L (IS) || R0.L = W[I0++] || R1.L = W[I1++];\n\t"
++		"LOOP_END dot%=;\n\t"
++		"A0 += R0.L*R1.L (IS);\n\t"
++		"R0 = A0;\n\t"
++		"%0 = R0;\n\t"
++		:"=&d"(dot)
++		:"a"(x), "a"(y), "a"(len)
++		:"I0", "I1", "A1", "A0", "R0", "R1"
++	);
++
++	return dot;
+ }
+ #endif
+ 
+-static __inline__ int16_t fir16(fir16_state_t *fir, int16_t sample)
++static __inline__ int16_t fir16(fir16_state_t * fir, int16_t sample)
+ {
+-    int32_t y;
++	int32_t y;
+ #if defined(USE_MMX)
+-    int i;
+-    mmx_t *mmx_coeffs;
+-    mmx_t *mmx_hist;
+-
+-    fir->history[fir->curr_pos] = sample;
+-    fir->history[fir->curr_pos + fir->taps] = sample;
+-
+-    mmx_coeffs = (mmx_t *) fir->coeffs;
+-    mmx_hist = (mmx_t *) &fir->history[fir->curr_pos];
+-    i = fir->taps;
+-    pxor_r2r(mm4, mm4);
+-    /* 8 samples per iteration, so the filter must be a multiple of 8 long. */
+-    while (i > 0)
+-    {
+-        movq_m2r(mmx_coeffs[0], mm0);
+-        movq_m2r(mmx_coeffs[1], mm2);
+-        movq_m2r(mmx_hist[0], mm1);
+-        movq_m2r(mmx_hist[1], mm3);
+-        mmx_coeffs += 2;
+-        mmx_hist += 2;
+-        pmaddwd_r2r(mm1, mm0);
+-        pmaddwd_r2r(mm3, mm2);
+-        paddd_r2r(mm0, mm4);
+-        paddd_r2r(mm2, mm4);
+-        i -= 8;
+-    }
+-    movq_r2r(mm4, mm0);
+-    psrlq_i2r(32, mm0);
+-    paddd_r2r(mm0, mm4);
+-    movd_r2m(mm4, y);
+-    emms();
 +	int i;
++	mmx_t *mmx_coeffs;
++	mmx_t *mmx_hist;
 +
-+	poch_dev = kzalloc(sizeof(struct poch_dev), GFP_KERNEL);
-+	if (!poch_dev) {
-+		dev_err(dev, "error allocating priv. data memory\n");
-+		return -ENOMEM;
++	fir->history[fir->curr_pos] = sample;
++	fir->history[fir->curr_pos + fir->taps] = sample;
++
++	mmx_coeffs = (mmx_t *) fir->coeffs;
++	mmx_hist = (mmx_t *) & fir->history[fir->curr_pos];
++	i = fir->taps;
++	pxor_r2r(mm4, mm4);
++	/* 8 samples per iteration, so the filter must be a multiple of 8 long. */
++	while (i > 0) {
++		movq_m2r(mmx_coeffs[0], mm0);
++		movq_m2r(mmx_coeffs[1], mm2);
++		movq_m2r(mmx_hist[0], mm1);
++		movq_m2r(mmx_hist[1], mm3);
++		mmx_coeffs += 2;
++		mmx_hist += 2;
++		pmaddwd_r2r(mm1, mm0);
++		pmaddwd_r2r(mm3, mm2);
++		paddd_r2r(mm0, mm4);
++		paddd_r2r(mm2, mm4);
++		i -= 8;
 +	}
++	movq_r2r(mm4, mm0);
++	psrlq_i2r(32, mm0);
++	paddd_r2r(mm0, mm4);
++	movd_r2m(mm4, y);
++	emms();
+ #elif defined(USE_SSE2)
+-    int i;
+-    xmm_t *xmm_coeffs;
+-    xmm_t *xmm_hist;
+-
+-    fir->history[fir->curr_pos] = sample;
+-    fir->history[fir->curr_pos + fir->taps] = sample;
+-
+-    xmm_coeffs = (xmm_t *) fir->coeffs;
+-    xmm_hist = (xmm_t *) &fir->history[fir->curr_pos];
+-    i = fir->taps;
+-    pxor_r2r(xmm4, xmm4);
+-    /* 16 samples per iteration, so the filter must be a multiple of 16 long. */
+-    while (i > 0)
+-    {
+-        movdqu_m2r(xmm_coeffs[0], xmm0);
+-        movdqu_m2r(xmm_coeffs[1], xmm2);
+-        movdqu_m2r(xmm_hist[0], xmm1);
+-        movdqu_m2r(xmm_hist[1], xmm3);
+-        xmm_coeffs += 2;
+-        xmm_hist += 2;
+-        pmaddwd_r2r(xmm1, xmm0);
+-        pmaddwd_r2r(xmm3, xmm2);
+-        paddd_r2r(xmm0, xmm4);
+-        paddd_r2r(xmm2, xmm4);
+-        i -= 16;
+-    }
+-    movdqa_r2r(xmm4, xmm0);
+-    psrldq_i2r(8, xmm0);
+-    paddd_r2r(xmm0, xmm4);
+-    movdqa_r2r(xmm4, xmm0);
+-    psrldq_i2r(4, xmm0);
+-    paddd_r2r(xmm0, xmm4);
+-    movd_r2m(xmm4, y);
++	int i;
++	xmm_t *xmm_coeffs;
++	xmm_t *xmm_hist;
 +
-+	poch_dev->pci_dev = pdev;
-+	uio = &poch_dev->uio;
++	fir->history[fir->curr_pos] = sample;
++	fir->history[fir->curr_pos + fir->taps] = sample;
 +
-+	pci_set_drvdata(pdev, poch_dev);
-+
-+	spin_lock_init(&poch_dev->iomem_lock);
-+
-+	poch_dev->nchannels = POCH_NCHANNELS;
-+	poch_dev->channels[CHNO_RX_CHANNEL].dir = CHANNEL_DIR_RX;
-+	poch_dev->channels[CHNO_TX_CHANNEL].dir = CHANNEL_DIR_TX;
-+
-+	for (i = 0; i < poch_dev->nchannels; i++) {
-+		init_waitqueue_head(&poch_dev->channels[i].wq);
-+		atomic_set(&poch_dev->channels[i].free, 1);
-+		atomic_set(&poch_dev->channels[i].inited, 0);
++	xmm_coeffs = (xmm_t *) fir->coeffs;
++	xmm_hist = (xmm_t *) & fir->history[fir->curr_pos];
++	i = fir->taps;
++	pxor_r2r(xmm4, xmm4);
++	/* 16 samples per iteration, so the filter must be a multiple of 16 long. */
++	while (i > 0) {
++		movdqu_m2r(xmm_coeffs[0], xmm0);
++		movdqu_m2r(xmm_coeffs[1], xmm2);
++		movdqu_m2r(xmm_hist[0], xmm1);
++		movdqu_m2r(xmm_hist[1], xmm3);
++		xmm_coeffs += 2;
++		xmm_hist += 2;
++		pmaddwd_r2r(xmm1, xmm0);
++		pmaddwd_r2r(xmm3, xmm2);
++		paddd_r2r(xmm0, xmm4);
++		paddd_r2r(xmm2, xmm4);
++		i -= 16;
 +	}
++	movdqa_r2r(xmm4, xmm0);
++	psrldq_i2r(8, xmm0);
++	paddd_r2r(xmm0, xmm4);
++	movdqa_r2r(xmm4, xmm0);
++	psrldq_i2r(4, xmm0);
++	paddd_r2r(xmm0, xmm4);
++	movd_r2m(xmm4, y);
+ #elif defined(__bfin__)
+-    fir->history[fir->curr_pos] = sample;
+-    fir->history[fir->curr_pos + fir->taps] = sample;
+-    y = dot_asm((int16_t*)fir->coeffs, &fir->history[fir->curr_pos], fir->taps);
++	fir->history[fir->curr_pos] = sample;
++	fir->history[fir->curr_pos + fir->taps] = sample;
++	y = dot_asm((int16_t *) fir->coeffs, &fir->history[fir->curr_pos],
++		    fir->taps);
+ #else
+-    int i;
+-    int offset1;
+-    int offset2;
+-
+-    fir->history[fir->curr_pos] = sample;
+-
+-    offset2 = fir->curr_pos;
+-    offset1 = fir->taps - offset2;
+-    y = 0;
+-    for (i = fir->taps - 1;  i >= offset1;  i--)
+-        y += fir->coeffs[i]*fir->history[i - offset1];
+-    for (  ;  i >= 0;  i--)
+-        y += fir->coeffs[i]*fir->history[i + offset2];
++	int i;
++	int offset1;
++	int offset2;
 +
-+	ret = pci_enable_device(pdev);
-+	if (ret) {
-+		dev_err(dev, "error enabling device\n");
-+		goto out_free;
-+	}
++	fir->history[fir->curr_pos] = sample;
 +
-+	ret = pci_request_regions(pdev, "poch");
-+	if (ret) {
-+		dev_err(dev, "error requesting resources\n");
-+		goto out_disable;
-+	}
++	offset2 = fir->curr_pos;
++	offset1 = fir->taps - offset2;
++	y = 0;
++	for (i = fir->taps - 1; i >= offset1; i--)
++		y += fir->coeffs[i] * fir->history[i - offset1];
++	for (; i >= 0; i--)
++		y += fir->coeffs[i] * fir->history[i + offset2];
+ #endif
+-    if (fir->curr_pos <= 0)
+-    	fir->curr_pos = fir->taps;
+-    fir->curr_pos--;
+-    return (int16_t) (y >> 15);
++	if (fir->curr_pos <= 0)
++		fir->curr_pos = fir->taps;
++	fir->curr_pos--;
++	return (int16_t) (y >> 15);
+ }
+ 
+-static __inline__ const int16_t *fir32_create(fir32_state_t *fir,
+-                                              const int32_t *coeffs,
+-                                              int taps)
++static __inline__ const int16_t *fir32_create(fir32_state_t * fir,
++					      const int32_t * coeffs, int taps)
+ {
+-    fir->taps = taps;
+-    fir->curr_pos = taps - 1;
+-    fir->coeffs = coeffs;
+-    fir->history = kcalloc(taps, sizeof(int16_t), GFP_KERNEL);
+-    return fir->history;
++	fir->taps = taps;
++	fir->curr_pos = taps - 1;
++	fir->coeffs = coeffs;
++	fir->history = kcalloc(taps, sizeof(int16_t), GFP_KERNEL);
++	return fir->history;
+ }
+ 
+-static __inline__ void fir32_flush(fir32_state_t *fir)
++static __inline__ void fir32_flush(fir32_state_t * fir)
+ {
+-    memset(fir->history, 0, fir->taps*sizeof(int16_t));
++	memset(fir->history, 0, fir->taps * sizeof(int16_t));
+ }
+ 
+-static __inline__ void fir32_free(fir32_state_t *fir)
++static __inline__ void fir32_free(fir32_state_t * fir)
+ {
+-    kfree(fir->history);
++	kfree(fir->history);
+ }
+ 
+-static __inline__ int16_t fir32(fir32_state_t *fir, int16_t sample)
++static __inline__ int16_t fir32(fir32_state_t * fir, int16_t sample)
+ {
+-    int i;
+-    int32_t y;
+-    int offset1;
+-    int offset2;
+-
+-    fir->history[fir->curr_pos] = sample;
+-    offset2 = fir->curr_pos;
+-    offset1 = fir->taps - offset2;
+-    y = 0;
+-    for (i = fir->taps - 1;  i >= offset1;  i--)
+-        y += fir->coeffs[i]*fir->history[i - offset1];
+-    for (  ;  i >= 0;  i--)
+-        y += fir->coeffs[i]*fir->history[i + offset2];
+-    if (fir->curr_pos <= 0)
+-    	fir->curr_pos = fir->taps;
+-    fir->curr_pos--;
+-    return (int16_t) (y >> 15);
++	int i;
++	int32_t y;
++	int offset1;
++	int offset2;
 +
-+	uio->mem[0].addr = pci_resource_start(pdev, 1);
-+	if (!uio->mem[0].addr) {
-+		dev_err(dev, "invalid BAR1\n");
-+		ret = -ENODEV;
-+		goto out_release;
-+	}
-+
-+	uio->mem[0].size = pci_resource_len(pdev, 1);
-+	uio->mem[0].memtype = UIO_MEM_PHYS;
-+
-+	uio->name = "poch";
-+	uio->version = "0.0.1";
-+	uio->irq = -1;
-+	ret = uio_register_device(dev, uio);
-+	if (ret) {
-+		dev_err(dev, "error register UIO device: %d\n", ret);
-+		goto out_release;
-+	}
-+
-+	poch_dev->bridge_iomem = ioremap(pci_resource_start(pdev, 0),
-+					 pci_resource_len(pdev, 0));
-+	if (poch_dev->bridge_iomem == NULL) {
-+		dev_err(dev, "error mapping bridge (bar0) registers\n");
-+		ret = -ENOMEM;
-+		goto out_uio_unreg;
-+	}
-+
-+	poch_dev->fpga_iomem = ioremap(pci_resource_start(pdev, 1),
-+				       pci_resource_len(pdev, 1));
-+	if (poch_dev->fpga_iomem == NULL) {
-+		dev_err(dev, "error mapping fpga (bar1) registers\n");
-+		ret = -ENOMEM;
-+		goto out_bar0_unmap;
-+	}
-+
-+	ret = request_irq(pdev->irq, poch_irq_handler, IRQF_SHARED,
-+			  dev->bus_id, poch_dev);
-+	if (ret) {
-+		dev_err(dev, "error requesting IRQ %u\n", pdev->irq);
-+		ret = -ENOMEM;
-+		goto out_bar1_unmap;
-+	}
-+
-+	if (!idr_pre_get(&poch_ids, GFP_KERNEL)) {
-+		dev_err(dev, "error allocating memory ids\n");
-+		ret = -ENOMEM;
-+		goto out_free_irq;
-+	}
-+
-+	idr_get_new(&poch_ids, poch_dev, &id);
-+	if (id >= MAX_POCH_CARDS) {
-+		dev_err(dev, "minors exhausted\n");
-+		ret = -EBUSY;
-+		goto out_free_irq;
-+	}
-+
-+	cdev_init(&poch_dev->cdev, &poch_fops);
-+	poch_dev->cdev.owner = THIS_MODULE;
-+	ret = cdev_add(&poch_dev->cdev,
-+		       poch_first_dev + (id * poch_dev->nchannels),
-+		       poch_dev->nchannels);
-+	if (ret) {
-+		dev_err(dev, "error register character device\n");
-+		goto out_idr_remove;
-+	}
-+
-+	ret = poch_class_dev_register(poch_dev, id);
-+	if (ret)
-+		goto out_cdev_del;
-+
-+	return 0;
-+
-+ out_cdev_del:
-+	cdev_del(&poch_dev->cdev);
-+ out_idr_remove:
-+	idr_remove(&poch_ids, id);
-+ out_free_irq:
-+	free_irq(pdev->irq, poch_dev);
-+ out_bar1_unmap:
-+	iounmap(poch_dev->fpga_iomem);
-+ out_bar0_unmap:
-+	iounmap(poch_dev->bridge_iomem);
-+ out_uio_unreg:
-+	uio_unregister_device(uio);
-+ out_release:
-+	pci_release_regions(pdev);
-+ out_disable:
-+	pci_disable_device(pdev);
-+ out_free:
-+	kfree(poch_dev);
-+	return ret;
-+}
-+
-+/*
-+ * FIXME: We are yet to handle the hot unplug case.
-+ */
-+static void poch_pci_remove(struct pci_dev *pdev)
-+{
-+	struct poch_dev *poch_dev = pci_get_drvdata(pdev);
-+	struct uio_info *uio = &poch_dev->uio;
-+	unsigned int minor = MINOR(poch_dev->cdev.dev);
-+	unsigned int id = minor / poch_dev->nchannels;
-+
-+	/* FIXME: unmap fpga_iomem and bridge_iomem */
-+
-+	poch_class_dev_unregister(poch_dev, id);
-+	cdev_del(&poch_dev->cdev);
-+	idr_remove(&poch_ids, id);
-+	free_irq(pdev->irq, poch_dev);
-+	uio_unregister_device(uio);
-+	pci_release_regions(pdev);
-+	pci_disable_device(pdev);
-+	pci_set_drvdata(pdev, NULL);
-+	iounmap(uio->mem[0].internal_addr);
-+
-+	kfree(poch_dev);
-+}
-+
-+static const struct pci_device_id poch_pci_ids[] /* __devinitconst */ = {
-+	{ PCI_DEVICE(PCI_VENDOR_ID_RRAPIDS,
-+		     PCI_DEVICE_ID_RRAPIDS_POCKET_CHANGE) },
-+	{ 0, }
-+};
-+
-+static struct pci_driver poch_pci_driver = {
-+	.name = DRV_NAME,
-+	.id_table = poch_pci_ids,
-+	.probe = poch_pci_probe,
-+	.remove = poch_pci_remove,
-+};
-+
-+static int __init poch_init_module(void)
-+{
-+	int ret = 0;
-+
-+	ret = alloc_chrdev_region(&poch_first_dev, 0,
-+				  MAX_POCH_DEVICES, DRV_NAME);
-+	if (ret) {
-+		printk(KERN_ERR PFX "error allocating device no.");
-+		return ret;
-+	}
-+
-+	poch_cls = class_create(THIS_MODULE, "pocketchange");
-+	if (IS_ERR(poch_cls)) {
-+		ret = PTR_ERR(poch_cls);
-+		goto out_unreg_chrdev;
-+	}
-+
-+	ret = pci_register_driver(&poch_pci_driver);
-+	if (ret) {
-+		printk(KERN_ERR PFX "error register PCI device");
-+		goto out_class_destroy;
-+	}
-+
-+	return 0;
-+
-+ out_class_destroy:
-+	class_destroy(poch_cls);
-+
-+ out_unreg_chrdev:
-+	unregister_chrdev_region(poch_first_dev, MAX_POCH_DEVICES);
-+
-+	return ret;
-+}
-+
-+static void __exit poch_exit_module(void)
-+{
-+	pci_unregister_driver(&poch_pci_driver);
-+	class_destroy(poch_cls);
-+	unregister_chrdev_region(poch_first_dev, MAX_POCH_DEVICES);
-+}
-+
-+module_init(poch_init_module);
-+module_exit(poch_exit_module);
-+
-+MODULE_LICENSE("GPL v2");
-diff --git a/drivers/staging/poch/poch.h b/drivers/staging/poch/poch.h
-new file mode 100644
-index 0000000..51a2d14
---- /dev/null
-+++ b/drivers/staging/poch/poch.h
-@@ -0,0 +1,29 @@
-+/*
-+ * User-space DMA and UIO based Redrapids Pocket Change CardBus driver
-+ *
-+ * Copyright 2008 Vijay Kumar <vijaykumar@bravegnu.org>
-+ *
-+ * Part of userspace API. Should be moved to a header file in
-+ * include/linux for final version.
-+ *
-+ */
-+struct poch_cbuf_header {
-+	__s32 group_size_bytes;
-+	__s32 group_count;
-+	__s32 group_offsets[0];
-+};
-+
-+struct poch_counters {
-+	__u32 fifo_empty;
-+	__u32 fifo_overflow;
-+	__u32 pll_unlock;
-+};
-+
-+#define POCH_IOC_NUM			'9'
-+
-+#define POCH_IOC_TRANSFER_START		_IO(POCH_IOC_NUM, 0)
-+#define POCH_IOC_TRANSFER_STOP		_IO(POCH_IOC_NUM, 1)
-+#define POCH_IOC_GET_COUNTERS		_IOR(POCH_IOC_NUM, 2, \
-+					     struct poch_counters)
-+#define POCH_IOC_SYNC_GROUP_FOR_USER	_IO(POCH_IOC_NUM, 3)
-+#define POCH_IOC_SYNC_GROUP_FOR_DEVICE	_IO(POCH_IOC_NUM, 4)
++	fir->history[fir->curr_pos] = sample;
++	offset2 = fir->curr_pos;
++	offset1 = fir->taps - offset2;
++	y = 0;
++	for (i = fir->taps - 1; i >= offset1; i--)
++		y += fir->coeffs[i] * fir->history[i - offset1];
++	for (; i >= 0; i--)
++		y += fir->coeffs[i] * fir->history[i + offset2];
++	if (fir->curr_pos <= 0)
++		fir->curr_pos = fir->taps;
++	fir->curr_pos--;
++	return (int16_t) (y >> 15);
+ }
+ 
+ #endif
+diff --git a/drivers/staging/echo/mmx.h b/drivers/staging/echo/mmx.h
+index b5a3964..35412ef 100644
+--- a/drivers/staging/echo/mmx.h
++++ b/drivers/staging/echo/mmx.h
+@@ -27,24 +27,23 @@
+  * values by ULL, lest they be truncated by the compiler)
+  */
+ 
+-typedef        union {
+-        long long               q;      /* Quadword (64-bit) value */
+-        unsigned long long      uq;     /* Unsigned Quadword */
+-        int                     d[2];   /* 2 Doubleword (32-bit) values */
+-        unsigned int            ud[2];  /* 2 Unsigned Doubleword */
+-        short                   w[4];   /* 4 Word (16-bit) values */
+-        unsigned short          uw[4];  /* 4 Unsigned Word */
+-        char                    b[8];   /* 8 Byte (8-bit) values */
+-        unsigned char           ub[8];  /* 8 Unsigned Byte */
+-        float                   s[2];   /* Single-precision (32-bit) value */
+-} mmx_t;        /* On an 8-byte (64-bit) boundary */
++typedef union {
++	long long q;		/* Quadword (64-bit) value */
++	unsigned long long uq;	/* Unsigned Quadword */
++	int d[2];		/* 2 Doubleword (32-bit) values */
++	unsigned int ud[2];	/* 2 Unsigned Doubleword */
++	short w[4];		/* 4 Word (16-bit) values */
++	unsigned short uw[4];	/* 4 Unsigned Word */
++	char b[8];		/* 8 Byte (8-bit) values */
++	unsigned char ub[8];	/* 8 Unsigned Byte */
++	float s[2];		/* Single-precision (32-bit) value */
++} mmx_t;			/* On an 8-byte (64-bit) boundary */
+ 
+ /* SSE registers */
+ typedef union {
+ 	char b[16];
+ } xmm_t;
+ 
+-
+ #define         mmx_i2r(op,imm,reg) \
+         __asm__ __volatile__ (#op " %0, %%" #reg \
+                               : /* nothing */ \
+@@ -63,7 +62,6 @@ typedef union {
+ #define         mmx_r2r(op,regs,regd) \
+         __asm__ __volatile__ (#op " %" #regs ", %" #regd)
+ 
+-
+ #define         emms() __asm__ __volatile__ ("emms")
+ 
+ #define         movd_m2r(var,reg)           mmx_m2r (movd, var, reg)
+@@ -192,16 +190,13 @@ typedef union {
+ #define         pxor_m2r(var,reg)           mmx_m2r (pxor, var, reg)
+ #define         pxor_r2r(regs,regd)         mmx_r2r (pxor, regs, regd)
+ 
+-
+ /* 3DNOW extensions */
+ 
+ #define         pavgusb_m2r(var,reg)        mmx_m2r (pavgusb, var, reg)
+ #define         pavgusb_r2r(regs,regd)      mmx_r2r (pavgusb, regs, regd)
+ 
+-
+ /* AMD MMX extensions - also available in intel SSE */
+ 
+-
+ #define         mmx_m2ri(op,mem,reg,imm) \
+         __asm__ __volatile__ (#op " %1, %0, %%" #reg \
+                               : /* nothing */ \
+@@ -216,7 +211,6 @@ typedef union {
+                               : /* nothing */ \
+                               : "m" (mem))
+ 
+-
+ #define         maskmovq(regs,maskreg)      mmx_r2ri (maskmovq, regs, maskreg)
+ 
+ #define         movntq_r2m(mmreg,var)       mmx_r2m (movntq, mmreg, var)
+@@ -284,5 +278,4 @@ typedef union {
+ #define         punpcklqdq_r2r(regs,regd)   mmx_r2r (punpcklqdq, regs, regd)
+ #define         punpckhqdq_r2r(regs,regd)   mmx_r2r (punpckhqdq, regs, regd)
+ 
+-
+ #endif /* AVCODEC_I386MMX_H */
+diff --git a/drivers/staging/echo/oslec.h b/drivers/staging/echo/oslec.h
+index e41de61..bad8523 100644
+--- a/drivers/staging/echo/oslec.h
++++ b/drivers/staging/echo/oslec.h
+@@ -83,4 +83,4 @@ int16_t oslec_update(struct oslec_state *ec, int16_t tx, int16_t rx);
+ */
+ int16_t oslec_hpf_tx(struct oslec_state *ec, int16_t tx);
+ 
+-#endif	/* __OSLEC_H */
++#endif /* __OSLEC_H */
 -- 
 1.6.0.2
 
