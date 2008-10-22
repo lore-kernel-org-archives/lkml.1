@@ -1,111 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756357AbYJVRFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbYJVRGD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756357AbYJVRFb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYJVRFU
+	id S1754259AbYJVRGD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:06:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYJVRFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:05:20 -0400
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:48908 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752046AbYJVRFS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:05:18 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtoEAIf3/khMQWQ+/2dsb2JhbACBcsR4g08
-Date: Wed, 22 Oct 2008 13:05:16 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Luck, Tony" <tony.luck@intel.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC patch 15/15] LTTng timestamp x86
-Message-ID: <20081022170516.GE12650@Krystal>
-References: <20081016232729.699004293@polymtl.ca> <20081016234657.837704867@polymtl.ca> <alpine.LFD.2.00.0810161701470.3288@nehalem.linux-foundation.org> <20081017012835.GA30195@Krystal> <57C9024A16AD2D4C97DC78E552063EA3532D455F@orsmsx505.amr.corp.intel.com> <20081017172515.GA9639@goodmis.org> <57C9024A16AD2D4C97DC78E552063EA3533458AC@orsmsx505.amr.corp.intel.com> <20081017184215.GB9874@Krystal> <alpine.LFD.2.00.0810201256350.3518@nehalem.linux-foundation.org>
-Mime-Version: 1.0
+	Wed, 22 Oct 2008 13:05:49 -0400
+Received: from hostap.isc.org ([149.20.54.63]:35215 "EHLO hostap.isc.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752149AbYJVRFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 13:05:48 -0400
+Date: Wed, 22 Oct 2008 20:04:44 +0300
+From: Jouni Malinen <j@w1.fi>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Jouni Malinen <jouni.malinen@atheros.com>,
+       wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       John Linville <linville@tuxdriver.com>
+Subject: Re: Regression in 2.6.27-git from commit 43ac2ca3840f64
+Message-ID: <20081022170444.GH16005@jm.kir.nu>
+References: <48FDFCCA.8040604@lwfinger.net> <20081022072840.GD16005@jm.kir.nu> <48FF5933.3080501@lwfinger.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0810201256350.3518@nehalem.linux-foundation.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:52:40 up 139 days, 21:33, 11 users,  load average: 0.89, 0.92,
-	0.98
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <48FF5933.3080501@lwfinger.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Spam-Score: -3.1
+X-Spam-Bar: ---
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Linus Torvalds (torvalds@linux-foundation.org) wrote:
-> 
-> 
-> On Fri, 17 Oct 2008, Mathieu Desnoyers wrote:
-> > 
-> > Hrm, on such systems
-> > - *large* amount of cpus
-> > - no synchronized TSCs
-> > 
-> > What would be the best approach to order events ?
-> 
-> My strong opinion has been - for a longish while now, and independently of 
-> any timestamping code - that we should be seriously looking at basically 
-> doing essentially a "ntp" inside the kernel to give up the whole idiotic 
-> notion of "synchronized TSCs". Yes, TSC's are often synchronized, but even 
-> when they are, we might as well _think_ of them as not being so.
-> 
-> In other words, instead of expecting internal clocks to be synchronized, 
-> just make the clock be a clock network of independent TSC domains. The 
-> domains could in theory be per-package (assuming TSC is synchronized at 
-> that level), but even if we _could_ do that, we'd probably still be better 
-> off by simply always doing it per-core. If only because then the reading 
-> would be per-core.
-> 
-> I think it's a mistake for us to maintain a single clock for 
-> gettimeofday() (well, "getnstimeofday" and the whole "clocksource_read()" 
-> crud to be technically correct). And sure, I bet clocksource_read() can do 
-> various per-CPU things and try to do that, but it's complex and pretty 
-> generic code, and as far as I know none of the clocksources have even 
-> tried. The TSC clocksource read certainly does not (it just does a very 
-> similar horrible "at least don't go backwards" crud that the LTTng patch 
-> suggested).
-> 
-> So I think we should make "xtime" be a per-CPU thing, and add support for 
-> per-CPU clocksources. And screw that insane "mark_tsc_unstable()" thing.
-> 
-> And if we did it well, we migth be able to get good timestamps that way 
-> too.
-> 
-> 		Linus
+On Wed, Oct 22, 2008 at 09:47:47AM -0700, Larry Finger wrote:
 
-Yep, it looks like a promising area to look into. I think, however, that
-it would be good to first experiment with it as a in-kernel time source
-rather than as a tracing time source, so we can use a tracer to make
-sure it is stable enough. :-)
+> When a utility starts spitting messages that it doesn't understand what the
+> kernel is providing _AND_ the commit message does not mention that this will
+> happen, can someone be blamed for thinking it is a bug?
 
-Also, we have to wonder if it's worth side-stepping tracing developement
-on what I consider being a "special-case for buggy hardware". If we let
-development on this specific problem at the kernel level go on its own
-and decide to use it for tracing when it's judged good enough, we
-(tracing people) can focus on the following steps needed to get a tracer
-into Linux, namely buffering, event id management, etc. Given I feel the
-need for tracing is relatively urgent for the community, I'd recommend
-getting a basic, non-perfect timestamping solution in first, and keep
-room for improvement.
+But the utility here understands that it receives additional IEs; it
+just does not know the name or format for them. I do not understand why
+the commit message should have commented on any particular user space
+tool and their behavior as long as nothing is broken (and as far as I'm
+aware, nothing was broken by that change).
 
-I prefer to provide tracing for 98% of the machines out there and point
-to some documentation telling how to configure the other 1.95% (and feel
-sorry for the people how fall in the inevitable 0.05%) than to spend
-years trying to come up with a complex scheme aiming precisely at this
-1.95%.
+> Clearly this is not a regression. Are there plans to update the wireless utilities?
 
-Mathieu
-
+Update them (or well, iwlist) to do what? Sure, it could have a list of
+some additional known SSIDs, but that does not sound very useful. If the
+"IE: Unknown" part is really making this somehow horrible for users, I
+would just hide those lines by default (but there should be an option to
+enable them). Anyway, I do not have any plans on providing a patch to
+change iwlist behavior because I think the current behavior is
+desirable.
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Jouni Malinen                                            PGP id EFC895FA
