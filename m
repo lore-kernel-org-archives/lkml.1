@@ -1,144 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbYJVPBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756542AbYJVPB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755998AbYJVPBo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 11:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbYJVPBc
+	id S1756542AbYJVPB6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 11:01:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbYJVPBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 11:01:32 -0400
-Received: from nebensachen.de ([195.34.83.29]:47687 "EHLO mail.nebensachen.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752255AbYJVPBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 11:01:31 -0400
-X-Hashcash: 1:20:081022:bzolnier@gmail.com::LkcVSIqqN3WBL4uw:000000000000000000000000000000000000000000014IY
-X-Hashcash: 1:20:081022:linux-kernel@vger.kernel.org::p3uC7opAzM6xMGEj:0000000000000000000000000000000003IUs
-X-Hashcash: 1:20:081022:linux-ide@vger.kernel.org::/gynAO6oyFanA8q3:0000000000000000000000000000000000000BV0
-From: Elias Oltmanns <eo@nebensachen.de>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH] ide: don't execute the next queued command from the hard-IRQ context
-References: <200810111617.51298.bzolnier@gmail.com>
-	<874p3hd74p.fsf@denkblock.local>
-	<200810152106.45728.bzolnier@gmail.com>
-Date: Wed, 22 Oct 2008 17:01:20 +0200
-Message-ID: <87od1cu11b.fsf@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
+	Wed, 22 Oct 2008 11:01:39 -0400
+Received: from outbound-mail-26.bluehost.com ([69.89.17.191]:54679 "HELO
+	outbound-mail-26.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754587AbYJVPBi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 11:01:38 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Oct 2008 11:01:37 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=uniscape.net;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=BuosOKGPtnwRnwkUJlDkC8B+uEL+mXtqfAWzXQJXokHwDOTFaBCUOIJdsF0nyZHojwRMzlKLzXiamibtNi8IqSX1nYleWTAdEhYNvmbF6FyS/wDxm6I1JueaWFxGgJq6;
+Message-ID: <48FF3E87.4090407@uniscape.net>
+Date: Wed, 22 Oct 2008 22:53:59 +0800
+From: Yu Zhao <yu.zhao@uniscape.net>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Yu Zhao <yu.zhao@intel.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "achiang@hp.com" <achiang@hp.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "greg@kroah.com" <greg@kroah.com>, "mingo@elte.hu" <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "matthew@wil.cx" <matthew@wil.cx>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH 2/16 v6] PCI: define PCI resource names in an 'enum'
+References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <200810220824.21356.bjorn.helgaas@hp.com> <48FF3C48.9060809@uniscape.net> <200810220851.13413.bjorn.helgaas@hp.com>
+In-Reply-To: <200810220851.13413.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {2990:host272.hostmonster.com:uniscape:uniscape.net} {sentby:smtp auth 58.38.26.55 authed with yu.zhao@uniscape.net}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> On Sunday 12 October 2008, Elias Oltmanns wrote:
->> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
->
->> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->> > Subject: [PATCH] ide: don't execute the next queued command from the hard-IRQ context
->> >
->> > * Tell the block layer that we are not done handling requests by using
->> >   blk_plug_device() in ide_do_request() (request handling function)
->> >   and ide_timer_expiry() (timeout handler) if the queue is not empty.
->> >
->> > * Remove optimization which directly calls ide_do_request() for the next
->> >   queued command from the ide_intr() (IRQ handler) and ide_timer_expiry().
->> >
->> > * Remove no longer needed IRQ masking from ide_do_request() - in case of
->> >   IDE ports needing serialization disable_irq_nosync()/enable_irq() was
->> >   used for the (possibly shared) IRQ of the other IDE port.
->> >
->> > * Put the misplaced comment in the right place in ide_do_request().
->> >
->> > * Drop no longer needed 'int masked_irq' argument from ide_do_request().
->> >
->> > * Merge ide_do_request() into do_ide_request().
->> >
->> > * Remove no longer needed IDE_NO_IRQ define.
->> >
->> > While at it:
->> >
->> > * Don't use HWGROUP() macro in do_ide_request().
->> >
->> > * Use __func__ in ide_intr().
->> >
->> > This patch reduces IRQ hadling latency for IDE and improves the system-wide
->> > handling of shared IRQs (which should result in more timeout resistant and
->> > stable IDE systems).  It also makes it possible to do some further changes
->> > later (i.e. replace some busy-waiting delays with sleeping equivalents).
->> >
->> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->> > ---
-[...]
->> > Index: b/drivers/ide/ide-io.c
->> > ===================================================================
->> > --- a/drivers/ide/ide-io.c
->> > +++ b/drivers/ide/ide-io.c
-[...]
->> >  		startstop = start_request(drive, rq);
->> >  		spin_lock_irq(&hwgroup->lock);
->> > -		if (masked_irq != IDE_NO_IRQ && hwif->irq != masked_irq)
->> > -			enable_irq(hwif->irq);
->> > -		if (startstop == ide_stopped)
->> > +
->> > +		if (startstop == ide_stopped) {
->> >  			hwgroup->busy = 0;
->> > +			goto plug_device;
->> 
->> This goto statement is wrong. Simply set ->busy to zero and be done with
->> it. This way, the loop will start again and either elv_next_request()
->> returns NULL, in which case the queue need not be plugged, or the next
->> request will be processed immediately, which is exactly what we want.
->
-> The problem is that the next loop can choose the different drive than
-> the current one so we can end up with the situation where we will "lose"
-> the blk_plug_device() call.
->
-> I fixed it by just inlining "plug_device" code for now.
+Bjorn Helgaas wrote:
+> On Wednesday 22 October 2008 08:44:24 am Yu Zhao wrote:
+>> Bjorn Helgaas wrote:
+>>> On Wednesday 22 October 2008 02:40:41 am Yu Zhao wrote:
+>>>> This patch moves all definitions of the PCI resource names to an 'enum',
+>>>> and also replaces some hard-coded resource variables with symbol
+>>>> names. This change eases introduction of device specific resources.
+>>> Thanks for removing a bunch of magic numbers from the code.
+>>>
+>>>>  static void
+>>>>  pci_restore_bars(struct pci_dev *dev)
+>>>>  {
+>>>> -	int i, numres;
+>>>> -
+>>>> -	switch (dev->hdr_type) {
+>>>> -	case PCI_HEADER_TYPE_NORMAL:
+>>>> -		numres = 6;
+>>>> -		break;
+>>>> -	case PCI_HEADER_TYPE_BRIDGE:
+>>>> -		numres = 2;
+>>>> -		break;
+>>>> -	case PCI_HEADER_TYPE_CARDBUS:
+>>>> -		numres = 1;
+>>>> -		break;
+>>>> -	default:
+>>>> -		/* Should never get here, but just in case... */
+>>>> -		return;
+>>>> -	}
+>>>> +	int i;
+>>>>  
+>>>> -	for (i = 0; i < numres; i++)
+>>>> +	for (i = 0; i < PCI_BRIDGE_RESOURCES; i++)
+>>>>  		pci_update_resource(dev, i);
+>>>>  }
+>>> The behavior of this function used to depend on dev->hdr_type.  Now
+>>> we don't look at hdr_type at all, so we do the same thing for all
+>>> devices.
+>>>
+>>> For example, for a CardBus device, we used to call pci_update_resource()
+>>> only for BAR 0; now we call it for BARs 0-6.
+>>>
+>>> Maybe this is safe, but I can't tell from the patch, so I think you
+>>> should explain *why* it's safe in the changelog.
+>> It's safe because pci_update_resource() will ignore unused resources. 
+>> E.g., for a Cardbus, only BAR 0 is used and its 'flags' is set, then 
+>> pci_update_resource() only updates it. BAR 1-6 are ignored since their 
+>> 'flags' are 0.
+>>
+>> I'll put more explanation in the changelog.
+> 
+> This is a logically separate change from merely substituting enum
+> names for magic numbers, so you might even consider splitting it
+> into a separate patch.  Better bisection and all that, you know :-)
 
-Right, I had missed that. Still, I'm not really convinced yet that this
-is the right way  to handle things. In fact, I believe that the role of
-choose_drive() has changed since it is now called directly from the
-->request_fn() and it should probably be rewritten and renamed along the
-way. However, this needs further discussion and the issue below has some
-bearing on this too.
+Will do.
 
->
->> [...]
->> > @@ -1438,11 +1431,11 @@ irqreturn_t ide_intr (int irq, void *dev
->> >  	if (startstop == ide_stopped) {
->> >  		if (hwgroup->handler == NULL) {	/* paranoia */
->> >  			hwgroup->busy = 0;
->> > -			ide_do_request(hwgroup, hwif->irq);
->> > -		} else {
->> > -			printk(KERN_ERR "%s: ide_intr: huh? expected NULL handler "
->> > -				"on exit\n", drive->name);
->> > -		}
->> > +			if (!elv_queue_empty(drive->queue))
->> > +				blk_plug_device(drive->queue);
->> 
->> This is perhaps not exactly what you really want. It basically means
->> that there will be a delay (q->unplug_delay) after each command which
->> may well hurt I/O performance. Instead, I'd suggest something like the
->> following:
->> 
->> 	if (!elv_queue_empty(drive->queue))
->> 		blk_schedule_queue_run(drive->queue);
->> 
->> and a function
->> 
->> void blk_schedule_queue_run(struct request_queue *q)
->> {
->> 	blk_plug_device(q);
->> 	kblockd_schedule_work(&q->unplug_work);
->> }
->> 
->> in blk-core.c. This can also be used as a helper function in blk-core.c
->> itself.
->
-> Care to make a patch adding such helper to blk-core.c?
-
-Thinking about this a bit more, I'd like to raise this issue with Jens
-and discuss it in some more generality.
-
-Regards,
-
-Elias
+Thanks,
+Yu
