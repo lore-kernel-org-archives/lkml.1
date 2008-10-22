@@ -1,67 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbYJVO1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbYJVO1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755948AbYJVO1X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 10:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbYJVO1O
+	id S1756156AbYJVO1v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 10:27:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbYJVO1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 10:27:14 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:53494 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752945AbYJVO1N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 10:27:13 -0400
-Date: Wed, 22 Oct 2008 09:14:30 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-audit@redhat.com, viro@zeniv.linux.org.uk, sgrubb@redhat.com
-Subject: Re: [PATCH 3/4] AUDIT: audit when fcaps increase the permitted or
-	inheritable capabilities
-Message-ID: <20081022141430.GB21612@us.ibm.com>
-References: <20081020222538.3895.50175.stgit@paris.rdu.redhat.com> <20081020222612.3895.6710.stgit@paris.rdu.redhat.com> <48FD6E49.6060104@kernel.org> <20081021191625.GA4657@us.ibm.com> <48FF21BF.9090509@kernel.org>
+	Wed, 22 Oct 2008 10:27:39 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:35671 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753046AbYJVO1i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 10:27:38 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Yu Zhao <yu.zhao@intel.com>
+Subject: Re: [PATCH 16/16 v6] PCI: document the new PCI boot parameters
+Date: Wed, 22 Oct 2008 08:27:32 -0600
+User-Agent: KMail/1.9.9
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "achiang@hp.com" <achiang@hp.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "greg@kroah.com" <greg@kroah.com>, "mingo@elte.hu" <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "matthew@wil.cx" <matthew@wil.cx>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <20081022084531.GP3773@yzhao12-linux.sh.intel.com>
+In-Reply-To: <20081022084531.GP3773@yzhao12-linux.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48FF21BF.9090509@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200810220827.33758.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew G. Morgan (morgan@kernel.org):
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+On Wednesday 22 October 2008 02:45:31 am Yu Zhao wrote:
+> Document the new PCI[x86] boot parameters.
 > 
-> [s/viro@...ok/viro@...uk/]
+> Cc: Alex Chiang <achiang@hp.com>
+> Cc: Grant Grundler <grundler@parisc-linux.org>
+> Cc: Greg KH <greg@kroah.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Cc: Matthew Wilcox <matthew@wil.cx>
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Roland Dreier <rdreier@cisco.com>
+> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 > 
-> Serge E. Hallyn wrote:
-> >> Logging execve()s where there is only an increase in capabilities seems
-> >> wrong to me. To me it seems equally important to log any event where an
-> >> execve() yields pP != 0.
-> > 
-> > True.
-> > 
-> > ... except if (!issecure(SECURE_NOROOT) && uid==0) I guess?
-> > 
-> > And then it also might be interesting in the case where
-> > (!issecure(SECURE_NOROOT) && uid==0) and pP is not full.
+> ---
+>  Documentation/kernel-parameters.txt |   10 ++++++++++
+>  1 files changed, 10 insertions(+), 0 deletions(-)
 > 
-> I guess so, although this seems like a case of being interested in a
-> (unusual) non-privileged execve().
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index 53ba7c7..5482ae0 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -1677,6 +1677,16 @@ and is between 256 and 4096 characters. It is defined in the file
+>  		cbmemsize=nn[KMG]	The fixed amount of bus space which is
+>  				reserved for the CardBus bridge's memory
+>  				window. The default value is 64 megabytes.
+> +		assign-mmio=[dddd:]bb	[X86] reassign memory resources of all
+> +				devices under bus [dddd:]bb (dddd is the domain
+> +				number and bb is the bus number).
+> +		assign-pio=[dddd:]bb	[X86] reassign io port resources of all
+> +				devices under bus [dddd:]bb (dddd is the domain
+> +				number and bb is the bus number).
+> +		align-mmio=[dddd:]bb:dd.f  [X86] relocate memory resources of a
+> +				device to minimum PAGE_SIZE alignment (dddd is
+> +				the domain number and bb, dd and f is the bus,
+> +				device and function number).
+>  
+>  	pcie_aspm=	[PCIE] Forcibly enable or disable PCIe Active State Power
+>  			Management.
 
-I'm not sure what you mean - but this can only happen if bits are taken
-out of the capability bounding set, right?
+I think it's nicer to have the documentation change included in the
+patch that implements the change.  For example, I think this and
+patch 9/16 "add boot option to align ..." should be folded into
+a single patch.  And similarly for the other documentation patches.
 
-> >>>  	rc = bprm_caps_from_vfs_caps(&vcaps, bprm);
-> >>>  
-> >>> +	audit_log_bprm_fcaps(bprm, &vcaps);
-> >>> +
-> >> When rc != 0, the execve() will fail. Is it appropriate to log in this case?
-> > 
-> > It might fail because fP contains bits not in pP', right?  That's
-> > probably interesting to auditors.
-> 
-> In which case, how is the fact it didn't execute captured in the audit log?
+Bjorn
 
-I assume as a FAIL?  (Not sure of the exact wording in the logs)
-
--serge
