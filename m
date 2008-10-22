@@ -1,160 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbYJVJhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbYJVJiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755349AbYJVJhv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 05:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbYJVJg5
+	id S1755220AbYJVJiM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 05:38:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbYJVJhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 05:36:57 -0400
-Received: from mga09.intel.com ([134.134.136.24]:31505 "EHLO mga09.intel.com"
+	Wed, 22 Oct 2008 05:37:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59647 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753200AbYJVJgt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 05:36:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,463,1220252400"; 
-   d="scan'208";a="351087419"
-Date: Wed, 22 Oct 2008 16:41:48 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Cc: "achiang@hp.com" <achiang@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "greg@kroah.com" <greg@kroah.com>, "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: [PATCH 5/16 v6] PCI: add a wrapper for resource_alignment()
-Message-ID: <20081022084148.GE3773@yzhao12-linux.sh.intel.com>
-References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com>
+	id S1752813AbYJVJhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 05:37:07 -0400
+Date: Wed, 22 Oct 2008 11:36:15 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Keith Packard <keithp@keithp.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dri-devel@lists.sf.net, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: io resources and cached mappings (was: [git pull] drm patches
+	for 2.6.27-rc1)
+Message-ID: <20081022093615.GF12453@elte.hu>
+References: <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org> <20081018203741.GA23396@elte.hu> <1224366690.4384.89.camel@koto.keithp.com> <20081018223214.GA5093@elte.hu> <1224389697.4384.118.camel@koto.keithp.com> <1224398496.5303.7.camel@koto.keithp.com> <20081019175320.GA6442@elte.hu> <1224450291.5303.23.camel@koto.keithp.com> <20081020115810.GC10594@elte.hu> <1224517744.5195.1.camel@koto.keithp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081022083809.GA3757@yzhao12-linux.sh.intel.com>
+In-Reply-To: <1224517744.5195.1.camel@koto.keithp.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a wrapper for resource_alignment() so it can handle device specific
-resource alignment.
 
-Cc: Alex Chiang <achiang@hp.com>
-Cc: Grant Grundler <grundler@parisc-linux.org>
-Cc: Greg KH <greg@kroah.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Roland Dreier <rdreier@cisco.com>
-Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+* Keith Packard <keithp@keithp.com> wrote:
 
----
- drivers/pci/pci.c       |   20 ++++++++++++++++++++
- drivers/pci/pci.h       |    1 +
- drivers/pci/setup-bus.c |    4 ++--
- drivers/pci/setup-res.c |    7 ++++---
- 4 files changed, 27 insertions(+), 5 deletions(-)
+> On Mon, 2008-10-20 at 13:58 +0200, Ingo Molnar wrote:
+> 
+> > yes but note that by caching the whole mapping on 64-bit we get 
+> > everything we want: trivially lockless, works from any CPU, can be 
+> > preempted at will, and there are no ugly INVLPG flushes anywhere.
+> 
+> I was assuming that on 64-bit, the map would be created at driver init 
+> time and be left in place until the driver closed; if that's what you 
+> mean by 'caching', then yes, we should cache the map.
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 40284dc..a9b554e 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -1904,6 +1904,26 @@ int pci_select_bars(struct pci_dev *dev, unsigned long flags)
- 	return bars;
- }
- 
-+/**
-+ * pci_resource_alignment - get a PCI BAR resource alignment
-+ * @dev: the PCI device
-+ * @resno: the resource number
-+ *
-+ * Returns alignment size on success, or 0 on error.
-+ */
-+int pci_resource_alignment(struct pci_dev *dev, int resno)
-+{
-+	resource_size_t align;
-+	struct resource *res = dev->resource + resno;
-+
-+	align = resource_alignment(res);
-+	if (align)
-+		return align;
-+
-+	dev_err(&dev->dev, "alignment: invalid resource #%d\n", resno);
-+	return 0;
-+}
-+
- static void __devinit pci_no_domains(void)
- {
- #ifdef CONFIG_PCI_DOMAINS
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index fbbc6ad..baa3d23 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -166,6 +166,7 @@ enum pci_bar_type {
- 
- extern int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
- 				struct resource *res, unsigned int reg);
-+extern int pci_resource_alignment(struct pci_dev *dev, int resno);
- extern void pci_enable_ari(struct pci_dev *dev);
- /**
-  * pci_ari_enabled - query ARI forwarding status
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index ea979f2..90a9c0a 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -25,6 +25,7 @@
- #include <linux/ioport.h>
- #include <linux/cache.h>
- #include <linux/slab.h>
-+#include "pci.h"
- 
- 
- static void pbus_assign_resources_sorted(struct pci_bus *bus)
-@@ -351,8 +352,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask, unsigned long
- 			if (r->parent || (r->flags & mask) != type)
- 				continue;
- 			r_size = resource_size(r);
--			/* For bridges size != alignment */
--			align = resource_alignment(r);
-+			align = pci_resource_alignment(dev, i);
- 			order = __ffs(align) - 20;
- 			if (order > 11) {
- 				dev_warn(&dev->dev, "BAR %d bad alignment %llx: "
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index b7ca679..88a9c70 100644
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -133,7 +133,7 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
- 	size = resource_size(res);
- 	min = (res->flags & IORESOURCE_IO) ? PCIBIOS_MIN_IO : PCIBIOS_MIN_MEM;
- 
--	align = resource_alignment(res);
-+	align = pci_resource_alignment(dev, resno);
- 	if (!align) {
- 		dev_err(&dev->dev, "BAR %d: can't allocate resource (bogus "
- 			"alignment) %pR flags %#lx\n",
-@@ -224,7 +224,7 @@ void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
- 		if (!(r->flags) || r->parent)
- 			continue;
- 
--		r_align = resource_alignment(r);
-+		r_align = pci_resource_alignment(dev, i);
- 		if (!r_align) {
- 			dev_warn(&dev->dev, "BAR %d: bogus alignment "
- 				"%pR flags %#lx\n",
-@@ -236,7 +236,8 @@ void pdev_sort_resources(struct pci_dev *dev, struct resource_list *head)
- 			struct resource_list *ln = list->next;
- 
- 			if (ln)
--				align = resource_alignment(ln->res);
-+				align = pci_resource_alignment(ln->dev,
-+						ln->res - ln->dev->resource);
- 
- 			if (r_align > align) {
- 				tmp = kmalloc(sizeof(*tmp), GFP_KERNEL);
--- 
-1.5.6.4
+correct.
 
+> > 32-bit we should handle as well but not design for it.
+> 
+> As long as we get kmap_atomic-like performance, and we get to simplify 
+> our code, I'm up for it.
+
+okay. So ... mind sending your io_mapping patch as a generic facility? 
+It looks all good to me in its present form, except that it should live 
+in include/linux/io.h, not in the drivers/gpu/drm/i915/io_reserve.h file
+:-)
+
+also, please send at least two patches, so that we can look at (and 
+possibly merge) the generic facility in isolation.
+
+	Ingo
