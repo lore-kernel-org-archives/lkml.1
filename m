@@ -1,161 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbYJVR21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbYJVRbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757370AbYJVR21 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbYJVR2S
+	id S1756798AbYJVRbq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbYJVRbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:28:18 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:36154 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751011AbYJVR2R (ORCPT
+	Wed, 22 Oct 2008 13:31:33 -0400
+Received: from gv-out-0910.google.com ([216.239.58.187]:22652 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753321AbYJVRbc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:28:17 -0400
-Message-ID: <48FF628A.2080405@oracle.com>
-Date: Wed, 22 Oct 2008 10:27:38 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Wed, 22 Oct 2008 13:31:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=CeUHMaWeiqMraGRigShSJrJFIZTYodOZMf08CFWzvzoWK0sNIIs5TkHcmNrMGhlihF
+         GvW14thSFfzfCUh7HBks0S2ggx5VcTPFPA/uspzN5TkeazkJZRnhbKRvFhM7Of9LqQmR
+         5K8xdX2ReBpTt0R3BRJfhd5z6TGuwhLhyp7ao=
+Message-ID: <48FF636F.6090804@gmail.com>
+Date: Wed, 22 Oct 2008 19:31:27 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RESEND] tracing/ftrace: Introduce the big kernel lock
+Subject: [PATCH 1/5] tracing/ftrace: Types and naming corrections for sched
  tracer
-References: <48FF5E54.7000101@gmail.com>
-In-Reply-To: <48FF5E54.7000101@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> ---
->  include/trace/bkl.h      |   29 ++++++++
->  kernel/trace/Kconfig     |   11 +++
->  kernel/trace/Makefile    |    1 +
->  kernel/trace/trace.h     |   18 +++++
->  kernel/trace/trace_bkl.c |  170 ++++++++++++++++++++++++++++++++++++++++++++++
->  lib/kernel_lock.c        |   22 ++++++-
->  6 files changed, 249 insertions(+), 2 deletions(-)
-> 
-> diff --git a/include/trace/bkl.h b/include/trace/bkl.h
-> new file mode 100644
-> index 0000000..bed2f1b
-> --- /dev/null
-> +++ b/include/trace/bkl.h
-> @@ -0,0 +1,29 @@
-> +#ifndef _TRACE_BKL_H
-> +#define _TRACE_BKL_H
-> +
-> +
-> +/* Entry which log the time when the task tried first to acquire the bkl
-> + * and the time when it acquired it.
-> + * That will let us know the latency to acquire the kernel lock.
-> + */
+This patch applies some corrections suggested by Steven Rostedt.
 
-Please use the more common/accepted long-comment style:
-
-/*
- * comment line 1
- * comment line 2
- */
-
-like you did in some other places.
-
-> +struct bkl_trace_acquire {
-> +	unsigned long long acquire_req_time;
-> +	unsigned long long acquire_time;
-> +};
-> +
-> +/* This will log the time when the task released the bkl.
-> + * So we will know the whole duration of its kernel lock.
-> + */
-
-ditto et al
-
-> +struct bkl_trace_release {
-> +	unsigned long long release_time;
-> +};
-> +
-> +#ifdef CONFIG_BKL_TRACER
-> +extern void trace_bkl_acquire(struct bkl_trace_acquire *trace);
-> +extern void trace_bkl_release(struct bkl_trace_release *trace);
-> +#else
-> +static void trace_bkl_acquire(struct bkl_trace_acquire *trace) { }
-> +static void trace_bkl_release(struct bkl_trace_release *trace) { }
-> +#endif
-> +
-> +#endif
-> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-> index 396aea1..fde7700 100644
-> --- a/kernel/trace/Kconfig
-> +++ b/kernel/trace/Kconfig
-> @@ -144,6 +144,17 @@ config STACK_TRACER
->  	 This tracer records the max stack of the kernel, and displays
->  	 it in debugfs/tracing/stack_trace
-> 
-> +config BKL_TRACER
-> +	bool "Trace Big Kernel Lock latencies"
-> +	depends on HAVE_FTRACE
-> +	depends on DEBUG_KERNEL
-> +	select FTRACE
-> +	select STACKTRACE
-> +	help
-> +	  This tracer records the latencies issued by the Big Kernel Lock.
-> +	  It traces the time when a task request the bkl, the time when it
-
-	                                 requests
-
-> +	  acquires it and the time when it releases it.
-> +
->  config DYNAMIC_FTRACE
->  	bool "enable/disable ftrace tracepoints dynamically"
->  	depends on FTRACE
-
-> diff --git a/kernel/trace/trace_bkl.c b/kernel/trace/trace_bkl.c
-> new file mode 100644
-> index 0000000..169ee01
-> --- /dev/null
-> +++ b/kernel/trace/trace_bkl.c
-> @@ -0,0 +1,170 @@
-> +/*
-> + * Ring buffer based Big Kernel Lock tracer
-> + * for purpose of measuring the latencies issued
-> + * by the BKL.
-> + *
-> + * Copyright (C) 2008 Frederic Weisbecker <fweisbec@gmail.com>
-> + */
-> +
-> +#include <trace/bkl.h>
-> +#include "trace.h"
-> +#include <linux/ftrace.h>
-> +
-> +
-> +static struct trace_array *bkl_trace;
-> +static bool bkl_tracer_enabled;
-> +
-> +
-> +static void bkl_trace_init(struct trace_array *tr)
-> +{
-> +	int cpu;
-> +	bkl_trace = tr;
-
-what is <bkl_trace> used for?  or unused?
-
-> +
-> +	for_each_cpu_mask(cpu, cpu_possible_map)
-> +		tracing_reset(tr, cpu);
-> +
-> +	if (tr->ctrl)
-> +		bkl_tracer_enabled = 1;
-> +}
+Change the type of shed_ref into int since it is used
+into a Mutex, we don't need it anymore as an atomic
+variable in the sched_switch tracer.
+Also change the name of the register mutex.
 
 
-~Randy
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/trace_sched_switch.c |   30 +++++++++++++-----------------
+ 1 files changed, 13 insertions(+), 17 deletions(-)
 
+diff --git a/kernel/trace/trace_sched_switch.c
+b/kernel/trace/trace_sched_switch.c
+index 9d7bdac..969953b 100644
+--- a/kernel/trace/trace_sched_switch.c
++++ b/kernel/trace/trace_sched_switch.c
+@@ -16,8 +16,8 @@
+
+ static struct trace_array	*ctx_trace;
+ static int __read_mostly	tracer_enabled;
+-static atomic_t		sched_ref;
+-static DEFINE_MUTEX(tracepoint_mutex);
++static int			sched_ref;
++static DEFINE_MUTEX(sched_register_mutex);
+
+ static void
+ probe_sched_switch(struct rq *__rq, struct task_struct *prev,
+@@ -28,7 +28,7 @@ probe_sched_switch(struct rq *__rq, struct task_struct *prev,
+ 	int cpu;
+ 	int pc;
+
+-	if (!atomic_read(&sched_ref))
++	if (!sched_ref)
+ 		return;
+
+ 	tracing_record_cmdline(prev);
+@@ -124,26 +124,22 @@ static void tracing_sched_unregister(void)
+
+ static void tracing_start_sched_switch(void)
+ {
+-	long ref;
+-
+-	mutex_lock(&tracepoint_mutex);
+-	 tracer_enabled = 1;
+-	ref = atomic_inc_return(&sched_ref);
+-	if (ref == 1)
++	mutex_lock(&sched_register_mutex);
++	if (!(sched_ref++)) {
++		tracer_enabled = 1;
+ 		tracing_sched_register();
+-	mutex_unlock(&tracepoint_mutex);
++	}
++	mutex_unlock(&sched_register_mutex);
+ }
+
+ static void tracing_stop_sched_switch(void)
+ {
+-	long ref;
+-
+-	mutex_lock(&tracepoint_mutex);
+-	tracer_enabled = 0;
+-	ref = atomic_dec_and_test(&sched_ref);
+-	if (ref)
++	mutex_lock(&sched_register_mutex);
++	if (!(--sched_ref)) {
+ 		tracing_sched_unregister();
+-	mutex_unlock(&tracepoint_mutex);
++		tracer_enabled = 0;
++	}
++	mutex_unlock(&sched_register_mutex);
+ }
+
+ void tracing_start_cmdline_record(void)
