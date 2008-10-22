@@ -1,58 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752558AbYJVFUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752467AbYJVF2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752558AbYJVFUw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 01:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbYJVFUn
+	id S1752467AbYJVF2b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 01:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbYJVF2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 01:20:43 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42962
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751044AbYJVFUn (ORCPT
+	Wed, 22 Oct 2008 01:28:19 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:46600 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751044AbYJVF2S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 01:20:43 -0400
-Date: Tue, 21 Oct 2008 22:20:20 -0700 (PDT)
-Message-Id: <20081021.222020.05274832.davem@davemloft.net>
-To: randy.dunlap@oracle.com
-Cc: greg@kroah.com, sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: Tree for October 21 (printk format warnings)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081021221116.dd56244b.randy.dunlap@oracle.com>
-References: <20081022050142.GA11674@kroah.com>
-	<20081021.220754.06835391.davem@davemloft.net>
-	<20081021221116.dd56244b.randy.dunlap@oracle.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 22 Oct 2008 01:28:18 -0400
+Message-ID: <48FEBAAA.5080604@suse.de>
+Date: Wed, 22 Oct 2008 11:01:22 +0530
+From: Suresh Jayaraman <sjayaraman@suse.de>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Neil Brown <neilb@suse.de>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 20/32] netvm: INET reserves.
+References: <20081002130504.927878499@chello.nl> <20081002131609.071928149@chello.nl>
+In-Reply-To: <20081002131609.071928149@chello.nl>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Date: Tue, 21 Oct 2008 22:11:16 -0700
+Hi Peter,
 
-> On Tue, 21 Oct 2008 22:07:54 -0700 (PDT) David Miller wrote:
-> 
-> > From: Greg KH <greg@kroah.com>
-> > Date: Tue, 21 Oct 2008 22:01:42 -0700
-> > 
-> > > What's the expected modifier for "size_t" to work on all arches?
-> > 
-> > Put "%Z" in front of the output specifier you want to use,
-> > for example %Zd for decimal and %Zx for hex.
-> > 
-> > > Same goes for the result of "size_of()", what should we use there?  Or
-> > > are we just required to always cast things?
-> > 
-> > Sizeof should use the same as above.
-> 
-> I know that Alan recently merged a patch with %Zd instead of %zd,
-> but the ANSI spec says to use %z, so I thought that we were going with
-> that moreso than %Z... ??
+>>> Peter Zijlstra <a.p.zijlstra@chello.nl> 10/02/08 7:06 PM >>>
+> Add reserves for INET.
 
-I think you're right.
+There's a typo in this patch that results in a Oops like the one below
+when doing `sysctl -a'
 
-My old fingers must do %Z automatically because gcc a long time ago
-didn't recognize %z and warned.  That should be such an old gcc problem
-as to be irrelevant these days.
+<cut>
+RIP: 0010:[<ffffffff804a0487>]  [<ffffffff804a0487>]
+__mutex_lock_slowpath+0x34/0xc9
+
+Call Trace:
+ [<ffffffff804a044f>] mutex_lock+0x1a/0x1e
+ [<ffffffff8044a82e>] proc_dointvec_route+0x38/0xad
+ [<ffffffff80301fce>] proc_sys_call_handler+0x91/0xb8
+ [<ffffffff802ba07e>] vfs_read+0xaa/0x153
+ [<ffffffff802ba1e3>] sys_read+0x45/0x6e
+ [<ffffffff8020c37a>] system_call_fastpath+0x16/0x1b
+ [<00007fb25e415880>] 0x7fb25e415880
+
+</cut>
+
+
+Index: linux-2.6/net/ipv4/route.c
+===================================================================
+--- linux-2.6.orig/net/ipv4/route.c
++++ linux-2.6/net/ipv4/route.c
+
+        /* Deprecated. Use gc_min_interval_ms */
+@@ -3271,6 +3330,15 @@ int __init ip_rt_init(void)
+    ipv4_dst_ops.gc_thresh = (rt_hash_mask + 1);
+    ip_rt_max_size = (rt_hash_mask + 1) * 16;
+
++#ifdef CONFIG_PROCFS
+
+Should be CONFIG_PROC_FS
+
++    mutex_init(&ipv4_route_lock);
++#endif
++
++    mem_reserve_init(&ipv4_route_reserve, "IPv4 route cache",
++            &net_rx_reserve);
++    mem_reserve_kmem_cache_set(&ipv4_route_reserve,
++            ipv4_dst_ops.kmem_cachep, ip_rt_max_size);
++
+    devinet_init();
+    ip_fib_init();
+
+
+Thanks,
+
+-- 
+Suresh Jayaraman
