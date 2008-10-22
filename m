@@ -1,69 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbYJVMmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755832AbYJVMo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755607AbYJVMmz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 08:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbYJVMmr
+	id S1755832AbYJVMo3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 08:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYJVMoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 08:42:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39414 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751558AbYJVMmr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 08:42:47 -0400
-Date: Wed, 22 Oct 2008 14:42:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/4] pending scheduler updates
-Message-ID: <20081022124240.GD25536@elte.hu>
-References: <20081017172701.047939625@chello.nl> <20081020120538.GD10594@elte.hu> <20081021173529.GG11679@linux.vnet.ibm.com> <20081022094019.GG12453@elte.hu> <1224669821.6871.16.camel@marge.simson.net> <1224671528.7511.11.camel@marge.simson.net> <20081022121007.GG8095@elte.hu> <1224679082.12294.15.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1224679082.12294.15.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Wed, 22 Oct 2008 08:44:21 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:33741 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752267AbYJVMoU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 08:44:20 -0400
+Subject: Re: [Devel] Re: [PATCH 08/10] Introduce functions to restart a
+	process
+From: Greg Kurz <gkurz@fr.ibm.com>
+To: Louis.Rilling@kerlabs.com
+Cc: Andrey Mirkin <major@openvz.org>, containers@lists.linux-foundation.org,
+       Cedric Le Goater <clg@fr.ibm.com>, linux-kernel@vger.kernel.org,
+       Pavel Emelyanov <xemul@openvz.org>
+In-Reply-To: <20081022104448.GX15171@hawkmoon.kerlabs.com>
+References: <1224285098-573-1-git-send-email-major@openvz.org>
+	 <1224285098-573-9-git-send-email-major@openvz.org>
+	 <48FC4E0C.7050008@fr.ibm.com> <200810221249.55600.major@openvz.org>
+	 <20081022092502.GW15171@hawkmoon.kerlabs.com>
+	 <1224669979.4210.15.camel@localhost.localdomain>
+	 <20081022104448.GX15171@hawkmoon.kerlabs.com>
+Content-Type: text/plain
+Date: Wed, 22 Oct 2008 14:44:15 +0200
+Message-Id: <1224679455.4210.24.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mike Galbraith <efault@gmx.de> wrote:
-
-> > > With that patch, pgsql+oltp scales perfectly.
+On Wed, 2008-10-22 at 12:44 +0200, Louis Rilling wrote:
+> On Wed, Oct 22, 2008 at 12:06:19PM +0200, Greg Kurz wrote:
+> > On Wed, 2008-10-22 at 11:25 +0200, Louis Rilling wrote:
+> > > Do you checkpoint uninterruptible syscalls as well? If only interruptible
+> > > syscalls are checkpointed, I'd say that either this syscall uses ERESTARTSYS or
+> > > ERESTART_RESTARTBLOCK, and then signal handling code already does the trick, or
+> > > this syscall does not restart itself when interrupted, and well, this is life,
+> > > userspace just sees -EINTR, which is allowed by the syscall spec.
+> > > Actually this is how we checkpoint/migrate tasks in interruptible syscalls in
+> > > Kerrighed and this works.
+> > > 
+> > > Louis
+> > > 
 > > 
-> > hm, tempting.
+> > I don't know Kerrighed internals but I understand you perform checkpoint
+> > with a signal handler. Right ?
 > 
-> I disagree.  Postgres's scaling problem is trivially corrected by 
-> twiddling knobs (or whatnot). [...]
-
-okay, then we need to document it a bit more: what knobs need twiddling 
-to make it scale perfectly?
-
-> [...]  With that patch, you can't twiddle mysql throughput back, or 
-> disk intensive loads for that matter.  You can tweak the preempt 
-> number, but it has nothing to do with lag, so anybody can preempt 
-> anybody else as you turn the knob toward zero.  Chaos.
-
-okay, convinced.
-
-> > Have you tried to hack/fix pgsql to do proper wakeups?
+> Right. This is an kernel-internal-only signal, so all signals remain available
+> for userspace.
 > 
-> No, I tried to build without spinlocks to verify, but build croaked. 
-> Never went back to slogging through the code.
+> > This approach has a huge benefit: the
+> > signal handling code do all the arch dependant stuff to save registers
+> > in user memory.
+> 
+> Hm, I'm not sure to understand what you mean here. We just rely on arch code
+> that jumps to signal handling to correctly setup struct pt_regs, which is then
+> passed to the checkpoint code. So yes, userspace registers are mostly saved by
+> existing arch code. But in x86-64 for instance, segment registers still need to
+> be saved by the checkpoint code (a bit like copy_thread() does), and I don't
+> know arch-independent functions doing this.
+> 
 
-if it falls back to IPC semaphores that's a bad trade from a performance 
-POV. The best would be if it used proper futexes (i.e. pthread_mutex() 
-and friends) not some home-grown user-space spinlock thing.
+You're right, some segment registers need to be saved on x86 also... I
+should have written 'most of' in my previous mail.
 
-	Ingo
+-- 
+Gregory Kurz                                     gkurz@fr.ibm.com
+Software Engineer @ IBM/Meiosys                  http://www.ibm.com
+Tel +33 (0)534 638 479                           Fax +33 (0)561 400 420
+
+"Anarchy is about taking complete responsibility for yourself."
+        Alan Moore.
+
