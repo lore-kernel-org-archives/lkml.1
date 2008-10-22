@@ -1,102 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756479AbYJVRNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757012AbYJVROV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756479AbYJVRNf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:13:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbYJVRNX
+	id S1757012AbYJVROV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753052AbYJVROM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:13:23 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:62949 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752250AbYJVRNW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:13:22 -0400
-Date: Wed, 22 Oct 2008 19:13:21 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-cc: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       tim.bird@am.sony.com
-Subject: Re: Subject: [PATCH 01/16] Squashfs: inode operations
-In-Reply-To: <E1KqrTW-0001xC-9M@dylan>
-Message-ID: <Pine.LNX.4.64.0810221907080.20919@vixen.sonytel.be>
-References: <E1KqrTW-0001xC-9M@dylan>
+	Wed, 22 Oct 2008 13:14:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59996 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752476AbYJVROL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 13:14:11 -0400
+Message-ID: <48FF5F58.6040502@redhat.com>
+Date: Wed, 22 Oct 2008 12:14:00 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1797153628-1224695601=:20919"
+To: Michael Halcrow <mhalcrow@us.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ecryptfs-devel@lists.sourceforge.net
+Subject: [PATCH] ecryptfs: fix memory corruption when storing crypto info
+ in xattrs
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+When ecryptfs allocates space to write crypto headers into, before
+copying it out to file headers or to xattrs, it looks at the value of
+crypt_stat->num_header_bytes_at_front to determine how much space it
+needs.  This is also used as the file offset to the actual encrypted
+data, so for xattr-stored crypto info, the value was zero.
 
----584349381-1797153628-1224695601=:20919
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+So, we kzalloc'd 0 bytes, and then ran off to write to that memory.
+(Which returned as ZERO_SIZE_PTR, so we explode quickly).
 
-On Fri, 17 Oct 2008, Phillip Lougher wrote:
-> --- /dev/null
-> +++ b/fs/squashfs/inode.c
+The right answer is to always allocate a page to write into; the current
+code won't ever write more than that (this is enforced by the 
+(PAGE_CACHE_SIZE - offset) length in the call to 
+ecryptfs_generate_key_packet_set).  To be explicit about this, we now
+send in a "max" parameter, rather than magically using PAGE_CACHE_SIZE 
+there.
 
-> +	case SQUASHFS_BLKDEV_TYPE:
-> +	case SQUASHFS_CHRDEV_TYPE: {
-> +		struct squashfs_dev_inode *inodep = &id.dev;
-> +		unsigned int rdev;
-> +
-> +		if (!squashfs_read_metadata(s, inodep, block, offset,
-> +				sizeof(*inodep), &next_block, &next_offset))
-> +			goto failed_read;
-> +
-> +		i->i_nlink = le32_to_cpu(inodep->nlink);
-> +		i->i_mode |= (type == SQUASHFS_CHRDEV_TYPE) ? S_IFCHR : S_IFBLK;
-> +		rdev = le32_to_cpu(inodep->rdev);
-> +		init_special_inode(i, le16_to_cpu(i->i_mode),
-                                      ^^^^^^^^^^^
-> +					new_decode_dev(rdev));
-> +
-> +		TRACE("Device inode %x:%x, rdev %x\n",
-> +				SQUASHFS_INODE_BLK(inode), offset, rdev);
-> +		break;
-> +	}
-> +	case SQUASHFS_FIFO_TYPE:
-> +	case SQUASHFS_SOCKET_TYPE: {
-> +		struct squashfs_ipc_inode *inodep = &id.ipc;
-> +
-> +		if (!squashfs_read_metadata(s, inodep, block, offset,
-> +				sizeof(*inodep), &next_block, &next_offset))
-> +			goto failed_read;
-> +
-> +		i->i_nlink = le32_to_cpu(inodep->nlink);
-> +		i->i_mode |= (type == SQUASHFS_FIFO_TYPE) ? S_IFIFO : S_IFSOCK;
-> +		init_special_inode(i, le16_to_cpu(i->i_mode), 0);
-                                      ^^^^^^^^^^^
-> +		break;
+Also, since the pointer we pass down the callchain eventually gets the
+virt_to_page() treatment, we should be using a alloc_page variant, not
+kzalloc (see also 7fcba054373d5dfc43d26e243a5c9b92069972ee)
 
-Sparse with endian checking (make C=2 CHECKFLAGS="-D__CHECK_ENDIAN__") complains
-about these:
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+---
 
-| fs/squashfs/inode.c:306:25: warning: cast to restricted __le16
-| fs/squashfs/inode.c:324:25: warning: cast to restricted __le16
+Index: linux-2.6.27.x86_64/fs/ecryptfs/crypto.c
+===================================================================
+--- linux-2.6.27.x86_64.orig/fs/ecryptfs/crypto.c
++++ linux-2.6.27.x86_64/fs/ecryptfs/crypto.c
+@@ -1251,6 +1251,7 @@ struct kmem_cache *ecryptfs_header_cache
+ /**
+  * ecryptfs_write_headers_virt
+  * @page_virt: The virtual address to write the headers to
++ * @max: The size of memory allocated at page_virt
+  * @size: Set to the number of bytes written by this function
+  * @crypt_stat: The cryptographic context
+  * @ecryptfs_dentry: The eCryptfs dentry
+@@ -1278,7 +1279,8 @@ struct kmem_cache *ecryptfs_header_cache
+  *
+  * Returns zero on success
+  */
+-static int ecryptfs_write_headers_virt(char *page_virt, size_t *size,
++static int ecryptfs_write_headers_virt(char *page_virt, size_t max,
++				       size_t *size,
+ 				       struct ecryptfs_crypt_stat *crypt_stat,
+ 				       struct dentry *ecryptfs_dentry)
+ {
+@@ -1296,7 +1298,7 @@ static int ecryptfs_write_headers_virt(c
+ 	offset += written;
+ 	rc = ecryptfs_generate_key_packet_set((page_virt + offset), crypt_stat,
+ 					      ecryptfs_dentry, &written,
+-					      PAGE_CACHE_SIZE - offset);
++					      max - offset);
+ 	if (rc)
+ 		ecryptfs_printk(KERN_WARNING, "Error generating key packet "
+ 				"set; rc = [%d]\n", rc);
+@@ -1368,14 +1370,14 @@ int ecryptfs_write_metadata(struct dentr
+ 		goto out;
+ 	}
+ 	/* Released in this function */
+-	virt = kzalloc(crypt_stat->num_header_bytes_at_front, GFP_KERNEL);
++	virt = (char *)get_zeroed_page(GFP_KERNEL);
+ 	if (!virt) {
+ 		printk(KERN_ERR "%s: Out of memory\n", __func__);
+ 		rc = -ENOMEM;
+ 		goto out;
+ 	}
+-	rc = ecryptfs_write_headers_virt(virt, &size, crypt_stat,
+-					 ecryptfs_dentry);
++	rc = ecryptfs_write_headers_virt(virt, PAGE_CACHE_SIZE, &size,
++					 crypt_stat, ecryptfs_dentry);
+ 	if (unlikely(rc)) {
+ 		printk(KERN_ERR "%s: Error whilst writing headers; rc = [%d]\n",
+ 		       __func__, rc);
+@@ -1393,8 +1395,7 @@ int ecryptfs_write_metadata(struct dentr
+ 		goto out_free;
+ 	}
+ out_free:
+-	memset(virt, 0, crypt_stat->num_header_bytes_at_front);
+-	kfree(virt);
++	free_page((unsigned long)virt);
+ out:
+ 	return rc;
+ }
 
-and it seems to be right, as inode.i_mode is not __le16. I think the le16_to_cpu()
-should be removed.
-
-BTW, there are also a few sparse warnings about different signednesses, so you
-probably want to run sparse yourself, too.
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-1797153628-1224695601=:20919--
