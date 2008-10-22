@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbYJVV5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756399AbYJVWAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756139AbYJVV5R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 17:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbYJVV5F
+	id S1756399AbYJVWAz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 18:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbYJVWAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 17:57:05 -0400
-Received: from server.lespinasse.org ([64.142.28.226]:55024 "EHLO
-	server.lespinasse.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752437AbYJVV5F (ORCPT
+	Wed, 22 Oct 2008 18:00:48 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:57210 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752437AbYJVWAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 17:57:05 -0400
-X-Greylist: delayed 1647 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Oct 2008 17:57:05 EDT
-Date: Wed, 22 Oct 2008 14:29:34 -0700
-From: Michel Lespinasse <walken@zoy.org>
-To: linux-kernel@vger.kernel.org
-Subject: NFS 5-minute hangs upon S3 resume using 2.6.27 client
-Message-ID: <20081022212934.GA24143@zoy.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 22 Oct 2008 18:00:47 -0400
+Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is
+	set.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>
+In-Reply-To: <20081022195845.GP12825@one.firstfloor.org>
+References: <1224552902.2640.88.camel@alok-dev1>
+	 <874p36fflp.fsf@basil.nowhere.org> <1224607284.6161.22.camel@alok-dev1>
+	 <20081021174008.GH12825@one.firstfloor.org>
+	 <1224612294.6161.43.camel@alok-dev1>
+	 <20081021181536.GI12825@one.firstfloor.org>
+	 <1224616236.6161.60.camel@alok-dev1>
+	 <20081021192746.GJ12825@one.firstfloor.org>
+	 <1224703427.13953.8.camel@alok-dev1>
+	 <20081022195845.GP12825@one.firstfloor.org>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Wed, 22 Oct 2008 15:00:46 -0700
+Message-Id: <1224712846.13953.37.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+[dropped LKML of the cc list]
 
-This has been mentionned in bugzilla already, but I'd like to draw attention
-before it gets too late for 2.6.28.
+Hi Andi,
 
-The following is a common cause of 5-minute NFS hangs here:
+On Wed, 2008-10-22 at 12:58 -0700, Andi Kleen wrote:
+> > We also force set the CONSTANT_TSC capability bit if we are running on
+> > VMware, since the VMware hypervisor exports a constant TSC to the guest.
+> 
+> NAK.
+> 
+> The whole point of this is to eliminate the need for vmware detection,
+> which is something the kernel shouldn't need to know about.
+> Instead VMware should supply that bit by itself and then Linux could
+> do the right thing. The only change you would need to do is to always
+> check it for all CPU vendors, not just AMD.
 
-* Client has TCP connections to the NFS server, goes to S3 sleep for few hours.
-* TCP connections die on the server side.
-  (not 100% sure why, do they use some kind of keepalive ???)
-* Client resumes from S3.
-* Client sends NFS requests down its TCP connections, gets back RST packet.
-* [Client hangs for exactly 300 seconds here]
-* Client establishes new TCP connections to the NFS server,
-  and recovers from the hang.
+Yeah, i can add that code which checks for that bit, for all cpu
+vendors. And yes we can supply that bit with our future products.
 
-A tcpdump trace is attached at the end of bugzilla bug 11154:
-http://bugzilla.kernel.org/show_bug.cgi?id=11154
+> Adding it with vmware detection code is not useful.
 
-Should the client immediately try to reconnect when its existing connection
-receives an RST packet ? (the 5 minute delay would make sense to me if
-RST was received in reply to a SYN, but I'm not sure about it in the case
-of an existing open TCP connection).
+The VMware detection code is something that's needed anyways for other
+purposes(getting tsc_freq right now). So the code which force sets this
+TSC_CONSTANT bit is trivial.
+Apart from that, as i said yesterday, this should be viewed as a special
+case for VMware products which don't already set this bit. Changing the
+behavior for already existing products is not feasible.
 
-If the 5 minute delay after an RST is necessary, could the client avoid it
-by explicitly closing/reopening its connections using suspend/resume hooks ?
+Thanks,
+Alok
 
-(I can not work around the issue locally by mounting/unmounting my NFS
-shares around the suspend/resume because rootfs also on NFS...)
+> 
+> -Andi
 
-This NFS setup was working fine in 2.6.24. There has been issues with
-2.6.25 and 2.6.26, but I did not confirm if they are the same bug.
-2.6.25 usualy recovers after some variable delay and 2.6.26 usualy
-does not recover. Bugs 11154 and 11061 have more details about this,
-also Ian Campbell has been tracking an NFS issue under load that
-appeared at around the same time.
-
-Hope this helps,
-
--- 
-Michel "Walken" Lespinasse
-A program is never fully debugged until the last user dies.
