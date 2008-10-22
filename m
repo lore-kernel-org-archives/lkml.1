@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758892AbYJVTze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbYJVUBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758892AbYJVTze (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 15:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbYJVTzH
+	id S1757272AbYJVUBR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 16:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbYJVUBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 15:55:07 -0400
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:40840 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758018AbYJVTzF (ORCPT
+	Wed, 22 Oct 2008 16:01:05 -0400
+Received: from el-out-1112.google.com ([209.85.162.178]:40692 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752073AbYJVUBE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 15:55:05 -0400
-Date: Wed, 22 Oct 2008 12:54:30 -0700 (PDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au, hugh@veritas.com,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: SLUB defrag pull request?
-In-Reply-To: <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu>
-Message-ID: <Pine.LNX.4.64.0810221252570.3562@quilx.com>
-References: <1223883004.31587.15.camel@penberg-laptop>
- <1223883164.31587.16.camel@penberg-laptop> <Pine.LNX.4.64.0810131227120.20511@blonde.site>
- <200810132354.30789.nickpiggin@yahoo.com.au> <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu>
- <E1KpOOL-0003Vf-9y@pomaz-ex.szeredi.hu> <48F378C6.7030206@linux-foundation.org>
- <E1KpOjX-0003dt-AY@pomaz-ex.szeredi.hu> <48FC9CCC.3040006@linux-foundation.org>
- <E1Krz4o-0002Fi-Pu@pomaz-ex.szeredi.hu> <48FCCC72.5020202@linux-foundation.org>
- <E1KrzgK-0002QS-Os@pomaz-ex.szeredi.hu> <48FCD7CB.4060505@linux-foundation.org>
- <E1Ks0QX-0002aC-SQ@pomaz-ex.szeredi.hu> <48FCE1C4.20807@linux-foundation.org>
- <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu> <48FE6306.6020806@linux-foundation.org>
- <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0810220822500.30851@quilx.com>
- <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu>
+	Wed, 22 Oct 2008 16:01:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=iP1m604yeaoMfGwueJGE8Z1SrrlLpR6zqVL6AHfOqwUWJNk25xtPISQqam1jr8aHVv
+         fbtwz2F2Ly9k0xIYduhg8IljH+AZ1kXLq1LTgsJdtm/6iZJRLAADVAudA7YxAlAGQ4VR
+         JgXV+w8pYe/F4hdWKMwjICnEfm3UTLIW32kH4=
+Message-ID: <f1c9d250810221301hb514aady73203bf489e0932b@mail.gmail.com>
+Date: Thu, 23 Oct 2008 01:31:02 +0530
+From: Tej <bewith.tej@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] build error: 2.6.17-rc5
+Cc: sam@ravnborg.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Spam-Score: -2.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Oct 2008, Miklos Szeredi wrote:
+observed following build error for 2.6.17-rc5 kernel (git repo)
 
-> Why?  The kmem_cache_free() doesn't touch the contents of the object,
-> does it?
+<---snip---->
+/opt/Testing/Tools/linux-2.6/init/do_mounts.c:115: undefined reference
+to `__stack_chk_fail'
+init/built-in.o: In function `name_to_dev_t':
+/opt/Testing/Tools/linux-2.6/init/do_mounts.c:206: undefined reference
+to `__stack_chk_fail'
+init/built-in.o: In function `change_floppy':
+/opt/Testing/Tools/linux-2.6/init/do_mounts.c:363: undefined reference
+to `__stack_chk_fail'
+init/built-in.o: In function `mount_block_root':
+/opt/Testing/Tools/linux-2.6/init/do_mounts.c:321: undefined reference
+to `__stack_chk_fail'
+init/built-in.o: In function `do_header':
+/opt/Testing/Tools/linux-2.6/init/initramfs.c:206: undefined reference
+to `__stack_chk_fail'
+arch/i386/kernel/built-in.o:/opt/Testing/Tools/linux-2.6/arch/i386/kernel/ptrace.c:634:
+more undefined references to `__stack_chk_fail' follow
+make: *** [.tmp_vmlinux1] Error 1
 
-Because filesystem code may be running on other processors which may be 
-freeing the dentry.
+attached patch solve problem, which seems to be obvious by looking at
+defination of "__stack_chk_fail" with subsequent kernel versions.
 
->> Because the slab starts out with a series of objects left in a slab. It
->> needs to do build a list of objects etc in a way that is independent as
->> possible from the user of the slab page. It does that by locking the slab
->> page so that free operations stall until the reference has been
->> established. If it would not be shutting off frees then the objects could
->> vanish under us.
->
-> It doesn't matter.  All we care about is that the dentry is on the
-> lru: it's cached but unused.  Every other state (being created,
-> active, being freed, freed) is uninteresting.
+Signed-off-by: Tej Parkash <bewith.tej@gmail.com>
 
-We cannot figure out that it is on the lru if we do not have a stable 
-reference to the object.
+diff --git a/Makefile b/Makefile
+index 435d209..d2afeea 100644
+--- a/Makefile
++++ b/Makefile
+@@ -306,7 +306,7 @@ LINUXINCLUDE    := -Iinclude \
+ CPPFLAGS        := -D__KERNEL__ $(LINUXINCLUDE)
 
-> Sure, and all that is possible without doing this messy 2 phase thing.
-> Unless I'm still missing something obvious...
+ CFLAGS                 := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+-                  -fno-strict-aliasing -fno-common
++                  -fno-strict-aliasing -fno-common -fno-stack-protector
+ AFLAGS         := -D__ASSEMBLY__
 
-Obviously one cannot free or handle an object that may be concurrently 
-freed on another processor.
-
+ # Read KERNELRELEASE from .kernelrelease (if it exists)
