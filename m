@@ -1,255 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758137AbYJVRm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbYJVRlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758137AbYJVRm2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757811AbYJVRec
+	id S1756243AbYJVRlY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757503AbYJVReO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:34:32 -0400
-Received: from kroah.org ([198.145.64.141]:53082 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757828AbYJVRea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:34:30 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, David Rowe <david@rowetel.com>,
-       Steve Underwood <steveu@coppice.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 25/42] Staging: echo: remove annoying "end of function" markers
-Date: Wed, 22 Oct 2008 10:29:06 -0700
-Message-Id: <1224696563-5170-25-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <20081022172203.GA4000@kroah.com>
-References: <20081022172203.GA4000@kroah.com>
+	Wed, 22 Oct 2008 13:34:14 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:55802 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757610AbYJVReL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 13:34:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=mhW2Qqth/xkb/AtEUuv5OjDpTVxHwSoGnVD9U1A2YGMVailS/ALyEjcaUJXdSWGtnJ
+         pb2o82ItCp/pabBPKFi6wlUykTBNiw1rhHuhoZtiES9kqbq5sLMzFKuiTUUVQkZhjjFy
+         3Ew6gI2IzYYoGbUNo4F7VKIqb5MWvC0vRdP7A=
+Message-ID: <d9def9db0810221034v3bf4dabt6aa905b8a3ebd5a@mail.gmail.com>
+Date: Wed, 22 Oct 2008 19:34:09 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       em28xx@mcentral.de
+Subject: [PATCH] em28xx patches against the latest git tree
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+Following patch adds the latest em28xx driver from mcentral.de.
 
-This patch removes the very noisy "end of function" markers that are
-very annoying when reading the driver code.
+merging mcentral.de/hg/~mrec/em28xx-new with upstream kernel
 
-Cc: David Rowe <david@rowetel.com>
-Cc: Steve Underwood <steveu@coppice.org>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/staging/echo/bit_operations.h |   10 ----------
- drivers/staging/echo/echo.c           |    7 -------
- drivers/staging/echo/fir.h            |    9 ---------
- 3 files changed, 0 insertions(+), 26 deletions(-)
+* adding VBI support to most VBI capable devices
+* radio support for cx25843 based devices
+* extra cx25843 driver (registers match the em28xx configuration in
+order to support proper VBI)
+* all videostandards and inputs are tested with cx25843 based devices
+* adding alternative audio driver for em28xx devices (independent
+audio transfer, not depending on oss/alsa)
+* adding em28xx-webcam support for videology webcams
+* adding em28xx-audioep audio driver for alternate number 1 - if
+vendor specific and not USB audio conform
+* adding s921 driver (ISDB-T 1Seg support tunneling parameters through
+DVB-T API setting specific registers to auto)
+* adding xc3028 mostly original sourcecode from the manufacturer (most
+recent version), merged xc3028/xc3028l into
+  one external firmware blob - important for signal quality
+* adding xc5000 mostly original sourcecode from the manufacturer (most
+recent version) - important for signal quality
+* adding lgdt3304, although currently disabled
+* remote control handling *works* but is broken by design and disabled
+since different rc5/rc6/nec remotes return
+  different values. Handling can be done using interrupt transfers too (TODO)
+* fixed a couple of bugs in the em28xx-audio driver which can lead to
+system hangs.
 
-diff --git a/drivers/staging/echo/bit_operations.h b/drivers/staging/echo/bit_operations.h
-index 04b55d2..abcd7a2 100644
---- a/drivers/staging/echo/bit_operations.h
-+++ b/drivers/staging/echo/bit_operations.h
-@@ -45,7 +45,6 @@ static __inline__ int top_bit(unsigned int bits)
-              : [bits] "rm" (bits));
-     return res;
- }
--/*- End of function --------------------------------------------------------*/
- 
- /*! \brief Find the bit position of the lowest set bit in a word
-     \param bits The word to be searched
-@@ -61,7 +60,6 @@ static __inline__ int bottom_bit(unsigned int bits)
-              : [bits] "rm" (bits));
-     return res;
- }
--/*- End of function --------------------------------------------------------*/
- #else
- static __inline__ int top_bit(unsigned int bits)
- {
-@@ -97,7 +95,6 @@ static __inline__ int top_bit(unsigned int bits)
-     }
-     return i;
- }
--/*- End of function --------------------------------------------------------*/
- 
- static __inline__ int bottom_bit(unsigned int bits)
- {
-@@ -133,7 +130,6 @@ static __inline__ int bottom_bit(unsigned int bits)
-     }
-     return i;
- }
--/*- End of function --------------------------------------------------------*/
- #endif
- 
- /*! \brief Bit reverse a byte.
-@@ -151,7 +147,6 @@ static __inline__ uint8_t bit_reverse8(uint8_t x)
-     return ((x & 0xAA) >> 1) | ((x & 0x55) << 1);
- #endif
- }
--/*- End of function --------------------------------------------------------*/
- 
- /*! \brief Bit reverse a 16 bit word.
-     \param data The word to be reversed.
-@@ -191,7 +186,6 @@ static __inline__ uint32_t least_significant_one32(uint32_t x)
- {
-     return (x & (-(int32_t) x));
- }
--/*- End of function --------------------------------------------------------*/
- 
- /*! \brief Find the most significant one in a word, and return a word
-            with just that bit set.
-@@ -206,7 +200,6 @@ static __inline__ uint32_t most_significant_one32(uint32_t x)
-     return (x ^ (x >> 1));
- #endif
- }
--/*- End of function --------------------------------------------------------*/
- 
- /*! \brief Find the parity of a byte.
-     \param x The byte to be checked.
-@@ -216,7 +209,6 @@ static __inline__ int parity8(uint8_t x)
-     x = (x ^ (x >> 4)) & 0x0F;
-     return (0x6996 >> x) & 1;
- }
--/*- End of function --------------------------------------------------------*/
- 
- /*! \brief Find the parity of a 16 bit word.
-     \param x The word to be checked.
-@@ -227,7 +219,6 @@ static __inline__ int parity16(uint16_t x)
-     x = (x ^ (x >> 4)) & 0x0F;
-     return (0x6996 >> x) & 1;
- }
--/*- End of function --------------------------------------------------------*/
- 
- /*! \brief Find the parity of a 32 bit word.
-     \param x The word to be checked.
-@@ -239,7 +230,6 @@ static __inline__ int parity32(uint32_t x)
-     x = (x ^ (x >> 4)) & 0x0F;
-     return (0x6996 >> x) & 1;
- }
--/*- End of function --------------------------------------------------------*/
- 
- #endif
- /*- End of file ------------------------------------------------------------*/
-diff --git a/drivers/staging/echo/echo.c b/drivers/staging/echo/echo.c
-index a2d3078..ad18a95 100644
---- a/drivers/staging/echo/echo.c
-+++ b/drivers/staging/echo/echo.c
-@@ -230,7 +230,6 @@ static __inline__ void lms_adapt_bg(struct oslec_state *ec, int clean, int shift
- }
- #endif
- 
--/*- End of function --------------------------------------------------------*/
- 
- struct oslec_state *oslec_create(int len, int adaption_mode)
- {
-@@ -288,7 +287,6 @@ error_oom:
-     return NULL;
- }
- EXPORT_SYMBOL_GPL(oslec_create);
--/*- End of function --------------------------------------------------------*/
- 
- void oslec_free(struct oslec_state *ec)
- {
-@@ -302,14 +300,12 @@ void oslec_free(struct oslec_state *ec)
- 	kfree(ec);
- }
- EXPORT_SYMBOL_GPL(oslec_free);
--/*- End of function --------------------------------------------------------*/
- 
- void oslec_adaption_mode(struct oslec_state *ec, int adaption_mode)
- {
-     ec->adaption_mode = adaption_mode;
- }
- EXPORT_SYMBOL_GPL(oslec_adaption_mode);
--/*- End of function --------------------------------------------------------*/
- 
- void oslec_flush(struct oslec_state *ec)
- {
-@@ -336,13 +332,11 @@ void oslec_flush(struct oslec_state *ec)
-     ec->Pstates = 0;
- }
- EXPORT_SYMBOL_GPL(oslec_flush);
--/*- End of function --------------------------------------------------------*/
- 
- void oslec_snapshot(struct oslec_state *ec) {
-     memcpy(ec->snapshot, ec->fir_taps16[0], ec->taps*sizeof(int16_t));
- }
- EXPORT_SYMBOL_GPL(oslec_snapshot);
--/*- End of function --------------------------------------------------------*/
- 
- /* Dual Path Echo Canceller ------------------------------------------------*/
- 
-@@ -588,7 +582,6 @@ int16_t oslec_update(struct oslec_state *ec, int16_t tx, int16_t rx)
-     return (int16_t) ec->clean_nlp << 1;
- }
- EXPORT_SYMBOL_GPL(oslec_update);
--/*- End of function --------------------------------------------------------*/
- 
- /* This function is seperated from the echo canceller is it is usually called
-    as part of the tx process.  See rx HP (DC blocking) filter above, it's
-diff --git a/drivers/staging/echo/fir.h b/drivers/staging/echo/fir.h
-index d1df33c..e760471 100644
---- a/drivers/staging/echo/fir.h
-+++ b/drivers/staging/echo/fir.h
-@@ -119,7 +119,6 @@ static __inline__ const int16_t *fir16_create(fir16_state_t *fir,
- #endif
- 	return fir->history;
- }
--/*- End of function --------------------------------------------------------*/
- 
- static __inline__ void fir16_flush(fir16_state_t *fir)
- {
-@@ -129,13 +128,11 @@ static __inline__ void fir16_flush(fir16_state_t *fir)
-     memset(fir->history, 0, fir->taps*sizeof(int16_t));
- #endif
- }
--/*- End of function --------------------------------------------------------*/
- 
- static __inline__ void fir16_free(fir16_state_t *fir)
- {
- 	kfree(fir->history);
- }
--/*- End of function --------------------------------------------------------*/
- 
- #ifdef __bfin__
- static inline int32_t dot_asm(short *x, short *y, int len)
-@@ -165,7 +162,6 @@ static inline int32_t dot_asm(short *x, short *y, int len)
-    return dot;
- }
- #endif
--/*- End of function --------------------------------------------------------*/
- 
- static __inline__ int16_t fir16(fir16_state_t *fir, int16_t sample)
- {
-@@ -260,7 +256,6 @@ static __inline__ int16_t fir16(fir16_state_t *fir, int16_t sample)
-     fir->curr_pos--;
-     return (int16_t) (y >> 15);
- }
--/*- End of function --------------------------------------------------------*/
- 
- static __inline__ const int16_t *fir32_create(fir32_state_t *fir,
-                                               const int32_t *coeffs,
-@@ -272,19 +267,16 @@ static __inline__ const int16_t *fir32_create(fir32_state_t *fir,
-     fir->history = kcalloc(taps, sizeof(int16_t), GFP_KERNEL);
-     return fir->history;
- }
--/*- End of function --------------------------------------------------------*/
- 
- static __inline__ void fir32_flush(fir32_state_t *fir)
- {
-     memset(fir->history, 0, fir->taps*sizeof(int16_t));
- }
--/*- End of function --------------------------------------------------------*/
- 
- static __inline__ void fir32_free(fir32_state_t *fir)
- {
-     kfree(fir->history);
- }
--/*- End of function --------------------------------------------------------*/
- 
- static __inline__ int16_t fir32(fir32_state_t *fir, int16_t sample)
- {
-@@ -306,7 +298,6 @@ static __inline__ int16_t fir32(fir32_state_t *fir, int16_t sample)
-     fir->curr_pos--;
-     return (int16_t) (y >> 15);
- }
--/*- End of function --------------------------------------------------------*/
- 
- #endif
- /*- End of file ------------------------------------------------------------*/
--- 
-1.6.0.2
+----
 
+as for testing:
+* analog TV: patched tvtime (for analog TV) version available on
+mcentral.de which supports 1. software rendering 2. digital
+audio/alsa/aad
+* FM radio: gqradio from mcentral.de, there's also an older radio
+patch for vlc available.
+* DVB-T: all applications should work with it
+* ISDB-T: relevant for China and Brazil only, can be used with
+dvbtune, dvbscan (the channel file cannot be used due problems with
+the characters), for transferring the MPEG-TS stream dvbstream,
+dvbsnoop, for playback gstreamer/mplayer (h264/aac isn't supported
+well with it).
+
+commit history is available at:
+http://mcentral.de/http://git.kernel.org/?p=linux/kernel/git/mrec/linux-2.6.git;a=commit;h=f1be9ae8f8489a6598417a194e0899ac00c7530ehg/~mrec/em28xx-new
+
+This patch adds a separate instance of the driver to the git
+repository, not affecting anything existing.
+
+the full patch against the git repository:
+
+
+Contributors:
+user:        acano@fastmail.fm
+user:        Andre Kelmanson <akelmanson@gmail.com>
+user:        Bouwsma Barry <freebeer.bouwsma@gmail.com>
+user:        Dan Kreiser <kreiser@informatik.hu-berlin.de>
+user:        Frank Neuber <fn@kernelport.de>
+user:        Jelle de Jong <jelledejong@powercraft.nl>
+user:        John Stowers <john.stowers.lists@gmail.com>
+user:        Lukas Kuna <lukas.kuna@evkanet.net>
+user:        Stefan Vonolfen <stefan.vonolfen@gmail.com>
+user:        Stephan Berberig <s.berberig@arcor.de>
+user:        Thomas Giesecke <thomas.giesecke@ibgmbh-naumburg.de>
+user:        Vitaly Wool <vwool@ru.mvista.com>
+user:        Zhenyu Wang <zhen78@gmail.com>
+
+Signed-off-by: Markus Rechberger <mrechberger@sundtek.de>
