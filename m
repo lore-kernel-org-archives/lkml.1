@@ -1,102 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757043AbYJVTKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757854AbYJVTLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757043AbYJVTKd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 15:10:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbYJVTKY
+	id S1757854AbYJVTLt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 15:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbYJVTLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 15:10:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51488 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751086AbYJVTKX (ORCPT
+	Wed, 22 Oct 2008 15:11:40 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:48927 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753141AbYJVTLj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 15:10:23 -0400
-Date: Wed, 22 Oct 2008 12:09:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       sagar.abhishek@gmail.com, davem@davemloft.net, tglx@linutronix.de,
-       peterz@infradead.org, torvalds@linux-foundation.org,
-       srostedt@redhat.com
-Subject: Re: [PATCH 04/11] ftrace: comment arch ftrace code
-Message-Id: <20081022120951.11665534.akpm@linux-foundation.org>
-In-Reply-To: <20081022185136.134729572@goodmis.org>
-References: <20081022184313.179487464@goodmis.org>
-	<20081022185136.134729572@goodmis.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 22 Oct 2008 15:11:39 -0400
+Subject: Re: Possible bug in SCSI Kconfig
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, sam@ravnborg.org,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <b637ec0b0810220929r2c889423ma92bef0ec7f9b3b0@mail.gmail.com>
+References: <b637ec0b0810220929r2c889423ma92bef0ec7f9b3b0@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 22 Oct 2008 13:05:40 -0600
+Message-Id: <1224702340.6851.20.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Oct 2008 14:43:17 -0400
-Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> Add comments to explain what is happening in the x86 arch ftrace code.
+On Wed, 2008-10-22 at 18:29 +0200, Fabio Comolli wrote:
+> Hi.
+> In kernel 2.6.27.2 - drivers/scsi/Kconfig we have:
 > 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  arch/x86/kernel/ftrace.c |    7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+> config SCSI_WAIT_SCAN
+>         tristate
+>         default m
+>         depends on SCSI
+>         depends on MODULES
 > 
-> Index: linux-compile.git/arch/x86/kernel/ftrace.c
-> ===================================================================
-> --- linux-compile.git.orig/arch/x86/kernel/ftrace.c	2008-10-22 13:15:36.000000000 -0400
-> +++ linux-compile.git/arch/x86/kernel/ftrace.c	2008-10-22 13:16:35.000000000 -0400
-> @@ -66,18 +66,23 @@ ftrace_modify_code(unsigned long ip, uns
->  	/*
->  	 * Note: Due to modules and __init, code can
->  	 *  disappear and change, we need to protect against faulting
-> -	 *  as well as code changing.
-> +	 *  as well as code changing. We do this by using the
-> +	 *  __copy_*_user functions.
->  	 *
->  	 * No real locking needed, this code is run through
->  	 * kstop_machine, or before SMP starts.
->  	 */
-> +
-> +	/* read the text we want to modify */
->  	if (__copy_from_user_inatomic(replaced, (char __user *)ip,
->  				      MCOUNT_INSN_SIZE))
->  		return -1;
->  
-> +	/* Make sure it is what we expect it to be */
->  	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
->  		return -1;
->  
-> +	/* replace the text with the new text */
->  	if (__copy_to_user_inatomic((char __user *)ip, new_code,
->  				    MCOUNT_INSN_SIZE))
->  		return -1;
+> The tristate field is empty. This has the effect that this option is
+> not visible in menuconfig and so it's always selected. The default is
+> "m" for all architectures and so this module is always compiled if
+> SCSI and MODULES are both enabled.
 > 
+> I'm using a patch like this one:
+> 
+>  config SCSI_WAIT_SCAN
+> -	tristate
+> +	tristate "Wait until all the async scans are complete"
+>  	default m
+>  	depends on SCSI
+>  	depends on MODULES
+> 
+> to get rid of that module.
+> 
+> Of course, I have no idea if this is correct or the current behavior
+> is the expected one.
 
-I dunno.
+The point of all of this is that if you enable async scanning, you need
+a method of waiting for the scans to complete, which is all this module
+does (you insert it and it doesn't come back from the insertion until
+all the pending async scans are complete).  It's tristate because really
+it only makes sense to be M or N.  The consensus is that, given async
+scanning is always an option, this function should always be built as a
+module *if* modules and SCSI are enabled ... because you might have a
+HBA module you enabled async scanning for and you need to wait.
 
-__copy_to_user_inatomic() is for "copying memory from userspace while
-in an atomic context".
+There's really not much point giving the user the choice, since this
+module is part of the initrd sequence ... it's not really anything a
+user would want to use stand alone, hence there's no point giving a
+choice about it.
 
-But what you're doing here is "modifying some kernel text which might
-generate a fault".  It seems somewhat interface-abusive to use a
-userspace access function for that just because it happens right now to
-do the right thing.
-
-I'd suggest that for clarity and for future-safety, you create some new
-interface function which does that thing.  Right now it can be a simple
-wrapper around __copy_from_user_inatomic().
-
-<looks>
-
-oh, someone added one - probe_kernel_write().  Why not use that?
-
-<wonders why he doesn't know what's going on any more>
-
-
-Also, I hope that the above code is called from within a
-pagefault_disable()d region?  Or are relying upon some magical
-side-effect of something which happens to do the same thing as
-pagefault_disable()?  IOW: by what means does the above code ensure
-that do_page_fault() will see in_atomic()==true?
-
+James
 
 
