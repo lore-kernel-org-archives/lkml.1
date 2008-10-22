@@ -1,281 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbYJVXfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbYJVXiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756110AbYJVXfK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 19:35:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbYJVXe4
+	id S1756740AbYJVXiA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 19:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYJVXhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 19:34:56 -0400
-Received: from mga09.intel.com ([134.134.136.24]:30766 "EHLO mga09.intel.com"
+	Wed, 22 Oct 2008 19:37:50 -0400
+Received: from mail-out2.uio.no ([129.240.10.58]:36322 "EHLO mail-out2.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752378AbYJVXey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 19:34:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,467,1220252400"; 
-   d="scan'208";a="454537010"
-Date: Wed, 22 Oct 2008 16:34:52 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Andi Kleen <ak@linux.intel.com>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Henroid, Andrew D" <andrew.d.henroid@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] Disable ioat channel only on platforms where ile driver can load
-Message-ID: <20081022233451.GA28775@linux-os.sc.intel.com>
-References: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com> <e8b529091b2ab65f5a4783e292c2b472e309116e.1223706853.git.len.brown@intel.com> <20081011083347.GA31918@elte.hu> <alpine.LFD.1.10.0810161805360.3026@localhost.localdomain> <48FE07AE.4010203@linux.intel.com> <7E82351C108FA840AB1866AC776AEC4637CD27F3@orsmsx505.amr.corp.intel.com> <48FED3FA.6040703@linux.intel.com>
+	id S1752763AbYJVXht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 19:37:49 -0400
+Subject: Re: SUNRPC problem with 2.6.26 and beyond - try again with
+	response in correct place.
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Harry Edmon <harry@atmos.washington.edu>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <48FFAF6F.3040406@atmos.washington.edu>
+References: <48FF482F.5060002@atmos.washington.edu>
+	 <1224715874.7525.18.camel@localhost>
+	 <48FFAF6F.3040406@atmos.washington.edu>
+Content-Type: text/plain
+Date: Wed, 22 Oct 2008 19:37:46 -0400
+Message-Id: <1224718666.7525.30.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48FED3FA.6040703@linux.intel.com>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, MISSING_SUBJECT=0.001,NO_RECEIVED=-0.001, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 7FFE64A9C58D172B856EC9A50245D1E340B53693
+X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 124 max/h 9 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 12:19:22AM -0700, Andi Kleen wrote:
-> Pallipadi, Venkatesh wrote:
+On Wed, 2008-10-22 at 15:55 -0700, Harry Edmon wrote:
+> Trond Myklebust wrote:
+> > On Wed, 2008-10-22 at 08:35 -0700, Harry Edmon wrote:
+> >   
+> >> I have a dual quad-core Xeon system running software 
+> >> (http://www.unidata.ucar.edu/software/ldm) that relays and processes 
+> >> weather data through RPC calls, keeping a queue of data in a memory 
+> >> mapped file.  Up until 2.6.26 the system has run just fine (for example 
+> >> 2.6.25.17).  But starting with 2.6.26 through 2.6.27.2 the system runs 
+> >> into a problem after approximately 24 hours.  The symptom is that the 
+> >> processing slows down to a crawl.  Using "top" I can see that the System 
+> >> time is up over 90%, with almost no User and Wait time.  If I stop and 
+> >> restart the software, most of the time it gets better - but sometimes it 
+> >> takes a reboot to fix the problem.  I have an identical system that does 
+> >> just processing and ingesting data from remote systems, and it does not 
+> >> have this problem.  I have tried a number of different kernel 
+> >> configurations, but they all show the same problem.
+> >>
+> >> I suspect a problem with SUNRPC.  I notice that there were a large 
+> >> number of SUNRPC patches in 2.6.26.  I am looking for suggestions on how 
+> >> to pin down which patches are causing the problem.  Are there ways to 
+> >> figure where in the  kernel the time is being spent?  I am will to work 
+> >> on isolating the problem, but I need some suggestions on the best way to 
+> >> do it given the large number of SUNRPC patches in 2.6.26 and the fact 
+> >> that each experiment takes a day.
+> >>     
 > >
-> >>> +#if CONFIG_I7300_IDLE_IOAT_CHANNEL
-> >>> +     device->common.chancnt--;
-> >>> +#endif
-> >> I still think this lone decrement looks fishy. Can there please be some
-> >> explanation how it exactly relates to the i7300 idle driver, where the
-> >> matching increment is, etc.?
+> > The kernel sunrpc interface is not exported to user land: the glibc code
+> > uses its own, entirely separate implementation of sunrpc.
 > >
-> > No. This is not a increment/decrement thing. It is basically telling other
-> > Users of IOAT that they have one IOAT channel less that they can use.
-> > The last IOAT channel is used by i7300 idle driver to get the throttling to
-> > work.
-> 
-> Ok then it should be made conditional on the i7300 actually be available
-> in the system?  It looks like you do it always no matter what chipset is in there.
+> > I cannot therefore see, how your application's RPC calls can be affected
+> > by kernel sunrpc changes.
+> >
+> > Cheers
+> >   Trond
+> >
+> >   
+> Then how do you explain the the large system time used with 2.6.26 and 
+> beyond?  Is it some other patch I should be looking at?
 
-Does the patch below look OK?
+I'm not explaining it. I'm saying that nothing outside the kernel NFS
+and NLM code uses the kernel sunrpc implementation. Your userland RPC
+calls are using glibc's implementation of sunrpc. Those are unaffected
+by patches to the kernel sunrpc layer.
 
-Thanks,
-Venki
+If you are seeing a hang, then I suggest you start by using the strace
+utility to figure out which system call is actually involved.
 
-Based on input from Andi Kleen:
-share the platform detection code with ioat_dma and disable the channel in
-dma engine only for specific platforms.
+Cheers
+  Trond
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-
----
- drivers/dma/ioat_dma.c     |    5 ++
- drivers/idle/i7300_idle.c  |   72 +--------------------------------------
- include/linux/i7300_idle.h |   83 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 89 insertions(+), 71 deletions(-)
-
-Index: linux-acpi-2.6/drivers/idle/i7300_idle.c
-===================================================================
---- linux-acpi-2.6.orig/drivers/idle/i7300_idle.c	2008-10-22 11:42:04.000000000 -0700
-+++ linux-acpi-2.6/drivers/idle/i7300_idle.c	2008-10-22 11:42:46.000000000 -0700
-@@ -25,6 +25,7 @@
- #include <linux/delay.h>
- #include <linux/debugfs.h>
- #include <linux/stop_machine.h>
-+#include <linux/i7300_idle.h>
- 
- #include <asm/idle.h>
- 
-@@ -505,77 +506,8 @@ static struct notifier_block i7300_idle_
- 	.notifier_call = i7300_idle_notifier,
- };
- 
--/*
-- * I/O AT controls (PCI bus 0 device 8 function 0)
-- * DIMM controls (PCI bus 0 device 16 function 1)
-- */
--#define IOAT_BUS 0
--#define IOAT_DEVFN PCI_DEVFN(8, 0)
--#define MEMCTL_BUS 0
--#define MEMCTL_DEVFN PCI_DEVFN(16, 1)
--
--struct fbd_ioat {
--	unsigned int vendor;
--	unsigned int ioat_dev;
--};
--
--/*
-- * The i5000 chip-set has the same hooks as the i7300
-- * but support is disabled by default because this driver
-- * has not been validated on that platform.
-- */
--#define SUPPORT_I5000 0
--
--static const struct fbd_ioat fbd_ioat_list[] = {
--	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_CNB},
--#if SUPPORT_I5000
--	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT},
--#endif
--	{0, 0}
--};
--
--/* table of devices that work with this driver */
--static const struct pci_device_id pci_tbl[] = {
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_FBD_CNB) },
--#if SUPPORT_I5000
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_5000_ERR) },
--#endif
--	{ } /* Terminating entry */
--};
--
- MODULE_DEVICE_TABLE(pci, pci_tbl);
- 
--/* Check for known platforms with I/O-AT */
--static int __init i7300_idle_platform_probe(void)
--{
--	int i;
--
--	fbd_dev = pci_get_bus_and_slot(MEMCTL_BUS, MEMCTL_DEVFN);
--	if (!fbd_dev)
--		return -ENODEV;
--
--	for (i = 0; pci_tbl[i].vendor != 0; i++) {
--		if (fbd_dev->vendor == pci_tbl[i].vendor &&
--		    fbd_dev->device == pci_tbl[i].device) {
--			break;
--		}
--	}
--	if (pci_tbl[i].vendor == 0)
--		return -ENODEV;
--
--	ioat_dev = pci_get_bus_and_slot(IOAT_BUS, IOAT_DEVFN);
--	if (!ioat_dev)
--		return -ENODEV;
--
--	for (i = 0; fbd_ioat_list[i].vendor != 0; i++) {
--		if (ioat_dev->vendor == fbd_ioat_list[i].vendor &&
--		    ioat_dev->device == fbd_ioat_list[i].ioat_dev) {
--			return 0;
--		}
--	}
--	return -ENODEV;
--}
--
- int stats_open_generic(struct inode *inode, struct file *fp)
- {
- 	fp->private_data = inode->i_private;
-@@ -617,7 +549,7 @@ static int __init i7300_idle_init(void)
- 	cpus_clear(idle_cpumask);
- 	total_us = 0;
- 
--	if (i7300_idle_platform_probe())
-+	if (i7300_idle_platform_probe(&fbd_dev, &ioat_dev))
- 		return -ENODEV;
- 
- 	if (i7300_idle_thrt_save())
-Index: linux-acpi-2.6/include/linux/i7300_idle.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-acpi-2.6/include/linux/i7300_idle.h	2008-10-22 11:42:46.000000000 -0700
-@@ -0,0 +1,83 @@
-+
-+#ifndef I7300_IDLE_H
-+#define I7300_IDLE_H
-+
-+#include <linux/pci.h>
-+
-+/*
-+ * I/O AT controls (PCI bus 0 device 8 function 0)
-+ * DIMM controls (PCI bus 0 device 16 function 1)
-+ */
-+#define IOAT_BUS 0
-+#define IOAT_DEVFN PCI_DEVFN(8, 0)
-+#define MEMCTL_BUS 0
-+#define MEMCTL_DEVFN PCI_DEVFN(16, 1)
-+
-+struct fbd_ioat {
-+	unsigned int vendor;
-+	unsigned int ioat_dev;
-+};
-+
-+/*
-+ * The i5000 chip-set has the same hooks as the i7300
-+ * but support is disabled by default because this driver
-+ * has not been validated on that platform.
-+ */
-+#define SUPPORT_I5000 0
-+
-+static const struct fbd_ioat fbd_ioat_list[] = {
-+	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_CNB},
-+#if SUPPORT_I5000
-+	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT},
-+#endif
-+	{0, 0}
-+};
-+
-+/* table of devices that work with this driver */
-+static const struct pci_device_id pci_tbl[] = {
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_FBD_CNB) },
-+#if SUPPORT_I5000
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_5000_ERR) },
-+#endif
-+	{ } /* Terminating entry */
-+};
-+
-+/* Check for known platforms with I/O-AT */
-+static inline int i7300_idle_platform_probe(struct pci_dev **fbd_dev,
-+						struct pci_dev **ioat_dev)
-+{
-+	int i;
-+	struct pci_dev *memdev, *dmadev;
-+
-+	memdev = pci_get_bus_and_slot(MEMCTL_BUS, MEMCTL_DEVFN);
-+	if (!memdev)
-+		return -ENODEV;
-+
-+	for (i = 0; pci_tbl[i].vendor != 0; i++) {
-+		if (memdev->vendor == pci_tbl[i].vendor &&
-+		    memdev->device == pci_tbl[i].device) {
-+			break;
-+		}
-+	}
-+	if (pci_tbl[i].vendor == 0)
-+		return -ENODEV;
-+
-+	dmadev = pci_get_bus_and_slot(IOAT_BUS, IOAT_DEVFN);
-+	if (!dmadev)
-+		return -ENODEV;
-+
-+	for (i = 0; fbd_ioat_list[i].vendor != 0; i++) {
-+		if (dmadev->vendor == fbd_ioat_list[i].vendor &&
-+		    dmadev->device == fbd_ioat_list[i].ioat_dev) {
-+			if (fbd_dev)
-+				*fbd_dev = memdev;
-+			if (ioat_dev)
-+				*ioat_dev = dmadev;
-+
-+			return 0;
-+		}
-+	}
-+	return -ENODEV;
-+}
-+
-+#endif
-Index: linux-acpi-2.6/drivers/dma/ioat_dma.c
-===================================================================
---- linux-acpi-2.6.orig/drivers/dma/ioat_dma.c	2008-10-22 11:42:04.000000000 -0700
-+++ linux-acpi-2.6/drivers/dma/ioat_dma.c	2008-10-22 11:42:46.000000000 -0700
-@@ -33,6 +33,7 @@
- #include <linux/delay.h>
- #include <linux/dma-mapping.h>
- #include <linux/workqueue.h>
-+#include <linux/i7300_idle.h>
- #include "ioatdma.h"
- #include "ioatdma_registers.h"
- #include "ioatdma_hw.h"
-@@ -172,7 +173,9 @@ static int ioat_dma_enumerate_channels(s
- 	xfercap = (xfercap_scale == 0 ? -1 : (1UL << xfercap_scale));
- 
- #if CONFIG_I7300_IDLE_IOAT_CHANNEL
--	device->common.chancnt--;
-+	if (i7300_idle_platform_probe(NULL, NULL) == 0) {
-+		device->common.chancnt--;
-+	}
- #endif
- 	for (i = 0; i < device->common.chancnt; i++) {
- 		ioat_chan = kzalloc(sizeof(*ioat_chan), GFP_KERNEL);
