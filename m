@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbYJVNvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbYJVOA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754270AbYJVNvw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 09:51:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYJVNvo
+	id S1753402AbYJVOA2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 10:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbYJVOAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 09:51:44 -0400
-Received: from poesci.dolphinics.no ([81.175.23.36]:44114 "EHLO
-	poesci.dolphinics.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751874AbYJVNvn (ORCPT
+	Wed, 22 Oct 2008 10:00:16 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:16910 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752144AbYJVOAO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 09:51:43 -0400
-Message-ID: <48FF2FE6.2000802@dolphinics.no>
-Date: Wed, 22 Oct 2008 15:51:34 +0200
-From: Simen Thoresen <simentt@dolphinics.no>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+	Wed, 22 Oct 2008 10:00:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=UESZkEg/+ZwCfvGGkjOCPJ69wX0aOp6G6zngfFcz4T6CZU5hVLfM2xxG7Aqb+QAW/U
+         Trwkbp2Q5+vMtVvrglSvlnRFFu8YS9AYNWDsX5MdShWGQxrGU1BYaAcizOmwRCaXduFT
+         +4rmDYSZf3/4r6uFFx2Oj4doQQw9pXcJoUQY4=
+Date: Wed, 22 Oct 2008 18:00:09 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Glauber Costa <glommer@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: [PATCH -tip] x86: do_boot_cpu - check if we have ESR register
+Message-ID: <20081022140009.GA9639@localhost>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: File as generic block-device?
-References: <48FF2304.8070301@dolphinics.no> <20081022133313.GA26243@piper.oerlikon.madduck.net>
-In-Reply-To: <20081022133313.GA26243@piper.oerlikon.madduck.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-martin f krafft wrote:
-> also sprach Simen Thoresen <simentt@dolphinics.no> [2008.10.22.1456 +0200]:
->> accept a file as a block-device, but I have found no such function
->> for  mdadm, and am thus asking for a kernel-internal way to
->> re-plug a file  into the block-device layer.
-> 
-> I suggest you search the web first.
-> http://en.wikipedia.org/wiki/Loopback_disk_device
+We should touch ESR register if only we have it.
+The patch fixes the problem mentoined here
 
-Thank you - I missed googling for the absolutely obvious.
+	http://lkml.org/lkml/2008/10/17/147
 
-Sigh.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Glauber Costa <glommer@gmail.com>
+---
 
--S
+ arch/x86/kernel/smpboot.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-
-
--- 
-Simen Thoresen - Dolphin ICS Systems Administrator
+Index: linux-2.6.git/arch/x86/kernel/smpboot.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/smpboot.c	2008-10-21 20:35:27.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/smpboot.c	2008-10-22 17:45:28.000000000 +0400
+@@ -894,8 +894,10 @@ do_rest:
+ 		/*
+ 		 * Be paranoid about clearing APIC errors.
+ 	 	*/
+-		apic_write(APIC_ESR, 0);
+-		apic_read(APIC_ESR);
++		if (APIC_INTEGRATED(apic_version[phys_apicid])) {
++			apic_write(APIC_ESR, 0);
++			apic_read(APIC_ESR);
++		}
+ 	}
+ 
+ 	/*
