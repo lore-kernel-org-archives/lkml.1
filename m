@@ -1,84 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbYJVEO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbYJVEPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752758AbYJVEO7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 00:14:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750725AbYJVEOu
+	id S1753139AbYJVEPo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 00:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbYJVEPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 00:14:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:17632 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbYJVEOu (ORCPT
+	Wed, 22 Oct 2008 00:15:36 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:10767 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750924AbYJVEPf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 00:14:50 -0400
-Date: Tue, 21 Oct 2008 22:14:46 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       "Steven A. Falco" <sfalco@harris.com>,
-       Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>,
-       i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/7] of: fill the archdata for I2C devices
-Message-ID: <20081022041446.GA7176@secretlab.ca>
-References: <20081016171222.GA24812@oksana.dev.rtsoft.ru> <20081016171256.GC5515@oksana.dev.rtsoft.ru>
+	Wed, 22 Oct 2008 00:15:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:organization:message-id:references
+         :in-reply-to:x-mailer:mime-version:content-type
+         :content-transfer-encoding;
+        b=dvpDh3MTWc6hh5aZsru5+ifhL8wOX76epb7TkeZTYNsiszB4ubfqlxDjUUzAX+hDxg
+         oV32hGK4GOpz59GrRWRR6BzMQQ+31b85maIJykAKiWDfXOmSRdWR318Vbhk5k7nfTYuF
+         2VTl3skMzx+yKeryQSf6GzrYXUFMDxA/OmgZ0=
+From: Grant Coady <gcoady.lk@gmail.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Alex Howells <alex@bytemark.co.uk>, Greg KH <greg@kroah.com>,
+       Alexandre Oliva <oliva@lsd.ic.unicamp.br>,
+       "H. Peter Anvin" <hpa@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel version numbering scheme change
+Date: Wed, 22 Oct 2008 15:15:01 +1100
+Organization: scattered
+Message-ID: <i0atf498dl3jeekrptbnlq0eu5h3ggdcb6@4ax.com>
+References: <20081016154726.GA6331@kroah.com> <20081016171626.GB22554@cs181140183.pp.htv.fi> <20081017040239.GB28188@kroah.com> <20081017103138.1ca68d17@lxorguk.ukuu.org.uk> <48F8C000.8030003@kernel.org> <20081017174226.GF2221@kroah.com> <48F98DE2.8030205@kernel.org> <ortzb89bak.fsf@oliva.athome.lsd.ic.unicamp.br> <48FCD421.2010208@bytemark.co.uk> <20081020202147.GA20788@kroah.com> <48FE32E2.5000601@bytemark.co.uk> <33098.1224636084@turing-police.cc.vt.edu>
+In-Reply-To: <33098.1224636084@turing-police.cc.vt.edu>
+X-Mailer: Forte Agent 4.2/32.1118
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081016171256.GC5515@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 09:12:56PM +0400, Anton Vorontsov wrote:
-> For I2C devices we just setting the the node pointer in the archdata.
-> This is needed so that the other code would know device's node.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+On Tue, 21 Oct 2008 20:41:24 -0400, you wrote:
 
-Looks okay to me.
+>On Tue, 21 Oct 2008 20:52:02 BST, Alex Howells said:
+>> Requirements for me to put a kernel on a given server would be:
+>
+>>     *  supports the hardware
+>The problem is that "supports" is often a fuzzy jello-like substance you
+>try to nail to a tree.  You mention the R8169 and e1000 drivers - if they
+>bring the device up, but have issues under corner cases, is that "supports"
+>or not?
+>
+>>     *  no security holes [in options I enable]
+>Similarly for "no security holes".  At *BEST*, you'll get "no *known* *major*
+>security holes", unless you feel like auditing the entire source tree.  There's
+>a whole slew of bugs that we can't even agree if they *are* security bugs or
+>just plain bugs - see Linus's rant on the subject a few months back.
+>
+>>     *  works reliably, under load/stress.
+>And you win the trifecta - I don't think we've *ever* shipped a Linux kernel
+>that worked reliably under the proper "beat on the scheduler/VM corner case"
+>load/stress testing.  Again, the best you can hope for is "doesn't fall over
+>under non-pathological non-corner-case loads when sufficient resources are
+>available so the kernel has a fighting chance".
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
->  drivers/of/of_i2c.c |   11 +++++++++++
->  1 files changed, 11 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/of/of_i2c.c b/drivers/of/of_i2c.c
-> index 6a98dc8..f9e18ed 100644
-> --- a/drivers/of/of_i2c.c
-> +++ b/drivers/of/of_i2c.c
-> @@ -24,6 +24,7 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
->  
->  	for_each_child_of_node(adap_node, node) {
->  		struct i2c_board_info info = {};
-> +		struct dev_archdata dev_ad = {};
->  		const u32 *addr;
->  		int len;
->  
-> @@ -41,6 +42,9 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
->  
->  		info.addr = *addr;
->  
-> +		dev_archdata_set_node(&dev_ad, node);
-> +		info.archdata = &dev_ad;
-> +
->  		request_module(info.type);
->  
->  		result = i2c_new_device(adap, &info);
-> @@ -51,6 +55,13 @@ void of_register_i2c_devices(struct i2c_adapter *adap,
->  			irq_dispose_mapping(info.irq);
->  			continue;
->  		}
-> +
-> +		/*
-> +		 * Get the node to not lose the dev_archdata->of_node.
-> +		 * Currently there is no way to put it back, as well as no
-> +		 * of_unregister_i2c_devices() call.
-> +		 */
-> +		of_node_get(node);
->  	}
->  }
->  EXPORT_SYMBOL(of_register_i2c_devices);
-> -- 
-> 1.5.6.3
-> 
+>...  Doing 'make -j100' on a
+>single Core2 Duo is gonna be painful, no matter what.
+
+Not painful at all, make -j100 is four seconds faster than a make -j5 on 
+a Core2Duo here with slamd64-12.1 (real: 3m21 vs 3m21).
+
+Grant.
+-- 
+http://bugsplatter.id.au
