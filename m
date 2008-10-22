@@ -1,114 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752364AbYJVSdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756291AbYJVSgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752364AbYJVSdt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 14:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755784AbYJVSdi
+	id S1756291AbYJVSgq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 14:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbYJVSgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 14:33:38 -0400
-Received: from node03.cambriumhosting.nl ([217.19.16.164]:56255 "EHLO
-	node03.cambriumhosting.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753522AbYJVSdh (ORCPT
+	Wed, 22 Oct 2008 14:36:36 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:53856 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751481AbYJVSgf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 14:33:37 -0400
-X-Greylist: delayed 1842 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Oct 2008 14:33:37 EDT
-Message-ID: <48FF6AC8.6020103@powercraft.nl>
-Date: Wed, 22 Oct 2008 20:02:48 +0200
-From: Jelle de Jong <jelledejong@powercraft.nl>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080724 Thunderbird/2.0.0.16 Mnenhy/0.7.5.666
+	Wed, 22 Oct 2008 14:36:35 -0400
+Message-ID: <48FF726D.9060504@s5r6.in-berlin.de>
+Date: Wed, 22 Oct 2008 20:35:25 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-To: Markus Rechberger <mrechberger@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       em28xx@mcentral.de
-Subject: Re: [Em28xx] [PATCH] em28xx patches against the latest git tree
-References: <d9def9db0810221034v3bf4dabt6aa905b8a3ebd5a@mail.gmail.com> <d9def9db0810221038g156871e1u200abb90b774ad28@mail.gmail.com>
-In-Reply-To: <d9def9db0810221038g156871e1u200abb90b774ad28@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
+To: Fabio Comolli <fabio.comolli@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, sam@ravnborg.org,
+       James.Bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>
+Subject: Re: Possible bug in SCSI Kconfig
+References: <b637ec0b0810220929r2c889423ma92bef0ec7f9b3b0@mail.gmail.com>
+In-Reply-To: <b637ec0b0810220929r2c889423ma92bef0ec7f9b3b0@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Markus Rechberger wrote:
-> On Wed, Oct 22, 2008 at 7:34 PM, Markus Rechberger
-> <mrechberger@gmail.com> wrote:
->> Following patch adds the latest em28xx driver from mcentral.de.
->>
->> merging mcentral.de/hg/~mrec/em28xx-new with upstream kernel
->>
->> * adding VBI support to most VBI capable devices
->> * radio support for cx25843 based devices
->> * extra cx25843 driver (registers match the em28xx configuration in
->> order to support proper VBI)
->> * all videostandards and inputs are tested with cx25843 based devices
->> * adding alternative audio driver for em28xx devices (independent
->> audio transfer, not depending on oss/alsa)
->> * adding em28xx-webcam support for videology webcams
->> * adding em28xx-audioep audio driver for alternate number 1 - if
->> vendor specific and not USB audio conform
->> * adding s921 driver (ISDB-T 1Seg support tunneling parameters through
->> DVB-T API setting specific registers to auto)
->> * adding xc3028 mostly original sourcecode from the manufacturer (most
->> recent version), merged xc3028/xc3028l into
->>  one external firmware blob - important for signal quality
->> * adding xc5000 mostly original sourcecode from the manufacturer (most
->> recent version) - important for signal quality
->> * adding lgdt3304, although currently disabled
->> * remote control handling *works* but is broken by design and disabled
->> since different rc5/rc6/nec remotes return
->>  different values. Handling can be done using interrupt transfers too (TODO)
->> * fixed a couple of bugs in the em28xx-audio driver which can lead to
->> system hangs.
->>
->> ----
->>
->> as for testing:
->> * analog TV: patched tvtime (for analog TV) version available on
->> mcentral.de which supports 1. software rendering 2. digital
->> audio/alsa/aad
->> * FM radio: gqradio from mcentral.de, there's also an older radio
->> patch for vlc available.
->> * DVB-T: all applications should work with it
->> * ISDB-T: relevant for China and Brazil only, can be used with
->> dvbtune, dvbscan (the channel file cannot be used due problems with
->> the characters), for transferring the MPEG-TS stream dvbstream,
->> dvbsnoop, for playback gstreamer/mplayer (h264/aac isn't supported
->> well with it).
->>
->> commit history is available at:
->> http://mcentral.de/http://git.kernel.org/?p=linux/kernel/git/mrec/linux-2.6.git;a=commit;h=f1be9ae8f8489a6598417a194e0899ac00c7530ehg/~mrec/em28xx-new
->>
-> 
-> this should be:
-> http://mcentral.de/hg/~mrec/em28xx-new/shortlog
-> 
->> This patch adds a separate instance of the driver to the git
->> repository, not affecting anything existing.
->>
->> the full patch against the git repository:
->>
->>
->> Contributors:
->> user:        acano@fastmail.fm
->> user:        Andre Kelmanson <akelmanson@gmail.com>
->> user:        Bouwsma Barry <freebeer.bouwsma@gmail.com>
->> user:        Dan Kreiser <kreiser@informatik.hu-berlin.de>
->> user:        Frank Neuber <fn@kernelport.de>
->> user:        Jelle de Jong <jelledejong@powercraft.nl>
->> user:        John Stowers <john.stowers.lists@gmail.com>
->> user:        Lukas Kuna <lukas.kuna@evkanet.net>
->> user:        Stefan Vonolfen <stefan.vonolfen@gmail.com>
->> user:        Stephan Berberig <s.berberig@arcor.de>
->> user:        Thomas Giesecke <thomas.giesecke@ibgmbh-naumburg.de>
->> user:        Vitaly Wool <vwool@ru.mvista.com>
->> user:        Zhenyu Wang <zhen78@gmail.com>
->>
->> Signed-off-by: Markus Rechberger <mrechberger@sundtek.de>
->>
-> 
+(adding Cc: LSML and author)
 
-Thumbs up for the git merge process, keep up the good work!
+On 10/22/2008, Fabio Comolli wrote at LKML:
+> Hi.
+> In kernel 2.6.27.2 - drivers/scsi/Kconfig we have:
+> 
+> config SCSI_WAIT_SCAN
+>         tristate
+>         default m
+>         depends on SCSI
+>         depends on MODULES
+> 
+> The tristate field is empty. This has the effect that this option is
+> not visible in menuconfig and so it's always selected. The default is
+> "m" for all architectures and so this module is always compiled if
+> SCSI and MODULES are both enabled.
+> 
+> I'm using a patch like this one:
+> 
+>  config SCSI_WAIT_SCAN
+> -	tristate
+> +	tristate "Wait until all the async scans are complete"
+>  	default m
+>  	depends on SCSI
+>  	depends on MODULES
+> 
+> to get rid of that module.
+> 
+> Of course, I have no idea if this is correct or the current behavior
+> is the expected one.
+> 
+> Regards,
+> Fabio
 
-Kind regards,
+What's the correct behaviour is contentious.  There have been complaints
+that it shouldn't be built if it is not needed.  However, how it
+currently works is how those who added and merged that feature thought
+that it should be.
 
-Jelle
+Notes on your suggestion:
+
+  - If you make it a visible prompt, you should also add a help text.
+    No Kconfig prompts without good help text, please!
+
+  - The suggested prompt text doesn't describe the matter too well.
+    scsi_wait_scan rather is a module which userland can use to get
+    a signal for when scans (by some but not all transports) are done.
+    (The signal is the end of module initialization of the
+    scsi_wait_scan module.)  I.e. the kernel as a whole doesn't
+    necessarily wait, just this module does.
+
+You could use the comment in drivers/scsi/scsi_wait_scan.c and the
+changelog of
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=3e082a910d217b2e7b186077ebf5a1126a68c62f
+as a basis for the Kconfig help text.  You could actually add a help
+text even to invisible prompts, just for documentation purposes.
+-- 
+Stefan Richter
+-=====-==--- =-=- =-==-
+http://arcgraph.de/sr/
