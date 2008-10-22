@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759404AbYJVRzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbYJVR43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759404AbYJVRzP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:55:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbYJVRy4
+	id S1757042AbYJVR43 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbYJVR4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:54:56 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:43890 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753522AbYJVRyz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:54:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=QFJ1fELevJj6pwKWnrhyjpTRE6UnKeDk5R9GcjQOtizuJoG73h6klv4dW8YdIbi/eE
-         yrV4LzYRHwNj3SqEXAx0TRr5EnJxOxAjGNSU2KcxWLd8fdvwBCsMEnCfaiZusZlMjp6q
-         I9OEXqs3OBRNlJjYak0DrP/5yJOiEkGzcGClk=
-Date: Wed, 22 Oct 2008 21:54:49 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] SLUB - define OO_ macro instead of hardcoded numbers
-Message-ID: <20081022175449.GK9639@localhost>
-References: <20081022161836.GG9639@localhost> <Pine.LNX.4.64.0810220926130.7633@quilx.com> <20081022163530.GH9639@localhost> <20081022165354.GI9639@localhost> <20081022172103.GJ9639@localhost> <Pine.LNX.4.64.0810221037320.7633@quilx.com>
+	Wed, 22 Oct 2008 13:56:20 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:33159 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752657AbYJVR4T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 13:56:19 -0400
+Date: Wed, 22 Oct 2008 13:56:17 -0400
+To: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: Re: High load in 2.6.27, NFS / rpcauth_lookup_credcache()?
+Message-ID: <20081022175617.GA2495@fieldses.org>
+References: <20081022091207.GA12996@squirrel.roonstrasse.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0810221037320.7633@quilx.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20081022091207.GA12996@squirrel.roonstrasse.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Christoph Lameter - Wed, Oct 22, 2008 at 10:47:09AM -0700]
-> On Wed, 22 Oct 2008, Cyrill Gorcunov wrote:
->
->> Christoph how about this one?
->
-> Ok. Looks a bit better but we still have two maxes here
->
-> s->max which refers to the maximum number of objects per slab page for a 
-> specific slab cache (depends on the runtime configuration). OO_MAX_OBJS  
-> refers to the maximum number of objects per slab page that any slab cache 
-> can be configured for which is a compile time limit.
->
-> Maybe this is okay, Pekka?
->
+On Wed, Oct 22, 2008 at 11:12:08AM +0200, Max Kellermann wrote:
+> Hi,
+> 
+> after I was able to fix http://lkml.org/lkml/2008/10/17/147, the
+> server which was already upgraded to 2.6.27.2 still gets very high
+> load.  It is a web server with NFS file storage (NetApp), and while
+> the others in the cluster (kernel 2.6.25) have a load of 1-3, 2.6.27.2
+> gets 30-50.
+> 
+> I did an oprofile, with the following results (server just started,
+> load "only" 5-10):
 
-If name is not that good -- maybe OO_OBJS_PER_PAGE? :)
+Well, there's only 7 patches to net/sunrpc/auth.c between 2.6.25 and
+today, so worst case a 'git bisect v2.6.25..v2.6.27 net/sunrpc/auth.c'
+might not be too bad.
 
-		- Cyrill -
+No particular idea why rpcauth_lookup_credcache would be a problem,
+though.
+
+--b.
+
+> 
+> 87593    56.1116  (no location information)   vmlinux
+> vmlinux                  rpcauth_lookup_credcache
+> 16037    10.2732  auth_generic.c:0            vmlinux
+> vmlinux                  generic_match
+> 6460      4.1382  (no location information)   php4
+> php4                     (no symbols)
+> 2478      1.5874  (no location information)   libc-2.7.so
+> libc-2.7.so              (no symbols)
+> [...]
+> 
+> We havn't configured any special authentication method.  It is a NFSv3
+> over UDP mount, but the kernel has NFSv4 and therefore KRB5 enabled.
+> 
+> Any ideas why rpcauth_lookup_credcache() goes overboard with CPU
+> usage?
+> 
+> Max
