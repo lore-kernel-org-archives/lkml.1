@@ -1,171 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756602AbYJVP21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbYJVP3E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756602AbYJVP21 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 11:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbYJVP2S
+	id S1756490AbYJVP3E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 11:29:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbYJVP2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 11:28:18 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:48174 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752251AbYJVP2Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 11:28:16 -0400
-Date: Wed, 22 Oct 2008 10:28:04 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-api@vger.kernel.org, tglx@linutronix.de,
-       dave@linux.vnet.ibm.com, mingo@elte.hu, hpa@zytor.com,
-       viro@zeniv.linux.org.uk
-Subject: Re: [RFC v7][PATCH 2/9] General infrastructure for checkpoint
-	restart
-Message-ID: <20081022152804.GA23821@us.ibm.com>
-References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu> <1224481237-4892-3-git-send-email-orenl@cs.columbia.edu> <20081021124130.a002e838.akpm@linux-foundation.org> <20081021202410.GA10423@us.ibm.com> <48FE82DF.6030005@cs.columbia.edu>
+	Wed, 22 Oct 2008 11:28:52 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52511 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752552AbYJVP2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 11:28:51 -0400
+Date: Wed, 22 Oct 2008 17:28:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, sandmann@daimi.au.dk,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 4/4] Implement semaphore latency tracer
+Message-ID: <20081022152842.GI23060@elte.hu>
+References: <1223817124-27239-1-git-send-email-edwintorok@gmail.com> <1223817124-27239-6-git-send-email-edwintorok@gmail.com> <1223838786.8634.8.camel@lappy.programming.kicks-ass.net> <48F259A7.2030800@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <48FE82DF.6030005@cs.columbia.edu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <48F259A7.2030800@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oren Laadan (orenl@cs.columbia.edu):
+
+* Török Edwin <edwintorok@gmail.com> wrote:
+
+> On 2008-10-12 22:13, Peter Zijlstra wrote:
+> > On Sun, 2008-10-12 at 16:12 +0300, Török Edwin wrote:
+> >   
+> >> Each time a down_read or down_write fails, a unique latency id is generated.
+> >> Later when someone releases the semaphore, it is blamed for the latency of all
+> >> tasks on the wait_list of the semaphore.
+> >> If you would group the output from latency_trace by the latency_id you get all those
+> >> who were contending on a lock, and the tasks that were holding the lock.
+> >> An entry in latency_trace has the format:
+> >> (latency_id) [semaphore_id] read|write
+> >> stacktrace <= stacktrace
+> >>     
+> >
+> > What can this tracer do that latencytop cannot already do?
 > 
+> Latencytop can show latencies in down_read or down_write (and is very
+> useful at doing that), but it cannot show who else was holding the
+> semaphore,
+> i.e. the true cause of the latency.
 > 
-> Serge E. Hallyn wrote:
-> > Quoting Andrew Morton (akpm@linux-foundation.org):
-> >> On Mon, 20 Oct 2008 01:40:30 -0400
-> >> Oren Laadan <orenl@cs.columbia.edu> wrote:
-> >>>  asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
-> >>>  {
-> >>> -	pr_debug("sys_checkpoint not implemented yet\n");
-> >>> -	return -ENOSYS;
-> >>> +	struct cr_ctx *ctx;
-> >>> +	int ret;
-> >>> +
-> >>> +	/* no flags for now */
-> >>> +	if (flags)
-> >>> +		return -EINVAL;
-> >>> +
-> >>> +	ctx = cr_ctx_alloc(pid, fd, flags | CR_CTX_CKPT);
-> >>> +	if (IS_ERR(ctx))
-> >>> +		return PTR_ERR(ctx);
-> >>> +
-> >>> +	ret = do_checkpoint(ctx);
-> >>> +
-> >>> +	if (!ret)
-> >>> +		ret = ctx->crid;
-> >>> +
-> >>> +	cr_ctx_free(ctx);
-> >>> +	return ret;
-> >>>  }
-> >> Is it appropriate that this be an unprivileged operation?
-> > 
-> > Early versions checked capable(CAP_SYS_ADMIN), and we reasoned that we
-> > would later attempt to remove the need for privilege so that all users
-> > could safely use it.
-> > 
-> > Arnd Bergmann called us on that nonsense, pointing out that it'd make
-> > more sense to let unprivileged users use them now, so that we'll be
-> > more careful about the security as patches roll in.
-> > 
-> > So, Oren's patchset right now only checkpoints current, despite pid
-> > being part of the API.  So the task can access its own data.  When
-> > the patch supports checkpointing another task (which Oren says he's
-> > doing right now), then our intent is to check for ptrace access to
-> > the target task.  (Right, Oren?)
+> Consider:
+> process A holds a semaphore for reading, process B tries to acquire it
+> for writing and fails. Latencytop shows the latency in process B, but
+> doesn't
+> show anything about process A.
 > 
-> Correct. That's already in the additional patch in the git tree - first
-> I locate the task and if found, I check ptrace_may_access() (read mode).
+> The semlat tracer is doing something more similar to lockstat, but
+> doesn't need lockdep, and it adds tracepoints on the slowpath only (lock
+> failed, wakeup).
 
-Just thinking aloud...
+hm, but the most common synchronization primitive are mutexes - and 
+those are not covered by your patchset.
 
-Is read mode appropriate?  The user can edit the statefile and restart
-it.  Admittedly the restart code should then do all the appropriate
-checks for recreating resources, but I'm having a hard time thinking
-through this straight.
-
-Let's say hallyn is running passwd.  ruid=500,euid=0.  He quickly
-checkpoints.  Then he restarts.  Will restart say "ok, the /bin/passwd
-binary is setuid 0 so let hallyn take euid=0 for this?"  I guess not.
-But are there other resources for which this is harder to get right?
-
-...
-
-> This should be covered by ptrace_may_access() test.
-> 
-> In the longer run, I suppose SElinux people would want a security hook
-> there to approve or disapprove the operation.
-
-I think we'll find the ptrace() checks to be so like what we're doing
-that no new check will be needed.  But we should definately ask them.
-
-Now may be too early to ask, though.  The answer will be clearer once
-more resources are supported.
- 
-> 
-> >>
-> >> What happens if I pass it a pid of a process which I _do_ own, but it
-> >> does not refer to a container's init process?
-> > 
-> > I would assume that do_checkpoint() would return -EINVAL, but it's a
-> > great question:  Oren, did you have another plan?
-> 
-> Since we intentional provide minimal functionality to keep the patchset
-> simple and allow easy review - we only checkpoint one task; it doesn't
-> really matter because we don't deal with the entire container.
-> 
-> With the ability to checkpoint multiple process we will have to ensure
-> that we checkpoint an entire container. I planned to return -EINVAL if
-> the target task isn't a container init(1). Another option, if people
-> prefer, is to use any task in a container to "represent" the entire
-> container.
-
-Except we support nested containers, so unless we only support
-checkpoint of the deepest container, that doesn't work.
-
-...
-
-> >> Again, this is scary stuff.  We're allowing unprivileged userspace to
-> >> feed random numbers into kernel data structures.
-> > 
-> > Yes, all of the file opens and mmaps must not skip the usual security
-> > checks.  The task credentials are currently unsupported, meaning that
-> > euid, etc, come from the caller, not the checkpoint image.  When the
-> 
-> Actually, the fact that task credentials are not restored makes it
-> more secure, because the user can't do anything beyond her current
-> capabilities.
-
-Hmm, so do you think we just always use the caller's credentials?
-
-If we were to use some sort of tpm-signing of statefiles, then
-hallyn restarting a checkpointed /bin/passwd may become doable.
-
-> For the same reason, however, unless we agree on a secure way to
-> elevate credentials, there are various things that we cannot restore,
-> even though it may be something we would want to permit.
-> 
-> > restoration of credentials becomes supported, then definately the
-> > caller (of sys_restore())'s ability to setresuid/setresgid to those
-> > values must be checked.
-> > 
-> > So that's why we don't want CAP_SYS_ADMIN required up-front.  That way
-> > we will be forced to more carefully review each of those features.
-> > 
-> >> I'd like to see the security guys take a real close look at all of
-> >> this, and for them to do that effectively they should be provided with
-> >> a full description of the security design of this feature.
-> > 
-> > Right, some of the above should be spelled out somewhere.  Should it be
-> > in the patch description, in the Documentation/checkpoint.txt file,
-> > or someplace else?  Oren, do you want to filter the above information
-> > into the right place, or do you want me to do it and send you a patch?
-> 
-> I'll add something to the Documentation/checkpoint.txt.
-
-Cool, thanks Oren.
-
--serge
+	Ingo
