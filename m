@@ -1,162 +1,288 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbYJVJl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755885AbYJVJlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754666AbYJVJl0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 05:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755629AbYJVJiu
+	id S1755885AbYJVJlo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 05:41:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbYJVJjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 05:38:50 -0400
-Received: from mga09.intel.com ([134.134.136.24]:49392 "EHLO mga09.intel.com"
+	Wed, 22 Oct 2008 05:39:05 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:54926 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755609AbYJVJis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 05:38:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,463,1220252400"; 
-   d="scan'208";a="351087886"
-Date: Wed, 22 Oct 2008 16:43:46 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Cc: "achiang@hp.com" <achiang@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "greg@kroah.com" <greg@kroah.com>, "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: [PATCH 10/16 v6] PCI: cleanup pci_bus_add_devices()
-Message-ID: <20081022084346.GJ3773@yzhao12-linux.sh.intel.com>
-References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081022083809.GA3757@yzhao12-linux.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1755697AbYJVJi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 05:38:59 -0400
+Date: Wed, 22 Oct 2008 20:38:38 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for October 22
+Message-Id: <20081022203838.f10065ec.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__22_Oct_2008_20_38_38_+1100_TG6aismQVL0IRs0X"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This cleanup makes pci_bus_add_devices() easier to read.
+--Signature=_Wed__22_Oct_2008_20_38_38_+1100_TG6aismQVL0IRs0X
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Cc: Alex Chiang <achiang@hp.com>
-Cc: Grant Grundler <grundler@parisc-linux.org>
-Cc: Greg KH <greg@kroah.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Roland Dreier <rdreier@cisco.com>
-Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+Hi all,
 
----
- drivers/pci/bus.c    |   56 +++++++++++++++++++++++++------------------------
- drivers/pci/remove.c |    2 +
- 2 files changed, 31 insertions(+), 27 deletions(-)
+Today's tree will not build for powerpc allyesconfig (libc aborts the
+link due to a free() problem), sparc(32) defconfig and probably some
+other configurations.
 
-diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
-index 999cc40..7a21602 100644
---- a/drivers/pci/bus.c
-+++ b/drivers/pci/bus.c
-@@ -71,7 +71,7 @@ pci_bus_alloc_resource(struct pci_bus *bus, struct resource *res,
- }
- 
- /**
-- * add a single device
-+ * pci_bus_add_device - add a single device
-  * @dev: device to add
-  *
-  * This adds a single pci device to the global
-@@ -105,7 +105,7 @@ int pci_bus_add_device(struct pci_dev *dev)
- void pci_bus_add_devices(struct pci_bus *bus)
- {
- 	struct pci_dev *dev;
--	struct pci_bus *child_bus;
-+	struct pci_bus *child;
- 	int retval;
- 
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
-@@ -120,39 +120,41 @@ void pci_bus_add_devices(struct pci_bus *bus)
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
- 		BUG_ON(!dev->is_added);
- 
-+		child = dev->subordinate;
- 		/*
- 		 * If there is an unattached subordinate bus, attach
- 		 * it and then scan for unattached PCI devices.
- 		 */
--		if (dev->subordinate) {
--		       if (list_empty(&dev->subordinate->node)) {
--			       down_write(&pci_bus_sem);
--			       list_add_tail(&dev->subordinate->node,
--					       &dev->bus->children);
--			       up_write(&pci_bus_sem);
--			}
--			pci_bus_add_devices(dev->subordinate);
--
--			/* register the bus with sysfs as the parent is now
--			 * properly registered. */
--			child_bus = dev->subordinate;
--			if (child_bus->is_added)
--				continue;
--			child_bus->dev.parent = child_bus->bridge;
--			retval = device_register(&child_bus->dev);
--			if (retval)
--				dev_err(&dev->dev, "Error registering pci_bus,"
--					" continuing...\n");
--			else {
--				child_bus->is_added = 1;
--				retval = device_create_file(&child_bus->dev,
--							&dev_attr_cpuaffinity);
--			}
-+		if (!child)
-+			continue;
-+		if (list_empty(&child->node)) {
-+			down_write(&pci_bus_sem);
-+			list_add_tail(&child->node,
-+						&dev->bus->children);
-+			up_write(&pci_bus_sem);
-+		}
-+		pci_bus_add_devices(child);
-+
-+		/*
-+		 * register the bus with sysfs as the parent is now
-+		 * properly registered.
-+		 */
-+		if (child->is_added)
-+			continue;
-+		child->dev.parent = child->bridge;
-+		retval = device_register(&child->dev);
-+		if (retval)
-+			dev_err(&dev->dev, "Error registering pci_bus,"
-+				" continuing...\n");
-+		else {
-+			child->is_added = 1;
-+			retval = device_create_file(&child->dev,
-+						&dev_attr_cpuaffinity);
- 			if (retval)
- 				dev_err(&dev->dev, "Error creating cpuaffinity"
- 					" file, continuing...\n");
- 
--			retval = device_create_file(&child_bus->dev,
-+			retval = device_create_file(&child->dev,
- 						&dev_attr_cpulistaffinity);
- 			if (retval)
- 				dev_err(&dev->dev,
-diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
-index 042e089..bfa0869 100644
---- a/drivers/pci/remove.c
-+++ b/drivers/pci/remove.c
-@@ -72,6 +72,8 @@ void pci_remove_bus(struct pci_bus *pci_bus)
- 	list_del(&pci_bus->node);
- 	up_write(&pci_bus_sem);
- 	pci_remove_legacy_files(pci_bus);
-+	if (!pci_bus->is_added)
-+		return;
- 	device_remove_file(&pci_bus->dev, &dev_attr_cpuaffinity);
- 	device_remove_file(&pci_bus->dev, &dev_attr_cpulistaffinity);
- 	device_unregister(&pci_bus->dev);
--- 
-1.5.6.4
+I am no longer commenting on conflicts that are clearly just caused by
+slight differences in what has been merged into Linus' tree and
+linux-next or conflicts caused by further changes in the linux-next after
+a subset of a tree has been merged.
 
+Changes since 20081021:
+
+New tree:
+	dwmw2-iommu
+
+Dropped trees:
+	tests (because its future is in doubt and it has conflicts)
+	v4l-dvb (the tree is a mess)
+	proc (messy conflicts, hopefully fixed tomorrow)
+
+Trees undropped:
+	bdev
+
+The cpus4096 tree lost its conflict.
+
+The stackprotector tree lost its conflict, but gained a build fix patch.
+
+The timers tree lost its 2 conflicts and its build fix patch.
+
+The pci tree gained a build fix patch.
+
+The kmemcheck tree lost 4 conflicts.
+
+The ttydev tree lost its conflict.
+
+The fastboot tree lost its 3 conflicts.
+
+I have also applied the following patches for known problems:
+
+	sparc: qlogicpti fallout from sbus removal
+	Fix page_cgroup build breakage
+	mfd/wm8350: don't export static functions
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 121 trees (counting Linus' and 14 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging quilt/m68k
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/powerpc-next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging quilt/driver-core
+Merging quilt/usb
+Created commit cb276b5: Revert "USB: remove info() macro from usb.h"
+Created commit f56529d: Revert "USB: remove warn() macro from usb.h"
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Applying stackprotector: fix up bad merge
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Applying pci: move include of io.h so it doesn't need to be exported
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in arch/x86/kernel/acpi/boot.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/acpi/sleep.c
+CONFLICT (content): Merge conflict in drivers/acpi/Kconfig
+CONFLICT (content): Merge conflict in drivers/pnp/Makefile
+CONFLICT (content): Merge conflict in drivers/pnp/quirks.c
+Applying acpi: merge fix for dpulicate acpi_mcfg_64bit_base_addr
+Applying acpi: acpi_os_hotplug_execute needs to be exported
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+CONFLICT (content): Merge conflict in fs/ext4/namei.c
+Applying vfs/xfs: fallout from i_vnode change
+Applying vfs: fix up merge of ext4
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging semaphore-removal/semaphore-removal
+CONFLICT (content): Merge conflict in net/9p/trans_virtio.c
+Merging bkl-removal/bkl-removal
+Merging trivial/next
+CONFLICT (content): Merge conflict in Documentation/edac.txt
+CONFLICT (content): Merge conflict in include/linux/securebits.h
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in drivers/scsi/qlogicpti.c
+CONFLICT (content): Merge conflict in firmware/WHENCE
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Applying leds/acpi: fix merge fallout from acpi_driver_data change
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+CONFLICT (content): Merge conflict in mm/Makefile
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-linus
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging creds/next-creds-subsys
+CONFLICT (content): Merge conflict in fs/devpts/inode.c
+CONFLICT (content): Merge conflict in fs/namespace.c
+CONFLICT (content): Merge conflict in fs/nfsd/nfs4recover.c
+CONFLICT (content): Merge conflict in include/linux/sched.h
+CONFLICT (content): Merge conflict in kernel/exit.c
+CONFLICT (content): Merge conflict in kernel/fork.c
+CONFLICT (content): Merge conflict in kernel/signal.c
+CONFLICT (content): Merge conflict in mm/migrate.c
+CONFLICT (content): Merge conflict in net/9p/client.c
+CONFLICT (content): Merge conflict in security/selinux/hooks.c
+Merging oprofile/auto-oprofile-next
+CONFLICT (content): Merge conflict in drivers/oprofile/cpu_buffer.c
+CONFLICT (content): Merge conflict in drivers/oprofile/event_buffer.h
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging scsi-post-merge/master
+Applying sparc: qlogicpti fallout from sbus removal
+Applying Fix page_cgroup build breakage
+Applying mfd/wm8350: don't export static functions
+
+--Signature=_Wed__22_Oct_2008_20_38_38_+1100_TG6aismQVL0IRs0X
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkj+9J4ACgkQjjKRsyhoI8xfvACgjGtADmJL5Ph0F5cwEi3vVbki
+LsIAn3jyICwgZHw4w2ZaiAFCUSOZXnQm
+=ylDf
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__22_Oct_2008_20_38_38_+1100_TG6aismQVL0IRs0X--
