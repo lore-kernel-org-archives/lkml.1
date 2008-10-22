@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757376AbYJVS3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbYJVSbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757376AbYJVS3h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 14:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbYJVS33
+	id S1757527AbYJVSbR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 14:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306AbYJVSbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 14:29:29 -0400
-Received: from mo-p05-ob.rzone.de ([81.169.146.180]:16605 "EHLO
-	mo-p05-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753721AbYJVS32 (ORCPT
+	Wed, 22 Oct 2008 14:31:05 -0400
+Received: from mail-gx0-f29.google.com ([209.85.217.29]:32876 "EHLO
+	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752476AbYJVSbE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 14:29:28 -0400
-X-RZG-CLASS-ID: mo05
-X-RZG-AUTH: :Pm0FVUW6aauhRGJJc5OfA4AU8DM8ZlijdmJYxKn/UQvEQQx8AU81rZ3v
-Date: Wed, 22 Oct 2008 20:29:24 +0200
-From: Alex Riesen <raa.lkml@gmail.com>
-To: Markus Rechberger <mrechberger@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       em28xx@mcentral.de
-Subject: Re: [PATCH] em28xx patches against the latest git tree
-Message-ID: <20081022182924.GA4626@blimp.localdomain>
-Reply-To: Alex Riesen <raa.lkml@gmail.com>
-References: <d9def9db0810221034v3bf4dabt6aa905b8a3ebd5a@mail.gmail.com> <d9def9db0810221038g156871e1u200abb90b774ad28@mail.gmail.com> <81b0412b0810221059w2e02b1c1ubd894b22f7991242@mail.gmail.com> <d9def9db0810221110g6f104b17g36a74704d43c5693@mail.gmail.com>
+	Wed, 22 Oct 2008 14:31:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=DEa8PNIUR1ltCVdP0/ja1JsT21gYpGsN2f93Fmnu+kZDWvRp90uCJgPBn4k+LX679v
+         8vyHj9qssR9LIvt60kVMsGm7J9Z/E44cp9mMHefuj3gO7o0XYIuPQPzsVThXbzZdAdaU
+         c1Yd/CY1DCheE5kTtgYOJ6b0k7ivgAR5+Jvco=
+Date: Wed, 22 Oct 2008 22:30:55 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] SLUB - define OO_ macro instead of hardcoded numbers
+Message-ID: <20081022183055.GN9639@localhost>
+References: <Pine.LNX.4.64.0810220926130.7633@quilx.com> <20081022163530.GH9639@localhost> <20081022165354.GI9639@localhost> <20081022172103.GJ9639@localhost> <Pine.LNX.4.64.0810221037320.7633@quilx.com> <48FF6800.20705@cs.helsinki.fi> <20081022175827.GL9639@localhost> <Pine.LNX.4.64.0810221110060.27088@quilx.com> <20081022181556.GM9639@localhost> <Pine.LNX.4.64.0810221123150.17454@quilx.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <d9def9db0810221110g6f104b17g36a74704d43c5693@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0810221123150.17454@quilx.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Markus Rechberger, Wed, Oct 22, 2008 20:10:49 +0200:
-> On Wed, Oct 22, 2008 at 7:59 PM, Alex Riesen <raa.lkml@gmail.com> wrote:
-> > 2008/10/22 Markus Rechberger <mrechberger@gmail.com>:
-> >>> commit history is available at:
-> >> http://mcentral.de/hg/~mrec/em28xx-new/shortlog
-> >>
-> >
-> > There is already an Empia EM28XX driver in the official tree. If your driver
-> > is based on it, could you point at the first commit in *your* tree at
-> > mcentral.de which
-> > corresponds to that driver? (if you do, your history can be moved into
-> > central Git
-> > repo completely, every commit of it)
-> >
-> 
-> The development has been split off for 3 years from the original
-> repository. The internal driver differs alot.
+[Christoph Lameter - Wed, Oct 22, 2008 at 11:24:58AM -0700]
+> On Wed, 22 Oct 2008, Cyrill Gorcunov wrote:
+>
+>> [Christoph Lameter - Wed, Oct 22, 2008 at 11:10:56AM -0700]
+>>> On Wed, 22 Oct 2008, Cyrill Gorcunov wrote:
+>>>
+>>>> +#define OO_SHIFT	16
+>>>> +#define OO_MASK		((1 << OO_SHIFT) - 1)
+>>>> +#define MAX_OBJS_PER_PAGE	65535 /* see struct page.objects */
+>>>
+>>> This is == OO_MASK right? Otherwise things will break when we change
+>>> OO_SHIFT.
+>>>
+>>
+>> Yes, I set it 65535 directly to distinguish it from OO_MASK
+>> meaning not value and point to page.objects since they are
+>> u16. Which meant that is the point where all limits start.
+>> So it we set OO_SHIFT to say 14 it will not be a problem
+>> but if we exceed 16 bits it will break SLUB. Am I right?
+>> (I become scratching the head :)
+>
+> If you set it > 16 then the size of the field in struct page is violated.
+>
+> So
+>
+> #define MAX_OBJ_PER_PAGE MIN(1 << bits_in(page.objects) - 1, OO_MASK)
+>
+> ?
+>
+>
 
-So it is more like a new driver. I tried merging them about half a
-year ago (unsuccessfully, of course). In the end your driver worked
-with that piece of hardware I have (it seem to produce an awful lot of
-tracing though) and I stayed with it.
+Looks really good for me (if it worth anything). But Christoph
+doesn't OO_SHIT inspired by u16 too which means we could use
+MAX_OBJ_PER_PAGE in form you mentoined but maybe we should define
 
-> The driver has a long and rather bad history, which I'd like to avoid
-> by using the different directory.
+#define OO_SHIFT bits_in(page.objects) to point out why we use
+16 not 14, not 18 or whatever? How do you think?
 
-You could submit patches depricating it. Does the old driver support
-something yours does not?
-
-> Some patches got ported from my repository into the kernel although
-> most devices don't work at all with the current inkernel driver (eg.
-> em2888, flash based, isdb-t, cx25843, some saa7114.. based devices).
-
-Mine (a Pinnacle-Apple-something, USB) does not work with it at all.
-
+		- Cyrill -
