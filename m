@@ -1,42 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756094AbYJVWlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757611AbYJVWms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756094AbYJVWlN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 18:41:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYJVWk4
+	id S1757611AbYJVWms (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 18:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYJVWmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 18:40:56 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:10327 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751501AbYJVWkz (ORCPT
+	Wed, 22 Oct 2008 18:42:40 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:59070 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751501AbYJVWmj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 18:40:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=s9MLYfWbhcUofnV2HnErjEbEgNIT+Fiv6EJBtLDbMvQB/yf23vk3YpHGdBoSjCOhNG
-         Uh6rjVwKHGL38ntqVtzEvIbSUT/pOObO3bRUzxh9XmoTy6CMQGTy38yO6qcxG15V4vFp
-         HPRRyp0uuExVV88o/6EWWwRpKHIN3YRA7wJEY=
-Message-ID: <2c0942db0810221540l4da55d92n2b55124908d08d3@mail.gmail.com>
-Date: Wed, 22 Oct 2008 15:40:54 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "=?UTF-8?Q?Fr=C3=A9d=C3=A9ric_Weisbecker?=" <fweisbec@gmail.com>
-Subject: Re: high %CPU values after upgrading to the last stable kernel
-Cc: sbs <gexlie@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <c62985530810221404k2987da81q3e158e203c379b89@mail.gmail.com>
+	Wed, 22 Oct 2008 18:42:39 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Am4DAM8S9kh5LE2tgWdsb2JhbACTYAEBFiKuDIFr
+X-IronPort-AV: E=Sophos;i="4.33,467,1220193000"; 
+   d="scan'208";a="216221413"
+Date: Thu, 23 Oct 2008 09:42:35 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Linda Walsh <lkml@tlinx.org>, LKML <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com
+Subject: Re: 2.6.27.[0,2] problems (v. 2.6.26.5): Samba & root-read-only
+Message-ID: <20081022224235.GW18495@disturbed>
+Mail-Followup-To: Linda Walsh <lkml@tlinx.org>,
+	LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+References: <48FED90F.7030809@tlinx.org> <20081022223005.GV18495@disturbed>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <53cc795f0810221237u1b5ece4dq477be67903dd5879@mail.gmail.com>
-	 <c62985530810221404k2987da81q3e158e203c379b89@mail.gmail.com>
-X-Google-Sender-Auth: 3c4ef9c461e7429f
+In-Reply-To: <20081022223005.GV18495@disturbed>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m9MMfHdq007844
 
-On Wed, Oct 22, 2008 at 2:04 PM, Fr√©d√©ric Weisbecker <fweisbec@gmail.com> wrote:> 2008/10/22 sbs <gexlie@gmail.com>:>> after upgrading from 2.6.16 to 2.6.27 kernel top shows a strange>> picture of extremely highly %CPU values.>>>> # top -V>>        top: procps version 3.2.6>>>>>> # top>> top - 04:24:06 up 7 days,  1:12,  1 user,  load average: 2.28, 2.03, 2.00>> Tasks: 183 total,   2 running, 181 sleeping,   0 stopped,   0 zombie>> Cpu(s): 36.2% us,  2.4% sy,  0.0% ni, 56.1% id,  4.7% wa,  0.1% hi,  0.5% si>> Mem:  12473092k total, 11169060k used,  1304032k free,       16k buffers>> Swap:  2048248k total,      636k used,  2047612k free,  1257988k cached>>>>  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND>> 19824 b      20   0 92212  17m 5420 S 4308  0.1   1:39.49 httpd>> 14396 b      20   0 92716  28m  16m S 3721  0.2  38:47.38 httpd>> 14024 b      20   0 92376  28m  16m S 2437  0.2  51:49.68 httpd>>  7415 b      20   0 96876  40m  24m D 2146  0.3  93:59.72 httpd>>  8182 b      20   0 94500  36m  21m S 1997  0.3 111:41.60 httpd>> 13461 b      20   0 94240  31m  17m S 1439  0.3  48:43.71 httpd>>  8466 b      20   0 92036  32m  21m S 1136  0.3 107:37.90 httpd>> 17620 b      20   0 92660  23m  11m S 1003  0.2  10:55.03 httpd>> 14025 b      20   0 92000  28m  16m S  720  0.2  51:49.49 httpd>>  3808 nobody    20   0 3013m 2.9g  592 S  714 24.7 343030:50 memcached>>   10 root     15  -5     0    0    0 S  714  0.0  11881:28 ksoftirqd/3>> 18487 b      20   0 91416  20m 9572 S  580  0.2   8:29.20 httpd>> 13252 b      20   0 93408  30m  17m S  580  0.3  45:19.69 httpd>> 17525 b      20   0 93208  23m  10m S  566  0.2  18:34.40 httpd>> 14760 b      20   0 93452  28m  15m S  534  0.2  57:34.65 httpd>>  3804 nobody    20   0 2995m 2.9g  592 S  441 24.6 378908:26 memcached>> 12209 b      20   0 92312  28m  16m S  279  0.2  63:28.45 httpd>>>>>>>> %CPU is 4308 here and it's not the highest value.>> i havent seen that on any previous kernel on the same server.>>>> should i upgrade procps or downgrade kernel then to get proper values back? :)>> or is it a feature of the new kernel?>>>> thank you>>>> Hi,>> It really depends on what your box is doing at the time you capture> the cpu usage.> And it really depends too of your kernel config...
-It really shouldn't, we're talking about /proc which is supposed to bea stable userspace interface.
-Try upgrading your procps, there's a chance it's just so ancient thatit accidentally got broken. However, if that fixes your problem, thenplease report back with a subject line of "/proc API breakage" orsomesuch, to get the proper attention to the issue.ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+On Thu, Oct 23, 2008 at 09:30:05AM +1100, Dave Chinner wrote:
+> On Wed, Oct 22, 2008 at 12:41:03AM -0700, Linda Walsh wrote:
+> > I am having to stay at 2.6.26.5 for now on my main home server.
+> >
+> > Going to 2.6.27 (and just trying 2.6.27.2), I'm have two VERY weird (would
+> > appear to be user-land probs from symptoms), problems. 
+> >
+> > 1) Samba -- the system is a Samba domain controller.  When I boot using
+> > the 2.6.27.2 kernel (or .0 before), I can no longer mount any file systems
+> > from my windows client. 
+> .....
+> >
+> > 2) My root disk comes up READ-ONLY.  It uses XFS.  I am NOT able to remount
+> > read/write (mount -o remount,rw /, fails writing to Read-only /etc/mtab,
+> > mount -n -o remount,rw doesn't give an error message, but doesn't make the
+> > drive R/W.  Root fs is on an adaptec FAST-SCSI (80MB/s) with an 18MB Seagate
+> > (root, disk is oldest disk on the system). 
+> 
+> That XFS problem should be fixed in 2.6.27.3, whenever that is going
+> to be released. It was sent and ACK'd by the stable team a week ago,
+> but for some reason missed 2.6.27.2.
+
+2.6.27.3 was released as I was writing this, so the fix is available
+now.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
