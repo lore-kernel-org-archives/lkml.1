@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbYJVNht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753052AbYJVNio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754142AbYJVNht (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 09:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbYJVNhk
+	id S1753052AbYJVNio (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 09:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbYJVNif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 09:37:40 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56631 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751585AbYJVNhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 09:37:39 -0400
-Date: Wed, 22 Oct 2008 15:37:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] OProfile for v2.6.28
-Message-ID: <20081022133725.GA10215@elte.hu>
-References: <20081022132858.GA11994@erda.amd.com>
+	Wed, 22 Oct 2008 09:38:35 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:60550 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751585AbYJVNif (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 09:38:35 -0400
+Message-ID: <48FF2DDC.5010600@gmail.com>
+Date: Wed, 22 Oct 2008 09:42:52 -0400
+From: Gregory Haskins <gregory.haskins.ml@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081022132858.GA11994@erda.amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0622]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: sched: deep power-saving states
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Arjan,
+  I was giving some thought to that topic you brought up at our
+LF-end-user session on RT w.r.t. deep power state wakeup adding latency.
 
-* Robert Richter <robert.richter@amd.com> wrote:
+As Steven mentioned, we currently have this thing called "cpupri"
+(kernel/sched_cpupri.c) in the scheduler which allows us to classify
+each core (on a per disjoint cpuset basis) as being either IDLE,
+SCHED_OTHER, or RT1 - RT99.  (Note that currently we lump both IDLE and
+SCHED_OTHER together as SCHED_OTHER because we don't yet care to
+differentiate between them, but I have patches to fix this that I can
+submit).
 
-> Hi Linus,
-> 
-> here are all OProfile patches for v2.6.28. The patches are also in the 
-> tip tree. However, you can also pull from here to get the changes:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git for-linus
+What I was thinking is that a simple mechanism to quantify the
+power-state penalty would be to add those states as priority levels in
+the cpupri namespace.  E.g. We could substitute IDLE-RUNNING for IDLE,
+and add IDLE-PS1, IDLE-PS2, .. IDLE-PSn, OTHER, RT1, .. RT99.  This
+means the scheduler would favor waking an IDLE-RUNNING core over an
+IDLE-PS1-PSn, etc.  The question in my mind is: can the power-states be
+determined in a static fashion such that we know what value to quantify
+the idle state before we enter it?  Or is it more dynamic (e.g. the
+longer it is in an MWAIT, the deeper the sleep gets).
 
-they tested out fine here on various machines. Thanks Robert,
+If its dynamic, is there a deterministic algorithm that could be applied
+so that, say, a timer on a different CPU (bsp makes sense to me) could
+advance the IDLE-PSx state in cpupri on behalf of the low-power core as
+time goes on?
 
-	Ingo
+Thoughts?
+-Greg
