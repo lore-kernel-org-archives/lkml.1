@@ -1,294 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759402AbYJVRr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759312AbYJVRp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759402AbYJVRr0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbYJVRgX
+	id S1759312AbYJVRp7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757628AbYJVRf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:36:23 -0400
-Received: from kroah.org ([198.145.64.141]:50456 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757808AbYJVRgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:36:22 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 37/42] Staging: w35und: remove spinlock wrappers
-Date: Wed, 22 Oct 2008 10:29:18 -0700
-Message-Id: <1224696563-5170-37-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <20081022172203.GA4000@kroah.com>
-References: <20081022172203.GA4000@kroah.com>
+	Wed, 22 Oct 2008 13:35:57 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:11050 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757982AbYJVRf4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 13:35:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=io3CvR7DL6lKTEYwhcM7JjYU/Z2kIMBTeiEsmsYAisn7/YoXMVpWs1fukO6UxgITIF
+         S8B3MyMXq1m7WyAGnsgd/6voHSXcjSNkTD5K/f2JnI54DhHLeG+7kcz2PrjpZTyQrV+7
+         iCBJaFxlxy7xUupw75KgYusUDgmPzJnOXk4z8=
+Message-ID: <c62985530810221035y6c19f364k3e07512bdf17b59a@mail.gmail.com>
+Date: Wed, 22 Oct 2008 19:35:54 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/5] tracing/ftrace: Types and naming corrections for sched tracer
+In-Reply-To: <48FF636F.6090804@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48FF636F.6090804@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+2008/10/22 Frederic Weisbecker <fweisbec@gmail.com>:
+> This patch applies some corrections suggested by Steven Rostedt.
+>
+> Change the type of shed_ref into int since it is used
+> into a Mutex, we don't need it anymore as an atomic
+> variable in the sched_switch tracer.
+> Also change the name of the register mutex.
+>
+>
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> ---
+>  kernel/trace/trace_sched_switch.c |   30 +++++++++++++-----------------
+>  1 files changed, 13 insertions(+), 17 deletions(-)
+>
+> diff --git a/kernel/trace/trace_sched_switch.c
+> b/kernel/trace/trace_sched_switch.c
+> index 9d7bdac..969953b 100644
+> --- a/kernel/trace/trace_sched_switch.c
+> +++ b/kernel/trace/trace_sched_switch.c
+> @@ -16,8 +16,8 @@
+>
+>  static struct trace_array      *ctx_trace;
+>  static int __read_mostly       tracer_enabled;
+> -static atomic_t                sched_ref;
+> -static DEFINE_MUTEX(tracepoint_mutex);
+> +static int                     sched_ref;
+> +static DEFINE_MUTEX(sched_register_mutex);
+>
+>  static void
+>  probe_sched_switch(struct rq *__rq, struct task_struct *prev,
+> @@ -28,7 +28,7 @@ probe_sched_switch(struct rq *__rq, struct task_struct *prev,
+>        int cpu;
+>        int pc;
+>
+> -       if (!atomic_read(&sched_ref))
+> +       if (!sched_ref)
+>                return;
+>
+>        tracing_record_cmdline(prev);
+> @@ -124,26 +124,22 @@ static void tracing_sched_unregister(void)
+>
+>  static void tracing_start_sched_switch(void)
+>  {
+> -       long ref;
+> -
+> -       mutex_lock(&tracepoint_mutex);
+> -        tracer_enabled = 1;
+> -       ref = atomic_inc_return(&sched_ref);
+> -       if (ref == 1)
+> +       mutex_lock(&sched_register_mutex);
+> +       if (!(sched_ref++)) {
+> +               tracer_enabled = 1;
+>                tracing_sched_register();
+> -       mutex_unlock(&tracepoint_mutex);
+> +       }
+> +       mutex_unlock(&sched_register_mutex);
+>  }
+>
+>  static void tracing_stop_sched_switch(void)
+>  {
+> -       long ref;
+> -
+> -       mutex_lock(&tracepoint_mutex);
+> -       tracer_enabled = 0;
+> -       ref = atomic_dec_and_test(&sched_ref);
+> -       if (ref)
+> +       mutex_lock(&sched_register_mutex);
+> +       if (!(--sched_ref)) {
+>                tracing_sched_unregister();
+> -       mutex_unlock(&tracepoint_mutex);
+> +               tracer_enabled = 0;
+> +       }
+> +       mutex_unlock(&sched_register_mutex);
+>  }
+>
+>  void tracing_start_cmdline_record(void)
+>
 
-This patch removes the OS_SPIN_LOCK and related wrappers from the driver code.
-
-Acked-by: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/staging/winbond/linux/common.h    |    7 -----
- drivers/staging/winbond/linux/wb35reg.c   |   37 +++++++++++++---------------
- drivers/staging/winbond/linux/wb35reg_s.h |    2 +-
- drivers/staging/winbond/mlme_s.h          |    2 +-
- drivers/staging/winbond/wblinux.c         |   13 ++++-----
- drivers/staging/winbond/wblinux_s.h       |    4 +-
- 6 files changed, 27 insertions(+), 38 deletions(-)
-
-diff --git a/drivers/staging/winbond/linux/common.h b/drivers/staging/winbond/linux/common.h
-index c8f14b7..712a86c 100644
---- a/drivers/staging/winbond/linux/common.h
-+++ b/drivers/staging/winbond/linux/common.h
-@@ -105,13 +105,6 @@ typedef struct urb * PURB;
- #define OS_MEMORY_CLEAR( _A, _S )	memset( (u8 *)_A,0,_S)
- #define OS_MEMORY_COMPARE( _A, _B, _S )	(memcmp(_A,_B,_S)? 0 : 1) // Definition is reverse with Ndis 1: the same 0: different
- 
--
--#define OS_SPIN_LOCK				spinlock_t
--#define OS_SPIN_LOCK_ALLOCATE( _S )		spin_lock_init( _S );
--#define OS_SPIN_LOCK_FREE( _S )
--#define OS_SPIN_LOCK_ACQUIRED( _S )		spin_lock_irq( _S )
--#define OS_SPIN_LOCK_RELEASED( _S )		spin_unlock_irq( _S );
--
- #define OS_TIMER	struct timer_list
- #define OS_TIMER_INITIAL( _T, _F, _P )			\
- {							\
-diff --git a/drivers/staging/winbond/linux/wb35reg.c b/drivers/staging/winbond/linux/wb35reg.c
-index 5c28ec9..ebb6db5 100644
---- a/drivers/staging/winbond/linux/wb35reg.c
-+++ b/drivers/staging/winbond/linux/wb35reg.c
-@@ -46,14 +46,14 @@ Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 N
- 		pRegQueue->pUsbReq = dr;
- 		pRegQueue->pUrb = pUrb;
- 
--		OS_SPIN_LOCK_ACQUIRED( &pWb35Reg->EP0VM_spin_lock );
-+		spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
- 		if (pWb35Reg->pRegFirst == NULL)
- 			pWb35Reg->pRegFirst = pRegQueue;
- 		else
- 			pWb35Reg->pRegLast->Next = pRegQueue;
- 		pWb35Reg->pRegLast = pRegQueue;
- 
--		OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
-+		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
- 
- 		// Start EP0VM
- 		Wb35Reg_EP0VM_start(pHwData);
-@@ -193,14 +193,14 @@ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
- 		pRegQueue->pUsbReq = dr;
- 		pRegQueue->pUrb = pUrb;
- 
--		OS_SPIN_LOCK_ACQUIRED(&pWb35Reg->EP0VM_spin_lock );
-+		spin_lock_irq(&pWb35Reg->EP0VM_spin_lock );
- 		if (pWb35Reg->pRegFirst == NULL)
- 			pWb35Reg->pRegFirst = pRegQueue;
- 		else
- 			pWb35Reg->pRegLast->Next = pRegQueue;
- 		pWb35Reg->pRegLast = pRegQueue;
- 
--		OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
-+		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
- 
- 		// Start EP0VM
- 		Wb35Reg_EP0VM_start(pHwData);
-@@ -254,14 +254,14 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
- 		pRegQueue->Next = NULL;
- 		pRegQueue->pUsbReq = dr;
- 		pRegQueue->pUrb = pUrb;
--		OS_SPIN_LOCK_ACQUIRED (&pWb35Reg->EP0VM_spin_lock );
-+		spin_lock_irq (&pWb35Reg->EP0VM_spin_lock );
- 		if( pWb35Reg->pRegFirst == NULL )
- 			pWb35Reg->pRegFirst = pRegQueue;
- 		else
- 			pWb35Reg->pRegLast->Next = pRegQueue;
- 		pWb35Reg->pRegLast = pRegQueue;
- 
--		OS_SPIN_LOCK_RELEASED ( &pWb35Reg->EP0VM_spin_lock );
-+		spin_unlock_irq ( &pWb35Reg->EP0VM_spin_lock );
- 
- 		// Start EP0VM
- 		Wb35Reg_EP0VM_start(pHwData);
-@@ -359,14 +359,14 @@ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
- 		pRegQueue->Next = NULL;
- 		pRegQueue->pUsbReq = dr;
- 		pRegQueue->pUrb = pUrb;
--		OS_SPIN_LOCK_ACQUIRED ( &pWb35Reg->EP0VM_spin_lock );
-+		spin_lock_irq ( &pWb35Reg->EP0VM_spin_lock );
- 		if( pWb35Reg->pRegFirst == NULL )
- 			pWb35Reg->pRegFirst = pRegQueue;
- 		else
- 			pWb35Reg->pRegLast->Next = pRegQueue;
- 		pWb35Reg->pRegLast = pRegQueue;
- 
--		OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
-+		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
- 
- 		// Start EP0VM
- 		Wb35Reg_EP0VM_start( pHwData );
-@@ -411,9 +411,9 @@ Wb35Reg_EP0VM(phw_data_t pHwData )
- 		goto cleanup;
- 
- 	// Get the register data and send to USB through Irp
--	OS_SPIN_LOCK_ACQUIRED( &pWb35Reg->EP0VM_spin_lock );
-+	spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
- 	pRegQueue = pWb35Reg->pRegFirst;
--	OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
-+	spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
- 
- 	if (!pRegQueue)
- 		goto cleanup;
-@@ -468,12 +468,12 @@ Wb35Reg_EP0VM_complete(PURB pUrb)
- 		OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Reg->RegFireCount );
- 	} else {
- 		// Complete to send, remove the URB from the first
--		OS_SPIN_LOCK_ACQUIRED( &pWb35Reg->EP0VM_spin_lock );
-+		spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
- 		pRegQueue = pWb35Reg->pRegFirst;
- 		if (pRegQueue == pWb35Reg->pRegLast)
- 			pWb35Reg->pRegLast = NULL;
- 		pWb35Reg->pRegFirst = pWb35Reg->pRegFirst->Next;
--		OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
-+		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
- 
- 		if (pWb35Reg->EP0VM_status) {
- #ifdef _PE_REG_DUMP_
-@@ -513,7 +513,7 @@ Wb35Reg_destroy(phw_data_t pHwData)
- 	OS_SLEEP(10000);  // Delay for waiting function enter 940623.1.b
- 
- 	// Release all the data in RegQueue
--	OS_SPIN_LOCK_ACQUIRED( &pWb35Reg->EP0VM_spin_lock );
-+	spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
- 	pRegQueue = pWb35Reg->pRegFirst;
- 	while (pRegQueue) {
- 		if (pRegQueue == pWb35Reg->pRegLast)
-@@ -521,7 +521,7 @@ Wb35Reg_destroy(phw_data_t pHwData)
- 		pWb35Reg->pRegFirst = pWb35Reg->pRegFirst->Next;
- 
- 		pUrb = pRegQueue->pUrb;
--		OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
-+		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
- 		if (pUrb) {
- 			usb_free_urb(pUrb);
- 			kfree(pRegQueue);
-@@ -530,14 +530,11 @@ Wb35Reg_destroy(phw_data_t pHwData)
- 			WBDEBUG(("EP0 queue release error\n"));
- 			#endif
- 		}
--		OS_SPIN_LOCK_ACQUIRED( &pWb35Reg->EP0VM_spin_lock );
-+		spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
- 
- 		pRegQueue = pWb35Reg->pRegFirst;
- 	}
--	OS_SPIN_LOCK_RELEASED( &pWb35Reg->EP0VM_spin_lock );
--
--	// Free resource
--	OS_SPIN_LOCK_FREE(  &pWb35Reg->EP0VM_spin_lock );
-+	spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
- }
- 
- //====================================================================================
-@@ -550,7 +547,7 @@ unsigned char Wb35Reg_initial(phw_data_t pHwData)
- 	u32 SoftwareSet, VCO_trim, TxVga, Region_ScanInterval;
- 
- 	// Spin lock is acquired for read and write IRP command
--	OS_SPIN_LOCK_ALLOCATE( &pWb35Reg->EP0VM_spin_lock );
-+	spin_lock_init( &pWb35Reg->EP0VM_spin_lock );
- 
- 	// Getting RF module type from EEPROM ------------------------------------
- 	Wb35Reg_WriteSync( pHwData, 0x03b4, 0x080d0000 ); // Start EEPROM access + Read + address(0x0d)
-diff --git a/drivers/staging/winbond/linux/wb35reg_s.h b/drivers/staging/winbond/linux/wb35reg_s.h
-index 9b76301..8b35b93 100644
---- a/drivers/staging/winbond/linux/wb35reg_s.h
-+++ b/drivers/staging/winbond/linux/wb35reg_s.h
-@@ -143,7 +143,7 @@ typedef struct _WB35REG
- 	//-------------------
- 	// VM
- 	//-------------------
--	OS_SPIN_LOCK	EP0VM_spin_lock; // 4B
-+	spinlock_t	EP0VM_spin_lock; // 4B
- 	u32	        EP0VM_status;//$$
- 	PREG_QUEUE	    pRegFirst;
- 	PREG_QUEUE	    pRegLast;
-diff --git a/drivers/staging/winbond/mlme_s.h b/drivers/staging/winbond/mlme_s.h
-index 6ec818b..039fd40 100644
---- a/drivers/staging/winbond/mlme_s.h
-+++ b/drivers/staging/winbond/mlme_s.h
-@@ -130,7 +130,7 @@ typedef struct _MLME_FRAME
- 	u8			DataType;
- 	u8			IsInUsed;
- 
--	OS_SPIN_LOCK	MLMESpinLock;
-+	spinlock_t	MLMESpinLock;
- 
-     u8		TxMMPDU[MAX_NUM_TX_MMPDU][MAX_MMPDU_SIZE];
- 	u8		TxMMPDUInUse[ (MAX_NUM_TX_MMPDU+3) & ~0x03 ];
-diff --git a/drivers/staging/winbond/wblinux.c b/drivers/staging/winbond/wblinux.c
-index 51dad95..186ad60 100644
---- a/drivers/staging/winbond/wblinux.c
-+++ b/drivers/staging/winbond/wblinux.c
-@@ -26,10 +26,10 @@ EncapAtomicInc(PADAPTER Adapter, void* pAtomic)
- 	PWBLINUX pWbLinux = &Adapter->WbLinux;
- 	u32	ltmp;
- 	u32 *	pltmp = (u32 *)pAtomic;
--	OS_SPIN_LOCK_ACQUIRED( &pWbLinux->AtomicSpinLock );
-+	spin_lock_irq( &pWbLinux->AtomicSpinLock );
- 	(*pltmp)++;
- 	ltmp = (*pltmp);
--	OS_SPIN_LOCK_RELEASED( &pWbLinux->AtomicSpinLock );
-+	spin_unlock_irq( &pWbLinux->AtomicSpinLock );
- 	return ltmp;
- }
- 
-@@ -39,10 +39,10 @@ EncapAtomicDec(PADAPTER Adapter, void* pAtomic)
- 	PWBLINUX pWbLinux = &Adapter->WbLinux;
- 	u32	ltmp;
- 	u32 *	pltmp = (u32 *)pAtomic;
--	OS_SPIN_LOCK_ACQUIRED( &pWbLinux->AtomicSpinLock );
-+	spin_lock_irq( &pWbLinux->AtomicSpinLock );
- 	(*pltmp)--;
- 	ltmp = (*pltmp);
--	OS_SPIN_LOCK_RELEASED( &pWbLinux->AtomicSpinLock );
-+	spin_unlock_irq( &pWbLinux->AtomicSpinLock );
- 	return ltmp;
- }
- 
-@@ -51,8 +51,8 @@ WBLINUX_Initial(PADAPTER Adapter)
- {
- 	PWBLINUX pWbLinux = &Adapter->WbLinux;
- 
--	OS_SPIN_LOCK_ALLOCATE( &pWbLinux->SpinLock );
--	OS_SPIN_LOCK_ALLOCATE( &pWbLinux->AtomicSpinLock );
-+	spin_lock_init( &pWbLinux->SpinLock );
-+	spin_lock_init( &pWbLinux->AtomicSpinLock );
- 	return TRUE;
- }
- 
-@@ -79,7 +79,6 @@ void
- WBLINUX_Destroy(PADAPTER Adapter)
- {
- 	WBLINUX_stop( Adapter );
--	OS_SPIN_LOCK_FREE( &pWbNdis->SpinLock );
- #ifdef _PE_USB_INI_DUMP_
- 	WBDEBUG(("[w35und] unregister_netdev!\n"));
- #endif
-diff --git a/drivers/staging/winbond/wblinux_s.h b/drivers/staging/winbond/wblinux_s.h
-index 97e9167..fd2bb43 100644
---- a/drivers/staging/winbond/wblinux_s.h
-+++ b/drivers/staging/winbond/wblinux_s.h
-@@ -24,8 +24,8 @@
- 
- typedef struct _WBLINUX
- {
--	OS_SPIN_LOCK	AtomicSpinLock;
--	OS_SPIN_LOCK	SpinLock;
-+	spinlock_t	AtomicSpinLock;
-+	spinlock_t	SpinLock;
- 	u32	shutdown;
- 
- 	OS_ATOMIC	ThreadCount;
--- 
-1.6.0.2
-
+Correction, it's not anymore a 1/5, it's just a resend.
