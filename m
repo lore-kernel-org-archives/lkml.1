@@ -1,62 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752167AbYJVBeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbYJVBee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752167AbYJVBeT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 21:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYJVBeG
+	id S1753668AbYJVBee (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 21:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYJVBeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 21:34:06 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:31186 "EHLO
-	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751217AbYJVBeF (ORCPT
+	Tue, 21 Oct 2008 21:34:10 -0400
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:61934 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751970AbYJVBeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 21:34:05 -0400
-Date: Tue, 21 Oct 2008 19:34:03 -0600
-From: dougthompson@xmission.com
-To: jens@linux.vnet.ibm.com, dougthompson@xmission.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 1/1] edac: fix enabling of polling cell module
-Message-ID: <48fe830b.nYXseMIua5Kc2bjK%dougthompson@xmission.com>
-User-Agent: Heirloom mailx 12.2 01/07/07
+	Tue, 21 Oct 2008 21:34:08 -0400
+Message-ID: <48FE82DF.6030005@cs.columbia.edu>
+Date: Tue, 21 Oct 2008 21:33:19 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org, tglx@linutronix.de,
+       dave@linux.vnet.ibm.com, mingo@elte.hu, hpa@zytor.com,
+       viro@zeniv.linux.org.uk
+Subject: Re: [RFC v7][PATCH 2/9] General infrastructure for checkpoint	restart
+References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu> <1224481237-4892-3-git-send-email-orenl@cs.columbia.edu> <20081021124130.a002e838.akpm@linux-foundation.org> <20081021202410.GA10423@us.ibm.com>
+In-Reply-To: <20081021202410.GA10423@us.ibm.com>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-The edac driver on cell turned out to be not enabled because of a missing op_state.
-This patch introduces it. Verified to work on top of Bens next branch.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Jens Osterkamp <jens@linux.vnet.ibm.com>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+Serge E. Hallyn wrote:
+> Quoting Andrew Morton (akpm@linux-foundation.org):
+>> On Mon, 20 Oct 2008 01:40:30 -0400
+>> Oren Laadan <orenl@cs.columbia.edu> wrote:
+>>>  asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
+>>>  {
+>>> -	pr_debug("sys_checkpoint not implemented yet\n");
+>>> -	return -ENOSYS;
+>>> +	struct cr_ctx *ctx;
+>>> +	int ret;
+>>> +
+>>> +	/* no flags for now */
+>>> +	if (flags)
+>>> +		return -EINVAL;
+>>> +
+>>> +	ctx = cr_ctx_alloc(pid, fd, flags | CR_CTX_CKPT);
+>>> +	if (IS_ERR(ctx))
+>>> +		return PTR_ERR(ctx);
+>>> +
+>>> +	ret = do_checkpoint(ctx);
+>>> +
+>>> +	if (!ret)
+>>> +		ret = ctx->crid;
+>>> +
+>>> +	cr_ctx_free(ctx);
+>>> +	return ret;
+>>>  }
+>> Is it appropriate that this be an unprivileged operation?
+> 
+> Early versions checked capable(CAP_SYS_ADMIN), and we reasoned that we
+> would later attempt to remove the need for privilege so that all users
+> could safely use it.
+> 
+> Arnd Bergmann called us on that nonsense, pointing out that it'd make
+> more sense to let unprivileged users use them now, so that we'll be
+> more careful about the security as patches roll in.
+> 
+> So, Oren's patchset right now only checkpoints current, despite pid
+> being part of the API.  So the task can access its own data.  When
+> the patch supports checkpointing another task (which Oren says he's
+> doing right now), then our intent is to check for ptrace access to
+> the target task.  (Right, Oren?)
 
----
+Correct. That's already in the additional patch in the git tree - first
+I locate the task and if found, I check ptrace_may_access() (read mode).
 
-Ben, can you please confirm this is the patch you wanted to send upstream ?
+see the top patch in:
+http://git.ncl.cs.columbia.edu/?p=linux-cr-dev.git;a=shortlog;h=refs/heads/ckpt-v7
 
-Index: linux-2.6/drivers/edac/cell_edac.c
-===================================================================
---- linux-2.6.orig/drivers/edac/cell_edac.c
-+++ linux-2.6/drivers/edac/cell_edac.c
-@@ -9,6 +9,7 @@
-  */
- #undef DEBUG
- 
-+#include <linux/edac.h>
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/platform_device.h>
-@@ -164,6 +165,8 @@ static int __devinit cell_edac_probe(str
- 	if (regs == NULL)
- 		return -ENODEV;
- 
-+	edac_op_state = EDAC_OPSTATE_POLL;
-+
- 	/* Get channel population */
- 	reg = in_be64(&regs->mic_mnt_cfg);
- 	dev_dbg(&pdev->dev, "MIC_MNT_CFG = 0x%016lx\n", reg);
+> 
+>> What happens if I pass it a pid which isn't system-wide unique?
+> 
+> pid must be checked in the caller's pid namespace.  So if I've create a
+> container which I want to checkpoint, pid 1 in that pidns will be, say,
+> 3497 in my pid_ns, and so 3497 is the pid I must use.  If I try to pass
+> 1, I'll try to checkpoint my own container.  And, if I'm not privileged
+> and init is owned by root, the ptrace() check I mentioned above will
+> return -EPERM.
+
+Yup.
+
+> 
+>> What happens if I pass it a pid of a process which I don't own?  This
+>> is super security-sensitive and we need to go over the permission
+>> checking with a toothcomb.  It needs to be exhaustively described in
+>> the changelog.  It might have security/selinux implications - I don't
+>> know, I didn't look, but lights are flashing and bells are ringing over
+>> here.
+
+This should be covered by ptrace_may_access() test.
+
+In the longer run, I suppose SElinux people would want a security hook
+there to approve or disapprove the operation.
+
+>>
+>> What happens if I pass it a pid of a process which I _do_ own, but it
+>> does not refer to a container's init process?
+> 
+> I would assume that do_checkpoint() would return -EINVAL, but it's a
+> great question:  Oren, did you have another plan?
+
+Since we intentional provide minimal functionality to keep the patchset
+simple and allow easy review - we only checkpoint one task; it doesn't
+really matter because we don't deal with the entire container.
+
+With the ability to checkpoint multiple process we will have to ensure
+that we checkpoint an entire container. I planned to return -EINVAL if
+the target task isn't a container init(1). Another option, if people
+prefer, is to use any task in a container to "represent" the entire
+container.
+
+> 
+>> If `pid' must refer to a container's init process, isn't it always
+>> equal to 1??
+> 
+> Not in the caller's pid_namespace.
+> 
+>>>  /**
+>>>   * sys_restart - restart a container
+>>>   * @crid: checkpoint image identifier
+>>> @@ -36,6 +234,19 @@ asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
+>>>   */
+>>>  asmlinkage long sys_restart(int crid, int fd, unsigned long flags)
+>>>  {
+>>> -	pr_debug("sys_restart not implemented yet\n");
+>>> -	return -ENOSYS;
+>>> +	struct cr_ctx *ctx;
+>>> +	int ret;
+>>> +
+>>> +	/* no flags for now */
+>>> +	if (flags)
+>>> +		return -EINVAL;
+>>> +
+>>> +	ctx = cr_ctx_alloc(crid, fd, flags | CR_CTX_RSTR);
+>>> +	if (IS_ERR(ctx))
+>>> +		return PTR_ERR(ctx);
+>>> +
+>>> +	ret = do_restart(ctx);
+>>> +
+>>> +	cr_ctx_free(ctx);
+>>> +	return ret;
+>>>  }
+>> Again, this is scary stuff.  We're allowing unprivileged userspace to
+>> feed random numbers into kernel data structures.
+> 
+> Yes, all of the file opens and mmaps must not skip the usual security
+> checks.  The task credentials are currently unsupported, meaning that
+> euid, etc, come from the caller, not the checkpoint image.  When the
+
+Actually, the fact that task credentials are not restored makes it
+more secure, because the user can't do anything beyond her current
+capabilities.
+
+For the same reason, however, unless we agree on a secure way to
+elevate credentials, there are various things that we cannot restore,
+even though it may be something we would want to permit.
+
+> restoration of credentials becomes supported, then definately the
+> caller (of sys_restore())'s ability to setresuid/setresgid to those
+> values must be checked.
+> 
+> So that's why we don't want CAP_SYS_ADMIN required up-front.  That way
+> we will be forced to more carefully review each of those features.
+> 
+>> I'd like to see the security guys take a real close look at all of
+>> this, and for them to do that effectively they should be provided with
+>> a full description of the security design of this feature.
+> 
+> Right, some of the above should be spelled out somewhere.  Should it be
+> in the patch description, in the Documentation/checkpoint.txt file,
+> or someplace else?  Oren, do you want to filter the above information
+> into the right place, or do you want me to do it and send you a patch?
+
+I'll add something to the Documentation/checkpoint.txt.
+
+Thanks,
+
+Oren.
 
