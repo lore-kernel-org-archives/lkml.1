@@ -1,84 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbYJVXiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756734AbYJVXk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756740AbYJVXiA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 19:38:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYJVXhu
+	id S1756734AbYJVXk0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 19:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYJVXkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 19:37:50 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:36322 "EHLO mail-out2.uio.no"
+	Wed, 22 Oct 2008 19:40:10 -0400
+Received: from mga14.intel.com ([143.182.124.37]:52735 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752763AbYJVXht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 19:37:49 -0400
-Subject: Re: SUNRPC problem with 2.6.26 and beyond - try again with
-	response in correct place.
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Harry Edmon <harry@atmos.washington.edu>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <48FFAF6F.3040406@atmos.washington.edu>
-References: <48FF482F.5060002@atmos.washington.edu>
-	 <1224715874.7525.18.camel@localhost>
-	 <48FFAF6F.3040406@atmos.washington.edu>
-Content-Type: text/plain
-Date: Wed, 22 Oct 2008 19:37:46 -0400
-Message-Id: <1224718666.7525.30.camel@localhost>
+	id S1752373AbYJVXkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 19:40:09 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,467,1220252400"; 
+   d="scan'208";a="64022290"
+Date: Wed, 22 Oct 2008 16:40:07 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Andi Kleen <ak@linux.intel.com>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Henroid, Andrew D" <andrew.d.henroid@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 2/2] i7300_idle driver v1.55
+Message-ID: <20081022234006.GB28775@linux-os.sc.intel.com>
+References: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com> <e8b529091b2ab65f5a4783e292c2b472e309116e.1223706853.git.len.brown@intel.com> <20081011083347.GA31918@elte.hu> <alpine.LFD.1.10.0810161805360.3026@localhost.localdomain> <48FE07AE.4010203@linux.intel.com> <7E82351C108FA840AB1866AC776AEC4637CD27F3@orsmsx505.amr.corp.intel.com> <48FED3FA.6040703@linux.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, MISSING_SUBJECT=0.001,NO_RECEIVED=-0.001, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 7FFE64A9C58D172B856EC9A50245D1E340B53693
-X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 124 max/h 9 blacklist 0 greylist 0 ratelimit 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48FED3FA.6040703@linux.intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-22 at 15:55 -0700, Harry Edmon wrote:
-> Trond Myklebust wrote:
-> > On Wed, 2008-10-22 at 08:35 -0700, Harry Edmon wrote:
-> >   
-> >> I have a dual quad-core Xeon system running software 
-> >> (http://www.unidata.ucar.edu/software/ldm) that relays and processes 
-> >> weather data through RPC calls, keeping a queue of data in a memory 
-> >> mapped file.  Up until 2.6.26 the system has run just fine (for example 
-> >> 2.6.25.17).  But starting with 2.6.26 through 2.6.27.2 the system runs 
-> >> into a problem after approximately 24 hours.  The symptom is that the 
-> >> processing slows down to a crawl.  Using "top" I can see that the System 
-> >> time is up over 90%, with almost no User and Wait time.  If I stop and 
-> >> restart the software, most of the time it gets better - but sometimes it 
-> >> takes a reboot to fix the problem.  I have an identical system that does 
-> >> just processing and ingesting data from remote systems, and it does not 
-> >> have this problem.  I have tried a number of different kernel 
-> >> configurations, but they all show the same problem.
-> >>
-> >> I suspect a problem with SUNRPC.  I notice that there were a large 
-> >> number of SUNRPC patches in 2.6.26.  I am looking for suggestions on how 
-> >> to pin down which patches are causing the problem.  Are there ways to 
-> >> figure where in the  kernel the time is being spent?  I am will to work 
-> >> on isolating the problem, but I need some suggestions on the best way to 
-> >> do it given the large number of SUNRPC patches in 2.6.26 and the fact 
-> >> that each experiment takes a day.
-> >>     
+On Wed, Oct 22, 2008 at 12:19:22AM -0700, Andi Kleen wrote:
+> Pallipadi, Venkatesh wrote:
 > >
-> > The kernel sunrpc interface is not exported to user land: the glibc code
-> > uses its own, entirely separate implementation of sunrpc.
-> >
-> > I cannot therefore see, how your application's RPC calls can be affected
-> > by kernel sunrpc changes.
-> >
-> > Cheers
-> >   Trond
-> >
-> >   
-> Then how do you explain the the large system time used with 2.6.26 and 
-> beyond?  Is it some other patch I should be looking at?
+> > udelay may be more power efficient than polling.
+> 
+> Isn't that function a one off anyways?
 
-I'm not explaining it. I'm saying that nothing outside the kernel NFS
-and NLM code uses the kernel sunrpc implementation. Your userland RPC
-calls are using glibc's implementation of sunrpc. Those are unaffected
-by patches to the kernel sunrpc layer.
+Which function is one off?
 
-If you are seeing a hang, then I suggest you start by using the strace
-utility to figure out which system call is actually involved.
+> >
+> >> ;
+> >>> +static void __exit i7300_idle_exit(void)
+> >>> +{
+> >>> +     idle_notifier_unregister(&i7300_idle_nb);
+> >> I still think this needs some kind of idle synchronization.
+> >
+> > This unregister uses atomic_notifier_chain_unregister() which
+> > uses RCU and handles the race conditions that way.
+> 
+> I didn't do a full analysis, but I didn't think RCU protects
+> against the idle handler itself.  At least not standard RCU.
+> You would need to go through at least two quiescent periods,
+> not one as standard code.
+> 
+> There used to be an older
+> idle synchronization interface for this case (which was removed
+> at some point), perhaps it needs to be readded.
+> 
+> Or just use stop_machine(). That protects against idle too
+> and while it's a big hammer for unloading it should be ok.
+> 
 
-Cheers
-  Trond
+stop_machine() for unregistering idle callback will deadlock due to RCU.
+
+I am not sure why we need two cycles. RCU in the unregister makes
+sure that no CPU is executing the callback handler and only then unregister
+returns. So, that will mean no one can be in the callback rountine and we are
+safe to remove the module. Correct?
+
+Thanks,
+Venki
 
