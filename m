@@ -1,101 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbYJVRlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758303AbYJVRmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756243AbYJVRlY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757503AbYJVReO
+	id S1758303AbYJVRmp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757850AbYJVReg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:34:14 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:55802 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757610AbYJVReL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:34:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=mhW2Qqth/xkb/AtEUuv5OjDpTVxHwSoGnVD9U1A2YGMVailS/ALyEjcaUJXdSWGtnJ
-         pb2o82ItCp/pabBPKFi6wlUykTBNiw1rhHuhoZtiES9kqbq5sLMzFKuiTUUVQkZhjjFy
-         3Ew6gI2IzYYoGbUNo4F7VKIqb5MWvC0vRdP7A=
-Message-ID: <d9def9db0810221034v3bf4dabt6aa905b8a3ebd5a@mail.gmail.com>
-Date: Wed, 22 Oct 2008 19:34:09 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       em28xx@mcentral.de
-Subject: [PATCH] em28xx patches against the latest git tree
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Wed, 22 Oct 2008 13:34:36 -0400
+Received: from kroah.org ([198.145.64.141]:53087 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757717AbYJVReg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 13:34:36 -0400
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 26/42] Staging: wlan-ng: fix build error if wireless networking is not enabled
+Date: Wed, 22 Oct 2008 10:29:07 -0700
+Message-Id: <1224696563-5170-26-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <20081022172203.GA4000@kroah.com>
+References: <20081022172203.GA4000@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following patch adds the latest em28xx driver from mcentral.de.
+Thanks to Ingo for pointing this out.
 
-merging mcentral.de/hg/~mrec/em28xx-new with upstream kernel
+Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/wlan-ng/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-* adding VBI support to most VBI capable devices
-* radio support for cx25843 based devices
-* extra cx25843 driver (registers match the em28xx configuration in
-order to support proper VBI)
-* all videostandards and inputs are tested with cx25843 based devices
-* adding alternative audio driver for em28xx devices (independent
-audio transfer, not depending on oss/alsa)
-* adding em28xx-webcam support for videology webcams
-* adding em28xx-audioep audio driver for alternate number 1 - if
-vendor specific and not USB audio conform
-* adding s921 driver (ISDB-T 1Seg support tunneling parameters through
-DVB-T API setting specific registers to auto)
-* adding xc3028 mostly original sourcecode from the manufacturer (most
-recent version), merged xc3028/xc3028l into
-  one external firmware blob - important for signal quality
-* adding xc5000 mostly original sourcecode from the manufacturer (most
-recent version) - important for signal quality
-* adding lgdt3304, although currently disabled
-* remote control handling *works* but is broken by design and disabled
-since different rc5/rc6/nec remotes return
-  different values. Handling can be done using interrupt transfers too (TODO)
-* fixed a couple of bugs in the em28xx-audio driver which can lead to
-system hangs.
+diff --git a/drivers/staging/wlan-ng/Kconfig b/drivers/staging/wlan-ng/Kconfig
+index 10b1f0f..2425d86 100644
+--- a/drivers/staging/wlan-ng/Kconfig
++++ b/drivers/staging/wlan-ng/Kconfig
+@@ -1,6 +1,6 @@
+ config PRISM2_USB
+ 	tristate "Prism2.5 USB driver"
+-	depends on USB
++	depends on WLAN_80211 && USB
+ 	default n
+ 	---help---
+ 	  This is the wlan-ng prism 2.5 USB driver for a wide range of
+-- 
+1.6.0.2
 
-----
-
-as for testing:
-* analog TV: patched tvtime (for analog TV) version available on
-mcentral.de which supports 1. software rendering 2. digital
-audio/alsa/aad
-* FM radio: gqradio from mcentral.de, there's also an older radio
-patch for vlc available.
-* DVB-T: all applications should work with it
-* ISDB-T: relevant for China and Brazil only, can be used with
-dvbtune, dvbscan (the channel file cannot be used due problems with
-the characters), for transferring the MPEG-TS stream dvbstream,
-dvbsnoop, for playback gstreamer/mplayer (h264/aac isn't supported
-well with it).
-
-commit history is available at:
-http://mcentral.de/http://git.kernel.org/?p=linux/kernel/git/mrec/linux-2.6.git;a=commit;h=f1be9ae8f8489a6598417a194e0899ac00c7530ehg/~mrec/em28xx-new
-
-This patch adds a separate instance of the driver to the git
-repository, not affecting anything existing.
-
-the full patch against the git repository:
-
-
-Contributors:
-user:        acano@fastmail.fm
-user:        Andre Kelmanson <akelmanson@gmail.com>
-user:        Bouwsma Barry <freebeer.bouwsma@gmail.com>
-user:        Dan Kreiser <kreiser@informatik.hu-berlin.de>
-user:        Frank Neuber <fn@kernelport.de>
-user:        Jelle de Jong <jelledejong@powercraft.nl>
-user:        John Stowers <john.stowers.lists@gmail.com>
-user:        Lukas Kuna <lukas.kuna@evkanet.net>
-user:        Stefan Vonolfen <stefan.vonolfen@gmail.com>
-user:        Stephan Berberig <s.berberig@arcor.de>
-user:        Thomas Giesecke <thomas.giesecke@ibgmbh-naumburg.de>
-user:        Vitaly Wool <vwool@ru.mvista.com>
-user:        Zhenyu Wang <zhen78@gmail.com>
-
-Signed-off-by: Markus Rechberger <mrechberger@sundtek.de>
