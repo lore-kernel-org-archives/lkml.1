@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193AbYJVD6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752140AbYJVEM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753193AbYJVD6t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 23:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbYJVD6l
+	id S1752140AbYJVEM2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 00:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750725AbYJVEMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 23:58:41 -0400
-Received: from ozlabs.org ([203.10.76.45]:55292 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751150AbYJVD6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 23:58:40 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18686.42209.47915.184451@cargo.ozlabs.ibm.com>
-Date: Wed, 22 Oct 2008 14:58:25 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: "Chris Friesen" <cfriesen@nortel.com>, linuxppc-dev@ozlabs.org,
-       Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: build failure on powerpc with current -git
-In-Reply-To: <20081021191324.d4810d40.sfr@canb.auug.org.au>
-References: <48F8E86B.702@nortel.com>
-	<18685.27030.529655.761257@cargo.ozlabs.ibm.com>
-	<20081021191324.d4810d40.sfr@canb.auug.org.au>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+	Wed, 22 Oct 2008 00:12:15 -0400
+Received: from vms172069pub.verizon.net ([206.46.172.69]:45412 "EHLO
+	vms172069pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbYJVEMO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 00:12:14 -0400
+Date: Wed, 22 Oct 2008 00:11:51 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [announce] new tree: "fix all build warnings, on all configs"
+In-reply-to: <200810212137.58020.rjw@sisk.pl>
+X-X-Sender: lenb@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Howells <dhowells@redhat.com>
+Message-id: <alpine.LFD.1.10.0810220008050.2984@localhost.localdomain>
+MIME-version: 1.0
+Content-type: multipart/mixed; boundary="Boundary_(ID_vc5q/OpJuzKVOLp+ZFuIHg)"
+References: <20081017171139.GA1792@elte.hu> <87r66ejqla.fsf@basil.nowhere.org>
+ <20081021111716.GA4476@elte.hu> <200810212137.58020.rjw@sisk.pl>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell writes:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> On Tue, 21 Oct 2008 16:33:10 +1100 Paul Mackerras <paulus@samba.org> wrote:
-> >
-> > It's a bug in older versions of ld (including 2.16.1) that's fixed in
-> > the current version (2.18).  However, this patch appears to work
-> > around the problem - at least, it let me build a 32-bit kernel with a
-> > cross-toolchain including a 2.16.1 ld.  Let me know if this gets it
-> > working for you.
+--Boundary_(ID_vc5q/OpJuzKVOLp+ZFuIHg)
+Content-type: TEXT/PLAIN; charset=utf-8
+Content-transfer-encoding: 8BIT
+
+
+
+> >   drivers/acpi/sleep/main.c:67: warning: ‘acpi_pm_disable_gpes’ defined but not used
+
+> > 
+> > Shows that this code has an identity crisis due to a maze of #ifdefs, in
+> > the PM_SLEEP && !SUSPEND && !HIBERNATION case for example.
 > 
-> With that patch applied I got these errors for a powerpc ppc64_defconfig
-> build (linux-next).
-> 
-> /usr/bin/objcopy: Warning: '/dev/null' is not an ordinary file
+> This case is invalid, because PM_SLEEP == SUSPEND || HIBERNATION !
 
-Hmmm, so do I, and in fact the arch/powerpc/boot/wrapper change now
-seems to be unnecessary with my cross-compile setup (which has ld
-2.16.1), whereas yesterday I'm sure it got errors.  Weird.
+I though so too, but 2.6.27 appears to have added XEN to the mix:
 
-Chris, could you try just the following change (my previous patch
-without the arch/powerpc/boot/wrapper change) and let me know if it
-fixes things with the ld you use?
+config PM_SLEEP
+        bool
+        depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
 
-Paul.
----
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index b39c27e..384dca5 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -187,6 +187,7 @@ SECTIONS
- 		*(.machine.desc)
- 		__machine_desc_end = . ;
- 	}
-+#ifdef CONFIG_RELOCATABLE
- 	. = ALIGN(8);
- 	.dynsym : AT(ADDR(.dynsym) - LOAD_OFFSET) { *(.dynsym) }
- 	.dynstr : AT(ADDR(.dynstr) - LOAD_OFFSET) { *(.dynstr) }
-@@ -202,6 +203,7 @@ SECTIONS
- 		__rela_dyn_start = .;
- 		*(.rela*)
- 	}
-+#endif
- 
- 	/* Fake ELF header containing RPA note; for addnote */
- 	.fakeelf : AT(ADDR(.fakeelf) - LOAD_OFFSET) { *(.fakeelf) }
+-Len
+
+--Boundary_(ID_vc5q/OpJuzKVOLp+ZFuIHg)--
