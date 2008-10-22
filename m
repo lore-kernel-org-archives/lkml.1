@@ -1,78 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575AbYJVTu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbYJVTva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756575AbYJVTu2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 15:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbYJVTuJ
+	id S1756148AbYJVTva (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 15:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbYJVTvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 15:50:09 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36914 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751074AbYJVTuI (ORCPT
+	Wed, 22 Oct 2008 15:51:22 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59025 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751215AbYJVTvV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 15:50:08 -0400
-Subject: Re: sched: deep power-saving states
-From: Peter Zijlstra <peterz@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Gregory Haskins <ghaskins@novell.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+	Wed, 22 Oct 2008 15:51:21 -0400
+Date: Wed, 22 Oct 2008 21:58:45 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Alok Kataria <akataria@vmware.com>
+Cc: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
        LKML <linux-kernel@vger.kernel.org>,
-       Jon Masters <jonathan@jonmasters.org>
-In-Reply-To: <20081022073616.5eb150fa@infradead.org>
-References: <48FF2DDC.5010600@gmail.com>
-	 <20081022064738.05818670@infradead.org> <48FF3321.4060809@novell.com>
-	 <20081022070701.567f1c9a@infradead.org> <48FF3829.8040704@novell.com>
-	 <20081022073616.5eb150fa@infradead.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 22 Oct 2008 21:49:52 +0200
-Message-Id: <1224704992.20069.71.camel@twins>
+       the arch/x86 maintainers <x86@kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>
+Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is set.
+Message-ID: <20081022195845.GP12825@one.firstfloor.org>
+References: <1224552902.2640.88.camel@alok-dev1> <874p36fflp.fsf@basil.nowhere.org> <1224607284.6161.22.camel@alok-dev1> <20081021174008.GH12825@one.firstfloor.org> <1224612294.6161.43.camel@alok-dev1> <20081021181536.GI12825@one.firstfloor.org> <1224616236.6161.60.camel@alok-dev1> <20081021192746.GJ12825@one.firstfloor.org> <1224703427.13953.8.camel@alok-dev1>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1224703427.13953.8.camel@alok-dev1>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-22 at 07:36 -0700, Arjan van de Ven wrote:
-> On Wed, 22 Oct 2008 10:26:49 -0400
-> Gregory Haskins <ghaskins@novell.com> wrote:
-> steps, so it'll be
-> > > faster) 
-> > 
-> > [Adding Peter Zijlstra to the thread]
-> > 
-> > Ah, yes of course!   That makes sense.  So I have to admit I am fairly
-> > ignorant of the ACPI C-state stuff, so I just read up on it.  In the
-> > context of what you said, it makes perfect sense to me now.
-> > 
-> > IIUC, the OS selects which C-state it will enter at idle points based
-> > on some internal criteria (TBD).  All we have to do is remap the
-> > cpupri "IDLE" state to something like IDLE-C1, IDLE-C2, ..., IDLE-Cn
-> > and have the cpupri map get updated coincident with the pm_idle()
-> > call.  Then the scheduler will naturally favor cores that are in
-> > lighter sleep over cores in deep sleep.
-> > 
-> > I am not sure if this is exactly what you were getting at during the
-> > conf, since it doesnt really consider deep-sleep latency times
-> > directly.  But I think this is a step in the right direction.
-> 
-> it for sure is a step in the right direction.
-> the actual exit costs are an optional parameter in this sense,
-> the steps between C states are non-linear (more like exponential)
-> so knowing the actual numbers could be used. but even if you don't
-> use it, it still makes sense and is a very good first order behavior.
+> We also force set the CONSTANT_TSC capability bit if we are running on
+> VMware, since the VMware hypervisor exports a constant TSC to the guest.
 
-This still leaves us with the worst case IRQ response as given by the
-deepest C state. Which might be un-desirable.
+NAK.
 
-jcm was, once upon a time, working on dynamically changing the idle
-routine, so that people who care about wakeup latency can run idle=poll
-while their application runs, and the acpi C state stuff when nobody
-cares.
+The whole point of this is to eliminate the need for vmware detection,
+which is something the kernel shouldn't need to know about.
+Instead VMware should supply that bit by itself and then Linux could
+do the right thing. The only change you would need to do is to always
+check it for all CPU vendors, not just AMD.
+Adding it with vmware detection code is not useful.
 
-This could of course then be tied into the PM QoS stuff Mark has been
-doing.
-
-Fact of life is, for some RT apps, anything but idle=poll is too much.
-
-But yes, when C states are in play, it makes sense to try and wake a cpu
-that's not deep over a very deep idle one.
+-Andi
