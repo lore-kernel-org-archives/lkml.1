@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbYJVDFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYJVDHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753571AbYJVDFk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 23:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbYJVDFa
+	id S1753536AbYJVDHk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 23:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbYJVDHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 23:05:30 -0400
-Received: from mga01.intel.com ([192.55.52.88]:35273 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751423AbYJVDF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 23:05:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,461,1220252400"; 
-   d="scan'208";a="394538387"
-Message-ID: <48FE9876.9040003@intel.com>
-Date: Wed, 22 Oct 2008 11:05:26 +0800
-From: "Zhao, Yu" <yu.zhao@intel.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 12/15 v5] PCI: support the SR-IOV capability
-References: <20081021114056.GA3185@yzhao12-linux.sh.intel.com> <20081021115308.GM3185@yzhao12-linux.sh.intel.com> <20081021165054.GA24795@kroah.com>
-In-Reply-To: <20081021165054.GA24795@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 21 Oct 2008 23:07:32 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:44485 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbYJVDHb (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 23:07:31 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Jonathan Johnson <johnsonn@matc.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: How do I self diagnose slow write to HDD performance issue
+In-Reply-To: Your message of "Tue, 21 Oct 2008 14:34:01 CDT."
+             <48FDE860.8C56.0056.0@matc.edu>
+From: Valdis.Kletnieks@vt.edu
+References: <48FDE860.8C56.0056.0@matc.edu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1224644845_3562P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Tue, 21 Oct 2008 23:07:25 -0400
+Message-ID: <111655.1224644845@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Tue, Oct 21, 2008 at 07:53:08PM +0800, Yu Zhao wrote:
->> Support Single Root I/O Virtualization (SR-IOV) capability.
->>
->> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
->> Cc: Randy Dunlap <randy.dunlap@oracle.com>
->> Cc: Grant Grundler <grundler@parisc-linux.org>
->> Cc: Alex Chiang <achiang@hp.com>
->> Cc: Matthew Wilcox <matthew@wil.cx>
->> Cc: Roland Dreier <rdreier@cisco.com>
->> Cc: Greg KH <greg@kroah.com>
->> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
->>
+--==_Exmh_1224644845_3562P
+Content-Type: text/plain; charset=us-ascii
 
->> +#define iov_config_attr(field)                                               \
->> +static ssize_t field##_show(struct device *dev,                              \
->> +             struct device_attribute *attr, char *buf)               \
->> +{                                                                    \
->> +     struct pci_dev *pdev = to_pci_dev(dev);                         \
->> +     return sprintf(buf, "%d\n", pdev->iov->field);                  \
->> +}
->> +
->> +iov_config_attr(status);
->> +iov_config_attr(totalvfs);
->> +iov_config_attr(initialvfs);
->> +iov_config_attr(numvfs);
-> 
-> As you are adding new sysfs entries, can you also create the proper
-> documentation in Documentation/ABI/ so that people can understand how to
-> use them?  Yes, I see you added a stand-alone document, but putting it
-> in the "standard" format is also necessary.
+On Tue, 21 Oct 2008 14:34:01 CDT, Jonathan Johnson said:
 
-Thanks for reminding me about this. I used to update ABI doc in earlier 
-versions, but somehow forgot to do this after several carry-forwards...
+> Before I setup the array I tested the SATA 2 drives connected to the mobo SATA connect and got approx 60mb/s
+> write and even better read speeds per drive.
 
-Will complete it in next version.
+Remember that streaming read/write speed is usually only a small part of the
+total disk performance story.  Sure, if you don't have to move the heads much,
+you can go 60 megabytes/sec.  However, even the *hottest* drives out there
+have a hard time sustaining 200 seeks per second.
 
-Regards,
-Yu
+In other words, every time you have to move the heads, it costs you 300Kbytes/sec
+of throughput (1/200th of that 60M).
+
+And bonnie++ probably moves the heads a lot.
+
+To *add* insult to injury, if you're running in RAID6 mode, each time you write
+to the RAID set, it has to do *several* I/Os to do all the parity computations.
+So you take a 300K hit for each of those I/Os.
+
+There's a *reason* why RAID1 is still used - you can (assuming a smart enough
+controller) launch both the write and the mirroring write at the same time in
+parallel, taking little or no performance penalty.
+
+
+--==_Exmh_1224644845_3562P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFI/pjtcC3lWbTT17ARAgcYAKCdoA4tEiQUCcC6wqM5xfm/qyloawCgxfoM
+Gf1vU0Ox8uY7msfFAhK4yjo=
+=4D9Y
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1224644845_3562P--
