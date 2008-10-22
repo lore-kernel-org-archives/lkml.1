@@ -1,86 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbYJVQfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbYJVQfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756972AbYJVQfc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 12:35:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754572AbYJVQfV
+	id S1757357AbYJVQfs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 12:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757082AbYJVQfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 12:35:21 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:62421 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753736AbYJVQfU (ORCPT
+	Wed, 22 Oct 2008 12:35:36 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:40354 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757045AbYJVQfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 12:35:20 -0400
-Date: Wed, 22 Oct 2008 18:35:18 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-cc: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       tim.bird@am.sony.com
-Subject: Re: Subject: [PATCH 04/16] Squashfs: regular file operations
-In-Reply-To: <E1KqrTW-0001xQ-Kx@dylan>
-Message-ID: <Pine.LNX.4.64.0810221833360.5634@vixen.sonytel.be>
-References: <E1KqrTW-0001xQ-Kx@dylan>
+	Wed, 22 Oct 2008 12:35:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=eL6Gneh4Wr+UhNIgzerUDuUJNpxt9p34nM25iZZ7b+co0no2Evr6X5lfJbKBfuVqTJ
+         nv2Ds2fQ5UeobZAsQmOfu/as6Pmp/wCTKsA0WcM3BUdlRrYloRBiDCilKJL4p5v8mIGJ
+         1lzLaEdcpfJYDNHl8d4aaHJ5exgrkv1m9JxkM=
+Date: Wed, 22 Oct 2008 20:35:30 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] SLUB - define OO_ macro instead of hardcoded numbers
+Message-ID: <20081022163530.GH9639@localhost>
+References: <20081022161836.GG9639@localhost> <Pine.LNX.4.64.0810220926130.7633@quilx.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-429055810-1224693318=:5634"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0810220926130.7633@quilx.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+[Christoph Lameter - Wed, Oct 22, 2008 at 09:28:14AM -0700]
+> On Wed, 22 Oct 2008, Cyrill Gorcunov wrote:
+>
+>> Please check -- wouldn't it be better to use such a macro?
+>
+> Looks good. But could you rename OO_MAX to something different? There is  
+> already s->max which may cause confusion because s->max is the maximum  
+> number of objects in a slab. OO_MAX is the maximum mask?
+>
 
----584349381-429055810-1224693318=:5634
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+I supposed it would mean maximum object number inside page (ie quantity) which
+is happen to be the same value as OO_MASK. Maybe OO_MAX_OBJ?
 
-On Fri, 17 Oct 2008, Phillip Lougher wrote:
-> --- /dev/null
-> +++ b/fs/squashfs/file.c
-> +static long long read_blocklist(struct inode *inode, int index,
-> +				unsigned int *bsize)
-> +{
-> +	long long start, block, blks;
-> +	int offset;
-> +	__le32 size;
-> +	int res = fill_meta_index(inode, index, &start, &offset, &block);
-> +
-> +	TRACE("read_blocklist: res %d, index %d, start 0x%llx, offset"
-> +		       " 0x%x, block 0x%llx\n", res, index, start, offset,
-> +			block);
-> +
-> +	if (res == -1)
-> +		goto failure;
-                ^^^^^^^^^^^^^
-
-> +		if (blks == -1)
-> +			goto failure;
-			^^^^^^^^^^^^^
-
-> +	if (res == 0)
-> +		goto failure;
-                ^^^^^^^^^^^^^
-
-> +failure:
-> +	return -1;
-> +}
-
-As there's nothing to clean up, you can just use `return -1' instead of `goto
-failure', and save a few lines.
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-429055810-1224693318=:5634--
+		- Cyrill -
