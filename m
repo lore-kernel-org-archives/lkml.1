@@ -1,53 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756448AbYJUX6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbYJVABx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756448AbYJUX6v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 19:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbYJUX6m
+	id S1756085AbYJVABx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 20:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbYJVABp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 19:58:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57705 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752194AbYJUX6l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 19:58:41 -0400
-Date: Tue, 21 Oct 2008 16:58:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org
-Subject: Re: [PATCH 01/31] proc: switch /proc/loadavg to seq_file
-Message-Id: <20081021165822.8d574935.akpm@linux-foundation.org>
-In-Reply-To: <20081017123958.GB22653@x200.localdomain>
-References: <20081017123958.GB22653@x200.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Oct 2008 20:01:45 -0400
+Received: from mga14.intel.com ([143.182.124.37]:58850 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751179AbYJVABo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 20:01:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,460,1220252400"; 
+   d="scan'208";a="63381874"
+From: Dan Williams <dan.j.williams@intel.com>
+Subject: [RFC PATCH] async_tx,
+	dmaengine: document channel allocation and api rework
+To: linux-kernel@vger.kernel.org
+Cc: hskinnemoen@atmel.com, jeff@garzik.org, neilb@suse.de
+Date: Tue, 21 Oct 2008 17:03:22 -0700
+Message-ID: <20081021235629.1202.39569.stgit@dwillia2-linux.ch.intel.com>
+User-Agent: StGIT/0.14.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Oct 2008 16:39:58 +0400
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
+"Wouldn't it be better if the dmaengine layer made sure it didn't pass
+the same channel several times to a client?
 
-> and move it to fs/proc/loadavg.c while I'm at it.
-> 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> ---
->  fs/proc/Makefile    |    2 +-
->  fs/proc/loadavg.c   |   51 +++++++++++++++++++++++++++++++++++++++++++++++++++
->  fs/proc/proc_misc.c |   26 --------------------------
+I mean, you seem concerned that the memcpy() API should be transparent
+and easy to use, but the whole registration interface is just
+ridiculously complicated..."
+	- Haavard
 
-While I think the patchset is a good thing, this is absolutely the worst
-possible time to merge large code-motion changes into linux-next.  We
-need to maintain this stuff for more than two months, and everyone and
-his puppy is altering those files.  Today's linux-next already broke.
+The dmaengine and async_tx registration/allocation interface is indeed
+needlessly complicated.  This redesign has the following goals:
 
-So I'd suggest that this all be deferred until the day before
-2.6.29-rc1(!).
+1/ Simplify reference counting: dma channels are not something one would
+   expect to be hotplugged, it should be an exceptional event handled by
+   drivers not something clients should be mandated to handle in a
+   callback.  The common case channel removal event is 'rmmod <dma driver>',
+   which for simplicity should be disallowed if the channel is in use.
+2/ Add an interface for requesting exclusive access to a channel
+   suitable to device-to-memory users.
+3/ Convert all memory-to-memory users over to a common api (async_tx):
+   the goal here is to not have competing channel allocation schemes.  The
+   only competition should be between device-to-memory exclusive
+   allocations and the memory-to-memory usage case where channels are
+   shared between multiple "clients".
+   3a/ A prerequisite for converting dma_async_memcpy* calls to
+       async_memcpy* equivalents is making the async_tx calls less
+       expensive in terms of cache lines accessed and number of
+       parameters to the interface routines.
+   3b/ Remove the client registration infrastructure
+
+Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: Neil Brown <neilb@suse.de>
+Cc: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
+
+No code here, just a proposed specification for a cleaned up api...
+
+ Documentation/crypto/async-tx-api.txt |  122 +++++++++++++++------------------
+ Documentation/dmaengine.txt           |    1 
+ 2 files changed, 55 insertions(+), 68 deletions(-)
+ create mode 100644 Documentation/dmaengine.txt
 
 
-fs/proc/meminfo.c: In function 'meminfo_proc_show':
-fs/proc/meminfo.c:90: error: 'NR_ACTIVE' undeclared (first use in this function)
-fs/proc/meminfo.c:90: error: (Each undeclared identifier is reported only once
-fs/proc/meminfo.c:90: error: for each function it appears in.)
-fs/proc/meminfo.c:91: error: 'NR_INACTIVE' undeclared (first use in this function)
+diff --git a/Documentation/crypto/async-tx-api.txt b/Documentation/crypto/async-tx-api.txt
+index c1e9545..cc675d4 100644
+--- a/Documentation/crypto/async-tx-api.txt
++++ b/Documentation/crypto/async-tx-api.txt
+@@ -13,9 +13,9 @@
+ 3.6 Constraints
+ 3.7 Example
+ 
+-4 DRIVER DEVELOPER NOTES
++4 DMAENGINE DRIVER DEVELOPER NOTES
+ 4.1 Conformance points
+-4.2 "My application needs finer control of hardware channels"
++4.2 "My application needs exclusive control of hardware channels"
+ 
+ 5 SOURCE
+ 
+@@ -80,9 +80,7 @@ acknowledged by the application before the offload engine driver is allowed to
+ recycle (or free) the descriptor.  A descriptor can be acked by one of the
+ following methods:
+ 1/ setting the ASYNC_TX_ACK flag if no child operations are to be submitted
+-2/ setting the ASYNC_TX_DEP_ACK flag to acknowledge the parent
+-   descriptor of a new operation.
+-3/ calling async_tx_ack() on the descriptor.
++2/ calling async_tx_ack() on the descriptor.
+ 
+ 3.4 When does the operation execute?
+ Operations do not immediately issue after return from the
+@@ -101,12 +99,15 @@ of an operation.
+    it polls for the completion of the operation.  It handles dependency
+    chains and issuing pending operations.
+ 2/ Specify a completion callback.  The callback routine runs in tasklet
+-   context if the offload engine driver supports interrupts, or it is
+-   called in application context if the operation is carried out
+-   synchronously in software.  The callback can be set in the call to
+-   async_<operation>, or when the application needs to submit a chain of
+-   unknown length it can use the async_trigger_callback() routine to set a
+-   completion interrupt/callback at the end of the chain.
++   context if an offload engine performs the operation, or it is called
++   in process context if the operation is carried out synchronously in
++   software.  The callback can by specified by using the
++   async_trigger_callback() interface.
++   Note: if the application knows ahead of time that it wants a
++   completion callback on a particular operation it should specify
++   ASYNC_TX_DELAY_SUBMIT to the flags.  Otherwise, async_trigger_callback
++   will be required to allocate and queue a separate 'interrupt'
++   descriptor.
+ 
+ 3.6 Constraints:
+ 1/ Calls to async_<operation> are not permitted in IRQ context.  Other
+@@ -133,14 +134,20 @@ int run_xor_copy_xor(struct page **xor_srcs,
+ 		     size_t copy_len)
+ {
+ 	struct dma_async_tx_descriptor *tx;
++	/* async_xor overwrites input parameters to save stack space */
++	struct page *srcs[xor_src_cnt];
+ 
+-	tx = async_xor(xor_dest, xor_srcs, 0, xor_src_cnt, xor_len,
+-		       ASYNC_TX_XOR_DROP_DST, NULL, NULL, NULL);
+-	tx = async_memcpy(copy_dest, copy_src, 0, 0, copy_len,
+-			  ASYNC_TX_DEP_ACK, tx, NULL, NULL);
+-	tx = async_xor(xor_dest, xor_srcs, 0, xor_src_cnt, xor_len,
+-		       ASYNC_TX_XOR_DROP_DST | ASYNC_TX_DEP_ACK | ASYNC_TX_ACK,
+-		       tx, complete_xor_copy_xor, NULL);
++	memcpy(srcs, xor_srcs, sizeof(struct page *) * xor_src_cnt));
++	tx = async_xor(xor_dest, srcs, 0, xor_src_cnt, xor_len,
++		       ASYNC_TX_XOR_DROP_DST, NULL);
++
++	tx = async_memcpy(copy_dest, copy_src, 0, 0, copy_len, 0, tx);
++
++	memcpy(srcs, xor_srcs, sizeof(struct page *) * xor_src_cnt));
++	tx = async_xor(xor_dest, srcs, 0, xor_src_cnt, xor_len,
++		       ASYNC_TX_XOR_DROP_DST | ASYNC_TX_DELAY_SUBMIT, tx);
++
++	tx = async_trigger_callback(tx, complete_xor_copy_xor, NULL);
+ 
+ 	async_tx_issue_pending_all();
+ }
+@@ -150,6 +157,7 @@ ops_run_* and ops_complete_* routines in drivers/md/raid5.c for more
+ implementation examples.
+ 
+ 4 DRIVER DEVELOPMENT NOTES
++
+ 4.1 Conformance points:
+ There are a few conformance points required in dmaengine drivers to
+ accommodate assumptions made by applications using the async_tx API:
+@@ -158,58 +166,36 @@ accommodate assumptions made by applications using the async_tx API:
+ 3/ Use async_tx_run_dependencies() in the descriptor clean up path to
+    handle submission of dependent operations
+ 
+-4.2 "My application needs finer control of hardware channels"
+-This requirement seems to arise from cases where a DMA engine driver is
+-trying to support device-to-memory DMA.  The dmaengine and async_tx
+-implementations were designed for offloading memory-to-memory
+-operations; however, there are some capabilities of the dmaengine layer
+-that can be used for platform-specific channel management.
+-Platform-specific constraints can be handled by registering the
+-application as a 'dma_client' and implementing a 'dma_event_callback' to
+-apply a filter to the available channels in the system.  Before showing
+-how to implement a custom dma_event callback some background of
+-dmaengine's client support is required.
+-
+-The following routines in dmaengine support multiple clients requesting
+-use of a channel:
+-- dma_async_client_register(struct dma_client *client)
+-- dma_async_client_chan_request(struct dma_client *client)
+-
+-dma_async_client_register takes a pointer to an initialized dma_client
+-structure.  It expects that the 'event_callback' and 'cap_mask' fields
+-are already initialized.
+-
+-dma_async_client_chan_request triggers dmaengine to notify the client of
+-all channels that satisfy the capability mask.  It is up to the client's
+-event_callback routine to track how many channels the client needs and
+-how many it is currently using.  The dma_event_callback routine returns a
+-dma_state_client code to let dmaengine know the status of the
+-allocation.
+-
+-Below is the example of how to extend this functionality for
+-platform-specific filtering of the available channels beyond the
+-standard capability mask:
+-
+-static enum dma_state_client
+-my_dma_client_callback(struct dma_client *client,
+-			struct dma_chan *chan, enum dma_state state)
+-{
+-	struct dma_device *dma_dev;
+-	struct my_platform_specific_dma *plat_dma_dev;
+-	
+-	dma_dev = chan->device;
+-	plat_dma_dev = container_of(dma_dev,
+-				    struct my_platform_specific_dma,
+-				    dma_dev);
+-
+-	if (!plat_dma_dev->platform_specific_capability)
+-		return DMA_DUP;
+-
+-	. . .
+-}
++4.2 "My application needs exclusive control of hardware channels"
++Primarily this requirement arises from cases where a DMA engine driver
++is being used to support device-to-memory operations.  A channel that is
++performing these operations cannot, for many platform specific reasons,
++be shared.  For these cases the dma_request_channel() interface is
++provided.
++
++The interface is:
++struct dma_chan *dma_request_channel(dma_cap_mask_t mask,
++				     dma_filter_fn filter_fn,
++				     void *filter_param);
++
++Where dma_filter_fn is defined as:
++typedef enum dma_state_client (*dma_filter_fn)(struct dma_chan *chan,
++					       void *filter_param);
++
++When the optional 'filter_fn' parameter is set to NULL
++dma_request_channel simply returns the first channel that satisfies the
++capability mask.  Otherwise, when the mask parameter is insufficient for
++specifying the necessary channel, the filter_fn routine can be used to
++disposition the available channels in the system. The filter_fn routine
++is called once for each free channel in the system.  Upon seeing a
++suitable channel filter_fn returns DMA_ACK which flags that channel to
++be the return value from dma_request_channel.  A channel allocated via
++this interface is exclusive to the caller, until dma_release_channel()
++is called.
+ 
+ 5 SOURCE
+-include/linux/dmaengine.h: core header file for DMA drivers and clients
++
++include/linux/dmaengine.h: core header file for DMA drivers and api users
+ drivers/dma/dmaengine.c: offload engine channel management routines
+ drivers/dma/: location for offload engine drivers
+ include/linux/async_tx.h: core header file for the async_tx api
+diff --git a/Documentation/dmaengine.txt b/Documentation/dmaengine.txt
+new file mode 100644
+index 0000000..0c1c2f6
+--- /dev/null
++++ b/Documentation/dmaengine.txt
+@@ -0,0 +1 @@
++See Documentation/crypto/async-tx-api.txt
+
