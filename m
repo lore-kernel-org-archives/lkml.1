@@ -1,83 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752558AbYJVDli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193AbYJVD6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752558AbYJVDli (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 23:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbYJVDla
+	id S1753193AbYJVD6t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 23:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbYJVD6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 23:41:30 -0400
-Received: from ishtar.tlinx.org ([64.81.245.74]:53588 "EHLO ishtar.tlinx.org"
+	Tue, 21 Oct 2008 23:58:41 -0400
+Received: from ozlabs.org ([203.10.76.45]:55292 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751174AbYJVDla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 23:41:30 -0400
-Message-ID: <48FEA0C5.5000802@tlinx.org>
-Date: Tue, 21 Oct 2008 20:40:53 -0700
-From: Linda Walsh <smartmontools@tlinx.org>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	id S1751150AbYJVD6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 23:58:40 -0400
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       Bruce Allen <ballen@gravity.phys.uwm.edu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: re: Promise SATA-standby +selftest=hungdrive; Sil works...
-References: <Pine.LNX.4.64.0809142159550.18213@gc.phys.uwm.edu> <48E1B8F8.3090205@gmail.com> <48E26BDA.8080804@tlinx.org> <48E26E61.2010705@gmail.com> <48E34BC8.3050009@tlinx.org> <48E6DE07.70706@gmail.com> <48EAAF2E.4060407@tlinx.org> <48EAB672.3010209@gmail.com> <48EABD07.6030506@tlinx.org> <48EABE8E.9070809@gmail.com> <48EBE263.8000500@tlinx.org> <48EBF7F7.8080908@gmail.com>
-In-Reply-To: <48EBF7F7.8080908@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18686.42209.47915.184451@cargo.ozlabs.ibm.com>
+Date: Wed, 22 Oct 2008 14:58:25 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: "Chris Friesen" <cfriesen@nortel.com>, linuxppc-dev@ozlabs.org,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: build failure on powerpc with current -git
+In-Reply-To: <20081021191324.d4810d40.sfr@canb.auug.org.au>
+References: <48F8E86B.702@nortel.com>
+	<18685.27030.529655.761257@cargo.ozlabs.ibm.com>
+	<20081021191324.d4810d40.sfr@canb.auug.org.au>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is with 2.6.26.5  (there are multiple other problems with 2.6.27[.0]).
+Stephen Rothwell writes:
 
-The problem with the drive going "offline" doesn't happen with a
-sil_sata(3124) controller -- so no need to unplug and replug...
+> On Tue, 21 Oct 2008 16:33:10 +1100 Paul Mackerras <paulus@samba.org> wrote:
+> >
+> > It's a bug in older versions of ld (including 2.16.1) that's fixed in
+> > the current version (2.18).  However, this patch appears to work
+> > around the problem - at least, it let me build a 32-bit kernel with a
+> > cross-toolchain including a 2.16.1 ld.  Let me know if this gets it
+> > working for you.
+> 
+> With that patch applied I got these errors for a powerpc ppc64_defconfig
+> build (linux-next).
+> 
+> /usr/bin/objcopy: Warning: '/dev/null' is not an ordinary file
 
+Hmmm, so do I, and in fact the arch/powerpc/boot/wrapper change now
+seems to be unnecessary with my cross-compile setup (which has ld
+2.16.1), whereas yesterday I'm sure it got errors.  Weird.
 
-I.e. when the drives are in standby, if smartd or a smartctl command
-attempts to run a drive self-test (short), I get timeout errors from the
-Promise controller (which hangs the sys if I try unplugging/replugging
-the cable to the hung drive). 
+Chris, could you try just the following change (my previous patch
+without the arch/powerpc/boot/wrapper change) and let me know if it
+fixes things with the ld you use?
 
-The drives correctly spin up to speed and perform the short-test with
-the sil controller.
-
-It would seem there is a problem with the Promise controller or driver?
-
-
-Tejun Heo wrote:
-> Linda Walsh wrote:
->   
->> Tejun Heo wrote:
->>     
->>> Linda Walsh wrote:
->>>  
->>>       
->>>> Controller is a Promise TX4/300
->>>> Yeap.  After the drive goes offline, does unplugging and replugging
->>>> the power cable to the harddrive makes it come back?
->>>>     
->>>>         
->> ----
->>    No.  It hangs the computer. about 2-3 seconds after plugging the
->> drives back in.  Did it twice to verify it wasn't a fluke.  Verified
->> drives removed from /dev, then
->> plugged them back in -- was able to do about 1-2 ls commands on /dev, then
->> keyboard goes dead.
->>
->>    First time I tried unplugging the power cables and replugging --
->> that hung...
->> 2nd time tried unplugging a sata cable and replugging -- that hung too.
->>     
->
-> Ah.. okay, so the controller went bonkers then.  Any chance you can
-> shell out ~15 bucks and try a sil SATA controller?
->
->   
->>    Hopefully you won't need any more tests of this exact nature...? :-)
->>     
->
-> Wasn't it fun and empowering?  :-P
->
->   
-
+Paul.
+---
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index b39c27e..384dca5 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -187,6 +187,7 @@ SECTIONS
+ 		*(.machine.desc)
+ 		__machine_desc_end = . ;
+ 	}
++#ifdef CONFIG_RELOCATABLE
+ 	. = ALIGN(8);
+ 	.dynsym : AT(ADDR(.dynsym) - LOAD_OFFSET) { *(.dynsym) }
+ 	.dynstr : AT(ADDR(.dynstr) - LOAD_OFFSET) { *(.dynstr) }
+@@ -202,6 +203,7 @@ SECTIONS
+ 		__rela_dyn_start = .;
+ 		*(.rela*)
+ 	}
++#endif
+ 
+ 	/* Fake ELF header containing RPA note; for addnote */
+ 	.fakeelf : AT(ADDR(.fakeelf) - LOAD_OFFSET) { *(.fakeelf) }
