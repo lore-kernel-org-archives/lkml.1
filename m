@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYJVDHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026AbYJVDLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753536AbYJVDHk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 23:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbYJVDHc
+	id S1753026AbYJVDLn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 23:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbYJVDLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 23:07:32 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:44485 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751126AbYJVDHb (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 23:07:31 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Jonathan Johnson <johnsonn@matc.edu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: How do I self diagnose slow write to HDD performance issue
-In-Reply-To: Your message of "Tue, 21 Oct 2008 14:34:01 CDT."
-             <48FDE860.8C56.0056.0@matc.edu>
-From: Valdis.Kletnieks@vt.edu
-References: <48FDE860.8C56.0056.0@matc.edu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1224644845_3562P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Tue, 21 Oct 2008 23:11:35 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:7582 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751022AbYJVDLe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 23:11:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ZamE9qKN6IAcimFxPzb7w9doewRDDtBVjMEm1Cgzz8MFfc0xL1oyrYYGAXw1mrThrt
+         5FN9yyAn2jxElgWSUjrn1WtcnxCiIQT2mkDA4wOYlDm0qB1B2FkPDzilPkiwIaKpx2C7
+         FrZ3F+Zr/T5+OfbAmE3E/PTjzdCu9RGWsJI7k=
+Message-ID: <8bd0f97a0810212011o2dfc2290ra6b227fec3d89a57@mail.gmail.com>
+Date: Tue, 21 Oct 2008 23:11:33 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Bryan Wu" <bryan.wu@analog.com>
+Subject: Re: [RFC] CRIS: Move header files from include to arch/cris
+Cc: "Jesper Nilsson" <jesper.nilsson@axis.com>,
+       "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       "Mikael Starvik" <mikael.starvik@axis.com>
+In-Reply-To: <48FE91AE.4010009@analog.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Tue, 21 Oct 2008 23:07:25 -0400
-Message-ID: <111655.1224644845@turing-police.cc.vt.edu>
+Content-Disposition: inline
+References: <20081021164211.GG24715@axis.com>
+	 <8bd0f97a0810211046n2e32868fu1a58cc9123da7c6d@mail.gmail.com>
+	 <48FE91AE.4010009@analog.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1224644845_3562P
-Content-Type: text/plain; charset=us-ascii
+On Tue, Oct 21, 2008 at 22:36, Bryan Wu wrote:
+> Mike Frysinger wrote:
+>> On Tue, Oct 21, 2008 at 12:42, Jesper Nilsson wrote:
+>>> That means that the machine dependent header files are moved to
+>>> arch/cris/mach-{fs,a3}/include, while the common and architecture
+>>> dependent files are moved to arch/cris/include.
+>>>
+>>> It is mainly this I'd like some input on, since most other ports
+>>> that have moved their header files have put all headers in
+>>> arch/*/include.
+>>
+>> that seems like a fairly obvious good idea to me ... i'm thinking we
+>> should do it for Blackfin as well ...
+>
+> For moving machine header files to arch/blackfin/include/asm/mach-bf{527,
+> 533, 537, 538, 548, 561},  we need to set a link such as
+>  arch/blackfin/include/asm/mach -> arch/blackfin/include/asm/mach-bf527,
+> because tons of drivers use the header file <asm/mach/xxxx.h>.
 
-On Tue, 21 Oct 2008 14:34:01 CDT, Jonathan Johnson said:
+i dont think a ton of drivers use asm/mach/xxx.h considering how few
+files we have in there.  a transition would be pretty trivial.
 
-> Before I setup the array I tested the SATA 2 drives connected to the mobo SATA connect and got approx 60mb/s
-> write and even better read speeds per drive.
+> But we don't like to setup a link that is the one reason we move our header
+> file from include/asm-blackfin to our arch/blackfin/include/asm.
 
-Remember that streaming read/write speed is usually only a small part of the
-total disk performance story.  Sure, if you don't have to move the heads much,
-you can go 60 megabytes/sec.  However, even the *hottest* drives out there
-have a hard time sustaining 200 seeks per second.
-
-In other words, every time you have to move the heads, it costs you 300Kbytes/sec
-of throughput (1/200th of that 60M).
-
-And bonnie++ probably moves the heads a lot.
-
-To *add* insult to injury, if you're running in RAID6 mode, each time you write
-to the RAID set, it has to do *several* I/Os to do all the parity computations.
-So you take a 300K hit for each of those I/Os.
-
-There's a *reason* why RAID1 is still used - you can (assuming a smart enough
-controller) launch both the write and the mirroring write at the same time in
-parallel, taking little or no performance penalty.
-
-
---==_Exmh_1224644845_3562P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFI/pjtcC3lWbTT17ARAgcYAKCdoA4tEiQUCcC6wqM5xfm/qyloawCgxfoM
-Gf1vU0Ox8uY7msfFAhK4yjo=
-=4D9Y
------END PGP SIGNATURE-----
-
---==_Exmh_1224644845_3562P--
+$arch/include/asm/ and $arch/asm/ would work the same.  just tweak the
+actual -I path.
+-mike
