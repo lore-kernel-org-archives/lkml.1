@@ -1,20 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759037AbYJVRoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757819AbYJVRnC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759037AbYJVRoe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 13:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbYJVRf0
+	id S1757819AbYJVRnC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 13:43:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757886AbYJVRes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 13:35:26 -0400
-Received: from kroah.org ([198.145.64.141]:50440 "EHLO coco.kroah.org"
+	Wed, 22 Oct 2008 13:34:48 -0400
+Received: from kroah.org ([198.145.64.141]:53090 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757742AbYJVRfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 13:35:22 -0400
+	id S1757255AbYJVReo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 13:34:44 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Lior Dotan <liodot@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 31/42] Staging: PCC-ACPI: Fix all checkpatch errors
-Date: Wed, 22 Oct 2008 10:29:12 -0700
-Message-Id: <1224696563-5170-31-git-send-email-gregkh@suse.de>
+Cc: Vijay Kumar <vijaykumar@bravegnu.org>,
+       Alexey Zaytsev <alexey.zaytsev@gmail.com>,
+       Jaya Kumar <jayakumar.lkml@gmail.com>,
+       Ken Sienski <sienski@redrapids.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 27/42] Staging: add poch driver
+Date: Wed, 22 Oct 2008 10:29:08 -0700
+Message-Id: <1224696563-5170-27-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081022172203.GA4000@kroah.com>
 References: <20081022172203.GA4000@kroah.com>
@@ -22,908 +26,1554 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Lior Dotan <liodot@gmail.com>
+From: Vijay Kumar <vijaykumar@bravegnu.org>
 
-Fix all complaints that checkpatch had regarding this patch
+This is the first cut at a driver for the Redrapids Pocket Change
+CardBus devices.
 
-Signed-off-by: Lior Dotan <liodot@gmail.com>
+Receiving data seems to work properly, but overflows happen on transmit.
+Still needs more hardware debugging to work properly.
+
+(cleaned up to use proper driver core api functions by Greg)
+
+From: Vijay Kumar <vijaykumar@bravegnu.org>
+Cc: Alexey Zaytsev <alexey.zaytsev@gmail.com>
+Cc: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: Ken Sienski <sienski@redrapids.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/pcc-acpi/pcc-acpi.c |  429 ++++++++++++++++++++---------------
- 1 files changed, 244 insertions(+), 185 deletions(-)
+ drivers/staging/Kconfig       |    2 +
+ drivers/staging/Makefile      |    1 +
+ drivers/staging/poch/Kconfig  |    6 +
+ drivers/staging/poch/Makefile |    1 +
+ drivers/staging/poch/README   |    7 +
+ drivers/staging/poch/poch.c   | 1425 +++++++++++++++++++++++++++++++++++++++++
+ drivers/staging/poch/poch.h   |   29 +
+ 7 files changed, 1471 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/staging/poch/Kconfig
+ create mode 100644 drivers/staging/poch/Makefile
+ create mode 100644 drivers/staging/poch/README
+ create mode 100644 drivers/staging/poch/poch.c
+ create mode 100644 drivers/staging/poch/poch.h
 
-diff --git a/drivers/staging/pcc-acpi/pcc-acpi.c b/drivers/staging/pcc-acpi/pcc-acpi.c
-index e44181e..7715c31 100644
---- a/drivers/staging/pcc-acpi/pcc-acpi.c
-+++ b/drivers/staging/pcc-acpi/pcc-acpi.c
-@@ -27,11 +27,13 @@
-  * 	Nov.04, 2006	Hiroshi Miura <miura@da-cha.org>
-  * 		-v0.9	remove warning about section reference.
-  * 			remove acpi_os_free
-- * 			add /proc/acpi/pcc/brightness interface to allow HAL to access.
-+ * 			add /proc/acpi/pcc/brightness interface to
-+ * 			allow HAL to access.
-  * 			merge dbronaugh's enhancement
-  * 			Aug.17, 2004 David Bronaugh (dbronaugh)
-  *  				- Added screen brightness setting interface
-- *				  Thanks to the FreeBSD crew (acpi_panasonic.c authors)
-+ *				  Thanks to the FreeBSD crew
-+ *				  (acpi_panasonic.c authors)
-  * 				  for the ideas I needed to accomplish it
-  *
-  *	May.29, 2006	Hiroshi Miura <miura@da-cha.org>
-@@ -41,13 +43,15 @@
-  *			Hiroshi Yokota for providing solutions.
-  *
-  *	Oct.02, 2004	Hiroshi Miura <miura@da-cha.org>
-- *		-v0.8.2	merge code of YOKOTA Hiroshi <yokota@netlab.is.tsukuba.ac.jp>.
-+ *		-v0.8.2	merge code of YOKOTA Hiroshi
-+ *			<yokota@netlab.is.tsukuba.ac.jp>.
-  *			Add sticky key mode interface.
-  *			Refactoring acpi_pcc_generete_keyinput().
-  *
-  *	Sep.15, 2004	Hiroshi Miura <miura@da-cha.org>
-  *		-v0.8	Generate key input event on input subsystem.
-- *			This is based on yet another driver written by Ryuta Nakanishi.
-+ *			This is based on yet another driver
-+ *			written by Ryuta Nakanishi.
-  *
-  *	Sep.10, 2004	Hiroshi Miura <miura@da-cha.org>
-  *		-v0.7	Change proc interface functions using seq_file
-@@ -57,7 +61,8 @@
-  *		-v0.6.4 Fix a silly error with status checking
-  *
-  *	Aug.25, 2004	Hiroshi Miura <miura@da-cha.org>
-- *		-v0.6.3 replace read_acpi_int by standard function acpi_evaluate_integer
-+ *		-v0.6.3 replace read_acpi_int by standard
-+ *			function acpi_evaluate_integer
-  *			some clean up and make smart copyright notice.
-  *			fix return value of pcc_acpi_get_key()
-  *			fix checking return value of acpi_bus_register_driver()
-@@ -96,19 +101,18 @@
+diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
+index 65a86b7..c4eff44 100644
+--- a/drivers/staging/Kconfig
++++ b/drivers/staging/Kconfig
+@@ -45,4 +45,6 @@ source "drivers/staging/at76_usb/Kconfig"
  
- #define ACPI_PCC_VERSION	"0.9+hy"
+ source "drivers/staging/pcc-acpi/Kconfig"
  
--#include <acpi/acpi_bus.h>
--#include <acpi/acpi_drivers.h>
--#include <asm/uaccess.h>
-+#include <linux/kernel.h>
++source "drivers/staging/poch/Kconfig"
++
+ endif # STAGING
+diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+index e5c4a38..7cb8701 100644
+--- a/drivers/staging/Makefile
++++ b/drivers/staging/Makefile
+@@ -14,3 +14,4 @@ obj-$(CONFIG_PRISM2_USB)	+= wlan-ng/
+ obj-$(CONFIG_ECHO)		+= echo/
+ obj-$(CONFIG_USB_ATMEL)		+= at76_usb/
+ obj-$(CONFIG_PCC_ACPI)		+= pcc-acpi/
++obj-$(CONFIG_POCH)		+= poch/
+diff --git a/drivers/staging/poch/Kconfig b/drivers/staging/poch/Kconfig
+new file mode 100644
+index 0000000..b3b33b9
+--- /dev/null
++++ b/drivers/staging/poch/Kconfig
+@@ -0,0 +1,6 @@
++config POCH
++	tristate "Redrapids Pocket Change CardBus support"
++	depends on PCI && UIO
++	default N
++	---help---
++	  Enable support for Redrapids Pocket Change CardBus devices.
+diff --git a/drivers/staging/poch/Makefile b/drivers/staging/poch/Makefile
+new file mode 100644
+index 0000000..d2b9680
+--- /dev/null
++++ b/drivers/staging/poch/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_POCH)		+= poch.o
+diff --git a/drivers/staging/poch/README b/drivers/staging/poch/README
+new file mode 100644
+index 0000000..f65e979
+--- /dev/null
++++ b/drivers/staging/poch/README
+@@ -0,0 +1,7 @@
++TODO:
++	- fix transmit overflows
++	- audit userspace interfaces
++	- get reserved major/minor if needed
++
++Please send patches to Greg Kroah-Hartman <greg@kroah.com> and
++Vijay Kumar <vijaykumar@bravegnu.org> and Jaya Kumar <jayakumar.lkml@gmail.com>
+diff --git a/drivers/staging/poch/poch.c b/drivers/staging/poch/poch.c
+new file mode 100644
+index 0000000..0e113f9
+--- /dev/null
++++ b/drivers/staging/poch/poch.c
+@@ -0,0 +1,1425 @@
++/*
++ * User-space DMA and UIO based Redrapids Pocket Change CardBus driver
++ *
++ * Copyright 2008 Vijay Kumar <vijaykumar@bravegnu.org>
++ *
++ * Licensed under GPL version 2 only.
++ */
++
++#include <linux/device.h>
 +#include <linux/module.h>
-+#include <linux/types.h>
- #include <linux/ctype.h>
- #include <linux/init.h>
- #include <linux/input.h>
--#include <linux/kernel.h>
--#include <linux/module.h>
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
- #include <linux/slab.h>
--#include <linux/types.h>
--#include <linux/version.h>
-+#include <linux/uaccess.h>
-+#include <acpi/acpi_bus.h>
-+#include <acpi/acpi_drivers.h>
- 
- 
- /*************************************************************************
-@@ -207,12 +211,18 @@ MODULE_LICENSE("GPL");
-    ENV_STATEs: Normal temp=0x01, High temp=0x81, N/A=0x00
- */
- enum SINF_BITS { SINF_NUM_BATTERIES = 0,
--                 SINF_LCD_TYPE,      /* 1 */
--		 SINF_AC_MAX_BRIGHT, SINF_AC_MIN_BRIGHT, SINF_AC_CUR_BRIGHT,  /* 2, 3, 4 */
--		             /* 4 = R1 only handle SINF_AC_CUR_BRIGHT as SINF_CUR_BRIGHT and don't know AC state */
--		 SINF_DC_MAX_BRIGHT, SINF_DC_MIN_BRIGHT, SINF_DC_CUR_BRIGHT,  /* 5, 6, 7 */
-+		 SINF_LCD_TYPE,
-+		 SINF_AC_MAX_BRIGHT,
-+		 SINF_AC_MIN_BRIGHT,
-+		 SINF_AC_CUR_BRIGHT,
-+			     /* 4 = R1 only handle SINF_AC_CUR_BRIGHT
-+			      * as SINF_CUR_BRIGHT and don't know AC state */
-+		 SINF_DC_MAX_BRIGHT,
-+		 SINF_DC_MIN_BRIGHT,
-+		 SINF_DC_CUR_BRIGHT,
- 		 SINF_MUTE,
--		 SINF_RESERVED,      SINF_ENV_STATE, /* 9, 10 */
-+		 SINF_RESERVED,
-+		 SINF_ENV_STATE, /* 10 */
- 		 SINF_STICKY_KEY = 0x80,
- };
- 
-@@ -227,7 +237,8 @@ MODULE_DEVICE_TABLE(acpi, pcc_device_ids);
- 
- 
- static int __devinit acpi_pcc_hotkey_add(struct acpi_device *device);
--static int __devexit acpi_pcc_hotkey_remove(struct acpi_device *device, int type);
-+static int __devexit acpi_pcc_hotkey_remove(struct acpi_device *device,
-+					    int type);
- static int acpi_pcc_hotkey_resume(struct acpi_device *device);
- 
- 
-@@ -236,11 +247,11 @@ static struct acpi_driver acpi_pcc_driver = {
- 	.class =	ACPI_PCC_CLASS,
- 	.ids =		pcc_device_ids,
- 	.ops =		{
--				.add =		acpi_pcc_hotkey_add,
--				.remove =	__devexit_p(acpi_pcc_hotkey_remove),
-+				.add = acpi_pcc_hotkey_add,
-+				.remove = __devexit_p(acpi_pcc_hotkey_remove),
- #ifdef CONFIG_PM
--				/*.suspend =      acpi_pcc_hotkey_suspend,*/
--				.resume =       acpi_pcc_hotkey_resume,
-+				/*.suspend = acpi_pcc_hotkey_suspend,*/
-+				.resume = acpi_pcc_hotkey_resume,
- #endif
- 			},
- };
-@@ -264,7 +275,7 @@ struct pcc_keyinput {
-    Hotkey driver core
-    ************************************************************************* */
- /* -------------------------------------------------------------------------
--                           method access functions
-+   method access functions
-    ------------------------------------------------------------------------- */
- static int acpi_pcc_write_sset(struct acpi_hotkey *hotkey, int func, int val)
- {
-@@ -282,7 +293,8 @@ static int acpi_pcc_write_sset(struct acpi_hotkey *hotkey, int func, int val)
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_write_sset");
- 
--	status = acpi_evaluate_object(hotkey->handle, METHOD_HKEY_SSET, &params, NULL);
-+	status = acpi_evaluate_object(hotkey->handle, METHOD_HKEY_SSET,
-+								&params, NULL);
- 
- 	return_VALUE(status == AE_OK ? AE_OK : AE_ERROR);
- }
-@@ -294,7 +306,8 @@ static inline int acpi_pcc_get_sqty(struct acpi_device *device)
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_get_sqty");
- 
--	status = acpi_evaluate_integer(device->handle, METHOD_HKEY_SQTY, NULL, &s);
-+	status = acpi_evaluate_integer(device->handle, METHOD_HKEY_SQTY,
-+								NULL, &s);
- 	if (ACPI_SUCCESS(status)) {
- 		return_VALUE(s);
- 	} else {
-@@ -304,7 +317,7 @@ static inline int acpi_pcc_get_sqty(struct acpi_device *device)
- 	}
- }
- 
--static int acpi_pcc_retrieve_biosdata(struct acpi_hotkey *hotkey, u32* sinf)
-+static int acpi_pcc_retrieve_biosdata(struct acpi_hotkey *hotkey, u32 *sinf)
- {
- 	acpi_status status;
- 	struct acpi_buffer buffer = {ACPI_ALLOCATE_BUFFER, NULL};
-@@ -313,9 +326,11 @@ static int acpi_pcc_retrieve_biosdata(struct acpi_hotkey *hotkey, u32* sinf)
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_retrieve_biosdata");
- 
--	status = acpi_evaluate_object(hotkey->handle, METHOD_HKEY_SINF, 0 , &buffer);
-+	status = acpi_evaluate_object(hotkey->handle, METHOD_HKEY_SINF, 0,
-+				      &buffer);
- 	if (ACPI_FAILURE(status)) {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "evaluation error HKEY.SINF\n"));
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+				 "evaluation error HKEY.SINF\n"));
- 		status = AE_ERROR;
- 		return_VALUE(status);
- 	}
-@@ -327,7 +342,8 @@ static int acpi_pcc_retrieve_biosdata(struct acpi_hotkey *hotkey, u32* sinf)
- 	}
- 
- 	if (hotkey->num_sifr < hkey->package.count) {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "SQTY reports bad SINF length\n"));
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+				 "SQTY reports bad SINF length\n"));
- 		status = AE_ERROR;
- 		goto free_buffer;
- 	}
-@@ -337,7 +353,8 @@ static int acpi_pcc_retrieve_biosdata(struct acpi_hotkey *hotkey, u32* sinf)
- 		if (likely(element->type == ACPI_TYPE_INTEGER)) {
- 			sinf[i] = element->integer.value;
- 		} else {
--			ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Invalid HKEY.SINF data\n"));
-+			ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+					 "Invalid HKEY.SINF data\n"));
- 			status = AE_ERROR;
- 			break;
- 		}
-@@ -356,24 +373,26 @@ static int acpi_pcc_read_sinf_field(struct seq_file *seq, int field)
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_read_sinf_field");
- 
--	if (ACPI_SUCCESS(acpi_pcc_retrieve_biosdata(hotkey, sinf))) {
-+	if (ACPI_SUCCESS(acpi_pcc_retrieve_biosdata(hotkey, sinf)))
- 		seq_printf(seq, "%u\n",	sinf[field]);
--	} else {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Couldn't retrieve BIOS data\n"));
--	}
-+	else
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+				 "Couldn't retrieve BIOS data\n"));
- 
- 	return_VALUE(AE_OK);
- }
- 
- /* -------------------------------------------------------------------------
--                       user interface functions
-+   user interface functions
-    ------------------------------------------------------------------------- */
- /* read methods */
- /* Sinf read methods */
- #define PCC_SINF_READ_F(_name_, FUNC) \
--static int _name_  (struct seq_file *seq, void *offset) \
-+static int _name_(struct seq_file *seq, void *offset) \
- { \
--	return_VALUE(ACPI_SUCCESS(acpi_pcc_read_sinf_field(seq, (FUNC)))  ? 0 : -EINVAL); \
-+	return_VALUE(ACPI_SUCCESS(acpi_pcc_read_sinf_field(seq,	\
-+							  (FUNC))) \
-+							  ? 0 : -EINVAL); \
- }
- 
- PCC_SINF_READ_F(acpi_pcc_numbatteries_show,	 SINF_NUM_BATTERIES);
-@@ -393,9 +412,8 @@ static int acpi_pcc_sticky_key_show(struct seq_file *seq, void *offset)
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_sticky_key_show");
- 
--	if (!hotkey || !hotkey->device) {
-+	if (!hotkey || !hotkey->device)
- 		return_VALUE(-EINVAL);
--	}
- 
- 	seq_printf(seq, "%d\n", hotkey->sticky_mode);
- 
-@@ -404,7 +422,7 @@ static int acpi_pcc_sticky_key_show(struct seq_file *seq, void *offset)
- 
- static int acpi_pcc_keyinput_show(struct seq_file *seq, void *offset)
- {
--	struct acpi_hotkey 	*hotkey = (struct acpi_hotkey *) seq->private;
-+	struct acpi_hotkey 	*hotkey = seq->private;
- 	struct input_dev 	*hotk_input_dev = hotkey->input_dev;
- 	struct pcc_keyinput 	*keyinput = input_get_drvdata(hotk_input_dev);
- 
-@@ -417,25 +435,25 @@ static int acpi_pcc_keyinput_show(struct seq_file *seq, void *offset)
- 
- static int acpi_pcc_version_show(struct seq_file *seq, void *offset)
- {
--	struct acpi_hotkey *hotkey = (struct acpi_hotkey *) seq->private;
-+	struct acpi_hotkey *hotkey = seq->private;
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_version_show");
- 
--	if (!hotkey || !hotkey->device) {
-+	if (!hotkey || !hotkey->device)
- 		return_VALUE(-EINVAL);
--	}
- 
--	seq_printf(seq, "%s version %s\n", ACPI_PCC_DRIVER_NAME, ACPI_PCC_VERSION);
-+	seq_printf(seq, "%s version %s\n", ACPI_PCC_DRIVER_NAME,
-+		   ACPI_PCC_VERSION);
- 	seq_printf(seq, "%li functions\n", hotkey->num_sifr);
- 
- 	return_VALUE(0);
- }
- 
- /* write methods */
--static ssize_t acpi_pcc_write_single_flag (struct file *file,
--					   const char __user *buffer,
--					   size_t count,
--					   int sinf_func)
-+static ssize_t acpi_pcc_write_single_flag(struct file *file,
-+					  const char __user *buffer,
-+					  size_t count,
-+					  int sinf_func)
- {
- 	struct seq_file		*seq = file->private_data;
- 	struct acpi_hotkey	*hotkey = seq->private;
-@@ -444,24 +462,23 @@ static ssize_t acpi_pcc_write_single_flag (struct file *file,
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_write_single_flag");
- 
--	if (!hotkey || (count > sizeof(write_string) - 1)) {
-+	if (!hotkey || (count > sizeof(write_string) - 1))
- 		return_VALUE(-EINVAL);
--	}
- 
--	if (copy_from_user(write_string, buffer, count)) {
-+	if (copy_from_user(write_string, buffer, count))
- 		return_VALUE(-EFAULT);
--	}
++#include <linux/pci.h>
++#include <linux/uio_driver.h>
++#include <linux/spinlock.h>
++#include <linux/cdev.h>
++#include <linux/delay.h>
++#include <linux/sysfs.h>
++#include <linux/poll.h>
++#include <linux/idr.h>
++#include <linux/interrupt.h>
++#include <linux/init.h>
++#include <linux/ioctl.h>
++#include <linux/io.h>
 +
- 	write_string[count] = '\0';
- 
- 	if ((sscanf(write_string, "%3i", &val) == 1) &&
--	    (val == 0 || val == 1)) {
-+	    (val == 0 || val == 1))
- 		acpi_pcc_write_sset(hotkey, sinf_func, val);
--	}
- 
- 	return_VALUE(count);
- }
- 
--static unsigned long acpi_pcc_write_brightness(struct file *file, const char __user *buffer,
-+static unsigned long acpi_pcc_write_brightness(struct file *file,
-+					       const char __user *buffer,
- 					       size_t count,
- 					       int min_index, int max_index,
- 					       int cur_index)
-@@ -474,33 +491,32 @@ static unsigned long acpi_pcc_write_brightness(struct file *file, const char __u
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_write_brightness");
- 
--	if (!hotkey || (count > sizeof(write_string) - 1)) {
-+	if (!hotkey || (count > sizeof(write_string) - 1))
- 		return_VALUE(-EINVAL);
--	}
- 
--	if (copy_from_user(write_string, buffer, count)) {
-+	if (copy_from_user(write_string, buffer, count))
- 		return_VALUE(-EFAULT);
--	}
- 
- 	write_string[count] = '\0';
- 
- 	if (ACPI_FAILURE(acpi_pcc_retrieve_biosdata(hotkey, sinf))) {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Couldn't retrieve BIOS data\n"));
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+				 "Couldn't retrieve BIOS data\n"));
- 		goto end;
- 	}
- 
- 	if ((sscanf(write_string, "%4i", &bright) == 1) &&
--	    (bright >= sinf[min_index]                ) &&
--	    (bright <= sinf[max_index]                )) {
-+	    (bright >= sinf[min_index]) &&
-+	    (bright <= sinf[max_index]))
- 		acpi_pcc_write_sset(hotkey, cur_index, bright);
--	}
- 
- end:
- 	return_VALUE(count);
- }
- 
--static ssize_t acpi_pcc_write_ac_brightness(struct file *file, const char __user *buffer,
--					 size_t count, loff_t *ppos)
-+static ssize_t acpi_pcc_write_ac_brightness(struct file *file,
-+					    const char __user *buffer,
-+					    size_t count, loff_t *ppos)
- {
- 	return_VALUE(acpi_pcc_write_brightness(file, buffer, count,
- 					       SINF_AC_MIN_BRIGHT,
-@@ -508,8 +524,9 @@ static ssize_t acpi_pcc_write_ac_brightness(struct file *file, const char __user
- 					       SINF_AC_CUR_BRIGHT));
- }
- 
--static ssize_t acpi_pcc_write_dc_brightness(struct file *file, const char __user *buffer,
--					 size_t count, loff_t *ppos)
-+static ssize_t acpi_pcc_write_dc_brightness(struct file *file,
-+					    const char __user *buffer,
-+					    size_t count, loff_t *ppos)
- {
- 	return_VALUE(acpi_pcc_write_brightness(file, buffer, count,
- 					       SINF_DC_MIN_BRIGHT,
-@@ -517,24 +534,27 @@ static ssize_t acpi_pcc_write_dc_brightness(struct file *file, const char __user
- 					       SINF_DC_CUR_BRIGHT));
- }
- 
--static ssize_t acpi_pcc_write_no_brightness(struct file *file, const char __user *buffer,
--					 size_t count, loff_t *ppos)
-+static ssize_t acpi_pcc_write_no_brightness(struct file *file,
-+					    const char __user *buffer,
-+					    size_t count, loff_t *ppos)
- {
--	return acpi_pcc_write_brightness(file, buffer, count, SINF_AC_MIN_BRIGHT,
-+	return acpi_pcc_write_brightness(file, buffer, count,
-+					 SINF_AC_MIN_BRIGHT,
- 					 SINF_AC_MAX_BRIGHT,
- 					 SINF_AC_CUR_BRIGHT);
- }
- 
--static ssize_t acpi_pcc_write_mute (struct file *file,
--				    const char __user *buffer,
--				    size_t count, loff_t *ppos)
-+static ssize_t acpi_pcc_write_mute(struct file *file,
-+				   const char __user *buffer,
-+				   size_t count, loff_t *ppos)
- {
--	return_VALUE(acpi_pcc_write_single_flag(file, buffer, count, SINF_MUTE));
-+	return_VALUE(acpi_pcc_write_single_flag(file, buffer, count,
-+						SINF_MUTE));
- }
- 
--static ssize_t acpi_pcc_write_sticky_key (struct file *file,
--					  const char __user *buffer,
--					  size_t count, loff_t *ppos)
-+static ssize_t acpi_pcc_write_sticky_key(struct file *file,
-+					 const char __user *buffer,
-+					 size_t count, loff_t *ppos)
- {
- 	struct seq_file     *seq = (struct seq_file *)file->private_data;
- 	struct acpi_hotkey  *hotkey = (struct acpi_hotkey *)seq->private;
-@@ -543,13 +563,12 @@ static ssize_t acpi_pcc_write_sticky_key (struct file *file,
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_write_sticky_key");
- 
--	if (!hotkey || (count > sizeof(write_string) - 1)) {
-+	if (!hotkey || (count > sizeof(write_string) - 1))
- 		return_VALUE(-EINVAL);
--	}
- 
--	if (copy_from_user(write_string, buffer, count)) {
-+	if (copy_from_user(write_string, buffer, count))
- 		return_VALUE(-EFAULT);
--	}
++#include "poch.h"
 +
- 	write_string[count] = '\0';
- 
- 	if ((sscanf(write_string, "%3i", &mode) == 1) &&
-@@ -561,8 +580,9 @@ static ssize_t acpi_pcc_write_sticky_key (struct file *file,
- 	return_VALUE(count);
- }
- 
--static ssize_t acpi_pcc_write_keyinput(struct file *file, const char __user *buffer,
--					 size_t count, loff_t *ppos)
-+static ssize_t acpi_pcc_write_keyinput(struct file *file,
-+				       const char __user *buffer,
-+				       size_t count, loff_t *ppos)
- {
- 	struct seq_file		*seq = (struct seq_file *)file->private_data;
- 	struct acpi_hotkey	*hotkey = (struct acpi_hotkey *)seq->private;
-@@ -572,13 +592,11 @@ static ssize_t acpi_pcc_write_keyinput(struct file *file, const char __user *buf
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_write_keyinput");
- 
--	if (!hotkey || (count > (sizeof(write_string) - 1))) {
-+	if (!hotkey || (count > (sizeof(write_string) - 1)))
- 		return_VALUE(-EINVAL);
--	}
- 
--	if (copy_from_user(write_string, buffer, count)) {
-+	if (copy_from_user(write_string, buffer, count))
- 		return_VALUE(-EFAULT);
--	}
- 
- 	write_string[count] = '\0';
- 
-@@ -592,7 +610,7 @@ static ssize_t acpi_pcc_write_keyinput(struct file *file, const char __user *buf
- }
- 
- /* -------------------------------------------------------------------------
--                            hotkey driver
-+   hotkey driver
-    ------------------------------------------------------------------------- */
- static void acpi_pcc_generete_keyinput(struct acpi_hotkey *hotkey)
- {
-@@ -604,7 +622,8 @@ static void acpi_pcc_generete_keyinput(struct acpi_hotkey *hotkey)
- 		/*  0 */ -1,
- 		/*  1 */ KEY_BRIGHTNESSDOWN,
- 		/*  2 */ KEY_BRIGHTNESSUP,
--		/*  3 */ -1, /* vga/lcd switch event is not occur on hotkey driver. */
-+		/*  3 */ -1, /* vga/lcd switch event is not occur on
-+				hotkey driver. */
- 		/*  4 */ KEY_MUTE,
- 		/*  5 */ KEY_VOLUMEDOWN,
- 		/*  6 */ KEY_VOLUMEUP,
-@@ -616,11 +635,12 @@ static void acpi_pcc_generete_keyinput(struct acpi_hotkey *hotkey)
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_generete_keyinput");
- 
--	if (keyinput->key_mode == 0) { return_VOID; }
-+	if (keyinput->key_mode == 0)
-+		return_VOID;
- 
- 	hkey_num = hinf & 0xf;
- 
--	if ((       0 > hkey_num	   ) ||
-+	if ((0 > hkey_num) ||
- 	    (hkey_num > ARRAY_SIZE(key_map))) {
- 		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
- 				  "hotkey number out of range: %d\n",
-@@ -645,12 +665,13 @@ static int acpi_pcc_hotkey_get_key(struct acpi_hotkey *hotkey)
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_hotkey_get_key");
- 
--	status = acpi_evaluate_integer(hotkey->handle, METHOD_HKEY_QUERY, NULL, &result);
--	if (likely(ACPI_SUCCESS(status))) {
-+	status = acpi_evaluate_integer(hotkey->handle, METHOD_HKEY_QUERY,
-+								NULL, &result);
-+	if (likely(ACPI_SUCCESS(status)))
- 		hotkey->status = result;
--	} else {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "error getting hotkey status\n"));
--	}
-+	else
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+			"error getting hotkey status\n"));
- 
- 	return_VALUE(status == AE_OK);
- }
-@@ -661,11 +682,13 @@ void acpi_pcc_hotkey_notify(acpi_handle handle, u32 event, void *data)
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_hotkey_notify");
- 
--	switch(event) {
-+	switch (event) {
- 	case HKEY_NOTIFY:
- 		if (acpi_pcc_hotkey_get_key(hotkey)) {
--			/* generate event like '"pcc HKEY 00000080 00000084"' when Fn+F4 pressed */
--			acpi_bus_generate_proc_event(hotkey->device, event, hotkey->status);
-+			/* generate event like '"pcc HKEY 00000080 00000084"'
-+			 * when Fn+F4 pressed */
-+			acpi_bus_generate_proc_event(hotkey->device, event,
-+								hotkey->status);
- 		}
- 		acpi_pcc_generete_keyinput(hotkey);
- 		break;
-@@ -680,75 +703,96 @@ void acpi_pcc_hotkey_notify(acpi_handle handle, u32 event, void *data)
-    FS Interface (/proc)
-    ************************************************************************* */
- /* oepn proc file fs*/
--SEQ_OPEN_FS(acpi_pcc_dc_brightness_open_fs,	acpi_pcc_dc_brightness_show);
--SEQ_OPEN_FS(acpi_pcc_numbatteries_open_fs,	acpi_pcc_numbatteries_show);
--SEQ_OPEN_FS(acpi_pcc_lcdtype_open_fs,		acpi_pcc_lcdtype_show);
--SEQ_OPEN_FS(acpi_pcc_ac_brightness_max_open_fs, acpi_pcc_ac_brightness_max_show);
--SEQ_OPEN_FS(acpi_pcc_ac_brightness_min_open_fs, acpi_pcc_ac_brightness_min_show);
--SEQ_OPEN_FS(acpi_pcc_ac_brightness_open_fs,	acpi_pcc_ac_brightness_show);
--SEQ_OPEN_FS(acpi_pcc_dc_brightness_max_open_fs, acpi_pcc_dc_brightness_max_show);
--SEQ_OPEN_FS(acpi_pcc_dc_brightness_min_open_fs, acpi_pcc_dc_brightness_min_show);
--SEQ_OPEN_FS(acpi_pcc_brightness_open_fs,	acpi_pcc_brightness_show);
--SEQ_OPEN_FS(acpi_pcc_mute_open_fs,		acpi_pcc_mute_show);
--SEQ_OPEN_FS(acpi_pcc_version_open_fs,		acpi_pcc_version_show);
--SEQ_OPEN_FS(acpi_pcc_keyinput_open_fs,		acpi_pcc_keyinput_show);
--SEQ_OPEN_FS(acpi_pcc_sticky_key_open_fs,	acpi_pcc_sticky_key_show);
--
--typedef struct file_operations fops_t;
--static fops_t acpi_pcc_numbatteries_fops      = SEQ_FILEOPS_R (acpi_pcc_numbatteries_open_fs);
--static fops_t acpi_pcc_lcdtype_fops           = SEQ_FILEOPS_R (acpi_pcc_lcdtype_open_fs);
--static fops_t acpi_pcc_mute_fops              = SEQ_FILEOPS_RW(acpi_pcc_mute_open_fs, acpi_pcc_write_mute);
--static fops_t acpi_pcc_ac_brightness_fops     = SEQ_FILEOPS_RW(acpi_pcc_ac_brightness_open_fs, acpi_pcc_write_ac_brightness);
--static fops_t acpi_pcc_ac_brightness_max_fops = SEQ_FILEOPS_R (acpi_pcc_ac_brightness_max_open_fs);
--static fops_t acpi_pcc_ac_brightness_min_fops = SEQ_FILEOPS_R (acpi_pcc_ac_brightness_min_open_fs);
--static fops_t acpi_pcc_dc_brightness_fops     = SEQ_FILEOPS_RW(acpi_pcc_dc_brightness_open_fs, acpi_pcc_write_dc_brightness);
--static fops_t acpi_pcc_dc_brightness_max_fops = SEQ_FILEOPS_R (acpi_pcc_dc_brightness_max_open_fs);
--static fops_t acpi_pcc_dc_brightness_min_fops = SEQ_FILEOPS_R (acpi_pcc_dc_brightness_min_open_fs);
--static fops_t acpi_pcc_brightness_fops        = SEQ_FILEOPS_RW(acpi_pcc_brightness_open_fs, acpi_pcc_write_no_brightness);
--static fops_t acpi_pcc_sticky_key_fops        = SEQ_FILEOPS_RW(acpi_pcc_sticky_key_open_fs, acpi_pcc_write_sticky_key);
--static fops_t acpi_pcc_keyinput_fops          = SEQ_FILEOPS_RW(acpi_pcc_keyinput_open_fs, acpi_pcc_write_keyinput);
--static fops_t acpi_pcc_version_fops           = SEQ_FILEOPS_R (acpi_pcc_version_open_fs);
--
--typedef struct _ProcItem
--{
--	const char* name;
-+SEQ_OPEN_FS(acpi_pcc_dc_brightness_open_fs, acpi_pcc_dc_brightness_show);
-+SEQ_OPEN_FS(acpi_pcc_numbatteries_open_fs, acpi_pcc_numbatteries_show);
-+SEQ_OPEN_FS(acpi_pcc_lcdtype_open_fs, acpi_pcc_lcdtype_show);
-+SEQ_OPEN_FS(acpi_pcc_ac_brightness_max_open_fs,
-+	    acpi_pcc_ac_brightness_max_show);
-+SEQ_OPEN_FS(acpi_pcc_ac_brightness_min_open_fs,
-+	    acpi_pcc_ac_brightness_min_show);
-+SEQ_OPEN_FS(acpi_pcc_ac_brightness_open_fs, acpi_pcc_ac_brightness_show);
-+SEQ_OPEN_FS(acpi_pcc_dc_brightness_max_open_fs,
-+	    acpi_pcc_dc_brightness_max_show);
-+SEQ_OPEN_FS(acpi_pcc_dc_brightness_min_open_fs,
-+	    acpi_pcc_dc_brightness_min_show);
-+SEQ_OPEN_FS(acpi_pcc_brightness_open_fs, acpi_pcc_brightness_show);
-+SEQ_OPEN_FS(acpi_pcc_mute_open_fs, acpi_pcc_mute_show);
-+SEQ_OPEN_FS(acpi_pcc_version_open_fs, acpi_pcc_version_show);
-+SEQ_OPEN_FS(acpi_pcc_keyinput_open_fs, acpi_pcc_keyinput_show);
-+SEQ_OPEN_FS(acpi_pcc_sticky_key_open_fs, acpi_pcc_sticky_key_show);
++#include <asm/cacheflush.h>
 +
-+static struct file_operations acpi_pcc_numbatteries_fops =
-+	SEQ_FILEOPS_R(acpi_pcc_numbatteries_open_fs);
-+static struct file_operations acpi_pcc_lcdtype_fops =
-+	SEQ_FILEOPS_R(acpi_pcc_lcdtype_open_fs);
-+static struct file_operations acpi_pcc_mute_fops =
-+	SEQ_FILEOPS_RW(acpi_pcc_mute_open_fs, acpi_pcc_write_mute);
-+static struct file_operations acpi_pcc_ac_brightness_fops =
-+	SEQ_FILEOPS_RW(acpi_pcc_ac_brightness_open_fs,
-+		       acpi_pcc_write_ac_brightness);
-+static struct file_operations acpi_pcc_ac_brightness_max_fops =
-+	SEQ_FILEOPS_R(acpi_pcc_ac_brightness_max_open_fs);
-+static struct file_operations acpi_pcc_ac_brightness_min_fops =
-+	SEQ_FILEOPS_R(acpi_pcc_ac_brightness_min_open_fs);
-+static struct file_operations acpi_pcc_dc_brightness_fops =
-+	SEQ_FILEOPS_RW(acpi_pcc_dc_brightness_open_fs,
-+		       acpi_pcc_write_dc_brightness);
-+static struct file_operations acpi_pcc_dc_brightness_max_fops =
-+	SEQ_FILEOPS_R(acpi_pcc_dc_brightness_max_open_fs);
-+static struct file_operations acpi_pcc_dc_brightness_min_fops =
-+	SEQ_FILEOPS_R(acpi_pcc_dc_brightness_min_open_fs);
-+static struct file_operations acpi_pcc_brightness_fops =
-+	SEQ_FILEOPS_RW(acpi_pcc_brightness_open_fs,
-+		       acpi_pcc_write_no_brightness);
-+static struct file_operations acpi_pcc_sticky_key_fops =
-+	SEQ_FILEOPS_RW(acpi_pcc_sticky_key_open_fs, acpi_pcc_write_sticky_key);
-+static struct file_operations acpi_pcc_keyinput_fops =
-+	SEQ_FILEOPS_RW(acpi_pcc_keyinput_open_fs, acpi_pcc_write_keyinput);
-+static struct file_operations acpi_pcc_version_fops =
-+	SEQ_FILEOPS_R(acpi_pcc_version_open_fs);
++#ifndef PCI_VENDOR_ID_RRAPIDS
++#define PCI_VENDOR_ID_RRAPIDS 0x17D2
++#endif
 +
-+struct proc_item {
-+	const char *name;
- 	struct file_operations *fops;
- 	mode_t flag;
--} ProcItem;
++#ifndef PCI_DEVICE_ID_RRAPIDS_POCKET_CHANGE
++#define PCI_DEVICE_ID_RRAPIDS_POCKET_CHANGE 0x0351
++#endif
++
++#define POCH_NCHANNELS 2
++
++#define MAX_POCH_CARDS 8
++#define MAX_POCH_DEVICES (MAX_POCH_CARDS * POCH_NCHANNELS)
++
++#define DRV_NAME "poch"
++#define PFX      DRV_NAME ": "
++
++/*
++ * BAR0 Bridge Register Definitions
++ */
++
++#define BRIDGE_REV_REG			0x0
++#define BRIDGE_INT_MASK_REG		0x4
++#define BRIDGE_INT_STAT_REG		0x8
++
++#define BRIDGE_INT_ACTIVE		(0x1 << 31)
++#define BRIDGE_INT_FPGA		        (0x1 << 2)
++#define BRIDGE_INT_TEMP_FAIL		(0x1 << 1)
++#define	BRIDGE_INT_TEMP_WARN		(0x1 << 0)
++
++#define BRIDGE_FPGA_RESET_REG		0xC
++
++#define BRIDGE_CARD_POWER_REG		0x10
++#define BRIDGE_CARD_POWER_EN            (0x1 << 0)
++#define BRIDGE_CARD_POWER_PROG_DONE     (0x1 << 31)
++
++#define BRIDGE_JTAG_REG			0x14
++#define BRIDGE_DMA_GO_REG		0x18
++#define BRIDGE_STAT_0_REG		0x1C
++#define BRIDGE_STAT_1_REG		0x20
++#define BRIDGE_STAT_2_REG		0x24
++#define BRIDGE_STAT_3_REG		0x28
++#define BRIDGE_TEMP_STAT_REG		0x2C
++#define BRIDGE_TEMP_THRESH_REG		0x30
++#define BRIDGE_EEPROM_REVSEL_REG	0x34
++#define BRIDGE_CIS_STRUCT_REG		0x100
++#define BRIDGE_BOARDREV_REG		0x124
++
++/*
++ * BAR1 FPGA Register Definitions
++ */
++
++#define FPGA_IFACE_REV_REG		0x0
++#define FPGA_RX_BLOCK_SIZE_REG		0x8
++#define FPGA_TX_BLOCK_SIZE_REG		0xC
++#define FPGA_RX_BLOCK_COUNT_REG		0x10
++#define FPGA_TX_BLOCK_COUNT_REG		0x14
++#define FPGA_RX_CURR_DMA_BLOCK_REG	0x18
++#define FPGA_TX_CURR_DMA_BLOCK_REG	0x1C
++#define FPGA_RX_GROUP_COUNT_REG		0x20
++#define FPGA_TX_GROUP_COUNT_REG		0x24
++#define FPGA_RX_CURR_GROUP_REG		0x28
++#define FPGA_TX_CURR_GROUP_REG		0x2C
++#define FPGA_RX_CURR_PCI_REG		0x38
++#define FPGA_TX_CURR_PCI_REG		0x3C
++#define FPGA_RX_GROUP0_START_REG	0x40
++#define FPGA_TX_GROUP0_START_REG	0xC0
++#define FPGA_DMA_DESC_1_REG		0x140
++#define FPGA_DMA_DESC_2_REG		0x144
++#define FPGA_DMA_DESC_3_REG		0x148
++#define FPGA_DMA_DESC_4_REG		0x14C
++
++#define FPGA_DMA_INT_STAT_REG		0x150
++#define FPGA_DMA_INT_MASK_REG		0x154
++#define FPGA_DMA_INT_RX		(1 << 0)
++#define FPGA_DMA_INT_TX		(1 << 1)
++
++#define FPGA_RX_GROUPS_PER_INT_REG	0x158
++#define FPGA_TX_GROUPS_PER_INT_REG	0x15C
++#define FPGA_DMA_ADR_PAGE_REG		0x160
++#define FPGA_FPGA_REV_REG		0x200
++
++#define FPGA_ADC_CLOCK_CTL_REG		0x204
++#define FPGA_ADC_CLOCK_CTL_OSC_EN	(0x1 << 3)
++#define FPGA_ADC_CLOCK_LOCAL_CLK	(0x1 | FPGA_ADC_CLOCK_CTL_OSC_EN)
++#define FPGA_ADC_CLOCK_EXT_SAMP_CLK	0X0
++
++#define FPGA_ADC_DAC_EN_REG		0x208
++#define FPGA_ADC_DAC_EN_DAC_OFF         (0x1 << 1)
++#define FPGA_ADC_DAC_EN_ADC_OFF         (0x1 << 0)
++
++#define FPGA_INT_STAT_REG		0x20C
++#define FPGA_INT_MASK_REG		0x210
++#define FPGA_INT_PLL_UNLOCKED		(0x1 << 9)
++#define FPGA_INT_DMA_CORE		(0x1 << 8)
++#define FPGA_INT_TX_FF_EMPTY		(0x1 << 7)
++#define FPGA_INT_RX_FF_EMPTY		(0x1 << 6)
++#define FPGA_INT_TX_FF_OVRFLW		(0x1 << 3)
++#define FPGA_INT_RX_FF_OVRFLW		(0x1 << 2)
++#define FPGA_INT_TX_ACQ_DONE		(0x1 << 1)
++#define FPGA_INT_RX_ACQ_DONE		(0x1)
++
++#define FPGA_RX_ADC_CTL_REG		0x214
++#define FPGA_RX_ADC_CTL_CONT_CAP	(0x0)
++#define FPGA_RX_ADC_CTL_SNAP_CAP	(0x1)
++
++#define FPGA_RX_ARM_REG			0x21C
++
++#define FPGA_DOM_REG			0x224
++#define	FPGA_DOM_DCM_RESET		(0x1 << 5)
++#define FPGA_DOM_SOFT_RESET		(0x1 << 4)
++#define FPGA_DOM_DUAL_M_SG_DMA		(0x0)
++#define FPGA_DOM_TARGET_ACCESS		(0x1)
++
++#define FPGA_TX_CTL_REG			0x228
++#define FPGA_TX_CTL_FIFO_FLUSH          (0x1 << 9)
++#define FPGA_TX_CTL_OUTPUT_ZERO         (0x0 << 2)
++#define FPGA_TX_CTL_OUTPUT_CARDBUS      (0x1 << 2)
++#define FPGA_TX_CTL_OUTPUT_ADC          (0x2 << 2)
++#define FPGA_TX_CTL_OUTPUT_SNAPSHOT     (0x3 << 2)
++#define FPGA_TX_CTL_LOOPBACK            (0x1 << 0)
++
++#define FPGA_ENDIAN_MODE_REG		0x22C
++#define FPGA_RX_FIFO_COUNT_REG		0x28C
++#define FPGA_TX_ENABLE_REG		0x298
++#define FPGA_TX_TRIGGER_REG		0x29C
++#define FPGA_TX_DATAMEM_COUNT_REG	0x2A8
++#define FPGA_CAP_FIFO_REG		0x300
++#define FPGA_TX_SNAPSHOT_REG		0x8000
++
++/*
++ * Channel Index Definitions
++ */
++
++enum {
++	CHNO_RX_CHANNEL,
++	CHNO_TX_CHANNEL,
 +};
- 
- /* Note: These functions map *exactly* to the SINF/SSET functions */
--ProcItem acpi_pcc_proc_items_sifr[] = {
--	{ "num_batteries",	&acpi_pcc_numbatteries_fops,	 S_IRUGO },
--	{ "lcd_type",		&acpi_pcc_lcdtype_fops,		 S_IRUGO },
--	{ "ac_brightness_max" , &acpi_pcc_ac_brightness_max_fops,S_IRUGO },
--	{ "ac_brightness_min" , &acpi_pcc_ac_brightness_min_fops,S_IRUGO },
--	{ "ac_brightness" ,	&acpi_pcc_ac_brightness_fops,	 S_IFREG | S_IRUGO | S_IWUSR },
--	{ "dc_brightness_max" , &acpi_pcc_dc_brightness_max_fops,S_IRUGO },
--	{ "dc_brightness_min" , &acpi_pcc_dc_brightness_min_fops,S_IRUGO },
--	{ "dc_brightness" ,	&acpi_pcc_dc_brightness_fops,	 S_IFREG | S_IRUGO | S_IWUSR },
--	{ "brightness" ,	&acpi_pcc_brightness_fops,    S_IFREG | S_IRUGO | S_IWUSR },
--	{ "mute",		&acpi_pcc_mute_fops,		 S_IFREG | S_IRUGO | S_IWUSR },
-+struct proc_item acpi_pcc_proc_items_sifr[] = {
-+	{ "num_batteries", &acpi_pcc_numbatteries_fops, S_IRUGO },
-+	{ "lcd_type", &acpi_pcc_lcdtype_fops, S_IRUGO },
-+	{ "ac_brightness_max", &acpi_pcc_ac_brightness_max_fops, S_IRUGO },
-+	{ "ac_brightness_min", &acpi_pcc_ac_brightness_min_fops, S_IRUGO },
-+	{ "ac_brightness", &acpi_pcc_ac_brightness_fops,
-+		S_IFREG | S_IRUGO | S_IWUSR },
-+	{ "dc_brightness_max", &acpi_pcc_dc_brightness_max_fops, S_IRUGO },
-+	{ "dc_brightness_min", &acpi_pcc_dc_brightness_min_fops, S_IRUGO },
-+	{ "dc_brightness", &acpi_pcc_dc_brightness_fops,
-+		S_IFREG | S_IRUGO | S_IWUSR },
-+	{ "brightness", &acpi_pcc_brightness_fops, S_IFREG | S_IRUGO | S_IWUSR},
-+	{ "mute", &acpi_pcc_mute_fops, S_IFREG | S_IRUGO | S_IWUSR },
- 	{ NULL, NULL, 0 },
- };
- 
--ProcItem acpi_pcc_proc_items[] = {
--	{ "sticky_key",		&acpi_pcc_sticky_key_fops,	 S_IFREG | S_IRUGO | S_IWUSR },
--	{ "keyinput",		&acpi_pcc_keyinput_fops,	 S_IFREG | S_IRUGO | S_IWUSR },
--	{ "version",		&acpi_pcc_version_fops,		 S_IRUGO },
-+struct proc_item acpi_pcc_proc_items[] = {
-+	{ "sticky_key", &acpi_pcc_sticky_key_fops, S_IFREG | S_IRUGO | S_IWUSR},
-+	{ "keyinput", &acpi_pcc_keyinput_fops, S_IFREG | S_IRUGO | S_IWUSR },
-+	{ "version", &acpi_pcc_version_fops, S_IRUGO },
- 	{ NULL, NULL, 0 },
- };
- 
- static int __devinit acpi_pcc_add_device(struct acpi_device *device,
--					 ProcItem *proc_items,
-+					 struct proc_item *proc_items,
- 					 int num)
- {
--	struct acpi_hotkey *hotkey = (struct acpi_hotkey*)acpi_driver_data(device);
--	struct proc_dir_entry* proc;
--	ProcItem* item;
-+	struct acpi_hotkey *hotkey = acpi_driver_data(device);
-+	struct proc_dir_entry *proc;
-+	struct proc_item *item;
- 	int i;
- 
- 	for (item = proc_items, i = 0; item->name && i < num; ++item, ++i) {
--		proc = create_proc_entry(item->name, item->flag, hotkey->proc_dir_entry);
-+		proc = create_proc_entry(item->name, item->flag,
-+					 hotkey->proc_dir_entry);
- 		if (likely(proc)) {
- 			proc->proc_fops = item->fops;
- 			proc->data = hotkey;
-@@ -756,7 +800,8 @@ static int __devinit acpi_pcc_add_device(struct acpi_device *device,
- 		} else {
- 			while (i-- > 0) {
- 				item--;
--				remove_proc_entry(item->name, hotkey->proc_dir_entry);
-+				remove_proc_entry(item->name,
-+					hotkey->proc_dir_entry);
- 			}
- 			return_VALUE(-ENODEV);
- 		}
-@@ -767,7 +812,7 @@ static int __devinit acpi_pcc_add_device(struct acpi_device *device,
- static int __devinit acpi_pcc_proc_init(struct acpi_device *device)
- {
- 	struct proc_dir_entry *acpi_pcc_dir;
--	struct acpi_hotkey    *hotkey = (struct acpi_hotkey*)acpi_driver_data(device);
-+	struct acpi_hotkey    *hotkey = acpi_driver_data(device);
- 	acpi_status status;
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_proc_init");
-@@ -775,15 +820,18 @@ static int __devinit acpi_pcc_proc_init(struct acpi_device *device)
- 	acpi_pcc_dir = proc_mkdir(PROC_PCC, acpi_root_dir);
- 
- 	if (unlikely(!acpi_pcc_dir)) {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Couldn't create dir in /proc\n"));
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+				 "Couldn't create dir in /proc\n"));
- 		return_VALUE(-ENODEV);
- 	}
- 
- 	acpi_pcc_dir->owner = THIS_MODULE;
- 	hotkey->proc_dir_entry = acpi_pcc_dir;
- 
--	status =  acpi_pcc_add_device(device, acpi_pcc_proc_items_sifr, hotkey->num_sifr);
--	status |= acpi_pcc_add_device(device, acpi_pcc_proc_items,      ARRAY_SIZE(acpi_pcc_proc_items));
-+	status =  acpi_pcc_add_device(device, acpi_pcc_proc_items_sifr,
-+				      hotkey->num_sifr);
-+	status |= acpi_pcc_add_device(device, acpi_pcc_proc_items,
-+				      ARRAY_SIZE(acpi_pcc_proc_items));
- 	if (unlikely(status)) {
- 		remove_proc_entry(PROC_PCC, acpi_root_dir);
- 		hotkey->proc_dir_entry = NULL;
-@@ -794,14 +842,16 @@ static int __devinit acpi_pcc_proc_init(struct acpi_device *device)
- }
- 
- static void __devexit acpi_pcc_remove_device(struct acpi_device *device,
--					     ProcItem *proc_items,
-+					     struct proc_item *proc_items,
- 					     int num)
- {
--	struct acpi_hotkey *hotkey = (struct acpi_hotkey*)acpi_driver_data(device);
--	ProcItem* item;
-+	struct acpi_hotkey *hotkey = acpi_driver_data(device);
-+	struct proc_item *item;
- 	int i;
- 
--	for (item = proc_items, i = 0; item->name != NULL && i < num; ++item, ++i) {
-+	for (item = proc_items, i = 0;
-+	     item->name != NULL && i < num;
-+	     ++item, ++i) {
- 		remove_proc_entry(item->name, hotkey->proc_dir_entry);
- 	}
- 
-@@ -819,14 +869,18 @@ static int acpi_pcc_hotkey_resume(struct acpi_device *device)
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_hotkey_resume");
- 
--	if (device == NULL || hotkey == NULL) { return_VALUE(-EINVAL); }
-+	if (device == NULL || hotkey == NULL)
-+		return_VALUE(-EINVAL);
- 
- 	if (hotkey->num_sifr != 0) {
--		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Sticky mode restore: %d\n", hotkey->sticky_mode));
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Sticky mode restore: %d\n",
-+				 hotkey->sticky_mode));
- 
--		status = acpi_pcc_write_sset(hotkey, SINF_STICKY_KEY, hotkey->sticky_mode);
-+		status = acpi_pcc_write_sset(hotkey, SINF_STICKY_KEY,
-+					     hotkey->sticky_mode);
- 	}
--	if (status != AE_OK) { return_VALUE(-EINVAL); }
-+	if (status != AE_OK)
-+		return_VALUE(-EINVAL);
- 
- 	return_VALUE(0);
- }
-@@ -848,14 +902,16 @@ static int __devinit acpi_pcc_init_input(struct acpi_hotkey *hotkey)
- 
- 	hotk_input_dev = input_allocate_device();
- 	if (hotk_input_dev == NULL) {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Couldn't allocate input device for hotkey"));
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+				 "Couldn't allocate input device for hotkey"));
- 		goto err_input;
- 	}
- 
- 	pcc_keyinput = kcalloc(1, sizeof(struct pcc_keyinput), GFP_KERNEL);
- 
- 	if (pcc_keyinput == NULL) {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Couldn't allocate mem for private data"));
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+				 "Couldn't allocate mem for private data"));
- 		goto err_pcc;
- 	}
- 
-@@ -886,9 +942,8 @@ static int __devinit acpi_pcc_init_input(struct acpi_hotkey *hotkey)
- 
- 	error = input_register_device(hotk_input_dev);
- 
--	if (error) {
-+	if (error)
- 		goto err_pcc;
--	}
- 
- 	return_VALUE(0);
- 
-@@ -921,7 +976,7 @@ static void __devexit acpi_pcc_remove_input(struct acpi_hotkey *hotkey)
- /* -------------------------------------------------------------------------
-    ACPI
-    ------------------------------------------------------------------------- */
--static int __devinit acpi_pcc_hotkey_add (struct acpi_device *device)
-+static int __devinit acpi_pcc_hotkey_add(struct acpi_device *device)
- {
- 	acpi_status		status = AE_OK;
- 	struct acpi_hotkey	*hotkey = NULL;
-@@ -929,9 +984,8 @@ static int __devinit acpi_pcc_hotkey_add (struct acpi_device *device)
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_hotkey_add");
- 
--	if (device == NULL) {
-+	if (device == NULL)
- 		return_VALUE(-EINVAL);
--	}
- 
- 	sifr_status = acpi_pcc_get_sqty(device);
- 
-@@ -949,7 +1003,8 @@ static int __devinit acpi_pcc_hotkey_add (struct acpi_device *device)
- 
- 	hotkey = kcalloc(1, sizeof(struct acpi_hotkey), GFP_KERNEL);
- 	if (hotkey == NULL) {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Couldn't allocate mem for hotkey"));
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+				 "Couldn't allocate mem for hotkey"));
- 		return_VALUE(-ENOMEM);
- 	}
- 
-@@ -966,14 +1021,16 @@ static int __devinit acpi_pcc_hotkey_add (struct acpi_device *device)
- 					     hotkey);
- 
- 	if (ACPI_FAILURE(status)) {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Error installing notify handler\n"));
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+				 "Error installing notify handler\n"));
- 		kfree(hotkey);
- 		return_VALUE(-ENODEV);
- 	}
- 
- 	result = acpi_pcc_init_input(hotkey);
- 	if (result != 0) {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Error installing keyinput handler\n"));
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+				 "Error installing keyinput handler\n"));
- 		kfree(hotkey);
- 		return_VALUE(result);
- 	}
-@@ -981,20 +1038,22 @@ static int __devinit acpi_pcc_hotkey_add (struct acpi_device *device)
- 	return_VALUE(acpi_pcc_proc_init(device));
- }
- 
--static int __devexit acpi_pcc_hotkey_remove(struct acpi_device *device, int type)
-+static int __devexit acpi_pcc_hotkey_remove(struct acpi_device *device,
-+					    int type)
- {
- 	acpi_status		status = AE_OK;
- 	struct acpi_hotkey	*hotkey = acpi_driver_data(device);
- 
- 	ACPI_FUNCTION_TRACE("acpi_pcc_hotkey_remove");
- 
--	if (!device || !hotkey) {
-+	if (!device || !hotkey)
- 		return_VALUE(-EINVAL);
--	}
- 
- 	if (hotkey->proc_dir_entry) {
--		acpi_pcc_remove_device(device, acpi_pcc_proc_items_sifr, hotkey->num_sifr);
--		acpi_pcc_remove_device(device, acpi_pcc_proc_items,      ARRAY_SIZE(acpi_pcc_proc_items));
-+		acpi_pcc_remove_device(device, acpi_pcc_proc_items_sifr,
-+				       hotkey->num_sifr);
-+		acpi_pcc_remove_device(device, acpi_pcc_proc_items,
-+				       ARRAY_SIZE(acpi_pcc_proc_items));
- 		remove_proc_entry(PROC_PCC, acpi_root_dir);
- 	}
- 
-@@ -1002,13 +1061,12 @@ static int __devexit acpi_pcc_hotkey_remove(struct acpi_device *device, int type
- 		    ACPI_DEVICE_NOTIFY, acpi_pcc_hotkey_notify);
- 
- 	if (ACPI_FAILURE(status)) {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Error removing notify handler\n"));
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+				 "Error removing notify handler\n"));
- 	}
- 
- 	acpi_pcc_remove_input(hotkey);
--	if (hotkey != NULL) {
--		kfree(hotkey);
--	}
-+	kfree(hotkey);
- 	return_VALUE(status == AE_OK);
- }
- 
-@@ -1030,7 +1088,8 @@ static int __init acpi_pcc_init(void)
- 
- 	result = acpi_bus_register_driver(&acpi_pcc_driver);
- 	if (result < 0) {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Error registering hotkey driver\n"));
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+				 "Error registering hotkey driver\n"));
- 		return_VALUE(-ENODEV);
- 	}
- 
++
++struct poch_dev;
++
++enum channel_dir {
++	CHANNEL_DIR_RX,
++	CHANNEL_DIR_TX,
++};
++
++struct poch_group_info {
++	struct page *pg;
++	dma_addr_t dma_addr;
++	unsigned long user_offset;
++};
++
++struct channel_info {
++	unsigned int chno;
++
++	atomic_t sys_block_size;
++	atomic_t sys_group_size;
++	atomic_t sys_group_count;
++
++	enum channel_dir dir;
++
++	unsigned long block_size;
++	unsigned long group_size;
++	unsigned long group_count;
++
++	/* Contains the DMA address and VM offset of each group. */
++	struct poch_group_info *groups;
++
++	/* Contains the header and circular buffer exported to userspace. */
++	spinlock_t group_offsets_lock;
++	struct poch_cbuf_header *header;
++	struct page *header_pg;
++	unsigned long header_size;
++
++	/* Last group indicated as 'complete' to user space. */
++	unsigned int transfer;
++
++	wait_queue_head_t wq;
++
++	union {
++		unsigned int data_available;
++		unsigned int space_available;
++	};
++
++	void __iomem *bridge_iomem;
++	void __iomem *fpga_iomem;
++	spinlock_t *iomem_lock;
++
++	atomic_t free;
++	atomic_t inited;
++
++	/* Error counters */
++	struct poch_counters counters;
++	spinlock_t counters_lock;
++
++	struct device *dev;
++};
++
++struct poch_dev {
++	struct uio_info uio;
++	struct pci_dev *pci_dev;
++	unsigned int nchannels;
++	struct channel_info channels[POCH_NCHANNELS];
++	struct cdev cdev;
++
++	/* Counts the no. of channels that have been opened. On first
++	 * open, the card is powered on. On last channel close, the
++	 * card is powered off.
++	 */
++	atomic_t usage;
++
++	void __iomem *bridge_iomem;
++	void __iomem *fpga_iomem;
++	spinlock_t iomem_lock;
++
++	struct device *dev;
++};
++
++static dev_t poch_first_dev;
++static struct class *poch_cls;
++static DEFINE_IDR(poch_ids);
++
++static ssize_t store_block_size(struct device *dev,
++				struct device_attribute *attr,
++				const char *buf, size_t count)
++{
++	struct channel_info *channel = dev_get_drvdata(dev);
++	unsigned long block_size;
++
++	sscanf(buf, "%lu", &block_size);
++	atomic_set(&channel->sys_block_size, block_size);
++
++	return count;
++}
++static DEVICE_ATTR(block_size, S_IWUSR|S_IWGRP, NULL, store_block_size);
++
++static ssize_t store_group_size(struct device *dev,
++				struct device_attribute *attr,
++				const char *buf, size_t count)
++{
++	struct channel_info *channel = dev_get_drvdata(dev);
++	unsigned long group_size;
++
++	sscanf(buf, "%lu", &group_size);
++	atomic_set(&channel->sys_group_size, group_size);
++
++	return count;
++}
++static DEVICE_ATTR(group_size, S_IWUSR|S_IWGRP, NULL, store_group_size);
++
++static ssize_t store_group_count(struct device *dev,
++				struct device_attribute *attr,
++				 const char *buf, size_t count)
++{
++	struct channel_info *channel = dev_get_drvdata(dev);
++	unsigned long group_count;
++
++	sscanf(buf, "%lu", &group_count);
++	atomic_set(&channel->sys_group_count, group_count);
++
++	return count;
++}
++static DEVICE_ATTR(group_count, S_IWUSR|S_IWGRP, NULL, store_group_count);
++
++static ssize_t show_direction(struct device *dev,
++			      struct device_attribute *attr, char *buf)
++{
++	struct channel_info *channel = dev_get_drvdata(dev);
++	int len;
++
++	len = sprintf(buf, "%s\n", (channel->dir ? "tx" : "rx"));
++	return len;
++}
++static DEVICE_ATTR(dir, S_IRUSR|S_IRGRP, show_direction, NULL);
++
++static ssize_t show_mmap_size(struct device *dev,
++			      struct device_attribute *attr, char *buf)
++{
++	struct channel_info *channel = dev_get_drvdata(dev);
++	int len;
++	unsigned long mmap_size;
++	unsigned long group_pages;
++	unsigned long header_pages;
++	unsigned long total_group_pages;
++
++	/* FIXME: We do not have to add 1, if group_size a multiple of
++	   PAGE_SIZE. */
++	group_pages = (channel->group_size / PAGE_SIZE) + 1;
++	header_pages = (channel->header_size / PAGE_SIZE) + 1;
++	total_group_pages = group_pages * channel->group_count;
++
++	mmap_size = (header_pages + total_group_pages) * PAGE_SIZE;
++	len = sprintf(buf, "%lu\n", mmap_size);
++	return len;
++}
++static DEVICE_ATTR(mmap_size, S_IRUSR|S_IRGRP, show_mmap_size, NULL);
++
++static struct device_attribute *poch_class_attrs[] = {
++	&dev_attr_block_size,
++	&dev_attr_group_size,
++	&dev_attr_group_count,
++	&dev_attr_dir,
++	&dev_attr_mmap_size,
++};
++
++static void poch_channel_free_groups(struct channel_info *channel)
++{
++	unsigned long i;
++
++	for (i = 0; i < channel->group_count; i++) {
++		struct poch_group_info *group;
++		unsigned int order;
++
++		group = &channel->groups[i];
++		order = get_order(channel->group_size);
++		if (group->pg)
++			__free_pages(group->pg, order);
++	}
++}
++
++static int poch_channel_alloc_groups(struct channel_info *channel)
++{
++	unsigned long i;
++	unsigned long group_pages;
++	unsigned long header_pages;
++
++	group_pages = (channel->group_size / PAGE_SIZE) + 1;
++	header_pages = (channel->header_size / PAGE_SIZE) + 1;
++
++	for (i = 0; i < channel->group_count; i++) {
++		struct poch_group_info *group;
++		unsigned int order;
++		gfp_t gfp_mask;
++
++		group = &channel->groups[i];
++		order = get_order(channel->group_size);
++
++		/*
++		 * __GFP_COMP is required here since we are going to
++		 * perform non-linear mapping to userspace. For more
++		 * information read the vm_insert_page() function
++		 * comments.
++		 */
++
++		gfp_mask = GFP_KERNEL | GFP_DMA32 | __GFP_ZERO;
++		group->pg = alloc_pages(gfp_mask, order);
++		if (!group->pg) {
++			poch_channel_free_groups(channel);
++			return -ENOMEM;
++		}
++
++		/* FIXME: This is the physical address not the bus
++		 * address!  This won't work in architectures that
++		 * have an IOMMU. Can we use pci_map_single() for
++		 * this?
++		 */
++		group->dma_addr = page_to_pfn(group->pg) * PAGE_SIZE;
++		group->user_offset =
++			(header_pages + (i * group_pages)) * PAGE_SIZE;
++
++		printk(KERN_INFO PFX "%ld: user_offset: 0x%lx dma: 0x%x\n", i,
++		       group->user_offset, group->dma_addr);
++	}
++
++	return 0;
++}
++
++static void channel_latch_attr(struct channel_info *channel)
++{
++	channel->group_count = atomic_read(&channel->sys_group_count);
++	channel->group_size = atomic_read(&channel->sys_group_size);
++	channel->block_size = atomic_read(&channel->sys_block_size);
++}
++
++/*
++ * Configure DMA group registers
++ */
++static void channel_dma_init(struct channel_info *channel)
++{
++	void __iomem *fpga = channel->fpga_iomem;
++	u32 group_regs_base;
++	u32 group_reg;
++	unsigned int page;
++	unsigned int group_in_page;
++	unsigned long i;
++	u32 block_size_reg;
++	u32 block_count_reg;
++	u32 group_count_reg;
++	u32 groups_per_int_reg;
++	u32 curr_pci_reg;
++
++	if (channel->chno == CHNO_RX_CHANNEL) {
++		group_regs_base = FPGA_RX_GROUP0_START_REG;
++		block_size_reg = FPGA_RX_BLOCK_SIZE_REG;
++		block_count_reg = FPGA_RX_BLOCK_COUNT_REG;
++		group_count_reg = FPGA_RX_GROUP_COUNT_REG;
++		groups_per_int_reg = FPGA_RX_GROUPS_PER_INT_REG;
++		curr_pci_reg = FPGA_RX_CURR_PCI_REG;
++	} else {
++		group_regs_base = FPGA_TX_GROUP0_START_REG;
++		block_size_reg = FPGA_TX_BLOCK_SIZE_REG;
++		block_count_reg = FPGA_TX_BLOCK_COUNT_REG;
++		group_count_reg = FPGA_TX_GROUP_COUNT_REG;
++		groups_per_int_reg = FPGA_TX_GROUPS_PER_INT_REG;
++		curr_pci_reg = FPGA_TX_CURR_PCI_REG;
++	}
++
++	printk(KERN_WARNING "block_size, group_size, group_count\n");
++	iowrite32(channel->block_size, fpga + block_size_reg);
++	iowrite32(channel->group_size / channel->block_size,
++		  fpga + block_count_reg);
++	iowrite32(channel->group_count, fpga + group_count_reg);
++	/* FIXME: Hardcoded groups per int. Get it from sysfs? */
++	iowrite32(1, fpga + groups_per_int_reg);
++
++	/* Unlock PCI address? Not defined in the data sheet, but used
++	 * in the reference code by Redrapids.
++	 */
++	iowrite32(0x1, fpga + curr_pci_reg);
++
++	/* The DMA address page register is shared between the RX and
++	 * TX channels, so acquire lock.
++	 */
++	spin_lock(channel->iomem_lock);
++	for (i = 0; i < channel->group_count; i++) {
++		page = i / 32;
++		group_in_page = i % 32;
++
++		group_reg = group_regs_base + (group_in_page * 4);
++
++		iowrite32(page, fpga + FPGA_DMA_ADR_PAGE_REG);
++		iowrite32(channel->groups[i].dma_addr, fpga + group_reg);
++	}
++	for (i = 0; i < channel->group_count; i++) {
++		page = i / 32;
++		group_in_page = i % 32;
++
++		group_reg = group_regs_base + (group_in_page * 4);
++
++		iowrite32(page, fpga + FPGA_DMA_ADR_PAGE_REG);
++		printk(KERN_INFO PFX "%ld: read dma_addr: 0x%x\n", i,
++		       ioread32(fpga + group_reg));
++	}
++	spin_unlock(channel->iomem_lock);
++
++}
++
++static int poch_channel_alloc_header(struct channel_info *channel)
++{
++	struct poch_cbuf_header *header = channel->header;
++	unsigned long group_offset_size;
++	unsigned long tot_group_offsets_size;
++
++	/* Allocate memory to hold header exported userspace */
++	group_offset_size = sizeof(header->group_offsets[0]);
++	tot_group_offsets_size = group_offset_size * channel->group_count;
++	channel->header_size = sizeof(*header) + tot_group_offsets_size;
++	channel->header_pg = alloc_pages(GFP_KERNEL | __GFP_ZERO,
++					 get_order(channel->header_size));
++	if (!channel->header_pg)
++		return -ENOMEM;
++
++	channel->header = page_address(channel->header_pg);
++
++	return 0;
++}
++
++static void poch_channel_free_header(struct channel_info *channel)
++{
++	unsigned int order;
++
++	order = get_order(channel->header_size);
++	__free_pages(channel->header_pg, order);
++}
++
++static void poch_channel_init_header(struct channel_info *channel)
++{
++	int i;
++	struct poch_group_info *groups;
++	s32 *group_offsets;
++
++	channel->header->group_size_bytes = channel->group_size;
++	channel->header->group_count = channel->group_count;
++
++	spin_lock_init(&channel->group_offsets_lock);
++
++	group_offsets = channel->header->group_offsets;
++	groups = channel->groups;
++
++	for (i = 0; i < channel->group_count; i++) {
++		if (channel->dir == CHANNEL_DIR_RX)
++			group_offsets[i] = -1;
++		else
++			group_offsets[i] = groups[i].user_offset;
++	}
++}
++
++static void __poch_channel_clear_counters(struct channel_info *channel)
++{
++	channel->counters.pll_unlock = 0;
++	channel->counters.fifo_empty = 0;
++	channel->counters.fifo_overflow = 0;
++}
++
++static int poch_channel_init(struct channel_info *channel,
++			     struct poch_dev *poch_dev)
++{
++	struct pci_dev *pdev = poch_dev->pci_dev;
++	struct device *dev = &pdev->dev;
++	unsigned long alloc_size;
++	int ret;
++
++	printk(KERN_WARNING "channel_latch_attr\n");
++
++	channel_latch_attr(channel);
++
++	channel->transfer = 0;
++
++	/* Allocate memory to hold group information. */
++	alloc_size = channel->group_count * sizeof(struct poch_group_info);
++	channel->groups = kzalloc(alloc_size, GFP_KERNEL);
++	if (!channel->groups) {
++		dev_err(dev, "error allocating memory for group info\n");
++		ret = -ENOMEM;
++		goto out;
++	}
++
++	printk(KERN_WARNING "poch_channel_alloc_groups\n");
++
++	ret = poch_channel_alloc_groups(channel);
++	if (ret) {
++		dev_err(dev, "error allocating groups of order %d\n",
++			get_order(channel->group_size));
++		goto out_free_group_info;
++	}
++
++	ret = poch_channel_alloc_header(channel);
++	if (ret) {
++		dev_err(dev, "error allocating user space header\n");
++		goto out_free_groups;
++	}
++
++	channel->fpga_iomem = poch_dev->fpga_iomem;
++	channel->bridge_iomem = poch_dev->bridge_iomem;
++	channel->iomem_lock = &poch_dev->iomem_lock;
++	spin_lock_init(&channel->counters_lock);
++
++	__poch_channel_clear_counters(channel);
++
++	printk(KERN_WARNING "poch_channel_init_header\n");
++
++	poch_channel_init_header(channel);
++
++	return 0;
++
++ out_free_groups:
++	poch_channel_free_groups(channel);
++ out_free_group_info:
++	kfree(channel->groups);
++ out:
++	return ret;
++}
++
++static int poch_wait_fpga_prog(void __iomem *bridge)
++{
++	unsigned long total_wait;
++	const unsigned long wait_period = 100;
++	/* FIXME: Get the actual timeout */
++	const unsigned long prog_timeo = 10000; /* 10 Seconds */
++	u32 card_power;
++
++	printk(KERN_WARNING "poch_wait_fpg_prog\n");
++
++	printk(KERN_INFO PFX "programming fpga ...\n");
++	total_wait = 0;
++	while (1) {
++		msleep(wait_period);
++		total_wait += wait_period;
++
++		card_power = ioread32(bridge + BRIDGE_CARD_POWER_REG);
++		if (card_power & BRIDGE_CARD_POWER_PROG_DONE) {
++			printk(KERN_INFO PFX "programming done\n");
++			return 0;
++		}
++		if (total_wait > prog_timeo) {
++			printk(KERN_ERR PFX
++			       "timed out while programming FPGA\n");
++			return -EIO;
++		}
++	}
++}
++
++static void poch_card_power_off(struct poch_dev *poch_dev)
++{
++	void __iomem *bridge = poch_dev->bridge_iomem;
++	u32 card_power;
++
++	iowrite32(0, bridge + BRIDGE_INT_MASK_REG);
++	iowrite32(0, bridge + BRIDGE_DMA_GO_REG);
++
++	card_power = ioread32(bridge + BRIDGE_CARD_POWER_REG);
++	iowrite32(card_power & ~BRIDGE_CARD_POWER_EN,
++		  bridge + BRIDGE_CARD_POWER_REG);
++}
++
++enum clk_src {
++	CLK_SRC_ON_BOARD,
++	CLK_SRC_EXTERNAL
++};
++
++static void poch_card_clock_on(void __iomem *fpga)
++{
++	/* FIXME: Get this data through sysfs? */
++	enum clk_src clk_src = CLK_SRC_ON_BOARD;
++
++	if (clk_src == CLK_SRC_ON_BOARD) {
++		iowrite32(FPGA_ADC_CLOCK_LOCAL_CLK | FPGA_ADC_CLOCK_CTL_OSC_EN,
++			  fpga + FPGA_ADC_CLOCK_CTL_REG);
++	} else if (clk_src == CLK_SRC_EXTERNAL) {
++		iowrite32(FPGA_ADC_CLOCK_EXT_SAMP_CLK,
++			  fpga + FPGA_ADC_CLOCK_CTL_REG);
++	}
++}
++
++static int poch_card_power_on(struct poch_dev *poch_dev)
++{
++	void __iomem *bridge = poch_dev->bridge_iomem;
++	void __iomem *fpga = poch_dev->fpga_iomem;
++
++	iowrite32(BRIDGE_CARD_POWER_EN, bridge + BRIDGE_CARD_POWER_REG);
++
++	if (poch_wait_fpga_prog(bridge) != 0) {
++		poch_card_power_off(poch_dev);
++		return -EIO;
++	}
++
++	poch_card_clock_on(fpga);
++
++	/* Sync to new clock, reset state machines, set DMA mode. */
++	iowrite32(FPGA_DOM_DCM_RESET | FPGA_DOM_SOFT_RESET
++		  | FPGA_DOM_DUAL_M_SG_DMA, fpga + FPGA_DOM_REG);
++
++	/* FIXME: The time required for sync. needs to be tuned. */
++	msleep(1000);
++
++	return 0;
++}
++
++static void poch_channel_analog_on(struct channel_info *channel)
++{
++	void __iomem *fpga = channel->fpga_iomem;
++	u32 adc_dac_en;
++
++	spin_lock(channel->iomem_lock);
++	adc_dac_en = ioread32(fpga + FPGA_ADC_DAC_EN_REG);
++	switch (channel->chno) {
++	case CHNO_RX_CHANNEL:
++		iowrite32(adc_dac_en & ~FPGA_ADC_DAC_EN_ADC_OFF,
++			  fpga + FPGA_ADC_DAC_EN_REG);
++		break;
++	case CHNO_TX_CHANNEL:
++		iowrite32(adc_dac_en & ~FPGA_ADC_DAC_EN_DAC_OFF,
++			  fpga + FPGA_ADC_DAC_EN_REG);
++		break;
++	}
++	spin_unlock(channel->iomem_lock);
++}
++
++static int poch_open(struct inode *inode, struct file *filp)
++{
++	struct poch_dev *poch_dev;
++	struct channel_info *channel;
++	void __iomem *bridge;
++	void __iomem *fpga;
++	int chno;
++	int usage;
++	int ret;
++
++	poch_dev = container_of(inode->i_cdev, struct poch_dev, cdev);
++	bridge = poch_dev->bridge_iomem;
++	fpga = poch_dev->fpga_iomem;
++
++	chno = iminor(inode) % poch_dev->nchannels;
++	channel = &poch_dev->channels[chno];
++
++	if (!atomic_dec_and_test(&channel->free)) {
++		atomic_inc(&channel->free);
++		ret = -EBUSY;
++		goto out;
++	}
++
++	usage = atomic_inc_return(&poch_dev->usage);
++
++	printk(KERN_WARNING "poch_card_power_on\n");
++
++	if (usage == 1) {
++		ret = poch_card_power_on(poch_dev);
++		if (ret)
++			goto out_dec_usage;
++	}
++
++	printk(KERN_INFO "CardBus Bridge Revision: %x\n",
++	       ioread32(bridge + BRIDGE_REV_REG));
++	printk(KERN_INFO "CardBus Interface Revision: %x\n",
++	       ioread32(fpga + FPGA_IFACE_REV_REG));
++
++	channel->chno = chno;
++	filp->private_data = channel;
++
++	printk(KERN_WARNING "poch_channel_init\n");
++
++	ret = poch_channel_init(channel, poch_dev);
++	if (ret)
++		goto out_power_off;
++
++	poch_channel_analog_on(channel);
++
++	printk(KERN_WARNING "channel_dma_init\n");
++
++	channel_dma_init(channel);
++
++	printk(KERN_WARNING "poch_channel_analog_on\n");
++
++	if (usage == 1) {
++		printk(KERN_WARNING "setting up DMA\n");
++
++		/* Initialize DMA Controller. */
++		iowrite32(FPGA_CAP_FIFO_REG, bridge + BRIDGE_STAT_2_REG);
++		iowrite32(FPGA_DMA_DESC_1_REG, bridge + BRIDGE_STAT_3_REG);
++
++		ioread32(fpga + FPGA_DMA_INT_STAT_REG);
++		ioread32(fpga + FPGA_INT_STAT_REG);
++		ioread32(bridge + BRIDGE_INT_STAT_REG);
++
++		/* Initialize Interrupts. FIXME: Enable temperature
++		 * handling We are enabling both Tx and Rx channel
++		 * interrupts here. Do we need to enable interrupts
++		 * only for the current channel? Anyways we won't get
++		 * the interrupt unless the DMA is activated.
++		 */
++		iowrite32(BRIDGE_INT_FPGA, bridge + BRIDGE_INT_MASK_REG);
++		iowrite32(FPGA_INT_DMA_CORE
++			  | FPGA_INT_PLL_UNLOCKED
++			  | FPGA_INT_TX_FF_EMPTY
++			  | FPGA_INT_RX_FF_EMPTY
++			  | FPGA_INT_TX_FF_OVRFLW
++			  | FPGA_INT_RX_FF_OVRFLW,
++			  fpga + FPGA_INT_MASK_REG);
++		iowrite32(FPGA_DMA_INT_RX | FPGA_DMA_INT_TX,
++			  fpga + FPGA_DMA_INT_MASK_REG);
++	}
++
++	if (channel->dir == CHANNEL_DIR_TX) {
++		/* Flush TX FIFO and output data from cardbus. */
++		iowrite32(FPGA_TX_CTL_FIFO_FLUSH
++			  | FPGA_TX_CTL_OUTPUT_CARDBUS,
++			  fpga + FPGA_TX_CTL_REG);
++	}
++
++	atomic_inc(&channel->inited);
++
++	return 0;
++
++ out_power_off:
++	if (usage == 1)
++		poch_card_power_off(poch_dev);
++ out_dec_usage:
++	atomic_dec(&poch_dev->usage);
++	atomic_inc(&channel->free);
++ out:
++	return ret;
++}
++
++static int poch_release(struct inode *inode, struct file *filp)
++{
++	struct channel_info *channel = filp->private_data;
++	struct poch_dev *poch_dev;
++	int usage;
++
++	poch_dev = container_of(inode->i_cdev, struct poch_dev, cdev);
++
++	usage = atomic_dec_return(&poch_dev->usage);
++	if (usage == 0) {
++		printk(KERN_WARNING "poch_card_power_off\n");
++		poch_card_power_off(poch_dev);
++	}
++
++	atomic_dec(&channel->inited);
++	poch_channel_free_header(channel);
++	poch_channel_free_groups(channel);
++	kfree(channel->groups);
++	atomic_inc(&channel->free);
++
++	return 0;
++}
++
++/*
++ * Map the header and the group buffers, to user space.
++ */
++static int poch_mmap(struct file *filp, struct vm_area_struct *vma)
++{
++	struct channel_info *channel = filp->private_data;
++
++	unsigned long start;
++	unsigned long size;
++
++	unsigned long group_pages;
++	unsigned long header_pages;
++	unsigned long total_group_pages;
++
++	int pg_num;
++	struct page *pg;
++
++	int i;
++	int ret;
++
++	printk(KERN_WARNING "poch_mmap\n");
++
++	if (vma->vm_pgoff) {
++		printk(KERN_WARNING PFX "page offset: %lu\n", vma->vm_pgoff);
++		return -EINVAL;
++	}
++
++	group_pages = (channel->group_size / PAGE_SIZE) + 1;
++	header_pages = (channel->header_size / PAGE_SIZE) + 1;
++	total_group_pages = group_pages * channel->group_count;
++
++	size = vma->vm_end - vma->vm_start;
++	if (size != (header_pages + total_group_pages) * PAGE_SIZE) {
++		printk(KERN_WARNING PFX "required %lu bytes\n", size);
++		return -EINVAL;
++	}
++
++	start = vma->vm_start;
++
++	/* FIXME: Cleanup required on failure? */
++	pg = channel->header_pg;
++	for (pg_num = 0; pg_num < header_pages; pg_num++, pg++) {
++		printk(KERN_DEBUG PFX "page_count: %d\n", page_count(pg));
++		printk(KERN_DEBUG PFX "%d: header: 0x%lx\n", pg_num, start);
++		ret = vm_insert_page(vma, start, pg);
++		if (ret) {
++			printk(KERN_DEBUG "vm_insert 1 failed at %lx\n", start);
++			return ret;
++		}
++		start += PAGE_SIZE;
++	}
++
++	for (i = 0; i < channel->group_count; i++) {
++		pg = channel->groups[i].pg;
++		for (pg_num = 0; pg_num < group_pages; pg_num++, pg++) {
++			printk(KERN_DEBUG PFX "%d: group %d: 0x%lx\n",
++			       pg_num, i, start);
++			ret = vm_insert_page(vma, start, pg);
++			if (ret) {
++				printk(KERN_DEBUG PFX
++				       "vm_insert 2 failed at %d\n", pg_num);
++				return ret;
++			}
++			start += PAGE_SIZE;
++		}
++	}
++
++	return 0;
++}
++
++/*
++ * Check whether there is some group that the user space has not
++ * consumed yet. When the user space consumes a group, it sets it to
++ * -1. Cosuming could be reading data in case of RX and filling a
++ * buffer in case of TX.
++ */
++static int poch_channel_available(struct channel_info *channel)
++{
++	int i;
++
++	spin_lock_irq(&channel->group_offsets_lock);
++
++	for (i = 0; i < channel->group_count; i++) {
++		if (channel->dir == CHANNEL_DIR_RX
++		    && channel->header->group_offsets[i] == -1) {
++			spin_unlock_irq(&channel->group_offsets_lock);
++			return 1;
++		}
++
++		if (channel->dir == CHANNEL_DIR_TX
++		    && channel->header->group_offsets[i] != -1) {
++			spin_unlock_irq(&channel->group_offsets_lock);
++			return 1;
++		}
++	}
++
++	spin_unlock_irq(&channel->group_offsets_lock);
++
++	return 0;
++}
++
++static unsigned int poch_poll(struct file *filp, poll_table *pt)
++{
++	struct channel_info *channel = filp->private_data;
++	unsigned int ret = 0;
++
++	poll_wait(filp, &channel->wq, pt);
++
++	if (poch_channel_available(channel)) {
++		if (channel->dir == CHANNEL_DIR_RX)
++			ret = POLLIN | POLLRDNORM;
++		else
++			ret = POLLOUT | POLLWRNORM;
++	}
++
++	return ret;
++}
++
++static int poch_ioctl(struct inode *inode, struct file *filp,
++		      unsigned int cmd, unsigned long arg)
++{
++	struct channel_info *channel = filp->private_data;
++	void __iomem *fpga = channel->fpga_iomem;
++	void __iomem *bridge = channel->bridge_iomem;
++	void __user *argp = (void __user *)arg;
++	struct vm_area_struct *vms;
++	struct poch_counters counters;
++	int ret;
++
++	switch (cmd) {
++	case POCH_IOC_TRANSFER_START:
++		switch (channel->chno) {
++		case CHNO_TX_CHANNEL:
++			printk(KERN_INFO PFX "ioctl: Tx start\n");
++			iowrite32(0x1, fpga + FPGA_TX_TRIGGER_REG);
++			iowrite32(0x1, fpga + FPGA_TX_ENABLE_REG);
++
++			/* FIXME: Does it make sense to do a DMA GO
++			 * twice, once in Tx and once in Rx.
++			 */
++			iowrite32(0x1, bridge + BRIDGE_DMA_GO_REG);
++			break;
++		case CHNO_RX_CHANNEL:
++			printk(KERN_INFO PFX "ioctl: Rx start\n");
++			iowrite32(0x1, fpga + FPGA_RX_ARM_REG);
++			iowrite32(0x1, bridge + BRIDGE_DMA_GO_REG);
++			break;
++		}
++		break;
++	case POCH_IOC_TRANSFER_STOP:
++		switch (channel->chno) {
++		case CHNO_TX_CHANNEL:
++			printk(KERN_INFO PFX "ioctl: Tx stop\n");
++			iowrite32(0x0, fpga + FPGA_TX_ENABLE_REG);
++			iowrite32(0x0, fpga + FPGA_TX_TRIGGER_REG);
++			iowrite32(0x0, bridge + BRIDGE_DMA_GO_REG);
++			break;
++		case CHNO_RX_CHANNEL:
++			printk(KERN_INFO PFX "ioctl: Rx stop\n");
++			iowrite32(0x0, fpga + FPGA_RX_ARM_REG);
++			iowrite32(0x0, bridge + BRIDGE_DMA_GO_REG);
++			break;
++		}
++		break;
++	case POCH_IOC_GET_COUNTERS:
++		if (access_ok(VERIFY_WRITE, argp, sizeof(struct poch_counters)))
++			return -EFAULT;
++
++		spin_lock_irq(&channel->counters_lock);
++		counters = channel->counters;
++		__poch_channel_clear_counters(channel);
++		spin_unlock_irq(&channel->counters_lock);
++
++		ret = copy_to_user(argp, &counters,
++				   sizeof(struct poch_counters));
++		if (ret)
++			return ret;
++
++		break;
++	case POCH_IOC_SYNC_GROUP_FOR_USER:
++	case POCH_IOC_SYNC_GROUP_FOR_DEVICE:
++		vms = find_vma(current->mm, arg);
++		if (!vms)
++			/* Address not mapped. */
++			return -EINVAL;
++		if (vms->vm_file != filp)
++			/* Address mapped from different device/file. */
++			return -EINVAL;
++
++		flush_cache_range(vms, arg, arg + channel->group_size);
++		break;
++	}
++	return 0;
++}
++
++static struct file_operations poch_fops = {
++	.owner = THIS_MODULE,
++	.open = poch_open,
++	.release = poch_release,
++	.ioctl = poch_ioctl,
++	.poll = poch_poll,
++	.mmap = poch_mmap
++};
++
++static void poch_irq_dma(struct channel_info *channel)
++{
++	u32 prev_transfer;
++	u32 curr_transfer;
++	long groups_done;
++	unsigned long i, j;
++	struct poch_group_info *groups;
++	s32 *group_offsets;
++	u32 curr_group_reg;
++
++	if (!atomic_read(&channel->inited))
++		return;
++
++	prev_transfer = channel->transfer;
++
++	if (channel->chno == CHNO_RX_CHANNEL)
++		curr_group_reg = FPGA_RX_CURR_GROUP_REG;
++	else
++		curr_group_reg = FPGA_TX_CURR_GROUP_REG;
++
++	curr_transfer = ioread32(channel->fpga_iomem + curr_group_reg);
++
++	groups_done = curr_transfer - prev_transfer;
++	/* Check wrap over, and handle it. */
++	if (groups_done <= 0)
++		groups_done += channel->group_count;
++
++	group_offsets = channel->header->group_offsets;
++	groups = channel->groups;
++
++	spin_lock(&channel->group_offsets_lock);
++
++	for (i = 0; i < groups_done; i++) {
++		j = (prev_transfer + i) % channel->group_count;
++		if (channel->dir == CHANNEL_DIR_RX)
++			group_offsets[j] = -1;
++		else
++			group_offsets[j] = groups[j].user_offset;
++	}
++
++	spin_unlock(&channel->group_offsets_lock);
++
++	channel->transfer = curr_transfer;
++
++	wake_up_interruptible(&channel->wq);
++}
++
++static irqreturn_t poch_irq_handler(int irq, void *p)
++{
++	struct poch_dev *poch_dev = p;
++	void __iomem *bridge = poch_dev->bridge_iomem;
++	void __iomem *fpga = poch_dev->fpga_iomem;
++	struct channel_info *channel_rx = &poch_dev->channels[CHNO_RX_CHANNEL];
++	struct channel_info *channel_tx = &poch_dev->channels[CHNO_TX_CHANNEL];
++	u32 bridge_stat;
++	u32 fpga_stat;
++	u32 dma_stat;
++
++	bridge_stat = ioread32(bridge + BRIDGE_INT_STAT_REG);
++	fpga_stat = ioread32(fpga + FPGA_INT_STAT_REG);
++	dma_stat = ioread32(fpga + FPGA_DMA_INT_STAT_REG);
++
++	ioread32(fpga + FPGA_DMA_INT_STAT_REG);
++	ioread32(fpga + FPGA_INT_STAT_REG);
++	ioread32(bridge + BRIDGE_INT_STAT_REG);
++
++	if (bridge_stat & BRIDGE_INT_FPGA) {
++		if (fpga_stat & FPGA_INT_DMA_CORE) {
++			if (dma_stat & FPGA_DMA_INT_RX)
++				poch_irq_dma(channel_rx);
++			if (dma_stat & FPGA_DMA_INT_TX)
++				poch_irq_dma(channel_tx);
++		}
++		if (fpga_stat & FPGA_INT_PLL_UNLOCKED) {
++			channel_tx->counters.pll_unlock++;
++			channel_rx->counters.pll_unlock++;
++			if (printk_ratelimit())
++				printk(KERN_WARNING PFX "PLL unlocked\n");
++		}
++		if (fpga_stat & FPGA_INT_TX_FF_EMPTY)
++			channel_tx->counters.fifo_empty++;
++		if (fpga_stat & FPGA_INT_TX_FF_OVRFLW)
++			channel_tx->counters.fifo_overflow++;
++		if (fpga_stat & FPGA_INT_RX_FF_EMPTY)
++			channel_rx->counters.fifo_empty++;
++		if (fpga_stat & FPGA_INT_RX_FF_OVRFLW)
++			channel_rx->counters.fifo_overflow++;
++
++		/*
++		 * FIXME: These errors should be notified through the
++		 * poll interface as POLLERR.
++		 */
++
++		/* Re-enable interrupts. */
++		iowrite32(BRIDGE_INT_FPGA, bridge + BRIDGE_INT_MASK_REG);
++
++		return IRQ_HANDLED;
++	}
++
++	return IRQ_NONE;
++}
++
++static void poch_class_dev_unregister(struct poch_dev *poch_dev, int id)
++{
++	int i, j;
++	int nattrs;
++	struct channel_info *channel;
++	dev_t devno;
++
++	if (poch_dev->dev == NULL)
++		return;
++
++	for (i = 0; i < poch_dev->nchannels; i++) {
++		channel = &poch_dev->channels[i];
++		devno = poch_first_dev + (id * poch_dev->nchannels) + i;
++
++		if (!channel->dev)
++			continue;
++
++		nattrs = sizeof(poch_class_attrs)/sizeof(poch_class_attrs[0]);
++		for (j = 0; j < nattrs; j++)
++			device_remove_file(channel->dev, poch_class_attrs[j]);
++
++		device_unregister(channel->dev);
++	}
++
++	device_unregister(poch_dev->dev);
++}
++
++static int __devinit poch_class_dev_register(struct poch_dev *poch_dev,
++					     int id)
++{
++	struct device *dev = &poch_dev->pci_dev->dev;
++	int i, j;
++	int nattrs;
++	int ret;
++	struct channel_info *channel;
++	dev_t devno;
++
++	poch_dev->dev = device_create(poch_cls, &poch_dev->pci_dev->dev,
++				      MKDEV(0, 0), NULL, "poch%d", id);
++	if (IS_ERR(poch_dev->dev)) {
++		dev_err(dev, "error creating parent class device");
++		ret = PTR_ERR(poch_dev->dev);
++		poch_dev->dev = NULL;
++		return ret;
++	}
++
++	for (i = 0; i < poch_dev->nchannels; i++) {
++		channel = &poch_dev->channels[i];
++
++		devno = poch_first_dev + (id * poch_dev->nchannels) + i;
++		channel->dev = device_create(poch_cls, poch_dev->dev, devno,
++					     NULL, "ch%d", i);
++		if (IS_ERR(channel->dev)) {
++			dev_err(dev, "error creating channel class device");
++			ret = PTR_ERR(channel->dev);
++			channel->dev = NULL;
++			poch_class_dev_unregister(poch_dev, id);
++			return ret;
++		}
++
++		dev_set_drvdata(channel->dev, channel);
++		nattrs = sizeof(poch_class_attrs)/sizeof(poch_class_attrs[0]);
++		for (j = 0; j < nattrs; j++) {
++			ret = device_create_file(channel->dev,
++						 poch_class_attrs[j]);
++			if (ret) {
++				dev_err(dev, "error creating attribute file");
++				poch_class_dev_unregister(poch_dev, id);
++				return ret;
++			}
++		}
++	}
++
++	return 0;
++}
++
++static int __devinit poch_pci_probe(struct pci_dev *pdev,
++				    const struct pci_device_id *pci_id)
++{
++	struct device *dev = &pdev->dev;
++	struct poch_dev *poch_dev;
++	struct uio_info *uio;
++	int ret;
++	int id;
++	int i;
++
++	poch_dev = kzalloc(sizeof(struct poch_dev), GFP_KERNEL);
++	if (!poch_dev) {
++		dev_err(dev, "error allocating priv. data memory\n");
++		return -ENOMEM;
++	}
++
++	poch_dev->pci_dev = pdev;
++	uio = &poch_dev->uio;
++
++	pci_set_drvdata(pdev, poch_dev);
++
++	spin_lock_init(&poch_dev->iomem_lock);
++
++	poch_dev->nchannels = POCH_NCHANNELS;
++	poch_dev->channels[CHNO_RX_CHANNEL].dir = CHANNEL_DIR_RX;
++	poch_dev->channels[CHNO_TX_CHANNEL].dir = CHANNEL_DIR_TX;
++
++	for (i = 0; i < poch_dev->nchannels; i++) {
++		init_waitqueue_head(&poch_dev->channels[i].wq);
++		atomic_set(&poch_dev->channels[i].free, 1);
++		atomic_set(&poch_dev->channels[i].inited, 0);
++	}
++
++	ret = pci_enable_device(pdev);
++	if (ret) {
++		dev_err(dev, "error enabling device\n");
++		goto out_free;
++	}
++
++	ret = pci_request_regions(pdev, "poch");
++	if (ret) {
++		dev_err(dev, "error requesting resources\n");
++		goto out_disable;
++	}
++
++	uio->mem[0].addr = pci_resource_start(pdev, 1);
++	if (!uio->mem[0].addr) {
++		dev_err(dev, "invalid BAR1\n");
++		ret = -ENODEV;
++		goto out_release;
++	}
++
++	uio->mem[0].size = pci_resource_len(pdev, 1);
++	uio->mem[0].memtype = UIO_MEM_PHYS;
++
++	uio->name = "poch";
++	uio->version = "0.0.1";
++	uio->irq = -1;
++	ret = uio_register_device(dev, uio);
++	if (ret) {
++		dev_err(dev, "error register UIO device: %d\n", ret);
++		goto out_release;
++	}
++
++	poch_dev->bridge_iomem = ioremap(pci_resource_start(pdev, 0),
++					 pci_resource_len(pdev, 0));
++	if (poch_dev->bridge_iomem == NULL) {
++		dev_err(dev, "error mapping bridge (bar0) registers\n");
++		ret = -ENOMEM;
++		goto out_uio_unreg;
++	}
++
++	poch_dev->fpga_iomem = ioremap(pci_resource_start(pdev, 1),
++				       pci_resource_len(pdev, 1));
++	if (poch_dev->fpga_iomem == NULL) {
++		dev_err(dev, "error mapping fpga (bar1) registers\n");
++		ret = -ENOMEM;
++		goto out_bar0_unmap;
++	}
++
++	ret = request_irq(pdev->irq, poch_irq_handler, IRQF_SHARED,
++			  dev->bus_id, poch_dev);
++	if (ret) {
++		dev_err(dev, "error requesting IRQ %u\n", pdev->irq);
++		ret = -ENOMEM;
++		goto out_bar1_unmap;
++	}
++
++	if (!idr_pre_get(&poch_ids, GFP_KERNEL)) {
++		dev_err(dev, "error allocating memory ids\n");
++		ret = -ENOMEM;
++		goto out_free_irq;
++	}
++
++	idr_get_new(&poch_ids, poch_dev, &id);
++	if (id >= MAX_POCH_CARDS) {
++		dev_err(dev, "minors exhausted\n");
++		ret = -EBUSY;
++		goto out_free_irq;
++	}
++
++	cdev_init(&poch_dev->cdev, &poch_fops);
++	poch_dev->cdev.owner = THIS_MODULE;
++	ret = cdev_add(&poch_dev->cdev,
++		       poch_first_dev + (id * poch_dev->nchannels),
++		       poch_dev->nchannels);
++	if (ret) {
++		dev_err(dev, "error register character device\n");
++		goto out_idr_remove;
++	}
++
++	ret = poch_class_dev_register(poch_dev, id);
++	if (ret)
++		goto out_cdev_del;
++
++	return 0;
++
++ out_cdev_del:
++	cdev_del(&poch_dev->cdev);
++ out_idr_remove:
++	idr_remove(&poch_ids, id);
++ out_free_irq:
++	free_irq(pdev->irq, poch_dev);
++ out_bar1_unmap:
++	iounmap(poch_dev->fpga_iomem);
++ out_bar0_unmap:
++	iounmap(poch_dev->bridge_iomem);
++ out_uio_unreg:
++	uio_unregister_device(uio);
++ out_release:
++	pci_release_regions(pdev);
++ out_disable:
++	pci_disable_device(pdev);
++ out_free:
++	kfree(poch_dev);
++	return ret;
++}
++
++/*
++ * FIXME: We are yet to handle the hot unplug case.
++ */
++static void poch_pci_remove(struct pci_dev *pdev)
++{
++	struct poch_dev *poch_dev = pci_get_drvdata(pdev);
++	struct uio_info *uio = &poch_dev->uio;
++	unsigned int minor = MINOR(poch_dev->cdev.dev);
++	unsigned int id = minor / poch_dev->nchannels;
++
++	/* FIXME: unmap fpga_iomem and bridge_iomem */
++
++	poch_class_dev_unregister(poch_dev, id);
++	cdev_del(&poch_dev->cdev);
++	idr_remove(&poch_ids, id);
++	free_irq(pdev->irq, poch_dev);
++	uio_unregister_device(uio);
++	pci_release_regions(pdev);
++	pci_disable_device(pdev);
++	pci_set_drvdata(pdev, NULL);
++	iounmap(uio->mem[0].internal_addr);
++
++	kfree(poch_dev);
++}
++
++static const struct pci_device_id poch_pci_ids[] /* __devinitconst */ = {
++	{ PCI_DEVICE(PCI_VENDOR_ID_RRAPIDS,
++		     PCI_DEVICE_ID_RRAPIDS_POCKET_CHANGE) },
++	{ 0, }
++};
++
++static struct pci_driver poch_pci_driver = {
++	.name = DRV_NAME,
++	.id_table = poch_pci_ids,
++	.probe = poch_pci_probe,
++	.remove = poch_pci_remove,
++};
++
++static int __init poch_init_module(void)
++{
++	int ret = 0;
++
++	ret = alloc_chrdev_region(&poch_first_dev, 0,
++				  MAX_POCH_DEVICES, DRV_NAME);
++	if (ret) {
++		printk(KERN_ERR PFX "error allocating device no.");
++		return ret;
++	}
++
++	poch_cls = class_create(THIS_MODULE, "pocketchange");
++	if (IS_ERR(poch_cls)) {
++		ret = PTR_ERR(poch_cls);
++		goto out_unreg_chrdev;
++	}
++
++	ret = pci_register_driver(&poch_pci_driver);
++	if (ret) {
++		printk(KERN_ERR PFX "error register PCI device");
++		goto out_class_destroy;
++	}
++
++	return 0;
++
++ out_class_destroy:
++	class_destroy(poch_cls);
++
++ out_unreg_chrdev:
++	unregister_chrdev_region(poch_first_dev, MAX_POCH_DEVICES);
++
++	return ret;
++}
++
++static void __exit poch_exit_module(void)
++{
++	pci_unregister_driver(&poch_pci_driver);
++	class_destroy(poch_cls);
++	unregister_chrdev_region(poch_first_dev, MAX_POCH_DEVICES);
++}
++
++module_init(poch_init_module);
++module_exit(poch_exit_module);
++
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/staging/poch/poch.h b/drivers/staging/poch/poch.h
+new file mode 100644
+index 0000000..51a2d14
+--- /dev/null
++++ b/drivers/staging/poch/poch.h
+@@ -0,0 +1,29 @@
++/*
++ * User-space DMA and UIO based Redrapids Pocket Change CardBus driver
++ *
++ * Copyright 2008 Vijay Kumar <vijaykumar@bravegnu.org>
++ *
++ * Part of userspace API. Should be moved to a header file in
++ * include/linux for final version.
++ *
++ */
++struct poch_cbuf_header {
++	__s32 group_size_bytes;
++	__s32 group_count;
++	__s32 group_offsets[0];
++};
++
++struct poch_counters {
++	__u32 fifo_empty;
++	__u32 fifo_overflow;
++	__u32 pll_unlock;
++};
++
++#define POCH_IOC_NUM			'9'
++
++#define POCH_IOC_TRANSFER_START		_IO(POCH_IOC_NUM, 0)
++#define POCH_IOC_TRANSFER_STOP		_IO(POCH_IOC_NUM, 1)
++#define POCH_IOC_GET_COUNTERS		_IOR(POCH_IOC_NUM, 2, \
++					     struct poch_counters)
++#define POCH_IOC_SYNC_GROUP_FOR_USER	_IO(POCH_IOC_NUM, 3)
++#define POCH_IOC_SYNC_GROUP_FOR_DEVICE	_IO(POCH_IOC_NUM, 4)
 -- 
 1.6.0.2
 
