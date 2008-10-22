@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbYJVOwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755133AbYJVOx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755854AbYJVOwy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 10:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbYJVOwo
+	id S1755133AbYJVOx5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 10:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYJVOxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 10:52:44 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:24884 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752255AbYJVOwn (ORCPT
+	Wed, 22 Oct 2008 10:53:47 -0400
+Received: from outbound-mail-143.bluehost.com ([67.222.38.33]:57444 "HELO
+	outbound-mail-143.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753084AbYJVOxr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 10:52:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ebxdQMV9OhaYvEYPult9AFxSt0qI7QIReGUMe3C7b8Rw3Gqbnff6AbzdR+pqqXpQs+
-         RtKCOv3HlrLmUlmKTGxi/3KhYbj5dQaya674H8vSLpcE9oyqA5TFZcRJB1UTNpC2KRcN
-         62YvxQ9tj/5sHOLeGIRluiJ2bsMalTZKfFA/0=
-Date: Wed, 22 Oct 2008 18:52:38 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Glauber Costa <glommer@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Max Kellermann <mk@cm4all.com>
-Subject: Re: [PATCH -tip] x86: do_boot_cpu - check if we have ESR register
-Message-ID: <20081022145238.GC9639@localhost>
-References: <20081022140009.GA9639@localhost> <20081022141354.GA26372@elte.hu> <20081022141720.GB9639@localhost> <20081022142312.GC26372@elte.hu>
+	Wed, 22 Oct 2008 10:53:47 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=uniscape.net;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=qkuc5GWtYxN0tPvDVHnZ6swsOOeKq2ZK0b7IrbkIMKS6JFiA4VKjjlFv9zGLDxQ/X3JymbKdehAkF48yIAv0tB8vWJIpJYX5Xe4YrQu8P3UhZmHQc1jSSXzGvuYKIKaU;
+Message-ID: <48FF3E3B.3050006@uniscape.net>
+Date: Wed, 22 Oct 2008 22:52:43 +0800
+From: Yu Zhao <yu.zhao@uniscape.net>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081022142312.GC26372@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Yu Zhao <yu.zhao@intel.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "achiang@hp.com" <achiang@hp.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "greg@kroah.com" <greg@kroah.com>, "mingo@elte.hu" <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "matthew@wil.cx" <matthew@wil.cx>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH 9/16 v6] PCI: add boot option to align MMIO resources
+References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <20081022084324.GI3773@yzhao12-linux.sh.intel.com> <200810220834.07222.bjorn.helgaas@hp.com>
+In-Reply-To: <200810220834.07222.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {2990:host272.hostmonster.com:uniscape:uniscape.net} {sentby:smtp auth 58.38.26.55 authed with yu.zhao@uniscape.net}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Wed, Oct 22, 2008 at 04:23:12PM +0200]
-| 
-| * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| 
-| > | > -		apic_write(APIC_ESR, 0);
-| > | > -		apic_read(APIC_ESR);
-| > | > +		if (APIC_INTEGRATED(apic_version[phys_apicid])) {
-| > | > +			apic_write(APIC_ESR, 0);
-| > | > +			apic_read(APIC_ESR);
-| > | > +		}
-| > | 
-| > | i'm wondering - is the server there really that old, that it has no 
-| > | integrated lapic? I.e. it's an i486 SMP box or so? Or perhaps some 
-| > | other, weird SMP box?
-| > | 
-| > | 	Ingo
-| > | 
-| > 
-| > I was quite wondering too -- it's Xeon server.
-| > 
-| > >From http://lkml.org/lkml/2008/10/20/34
-| > >> Hardware: Compaq P4 Xeon server, Broadcom CMIC-WS / CIOB-X2 board.
-| > >> Tell me if you need more detailed information.
-| 
-| ah, Compaq - how many CPUs does that box support? If it's 8 or more then 
-| perhaps they turned off the real local APIC, fudged some chipset glue to 
-| emulate APIC functionality and thus were able to use 8 or more of these 
-| chips? The built-in lapic would only go up to 4 CPUs. (or maybe even 
-| just up to dual, depending on the model)
+Bjorn Helgaas wrote:
+> On Wednesday 22 October 2008 02:43:24 am Yu Zhao wrote:
+>> This patch adds boot option to align MMIO resource for a device.
+>> The alignment is a bigger value between the PAGE_SIZE and the
+>> resource size.
+> 
+> It looks like this forces alignment on PAGE_SIZE, not "a bigger
+> value between the PAGE_SIZE and the resource size."  Can you
+> clarify the changelog to specify exactly what alignment this
+> option forces?
 
-I have no glue how many cpus it does supposrt :) Maybe Max know.
+I guess following would explain your question.
 
-| 
-| This reminds us that all the is-integrated-lapic checks still matter 
-| today.
-| 
-| 	Ingo
-| 
-		- Cyrill -
+>>  int pci_resource_alignment(struct pci_dev *dev, int resno)
+>>  {
+>> -	resource_size_t align;
+>> +	resource_size_t align, bios_align;
+>>  	struct resource *res = dev->resource + resno;
+>>  
+>> +	bios_align = pcibios_resource_alignment(dev, resno);
+>> +
+>>  	align = resource_alignment(res);
+>>  	if (align)
+>> -		return align;
+>> +		return align > bios_align ? align : bios_align;
+>>  
+>>  	dev_err(&dev->dev, "alignment: invalid resource #%d\n", resno);
+>>  	return 0;
+
