@@ -1,72 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756439AbYJVVDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758086AbYJVVDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756439AbYJVVDM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 17:03:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbYJVVC5
+	id S1758086AbYJVVDs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 17:03:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbYJVVDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 17:02:57 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:34924 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752544AbYJVVC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 17:02:56 -0400
-Date: Wed, 22 Oct 2008 14:02:54 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Manfred Spraul <manfred@colorfullife.com>
-Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
-       akpm@linux-foundation.org, dipankar@in.ibm.com,
-       josht@linux.vnet.ibm.com, schamp@sgi.com, niv@us.ibm.com,
-       dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
-       andi@firstfloor.org, tglx@linutronix.de
-Subject: Re: [PATCH, RFC] v7 scalable classic RCU implementation
-Message-ID: <20081022210254.GE6766@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080915160221.GA9660@linux.vnet.ibm.com> <20080923235340.GA12166@linux.vnet.ibm.com> <20081010160930.GA9777@linux.vnet.ibm.com> <48F21D58.3000404@colorfullife.com> <20081012224629.GA7353@linux.vnet.ibm.com> <48F38D73.8040804@colorfullife.com> <20081015011143.GE6874@linux.vnet.ibm.com> <48F5A638.8020003@colorfullife.com> <20081015152637.GA6739@linux.vnet.ibm.com> <48FF73C7.90709@colorfullife.com>
+	Wed, 22 Oct 2008 17:03:37 -0400
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:56439 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752186AbYJVVDg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 17:03:36 -0400
+Date: Wed, 22 Oct 2008 14:01:28 -0700 (PDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Miklos Szeredi <miklos@szeredi.hu>, nickpiggin@yahoo.com.au,
+       hugh@veritas.com, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: SLUB defrag pull request?
+In-Reply-To: <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0810221400340.26671@quilx.com>
+References: <1223883004.31587.15.camel@penberg-laptop> 
+ <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu>  <48FE6306.6020806@linux-foundation.org>
+  <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810220822500.30851@quilx.com>
+  <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221252570.3562@quilx.com>
+  <E1Ksk3g-00027r-Lp@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221315080.26671@quilx.com>
+  <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu> <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48FF73C7.90709@colorfullife.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Spam-Score: -2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 08:41:11PM +0200, Manfred Spraul wrote:
-> Paul E. McKenney wrote:
->> Only once per such CPU every grace period -- seems in the noise to me.
->> But I should revisit, as I have changed things quite a bit since I
->> made that decision many weeks ago.  ;-)
->>
->>   
-> Another small point:
-> Does your implementation support rcu_check_callbacks() with cpu != 
-> smp_processor_id()?
-> I don't think my locking would support it properly.
-> Thus:
-> - cpu != smp_processor_id() doesn't work.
-> - stack space for a useless parameter.
-> - the explicit cpu parameter prevents the rcu code from using 
-> get_cpu_var().
->
-> What about modifying the rcu_check_callbacks() prototype? I'd propose to 
-> remove the cpu parameter.
+On Wed, 22 Oct 2008, Pekka Enberg wrote:
 
-That would work fine for rcutree.c.  If I were to invoke
-rcu_check_callbacks() remotely, I would use something like
-smp_call_function() to make it happen.
+> Actually, when debugging is enabled, it's customary to poison the
+> object, for example (see free_debug_processing() in mm/slub.c). So we
+> really can't "easily ensure" that in the allocator unless we by-pass
+> all the current debugging code.
 
-Hmmm...  Looks like rcu_pending is also always called with its cpu
-parameter set to the current CPU, and same for rcu_needs_cpu().
-And given that all the external uses of rcu_check_callbacks() are
-of the following form:
-
-	if (rcu_pending(cpu))
-		rcu_check_callbacks(cpu, whatever);
-
-
-perhaps rcu_pending() should be an internal-to-RCU API invoked from
-rcu_check_callbacks().
-
-Thoughts?
-
-							Thanx, Paul
+We may be talking of different frees here. Maybe what he means by freeing 
+is that the object was put on the lru? And we understand a kfree().
