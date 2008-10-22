@@ -1,83 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690AbYJVLvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbYJVL6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755690AbYJVLvq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 07:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYJVLvi
+	id S1753505AbYJVL6S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 07:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbYJVL6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 07:51:38 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:38542 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753061AbYJVLvh (ORCPT
+	Wed, 22 Oct 2008 07:58:06 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45146 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751278AbYJVL6D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 07:51:37 -0400
-Message-ID: <48FF13C0.6000805@fr.ibm.com>
-Date: Wed, 22 Oct 2008 13:51:28 +0200
-From: Daniel Lezcano <dlezcano@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 22 Oct 2008 07:58:03 -0400
+Date: Wed, 22 Oct 2008 13:58:02 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Eric Piel <eric.piel@tremplin-utc.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       burman.yan@gmail.com, pau@eslack.org
+Subject: Re: [PATCH] LIS3LV02Dx Accelerometer driver (take 4)
+Message-ID: <20081022115802.GA29650@atrey.karlin.mff.cuni.cz>
+References: <48FA3368.1040605@tremplin-utc.net> <20081021083822.GG15782@atrey.karlin.mff.cuni.cz> <20081021114255.a7dabc2d.akpm@linux-foundation.org> <20081022102713.GA7843@atrey.karlin.mff.cuni.cz> <48FF0FB7.5070706@tremplin-utc.net>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>,
-       containers@lists.linux-foundation.org, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, linux-api@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de
-Subject: Re: [RFC v7][PATCH 0/9] Kernel based checkpoint/restart
-References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu>	<20081021122135.4bce362c.akpm@linux-foundation.org>	<1224621667.1848.228.camel@nimitz> <20081022092024.GC12453@elte.hu>
-In-Reply-To: <20081022092024.GC12453@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48FF0FB7.5070706@tremplin-utc.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+Hi!
+
+> > Ok, I guess you have better eyeballs. Yes, the locking was totaly
+> > broken (and disabled by initing semaphore to 1 by default).
+> To which value the semaphore should have been initialised? I can see
+> DECLARE_MUTEX(name) declared as:
+> 	struct semaphore name = __SEMAPHORE_INITIALIZER(name, 1)
 > 
->> On Tue, 2008-10-21 at 12:21 -0700, Andrew Morton wrote:
->>> On Mon, 20 Oct 2008 01:40:28 -0400
->>> Oren Laadan <orenl@cs.columbia.edu> wrote:
->>>> These patches implement basic checkpoint-restart [CR]. This version
->>>> (v7) supports basic tasks with simple private memory, and open files
->>>> (regular files and directories only).
->>> - how useful is this code as it stands in real-world usage?
->> Right now, an application must be specifically written to use these 
->> mew system calls.  It must be a single process and not share any 
->> resources with other processes.  The only file descriptors that may be 
->> open are simple files and may not include sockets or pipes.
->>
->> What this means in practice is that it is useful for a simple app 
->> doing computational work.
-> 
-> say a chemistry application doing calculations. Or a raytracer with a 
-> large job. Both can take many hours (days!) even on very fast machine 
-> and the restrictions on rebootability can hurt in such cases.
-> 
-> You should reach a minimal level of initial practical utility: say some 
-> helper tool that allows testers to checkpoint and restore a real PovRay 
-> session - without any modification to a stock distro PovRay.
+> (I'm still learning about the locking in the kernel. To me, it looks
+> like a maze, and I couldn't find one simple document detailing all the
+> mechanisms.)
 
-There are the liblxc userspace tools doing that.
+It is a bit of maze.
 
-http://sourceforge.net/projects/lxc/
+You should not really use semaphores. They are old and tricky.
 
-There are the lxc-checkpoint and lxc-restart commands to test the Oren's 
-patches with the external checkpoint Cedric did. These commands are 
-experimental and under development so a hack may be necessary for 
-checkpoint/restart.
+> > This strips some more code, turns semaphore into mutex, and should
+> > solve more problems.
+> > 
+> > I killed the "power down on timer" thingie. I guess we can reintroduce
+> > it when we get the basics right (and driver works just fine without
+> > that... I did not detect unusual slowness).
+> I inserted the timer thingie because I have a program on my laptop which
+> reads the position twice per second. Using the joystick interface uses
+> two much CPU (it's 20 Hz) and so it's using the sysfs interface.
+> However, turning on and off the device twice per second is rather costly
+> (especially due to the ACPI access). That's why I made it delayed... and
+> I'd like to keep it this way.
 
-I didn't tried with Oren's external checkpoint yet, but I think the 
-commands should work. Actually these commands relies on the freezer, so 
-the checkpoint command does freeze, checkpoint, unfreeze. (and kill if 
-specified).
+Ultimately, we may end up doing that; but for now, I'd like to get
+very small and very obvious patch merged...
 
-	lxc-create -n foo
+(Possible workaround: sleep 100 < position should keep the
+accelerometer powered up for 100 seconds, right?)
 
-	lxc-start -n foo mypovray
+> I'll send this evening a "delayed power down" based on workqueue. Within
+> the  work of a workqueue, it's not possible to use a mutex, right? Only
+> semaphores are allowed?
 
-	lxc-checkpoint -s -n foo > myckptfile
-
-	lxc-restart -n foo < myckptfile
-
-Thanks
-   -- Daniel
+Within workqueue, mutex and semaphores are both allowed. What you may
+not do is to keep mutex locked and return control.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
