@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758510AbYJVUXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbYJVU00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758510AbYJVUXc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 16:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbYJVUXX
+	id S1758136AbYJVU00 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 16:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYJVU0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 16:23:23 -0400
-Received: from gw.goop.org ([64.81.55.164]:58113 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752654AbYJVUXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 16:23:22 -0400
-Message-ID: <48FF8BB9.7050506@goop.org>
-Date: Wed, 22 Oct 2008 13:23:21 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       johannes@sipsolutions.net, davem@davemloft.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] fix WARN() for PPC
-References: <20081020145056.24d84992@infradead.org>
-In-Reply-To: <20081020145056.24d84992@infradead.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Oct 2008 16:26:16 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:56750 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751416AbYJVU0P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 16:26:15 -0400
+To: cl@linux-foundation.org
+CC: miklos@szeredi.hu, penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au,
+       hugh@veritas.com, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-reply-to: <Pine.LNX.4.64.0810221315080.26671@quilx.com> (message from
+	Christoph Lameter on Wed, 22 Oct 2008 13:19:15 -0700 (PDT))
+Subject: Re: SLUB defrag pull request?
+References: <1223883004.31587.15.camel@penberg-laptop>
+ <1223883164.31587.16.camel@penberg-laptop> <Pine.LNX.4.64.0810131227120.20511@blonde.site>
+ <200810132354.30789.nickpiggin@yahoo.com.au> <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu>
+ <E1KpOOL-0003Vf-9y@pomaz-ex.szeredi.hu> <48F378C6.7030206@linux-foundation.org>
+ <E1KpOjX-0003dt-AY@pomaz-ex.szeredi.hu> <48FC9CCC.3040006@linux-foundation.org>
+ <E1Krz4o-0002Fi-Pu@pomaz-ex.szeredi.hu> <48FCCC72.5020202@linux-foundation.org>
+ <E1KrzgK-0002QS-Os@pomaz-ex.szeredi.hu> <48FCD7CB.4060505@linux-foundation.org>
+ <E1Ks0QX-0002aC-SQ@pomaz-ex.szeredi.hu> <48FCE1C4.20807@linux-foundation.org>
+ <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu> <48FE6306.6020806@linux-foundation.org>
+ <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0810220822500.30851@quilx.com>
+ <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0810221252570.3562@quilx.com>
+ <E1Ksk3g-00027r-Lp@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0810221315080.26671@quilx.com>
+Message-Id: <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 22 Oct 2008 22:26:00 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Mon, 20 Oct 2008 14:41:03 -0700
-> Subject: [PATCH] fix WARN() for PPC
->
-> powerpc doesn't use the generic WARN_ON infrastructure.
+On Wed, 22 Oct 2008, Christoph Lameter wrote:
+> On Wed, 22 Oct 2008, Miklos Szeredi wrote:
+> 
+> > You are not actually listening to what I'm saying.  Please read the
+> > question carefully again.
+> 
+> That is the impression that I got from you too. I have listed the options 
+> to get a reliable reference to an object and you seem to just skip over 
+> it.
 
-Hm, why's that now?  The generic infrastructure was taken from powerpc, 
-and I thought I'd converted it...
+Because you don't _need_ a reliable reference to access the contents
+of the dentry.  The dentry is still there after being freed, as long
+as the underlying slab is there and isn't being reused for some other
+purpose.  But you can easily ensure that from the slab code.
 
-    J
+Hmm?
+
+Miklos
