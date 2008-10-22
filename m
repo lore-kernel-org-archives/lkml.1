@@ -1,115 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbYJVJI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbYJVJMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754600AbYJVJI4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 05:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYJVJIr
+	id S1754077AbYJVJMd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 05:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYJVJMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 05:08:47 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58108 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751238AbYJVJIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 05:08:46 -0400
-Message-ID: <48FEED4D.3000208@cn.fujitsu.com>
-Date: Wed, 22 Oct 2008 17:07:25 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 22 Oct 2008 05:12:24 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:36752 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751564AbYJVJMX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 05:12:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=lcGGHkXc+zYH/telubf3FmlYORJEXNslgtfcalerOLiVt2lD5+F9qBUJgXJ7g9tOLZ
+         xFurc6F3AbbUh/gNR1+SPKbl+ouM2fi5VUNAkTkDuNjztHpRibLrJQVucoqF7379ZFud
+         N5rgJU9jZtsBmq0b3+LjrwT3uOqAzQHP2tMc8=
+Message-ID: <a4423d670810220212g64711390x1963da748f6084c2@mail.gmail.com>
+Date: Wed, 22 Oct 2008 13:12:22 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: "Dave Chinner" <david@fromorbit.com>, lachlan@sgi.com,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Arjan van de Ven" <arjan@infradead.org>, xfs@oss.sgi.com,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: sleeping function called from invalid context at kernel/rwsem.c:131 XFS? (was: Re: linux-next: Tree for October 17)
+In-Reply-To: <20081022082550.GM18495@disturbed>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: linux-wireless@vger.kernel.org, rt2400-devel@lists.sourceforge.net
-Subject: [PATCH] Fix debugfs_create_*'s error checking method for wireless/rt2x00/
-Content-Type: text/plain; charset=GB2312
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081017165738.GA20818@infradead.org>
+	 <20081017203710.GA27187@infradead.org>
+	 <20081017135510.7127c4e7@infradead.org>
+	 <a4423d670810200758m3cea3841h40988afc8eaf81@mail.gmail.com>
+	 <20081020163327.GA15651@infradead.org>
+	 <a4423d670810201013w6448cb38w402771799cefb5f5@mail.gmail.com>
+	 <20081020223549.GA21152@disturbed>
+	 <a4423d670810210442y51b62fc2naf6cb649e6b26942@mail.gmail.com>
+	 <20081022075838.GK18495@disturbed> <20081022082550.GM18495@disturbed>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+2008/10/22 Dave Chinner <david@fromorbit.com>:
+> On Wed, Oct 22, 2008 at 06:58:38PM +1100, Dave Chinner wrote:
+>> On Tue, Oct 21, 2008 at 03:42:16PM +0400, Alexander Beregalov wrote:
+>> > Bisected to:
+>> > dd509097cb0b76d3836385f80d6b2d6fd3b97757 is first bad commit
+>> > commit dd509097cb0b76d3836385f80d6b2d6fd3b97757
+>> > Author: Lachlan McIlroy <lachlan@sgi.com>
+>> > Date:   Mon Sep 29 14:56:40 2008 +1000
+>> >
+>> >     [XFS] Unlock inode before calling xfs_idestroy()
+>> >
+>> >     Lock debugging reported the ilock was being destroyed without being
+>> >     unlocked. We don't need to lock the inode until we are going to insert it
+>> >     into the radix tree.
+>>
+>> Ah, OK, I see the problem, though I don't understand why I'm not
+>> seeing the might_sleep() triggering all the time given that I always
+>> build with:
+>>
+>> $ grep SLEEP .config
+>> CONFIG_DEBUG_SPINLOCK_SLEEP=y
+>>
+>> Basically the above commit moved xfs_ilock() inside
+>> radix_tree_preload()/radix_tree_preload_end(), which means we are
+>> taking a rwsem() while we have an elevated preempt count. I'll
+>> get a patch out to fix it.
+>
+> Patch below (against the xfs master/linux-next branch) should fix the
+> regression. I've just started QA on it. Can you please check that
+> it works for you, Alexander?
+>
+> Cheers,
+>
+> Dave.
+> --
+> Dave Chinner
+> david@fromorbit.com
+>
+> XFS: Can't lock inodes in radix tree preload region
+>
+> When we are inside a radix tree preload region, we cannot
+> sleep. Recently we moved the inode locking inside the
+> preload region for the inode radix tree. Fix that,
+> and fix a missed unlock in another error path in the
+> same code at the same time.
+>
+> Signed-off-by: Dave Chinner <david@fromorbit.com>
+Tested-by: Alexander Beregalov <a.beregalov@gmail.com>
 
-debugfs_create_*() returns NULL if an error occurs, returns -ENODEV
-when debugfs is not enabled in the kernel.
-
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- drivers/net/wireless/rt2x00/rt2x00debug.c |   21 ++++++++++++---------
- 1 files changed, 12 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/net/wireless/rt2x00/rt2x00debug.c b/drivers/net/wireless/rt2x00/rt2x00debug.c
-index 5cf4c85..b380cd3 100644
---- a/drivers/net/wireless/rt2x00/rt2x00debug.c
-+++ b/drivers/net/wireless/rt2x00/rt2x00debug.c
-@@ -587,29 +587,29 @@ void rt2x00debug_register(struct rt2x00_dev *rt2x00dev)
- 	intf->driver_folder =
- 	    debugfs_create_dir(intf->rt2x00dev->ops->name,
- 			       rt2x00dev->hw->wiphy->debugfsdir);
--	if (IS_ERR(intf->driver_folder))
-+	if (IS_ERR(intf->driver_folder) || !intf->driver_folder)
- 		goto exit;
- 
- 	intf->driver_entry =
- 	    rt2x00debug_create_file_driver("driver", intf, &intf->driver_blob);
--	if (IS_ERR(intf->driver_entry))
-+	if (IS_ERR(intf->driver_entry) || !intf->driver_entry)
- 		goto exit;
- 
- 	intf->chipset_entry =
- 	    rt2x00debug_create_file_chipset("chipset",
- 					    intf, &intf->chipset_blob);
--	if (IS_ERR(intf->chipset_entry))
-+	if (IS_ERR(intf->chipset_entry) || !intf->chipset_entry)
- 		goto exit;
- 
- 	intf->dev_flags = debugfs_create_file("dev_flags", S_IRUSR,
- 					      intf->driver_folder, intf,
- 					      &rt2x00debug_fop_dev_flags);
--	if (IS_ERR(intf->dev_flags))
-+	if (IS_ERR(intf->dev_flags) || !intf->dev_flags)
- 		goto exit;
- 
- 	intf->register_folder =
- 	    debugfs_create_dir("register", intf->driver_folder);
--	if (IS_ERR(intf->register_folder))
-+	if (IS_ERR(intf->register_folder) || !intf->register_folder)
- 		goto exit;
- 
- #define RT2X00DEBUGFS_CREATE_REGISTER_ENTRY(__intf, __name)	\
-@@ -619,7 +619,8 @@ void rt2x00debug_register(struct rt2x00_dev *rt2x00dev)
- 			       S_IRUSR | S_IWUSR,		\
- 			       (__intf)->register_folder,	\
- 			       &(__intf)->offset_##__name);	\
--	if (IS_ERR((__intf)->__name##_off_entry))		\
-+	if (IS_ERR((__intf)->__name##_off_entry)		\
-+			|| !(__intf)->__name##_off_entry)	\
- 		goto exit;					\
- 								\
- 	(__intf)->__name##_val_entry =				\
-@@ -627,7 +628,8 @@ void rt2x00debug_register(struct rt2x00_dev *rt2x00dev)
- 				S_IRUSR | S_IWUSR,		\
- 				(__intf)->register_folder,	\
- 				(__intf), &rt2x00debug_fop_##__name);\
--	if (IS_ERR((__intf)->__name##_val_entry))		\
-+	if (IS_ERR((__intf)->__name##_val_entry)		\
-+			|| !(__intf)->__name##_val_entry)	\
- 		goto exit;					\
- })
- 
-@@ -640,13 +642,14 @@ void rt2x00debug_register(struct rt2x00_dev *rt2x00dev)
- 
- 	intf->queue_folder =
- 	    debugfs_create_dir("queue", intf->driver_folder);
--	if (IS_ERR(intf->queue_folder))
-+	if (IS_ERR(intf->queue_folder) || !intf->queue_folder)
- 		goto exit;
- 
- 	intf->queue_frame_dump_entry =
- 	    debugfs_create_file("dump", S_IRUSR, intf->queue_folder,
- 				intf, &rt2x00debug_fop_queue_dump);
--	if (IS_ERR(intf->queue_frame_dump_entry))
-+	if (IS_ERR(intf->queue_frame_dump_entry)
-+		|| !intf->queue_frame_dump_entry)
- 		goto exit;
- 
- 	skb_queue_head_init(&intf->frame_dump_skbqueue);
--- 1.5.5.3 
-
-
-
+Yes, it fixes the issue. Thanks
