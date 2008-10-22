@@ -1,56 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbYJVPwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbYJVPxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755348AbYJVPwv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 11:52:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYJVPwm
+	id S1753402AbYJVPxM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 11:53:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbYJVPws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 11:52:42 -0400
-Received: from ftp.linux-mips.org ([213.58.128.207]:44744 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751032AbYJVPwl (ORCPT
+	Wed, 22 Oct 2008 11:52:48 -0400
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:49230 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754660AbYJVPwq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 11:52:41 -0400
-Date: Wed, 22 Oct 2008 16:52:40 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Cyrill Gorcunov <gorcunov@gmail.com>, Glauber Costa <glommer@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Max Kellermann <mk@cm4all.com>
-Subject: Re: [PATCH -tip] x86: do_boot_cpu - check if we have ESR register
-In-Reply-To: <20081022142312.GC26372@elte.hu>
-Message-ID: <alpine.LFD.1.10.0810221643250.24509@ftp.linux-mips.org>
-References: <20081022140009.GA9639@localhost> <20081022141354.GA26372@elte.hu> <20081022141720.GB9639@localhost> <20081022142312.GC26372@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 22 Oct 2008 11:52:46 -0400
+X-Greylist: delayed 577 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Oct 2008 11:52:46 EDT
+Date: Wed, 22 Oct 2008 08:42:25 -0700 (PDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au, hugh@veritas.com,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: SLUB defrag pull request?
+In-Reply-To: <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu>
+Message-ID: <Pine.LNX.4.64.0810220822500.30851@quilx.com>
+References: <1223883004.31587.15.camel@penberg-laptop>
+ <1223883164.31587.16.camel@penberg-laptop> <Pine.LNX.4.64.0810131227120.20511@blonde.site>
+ <200810132354.30789.nickpiggin@yahoo.com.au> <E1KpNwq-0003OW-8f@pomaz-ex.szeredi.hu>
+ <E1KpOOL-0003Vf-9y@pomaz-ex.szeredi.hu> <48F378C6.7030206@linux-foundation.org>
+ <E1KpOjX-0003dt-AY@pomaz-ex.szeredi.hu> <48FC9CCC.3040006@linux-foundation.org>
+ <E1Krz4o-0002Fi-Pu@pomaz-ex.szeredi.hu> <48FCCC72.5020202@linux-foundation.org>
+ <E1KrzgK-0002QS-Os@pomaz-ex.szeredi.hu> <48FCD7CB.4060505@linux-foundation.org>
+ <E1Ks0QX-0002aC-SQ@pomaz-ex.szeredi.hu> <48FCE1C4.20807@linux-foundation.org>
+ <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu> <48FE6306.6020806@linux-foundation.org>
+ <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Spam-Score: -1.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Oct 2008, Ingo Molnar wrote:
+On Wed, 22 Oct 2008, Miklos Szeredi wrote:
 
-> ah, Compaq - how many CPUs does that box support? If it's 8 or more then 
-> perhaps they turned off the real local APIC, fudged some chipset glue to 
-> emulate APIC functionality and thus were able to use 8 or more of these 
-> chips? The built-in lapic would only go up to 4 CPUs. (or maybe even 
-> just up to dual, depending on the model)
+> On Tue, 21 Oct 2008, Christoph Lameter wrote:
+>> The only way that a secure reference can be established is if the
+>> slab page is locked. That requires a spinlock. The slab allocator
+>> calls the get() functions while the slab lock guarantees object
+>> existence. Then locks are dropped and reclaim actions can start with
+>> the guarantee that the slab object will not suddenly vanish.
+>
+> Yes, you've made up your mind, that you want to do it this way.  But
+> it's the _wrong_ way, this "want to get a secure reference for use
+> later" leads to madness when applied to dentries or inodes.  Try for a
+> minute to think outside this template.
+>
+> For example dcache_lock will protect against dentries moving to/from
+> d_lru.  So you can do this:
+>
+>  take dcache_lock
+>  check if d_lru is non-empty
 
- Hmm, interesting.  The integrated APIC should support up to 14 CPUs 
-(assuming one ID is needed for the I/O APIC).  One cannot preclude silicon 
-errata affecting the less common hardware configurations though.  It would 
-be interesting to see a full bootstrap log with all the APIC debug 
-information enabled.  That would probably clarify matters a bit.
+The dentry could have been freed even before we take the dcache_lock. We 
+cannot access d_lru without a stable reference to the dentry.
 
- Note that Compaq would have to come with their own solution about the 
-discrete APIC as the 82489DX went out of production many years ago -- ten 
-at the very least.  OTOH, they could have stockpiled them back then. ;)  
-This is one of the few manufacturers I would actually suspect doing so as 
-they always seemed keen on going SMP.  Good to know we can support these 
-boxes at all these days.
+>  take sb->s_umount
+>  free dentry
+>  release sb->s_umount
+>  release dcache_lock
+>
+> Yeah, locking will be more complicated in reality.  Still, much less
+> complicated than trying to do the same across two separate phases.
+>
+> Why can't something like that work?
 
-> This reminds us that all the is-integrated-lapic checks still matter 
-> today.
+Because the slab starts out with a series of objects left in a slab. It 
+needs to do build a list of objects etc in a way that is independent as 
+possible from the user of the slab page. It does that by locking the slab 
+page so that free operations stall until the reference has been 
+established. If it would not be shutting off frees then the objects could 
+vanish under us.
 
- Quite surprising indeed.
+We could also avoid frees by calling some cache specific method that locks 
+out frees before and after. But then frees would stall everywhere and 
+every slab cache would have to check a global lock before freeing objects 
+(there would be numerous complications with RCU free etc etc).
 
-  Maciej
+Slab defrag only stops frees on a particular slab page.
+
+The slab defrag approach also allows the slab cache (dentry or inodes 
+here) to do something else than free the object. It would be possible f.e. 
+to move the object by allocating a new entry and moving the information to 
+the new dentry. That would actually be better since it would preserve the 
+objects and just move them into the same slab page.
