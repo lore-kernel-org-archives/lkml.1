@@ -1,58 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752306AbYJVDC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbYJVDFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752306AbYJVDC5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Oct 2008 23:02:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYJVDCs
+	id S1753571AbYJVDFk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Oct 2008 23:05:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbYJVDFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Oct 2008 23:02:48 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:44803 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751014AbYJVDCr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Oct 2008 23:02:47 -0400
-Subject: Re: [RFC v7][PATCH 2/9] General infrastructure for checkpoint
-	restart
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Daniel Jacobowitz <dan@debian.org>
-Cc: Oren Laadan <orenl@cs.columbia.edu>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, hpa@zytor.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de
-In-Reply-To: <20081022025513.GA7504@caradoc.them.org>
-References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu>
-	 <1224481237-4892-3-git-send-email-orenl@cs.columbia.edu>
-	 <20081021124130.a002e838.akpm@linux-foundation.org>
-	 <20081021202410.GA10423@us.ibm.com> <48FE82DF.6030005@cs.columbia.edu>
-	 <20081022025513.GA7504@caradoc.them.org>
-Content-Type: text/plain
-Date: Tue, 21 Oct 2008 20:02:43 -0700
-Message-Id: <1224644563.1848.232.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 21 Oct 2008 23:05:30 -0400
+Received: from mga01.intel.com ([192.55.52.88]:35273 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751423AbYJVDF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Oct 2008 23:05:29 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,461,1220252400"; 
+   d="scan'208";a="394538387"
+Message-ID: <48FE9876.9040003@intel.com>
+Date: Wed, 22 Oct 2008 11:05:26 +0800
+From: "Zhao, Yu" <yu.zhao@intel.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH 12/15 v5] PCI: support the SR-IOV capability
+References: <20081021114056.GA3185@yzhao12-linux.sh.intel.com> <20081021115308.GM3185@yzhao12-linux.sh.intel.com> <20081021165054.GA24795@kroah.com>
+In-Reply-To: <20081021165054.GA24795@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-21 at 22:55 -0400, Daniel Jacobowitz wrote:
-> I haven't been following - but why this whole container restriction?
-> Checkpoint/restart of individual processes is very useful too.
-> There are issues with e.g. IPC, but I'm not convinced they're
-> substantially different than the issues already present for a
-> container.
+Greg KH wrote:
+> On Tue, Oct 21, 2008 at 07:53:08PM +0800, Yu Zhao wrote:
+>> Support Single Root I/O Virtualization (SR-IOV) capability.
+>>
+>> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+>> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+>> Cc: Grant Grundler <grundler@parisc-linux.org>
+>> Cc: Alex Chiang <achiang@hp.com>
+>> Cc: Matthew Wilcox <matthew@wil.cx>
+>> Cc: Roland Dreier <rdreier@cisco.com>
+>> Cc: Greg KH <greg@kroah.com>
+>> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+>>
 
-Containers provide isolation.  Once you have isolation, you have a
-discrete set of resources which you can checkpoint/restart.
+>> +#define iov_config_attr(field)                                               \
+>> +static ssize_t field##_show(struct device *dev,                              \
+>> +             struct device_attribute *attr, char *buf)               \
+>> +{                                                                    \
+>> +     struct pci_dev *pdev = to_pci_dev(dev);                         \
+>> +     return sprintf(buf, "%d\n", pdev->iov->field);                  \
+>> +}
+>> +
+>> +iov_config_attr(status);
+>> +iov_config_attr(totalvfs);
+>> +iov_config_attr(initialvfs);
+>> +iov_config_attr(numvfs);
+> 
+> As you are adding new sysfs entries, can you also create the proper
+> documentation in Documentation/ABI/ so that people can understand how to
+> use them?  Yes, I see you added a stand-alone document, but putting it
+> in the "standard" format is also necessary.
 
-Let's say you have a process you want to checkpoint.  If it uses a
-completely discrete IPC namespace, you *know* that nothing else depends
-on those IPC ids.  We don't even have to worry about who might have been
-using them and when.
+Thanks for reminding me about this. I used to update ABI doc in earlier 
+versions, but somehow forgot to do this after several carry-forwards...
 
-Also think about pids.  Without containers, how can you guarantee a
-restarted process that it can regain the same pid?
+Will complete it in next version.
 
--- Dave
-
+Regards,
+Yu
