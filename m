@@ -1,64 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758702AbYJVVak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758145AbYJVVgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758702AbYJVVak (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 17:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757475AbYJVVa1
+	id S1758145AbYJVVgQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 17:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757475AbYJVVfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 17:30:27 -0400
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:40534 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757018AbYJVVaW (ORCPT
+	Wed, 22 Oct 2008 17:35:54 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:33398 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753034AbYJVVfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 17:30:22 -0400
-Date: Wed, 22 Oct 2008 14:28:57 -0700 (PDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au, hugh@veritas.com,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: SLUB defrag pull request?
-In-Reply-To: <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu>
-Message-ID: <Pine.LNX.4.64.0810221416130.26639@quilx.com>
-References: <1223883004.31587.15.camel@penberg-laptop> 
- <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu>  <48FE6306.6020806@linux-foundation.org>
-  <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810220822500.30851@quilx.com>
-  <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221252570.3562@quilx.com>
-  <E1Ksk3g-00027r-Lp@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221315080.26671@quilx.com>
-  <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu> <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>
- <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Spam-Score: -2.5
+	Wed, 22 Oct 2008 17:35:53 -0400
+Message-Id: <20081022213551.196894190@goodmis.org>
+References: <20081022212721.167005680@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 22 Oct 2008 17:27:22 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 01/13 v2] ftrace: handle generic arch calls
+Content-Disposition: inline; filename=ftrace-rm-script-bit-interface.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Oct 2008, Miklos Szeredi wrote:
+The recordmcount script requires that the actual arch is passed in.
+This works well when ARCH=i386 or ARCH=x86_64 but does not handle the
+case of ARCH=x86.
 
->> Actually, when debugging is enabled, it's customary to poison the
->> object, for example (see free_debug_processing() in mm/slub.c). So we
->> really can't "easily ensure" that in the allocator unless we by-pass
->> all the current debugging code.
+This patch adds a parameter to the function to pass in the number of
+bits of the architecture. So that it can determine if x86 should be
+run for x86_64 or i386 archs.
 
-Plus the allocator may be reusing parts of the freed object for a freelist 
-etc even if the object is not poisoned.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ scripts/Makefile.build  |   10 ++++++++--
+ scripts/recordmcount.pl |   11 ++++++++++-
+ 2 files changed, 18 insertions(+), 3 deletions(-)
 
-> Thank you, that does actually answer my question.  I would still think
-> it's a good sacrifice to no let the dentries be poisoned for the sake
-> of a simpler dentry defragmenter.
+Index: linux-compile.git/scripts/Makefile.build
+===================================================================
+--- linux-compile.git.orig/scripts/Makefile.build	2008-10-22 15:09:04.000000000 -0400
++++ linux-compile.git/scripts/Makefile.build	2008-10-22 15:09:07.000000000 -0400
+@@ -198,10 +198,16 @@ cmd_modversions =							\
+ 	fi;
+ endif
+ 
++ifdef CONFIG_64BIT
++arch_bits = 64
++else
++arch_bits = 32
++endif
++
+ ifdef CONFIG_FTRACE_MCOUNT_RECORD
+ cmd_record_mcount = perl $(srctree)/scripts/recordmcount.pl \
+-	"$(ARCH)" "$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" "$(NM)" "$(RM)" \
+-	"$(MV)" "$(@)";
++	"$(ARCH)" "$(arch_bits)" "$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" \
++	"$(NM)" "$(RM)" "$(MV)" "$(@)";
+ endif
+ 
+ define rule_cc_o_c
+Index: linux-compile.git/scripts/recordmcount.pl
+===================================================================
+--- linux-compile.git.orig/scripts/recordmcount.pl	2008-10-22 15:09:04.000000000 -0400
++++ linux-compile.git/scripts/recordmcount.pl	2008-10-22 15:09:45.000000000 -0400
+@@ -106,7 +106,8 @@ if ($#ARGV < 6) {
+ 	exit(1);
+ }
+ 
+-my ($arch, $objdump, $objcopy, $cc, $ld, $nm, $rm, $mv, $inputfile) = @ARGV;
++my ($arch, $bits, $objdump, $objcopy, $cc,
++    $ld, $nm, $rm, $mv, $inputfile) = @ARGV;
+ 
+ $objdump = "objdump" if ((length $objdump) == 0);
+ $objcopy = "objcopy" if ((length $objcopy) == 0);
+@@ -129,6 +130,14 @@ my $function_regex;	# Find the name of a
+ 			#    (return offset and func name)
+ my $mcount_regex;	# Find the call site to mcount (return offset)
+ 
++if ($arch eq "x86") {
++    if ($bits == 64) {
++	$arch = "x86_64";
++    } else {
++	$arch = "i386";
++    }
++}
++
+ if ($arch eq "x86_64") {
+     $section_regex = "Disassembly of section";
+     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
 
-You can simplify defrag by not doing anything in the get() method. That 
-means some of the objects passed to the kick() method may be already have 
-been freed in the interim.
-
-The kick method then must be able to determine if the object has already 
-been freed (or is undergoing freeing) by inspecting the object contents 
-(allocations are held off until kick() is complete). It then needs to free 
-only the objects that are still allocated.
-
-That way you could get to a one stage system.... If the dentry code can 
-give us that then the approach would become much simpler.
-
-
-
+-- 
