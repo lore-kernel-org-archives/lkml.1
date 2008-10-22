@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758255AbYJVSwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758516AbYJVSw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758255AbYJVSwI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 14:52:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758000AbYJVSvj
+	id S1758516AbYJVSw2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 14:52:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758010AbYJVSvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 22 Oct 2008 14:51:39 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42097 "EHLO
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:62167 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757933AbYJVSvh (ORCPT
+	with ESMTP id S1754695AbYJVSvh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 22 Oct 2008 14:51:37 -0400
-Message-Id: <20081022185136.134729572@goodmis.org>
-References: <20081022184313.179487464@goodmis.org>
+Message-Id: <20081022184313.179487464@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Oct 2008 14:43:17 -0400
+Date: Wed, 22 Oct 2008 14:43:13 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
@@ -22,49 +21,35 @@ Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <peterz@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 04/11] ftrace: comment arch ftrace code
-Content-Disposition: inline; filename=ftrace-comment-mod-code.patch
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH 00/11] ftrace: clean ups and fixes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add comments to explain what is happening in the x86 arch ftrace code.
+This is a series of patches to make ftrace more robust and clean ups.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- arch/x86/kernel/ftrace.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+The first couple of patches fix the recordmount.pl script and changes
+it to only record the .text section functions. This means that
+the init sections will not be processed.
 
-Index: linux-compile.git/arch/x86/kernel/ftrace.c
-===================================================================
---- linux-compile.git.orig/arch/x86/kernel/ftrace.c	2008-10-22 13:15:36.000000000 -0400
-+++ linux-compile.git/arch/x86/kernel/ftrace.c	2008-10-22 13:16:35.000000000 -0400
-@@ -66,18 +66,23 @@ ftrace_modify_code(unsigned long ip, uns
- 	/*
- 	 * Note: Due to modules and __init, code can
- 	 *  disappear and change, we need to protect against faulting
--	 *  as well as code changing.
-+	 *  as well as code changing. We do this by using the
-+	 *  __copy_*_user functions.
- 	 *
- 	 * No real locking needed, this code is run through
- 	 * kstop_machine, or before SMP starts.
- 	 */
-+
-+	/* read the text we want to modify */
- 	if (__copy_from_user_inatomic(replaced, (char __user *)ip,
- 				      MCOUNT_INSN_SIZE))
- 		return -1;
- 
-+	/* Make sure it is what we expect it to be */
- 	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
- 		return -1;
- 
-+	/* replace the text with the new text */
- 	if (__copy_to_user_inatomic((char __user *)ip, new_code,
- 				    MCOUNT_INSN_SIZE))
- 		return -1;
+I still have a patch to add notrace to the init sections, and not for
+safety reasons, but for perfomance. Since the init sections will not be
+processed, they will still call mcount. Note, mcount is just a ret,
+but why have the init code waste CPU cycles to call a stub function?
 
--- 
+A FTRACE_WARN_ON is added to change all WARN_ONS to not only print a
+warning, but also to disable ftrace as well.
+
+The later patches are a bit more drastic. Since the daemon is error prone,
+I stripped it out. In doing so, I have to disable dynamic ftrace from all
+archs that use it.  The archs can get dynamic ftrace reenabled when they
+are ported to the recordmcount.pl method. (Arch maintainers, please contact
+me if you want help. I can do it with some information about your arch).
+
+Since the hash was created to work with the daemon, that too was stripped
+out, making the remaining code smaller and cleaner. The kprobe hooks
+in ftrace may need to be reworked.
+
+-- Steve
+
