@@ -1,54 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756865AbYJVSQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbYJVSXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756865AbYJVSQS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 14:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753558AbYJVSQD
+	id S1756042AbYJVSXd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 14:23:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbYJVSXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 14:16:03 -0400
-Received: from qb-out-0506.google.com ([72.14.204.231]:26298 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753360AbYJVSQB (ORCPT
+	Wed, 22 Oct 2008 14:23:25 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:64961 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751131AbYJVSXY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 14:16:01 -0400
+	Wed, 22 Oct 2008 14:23:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=qfETFzwF7+sQYggRb8zfWuvpvMPYwDs5Qa4BesqMAfmB/Ba9Oid9uJ3QOiZ18XTyLq
-         UMe64A+CmQH1EP4r+a0u0ZXimrt+y/nK0mipGFgFrGv2fkRiK9eFpAPpyDJcuw+SGmZk
-         bSMbTTaBseCKrvnHEg2uxoVmYD2mdHPbcbxRo=
-Date: Wed, 22 Oct 2008 22:15:56 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] SLUB - define OO_ macro instead of hardcoded numbers
-Message-ID: <20081022181556.GM9639@localhost>
-References: <20081022161836.GG9639@localhost> <Pine.LNX.4.64.0810220926130.7633@quilx.com> <20081022163530.GH9639@localhost> <20081022165354.GI9639@localhost> <20081022172103.GJ9639@localhost> <Pine.LNX.4.64.0810221037320.7633@quilx.com> <48FF6800.20705@cs.helsinki.fi> <20081022175827.GL9639@localhost> <Pine.LNX.4.64.0810221110060.27088@quilx.com>
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=GR6LY0h26BRay8k+nfGeM1Z2tNYo+vDcQcDdzOEzzS52XLRs4eCyQfU3jQm1zB1oaM
+         ETk8gQUoHD1yifIbwXHDrDORswFZNBH54uUpD3ccqXp1GJYzVBiZpK7EW1LjV3OHbl59
+         Dcz4ln2dBBl2+KwTRduvQZWPJUssonNKU7Fx8=
+Message-ID: <d9def9db0810221123s3cc27f6fhafcdb686df4a5bd9@mail.gmail.com>
+Date: Wed, 22 Oct 2008 20:23:22 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       em28xx@mcentral.de,
+       "Linux and Kernel Video" <video4linux-list@redhat.com>
+Subject: Re: [PATCH] em28xx patches against the latest git tree
+In-Reply-To: <d9def9db0810221038g156871e1u200abb90b774ad28@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0810221110060.27088@quilx.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <d9def9db0810221034v3bf4dabt6aa905b8a3ebd5a@mail.gmail.com>
+	 <d9def9db0810221038g156871e1u200abb90b774ad28@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Christoph Lameter - Wed, Oct 22, 2008 at 11:10:56AM -0700]
-> On Wed, 22 Oct 2008, Cyrill Gorcunov wrote:
+On Wed, Oct 22, 2008 at 7:38 PM, Markus Rechberger
+<mrechberger@gmail.com> wrote:
+> On Wed, Oct 22, 2008 at 7:34 PM, Markus Rechberger
+> <mrechberger@gmail.com> wrote:
+>> Following patch adds the latest em28xx driver from mcentral.de.
+>>
+>> merging mcentral.de/hg/~mrec/em28xx-new with upstream kernel
+>>
+>> * adding VBI support to most VBI capable devices
+>> * radio support for cx25843 based devices
+>> * extra cx25843 driver (registers match the em28xx configuration in
+>> order to support proper VBI)
+>> * all videostandards and inputs are tested with cx25843 based devices
+>> * adding alternative audio driver for em28xx devices (independent
+>> audio transfer, not depending on oss/alsa)
+>> * adding em28xx-webcam support for videology webcams
+>> * adding em28xx-audioep audio driver for alternate number 1 - if
+>> vendor specific and not USB audio conform
+>> * adding s921 driver (ISDB-T 1Seg support tunneling parameters through
+>> DVB-T API setting specific registers to auto)
+>> * adding xc3028 mostly original sourcecode from the manufacturer (most
+>> recent version), merged xc3028/xc3028l into
+>>  one external firmware blob - important for signal quality
+>> * adding xc5000 mostly original sourcecode from the manufacturer (most
+>> recent version) - important for signal quality
+>> * adding lgdt3304, although currently disabled
+>> * remote control handling *works* but is broken by design and disabled
+>> since different rc5/rc6/nec remotes return
+>>  different values. Handling can be done using interrupt transfers too (TODO)
+>> * fixed a couple of bugs in the em28xx-audio driver which can lead to
+>> system hangs.
+>>
+
+one more thing which I forgot it also adds support for em2888 based
+which also support
+flash beside analog TV, digital TV and radio
+
+>> ----
+>>
+>> as for testing:
+>> * analog TV: patched tvtime (for analog TV) version available on
+>> mcentral.de which supports 1. software rendering 2. digital
+>> audio/alsa/aad
+>> * FM radio: gqradio from mcentral.de, there's also an older radio
+>> patch for vlc available.
+>> * DVB-T: all applications should work with it
+>> * ISDB-T: relevant for China and Brazil only, can be used with
+>> dvbtune, dvbscan (the channel file cannot be used due problems with
+>> the characters), for transferring the MPEG-TS stream dvbstream,
+>> dvbsnoop, for playback gstreamer/mplayer (h264/aac isn't supported
+>> well with it).
+>>
+>> commit history is available at:
+>> http://mcentral.de/http://git.kernel.org/?p=linux/kernel/git/mrec/linux-2.6.git;a=commit;h=f1be9ae8f8489a6598417a194e0899ac00c7530ehg/~mrec/em28xx-new
+>>
 >
->> +#define OO_SHIFT	16
->> +#define OO_MASK		((1 << OO_SHIFT) - 1)
->> +#define MAX_OBJS_PER_PAGE	65535 /* see struct page.objects */
+> this should be:
+> http://mcentral.de/hg/~mrec/em28xx-new/shortlog
 >
-> This is == OO_MASK right? Otherwise things will break when we change  
-> OO_SHIFT.
+>> This patch adds a separate instance of the driver to the git
+>> repository, not affecting anything existing.
+>>
+>> the full patch against the git repository:
+>>
+>>
+>> Contributors:
+>> user:        acano@fastmail.fm
+>> user:        Andre Kelmanson <akelmanson@gmail.com>
+>> user:        Bouwsma Barry <freebeer.bouwsma@gmail.com>
+>> user:        Dan Kreiser <kreiser@informatik.hu-berlin.de>
+>> user:        Frank Neuber <fn@kernelport.de>
+>> user:        Jelle de Jong <jelledejong@powercraft.nl>
+>> user:        John Stowers <john.stowers.lists@gmail.com>
+>> user:        Lukas Kuna <lukas.kuna@evkanet.net>
+>> user:        Stefan Vonolfen <stefan.vonolfen@gmail.com>
+>> user:        Stephan Berberig <s.berberig@arcor.de>
+>> user:        Thomas Giesecke <thomas.giesecke@ibgmbh-naumburg.de>
+>> user:        Vitaly Wool <vwool@ru.mvista.com>
+>> user:        Zhenyu Wang <zhen78@gmail.com>
+>>
+>> Signed-off-by: Markus Rechberger <mrechberger@sundtek.de>
+>>
 >
 
-Yes, I set it 65535 directly to distinguish it from OO_MASK
-meaning not value and point to page.objects since they are
-u16. Which meant that is the point where all limits start.
-So it we set OO_SHIFT to say 14 it will not be a problem
-but if we exceed 16 bits it will break SLUB. Am I right?
-(I become scratching the head :)
-
-		- Cyrill -
+also adding video4linux-list
