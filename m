@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756098AbYJVOz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbYJVO6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756098AbYJVOz2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 10:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbYJVOzM
+	id S1755347AbYJVO6H (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 10:58:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbYJVO5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 10:55:12 -0400
-Received: from mga11.intel.com ([192.55.52.93]:18795 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753203AbYJVOzL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 10:55:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,464,1220252400"; 
-   d="scan'208";a="394804010"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] dmaengine: at_hdmac: new driver for the Atmel AHB DMA Controller
-Date: Wed, 22 Oct 2008 15:55:07 +0100
-Message-ID: <7F38996F7185A24AB9071ED4950AD8C1022288C6@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <48F8B291.1060500@atmel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] dmaengine: at_hdmac: new driver for the Atmel AHB DMA Controller
-Thread-Index: AckwbxwNmSQ3q26ATJ2JLuTtMazg1AD5l9eA
-References: <48F8B291.1060500@atmel.com>
-From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-To: "Nicolas Ferre" <nicolas.ferre@atmel.com>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
-       "Williams, Dan J" <dan.j.williams@intel.com>
-Cc: "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
-       "Andrew Victor" <linux@maxim.org.za>
-X-OriginalArrivalTime: 22 Oct 2008 14:55:09.0940 (UTC) FILETIME=[2DF17340:01C93456]
+	Wed, 22 Oct 2008 10:57:50 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:51547 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752055AbYJVO5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 10:57:49 -0400
+Date: Wed, 22 Oct 2008 09:57:48 -0500
+From: Russ Anderson <rja@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 3/3] x86: Add UV reserved page bios call
+Message-ID: <20081022145748.GC201004@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+References: <20081021200128.GE32545@sgi.com> <20081022062338.GE651@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081022062338.GE651@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicolas Ferre wrote:
-> This AHB DMA Controller (aka HDMA or DMAC on AT91 systems) is
-> availlable on 
-> at91sam9rl chip. It will be used on other products in the future.
+On Wed, Oct 22, 2008 at 08:23:38AM +0200, Ingo Molnar wrote:
 > 
-> This first release covers only the memory-to-memory tranfer type.
-> This is the 
-> only tranfer type supported by this chip.
-> On other products, it will be used also for peripheral DMA transfer
-> (slave API 
-> support to come).
+> * Russ Anderson <rja@sgi.com> wrote:
 > 
-> I used dmatest client without problem in different configurations to
-> test 
-> it.
+> > Add UV bios call to get the address of the reserved page.
 > 
-> Full documentation for this controller can be found in the SAM9RL
-> datasheet :
-> http://www.atmel.com/dyn/products/product_card.asp?part_id=4243 
+> > +	UV_BIOS_GET_PARTITION_ADDR
 > 
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> ---
+> > +	BIOS_STATUS_MORE_PASSES		=  1,
+> 
+> what is the "reserved page"?
+> 
+> And why is it called "PARTITION_ADDR" in the enum?
 
-Hi Nicolas,
-I have walked through the code and I do not see any serious problems
-here.
+The reserved page has partitioning configuration information.
+This call returns a pointer (physical addr) to the reserved page.
 
-Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
+As some background, a large SGI UV system can be run as multiple
+smaller systems (each smaller system is refered to as a partition).
+For example, a two rack system can be run as two one rack partitions.
+Each partition has a unique linux kernel (just like a stand alone system).
+The reserve page is a way of sharing configuration information about 
+the other partitions in a partitioned system.  The UV hardware allows
+memory to memory transfers between partitions using the GRU (Global
+Reference Unit).  SGI Altix hardware has similar functionality (though
+the hardware specifics are different).
+
+This is used by the xp driver (drivers/misc/sgi-xp/xpc_uv.c).
+Dean Nelson submitted a patch yesterday that uses this bios call.
+
+http://marc.info/?l=linux-kernel&m=122462448719656&w=2
+
+-- 
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
