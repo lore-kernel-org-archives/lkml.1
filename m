@@ -1,89 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758615AbYJWSXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758428AbYJWSaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758615AbYJWSXu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 14:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757586AbYJWSXl
+	id S1758428AbYJWSaY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 14:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbYJWSaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 14:23:41 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:35191 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756929AbYJWSXl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 14:23:41 -0400
-Date: Thu, 23 Oct 2008 14:23:37 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Manish Lachwani <mlachwani@gmail.com>
-cc: USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: oops in file_storage.c
-In-Reply-To: <431757fd0810231055m4b697888j9132f7183a2318c@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0810231421270.2453-100000@iolanthe.rowland.org>
+	Thu, 23 Oct 2008 14:30:10 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56028 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753436AbYJWSaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 14:30:09 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX197koET5ZR74sXp8x8k/RJpOiRHD61V2+3Fh6MUof
+	B+dQx9SJLAzeGA
+Date: Thu, 23 Oct 2008 20:30:23 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Michael Weiser <michael@weiser.dinsnail.net>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: rtc/i2c-mpc stops working with 2.6.27 on Linkstation HG (powerpc)
+In-Reply-To: <20081022191650.GA11406@weiser.dinsnail.net>
+Message-ID: <Pine.LNX.4.64.0810232029380.9657@axis700.grange>
+References: <20081022191650.GA11406@weiser.dinsnail.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.59
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Oct 2008, Manish Lachwani wrote:
+On Wed, 22 Oct 2008, Michael Weiser wrote:
 
-> Hi Alan,
+> Hello,
 > 
-> Yes, I am trying out the changes below. Will let you know how it goes.
-> If it works well, I will send an updated patch.
+> with 2.6.27(-gentoo) the rtc (Ricoh 5c372) is no longer found on my
+> Linkstation HG. It seems, the i2c-mpc driver doesn't even find the I2C
+> controller.
 > 
-> diff --git a/drivers/usb/gadget/file_storage.c
-> b/drivers/usb/gadget/file_storage.c
-> index 3e807f0..844f992 100644
-> --- a/drivers/usb/gadget/file_storage.c
-> +++ b/drivers/usb/gadget/file_storage.c
-> @@ -1927,26 +1927,11 @@ static int do_write(struct fsg_dev *fsg)
->  static int fsync_sub(struct lun *curlun)
->  {
->         struct file     *filp = curlun->filp;
-> -       struct inode    *inode;
-> -       int             rc, err;
+> Could this be related to commit
+> #0d1cde235874b00905bce23f659690d060ebf475 (powerpc/i2c: Convert i2c-mpc
+> into an of_platform driver,
+> http://kerneltrap.org/mailarchive/git-commits-head/2008/7/16/2522594/thread)?
 > 
->         if (curlun->ro || !filp)
->                 return 0;
-> -       if (!filp->f_op || !filp->f_op->fsync)
-> -               return -EINVAL;
+> What do I need to do, to make it work again?
 > 
-> -       inode = filp->f_path.dentry->d_inode;
-> -       mutex_lock(&inode->i_mutex);
-> -       rc = filemap_fdatawrite(inode->i_mapping);
-> -       err = filp->f_op->fsync(filp, filp->f_path.dentry, 1);
-> -       if (!rc)
-> -               rc = err;
-> -       err = filemap_fdatawait(inode->i_mapping);
-> -       if (!rc)
-> -               rc = err;
-> -       mutex_unlock(&inode->i_mutex);
-> -       VLDBG(curlun, "fdatasync -> %d\n", rc);
-> -       return rc;
-> +       return do_fsync(filp, 0);
+> The configs are virtually identical. The kernels are loaded with their
+> respective dtb files. The dtb and dts files are identical anyways.
 
-The fsync call above uses 1, not 0.
+This is a known regression, see, e.g., here:
 
->  }
-> 
->  static void fsync_all(struct fsg_dev *fsg)
-> diff --git a/fs/sync.c b/fs/sync.c
-> index e700eb1..53ff1f3 100644
-> --- a/fs/sync.c
-> +++ b/fs/sync.c
-> @@ -111,6 +111,7 @@ long do_fsync(struct file *file, int datasync)
->  out:
->         return ret;
->  }
-> +EXPORT_SYMBOL(do_fsync);
-> 
->  static long __do_fsync(unsigned int fd, int datasync)
->  {
+http://ozlabs.org/pipermail/linuxppc-dev/2008-October/064318.html
 
-Apart from that one mistake, this is fine with me.  But you should 
-check with the core kernel developers; there may an objection to 
-exporting do_fsync().
+waiting for someone to find time to fix it.
 
-Alan Stern
-
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
