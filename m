@@ -1,60 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758516AbYJWSdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758731AbYJWSeB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758516AbYJWSdq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 14:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbYJWSdh
+	id S1758731AbYJWSeB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 14:34:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYJWSdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 14:33:37 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:42690 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750824AbYJWSdg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 14:33:38 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:43695 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753212AbYJWSdg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 23 Oct 2008 14:33:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=jHOskXNjXZicePnwg4/hLQNc8JhD89s+8JFqDvlVM6uLu30GXJE16iHEYdhff78wty
-         aa1YH0+RWUNyBubcgiEQS8t0W8oZ7bQeaDPRMvQV/dkODp0v8fcXA2IrZkkXDiM8vF3C
-         MX7xSd5NYipusxKJTPBgcU6f8wCLUedPx6O8c=
-Date: Thu, 23 Oct 2008 22:36:49 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: torvalds@osdl.org
+Date: Thu, 23 Oct 2008 13:33:35 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [GIT] /proc update
-Message-ID: <20081023183649.GA13432@x200.localdomain>
+Subject: [PATCH] sgi-xp: only build for ia64-sn2 when CONFIG_IA64_GENERIC specified v.2
+Message-ID: <20081023183335.GA24139@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please, pull from
+For the time being build for ia64-sn2 alone when CONFIG_IA64_GENERIC is
+specified.
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/adobriyan/proc.git proc
+Signed-off-by: Dean Nelson <dcn@sgi.com>
 
-to get
-a) /proc/*/smaps fix aka "[vsyscall] is listed twice"
-b) proc_misc.c disintegration patches which spread that collective
-   dumping ground into sensible pieces,
-c) trivial things.
+---
 
-Regarding (b), it wasn't in -next because of huge rejects, it wasn't in
--mm because of huge rejects, but (!) various people acked pieces, it was
-booted in several configurations here and proc files were created and
-worked as usual, it's trivial.
+ drivers/misc/sgi-xp/Makefile   |    4 ++--
+ drivers/misc/sgi-xp/xp.h       |    4 ++++
+ drivers/misc/sgi-xp/xpc_main.c |    4 ++--
+ 3 files changed, 8 insertions(+), 4 deletions(-)
 
-Also, looks like, I can't put it into -next or into -mm and keep it for
-several months there because of rejects, and keeping it out of system
-will buy me approximately the same amount of testing as there is now.
-
-However, fs/proc/ compiliation was tested on huge cross-compile setup here
-and many, many randconfigs without warnings or errors.
-
-Now, if you don't buy it, pull from
-
-	git://git.kernel.org/pub/scm/linux/kernel/git/adobriyan/proc.git proc-conservative
-
-to get just /proc/*/smaps fix and trivial things.
+Index: linux/drivers/misc/sgi-xp/Makefile
+===================================================================
+--- linux.orig/drivers/misc/sgi-xp/Makefile	2008-10-23 10:59:42.000000000 -0500
++++ linux/drivers/misc/sgi-xp/Makefile	2008-10-23 10:59:44.000000000 -0500
+@@ -5,14 +5,14 @@
+ obj-$(CONFIG_SGI_XP)		+= xp.o
+ xp-y				:= xp_main.o
+ xp-$(CONFIG_IA64_SGI_SN2)	+= xp_sn2.o xp_nofault.o
+-xp-$(CONFIG_IA64_GENERIC)	+= xp_sn2.o xp_nofault.o xp_uv.o
++xp-$(CONFIG_IA64_GENERIC)	+= xp_sn2.o xp_nofault.o
+ xp-$(CONFIG_IA64_SGI_UV)	+= xp_uv.o
+ xp-$(CONFIG_X86_64)		+= xp_uv.o
+ 
+ obj-$(CONFIG_SGI_XP)		+= xpc.o
+ xpc-y				:= xpc_main.o xpc_channel.o xpc_partition.o
+ xpc-$(CONFIG_IA64_SGI_SN2)	+= xpc_sn2.o
+-xpc-$(CONFIG_IA64_GENERIC)	+= xpc_sn2.o xpc_uv.o
++xpc-$(CONFIG_IA64_GENERIC)	+= xpc_sn2.o
+ xpc-$(CONFIG_IA64_SGI_UV) 	+= xpc_uv.o
+ xpc-$(CONFIG_X86_64)		+= xpc_uv.o
+ 
+Index: linux/drivers/misc/sgi-xp/xp.h
+===================================================================
+--- linux.orig/drivers/misc/sgi-xp/xp.h	2008-10-23 10:59:42.000000000 -0500
++++ linux/drivers/misc/sgi-xp/xp.h	2008-10-23 10:59:44.000000000 -0500
+@@ -19,7 +19,11 @@
+ #include <asm/system.h>
+ #include <asm/sn/arch.h>	/* defines is_shub1() and is_shub2() */
+ #define is_shub()	ia64_platform_is("sn2")
++#ifdef CONFIG_IA64_SGI_UV
+ #define is_uv()		ia64_platform_is("uv")
++#else
++#define is_uv()		0
++#endif
+ #endif
+ #ifdef CONFIG_X86_64
+ #include <asm/genapic.h>
+Index: linux/drivers/misc/sgi-xp/xpc_main.c
+===================================================================
+--- linux.orig/drivers/misc/sgi-xp/xpc_main.c	2008-10-23 10:59:42.000000000 -0500
++++ linux/drivers/misc/sgi-xp/xpc_main.c	2008-10-23 10:59:44.000000000 -0500
+@@ -1104,7 +1104,7 @@ xpc_do_exit(enum xp_retval reason)
+ 
+ 	if (is_shub())
+ 		xpc_exit_sn2();
+-	else
++	else if (is_uv())
+ 		xpc_exit_uv();
+ }
+ 
+@@ -1363,7 +1363,7 @@ out_2:
+ out_1:
+ 	if (is_shub())
+ 		xpc_exit_sn2();
+-	else
++	else if (is_uv())
+ 		xpc_exit_uv();
+ 	return ret;
+ }
