@@ -1,158 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757470AbYJWX0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbYJWXfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757470AbYJWX0X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 19:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbYJWX0P
+	id S1754381AbYJWXfT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 19:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbYJWXfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 19:26:15 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:43823 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751873AbYJWX0O (ORCPT
+	Thu, 23 Oct 2008 19:35:04 -0400
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:44693 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751638AbYJWXfD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 19:26:14 -0400
-Date: Thu, 23 Oct 2008 19:26:08 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH v2] ftrace: ftrace dump on oops control
-In-Reply-To: <20081023155440.3b90e129.randy.dunlap@oracle.com>
-Message-ID: <alpine.DEB.1.10.0810231924400.4182@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0810231514140.8986@gandalf.stny.rr.com> <20081023155440.3b90e129.randy.dunlap@oracle.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 23 Oct 2008 19:35:03 -0400
+Message-ID: <49010A25.6020702@lwfinger.net>
+Date: Thu, 23 Oct 2008 16:35:01 -0700
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Greg Kroah-Hartman <gregkh@suse.de>
+CC: linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] usbcore: Limit number of 'unable to enumerate USB device'
+ messages
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[
-  Changes since v1:
+In my system, a number of messages that state "unable to enumerate USB device"
+are logged. These are intermittent and likely due to some race condition
+at bootup.
 
-   Replaced /** with /* as Randy explained that kernel-doc does
-    not yet handle variables.
-]
+Some of these happen when the EHCI driver is loaded after UHCI or OHCI, which
+causes the device to be switched away from the other controller that's trying
+to enumerate it, at least momentarily. This type of message is logged at most
+once for each hub and occurs in about 70% of my reboots.
 
-Currently, ftrace is set up to dump its contents to the console if the
-kernel panics or oops. This can be annoying if you have trace data in
-the buffers and you experience an oops, but the trace data is old or
-static.
+A more insidious form of the message occurs hundreds of times in about 10% of
+reboots. They continue until the system is rebooted. This patch limits the
+number of these messages to 20. Once the actual cause of this message is
+located, this patch can be reverted.
 
-Usually when you want ftrace to dump its contents is when you are debugging
-your system and you have set up ftrace to trace the events leading to
-an oops.
-
-This patch adds a control variable called "ftrace_dump_on_oops" that will
-enable the ftrace dump to console on oops. This variable is default off
-but a developer can enable it either through the kernel command line
-by adding "ftrace_dump_on_oops" or at run time by setting (or disabling)
-/proc/sys/kernel/ftrace_dump_on_oops.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
 ---
- include/linux/ftrace.h |    2 ++
- kernel/sysctl.c        |   10 ++++++++++
- kernel/trace/trace.c   |   29 ++++++++++++++++++++++++++---
- 3 files changed, 38 insertions(+), 3 deletions(-)
 
-Index: linux-tip.git/include/linux/ftrace.h
+Index: linux-2.6/drivers/usb/core/hub.c
 ===================================================================
---- linux-tip.git.orig/include/linux/ftrace.h	2008-10-23 12:55:35.000000000 -0400
-+++ linux-tip.git/include/linux/ftrace.h	2008-10-23 15:31:50.000000000 -0400
-@@ -181,6 +181,8 @@ static inline void __ftrace_enabled_rest
- #endif
- 
- #ifdef CONFIG_TRACING
-+extern int ftrace_dump_on_oops;
-+
- extern void
- ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3);
- 
-Index: linux-tip.git/kernel/sysctl.c
-===================================================================
---- linux-tip.git.orig/kernel/sysctl.c	2008-10-23 12:55:37.000000000 -0400
-+++ linux-tip.git/kernel/sysctl.c	2008-10-23 15:01:00.000000000 -0400
-@@ -485,6 +485,16 @@ static struct ctl_table kern_table[] = {
- 		.proc_handler	= &ftrace_enable_sysctl,
- 	},
- #endif
-+#ifdef CONFIG_TRACING
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "ftrace_dump_on_opps",
-+		.data		= &ftrace_dump_on_oops,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
-+#endif
- #ifdef CONFIG_MODULES
- 	{
- 		.ctl_name	= KERN_MODPROBE,
-Index: linux-tip.git/kernel/trace/trace.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/trace.c	2008-10-23 12:55:37.000000000 -0400
-+++ linux-tip.git/kernel/trace/trace.c	2008-10-23 19:24:15.000000000 -0400
-@@ -63,6 +63,28 @@ static cpumask_t __read_mostly		tracing_
- 
- static int tracing_disabled = 1;
- 
-+/*
-+ * ftrace_dump_on_oops - variable to dump ftrace buffer on oops
-+ *
-+ * If there is an oops (or kernel panic) and the ftrace_dump_on_oops
-+ * is set, then ftrace_dump is called. This will output the contents
-+ * of the ftrace buffers to the console.  This is very useful for
-+ * capturing traces that lead to crashes and outputing it to a
-+ * serial console.
-+ *
-+ * It is default off, but you can enable it with either specifying
-+ * "ftrace_dump_on_oops" in the kernel command line, or setting
-+ * /proc/sys/kernel/ftrace_dump_on_oops to true.
-+ */
-+int ftrace_dump_on_oops;
-+
-+static int __init set_ftrace_dump_on_oops(char *str)
-+{
-+	ftrace_dump_on_oops = 1;
-+	return 1;
-+}
-+__setup("ftrace_dump_on_oops", set_ftrace_dump_on_oops);
-+
- long
- ns2usecs(cycle_t nsec)
- {
-@@ -3018,7 +3040,8 @@ EXPORT_SYMBOL_GPL(__ftrace_printk);
- static int trace_panic_handler(struct notifier_block *this,
- 			       unsigned long event, void *unused)
- {
--	ftrace_dump();
-+	if (ftrace_dump_on_oops)
-+		ftrace_dump();
- 	return NOTIFY_OK;
- }
- 
-@@ -3034,7 +3057,8 @@ static int trace_die_handler(struct noti
- {
- 	switch (val) {
- 	case DIE_OOPS:
--		ftrace_dump();
-+		if (ftrace_dump_on_oops)
-+			ftrace_dump();
- 		break;
- 	default:
- 		break;
-@@ -3075,7 +3099,6 @@ trace_printk_seq(struct trace_seq *s)
- 	trace_seq_reset(s);
- }
- 
--
- void ftrace_dump(void)
- {
- 	static DEFINE_SPINLOCK(ftrace_dump_lock);
+--- linux-2.6.orig/drivers/usb/core/hub.c
++++ linux-2.6/drivers/usb/core/hub.c
+@@ -2746,6 +2746,7 @@ static void hub_port_connect_change(stru
+ 			le16_to_cpu(hub->descriptor->wHubCharacteristics);
+ 	struct usb_device *udev;
+ 	int status, i;
++	static int enum_count;
+
+ 	dev_dbg (hub_dev,
+ 		"port %d, status %04x, change %04x, %s\n",
+@@ -2945,8 +2946,9 @@ loop:
+ 	if (hub->hdev->parent ||
+ 			!hcd->driver->port_handed_over ||
+ 			!(hcd->driver->port_handed_over)(hcd, port1))
+-		dev_err(hub_dev, "unable to enumerate USB device on port %d\n",
+-				port1);
++		if (enum_count++ < 20)
++			dev_err(hub_dev, "unable to enumerate USB device on "
++				"port %d\n", port1);
+
+ done:
+ 	hub_port_disable(hub, port1, 1);
 
 
