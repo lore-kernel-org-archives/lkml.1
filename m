@@ -1,298 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760789AbYJWCWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760737AbYJWCW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760789AbYJWCWB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 22:22:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759195AbYJWCP0
+	id S1760737AbYJWCW0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 22:22:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760075AbYJWCVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 22:15:26 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43700 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758952AbYJWCPY (ORCPT
+	Wed, 22 Oct 2008 22:21:21 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:56310 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760660AbYJWCVT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 22:15:24 -0400
-Message-ID: <48FFDE76.50208@sgi.com>
-Date: Wed, 22 Oct 2008 19:16:22 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 18/35] cpumask: use cpumask_bits() everywhere.-resubmit
-References: <20081023020826.051012000@polaris-admin.engr.sgi.com> <20081023020829.882014000@polaris-admin.engr.sgi.com>
-In-Reply-To: <20081023020829.882014000@polaris-admin.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 22 Oct 2008 22:21:19 -0400
+Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is
+	set.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>
+In-Reply-To: <20081022225409.GB27492@one.firstfloor.org>
+References: <20081021174008.GH12825@one.firstfloor.org>
+	 <1224612294.6161.43.camel@alok-dev1>
+	 <20081021181536.GI12825@one.firstfloor.org>
+	 <1224616236.6161.60.camel@alok-dev1>
+	 <20081021192746.GJ12825@one.firstfloor.org>
+	 <1224703427.13953.8.camel@alok-dev1>
+	 <20081022195845.GP12825@one.firstfloor.org>
+	 <1224712846.13953.37.camel@alok-dev1>
+	 <20081022221316.GW12825@one.firstfloor.org>
+	 <1224713518.13953.46.camel@alok-dev1>
+	 <20081022225409.GB27492@one.firstfloor.org>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Wed, 22 Oct 2008 19:21:18 -0700
+Message-Id: <1224728478.13953.79.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cpumask: use cpumask_bits() everywhere.
-From: Rusty Russell <rusty@rustcorp.com.au>
+On Wed, 2008-10-22 at 15:54 -0700, Andi Kleen wrote:
+> > Not really, there are problems with the pm timer too, the one about
+> > missing the counter wrap and time dropping in chunks of 4 seconds.
+> > Tried to explain it over here, http://lkml.org/lkml/2008/10/22/525
+> 
+> Well then pit. 
 
-Instead of accessing ->bits, we use cpumask_bits().  This will be very
-useful when 'struct cpumask' has a hidden definition.
+PIT is not available as a clocksource if highres or one-shot timers are
+enabled. So PIT is not a possibility. 
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- include/linux/cpumask.h  |   70 ++++++++++++++++++++++++++++-------------------
- include/linux/seq_file.h |    2 -
- kernel/time/timer_list.c |    4 +-
- lib/cpumask.c            |    4 +-
- 4 files changed, 47 insertions(+), 33 deletions(-)
+> 
+> Or are you saying time is always broken on VMware & Linux?
 
---- linux-2.6.28.orig/include/linux/cpumask.h
-+++ linux-2.6.28/include/linux/cpumask.h
-@@ -194,12 +194,12 @@ extern int nr_cpu_ids;
- 
- static inline void cpumask_set_cpu(int cpu, volatile struct cpumask *dstp)
- {
--	set_bit(cpu, dstp->bits);
-+	set_bit(cpu, cpumask_bits(dstp));
- }
- 
- static inline void cpumask_clear_cpu(int cpu, volatile struct cpumask *dstp)
- {
--	clear_bit(cpu, dstp->bits);
-+	clear_bit(cpu, cpumask_bits(dstp));
- }
- 
- /* No static inline type checking - see Subtlety (1) above. */
-@@ -207,130 +207,142 @@ static inline void cpumask_clear_cpu(int
- 
- static inline int cpumask_test_and_set_cpu(int cpu, struct cpumask *addr)
- {
--	return test_and_set_bit(cpu, addr->bits);
-+	return test_and_set_bit(cpu, cpumask_bits(addr));
- }
- 
- static inline void cpumask_setall(struct cpumask *dstp)
- {
--	bitmap_fill(dstp->bits, nr_cpumask_bits);
-+	bitmap_fill(cpumask_bits(dstp), nr_cpumask_bits);
- }
- 
- static inline void cpumask_clear(struct cpumask *dstp)
- {
--	bitmap_zero(dstp->bits, nr_cpumask_bits);
-+	bitmap_zero(cpumask_bits(dstp), nr_cpumask_bits);
- }
- 
- static inline void cpumask_and(struct cpumask *dstp,
- 			       const struct cpumask *src1p,
- 			       const struct cpumask *src2p)
- {
--	bitmap_and(dstp->bits, src1p->bits, src2p->bits, nr_cpumask_bits);
-+	bitmap_and(cpumask_bits(dstp), cpumask_bits(src1p),
-+				       cpumask_bits(src2p), nr_cpumask_bits);
- }
- 
- static inline void cpumask_or(struct cpumask *dstp, const struct cpumask *src1p,
- 			      const struct cpumask *src2p)
- {
--	bitmap_or(dstp->bits, src1p->bits, src2p->bits, nr_cpumask_bits);
-+	bitmap_or(cpumask_bits(dstp), cpumask_bits(src1p),
-+				      cpumask_bits(src2p), nr_cpumask_bits);
- }
- 
- static inline void cpumask_xor(struct cpumask *dstp,
- 			       const struct cpumask *src1p,
- 			       const struct cpumask *src2p)
- {
--	bitmap_xor(dstp->bits, src1p->bits, src2p->bits, nr_cpumask_bits);
-+	bitmap_xor(cpumask_bits(dstp), cpumask_bits(src1p),
-+				       cpumask_bits(src2p), nr_cpumask_bits);
- }
- 
- static inline void cpumask_andnot(struct cpumask *dstp,
- 				  const struct cpumask *src1p,
- 				  const struct cpumask *src2p)
- {
--	bitmap_andnot(dstp->bits, src1p->bits, src2p->bits, nr_cpumask_bits);
-+	bitmap_andnot(cpumask_bits(dstp), cpumask_bits(src1p),
-+					  cpumask_bits(src2p), nr_cpumask_bits);
- }
- 
- static inline void cpumask_complement(struct cpumask *dstp,
- 				      const struct cpumask *srcp)
- {
--	bitmap_complement(dstp->bits, srcp->bits, nr_cpumask_bits);
-+	bitmap_complement(cpumask_bits(dstp), cpumask_bits(srcp),
-+					      nr_cpumask_bits);
- }
- 
- static inline int cpumask_equal(const struct cpumask *src1p,
- 				const struct cpumask *src2p)
- {
--	return bitmap_equal(src1p->bits, src2p->bits, nr_cpumask_bits);
-+	return bitmap_equal(cpumask_bits(src1p), cpumask_bits(src2p),
-+						 nr_cpumask_bits);
- }
- 
- static inline int cpumask_intersects(const struct cpumask *src1p,
- 				     const struct cpumask *src2p)
- {
--	return bitmap_intersects(src1p->bits, src2p->bits, nr_cpumask_bits);
-+	return bitmap_intersects(cpumask_bits(src1p), cpumask_bits(src2p),
-+						      nr_cpumask_bits);
- }
- 
- static inline int cpumask_subset(const struct cpumask *src1p,
- 				 const struct cpumask *src2p)
- {
--	return bitmap_subset(src1p->bits, src2p->bits, nr_cpumask_bits);
-+	return bitmap_subset(cpumask_bits(src1p), cpumask_bits(src2p),
-+						  nr_cpumask_bits);
- }
- 
- static inline int cpumask_empty(const struct cpumask *srcp)
- {
--	return bitmap_empty(srcp->bits, nr_cpumask_bits);
-+	return bitmap_empty(cpumask_bits(srcp), nr_cpumask_bits);
- }
- 
- static inline int cpumask_full(const struct cpumask *srcp)
- {
--	return bitmap_full(srcp->bits, nr_cpumask_bits);
-+	return bitmap_full(cpumask_bits(srcp), nr_cpumask_bits);
- }
- 
- static inline int __cpus_weight(const cpumask_t *srcp, int nbits)
- {
--	return bitmap_weight(srcp->bits, nbits);
-+	return bitmap_weight(cpumask_bits(srcp), nbits);
- }
- 
- static inline int cpumask_weight(const struct cpumask *srcp)
- {
--	return bitmap_weight(srcp->bits, nr_cpumask_bits);
-+	return bitmap_weight(cpumask_bits(srcp), nr_cpumask_bits);
- }
- 
- static inline void cpumask_shift_right(struct cpumask *dstp,
- 				       const struct cpumask *srcp, int n)
- {
--	bitmap_shift_right(dstp->bits, srcp->bits, n, nr_cpumask_bits);
-+	bitmap_shift_right(cpumask_bits(dstp), cpumask_bits(srcp), n,
-+					       nr_cpumask_bits);
- }
- 
- static inline void cpumask_shift_left(struct cpumask *dstp,
- 				      const struct cpumask *srcp, int n)
- {
--	bitmap_shift_left(dstp->bits, srcp->bits, n, nr_cpumask_bits);
-+	bitmap_shift_left(cpumask_bits(dstp), cpumask_bits(srcp), n,
-+					      nr_cpumask_bits);
- }
- 
- static inline int cpumask_scnprintf(char *buf, int len,
- 				    const struct cpumask *srcp)
- {
--	return bitmap_scnprintf(buf, len, srcp->bits, nr_cpumask_bits);
-+	return bitmap_scnprintf(buf, len, cpumask_bits(srcp), nr_cpumask_bits);
- }
- 
- static inline int cpumask_parse_user(const char __user *buf, int len,
- 				     struct cpumask *dstp)
- {
--	return bitmap_parse_user(buf, len, dstp->bits, nr_cpumask_bits);
-+	return bitmap_parse_user(buf, len, cpumask_bits(dstp), nr_cpumask_bits);
- }
- 
- static inline int cpulist_scnprintf(char *buf, int len,
- 				    const struct cpumask *srcp)
- {
--	return bitmap_scnlistprintf(buf, len, srcp->bits, nr_cpumask_bits);
-+	return bitmap_scnlistprintf(buf, len, cpumask_bits(srcp),
-+					      nr_cpumask_bits);
- }
- 
- static inline int cpulist_parse(const char *buf, struct cpumask *dstp)
- {
--	return bitmap_parselist(buf, dstp->bits, nr_cpumask_bits);
-+	return bitmap_parselist(buf, cpumask_bits(dstp), nr_cpumask_bits);
- }
- 
- static inline int cpumask_cpuremap(int oldbit,
- 				   const struct cpumask *oldp,
- 				   const struct cpumask *newp)
- {
--	return bitmap_bitremap(oldbit, oldp->bits, newp->bits, nr_cpumask_bits);
-+	return bitmap_bitremap(oldbit, cpumask_bits(oldp), cpumask_bits(newp),
-+							   nr_cpumask_bits);
- }
- 
- static inline void cpumask_remap(struct cpumask *dstp,
-@@ -338,21 +350,23 @@ static inline void cpumask_remap(struct 
- 				 const struct cpumask *oldp,
- 				 const struct cpumask *newp)
- {
--	bitmap_remap(dstp->bits, srcp->bits, oldp->bits, newp->bits,
--		     nr_cpumask_bits);
-+	bitmap_remap(cpumask_bits(dstp), cpumask_bits(srcp),
-+		     cpumask_bits(oldp), cpumask_bits(newp), nr_cpumask_bits);
- }
- 
- static inline void cpumask_onto(struct cpumask *dstp,
- 				const struct cpumask *origp,
- 				const struct cpumask *relmapp)
- {
--	bitmap_onto(dstp->bits, origp->bits, relmapp->bits, nr_cpumask_bits);
-+	bitmap_onto(cpumask_bits(dstp), cpumask_bits(origp),
-+					cpumask_bits(relmapp), nr_cpumask_bits);
- }
- 
- static inline void cpumask_fold(struct cpumask *dstp,
- 				const struct cpumask *origp, int sz)
- {
--	bitmap_fold(dstp->bits, origp->bits, sz, nr_cpumask_bits);
-+	bitmap_fold(cpumask_bits(dstp), cpumask_bits(origp), sz,
-+					nr_cpumask_bits);
- }
- 
- static inline void cpumask_copy(struct cpumask *dstp,
---- linux-2.6.28.orig/include/linux/seq_file.h
-+++ linux-2.6.28/include/linux/seq_file.h
-@@ -52,7 +52,7 @@ int seq_path_root(struct seq_file *m, st
- int seq_bitmap(struct seq_file *m, unsigned long *bits, unsigned int nr_bits);
- static inline int seq_cpumask(struct seq_file *m, cpumask_t *mask)
- {
--	return seq_bitmap(m, mask->bits, nr_cpu_ids);
-+	return seq_bitmap(m, cpumask_bits(mask), nr_cpu_ids);
- }
- 
- static inline int seq_nodemask(struct seq_file *m, nodemask_t *mask)
---- linux-2.6.28.orig/kernel/time/timer_list.c
-+++ linux-2.6.28/kernel/time/timer_list.c
-@@ -232,10 +232,10 @@ static void timer_list_show_tickdevices(
- #ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
- 	print_tickdevice(m, tick_get_broadcast_device(), -1);
- 	SEQ_printf(m, "tick_broadcast_mask: %08lx\n",
--		   tick_get_broadcast_mask()->bits[0]);
-+		   cpumask_bits(tick_get_broadcast_mask())[0]);
- #ifdef CONFIG_TICK_ONESHOT
- 	SEQ_printf(m, "tick_broadcast_oneshot_mask: %08lx\n",
--		   tick_get_broadcast_oneshot_mask()->bits[0]);
-+		   cpumask_bits(tick_get_broadcast_oneshot_mask())[0]);
- #endif
- 	SEQ_printf(m, "\n");
- #endif
---- linux-2.6.28.orig/lib/cpumask.c
-+++ linux-2.6.28/lib/cpumask.c
-@@ -5,13 +5,13 @@
- 
- int __first_cpu(const cpumask_t *srcp)
- {
--	return find_first_bit(srcp->bits, nr_cpumask_bits);
-+	return find_first_bit(cpumask_bits(srcp), nr_cpumask_bits);
- }
- EXPORT_SYMBOL(__first_cpu);
- 
- int __next_cpu(int n, const cpumask_t *srcp)
- {
--	return find_next_bit(srcp->bits, nr_cpumask_bits, n+1);
-+	return find_next_bit(cpumask_bits(srcp), nr_cpumask_bits, n+1);
- }
- EXPORT_SYMBOL(__next_cpu);
- 
+The acpi_pm timer wrap problem has come up only with the clocksource and
+NO_HZ kernels, without NO_HZ there were periodic interrupts which caused
+the guest to be scheduled before ACPI_PM could wrap around.
+
+> > So TSC is the ideal clocksource from performance and correctness point
+> > of view for VMware.
+> 
+> But you don't seem to emulate it "ideal"ly otherwise you wouldn't
+> need all these hacks you're adding?
+
+"All these hacks" ? i guess you are talking about only this particular,
+skipping the tsc_sync checks.
+Rest of them are valid bugs as i have mentioned.
+
+> 
+> I think you should either implement a TSC that matches what
+> real hardware does (including CPUID semantics) 
+
+Yeah accepted, i agree this is the right approach and that's the long
+term view that we are taking too.
+
+> or implement
+> a real vmware PV timer and just say it's PV and not fully virtualized.
+> But doesn't the vmware paravirt ops have that already anyways?
+
+That's for 32bit only. Apart from the tsc_sync problem i doubt we have
+any other issue with the TSC as clocksource, so adding a similar
+clocksource is something that i would avoid.
+
+> 
+> But I personally think it wouldn't really scale to add detection for
+> more and more "nearly PV" hypervisors to the standard native kernel.
+
+I think we anyways need a way to detect if we are running on a
+hypervisor. That's the only way we can move towards having a single
+image which runs well on both native hardware and a virtualized
+environment. 
+
+I guess, the only thing that you don't agree over here is the enabling
+of CONSTANT_TSC bit when VMware is detected, right ?
+I would agree that this could be viewed as a hack but that is the only
+way we can have the kernel still working correctly on the already
+released platforms. And, this should be viewed no different than the
+case of fixing a slightly different behavior of a particular hardware. 
+
+Thanks,
+Alok
+
+
+> 
+> -Andi
 
