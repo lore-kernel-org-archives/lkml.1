@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757005AbYJWNmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbYJWNm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757005AbYJWNmn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 09:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711AbYJWNlT
+	id S1757271AbYJWNm6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 09:42:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbYJWNmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 09:41:19 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:54358 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756816AbYJWNlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 09:41:17 -0400
-Date: Thu, 23 Oct 2008 15:40:18 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, jeff@garzik.org
-Subject: Re: [PATCH 1/2] libata: get rid of ATA_MAX_QUEUE loop in ata_qc_complete_multiple()
-Message-ID: <20081023134017.GA22217@kernel.dk>
-References: <1224661243-7929-1-git-send-email-jens.axboe@oracle.com> <1224661243-7929-2-git-send-email-jens.axboe@oracle.com> <48FFFA15.8060603@kernel.org> <20081023064357.GT22217@kernel.dk>
+	Thu, 23 Oct 2008 09:42:12 -0400
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:34413 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757270AbYJWNmL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 09:42:11 -0400
+Date: Thu, 23 Oct 2008 06:40:43 -0700 (PDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: penberg@cs.helsinki.fi, nickpiggin@yahoo.com.au, hugh@veritas.com,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: SLUB defrag pull request?
+In-Reply-To: <E1KsviY-0003Mq-6M@pomaz-ex.szeredi.hu>
+Message-ID: <Pine.LNX.4.64.0810230638450.11924@quilx.com>
+References: <1223883004.31587.15.camel@penberg-laptop> 
+ <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu>  <48FE6306.6020806@linux-foundation.org>
+  <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810220822500.30851@quilx.com>
+  <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221252570.3562@quilx.com>
+  <E1Ksk3g-00027r-Lp@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221315080.26671@quilx.com>
+  <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu>  <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>
+  <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221416130.26639@quilx.com>
+  <E1KsluU-0002R1-Ow@pomaz-ex.szeredi.hu> <1224745831.25814.21.camel@penberg-laptop>
+ <E1KsviY-0003Mq-6M@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081023064357.GT22217@kernel.dk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Spam-Score: -2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 23 2008, Jens Axboe wrote:
-> On Thu, Oct 23 2008, Tejun Heo wrote:
-> > while (done_mask) {
-> >         struct ata_queued_cmd *qc;
-> >         unsigned int next = __ffs(done_mask);
-> > 
-> >         tag += next;
-> >         if ((qc = ata_qc_from_tag(ap, tag))) {
-> >                 ata_qc_complete(qc);
-> >                 nr_done++;
-> >         }
-> >         next++;
-> >         tag += next;
-> >         done_mask >>= next;
-> > }
-> 
-> That doesn't work (you're adding next to tag twice), it needs a little
-> tweak:
-> 
-> while (done_mask) {
->         struct ata_queued_cmd *qc;
->         unsigned int next = __ffs(done_mask);
-> 
->         if ((qc = ata_qc_from_tag(ap, tag + next))) {
->                 ata_qc_complete(qc);
->                 nr_done++;
->         }
->         next++;
->         tag += next;
->         done_mask >>= next;
-> }
-> 
-> and I think it should work. Not tested yet :-)
+On Thu, 23 Oct 2008, Miklos Szeredi wrote:
 
-Pondered some more, and it can't work. The problem is that if we
-complete tag 31, we attempt to shift done_mask down by 32 bits. On a
-32-bit arch, that's not defined. So we DO need a check like the existing
-one, or something similar.
+> I think the _real_ problem is that instead of fancy features like this
+> defragmenter, SLUB should first concentrate on getting the code solid
+> enough to replace the other allocators.
 
-So I don't think we need to make changes to this patch either, at least
-unless one of you can come up with a better check that avoids a branch.
+Solid? What is not solid? The SLUB design was made in part because of the 
+defrag problems that were not easy to solve with SLAB. The ability to lock 
+down a slab allows stabilizing objects. We discussed solutions to the 
+fragmentation problem for years and did not get anywhere with SLAB.
 
--- 
-Jens Axboe
 
