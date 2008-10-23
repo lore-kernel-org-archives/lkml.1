@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbYJWXfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbYJWXiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754381AbYJWXfT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 19:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbYJWXfE
+	id S1754812AbYJWXiA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 19:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYJWXhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 19:35:04 -0400
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:44693 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751638AbYJWXfD (ORCPT
+	Thu, 23 Oct 2008 19:37:51 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:24465 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751910AbYJWXhu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 19:35:03 -0400
-Message-ID: <49010A25.6020702@lwfinger.net>
-Date: Thu, 23 Oct 2008 16:35:01 -0700
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Thu, 23 Oct 2008 19:37:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Cht6nqjldNKEHdYyqvaBqbH0QBilWM5h4LDHSqZiow1McXtkCHrhx75ExYnr5EFgX5
+         lshJzYlVBbO4zKI7EWV0M3ZbIZXpvg/wh4OcylJCuibzkDIkjr8Y6w7cI8j6e6Wq5Q8s
+         j6P2XrKgcCVil+ifm9mmoxyxxTvVxO69kYsUw=
+Message-ID: <43e72e890810231637v51591edak5345faccd81d594b@mail.gmail.com>
+Date: Thu, 23 Oct 2008 16:37:48 -0700
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       otus-devel@venema.h4ckr.net
+Subject: Re: Release of Atheros 802.11n USB Linux driver
+In-Reply-To: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com>
 MIME-Version: 1.0
-To: Greg Kroah-Hartman <gregkh@suse.de>
-CC: linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] usbcore: Limit number of 'unable to enumerate USB device'
- messages
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In my system, a number of messages that state "unable to enumerate USB device"
-are logged. These are intermittent and likely due to some race condition
-at bootup.
+On Tue, Oct 21, 2008 at 7:04 PM, Luis R. Rodriguez
+<lrodriguez@atheros.com> wrote:
+> We would like to see our Atheros 802.11n USB Linux driver upstream
+> however we need help with this so we are releasing our Atheros 11n USB
+> Otus Linux driver under the ISC to the community. The goal is to work
+> with the community to help move this forward upstream. We are hoping
+> for community help and leadership on this (*cough*).
+>
+> In the meantime users should be able to use this driver and patches
+> are welcomed to add newer wireless extension support so users on newer
+> kernels can get their devices working. The focus should be upstream
+> though :)
 
-Some of these happen when the EHCI driver is loaded after UHCI or OHCI, which
-causes the device to be switched away from the other controller that's trying
-to enumerate it, at least momentarily. This type of message is logged at most
-once for each hub and occurs in about 70% of my reboots.
+So for those of you who want to know which devices to buy
 
-A more insidious form of the message occurs hundreds of times in about 10% of
-reboots. They continue until the system is rebooted. This patch limits the
-number of these messages to 20. Once the actual cause of this message is
-located, this patch can be reverted.
+Dlink
+    * DWA-160A1
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
----
+Netgear
+    * WNDA3100
+    * WN111v2
 
-Index: linux-2.6/drivers/usb/core/hub.c
-===================================================================
---- linux-2.6.orig/drivers/usb/core/hub.c
-+++ linux-2.6/drivers/usb/core/hub.c
-@@ -2746,6 +2746,7 @@ static void hub_port_connect_change(stru
- 			le16_to_cpu(hub->descriptor->wHubCharacteristics);
- 	struct usb_device *udev;
- 	int status, i;
-+	static int enum_count;
+TP-Link
+    * TL-WN821N
 
- 	dev_dbg (hub_dev,
- 		"port %d, status %04x, change %04x, %s\n",
-@@ -2945,8 +2946,9 @@ loop:
- 	if (hub->hdev->parent ||
- 			!hcd->driver->port_handed_over ||
- 			!(hcd->driver->port_handed_over)(hcd, port1))
--		dev_err(hub_dev, "unable to enumerate USB device on port %d\n",
--				port1);
-+		if (enum_count++ < 20)
-+			dev_err(hub_dev, "unable to enumerate USB device on "
-+				"port %d\n", port1);
+We now have on the wiki for the driver too, to help followup progress
+on development for this driver.
 
- done:
- 	hub_port_disable(hub, port1, 1);
+http://wireless.kernel.org/en/users/Drivers/otus
 
-
+  Luis
