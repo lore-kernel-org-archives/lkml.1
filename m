@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752292AbYJWOha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbYJWOiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752292AbYJWOha (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 10:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbYJWOhK
+	id S1755565AbYJWOiW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 10:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbYJWOiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 10:37:10 -0400
-Received: from nelson.telenet-ops.be ([195.130.133.66]:47533 "EHLO
-	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752216AbYJWOhJ (ORCPT
+	Thu, 23 Oct 2008 10:38:13 -0400
+Received: from edna.telenet-ops.be ([195.130.132.58]:49411 "EHLO
+	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751144AbYJWOiN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 10:37:09 -0400
-Date: Thu, 23 Oct 2008 16:37:01 +0200 (CEST)
+	Thu, 23 Oct 2008 10:38:13 -0400
+Date: Thu, 23 Oct 2008 16:38:10 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: linux-next: kernel/trace/trace.c:658: error:
-In-Reply-To: <49008D12.5090204@gmail.com>
-Message-ID: <Pine.LNX.4.64.0810231635440.18978@anakin>
-References: <20081023213637.eff9b414.sfr@canb.auug.org.au> 
- <20081023121145.GB27984@x200.localdomain>  <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com>
- <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com>
- <49008D12.5090204@gmail.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: include/linux/mmzone.h:288: error: 'CONFIG_NR_CPUS'
+ undeclared here (not in a function)
+In-Reply-To: <20081023122214.GA15805@x200.localdomain>
+Message-ID: <Pine.LNX.4.64.0810231637400.18978@anakin>
+References: <20081023213637.eff9b414.sfr@canb.auug.org.au>
+ <20081023122214.GA15805@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463808415-1462764117-1224772621=:18978"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----1463808415-1462764117-1224772621=:18978
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Thu, 23 Oct 2008, Frederic Weisbecker wrote:
-> Frédéric Weisbecker wrote:
-> > 2008/10/23 Frédéric Weisbecker <fweisbec@gmail.com>:
-> >> 2008/10/23 Alexey Dobriyan <adobriyan@gmail.com>:
-> >>> On alpha-smp-n-debug-y:
-> >>>
-> >>> kernel/trace/trace.c: In function 'tracing_generic_entry_update':
-> >>> kernel/trace/trace.c:658: error: implicit declaration of function 'irqs_disabled_flags'
-> >>> kernel/trace/trace.c: In function 'tracing_cpumask_write':
-> >>> kernel/trace/trace.c:2145: error: implicit declaration of function 'raw_local_irq_disable'
-> >>> kernel/trace/trace.c:2162: error: implicit declaration of function 'raw_local_irq_enable'
-> >>> kernel/trace/trace.c: In function 'trace_die_handler':
-> >>> kernel/trace/trace.c:3039: error: 'DIE_OOPS' undeclared (first use in this function)
-> >>>
-> >>> This has something with config dependencies, because adding include doesn't fix it.
-> >>>
-> >> A lot of arch have an asm/irqflags.h but not alpha.
-> >> In linux/irqflags, raw_local_irq_* functions are defined to be
-> >> local_irq_* function if they don't support
-> >> CONFIG_TRACE_IRQFLAGS_SUPPORT.
-> >> It seems the error is here, alpha may turn this option off.
-> >>
-> > 
-> > Hmm no actually your CONFIG_TRACE_IRFLAGS_SUPPORT is not set.
-> > So that's because the linux/irqflags.h is not included in the
-> > asm/system.h on alpha (other archs do).
-> > 
+On Thu, 23 Oct 2008, Alexey Dobriyan wrote:
+> On avr32-debug-n-preempt-n:
 > 
-> Does this patch correct the issue?
-> It applies on last -tip
-> ---
-> 
-> From: Frederic Weisbecker <fweisbec@gmail.com>
-> Subject: [PATCH] alpha: include irqflags.h to enable use of tracing
-> 
-> asm/system.h should include linux/irqflags.h to enable the use of tracing
-> which needs raw_local_irq_* functions.
+>   Using /src/linux-1 as source for kernel
+>   GEN     /src/build/avr32-debug-n-preempt-n/Makefile
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CC      arch/avr32/kernel/asm-offsets.s
+> In file included from /src/linux-1/include/linux/gfp.h:4,
+>                  from /src/linux-1/include/linux/mm.h:8,
+>                  from /src/linux-1/arch/avr32/kernel/asm-offsets.c:7:
+> /src/linux-1/include/linux/mmzone.h:288: error: 'CONFIG_NR_CPUS' undeclared here (not in a function)
+> In file included from /src/linux-1/include/linux/topology.h:30,
+>                  from /src/linux-1/include/linux/mmzone.h:763,
+>                  from /src/linux-1/include/linux/gfp.h:4,
+>                  from /src/linux-1/include/linux/mm.h:8,
+>                  from /src/linux-1/arch/avr32/kernel/asm-offsets.c:7:
+> /src/linux-1/include/linux/cpumask.h:117:5: warning: "CONFIG_NR_CPUS" is not defined
+> /src/linux-1/include/linux/cpumask.h:164:5: warning: "CONFIG_NR_CPUS" is not defined
+> /src/linux-1/include/linux/cpumask.h:238:5: warning: "CONFIG_NR_CPUS" is not defined
+> In file included from /src/linux-1/include/linux/mm.h:15,
+>                  from /src/linux-1/arch/avr32/kernel/asm-offsets.c:7:
+> /src/linux-1/include/linux/mm_types.h:26:5: warning: "CONFIG_NR_CPUS" is not defined
+> /src/linux-1/include/linux/mm_types.h:70:5: warning: "CONFIG_NR_CPUS" is not defined
+> In file included from /src/linux-1/arch/avr32/include/asm/pgtable.h:14,
+>                  from /src/linux-1/include/linux/mm.h:40,
+>                  from /src/linux-1/arch/avr32/kernel/asm-offsets.c:7:
+> /src/linux-1/include/linux/sched.h:354:5: warning: "CONFIG_NR_CPUS" is not defined
+> In file included from /src/linux-1/arch/avr32/kernel/asm-offsets.c:7:
+> /src/linux-1/include/linux/mm.h:922:5: warning: "CONFIG_NR_CPUS" is not defined
+> make[2]: *** [arch/avr32/kernel/asm-offsets.s] Error 1
+> make[1]: *** [prepare0] Error 2
+> make: *** [sub-make] Error 2
 
-If kernel/trace/trace.c calls irqs_disabled_flags(), it should include
-the include that defines irqs_disabled_flags(). You should not add it to
-some other random include.
-
-It's also happening on m68k:
-http://kisskb.ellerman.id.au/kisskb/buildresult/50641/
+Same on m68k: http://kisskb.ellerman.id.au/kisskb/buildresult/50671/
 
 Gr{oetje,eeting}s,
 
@@ -91,4 +73,3 @@ Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 In personal conversations with technical people, I call myself a hacker. But
 when I'm talking to journalists I just say "programmer" or something like that.
 							    -- Linus Torvalds
----1463808415-1462764117-1224772621=:18978--
