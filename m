@@ -1,65 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbYJWQlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbYJWQlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757259AbYJWQlh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 12:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbYJWQl2
+	id S1755811AbYJWQlz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 12:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbYJWQln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 12:41:28 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51230 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752749AbYJWQl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 12:41:27 -0400
-Date: Thu, 23 Oct 2008 18:40:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jan Kiszka <jan.kiszka@siemens.com>, linux-kernel@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 08/13 v2] ftrace: do not trace init sections
-Message-ID: <20081023164032.GA19070@elte.hu>
-References: <20081022212721.167005680@goodmis.org> <20081022213552.440512191@goodmis.org> <49005CD0.2070807@siemens.com> <alpine.DEB.1.10.0810230732100.31839@gandalf.stny.rr.com> <49008A9B.8040905@siemens.com> <alpine.DEB.1.10.0810231202310.1765@gandalf.stny.rr.com>
+	Thu, 23 Oct 2008 12:41:43 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48274 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757388AbYJWQlj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 12:41:39 -0400
+Message-ID: <4900A8D4.4010806@zytor.com>
+Date: Thu, 23 Oct 2008 09:39:48 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810231202310.1765@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Bjorn Helgaas <bjorn.helgaas@hp.com>, john stultz <johnstul@us.ibm.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [RFC patch 15/15] LTTng timestamp x86
+References: <20081016232729.699004293@polymtl.ca> <alpine.LFD.2.00.0810201451190.3287@nehalem.linux-foundation.org> <48FD0633.70604@zytor.com> <200810211211.00332.bjorn.helgaas@hp.com> <alpine.LFD.2.00.0810230838410.3287@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0810230838410.3287@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> > I don't know if this feature is already considered for / part of 
-> > mainline, but oops backtraces based on mcount instrumentation used 
-> > to be quite helpful for me to understand the wider context of 
-> > several faults. The more you have to mask out of this picture, the 
-> > harder it gets to match the trace to your model of the kernel 
-> > activities. At least you have to know more in advance about the 
-> > limitation of the tracer...
+Linus Torvalds wrote:
 > 
-> The ftrace buffer can be dumped out on oops. I'm not sure if it is 
-> always on. If it is, I need to make it default off and add a command 
-> line and sysctl to turn it on. Otherwise, we will have people 
-> complaining about the extra output to the console on oops.
+> They are almost inevitable for another reason too: the interconnect seldom 
+> has a concept of "clock signal" other than for the signalling itself, and 
+> the signal clock is designed for the signal itself and is designed for 
+> signal integrity rather than "stable clock".
+> 
+> Does _any_ common interconnect have integral support for clock 
+> distribution?
+> 
 
-it dumps currently if a tracer is enabled. I saw it a couple of times 
-already during crashes.
+How do you mean "integral"?  All it really would end up being would be a 
+separate wire anyway carrying the 14.318 MHz clock, so the only way it 
+would ever be "integral" is as part of the slot connector definition.
 
-	Ingo
+Note that this is a *frequency standard*.  This is a much simpler task 
+than distributing a clock that has to be in phase with a bunch of data 
+wires.
+
+> And no, nobody is going to add another clock network for just clock 
+> distribution. 
+
+I have defitely seen machines with a common backplane clock source. 
+That does not mean that it is common.  I can certainly see the 
+redundancy issues being a big deal there.
+
+> So even ignoring redundancy issues, and the fact that people want to 
+> hot-plug things (and yes, that would make a central clock interesting), I 
+> doubt any hw manufacturer really looks at it the way we do.
+
+Hotplugging isn't so bad (the clock source is tiny, and goes on the 
+backplane.)  Redundancy is harder, but not impossible -- even cheap 
+TCXOs can usually operate either self-running or as slaves to an 
+incoming signal.  The hard part is to avoid partition on failure, since 
+in that case you have to handle the unsynchronized case correctly anyway.
+
+> The best we could hope for is some hardware assist for helping distribute 
+> a common clock. Ie not a real single crystal, but having time-packets in 
+> the interconnect that are used to synchronize nodes whenever there is 
+> communication between them. It's hard to do that in software, because the 
+> overhead is fairly high, but if hardware does at least some of it you 
+> could probably get a damn fine distributed clock source.
+> 
+> But I don't know if any hw people are worried enough about it to do it...
+
+Most likely not, which means that any solutions we as software guys 
+propose are probably pointless.
+
+	-hpa
+
