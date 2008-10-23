@@ -1,80 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753600AbYJWIml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753784AbYJWIpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753600AbYJWIml (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 04:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754968AbYJWIm0
+	id S1753784AbYJWIpv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 04:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbYJWIpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 04:42:26 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:14307 "EHLO relay.sw.ru"
+	Thu, 23 Oct 2008 04:45:43 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:5985 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754840AbYJWImY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 04:42:24 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] Add block device speciffic splice write method
-References: <1224424858-3927-1-git-send-email-dmonakhov@openvz.org>
-	<20081020174931.GH19428@kernel.dk> <20081020181156.GI19428@kernel.dk>
-	<20081022223928.a6ce476f.akpm@linux-foundation.org>
-From: Dmitri Monakhov <dmonakhov@openvz.org>
-Date: Thu, 23 Oct 2008 12:41:03 +0400
-In-Reply-To: <20081022223928.a6ce476f.akpm@linux-foundation.org> (Andrew Morton's message of "Wed\, 22 Oct 2008 22\:39\:28 -0700")
-Message-ID: <m37i7zzotc.fsf@dmon-lap.sw.ru>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+	id S1751647AbYJWIpl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 04:45:41 -0400
+From: Andrey Mirkin <major@openvz.org>
+To: devel@openvz.org
+Subject: Re: [Devel] Re: [PATCH 06/10] Introduce functions to dump mm
+Date: Thu, 23 Oct 2008 12:43:41 +0400
+User-Agent: KMail/1.8.2
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <1224285098-573-1-git-send-email-major@openvz.org> <1224285098-573-7-git-send-email-major@openvz.org> <1224523278.1848.123.camel@nimitz>
+In-Reply-To: <1224523278.1848.123.camel@nimitz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810231243.42181.major@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On Monday 20 October 2008 21:21 Dave Hansen wrote:
+> On Sat, 2008-10-18 at 03:11 +0400, Andrey Mirkin wrote:
+> > +static void page_get_desc(struct vm_area_struct *vma, unsigned long
+> > addr, +                         struct page_desc *pdesc, cpt_context_t *
+> > ctx) +{
+> > +       struct mm_struct *mm = vma->vm_mm;
+> > +       pgd_t *pgd;
+> > +       pud_t *pud;
+> > +       pmd_t *pmd;
+> > +       pte_t *ptep, pte;
+> > +       spinlock_t *ptl;
+> > +       struct page *pg = NULL;
+> > +       pgoff_t linear_index = (addr - vma->vm_start)/PAGE_SIZE +
+> > vma->vm_pgoff; +
+> > +       pdesc->index = linear_index;
+> > +       pdesc->shared = 0;
+> > +       pdesc->mm = CPT_NULL;
+> > +
+> > +       if (vma->vm_flags & VM_IO) {
+> > +               pdesc->type = PD_ABSENT;
+> > +               return;
+> > +       }
+> > +
+> > +       pgd = pgd_offset(mm, addr);
+> > +       if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
+> > +               goto out_absent;
+> > +       pud = pud_offset(pgd, addr);
+> > +       if (pud_none(*pud) || unlikely(pud_bad(*pud)))
+> > +               goto out_absent;
+> > +       pmd = pmd_offset(pud, addr);
+> > +       if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
+> > +               goto out_absent;
+> > +#ifdef CONFIG_X86
+> > +       if (pmd_huge(*pmd)) {
+> > +               eprintk("page_huge\n");
+> > +               goto out_unsupported;
+> > +       }
+> > +#endif
+>
+> I take it you know that this breaks with the 1GB (x86_64) and 16GB (ppc)
+> large pages.
+>
+> Since you have the VMA, why not use is_vm_hugetlb_page()?
+Right now I'm checking VM_HUGETLB flag on VMAs in dump_one_vma().
+This checks were added for sanity purpose just to throw out all unsupported 
+right now cases.
 
-> On Mon, 20 Oct 2008 20:11:56 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
->
->> +ssize_t generic_file_splice_write_file_nolock(struct pipe_inode_info *pipe,
->> +					      struct file *out, loff_t *ppos,
->> +					      size_t len, unsigned int flags)
->> +{
->> +	struct address_space *mapping = out->f_mapping;
->> +	struct inode *inode = mapping->host;
->> +	struct splice_desc sd = {
->> +		.total_len = len,
->> +		.flags = flags,
->> +		.pos = *ppos,
->> +		.u.file = out,
->> +	};
->> +	ssize_t ret;
->> +
->> +	mutex_lock(&pipe->inode->i_mutex);
->> +	ret = __splice_from_pipe(pipe, &sd, pipe_to_file);
->> +	mutex_unlock(&pipe->inode->i_mutex);
->> +
->> +	if (ret > 0) {
->> +		unsigned long nr_pages;
->> +
->> +		*ppos += ret;
->> +		nr_pages = (ret + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
->> +
->> +		if (unlikely((out->f_flags & O_SYNC) || IS_SYNC(inode))) {
->> +			int er;
->> +
->> +			er = sync_page_range_nolock(inode, mapping, *ppos, ret);
->> +			if (er)
->> +				ret = er;
->> +		}
->> +		balance_dirty_pages_ratelimited_nr(mapping, nr_pages);
->> +	}
->> +
->> +	return ret;
->> +}
->> +EXPORT_SYMBOL(generic_file_splice_write_file_nolock);
->
-> I don't think the balance_dirty_pages() is needed if we just did the
-> sync_page_range().
-I think so too, but I've done it in this way because all other writers
-does it. 
->
->
-> But really it'd be better if the throttling happened down in
-> pipe_to_file(), on a per-page basis.  As it stands we can dirty an
-> arbitrary number of pagecache pages without throttling.  I think?
+Andrey
