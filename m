@@ -1,51 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbYJWVF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757574AbYJWVGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755514AbYJWVF2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 17:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbYJWVFK
+	id S1757574AbYJWVGc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 17:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbYJWVGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 17:05:10 -0400
-Received: from stinky.trash.net ([213.144.137.162]:61272 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752030AbYJWVFJ (ORCPT
+	Thu, 23 Oct 2008 17:06:23 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:57045 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751040AbYJWVGW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 17:05:09 -0400
-Message-ID: <4900E668.9050101@trash.net>
-Date: Thu, 23 Oct 2008 23:02:32 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Thu, 23 Oct 2008 17:06:22 -0400
+Date: Thu, 23 Oct 2008 23:04:46 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+Subject: Re: [GIT PULL/RESEND] kernel message catalog patches
+Message-ID: <20081023210446.GA12003@osiris.boeblingen.de.ibm.com>
+References: <1224168620.9617.14.camel@localhost> <1224230354.4631.1.camel@localhost> <20081021092148.GB4980@osiris.boeblingen.de.ibm.com> <alpine.LFD.2.00.0810230835150.3287@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: michellammertink@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] netlink: fix append of whole original message on negative
- ack.
-References: <4900BFCF.2030707@gmail.com> <20081023.134513.267548182.davem@davemloft.net>
-In-Reply-To: <20081023.134513.267548182.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0810230835150.3287@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: M Lammertink <michellammertink@gmail.com>
-> Date: Thu, 23 Oct 2008 20:17:51 +0200
->   
->> Can anyone explain to me why struct nlmsgerr contains an int error and the nlmsghdr struct. The comment in netlink_ack states that the whole message should be appended. Why not only include an int error in struct nlmsgerr and just append the original message?
->>
->> Comments appreciated.
->>
->> diff -uprN linux-2.6.27.3.orig/net/netlink/af_netlink.c linux-2.6.27.3/net/netlink/af_netlink.c
->> --- linux-2.6.27.3.orig/net/netlink/af_netlink.c	2008-10-23 18:01:54.000000000 +0200
->> +++ linux-2.6.27.3/net/netlink/af_netlink.c	2008-10-23 18:04:22.000000000 +0200
->> @@ -1656,7 +1656,7 @@ void netlink_ack(struct sk_buff *in_skb,
->>  	}
->>  
->>  	rep = __nlmsg_put(skb, NETLINK_CB(in_skb).pid, nlh->nlmsg_seq,
->> -			  NLMSG_ERROR, sizeof(struct nlmsgerr), 0);
->> +			  NLMSG_ERROR, payload, 0)
+On Thu, Oct 23, 2008 at 08:35:40AM -0700, Linus Torvalds wrote:
+> On Tue, 21 Oct 2008, Heiko Carstens wrote:
+> > 
+> > please pull from 'kmsg' branch of
+> > 
+> >         git://git390.osdl.marist.edu/pub/scm/linux-2.6.git kmsg
+> > 
+> > to get the kernel message catalog code.
+> 
+> I'm not going to pull it, since I have no idea what it is, or why I'd 
+> _want_ to pull it.
 
-You can't include the full message since the resulting message
-might exceed the 64k netlink limit.
+The whole point of the patch set is to add documentation for kernel
+messages that are emitted via printk. The documentation is supposed to
+help a sys admin to help understand what went wrong.
 
+To achieve this each message gets a component name and a hash and so
+gets a unique identifier with which the documentation for the message
+can be found. The documentation can be within the source code or in
+the Documentation/kmsg/<arch> folder. A script allows to create man
+pages from the documentations (make D=2). The user can then just issue
+'man <componentname>.<hash>' and gets a detailed description of what
+went wrong and what to do.
+
+To add component name and hash to the printk output new macros have to
+be used (see patch "kmsg: tagged kernel messages."):
+
+kmsg_emerg(format, args...);
+kmsg_alert(format, args...);
+kmsg_crit(format, args...);
+kmsg_err(format, args...);
+kmsg_warn(format, args...);
+kmsg_notice(format, args...);
+kmsg_info(format, args...);
+
+If kernel message identifiers are disabled they just translate into
+printk(KERN_EMERG, format, args...); etc.
+
+Otherwise the code in question has to specify its compoment name
+with a KMSG_COMPONENT define and kmesg_<level>() would translate into
+
+printk_hash(level KMSG_COMPONENT ".%06x" ": ", format, ##__VA_ARGS__)
+
+where printk_hash will generate a hash for the format string.
+
+Example:
+
+The s390 xpram driver now has:
+
+#define KMSG_COMPONENT "xpram"
+[...]
+	if (devs <= 0 || devs > XPRAM_MAX_DEVS) {
+		kmsg_err("%d is not a valid number of XPRAM devices\n",devs);
+
+If the message would be printed it could look like:
+
+xpram.ab9aa4 42 is not a valid number of XPRAM devices
+
+The corresponding description for the message is in
+Documentation/kmsg/s390/xpram :
+
+/*?
+ * Tag: xpram.ab9aa4
+ * Text: "%d is not a valid number of XPRAM devices\n"
+ * Severity: Error
+ * Parameter:
+ *   @1: number of partitions
+ * Description:
+ * The number of XPRAM partitions specified for the 'devs' module parameter 
+ * or with the 'xpram.parts' kernel parameter must be an integer in the
+ * range 1 to 32. The XPRAM device driver created a maximum of 32 partitions
+ * that are probably not configured as intended.
+ * User action:
+ * If the XPRAM device driver has been compiled as a separate module,
+ * unload the module and load it again with a correct value for the 
+ * 'devs' module parameter. If the XPRAM device driver has been compiled
+ * into the kernel, correct the 'xpram.parts' parameter in the kernel
+ * command line and restart Linux.
+ */
+
+With "make D=2" a man page can be created from this:
+
+.TH "xpram.ab9aa4" 9 "Linux Messages" LINUX
+.SH Message
+xpram.ab9aa4: %d is not a valid number of XPRAM devices\n
+.SH Severity
+Error
+.SH Parameters
+@1: number of partitions
+
+.SH Description
+The number of XPRAM partitions specified for the 'devs' module parameter 
+or with the 'xpram.parts' kernel parameter must be an integer in the
+range 1 to 32. The XPRAM device driver created a maximum of 32 partitions
+that are probably not configured as intended.
+.SH User action
+If the XPRAM device driver has been compiled as a separate module,
+unload the module and load it again with a correct value for the 
+'devs' module parameter. If the XPRAM device driver has been compiled
+into the kernel, correct the 'xpram.parts' parameter in the kernel
+command line and restart Linux.
+
+
+So with 'man <componentname>.<hash>' a sys admin would get information
+of what went wrong.
+
+Please note that this was initially an s390 only patch set but we moved
+the infrastructure to generic code since it looks like others want a
+facility like this too. iirc Andrew requested the move.
+
+Thanks,
+Heiko
