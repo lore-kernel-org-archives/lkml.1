@@ -1,83 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759742AbYJWCQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759363AbYJWCQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759742AbYJWCQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 22:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756483AbYJWCIu
+	id S1759363AbYJWCQo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 22:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756524AbYJWCIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 22:08:50 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43362 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754567AbYJWCIb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 22:08:51 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:46606 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754643AbYJWCIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 22 Oct 2008 22:08:31 -0400
-Message-Id: <20081023020830.882924000@polaris-admin.engr.sgi.com>
+Message-Id: <20081023020831.491718000@polaris-admin.engr.sgi.com>
 References: <20081023020826.051012000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Oct 2008 19:08:49 -0700
+Date: Wed, 22 Oct 2008 19:08:52 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 23/35] cpumask: cpumask_any_but() From: Rusty Russell <rusty@rustcorp.com.au>
-Content-Disposition: inline; filename=cpumask:cpumask_any_but.patch
+Subject: [PATCH 26/35] cpumask: to_cpumask() From: Rusty Russell <rusty@rustcorp.com.au>
+Content-Disposition: inline; filename=cpumask:to_cpumask.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's a common case where we want any online cpu except a particular
-one.  This creates a helper to do that, otherwise we need a temp var
-and cpumask_andnot().
+There are times when we really want a static cpumask.  Yet we don't
+want to expose the struct cpumask definition, to avoid casual on-stack
+usage and assignment.
+
+So this macro allows you to do DECLARE_BITMAP(map, CONFIG_NR_CPUS); then use
+to_cpumask() to turn it into a cpumask as needed.
+
+Ugly?  Yes, but as we move to fewer static cpumasks these calls vanish.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- include/linux/cpumask.h |    3 +++
- lib/cpumask.c           |   10 ++++++++++
- 2 files changed, 13 insertions(+)
+ include/linux/cpumask.h |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
 --- linux-2.6.28.orig/include/linux/cpumask.h
 +++ linux-2.6.28/include/linux/cpumask.h
-@@ -110,6 +110,7 @@
+@@ -57,6 +57,9 @@
+  * CPU_MASK_NONE			Initializer - no bits set
+  * unsigned long *cpumask_bits(mask)	Array of unsigned long's in mask
   *
-  * int cpumask_any(mask)		Any cpu in mask
-  * int cpumask_any_and(mask1,mask2)	Any cpu in both masks
-+ * int cpumask_any_but(mask,cpu)	Any cpu in mask except cpu
++ * struct cpumask *to_cpumask(const unsigned long[])
++ *					Convert a bitmap to a cpumask.
++ *
+  * ------------------------------------------------------------------------
   *
-  * for_each_possible_cpu(cpu)		for-loop cpu over cpu_possible_map
-  * for_each_online_cpu(cpu)		for-loop cpu over cpu_online_map
-@@ -451,6 +452,7 @@ extern cpumask_t cpu_mask_all;
- #define cpumask_first(src)		({ (void)(src); 0; })
- #define cpumask_next(n, src)		({ (void)(src); 1; })
- #define cpumask_next_and(n, srcp, andp)	({ (void)(srcp), (void)(andp); 1; })
-+#define cpumask_any_but(mask, cpu)	({ (void)(mask); (void)(cpu); 0; })
+  * int cpumask_scnprintf(buf, len, mask) Format cpumask for printing
+@@ -365,6 +368,17 @@ static inline void cpumask_copy(struct c
+ #define cpumask_any(srcp) cpumask_first(srcp)
+ #define cpumask_any_and(mask1, mask2) cpumask_first_and((mask1), (mask2))
  
- #define for_each_cpu(cpu, mask)			\
- 	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
-@@ -462,6 +464,7 @@ extern cpumask_t cpu_mask_all;
- int cpumask_first(const cpumask_t *srcp);
- int cpumask_next(int n, const cpumask_t *srcp);
- int cpumask_next_and(int n, const cpumask_t *srcp, const cpumask_t *andp);
-+int cpumask_any_but(const struct cpumask *mask, unsigned int cpu);
- 
- #define for_each_cpu(cpu, mask)				\
- 	for ((cpu) = -1;				\
---- linux-2.6.28.orig/lib/cpumask.c
-+++ linux-2.6.28/lib/cpumask.c
-@@ -24,6 +24,16 @@ int cpumask_next_and(int n, const cpumas
- }
- EXPORT_SYMBOL(cpumask_next_and);
- 
-+int cpumask_any_but(const struct cpumask *mask, unsigned int cpu)
-+{
-+	unsigned int i;
++/* Used for static bitmaps of CONFIG_NR_CPUS bits.  Must be a constant to use
++ * as an initializer. */
++#define to_cpumask(bitmap)						\
++	((struct cpumask *)(1 ? (bitmap)				\
++			    : (void *)sizeof(__check_is_bitmap(bitmap))))
 +
-+	for_each_cpu(i, mask)
-+		if (i != cpu)
-+			break;
-+	return i;
++static inline int __check_is_bitmap(const unsigned long *bitmap)
++{
++	return 1;
 +}
 +
- /* These are not inline because of header tangles. */
- #ifdef CONFIG_CPUMASK_OFFSTACK
- bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
+ /*
+  * Special-case data structure for "single bit set only" constant CPU masks.
+  *
 
 -- 
