@@ -1,54 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbYJWWj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbYJWWnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754883AbYJWWj3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 18:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbYJWWjU
+	id S1753507AbYJWWnZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 18:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbYJWWnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 18:39:20 -0400
-Received: from mga11.intel.com ([192.55.52.93]:19892 "EHLO mga11.intel.com"
+	Thu, 23 Oct 2008 18:43:10 -0400
+Received: from mga01.intel.com ([192.55.52.88]:46567 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751483AbYJWWjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 18:39:20 -0400
+	id S1751374AbYJWWnI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 18:43:08 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,473,1220252400"; 
-   d="scan'208";a="630996116"
-Date: Thu, 23 Oct 2008 15:39:06 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Fix compile warning CONFIG_I7300_IDLE_IOAT_CHANNEL not defined
-Message-ID: <20081023223906.GA26918@linux-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+   d="scan'208";a="630997131"
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: Sanjoy Mahajan <sanjoy@MIT.EDU>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       NetDEV list <netdev@vger.kernel.org>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>
+Date: Thu, 23 Oct 2008 15:42:55 -0700
+Subject: RE: e1000e fails after several S3 resumes (2.6.26 Debian, TP T60) 
+Thread-Topic: e1000e fails after several S3 resumes (2.6.26 Debian, TP T60) 
+Thread-Index: Ack1E8ufY1Be6s3VSg2c+Fixme6JJgASy7oQ
+Message-ID: <F169D4F5E1F1974DBFAFABF47F60C10A069DFD62@orsmsx507.amr.corp.intel.com>
+References: Your message of "Wed, 22 Oct 2008 09:29:21 PDT."
+             <4807377b0810220929v5906b42bgf9d63215370e5ab5@mail.gmail.com>
+ (sfid-20081022_141704_643135_AA4BDC9C)  <E1Kt0Cr-0008PB-Ux@approx.mit.edu>
+In-Reply-To: <E1Kt0Cr-0008PB-Ux@approx.mit.edu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Sanjoy Mahajan wrote:
+>> There is also lots of opportunity for BIOS bugs to be effecting
+>> things so please make sure that you have the latest bios.
+> 
+> I was about to burn the CD to update the bios to 2.23 when the failure
+> recurred.  So, with the caveat that the bios is still 2.20, I've
+> attached logs from ethregs and ethtool before and after
+>   ethtool -r eth0
+> (which fixed the dhcp).
+> 
+> Here is the e1000e driver version:
+> 
+>   $ grep e1000e /var/log/dmesg
+>   [   23.988317] e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k2
+>   [   23.988390] e1000e: Copyright (c) 1999-2008 Intel Corporation.
+>   [   23.988505] e1000e 0000:02:00.0: Disabling L1 ASPM
 
-When I7300_idle driver is not configured, there is a compile time
-warning about IDLE_IOAT_CHANNEL not defined. Fix it.
+hm, does your kernel have CONFIG_PM defined?  if it happens again please include lspci -vvv before and after ethtool -r (see below)
 
-Reported-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> Here are diffs of the attached before and after logs:
+> 
+> --- ethtool-before.log	2008-10-23 09:14:41.000000000 -0400
+> +++ ethtool-after.log	2008-10-23 09:17:54.000000000 -0400
+> @@ -33,8 +33,8 @@
+>        Pass MAC control frames:           don't pass
+>        Receive buffer size:               2048
+>  0x02808: RDLEN (Receive desc length)     0x00001000
+> -0x02810: RDH   (Receive desc head)       0x000000BB
+> -0x02818: RDT   (Receive desc tail)       0x000000B9
+> +0x02810: RDH   (Receive desc head)       0x00000051
+> +0x02818: RDT   (Receive desc tail)       0x0000004F
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+this indicates the device was actually receiving packets okay (RDH) and the
+driver was returning buffers to hardware (RDT)
 
----
- drivers/dma/ioat_dma.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+>  0x02820: RDTR  (Receive delay timer)     0x00000000
+>  0x00400: TCTL (Transmit ctrl register)   0x3103F0FA
+>        Transmitter:                       enabled
+> @@ -42,7 +42,7 @@
+>        Software XOFF Transmission:        disabled
+>        Re-transmit on late collision:     enabled
+>  0x03808: TDLEN (Transmit desc length)    0x00001000
+> -0x03810: TDH   (Transmit desc head)      0x00000018
+> -0x03818: TDT   (Transmit desc tail)      0x00000018
+> +0x03810: TDH   (Transmit desc head)      0x00000075
+> +0x03818: TDT   (Transmit desc tail)      0x00000075
 
-Index: linux-2.6/drivers/dma/ioat_dma.c
-===================================================================
---- linux-2.6.orig/drivers/dma/ioat_dma.c	2008-10-23 15:27:43.000000000 -0700
-+++ linux-2.6/drivers/dma/ioat_dma.c	2008-10-23 15:28:03.000000000 -0700
-@@ -171,7 +171,7 @@ static int ioat_dma_enumerate_channels(s
- 	xfercap_scale = readb(device->reg_base + IOAT_XFERCAP_OFFSET);
- 	xfercap = (xfercap_scale == 0 ? -1 : (1UL << xfercap_scale));
- 
--#if CONFIG_I7300_IDLE_IOAT_CHANNEL
-+#ifdef CONFIG_I7300_IDLE_IOAT_CHANNEL
- 	device->common.chancnt--;
- #endif
- 	for (i = 0; i < device->common.chancnt; i++) {
+device was also claiming successfully transmitting, so I don't know why 
+the DHCP packets don't work, can you tcpdump on the network or the dhcp 
+server by chance?  I'm looking to see if the server receives the transmits 
+and then replies.
+
+>  	RAL[0]         52411600
+>  	RAH[0]         8000de50
+> -	RAL[1]         00003333
+> +	RAL[1]         005e0001
+>  	RAH[1]         8000fb00
+> -	RAL[2]         52ff3333
+> -	RAH[2]         8000de50
+> -	RAL[3]         00003333
+> -	RAH[3]         80000100
+> -	RAL[4]         005e0001
+> +	RAL[2]         00003333
+> +	RAH[2]         8000fb00
+> +	RAL[3]         52ff3333
+> +	RAH[3]         8000de50
+> +	RAL[4]         00003333
+>  	RAH[4]         80000100
+> -	RAL[5]         00000000
+> -	RAH[5]         00000000
+> +	RAL[5]         005e0001
+> +	RAH[5]         80000100
+
+after resume, one multicast address is added and one is missing from the 
+list of addresses the adapter will listen on.  I reordered but here are 
+the diffs
+before:
+	RAL[5]         00000000
+	RAH[5]         00000000
+after
+	RAL[5]         005e0001
+	RAH[5]         8000fb00
+
+I don't know which protocol added 01005e00fb as a multicast address only 
+after suspend.
+
+can you ifconfig eth0 promisc before doing suspend?  I'd be curious if 
+that fixed it.
+
+>  	RAL[6]         00000000
+>  	RAH[6]         00000000
+>  	RAL[7]         00000000
+> @@ -390,7 +390,7 @@
+>  	GSCL_2         00000000
+>  	GSCL_3         00000000
+>  	GSCL_4         00000000
+> -	FACTPS         a1041046
+> +	FACTPS         21041046
+
+FACTPS bits are reserved in our manuals (but have to do with PCIe power state
+changes), but I can't help but wonder if there isn't something with ASPM L0s or
+L1 on your system (where we had trouble with that feature on your laptop) when
+coming out of resume, therefore the lspci would show us the difference if there
+was one.
