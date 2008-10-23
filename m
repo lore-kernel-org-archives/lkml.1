@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbYJWDgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624AbYJWDmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754099AbYJWDgG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 23:36:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbYJWDfy
+	id S1753624AbYJWDmG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 23:42:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbYJWDlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 23:35:54 -0400
-Received: from lobo.ruivo.org ([66.92.68.119]:41193 "EHLO lobo.ruivo.org"
+	Wed, 22 Oct 2008 23:41:53 -0400
+Received: from hera.kernel.org ([140.211.167.34]:32814 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751086AbYJWDfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 23:35:54 -0400
-Date: Wed, 22 Oct 2008 23:35:40 -0400
-From: Aristeu Rozanski <aris@ruivo.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] nmi watchdog: handle NMI_IO_APIC on nmi_watchdog
-Message-ID: <20081023033540.GF28317@cathedrallabs.org>
-References: <20080313180538.GC4620@cathedrallabs.org> <20080321114752.GA25225@elte.hu> <20080326152417.GE25854@cathedrallabs.org> <20080326182333.GA11187@elte.hu> <20081022215008.GE28317@cathedrallabs.org> <alpine.LFD.1.10.0810222329410.24509@ftp.linux-mips.org>
+	id S1751481AbYJWDlw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 23:41:52 -0400
+Message-ID: <48FFF26E.5040904@kernel.org>
+Date: Thu, 23 Oct 2008 12:41:34 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0810222329410.24509@ftp.linux-mips.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, jeff@garzik.org
+Subject: Re: [PATCH 2/2] libata: switch to using block layer tagging support
+References: <1224661243-7929-1-git-send-email-jens.axboe@oracle.com> <1224661243-7929-3-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1224661243-7929-3-git-send-email-jens.axboe@oracle.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 23 Oct 2008 03:41:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > but this stops all NMIs, not just the IO-APIC generated ones, doesnt it? 
-> > external NMIs would come by LINT1, no?
+Jens Axboe wrote:
+> libata currently has a pretty dumb ATA_MAX_QUEUE loop for finding
+> a free tag to use. Instead of fixing that up, convert libata to
+> using block layer tagging - gets rid of code in libata, and is also
+> much faster.
 > 
->  Correct.
-> 
-> > after reading a lot and talking with Vivek, what I understood was that 8259 is
-> > also connected to LINT0, so timer interrupts would be reported both in
-> > IOAPIC and on LINT0. LVT0 is being configured on setup_nmi() to generate
-> > an NMI. Also, the same timer interrupt would generate an regular interrupt
-> > coming from IOAPIC. Clearing the APIC_DM_NMI on LVT0 would disable the
-> > NMI delivery, but not the regular interrupt.
-> > or am I missing something here?
-> 
->  You are correct.  The routing of the 8254 timer interrupt may vary, but 
-> the NMI watchdog it drives, if supported, always uses the LINT0 input of 
-> all the local APICs.
-thanks
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 
->  You seem to be writing in reply to a very old thread -- please make sure 
-> your concerns are still valid with current code.  For example we have an 
-> implementation of __acpi_nmi_disable() now, which is exactly your proposed 
-> one.
-didn't noticed that, sorry.
+Acked-by: Tejun Heo <tj@kernel.org>
+
+Thanks.
 
 -- 
-Aristeu
-
+tejun
