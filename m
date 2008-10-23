@@ -1,157 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758178AbYJWCgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758373AbYJWChQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758178AbYJWCgw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 22:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755959AbYJWCft
+	id S1758373AbYJWChQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 22:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758085AbYJWCgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 22:35:49 -0400
-Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.108]:61057
-	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755651AbYJWCfr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 22:35:47 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAIx//0h8qQJT/2dsb2JhbADAPYNO
-X-IronPort-AV: E=Sophos;i="4.33,468,1220198400"; 
-   d="scan'208";a="406917572"
-From: Ian Kent <raven@themaw.net>
-Subject: [PATCH 6/6] autofs4 - cleanup expire code duplication
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       autofs mailing list <autofs@linux.kernel.org>
-Date: Thu, 23 Oct 2008 10:35:43 +0800
-Message-ID: <20081023023543.4508.49501.stgit@raven.themaw.net>
-In-Reply-To: <20081023023513.4508.54940.stgit@raven.themaw.net>
-References: <20081023023513.4508.54940.stgit@raven.themaw.net>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Wed, 22 Oct 2008 22:36:46 -0400
+Received: from sh.osrg.net ([192.16.179.4]:33167 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758030AbYJWCgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 22:36:45 -0400
+Date: Thu, 23 Oct 2008 11:36:20 +0900
+To: tiwai@suse.de
+Cc: fujita.tomonori@lab.ntt.co.jp, svens@stackframe.org, joerg.roedel@amd.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: swiotlb_alloc_coherent: allocated memory is out of range for
+ device
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <s5hfxmon4aj.wl%tiwai@suse.de>
+References: <s5hmygwn89z.wl%tiwai@suse.de>
+	<20081022221321J.fujita.tomonori@lab.ntt.co.jp>
+	<s5hfxmon4aj.wl%tiwai@suse.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20081023113618T.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A significant portion of the autofs_dev_ioctl_expire() and
-autofs4_expire_multi() functions is duplicated code. This patch
-cleans that up.
+On Wed, 22 Oct 2008 15:32:52 +0200
+Takashi Iwai <tiwai@suse.de> wrote:
 
-Signed-off-by: Ian Kent <raven@themaw.net>
-Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
+> > About the bug that you hit, I suspect that dma_map_coherent() in
+> > asm-x86/dma-mapping.h doesn't set gfp flags correctly.
+> > 
+> > dma_map_coherent() calls swiotlb_alloc_coherent with the flags GFP_DMA
+> > set? parport driver set dev->coherent_dma_mask properly?
+> 
+> The parport driver itself passes always GFP_KERNEL.  So I added
+> GFP_DMA in my initial patch as a workaround.
 
----
+Hmm, have you actually tried your patch?
 
- fs/autofs4/autofs_i.h  |    2 ++
- fs/autofs4/dev-ioctl.c |   29 +----------------------------
- fs/autofs4/expire.c    |   27 +++++++++++++++++----------
- 3 files changed, 20 insertions(+), 38 deletions(-)
+dma_alloc_coherent clears the gfp zone flags that the callers pass. So
+even if a driver passes GFP_DMA, swiotlb_alloc_coherent doesn't get
+GFP_DMA. So I'm not sure how your patch fixes the parport problem.
 
 
-diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
-index a768031..b7ff33c 100644
---- a/fs/autofs4/autofs_i.h
-+++ b/fs/autofs4/autofs_i.h
-@@ -186,6 +186,8 @@ int autofs4_expire_wait(struct dentry *dentry);
- int autofs4_expire_run(struct super_block *, struct vfsmount *,
- 			struct autofs_sb_info *,
- 			struct autofs_packet_expire __user *);
-+int autofs4_do_expire_multi(struct super_block *sb, struct vfsmount *mnt,
-+			    struct autofs_sb_info *sbi, int when);
- int autofs4_expire_multi(struct super_block *, struct vfsmount *,
- 			struct autofs_sb_info *, int __user *);
- struct dentry *autofs4_expire_direct(struct super_block *sb,
-diff --git a/fs/autofs4/dev-ioctl.c b/fs/autofs4/dev-ioctl.c
-index 9b78be9..a040639 100644
---- a/fs/autofs4/dev-ioctl.c
-+++ b/fs/autofs4/dev-ioctl.c
-@@ -502,40 +502,13 @@ static int autofs_dev_ioctl_expire(struct file *fp,
- 				   struct autofs_sb_info *sbi,
- 				   struct autofs_dev_ioctl *param)
+The current dma_alloc_coherent (asm-x86/dma-mapping.h) handles the gfp
+flags in the exact same way as the old dma_alloc_coherent
+(pci-dma.c). Neither sets GFP_DMA even if coherent_dma_mask is
+24bits. The old code is fine because of the GFP_DMA retry
+mechanism. But if coherent_dma_mask is 24bits, there is no point to go
+into the GFP_DMA retry mechanism. We should use GFP_DMA in the first
+place.
+
+How about the following patch?
+
+
+diff --git a/include/asm-x86/dma-mapping.h b/include/asm-x86/dma-mapping.h
+index 219c33d..05fcec5 100644
+--- a/include/asm-x86/dma-mapping.h
++++ b/include/asm-x86/dma-mapping.h
+@@ -255,9 +255,11 @@ static inline unsigned long dma_alloc_coherent_mask(struct device *dev,
+ 
+ static inline gfp_t dma_alloc_coherent_gfp_flags(struct device *dev, gfp_t gfp)
  {
--	struct dentry *dentry;
- 	struct vfsmount *mnt;
--	int err = -EAGAIN;
- 	int how;
+-#ifdef CONFIG_X86_64
+ 	unsigned long dma_mask = dma_alloc_coherent_mask(dev, gfp);
  
- 	how = param->expire.how;
- 	mnt = fp->f_path.mnt;
- 
--	if (autofs_type_trigger(sbi->type))
--		dentry = autofs4_expire_direct(sbi->sb, mnt, sbi, how);
--	else
--		dentry = autofs4_expire_indirect(sbi->sb, mnt, sbi, how);
--
--	if (dentry) {
--		struct autofs_info *ino = autofs4_dentry_ino(dentry);
--
--		/*
--		 * This is synchronous because it makes the daemon a
--		 * little easier
--		*/
--		err = autofs4_wait(sbi, dentry, NFY_EXPIRE);
--
--		spin_lock(&sbi->fs_lock);
--		if (ino->flags & AUTOFS_INF_MOUNTPOINT) {
--			ino->flags &= ~AUTOFS_INF_MOUNTPOINT;
--			sbi->sb->s_root->d_mounted++;
--		}
--		ino->flags &= ~AUTOFS_INF_EXPIRING;
--		complete_all(&ino->expire_complete);
--		spin_unlock(&sbi->fs_lock);
--		dput(dentry);
--	}
--
--	return err;
-+	return autofs4_do_expire_multi(sbi->sb, mnt, sbi, how);
- }
- 
- /* Check if autofs mount point is in use */
-diff --git a/fs/autofs4/expire.c b/fs/autofs4/expire.c
-index e3bd507..75f7dda 100644
---- a/fs/autofs4/expire.c
-+++ b/fs/autofs4/expire.c
-@@ -478,22 +478,16 @@ int autofs4_expire_run(struct super_block *sb,
- 	return ret;
- }
- 
--/* Call repeatedly until it returns -EAGAIN, meaning there's nothing
--   more to be done */
--int autofs4_expire_multi(struct super_block *sb, struct vfsmount *mnt,
--			struct autofs_sb_info *sbi, int __user *arg)
-+int autofs4_do_expire_multi(struct super_block *sb, struct vfsmount *mnt,
-+			    struct autofs_sb_info *sbi, int when)
- {
- 	struct dentry *dentry;
- 	int ret = -EAGAIN;
--	int do_now = 0;
--
--	if (arg && get_user(do_now, arg))
--		return -EFAULT;
- 
- 	if (autofs_type_trigger(sbi->type))
--		dentry = autofs4_expire_direct(sb, mnt, sbi, do_now);
-+		dentry = autofs4_expire_direct(sb, mnt, sbi, when);
- 	else
--		dentry = autofs4_expire_indirect(sb, mnt, sbi, do_now);
-+		dentry = autofs4_expire_indirect(sb, mnt, sbi, when);
- 
- 	if (dentry) {
- 		struct autofs_info *ino = autofs4_dentry_ino(dentry);
-@@ -516,3 +510,16 @@ int autofs4_expire_multi(struct super_block *sb, struct vfsmount *mnt,
- 	return ret;
- }
- 
-+/* Call repeatedly until it returns -EAGAIN, meaning there's nothing
-+   more to be done */
-+int autofs4_expire_multi(struct super_block *sb, struct vfsmount *mnt,
-+			struct autofs_sb_info *sbi, int __user *arg)
-+{
-+	int do_now = 0;
-+
-+	if (arg && get_user(do_now, arg))
-+		return -EFAULT;
-+
-+	return autofs4_do_expire_multi(sb, mnt, sbi, do_now);
-+}
-+
-
++	if (dma_mask <= DMA_24BIT_MASK)
++		gfp |= GFP_DMA;
++#ifdef CONFIG_X86_64
+ 	if (dma_mask <= DMA_32BIT_MASK && !(gfp & GFP_DMA))
+ 		gfp |= GFP_DMA32;
+ #endif
