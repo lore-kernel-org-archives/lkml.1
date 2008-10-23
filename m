@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbYJWL4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbYJWMAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755507AbYJWL4S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 07:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYJWL4D
+	id S1755222AbYJWMAp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 08:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbYJWMAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 07:56:03 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:41561 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751331AbYJWL4B (ORCPT
+	Thu, 23 Oct 2008 08:00:33 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:58586 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752958AbYJWMAc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 07:56:01 -0400
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: Tilman Baumann <tilman.baumann@collax.com>
-Subject: Re: SMACK netfilter smacklabel socket match
-Date: Thu, 23 Oct 2008 07:55:57 -0400
-User-Agent: KMail/1.9.10
-Cc: Casey Schaufler <casey@schaufler-ca.com>,
-       "Linux-Kernel" <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org
-References: <48DBC9A1.20900@collax.com> <48F8C3EC.1030607@collax.com> <48F8D122.3010105@schaufler-ca.com>
-In-Reply-To: <48F8D122.3010105@schaufler-ca.com>
+	Thu, 23 Oct 2008 08:00:32 -0400
+Message-ID: <49006671.3010804@bull.net>
+Date: Thu, 23 Oct 2008 13:56:33 +0200
+From: Benjamin Thery <benjamin.thery@bull.net>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: netdev <netdev@vger.kernel.org>, Dave Miller <davem@davemloft.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Al Viro <viro@ftp.linux.org.uk>,
+       Serge Hallyn <serue@us.ibm.com>, Daniel Lezcano <dlezcano@fr.ibm.com>,
+       linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
+       Denis Lunev <den@openvz.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [PATCH 0/4][RFC] netns: sysfs: add a netns suffix to net device
+ sysfs entries
+References: <20081022152144.351965414@theryb.frec.bull.fr> <m1d4hso0ym.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1d4hso0ym.fsf@frodo.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810230755.57819.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 17 October 2008 1:53:38 pm Casey Schaufler wrote:
-> Tilman Baumann wrote:
-> > Hi Casey,
-> >
-> > the last weeks I tried to come up with some way to circumvent my
-> > problems by aimlessly poking around in the code. Did not work
-> > though. Not yet at least. :)
-> > Maybe it makes more sense for me to wait until you have a solution.
-> > My whole project is stalled right now because of this and I'm not
-> > sure what next.
-> > Do you plan to change something there soon? If so I would stop
-> > wasting my time with hopeless attempts.
-> >
-> > My problem is at the moment that I don't really know what to do. If
-> > you can give some aim I would be glad if I could do something.
->
-> Well, the good news is that I have a change under test that will
-> address your needs, allowing a host or set of hosts to be generally
-> accessible from the Smack system. The bad news is that it uses a set
-> of netlabel apis that are not going to get released in favor of a
-> redesigned set of apis which are not available yet. The good news is
-> that those apis will handle Smack's needs just fine, but again the
-> bad news is that I don't have them to use yet.
+Eric W. Biederman wrote:
+> Benjamin Thery <benjamin.thery@bull.net> writes:
+> 
+>> Support for network namespaces in mainline is pretty complete for
+>> some time now, but there is still this issue with sysfs that prevents 
+>> more people to use it easily.
+> 
+> Ben your patchset is completely inappropriate.
+> 
+> Temporarily adding elements to the ABI that we intend to remove
+> is not a proper solution to this problem.
 
-Just a quick update.  You can blame me for the delay, I was a bit 
-distracted trying to get things ready for the 2.6.28 merge window and 
-the NetLabel kernel API changes got pushed aside for a few weeks.  I 
-just sent Casey a draft patch of the new API bits to review; with any 
-luck I'll have something to post as an RFC patch shortly.
+In fact, I feared that would be an issue before I sent the patches.
+Thanks for confirming this.
 
-Thanks for your patience.
+But, as this alternative was discussed a bit after Al's comments on your
+last patches, I had to give it a try and code a proof-of-concept.
+
+Benjamin
+
+> 
+> That user space visible ida you add is a namespace identifier that breaks
+> nested containers and migration.  It is very very very wrong.
+> 
+> Eric
+> 
+> 
+> 
+
 
 -- 
-paul moore
-linux @ hp
+B e n j a m i n   T h e r y  - BULL/DT/Open Software R&D
+
+    http://www.bull.com
