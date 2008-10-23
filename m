@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbYJWWJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756469AbYJWWLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755050AbYJWWJY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 18:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbYJWWJQ
+	id S1756469AbYJWWLW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 18:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbYJWWLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 18:09:16 -0400
-Received: from mga01.intel.com ([192.55.52.88]:61243 "EHLO mga01.intel.com"
+	Thu, 23 Oct 2008 18:11:11 -0400
+Received: from lucidpixels.com ([75.144.35.66]:33168 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752855AbYJWWJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 18:09:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,472,1220252400"; 
-   d="scan'208";a="395397291"
-Date: Thu, 23 Oct 2008 15:09:14 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: npiggin@suse.de, hugh@veritas.com
-Cc: apkm@linux-os.sc.intel.com, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [RFC] remap_pfn_range: store vm_pgoff for all linear_over_vma_region mappings
-Message-ID: <20081023220913.GA20300@linux-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+	id S1752224AbYJWWLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 18:11:11 -0400
+Date: Thu, 23 Oct 2008 18:11:09 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Michael Krufky <mkrufky@linuxtv.org>
+cc: Mike Isely <isely@pobox.com>, Greg KH <greg@kroah.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: Bug fix for pvrusb2 driver [was: Re: Kernel 2.6.26.5 -> 2.6.27.2
+ [USB REGRESSION] (USB -> D_STATE)]
+In-Reply-To: <37219a840810231504r6a1d7c1eu5b2b05a6258a3597@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0810231810480.16804@p34.internal.lan>
+References: <Pine.LNX.4.44L0.0810201203530.2719-100000@iolanthe.rowland.org>  <Pine.LNX.4.64.0810201134400.12643@cnc.isely.net>  <20081020172914.GA9624@kroah.com>  <Pine.LNX.4.64.0810231114320.1475@cnc.isely.net>  <20081023191543.GA10017@kroah.com> 
+ <Pine.LNX.4.64.0810231451080.1475@cnc.isely.net> <37219a840810231504r6a1d7c1eu5b2b05a6258a3597@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-While working on x86 PAT, we are having some hurdles with tracking
-remap_pfn_range() regions, as later we do not have any information to say
-whether that PFNMAP mapping is linear for the entire vma range or
-it is smaller granularity regions within the vma.
 
-A simple solution to this is to use vm_pgoff as an indicator for
-linear mapping over the vma region. Currently, remap_pfn_range
-only sets vm_pgoff only for COW mappings. Below patch changes the
-logic and sets the vm_pgoff irrespective of COW.
+On Thu, 23 Oct 2008, Michael Krufky wrote:
 
->From our understanding of the code, this should not break anyone.
-Just sending it as an RFC to get feedback on whether it is OK to do
-something like this or are there any corner cases that we may
-break or watch out for.
+> On Thu, Oct 23, 2008 at 3:54 PM, Mike Isely <isely@isely.net> wrote:
+>> On Thu, 23 Oct 2008, Greg KH wrote:
+>>
+>>> On Thu, Oct 23, 2008 at 11:27:11AM -0500, Mike Isely wrote:
+>>>> On Mon, 20 Oct 2008, Greg KH wrote:
+>>>>
+>>
+>>   [...]
+>>
+>>>>>
+>>>>> Will this patch be sent to the -stable group, to fix this regression in
+>>>>> 2.6.27?  Or should they take Alan's fix instead?
+>>>>>
+>>>>
+>>>> Greg:
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+[ .. ]
 
----
- mm/memory.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+> The changeset in Linus tree is: c82732a42896364296599b0f73f01c5e3fd781ae
+>
+> Reviewed-by: Michael Krufky <mkrufky@linuxtv.org>
+>
+> Please wait on test results from Mike Isely or I confirming that
+> digital mode still works properly before queuing this one.
+>
+> Thanks,
+>
+> Mike Krufky
+>
 
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c	2008-10-21 09:58:47.000000000 -0700
-+++ linux-2.6/mm/memory.c	2008-10-23 13:38:26.000000000 -0700
-@@ -1575,11 +1575,10 @@ int remap_pfn_range(struct vm_area_struc
- 	 * behaviour that some programs depend on. We mark the "original"
- 	 * un-COW'ed pages by matching them up with "vma->vm_pgoff".
- 	 */
--	if (is_cow_mapping(vma->vm_flags)) {
--		if (addr != vma->vm_start || end != vma->vm_end)
--			return -EINVAL;
-+	if (addr == vma->vm_start && end == vma->vm_end)
- 		vma->vm_pgoff = pfn;
--	}
-+	else if (is_cow_mapping(vma->vm_flags))
-+		return -EINVAL;
- 
- 	vma->vm_flags |= VM_IO | VM_RESERVED | VM_PFNMAP;
- 
+I only tested analog here for the 1950 FYI.
+
+Justin.
