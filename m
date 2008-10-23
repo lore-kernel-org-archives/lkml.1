@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbYJWQRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbYJWQWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757388AbYJWQRZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 12:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbYJWQRP
+	id S1756516AbYJWQWP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 12:22:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYJWQV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 12:17:15 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43508 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752692AbYJWQRP (ORCPT
+	Thu, 23 Oct 2008 12:21:59 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:28753 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751797AbYJWQV6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 12:17:15 -0400
-Message-ID: <4900A3C6.1080000@sgi.com>
-Date: Thu, 23 Oct 2008 09:18:14 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 23 Oct 2008 12:21:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=TS1okRSAp419juzYpKNm89CDYfh+NJLHtxems8tJshKWwZ/r3HDhjbWyXeKGyiOHzb
+         Us9HkMLr0zdbdljN7bQSlA+giWIFu2nivInZDs30ANu/2duqaTr9ZTRhsHfkpwH/vm1N
+         BicNm7bLPcm0TTuvjSDmzq+t6qFuuWspz2Nfg=
+Message-ID: <4900B414.7090002@gmail.com>
+Date: Thu, 23 Oct 2008 19:27:48 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [bug #2] Re: [PATCH 00/35] cpumask: Replace cpumask_t with	struct
- cpumask
-References: <20081023020826.051012000@polaris-admin.engr.sgi.com> <20081023125529.GA18327@elte.hu> <20081023142025.GA18804@elte.hu> <200810240201.15037.rusty@rustcorp.com.au> <20081023160610.GA8853@elte.hu>
-In-Reply-To: <20081023160610.GA8853@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+CC: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH] tracing: fix a build error on alpha and m68k
+References: <20081023213637.eff9b414.sfr@canb.auug.org.au> <20081023121145.GB27984@x200.localdomain> <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com> <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com> <49008D12.5090204@gmail.com> <Pine.LNX.4.64.0810231635440.18978@anakin> <c62985530810230757r411b4e3dj4ecec649cf8cf0b3@mail.gmail.com> <Pine.LNX.4.64.0810231727430.18978@anakin>
+In-Reply-To: <Pine.LNX.4.64.0810231727430.18978@anakin>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Rusty Russell <rusty@rustcorp.com.au> wrote:
-> 
->> On Friday 24 October 2008 01:20:25 Ingo Molnar wrote:
->>> Thomas has started a -tip cross-build test, and there's massive
->>> cross-build failures as well due to the cpumask changes:
->> Yes.  linux-next reported the same thing.  I've backed out various 
->> arch changes for this reason.
->>
->>> it seems to me that this commit is massively borked:
->>>
->>>   4a792c2: cpumask: make CONFIG_NR_CPUS always valid
->> Yep.  This is the big one I dropped.  There are a few others; Mike is 
->> just porting the changes across to your tree now.
-> 
-> guys. I already spent hours integrating the "latest" of this stuff today 
-> and established baseline quality for it on x86. I've dropped 4a792c2 and 
-> pushed out a new tip/cpus4096-v2, please send append-only patches for 
-> the rest of the changes.
-> 
-> 	Ingo
+When tracing is enabled, some arch have included <linux/irqflags.h>
+on their <asm/system.h> but others like alpha or m68k don't.
 
-Ok, no problem.  I was integrating in the changes you already made so they
-would not be dropped.  But I'll send "update" patches instead of "replacement"
-patches if you prefer.
+Build error on alpha:
 
-Thanks,
-Mike
+kernel/trace/trace.c: In function 'tracing_generic_entry_update':
+kernel/trace/trace.c:658: error: implicit declaration of function 'irqs_disabled_flags'
+kernel/trace/trace.c: In function 'tracing_cpumask_write':
+kernel/trace/trace.c:2145: error: implicit declaration of function 'raw_local_irq_disable'
+kernel/trace/trace.c:2162: error: implicit declaration of function 'raw_local_irq_enable'
+kernel/trace/trace.c: In function 'trace_die_handler':
+kernel/trace/trace.c:3039: error: 'DIE_OOPS' undeclared (first use in this function)
+
+Build error on m68k:
+http://kisskb.ellerman.id.au/kisskb/buildresult/50641/
+
+
+Include it on kernel/trace/trace.c
+
+Reported-by: Alexey Dobriyan <adobriyan@gmail.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 78d5661..deb9684 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -34,6 +34,7 @@
+ 
+ #include <linux/stacktrace.h>
+ #include <linux/ring_buffer.h>
++#include <linux/irqflags.h>
+ 
+ #include "trace.h"
+ 
