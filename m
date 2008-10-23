@@ -1,147 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbYJWWnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757135AbYJWWnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753507AbYJWWnZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 18:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbYJWWnK
+	id S1757135AbYJWWnz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 18:43:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbYJWWnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 18:43:10 -0400
-Received: from mga01.intel.com ([192.55.52.88]:46567 "EHLO mga01.intel.com"
+	Thu, 23 Oct 2008 18:43:46 -0400
+Received: from mga03.intel.com ([143.182.124.21]:44772 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751374AbYJWWnI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 18:43:08 -0400
+	id S1751561AbYJWWnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 18:43:45 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,473,1220252400"; 
-   d="scan'208";a="630997131"
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: Sanjoy Mahajan <sanjoy@MIT.EDU>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDEV list <netdev@vger.kernel.org>,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>
-Date: Thu, 23 Oct 2008 15:42:55 -0700
-Subject: RE: e1000e fails after several S3 resumes (2.6.26 Debian, TP T60) 
-Thread-Topic: e1000e fails after several S3 resumes (2.6.26 Debian, TP T60) 
-Thread-Index: Ack1E8ufY1Be6s3VSg2c+Fixme6JJgASy7oQ
-Message-ID: <F169D4F5E1F1974DBFAFABF47F60C10A069DFD62@orsmsx507.amr.corp.intel.com>
-References: Your message of "Wed, 22 Oct 2008 09:29:21 PDT."
-             <4807377b0810220929v5906b42bgf9d63215370e5ab5@mail.gmail.com>
- (sfid-20081022_141704_643135_AA4BDC9C)  <E1Kt0Cr-0008PB-Ux@approx.mit.edu>
-In-Reply-To: <E1Kt0Cr-0008PB-Ux@approx.mit.edu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+   d="scan'208";a="64607286"
+Date: Thu, 23 Oct 2008 15:43:43 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "npiggin@suse.de" <npiggin@suse.de>, "hugh@veritas.com" <hugh@veritas.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] remap_pfn_range: store vm_pgoff for all linear_over_vma_region mappings
+Message-ID: <20081023224343.GA28072@linux-os.sc.intel.com>
+References: <20081023220913.GA20300@linux-os.sc.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081023220913.GA20300@linux-os.sc.intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sanjoy Mahajan wrote:
->> There is also lots of opportunity for BIOS bugs to be effecting
->> things so please make sure that you have the latest bios.
+
+[Sorry for the duplicate. Correctly sending to Andrew this time.]
+
+On Thu, Oct 23, 2008 at 03:09:14PM -0700, Venki Pallipadi wrote:
 > 
-> I was about to burn the CD to update the bios to 2.23 when the failure
-> recurred.  So, with the caveat that the bios is still 2.20, I've
-> attached logs from ethregs and ethtool before and after
->   ethtool -r eth0
-> (which fixed the dhcp).
+> While working on x86 PAT, we are having some hurdles with tracking
+> remap_pfn_range() regions, as later we do not have any information to say
+> whether that PFNMAP mapping is linear for the entire vma range or
+> it is smaller granularity regions within the vma.
 > 
-> Here is the e1000e driver version:
+> A simple solution to this is to use vm_pgoff as an indicator for
+> linear mapping over the vma region. Currently, remap_pfn_range
+> only sets vm_pgoff only for COW mappings. Below patch changes the
+> logic and sets the vm_pgoff irrespective of COW.
 > 
->   $ grep e1000e /var/log/dmesg
->   [   23.988317] e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k2
->   [   23.988390] e1000e: Copyright (c) 1999-2008 Intel Corporation.
->   [   23.988505] e1000e 0000:02:00.0: Disabling L1 ASPM
-
-hm, does your kernel have CONFIG_PM defined?  if it happens again please include lspci -vvv before and after ethtool -r (see below)
-
-> Here are diffs of the attached before and after logs:
+> From our understanding of the code, this should not break anyone.
+> Just sending it as an RFC to get feedback on whether it is OK to do
+> something like this or are there any corner cases that we may
+> break or watch out for.
 > 
-> --- ethtool-before.log	2008-10-23 09:14:41.000000000 -0400
-> +++ ethtool-after.log	2008-10-23 09:17:54.000000000 -0400
-> @@ -33,8 +33,8 @@
->        Pass MAC control frames:           don't pass
->        Receive buffer size:               2048
->  0x02808: RDLEN (Receive desc length)     0x00001000
-> -0x02810: RDH   (Receive desc head)       0x000000BB
-> -0x02818: RDT   (Receive desc tail)       0x000000B9
-> +0x02810: RDH   (Receive desc head)       0x00000051
-> +0x02818: RDT   (Receive desc tail)       0x0000004F
-
-this indicates the device was actually receiving packets okay (RDH) and the
-driver was returning buffers to hardware (RDT)
-
->  0x02820: RDTR  (Receive delay timer)     0x00000000
->  0x00400: TCTL (Transmit ctrl register)   0x3103F0FA
->        Transmitter:                       enabled
-> @@ -42,7 +42,7 @@
->        Software XOFF Transmission:        disabled
->        Re-transmit on late collision:     enabled
->  0x03808: TDLEN (Transmit desc length)    0x00001000
-> -0x03810: TDH   (Transmit desc head)      0x00000018
-> -0x03818: TDT   (Transmit desc tail)      0x00000018
-> +0x03810: TDH   (Transmit desc head)      0x00000075
-> +0x03818: TDT   (Transmit desc tail)      0x00000075
-
-device was also claiming successfully transmitting, so I don't know why 
-the DHCP packets don't work, can you tcpdump on the network or the dhcp 
-server by chance?  I'm looking to see if the server receives the transmits 
-and then replies.
-
->  	RAL[0]         52411600
->  	RAH[0]         8000de50
-> -	RAL[1]         00003333
-> +	RAL[1]         005e0001
->  	RAH[1]         8000fb00
-> -	RAL[2]         52ff3333
-> -	RAH[2]         8000de50
-> -	RAL[3]         00003333
-> -	RAH[3]         80000100
-> -	RAL[4]         005e0001
-> +	RAL[2]         00003333
-> +	RAH[2]         8000fb00
-> +	RAL[3]         52ff3333
-> +	RAH[3]         8000de50
-> +	RAL[4]         00003333
->  	RAH[4]         80000100
-> -	RAL[5]         00000000
-> -	RAH[5]         00000000
-> +	RAL[5]         005e0001
-> +	RAH[5]         80000100
-
-after resume, one multicast address is added and one is missing from the 
-list of addresses the adapter will listen on.  I reordered but here are 
-the diffs
-before:
-	RAL[5]         00000000
-	RAH[5]         00000000
-after
-	RAL[5]         005e0001
-	RAH[5]         8000fb00
-
-I don't know which protocol added 01005e00fb as a multicast address only 
-after suspend.
-
-can you ifconfig eth0 promisc before doing suspend?  I'd be curious if 
-that fixed it.
-
->  	RAL[6]         00000000
->  	RAH[6]         00000000
->  	RAL[7]         00000000
-> @@ -390,7 +390,7 @@
->  	GSCL_2         00000000
->  	GSCL_3         00000000
->  	GSCL_4         00000000
-> -	FACTPS         a1041046
-> +	FACTPS         21041046
-
-FACTPS bits are reserved in our manuals (but have to do with PCIe power state
-changes), but I can't help but wonder if there isn't something with ASPM L0s or
-L1 on your system (where we had trouble with that feature on your laptop) when
-coming out of resume, therefore the lspci would show us the difference if there
-was one.
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> 
+> ---
+>  mm/memory.c |    7 +++----
+>  1 file changed, 3 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6/mm/memory.c
+> ===================================================================
+> --- linux-2.6.orig/mm/memory.c	2008-10-21 09:58:47.000000000 -0700
+> +++ linux-2.6/mm/memory.c	2008-10-23 13:38:26.000000000 -0700
+> @@ -1575,11 +1575,10 @@ int remap_pfn_range(struct vm_area_struc
+>  	 * behaviour that some programs depend on. We mark the "original"
+>  	 * un-COW'ed pages by matching them up with "vma->vm_pgoff".
+>  	 */
+> -	if (is_cow_mapping(vma->vm_flags)) {
+> -		if (addr != vma->vm_start || end != vma->vm_end)
+> -			return -EINVAL;
+> +	if (addr == vma->vm_start && end == vma->vm_end)
+>  		vma->vm_pgoff = pfn;
+> -	}
+> +	else if (is_cow_mapping(vma->vm_flags))
+> +		return -EINVAL;
+>  
+>  	vma->vm_flags |= VM_IO | VM_RESERVED | VM_PFNMAP;
+>  
