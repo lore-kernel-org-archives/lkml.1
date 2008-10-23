@@ -1,133 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbYJWPKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbYJWPL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752463AbYJWPKr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 11:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbYJWPKW
+	id S1757037AbYJWPL0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 11:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756923AbYJWPLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 11:10:22 -0400
-Received: from ozlabs.org ([203.10.76.45]:51718 "EHLO ozlabs.org"
+	Thu, 23 Oct 2008 11:11:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53826 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752858AbYJWPKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 11:10:20 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH 1/7] work_on_cpu: helper for doing task on a CPU.
-Date: Fri, 24 Oct 2008 02:10:22 +1100
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, travis@sgi.com, Ingo Molnar <mingo@elte.hu>,
-       Gautham R Shenoy <ego@in.ibm.com>
-References: <20081023005751.53973DDEFE@ozlabs.org> <20081023094036.GA7593@redhat.com>
-In-Reply-To: <20081023094036.GA7593@redhat.com>
+	id S1756917AbYJWPLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 11:11:03 -0400
+Date: Thu, 23 Oct 2008 11:10:02 -0400
+From: Dave Jones <davej@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 35/35] x86: clean up speedctep-centrino and reduce
+	cpumask_t usage From: Rusty Russell <rusty@rustcorp.com.au>
+Message-ID: <20081023151002.GA15886@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+	Mike Travis <travis@sgi.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20081023020826.051012000@polaris-admin.engr.sgi.com> <20081023020833.302361000@polaris-admin.engr.sgi.com> <200810231636.30722.rusty@rustcorp.com.au> <20081023120444.GD25132@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810240210.23085.rusty@rustcorp.com.au>
+In-Reply-To: <20081023120444.GD25132@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 23 October 2008 20:40:36 Oleg Nesterov wrote:
-> Once we drop cpu_hotplug lock, CPU can go away and this work can migrate
-> to another cpu.
+On Thu, Oct 23, 2008 at 02:04:44PM +0200, Ingo Molnar wrote:
+ > 
+ > * Rusty Russell <rusty@rustcorp.com.au> wrote:
+ > 
+ > > On Thursday 23 October 2008 13:09:01 Mike Travis wrote:
+ > > > 1) The #ifdef CONFIG_HOTPLUG_CPU seems unnecessary these days.
+ > > > 2) The loop can simply skip over offline cpus, rather than creating a tmp
+ > > > mask.
+ > > > 3) set_mask is set to either a single cpu or all online cpus in a 
+ > > > policy. Since it's just used for set_cpus_allowed(), any offline cpus in a
+ > > > policy don't matter, so we can just use cpumask_of_cpu() or the
+ > > > policy->cpus.
+ > > 
+ > > Note that this cleanup stands alone; it's just that I read this code I 
+ > > couldn't help but tidy it up.
+ > > 
+ > > Ingo: do you just want to put this in your normal tree for sending to 
+ > > Linus?
+ > 
+ > hm, cpufreq stuff belongs into davej's tree.
+ > 
+ > i skipped #34 and #35 for now, we can live without them, correct?
 
-Thanks Oleg.  It is wrong.  I'll use your suggestion; it's simpler.
+If those patches are dependant upon the others, I can live with them
+going through another tree.  There's nothing pending for speedstep-centrino
+in cpufreq anyway.
 
-Cheers,
-Rusty.
+	Dave
 
-work_on_cpu: helper for doing task on a CPU.
-
-Several places in the kernel do the following:
-
-	saved_mask = current->cpus_allowed;
-	set_cpus_allowed_ptr(current, &cpumask_of_cpu(pr->id));
-	somefunc();
-	/* restore the previous state */
-	set_cpus_allowed_ptr(current, &saved_mask);
-
-This is bad, because a process's cpumask is observable and
-manipulatable by userspace and should not be toyed with.
-
-We have the infrastructure, this just creates a nice wrapper to
-encourage its use.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- include/linux/workqueue.h |    8 ++++++++
- kernel/workqueue.c        |   45 +++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 53 insertions(+)
-
-diff -r 494880dd124b include/linux/workqueue.h
---- a/include/linux/workqueue.h	Fri Oct 24 00:29:43 2008 +1100
-+++ b/include/linux/workqueue.h	Fri Oct 24 01:16:52 2008 +1100
-@@ -240,4 +240,12 @@ void cancel_rearming_delayed_work(struct
- 	cancel_delayed_work_sync(work);
- }
- 
-+#ifndef CONFIG_SMP
-+static inline long work_on_cpu(unsigned int cpu, long (*fn)(void *), void *arg)
-+{
-+	return fn(arg);
-+}
-+#else
-+long work_on_cpu(unsigned int cpu, long (*fn)(void *), void *arg);
-+#endif /* CONFIG_SMP */
- #endif
-diff -r 494880dd124b kernel/workqueue.c
---- a/kernel/workqueue.c	Fri Oct 24 00:29:43 2008 +1100
-+++ b/kernel/workqueue.c	Fri Oct 24 01:16:52 2008 +1100
-@@ -970,6 +970,51 @@ undo:
- 	return ret;
- }
- 
-+#ifdef CONFIG_SMP
-+struct work_for_cpu {
-+	struct work_struct work;
-+	long (*fn)(void *);
-+	void *arg;
-+	long ret;
-+};
-+
-+static void do_work_for_cpu(struct work_struct *w)
-+{
-+	struct work_for_cpu *wfc = container_of(w, struct work_for_cpu, work);
-+
-+	wfc->ret = wfc->fn(wfc->arg);
-+}
-+
-+/**
-+ * work_on_cpu - run a function in user context on a particular cpu
-+ * @cpu: the cpu to run on
-+ * @fn: the function to run
-+ * @arg: the function arg
-+ *
-+ * This will return -EINVAL in the cpu is not online, or the return value
-+ * of @fn otherwise.
-+ */
-+long work_on_cpu(unsigned int cpu, long (*fn)(void *), void *arg)
-+{
-+	struct work_for_cpu wfc;
-+
-+	INIT_WORK(&wfc.work, do_work_for_cpu);
-+	wfc.fn = fn;
-+	wfc.arg = arg;
-+	get_online_cpus();
-+	if (unlikely(!cpu_online(cpu)))
-+		wfc.ret = -EINVAL;
-+	else {
-+		schedule_work_on(cpu, &wfc.work);
-+		flush_workqueue(&wfc.work);
-+	}
-+	put_online_cpus();
-+
-+	return wfc.ret;
-+}
-+EXPORT_SYMBOL_GPL(work_on_cpu);
-+#endif /* CONFIG_SMP */
-+
- void __init init_workqueues(void)
- {
- 	cpu_populated_map = cpu_online_map;
+-- 
+http://www.codemonkey.org.uk
