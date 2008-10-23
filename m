@@ -1,40 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbYJWCIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbYJWCJD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754742AbYJWCIl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 22:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbYJWCI1
+	id S1753968AbYJWCJD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 22:09:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYJWCI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 22:08:27 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43346 "EHLO
+	Wed, 22 Oct 2008 22:08:28 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43350 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752107AbYJWCI1 (ORCPT
+	with ESMTP id S1752219AbYJWCI1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 22 Oct 2008 22:08:27 -0400
-Message-Id: <20081023020826.051012000@polaris-admin.engr.sgi.com>
+Message-Id: <20081023020826.521509000@polaris-admin.engr.sgi.com>
+References: <20081023020826.051012000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Oct 2008 19:08:26 -0700
+Date: Wed, 22 Oct 2008 19:08:27 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 00/35] cpumask: Replace cpumask_t with struct cpumask
+Subject: [PATCH 01/35] cpumask: add for_each_cpu_mask_and function
+Content-Disposition: inline; filename=cpumask:add-for_each_cpu_mask_and.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add for_each_cpu_mask_and() function to eliminate need for a common use
+of a temporary cpumask_t variable.  When the following procedure is being
+used:
 
-[Resubmit: cleanup and rebase on latest tip/master.]
+    funcproto(const cpumask_t *mask, ...)
+    {
+	cpumask_t temp;
 
-Redesign cpumask API to explicitly declare struct cpumask pointers to
-the cpumask_* operators and add functions to make it easier to support
-struct cpumask pointers on the stack.
+	cpus_and(temp, mask, cpu_online_map);
+	for_each_cpu_mask(cpu, temp)
+		...
+It then becomes:
 
-This patchset supplies the infrastructure going forward to implement
-this new struct cpumask API.  Many more patches (currently 58)  have
-been written and tested to verify the functionality of this API.  These
-will be submitted as soon as they are thoroughly tested.
+    funcproto(cpumask_t *mask, ...)
+    {
+	for_each_cpu_mask_and(cpu, *mask, cpu_online_map)
+		...
 
-Compiled and tested on x86_64.
+... eliminating the need for the temp cpumask.
 
-Based on tip/master @ v2.6.27-6973-ga90cd11
+
+Applies to linux-2.6.tip/master.
+
+Signed-off-by: Mike Travis <travis@sgi.com>
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ include/linux/cpumask.h |   33 ++++++++++++++++++++++++---------
+ lib/cpumask.c           |    9 +++++++++
+ 2 files changed, 33 insertions(+), 9 deletions(-)
+
+--- linux-2.6.28.orig/include/linux/cpumask.h
++++ linux-2.6.28/include/linux/cpumask.h
+@@ -109,6 +109,7 @@
+  *
+  * for_each_cpu_mask(cpu, mask)		for-loop cpu over mask using NR_CPUS
+  * for_each_cpu_mask_nr(cpu, mask)	for-loop cpu over mask using nr_cpu_ids
++ * for_each_cpu_mask_and(cpu, mask, and) for-loop cpu over (mask & and).
+  *
+  * int num_online_cpus()		Number of online CPUs
+  * int num_possible_cpus()		Number of all possible CPUs
+@@ -400,29 +401,41 @@ static inline void __cpus_fold(cpumask_t
+ 
+ #if NR_CPUS == 1
+ 
+-#define nr_cpu_ids		1
+-#define first_cpu(src)		({ (void)(src); 0; })
+-#define next_cpu(n, src)	({ (void)(src); 1; })
+-#define any_online_cpu(mask)	0
+-#define for_each_cpu_mask(cpu, mask)	\
++#define nr_cpu_ids			1
++#define first_cpu(src)			({ (void)(src); 0; })
++#define next_cpu(n, src)		({ (void)(src); 1; })
++#define cpumask_next_and(n, srcp, andp)	({ (void)(srcp), (void)(andp); 1; })
++#define any_online_cpu(mask)		0
++
++#define for_each_cpu_mask(cpu, mask)		\
+ 	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
++#define for_each_cpu_mask_and(cpu, mask, and)	\
++	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask, (void)and)
+ 
+ #else /* NR_CPUS > 1 */
+ 
+ extern int nr_cpu_ids;
+ int __first_cpu(const cpumask_t *srcp);
+ int __next_cpu(int n, const cpumask_t *srcp);
++int cpumask_next_and(int n, const cpumask_t *srcp, const cpumask_t *andp);
+ int __any_online_cpu(const cpumask_t *mask);
+ 
+ #define first_cpu(src)		__first_cpu(&(src))
+ #define next_cpu(n, src)	__next_cpu((n), &(src))
+ #define any_online_cpu(mask) __any_online_cpu(&(mask))
++
+ #define for_each_cpu_mask(cpu, mask)			\
+ 	for ((cpu) = -1;				\
+ 		(cpu) = next_cpu((cpu), (mask)),	\
+-		(cpu) < NR_CPUS; )
++		(cpu) < NR_CPUS;)
++#define for_each_cpu_mask_and(cpu, mask, and)				\
++	for ((cpu) = -1;						\
++		(cpu) = cpumask_next_and((cpu), &(mask), &(and)),	\
++		(cpu) < nr_cpu_ids;)
+ #endif
+ 
++#define cpumask_first_and(mask, and) cpumask_next_and(-1, (mask), (and))
++
+ #if NR_CPUS <= 64
+ 
+ #define next_cpu_nr(n, src)		next_cpu(n, src)
+@@ -432,12 +445,14 @@ int __any_online_cpu(const cpumask_t *ma
+ #else /* NR_CPUS > 64 */
+ 
+ int __next_cpu_nr(int n, const cpumask_t *srcp);
+-#define next_cpu_nr(n, src)	__next_cpu_nr((n), &(src))
+-#define cpus_weight_nr(cpumask)	__cpus_weight(&(cpumask), nr_cpu_ids)
++
++#define next_cpu_nr(n, src)		__next_cpu_nr((n), &(src))
++#define cpus_weight_nr(cpumask)		__cpus_weight(&(cpumask), nr_cpu_ids)
++
+ #define for_each_cpu_mask_nr(cpu, mask)			\
+ 	for ((cpu) = -1;				\
+ 		(cpu) = next_cpu_nr((cpu), (mask)),	\
+-		(cpu) < nr_cpu_ids; )
++		(cpu) < nr_cpu_ids;)
+ 
+ #endif /* NR_CPUS > 64 */
+ 
+--- linux-2.6.28.orig/lib/cpumask.c
++++ linux-2.6.28/lib/cpumask.c
+@@ -15,6 +15,15 @@ int __next_cpu(int n, const cpumask_t *s
+ }
+ EXPORT_SYMBOL(__next_cpu);
+ 
++int cpumask_next_and(int n, const cpumask_t *srcp, const cpumask_t *andp)
++{
++	while ((n = next_cpu_nr(n, *srcp)) < nr_cpu_ids)
++		if (cpu_isset(n, *andp))
++			break;
++	return n;
++}
++EXPORT_SYMBOL(cpumask_next_and);
++
+ #if NR_CPUS > 64
+ int __next_cpu_nr(int n, const cpumask_t *srcp)
+ {
 
 -- 
