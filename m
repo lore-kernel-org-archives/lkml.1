@@ -1,100 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbYJWGh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYJWGi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbYJWGh4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 02:37:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYJWGhs
+	id S1755525AbYJWGi1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 02:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbYJWGiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 02:37:48 -0400
-Received: from smtp-out-45.synserver.de ([217.119.50.45]:1106 "HELO
-	smtp-out-45.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752181AbYJWGhr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 02:37:47 -0400
-X-SynServer-TrustedSrc: 1
-X-SynServer-AuthUser: markus@trippelsdorf.de
-X-SynServer-PPID: 29553
-Date: Thu, 23 Oct 2008 08:37:40 +0200
-From: Markus Trippelsdorf <markus@trippelsdorf.de>
-To: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
-       eugene@ibrix.com, msnitzer@ibrix.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: ext3: fix ext3_dx_readdir hash collision handling - Regression
-Message-ID: <20081023063740.GA2438@gentoox2.trippelsdorf.de>
-References: <20081022093201.GA2227@gentoox2.trippelsdorf.de> <20081023032832.GE10369@mit.edu>
+	Thu, 23 Oct 2008 02:38:15 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:47181 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752219AbYJWGiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 02:38:15 -0400
+Date: Thu, 23 Oct 2008 08:37:16 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, jeff@garzik.org
+Subject: Re: [PATCH 1/2] libata: get rid of ATA_MAX_QUEUE loop in ata_qc_complete_multiple()
+Message-ID: <20081023063716.GS22217@kernel.dk>
+References: <1224661243-7929-1-git-send-email-jens.axboe@oracle.com> <1224661243-7929-2-git-send-email-jens.axboe@oracle.com> <48FFFA15.8060603@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081023032832.GE10369@mit.edu>
+In-Reply-To: <48FFFA15.8060603@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 11:28:32PM -0400, Theodore Tso wrote:
-> On Wed, Oct 22, 2008 at 11:32:01AM +0200, Markus Trippelsdorf wrote:
-> > Commit 6a897cf447a83c9c3fd1b85a1e525c02d6eada7d 
-> > "ext3: fix ext3_dx_readdir hash collision handling" causes a regression
-> > when deleting big directories.
-> > 
-> > I'm using an ext3 filesystem in data=writeback mode as my root fs.
-> > When I untar a kernel tarball and then rm -r the files, this is what
-> > happens on my machine (latest git):
-> > 
-> > markus@gentoox2 ~ % tar xjf  linux-2.6.27.2.tar.bz2
-> > markus@gentoox2 ~ % rm -r linux-2.6.27.2
-> > rm: cannot remove `linux-2.6.27.2/arch/alpha/include/asm/statfs.h': No such file or directory...
+On Thu, Oct 23 2008, Tejun Heo wrote:
+> Jens Axboe wrote:
+> > @@ -4811,16 +4811,19 @@ int ata_qc_complete_multiple(struct ata_port *ap, u32 qc_active)
+> >               return -EINVAL;
+> >       }
+> >
+> > -     for (i = 0; i < ATA_MAX_QUEUE; i++) {
+> > +     while (done_mask) {
+> >               struct ata_queued_cmd *qc;
+> > +             unsigned int next = __ffs(done_mask);
+> >
+> > -             if (!(done_mask & (1 << i)))
+> > -                     continue;
+> > -
+> > -             if ((qc = ata_qc_from_tag(ap, i))) {
+> > +             qc = ata_qc_from_tag(ap, i + next);
+> > +             if (qc) {
+> >                       ata_qc_complete(qc);
+> >                       nr_done++;
+> >               }
+> > +             if (++next >= ATA_MAX_QUEUE)
+> > +                     break;
+> > +             i += next;
+> > +             done_mask >>= next;
 > 
-> I haven't been able to replicate this.  Does it matter which kernel
-> tarball you use?  And can you send me the output of "dumpe2fs -h
-> /dev/hdXX", where hdXX is the device of the filesystem where this was
-> failing?
+> Shouldn't this be...
+> 
+>         i += next + 1;
+>         if (i >= ATA_MAX_QUEUE)
+>                 break;
+> 
+> or better...
+> 
+> while (done_mask) {
+>         struct ata_queued_cmd *qc;
+>         unsigned int next = __ffs(done_mask);
+> 
+>         tag += next;
+>         if ((qc = ata_qc_from_tag(ap, tag))) {
+>                 ata_qc_complete(qc);
+>                 nr_done++;
+>         }
+>         next++;
+>         tag += next;
+>         done_mask >>= next;
+> }
+> 
+> done_mask is guaranteed to be zero at when tag reaches ATA_MAX_QUEUE.
 
-No, it happens with _every_ tarball from a certain size on. 
-Ext4 is also affected due to d015641734cde55d2fce48a6db3983c8a029fe05 .
+That does indeed look a lot cleaner. I think it was rewritten at some
+point and kept some of the logic for not passing 0 into __ffs, but it's
+clearly pointless now.
 
-This is the output of dumpe2fs -h /dev/sda1:
-
-dumpe2fs 1.41.3 (12-Oct-2008)
-Filesystem volume name:   /
-Last mounted on:          <not available>
-Filesystem UUID:          9a6c302d-e3f3-4fea-96d8-dad6890780a9
-Filesystem magic number:  0xEF53
-Filesystem revision #:    1 (dynamic)
-Filesystem features:      has_journal ext_attr resize_inode dir_index filetype needs_recovery sparse_super large_file
-Filesystem flags:         signed_directory_hash
-Default mount options:    journal_data_writeback
-Filesystem state:         clean
-Errors behavior:          Continue
-Filesystem OS type:       Linux
-Inode count:              6406144
-Block count:              25599569
-Reserved block count:     1279978
-Free blocks:              19067411
-Free inodes:              5642168
-First block:              0
-Block size:               4096
-Fragment size:            4096
-Reserved GDT blocks:      1017
-Blocks per group:         32768
-Fragments per group:      32768
-Inodes per group:         8192
-Inode blocks per group:   512
-Filesystem created:       Sat May  3 13:22:22 2008
-Last mount time:          Thu Oct 23 08:27:43 2008
-Last write time:          Thu Oct 23 08:27:43 2008
-Mount count:              40
-Maximum mount count:      -1
-Last checked:             Wed Oct 15 20:42:58 2008
-Check interval:           0 (<none>)
-Reserved blocks uid:      0 (user root)
-Reserved blocks gid:      0 (group root)
-First inode:              11
-Inode size:               256
-Journal inode:            8
-First orphan inode:       2233455
-Default directory hash:   tea
-Directory Hash Seed:      c3188d40-b161-4458-b3f9-22ca7788110f
-Journal backup:           inode blocks
-Journal size:             128M
+I'll send out a revised patch when it's tested.
 
 -- 
-Markus
+Jens Axboe
+
