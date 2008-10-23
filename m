@@ -1,68 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757936AbYJWSL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758217AbYJWSQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757936AbYJWSL1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 14:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755307AbYJWSLJ
+	id S1758217AbYJWSQK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 14:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758082AbYJWSP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 14:11:09 -0400
-Received: from mail.atheros.com ([12.36.123.2]:44244 "EHLO mail.atheros.com"
+	Thu, 23 Oct 2008 14:15:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40198 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755288AbYJWSLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 14:11:08 -0400
-Date: Thu, 23 Oct 2008 04:11:03 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: Greg KH <greg@kroah.com>
-CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       "otus-devel@lists.madwifi-project.org" 
-	<otus-devel@venema.h4ckr.net>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: Release of Atheros 802.11n USB Linux driver
-Message-ID: <20081023111103.GB5979@tesla>
-References: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com> <20081022065045.GA2400@kroah.com> <20081023062655.GA8039@kroah.com>
+	id S1758073AbYJWSPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 14:15:55 -0400
+To: =?us-ascii?Q?=3D=3FISO-8859-1=3FQ=3FFr=3DE9d=3DE9ric=5FWeisbecker=3F?=
+	 =?us-ascii?Q?=3D?= <fweisbec@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Steven Rostedt" <rostedt@goodmis.org>, systemtap@sources.redhat.com
+Subject: Re: [PATCH 5/5] tracing/ftrace: Introduce the big kernel lock tracer
+References: <48F10B0B.406@gmail.com>
+	<c62985530810210528t416c82b2lbe8471322e8359c@mail.gmail.com>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Thu, 23 Oct 2008 14:15:25 -0400
+In-Reply-To: <c62985530810210528t416c82b2lbe8471322e8359c@mail.gmail.com> (fweisbec@gmail.com's message of "Tue, 21 Oct 2008 14:28:52 +0200")
+Message-ID: <y0mmygv18le.fsf@ton.toronto.redhat.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20081023062655.GA8039@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 11:26:55PM -0700, Greg KH wrote:
-> On Tue, Oct 21, 2008 at 11:50:45PM -0700, Greg KH wrote:
-> > On Tue, Oct 21, 2008 at 07:04:17PM -0700, Luis R. Rodriguez wrote:
-> > > We would like to see our Atheros 802.11n USB Linux driver upstream
-> > > however we need help with this so we are releasing our Atheros 11n USB
-> > > Otus Linux driver under the ISC to the community. The goal is to work
-> > > with the community to help move this forward upstream. We are hoping
-> > > for community help and leadership on this (*cough*).
-> >
-> > Yeah!
-> >
-> > I'll grab this and put it in drivers/staging/ so it gets some users and
-> > more developers to help out with it.
-> 
-> Ok, it seems to need some basic work to merely build properly on
-> "modern" kernel versions.
 
-Yeah, it works up to 2.6.24.
+>> Introduce the Big Kernel Lock tracer.
+>> This new tracer lets one to observe the latencies caused
+>> by the lock_kernel() function.
+>> It captures the time when the task request the spinlock,
+>> the time when the spinlock is hold and the time it is released.
+>> This way we can measure the latency for a task that wait for this
+>> spinlock and the latency caused by the time this lock is hold.
 
-> So, how should we do this if I want to move it into staging?  Can I just
-> take a snapshot of what you have in this repo, move it in-kernel, fix
-> the build errors and apply that patch (as your contribution of course)?
+For comparison, this is how this sort of analysis may be done with
+systemtap, just for fun collecting locking latency on a
+per-locker/unlocker (stack traceback) basis.  We don't have the stack
+traceback extended right into userspace yet, but will before too long.
 
-That's the thing it needs Wireless Extension support for >= 2.6.24 so
-that needs to be done. I can try to do it but first comes ath9k, hence
-why we released it to engage with the community on adding that and to
-eventually push it upstream.
 
-> Then future development can go off of the in-kernel version?  Or do you
-> plan to keep this git tree active somehow?
+% cat bkl.stp
+probe kernel.function("lock_kernel") {
+        locker=backtrace()
+        locktime=gettimeofday_us()
+}
 
-Yeah so the purpose of the git tree is to collect patches to allow users
-to use it with >= 2.6.24, all other focus should be on an in-kernel
-driver.
+probe kernel.function("lock_kernel").return {
+        unlocktime=gettimeofday_us()
+        delay = unlocktime-locktime
+        lockhistory[locker,unlocker] <<< delay
+}
 
-  Luis
+probe kernel.function("unlock_kernel") {
+        unlocker=backtrace()
+}
+
+global locker, unlocker, locktime, lockhistory
+
+probe end,timer.s(30) { // interrupt any time; automatic ending in 30s
+        foreach ([l,u] in lockhistory+) { // in increasing order of @count()
+
+                println("locker:") print_stack (l)
+                println("unlocker:") print_stack (u)
+
+                println(@hist_log (lockhistory[l,u]))
+
+                if (@max (lockhistory[l,u]) > 100)
+                   println("--- holy cow, that can take a long time ---")
+        }
+        exit()
+}
+
+
+
+% sudo stap bkl.stp
+[...]
+locker:
+ 0xffffffff812bdcec : lock_kernel+0x1/0x37 [kernel]
+ 0xffffffff812bf12b : kretprobe_trampoline_holder+0x4/0x50 [kernel]
+ 0xffffffff811b067b : write_chan+0x273/0x338 [kernel]
+ 0xffffffff810305e0 : default_wake_function+0x0/0xf [kernel]
+ 0xffffffff811ade5f : tty_write+0x184/0x213 [kernel]
+ 0xffffffff811b0408 : write_chan+0x0/0x338 [kernel]
+ 0x00000ffffffff810
+unlocker:
+ 0xffffffff812bdca9 : unlock_kernel+0x1/0x31 [kernel]
+ 0xffffffff811b064e : write_chan+0x246/0x338 [kernel]
+ 0xffffffff810305e0 : default_wake_function+0x0/0xf [kernel]
+ 0xffffffff811ade5f : tty_write+0x184/0x213 [kernel]
+ 0xffffffff811b0408 : write_chan+0x0/0x338 [kernel]
+ 0xffffffff810b6f89 : vfs_write+0xae/0x157 [kernel]
+ 0x00000fffffffff7f
+value |-------------------------------------------------- count
+    0 |                                                     3
+    1 |@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    570
+    2 |@@@@@@@@@@@@@                                      159
+    4 |                                                     9
+    8 |@                                                   16
+   16 |                                                     3
+   32 |@@                                                  35
+   64 |                                                     5
+  128 |                                                     0
+  256 |                                                     0
+
+locker:
+ 0xffffffff812bdcec : lock_kernel+0x1/0x37 [kernel]
+ 0xffffffff812bf12b : kretprobe_trampoline_holder+0x4/0x50 [kernel]
+ 0xffffffff810305e0 : default_wake_function+0x0/0xf [kernel]
+ 0xffffffff811ade5f : tty_write+0x184/0x213 [kernel]
+ 0xffffffff811b0408 : write_chan+0x0/0x338 [kernel]
+ 0xffffffff810b6f89 : vfs_write+0xae/0x157 [kernel]
+ 0x00000fffffffff7f
+unlocker:
+ 0xffffffff812bdca9 : unlock_kernel+0x1/0x31 [kernel]
+ 0xffffffff811b064e : write_chan+0x246/0x338 [kernel]
+ 0xffffffff810305e0 : default_wake_function+0x0/0xf [kernel]
+ 0xffffffff811ade5f : tty_write+0x184/0x213 [kernel]
+ 0xffffffff811b0408 : write_chan+0x0/0x338 [kernel]
+ 0xffffffff810b6f89 : vfs_write+0xae/0x157 [kernel]
+ 0x00000fffffffff7f
+value |-------------------------------------------------- count
+    0 |                                                     0
+    1 |@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@      454
+    2 |@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  497
+    4 |@@                                                  21
+    8 |@                                                   15
+   16 |                                                     1
+   32 |@@@                                                 33
+   64 |                                                     2
+  128 |                                                     0
+  256 |                                                     0
+
+
+
+NB: Observed lock times in the 1-2 us range indicate no contention, as
+that's on the order of magnitude of the (un)lock_kernel kprobe
+overheads.
+
+
+- FChE
