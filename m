@@ -1,64 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbYJWQoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbYJWQqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757606AbYJWQoT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 12:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbYJWQoI
+	id S1756804AbYJWQqT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 12:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbYJWQqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 12:44:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44447 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753101AbYJWQoH (ORCPT
+	Thu, 23 Oct 2008 12:46:04 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:40167 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751601AbYJWQqB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 12:44:07 -0400
-Date: Thu, 23 Oct 2008 09:43:18 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [git pull] core fixes
-In-Reply-To: <20081021144753.GA553@elte.hu>
-Message-ID: <alpine.LFD.2.00.0810230939080.3287@nehalem.linux-foundation.org>
-References: <20081021144753.GA553@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 23 Oct 2008 12:46:01 -0400
+Date: Thu, 23 Oct 2008 12:46:01 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Manish Lachwani <mlachwani@gmail.com>
+cc: USB list <linux-usb@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: oops in file_storage.c
+In-Reply-To: <431757fd0810230835m454a18bav24347e4851b7cb85@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0810231238550.2453-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 23 Oct 2008, Manish Lachwani wrote:
 
-
-On Tue, 21 Oct 2008, Ingo Molnar wrote:
+> Hi Alan,
 > 
-> this is because the merge-base of this tree is 2e532d68a2, while your 
-> tree that merges this is fresher.
+> >
+> > Hmm.  On my system (2.6.27) the code has moved to fs/sync.c/do_fsync(),
+> > and it has changed a fair amount.  Maybe file_storage.c should be
+> > changed to match.
 > 
-> I did not want to merge to your latest, to not create an unnecessary 
-> merge commit. But i could not find a way either how to generate a proper 
-> shortlog either.
+> I have the latest git checkout of
+> http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+> and it seems that do_fsync() is still quite similar to fsync_sub().
+> Also, I checked older trees like 2.6.22 and do_fsync() is still in
+> fs/sync.c
 
-Just do
+That just goes to show how old file_storage.c is.
 
-	# update the remote branches
-	git fetch linus
-	# get the log difference
-	git shortlog linus..
+> > In fact, the easiest approach would be to EXPORT do_fsync() and then
+> > call it directly.  I don't know whether people would like this, though.
+> >
+> 
+> I could try this. But I don't see much difference b/w do_fsync() and
+> fsync_sub(). However in do_fsync(), filemap_fdatawrite() is called
+> before the mutex_lock() and filemap_fdatawait() is called after the
+> mutex_unlock().
+> 
+> Here is do_fsync() -
+> 
+> long do_fsync(struct file *file, int datasync)
+> {
+>         int ret;
+>         int err;
+>         struct address_space *mapping = file->f_mapping;
 
-because "git log" and friends don't care about the merge base, they only 
-care about the actual commit _set_difference_. So "linus.." is shorthand 
-for "linus..HEAD", which in turn means "Which commits are in HEAD but not 
-in 'linus".
+file_storage does
 
-Doing a _diff_ is different, and when you do "git diff linus.." doesn't 
-mean a set difference, it means an "endpoint difference", and there you 
-need to find the merge base in order to get a sane answer. Of course, then 
-the diff won't necessarily be what I see, since common commits will 
-disappear. But even there, you can do
+		inode = filp->f_path.dentry->d_inode;
 
-	git diff linus...
+instead, and uses inode in place of mapping->host and inode->i_mapping 
+in place of mapping.  Should this be changed?  I have no idea, beyond 
+feeling that the core kernel code has got to be more up-to-date.  Same 
+goes for the ordering of the locks and the filemap_* calls.
 
-where the triple dots mean "symmetric set difference" for a log-based (ie 
-"set operation") operation, but means "difference from common merge base" 
-for an endpoint operation (ie "git diff").
+>         if (!file->f_op || !file->f_op->fsync) {
+>                 /* Why?  We can still call filemap_fdatawrite */
+>                 ret = -EINVAL;
+>                 goto out;
+>         }
+> 
+>         ret = filemap_fdatawrite(mapping);
+> 
+>         /*
+>          * We need to protect against concurrent writers, which could cause
+>          * livelocks in fsync_buffers_list().
+>          */
+>         mutex_lock(&mapping->host->i_mutex);
+>         err = file->f_op->fsync(file, file->f_path.dentry, datasync);
+>         if (!ret)
+>                 ret = err;
+>         mutex_unlock(&mapping->host->i_mutex);
+>         err = filemap_fdatawait(mapping);
+>         if (!ret)
+>                 ret = err;
+> out:
+>         return ret;
+> }
 
-		Linus
+If the EXPORT route is acceptable, I'd prefer to use it.
+
+Alan Stern
+
