@@ -1,158 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbYJWN6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbYJWN6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753188AbYJWN6e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 09:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYJWN6K
+	id S1756337AbYJWN6u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 09:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753791AbYJWN6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 09:58:10 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59117 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752027AbYJWN6I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 09:58:08 -0400
-Message-Id: <20081023135732.138544330@bull.net>
-References: <20081023135714.914147053@bull.net>
-User-Agent: quilt/0.46-1
-Date: Thu, 23 Oct 2008 15:57:15 +0200
-From: Nadia.Derbey@bull.net
-To: akpm@linux-foundation.org, cboulte@gmail.com
-Cc: manfred@colorfullife.com, linux-kernel@vger.kernel.org,
-       Nadia.Derbey@bull.net
-Subject: [PATCH 1/1] SYSVIPC - Fix the ipc structures initialization
-Content-Disposition: inline; filename=ipc-fix-sysvipc_structures_initialization.patch
+	Thu, 23 Oct 2008 09:58:21 -0400
+Received: from saeurebad.de ([85.214.36.134]:56450 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753530AbYJWN6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 09:58:20 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrea Righi <righi.andrea@gmail.com>, Dave Jones <davej@redhat.com>,
+       Dave Airlie <airlied@redhat.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: lockdep splat from ioctl and mmap fops sharing lock
+References: <87ljwgj8p1.fsf@saeurebad.de>
+Date: Thu, 23 Oct 2008 15:58:10 +0200
+In-Reply-To: <87ljwgj8p1.fsf@saeurebad.de> (Johannes Weiner's message of "Thu,
+	23 Oct 2008 05:23:38 +0200")
+Message-ID: <87ej27jtvx.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Johannes Weiner <hannes@saeurebad.de> writes:
 
-This patch is a fix for Bugzilla bug
-http://bugzilla.kernel.org/show_bug.cgi?id=11796.
+> Hi,
+>
+> fb_mmap() is called under mmap_sem and acquires fb_info->lock.
+>
+> Since 3e680aae4e53ab "fb: convert lock/unlock_kernel() into local fb
+> mutex", fb_ioctl() takes fb_info->lock and does copy_to/from_user()
+> under it, which in turn might acquire mmap_sem.
 
-To summarize, a simple testcase is concurrently running an infinite loop on
-msgctl(IPC_STAT) and a call to msgget():
+More affected drivers:
 
-while (1)
-   msgctl(id, IPC_STAT)    1
-                           |
-                           |
-                           |
-                           2 id = msgget(key, IPC_CREAT)
-                           |
-                           |
-                           |
+agp_ioctl() doing usercopy under agp_fe.agp_mutex
+agp_mmap() taking agp_fe.agp_mutex under mmap_sem
 
-In the interval [1-2], the id doesn't exist yet.
+dv1394_write() doing usercopy under video->mtx
+dv1394_mmap() taking video->mtx under mmap_sem
 
-In that test, the problem is the following:
-When we are calling ipc_addid() from msgget() the msq structure is not
-completely initialized. So idr_get_new() is inserting a pointer into the
-idr tree, and the structure which is pointed to has, among other fields,
-its lock uninitialized.
+raw1394_ioctl() doing usercopy under fi->state_mutex
+raw1394_mmap() taking fi->state_mutex under mmap_sem
 
-Since msgctl(IPC_STAT) is looping while (1), idr_find() returns the
-pointer as soon as it is inserted into the IDR tree. And ipc_lock()
-calls spin_lock(&mqs->lock), while we have not initialized that lock
-yet.
-
-This patch moves the spin_lock_init() before the call to ipc_addid().
-It also sets the "deleted" flag to 1 in the window between msg structure
-allocation and msg structure locking in ipc_addid().
-
-The fix has been applied to semaphores and shm segments too.
-
-Regards,
-Nadia
-
-
-Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
-
----
- ipc/msg.c  |    9 +++++++++
- ipc/sem.c  |    9 +++++++++
- ipc/shm.c  |    9 +++++++++
- ipc/util.c |    3 ++-
- 4 files changed, 29 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.27/ipc/msg.c
-===================================================================
---- linux-2.6.27.orig/ipc/msg.c	2008-10-23 15:20:46.000000000 +0200
-+++ linux-2.6.27/ipc/msg.c	2008-10-23 16:38:59.000000000 +0200
-@@ -191,6 +191,15 @@ static int newque(struct ipc_namespace *
- 	msq->q_perm.mode = msgflg & S_IRWXUGO;
- 	msq->q_perm.key = key;
- 
-+	/*
-+	 * We have a window between the time msq is inserted into the idr
-+	 * tree (done in ipc_addid()) and the time it is actually locked.
-+	 * In order to be safe during that window set the msq as deleted:
-+	 * a concurrent ipc_lock() will see it as not present until the
-+	 * initialization phase is complete.
-+	 */
-+	msq->q_perm.deleted = 1;
-+
- 	msq->q_perm.security = NULL;
- 	retval = security_msg_queue_alloc(msq);
- 	if (retval) {
-Index: linux-2.6.27/ipc/util.c
-===================================================================
---- linux-2.6.27.orig/ipc/util.c	2008-10-23 15:20:46.000000000 +0200
-+++ linux-2.6.27/ipc/util.c	2008-10-23 15:33:37.000000000 +0200
-@@ -266,6 +266,8 @@ int ipc_addid(struct ipc_ids* ids, struc
- 	if (ids->in_use >= size)
- 		return -ENOSPC;
- 
-+	spin_lock_init(&new->lock);
-+
- 	err = idr_get_new(&ids->ipcs_idr, new, &id);
- 	if (err)
- 		return err;
-@@ -280,7 +282,6 @@ int ipc_addid(struct ipc_ids* ids, struc
- 		ids->seq = 0;
- 
- 	new->id = ipc_buildid(id, new->seq);
--	spin_lock_init(&new->lock);
- 	new->deleted = 0;
- 	rcu_read_lock();
- 	spin_lock(&new->lock);
-Index: linux-2.6.27/ipc/sem.c
-===================================================================
---- linux-2.6.27.orig/ipc/sem.c	2008-10-23 15:20:46.000000000 +0200
-+++ linux-2.6.27/ipc/sem.c	2008-10-23 15:57:27.000000000 +0200
-@@ -256,6 +256,15 @@ static int newary(struct ipc_namespace *
- 	sma->sem_perm.mode = (semflg & S_IRWXUGO);
- 	sma->sem_perm.key = key;
- 
-+	/*
-+	 * We have a window between the time sma is inserted into the idr
-+	 * tree (done in ipc_addid()) and the time it is actually locked.
-+	 * In order to be safe during that window set the sma as deleted:
-+	 * a concurrent ipc_lock() will see it as not present until the
-+	 * initialization phase is complete.
-+	 */
-+	sma->sem_perm.deleted = 1;
-+
- 	sma->sem_perm.security = NULL;
- 	retval = security_sem_alloc(sma);
- 	if (retval) {
-Index: linux-2.6.27/ipc/shm.c
-===================================================================
---- linux-2.6.27.orig/ipc/shm.c	2008-10-23 15:20:46.000000000 +0200
-+++ linux-2.6.27/ipc/shm.c	2008-10-23 15:56:32.000000000 +0200
-@@ -355,6 +355,15 @@ static int newseg(struct ipc_namespace *
- 	shp->shm_perm.mode = (shmflg & S_IRWXUGO);
- 	shp->mlock_user = NULL;
- 
-+	/*
-+	 * We have a window between the time shp is inserted into the idr
-+	 * tree (done in ipc_addid()) and the time it is actually locked.
-+	 * In order to be safe during that window set the shp as deleted:
-+	 * a concurrent ipc_lock() will see it as not present until the
-+	 * initialization phase is complete.
-+	 */
-+	shp->shm_perm.deleted = 1;
-+
- 	shp->shm_perm.security = NULL;
- 	error = security_shm_alloc(shp);
- 	if (error) {
-
--- 
+	Hannes
