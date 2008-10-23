@@ -1,210 +1,464 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbYJWDwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbYJWD45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753535AbYJWDwU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 23:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYJWDwK
+	id S1754182AbYJWD45 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 23:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYJWD4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 23:52:10 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:33992 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750999AbYJWDwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 23:52:09 -0400
-Date: Thu, 23 Oct 2008 04:52:04 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
-cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
-Subject: [git pull] drm fixes for 2.6.27-rc1
-Message-ID: <alpine.DEB.0.82.0810230448150.21357@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="29444707-1180388520-1224733924=:21357"
+	Wed, 22 Oct 2008 23:56:48 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60854 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751169AbYJWD4r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 23:56:47 -0400
+Date: Wed, 22 Oct 2008 20:56:56 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, mingo@elte.hu,
+       torvalds@linux-foundation.org, Matthew Wilcox <matthew@wil.cx>
+Subject: RFC: [PATCH] resource: ensure MMIO exclusivity for device drivers
+Message-ID: <20081022205656.184929ed@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---29444707-1180388520-1224733924=:21357
-Content-Type: TEXT/PLAIN; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Wed, 22 Oct 2008 19:55:31 -0700
+Subject: [PATCH] resource: ensure MMIO exclusivity for device drivers
+
+Device drivers that use pci_request_regions() (and similar APIs) have a
+reasonable expectation that they are the only ones accessing their device.
+As part of the e1000e hunt, we were afraid that some userland (X or some
+bootsplash stuff) was mapping the MMIO region that the driver thought it
+had exclusively via /dev/mem or via various sysfs resource mappings.
+
+This patch adds the option for device drivers to cause their reserved
+regions to be on the "banned from /dev/mem use" list, so now both kernel memory
+and device-exclusive MMIO regions are banned.
+NOTE: This is only active when CONFIG_STRICT_DEVMEM is set.
+
+In addition to the config option, a kernel parameter iomem=relaxed is
+provided for the cases where developers want to diagnose, in the field,
+drivers issues from userspace despite the drivers explicit request.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ Documentation/kernel-parameters.txt |    4 +
+ arch/x86/mm/init_32.c               |    2 +
+ arch/x86/mm/init_64.c               |    2 +
+ drivers/net/e1000e/netdev.c         |    2 +-
+ drivers/pci/pci-sysfs.c             |    3 +
+ drivers/pci/pci.c                   |  107 +++++++++++++++++++++++++++++++----
+ include/linux/ioport.h              |   11 +++-
+ include/linux/pci.h                 |    3 +
+ kernel/resource.c                   |   61 +++++++++++++++++++-
+ 9 files changed, 176 insertions(+), 19 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 53ba7c7..d64171e 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -886,6 +886,10 @@ and is between 256 and 4096 characters. It is defined in the file
+ 
+ 	inttest=	[IA64]
+ 
++	iomem=		Disable strict checking of access to MMIO memory
++		strict	regions from userspace.
++		relaxed
++
+ 	iommu=		[x86]
+ 		off
+ 		force
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 8396868..2bcd7fe 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -329,6 +329,8 @@ int devmem_is_allowed(unsigned long pagenr)
+ {
+ 	if (pagenr <= 256)
+ 		return 1;
++	if (iomem_is_exclusive(pagenr << PAGE_SHIFT))
++		return 0;
+ 	if (!page_is_ram(pagenr))
+ 		return 1;
+ 	return 0;
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index b8e461d..00426fa 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -866,6 +866,8 @@ int devmem_is_allowed(unsigned long pagenr)
+ {
+ 	if (pagenr <= 256)
+ 		return 1;
++	if (iomem_is_exclusive(pagenr << PAGE_SHIFT))
++		return 0;
+ 	if (!page_is_ram(pagenr))
+ 		return 1;
+ 	return 0;
+diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
+index abd492b..8442a54 100644
+--- a/drivers/net/e1000e/netdev.c
++++ b/drivers/net/e1000e/netdev.c
+@@ -4742,7 +4742,7 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
+ 		}
+ 	}
+ 
+-	err = pci_request_selected_regions(pdev,
++	err = pci_request_selected_regions_exclusive(pdev,
+ 	                                  pci_select_bars(pdev, IORESOURCE_MEM),
+ 	                                  e1000e_driver_name);
+ 	if (err)
+diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+index 110022d..7c010d3 100644
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -620,6 +620,9 @@ pci_mmap_resource(struct kobject *kobj, struct bin_attribute *attr,
+ 	vma->vm_pgoff += start >> PAGE_SHIFT;
+ 	mmap_type = res->flags & IORESOURCE_MEM ? pci_mmap_mem : pci_mmap_io;
+ 
++	if (res->flags & IORESOURCE_MEM && iomem_is_exclusive(start))
++		return -EINVAL;
++
+ 	return pci_mmap_page_range(pdev, vma, mmap_type, write_combine);
+ }
+ 
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 4db261e..624955f 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1389,7 +1389,8 @@ void pci_release_region(struct pci_dev *pdev, int bar)
+  *	Returns 0 on success, or %EBUSY on error.  A warning
+  *	message is also printed on failure.
+  */
+-int pci_request_region(struct pci_dev *pdev, int bar, const char *res_name)
++static int __pci_request_region(struct pci_dev *pdev, int bar, const char *res_name,
++									int exclusive)
+ {
+ 	struct pci_devres *dr;
+ 
+@@ -1402,8 +1403,9 @@ int pci_request_region(struct pci_dev *pdev, int bar, const char *res_name)
+ 			goto err_out;
+ 	}
+ 	else if (pci_resource_flags(pdev, bar) & IORESOURCE_MEM) {
+-		if (!request_mem_region(pci_resource_start(pdev, bar),
+-				        pci_resource_len(pdev, bar), res_name))
++		if (!__request_mem_region(pci_resource_start(pdev, bar),
++					pci_resource_len(pdev, bar), res_name,
++					exclusive))
+ 			goto err_out;
+ 	}
+ 
+@@ -1422,6 +1424,47 @@ err_out:
+ }
+ 
+ /**
++ *	pci_request_region - Reserved PCI I/O and memory resource
++ *	@pdev: PCI device whose resources are to be reserved
++ *	@bar: BAR to be reserved
++ *	@res_name: Name to be associated with resource.
++ *
++ *	Mark the PCI region associated with PCI device @pdev BR @bar as
++ *	being reserved by owner @res_name.  Do not access any
++ *	address inside the PCI regions unless this call returns
++ *	successfully.
++ *
++ *	Returns 0 on success, or %EBUSY on error.  A warning
++ *	message is also printed on failure.
++ */
++int pci_request_region(struct pci_dev *pdev, int bar, const char *res_name)
++{
++	return __pci_request_region(pdev, bar, res_name, 0);
++}
++
++/**
++ *	pci_request_region_exclusive - Reserved PCI I/O and memory resource
++ *	@pdev: PCI device whose resources are to be reserved
++ *	@bar: BAR to be reserved
++ *	@res_name: Name to be associated with resource.
++ *
++ *	Mark the PCI region associated with PCI device @pdev BR @bar as
++ *	being reserved by owner @res_name.  Do not access any
++ *	address inside the PCI regions unless this call returns
++ *	successfully.
++ *
++ *	Returns 0 on success, or %EBUSY on error.  A warning
++ *	message is also printed on failure.
++ *
++ *	The key difference that _exclusive makes it that userspace is
++ *	explicitly not allowed to map the resource via /dev/mem or
++ * 	sysfs.
++ */
++int pci_request_region_exclusive(struct pci_dev *pdev, int bar, const char *res_name)
++{
++	return __pci_request_region(pdev, bar, res_name, IORESOURCE_EXCLUSIVE);
++}
++/**
+  * pci_release_selected_regions - Release selected PCI I/O and memory resources
+  * @pdev: PCI device whose resources were previously reserved
+  * @bars: Bitmask of BARs to be released
+@@ -1438,20 +1481,14 @@ void pci_release_selected_regions(struct pci_dev *pdev, int bars)
+ 			pci_release_region(pdev, i);
+ }
+ 
+-/**
+- * pci_request_selected_regions - Reserve selected PCI I/O and memory resources
+- * @pdev: PCI device whose resources are to be reserved
+- * @bars: Bitmask of BARs to be requested
+- * @res_name: Name to be associated with resource
+- */
+-int pci_request_selected_regions(struct pci_dev *pdev, int bars,
+-				 const char *res_name)
++int __pci_request_selected_regions(struct pci_dev *pdev, int bars,
++				 const char *res_name, int excl)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < 6; i++)
+ 		if (bars & (1 << i))
+-			if(pci_request_region(pdev, i, res_name))
++			if (__pci_request_region(pdev, i, res_name, excl))
+ 				goto err_out;
+ 	return 0;
+ 
+@@ -1463,6 +1500,26 @@ err_out:
+ 	return -EBUSY;
+ }
+ 
++
++/**
++ * pci_request_selected_regions - Reserve selected PCI I/O and memory resources
++ * @pdev: PCI device whose resources are to be reserved
++ * @bars: Bitmask of BARs to be requested
++ * @res_name: Name to be associated with resource
++ */
++int pci_request_selected_regions(struct pci_dev *pdev, int bars,
++				 const char *res_name)
++{
++	return __pci_request_selected_regions(pdev, bars, res_name, 0);
++}
++
++int pci_request_selected_regions_exclusive(struct pci_dev *pdev,
++				 int bars, const char *res_name)
++{
++	return __pci_request_selected_regions(pdev, bars, res_name,
++			IORESOURCE_EXCLUSIVE);
++}
++
+ /**
+  *	pci_release_regions - Release reserved PCI I/O and memory resources
+  *	@pdev: PCI device whose resources were previously reserved by pci_request_regions
+@@ -1496,6 +1553,29 @@ int pci_request_regions(struct pci_dev *pdev, const char *res_name)
+ }
+ 
+ /**
++ *	pci_request_regions_exclusive - Reserved PCI I/O and memory resources
++ *	@pdev: PCI device whose resources are to be reserved
++ *	@res_name: Name to be associated with resource.
++ *
++ *	Mark all PCI regions associated with PCI device @pdev as
++ *	being reserved by owner @res_name.  Do not access any
++ *	address inside the PCI regions unless this call returns
++ *	successfully.
++ *
++ *	pci_request_regions_exclusive() will mark the region so that
++ * 	/dev/mem and the sysfs MMIO access will not be allowed.
++ *
++ *	Returns 0 on success, or %EBUSY on error.  A warning
++ *	message is also printed on failure.
++ */
++int pci_request_regions_exclusive(struct pci_dev *pdev, const char *res_name)
++{
++	return pci_request_selected_regions_exclusive(pdev,
++					((1 << 6) - 1), res_name);
++}
++
++
++/**
+  * pci_set_master - enables bus-mastering for device dev
+  * @dev: the PCI device to enable
+  *
+@@ -1977,10 +2057,13 @@ EXPORT_SYMBOL(pci_find_capability);
+ EXPORT_SYMBOL(pci_bus_find_capability);
+ EXPORT_SYMBOL(pci_release_regions);
+ EXPORT_SYMBOL(pci_request_regions);
++EXPORT_SYMBOL(pci_request_regions_exclusive);
+ EXPORT_SYMBOL(pci_release_region);
+ EXPORT_SYMBOL(pci_request_region);
++EXPORT_SYMBOL(pci_request_region_exclusive);
+ EXPORT_SYMBOL(pci_release_selected_regions);
+ EXPORT_SYMBOL(pci_request_selected_regions);
++EXPORT_SYMBOL(pci_request_selected_regions_exclusive);
+ EXPORT_SYMBOL(pci_set_master);
+ EXPORT_SYMBOL(pci_set_mwi);
+ EXPORT_SYMBOL(pci_try_set_mwi);
+diff --git a/include/linux/ioport.h b/include/linux/ioport.h
+index 041e95a..f6bb2ca 100644
+--- a/include/linux/ioport.h
++++ b/include/linux/ioport.h
+@@ -49,6 +49,7 @@ struct resource_list {
+ #define IORESOURCE_SIZEALIGN	0x00020000	/* size indicates alignment */
+ #define IORESOURCE_STARTALIGN	0x00040000	/* start field is alignment */
+ 
++#define IORESOURCE_EXCLUSIVE	0x08000000	/* Userland may not map this resource */
+ #define IORESOURCE_DISABLED	0x10000000
+ #define IORESOURCE_UNSET	0x20000000
+ #define IORESOURCE_AUTO		0x40000000
+@@ -133,13 +134,16 @@ static inline unsigned long resource_type(struct resource *res)
+ }
+ 
+ /* Convenience shorthand with allocation */
+-#define request_region(start,n,name)	__request_region(&ioport_resource, (start), (n), (name))
+-#define request_mem_region(start,n,name) __request_region(&iomem_resource, (start), (n), (name))
++#define request_region(start,n,name)	__request_region(&ioport_resource, (start), (n), (name), 0)
++#define __request_mem_region(start,n,name, excl) __request_region(&iomem_resource, (start), (n), (name), excl)
++#define request_mem_region(start,n,name) __request_region(&iomem_resource, (start), (n), (name), 0)
++#define request_mem_region_exclusive(start,n,name) \
++	__request_region(&iomem_resource, (start), (n), (name), IORESOURCE_EXCLUSIVE)
+ #define rename_region(region, newname) do { (region)->name = (newname); } while (0)
+ 
+ extern struct resource * __request_region(struct resource *,
+ 					resource_size_t start,
+-					resource_size_t n, const char *name);
++					resource_size_t n, const char *name, int relaxed);
+ 
+ /* Compatibility cruft */
+ #define release_region(start,n)	__release_region(&ioport_resource, (start), (n))
+@@ -175,6 +179,7 @@ extern struct resource * __devm_request_region(struct device *dev,
+ extern void __devm_release_region(struct device *dev, struct resource *parent,
+ 				  resource_size_t start, resource_size_t n);
+ extern int iomem_map_sanity_check(resource_size_t addr, unsigned long size);
++extern int iomem_is_exclusive(u64 addr);
+ 
+ #endif /* __ASSEMBLY__ */
+ #endif	/* _LINUX_IOPORT_H */
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 085187b..66a0586 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -665,10 +665,13 @@ void pci_fixup_irqs(u8 (*)(struct pci_dev *, u8 *),
+ 		    int (*)(struct pci_dev *, u8, u8));
+ #define HAVE_PCI_REQ_REGIONS	2
+ int __must_check pci_request_regions(struct pci_dev *, const char *);
++int __must_check pci_request_regions_exclusive(struct pci_dev *, const char *);
+ void pci_release_regions(struct pci_dev *);
+ int __must_check pci_request_region(struct pci_dev *, int, const char *);
++int __must_check pci_request_region_exclusive(struct pci_dev *, int, const char *);
+ void pci_release_region(struct pci_dev *, int);
+ int pci_request_selected_regions(struct pci_dev *, int, const char *);
++int pci_request_selected_regions_exclusive(struct pci_dev *, int, const char *);
+ void pci_release_selected_regions(struct pci_dev *, int);
+ 
+ /* drivers/pci/bus.c */
+diff --git a/kernel/resource.c b/kernel/resource.c
+index 4089d12..121478f 100644
+--- a/kernel/resource.c
++++ b/kernel/resource.c
+@@ -622,7 +622,7 @@ resource_size_t resource_alignment(struct resource *res)
+  */
+ struct resource * __request_region(struct resource *parent,
+ 				   resource_size_t start, resource_size_t n,
+-				   const char *name)
++				   const char *name, int flags)
+ {
+ 	struct resource *res = kzalloc(sizeof(*res), GFP_KERNEL);
+ 
+@@ -633,6 +633,7 @@ struct resource * __request_region(struct resource *parent,
+ 	res->start = start;
+ 	res->end = start + n - 1;
+ 	res->flags = IORESOURCE_BUSY;
++	res->flags |= flags;
+ 
+ 	write_lock(&resource_lock);
+ 
+@@ -678,7 +679,7 @@ int __check_region(struct resource *parent, resource_size_t start,
+ {
+ 	struct resource * res;
+ 
+-	res = __request_region(parent, start, n, "check-region");
++	res = __request_region(parent, start, n, "check-region", 0);
+ 	if (!res)
+ 		return -EBUSY;
+ 
+@@ -775,7 +776,7 @@ struct resource * __devm_request_region(struct device *dev,
+ 	dr->start = start;
+ 	dr->n = n;
+ 
+-	res = __request_region(parent, start, n, name);
++	res = __request_region(parent, start, n, name, 0);
+ 	if (res)
+ 		devres_add(dev, dr);
+ 	else
+@@ -865,3 +866,57 @@ int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
+ 
+ 	return err;
+ }
++
++#ifdef CONFIG_STRICT_DEVMEM
++static int strict_iomem_checks = 1;
++#else
++static int strict_iomem_checks;
++#endif
++
++/*
++ * check if an address is reserved in the iomem resource tree
++ * returns 1 if reserved, 0 if not reserved.
++ */
++int iomem_is_exclusive(u64 addr)
++{
++	struct resource *p = &iomem_resource;
++	int err = 0;
++	loff_t l;
++	int size = PAGE_SIZE;
++
++	if (!strict_iomem_checks)
++		return 0;
++
++	addr = addr & PAGE_MASK;
++
++	read_lock(&resource_lock);
++	for (p = p->child; p ; p = r_next(NULL, p, &l)) {
++		/*
++		 * We can probably skip the resources without
++		 * IORESOURCE_IO attribute?
++		 */
++		if (p->start >= addr + size)
++			break;
++		if (p->end < addr)
++			continue;
++		if (p->flags & IORESOURCE_BUSY &&
++		     p->flags & IORESOURCE_EXCLUSIVE) {
++			err = 1;
++			break;
++		}
++	}
++	read_unlock(&resource_lock);
++
++	return err;
++}
++
++static int __init strict_iomem(char *str)
++{
++	if (strstr(str, "relaxed"))
++		strict_iomem_checks = 0;
++	if (strstr(str, "strict"))
++		strict_iomem_checks = 1;
++	return 1;
++}
++
++__setup("iomem=", strict_iomem);
+-- 
+1.5.5.1
 
 
-Hi Linus,
 
-Please pull the 'drm-next' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-next
-
-This contains a lot of stability fixes from Intel for the GEM work along 
-with fixing some general drm issues.
-
-Keith is working on a patchset to implement the new IO stuff, which we can 
-discuss later if it needs to hit 2.6.27 or if .28 is good enough.
-
-Dave.
-
- drivers/gpu/drm/drm_drawable.c       |   15 ++-
- drivers/gpu/drm/drm_ioc32.c          |   34 ++++
- drivers/gpu/drm/drm_irq.c            |    5 +-
- drivers/gpu/drm/drm_lock.c           |    2 +
- drivers/gpu/drm/drm_proc.c           |    4 +-
- drivers/gpu/drm/i915/i915_dma.c      |    5 +-
- drivers/gpu/drm/i915/i915_drv.h      |   10 +-
- drivers/gpu/drm/i915/i915_gem.c      |    2 -
- drivers/gpu/drm/i915/i915_gem_proc.c |   15 ++-
- drivers/gpu/drm/i915/i915_irq.c      |  277 ++++++++++++++++++----------------
- 10 files changed, 223 insertions(+), 146 deletions(-)
-
-commit 7e78f72524b794fa8d73dc59aeeacc12a2e937fe
-Author: Eric Anholt <eric@anholt.net>
-Date:   Tue Oct 21 11:53:01 2008 -0700
-
-    drm: Avoid oops in DRM_IOCTL_RM_DRAW if a bad handle is supplied.
-    
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Acked-by: Michel Dänzer <michel@tungstengraphics.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 49568873705e45a0de77b7824a9a46d3201019a7
-Author: Eric Anholt <eric@anholt.net>
-Date:   Tue Oct 21 11:38:50 2008 -0700
-
-    drm: Add 32-bit compatibility for DRM_IOCTL_UPDATE_DRAW.
-    
-    This fixes vblank support for a 32-bit X Server on a 64-bit kernel.
-    
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 42f52ef8d96b1434f12ad9f895b5412fda392847
-Author: Keith Packard <keithp@keithp.com>
-Date:   Sat Oct 18 19:39:29 2008 -0700
-
-    drm/i915: use pipes, not planes to label vblank data
-    
-    vblank in the kernel is far simpler if it deals with pipes instead of
-    planes, so we're changing both user and kernel side.
-    
-    Signed-off-by: Keith Packard <keithp@keithp.com>
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 9e44af790f8bf8c3aa8a3101fd4f9bca2e932baa
-Author: Keith Packard <keithp@keithp.com>
-Date:   Thu Oct 16 21:18:27 2008 -0700
-
-    drm/i915: hold dev->struct_mutex and DRM lock during vblank ring operations
-    
-    To synchronize clip lists with the X server, the DRM lock must be held while
-    looking at drawable clip lists. To synchronize with other ring access, the
-    ring mutex must be held while inserting commands into the ring.  Failure to
-    do the first resulted in easy visual corruption when moving windows, and the
-    second could have corrupted the ring with DRI2.
-    
-    Grabbing the DRM lock involves using the DRM tasklet mechanism, grabbing the
-    ring mutex means potentially sleeping. Deal with both of these by always
-    running the tasklet from a work handler.
-    
-    Also, protect from clip list changes since the vblank request was queued by
-    making sure the window has at least one rectangle while looking inside,
-    preventing oopses .
-    
-    Signed-off-by: Keith Packard <keithp@keithp.com>
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit fe8133dc07e613587f8e667bce769edce8490f2a
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Fri Oct 17 15:43:02 2008 -0700
-
-    i915: Fix format string warnings on x86-64.
-    
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit a2d44cca4fc9ae04ed2c9fc2ef16b6989eeae218
-Author: Eric Anholt <eric@anholt.net>
-Date:   Fri Oct 17 14:41:03 2008 -0700
-
-    i915: Don't dereference HWS in /proc debug files when it isn't initialized.
-    
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Acked-by: Keith Packard <keithp@keithp.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 053d7f244a8739d96d316c77a97cd063804c8e35
-Author: Eric Anholt <eric@anholt.net>
-Date:   Fri Oct 17 15:41:26 2008 -0700
-
-    i915: Enable IMR passthrough of vblank events before enabling it in pipestat.
-    
-    Otherwise, if we lost the race, the pipestat bit would be set without being
-    reflected in IIR, and we would never clear the pipestat bit so the pipe
-    event would never be generated again, and all vblank waits would time out.
-    
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Acked-by: Keith Packard <keithp@keithp.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 35ad68c18148a18938ff4f40e945c9734e7d2265
-Author: Eric Anholt <eric@anholt.net>
-Date:   Fri Oct 17 11:03:53 2008 -0700
-
-    drm: Remove two leaks of vblank reference count in error paths.
-    
-    If the failing paths were hit, the vblank IRQ would never get turned off
-    again.
-    
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Acked-by: Keith Packard <keithp@keithp.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 786225eb2f4e55b5dda3cf8c62a145e824aae199
-Author: Zhenyu Wang <zhenyu.z.wang@intel.com>
-Date:   Fri Oct 17 15:48:44 2008 +0800
-
-    drm: fix leak of cliprects in drm_rmdraw()
-    
-    Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit d1ed629f44b3a4108d5c445971535f05f441fce7
-Author: Keith Packard <keithp@keithp.com>
-Date:   Fri Oct 17 00:44:42 2008 -0700
-
-    i915: Disable MSI on GM965 (errata says it doesn't work)
-    
-    Current Intel errata for the GM965 says that using MSI may cause interrupts
-    to be delayed or lost. The only workaround offered is to not use it.
-    
-    Signed-off-by: Keith Packard <keithp@keithp.com>
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 863842736fb4571b22e0f7f4696bf13eeec57166
-Author: Zhenyu Wang <zhenyu.z.wang@intel.com>
-Date:   Fri Oct 17 13:15:48 2008 +0800
-
-    drm: Set cliprects to NULL when changing drawable to having 0 cliprects.
-    
-    This avoids setting the cliprects pointer to a zero-sized allocation.
-    
-    Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit e9d21d7f5ae1e625f3687d88bb50b00478c533ad
-Author: Keith Packard <keithp@keithp.com>
-Date:   Thu Oct 16 11:31:38 2008 -0700
-
-    i915: Protect vblank IRQ reg access with spinlock
-    
-    This uses the same spinlock as the user_irq code as it shares the same
-    register, ensuring that interrupt registers are updated atomically.
-    
-    Signed-off-by: Keith Packard <keithp@keithp.com>
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
---29444707-1180388520-1224733924=:21357--
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
