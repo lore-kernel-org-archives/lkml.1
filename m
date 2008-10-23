@@ -1,104 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbYJWUiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbYJWUkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756212AbYJWUiT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 16:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYJWUiH
+	id S1755406AbYJWUkG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 16:40:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYJWUjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 16:38:07 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40878 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752619AbYJWUiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 16:38:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: Oops in ACPI with git latest
-Date: Thu, 23 Oct 2008 22:42:32 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-acpi@vger.kernel.org, "linux-kernel" <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>
-References: <1224791103.3330.37.camel@localhost.localdomain>
-In-Reply-To: <1224791103.3330.37.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 23 Oct 2008 16:39:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55978 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752860AbYJWUjy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 16:39:54 -0400
+Date: Thu, 23 Oct 2008 13:38:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Keith Packard <keithp@keithp.com>
+Cc: mingo@elte.hu, keithp@keithp.com, nickpiggin@yahoo.com.au,
+       airlied@linux.ie, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       dri-devel@lists.sf.net, yinghai@kernel.org
+Subject: Re: Adding kmap_atomic_prot_pfn  (was: [git pull] drm patches for
+ 2.6.27-rc1)
+Message-Id: <20081023133840.d4eef579.akpm@linux-foundation.org>
+In-Reply-To: <1224793332.22877.8.camel@koto.keithp.com>
+References: <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
+	<20081018203741.GA23396@elte.hu>
+	<1224366690.4384.89.camel@koto.keithp.com>
+	<20081018223214.GA5093@elte.hu>
+	<1224389697.4384.118.camel@koto.keithp.com>
+	<1224398496.5303.7.camel@koto.keithp.com>
+	<20081019175320.GA6442@elte.hu>
+	<1224450291.5303.23.camel@koto.keithp.com>
+	<20081020115810.GC10594@elte.hu>
+	<1224517744.5195.1.camel@koto.keithp.com>
+	<20081022093615.GF12453@elte.hu>
+	<1224793332.22877.8.camel@koto.keithp.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810232242.33480.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 23 of October 2008, James Bottomley wrote:
-> ACPI Warning (nseval-0168): Insufficient arguments - method [_OSC] needs 5, found 4 [20080926]
-> ACPI Warning (nspredef-0252): \_SB_.PCI0._OSC: Parameter count mismatch - ASL declared 5, expected 4 [20080926]
-> ACPI Error (nspredef-0163): \_SB_.PCI0._OSC: Missing expected return value [20080926]
-> BUG: unable to handle kernel NULL pointer dereference at 00000000
-> IP: [<c0237671>] acpi_run_osc+0xa1/0x170
-> *pde = 00000000 
-> Oops: 0000 [#1] SMP 
-> last sysfs file: 
-> Dumping ftrace buffer:
->    (ftrace buffer empty)
-> Modules linked in:
+On Thu, 23 Oct 2008 13:22:12 -0700
+Keith Packard <keithp@keithp.com> wrote:
+
+> We just ran some numbers on a box with PAT enabled and broken MTRRs.
+> Finally we have a test platform for the difference between kmap_atomic
+> and kmap_atomic_prot. Using regular kmap_atomic on this platform, we get
+> UC access to the graphics device; sending data from the CPU is a bit
+> slow. Adding kmap_atomic_prot_pfn and specifying WC access raises that
+> by a fairly significant factor, taking our CPU utilization for
+> copy_from_user from 40% to 2%.
 > 
-> Pid: 1, comm: swapper Not tainted (2.6.27 #124) IBM eServer 206m-[8485IZZ]-
-> EIP: 0060:[<c0237671>] EFLAGS: 00010246 CPU: 1
-> EIP is at acpi_run_osc+0xa1/0x170
-> EAX: 00000000 EBX: 00000010 ECX: 00000003 EDX: f704d4ec
-> ESI: 00000000 EDI: 00000000 EBP: f704fde4 ESP: f704fd7c
->  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> Process swapper (pid: 1, ti=f704e000 task=f704d150 task.ti=f704e000)
-> Stack:
->  f704fdc8 f704fdf0 00000001 00000003 00000010 c04f4a28 c014c3ab 00000001
->  00000001 00000000 f68766a0 00000001 00000003 00000000 f704fdd4 00000003
->  0000000c f704fdf0 c023759b 00000000 00000000 00000004 f704fd88 00000010
-> Call Trace:
->  [<c014c3ab>] ? trace_hardirqs_on+0xb/0x10
->  [<c023759b>] ? acpi_get_osc_data+0x5b/0x90
->  [<c02378c4>] ? acpi_query_osc+0x74/0xa0
->  [<c02486bb>] ? acpi_ns_get_device_callback+0xfe/0x112
->  [<c0249dbe>] ? acpi_ns_walk_namespace+0x9a/0x110
->  [<c033a5cc>] ? pci_init+0x0/0x44
->  [<c0248541>] ? acpi_get_devices+0x47/0x5d
->  [<c02485bd>] ? acpi_ns_get_device_callback+0x0/0x112
->  [<c0237850>] ? acpi_query_osc+0x0/0xa0
->  [<c0237918>] ? __pci_osc_support_set+0x28/0x30
->  [<c033b99c>] ? msi_init+0x27/0x38
->  [<c033a5fc>] ? pci_init+0x30/0x44
->  [<c010111d>] ? do_one_initcall+0x2d/0x160
->  [<c014c3ab>] ? trace_hardirqs_on+0xb/0x10
->  [<c01d6c5e>] ? proc_register+0xee/0x1f0
->  [<c03482ad>] ? _spin_unlock+0x1d/0x20
->  [<c01d6c5e>] ? proc_register+0xee/0x1f0
->  [<c01d6e64>] ? create_proc_entry+0x54/0xb0
->  [<c01622a4>] ? register_irq_proc+0xa4/0xc0
->  [<c016231c>] ? init_irq_proc+0x5c/0x70
->  [<c0521325>] ? kernel_init+0x10f/0x166
->  [<c0521216>] ? kernel_init+0x0/0x166
->  [<c0104213>] ? kernel_thread_helper+0x7/0x14
-> Code: 00 00 00 c7 45 cc 00 00 00 00 c7 45 d4 03 00 00 00 c7 45 d8 0c 00 00 00 ba 80 41 4a c0 e8 67 10 01 00 89 c7 85 c0 75 4a 8b 75 e8 <83> 3e 03 75 5c 8b 46 08 8b 18 85 db 74 29 f6 c3 02 0f 85 82 00 
-> EIP: [<c0237671>] acpi_run_osc+0xa1/0x170 SS:ESP 0068:f704fd7c
-> ---[ end trace a7919e7f17c0a725 ]---
-> swapper used greatest stack depth: 5788 bytes left
-> Kernel panic - not syncing: Attempted to kill init!
+> Here's a patch which adds kmap_atomic_prot_pfn to the kernel for this
+> usage. When we add native io-mapping support instead of sitting on top
+> of kmap, we can remove this function.
+> 
+> I've reworked the io_mapping patches to use this function as well, along
+> with cleaning up the i915 code along the lines of Linus' current
+> version. I'll post those if this patch looks acceptable.
+> 
+> From e3f633dcb36889fa85ea06cca339072df3c44ae0 Mon Sep 17 00:00:00 2001
+> From: Keith Packard <keithp@keithp.com>
+> Date: Thu, 23 Oct 2008 11:53:45 -0700
+> Subject: [PATCH] Add kmap_atomic_prot_pfn
+> 
+> kmap_atomic_prot_pfn is a mixture of kmap_atomic_prot and kmap_atomic_pfn,
+> accepting both a pfn instead of a page and an explicit protection value.
+> 
+> Signed-off-by: Keith Packard <keithp@keithp.com>
+> ---
+>  arch/x86/mm/highmem_32.c  |   19 +++++++++++++++++++
+>  include/asm-x86/highmem.h |    1 +
+>  include/linux/highmem.h   |    1 +
+>  3 files changed, 21 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
+> index bcc079c..91ae5e8 100644
+> --- a/arch/x86/mm/highmem_32.c
+> +++ b/arch/x86/mm/highmem_32.c
+> @@ -139,6 +139,25 @@ void *kmap_atomic_pfn(unsigned long pfn, enum km_type type)
+>  }
+>  EXPORT_SYMBOL_GPL(kmap_atomic_pfn); /* temporarily in use by i915 GEM until vmap */
+>  
+> +/* This is the same as kmap_atomic_prot() but can map memory that doesn't
+> + * have a struct page associated with it.
+> + */
+> +void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot)
+> +{
+> +	enum fixed_addresses idx;
+> +	unsigned long vaddr;
+> +
+> +	pagefault_disable();
+> +
+> +	idx = type + KM_TYPE_NR*smp_processor_id();
+> +	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+> +	set_pte(kmap_pte-idx, pfn_pte(pfn, prot));
+> +	arch_flush_lazy_mmu_mode();
+> +
+> +	return (void*) vaddr;
+> +}
+> +EXPORT_SYMBOL_GPL(kmap_atomic_prot_pfn); /* temporarily in use by i915 GEM until vmap */
 
-Does this patch help?
+I guess one could reimplemenet kmap_atomic_pfn() to call this.  Sometime.
 
----
- drivers/pci/pci-acpi.c |    3 +++
- 1 file changed, 3 insertions(+)
+>  struct page *kmap_atomic_to_page(void *ptr)
+>  {
+>  	unsigned long idx, vaddr = (unsigned long)ptr;
+> diff --git a/include/asm-x86/highmem.h b/include/asm-x86/highmem.h
+> index bc3f6a2..a1f8f8c 100644
+> --- a/include/asm-x86/highmem.h
+> +++ b/include/asm-x86/highmem.h
+> @@ -66,6 +66,7 @@ void *kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t prot);
+>  void *kmap_atomic(struct page *page, enum km_type type);
+>  void kunmap_atomic(void *kvaddr, enum km_type type);
+>  void *kmap_atomic_pfn(unsigned long pfn, enum km_type type);
+> +void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot);
 
-Index: linux-2.6/drivers/pci/pci-acpi.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci-acpi.c
-+++ linux-2.6/drivers/pci/pci-acpi.c
-@@ -83,6 +83,9 @@ static acpi_status acpi_run_osc(acpi_han
- 	if (ACPI_FAILURE(status))
- 		return status;
- 
-+	if (!output.pointer)
-+		return AE_NULL_OBJECT;
-+
- 	out_obj = output.pointer;
- 	if (out_obj->type != ACPI_TYPE_BUFFER) {
- 		printk(KERN_DEBUG "Evaluate _OSC returns wrong type\n");
+Given that all highmem-implementing archtiectures must use the same
+declaration here, we might as well put it into include/linux/highmem.h.
+Although that goes against current mistakes^Wcode.
+
+Does powerpc32 still implement highmem?  It seems that way.  You broke
+it, no?
