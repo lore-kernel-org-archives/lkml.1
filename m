@@ -1,24 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbYJWTmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758826AbYJWTpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758765AbYJWTmx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 15:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbYJWTmm
+	id S1758826AbYJWTpX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 15:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbYJWTpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 15:42:42 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:60856 "EHLO
+	Thu, 23 Oct 2008 15:45:09 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:60620 "EHLO
 	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752780AbYJWTml (ORCPT
+	by vger.kernel.org with ESMTP id S1753804AbYJWTpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 15:42:41 -0400
-Subject: [GIT PATCH] final merge window updates for SCSI
+	Thu, 23 Oct 2008 15:45:05 -0400
+Subject: Oops in ACPI with git latest
 From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
+To: linux-acpi@vger.kernel.org
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Thu, 23 Oct 2008 14:42:37 -0500
-Message-Id: <1224790957.3330.35.camel@localhost.localdomain>
+Date: Thu, 23 Oct 2008 14:45:03 -0500
+Message-Id: <1224791103.3330.37.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -26,101 +24,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This lot's been through at least four days random config testing in
-linux-next (I checked).  It's basically a sequence of small updates that
-were all in process before the merge window opened.
+ACPI Warning (nseval-0168): Insufficient arguments - method [_OSC] needs 5, found 4 [20080926]
+ACPI Warning (nspredef-0252): \_SB_.PCI0._OSC: Parameter count mismatch - ASL declared 5, expected 4 [20080926]
+ACPI Error (nspredef-0163): \_SB_.PCI0._OSC: Missing expected return value [20080926]
+BUG: unable to handle kernel NULL pointer dereference at 00000000
+IP: [<c0237671>] acpi_run_osc+0xa1/0x170
+*pde = 00000000 
+Oops: 0000 [#1] SMP 
+last sysfs file: 
+Dumping ftrace buffer:
+   (ftrace buffer empty)
+Modules linked in:
 
-The patch is available here:
-
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
-
-The short changelog is:
-
-Akinobu Mita (1):
-      ipr: use memory_read_from_buffer()
-
-Alan Cox (1):
-      aic79xx: user visible misuse wrong SI units (not disk size!)
-
-Alan Stern (1):
-      sd: remove command-size switching code
-
-Bernd Schubert (1):
-      mptfusion: Increase scsi-timeouts, similariy to the LSI 4.x
-driver.
-
-Chandra Seetharaman (1):
-      scsi_dh: Initialize path state to be passive when path is not
-owned
-
-Denys Vlasenko (3):
-      aic7xxx: update *_shipped files
-      aic7xxx: update .reg files
-      aic7xxx: introduce "dont_generate_debug_code" keyword in aicasm
-parser
-
-FUJITA Tomonori (2):
-      3w-9xxx: remove unnecessary local_irq_save/restore for scsi sg
-copy API
-      3w-xxxx: remove unnecessary local_irq_save/restore for scsi sg
-copy API
-
-H. Peter Anvin (2):
-      sd: fix computation of the full size of the device
-      lib: string_get_size(): don't hang on zero; no decimals on exact
-
-Harvey Harrison (2):
-      aic79xx: fix shadowed variables
-      aic79xx: fix shadowed variables, add statics
-
-James Bottomley (1):
-      fix removable device inability to detect disk changes
-
-Jamie Wellnitz (1):
-      sd: Fix handling of NO_SENSE check condition
-
-Julia Lawall (1):
-      sun3x_esp: Convert && to ||
-
-Kiyoshi Ueda (2):
-      export busy state via q->lld_busy_fn()
-      refactor sdev/starget/shost busy checking
-
-Randy Dunlap (1):
-      fix netlink kernel-doc
-
-thomas schorpp (1):
-      aic7xxx: Take the LED out of diagnostic mode on PM resume
-
-
-And the diffstat:
-
- drivers/message/fusion/mptscsih.c                |    3 
- drivers/scsi/3w-9xxx.c                           |    3 
- drivers/scsi/3w-xxxx.c                           |    7 
- drivers/scsi/aic7xxx/aic79xx.reg                 |  185 ++
- drivers/scsi/aic7xxx/aic79xx_core.c              |   15 
- drivers/scsi/aic7xxx/aic79xx_pci.c               |   12 
- drivers/scsi/aic7xxx/aic79xx_reg.h_shipped       |  567 +------
- drivers/scsi/aic7xxx/aic79xx_reg_print.c_shipped | 1723
------------------------
- drivers/scsi/aic7xxx/aic7xxx.reg                 |  124 +
- drivers/scsi/aic7xxx/aic7xxx_core.c              |    7 
- drivers/scsi/aic7xxx/aic7xxx_reg.h_shipped       |  875 -----------
- drivers/scsi/aic7xxx/aic7xxx_reg_print.c_shipped | 1165 ---------------
- drivers/scsi/aic7xxx/aicasm/aicasm_gram.y        |   10 
- drivers/scsi/aic7xxx/aicasm/aicasm_scan.l        |    1 
- drivers/scsi/aic7xxx/aicasm/aicasm_symbol.c      |    3 
- drivers/scsi/aic7xxx/aicasm/aicasm_symbol.h      |    3 
- drivers/scsi/device_handler/scsi_dh_rdac.c       |    3 
- drivers/scsi/ipr.c                               |   16 
- drivers/scsi/scsi_lib.c                          |   83 -
- drivers/scsi/scsi_netlink.c                      |    9 
- drivers/scsi/sd.c                                |   21 
- drivers/scsi/sun3x_esp.c                         |    4 
- lib/string_helpers.c                             |   34 
- 23 files changed, 580 insertions(+), 4293 deletions(-)
-
-James
+Pid: 1, comm: swapper Not tainted (2.6.27 #124) IBM eServer 206m-[8485IZZ]-
+EIP: 0060:[<c0237671>] EFLAGS: 00010246 CPU: 1
+EIP is at acpi_run_osc+0xa1/0x170
+EAX: 00000000 EBX: 00000010 ECX: 00000003 EDX: f704d4ec
+ESI: 00000000 EDI: 00000000 EBP: f704fde4 ESP: f704fd7c
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+Process swapper (pid: 1, ti=f704e000 task=f704d150 task.ti=f704e000)
+Stack:
+ f704fdc8 f704fdf0 00000001 00000003 00000010 c04f4a28 c014c3ab 00000001
+ 00000001 00000000 f68766a0 00000001 00000003 00000000 f704fdd4 00000003
+ 0000000c f704fdf0 c023759b 00000000 00000000 00000004 f704fd88 00000010
+Call Trace:
+ [<c014c3ab>] ? trace_hardirqs_on+0xb/0x10
+ [<c023759b>] ? acpi_get_osc_data+0x5b/0x90
+ [<c02378c4>] ? acpi_query_osc+0x74/0xa0
+ [<c02486bb>] ? acpi_ns_get_device_callback+0xfe/0x112
+ [<c0249dbe>] ? acpi_ns_walk_namespace+0x9a/0x110
+ [<c033a5cc>] ? pci_init+0x0/0x44
+ [<c0248541>] ? acpi_get_devices+0x47/0x5d
+ [<c02485bd>] ? acpi_ns_get_device_callback+0x0/0x112
+ [<c0237850>] ? acpi_query_osc+0x0/0xa0
+ [<c0237918>] ? __pci_osc_support_set+0x28/0x30
+ [<c033b99c>] ? msi_init+0x27/0x38
+ [<c033a5fc>] ? pci_init+0x30/0x44
+ [<c010111d>] ? do_one_initcall+0x2d/0x160
+ [<c014c3ab>] ? trace_hardirqs_on+0xb/0x10
+ [<c01d6c5e>] ? proc_register+0xee/0x1f0
+ [<c03482ad>] ? _spin_unlock+0x1d/0x20
+ [<c01d6c5e>] ? proc_register+0xee/0x1f0
+ [<c01d6e64>] ? create_proc_entry+0x54/0xb0
+ [<c01622a4>] ? register_irq_proc+0xa4/0xc0
+ [<c016231c>] ? init_irq_proc+0x5c/0x70
+ [<c0521325>] ? kernel_init+0x10f/0x166
+ [<c0521216>] ? kernel_init+0x0/0x166
+ [<c0104213>] ? kernel_thread_helper+0x7/0x14
+Code: 00 00 00 c7 45 cc 00 00 00 00 c7 45 d4 03 00 00 00 c7 45 d8 0c 00 00 00 ba 80 41 4a c0 e8 67 10 01 00 89 c7 85 c0 75 4a 8b 75 e8 <83> 3e 03 75 5c 8b 46 08 8b 18 85 db 74 29 f6 c3 02 0f 85 82 00 
+EIP: [<c0237671>] acpi_run_osc+0xa1/0x170 SS:ESP 0068:f704fd7c
+---[ end trace a7919e7f17c0a725 ]---
+swapper used greatest stack depth: 5788 bytes left
+Kernel panic - not syncing: Attempted to kill init!
 
 
