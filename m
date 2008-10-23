@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbYJWOKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754083AbYJWOLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753811AbYJWOKW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 10:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbYJWOKG
+	id S1754083AbYJWOLa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 10:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbYJWOLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 10:10:06 -0400
-Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:38254 "EHLO
-	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751055AbYJWOKF (ORCPT
+	Thu, 23 Oct 2008 10:11:22 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:59261 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751638AbYJWOLW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 10:10:05 -0400
-Date: Thu, 23 Oct 2008 07:09:24 -0700 (PDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Miklos Szeredi <miklos@szeredi.hu>, nickpiggin@yahoo.com.au,
-       hugh@veritas.com, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: SLUB defrag pull request?
-In-Reply-To: <84144f020810230658o7c6b3651k2d671aab09aa71fb@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0810230705210.12497@quilx.com>
-References: <1223883004.31587.15.camel@penberg-laptop> 
- <Pine.LNX.4.64.0810221315080.26671@quilx.com>  <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu>
-  <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com> 
- <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221416130.26639@quilx.com>
-  <E1KsluU-0002R1-Ow@pomaz-ex.szeredi.hu>  <1224745831.25814.21.camel@penberg-laptop>
-  <E1KsviY-0003Mq-6M@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810230638450.11924@quilx.com>
- <84144f020810230658o7c6b3651k2d671aab09aa71fb@mail.gmail.com>
+	Thu, 23 Oct 2008 10:11:22 -0400
+Date: Thu, 23 Oct 2008 15:11:08 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Yauhen Kharuzhy <jekhor@gmail.com>
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] RTC S3C: Add device_init_wakeup() invokation
+Message-ID: <20081023141108.GA6099@fluff.org.uk>
+References: <1224758815-23131-1-git-send-email-jekhor@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Spam-Score: -2.5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1224758815-23131-1-git-send-email-jekhor@gmail.com>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Oct 2008, Pekka Enberg wrote:
+On Thu, Oct 23, 2008 at 01:46:55PM +0300, Yauhen Kharuzhy wrote:
+> This patch adds device_init_wakeup() ivokation to probe function of
+                                       invocation
+> s3c2410_rtc_driver. Without of this wakealarm sysfs attribute does not
+> initialise.
+> 
+> Signed-off-by: Yauhen Kharuzhy <jekhor@gmail.com>
+Acked-by: Ben Dooks <ben-linux@fluff.org>
+> ---
+>  drivers/rtc/rtc-s3c.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/rtc/rtc-s3c.c b/drivers/rtc/rtc-s3c.c
+> index 9a92ee1..70d9fc3 100644
+> --- a/drivers/rtc/rtc-s3c.c
+> +++ b/drivers/rtc/rtc-s3c.c
+> @@ -455,6 +455,8 @@ static int __devinit s3c_rtc_probe(struct platform_device *pdev)
+>  
+>  	s3c_rtc_setfreq(&pdev->dev, 1);
+>  
+> +	device_init_wakeup(&pdev->dev, 1);
+> +
+>  	/* register RTC and exit */
+>  
+>  	rtc = rtc_device_register("s3c", &pdev->dev, &s3c_rtcops,
+> -- 
+> 1.5.6.5
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-> On Thu, Oct 23, 2008 at 4:40 PM, Christoph Lameter
-> <cl@linux-foundation.org> wrote:
->> Solid? What is not solid? The SLUB design was made in part because of the
->> defrag problems that were not easy to solve with SLAB. The ability to lock
->> down a slab allows stabilizing objects. We discussed solutions to the
->> fragmentation problem for years and did not get anywhere with SLAB.
->
-> I'd assume he's talking about the Intel-reported regression that's yet
-> to be resolved.
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-On that subject:
-
-Got a draft of a patch here that does freelist handling differently. 
-Instead of building linked lists it uses free objects to build arrays of 
-pointers to free objects. That improves cache cold free behavior since the 
-object contents itself does not have to be touched on free.
-
-The problem looks like its freeing objects on a different processor that 
-where it was used last. With the pointer array it is only necessary to 
-touch the objects that contain the arrays.
+  'a smiley only costs 4 bytes'
