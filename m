@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbYJWOY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbYJWO0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754917AbYJWOY6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 10:24:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbYJWOYu
+	id S1755994AbYJWO0O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 10:26:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYJWOZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 10:24:50 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51863 "EHLO mx3.mail.elte.hu"
+	Thu, 23 Oct 2008 10:25:56 -0400
+Received: from mx2.suse.de ([195.135.220.15]:58496 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751275AbYJWOYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 10:24:49 -0400
-Date: Thu, 23 Oct 2008 16:24:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [bug] Re: [PATCH 00/35] cpumask: Replace cpumask_t with struct
-	cpumask
-Message-ID: <20081023142425.GB22088@elte.hu>
-References: <20081023020826.051012000@polaris-admin.engr.sgi.com> <20081023120322.GC25132@elte.hu> <20081023125529.GA18327@elte.hu> <490088BD.1060606@sgi.com>
-MIME-Version: 1.0
+	id S1751455AbYJWOZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 10:25:55 -0400
+Date: Thu, 23 Oct 2008 16:25:54 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: levon@movementarian.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [patch] oprofile: fix memory ordering
+Message-ID: <20081023142554.GA22805@wotan.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <490088BD.1060606@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Regular bitops don't work as locks on all architectures.
 
-* Mike Travis <travis@sgi.com> wrote:
+Also: can use non-atomic unlock as no concurrent stores to the word.
 
-> Ingo Molnar wrote:
-> > ok, the new cpumask code blew up in -tip testing, with various sorts of 
-> > slab corruptions during scheduler init:
-> > 
-> ...
->
-> Curious thing happens here.  I created the tree as you suggested 
-> (branch tip/cpus4096-v2) and copied in your .config file.  Running it 
-> through "silentoldconfig" (choosing only the defaults), I get the 
-> following changes.  This makes me suspect that I'm not testing the 
-> same thing as you are...?  Perhaps my git setup was not correct?
-
-no - i have some extras that forces on SMP for example to make it more 
-likely to trigger in random tests (it's far more interesting from a QA 
-point of view than UP).
-
-so as long as you select SMP you should get the same config. Lemme do a 
-.config you can plug in.
-
-	Ingo
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+---
+Index: linux-2.6/drivers/oprofile/event_buffer.c
+===================================================================
+--- linux-2.6.orig/drivers/oprofile/event_buffer.c
++++ linux-2.6/drivers/oprofile/event_buffer.c
+@@ -105,7 +105,7 @@ static int event_buffer_open(struct inod
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+ 
+-	if (test_and_set_bit(0, &buffer_opened))
++	if (test_and_set_bit_lock(0, &buffer_opened))
+ 		return -EBUSY;
+ 
+ 	/* Register as a user of dcookies
+@@ -129,7 +129,7 @@ static int event_buffer_open(struct inod
+ fail:
+ 	dcookie_unregister(file->private_data);
+ out:
+-	clear_bit(0, &buffer_opened);
++	__clear_bit_unlock(0, &buffer_opened);
+ 	return err;
+ }
+ 
+@@ -141,7 +141,7 @@ static int event_buffer_release(struct i
+ 	dcookie_unregister(file->private_data);
+ 	buffer_pos = 0;
+ 	atomic_set(&buffer_ready, 0);
+-	clear_bit(0, &buffer_opened);
++	__clear_bit_unlock(0, &buffer_opened);
+ 	return 0;
+ }
+ 
