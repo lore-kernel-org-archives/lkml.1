@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753903AbYJWPRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964AbYJWPTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753903AbYJWPRg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 11:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbYJWPR0
+	id S1754964AbYJWPTh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 11:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbYJWPT1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 11:17:26 -0400
-Received: from smtp2e.orange.fr ([80.12.242.113]:40016 "EHLO smtp2e.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751144AbYJWPRZ convert rfc822-to-8bit (ORCPT
+	Thu, 23 Oct 2008 11:19:27 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39995 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751254AbYJWPT0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 11:17:25 -0400
-X-ME-UUID: 20081023151722309.4BA057000112@mwinf2e18.orange.fr
-Message-ID: <49009575.60004@cosmosbay.com>
-Date: Thu, 23 Oct 2008 17:17:09 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Thu, 23 Oct 2008 11:19:26 -0400
+Message-ID: <49009639.3050603@sgi.com>
+Date: Thu, 23 Oct 2008 08:20:25 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Miklos Szeredi <miklos@szeredi.hu>,
-       nickpiggin@yahoo.com.au, hugh@veritas.com, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: SLUB defrag pull request?
-References: <1223883004.31587.15.camel@penberg-laptop>  <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>  <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221416130.26639@quilx.com>  <E1KsluU-0002R1-Ow@pomaz-ex.szeredi.hu>  <1224745831.25814.21.camel@penberg-laptop>  <E1KsviY-0003Mq-6M@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810230638450.11924@quilx.com>  <84144f020810230658o7c6b3651k2d671aab09aa71fb@mail.gmail.com>  <Pine.LNX.4.64.0810230705210.12497@quilx.com> <84144f020810230714g7f5d36bas812ad691140ee453@mail.gmail.com> <Pine.LNX.4.64.0810230721400.12497@quilx.com>
-In-Reply-To: <Pine.LNX.4.64.0810230721400.12497@quilx.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [bug #2] Re: [PATCH 00/35] cpumask: Replace cpumask_t with struct
+ cpumask
+References: <20081023020826.051012000@polaris-admin.engr.sgi.com> <20081023125529.GA18327@elte.hu> <20081023142025.GA18804@elte.hu> <200810240201.15037.rusty@rustcorp.com.au>
+In-Reply-To: <200810240201.15037.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter a écrit :
-> On Thu, 23 Oct 2008, Pekka Enberg wrote:
+Rusty Russell wrote:
+> On Friday 24 October 2008 01:20:25 Ingo Molnar wrote:
+>> Thomas has started a -tip cross-build test, and there's massive
+>> cross-build failures as well due to the cpumask changes:
 > 
->>> The problem looks like its freeing objects on a different processor that
->>> where it was used last. With the pointer array it is only necessary 
->>> to touch
->>> the objects that contain the arrays.
+> Yes.  linux-next reported the same thing.  I've backed out various arch 
+> changes for this reason.
+> 
+>> it seems to me that this commit is massively borked:
 >>
->> Interesting. SLAB gets away with this because of per-cpu caches or
->> because it uses the bufctls instead of a freelist?
+>>   4a792c2: cpumask: make CONFIG_NR_CPUS always valid
 > 
-> Exactly. Slab adds a special management structure to each slab page that 
-> contains the freelist and other stuff. Freeing first occurs to a per cpu 
-> queue that contains an array of pointers. Then later the objects are 
-> moved from the pointer array into the management structure for the slab.
+> Yep.  This is the big one I dropped.  There are a few others; Mike is just 
+> porting the changes across to your tree now.
 > 
-> What we could do for SLUB is to generate a linked list of pointer arrays 
-> in the free objects of a slab page. If all objects are allocated then no 
-> pointer array is needed. The first object freed would become the first 
-> pointer array. If that is found to be exhausted then the object 
-> currently being freed is becoming the next pointer array and we put a 
-> link to the old one into the object as well.
-> 
+> Cheers,
+> Rusty.
 
-This idea is very nice, especially considering that many objects are freed
-by RCU, and their rcu_head (which is hot at kfree() time), might be far
-away the linked list anchor actually used in SLUB.
+Hi Ingo,
 
-At alloc time, I remember I added a prefetchw() call in SLAB in __cache_alloc(),
-this could explain some differences between SLUB and SLAB too, since SLAB
-gives a hint to processor to warm its cache.
+It would seem easier to back out previous patches and apply the replacements.
+Does this work for you?
 
-
-
-
+Thanks,
+Mike
