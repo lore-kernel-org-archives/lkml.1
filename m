@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757662AbYJWVkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbYJWVpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757662AbYJWVkZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 17:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbYJWVkM
+	id S1756192AbYJWVpZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 17:45:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbYJWVpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 17:40:12 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:62525 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753453AbYJWVkK (ORCPT
+	Thu, 23 Oct 2008 17:45:10 -0400
+Received: from mga12.intel.com ([143.182.124.36]:18656 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752030AbYJWVpJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 17:40:10 -0400
-X-IronPort-AV: E=Sophos;i="4.33,472,1220227200"; 
-   d="scan'208";a="98292864"
-From: Roland Dreier <rdreier@cisco.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, axboe@kernel.dk
-Subject: Re: [git pull] bdev API series
-References: <20081023100124.GK28946@ZenIV.linux.org.uk>
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 23 Oct 2008 14:40:08 -0700
-In-Reply-To: <20081023100124.GK28946@ZenIV.linux.org.uk> (Al Viro's message of
-	"Thu, 23 Oct 2008 11:01:24 +0100")
-Message-ID: <adazlkvrnwn.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 23 Oct 2008 21:40:09.0323 (UTC) FILETIME=[EBEACBB0:01C93557]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+	Thu, 23 Oct 2008 17:45:09 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,472,1220252400"; 
+   d="scan'208";a="64583789"
+Subject: [GIT PULL] Backlight updates for 2.6.28
+From: Richard Purdie <rpurdie@linux.intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 23 Oct 2008 22:44:59 +0100
+Message-Id: <1224798299.5427.75.camel@dax.rpnet.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think it would be worth trying to get the patch descriptions a little
-better for future trees at least -- if I'm reading through a shortlog or
-something and I see:
+Linus,
 
- >       switch ubd
- >       switch DAC960
- >       switch amiflop
- >       switch aoeblk
- >       switch ataflop
+Could you please pull from:
 
-then it's not exactly clear what those patches do (without the context
-of the full series handy).
+git://git.o-hand.com/linux-rpurdie-backlight for-linus
 
- - R.
+for the backlight tree updates for 2.6.28. These are all new drivers and
+have seen testing in -mm/-next.
+
+Thanks, Richard
+
+ arch/arm/mach-pxa/include/mach/tosa.h |    3 
+ arch/arm/mach-pxa/tosa.c              |   21 ++
+ drivers/video/backlight/Kconfig       |   32 +++
+ drivers/video/backlight/Makefile      |    4 
+ drivers/video/backlight/da903x.c      |  201 ++++++++++++++++++++++++
+ drivers/video/backlight/kb3886_bl.c   |  204 ++++++++++++++++++++++++
+ drivers/video/backlight/tosa_bl.c     |  198 ++++++++++++++++++++++++
+ drivers/video/backlight/tosa_lcd.c    |  280 ++++++++++++++++++++++++++++++++++
+ 8 files changed, 942 insertions(+), 1 deletion(-)
+
+Claudio Nieder (1):
+      backlight: Add driver for Tabletkiosk Sahara TouchIT-213 Tablet PC
+
+Dmitry Baryshkov (2):
+      backlight: add support for Sharp SL-6000 LCD and backlight drivers
+      tosa: add support for bl/lcd driver
+
+Mike Rapoport (1):
+      backlight: da903x: Add backlight driver for DA9030/DA9034
+
+
