@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbYJWAJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbYJWAMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755866AbYJWAJS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 20:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbYJWAJF
+	id S1754640AbYJWAMY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 20:12:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbYJWAMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 20:09:05 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:15055 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752339AbYJWAJE (ORCPT
+	Wed, 22 Oct 2008 20:12:16 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:33396 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751208AbYJWAMP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 20:09:04 -0400
+	Wed, 22 Oct 2008 20:12:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=YBvRB7Ix/5kicVPsmSgfHVY1X1w0aMlC9TyQCvTUu74S29LC7F/2gmKEtrSDQACmAH
-         e0qJeaACYGi2I9nUWl5EYMEziHbdNYkdfK6QpZnGbakooYhbUUG3Kbx2unHbgzc4ieJZ
-         eRW4xi/TxkoLz7dlKB8DKBOK4IKw2UUSezlIk=
-Subject: [PATCH] mmc: trivial annotation of 'blocks'
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Pierre Ossman <drzeus@drzeus.cx>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 22 Oct 2008 17:09:00 -0700
-Message-Id: <1224720540.6823.7.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=rGw3QuL6BZbgfsF8nnMn+eNbjPB+9yKBvS+vHGJotF36tAgPht+WyTi6d2x//tt9nl
+         Pd/Zo2p9CJXiSciMUUC0OXG32q3XtNuFrKEV0zvBYnWvWuZxQH99l+mGfSJyp4wF2e/r
+         hAyxDkziEFrJOIJzn1kIu/rkNPj6SDJlmo9dA=
+Message-ID: <12c511ca0810221712n665b4c75t5d07c7f4d5e006b2@mail.gmail.com>
+Date: Wed, 22 Oct 2008 17:12:14 -0700
+From: "Tony Luck" <tony.luck@intel.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: [PATCH] get rid if __cpuinit and __cpuexit
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+In-Reply-To: <20081022153054.335ce51e@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081022153054.335ce51e@infradead.org>
+X-Google-Sender-Auth: 929cd48cc3a61393
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sg_init_one is reading a be32, annotate as such.
+On Wed, Oct 22, 2008 at 3:30 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> as discussed briefly at the kernel summit; __cpuinit and __cpuexit are
+> causing a ton more complexity than they're worth (just see how many
+> section warnings an average build has);
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/mmc/card/block.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+Nice idea ... but on ia64 I actually see *more* section mismatch
+warnings with this patch applied :-(
 
-diff --git a/drivers/mmc/card/block.c b/drivers/mmc/card/block.c
-index 3d067c3..903c8aa 100644
---- a/drivers/mmc/card/block.c
-+++ b/drivers/mmc/card/block.c
-@@ -145,7 +145,7 @@ struct mmc_blk_request {
- static u32 mmc_sd_num_wr_blocks(struct mmc_card *card)
- {
- 	int err;
--	u32 blocks;
-+	__be32 blocks;
- 
- 	struct mmc_request mrq;
- 	struct mmc_command cmd;
-@@ -204,9 +204,7 @@ static u32 mmc_sd_num_wr_blocks(struct mmc_card *card)
- 	if (cmd.error || data.error)
- 		return (u32)-1;
- 
--	blocks = ntohl(blocks);
--
--	return blocks;
-+	return ntohl(blocks);
- }
- 
- static int mmc_blk_issue_rq(struct mmc_queue *mq, struct request *req)
--- 
-1.6.0.3.723.g757e
+generic_defconfig goes up from 6 to 7
+tiger_defconfig rises from 3 to 6
 
-
-
+-Tony
