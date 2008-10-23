@@ -1,43 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbYJWHQJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755770AbYJWHRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756106AbYJWHQJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 03:16:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbYJWHPe
+	id S1755770AbYJWHRR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 03:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYJWHQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 03:15:34 -0400
-Received: from home.keithp.com ([63.227.221.253]:47712 "EHLO keithp.com"
+	Thu, 23 Oct 2008 03:16:59 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:46677 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754821AbYJWHPd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 03:15:33 -0400
-From: Keith Packard <keithp@keithp.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Keith Packard <keithp@keithp.com>
-Subject: Re: io resources and cached mappings (was: [git pull] drm patches for 2.6.27-rc1)
-Date: Thu, 23 Oct 2008 00:14:45 -0700
-Message-Id: <1224746087-13991-1-git-send-email-keithp@keithp.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <20081022093615.GF12453@elte.hu>
-References: <20081022093615.GF12453@elte.hu>
+	id S1752955AbYJWHQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 03:16:58 -0400
+Date: Thu, 23 Oct 2008 09:16:00 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dmitri Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] Add block device speciffic splice write method
+Message-ID: <20081023071559.GV22217@kernel.dk>
+References: <1224424858-3927-1-git-send-email-dmonakhov@openvz.org> <20081020174931.GH19428@kernel.dk> <20081020181156.GI19428@kernel.dk> <20081022223928.a6ce476f.akpm@linux-foundation.org> <20081023062921.GQ22217@kernel.dk> <20081022234157.33d46459.akpm@linux-foundation.org> <20081023065113.GU22217@kernel.dk> <20081023000315.6aa579f2.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081023000315.6aa579f2.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Oct 23 2008, Andrew Morton wrote:
+> On Thu, 23 Oct 2008 08:51:13 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Wed, Oct 22 2008, Andrew Morton wrote:
+> > > On Thu, 23 Oct 2008 08:29:23 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > 
+> > > > > But really it'd be better if the throttling happened down in
+> > > > > pipe_to_file(), on a per-page basis.  As it stands we can dirty an
+> > > > > arbitrary number of pagecache pages without throttling.  I think?
+> > > > 
+> > > > That's pretty exactly why it isn't done in the actor, to avoid doing it
+> > > > per-page. As it's going to be PIPE_BUFFERS (16) pages max, I think this
+> > > > is better.
+> > > > 
+> > > > Back in the splice early days, the balance_dirty_pages() actually showed
+> > > > up in profiles when it was done on a per-page basis. So I'm reluctant to
+> > > > change it :-)
+> > > 
+> > > That's why (the misnamed) balance_dirty_pages_ratelimited() exists?
+> > 
+> > I think that is what was used, but the details are a little hazy at this
+> > point. So I can't say for sure.
+> 
+> All that function does is to bump a per-cpu variable and
+> once-per-thousand or so it does the balance.  If it was causing
+> problems in the splice application we want to know, because write()
+> uses it!
 
-> okay. So ... mind sending your io_mapping patch as a generic facility? 
-> It looks all good to me in its present form, except that it should live 
-> in include/linux/io.h, not in the drivers/gpu/drm/i915/io_reserve.h file
-> :-)
+Once per 8 or 32. If we haven't exceeded the dirty limit, calling it in
+the actor or at the end should not make a difference for splice, since
+we should be going into balance_dirty_pages() at most once.
 
-The first patch in this series (assuming I'm driving git-send-email
-correctly) adds the io_mapping API. I ended up creating a new
-linux/io_mapping.h file as the kernel init code uses io.h and got very angry
-when I tried to include linux/highmem.h from that. I'm afraid I gave up at
-that point and just moved the code to a new file. 
+Perhaps it was different some years ago, or perhaps the micro benchmarks
+were screwed. Or perhaps my memory is shot, can't say for sure :)
 
-The second patch switches the drm/i915 driver to the new API. Performance
-improvements on 64-bit kernels are impressive as we were using the slow path
-before and now get to take advantage of 64-bit wonderfulness.
+> >  In this case it's moot anyway, since we can kill it.
+> 
+> Nope, we can only remove it if the fd is O_SYNC||is_sync().
+
+Right, I forgot this is still the buffered path.
+
+-- 
+Jens Axboe
+
