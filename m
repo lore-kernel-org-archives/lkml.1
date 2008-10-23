@@ -1,68 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYJWN6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbYJWN6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbYJWN6T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 09:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbYJWN6G
+	id S1753188AbYJWN6e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 09:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYJWN6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 09:58:06 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:48845 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751296AbYJWN6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 09:58:03 -0400
-Subject: Re: [Devel] Re: [PATCH 08/10] Introduce functions to restart a
-	process
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Andrey Mirkin <amirkin@parallels.com>
-Cc: Oren Laadan <orenl@cs.columbia.edu>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Louis.Rilling@kerlabs.com,
-       Cedric Le Goater <clg@fr.ibm.com>, Andrey Mirkin <major@openvz.org>,
-       Pavel Emelyanov <xemul@openvz.org>
-In-Reply-To: <200810231300.50628.amirkin@parallels.com>
-References: <1224285098-573-1-git-send-email-major@openvz.org>
-	 <200810221412.14174.major@openvz.org> <48FF45CF.5000306@cs.columbia.edu>
-	 <200810231300.50628.amirkin@parallels.com>
-Content-Type: text/plain
-Date: Thu, 23 Oct 2008 06:57:57 -0700
-Message-Id: <1224770277.12673.21.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Oct 2008 09:58:10 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59117 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752027AbYJWN6I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 09:58:08 -0400
+Message-Id: <20081023135732.138544330@bull.net>
+References: <20081023135714.914147053@bull.net>
+User-Agent: quilt/0.46-1
+Date: Thu, 23 Oct 2008 15:57:15 +0200
+From: Nadia.Derbey@bull.net
+To: akpm@linux-foundation.org, cboulte@gmail.com
+Cc: manfred@colorfullife.com, linux-kernel@vger.kernel.org,
+       Nadia.Derbey@bull.net
+Subject: [PATCH 1/1] SYSVIPC - Fix the ipc structures initialization
+Content-Disposition: inline; filename=ipc-fix-sysvipc_structures_initialization.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-23 at 13:00 +0400, Andrey Mirkin wrote:
-> 
-> > >>> It is not related to the freezer code actually.
-> > >>> That is needed to restart syscalls. Right now I don't have a code in my
-> > >>> patchset which restarts a syscall, but later I plan to add it.
-> > >>> In OpenVZ checkpointing we restart syscalls if process was caught in
-> > >>> syscall during checkpointing.
-> > >>
-> > >> Do you checkpoint uninterruptible syscalls as well? If only
-> > >> interruptible syscalls are checkpointed, I'd say that either this
-> > >> syscall uses ERESTARTSYS or ERESTART_RESTARTBLOCK, and then signal
-> > >> handling code already does the trick, or this syscall does not restart
-> > >> itself when interrupted, and well, this is life, userspace just sees
-> > >> -EINTR, which is allowed by the syscall spec.
-> > >> Actually this is how we checkpoint/migrate tasks in interruptible
-> > >> syscalls in Kerrighed and this works.
-> > >
-> > > We checkpoint only interruptible syscalls. Some syscalls do not restart
-> > > themself, that is why after restarting a process we restart syscall to
-> > > complete it.
-> >
-> > Can you please elaborate on this ?  I don't recall having had issues
-> > with that.
-> 
-> Right now in 2.6.18 kernel we restarts in such a way pause, rt_sigtimedwait 
-> and futex syscalls. Recently futex syscall was reworked and we will not need 
-> such hooks for it.
 
-Could you elaborate on this a bit?
+This patch is a fix for Bugzilla bug
+http://bugzilla.kernel.org/show_bug.cgi?id=11796.
 
-If the futex syscall was reworked, perhaps we can do the same for
-rt_sigtimedwait() and get rid of this code completely.
+To summarize, a simple testcase is concurrently running an infinite loop on
+msgctl(IPC_STAT) and a call to msgget():
 
--- Dave
+while (1)
+   msgctl(id, IPC_STAT)    1
+                           |
+                           |
+                           |
+                           2 id = msgget(key, IPC_CREAT)
+                           |
+                           |
+                           |
 
+In the interval [1-2], the id doesn't exist yet.
+
+In that test, the problem is the following:
+When we are calling ipc_addid() from msgget() the msq structure is not
+completely initialized. So idr_get_new() is inserting a pointer into the
+idr tree, and the structure which is pointed to has, among other fields,
+its lock uninitialized.
+
+Since msgctl(IPC_STAT) is looping while (1), idr_find() returns the
+pointer as soon as it is inserted into the IDR tree. And ipc_lock()
+calls spin_lock(&mqs->lock), while we have not initialized that lock
+yet.
+
+This patch moves the spin_lock_init() before the call to ipc_addid().
+It also sets the "deleted" flag to 1 in the window between msg structure
+allocation and msg structure locking in ipc_addid().
+
+The fix has been applied to semaphores and shm segments too.
+
+Regards,
+Nadia
+
+
+Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
+
+---
+ ipc/msg.c  |    9 +++++++++
+ ipc/sem.c  |    9 +++++++++
+ ipc/shm.c  |    9 +++++++++
+ ipc/util.c |    3 ++-
+ 4 files changed, 29 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.27/ipc/msg.c
+===================================================================
+--- linux-2.6.27.orig/ipc/msg.c	2008-10-23 15:20:46.000000000 +0200
++++ linux-2.6.27/ipc/msg.c	2008-10-23 16:38:59.000000000 +0200
+@@ -191,6 +191,15 @@ static int newque(struct ipc_namespace *
+ 	msq->q_perm.mode = msgflg & S_IRWXUGO;
+ 	msq->q_perm.key = key;
+ 
++	/*
++	 * We have a window between the time msq is inserted into the idr
++	 * tree (done in ipc_addid()) and the time it is actually locked.
++	 * In order to be safe during that window set the msq as deleted:
++	 * a concurrent ipc_lock() will see it as not present until the
++	 * initialization phase is complete.
++	 */
++	msq->q_perm.deleted = 1;
++
+ 	msq->q_perm.security = NULL;
+ 	retval = security_msg_queue_alloc(msq);
+ 	if (retval) {
+Index: linux-2.6.27/ipc/util.c
+===================================================================
+--- linux-2.6.27.orig/ipc/util.c	2008-10-23 15:20:46.000000000 +0200
++++ linux-2.6.27/ipc/util.c	2008-10-23 15:33:37.000000000 +0200
+@@ -266,6 +266,8 @@ int ipc_addid(struct ipc_ids* ids, struc
+ 	if (ids->in_use >= size)
+ 		return -ENOSPC;
+ 
++	spin_lock_init(&new->lock);
++
+ 	err = idr_get_new(&ids->ipcs_idr, new, &id);
+ 	if (err)
+ 		return err;
+@@ -280,7 +282,6 @@ int ipc_addid(struct ipc_ids* ids, struc
+ 		ids->seq = 0;
+ 
+ 	new->id = ipc_buildid(id, new->seq);
+-	spin_lock_init(&new->lock);
+ 	new->deleted = 0;
+ 	rcu_read_lock();
+ 	spin_lock(&new->lock);
+Index: linux-2.6.27/ipc/sem.c
+===================================================================
+--- linux-2.6.27.orig/ipc/sem.c	2008-10-23 15:20:46.000000000 +0200
++++ linux-2.6.27/ipc/sem.c	2008-10-23 15:57:27.000000000 +0200
+@@ -256,6 +256,15 @@ static int newary(struct ipc_namespace *
+ 	sma->sem_perm.mode = (semflg & S_IRWXUGO);
+ 	sma->sem_perm.key = key;
+ 
++	/*
++	 * We have a window between the time sma is inserted into the idr
++	 * tree (done in ipc_addid()) and the time it is actually locked.
++	 * In order to be safe during that window set the sma as deleted:
++	 * a concurrent ipc_lock() will see it as not present until the
++	 * initialization phase is complete.
++	 */
++	sma->sem_perm.deleted = 1;
++
+ 	sma->sem_perm.security = NULL;
+ 	retval = security_sem_alloc(sma);
+ 	if (retval) {
+Index: linux-2.6.27/ipc/shm.c
+===================================================================
+--- linux-2.6.27.orig/ipc/shm.c	2008-10-23 15:20:46.000000000 +0200
++++ linux-2.6.27/ipc/shm.c	2008-10-23 15:56:32.000000000 +0200
+@@ -355,6 +355,15 @@ static int newseg(struct ipc_namespace *
+ 	shp->shm_perm.mode = (shmflg & S_IRWXUGO);
+ 	shp->mlock_user = NULL;
+ 
++	/*
++	 * We have a window between the time shp is inserted into the idr
++	 * tree (done in ipc_addid()) and the time it is actually locked.
++	 * In order to be safe during that window set the shp as deleted:
++	 * a concurrent ipc_lock() will see it as not present until the
++	 * initialization phase is complete.
++	 */
++	shp->shm_perm.deleted = 1;
++
+ 	shp->shm_perm.security = NULL;
+ 	error = security_shm_alloc(shp);
+ 	if (error) {
+
+-- 
