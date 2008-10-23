@@ -1,37 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbYJWDX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbYJWD2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753155AbYJWDX5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 23:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbYJWDXs
+	id S1753402AbYJWD2s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 23:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbYJWD2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 23:23:48 -0400
-Received: from saeurebad.de ([85.214.36.134]:48680 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750785AbYJWDXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 23:23:48 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: Andrea Righi <righi.andrea@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: lockdep splat from fbmem
-Date: Thu, 23 Oct 2008 05:23:38 +0200
-Message-ID: <87ljwgj8p1.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 22 Oct 2008 23:28:39 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:42282 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750785AbYJWD2j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 23:28:39 -0400
+Date: Wed, 22 Oct 2008 23:28:32 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Markus Trippelsdorf <markus@trippelsdorf.de>
+Cc: linux-kernel@vger.kernel.org, eugene@ibrix.com, msnitzer@ibrix.com,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: ext3: fix ext3_dx_readdir hash collision handling - Regression
+Message-ID: <20081023032832.GE10369@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Markus Trippelsdorf <markus@trippelsdorf.de>,
+	linux-kernel@vger.kernel.org, eugene@ibrix.com, msnitzer@ibrix.com,
+	akpm@linux-foundation.org, torvalds@linux-foundation.org
+References: <20081022093201.GA2227@gentoox2.trippelsdorf.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Disposition: inline
+In-Reply-To: <20081022093201.GA2227@gentoox2.trippelsdorf.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Oct 22, 2008 at 11:32:01AM +0200, Markus Trippelsdorf wrote:
+> Commit 6a897cf447a83c9c3fd1b85a1e525c02d6eada7d 
+> "ext3: fix ext3_dx_readdir hash collision handling" causes a regression
+> when deleting big directories.
+> 
+> I'm using an ext3 filesystem in data=writeback mode as my root fs.
+> When I untar a kernel tarball and then rm -r the files, this is what
+> happens on my machine (latest git):
+> 
+> markus@gentoox2 ~ % tar xjf  linux-2.6.27.2.tar.bz2
+> markus@gentoox2 ~ % rm -r linux-2.6.27.2
+> rm: cannot remove `linux-2.6.27.2/arch/alpha/include/asm/statfs.h': No such file or directory...
 
-fb_mmap() is called under mmap_sem and acquires fb_info->lock.
+I haven't been able to replicate this.  Does it matter which kernel
+tarball you use?  And can you send me the output of "dumpe2fs -h
+/dev/hdXX", where hdXX is the device of the filesystem where this was
+failing?
 
-Since 3e680aae4e53ab "fb: convert lock/unlock_kernel() into local fb
-mutex", fb_ioctl() takes fb_info->lock and does copy_to/from_user()
-under it, which in turn might acquire mmap_sem.
+Thanks,
 
-Just noticed the trace and wanted to let you know.
-
-        Hannes
+						- Ted
