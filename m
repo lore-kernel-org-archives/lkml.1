@@ -1,109 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbYJWIyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbYJWI4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754711AbYJWIyt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 04:54:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbYJWIyl
+	id S1754812AbYJWI4X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 04:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbYJWI4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 04:54:41 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:30580 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752006AbYJWIyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 04:54:40 -0400
-From: Andrey Mirkin <major@openvz.org>
-To: Louis.Rilling@kerlabs.com
-Subject: Re: [Devel] Re: [PATCH 08/10] Introduce functions to restart a process
-Date: Thu, 23 Oct 2008 12:53:34 +0400
-User-Agent: KMail/1.8.2
-Cc: devel@openvz.org, Pavel Emelyanov <xemul@openvz.org>,
-       Cedric Le Goater <clg@fr.ibm.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <1224285098-573-1-git-send-email-major@openvz.org> <200810221412.14174.major@openvz.org> <20081022104630.GY15171@hawkmoon.kerlabs.com>
-In-Reply-To: <20081022104630.GY15171@hawkmoon.kerlabs.com>
+	Thu, 23 Oct 2008 04:56:09 -0400
+Received: from anchor-post-36.mail.demon.net ([194.217.242.86]:4445 "EHLO
+	anchor-post-36.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751127AbYJWI4I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 04:56:08 -0400
+Message-ID: <49003C35.1090301@lougher.demon.co.uk>
+Date: Thu, 23 Oct 2008 09:56:21 +0100
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tim.bird@am.sony.com
+Subject: Re: Subject: [PATCH 12/16] Squashfs: header files
+References: <E1KqrTX-0001y4-JE@dylan> <Pine.LNX.4.64.0810221801570.5634@vixen.sonytel.be>
+In-Reply-To: <Pine.LNX.4.64.0810221801570.5634@vixen.sonytel.be>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810231253.35532.major@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 October 2008 14:46 Louis Rilling wrote:
-> On Wed, Oct 22, 2008 at 02:12:12PM +0400, Andrey Mirkin wrote:
-> > On Wednesday 22 October 2008 13:25 Louis Rilling wrote:
-> > > On Wed, Oct 22, 2008 at 12:49:54PM +0400, Andrey Mirkin wrote:
-> > > > On Monday 20 October 2008 13:23 Cedric Le Goater wrote:
-> > > > > Hello Andrey !
-> > > > >
-> > > > > > diff --git a/arch/x86/kernel/entry_32.S
-> > > > > > b/arch/x86/kernel/entry_32.S index 109792b..a4848a3 100644
-> > > > > > --- a/arch/x86/kernel/entry_32.S
-> > > > > > +++ b/arch/x86/kernel/entry_32.S
-> > > > > > @@ -225,6 +225,7 @@ ENTRY(ret_from_fork)
-> > > > > >  	GET_THREAD_INFO(%ebp)
-> > > > > >  	popl %eax
-> > > > > >  	CFI_ADJUST_CFA_OFFSET -4
-> > > > > > +ret_from_fork_tail:
-> > > > > >  	pushl $0x0202			# Reset kernel eflags
-> > > > > >  	CFI_ADJUST_CFA_OFFSET 4
-> > > > > >  	popfl
-> > > > > > @@ -233,6 +234,26 @@ ENTRY(ret_from_fork)
-> > > > > >  	CFI_ENDPROC
-> > > > > >  END(ret_from_fork)
-> > > > > >
-> > > > > > +ENTRY(i386_ret_from_resume)
-> > > > > > +	CFI_STARTPROC
-> > > > > > +	pushl %eax
-> > > > > > +	CFI_ADJUST_CFA_OFFSET 4
-> > > > > > +	call schedule_tail
-> > > > > > +	GET_THREAD_INFO(%ebp)
-> > > > > > +	popl %eax
-> > > > > > +	CFI_ADJUST_CFA_OFFSET -4
-> > > > > > +	movl (%esp), %eax
-> > > > > > +	testl %eax, %eax
-> > > > > > +	jz    1f
-> > > > > > +	pushl %esp
-> > > > > > +	call  *%eax
-> > > > > > +	addl  $4, %esp
-> > > > > > +1:
-> > > > > > +	addl  $256, %esp
-> > > > > > +	jmp   ret_from_fork_tail
-> > > > > > +	CFI_ENDPROC
-> > > > > > +END(i386_ret_from_resume)
-> > > > >
-> > > > > Could you explain why you need to do this
-> > > > >
-> > > > > 	call  *%eax
-> > > > >
-> > > > > is it related to the freezer code ?
-> > > >
-> > > > It is not related to the freezer code actually.
-> > > > That is needed to restart syscalls. Right now I don't have a code in
-> > > > my patchset which restarts a syscall, but later I plan to add it. In
-> > > > OpenVZ checkpointing we restart syscalls if process was caught in
-> > > > syscall during checkpointing.
-> > >
-> > > Do you checkpoint uninterruptible syscalls as well? If only
-> > > interruptible syscalls are checkpointed, I'd say that either this
-> > > syscall uses ERESTARTSYS or ERESTART_RESTARTBLOCK, and then signal
-> > > handling code already does the trick, or this syscall does not restart
-> > > itself when interrupted, and well, this is life, userspace just sees
-> > > -EINTR, which is allowed by the syscall spec.
-> > > Actually this is how we checkpoint/migrate tasks in interruptible
-> > > syscalls in Kerrighed and this works.
-> >
-> > We checkpoint only interruptible syscalls. Some syscalls do not restart
-> > themself, that is why after restarting a process we restart syscall to
-> > complete it.
->
-> I guess you do that to avoid breaking application that are badly written
-> and do not handle -EINTR correctly with interruptible syscalls. Right?
+Geert Uytterhoeven wrote:
+> On Fri, 17 Oct 2008, Phillip Lougher wrote:
 
-Right, also this is needed to restart some syscalls (like pause) from kernel 
-without returning to user space. Let me explain it in more details. There is 
-a gap when process will be in user space just before entering syscall again. 
-At this time a signal can be delivered to process and it even can be handled. 
-So, we will miss a signal which must interrupt pause syscall.
+>> +#ifdef SQUASHFS_TRACE
+>> +#define TRACE(s, args...)	printk(KERN_NOTICE "SQUASHFS: "s, ## args)
+>> +#else
+>> +#define TRACE(s, args...)	{}
+>> +#endif
+> 
+> Just use
+> 
+>     #define TRACE(s, args...)	pr_debug("SQUASHFS: "s, ## args)
 
-Andrey
+OK.
+
+>> +
+>> +#define WARNING(s, args...)	printk(KERN_WARNING "SQUASHFS: "s, ## args)
+>                                 ^^^^^^^^^^^^^^^^
+> 				pr_warning(
+> 
+
+OK.
+
+> 
+> SQUASHFS_MKFLAGS() isn't used by the kernel, only by the tools (mksquashfs)?
+> 
+
+Only used by mksquashfs.  I pulled out the user-space only stuff into a 
+separate include, but must have missed this one.
+
+>> +/* meta index cache */
+>> +#define SQUASHFS_META_INDEXES	(SQUASHFS_METADATA_SIZE / sizeof(unsigned int))
+>                                                                          ^^^^^^^^^^^^
+> I was wondering whether a meta index is an `unsigned int' or an `__le32', but I
+> couldn't find it easily.
+> 
+
+Unsigned int, it's used internally by the index cache code (file.c).  It 
+works out how many block indexes can fit into one compressed metadata block.
+
+Phillip
