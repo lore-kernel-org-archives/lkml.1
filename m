@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbYJWOXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbYJWOY6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755869AbYJWOXS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 10:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbYJWOXA
+	id S1754917AbYJWOY6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 10:24:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbYJWOYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 10:23:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51565 "EHLO mx3.mail.elte.hu"
+	Thu, 23 Oct 2008 10:24:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51863 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752772AbYJWOW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 10:22:59 -0400
-Date: Thu, 23 Oct 2008 16:22:43 +0200
+	id S1751275AbYJWOYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 10:24:49 -0400
+Date: Thu, 23 Oct 2008 16:24:25 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, tiwai@suse.de, joerg.roedel@amd.com
-Subject: Re: [PATCH] x86: restore the old swiotlb alloc_coherent behavior
-Message-ID: <20081023142243.GA22088@elte.hu>
-References: <20081023231230V.fujita.tomonori@lab.ntt.co.jp>
+To: Mike Travis <travis@sgi.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [bug] Re: [PATCH 00/35] cpumask: Replace cpumask_t with struct
+	cpumask
+Message-ID: <20081023142425.GB22088@elte.hu>
+References: <20081023020826.051012000@polaris-admin.engr.sgi.com> <20081023120322.GC25132@elte.hu> <20081023125529.GA18327@elte.hu> <490088BD.1060606@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081023231230V.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <490088BD.1060606@sgi.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,36 +38,25 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+* Mike Travis <travis@sgi.com> wrote:
 
-> This restores the old swiotlb alloc_coherent behavior (before the
-> alloc_coherent rewrite):
-> 
-> http://lkml.org/lkml/2008/8/12/200
-> 
-> The old alloc_coherent avoids GFP_DMA allocation first and if the
-> allocated address is not fit for the device's coherent_dma_mask, then
-> dma_alloc_coherent does GFP_DMA allocation. If it fails,
-> alloc_coherent calls swiotlb_alloc_coherent (in short, we rarely used
-> swiotlb_alloc_coherent).
-> 
-> After the alloc_coherent rewrite, dma_alloc_coherent
-> (include/asm-x86/dma-mapping.h) directly calls swiotlb_alloc_coherent.
-> It means that we possibly can't handle a device having dma_masks >
-> 24bit < 32bits since swiotlb_alloc_coherent doesn't have the above
-> GFP_DMA retry mechanism.
-> 
-> This patch fixes x86's swiotlb alloc_coherent to use the GFP_DMA retry
-> mechanism, which dma_generic_alloc_coherent() provides now
-> (pci-nommu.c and GART IOMMU driver also use
-> dma_generic_alloc_coherent).
-> 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> ---
->  arch/x86/kernel/pci-swiotlb_64.c |   14 +++++++++++++-
->  1 files changed, 13 insertions(+), 1 deletions(-)
+> Ingo Molnar wrote:
+> > ok, the new cpumask code blew up in -tip testing, with various sorts of 
+> > slab corruptions during scheduler init:
+> > 
+> ...
+>
+> Curious thing happens here.  I created the tree as you suggested 
+> (branch tip/cpus4096-v2) and copied in your .config file.  Running it 
+> through "silentoldconfig" (choosing only the defaults), I get the 
+> following changes.  This makes me suspect that I'm not testing the 
+> same thing as you are...?  Perhaps my git setup was not correct?
 
-applied to tip/core/urgent (to after the two other iommu related 
-patches) - thanks Fujita!
+no - i have some extras that forces on SMP for example to make it more 
+likely to trigger in random tests (it's far more interesting from a QA 
+point of view than UP).
+
+so as long as you select SMP you should get the same config. Lemme do a 
+.config you can plug in.
 
 	Ingo
