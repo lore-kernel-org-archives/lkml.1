@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbYJWVrB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbYJWVuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757898AbYJWVrB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 17:47:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbYJWVqw
+	id S1758027AbYJWVuh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 17:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbYJWVuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 17:46:52 -0400
-Received: from outbound-mail-22.bluehost.com ([69.89.21.17]:38686 "HELO
-	outbound-mail-22.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753133AbYJWVqw (ORCPT
+	Thu, 23 Oct 2008 17:50:10 -0400
+Received: from gv-out-0910.google.com ([216.239.58.186]:6727 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753692AbYJWVuI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 17:46:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=Z5kVVIMP3x52Wl+jcshGJ1+PrjWKaORsFLIUPqwRiThpRIZfvAPlk6VaXQ/tNuqIY93UhwWWB69eOr6dBOdEmWnLbg9NG/43D7Gn0Efv4BqRsBGTTexwrbrpLQz9iCc4;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Subject: Re: [BUG][PATCH] cpqphp: fix kernel NULL pointer dereference
-Date: Thu, 23 Oct 2008 14:46:31 -0700
-User-Agent: KMail/1.10.1 (Linux/2.6.26.5-45.fc9.x86_64; KDE/4.1.2; x86_64; ; )
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Alex Chiang <achiang@hp.com>,
-       Yinghai Lu <yinghai@kernel.org>, stable@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <48F7DB17.9020302@jp.fujitsu.com>
-In-Reply-To: <48F7DB17.9020302@jp.fujitsu.com>
+	Thu, 23 Oct 2008 17:50:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=KVhPVxZ01+hDoYVI8183d6gcuidWdEmAna6aGNRlR7JcQRNs9jT07xGz+VQSgIIqXz
+         I9eQjLse1eX6DRM4rWQ4CehFt6u3BlpkgkvXm6e58ua44ZCZTh6Gab8JxTPC7rkUWF6S
+         InPwONQgLaDOJgk0VSsrMVGqPskpm9SVOfg3I=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: petkovbb@gmail.com
+Subject: Re: [PATCH] cdrom: add TEAC CD-224E to the NO_AUTOCLOSE list
+Date: Thu, 23 Oct 2008 22:50:03 +0200
+User-Agent: KMail/1.9.10
+Cc: "=?iso-8859-1?q?N=E9meth?= =?iso-8859-1?q?_M=E1rton?=" 
+	<nm127@freemail.hu>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <4900655E.7050906@freemail.hu> <9ea470500810230537u559fff3chda7c6f47927bf1b0@mail.gmail.com>
+In-Reply-To: <9ea470500810230537u559fff3chda7c6f47927bf1b0@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200810231446.31724.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Message-Id: <200810232250.03290.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, October 16, 2008 5:23 pm Kenji Kaneshige wrote:
-> Hi,
->
-> The following patch fixes the regression in 2.6.27 that causes
-> kernel NULL pointer dereference at cpqphp driver probe time.
-> This patch should be backported to the .27 stable series.
+On Thursday 23 October 2008, Boris Petkov wrote:
+> On Thu, Oct 23, 2008 at 1:51 PM, Németh Márton <nm127@freemail.hu> wrote:
+> > From: Márton Németh <nm127@freemail.hu>
+> >
+> > The "TEAC CD-ROM CD-224E" cannot close its tray, so add it to the NO_AUTOCLOSE list. This
+> > will correct the "Can close tray" field of /proc/sys/dev/cdrom/info.
+> >
+> > Signed-off-by: Márton Németh <nm127@freemail.hu>
+> 
+> Acked-by: Borislav Petkov <petkovbb@gmail.com>
 
-Applied, thanks.
-
-Jesse
+applied
