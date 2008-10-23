@@ -1,79 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757052AbYJWQEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbYJWQFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757052AbYJWQEl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 12:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbYJWQEY
+	id S1756705AbYJWQFH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 12:05:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756793AbYJWQEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 12:04:24 -0400
-Received: from rtr.ca ([76.10.145.34]:33402 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751746AbYJWQEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 12:04:23 -0400
-Message-ID: <4900A0A7.3090102@rtr.ca>
-Date: Thu, 23 Oct 2008 12:04:55 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Thu, 23 Oct 2008 12:04:36 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:36653 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756554AbYJWQEd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 12:04:33 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Dave Miller <davem@davemloft.net>
+Cc: Benjamin Thery <benjamin.thery@bull.net>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, netdev <netdev@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Al Viro <viro@ftp.linux.org.uk>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
+       Tejun Heo <htejun@gmail.com>, Denis Lunev <den@openvz.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+References: <20081022152144.351965414@theryb.frec.bull.fr>
+	<m17i80nzff.fsf@frodo.ebiederm.org> <20081022212124.GA9910@us.ibm.com>
+	<49003019.40904@bull.net>
+Date: Thu, 23 Oct 2008 08:56:08 -0700
+In-Reply-To: <49003019.40904@bull.net> (Benjamin Thery's message of "Thu, 23
+	Oct 2008 10:04:41 +0200")
+Message-ID: <m1fxmni9uv.fsf_-_@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: matthieu castet <castet.matthieu@free.fr>
-Cc: Tejun Heo <tj@kernel.org>, David Greaves <david@dgreaves.com>,
-       linux-ide@vger.kernel.org,
-       Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [smartmontools-support] SMART to USB/sata dock in 2.6.27-rc5
- doesn't work
-References: <48EE7E0A.8040701@dgreaves.com> <48F40164.5000502@kernel.org> <48F641A3.5080609@free.fr>
-In-Reply-To: <48F641A3.5080609@free.fr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Dave Miller <davem@davemloft.net>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
+	*      [score: 0.0256]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: [PATCH] netns: Coexist with the sysfs limitations v2
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-matthieu castet wrote:
-> Hi,
-> 
-> Tejun Heo wrote:
->> David Greaves wrote:
->>> Error Counter logging not supported
->>> Device does not support Self Test logging
->>
->> The USB bridge should support SAT (SCSI-ATA translation) and many
->> don't.  Nothing much can be done about it.  The hardware just don't know
->> how to do it.
->>
-> That true that the hardware should support SAT, but even if it support 
-> it, linux need some patches to support SAT over USB. See 
-> http://thread.gmane.org/gmane.linux.scsi/43688 and the patch mentioned 
-> in the thread.
-...
 
-Ahh.. Great!  This mostly fixes smartctl operation on at least two
-of my USB drive enclosures here:
+To make testing of the network namespace simpler allow
+the network namespace code and the sysfs code to be
+compiled and run at the same time.  To do this only
+virtual devices are allowed in the additional network
+namespaces and those virtual devices are not placed
+in the kobject tree.
 
-    1. a recent rev.  2.5" NexStar-3 SATA enclosure.
-    2. a 250GB 2.5" WD "Passport" external USB drive/enclosure.
+Since virtual devices don't actually do anything interesting
+hardware wise that needs device management there should
+be no loss in keeping them out of the kobject tree and
+by implication sysfs.  The gain in ease of testing
+and code coverage should be significant.
 
-With the patch, this command line works for me:
+Changelog:
 
-    smartctl -a -dsat -T permissive /dev/sdb 
+v2: As pointed out by Benjamin Thery it only makes sense to call
+    device_rename in the initial network namespace for now.
 
-And hdparm just works regardless, with or without the patch.
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Acked-by: Benjamin Thery <benjamin.thery@bull.net>
+Tested-by: Serge Hallyn <serue@us.ibm.com>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Acked-by: Daniel Lezcano <dlezcano@fr.ibm.com>
+---
+ net/Kconfig          |    2 +-
+ net/core/dev.c       |   25 ++++++++++++++++++++-----
+ net/core/net-sysfs.c |    7 +++++++
+ 3 files changed, 28 insertions(+), 6 deletions(-)
 
-
-> 
-> Unfortunately I am a bit busy to try to resubmit it. But I won't care if 
-> somebody improve it/resubmit it ;)
-> 
-> Matthieu
-> 
-> PS : there also  http://thread.gmane.org/gmane.linux.usb.general/7145 
-> that is pending.
-> 
-> 
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/net/Kconfig b/net/Kconfig
+index d789d79..8c3d97c 100644
+--- a/net/Kconfig
++++ b/net/Kconfig
+@@ -27,7 +27,7 @@ menu "Networking options"
+ config NET_NS
+ 	bool "Network namespace support"
+ 	default n
+-	depends on EXPERIMENTAL && !SYSFS && NAMESPACES
++	depends on EXPERIMENTAL && NAMESPACES
+ 	help
+ 	  Allow user space to create what appear to be multiple instances
+ 	  of the network stack.
+diff --git a/net/core/dev.c b/net/core/dev.c
+index b8a4fd0..0e38594 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -924,10 +924,15 @@ int dev_change_name(struct net_device *dev, const char *newname)
+ 		strlcpy(dev->name, newname, IFNAMSIZ);
+ 
+ rollback:
+-	ret = device_rename(&dev->dev, dev->name);
+-	if (ret) {
+-		memcpy(dev->name, oldname, IFNAMSIZ);
+-		return ret;
++	/* For now only devices in the initial network namespace
++	 * are in sysfs.
++	 */
++	if (net == &init_net) {
++		ret = device_rename(&dev->dev, dev->name);
++		if (ret) {
++			memcpy(dev->name, oldname, IFNAMSIZ);
++			return ret;
++		}
+ 	}
+ 
+ 	write_lock_bh(&dev_base_lock);
+@@ -4449,6 +4454,15 @@ int dev_change_net_namespace(struct net_device *dev, struct net *net, const char
+ 	if (dev->features & NETIF_F_NETNS_LOCAL)
+ 		goto out;
+ 
++#ifdef CONFIG_SYSFS
++	/* Don't allow real devices to be moved when sysfs
++	 * is enabled.
++	 */
++	err = -EINVAL;
++	if (dev->dev.parent)
++		goto out;
++#endif
++
+ 	/* Ensure the device has been registrered */
+ 	err = -EINVAL;
+ 	if (dev->reg_state != NETREG_REGISTERED)
+@@ -4506,6 +4520,8 @@ int dev_change_net_namespace(struct net_device *dev, struct net *net, const char
+ 	 */
+ 	dev_addr_discard(dev);
+ 
++	netdev_unregister_kobject(dev);
++
+ 	/* Actually switch the network namespace */
+ 	dev_net_set(dev, net);
+ 
+@@ -4522,7 +4538,6 @@ int dev_change_net_namespace(struct net_device *dev, struct net *net, const char
+ 	}
+ 
+ 	/* Fixup kobjects */
+-	netdev_unregister_kobject(dev);
+ 	err = netdev_register_kobject(dev);
+ 	WARN_ON(err);
+ 
+diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
+index 92d6b94..85cb8bd 100644
+--- a/net/core/net-sysfs.c
++++ b/net/core/net-sysfs.c
+@@ -476,6 +476,10 @@ void netdev_unregister_kobject(struct net_device * net)
+ 	struct device *dev = &(net->dev);
+ 
+ 	kobject_get(&dev->kobj);
++
++	if (dev_net(net) != &init_net)
++		return;
++
+ 	device_del(dev);
+ }
+ 
+@@ -501,6 +505,9 @@ int netdev_register_kobject(struct net_device *net)
+ #endif
+ #endif /* CONFIG_SYSFS */
+ 
++	if (dev_net(net) != &init_net)
++		return 0;
++
+ 	return device_add(dev);
+ }
+ 
+-- 
+1.5.3.rc6.17.g1911
 
