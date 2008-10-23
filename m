@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbYJWWNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755056AbYJWWU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757487AbYJWWNZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 18:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbYJWWNQ
+	id S1755056AbYJWWU3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 18:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbYJWWUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 18:13:16 -0400
-Received: from h155.mvista.com ([63.81.120.155]:18684 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753026AbYJWWNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 18:13:15 -0400
-Message-ID: <4900F6F2.6000601@ru.mvista.com>
-Date: Fri, 24 Oct 2008 02:13:06 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Thu, 23 Oct 2008 18:20:18 -0400
+Received: from heinz.dinsnail.net ([87.106.63.74]:38978 "EHLO
+	heinz.dinsnail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751772AbYJWWUR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 18:20:17 -0400
+Date: Thu, 23 Oct 2008 23:33:09 +0200
+From: Michael Weiser <michael@weiser.dinsnail.net>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: rtc/i2c-mpc stops working with 2.6.27 on Linkstation HG
+	(powerpc)
+Message-ID: <20081023213309.GA19777@weiser.dinsnail.net>
+References: <20081022191650.GA11406@weiser.dinsnail.net> <Pine.LNX.4.64.0810232029380.9657@axis700.grange>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git pull] IDE updates #4
-References: <200810212100.52985.bzolnier@gmail.com> <48FFAFBB.8020709@ru.mvista.com> <49009EDA.2030707@ru.mvista.com> <200810232307.15462.bzolnier@gmail.com>
-In-Reply-To: <200810232307.15462.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0810232029380.9657@axis700.grange>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-dinsnail.net-MailScanner-ID: m9NMK890010147
+X-MailScanner: Found to be clean
+X-MailScanner-From: michael@weiser.dinsnail.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, Oct 23, 2008 at 08:30:23PM +0200, Guennadi Liakhovetski wrote:
 
-Bartlomiej Zolnierkiewicz wrote:
+> > with 2.6.27(-gentoo) the rtc (Ricoh 5c372) is no longer found on my
+> > Linkstation HG. It seems, the i2c-mpc driver doesn't even find the I2C
+> > controller.
 
->>>> Also I didn't know anything about your patchset and its
->>>> dependency on TX4939, otherwise I'll be pushing things in
->>>>         
->>>   The patchset consists of a large patch moving read_sff_dma_status() to 
->>> its porper place, one small preparatory patch, and 2 followup patches, 
->>> so unfortunately it's dependent on TX4939 in its main patch (worse, the 
->>> relevant part of this driver has changed after your last merged driver 
->>> version)...
->>>       
->>>> different order or even skip this pull request if needed
->>>> (TX493x drivers are new stuff and were still under review,
->>>> such things can be also submitted after the merge window
->>>> closes so they were given the lowest priority).
->>>>         
->>>   Unfortunately, that driver has been submitted first back 9/09, long 
->>> before my patchset was even created, so the dependence was just natural.
->>>       
->>     I could also rip out TX4939 part from the patch and leave Atsushi to deal 
->> with the fallout (though I could give him the ripped out part to simply be 
->> merged to the driver) if you would queue my patchset ahead of the driver. 
->> Though I feel it's too late now for my patchset to get into 2.6.28 the way 
->> things have been happening... :-/
->>     
->
-> Ehm, submitting things _before_ the merge window usually help. ;-)
->   
+> This is a known regression, see, e.g., here:
 
-   If I only had time to do that...
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-October/064318.html
 
-> Anyway, no need to get too frustrated over it.  It is normal that
->   
+> waiting for someone to find time to fix it.
 
-   I got used to my bad luck long ago -- this was only a minor series of 
-misfortunes... :-)
-
-MBR, Sergei
-
-
+Cheers. I found the thread but not the pertinent posts - the web mail
+archive I googled into must have been lagging. Sorry for the
+duplication.
+-- 
+bye, Michael
