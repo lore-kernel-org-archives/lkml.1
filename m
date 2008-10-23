@@ -1,67 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752530AbYJWQZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbYJWQ0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752530AbYJWQZw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 12:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbYJWQZj
+	id S1756960AbYJWQ0y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 12:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYJWQ0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 12:25:39 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33407 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754327AbYJWQZi (ORCPT
+	Thu, 23 Oct 2008 12:26:42 -0400
+Received: from mga10.intel.com ([192.55.52.92]:34110 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753101AbYJWQ0m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 12:25:38 -0400
-Date: Thu, 23 Oct 2008 12:05:53 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Jan Kiszka <jan.kiszka@siemens.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 08/13 v2] ftrace: do not trace init sections
-In-Reply-To: <49008A9B.8040905@siemens.com>
-Message-ID: <alpine.DEB.1.10.0810231202310.1765@gandalf.stny.rr.com>
-References: <20081022212721.167005680@goodmis.org> <20081022213552.440512191@goodmis.org> <49005CD0.2070807@siemens.com> <alpine.DEB.1.10.0810230732100.31839@gandalf.stny.rr.com> <49008A9B.8040905@siemens.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 23 Oct 2008 12:26:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,471,1220252400"; 
+   d="scan'208";a="630867412"
+Message-ID: <4900A5CA.5070107@linux.intel.com>
+Date: Thu, 23 Oct 2008 18:26:50 +0200
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: paulmck@linux.vnet.ibm.com
+CC: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Henroid, Andrew D" <andrew.d.henroid@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 2/2] i7300_idle driver v1.55
+References: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com> <e8b529091b2ab65f5a4783e292c2b472e309116e.1223706853.git.len.brown@intel.com> <20081011083347.GA31918@elte.hu> <alpine.LFD.1.10.0810161805360.3026@localhost.localdomain> <48FE07AE.4010203@linux.intel.com> <7E82351C108FA840AB1866AC776AEC4637CD27F3@orsmsx505.amr.corp.intel.com> <48FED3FA.6040703@linux.intel.com> <20081022234006.GB28775@linux-os.sc.intel.com> <48FFCF28.3070604@linux.intel.com> <7E82351C108FA840AB1866AC776AEC4637D389DB@orsmsx505.amr.corp.intel.com> <20081023150047.GD6368@linux.vnet.ibm.com>
+In-Reply-To: <20081023150047.GD6368@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 23 Oct 2008, Jan Kiszka wrote:
-> 
-> >From my POV - I'm using mcount tracing for a few years now -, the thing
-> about this is gaining a complete overview of what happens at function
-> level, which code paths were taken (at that level). Each bit of
-> information you (have to) drop can harm here, even more if they come in
-> larger chunks like in this case.
+> Suppose that one of the idle CPUs takes an interrupt, whose handler
+> accesses the module being removed.  How is this handled?
 
-Then you should be happy :-)
+We're just talking about idle notifier code here. Interrupts shouldn't
+ever call idle notifiers directly.
 
-I removed the notrace to those sections. Although there is already a
-notrace on the __init. We probably should remove it. The recordmcount.pl
-does not add tracing to these functions. If you want tracing of these 
-functions, you will need to use the static ftrace tracer (!DYNAMIC_FTRACE)
-
-> 
-> I don't know if this feature is already considered for / part of
-> mainline, but oops backtraces based on mcount instrumentation used to be
-> quite helpful for me to understand the wider context of several faults.
-> The more you have to mask out of this picture, the harder it gets to
-> match the trace to your model of the kernel activities. At least you
-> have to know more in advance about the limitation of the tracer...
-
-The ftrace buffer can be dumped out on oops. I'm not sure if it is always 
-on. If it is, I need to make it default off and add a command line and 
-sysctl to turn it on. Otherwise, we will have people complaining about the 
-extra output to the console on oops.
-
--- Steve
-
+-Andi
