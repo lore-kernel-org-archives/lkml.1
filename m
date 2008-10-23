@@ -1,90 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752469AbYJWEOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbYJWEOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752469AbYJWEOe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 00:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbYJWEOV
+	id S1752709AbYJWEOu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 00:14:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYJWEO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 00:14:21 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:31658 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750999AbYJWEOU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 00:14:20 -0400
-Message-ID: <f73f7ab80810222114k7caffd16wbeb464c4739bfc77@mail.gmail.com>
-Date: Thu, 23 Oct 2008 00:14:19 -0400
-From: "Kyle Moffett" <kyle@moffetthome.net>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 0/4][RFC] netns: sysfs: add a netns suffix to net device sysfs entries
-Cc: "Stephen Hemminger" <shemminger@vyatta.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Benjamin Thery" <benjamin.thery@bull.net>,
-       netdev <netdev@vger.kernel.org>, "Dave Miller" <davem@davemloft.net>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "Al Viro" <viro@ftp.linux.org.uk>,
-       "Daniel Lezcano" <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       "Tejun Heo" <htejun@gmail.com>, "Denis Lunev" <den@openvz.org>,
-       "Linux Containers" <containers@lists.linux-foundation.org>
-In-Reply-To: <m11vy8jl5s.fsf@frodo.ebiederm.org>
+	Thu, 23 Oct 2008 00:14:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40803 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751873AbYJWEO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 00:14:27 -0400
+Message-ID: <48FFFA15.8060603@kernel.org>
+Date: Thu, 23 Oct 2008 13:14:13 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, jeff@garzik.org
+Subject: Re: [PATCH 1/2] libata: get rid of ATA_MAX_QUEUE loop in ata_qc_complete_multiple()
+References: <1224661243-7929-1-git-send-email-jens.axboe@oracle.com> <1224661243-7929-2-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1224661243-7929-2-git-send-email-jens.axboe@oracle.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081022152144.351965414@theryb.frec.bull.fr>
-	 <m1d4hso0ym.fsf@frodo.ebiederm.org> <20081022203045.GA4633@us.ibm.com>
-	 <m18wsgmji0.fsf@frodo.ebiederm.org> <20081022145507.2d1ea86c@extreme>
-	 <m11vy8jl5s.fsf@frodo.ebiederm.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 23 Oct 2008 04:14:17 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22, 2008 at 6:54 PM, Eric W. Biederman
-<ebiederm@xmission.com> wrote:
-> Stephen Hemminger <shemminger@vyatta.com> writes:
->>> The well-known user space tools don't use /sys at all.  Modern
->>> network tools use rtnetlink (ip) old network tools use /proc/net.
->>>
->>> Very few things actually use /sys and for those things lo@1 or
->>> eth0@1 are completely useless except for implementing a FUSE
->>> mock up of sysfs.  But you don't need anything in sysfs to do
->>> that as all of the interesting information is available through
->>> /proc/net or rtnetlink.
->>
->> Lots of scripts are starting use /sys for things. It is easier to
->> parse /sys/class/net than the output of ifconfig or ip
+Jens Axboe wrote:
+> @@ -4811,16 +4811,19 @@ int ata_qc_complete_multiple(struct ata_port *ap, u32 qc_active)
+>               return -EINVAL;
+>       }
 >
-> Yes.  So we need the correct values in /sys/class/net.
+> -     for (i = 0; i < ATA_MAX_QUEUE; i++) {
+> +     while (done_mask) {
+>               struct ata_queued_cmd *qc;
+> +             unsigned int next = __ffs(done_mask);
 >
-> Which is why sysfs and network namespaces do not coexist currently.
+> -             if (!(done_mask & (1 << i)))
+> -                     continue;
+> -
+> -             if ((qc = ata_qc_from_tag(ap, i))) {
+> +             qc = ata_qc_from_tag(ap, i + next);
+> +             if (qc) {
+>                       ata_qc_complete(qc);
+>                       nr_done++;
+>               }
+> +             if (++next >= ATA_MAX_QUEUE)
+> +                     break;
+> +             i += next;
+> +             done_mask >>= next;
 
-I definitely agree that "eth0@1" is a bad ide. I know for sure that a
-relatively large number of system init scripts poke about in
-/sys/class/net/$IFACE, as well as a number of the system installation
-scripts.  Those scripts include some that my company has written for
-internal use and others supplied by distributions.
+Shouldn't this be...
 
-Daemons and such mostly use netlink, but for anything written in shell
-it's much easier to do things like this:
+        i += next + 1;
+        if (i >= ATA_MAX_QUEUE)
+                break;
 
-for devpath in /sys/class/net/*; do
-    dev="${dev##/sys/class/net/}"
-    case "${dev}" in
-        [....]
-    esac
-    if [ "x${mac}" = "x$(cat ${devpath}/address)" ]; then
-        echo "Found MAC '${mac}': ${dev}"
-    fi
-done
+or better...
 
-If I wanted to perform similar things with the output of ifconfig, it
-would involve some much more fragile manual text parsing of the output
-of the "ip" or "ifconfig" commands.  And sometimes the "ifconfig"
-command is outright wrong.  If you have an interface name longer than
-7 characters or so then some versions of ifconfig will truncate it
-internally and display garbage.
+while (done_mask) {
+        struct ata_queued_cmd *qc;
+        unsigned int next = __ffs(done_mask);
 
-While the "show only the root namespace" interim solution is
-problematic for processes in network namespaces, I think it's more
-important not to break things for admin tools in the root namespace.
+        tag += next;
+        if ((qc = ata_qc_from_tag(ap, tag))) {
+                ata_qc_complete(qc);
+                nr_done++;
+        }
+        next++;
+        tag += next;
+        done_mask >>= next;
+}
 
-Cheers,
-Kyle Moffett
+done_mask is guaranteed to be zero at when tag reaches ATA_MAX_QUEUE.
+
+Thanks.
+
+-- 
+tejun
