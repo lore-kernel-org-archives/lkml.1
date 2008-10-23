@@ -1,81 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754993AbYJWOPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYJWOTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754993AbYJWOPe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 10:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbYJWOPD
+	id S1754109AbYJWOTc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 10:19:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbYJWOTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 10:15:03 -0400
-Received: from sh.osrg.net ([192.16.179.4]:41268 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755219AbYJWOPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 10:15:00 -0400
-Date: Thu, 23 Oct 2008 23:14:29 +0900
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, tiwai@suse.de, joerg.roedel@amd.com
-Subject: [PATCH] x86: restore the old swiotlb alloc_coherent behavior
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081023231230V.fujita.tomonori@lab.ntt.co.jp>
+	Thu, 23 Oct 2008 10:19:23 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:54168 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751030AbYJWOTV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 10:19:21 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Jon Tollefson <kniht@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: [PATCH 1/2] hugetlbfs: handle pages higher order than MAX_ORDER
+Date: Thu, 23 Oct 2008 15:19:18 +0100
+Message-Id: <1224771559-19363-2-git-send-email-apw@shadowen.org>
+X-Mailer: git-send-email 1.6.0.2.711.gf1ba4
+In-Reply-To: <1224771559-19363-1-git-send-email-apw@shadowen.org>
+References: <1224771559-19363-1-git-send-email-apw@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This restores the old swiotlb alloc_coherent behavior (before the
-alloc_coherent rewrite):
+When working with hugepages, hugetlbfs assumes that those hugepages
+are smaller than MAX_ORDER.  Specifically it assumes that the mem_map
+is contigious and uses that to optimise access to the elements of the
+mem_map that represent the hugepage.  Gigantic pages (such as 16GB pages
+on powerpc) by definition are of greater order than MAX_ORDER (larger
+than MAX_ORDER_NR_PAGES in size).  This means that we can no longer make
+use of the buddy alloctor guarentees for the contiguity of the mem_map,
+which ensures that the mem_map is at least contigious for maximmally
+aligned areas of MAX_ORDER_NR_PAGES pages.
 
-http://lkml.org/lkml/2008/8/12/200
+This patch adds new mem_map accessors and iterator helpers which handle
+any discontiguity at MAX_ORDER_NR_PAGES boundaries.  It then uses these
+to implement gigantic page versions of copy_huge_page and clear_huge_page,
+and to allow follow_hugetlb_page handle gigantic pages.
 
-The old alloc_coherent avoids GFP_DMA allocation first and if the
-allocated address is not fit for the device's coherent_dma_mask, then
-dma_alloc_coherent does GFP_DMA allocation. If it fails,
-alloc_coherent calls swiotlb_alloc_coherent (in short, we rarely used
-swiotlb_alloc_coherent).
-
-After the alloc_coherent rewrite, dma_alloc_coherent
-(include/asm-x86/dma-mapping.h) directly calls swiotlb_alloc_coherent.
-It means that we possibly can't handle a device having dma_masks >
-24bit < 32bits since swiotlb_alloc_coherent doesn't have the above
-GFP_DMA retry mechanism.
-
-This patch fixes x86's swiotlb alloc_coherent to use the GFP_DMA retry
-mechanism, which dma_generic_alloc_coherent() provides now
-(pci-nommu.c and GART IOMMU driver also use
-dma_generic_alloc_coherent).
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
 ---
- arch/x86/kernel/pci-swiotlb_64.c |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+ mm/hugetlb.c  |   37 ++++++++++++++++++++++++++++++++++++-
+ mm/internal.h |   28 ++++++++++++++++++++++++++++
+ 2 files changed, 64 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/pci-swiotlb_64.c b/arch/x86/kernel/pci-swiotlb_64.c
-index c4ce033..3c539d1 100644
---- a/arch/x86/kernel/pci-swiotlb_64.c
-+++ b/arch/x86/kernel/pci-swiotlb_64.c
-@@ -18,9 +18,21 @@ swiotlb_map_single_phys(struct device *hwdev, phys_addr_t paddr, size_t size,
- 	return swiotlb_map_single(hwdev, phys_to_virt(paddr), size, direction);
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 67a7119..793f52e 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -353,11 +353,26 @@ static int vma_has_reserves(struct vm_area_struct *vma)
+ 	return 0;
  }
  
-+static void *x86_swiotlb_alloc_coherent(struct device *hwdev, size_t size,
-+					dma_addr_t *dma_handle, gfp_t flags)
++static void clear_gigantic_page(struct page *page,
++			unsigned long addr, unsigned long sz)
 +{
-+	void *vaddr;
++	int i;
++	struct page *p = page;
 +
-+	vaddr = dma_generic_alloc_coherent(hwdev, size, dma_handle, flags);
-+	if (vaddr)
-+		return vaddr;
++	might_sleep();
++	for (i = 0; i < sz/PAGE_SIZE; i++, p = mem_map_next(p, page, i)) {
++		cond_resched();
++		clear_user_highpage(p, addr + i * PAGE_SIZE);
++	}
++}
+ static void clear_huge_page(struct page *page,
+ 			unsigned long addr, unsigned long sz)
+ {
+ 	int i;
+ 
++	if (unlikely(sz > MAX_ORDER_NR_PAGES))
++		return clear_gigantic_page(page, addr, sz);
 +
-+	return swiotlb_alloc_coherent(hwdev, size, dma_handle, flags);
+ 	might_sleep();
+ 	for (i = 0; i < sz/PAGE_SIZE; i++) {
+ 		cond_resched();
+@@ -365,12 +380,32 @@ static void clear_huge_page(struct page *page,
+ 	}
+ }
+ 
++static void copy_gigantic_page(struct page *dst, struct page *src,
++			   unsigned long addr, struct vm_area_struct *vma)
++{
++	int i;
++	struct hstate *h = hstate_vma(vma);
++	struct page *dst_base = dst;
++	struct page *src_base = src;
++	might_sleep();
++	for (i = 0; i < pages_per_huge_page(h); ) {
++		cond_resched();
++		copy_user_highpage(dst, src, addr + i*PAGE_SIZE, vma);
++
++		i++;
++		dst = mem_map_next(dst, dst_base, i);
++		src = mem_map_next(src, src_base, i);
++	}
++}
+ static void copy_huge_page(struct page *dst, struct page *src,
+ 			   unsigned long addr, struct vm_area_struct *vma)
+ {
+ 	int i;
+ 	struct hstate *h = hstate_vma(vma);
+ 
++	if (unlikely(pages_per_huge_page(h) > MAX_ORDER_NR_PAGES))
++		return copy_gigantic_page(dst, src, addr, vma);
++
+ 	might_sleep();
+ 	for (i = 0; i < pages_per_huge_page(h); i++) {
+ 		cond_resched();
+@@ -2103,7 +2138,7 @@ int follow_hugetlb_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ same_page:
+ 		if (pages) {
+ 			get_page(page);
+-			pages[i] = page + pfn_offset;
++			pages[i] = mem_map_offset(page, pfn_offset);
+ 		}
+ 
+ 		if (vmas)
+diff --git a/mm/internal.h b/mm/internal.h
+index 1f43f74..08b8dea 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -53,6 +53,34 @@ static inline unsigned long page_order(struct page *page)
+ }
+ 
+ /*
++ * Return the mem_map entry representing the 'offset' subpage within
++ * the maximally aligned gigantic page 'base'.  Handle any discontiguity
++ * in the mem_map at MAX_ORDER_NR_PAGES boundaries.
++ */
++static inline struct page *mem_map_offset(struct page *base, int offset)
++{
++	if (unlikely(offset >= MAX_ORDER_NR_PAGES))
++		return pfn_to_page(page_to_pfn(base) + offset);
++	return base + offset;
 +}
 +
- struct dma_mapping_ops swiotlb_dma_ops = {
- 	.mapping_error = swiotlb_dma_mapping_error,
--	.alloc_coherent = swiotlb_alloc_coherent,
-+	.alloc_coherent = x86_swiotlb_alloc_coherent,
- 	.free_coherent = swiotlb_free_coherent,
- 	.map_single = swiotlb_map_single_phys,
- 	.unmap_single = swiotlb_unmap_single,
++/*
++ * Iterator over all subpages withing the maximally aligned gigantic
++ * page 'base'.  Handle any discontiguity in the mem_map.
++ */
++static inline struct page *mem_map_next(struct page *iter,
++						struct page *base, int offset)
++{
++	if (unlikely((offset & (MAX_ORDER_NR_PAGES - 1)) == 0)) {
++		unsigned long pfn = page_to_pfn(base) + offset;
++		if (!pfn_valid(pfn))
++			return NULL;
++		return pfn_to_page(pfn);
++	}
++	return iter + 1;
++}
++
++/*
+  * FLATMEM and DISCONTIGMEM configurations use alloc_bootmem_node,
+  * so all functions starting at paging_init should be marked __init
+  * in those cases. SPARSEMEM, however, allows for memory hotplug,
 -- 
-1.5.5.GIT
+1.6.0.2.711.gf1ba4
 
