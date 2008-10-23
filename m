@@ -1,72 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbYJWQWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbYJWQYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756516AbYJWQWP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 12:22:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYJWQV7
+	id S1756012AbYJWQYt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 12:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbYJWQYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 12:21:59 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:28753 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751797AbYJWQV6 (ORCPT
+	Thu, 23 Oct 2008 12:24:40 -0400
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:59455 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752037AbYJWQYj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 12:21:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=TS1okRSAp419juzYpKNm89CDYfh+NJLHtxems8tJshKWwZ/r3HDhjbWyXeKGyiOHzb
-         Us9HkMLr0zdbdljN7bQSlA+giWIFu2nivInZDs30ANu/2duqaTr9ZTRhsHfkpwH/vm1N
-         BicNm7bLPcm0TTuvjSDmzq+t6qFuuWspz2Nfg=
-Message-ID: <4900B414.7090002@gmail.com>
-Date: Thu, 23 Oct 2008 19:27:48 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Thu, 23 Oct 2008 12:24:39 -0400
+Message-ID: <4900A536.8000208@euromail.se>
+Date: Thu, 23 Oct 2008 18:24:22 +0200
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH] tracing: fix a build error on alpha and m68k
-References: <20081023213637.eff9b414.sfr@canb.auug.org.au> <20081023121145.GB27984@x200.localdomain> <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com> <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com> <49008D12.5090204@gmail.com> <Pine.LNX.4.64.0810231635440.18978@anakin> <c62985530810230757r411b4e3dj4ecec649cf8cf0b3@mail.gmail.com> <Pine.LNX.4.64.0810231727430.18978@anakin>
-In-Reply-To: <Pine.LNX.4.64.0810231727430.18978@anakin>
-Content-Type: text/plain; charset=UTF-8
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, akpm@osdl.org,
+       linux-input@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/4] input: bcm5974: Prepare for a new trackpad header type
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Originating-IP: 83.248.192.132
+X-Scan-Result: No virus found in message 1Kt2zF-00075S-3g.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1Kt2zF-00075S-3g 934b140c6150fc5e4d750c7b2d585ed9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When tracing is enabled, some arch have included <linux/irqflags.h>
-on their <asm/system.h> but others like alpha or m68k don't.
+The new unibody Macbooks are equipped with an integrated button and
+trackpad. The package header of the trackpad interface has changed to
+also contain information about the integrated button.  This patch
+performs the necessary preparations to allow for the new package
+header.
 
-Build error on alpha:
-
-kernel/trace/trace.c: In function 'tracing_generic_entry_update':
-kernel/trace/trace.c:658: error: implicit declaration of function 'irqs_disabled_flags'
-kernel/trace/trace.c: In function 'tracing_cpumask_write':
-kernel/trace/trace.c:2145: error: implicit declaration of function 'raw_local_irq_disable'
-kernel/trace/trace.c:2162: error: implicit declaration of function 'raw_local_irq_enable'
-kernel/trace/trace.c: In function 'trace_die_handler':
-kernel/trace/trace.c:3039: error: 'DIE_OOPS' undeclared (first use in this function)
-
-Build error on m68k:
-http://kisskb.ellerman.id.au/kisskb/buildresult/50641/
-
-
-Include it on kernel/trace/trace.c
-
-Reported-by: Alexey Dobriyan <adobriyan@gmail.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
 ---
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 78d5661..deb9684 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -34,6 +34,7 @@
- 
- #include <linux/stacktrace.h>
- #include <linux/ring_buffer.h>
-+#include <linux/irqflags.h>
- 
- #include "trace.h"
- 
+ drivers/input/mouse/bcm5974.c |   42 ++++++++++++++++++++++------------------
+ 1 files changed, 23 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/input/mouse/bcm5974.c b/drivers/input/mouse/bcm5974.c
+index 2998a6a..e97462e 100644
+--- a/drivers/input/mouse/bcm5974.c
++++ b/drivers/input/mouse/bcm5974.c
+@@ -96,13 +96,14 @@ struct bt_data {
+ 	u8 rel_y;		/* relative y coordinate */
+ };
+
+-/* trackpad header structure */
+-struct tp_header {
+-	u8 unknown1[16];	/* constants, timers, etc */
+-	u8 fingers;		/* number of fingers on trackpad */
+-	u8 unknown2[9];		/* constants, timers, etc */
++/* trackpad header types */
++enum tp_type {
++	TYPE1			/* plain trackpad */
+ };
+
++/* trackpad finger data offsets */
++#define FINGER_TYPE1		26
++
+ /* trackpad finger structure */
+ struct tp_finger {
+ 	__le16 origin;		/* zero when switching track finger */
+@@ -119,11 +120,9 @@ struct tp_finger {
+ 	__le16 multi;		/* one finger: varies, more fingers: constant */
+ };
+
+-/* trackpad data structure, empirically at least ten fingers */
+-struct tp_data {
+-	struct tp_header header;
+-	struct tp_finger finger[16];
+-};
++/* trackpad finger data size, empirically at least ten fingers */
++#define SIZEOF_FINGER		sizeof(struct tp_finger)
++#define SIZEOF_ALL_FINGERS	(16 * SIZEOF_FINGER)
+
+ /* device-specific parameters */
+ struct bcm5974_param {
+@@ -139,6 +138,8 @@ struct bcm5974_config {
+ 	int bt_ep;		/* the endpoint of the button interface */
+ 	int bt_datalen;		/* data length of the button interface */
+ 	int tp_ep;		/* the endpoint of the trackpad interface */
++	enum tp_type tp_type;	/* type of trackpad interface */
++	int tp_offset;		/* offset to trackpad finger data */
+ 	int tp_datalen;		/* data length of the trackpad interface */
+ 	struct bcm5974_param p;	/* finger pressure limits */
+ 	struct bcm5974_param w;	/* finger width limits */
+@@ -158,7 +159,7 @@ struct bcm5974 {
+ 	struct urb *bt_urb;		/* button usb request block */
+ 	struct bt_data *bt_data;	/* button transferred data */
+ 	struct urb *tp_urb;		/* trackpad usb request block */
+-	struct tp_data *tp_data;	/* trackpad transferred data */
++	u8 *tp_data;			/* trackpad transferred data */
+ 	int fingers;			/* number of fingers on trackpad */
+ };
+
+@@ -184,7 +185,7 @@ static const struct bcm5974_config bcm5974_config_table[] = {
+ 		USB_DEVICE_ID_APPLE_WELLSPRING_ISO,
+ 		USB_DEVICE_ID_APPLE_WELLSPRING_JIS,
+ 		0x84, sizeof(struct bt_data),
+-		0x81, sizeof(struct tp_data),
++		0x81, TYPE1, FINGER_TYPE1, FINGER_TYPE1 + SIZEOF_ALL_FINGERS,
+ 		{ DIM_PRESSURE, DIM_PRESSURE / SN_PRESSURE, 0, 256 },
+ 		{ DIM_WIDTH, DIM_WIDTH / SN_WIDTH, 0, 2048 },
+ 		{ DIM_X, DIM_X / SN_COORD, -4824, 5342 },
+@@ -195,7 +196,7 @@ static const struct bcm5974_config bcm5974_config_table[] = {
+ 		USB_DEVICE_ID_APPLE_WELLSPRING2_ISO,
+ 		USB_DEVICE_ID_APPLE_WELLSPRING2_JIS,
+ 		0x84, sizeof(struct bt_data),
+-		0x81, sizeof(struct tp_data),
++		0x81, TYPE1, FINGER_TYPE1, FINGER_TYPE1 + SIZEOF_ALL_FINGERS,
+ 		{ DIM_PRESSURE, DIM_PRESSURE / SN_PRESSURE, 0, 256 },
+ 		{ DIM_WIDTH, DIM_WIDTH / SN_WIDTH, 0, 2048 },
+ 		{ DIM_X, DIM_X / SN_COORD, -4824, 4824 },
+@@ -276,18 +277,20 @@ static int report_bt_state(struct bcm5974 *dev, int size)
+ static int report_tp_state(struct bcm5974 *dev, int size)
+ {
+ 	const struct bcm5974_config *c = &dev->cfg;
+-	const struct tp_finger *f = dev->tp_data->finger;
++	const struct tp_finger *f;
+ 	struct input_dev *input = dev->input;
+-	const int fingers = (size - 26) / 28;
+-	int raw_p, raw_w, raw_x, raw_y;
++	int raw_p, raw_w, raw_x, raw_y, raw_n;
+ 	int ptest = 0, origin = 0, nmin = 0, nmax = 0;
+ 	int abs_p = 0, abs_w = 0, abs_x = 0, abs_y = 0;
+
+-	if (size < 26 || (size - 26) % 28 != 0)
++	if (size < c->tp_offset || (size - c->tp_offset) % SIZEOF_FINGER != 0)
+ 		return -EIO;
+
++	f = (const struct tp_finger *)(dev->tp_data + c->tp_offset);
++	raw_n = (size - c->tp_offset) / SIZEOF_FINGER;
++
+ 	/* always track the first finger; when detached, start over */
+-	if (fingers) {
++	if (raw_n) {
+ 		raw_p = raw2int(f->force_major);
+ 		raw_w = raw2int(f->size_major);
+ 		raw_x = raw2int(f->abs_x);
+@@ -307,12 +310,13 @@ static int report_tp_state(struct bcm5974 *dev, int size)
+ 		abs_w = int2bound(&c->w, raw_w);
+ 		abs_x = int2bound(&c->x, raw_x - c->x.devmin);
+ 		abs_y = int2bound(&c->y, c->y.devmax - raw_y);
+-		for (; f != dev->tp_data->finger + fingers; f++) {
++		while (raw_n--) {
+ 			ptest = int2bound(&c->p, raw2int(f->force_major));
+ 			if (ptest > PRESSURE_LOW)
+ 				nmax++;
+ 			if (ptest > PRESSURE_HIGH)
+ 				nmin++;
++			f++;
+ 		}
+ 	}
+
+-- 
+1.5.6.3
+
