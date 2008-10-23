@@ -1,56 +1,449 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbYJWJqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755728AbYJWJqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753547AbYJWJqA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 05:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbYJWJph
+	id S1755728AbYJWJqa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 05:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbYJWJqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 05:45:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35598 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753311AbYJWJpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 05:45:36 -0400
-Date: Thu, 23 Oct 2008 11:46:21 +0200
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, travis@sgi.com, Ingo Molnar <mingo@elte.hu>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [PATCH 6/7] work_on_cpu: use on
-	x86/kernel/cpu/intel_cacheinfo.c
-Message-ID: <20081023094621.GA7995@redhat.com>
-References: <20081023005750.D0A11DDEF9@ozlabs.org>
+	Thu, 23 Oct 2008 05:46:19 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36194 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752046AbYJWJqQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 05:46:16 -0400
+Date: Thu, 23 Oct 2008 11:47:54 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] w35und: use msleep() and udelay()
+Message-ID: <20081023094754.GE1849@elf.ucw.cz>
+References: <Pine.LNX.4.64.0810221906420.1679@melkki.cs.Helsinki.FI>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081023005750.D0A11DDEF9@ozlabs.org>
+In-Reply-To: <Pine.LNX.4.64.0810221906420.1679@melkki.cs.Helsinki.FI>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/23, Rusty Russell wrote:
->
-> +static int __cpuinit detect_cache_attributes(unsigned int cpu)
-> +{
-> +	int			retval;
-> +
-> +	if (num_cache_leaves == 0)
-> +		return -ENOENT;
-> +
-> +	per_cpu(cpuid4_info, cpu) = kzalloc(
-> +	    sizeof(struct _cpuid4_info) * num_cache_leaves, GFP_KERNEL);
-> +	if (per_cpu(cpuid4_info, cpu) == NULL)
-> +		return -ENOMEM;
-> +
-> +	retval = work_on_cpu(cpu, get_cpu_leaves, NULL);
+On Wed 2008-10-22 19:07:03, Pekka J Enberg wrote:
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
+> This patch removes the OS_SLEEP() wrapper and changes the call-sites to use
+> msleep() and udelay() where appropriate.
+> 
+> Cc: Pavel Machek <pavel@suse.cz>
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-This doesn't look right.
+ACK.
 
-cache_add_dev()->cpuid4_cache_sysfs_init()->detect_cache_attributes()
-is called by CPU_ONLINE under cpu_hotplug_begin(), this is deadlockable.
+> ---
+>  drivers/staging/winbond/linux/wb35reg.c   |    8 ++--
+>  drivers/staging/winbond/linux/wb35rx.c    |    4 +-
+>  drivers/staging/winbond/linux/wb35tx.c    |    4 +-
+>  drivers/staging/winbond/linux/wbusb_s.h   |    4 --
+>  drivers/staging/winbond/phy_calibration.c |   10 ++--
+>  drivers/staging/winbond/reg.c             |   66 ++++++++++++++--------------
+>  drivers/staging/winbond/wbhal.c           |    2 +-
+>  drivers/staging/winbond/wblinux.c         |    4 +-
+>  8 files changed, 49 insertions(+), 53 deletions(-)
+> 
+> diff --git a/drivers/staging/winbond/linux/wb35reg.c b/drivers/staging/winbond/linux/wb35reg.c
+> index 4467c7a..c36c220 100644
+> --- a/drivers/staging/winbond/linux/wb35reg.c
+> +++ b/drivers/staging/winbond/linux/wb35reg.c
+> @@ -131,7 +131,7 @@ Wb35Reg_WriteSync(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+>  
+>  	// 20060717.5 Wait until EP0VM stop
+>  	while (reg->EP0vm_state != VM_STOP)
+> -		OS_SLEEP(10000);
+> +		msleep(10);
+>  
+>  	// Sync IoCallDriver
+>  	reg->EP0vm_state = VM_RUNNING;
+> @@ -294,7 +294,7 @@ Wb35Reg_ReadSync(  phw_data_t pHwData,  u16 RegisterNo,   u32 * pRegisterValue )
+>  
+>  	// 20060717.5 Wait until EP0VM stop
+>  	while (reg->EP0vm_state != VM_STOP)
+> -		OS_SLEEP(10000);
+> +		msleep(10);
+>  
+>  	reg->EP0vm_state = VM_RUNNING;
+>  	ret = usb_control_msg( pHwData->WbUsb.udev,
+> @@ -508,9 +508,9 @@ Wb35Reg_destroy(phw_data_t pHwData)
+>  
+>  	// Wait for Reg operation completed
+>  	do {
+> -		OS_SLEEP(10000); // Delay for waiting function enter 940623.1.a
+> +		msleep(10); // Delay for waiting function enter 940623.1.a
+>  	} while (reg->EP0vm_state != VM_STOP);
+> -	OS_SLEEP(10000);  // Delay for waiting function enter 940623.1.b
+> +	msleep(10);  // Delay for waiting function enter 940623.1.b
+>  
+>  	// Release all the data in RegQueue
+>  	spin_lock_irq( &reg->EP0VM_spin_lock );
+> diff --git a/drivers/staging/winbond/linux/wb35rx.c b/drivers/staging/winbond/linux/wb35rx.c
+> index e5ec29c..1326996 100644
+> --- a/drivers/staging/winbond/linux/wb35rx.c
+> +++ b/drivers/staging/winbond/linux/wb35rx.c
+> @@ -191,9 +191,9 @@ void Wb35Rx_destroy(phw_data_t pHwData)
+>  	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
+>  
+>  	do {
+> -		OS_SLEEP(10000); // Delay for waiting function enter 940623.1.a
+> +		msleep(10); // Delay for waiting function enter 940623.1.a
+>  	} while (pWb35Rx->EP3vm_state != VM_STOP);
+> -	OS_SLEEP(10000); // Delay for waiting function exit 940623.1.b
+> +	msleep(10); // Delay for waiting function exit 940623.1.b
+>  
+>  	if (pWb35Rx->RxUrb)
+>  		usb_free_urb( pWb35Rx->RxUrb );
+> diff --git a/drivers/staging/winbond/linux/wb35tx.c b/drivers/staging/winbond/linux/wb35tx.c
+> index 0a51d39..9c928ee 100644
+> --- a/drivers/staging/winbond/linux/wb35tx.c
+> +++ b/drivers/staging/winbond/linux/wb35tx.c
+> @@ -175,9 +175,9 @@ void Wb35Tx_destroy(phw_data_t pHwData)
+>  
+>  	// Wait for VM stop
+>  	do {
+> -		OS_SLEEP(10000);  // Delay for waiting function enter 940623.1.a
+> +		msleep(10);  // Delay for waiting function enter 940623.1.a
+>  	} while( (pWb35Tx->EP2vm_state != VM_STOP) && (pWb35Tx->EP4vm_state != VM_STOP) );
+> -	OS_SLEEP(10000);  // Delay for waiting function enter 940623.1.b
+> +	msleep(10);  // Delay for waiting function enter 940623.1.b
+>  
+>  	if (pWb35Tx->Tx4Urb)
+>  		usb_free_urb( pWb35Tx->Tx4Urb );
+> diff --git a/drivers/staging/winbond/linux/wbusb_s.h b/drivers/staging/winbond/linux/wbusb_s.h
+> index 562ddc0..45e41b3 100644
+> --- a/drivers/staging/winbond/linux/wbusb_s.h
+> +++ b/drivers/staging/winbond/linux/wbusb_s.h
+> @@ -11,10 +11,6 @@
+>  //
+>  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  
+> -#define OS_SLEEP( _MT )	{ set_current_state(TASK_INTERRUPTIBLE); \
+> -			  schedule_timeout( _MT*HZ/1000000 ); }
+> -
+> -
+>  //---------------------------------------------------------------------------
+>  //  RW_CONTEXT --
+>  //
+> diff --git a/drivers/staging/winbond/phy_calibration.c b/drivers/staging/winbond/phy_calibration.c
+> index 272a650..76183b2 100644
+> --- a/drivers/staging/winbond/phy_calibration.c
+> +++ b/drivers/staging/winbond/phy_calibration.c
+> @@ -1075,7 +1075,7 @@ void _tx_iq_calibration_winbond(hw_data_t *phw_data)
+>  	//; [BB-chip]: Calibration (6h). Caculate TX-path IQ imbalance and setting TX path IQ compensation table
+>  	//phy_set_rf_data(phw_data, 3, (3<<24)|0x025586);
+>  
+> -	OS_SLEEP(30000); // 20060612.1.a 30ms delay. Add the follow 2 lines
+> +	msleep(30); // 20060612.1.a 30ms delay. Add the follow 2 lines
+>  	//To adjust TXVGA to fit iq_mag_0 range from 1250 ~ 1750
+>  	adjust_TXVGA_for_iq_mag( phw_data );
+>  
+> @@ -1698,7 +1698,7 @@ unsigned char adjust_TXVGA_for_iq_mag(hw_data_t *phw_data)
+>  		phw_data->txvga_setting_for_cal = current_txvga;
+>  
+>  		//pa_stall_execution(30000);//Sleep(30);
+> -		OS_SLEEP(30000); // 20060612.1.a
+> +		msleep(30); // 20060612.1.a
+>  
+>  		if( !hw_get_dxx_reg(phw_data, REG_MODE_CTRL, &reg_mode_ctrl) ) // 20060718.1 modify
+>  			return FALSE;
+> @@ -1715,10 +1715,10 @@ unsigned char adjust_TXVGA_for_iq_mag(hw_data_t *phw_data)
+>  		PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
+>  
+>  		//pa_stall_execution(US);
+> -		OS_SLEEP(1); // 20060612.1.a
+> +		udelay(1); // 20060612.1.a
+>  
+>  		//pa_stall_execution(300);//Sleep(30);
+> -		OS_SLEEP(300); // 20060612.1.a
+> +		udelay(300); // 20060612.1.a
+>  
+>  		// b.
+>  		hw_get_dxx_reg(phw_data, REG_CALIB_READ1, &val);
+> @@ -1726,7 +1726,7 @@ unsigned char adjust_TXVGA_for_iq_mag(hw_data_t *phw_data)
+>  		PHY_DEBUG(("[CAL]    CALIB_READ1 = 0x%08X\n", val));
+>  		//pa_stall_execution(US);
+>  		//pa_stall_execution(300);//Sleep(30);
+> -		OS_SLEEP(300); // 20060612.1.a
+> +		udelay(300); // 20060612.1.a
+>  
+>  		iqcal_tone_i0 = _s13_to_s32(val & 0x00001FFF);
+>  		iqcal_tone_q0 = _s13_to_s32((val & 0x03FFE000) >> 13);
+> diff --git a/drivers/staging/winbond/reg.c b/drivers/staging/winbond/reg.c
+> index a4855dd..9f305d7 100644
+> --- a/drivers/staging/winbond/reg.c
+> +++ b/drivers/staging/winbond/reg.c
+> @@ -976,9 +976,9 @@ void Uxx_power_on_procedure(  phw_data_t pHwData )
+>  
+>  		// 20060511.1 Fix the following 4 steps for Rx of RF 2230 initial fail
+>  		Wb35Reg_WriteSync( pHwData, 0x03d4, 0x80 );// regulator on only
+> -		OS_SLEEP(10000); // Modify 20051221.1.b
+> +		msleep(10); // Modify 20051221.1.b
+>  		Wb35Reg_WriteSync( pHwData, 0x03d4, 0xb8 );// REG_ON RF_RSTN on, and
+> -		OS_SLEEP(10000); // Modify 20051221.1.b
+> +		msleep(10); // Modify 20051221.1.b
+>  
+>  		ltmp = 0x4968;
+>  		if( (pHwData->phy_type == RF_WB_242) ||
+> @@ -988,12 +988,12 @@ void Uxx_power_on_procedure(  phw_data_t pHwData )
+>  
+>  		Wb35Reg_WriteSync( pHwData, 0x03d4, 0xa0 );// PLL_PD REF_PD set to 0
+>  
+> -		OS_SLEEP(20000); // Modify 20051221.1.b
+> +		msleep(20); // Modify 20051221.1.b
+>  		Wb35Reg_ReadSync( pHwData, 0x03d0, &ltmp );
+>  		loop = 500; // Wait for 5 second 20061101
+>  		while( !(ltmp & 0x20) && loop-- )
+>  		{
+> -			OS_SLEEP(10000); // Modify 20051221.1.b
+> +			msleep(10); // Modify 20051221.1.b
+>  			if( !Wb35Reg_ReadSync( pHwData, 0x03d0, &ltmp ) )
+>  				break;
+>  		}
+> @@ -1002,7 +1002,7 @@ void Uxx_power_on_procedure(  phw_data_t pHwData )
+>  	}
+>  
+>  	Wb35Reg_WriteSync( pHwData, 0x03b0, 1 );// Reset hardware first
+> -	OS_SLEEP(10000); // Add this 20051221.1.b
+> +	msleep(10); // Add this 20051221.1.b
+>  
+>  	// Set burst write delay
+>  	Wb35Reg_WriteSync( pHwData, 0x03f8, 0x7ff );
+> @@ -1167,23 +1167,23 @@ RFSynthesizer_initial(phw_data_t pHwData)
+>  			// 20060511.1 --- Modifying the follow step for Rx issue-----------------
+>  			ltmp = (1 << 31) | (0 << 30) | (20 << 24) | BitReverse( (0x07<<20)|0xE168E, 20);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP(10000);
+> +			msleep(10);
+>  			ltmp = (1 << 31) | (0 << 30) | (20 << 24) | BitReverse( al2230_rf_data[7], 20);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP(10000);
+> +			msleep(10);
+>  
+>  		case RF_AIROHA_2230S: // 20060420 Add this
+>  
+>  			// 20060511.1 --- Modifying the follow step for Rx issue-----------------
+>  			Wb35Reg_WriteSync( pHwData, 0x03d4, 0x80 );// regulator on only
+> -			OS_SLEEP(10000); // Modify 20051221.1.b
+> +			msleep(10); // Modify 20051221.1.b
+>  
+>  			Wb35Reg_WriteSync( pHwData, 0x03d4, 0xa0 );// PLL_PD REF_PD set to 0
+> -			OS_SLEEP(10000); // Modify 20051221.1.b
+> +			msleep(10); // Modify 20051221.1.b
+>  
+>  			Wb35Reg_WriteSync( pHwData, 0x03d4, 0xe0 );// MLK_EN
+>  			Wb35Reg_WriteSync( pHwData, 0x03b0, 1 );// Reset hardware first
+> -			OS_SLEEP(10000); // Add this 20051221.1.b
+> +			msleep(10); // Add this 20051221.1.b
+>  			//------------------------------------------------------------------------
+>  
+>  			// The follow code doesn't use the burst-write mode
+> @@ -1195,17 +1195,17 @@ RFSynthesizer_initial(phw_data_t pHwData)
+>  			Wb35Reg_WriteSync( pHwData, 0x105c, ltmp );
+>  			pHwData->reg.BB50 |= 0x13;//(MASK_IQCAL_MODE|MASK_CALIB_START);//20060315.1 modify
+>          	Wb35Reg_WriteSync( pHwData, 0x1050, pHwData->reg.BB50);
+> -			OS_SLEEP(5000);
+> +			msleep(5);
+>  
+>  			//phy_set_rf_data(phw_data, 0x0F, (0x0F<<20) | 0xF01B0); //Activate Filter Cal.
+>  			ltmp = (1 << 31) | (0 << 30) | (20 << 24) | BitReverse( (0x0F<<20) | 0xF01B0, 20);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP(5000);
+> +			msleep(5);
+>  
+>  			//phy_set_rf_data(phw_data, 0x0F, (0x0F<<20) | 0xF01e0); //Activate TX DCC
+>  			ltmp = (1 << 31) | (0 << 30) | (20 << 24) | BitReverse( (0x0F<<20) | 0xF01E0, 20);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP(5000);
+> +			msleep(5);
+>  
+>  			//phy_set_rf_data(phw_data, 0x0F, (0x0F<<20) | 0xF01A0); //Resotre Initial Setting
+>  			ltmp = (1 << 31) | (0 << 30) | (20 << 24) | BitReverse( (0x0F<<20) | 0xF01A0, 20);
+> @@ -1229,16 +1229,16 @@ RFSynthesizer_initial(phw_data_t pHwData)
+>  			//2.4GHz
+>  			//ltmp = (1 << 31) | (0 << 30) | (24 << 24) | 0x1ABA8F;
+>  			//Wb35Reg_WriteSync pHwData, 0x0864, ltmp );
+> -			//OS_SLEEP(1000); // Sleep 1 ms
+> +			//msleep(1); // Sleep 1 ms
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | 0x9ABA8F;
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP(5000);
+> +			msleep(5);
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | 0x3ABA8F;
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP(5000);
+> +			msleep(5);
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | 0x1ABA8F;
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP(5000);
+> +			msleep(5);
+>  
+>  			//5GHz
+>  			Wb35Reg_WriteSync( pHwData, 0x03dc, 0x00000000 );
+> @@ -1251,7 +1251,7 @@ RFSynthesizer_initial(phw_data_t pHwData)
+>  			// Write to register. number must less and equal than 16
+>  			for( i=0; i<number; i++ )
+>  				Wb35Reg_WriteSync( pHwData, 0x0864, pltmp[i] );
+> -			OS_SLEEP(5000);
+> +			msleep(5);
+>  
+>  			Wb35Reg_WriteSync( pHwData, 0x03dc, 0x00000080 );
+>  			#ifdef _PE_STATE_DUMP_
+> @@ -1262,13 +1262,13 @@ RFSynthesizer_initial(phw_data_t pHwData)
+>  			//Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | 0x9ABA8F;
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP(5000);
+> +			msleep(5);
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | 0x3ABA8F;
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP(5000);
+> +			msleep(5);
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | 0x12BACF;
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP(5000);
+> +			msleep(5);
+>  
+>  			//Wb35Reg_WriteSync( pHwData, 0x03dc, 0x00000080 );
+>  			//WBDEBUG(("* PLL_ON    high\n"));
+> @@ -1290,11 +1290,11 @@ RFSynthesizer_initial(phw_data_t pHwData)
+>  			//Calibration (1a.0). Synthesizer reset (HTHo corrected 2005/05/10)
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | BitReverse( (0x0F<<24) | 0x00101E, 24);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP( 5000 ); // Sleep 5ms
+> +			msleep(5); // Sleep 5ms
+>  			//Calibration (1a). VCO frequency calibration mode ; waiting 2msec VCO calibration time
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | BitReverse( (0x00<<24) | 0xFE69c0, 24);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP( 2000 ); // Sleep 2ms
+> +			msleep(2); // Sleep 2ms
+>  
+>  			//----- Calibration (2). TX baseband Gm-C filter auto-tuning
+>  			//Calibration (2a). turn off ENCAL signal
+> @@ -1309,7 +1309,7 @@ RFSynthesizer_initial(phw_data_t pHwData)
+>  			//Calibration (2c). turn-on TX Gm-C filter auto-tuning
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | BitReverse( (0x00<<24) | 0xFCEBC0, 24);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP( 150 ); // Sleep 150 us
+> +			udelay(150); // Sleep 150 us
+>  			//turn off ENCAL signal
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | BitReverse( (0x00<<24) | 0xF8EBC0, 24);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> @@ -1327,7 +1327,7 @@ RFSynthesizer_initial(phw_data_t pHwData)
+>  			//Calibration (3c). turn-on RX Gm-C filter auto-tuning
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | BitReverse( (0x00<<24) | 0xFEEDC0, 24);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP( 150 ); // Sleep 150 us
+> +			udelay(150); // Sleep 150 us
+>  			//Calibration (3e). turn off ENCAL signal
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | BitReverse( (0x00<<24) | 0xFAEDC0, 24);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> @@ -1336,7 +1336,7 @@ RFSynthesizer_initial(phw_data_t pHwData)
+>  			//Calibration (4a). TX LO leakage calibration
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | BitReverse( (0x00<<24) | 0xFD6BC0, 24);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP( 150 ); // Sleep 150 us
+> +			udelay(150); // Sleep 150 us
+>  
+>  			//----- Calibration (5). RX DC offset calibration
+>  			//Calibration (5a). turn off ENCAL signal and set to RX SW DC caliration mode
+> @@ -1353,7 +1353,7 @@ RFSynthesizer_initial(phw_data_t pHwData)
+>  			//Calibration (5d). turn on RX DC offset cal function; and waiting 2 msec cal time
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | BitReverse( (0x00<<24) | 0xFF6DC0, 24);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP(2000); // Sleep 2ms
+> +			msleep(2); // Sleep 2ms
+>  			//Calibration (5f). turn off ENCAL signal
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | BitReverse( (0x00<<24) | 0xFAEDC0, 24);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> @@ -1365,7 +1365,7 @@ RFSynthesizer_initial(phw_data_t pHwData)
+>  			//Calibration (5d). turn on RX DC offset cal function; and waiting 2 msec cal time
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | BitReverse( (0x00<<24) | 0xFF6DC0, 24);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP(2000); // Sleep 2ms
+> +			msleep(2); // Sleep 2ms
+>  			//Calibration (5f). turn off ENCAL signal
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | BitReverse( (0x00<<24) | 0xFAEDC0, 24);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> @@ -1377,7 +1377,7 @@ RFSynthesizer_initial(phw_data_t pHwData)
+>  			//Calibration (5d). turn on RX DC offset cal function; and waiting 2 msec cal time
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | BitReverse( (0x00<<24) | 0xFF6DC0, 24);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP(2000); // Sleep 2ms
+> +			msleep(2); // Sleep 2ms
+>  			//Calibration (5f). turn off ENCAL signal
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | BitReverse( (0x00<<24) | 0xFAEDC0, 24);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> @@ -1389,7 +1389,7 @@ RFSynthesizer_initial(phw_data_t pHwData)
+>  			//Calibration (5d). turn on RX DC offset cal function; and waiting 2 msec cal time
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | BitReverse( (0x00<<24) | 0xFF6DC0, 24);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP(2000); // Sleep 2ms
+> +			msleep(2); // Sleep 2ms
+>  			//Calibration (5f). turn off ENCAL signal
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | BitReverse( (0x00<<24) | 0xFAEDC0, 24);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> @@ -1399,16 +1399,16 @@ RFSynthesizer_initial(phw_data_t pHwData)
+>  
+>  			//; ----- Calibration (7). Switch RF chip to normal mode
+>  			//0x00 0xF86100 ; 3E184   ; Switch RF chip to normal mode
+> -//			OS_SLEEP(10000); // @@ 20060721
+> +//			msleep(10); // @@ 20060721
+>  			ltmp = (1 << 31) | (0 << 30) | (24 << 24) | BitReverse( (0x00<<24) | 0xF86100, 24);
+>  			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
+> -			OS_SLEEP(5000); // Sleep 5 ms
+> +			msleep(5); // Sleep 5 ms
+>  
+>  //			//write back
+>  //			Wb35Reg_WriteSync( pHwData, 0x105c, pHwData->reg.BB5C );
+>  //			pHwData->reg.BB50 &= ~0x13;//(MASK_IQCAL_MODE|MASK_CALIB_START); // 20060315.1 fix
+>  //      	Wb35Reg_WriteSync( pHwData, 0x1050, pHwData->reg.BB50);
+> -//			OS_SLEEP(1000); // Sleep 1 ms
+> +//			msleep(1); // Sleep 1 ms
+>  			break;
+>  	}
+>  }
+> diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
+> index 356bd91..c8da1a3 100644
+> --- a/drivers/staging/winbond/wbhal.c
+> +++ b/drivers/staging/winbond/wbhal.c
+> @@ -78,7 +78,7 @@ void hal_halt(phw_data_t pHwData, void *ppa_data)
+>  	{
+>  		case 4:
+>  		case 3: OS_TIMER_CANCEL( &pHwData->LEDTimer, &cancel );
+> -			OS_SLEEP(100000); // Wait for Timer DPC exit 940623.2
+> +			msleep(100); // Wait for Timer DPC exit 940623.2
+>  			Wb35Rx_destroy( pHwData ); // Release the Rx
+>  		case 2: Wb35Tx_destroy( pHwData ); // Release the Tx
+>  		case 1: Wb35Reg_destroy( pHwData ); // Release the Wb35 Regisster resources
+> diff --git a/drivers/staging/winbond/wblinux.c b/drivers/staging/winbond/wblinux.c
+> index 1668e54..d00efe7 100644
+> --- a/drivers/staging/winbond/wblinux.c
+> +++ b/drivers/staging/winbond/wblinux.c
+> @@ -123,7 +123,7 @@ WbWlanHalt(  struct wb35_adapter * adapter )
+>  #ifdef _PE_USB_INI_DUMP_
+>  	WBDEBUG(("[w35und] Hal_stop O.K.\n"));
+>  #endif
+> -	OS_SLEEP(100000);// Waiting Irp completed
+> +	msleep(100);// Waiting Irp completed
+>  
+>  	// Destroy the NDIS module
+>  	WBLINUX_Destroy( adapter );
+> @@ -233,7 +233,7 @@ WbWLanInitialize(struct wb35_adapter * adapter)
+>  
+>  	// Waiting for HAL setting OK
+>  	while (!hal_idle(pHwData))
+> -		OS_SLEEP(10000);
+> +		msleep(10);
+>  
+>  	MTO_Init(adapter);
+>  
 
-Yes, the caller (cpu_hotplug.active_writer) can safely take
-get_online_cpus(), but if we have another pending work which needs
-get_online_cpus(), we have the deadlock.
-
-Oleg.
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
