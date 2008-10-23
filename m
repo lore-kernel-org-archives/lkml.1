@@ -1,82 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbYJWLLF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbYJWLPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756188AbYJWLLF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 07:11:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbYJWLKw
+	id S1755915AbYJWLPA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 07:15:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbYJWLOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 07:10:52 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:64681 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753332AbYJWLKu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 07:10:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gOBZh+UHs6HfxfVhjGV2to7dpo3XAO+gc15kJICEpFt7v2mgzO7CekHcR0Lu6rab/w
-         rAkuzygyJjLQD7aEzpFu8J5hgPBp4cT8hMuwr+6OsyMzX3gypYzMp052/Z0AHBw3UIs2
-         faFt4QjLNZOL8a/jWGk3yqLcJ7J/6HOV4Q1GU=
-Message-ID: <d9def9db0810230410w9508d2cjf91b44156a624a4f@mail.gmail.com>
-Date: Thu, 23 Oct 2008 07:10:46 -0400
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 1/7] Adding empia base driver
-Cc: "Greg KH" <greg@kroah.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       em28xx <em28xx@mcentral.de>, acano@fastmail.fm,
-       "Andre Kelmanson" <akelmanson@gmail.com>,
-       "Bouwsma Barry" <freebeer.bouwsma@gmail.com>,
-       "Dan Kreiser" <kreiser@informatik.hu-berlin.de>,
-       "Frank Neuber" <fn@kernelport.de>,
-       "Jelle de Jong" <jelledejong@powercraft.nl>,
-       "John Stowers" <john.stowers.lists@gmail.com>,
-       "Lukas Kuna" <lukas.kuna@evkanet.net>,
-       "Stefan Vonolfen" <stefan.vonolfen@gmail.com>,
-       "Stephan Berberig" <s.berberig@arcor.de>,
-       "Thomas Giesecke" <thomas.giesecke@ibgmbh-naumburg.de>,
-       "Vitaly Wool" <vwool@ru.mvista.com>, "Zhenyu Wang" <zhen78@gmail.com>
-In-Reply-To: <20081023102901.59c14cf6@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d9def9db0810221414w5348acf3re31a033ea7179462@mail.gmail.com>
-	 <20081022220903.GA15278@kroah.com>
-	 <20081023102901.59c14cf6@lxorguk.ukuu.org.uk>
+	Thu, 23 Oct 2008 07:14:51 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:57233 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752964AbYJWLOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 07:14:50 -0400
+To: greg@kroah.com
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.27.2] Unnamed entry appears in/sys/module/usbcore/parameters/ .
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <200810210838.m9L8cegu033608@www262.sakura.ne.jp>
+	<20081021170002.GA24940@kroah.com>
+	<200810221951.JHF56206.JFQFMFSVtLOHOO@I-love.SAKURA.ne.jp>
+	<20081023051113.GA7719@kroah.com>
+In-Reply-To: <20081023051113.GA7719@kroah.com>
+Message-Id: <200810232014.HCE57837.MVJtOFQOFHFOSL@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Thu, 23 Oct 2008 20:14:47 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 23, 2008 at 5:29 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> This is going to cause a big problem for distros as they will not know
->> which to enable, so they will probably just disable this one, which is
->> what I don't think you want to have happen :(
->
-> Before looking into any of this talk to the V4L and DVB maintainers,
-> browse video4linux list and have a happy read of stuff like:
->
-> http://thread.gmane.org/gmane.linux.drivers.dvb/35454
->
+Hello.
 
-There's a much much longer history about that, this can safely be ignored.
-The history goes back 3 years .. this one only goes back a couple of months.
-It will take at least a week for a single person to understand the
-whole issue from the beginning on, although I'd say it's not relevant.
+I tested 2.6.27.3 on Debian Sarge. I got the same result.
 
-In case of Userspace tuners, see cx88 freeBSD driver the project is
-growing, netBSD
-is also using parts of that em28xx driver - there was no complaint at
-all about it.
-Some people don't like that idea in linux so it's ok and it has been
-redone, no big deal anymore.
+So, I tried to produce different results.
 
-Markus
+I pruned declaration of module_param(usbfs_snoop) like
 
->
-> Now I wonder why Markus didn't cc Mauro on this despite Mauro being
-> maintainer.
->
-> Alan
->
+  static int usbfs_snoop;
+  /*
+  module_param(usbfs_snoop, bool, S_IRUGO | S_IWUSR);
+  MODULE_PARM_DESC(usbfs_snoop, "true to log all usbfs traffic");
+  */
+
+and I got the below result.
+
+  # ls -ail /sys/module/usbcore/parameters/
+  total 0
+  189 drwxr-xr-x  2 root root    0 Oct 24  2008
+  189 drwxr-xr-x  2 root root    0 Oct 24  2008 .
+  188 drwxr-xr-x  4 root root    0 Oct 24  2008 ..
+  190 -rw-r--r--  1 root root 4096 Oct 24  2008 autosuspend
+  192 -r--r--r--  1 root root 4096 Oct 24  2008 blinkenlights
+  193 -rw-r--r--  1 root root 4096 Oct 24  2008 old_scheme_first
+
+This time, 'use_both_schemes' entry became no-name.
+
+I added declaration of module_param(usbfs_aaaaa) and module_param(usbfs_zzzzz)
+like
+
+  static int usbfs_aaaaa;
+  module_param(usbfs_aaaaa, bool, S_IRUGO | S_IWUSR);
+  MODULE_PARM_DESC(usbfs_aaaaa, "true to log all usbfs traffic");
+  
+  static int usbfs_snoop;
+  module_param(usbfs_snoop, bool, S_IRUGO | S_IWUSR);
+  MODULE_PARM_DESC(usbfs_snoop, "true to log all usbfs traffic");
+  
+  static int usbfs_zzzzz;
+  module_param(usbfs_zzzzz, bool, S_IRUGO | S_IWUSR);
+  MODULE_PARM_DESC(usbfs_zzzzz, "true to log all usbfs traffic");
+
+and I got the below result.
+
+  # ls -ail /sys/module/usbcore/parameters/
+  total 0
+  189 drwxr-xr-x  2 root root    0 Oct 24  2008
+  189 drwxr-xr-x  2 root root    0 Oct 24  2008 .
+  188 drwxr-xr-x  4 root root    0 Oct 24  2008 ..
+  190 -rw-r--r--  1 root root 4096 Oct 24  2008 autosuspend
+  192 -r--r--r--  1 root root 4096 Oct 24  2008 blinkenlights
+  193 -rw-r--r--  1 root root 4096 Oct 24  2008 old_scheme_first
+  195 -rw-r--r--  1 root root 4096 Oct 24  2008 usbfs_aaaaa
+  196 -rw-r--r--  1 root root 4096 Oct 24  2008 usbfs_snoop
+  194 -rw-r--r--  1 root root 4096 Oct 24  2008 use_both_schemes
+
+This time, 'usbfs_zzzzz' entry became no-name.
+
+Greg KH wrote:
+> I really have no idea what is causing this, and can't seem to duplicate
+> this here at all.
+It seems to me that somebody is overwriting (or truncating) at address
+of module_param(usbfs_snoop) .
+
+Is there a way to change the address of module_param() defined by
+usbcore module?
+
+Regards.
