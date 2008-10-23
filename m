@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756616AbYJWPnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbYJWPn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756616AbYJWPnl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 11:43:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbYJWPm4
+	id S1756194AbYJWPn4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 11:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbYJWPm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 11:42:56 -0400
-Received: from kroah.org ([198.145.64.141]:58946 "EHLO coco.kroah.org"
+	Thu, 23 Oct 2008 11:42:57 -0400
+Received: from kroah.org ([198.145.64.141]:58950 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752805AbYJWPmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 11:42:55 -0400
-Date: Thu, 23 Oct 2008 08:37:33 -0700
+	id S1752866AbYJWPm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 11:42:56 -0400
+Date: Thu, 23 Oct 2008 08:39:23 -0700
 From: Greg KH <greg@kroah.com>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Add c2 port support.
-Message-ID: <20081023153733.GA4011@kroah.com>
-References: <1224683240-15439-1-git-send-email-giometti@linux.it> <1224683240-15439-2-git-send-email-giometti@linux.it> <20081022174004.GB10587@kroah.com> <20081022111145.e5f3c632.akpm@linux-foundation.org> <20081022195245.GS4390@tekkaman> <20081022130150.00836eba.akpm@linux-foundation.org> <20081022204800.GT4390@tekkaman> <20081022135810.37c564f8.akpm@linux-foundation.org> <20081022210352.GA29754@kroah.com> <20081023073957.GU4390@tekkaman>
+To: Grant Grundler <grundler@parisc-linux.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Yinghai Lu <yinghai@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci: show dma_mask bits in /sys
+Message-ID: <20081023153923.GB4011@kroah.com>
+References: <20081009211837.GC18444@colo.lackof.org> <48EE7745.2020603@kernel.org> <20081009213551.GC25780@parisc-linux.org> <86802c440810091451y4a3caceg1abaa75464c40a72@mail.gmail.com> <20081009225533.GB1914@colo.lackof.org> <48EE8E55.4000009@kernel.org> <20081012071157.GA20056@colo.lackof.org> <48FFD726.2010600@kernel.org> <20081023032833.GK26094@parisc-linux.org> <20081023064412.GD31186@colo.lackof.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081023073957.GU4390@tekkaman>
+In-Reply-To: <20081023064412.GD31186@colo.lackof.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 23, 2008 at 09:39:57AM +0200, Rodolfo Giometti wrote:
-> On Wed, Oct 22, 2008 at 02:03:52PM -0700, Greg KH wrote:
+On Thu, Oct 23, 2008 at 12:44:12AM -0600, Grant Grundler wrote:
 > 
-> > > Why is that good?  We have hundreds and hundreds of drivers which use a
-> > > device node interface and they work OK.
-> > > 
-> > > sysfs was never intended for use as the sole interface between device
-> > > drivers and userspace.  Using it that way is somewhat unconventional. 
-> > > At the very least I do think it needs more justification and
-> > > explanation than we're being provded here.
-> > 
-> > For firmware download to devices, using sysfs is the "normal" interface
-> > these days, that is what the firmware class is for.
-> > 
-> > Which reminds me, Rodolfo, why didn't you just use that interface for
-> > your firmware downloading instead of rolling your own here?
-> 
-> Because I need also to know revision ID, device ID and other minor
-> info from the microcontroller.
+> Lastly, /sys seems to have over run even /proc. On an rx2600 (ia64):
+> grundler@gsyprf3:/usr/src/linux-2.6$ find /sys ! -type d | wc
+>    6288    6296  264893
 
-You can still use sysfs for that, no problems there.
+Is this causing some kind of problem for your systems?
 
-> Also I can reset the microcontroller when I need it without
-> downloading any new firmware.
-
-And again, you can still use sysfs for that as well.  I was just
-referring to the binary sysfs file that you use for the firmware
-download, it would make more sense for you to use the standard kernel
-firmware download interface instead of rolling your own here.
+/sys shows far more information than /proc does, so of course it would
+be larger in quantity.
 
 thanks,
 
