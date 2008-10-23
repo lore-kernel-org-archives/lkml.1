@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbYJWHEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbYJWHKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754680AbYJWHEP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 03:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752504AbYJWHD6
+	id S1754911AbYJWHKZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 03:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbYJWHKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 03:03:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53095 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751970AbYJWHD5 (ORCPT
+	Thu, 23 Oct 2008 03:10:09 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:52388 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751872AbYJWHKH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 03:03:57 -0400
-Date: Thu, 23 Oct 2008 00:03:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Dmitri Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] Add block device speciffic splice write method
-Message-Id: <20081023000315.6aa579f2.akpm@linux-foundation.org>
-In-Reply-To: <20081023065113.GU22217@kernel.dk>
-References: <1224424858-3927-1-git-send-email-dmonakhov@openvz.org>
-	<20081020174931.GH19428@kernel.dk>
-	<20081020181156.GI19428@kernel.dk>
-	<20081022223928.a6ce476f.akpm@linux-foundation.org>
-	<20081023062921.GQ22217@kernel.dk>
-	<20081022234157.33d46459.akpm@linux-foundation.org>
-	<20081023065113.GU22217@kernel.dk>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 23 Oct 2008 03:10:07 -0400
+Subject: Re: SLUB defrag pull request?
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: cl@linux-foundation.org, nickpiggin@yahoo.com.au, hugh@veritas.com,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <E1KsluU-0002R1-Ow@pomaz-ex.szeredi.hu>
+References: <1223883004.31587.15.camel@penberg-laptop>
+	 <E1Ks1hu-0002nN-9f@pomaz-ex.szeredi.hu>
+	 <48FE6306.6020806@linux-foundation.org>
+	 <E1KsXrY-0000AU-C4@pomaz-ex.szeredi.hu>
+	 <Pine.LNX.4.64.0810220822500.30851@quilx.com>
+	 <E1Ksjed-00023D-UB@pomaz-ex.szeredi.hu>
+	 <Pine.LNX.4.64.0810221252570.3562@quilx.com>
+	 <E1Ksk3g-00027r-Lp@pomaz-ex.szeredi.hu>
+	 <Pine.LNX.4.64.0810221315080.26671@quilx.com>
+	 <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu>
+	 <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>
+	 <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu>
+	 <Pine.LNX.4.64.0810221416130.26639@quilx.com>
+	 <E1KsluU-0002R1-Ow@pomaz-ex.szeredi.hu>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 23 Oct 2008 10:10:31 +0300
+Message-Id: <1224745831.25814.21.camel@penberg-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Oct 2008 08:51:13 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+Hi Miklos,
 
-> On Wed, Oct 22 2008, Andrew Morton wrote:
-> > On Thu, 23 Oct 2008 08:29:23 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > > But really it'd be better if the throttling happened down in
-> > > > pipe_to_file(), on a per-page basis.  As it stands we can dirty an
-> > > > arbitrary number of pagecache pages without throttling.  I think?
-> > > 
-> > > That's pretty exactly why it isn't done in the actor, to avoid doing it
-> > > per-page. As it's going to be PIPE_BUFFERS (16) pages max, I think this
-> > > is better.
-> > > 
-> > > Back in the splice early days, the balance_dirty_pages() actually showed
-> > > up in profiles when it was done on a per-page basis. So I'm reluctant to
-> > > change it :-)
-> > 
-> > That's why (the misnamed) balance_dirty_pages_ratelimited() exists?
-> 
-> I think that is what was used, but the details are a little hazy at this
-> point. So I can't say for sure.
+﻿On Thu, 2008-10-23 at 00:10 +0200, Miklos Szeredi wrote:﻿
+> Actually, no: looking at the slub code it already makes sure that
+> objects are neither poisoned, nor touched in any way _if_ there is a
+> constructor for the object. And for good reason too, otherwise a
+> reused object would contain rubbish after a second allocation.
 
-All that function does is to bump a per-cpu variable and
-once-per-thousand or so it does the balance.  If it was causing
-problems in the splice application we want to know, because write()
-uses it!
+There's no inherent reason why we cannot poison slab caches with a
+constructor. As a matter of fact SLAB does it which is probably why I
+got confused here. The only thing that needs to disable slab poisoning
+by design is SLAB_DESTROY_BY_RCU.
 
->  In this case it's moot anyway, since we can kill it.
+But for SLUB, you're obviously right.
 
-Nope, we can only remove it if the fd is O_SYNC||is_sync().
+﻿On Thu, 2008-10-23 at 00:10 +0200, Miklos Szeredi wrote:
+> Come on guys, you should be the experts in this thing!
+
+Yeah, I know. Yet you're stuck with us. That's sad.
+
+		Pekka
+
