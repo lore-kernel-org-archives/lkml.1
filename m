@@ -1,45 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757193AbYJWROY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbYJWRS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757193AbYJWROY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 13:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbYJWROP
+	id S1756845AbYJWRS2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 13:18:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbYJWRSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 13:14:15 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59509 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752991AbYJWROP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 13:14:15 -0400
-Date: Thu, 23 Oct 2008 13:14:13 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Alexey Dobriyan <adobriyan@gmail.com>
-cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tracing: fix a build error on alpha and m68k
-In-Reply-To: <20081023163433.GA3160@x200.localdomain>
-Message-ID: <alpine.DEB.1.10.0810231312480.1765@gandalf.stny.rr.com>
-References: <20081023213637.eff9b414.sfr@canb.auug.org.au> <20081023121145.GB27984@x200.localdomain> <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com> <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com> <49008D12.5090204@gmail.com>
- <Pine.LNX.4.64.0810231635440.18978@anakin> <c62985530810230757r411b4e3dj4ecec649cf8cf0b3@mail.gmail.com> <Pine.LNX.4.64.0810231727430.18978@anakin> <4900B414.7090002@gmail.com> <20081023163433.GA3160@x200.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 23 Oct 2008 13:18:18 -0400
+Received: from smtp2e.orange.fr ([80.12.242.113]:32776 "EHLO smtp2e.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751085AbYJWRSR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 13:18:17 -0400
+X-ME-UUID: 20081023171815672.0024A7000088@mwinf2e16.orange.fr
+Message-ID: <4900B0EF.2000108@cosmosbay.com>
+Date: Thu, 23 Oct 2008 19:14:23 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Miklos Szeredi <miklos@szeredi.hu>,
+       nickpiggin@yahoo.com.au, hugh@veritas.com, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: SLUB defrag pull request?
+References: <1223883004.31587.15.camel@penberg-laptop>  <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>  <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221416130.26639@quilx.com>  <E1KsluU-0002R1-Ow@pomaz-ex.szeredi.hu>  <1224745831.25814.21.camel@penberg-laptop>  <E1KsviY-0003Mq-6M@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810230638450.11924@quilx.com>  <84144f020810230658o7c6b3651k2d671aab09aa71fb@mail.gmail.com>  <Pine.LNX.4.64.0810230705210.12497@quilx.com> <84144f020810230714g7f5d36bas812ad691140ee453@mail.gmail.com> <Pine.LNX.4.64.0810230721400.12497@quilx.com> <49009575.60004@cosmosbay.com> <Pine.LNX.4.64.0810231035510.17638@quilx.com> <4900A7C8.9020707@cosmosbay.com> <Pine.LNX.4.64.0810231145430.19239@quilx.com>
+In-Reply-To: <Pine.LNX.4.64.0810231145430.19239@quilx.com>
+Content-Type: multipart/mixed;
+ boundary="------------010605080000090002080906"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------010605080000090002080906
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, 23 Oct 2008, Alexey Dobriyan wrote:
-> > 
-> > kernel/trace/trace.c: In function 'tracing_generic_entry_update':
-> > kernel/trace/trace.c:658: error: implicit declaration of function 'irqs_disabled_flags'
+Christoph Lameter a =E9crit :
+> On Thu, 23 Oct 2008, Eric Dumazet wrote:
+>=20
+>>> SLUB touches objects by default when allocating. And it does it=20
+>>> immediately in slab_alloc() in order to retrieve the pointer to the=20
+>>> next object. So there is no point of hinting there right now.
+>>>
+>>
+>> Please note SLUB touches by reading object.
+>>
+>> prefetchw() gives a hint to cpu saying this cache line is going to be =
 
-This error concerns me more. We depend on this in the generic tracers.
-Should we just add a stub function here when TRACE_IRQFLAGS is not 
-supported?
+>> *modified*, even
+>> if first access is a read. Some architectures can save some bus=20
+>> transactions, acquiring
+>> the cache line in an exclusive way instead of shared one.
+>=20
+> Most architectures actually can do that. Its probably worth to run some=
+=20
+> tests with that. Conversion of a cacheline from shared to exclusive can=
+=20
+> cost something.
+>=20
 
--- Steve
+Please check following patch as a followup
+
+[PATCH] slub: slab_alloc() can use prefetchw()
+
+Most kmalloced() areas are initialized/written right after allocation.
+
+prefetchw() gives a hint to cpu saying this cache line is going to be
+*modified*, even if first access is a read.
+
+Some architectures can save some bus transactions, acquiring
+the cache line in an exclusive way instead of shared one.
+
+Same optimization was done in 2005 on SLAB in commit=20
+34342e863c3143640c031760140d640a06c6a5f8=20
+([PATCH] mm/slab.c: prefetchw the start of new allocated objects)
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+
+
+--------------010605080000090002080906
+Content-Type: text/plain;
+ name="slub.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="slub.patch"
+
+diff --git a/mm/slub.c b/mm/slub.c
+index 0c83e6a..c2017a3 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1592,13 +1592,14 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
+ 
+ 	local_irq_save(flags);
+ 	c = get_cpu_slab(s, smp_processor_id());
++	object = c->freelist;
++	prefetchw(object);
+ 	objsize = c->objsize;
+-	if (unlikely(!c->freelist || !node_match(c, node)))
++	if (unlikely(!object || !node_match(c, node)))
+ 
+ 		object = __slab_alloc(s, gfpflags, node, addr, c);
+ 
+ 	else {
+-		object = c->freelist;
+ 		c->freelist = object[c->offset];
+ 		stat(c, ALLOC_FASTPATH);
+ 	}
+
+--------------010605080000090002080906--
 
 
