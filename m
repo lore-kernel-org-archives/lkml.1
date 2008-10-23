@@ -1,84 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757906AbYJWRun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbYJWRw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757906AbYJWRun (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 13:50:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbYJWRu2
+	id S1757445AbYJWRw7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 13:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbYJWRwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 13:50:28 -0400
-Received: from qb-out-0506.google.com ([72.14.204.234]:28148 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754696AbYJWRu0 (ORCPT
+	Thu, 23 Oct 2008 13:52:51 -0400
+Received: from outbound-mail-109.bluehost.com ([69.89.22.9]:53449 "HELO
+	outbound-mail-109.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752457AbYJWRwu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 13:50:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=N4x/jTVoKmBS7kDAhCw/YyFPJvKAwyQL5Ei3k+JUQOQ8sN0wgLFP+cfseXgr/bDbtI
-         rlEOX4YuAP2kua9LABa6Arqc0g6Ktw6DXOGEWdd19miNPx0IyxPgCHbw7S39wczjg7Jb
-         XN9nvtAhBGPt8q64BvE3P0zx4thgTRAEn0JXU=
-Message-ID: <c62985530810230935t4b5e88bepfd48ca694bdd8eba@mail.gmail.com>
-Date: Thu, 23 Oct 2008 18:35:14 +0200
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Alexey Dobriyan" <adobriyan@gmail.com>
-Subject: Re: [PATCH] tracing: fix a build error on alpha and m68k
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Geert Uytterhoeven" <geert@linux-m68k.org>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Steven Rostedt" <rostedt@goodmis.org>
-In-Reply-To: <20081023163433.GA3160@x200.localdomain>
+	Thu, 23 Oct 2008 13:52:50 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=uHZ96eS2RH3jtYlwOR08w1CDwBt4C7vhxvN3+Fu9hMm5xU1i82h/Hgmyneq9L+zRlSkNeYRl7W3Pz0TN6nHtHzOkjV5VMrcBFnnwjf609gzL2b4WKeNk2rFCxiOZcqAX;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [git pull] PCI pull request #2 for 2.6.28
+Date: Thu, 23 Oct 2008 10:52:47 -0700
+User-Agent: KMail/1.10.1 (Linux/2.6.26.5-45.fc9.x86_64; KDE/4.1.2; x86_64; ; )
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+References: <200810221714.18723.jbarnes@virtuousgeek.org> <alpine.LFD.2.00.0810231043560.3287@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0810231043560.3287@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20081023213637.eff9b414.sfr@canb.auug.org.au>
-	 <20081023121145.GB27984@x200.localdomain>
-	 <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com>
-	 <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com>
-	 <49008D12.5090204@gmail.com>
-	 <Pine.LNX.4.64.0810231635440.18978@anakin>
-	 <c62985530810230757r411b4e3dj4ecec649cf8cf0b3@mail.gmail.com>
-	 <Pine.LNX.4.64.0810231727430.18978@anakin>
-	 <4900B414.7090002@gmail.com> <20081023163433.GA3160@x200.localdomain>
+Message-Id: <200810231052.47621.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/23 Alexey Dobriyan <adobriyan@gmail.com>:
-> On Thu, Oct 23, 2008 at 07:27:48PM +0200, Frederic Weisbecker wrote:
->> When tracing is enabled, some arch have included <linux/irqflags.h>
->> on their <asm/system.h> but others like alpha or m68k don't.
->>
->> Build error on alpha:
->>
->> kernel/trace/trace.c: In function 'tracing_generic_entry_update':
->> kernel/trace/trace.c:658: error: implicit declaration of function 'irqs_disabled_flags'
->> kernel/trace/trace.c: In function 'tracing_cpumask_write':
->> kernel/trace/trace.c:2145: error: implicit declaration of function 'raw_local_irq_disable'
->> kernel/trace/trace.c:2162: error: implicit declaration of function 'raw_local_irq_enable'
->> kernel/trace/trace.c: In function 'trace_die_handler':
->> kernel/trace/trace.c:3039: error: 'DIE_OOPS' undeclared (first use in this function)
->>
->> Build error on m68k:
->> http://kisskb.ellerman.id.au/kisskb/buildresult/50641/
->>
->>
->> Include it on kernel/trace/trace.c
->>
->> Reported-by: Alexey Dobriyan <adobriyan@gmail.com>
->> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
->> ---
->> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
->> index 78d5661..deb9684 100644
->> --- a/kernel/trace/trace.c
->> +++ b/kernel/trace/trace.c
->> @@ -34,6 +34,7 @@
->>
->>  #include <linux/stacktrace.h>
->>  #include <linux/ring_buffer.h>
->> +#include <linux/irqflags.h>
+On Thursday, October 23, 2008 10:46 am Linus Torvalds wrote:
+> On Wed, 22 Oct 2008, Jesse Barnes wrote:
+> > A few more bits for 2.6.28, mainly hotplug related stuff so the risk
+> > should be pretty low.  There are a few good fixes in here though too: a
+> > build fix for some architectures due to the new ioremap_nocache usage in
+> > pci.h and a fix for a refcounting bug.
 >
-> Sure, except it doesn't fix anything.
+> Pulled.
 >
+> Ingo tells me that the ARI code is broken on his Nehalem, and that there's
+> already a confirmed fix for it by Yu Zhao ("[PATCH] pci: fix ARI") but
+> it's not in this series.
+>
+> Hmm? Status?
 
-Really? You mean only m68k or even on alpha?
+Yeah came in after I set up my pull request; I'll queue it up today.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
+
