@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbYJWUps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754991AbYJWUv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756703AbYJWUps (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 16:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbYJWUpg
+	id S1754991AbYJWUv1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 16:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbYJWUvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 16:45:36 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39622
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752375AbYJWUpg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 16:45:36 -0400
-Date: Thu, 23 Oct 2008 13:45:13 -0700 (PDT)
-Message-Id: <20081023.134513.267548182.davem@davemloft.net>
-To: michellammertink@gmail.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] netlink: fix append of whole original message on
- negative ack.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4900BFCF.2030707@gmail.com>
-References: <4900BFCF.2030707@gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Oct 2008 16:51:18 -0400
+Received: from kroah.org ([198.145.64.141]:51410 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751122AbYJWUvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 16:51:17 -0400
+Date: Thu, 23 Oct 2008 13:37:32 -0700
+From: Greg KH <greg@kroah.com>
+To: Alex Chiang <achiang@hp.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Yinghai Lu <yinghai@kernel.org>, stable@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [stable] [BUG][PATCH] cpqphp: fix kernel NULL pointer
+	dereference
+Message-ID: <20081023203732.GA17600@kroah.com>
+References: <48F7DB17.9020302@jp.fujitsu.com> <20081017003334.GA28723@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081017003334.GA28723@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: M Lammertink <michellammertink@gmail.com>
-Date: Thu, 23 Oct 2008 20:17:51 +0200
+On Thu, Oct 16, 2008 at 06:33:34PM -0600, Alex Chiang wrote:
+> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+> > 
+> > The root cause of this problem seems that cpqphp driver calls
+> > pci_hp_register() wrongly. In current implementation, cpqphp driver
+> > passes 'ctrl->pci_dev->subordinate' as a second parameter for
+> > pci_hp_register(). But because hotplug slots and it's hotplug
+> > controller (exists as a pci funcion) are on the same bus, it should be
+> > 'ctrl->pci_dev->bus' instead.
+> > 
+> > Cc: <stable@kernel.org>
+> 
+> Acked-by: Alex Chiang <achiang@hp.com>
 
-You'll get a much better review of this if you send it to
-the netdev mailing list, which is where all the networking
-developers are subscribed.  They don't read linux-kernel
+This patch doesn't seem to have made it upstream.
 
-Added to CC:
+Jesse, is it queued up in any of your trees?
 
-> From: Michel Lammertink <mlammertink <at> ti-wmc.nl>
-> Signed-off-by: Michel Lammertink <mlammertink <at> ti-wmc.nl>
+thanks,
+
+greg k-h
+
 > 
-> Netlink can return an negative acknowledgement, which AFAICT should include an error code and the whole original message. This patch fixes the size argument given to the __nlmsg_put call. Without this patch only the original header was attached.
-> ---
+> > Tested-by: Ingo Molnar <mingo@elte.hu>
+> > Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+> > 
+> > ---
+> >  drivers/pci/hotplug/cpqphp_core.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > Index: linux-2.6-tip/drivers/pci/hotplug/cpqphp_core.c
+> > ===================================================================
+> > --- linux-2.6-tip.orig/drivers/pci/hotplug/cpqphp_core.c
+> > +++ linux-2.6-tip/drivers/pci/hotplug/cpqphp_core.c
+> > @@ -435,7 +435,7 @@ static int ctrl_slot_setup(struct contro
+> >  				slot->number, ctrl->slot_device_offset,
+> >  				slot_number);
+> >  		result = pci_hp_register(hotplug_slot,
+> > -					 ctrl->pci_dev->subordinate,
+> > +					 ctrl->pci_dev->bus,
+> >  					 slot->device);
+> >  		if (result) {
+> >  			err("pci_hp_register failed with error %d\n", result);
+> > 
 > 
-> Can anyone explain to me why struct nlmsgerr contains an int error and the nlmsghdr struct. The comment in netlink_ack states that the whole message should be appended. Why not only include an int error in struct nlmsgerr and just append the original message?
-> 
-> Comments appreciated.
-> 
-> diff -uprN linux-2.6.27.3.orig/net/netlink/af_netlink.c linux-2.6.27.3/net/netlink/af_netlink.c
-> --- linux-2.6.27.3.orig/net/netlink/af_netlink.c	2008-10-23 18:01:54.000000000 +0200
-> +++ linux-2.6.27.3/net/netlink/af_netlink.c	2008-10-23 18:04:22.000000000 +0200
-> @@ -1656,7 +1656,7 @@ void netlink_ack(struct sk_buff *in_skb,
->  	}
->  
->  	rep = __nlmsg_put(skb, NETLINK_CB(in_skb).pid, nlh->nlmsg_seq,
-> -			  NLMSG_ERROR, sizeof(struct nlmsgerr), 0);
-> +			  NLMSG_ERROR, payload, 0);
->  	errmsg = nlmsg_data(rep);
->  	errmsg->error = err;
->  	memcpy(&errmsg->msg, nlh, err ? nlh->nlmsg_len : sizeof(*nlh));
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> _______________________________________________
+> stable mailing list
+> stable@linux.kernel.org
+> http://linux.kernel.org/mailman/listinfo/stable
