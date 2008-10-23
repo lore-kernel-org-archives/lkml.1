@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbYJWT0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758709AbYJWT20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758641AbYJWT0q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 15:26:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYJWT0h
+	id S1758709AbYJWT20 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 15:28:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbYJWT2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 15:26:37 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:35180 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751622AbYJWT0g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 15:26:36 -0400
-Date: Thu, 23 Oct 2008 13:26:18 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [PATCH,RFC] ext3: Add support for non-native signed/unsigned	htree
- hash algorithms
-In-reply-to: <20081023025646.GD10369@mit.edu>
-To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-id: <20081023192618.GS3184@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <1224560624-9691-1-git-send-email-tytso@mit.edu>
- <1224560624-9691-2-git-send-email-tytso@mit.edu>
- <20081022172221.c1a8c5b5.akpm@linux-foundation.org>
- <20081023025646.GD10369@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 23 Oct 2008 15:28:18 -0400
+Received: from colo.lackof.org ([198.49.126.79]:56498 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751601AbYJWT2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 15:28:17 -0400
+Date: Thu, 23 Oct 2008 13:28:00 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Grant Grundler <grundler@parisc-linux.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci: show dma_mask bits in /sys
+Message-ID: <20081023192800.GB8060@colo.lackof.org>
+References: <20081009211837.GC18444@colo.lackof.org> <48EE7745.2020603@kernel.org> <20081009213551.GC25780@parisc-linux.org> <86802c440810091451y4a3caceg1abaa75464c40a72@mail.gmail.com> <20081009225533.GB1914@colo.lackof.org> <48EE8E55.4000009@kernel.org> <20081012071157.GA20056@colo.lackof.org> <48FFD726.2010600@kernel.org> <20081023064815.GE31186@colo.lackof.org> <86802c440810222351g18a34904ka1f3621df7f2614f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440810222351g18a34904ka1f3621df7f2614f@mail.gmail.com>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct 22, 2008  22:56 -0400, Theodore Ts'o wrote:
-> On Wed, Oct 22, 2008 at 05:22:21PM -0700, Andrew Morton wrote:
-> > arm says
-> > 
-> > fs/ext3/super.c: In function `ext3_fill_super':
-> > fs/ext3/super.c:1750: warning: comparison is always false due to limited range of data type
-> > 
-> > Also, is there any way in which this new code can be, umm, cleaned up?
+On Wed, Oct 22, 2008 at 11:51:36PM -0700, Yinghai Lu wrote:
+> On Wed, Oct 22, 2008 at 11:48 PM, Grant Grundler
+> <grundler@parisc-linux.org> wrote:
+> > On Wed, Oct 22, 2008 at 06:45:10PM -0700, Yinghai Lu wrote:
+> >> Grant prefer to add it /sys instead of showing in bootlog
+> >>
+> >> so could catch if the driver set the correct dma_mask.
+> >>
+> >> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> >>
+> >> ---
+> >>  drivers/pci/pci-sysfs.c |   17 +++++++++++++++++
+> >>  1 file changed, 17 insertions(+)
+> >>
+> >> Index: linux-2.6/drivers/pci/pci-sysfs.c
+> >> ===================================================================
+> >> --- linux-2.6.orig/drivers/pci/pci-sysfs.c
+> >> +++ linux-2.6/drivers/pci/pci-sysfs.c
+> >> @@ -169,6 +169,21 @@ numa_node_show(struct device *dev, struc
+> >>  #endif
+> >>
+> >>  static ssize_t
+> >> +dma_mask_bits_show(struct device *dev, struct device_attribute *attr, char *buf)
+> >> +{
+> >> +     struct pci_dev *pdev = to_pci_dev(dev);
+> >> +
+> >> +     return sprintf (buf, "%d\n", fls64(pdev->dma_mask));
+> >
+> > Is there any reason to use %d instead of "0x%x" ?
+> > I'd much rather see this dumped in hex.
 > 
-> Hmm..... is it considered safe to depend on the userspace limits.h
-> header file?  I guess if we trust that header file to be correct we
-> could check the value of CHAR_MIN and/or CHAR_MAX as defined by
-> limits.h.
+> that is bits, so it will be 64, 41 instead of 0xfffff
 
-That would likely fail on cross-compiled environments, right?
+Sorry - I missed the fls64(). Looks good to me.
 
-> Alternatively we could do an #ifdef __CHAR_UNSIGNED__, which is
-> defined by gcc.  The manual for gcc tells us not to depend on it, but
-> to depend on limits.h instead.
+We only need to know if willy agrees to how/when to
+limit when this is available.
 
-This warning likely is aimed at userspace for portable applications.
-
-> Any thoughts, or comments?  Does anyone know if the Intel compiler
-> will DTRT with either of these approaches?
-
-If it doesn't, then it probably has some equivalent that can be #ifdef'd
-in its place.
-
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
-
+thanks,
+grant
