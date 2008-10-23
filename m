@@ -1,57 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbYJWN7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbYJWOG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753135AbYJWN7X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 09:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbYJWN7B
+	id S1753188AbYJWOG7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 10:06:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbYJWOGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 09:59:01 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:57955 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752505AbYJWN67 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 09:58:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=grp+atvqE9Vr7wWAGHbaSwpsjrGhRq4rX0D2j9R/logrGtJgdB2Q0uswcF6QGuVj9A
-         XuZirwrKsRqWkKkyztal3XNXS9RVuL0U+CcxhsFBl0OO6LBMw3cTRuCXlz2qJu61w7d+
-         cImBWKxFmMy2qCmoS5lobsWxuPHO+GpY3cJsU=
-Message-ID: <84144f020810230658o7c6b3651k2d671aab09aa71fb@mail.gmail.com>
-Date: Thu, 23 Oct 2008 16:58:53 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Christoph Lameter" <cl@linux-foundation.org>
-Subject: Re: SLUB defrag pull request?
-Cc: "Miklos Szeredi" <miklos@szeredi.hu>, nickpiggin@yahoo.com.au,
-       hugh@veritas.com, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <Pine.LNX.4.64.0810230638450.11924@quilx.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1223883004.31587.15.camel@penberg-laptop>
-	 <Pine.LNX.4.64.0810221315080.26671@quilx.com>
-	 <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu>
-	 <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>
-	 <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu>
-	 <Pine.LNX.4.64.0810221416130.26639@quilx.com>
-	 <E1KsluU-0002R1-Ow@pomaz-ex.szeredi.hu>
-	 <1224745831.25814.21.camel@penberg-laptop>
-	 <E1KsviY-0003Mq-6M@pomaz-ex.szeredi.hu>
-	 <Pine.LNX.4.64.0810230638450.11924@quilx.com>
-X-Google-Sender-Auth: 4646e9f69bf85ff2
+	Thu, 23 Oct 2008 10:06:51 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:54537 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751628AbYJWOGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 10:06:50 -0400
+Date: Thu, 23 Oct 2008 16:05:59 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] AVR32 update for 2.6.28-rc1, round 2
+Message-ID: <20081023160559.77f79a84@hskinnemo-gx745.norway.atmel.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 23 Oct 2008 14:05:45.0640 (UTC) FILETIME=[717EEA80:01C93518]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 23, 2008 at 4:40 PM, Christoph Lameter
-<cl@linux-foundation.org> wrote:
-> Solid? What is not solid? The SLUB design was made in part because of the
-> defrag problems that were not easy to solve with SLAB. The ability to lock
-> down a slab allows stabilizing objects. We discussed solutions to the
-> fragmentation problem for years and did not get anywhere with SLAB.
+Hi Linus,
 
-I'd assume he's talking about the Intel-reported regression that's yet
-to be resolved.
+Please pull
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git master
+
+to receive the following updates. This includes support for four new
+boards and a couple of fixes.
+
+I'm seeing some jffs2-related build failures, but they don't seem to be
+related to the arch code.
+
+Alex Raimondi (1):
+      avr32: Fix bug in LCD pin setup on port C
+
+Haavard Skinnemoen (6):
+      avr32: Kconfig: Remove pointless if around atstk1000 include
+      avr32: Add defconfig for the mimc200 board
+      avr32: Add defconfig for the favr-32 board
+      avr32: Scale loops_per_jiffy when cpu frequency changes
+      avr32: Fix GPIO initcall breakage
+      Merge branches 'boards' and 'fixes' of git://git.kernel.org/.../hskinnemoen/avr32-2.6
+
+Hans-Christian Egtvedt (2):
+      avr32: Add support for EVKLCD10X addon boards
+      avr32: add support for EarthLCD Favr-32 board
+
+Mark Jackson (2):
+      avr32: Fix MIMC200 board use of SPD network pins
+      avr32: Add MIMC200 board support
+
+ arch/avr32/Kconfig                              |   12 +-
+ arch/avr32/Makefile                             |    2 +
+ arch/avr32/boards/atngw100/Kconfig              |   35 +
+ arch/avr32/boards/atngw100/Makefile             |    3 +-
+ arch/avr32/boards/atngw100/evklcd10x.c          |  155 +++
+ arch/avr32/boards/atngw100/setup.c              |    7 +-
+ arch/avr32/boards/atstk1000/atstk1002.c         |    2 -
+ arch/avr32/boards/atstk1000/atstk1003.c         |    2 -
+ arch/avr32/boards/atstk1000/atstk1004.c         |    2 -
+ arch/avr32/boards/favr-32/Kconfig               |   22 +
+ arch/avr32/boards/favr-32/Makefile              |    1 +
+ arch/avr32/boards/favr-32/flash.c               |   98 ++
+ arch/avr32/boards/favr-32/setup.c               |  352 +++++++
+ arch/avr32/boards/mimc200/Makefile              |    1 +
+ arch/avr32/boards/mimc200/flash.c               |  143 +++
+ arch/avr32/boards/mimc200/fram.c                |   80 ++
+ arch/avr32/boards/mimc200/setup.c               |  237 +++++
+ arch/avr32/configs/atngw100_evklcd100_defconfig | 1264 +++++++++++++++++++++++
+ arch/avr32/configs/atngw100_evklcd101_defconfig | 1264 +++++++++++++++++++++++
+ arch/avr32/configs/favr-32_defconfig            | 1235 ++++++++++++++++++++++
+ arch/avr32/configs/mimc200_defconfig            | 1109 ++++++++++++++++++++
+ arch/avr32/mach-at32ap/at32ap700x.c             |   11 +-
+ arch/avr32/mach-at32ap/cpufreq.c                |   14 +
+ arch/avr32/mach-at32ap/include/mach/board.h     |   10 +-
+ 24 files changed, 6046 insertions(+), 15 deletions(-)
+ create mode 100644 arch/avr32/boards/atngw100/Kconfig
+ create mode 100644 arch/avr32/boards/atngw100/evklcd10x.c
+ create mode 100644 arch/avr32/boards/favr-32/Kconfig
+ create mode 100644 arch/avr32/boards/favr-32/Makefile
+ create mode 100644 arch/avr32/boards/favr-32/flash.c
+ create mode 100644 arch/avr32/boards/favr-32/setup.c
+ create mode 100644 arch/avr32/boards/mimc200/Makefile
+ create mode 100644 arch/avr32/boards/mimc200/flash.c
+ create mode 100644 arch/avr32/boards/mimc200/fram.c
+ create mode 100644 arch/avr32/boards/mimc200/setup.c
+ create mode 100644 arch/avr32/configs/atngw100_evklcd100_defconfig
+ create mode 100644 arch/avr32/configs/atngw100_evklcd101_defconfig
+ create mode 100644 arch/avr32/configs/favr-32_defconfig
+ create mode 100644 arch/avr32/configs/mimc200_defconfig
+
+Haavard
