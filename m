@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758661AbYJWCL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758071AbYJWCMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758661AbYJWCL6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 22:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755816AbYJWCIh
+	id S1758071AbYJWCMX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 22:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbYJWCIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 22:08:37 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:46600 "EHLO relay.sgi.com"
+	Wed, 22 Oct 2008 22:08:38 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:46606 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753744AbYJWCI2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 22:08:28 -0400
-Message-Id: <20081023020828.097703000@polaris-admin.engr.sgi.com>
+	id S1753929AbYJWCI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 22:08:29 -0400
+Message-Id: <20081023020828.489427000@polaris-admin.engr.sgi.com>
 References: <20081023020826.051012000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 22 Oct 2008 19:08:35 -0700
+Date: Wed, 22 Oct 2008 19:08:37 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 09/35] cpumask: add cpumask_copy()
-Content-Disposition: inline; filename=cpumask:cpus_copy.patch
+Subject: [PATCH 11/35] x86: enable MAXSMP
+Content-Disposition: inline; filename=x86:enable-MAXSMP.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since cpumasks are to become pointers to undefined structs, we need to
-replace assignments.  Also, dynamically allocated ones will eventually
-be nr_cpu_ids bits (<= NR_CPUS), so assignment is a definite no-no.
+Set MAXSMP to enable CONFIG_CPUMASK_OFFSTACK which moves cpumask's off
+the stack (and in structs) when using cpumask_var_t.
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- include/linux/cpumask.h |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/x86/Kconfig |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
---- linux-2.6.28.orig/include/linux/cpumask.h
-+++ linux-2.6.28/include/linux/cpumask.h
-@@ -64,6 +64,8 @@
-  * int next_cpu(cpu, mask)		Next cpu past 'cpu', or NR_CPUS
-  * int next_cpu_nr(cpu, mask)		Next cpu past 'cpu', or nr_cpu_ids
-  *
-+ * void cpumask_copy(dmask, smask)	dmask = smask
-+ *
-  * size_t cpumask_size()		Length of cpumask in bytes.
-  * cpumask_t cpumask_of_cpu(cpu)	Return cpumask with bit 'cpu' set
-  *					(can be used as an lvalue)
-@@ -350,6 +352,12 @@ static inline void cpumask_fold(struct c
- 	bitmap_fold(dstp->bits, origp->bits, sz, NR_CPUS);
- }
+--- linux-2.6.28.orig/arch/x86/Kconfig
++++ linux-2.6.28/arch/x86/Kconfig
+@@ -573,6 +573,7 @@ config IOMMU_HELPER
+ config MAXSMP
+ 	bool "Configure Maximum number of SMP Processors and NUMA Nodes"
+ 	depends on X86_64 && SMP && DEBUG_KERNEL && EXPERIMENTAL
++	select CPUMASK_OFFSTACK
+ 	help
+ 	  Configure maximum number of CPUS and NUMA Nodes for this
+ 	  architecture (up to 4096!).
+@@ -584,16 +585,16 @@ config MAXSMP
+ 	  If unsure, say N.
  
-+static inline void cpumask_copy(struct cpumask *dstp,
-+				const struct cpumask *srcp)
-+{
-+	bitmap_copy(cpumask_bits(dstp), cpumask_bits(srcp), NR_CPUS);
-+}
-+
- /*
-  * Special-case data structure for "single bit set only" constant CPU masks.
-  *
+ config NR_CPUS
+-	int "Maximum number of CPUs (2-4096)" if !MAXSMP
+-	range 2 4096
+ 	depends on SMP
++ 	int "Maximum number of CPUs" if SMP && !MAXSMP
++ 	range 2 512 if SMP && !MAXSMP
+ 	default "4096" if MAXSMP
+-	default "32" if X86_NUMAQ || X86_SUMMIT || X86_BIGSMP || X86_ES7000
++ 	default "32" if X86_NUMAQ || X86_SUMMIT || X86_BIGSMP || X86_ES7000
+ 	default "8"
+ 	help
+ 	  This allows you to specify the maximum number of CPUs which this
+-	  kernel will support.  The maximum supported value is 512 and the
+-	  minimum value which makes sense is 2.
++	  kernel will support.  The maximum supported value is 512 (4096
++	  if MAXSMP set) and the minimum value which makes sense is 2.
+ 
+ 	  This is purely to save memory - each supported CPU adds
+ 	  approximately one kilobyte to the kernel image.
 
 -- 
