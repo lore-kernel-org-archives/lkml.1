@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbYJWN6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbYJWN7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756337AbYJWN6u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 09:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753791AbYJWN6V
+	id S1753135AbYJWN7X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 09:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbYJWN7B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 09:58:21 -0400
-Received: from saeurebad.de ([85.214.36.134]:56450 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753530AbYJWN6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 09:58:20 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Andrea Righi <righi.andrea@gmail.com>, Dave Jones <davej@redhat.com>,
-       Dave Airlie <airlied@redhat.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: lockdep splat from ioctl and mmap fops sharing lock
-References: <87ljwgj8p1.fsf@saeurebad.de>
-Date: Thu, 23 Oct 2008 15:58:10 +0200
-In-Reply-To: <87ljwgj8p1.fsf@saeurebad.de> (Johannes Weiner's message of "Thu,
-	23 Oct 2008 05:23:38 +0200")
-Message-ID: <87ej27jtvx.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 23 Oct 2008 09:59:01 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:57955 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752505AbYJWN67 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 09:58:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=grp+atvqE9Vr7wWAGHbaSwpsjrGhRq4rX0D2j9R/logrGtJgdB2Q0uswcF6QGuVj9A
+         XuZirwrKsRqWkKkyztal3XNXS9RVuL0U+CcxhsFBl0OO6LBMw3cTRuCXlz2qJu61w7d+
+         cImBWKxFmMy2qCmoS5lobsWxuPHO+GpY3cJsU=
+Message-ID: <84144f020810230658o7c6b3651k2d671aab09aa71fb@mail.gmail.com>
+Date: Thu, 23 Oct 2008 16:58:53 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Christoph Lameter" <cl@linux-foundation.org>
+Subject: Re: SLUB defrag pull request?
+Cc: "Miklos Szeredi" <miklos@szeredi.hu>, nickpiggin@yahoo.com.au,
+       hugh@veritas.com, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <Pine.LNX.4.64.0810230638450.11924@quilx.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1223883004.31587.15.camel@penberg-laptop>
+	 <Pine.LNX.4.64.0810221315080.26671@quilx.com>
+	 <E1KskHI-0002AF-Hz@pomaz-ex.szeredi.hu>
+	 <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>
+	 <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu>
+	 <Pine.LNX.4.64.0810221416130.26639@quilx.com>
+	 <E1KsluU-0002R1-Ow@pomaz-ex.szeredi.hu>
+	 <1224745831.25814.21.camel@penberg-laptop>
+	 <E1KsviY-0003Mq-6M@pomaz-ex.szeredi.hu>
+	 <Pine.LNX.4.64.0810230638450.11924@quilx.com>
+X-Google-Sender-Auth: 4646e9f69bf85ff2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Weiner <hannes@saeurebad.de> writes:
+On Thu, Oct 23, 2008 at 4:40 PM, Christoph Lameter
+<cl@linux-foundation.org> wrote:
+> Solid? What is not solid? The SLUB design was made in part because of the
+> defrag problems that were not easy to solve with SLAB. The ability to lock
+> down a slab allows stabilizing objects. We discussed solutions to the
+> fragmentation problem for years and did not get anywhere with SLAB.
 
-> Hi,
->
-> fb_mmap() is called under mmap_sem and acquires fb_info->lock.
->
-> Since 3e680aae4e53ab "fb: convert lock/unlock_kernel() into local fb
-> mutex", fb_ioctl() takes fb_info->lock and does copy_to/from_user()
-> under it, which in turn might acquire mmap_sem.
-
-More affected drivers:
-
-agp_ioctl() doing usercopy under agp_fe.agp_mutex
-agp_mmap() taking agp_fe.agp_mutex under mmap_sem
-
-dv1394_write() doing usercopy under video->mtx
-dv1394_mmap() taking video->mtx under mmap_sem
-
-raw1394_ioctl() doing usercopy under fi->state_mutex
-raw1394_mmap() taking fi->state_mutex under mmap_sem
-
-	Hannes
+I'd assume he's talking about the Intel-reported regression that's yet
+to be resolved.
