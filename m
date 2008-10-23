@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbYJWTXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbYJWT0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753584AbYJWTXi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 15:23:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754816AbYJWTX0
+	id S1758641AbYJWT0q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 15:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYJWT0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 15:23:26 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:31971 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758778AbYJWTXZ (ORCPT
+	Thu, 23 Oct 2008 15:26:37 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:35180 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751622AbYJWT0g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 15:23:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hmnUvNczbF2l+sxAnGZJzFNSP+mir356SXWqDdq3W481jxiroc9xXB2Y1zxOucI46o
-         UP9/xbnzXKzG6as23Fr5hBm03rHu37a6s4OFXXqDeSuyD/8GPuTq8ZYE/IGDi1X3hS1X
-         ZkB039vJPcANaZu4RorWzd623+Y8L7dIacbRM=
-Date: Thu, 23 Oct 2008 23:26:30 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: wierd new config options
-Message-ID: <20081023192630.GA23841@x200.localdomain>
-References: <20081023181818.GA25430@lst.de> <1224789404.8230.158.camel@lts-notebook>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1224789404.8230.158.camel@lts-notebook>
+	Thu, 23 Oct 2008 15:26:36 -0400
+Date: Thu, 23 Oct 2008 13:26:18 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH,RFC] ext3: Add support for non-native signed/unsigned	htree
+ hash algorithms
+In-reply-to: <20081023025646.GD10369@mit.edu>
+To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-id: <20081023192618.GS3184@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <1224560624-9691-1-git-send-email-tytso@mit.edu>
+ <1224560624-9691-2-git-send-email-tytso@mit.edu>
+ <20081022172221.c1a8c5b5.akpm@linux-foundation.org>
+ <20081023025646.GD10369@mit.edu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 23, 2008 at 03:16:44PM -0400, Lee Schermerhorn wrote:
-> On Thu, 2008-10-23 at 20:18 +0200, Christoph Hellwig wrote:
-> > Why is UNEVICTABLE_LRU and option?  Is there any rason to turn it off or
-> > is this just to confuse users?
+On Oct 22, 2008  22:56 -0400, Theodore Ts'o wrote:
+> On Wed, Oct 22, 2008 at 05:22:21PM -0700, Andrew Morton wrote:
+> > arm says
+> > 
+> > fs/ext3/super.c: In function `ext3_fill_super':
+> > fs/ext3/super.c:1750: warning: comparison is always false due to limited range of data type
+> > 
+> > Also, is there any way in which this new code can be, umm, cleaned up?
 > 
-> 
-> We discussed this back when we first submitted the patches.  I
-> considered the NONRECLAIMABLE/UNEVICTABLE LRU mechanism to be a wee bit
-> experimental at the time.  I wasn't sure that all platform that do want
-> memory management would necessarily also want the unevictable lru.  It's
-> easier for me to build it with the option and remove it later than vice
-> versa.  If the consensus of the community is that it should always be
-> enabled, then I'm fine with removing the option.  
+> Hmm..... is it considered safe to depend on the userspace limits.h
+> header file?  I guess if we trust that header file to be correct we
+> could check the value of CHAR_MIN and/or CHAR_MAX as defined by
+> limits.h.
 
-The problem is that average admin can't make useful judgement on
-this: active pageout lists -- what the hell is it?, kswapd -- ok, I
-remember this process from ps(1) output, "will not waste" -- ok, good
-thing, "will use one page flag" -- how many more I have?, what will
-happen if they emptied?
+That would likely fail on cross-compiled environments, right?
 
-And distro kernel maintainer should also make a decision -- not a module, after all.
+> Alternatively we could do an #ifdef __CHAR_UNSIGNED__, which is
+> defined by gcc.  The manual for gcc tells us not to depend on it, but
+> to depend on limits.h instead.
+
+This warning likely is aimed at userspace for portable applications.
+
+> Any thoughts, or comments?  Does anyone know if the Intel compiler
+> will DTRT with either of these approaches?
+
+If it doesn't, then it probably has some equivalent that can be #ifdef'd
+in its place.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
