@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754291AbYJWAXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbYJWAqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754291AbYJWAXJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 20:23:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYJWAWz
+	id S1755219AbYJWAqx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 20:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbYJWAqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 20:22:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54902 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751868AbYJWAWy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 20:22:54 -0400
-Date: Wed, 22 Oct 2008 17:22:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: linux-ext4@vger.kernel.org, tytso@mit.edu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH,RFC] ext3: Add support for non-native signed/unsigned
- htree hash algorithms
-Message-Id: <20081022172221.c1a8c5b5.akpm@linux-foundation.org>
-In-Reply-To: <1224560624-9691-2-git-send-email-tytso@mit.edu>
-References: <1224560624-9691-1-git-send-email-tytso@mit.edu>
-	<1224560624-9691-2-git-send-email-tytso@mit.edu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 22 Oct 2008 20:46:43 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38488 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753168AbYJWAqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Oct 2008 20:46:42 -0400
+Message-ID: <48FFC96E.5060604@garzik.org>
+Date: Wed, 22 Oct 2008 20:46:38 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, tj@kernel.org
+Subject: Re: [PATCH 2/2] libata: switch to using block layer tagging support
+References: <1224661243-7929-1-git-send-email-jens.axboe@oracle.com> <1224661243-7929-3-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1224661243-7929-3-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Oct 2008 23:43:44 -0400
-"Theodore Ts'o" <tytso@mit.edu> wrote:
+Jens Axboe wrote:
+> libata currently has a pretty dumb ATA_MAX_QUEUE loop for finding
+> a free tag to use. Instead of fixing that up, convert libata to
+> using block layer tagging - gets rid of code in libata, and is also
+> much faster.
+> 
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  drivers/ata/libata-core.c |   66 ++++----------------------------------------
+>  drivers/ata/libata-scsi.c |   10 +++++-
+>  drivers/ata/libata.h      |   19 +++++++++++-
+>  include/linux/libata.h    |    1 -
+>  4 files changed, 31 insertions(+), 65 deletions(-)
 
-> +	i = le32_to_cpu(es->s_flags);
-> +	if (i & EXT2_FLAGS_UNSIGNED_HASH)
-> +		sbi->s_hash_unsigned = 3;
-> +	else if ((i & EXT2_FLAGS_SIGNED_HASH) == 0) {
-> +		char	c;
-> +
-> +		c = (char) 255;
-> +		if (((int) c) == -1) {
+Just to be sure, I take it this patch series is for 2.6.29?
 
-arm says
+Seems nice to have, but since it wasn't ready for the merge window 
+opening...
 
-fs/ext3/super.c: In function `ext3_fill_super':
-fs/ext3/super.c:1750: warning: comparison is always false due to limited range of data type
+	Jeff
 
-Also, is there any way in which this new code can be, umm, cleaned up?
+
+
