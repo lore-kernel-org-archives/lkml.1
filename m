@@ -1,81 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758633AbYJWTkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbYJWTmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758633AbYJWTkd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 15:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbYJWTkZ
+	id S1758765AbYJWTmx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 15:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbYJWTmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 15:40:25 -0400
-Received: from kroah.org ([198.145.64.141]:48156 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753585AbYJWTkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 15:40:24 -0400
-Date: Thu, 23 Oct 2008 12:36:50 -0700
-From: Greg KH <greg@kroah.com>
-To: "Gu, Mingkun" <Mingkun.Gu@GTECH.COM>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Help: undesired 10 seconds delay in creating USB devices
-Message-ID: <20081023193650.GB10397@kroah.com>
-References: <20081023161355.GA8171@kroah.com> <32C88E5279F5DD46B7237443CD61E67901E455BB@cspmail02.gtk.gtech.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <32C88E5279F5DD46B7237443CD61E67901E455BB@cspmail02.gtk.gtech.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 23 Oct 2008 15:42:42 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:60856 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752780AbYJWTml (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 15:42:41 -0400
+Subject: [GIT PATCH] final merge window updates for SCSI
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 23 Oct 2008 14:42:37 -0500
+Message-Id: <1224790957.3330.35.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 23, 2008 at 04:30:34PM -0300, Gu, Mingkun wrote:
-> > -----Original Message-----
-> > From: Greg KH [mailto:greg@kroah.com]
-> > Sent: Thursday, October 23, 2008 1:14 PM
-> > To: Gu, Mingkun
-> > Cc: linux-kernel@vger.kernel.org
-> > Subject: Re: Help: undesired 10 seconds delay in creating USB devices
-> > 
-> > On Thu, Oct 23, 2008 at 01:11:00PM -0300, Gu, Mingkun wrote:
-> > 
-> > Please stop sending email in HTML format, the mailing lists reject it.
-> > 
-> > > [MKGU>] My device driver name is "usbled". Our USB device has
-> > > VendorID=11b4. After I unplugged the USB cable connecting to this
-> device
-> > > and kept the device driver "usbled" remaining loaded, I plugged in
-> the
-> > > USB cable back to the system again. I could see the device
-> information
-> > > retrieved from /proc/bus/usb/devices immediately but the device name
-> > > /dev/usbled0 was seen after near 10 seconds.
-> > 
-> > That sounds like a udev script issue, not a kernel issue, correct?
-> > 
-> 
-> [MKGU>] Yes. It seems related to udev.
-> 
-> > > > If you run 'udevadm monitor', does it show a 10 second delay?
-> > >
-> > > [MKGU>] I don't have the program 'udevadm' on my system.
-> > 
-> > Do you have the program 'udevmonitor'?  I suggest trying that.
-> > 
-> 
-> [MKGU>] Yes, I ran "udevmonitor" and captured the following messages:
-> UEVENT[1224775488.005799] remove   /class/usb/usbled0 (usb)
-> UEVENT[1224775488.007901] remove   /class/usb (class)
-> UEVENT[1224775488.011992] remove
-> /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0 (usb)
-> UEVENT[1224775488.019706] remove
-> /devices/pci0000:00/0000:00:1d.1/usb3/3-1 (usb)
-> UEVENT[1224775496.176576] add
-> /devices/pci0000:00/0000:00:1d.1/usb3/3-1 (usb)
-> UEVENT[1224775496.181732] add
-> /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0 (usb)
-> UEVENT[1224775496.186031] add      /class/usb/usbled0 (usb)
+This lot's been through at least four days random config testing in
+linux-next (I checked).  It's basically a sequence of small updates that
+were all in process before the merge window opened.
 
-Then I suggest filing a bug with your distro to get this looked at, as
-they are responsible for the udev scripts here, nothing wrong with your
-kernel :)
+The patch is available here:
 
-good luck,
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
 
-greg k-h
+The short changelog is:
+
+Akinobu Mita (1):
+      ipr: use memory_read_from_buffer()
+
+Alan Cox (1):
+      aic79xx: user visible misuse wrong SI units (not disk size!)
+
+Alan Stern (1):
+      sd: remove command-size switching code
+
+Bernd Schubert (1):
+      mptfusion: Increase scsi-timeouts, similariy to the LSI 4.x
+driver.
+
+Chandra Seetharaman (1):
+      scsi_dh: Initialize path state to be passive when path is not
+owned
+
+Denys Vlasenko (3):
+      aic7xxx: update *_shipped files
+      aic7xxx: update .reg files
+      aic7xxx: introduce "dont_generate_debug_code" keyword in aicasm
+parser
+
+FUJITA Tomonori (2):
+      3w-9xxx: remove unnecessary local_irq_save/restore for scsi sg
+copy API
+      3w-xxxx: remove unnecessary local_irq_save/restore for scsi sg
+copy API
+
+H. Peter Anvin (2):
+      sd: fix computation of the full size of the device
+      lib: string_get_size(): don't hang on zero; no decimals on exact
+
+Harvey Harrison (2):
+      aic79xx: fix shadowed variables
+      aic79xx: fix shadowed variables, add statics
+
+James Bottomley (1):
+      fix removable device inability to detect disk changes
+
+Jamie Wellnitz (1):
+      sd: Fix handling of NO_SENSE check condition
+
+Julia Lawall (1):
+      sun3x_esp: Convert && to ||
+
+Kiyoshi Ueda (2):
+      export busy state via q->lld_busy_fn()
+      refactor sdev/starget/shost busy checking
+
+Randy Dunlap (1):
+      fix netlink kernel-doc
+
+thomas schorpp (1):
+      aic7xxx: Take the LED out of diagnostic mode on PM resume
+
+
+And the diffstat:
+
+ drivers/message/fusion/mptscsih.c                |    3 
+ drivers/scsi/3w-9xxx.c                           |    3 
+ drivers/scsi/3w-xxxx.c                           |    7 
+ drivers/scsi/aic7xxx/aic79xx.reg                 |  185 ++
+ drivers/scsi/aic7xxx/aic79xx_core.c              |   15 
+ drivers/scsi/aic7xxx/aic79xx_pci.c               |   12 
+ drivers/scsi/aic7xxx/aic79xx_reg.h_shipped       |  567 +------
+ drivers/scsi/aic7xxx/aic79xx_reg_print.c_shipped | 1723
+-----------------------
+ drivers/scsi/aic7xxx/aic7xxx.reg                 |  124 +
+ drivers/scsi/aic7xxx/aic7xxx_core.c              |    7 
+ drivers/scsi/aic7xxx/aic7xxx_reg.h_shipped       |  875 -----------
+ drivers/scsi/aic7xxx/aic7xxx_reg_print.c_shipped | 1165 ---------------
+ drivers/scsi/aic7xxx/aicasm/aicasm_gram.y        |   10 
+ drivers/scsi/aic7xxx/aicasm/aicasm_scan.l        |    1 
+ drivers/scsi/aic7xxx/aicasm/aicasm_symbol.c      |    3 
+ drivers/scsi/aic7xxx/aicasm/aicasm_symbol.h      |    3 
+ drivers/scsi/device_handler/scsi_dh_rdac.c       |    3 
+ drivers/scsi/ipr.c                               |   16 
+ drivers/scsi/scsi_lib.c                          |   83 -
+ drivers/scsi/scsi_netlink.c                      |    9 
+ drivers/scsi/sd.c                                |   21 
+ drivers/scsi/sun3x_esp.c                         |    4 
+ lib/string_helpers.c                             |   34 
+ 23 files changed, 580 insertions(+), 4293 deletions(-)
+
+James
+
+
