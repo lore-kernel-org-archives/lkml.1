@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755699AbYJWPlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbYJWPnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755699AbYJWPlA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 11:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbYJWPku
+	id S1755860AbYJWPnG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 11:43:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbYJWPmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 11:40:50 -0400
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:54334 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751318AbYJWPkt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 11:40:49 -0400
-Date: Thu, 23 Oct 2008 10:39:58 -0500 (CDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, Miklos Szeredi <miklos@szeredi.hu>,
-       nickpiggin@yahoo.com.au, hugh@veritas.com, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: SLUB defrag pull request?
-In-Reply-To: <49009575.60004@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0810231035510.17638@quilx.com>
-References: <1223883004.31587.15.camel@penberg-laptop> 
- <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com> 
- <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221416130.26639@quilx.com>
-  <E1KsluU-0002R1-Ow@pomaz-ex.szeredi.hu>  <1224745831.25814.21.camel@penberg-laptop>
-  <E1KsviY-0003Mq-6M@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810230638450.11924@quilx.com>
-  <84144f020810230658o7c6b3651k2d671aab09aa71fb@mail.gmail.com> 
- <Pine.LNX.4.64.0810230705210.12497@quilx.com>
- <84144f020810230714g7f5d36bas812ad691140ee453@mail.gmail.com>
- <Pine.LNX.4.64.0810230721400.12497@quilx.com> <49009575.60004@cosmosbay.com>
+	Thu, 23 Oct 2008 11:42:53 -0400
+Received: from kroah.org ([198.145.64.141]:58922 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751561AbYJWPmw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 11:42:52 -0400
+Date: Thu, 23 Oct 2008 08:22:16 -0700
+From: Greg KH <greg@kroah.com>
+To: "Gu, Mingkun" <Mingkun.Gu@GTECH.COM>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Help: undesired 10 seconds delay in creating USB devices
+Message-ID: <20081023152216.GA3911@kroah.com>
+References: <32C88E5279F5DD46B7237443CD61E67901E455B9@cspmail02.gtk.gtech.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Spam-Score: -2.5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <32C88E5279F5DD46B7237443CD61E67901E455B9@cspmail02.gtk.gtech.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Oct 2008, Eric Dumazet wrote:
+On Thu, Oct 23, 2008 at 11:22:08AM -0300, Gu, Mingkun wrote:
+> Hi Gentlemen,
+> 
+> I upgraded my kernel version from 2.6.13.5 to 2.6.21.7. I noted a 10
+> seconds delay in creating the device node under /dev for a hotplug USB
+> device. The details are as follows:
+> 
+> 1) if the device driver is not loaded, the device driver will be loaded
+> and a device name under /dev will be created immediately when I plug in
+> my USB device (a finger button board);
+> 
+> 2) after the device driver has been loaded and unplugged the USB device
+> from the system, a 10 seconds delay in creating a device name under /dev
+> will be observed when I plug the device back into the system.
 
-> At alloc time, I remember I added a prefetchw() call in SLAB in 
-> __cache_alloc(),
-> this could explain some differences between SLUB and SLAB too, since SLAB
-> gives a hint to processor to warm its cache.
+What are you using to test that a 10 second delay is present?
 
-SLUB touches objects by default when allocating. And it does it 
-immediately in slab_alloc() in order to retrieve the pointer to the next 
-object. So there is no point of hinting there right now.
+If you run 'udevadm monitor', does it show a 10 second delay?
 
-If we go to the pointer arrays then the situation is similar to SLAB where 
-the object is not touched by the allocator. Then the hint would be useful 
-again.
+Remember, for a usb-storage device, the kernel will wait at least 5
+seconds before creating the block device for it as part of the "settle
+the device down" delay.  If you don't like it, you can change that
+parameter to be shorter, but you do so at your own risk.
 
+thanks,
+
+greg k-h
