@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbYJWXsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbYJWXsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754782AbYJWXsU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 19:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbYJWXsK
+	id S1756585AbYJWXsg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 19:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbYJWXsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 19:48:10 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57525 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751910AbYJWXsJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 19:48:09 -0400
-Message-ID: <49010D1E.8070400@zytor.com>
-Date: Thu, 23 Oct 2008 16:47:42 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 23 Oct 2008 19:48:21 -0400
+Received: from gw.goop.org ([64.81.55.164]:51036 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754561AbYJWXsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 19:48:20 -0400
+Message-ID: <49010D41.1080305@goop.org>
+Date: Thu, 23 Oct 2008 16:48:17 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-To: akataria@vmware.com
-CC: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is
- set.
-References: <20081021181536.GI12825@one.firstfloor.org>	 <1224616236.6161.60.camel@alok-dev1>	 <20081021192746.GJ12825@one.firstfloor.org>	 <1224703427.13953.8.camel@alok-dev1>	 <20081022195845.GP12825@one.firstfloor.org>	 <1224712846.13953.37.camel@alok-dev1>	 <20081022221316.GW12825@one.firstfloor.org>	 <1224713518.13953.46.camel@alok-dev1>	 <20081022225409.GB27492@one.firstfloor.org>	 <1224728478.13953.79.camel@alok-dev1>	 <20081023081052.GI27492@one.firstfloor.org> <1224805162.21776.45.camel@alok-dev1>
-In-Reply-To: <1224805162.21776.45.camel@alok-dev1>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: vm_unmap_aliases and Xen
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alok Kataria wrote:
-> 
-> I am ok with the CONSTANT_TSC bit check, but if people think that its
-> not important to skip this for native, i think adding a new flag to skip
-> this should be safe enough.
-> 
-> Ingo, HPA your views on this whole detection and skipping thing ? 
-> 
+I've been having a few problems with Xen, I suspect as a result of the 
+lazy unmapping in vmalloc.c.
 
-Okay, first of all, I'm somewhat leery (to put it mildly) of trusting a 
-CPUID bit to tell me a *system* property, which is that all cores in the 
-system are synchronized.  The CPU designer will know that all the cores 
-in the *package* are synchronized, but if that extends system-wide is a 
-property beyond the CPU.  Now, if I'm not completely mistaken, in the 
-case of AMD this bit is actually set by the BIOS via a magic MSR, but 
-that doesn't mean it can't be wrong.
+One immediate one is that vm_unmap_aliases() will oops if you call it 
+before vmalloc_init() is called, which can happen in the Xen case.  RFC 
+patch below.
 
-As far as skipping the check, it makes sense for me in the case of known 
-virtualization platforms; a CPU feature bit, real or synthetic, is a 
-very clean way to do that.  In general we should centralize CPU 
-knowledge to arch/x86/kernel/cpu and have the code outside look for 
-specific feature flags, and that applies to virtualization platforms, too.
+But the bigger problem I'm seeing is that despite calling 
+vm_unmap_aliases() at the pertinent places, I'm still seeing errors 
+resulting from stray aliases.  Is it possible that vm_unmap_aliases() 
+could be missing some, or not completely synchronous?
 
-	-hpa
+Subject: vmap: cope with vm_unmap_aliases before vmalloc_init()
+
+Xen can end up calling vm_unmap_aliases() before vmalloc_init() has
+been called.  In this case its safe to make it a simple no-op.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+diff -r 42c8b29f7ccf mm/vmalloc.c
+--- a/mm/vmalloc.c	Wed Oct 22 12:43:39 2008 -0700
++++ b/mm/vmalloc.c	Wed Oct 22 21:39:00 2008 -0700
+@@ -591,6 +591,8 @@
+ 
+ #define VMAP_BLOCK_SIZE		(VMAP_BBMAP_BITS * PAGE_SIZE)
+ 
++static bool vmap_initialized = false;
++
+ struct vmap_block_queue {
+ 	spinlock_t lock;
+ 	struct list_head free;
+@@ -827,6 +829,9 @@
+ 	int cpu;
+ 	int flush = 0;
+ 
++	if (!vmap_initialized)
++		return;
++
+ 	for_each_possible_cpu(cpu) {
+ 		struct vmap_block_queue *vbq = &per_cpu(vmap_block_queue, cpu);
+ 		struct vmap_block *vb;
+@@ -940,6 +945,8 @@
+ 		INIT_LIST_HEAD(&vbq->dirty);
+ 		vbq->nr_dirty = 0;
+ 	}
++
++	vmap_initialized = true;
+ }
+ 
+ void unmap_kernel_range(unsigned long addr, unsigned long size)
+
+
