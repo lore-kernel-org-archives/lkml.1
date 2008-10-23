@@ -1,89 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbYJWGac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbYJWGb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754713AbYJWGac (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 02:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYJWGaX
+	id S1755146AbYJWGb5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 02:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbYJWGbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 02:30:23 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:47064 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751915AbYJWGaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 02:30:22 -0400
-Date: Thu, 23 Oct 2008 08:29:23 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dmitri Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] Add block device speciffic splice write method
-Message-ID: <20081023062921.GQ22217@kernel.dk>
-References: <1224424858-3927-1-git-send-email-dmonakhov@openvz.org> <20081020174931.GH19428@kernel.dk> <20081020181156.GI19428@kernel.dk> <20081022223928.a6ce476f.akpm@linux-foundation.org>
+	Thu, 23 Oct 2008 02:31:48 -0400
+Received: from kroah.org ([198.145.64.141]:42682 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751915AbYJWGbr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 02:31:47 -0400
+Date: Wed, 22 Oct 2008 23:26:55 -0700
+From: Greg KH <greg@kroah.com>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>, otus-devel@venema.h4ckr.net
+Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: Release of Atheros 802.11n USB Linux driver
+Message-ID: <20081023062655.GA8039@kroah.com>
+References: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com> <20081022065045.GA2400@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081022223928.a6ce476f.akpm@linux-foundation.org>
+In-Reply-To: <20081022065045.GA2400@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 22 2008, Andrew Morton wrote:
-> On Mon, 20 Oct 2008 20:11:56 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+On Tue, Oct 21, 2008 at 11:50:45PM -0700, Greg KH wrote:
+> On Tue, Oct 21, 2008 at 07:04:17PM -0700, Luis R. Rodriguez wrote:
+> > We would like to see our Atheros 802.11n USB Linux driver upstream
+> > however we need help with this so we are releasing our Atheros 11n USB
+> > Otus Linux driver under the ISC to the community. The goal is to work
+> > with the community to help move this forward upstream. We are hoping
+> > for community help and leadership on this (*cough*).
 > 
-> > +ssize_t generic_file_splice_write_file_nolock(struct pipe_inode_info *pipe,
-> > +					      struct file *out, loff_t *ppos,
-> > +					      size_t len, unsigned int flags)
-> > +{
-> > +	struct address_space *mapping = out->f_mapping;
-> > +	struct inode *inode = mapping->host;
-> > +	struct splice_desc sd = {
-> > +		.total_len = len,
-> > +		.flags = flags,
-> > +		.pos = *ppos,
-> > +		.u.file = out,
-> > +	};
-> > +	ssize_t ret;
-> > +
-> > +	mutex_lock(&pipe->inode->i_mutex);
-> > +	ret = __splice_from_pipe(pipe, &sd, pipe_to_file);
-> > +	mutex_unlock(&pipe->inode->i_mutex);
-> > +
-> > +	if (ret > 0) {
-> > +		unsigned long nr_pages;
-> > +
-> > +		*ppos += ret;
-> > +		nr_pages = (ret + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-> > +
-> > +		if (unlikely((out->f_flags & O_SYNC) || IS_SYNC(inode))) {
-> > +			int er;
-> > +
-> > +			er = sync_page_range_nolock(inode, mapping, *ppos, ret);
-> > +			if (er)
-> > +				ret = er;
-> > +		}
-> > +		balance_dirty_pages_ratelimited_nr(mapping, nr_pages);
-> > +	}
-> > +
-> > +	return ret;
-> > +}
-> > +EXPORT_SYMBOL(generic_file_splice_write_file_nolock);
+> Yeah!
 > 
-> I don't think the balance_dirty_pages() is needed if we just did the
-> sync_page_range().
+> I'll grab this and put it in drivers/staging/ so it gets some users and
+> more developers to help out with it.
 
-Good point, I think we can get rid of that.
-> 
-> 
-> But really it'd be better if the throttling happened down in
-> pipe_to_file(), on a per-page basis.  As it stands we can dirty an
-> arbitrary number of pagecache pages without throttling.  I think?
+Ok, it seems to need some basic work to merely build properly on
+"modern" kernel versions.
 
-That's pretty exactly why it isn't done in the actor, to avoid doing it
-per-page. As it's going to be PIPE_BUFFERS (16) pages max, I think this
-is better.
+So, how should we do this if I want to move it into staging?  Can I just
+take a snapshot of what you have in this repo, move it in-kernel, fix
+the build errors and apply that patch (as your contribution of course)?
 
-Back in the splice early days, the balance_dirty_pages() actually showed
-up in profiles when it was done on a per-page basis. So I'm reluctant to
-change it :-)
+Then future development can go off of the in-kernel version?  Or do you
+plan to keep this git tree active somehow?
 
--- 
-Jens Axboe
+thanks,
 
+greg k-h
