@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbYJXJqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbYJXJqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755898AbYJXJqV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 05:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbYJXJqM
+	id S1756155AbYJXJqz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 05:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYJXJqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 05:46:12 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:54315 "EHLO
+	Fri, 24 Oct 2008 05:46:46 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:54339 "EHLO
 	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752096AbYJXJqK (ORCPT
+	with ESMTP id S1752230AbYJXJqp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 05:46:10 -0400
-Subject: [PATCH 2/2] timer: implement lockdep deadlock detection
+	Fri, 24 Oct 2008 05:46:45 -0400
+Subject: [PATCH 3/2] tasklet: implement lockdep deadlock detection
 From: Johannes Berg <johannes@sipsolutions.net>
 To: Thomas Gleixner <tglx@linutronix.de>
 Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
@@ -18,8 +18,8 @@ Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
 In-Reply-To: <1224790541.6002.53.camel@johannes.berg>
 References: <1224790541.6002.53.camel@johannes.berg>
 Content-Type: text/plain
-Date: Thu, 23 Oct 2008 21:46:02 +0200
-Message-Id: <1224791162.6002.67.camel@johannes.berg>
+Date: Thu, 23 Oct 2008 22:37:14 +0200
+Message-Id: <1224794234.6002.70.camel@johannes.berg>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -27,243 +27,124 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This modifies the timer code in a way to allow lockdep to detect
-deadlocks resulting from a lock being taken in the timer function
-as well as around the del_timer_sync() call.
+The tasklet code can deadlock when you try to disable a tasklet
+under a lock that the tasklet requires. This patch implements
+lockdep checking for this situation.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 ---
- include/linux/timer.h |   93 +++++++++++++++++++++++++++++++++++++++++---------
- kernel/timer.c        |   40 +++++++++++++++------
- 2 files changed, 106 insertions(+), 27 deletions(-)
+I don't have an actual instance of this in the kernel either, but my
+test case triggers correctly.
 
---- wireless-testing.orig/include/linux/timer.h	2008-10-23 21:06:23.948352811 +0200
-+++ wireless-testing/include/linux/timer.h	2008-10-23 21:30:06.468674841 +0200
-@@ -21,52 +21,115 @@ struct timer_list {
- 	char start_comm[16];
- 	int start_pid;
- #endif
+This was easy, but I think it's probably unlikely that somebody will do
+this mistake.
+
+ include/linux/interrupt.h |   41 ++++++++++++++++++++++++++++++++++++-----
+ kernel/softirq.c          |   10 +++++++---
+ 2 files changed, 43 insertions(+), 8 deletions(-)
+
+--- wireless-testing.orig/include/linux/interrupt.h	2008-10-23 21:42:58.495547519 +0200
++++ wireless-testing/include/linux/interrupt.h	2008-10-23 22:09:18.911743812 +0200
+@@ -299,13 +299,31 @@ struct tasklet_struct
+ 	atomic_t count;
+ 	void (*func)(unsigned long);
+ 	unsigned long data;
 +#ifdef CONFIG_LOCKDEP
-+	struct lockdep_map lockdep_map;
++	struct lockdep_map lock_map;
 +#endif
  };
  
- extern struct tvec_base boot_tvec_bases;
- 
--#define TIMER_INITIALIZER(_function, _expires, _data) {		\
--		.entry = { .prev = TIMER_ENTRY_STATIC },	\
--		.function = (_function),			\
--		.expires = (_expires),				\
--		.data = (_data),				\
--		.base = &boot_tvec_bases,			\
+-#define DECLARE_TASKLET(name, func, data) \
+-struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(0), func, data }
 +#ifdef CONFIG_LOCKDEP
-+#define __TIMER_LOCKDEP_MAP_INITIALIZER(fn, name)		\
-+	.lockdep_map = STATIC_LOCKDEP_MAP_INIT(name, fn),
++#define __TASKLET_LOCK_INIT(n, k) .lock_map = STATIC_LOCKDEP_MAP_INIT(n, k),
 +#else
-+#define __TIMER_LOCKDEP_MAP_INITIALIZER(fn, name)
-+#endif
-+
-+#define TIMER_INITIALIZER(_function, _expires, _data) {			\
-+		.entry = { .prev = TIMER_ENTRY_STATIC },		\
-+		.function = (_function),				\
-+		.expires = (_expires),					\
-+		.data = (_data),					\
-+		.base = &boot_tvec_bases,				\
-+		__TIMER_LOCKDEP_MAP_INITIALIZER((_function), #_function)\
- 	}
- 
- #define DEFINE_TIMER(_name, _function, _expires, _data)		\
- 	struct timer_list _name =				\
- 		TIMER_INITIALIZER(_function, _expires, _data)
- 
--void init_timer(struct timer_list *timer);
--void init_timer_deferrable(struct timer_list *timer);
-+void init_timer_key(struct timer_list *timer,
-+		    const char *name,
-+		    struct lock_class_key *key);
-+void init_timer_deferrable_key(struct timer_list *timer,
-+			       const char *name,
-+			       struct lock_class_key *key);
-+
-+#ifdef CONFIG_LOCKDEP
-+#define init_timer(timer)						\
-+	do {								\
-+		static struct lock_class_key __key;			\
-+		init_timer_key((timer), #timer, &__key);		\
-+	} while (0)
-+#define init_timer_deferrable(timer)					\
-+	do {								\
-+		static struct lock_class_key __key;			\
-+		init_timer_deferrable_key((timer), #timer, &__key);	\
-+	} while (0)
-+#define init_timer_on_stack(timer)					\
-+	do {								\
-+		static struct lock_class_key __key;			\
-+		init_timer_on_stack_key((timer), #timer, &__key);	\
-+	} while (0)
-+#define setup_timer(timer, fn, data)					\
-+	do {								\
-+		static struct lock_class_key __key;			\
-+		setup_timer_key((timer), #timer, &__key, (fn), (data));\
-+	} while (0)
-+#define setup_timer_on_stack(timer, fn, data)				\
-+	do {								\
-+		static struct lock_class_key __key;			\
-+		setup_timer_on_stack_key((timer), #timer, &__key,	\
-+					 (fn), (data));			\
-+	} while (0)
-+#else
-+#define init_timer(timer)\
-+	init_timer_key((timer), NULL, NULL)
-+#define init_timer_deferrable(timer)\
-+	init_timer_deferrable_key((timer), NULL, NULL)
-+#define init_timer_on_stack(timer)\
-+	init_timer_on_stack_key((timer)), NULL, NULL)
-+#define setup_timer(timer, fn, data)\
-+	setup_timer_key((timer), NULL, NULL, (fn), (data))
-+#define setup_timer_on_stack(timer, fn, data)\
-+	setup_timer_on_stack_key((timer), NULL, NULL, (fn), (data))
++#define __TASKLET_LOCK_INIT(n, k)
 +#endif
  
- #ifdef CONFIG_DEBUG_OBJECTS_TIMERS
--extern void init_timer_on_stack(struct timer_list *timer);
-+extern void init_timer_on_stack_key(struct timer_list *timer,
-+				    const char *name,
-+				    struct lock_class_key *key);
- extern void destroy_timer_on_stack(struct timer_list *timer);
++#define __DECLARE_TASKLET(name, _func, _data, c)\
++struct tasklet_struct name = {			\
++	.next = NULL,				\
++	.state = 0,				\
++	.count = ATOMIC_INIT(c),		\
++	.func = _func,				\
++	.data = _data,				\
++	__TASKLET_LOCK_INIT(#name, &name)	\
++}
++
++#define DECLARE_TASKLET(name, func, data)	\
++	__DECLARE_TASKLET(name, func, data, 0)
+ #define DECLARE_TASKLET_DISABLED(name, func, data) \
+-struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(1), func, data }
++	__DECLARE_TASKLET(name, func, data, 1)
+ 
+ 
+ enum
+@@ -328,6 +346,8 @@ static inline void tasklet_unlock(struct
+ 
+ static inline void tasklet_unlock_wait(struct tasklet_struct *t)
+ {
++	lock_map_acquire_noirq(&t->lock_map);
++	lock_map_release(&t->lock_map);
+ 	while (test_bit(TASKLET_STATE_RUN, &(t)->state)) { barrier(); }
+ }
  #else
- static inline void destroy_timer_on_stack(struct timer_list *timer) { }
--static inline void init_timer_on_stack(struct timer_list *timer)
-+static inline void init_timer_on_stack_key(struct timer_list *timer,
-+					   const char *name,
-+					   struct lock_class_key *key)
- {
--	init_timer(timer);
-+	init_timer_key(timer, name, key);
- }
- #endif
+@@ -380,8 +400,19 @@ static inline void tasklet_hi_enable(str
  
--static inline void setup_timer(struct timer_list * timer,
-+static inline void setup_timer_key(struct timer_list * timer,
-+				const char *name,
-+				struct lock_class_key *key,
- 				void (*function)(unsigned long),
- 				unsigned long data)
- {
- 	timer->function = function;
- 	timer->data = data;
--	init_timer(timer);
-+	init_timer_key(timer, name, key);
- }
- 
--static inline void setup_timer_on_stack(struct timer_list *timer,
-+static inline void setup_timer_on_stack_key(struct timer_list *timer,
-+					const char *name,
-+					struct lock_class_key *key,
- 					void (*function)(unsigned long),
- 					unsigned long data)
- {
- 	timer->function = function;
- 	timer->data = data;
--	init_timer_on_stack(timer);
-+	init_timer_on_stack_key(timer, name, key);
- }
- 
- /**
---- wireless-testing.orig/kernel/timer.c	2008-10-23 21:06:23.993350111 +0200
-+++ wireless-testing/kernel/timer.c	2008-10-23 21:08:10.172098297 +0200
-@@ -422,14 +422,18 @@ static inline void debug_timer_free(stru
- 	debug_object_free(timer, &timer_debug_descr);
- }
- 
--static void __init_timer(struct timer_list *timer);
--
--void init_timer_on_stack(struct timer_list *timer)
-+static void __init_timer(struct timer_list *timer,
-+			 const char *name,
-+			 struct lock_class_key *key);
+ extern void tasklet_kill(struct tasklet_struct *t);
+ extern void tasklet_kill_immediate(struct tasklet_struct *t, unsigned int cpu);
+-extern void tasklet_init(struct tasklet_struct *t,
+-			 void (*func)(unsigned long), unsigned long data);
++extern void tasklet_init_key(struct tasklet_struct *t,
++			     const char *name, struct lock_class_key *key,
++			     void (*func)(unsigned long), unsigned long data);
 +
-+void init_timer_on_stack_key(struct timer_list *timer,
-+			     const char *name,
-+			     struct lock_class_key *key)
- {
- 	debug_object_init_on_stack(timer, &timer_debug_descr);
--	__init_timer(timer);
-+	__init_timer(timer, name, key);
- }
--EXPORT_SYMBOL_GPL(init_timer_on_stack);
-+EXPORT_SYMBOL_GPL(init_timer_on_stack_key);
++#ifdef CONFIG_LOCKDEP
++#define tasklet_init(t, f, d)					\
++	do {							\
++		static struct lock_class_key __key;		\
++		tasklet_init_key((t), #t, &__key, (f), (d));	\
++	} while (0)
++#else
++#define tasklet_init(t, f, d) tasklet_init_key((t), NULL, NULL, (f), (d))
++#endif
  
- void destroy_timer_on_stack(struct timer_list *timer)
- {
-@@ -443,7 +447,9 @@ static inline void debug_timer_activate(
- static inline void debug_timer_deactivate(struct timer_list *timer) { }
- #endif
- 
--static void __init_timer(struct timer_list *timer)
-+static void __init_timer(struct timer_list *timer,
-+			 const char *name,
-+			 struct lock_class_key *key)
- {
- 	timer->entry.next = NULL;
- 	timer->base = __raw_get_cpu_var(tvec_bases);
-@@ -452,6 +458,7 @@ static void __init_timer(struct timer_li
- 	timer->start_pid = -1;
- 	memset(timer->start_comm, 0, TASK_COMM_LEN);
- #endif
-+	lockdep_init_map(&timer->lockdep_map, name, key, 0);
+ /*
+  * Autoprobing for irqs:
+--- wireless-testing.orig/kernel/softirq.c	2008-10-23 21:46:26.808921693 +0200
++++ wireless-testing/kernel/softirq.c	2008-10-23 22:01:34.382734952 +0200
+@@ -383,7 +383,9 @@ static void tasklet_action(struct softir
+ 			if (!atomic_read(&t->count)) {
+ 				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
+ 					BUG();
++				lock_map_acquire_noirq(&t->lock_map);
+ 				t->func(t->data);
++				lock_map_release(&t->lock_map);
+ 				tasklet_unlock(t);
+ 				continue;
+ 			}
+@@ -435,17 +437,19 @@ static void tasklet_hi_action(struct sof
  }
  
- /**
-@@ -461,19 +468,23 @@ static void __init_timer(struct timer_li
-  * init_timer() must be done to a timer prior calling *any* of the
-  * other timer functions.
-  */
--void init_timer(struct timer_list *timer)
-+void init_timer_key(struct timer_list *timer,
-+		    const char *name,
-+		    struct lock_class_key *key)
- {
- 	debug_timer_init(timer);
--	__init_timer(timer);
-+	__init_timer(timer, name, key);
- }
--EXPORT_SYMBOL(init_timer);
-+EXPORT_SYMBOL(init_timer_key);
  
--void init_timer_deferrable(struct timer_list *timer)
-+void init_timer_deferrable_key(struct timer_list *timer,
-+			       const char *name,
-+			       struct lock_class_key *key)
+-void tasklet_init(struct tasklet_struct *t,
+-		  void (*func)(unsigned long), unsigned long data)
++void tasklet_init_key(struct tasklet_struct *t,
++		      const char *name, struct lock_class_key *key,
++		      void (*func)(unsigned long), unsigned long data)
  {
--	init_timer(timer);
-+	init_timer_key(timer, name, key);
- 	timer_set_deferrable(timer);
+ 	t->next = NULL;
+ 	t->state = 0;
+ 	atomic_set(&t->count, 0);
+ 	t->func = func;
+ 	t->data = data;
++	lockdep_init_map(&t->lock_map, name, key, 0);
  }
--EXPORT_SYMBOL(init_timer_deferrable);
-+EXPORT_SYMBOL(init_timer_deferrable_key);
  
- static inline void detach_timer(struct timer_list *timer,
- 				int clear_pending)
-@@ -720,6 +731,9 @@ EXPORT_SYMBOL(try_to_del_timer_sync);
-  */
- int del_timer_sync(struct timer_list *timer)
+-EXPORT_SYMBOL(tasklet_init);
++EXPORT_SYMBOL(tasklet_init_key);
+ 
+ void tasklet_kill(struct tasklet_struct *t)
  {
-+	lock_map_acquire_noirq(&timer->lockdep_map);
-+	lock_map_release(&timer->lockdep_map);
-+
- 	for (;;) {
- 		int ret = try_to_del_timer_sync(timer);
- 		if (ret >= 0)
-@@ -795,7 +809,9 @@ static inline void __run_timers(struct t
- 			spin_unlock_irq(&base->lock);
- 			{
- 				int preempt_count = preempt_count();
-+				lock_map_acquire_noirq(&timer->lockdep_map);
- 				fn(data);
-+				lock_map_release(&timer->lockdep_map);
- 				if (preempt_count != preempt_count()) {
- 					printk(KERN_ERR "huh, entered %p "
- 					       "with preempt_count %08x, exited"
 
 
