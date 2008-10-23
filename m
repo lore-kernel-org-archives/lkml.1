@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbYJWGPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754875AbYJWGRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbYJWGPi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 02:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYJWGP3
+	id S1754875AbYJWGRZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 02:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYJWGRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 02:15:29 -0400
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:47291 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751541AbYJWGP3 (ORCPT
+	Thu, 23 Oct 2008 02:17:17 -0400
+Received: from mo-p05-ob.rzone.de ([81.169.146.181]:48929 "EHLO
+	mo-p05-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751541AbYJWGRQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 02:15:29 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=i9UhnYLUuX6K9po/FaRJBX5GidAKoHWkuTa1G1foVB3emjj1MbPgLbk9B2JH8w3c3JZGXM/QpfnpeLdsQ/zLcZCFr7sNfCkVg+gCh8Gcdy7dLumw3T0IoT3eE/1ltuMGDvxGAOhUmuh2xfAsPsysxbGa5yFk4k/l1fkJg4y832M=  ;
-X-YMail-OSG: lxysYlsVM1k4Q2WYYLoLcnYCKc76M_QuG4a6AqqTadH5IbCjD86Oy__YjbyH.3DvCh2CN1m2EfM4MCOcXm67.j1uPYyguqdgKjMvRqGsni_.4glxHVUaHpaEUqE7RC2dAa8-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
-Date: Wed, 22 Oct 2008 23:15:26 -0700
-User-Agent: KMail/1.9.10
-Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
-       Jean Delvare <khali@linux-fr.org>, David Miller <davem@davemloft.net>
-References: <20081016171222.GA24812@oksana.dev.rtsoft.ru> <20081022104606.GA510@oksana.dev.rtsoft.ru> <20081022183218.GA19025@oksana.dev.rtsoft.ru>
-In-Reply-To: <20081022183218.GA19025@oksana.dev.rtsoft.ru>
+	Thu, 23 Oct 2008 02:17:16 -0400
+X-RZG-CLASS-ID: mo05
+X-RZG-AUTH: :Pm0FVUW6aauhRGJJc5OfA4AU8DM8ZlijdmJYxKn/UQvEQQx8Ak89p3I=
+Date: Thu, 23 Oct 2008 08:17:12 +0200
+From: Alex Riesen <fork0@users.sourceforge.net>
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       em28xx@mcentral.de
+Subject: Re: [PATCH] em28xx patches against the latest git tree
+Message-ID: <20081023061712.GA4596@blimp.localdomain>
+Reply-To: Alex Riesen <fork0@users.sourceforge.net>
+References: <d9def9db0810221034v3bf4dabt6aa905b8a3ebd5a@mail.gmail.com> <d9def9db0810221038g156871e1u200abb90b774ad28@mail.gmail.com> <81b0412b0810221059w2e02b1c1ubd894b22f7991242@mail.gmail.com> <d9def9db0810221110g6f104b17g36a74704d43c5693@mail.gmail.com> <20081022182924.GA4626@blimp.localdomain> <20081022184058.GB4626@blimp.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810222315.26576.david-b@pacbell.net>
+In-Reply-To: <20081022184058.GB4626@blimp.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 October 2008, Anton Vorontsov wrote:
-> --- a/drivers/gpio/pcf857x.c
-> +++ b/drivers/gpio/pcf857x.c
-> @@ -187,7 +187,7 @@ static int pcf857x_probe(struct i2c_client *client,
->         struct pcf857x                  *gpio;
->         int                             status;
->  
-> -       pdata = client->dev.platform_data;
-> +       pdata = pcf857x_get_pdata(client);
->         if (!pdata)
->                 return -ENODEV;
->  
+Alex Riesen, Wed, Oct 22, 2008 20:40:58 +0200:
+> 
+> BTW, you forgot to a patch to include your driver into Kconfig of
+> drivers/media/video. ...
+> 
 
-I suppose that can work.  Regardless, some OF-specific code will
-need to map device tree state into a generic format that's fully
-decoupled from OF.  (And there's something to be said to having
-that mapping sit in the same directory as the driver needing it.)
-
+And the upper-level Makefile. Otherwise the driver wasn't even
+compiled. It has some warnings regarding unused inc_ref/dec_ref, BTW
 
