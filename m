@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755676AbYJWPHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbYJWPJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755676AbYJWPHT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 11:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756060AbYJWPGU
+	id S1754525AbYJWPJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 11:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbYJWPJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 11:06:20 -0400
-Received: from ozlabs.org ([203.10.76.45]:37630 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754109AbYJWPGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 11:06:19 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 35/35] x86: clean up speedctep-centrino and reduce cpumask_t usage From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Fri, 24 Oct 2008 02:06:22 +1100
-User-Agent: KMail/1.9.10
-Cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>
-References: <20081023020826.051012000@polaris-admin.engr.sgi.com> <200810231636.30722.rusty@rustcorp.com.au> <20081023120444.GD25132@elte.hu>
-In-Reply-To: <20081023120444.GD25132@elte.hu>
+	Thu, 23 Oct 2008 11:09:48 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:56346 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751144AbYJWPJs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 11:09:48 -0400
+Message-ID: <49009375.1070209@s5r6.in-berlin.de>
+Date: Thu, 23 Oct 2008 17:08:37 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Johannes Weiner <hannes@saeurebad.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrea Righi <righi.andrea@gmail.com>, Dave Jones <davej@redhat.com>,
+       Dave Airlie <airlied@redhat.com>
+Subject: Re: lockdep splat from ioctl and mmap fops sharing lock
+References: <87ljwgj8p1.fsf@saeurebad.de> <87ej27jtvx.fsf@saeurebad.de>
+In-Reply-To: <87ej27jtvx.fsf@saeurebad.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810240206.22933.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 23 October 2008 23:04:44 Ingo Molnar wrote:
-> * Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > On Thursday 23 October 2008 13:09:01 Mike Travis wrote:
-> > > 1) The #ifdef CONFIG_HOTPLUG_CPU seems unnecessary these days.
-> > > 2) The loop can simply skip over offline cpus, rather than creating a
-> > > tmp mask.
-> > > 3) set_mask is set to either a single cpu or all online cpus in a
-> > > policy. Since it's just used for set_cpus_allowed(), any offline cpus
-> > > in a policy don't matter, so we can just use cpumask_of_cpu() or the
-> > > policy->cpus.
-> >
-> > Note that this cleanup stands alone; it's just that I read this code I
-> > couldn't help but tidy it up.
-> >
-> > Ingo: do you just want to put this in your normal tree for sending to
-> > Linus?
->
-> hm, cpufreq stuff belongs into davej's tree.
->
-> i skipped #34 and #35 for now, we can live without them, correct?
+Johannes Weiner wrote:
+> Johannes Weiner <hannes@saeurebad.de> writes:
+> 
+>> Hi,
+>>
+>> fb_mmap() is called under mmap_sem and acquires fb_info->lock.
+>>
+>> Since 3e680aae4e53ab "fb: convert lock/unlock_kernel() into local fb
+>> mutex", fb_ioctl() takes fb_info->lock and does copy_to/from_user()
+>> under it, which in turn might acquire mmap_sem.
+> 
+> More affected drivers:
+> 
+> agp_ioctl() doing usercopy under agp_fe.agp_mutex
+> agp_mmap() taking agp_fe.agp_mutex under mmap_sem
+> 
+> dv1394_write() doing usercopy under video->mtx
+> dv1394_mmap() taking video->mtx under mmap_sem
 
-Definitely, they were tacked on and don't belong with the others.
+OK, it doesn't surprise me that I didn't notice this one myself:  The
+video->mtx usage is old, but dv1394 is not frequently used anymore; I
+for one don't test anything of it beyond loading and unloading.
 
-Cheers,
-Rusty.
+> raw1394_ioctl() doing usercopy under fi->state_mutex
+> raw1394_mmap() taking fi->state_mutex under mmap_sem
+
+The state_mutex in raw1394 however was introduced by me in patches
+written against 2.6.26 and 2.6.27-rcs.  And I tested the ioctls and I'd
+like to think that I also tested mmaps.  But maybe I didn't.  Of course
+I ahve all sorts of lockdep options enabled.
+
+So, was the usage of mmap_sem changed after 2.6.27 or were my tests
+insufficient?
+-- 
+Stefan Richter
+-=====-==--- =-=- =-===
+http://arcgraph.de/sr/
