@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbYJWVjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757662AbYJWVkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756691AbYJWVjf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 17:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbYJWVj0
+	id S1757662AbYJWVkZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 17:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbYJWVkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 17:39:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57761 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751378AbYJWVjZ (ORCPT
+	Thu, 23 Oct 2008 17:40:12 -0400
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:62525 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753453AbYJWVkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 17:39:25 -0400
-Date: Thu, 23 Oct 2008 14:37:24 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-Subject: Re: [GIT PULL/RESEND] kernel message catalog patches
-In-Reply-To: <20081023210446.GA12003@osiris.boeblingen.de.ibm.com>
-Message-ID: <alpine.LFD.2.00.0810231433380.3287@nehalem.linux-foundation.org>
-References: <1224168620.9617.14.camel@localhost> <1224230354.4631.1.camel@localhost> <20081021092148.GB4980@osiris.boeblingen.de.ibm.com> <alpine.LFD.2.00.0810230835150.3287@nehalem.linux-foundation.org>
- <20081023210446.GA12003@osiris.boeblingen.de.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 23 Oct 2008 17:40:10 -0400
+X-IronPort-AV: E=Sophos;i="4.33,472,1220227200"; 
+   d="scan'208";a="98292864"
+From: Roland Dreier <rdreier@cisco.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk
+Subject: Re: [git pull] bdev API series
+References: <20081023100124.GK28946@ZenIV.linux.org.uk>
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 23 Oct 2008 14:40:08 -0700
+In-Reply-To: <20081023100124.GK28946@ZenIV.linux.org.uk> (Al Viro's message of
+	"Thu, 23 Oct 2008 11:01:24 +0100")
+Message-ID: <adazlkvrnwn.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 23 Oct 2008 21:40:09.0323 (UTC) FILETIME=[EBEACBB0:01C93557]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I think it would be worth trying to get the patch descriptions a little
+better for future trees at least -- if I'm reading through a shortlog or
+something and I see:
 
+ >       switch ubd
+ >       switch DAC960
+ >       switch amiflop
+ >       switch aoeblk
+ >       switch ataflop
 
-On Thu, 23 Oct 2008, Heiko Carstens wrote:
-> 
-> The whole point of the patch set is to add documentation for kernel
-> messages that are emitted via printk. The documentation is supposed to
-> help a sys admin to help understand what went wrong.
+then it's not exactly clear what those patches do (without the context
+of the full series handy).
 
-I'm still not convinced.
-
-> Please note that this was initially an s390 only patch set but we moved
-> the infrastructure to generic code since it looks like others want a
-> facility like this too. iirc Andrew requested the move.
-
-I do agree that it makes no sense as a s390 feature, but quite frankly, 
-I don't think it makes sense AT ALL. It introduces the notion of fixed 
-messages and people now suddenly need to worry about the hashes of the 
-contents etc. Exactly the kind of thing that I don't personally EVER want 
-to see, and certainly not inside the kernel.
-
-If somebody really wants this, I seriously believe it would be better done 
-as a separate out-of-kernel package. Because I don't think it's worth 
-maintaining those hashed translations in-kernel, and I'm nto going to ask 
-people to even bother.
-
-But if it's in-kernel, other people are then going to complain about them 
-not being maintained. And quite frankly, I'm neither willing nor 
-interested in hearing those complaints or making them more "valid".
-
-So please keep the kernel message catalog external. Or try to convince me. 
-But don't send me a "please pull" without any explanation or any relevant 
-convincing argument.
-
-		Linus
-
-
+ - R.
