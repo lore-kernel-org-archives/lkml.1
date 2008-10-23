@@ -1,170 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757335AbYJWQeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbYJWQew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757335AbYJWQeZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 12:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbYJWQeQ
+	id S1757914AbYJWQew (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 12:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbYJWQel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 12:34:16 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44435 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751517AbYJWQeP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 12:34:15 -0400
-Date: Thu, 23 Oct 2008 11:34:14 -0500
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Cc: Dimitri Sivanich <sivanich@sgi.com>
-Subject: [PATCH 2/2 v2] SGI RTC: add RTC system interrupt
-Message-ID: <20081023163414.GB14815@sgi.com>
-References: <20081023163041.GA14574@sgi.com> <20081023163223.GA14815@sgi.com>
+	Thu, 23 Oct 2008 12:34:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54045 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753337AbYJWQek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 12:34:40 -0400
+Date: Thu, 23 Oct 2008 18:35:17 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       travis@sgi.com, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/7] work_on_cpu: helper for doing task on a CPU.
+Message-ID: <20081023163517.GB21008@redhat.com>
+References: <20081023005751.53973DDEFE@ozlabs.org> <20081023094036.GA7593@redhat.com> <20081023143605.GN5255@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081023163223.GA14815@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081023143605.GN5255@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allocates a system interrupt vector for architecture specific
-use in implementing RTC timer interrupts.
+On 10/23, Gautham R Shenoy wrote:
+>
+> On Thu, Oct 23, 2008 at 11:40:36AM +0200, Oleg Nesterov wrote:
+> >
+> > IOW, I'd suggest
+> >
+> > 	long work_on_cpu(unsigned int cpu, long (*fn)(void *), void *arg)
+> > 	{
+> > 		struct work_for_cpu wfc;
+> >
+> > 		INIT_WORK(&wfc.work, do_work_for_cpu);
+> > 		wfc.fn = fn;
+> > 		wfc.arg = arg;
+> > 		wfc.ret = -EINVAL;
+> >
+> > 		get_online_cpus();
+> > 		if (likely(cpu_online(cpu))) {
+> > 			schedule_work_on(cpu, &wfc.work);
+> > 			flush_work(&wfc.work);
+> > 		}
+>
+> OK, how about doing the following? That will solve the problem
+> of deadlock you pointed out in patch 6.
+>
+> 		get_online_cpus();
+> 		if (likely(per_cpu(cpu_state, cpuid) == CPU_ONLINE)) {
+> 			schedule_work_on(cpu, &wfc.work);
+> 			flush_work(&wfc.work);
+> 		} else if (per_cpu(cpu_state, cpuid) != CPU_DEAD)) {
+> 			/*
+> 			 * We're the CPU-Hotplug thread. Call the
+> 			 * function synchronously so that we don't
+> 			 * deadlock with any pending work-item blocked
+> 			 * on get_online_cpus()
+> 			 */
+> 			 cpumask_t  orignal_mask = current->cpus_allowed;
+> 			 set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu);
+> 			 wfc.ret = fn(arg);
+> 			 set_cpus_allowed_ptr(current, &original_mask);
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+Not sure I understand...
 
----
+_cpu_up() does raw_notifier_call_chain(CPU_ONLINE) after __cpu_up(),
+at this point per_cpu(cpu_state) == CPU_ONLINE.
 
- arch/x86/kernel/entry_64.S       |    4 +++
- arch/x86/kernel/genx2apic_uv_x.c |   41 +++++++++++++++++++++++++++++++++++
- arch/x86/kernel/irqinit_64.c     |    3 ++
- include/asm-x86/genapic_64.h     |    2 +
- include/asm-x86/hw_irq.h         |    1 
- include/asm-x86/irq_vectors.h    |    1 
- 6 files changed, 52 insertions(+)
+(OK, this is not exactly true, start_secondary() updates cpu_online_map
+ and only then cpu_state = CPU_ONLINE, but __cpu_up() waits for
+ cpu_online(cpu) == T).
 
-Index: linux/arch/x86/kernel/entry_64.S
-===================================================================
---- linux.orig/arch/x86/kernel/entry_64.S	2008-10-22 16:09:56.000000000 -0500
-+++ linux/arch/x86/kernel/entry_64.S	2008-10-22 16:13:30.000000000 -0500
-@@ -858,6 +858,10 @@ ENTRY(apic_timer_interrupt)
- 	apicinterrupt LOCAL_TIMER_VECTOR,smp_apic_timer_interrupt
- END(apic_timer_interrupt)
- 
-+ENTRY(uv_rtc_timer_intr)
-+	apicinterrupt RTC_TIMER_VECTOR,uv_rtc_timer_interrupt
-+END(uv_rtc_timer_intr)
-+
- ENTRY(uv_bau_message_intr1)
- 	apicinterrupt 220,uv_bau_message_interrupt
- END(uv_bau_message_intr1)
-Index: linux/arch/x86/kernel/irqinit_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/irqinit_64.c	2008-10-22 16:09:56.000000000 -0500
-+++ linux/arch/x86/kernel/irqinit_64.c	2008-10-22 16:13:30.000000000 -0500
-@@ -201,6 +201,9 @@ static void __init apic_intr_init(void)
- 	/* self generated IPI for local APIC timer */
- 	alloc_intr_gate(LOCAL_TIMER_VECTOR, apic_timer_interrupt);
- 
-+	/* IPI for RTC timers */
-+	alloc_intr_gate(RTC_TIMER_VECTOR, uv_rtc_timer_intr);
-+
- 	/* IPI vectors for APIC spurious and error interrupts */
- 	alloc_intr_gate(SPURIOUS_APIC_VECTOR, spurious_interrupt);
- 	alloc_intr_gate(ERROR_APIC_VECTOR, error_interrupt);
-Index: linux/include/asm-x86/irq_vectors.h
-===================================================================
---- linux.orig/include/asm-x86/irq_vectors.h	2008-10-22 16:10:03.000000000 -0500
-+++ linux/include/asm-x86/irq_vectors.h	2008-10-22 16:13:30.000000000 -0500
-@@ -85,6 +85,7 @@
-  * sources per level' errata.
-  */
- #define LOCAL_TIMER_VECTOR	0xef
-+#define RTC_TIMER_VECTOR	0xee
- 
- /*
-  * First APIC vector available to drivers: (vectors 0x30-0xee) we
-Index: linux/arch/x86/kernel/genx2apic_uv_x.c
-===================================================================
---- linux.orig/arch/x86/kernel/genx2apic_uv_x.c	2008-10-22 16:09:56.000000000 -0500
-+++ linux/arch/x86/kernel/genx2apic_uv_x.c	2008-10-22 16:13:30.000000000 -0500
-@@ -22,6 +22,7 @@
- #include <asm/ipi.h>
- #include <asm/genapic.h>
- #include <asm/pgtable.h>
-+#include <asm/idle.h>
- #include <asm/uv/uv_mmrs.h>
- #include <asm/uv/uv_hub.h>
- #include <asm/uv/bios.h>
-@@ -356,6 +357,46 @@ static __init void uv_rtc_init(void)
- 		sn_rtc_cycles_per_second = ticks_per_sec;
- }
- 
-+/* Function pointer for RTC interrupt handling */
-+static void (*uv_rtc_interrupt_extension)(void);
-+
-+int
-+uv_rtc_reg_extension(void (*fn)(void))
-+{
-+	if (uv_rtc_interrupt_extension)
-+		return 1;
-+
-+	uv_rtc_interrupt_extension = fn;
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(uv_rtc_reg_extension);
-+
-+void
-+uv_rtc_unreg_extension(void)
-+{
-+	if (uv_rtc_interrupt_extension)
-+		uv_rtc_interrupt_extension = NULL;
-+}
-+EXPORT_SYMBOL_GPL(uv_rtc_unreg_extension);
-+
-+void uv_rtc_timer_interrupt(struct pt_regs *regs)
-+{
-+	struct pt_regs *old_regs = set_irq_regs(regs);
-+
-+	ack_APIC_irq();
-+
-+	exit_idle();
-+
-+	irq_enter();
-+
-+	if (uv_rtc_interrupt_extension)
-+		uv_rtc_interrupt_extension();
-+
-+	irq_exit();
-+
-+	set_irq_regs(old_regs);
-+}
-+
- /*
-  * Called on each cpu to initialize the per_cpu UV data area.
-  * 	ZZZ hotplug not supported yet
-Index: linux/include/asm-x86/genapic_64.h
-===================================================================
---- linux.orig/include/asm-x86/genapic_64.h	2008-10-22 16:10:03.000000000 -0500
-+++ linux/include/asm-x86/genapic_64.h	2008-10-22 16:13:30.000000000 -0500
-@@ -49,6 +49,8 @@ extern int is_uv_system(void);
- 
- extern struct genapic apic_x2apic_uv_x;
- DECLARE_PER_CPU(int, x2apic_extra_bits);
-+extern int uv_rtc_reg_extension(void (*fn)(void));
-+extern void uv_rtc_unreg_extension(void);
- extern void uv_cpu_init(void);
- extern void uv_system_init(void);
- extern int uv_wakeup_secondary(int phys_apicid, unsigned int start_rip);
-Index: linux/include/asm-x86/hw_irq.h
-===================================================================
---- linux.orig/include/asm-x86/hw_irq.h	2008-10-22 16:10:03.000000000 -0500
-+++ linux/include/asm-x86/hw_irq.h	2008-10-22 16:13:30.000000000 -0500
-@@ -29,6 +29,7 @@
- 
- /* Interrupt handlers registered during init_IRQ */
- extern void apic_timer_interrupt(void);
-+extern void uv_rtc_timer_intr(void);
- extern void error_interrupt(void);
- extern void spurious_interrupt(void);
- extern void thermal_interrupt(void);
+
+Anyway, personally I dislike this special case. We must not use work_on_cpu()
+if we hold the lock which can be used by some work_struct, cpu_hotplug is not
+special at all.
+
+Oleg.
+
