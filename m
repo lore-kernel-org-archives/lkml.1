@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbYJWLBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbYJWLFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754898AbYJWLBK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 07:01:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbYJWLA4
+	id S1754715AbYJWLFz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 07:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbYJWLFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 07:00:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38535 "EHLO mx3.mail.elte.hu"
+	Thu, 23 Oct 2008 07:05:45 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60013 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752751AbYJWLA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 07:00:56 -0400
-Date: Thu, 23 Oct 2008 13:00:36 +0200
+	id S1752466AbYJWLFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 07:05:45 -0400
+Date: Thu, 23 Oct 2008 13:05:24 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Mike Travis <travis@sgi.com>
 Cc: Rusty Russell <rusty@rustcorp.com.au>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 23/35] cpumask: cpumask_any_but() From: Rusty Russell
+Subject: Re: [PATCH 27/35] cpumask: accessors to manipulate
+	possible/present/online/active maps From: Rusty Russell
 	<rusty@rustcorp.com.au>
-Message-ID: <20081023110036.GA25132@elte.hu>
-References: <20081023020826.051012000@polaris-admin.engr.sgi.com> <20081023020830.882924000@polaris-admin.engr.sgi.com>
+Message-ID: <20081023110524.GB25132@elte.hu>
+References: <20081023020826.051012000@polaris-admin.engr.sgi.com> <20081023020831.698704000@polaris-admin.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081023020830.882924000@polaris-admin.engr.sgi.com>
+In-Reply-To: <20081023020831.698704000@polaris-admin.engr.sgi.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,18 +41,16 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Mike Travis <travis@sgi.com> wrote:
 
-> +int cpumask_any_but(const struct cpumask *mask, unsigned int cpu)
+> +void set_cpu_possible(unsigned int cpu, bool possible)
 > +{
-> +	unsigned int i;
-> +
-> +	for_each_cpu(i, mask)
-> +		if (i != cpu)
-> +			break;
-> +	return i;
+> +	if (possible)
+> +		cpumask_set_cpu(cpu, &cpu_possible_map);
+> +	else
+> +		cpumask_clear_cpu(cpu, &cpu_possible_map);
 > +}
-> +
->  /* These are not inline because of header tangles. */
+> +void set_cpu_present(unsigned int cpu, bool present)
+> +{
 
-i've added a missing export here.
+i added the missing newlines between all the new function definitions.
 
 	Ingo
