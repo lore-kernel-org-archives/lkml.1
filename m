@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757667AbYJWXX1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757470AbYJWX0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757667AbYJWXX1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 19:23:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbYJWXXS
+	id S1757470AbYJWX0X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 19:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbYJWX0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 19:23:18 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62357 "EHLO
+	Thu, 23 Oct 2008 19:26:15 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:43823 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751551AbYJWXXR (ORCPT
+	with ESMTP id S1751873AbYJWX0O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 19:23:17 -0400
-Date: Thu, 23 Oct 2008 19:23:14 -0400 (EDT)
+	Thu, 23 Oct 2008 19:26:14 -0400
+Date: Thu, 23 Oct 2008 19:26:08 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [PATCH] ftrace: update txt document
-Message-ID: <alpine.DEB.1.10.0810231921590.4182@gandalf.stny.rr.com>
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH v2] ftrace: ftrace dump on oops control
+In-Reply-To: <20081023155440.3b90e129.randy.dunlap@oracle.com>
+Message-ID: <alpine.DEB.1.10.0810231924400.4182@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0810231514140.8986@gandalf.stny.rr.com> <20081023155440.3b90e129.randy.dunlap@oracle.com>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -28,271 +30,129 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[
+  Changes since v1:
 
-A lot of changes have gone into ftrace. This patch updates
-the ftrace.txt document.
+   Replaced /** with /* as Randy explained that kernel-doc does
+    not yet handle variables.
+]
+
+Currently, ftrace is set up to dump its contents to the console if the
+kernel panics or oops. This can be annoying if you have trace data in
+the buffers and you experience an oops, but the trace data is old or
+static.
+
+Usually when you want ftrace to dump its contents is when you are debugging
+your system and you have set up ftrace to trace the events leading to
+an oops.
+
+This patch adds a control variable called "ftrace_dump_on_oops" that will
+enable the ftrace dump to console on oops. This variable is default off
+but a developer can enable it either through the kernel command line
+by adding "ftrace_dump_on_oops" or at run time by setting (or disabling)
+/proc/sys/kernel/ftrace_dump_on_oops.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- Documentation/ftrace.txt |  145 +++++++++++++++++++----------------------------
- 1 file changed, 59 insertions(+), 86 deletions(-)
+ include/linux/ftrace.h |    2 ++
+ kernel/sysctl.c        |   10 ++++++++++
+ kernel/trace/trace.c   |   29 ++++++++++++++++++++++++++---
+ 3 files changed, 38 insertions(+), 3 deletions(-)
 
-Index: linux-tip.git/Documentation/ftrace.txt
+Index: linux-tip.git/include/linux/ftrace.h
 ===================================================================
---- linux-tip.git.orig/Documentation/ftrace.txt	2008-08-14 13:54:58.000000000 -0400
-+++ linux-tip.git/Documentation/ftrace.txt	2008-10-23 19:20:30.000000000 -0400
-@@ -94,23 +94,19 @@ of ftrace. Here is a list of some of the
- 		only be recorded if the latency is greater than
- 		the value in this file. (in microseconds)
+--- linux-tip.git.orig/include/linux/ftrace.h	2008-10-23 12:55:35.000000000 -0400
++++ linux-tip.git/include/linux/ftrace.h	2008-10-23 15:31:50.000000000 -0400
+@@ -181,6 +181,8 @@ static inline void __ftrace_enabled_rest
+ #endif
  
--  trace_entries : This sets or displays the number of trace
--		entries each CPU buffer can hold. The tracer buffers
--		are the same size for each CPU. The displayed number
--		is the size of the CPU buffer and not total size. The
-+  trace_entries : This sets or displays the number of bytes each CPU
-+		buffer can hold. The tracer buffers are the same size
-+		for each CPU. The displayed number is the size of the
-+		 CPU buffer and not total size of all buffers. The
- 		trace buffers are allocated in pages (blocks of memory
- 		that the kernel uses for allocation, usually 4 KB in size).
--		Since each entry is smaller than a page, if the last
--		allocated page has room for more entries than were
--		requested, the rest of the page is used to allocate
--		entries.
-+		If the last page allocated has room for more bytes
-+		than requested, the rest of the page is used to allocate.
-+		(Note, the size may not be a multiple of the page size due
-+		to buffer managment overhead).
- 
- 		This can only be updated when the current_tracer
--		is set to "none".
--
--		NOTE: It is planned on changing the allocated buffers
--		      from being the number of possible CPUS to
--		      the number of online CPUS.
-+		is set to "nop".
- 
-   tracing_cpumask : This is a mask that lets the user only trace
- 		on specified CPUS. The format is a hex string
-@@ -130,13 +126,10 @@ of ftrace. Here is a list of some of the
- 		be traced. If a function exists in both set_ftrace_filter
- 		and set_ftrace_notrace,	the function will _not_ be traced.
- 
--  available_filter_functions : When a function is encountered the first
--		time by the dynamic tracer, it is recorded and
--		later the call is converted into a nop. This file
--		lists the functions that have been recorded
--		by the dynamic tracer and these functions can
--		be used to set the ftrace filter by the above
--		"set_ftrace_filter" file. (See the section "dynamic ftrace"
-+  available_filter_functions : This lists the functions that ftrace
-+		has processed and can trace. These are the function
-+		names that you can pass to "set_ftrace_filter" or
-+		"set_ftrace_notrace". (See the section "dynamic ftrace"
- 		below for more details).
- 
- 
-@@ -145,7 +138,7 @@ The Tracers
- 
- Here is the list of current tracers that may be configured.
- 
--  ftrace - function tracer that uses mcount to trace all functions.
-+  function - function tracer that uses mcount to trace all functions.
- 
-   sched_switch - traces the context switches between tasks.
- 
-@@ -166,8 +159,8 @@ Here is the list of current tracers that
- 		the highest priority task to get scheduled after
- 		it has been woken up.
- 
--  none - This is not a tracer. To remove all tracers from tracing
--		simply echo "none" into current_tracer.
-+  nop - This is not a tracer. To remove all tracers from tracing
-+		simply echo "nop" into current_tracer.
- 
- 
- Examples of using the tracer
-@@ -182,7 +175,7 @@ Output format:
- Here is an example of the output format of the file "trace"
- 
-                              --------
--# tracer: ftrace
-+# tracer: function
- #
- #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
- #              | |      |          |         |
-@@ -192,7 +185,7 @@ Here is an example of the output format 
-                              --------
- 
- A header is printed with the tracer name that is represented by the trace.
--In this case the tracer is "ftrace". Then a header showing the format. Task
-+In this case the tracer is "function". Then a header showing the format. Task
- name "bash", the task PID "4251", the CPU that it was running on
- "01", the timestamp in <secs>.<usecs> format, the function name that was
- traced "path_put" and the parent function that called this function
-@@ -1000,22 +993,20 @@ is the stack for the hard interrupt. Thi
- has been set. We do not see the 'N' until we switch back to the task's
- assigned stack.
- 
--ftrace
--------
-+function
-+--------
- 
--ftrace is not only the name of the tracing infrastructure, but it
--is also a name of one of the tracers. The tracer is the function
--tracer. Enabling the function tracer can be done from the
--debug file system. Make sure the ftrace_enabled is set otherwise
--this tracer is a nop.
-+This tracer is the function tracer. Enabling the function tracer
-+can be done from the debug file system. Make sure the ftrace_enabled is
-+set otherwise this tracer is a nop.
- 
-  # sysctl kernel.ftrace_enabled=1
-- # echo ftrace > /debug/tracing/current_tracer
-+ # echo function > /debug/tracing/current_tracer
-  # echo 1 > /debug/tracing/tracing_enabled
-  # usleep 1
-  # echo 0 > /debug/tracing/tracing_enabled
-  # cat /debug/tracing/trace
--# tracer: ftrace
-+# tracer: function
- #
- #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
- #              | |      |          |         |
-@@ -1037,10 +1028,10 @@ this tracer is a nop.
- [...]
- 
- 
--Note: ftrace uses ring buffers to store the above entries. The newest data
--may overwrite the oldest data. Sometimes using echo to stop the trace
--is not sufficient because the tracing could have overwritten the data
--that you wanted to record. For this reason, it is sometimes better to
-+Note: function tracer uses ring buffers to store the above entries.
-+The newest data may overwrite the oldest data. Sometimes using echo to
-+stop the trace is not sufficient because the tracing could have overwritten
-+the data that you wanted to record. For this reason, it is sometimes better to
- disable tracing directly from a program. This allows you to stop the
- tracing at the point that you hit the part that you are interested in.
- To disable the tracing directly from a C program, something like following
-@@ -1074,18 +1065,30 @@ every kernel function, produced by the -
- of pointing to a simple return. (Enabling FTRACE will include the
- -pg switch in the compiling of the kernel.)
- 
--When dynamic ftrace is initialized, it calls kstop_machine to make
--the machine act like a uniprocessor so that it can freely modify code
--without worrying about other processors executing that same code.  At
--initialization, the mcount calls are changed to call a "record_ip"
--function.  After this, the first time a kernel function is called,
--it has the calling address saved in a hash table.
--
--Later on the ftraced kernel thread is awoken and will again call
--kstop_machine if new functions have been recorded. The ftraced thread
--will change all calls to mcount to "nop".  Just calling mcount
--and having mcount return has shown a 10% overhead. By converting
--it to a nop, there is no measurable overhead to the system.
-+At compile time every C file object is run through the
-+recordmcount.pl script (located in the scripts directory). This
-+script will process the C object using objdump to find all the
-+locations in the .text section that call mcount. (Note, only
-+the .text section is processed, since processing other sections
-+like .init.text may cause races due to those sections being freed).
+ #ifdef CONFIG_TRACING
++extern int ftrace_dump_on_oops;
 +
-+A new section called "__mcount_loc" is created that holds references
-+to all the mcount call sites in the .text section. This section is
-+compiled back into the original object. The final linker will add
-+all these references into a single table.
+ extern void
+ ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3);
+ 
+Index: linux-tip.git/kernel/sysctl.c
+===================================================================
+--- linux-tip.git.orig/kernel/sysctl.c	2008-10-23 12:55:37.000000000 -0400
++++ linux-tip.git/kernel/sysctl.c	2008-10-23 15:01:00.000000000 -0400
+@@ -485,6 +485,16 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &ftrace_enable_sysctl,
+ 	},
+ #endif
++#ifdef CONFIG_TRACING
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "ftrace_dump_on_opps",
++		.data		= &ftrace_dump_on_oops,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
++#endif
+ #ifdef CONFIG_MODULES
+ 	{
+ 		.ctl_name	= KERN_MODPROBE,
+Index: linux-tip.git/kernel/trace/trace.c
+===================================================================
+--- linux-tip.git.orig/kernel/trace/trace.c	2008-10-23 12:55:37.000000000 -0400
++++ linux-tip.git/kernel/trace/trace.c	2008-10-23 19:24:15.000000000 -0400
+@@ -63,6 +63,28 @@ static cpumask_t __read_mostly		tracing_
+ 
+ static int tracing_disabled = 1;
+ 
++/*
++ * ftrace_dump_on_oops - variable to dump ftrace buffer on oops
++ *
++ * If there is an oops (or kernel panic) and the ftrace_dump_on_oops
++ * is set, then ftrace_dump is called. This will output the contents
++ * of the ftrace buffers to the console.  This is very useful for
++ * capturing traces that lead to crashes and outputing it to a
++ * serial console.
++ *
++ * It is default off, but you can enable it with either specifying
++ * "ftrace_dump_on_oops" in the kernel command line, or setting
++ * /proc/sys/kernel/ftrace_dump_on_oops to true.
++ */
++int ftrace_dump_on_oops;
 +
-+On boot up, before SMP is initialized, the dynamic ftrace code
-+scans this table and updates all the locations into nops. It also
-+records the locations, which are added to the available_filter_functions
-+list.  Modules are processed as they are loaded and before they are
-+executed.  They also remove their functions from the list when they
-+are removed.
++static int __init set_ftrace_dump_on_oops(char *str)
++{
++	ftrace_dump_on_oops = 1;
++	return 1;
++}
++__setup("ftrace_dump_on_oops", set_ftrace_dump_on_oops);
 +
-+When tracing is enabled, kstop_machine is called to prevent races
-+with the CPUS executing code being modified (which can cause the
-+CPU to do undesireable things), and the nops are patched back
-+to calls. But this time, they do not call mcount (which is just
-+a function stub). They now call into the ftrace infrastructure.
+ long
+ ns2usecs(cycle_t nsec)
+ {
+@@ -3018,7 +3040,8 @@ EXPORT_SYMBOL_GPL(__ftrace_printk);
+ static int trace_panic_handler(struct notifier_block *this,
+ 			       unsigned long event, void *unused)
+ {
+-	ftrace_dump();
++	if (ftrace_dump_on_oops)
++		ftrace_dump();
+ 	return NOTIFY_OK;
+ }
  
- One special side-effect to the recording of the functions being
- traced is that we can now selectively choose which functions we
-@@ -1248,36 +1251,6 @@ Produces:
+@@ -3034,7 +3057,8 @@ static int trace_die_handler(struct noti
+ {
+ 	switch (val) {
+ 	case DIE_OOPS:
+-		ftrace_dump();
++		if (ftrace_dump_on_oops)
++			ftrace_dump();
+ 		break;
+ 	default:
+ 		break;
+@@ -3075,7 +3099,6 @@ trace_printk_seq(struct trace_seq *s)
+ 	trace_seq_reset(s);
+ }
  
- We can see that there's no more lock or preempt tracing.
- 
--ftraced
---------
 -
--As mentioned above, when dynamic ftrace is configured in, a kernel
--thread wakes up once a second and checks to see if there are mcount
--calls that need to be converted into nops. If there are not any, then
--it simply goes back to sleep. But if there are some, it will call
--kstop_machine to convert the calls to nops.
--
--There may be a case in which you do not want this added latency.
--Perhaps you are doing some audio recording and this activity might
--cause skips in the playback. There is an interface to disable
--and enable the "ftraced" kernel thread.
--
-- # echo 0 > /debug/tracing/ftraced_enabled
--
--This will disable the calling of kstop_machine to update the
--mcount calls to nops. Remember that there is a large overhead
--to calling mcount. Without this kernel thread, that overhead will
--exist.
--
--If there are recorded calls to mcount, any write to the ftraced_enabled
--file will cause the kstop_machine to run. This means that a
--user can manually perform the updates when they want to by simply
--echoing a '0' into the ftraced_enabled file.
--
--The updates are also done at the beginning of enabling a tracer
--that uses ftrace function recording.
--
--
- trace_pipe
- ----------
- 
-@@ -1286,14 +1259,14 @@ on the tracing is different. Every read 
- This means that subsequent reads will be different. The trace
- is live.
- 
-- # echo ftrace > /debug/tracing/current_tracer
-+ # echo function > /debug/tracing/current_tracer
-  # cat /debug/tracing/trace_pipe > /tmp/trace.out &
- [1] 4153
-  # echo 1 > /debug/tracing/tracing_enabled
-  # usleep 1
-  # echo 0 > /debug/tracing/tracing_enabled
-  # cat /debug/tracing/trace
--# tracer: ftrace
-+# tracer: function
- #
- #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
- #              | |      |          |         |
-@@ -1314,7 +1287,7 @@ is live.
- 
- Note, reading the trace_pipe file will block until more input is added.
- By changing the tracer, trace_pipe will issue an EOF. We needed
--to set the ftrace tracer _before_ cating the trace_pipe file.
-+to set the function tracer _before_ cating the trace_pipe file.
- 
- 
- trace entries
-@@ -1331,10 +1304,10 @@ number of entries.
- 65620
- 
- Note, to modify this, you must have tracing completely disabled. To do that,
--echo "none" into the current_tracer. If the current_tracer is not set
--to "none", an EINVAL error will be returned.
-+echo "nop" into the current_tracer. If the current_tracer is not set
-+to "nop", an EINVAL error will be returned.
- 
-- # echo none > /debug/tracing/current_tracer
-+ # echo nop > /debug/tracing/current_tracer
-  # echo 100000 > /debug/tracing/trace_entries
-  # cat /debug/tracing/trace_entries
- 100045
+ void ftrace_dump(void)
+ {
+ 	static DEFINE_SPINLOCK(ftrace_dump_lock);
+
 
