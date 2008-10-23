@@ -1,80 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758826AbYJWTpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbYJWTuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758826AbYJWTpX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 15:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbYJWTpJ
+	id S1758577AbYJWTuF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 15:50:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbYJWTty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 15:45:09 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:60620 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753804AbYJWTpF (ORCPT
+	Thu, 23 Oct 2008 15:49:54 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:50216 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752610AbYJWTty (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 15:45:05 -0400
-Subject: Oops in ACPI with git latest
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: linux-acpi@vger.kernel.org
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 23 Oct 2008 14:45:03 -0500
-Message-Id: <1224791103.3330.37.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Thu, 23 Oct 2008 15:49:54 -0400
+Message-ID: <ac3eb2510810231249uf633483p6ea0f543ffdcf900@mail.gmail.com>
+Date: Thu, 23 Oct 2008 21:49:51 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: Help: undesired 10 seconds delay in creating USB devices
+Cc: "Gu, Mingkun" <Mingkun.Gu@gtech.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20081023193650.GB10397@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081023161355.GA8171@kroah.com>
+	 <32C88E5279F5DD46B7237443CD61E67901E455BB@cspmail02.gtk.gtech.com>
+	 <20081023193650.GB10397@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACPI Warning (nseval-0168): Insufficient arguments - method [_OSC] needs 5, found 4 [20080926]
-ACPI Warning (nspredef-0252): \_SB_.PCI0._OSC: Parameter count mismatch - ASL declared 5, expected 4 [20080926]
-ACPI Error (nspredef-0163): \_SB_.PCI0._OSC: Missing expected return value [20080926]
-BUG: unable to handle kernel NULL pointer dereference at 00000000
-IP: [<c0237671>] acpi_run_osc+0xa1/0x170
-*pde = 00000000 
-Oops: 0000 [#1] SMP 
-last sysfs file: 
-Dumping ftrace buffer:
-   (ftrace buffer empty)
-Modules linked in:
+On Thu, Oct 23, 2008 at 21:36, Greg KH <greg@kroah.com> wrote:
+> On Thu, Oct 23, 2008 at 04:30:34PM -0300, Gu, Mingkun wrote:
+>> > -----Original Message-----
+>> > From: Greg KH [mailto:greg@kroah.com]
+>> > Sent: Thursday, October 23, 2008 1:14 PM
+>> > To: Gu, Mingkun
+>> > Cc: linux-kernel@vger.kernel.org
+>> > Subject: Re: Help: undesired 10 seconds delay in creating USB devices
+>> >
+>> > On Thu, Oct 23, 2008 at 01:11:00PM -0300, Gu, Mingkun wrote:
+>> >
+>> > Please stop sending email in HTML format, the mailing lists reject it.
+>> >
+>> > > [MKGU>] My device driver name is "usbled". Our USB device has
+>> > > VendorID=11b4. After I unplugged the USB cable connecting to this
+>> device
+>> > > and kept the device driver "usbled" remaining loaded, I plugged in
+>> the
+>> > > USB cable back to the system again. I could see the device
+>> information
+>> > > retrieved from /proc/bus/usb/devices immediately but the device name
+>> > > /dev/usbled0 was seen after near 10 seconds.
+>> >
+>> > That sounds like a udev script issue, not a kernel issue, correct?
+>> >
+>>
+>> [MKGU>] Yes. It seems related to udev.
+>>
+>> > > > If you run 'udevadm monitor', does it show a 10 second delay?
+>> > >
+>> > > [MKGU>] I don't have the program 'udevadm' on my system.
+>> >
+>> > Do you have the program 'udevmonitor'?  I suggest trying that.
+>> >
+>>
+>> [MKGU>] Yes, I ran "udevmonitor" and captured the following messages:
+>> UEVENT[1224775488.005799] remove   /class/usb/usbled0 (usb)
+>> UEVENT[1224775488.007901] remove   /class/usb (class)
+>> UEVENT[1224775488.011992] remove
+>> /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0 (usb)
+>> UEVENT[1224775488.019706] remove
+>> /devices/pci0000:00/0000:00:1d.1/usb3/3-1 (usb)
+>> UEVENT[1224775496.176576] add
+>> /devices/pci0000:00/0000:00:1d.1/usb3/3-1 (usb)
+>> UEVENT[1224775496.181732] add
+>> /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0 (usb)
+>> UEVENT[1224775496.186031] add      /class/usb/usbled0 (usb)
+>
+> Then I suggest filing a bug with your distro to get this looked at, as
+> they are responsible for the udev scripts here, nothing wrong with your
+> kernel :)
 
-Pid: 1, comm: swapper Not tainted (2.6.27 #124) IBM eServer 206m-[8485IZZ]-
-EIP: 0060:[<c0237671>] EFLAGS: 00010246 CPU: 1
-EIP is at acpi_run_osc+0xa1/0x170
-EAX: 00000000 EBX: 00000010 ECX: 00000003 EDX: f704d4ec
-ESI: 00000000 EDI: 00000000 EBP: f704fde4 ESP: f704fd7c
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-Process swapper (pid: 1, ti=f704e000 task=f704d150 task.ti=f704e000)
-Stack:
- f704fdc8 f704fdf0 00000001 00000003 00000010 c04f4a28 c014c3ab 00000001
- 00000001 00000000 f68766a0 00000001 00000003 00000000 f704fdd4 00000003
- 0000000c f704fdf0 c023759b 00000000 00000000 00000004 f704fd88 00000010
-Call Trace:
- [<c014c3ab>] ? trace_hardirqs_on+0xb/0x10
- [<c023759b>] ? acpi_get_osc_data+0x5b/0x90
- [<c02378c4>] ? acpi_query_osc+0x74/0xa0
- [<c02486bb>] ? acpi_ns_get_device_callback+0xfe/0x112
- [<c0249dbe>] ? acpi_ns_walk_namespace+0x9a/0x110
- [<c033a5cc>] ? pci_init+0x0/0x44
- [<c0248541>] ? acpi_get_devices+0x47/0x5d
- [<c02485bd>] ? acpi_ns_get_device_callback+0x0/0x112
- [<c0237850>] ? acpi_query_osc+0x0/0xa0
- [<c0237918>] ? __pci_osc_support_set+0x28/0x30
- [<c033b99c>] ? msi_init+0x27/0x38
- [<c033a5fc>] ? pci_init+0x30/0x44
- [<c010111d>] ? do_one_initcall+0x2d/0x160
- [<c014c3ab>] ? trace_hardirqs_on+0xb/0x10
- [<c01d6c5e>] ? proc_register+0xee/0x1f0
- [<c03482ad>] ? _spin_unlock+0x1d/0x20
- [<c01d6c5e>] ? proc_register+0xee/0x1f0
- [<c01d6e64>] ? create_proc_entry+0x54/0xb0
- [<c01622a4>] ? register_irq_proc+0xa4/0xc0
- [<c016231c>] ? init_irq_proc+0x5c/0x70
- [<c0521325>] ? kernel_init+0x10f/0x166
- [<c0521216>] ? kernel_init+0x0/0x166
- [<c0104213>] ? kernel_thread_helper+0x7/0x14
-Code: 00 00 00 c7 45 cc 00 00 00 00 c7 45 d4 03 00 00 00 c7 45 d8 0c 00 00 00 ba 80 41 4a c0 e8 67 10 01 00 89 c7 85 c0 75 4a 8b 75 e8 <83> 3e 03 75 5c 8b 46 08 8b 18 85 db 74 29 f6 c3 02 0f 85 82 00 
-EIP: [<c0237671>] acpi_run_osc+0xa1/0x170 SS:ESP 0068:f704fd7c
----[ end trace a7919e7f17c0a725 ]---
-swapper used greatest stack depth: 5788 bytes left
-Kernel panic - not syncing: Attempted to kill init!
+You don't have UDEV[...] events here? The interesting output of
+udevmonitor would the timing difference between the kernel events and
+the udev events, but you completely miss the udev ones.
 
+What version of udev, and which distro is that?
 
+Kay
