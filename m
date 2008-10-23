@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbYJWPtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbYJWPtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755166AbYJWPtT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 11:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbYJWPtI
+	id S1756805AbYJWPtr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 11:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbYJWPtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 11:49:08 -0400
-Received: from www1.email.si ([81.24.97.10]:40443 "EHLO www1.email.si"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752514AbYJWPtH convert rfc822-to-8bit (ORCPT
+	Thu, 23 Oct 2008 11:49:35 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:54634 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751704AbYJWPte (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 11:49:07 -0400
-Date: Thu, 23 Oct 2008 23:39:26 +0800
-Mime-version: 1.0
-Subject: THE BREAKTHROUGH TO A NEWLY SUCCESS ONLINE !!!
-From: Mark Norwood <bettysimm@terra.es>
-To: <linux-kernel@vger.kernel.org>
-Message-Id: <10232339.SGGRJIJV@terra.es>
-Reply-To: deborabiz@walla.com
-Content-Type: text/plain; charset=US-ASCII;
-	format=flowed
-Content-Transfer-Encoding: 7BIT
+	Thu, 23 Oct 2008 11:49:34 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=X2wTgfKYpKXjOhfVivTT20bkHg2XC3Q5yvXRqtYfWCOZxcjBC4634o4I5N8EglWK1
+	I7jRKVLuWP25Oy3podNpQ==
+Message-ID: <6599ad830810230849x71961a0asd7f00d3baa2f2271@mail.gmail.com>
+Date: Thu, 23 Oct 2008 08:49:19 -0700
+From: "Paul Menage" <menage@google.com>
+To: bharata@linux.vnet.ibm.com
+Subject: Re: [PATCH] Add hierarchical accounting to cpu accounting controller
+Cc: linux-kernel@vger.kernel.org,
+       "Srivatsa Vaddagiri" <vatsa@linux.vnet.ibm.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <20081023054335.GC3280@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081023054335.GC3280@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Shallom,
+On Wed, Oct 22, 2008 at 10:43 PM, Bharata B Rao
+<bharata@linux.vnet.ibm.com> wrote:
+> ---
+>  kernel/sched.c |   30 ++++++++++++++++++++++++------
+>  1 file changed, 24 insertions(+), 6 deletions(-)
+>
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -9131,10 +9131,15 @@ struct cpuacct {
+>        struct cgroup_subsys_state css;
+>        /* cpuusage holds pointer to a u64-type object on every cpu */
+>        u64 *cpuusage;
+> +       struct cpuacct *parent;
+>  };
+>
+> +static struct cpuacct init_cpuacct_group;
 
-     Do you want to be paid using your computer?
-  All you need to do is to fill in online form
-  and submit them daily..
+Why are you making the root state static?
 
+>  struct cgroup_subsys cpuacct_subsys;
+>
+> +#define for_each_cpuacct_group(ca) \
+> +               for (; ca; ca = ca->parent)
+> +
 
- click the link below..
- http://u76.org/qbj
+This is only used once, so doesn't seem worth creating a new macro for.
 
-    This is amazing..This is not the traditional 1
- home typist job,a lot of of people do not know
- the system of making money..this is unique,its
- a way of entering simple data online.The company
- involved with this business want you to become
- affiliate with them.Giving you step by step
- instructions on how you become a successful
- home typist person..Then log in to your account
- and see how much you have made  anytime of a day...
+>
+> +       if (cgrp->parent) {
+> +               ca->css.cgroup = cgrp;
 
+The cgroup pointer in the css is maintained by cgroups - you don't
+need to set it.
 
-  Hopefully yours,
-  Mark Norwood
-  http://u76.org/qbj
-
-
-
+Paul
