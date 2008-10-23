@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbYJWNhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbYJWNhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755213AbYJWNhi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 09:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbYJWNhZ
+	id S1756332AbYJWNhv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 09:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbYJWNh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 09:37:25 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:52098 "EHLO
+	Thu, 23 Oct 2008 09:37:26 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:62143 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209AbYJWNhZ (ORCPT
+	with ESMTP id S1751597AbYJWNhZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 23 Oct 2008 09:37:25 -0400
-Message-Id: <20081023133723.268161704@goodmis.org>
+Message-Id: <20081023133722.894543902@goodmis.org>
 References: <20081023133256.926296694@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 23 Oct 2008 09:33:00 -0400
+Date: Thu, 23 Oct 2008 09:32:58 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
@@ -25,47 +25,73 @@ Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Wenji Huang <wenji.huang@oracle.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 04/12 v3] ftrace: comment arch ftrace code
-Content-Disposition: inline; filename=ftrace-comment-mod-code.patch
+Subject: [PATCH 02/12 v3] ftrace: dynamic ftrace process only text section
+Content-Disposition: inline; filename=ftrace-record-only-text.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add comments to explain what is happening in the x86 arch ftrace code.
+The text section stays in memory without ever leaving. With the exception
+of modules, but modules know how to handle that case. With the dynamic
+ftrace tracer, we need to make sure that it does not try to modify code
+that no longer exists. The only safe section is .text.
+
+This patch changes the recordmcount script to only record the mcount calls
+in the .text sections.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/x86/kernel/ftrace.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ scripts/recordmcount.pl |   17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
 
-Index: linux-compile.git/arch/x86/kernel/ftrace.c
+Index: linux-compile.git/scripts/recordmcount.pl
 ===================================================================
---- linux-compile.git.orig/arch/x86/kernel/ftrace.c	2008-10-22 15:23:20.000000000 -0400
-+++ linux-compile.git/arch/x86/kernel/ftrace.c	2008-10-22 15:24:15.000000000 -0400
-@@ -66,18 +66,23 @@ ftrace_modify_code(unsigned long ip, uns
- 	/*
- 	 * Note: Due to modules and __init, code can
- 	 *  disappear and change, we need to protect against faulting
--	 *  as well as code changing.
-+	 *  as well as code changing. We do this by using the
-+	 *  __copy_*_user functions.
- 	 *
- 	 * No real locking needed, this code is run through
- 	 * kstop_machine, or before SMP starts.
- 	 */
+--- linux-compile.git.orig/scripts/recordmcount.pl	2008-10-23 09:20:24.000000000 -0400
++++ linux-compile.git/scripts/recordmcount.pl	2008-10-23 09:20:46.000000000 -0400
+@@ -109,6 +109,11 @@ if ($#ARGV < 6) {
+ my ($arch, $bits, $objdump, $objcopy, $cc,
+     $ld, $nm, $rm, $mv, $inputfile) = @ARGV;
+ 
++# Acceptable sections to record.
++my %text_sections = (
++     ".text" => 1,
++);
 +
-+	/* read the text we want to modify */
- 	if (__copy_from_user_inatomic(replaced, (char __user *)ip,
- 				      MCOUNT_INSN_SIZE))
- 		return -EFAULT;
+ $objdump = "objdump" if ((length $objdump) == 0);
+ $objcopy = "objcopy" if ((length $objcopy) == 0);
+ $cc = "gcc" if ((length $cc) == 0);
+@@ -139,7 +144,7 @@ if ($arch eq "x86") {
+ }
  
-+	/* Make sure it is what we expect it to be */
- 	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
- 		return -EINVAL;
+ if ($arch eq "x86_64") {
+-    $section_regex = "Disassembly of section";
++    $section_regex = "Disassembly of section\\s+(\\S+):";
+     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount([+-]0x[0-9a-zA-Z]+)?\$";
+     $type = ".quad";
+@@ -151,7 +156,7 @@ if ($arch eq "x86_64") {
+     $cc .= " -m64";
  
-+	/* replace the text with the new text */
- 	if (__copy_to_user_inatomic((char __user *)ip, new_code,
- 				    MCOUNT_INSN_SIZE))
- 		return -EPERM;
+ } elsif ($arch eq "i386") {
+-    $section_regex = "Disassembly of section";
++    $section_regex = "Disassembly of section\\s+(\\S+):";
+     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
+     $type = ".long";
+@@ -298,7 +303,13 @@ my $text;
+ while (<IN>) {
+     # is it a section?
+     if (/$section_regex/) {
+-	$read_function = 1;
++
++	# Only record text sections that we know are safe
++	if (defined($text_sections{$1})) {
++	    $read_function = 1;
++	} else {
++	    $read_function = 0;
++	}
+ 	# print out any recorded offsets
+ 	update_funcs() if ($text_found);
+ 
 
 -- 
