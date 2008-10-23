@@ -1,59 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758428AbYJWSaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbYJWSbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758428AbYJWSaY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 14:30:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbYJWSaK
+	id S1758577AbYJWSbl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 14:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756411AbYJWSbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 14:30:10 -0400
-Received: from mail.gmx.net ([213.165.64.20]:56028 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753436AbYJWSaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 14:30:09 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX197koET5ZR74sXp8x8k/RJpOiRHD61V2+3Fh6MUof
-	B+dQx9SJLAzeGA
-Date: Thu, 23 Oct 2008 20:30:23 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Michael Weiser <michael@weiser.dinsnail.net>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: rtc/i2c-mpc stops working with 2.6.27 on Linkstation HG (powerpc)
-In-Reply-To: <20081022191650.GA11406@weiser.dinsnail.net>
-Message-ID: <Pine.LNX.4.64.0810232029380.9657@axis700.grange>
-References: <20081022191650.GA11406@weiser.dinsnail.net>
+	Thu, 23 Oct 2008 14:31:33 -0400
+Received: from qb-out-0506.google.com ([72.14.204.236]:38810 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756287AbYJWSbc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 14:31:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=oFYmalqOLZFKbtcCXf9vF0K/1DiB6zWOkZY555KpQ0LCu723XlAX8jxezcCz50nnAr
+         oXuMgPjpK7go9II4H3t37AuCDfHKZAiO1NqMBEoU22ggxb7JJ46TLnlr/eYahhfjdfY7
+         blyYqNYmHBhw2RrnyrCOURG9YyHpXEKwqrXMc=
+Message-ID: <c62985530810230924q7f5bd48es3353428766ee49eb@mail.gmail.com>
+Date: Thu, 23 Oct 2008 18:24:14 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] tracing: fix a build error on alpha and m68k
+Cc: "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Steven Rostedt" <rostedt@goodmis.org>
+In-Reply-To: <4900B414.7090002@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.59
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081023213637.eff9b414.sfr@canb.auug.org.au>
+	 <20081023121145.GB27984@x200.localdomain>
+	 <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com>
+	 <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com>
+	 <49008D12.5090204@gmail.com>
+	 <Pine.LNX.4.64.0810231635440.18978@anakin>
+	 <c62985530810230757r411b4e3dj4ecec649cf8cf0b3@mail.gmail.com>
+	 <Pine.LNX.4.64.0810231727430.18978@anakin>
+	 <4900B414.7090002@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Oct 2008, Michael Weiser wrote:
+2008/10/23 Frederic Weisbecker <fweisbec@gmail.com>:
+> When tracing is enabled, some arch have included <linux/irqflags.h>
+> on their <asm/system.h> but others like alpha or m68k don't.
+>
+> Build error on alpha:
+>
+> kernel/trace/trace.c: In function 'tracing_generic_entry_update':
+> kernel/trace/trace.c:658: error: implicit declaration of function 'irqs_disabled_flags'
+> kernel/trace/trace.c: In function 'tracing_cpumask_write':
+> kernel/trace/trace.c:2145: error: implicit declaration of function 'raw_local_irq_disable'
+> kernel/trace/trace.c:2162: error: implicit declaration of function 'raw_local_irq_enable'
+> kernel/trace/trace.c: In function 'trace_die_handler':
+> kernel/trace/trace.c:3039: error: 'DIE_OOPS' undeclared (first use in this function)
+>
+> Build error on m68k:
+> http://kisskb.ellerman.id.au/kisskb/buildresult/50641/
+>
+>
+> Include it on kernel/trace/trace.c
+>
+> Reported-by: Alexey Dobriyan <adobriyan@gmail.com>
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index 78d5661..deb9684 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -34,6 +34,7 @@
+>
+>  #include <linux/stacktrace.h>
+>  #include <linux/ring_buffer.h>
+> +#include <linux/irqflags.h>
+>
+>  #include "trace.h"
+>
+>
 
-> Hello,
-> 
-> with 2.6.27(-gentoo) the rtc (Ricoh 5c372) is no longer found on my
-> Linkstation HG. It seems, the i2c-mpc driver doesn't even find the I2C
-> controller.
-> 
-> Could this be related to commit
-> #0d1cde235874b00905bce23f659690d060ebf475 (powerpc/i2c: Convert i2c-mpc
-> into an of_platform driver,
-> http://kerneltrap.org/mailarchive/git-commits-head/2008/7/16/2522594/thread)?
-> 
-> What do I need to do, to make it work again?
-> 
-> The configs are virtually identical. The kernels are loaded with their
-> respective dtb files. The dtb and dts files are identical anyways.
+And one other "reported by" for the m68k error:
 
-This is a known regression, see, e.g., here:
-
-http://ozlabs.org/pipermail/linuxppc-dev/2008-October/064318.html
-
-waiting for someone to find time to fix it.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
