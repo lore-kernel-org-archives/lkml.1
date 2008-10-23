@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbYJWPOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753903AbYJWPRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754574AbYJWPOT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 11:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbYJWPOK
+	id S1753903AbYJWPRg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 11:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbYJWPR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 11:14:10 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:59960 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751318AbYJWPOI (ORCPT
+	Thu, 23 Oct 2008 11:17:26 -0400
+Received: from smtp2e.orange.fr ([80.12.242.113]:40016 "EHLO smtp2e.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751144AbYJWPRZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 11:14:08 -0400
-Subject: Re: How do I printk <type> correctly?
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081023114133.GA30187@x200.localdomain>
-References: <20081023114133.GA30187@x200.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-RQrmLC3SoWU/V48mhxgo"
-Date: Thu, 23 Oct 2008 17:13:26 +0200
-Message-Id: <1224774806.6002.42.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 23 Oct 2008 11:17:25 -0400
+X-ME-UUID: 20081023151722309.4BA057000112@mwinf2e18.orange.fr
+Message-ID: <49009575.60004@cosmosbay.com>
+Date: Thu, 23 Oct 2008 17:17:09 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Miklos Szeredi <miklos@szeredi.hu>,
+       nickpiggin@yahoo.com.au, hugh@veritas.com, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: SLUB defrag pull request?
+References: <1223883004.31587.15.camel@penberg-laptop>  <84144f020810221348j536f0d84vca039ff32676e2cc@mail.gmail.com>  <E1Ksksa-0002Iq-EV@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810221416130.26639@quilx.com>  <E1KsluU-0002R1-Ow@pomaz-ex.szeredi.hu>  <1224745831.25814.21.camel@penberg-laptop>  <E1KsviY-0003Mq-6M@pomaz-ex.szeredi.hu>  <Pine.LNX.4.64.0810230638450.11924@quilx.com>  <84144f020810230658o7c6b3651k2d671aab09aa71fb@mail.gmail.com>  <Pine.LNX.4.64.0810230705210.12497@quilx.com> <84144f020810230714g7f5d36bas812ad691140ee453@mail.gmail.com> <Pine.LNX.4.64.0810230721400.12497@quilx.com>
+In-Reply-To: <Pine.LNX.4.64.0810230721400.12497@quilx.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Christoph Lameter a écrit :
+> On Thu, 23 Oct 2008, Pekka Enberg wrote:
+> 
+>>> The problem looks like its freeing objects on a different processor that
+>>> where it was used last. With the pointer array it is only necessary 
+>>> to touch
+>>> the objects that contain the arrays.
+>>
+>> Interesting. SLAB gets away with this because of per-cpu caches or
+>> because it uses the bufctls instead of a freelist?
+> 
+> Exactly. Slab adds a special management structure to each slab page that 
+> contains the freelist and other stuff. Freeing first occurs to a per cpu 
+> queue that contains an array of pointers. Then later the objects are 
+> moved from the pointer array into the management structure for the slab.
+> 
+> What we could do for SLUB is to generate a linked list of pointer arrays 
+> in the free objects of a slab page. If all objects are allocated then no 
+> pointer array is needed. The first object freed would become the first 
+> pointer array. If that is found to be exhausted then the object 
+> currently being freed is becoming the next pointer array and we put a 
+> link to the old one into the object as well.
+> 
 
---=-RQrmLC3SoWU/V48mhxgo
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This idea is very nice, especially considering that many objects are freed
+by RCU, and their rcu_head (which is hot at kfree() time), might be far
+away the linked list anchor actually used in SLUB.
+
+At alloc time, I remember I added a prefetchw() call in SLAB in __cache_alloc(),
+this could explain some differences between SLUB and SLAB too, since SLAB
+gives a hint to processor to warm its cache.
 
 
-> u64 SHOULD be printed with %llu/%llx, (unsigned long long):
->=20
-> 	printk("%llu", (unsigned long long)u64_var);
->=20
-> s64 SHOULD be printed with %lld/%llx, (long long):
->=20
-> 	printk("%lld", (long long)s64_var);
 
-out of curiosity, why are there platforms that use an "unsigned long"
-for u64? An "unsigned long long" is 64-bits too even on 64-bit
-platforms, so why the difference? Are there any differences like
-alignment on some platforms?
-
-johannes
-
---=-RQrmLC3SoWU/V48mhxgo
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJAJSSAAoJEKVg1VMiehFYLfQQAJLVwAdUO4V+hUY7iVEk/Xm3
-6qi24r+ZeQxCh5S35sY50+db0d1OkBm2Z4u/4oNLrE2SBaV+2gdUmHHgqKG36GCl
-4hTX66PZjCQVWF8SnwFcmrupiTKfDnvNUliQleV5c8gATGyWgb9pNTcE6XjdDbvz
-HCC2WwjAsTAynEqYsVsP5TyCpO3rGAug1K47bQnApEYHVPVjz9ffgNuWnJ8fT/l4
-ZHwIVVzhXACvt2vTV8puJXvB3MqNgPlY1ejDJkyicT3q4hMqnbSt2ACpdix7cXuH
-TRuDgZoJSwlgvKdGuwjm2RNEpBFi10k2nj6LwUxjkQr8Qb9DlCTkUFskeFfyckp7
-6qcrmzJaTVwkJi4jpf3f57k9I5xdkAW3ukqV6aL7u1ul5hh14PAESChieKVoiC9h
-p4TGkj/Lb3IhvC2BA/j4/D2kb/hxSJb/PCHaSEzWKrXrU3B0YOmqE4FHGrhendbQ
-b3huWtUDgor0bLQVH4tqzZGEp2oo5Cmtr/Miwc9JARRVaSzHTUt/PKV4q63Op24P
-Efcuzi6+nOA4Lr0zhf/fciC92PTqquPxFnyHiiNqEuMPIA5oAc9jrpC9r5i1IKWh
-tQLzWNkR/PZyPAw9hp+aWQ8gEiIrTMgZYtuoCIpQh0ZQF0d3eWkAPP9RrzdFNfq/
-8sOnWgelJGT9wMAVciF/
-=6yH/
------END PGP SIGNATURE-----
-
---=-RQrmLC3SoWU/V48mhxgo--
 
