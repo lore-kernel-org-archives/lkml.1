@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbYJWNK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbYJWNPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754742AbYJWNK0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 09:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbYJWNKQ
+	id S1754838AbYJWNPU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 09:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbYJWNPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 09:10:16 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:42892 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752224AbYJWNKO (ORCPT
+	Thu, 23 Oct 2008 09:15:05 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:40486 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751232AbYJWNPE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 09:10:14 -0400
+	Thu, 23 Oct 2008 09:15:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=Ph6AEL8nIXocJUSWZawb5W1IDjnY3oNtqmkFmThaJ5eG/e1wifbEmIpX1kppkceyBK
-         C+EvhURA+xzOvrTgncIKZesCJ8T7o+/NPeenj8MfFvHJeeLjgvC5MQGXKx5SXI6LJqib
-         RVwns3fXKDPQhmI6AW+RzkbCJ5Tvr49W1s1+0=
-Message-ID: <490077B4.5020909@gmail.com>
-Date: Thu, 23 Oct 2008 15:10:12 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=MWF+Cn2XP+FMwy6rcVYrdwEaiEdZNI6YDuPZSnmds5CECPuGwDuZLHQxs6sVrwBzf8
+         Qw6X6HnxIK2yZwzC0yotueP+blo8cNxq+31J+ZGoNzUPb51TfxfY8b0XSRpbUC835jEO
+         +Vv1joXkfjIHcZs00wfqvNz+SUw8HFG5wN5BE=
+Message-ID: <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com>
+Date: Thu, 23 Oct 2008 15:15:01 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Alexey Dobriyan" <adobriyan@gmail.com>
+Subject: Re: linux-next: kernel/trace/trace.c:658: error:
+Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com>
 MIME-Version: 1.0
-To: Johannes Weiner <hannes@saeurebad.de>
-CC: Krzysztof Helt <krzysztof.h1@wp.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: lockdep splat from fbmem
-References: <87ljwgj8p1.fsf@saeurebad.de>
-In-Reply-To: <87ljwgj8p1.fsf@saeurebad.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <20081023213637.eff9b414.sfr@canb.auug.org.au>
+	 <20081023121145.GB27984@x200.localdomain>
+	 <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Weiner wrote:
-> Hi,
-> 
-> fb_mmap() is called under mmap_sem and acquires fb_info->lock.
-> 
-> Since 3e680aae4e53ab "fb: convert lock/unlock_kernel() into local fb
-> mutex", fb_ioctl() takes fb_info->lock and does copy_to/from_user()
-> under it, which in turn might acquire mmap_sem.
-> 
-> Just noticed the trace and wanted to let you know.
-> 
->         Hannes
+2008/10/23 Frédéric Weisbecker <fweisbec@gmail.com>:
+> 2008/10/23 Alexey Dobriyan <adobriyan@gmail.com>:
+>> On alpha-smp-n-debug-y:
+>>
+>> kernel/trace/trace.c: In function 'tracing_generic_entry_update':
+>> kernel/trace/trace.c:658: error: implicit declaration of function 'irqs_disabled_flags'
+>> kernel/trace/trace.c: In function 'tracing_cpumask_write':
+>> kernel/trace/trace.c:2145: error: implicit declaration of function 'raw_local_irq_disable'
+>> kernel/trace/trace.c:2162: error: implicit declaration of function 'raw_local_irq_enable'
+>> kernel/trace/trace.c: In function 'trace_die_handler':
+>> kernel/trace/trace.c:3039: error: 'DIE_OOPS' undeclared (first use in this function)
+>>
+>> This has something with config dependencies, because adding include doesn't fix it.
+>>
+>
+> A lot of arch have an asm/irqflags.h but not alpha.
+> In linux/irqflags, raw_local_irq_* functions are defined to be
+> local_irq_* function if they don't support
+> CONFIG_TRACE_IRQFLAGS_SUPPORT.
+> It seems the error is here, alpha may turn this option off.
+>
 
-Good catch. We could try to push down the mutex and call all the
-copy_to/from_user() outside the lock. I can try look at it tonight,
-if someone doesn't fix it before.
-
-Thanks for reporting,
--Andrea
+Hmm no actually your CONFIG_TRACE_IRFLAGS_SUPPORT is not set.
+So that's because the linux/irqflags.h is not included in the
+asm/system.h on alpha (other archs do).
