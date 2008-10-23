@@ -1,93 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758430AbYJWVuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758357AbYJWVvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758430AbYJWVuw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 17:50:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbYJWVuO
+	id S1758357AbYJWVvR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 17:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbYJWVuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 17:50:14 -0400
-Received: from gv-out-0910.google.com ([216.239.58.191]:1076 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753818AbYJWVuK (ORCPT
+	Thu, 23 Oct 2008 17:50:18 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:54185 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754556AbYJWVuP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 17:50:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=I2nh6egABTYL/vstjwjdy+CmX5kF5CsADix/2/BMSRmxS4Y1wGCDR+xUEFbgpIsUwV
-         ZmQuNj6qhJJC85LTXiUJNrEBXAFdxveEE/OZHQUYmrHzNwatNYNR4V2vD9x72hr85RYp
-         Ev7rTV+RlwmNxVuEdsjIdaK5zDRdNiiXiUCow=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [git pull] IDE updates #4
-Date: Thu, 23 Oct 2008 23:07:14 +0200
-User-Agent: KMail/1.9.10
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200810212100.52985.bzolnier@gmail.com> <48FFAFBB.8020709@ru.mvista.com> <49009EDA.2030707@ru.mvista.com>
-In-Reply-To: <49009EDA.2030707@ru.mvista.com>
+	Thu, 23 Oct 2008 17:50:15 -0400
+Date: Fri, 24 Oct 2008 03:20:03 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Paul E McKenney <paulmck@us.ibm.com>
+Subject: [PATCH] timers: Handle HRTIMER_CB_IRQSAFE_UNLOCKED correctly from
+	softirq context
+Message-ID: <20081023215003.GC1480@in.ibm.com>
+Reply-To: ego@in.ibm.com
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810232307.15462.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 23 October 2008, Sergei Shtylyov wrote:
-> Hello, I wrote:
-> 
-> >>>> and number of new submitted patches is < 10 (I'll take
-> >>>> care of fixing them up, ditto for all other new stuff that will be 
-> >>>> using old
-> >>>> naming scheme).
-> 
-> >>>    Thanks for clarifying this.
-> >>>    This rename only added more uncertainty for my pending patchset 
-> >>> (which had been already dependant on at least TX4939 driver which 
-> >>> keeps being recast by Atsushi and being stale in pata-2.6 series) as 
-> >>> I can't predict when you and Linus will merge the changes and this is 
-> >>> getting on my nerves, as I don't have time on any extra rework and 
-> >>> I'm running out of time with the submission. I know I should have 
-> >>> done this earlier and     
-> 
-> >> Maybe some parts could be submitted separately?
-> >> (so keeping them up-to-date in pata-2.6 would be my task)
-> 
-> >   2 (maybe even 3) out of 4 can be but that doesn't make much sense 
-> > already (and would incur the patch reordering for me) -- the best thing 
-> > you can do is to merge ASAP the last verison of TX4939 which has my ACK.
-> > I'm not sure about TX4938 driver yet -- will look at it after some sleep...
-> 
->     Still haven't looked at it... too little sleep and incuring headache. :-/
-> 
-> >> Also I didn't know anything about your patchset and its
-> >> dependency on TX4939, otherwise I'll be pushing things in
-> 
-> >   The patchset consists of a large patch moving read_sff_dma_status() to 
-> > its porper place, one small preparatory patch, and 2 followup patches, 
-> > so unfortunately it's dependent on TX4939 in its main patch (worse, the 
-> > relevant part of this driver has changed after your last merged driver 
-> > version)...
-> 
-> >> different order or even skip this pull request if needed
-> >> (TX493x drivers are new stuff and were still under review,
-> >> such things can be also submitted after the merge window
-> >> closes so they were given the lowest priority).
-> 
-> >   Unfortunately, that driver has been submitted first back 9/09, long 
-> > before my patchset was even created, so the dependence was just natural.
-> 
->     I could also rip out TX4939 part from the patch and leave Atsushi to deal 
-> with the fallout (though I could give him the ripped out part to simply be 
-> merged to the driver) if you would queue my patchset ahead of the driver. 
-> Though I feel it's too late now for my patchset to get into 2.6.28 the way 
-> things have been happening... :-/
+timers: Handle HRTIMER_CB_IRQSAFE_UNLOCKED correctly from softirq context
 
-Ehm, submitting things _before_ the merge window usually help. ;-)
+From: Gautham R Shenoy <ego@in.ibm.com>
 
-Anyway, no need to get too frustrated over it.  It is normal that
-sometimes you will need to push back your own changes if you're doing
-more higher-level work...  though it takes a while to get used to it.
+While migrating the the CB_IRQSAFE_UNLOCKED timers during a cpu-offline,
+we queue them on the cb_pending list, so that they won't go
+stale.
+
+Thus, when the callbacks of the timers run from the softirq context,
+they could run into potential deadlocks, since these callbacks
+assume that they're running with irq's disabled, thereby annoying
+lockdep (see below)!
+
+Fix this by emulating hardirq context while running these callbacks from
+the hrtimer softirq.
+
+=================================
+[ INFO: inconsistent lock state ]
+2.6.27 #2
+--------------------------------
+inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+ksoftirqd/0/4 [HC0[0]:SC1[1]:HE1:SE0] takes:
+ (&rq->lock){++..}, at: [<c011db84>] sched_rt_period_timer+0x9e/0x1fc
+{in-hardirq-W} state was registered at:
+  [<c014103c>] __lock_acquire+0x549/0x121e
+  [<c0107890>] native_sched_clock+0x88/0x99
+  [<c013aa12>] clocksource_get_next+0x39/0x3f
+  [<c0139abc>] update_wall_time+0x616/0x7df
+  [<c0141d6b>] lock_acquire+0x5a/0x74
+  [<c0121724>] scheduler_tick+0x3a/0x18d
+  [<c047ed45>] _spin_lock+0x1c/0x45
+  [<c0121724>] scheduler_tick+0x3a/0x18d
+  [<c0121724>] scheduler_tick+0x3a/0x18d
+  [<c012c436>] update_process_times+0x3a/0x44
+  [<c013c044>] tick_periodic+0x63/0x6d
+  [<c013c062>] tick_handle_periodic+0x14/0x5e
+  [<c010568c>] timer_interrupt+0x44/0x4a
+  [<c0150c9f>] handle_IRQ_event+0x13/0x3d
+  [<c0151c14>] handle_level_irq+0x79/0xbd
+  [<c0105634>] do_IRQ+0x69/0x7d
+  [<c01041e4>] common_interrupt+0x28/0x30
+  [<c047007b>] aac_probe_one+0x1a3/0x3f3
+  [<c047ec2d>] _spin_unlock_irqrestore+0x36/0x39
+  [<c01512b4>] setup_irq+0x1be/0x1f9
+  [<c065d70b>] start_kernel+0x259/0x2c5
+  [<ffffffff>] 0xffffffff
+irq event stamp: 50102
+hardirqs last  enabled at (50102): [<c047ebf4>] _spin_unlock_irq+0x20/0x23
+hardirqs last disabled at (50101): [<c047edc2>] _spin_lock_irq+0xa/0x4b
+softirqs last  enabled at (50088): [<c0128ba6>] do_softirq+0x37/0x4d
+softirqs last disabled at (50099): [<c0128ba6>] do_softirq+0x37/0x4d
+
+other info that might help us debug this:
+no locks held by ksoftirqd/0/4.
+
+stack backtrace:
+Pid: 4, comm: ksoftirqd/0 Not tainted 2.6.27 #2
+ [<c013f6cb>] print_usage_bug+0x13e/0x147
+ [<c013fef5>] mark_lock+0x493/0x797
+ [<c01410b1>] __lock_acquire+0x5be/0x121e
+ [<c0141d6b>] lock_acquire+0x5a/0x74
+ [<c011db84>] sched_rt_period_timer+0x9e/0x1fc
+ [<c047ed45>] _spin_lock+0x1c/0x45
+ [<c011db84>] sched_rt_period_timer+0x9e/0x1fc
+ [<c011db84>] sched_rt_period_timer+0x9e/0x1fc
+ [<c01210fd>] finish_task_switch+0x41/0xbd
+ [<c0107890>] native_sched_clock+0x88/0x99
+ [<c011dae6>] sched_rt_period_timer+0x0/0x1fc
+ [<c0136dda>] run_hrtimer_pending+0x54/0xe5
+ [<c011dae6>] sched_rt_period_timer+0x0/0x1fc
+ [<c0128afb>] __do_softirq+0x7b/0xef
+ [<c0128ba6>] do_softirq+0x37/0x4d
+ [<c0128c12>] ksoftirqd+0x56/0xc5
+ [<c0128bbc>] ksoftirqd+0x0/0xc5
+ [<c0134649>] kthread+0x38/0x5d
+ [<c0134611>] kthread+0x0/0x5d
+ [<c0104477>] kernel_thread_helper+0x7/0x10
+ =======================
+
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+
+ kernel/hrtimer.c |   21 ++++++++++++++++++---
+ 1 files changed, 18 insertions(+), 3 deletions(-)
+
+
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index cdec83e..60aaad6 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -1188,6 +1188,7 @@ static void run_hrtimer_pending(struct hrtimer_cpu_base *cpu_base)
+ 		enum hrtimer_restart (*fn)(struct hrtimer *);
+ 		struct hrtimer *timer;
+ 		int restart;
++		int emulate_hardirq_ctx = 0;
+ 
+ 		timer = list_entry(cpu_base->cb_pending.next,
+ 				   struct hrtimer, cb_entry);
+@@ -1196,12 +1197,26 @@ static void run_hrtimer_pending(struct hrtimer_cpu_base *cpu_base)
+ 		timer_stats_account_hrtimer(timer);
+ 
+ 		fn = timer->function;
++		/*
++		 * A timer might have been added to the cb_pending list
++		 * when it was migrated during a cpu-offline operation.
++		 * Emulate hardirq context for such timers.
++		 */
++		if (timer->cb_mode == HRTIMER_CB_IRQSAFE_PERCPU ||
++		    timer->cb_mode == HRTIMER_CB_IRQSAFE_UNLOCKED)
++			emulate_hardirq_ctx = 1;
++
+ 		__remove_hrtimer(timer, timer->base, HRTIMER_STATE_CALLBACK, 0);
+-		spin_unlock_irq(&cpu_base->lock);
++		spin_unlock(&cpu_base->lock);
+ 
+-		restart = fn(timer);
++		if (likely(!emulate_hardirq_ctx)) {
++			local_irq_enable();
++			restart = fn(timer);
++			local_irq_disable();
++		} else
++			restart = fn(timer);
+ 
+-		spin_lock_irq(&cpu_base->lock);
++		spin_lock(&cpu_base->lock);
+ 
+ 		timer->state &= ~HRTIMER_STATE_CALLBACK;
+ 		if (restart == HRTIMER_RESTART) {
+-- 
+Thanks and Regards
+gautham
