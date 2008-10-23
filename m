@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbYJWQN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbYJWQOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757247AbYJWQN6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 12:13:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbYJWQNt
+	id S1757474AbYJWQOn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 12:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYJWQOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 12:13:49 -0400
-Received: from smtp-vbr15.xs4all.nl ([194.109.24.35]:2944 "EHLO
-	smtp-vbr15.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752126AbYJWQNs (ORCPT
+	Thu, 23 Oct 2008 12:14:34 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:43842 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753499AbYJWQOd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 12:13:48 -0400
-Date: Thu, 23 Oct 2008 18:13:37 +0200
-From: Miquel van Smoorenburg <mikevs@xs4all.net>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] elevator.c: prevent flushing small requests to device
-Message-ID: <20081023161333.GA28155@xs4all.net>
+	Thu, 23 Oct 2008 12:14:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=a9TUld3wlpdMAVrceKx3FoGrjLVH5AFbUSaTBMaOZAzvUcGQR52T/1oVXmxwiJgrsc
+         AjVRZ9SUv/211SHgbtV6PAuB1f5AJy+SfKBCcPAB0JwEqzJ0GKd8cFvj8XM6ImBk/y5x
+         UJMGvjGWt6E8nJZKLjPjKqfdbXRb9FrOvebaw=
+Message-ID: <376ea3380810230914m32080a97t34a8b66e4e4039db@mail.gmail.com>
+Date: Thu, 23 Oct 2008 09:14:32 -0700
+From: "Jon Dufresne" <jon.dufresne@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: RTL8111/8168B multicast bug
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-NCC-RegID: nl.xs4all
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While tracing I/O patterns with blktrace (a great tool) a few
-weeks ago I identified a minor issue in elevator.c
+Hello,
 
-[PATCH] elevator.c: prevent flushing small requests to device
+Are there any known bugs regarding using the "Realtek Semiconductor
+Co., Ltd. RTL8111/8168B PCI Express Gigabit Ethernet controller" to
+receive multicast packets?
 
-When elv_insert() is called to insert a new request, and the
-device is plugged,  bit of code at the end of the function
-will unplug the device if the number of pending requests >= q->unplug_thresh.
+I am developing a piece of software to receive a multicast signal as
+produced by the mp4live program in the mpeg4ip project. The software
+has worked on a wide variety of hardware until I got to this one
+machine with the above realtek chip.  I noticed it was unable to
+connect to the stream. I was never able to get it to properly receive
+the signal until I put in a new NIC, a "3Com Corporation
+3c905C-TX/TX-M" and now the program is once again receiving multicast
+packets.
 
-This means the current request is also sent to the device immidiately
-while it is potentially mergeable with the next request. This has been
-observed when a lot of small sequential requests are made.
+So I believe the realtek driver is possibly not doing something correctly.
 
-By unplugging the device before we add the new request to the
-queue this can be prevented.
+Are there any known issues with my hardware? Is there anything I could
+do from a kernel space or user space level that would further help
+diagnose the problem?
 
-Signed-off-by: Miquel van Smoorenburg <mikevs@xs4all.net>
+My OS is an up to date Fedora with all fedora packages except the
+piece of software I am developing.
 
-diff -ruN linux-2.6.26.5.orig/block/elevator.c linux-2.6.26.5/block/elevator.c
---- linux-2.6.26.5.orig/block/elevator.c	2008-09-08 19:40:20.000000000 +0200
-+++ linux-2.6.26.5/block/elevator.c	2008-10-23 00:33:21.000000000 +0200
-@@ -602,6 +602,20 @@
- 
- 	case ELEVATOR_INSERT_SORT:
- 		BUG_ON(!blk_fs_request(rq));
-+		/*
-+		 * If we're going to unplug the device, do it now before
-+		 * we put a potentially small and mergeable new
-+		 * request on the queue, instead of just after it.
-+		 */
-+		if (blk_queue_plugged(q)) {
-+			int nrq = q->rq.count[READ] + q->rq.count[WRITE]
-+				- q->in_flight;
-+			if (nrq >= q->unplug_thresh)
-+				__generic_unplug_device(q);
-+			if (elv_queue_empty(q))
-+				blk_plug_device(q);
-+			unplug_it = 0;
-+		}
- 		rq->cmd_flags |= REQ_SORTED;
- 		q->nr_sorted++;
- 		if (rq_mergeable(rq)) {
+Thanks,
+Jon
