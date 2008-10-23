@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbYJWGb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbYJWGe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755146AbYJWGb5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 02:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbYJWGbs
+	id S1755198AbYJWGe6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 02:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbYJWGes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 02:31:48 -0400
-Received: from kroah.org ([198.145.64.141]:42682 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751915AbYJWGbr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 02:31:47 -0400
-Date: Wed, 22 Oct 2008 23:26:55 -0700
-From: Greg KH <greg@kroah.com>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>, otus-devel@venema.h4ckr.net
-Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: Release of Atheros 802.11n USB Linux driver
-Message-ID: <20081023062655.GA8039@kroah.com>
-References: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com> <20081022065045.GA2400@kroah.com>
+	Thu, 23 Oct 2008 02:34:48 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:35762 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752181AbYJWGer (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 02:34:47 -0400
+Date: Thu, 23 Oct 2008 08:33:49 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, tj@kernel.org
+Subject: Re: [PATCH 2/2] libata: switch to using block layer tagging support
+Message-ID: <20081023063349.GR22217@kernel.dk>
+References: <1224661243-7929-1-git-send-email-jens.axboe@oracle.com> <1224661243-7929-3-git-send-email-jens.axboe@oracle.com> <48FFC96E.5060604@garzik.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081022065045.GA2400@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <48FFC96E.5060604@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 21, 2008 at 11:50:45PM -0700, Greg KH wrote:
-> On Tue, Oct 21, 2008 at 07:04:17PM -0700, Luis R. Rodriguez wrote:
-> > We would like to see our Atheros 802.11n USB Linux driver upstream
-> > however we need help with this so we are releasing our Atheros 11n USB
-> > Otus Linux driver under the ISC to the community. The goal is to work
-> > with the community to help move this forward upstream. We are hoping
-> > for community help and leadership on this (*cough*).
+On Wed, Oct 22 2008, Jeff Garzik wrote:
+> Jens Axboe wrote:
+> >libata currently has a pretty dumb ATA_MAX_QUEUE loop for finding
+> >a free tag to use. Instead of fixing that up, convert libata to
+> >using block layer tagging - gets rid of code in libata, and is also
+> >much faster.
+> >
+> >Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> >---
+> > drivers/ata/libata-core.c |   66 
+> > ++++----------------------------------------
+> > drivers/ata/libata-scsi.c |   10 +++++-
+> > drivers/ata/libata.h      |   19 +++++++++++-
+> > include/linux/libata.h    |    1 -
+> > 4 files changed, 31 insertions(+), 65 deletions(-)
 > 
-> Yeah!
-> 
-> I'll grab this and put it in drivers/staging/ so it gets some users and
-> more developers to help out with it.
+> Just to be sure, I take it this patch series is for 2.6.29?
 
-Ok, it seems to need some basic work to merely build properly on
-"modern" kernel versions.
+Sure yes, it was written and tested just the other day :-)
 
-So, how should we do this if I want to move it into staging?  Can I just
-take a snapshot of what you have in this repo, move it in-kernel, fix
-the build errors and apply that patch (as your contribution of course)?
+> Seems nice to have, but since it wasn't ready for the merge window 
+> opening...
 
-Then future development can go off of the in-kernel version?  Or do you
-plan to keep this git tree active somehow?
+Indeed, but it can certainly wait for 2.6.29.
 
-thanks,
+-- 
+Jens Axboe
 
-greg k-h
