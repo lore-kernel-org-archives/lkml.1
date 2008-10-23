@@ -1,60 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbYJWP1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754322AbYJWPaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753788AbYJWP1g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 11:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbYJWP11
+	id S1754322AbYJWPaT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 11:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYJWPaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 11:27:27 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44246 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751455AbYJWP11 (ORCPT
+	Thu, 23 Oct 2008 11:30:05 -0400
+Received: from nelson.telenet-ops.be ([195.130.133.66]:53761 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751209AbYJWPaE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 11:27:27 -0400
-Message-ID: <490097BF.8050407@zytor.com>
-Date: Thu, 23 Oct 2008 08:26:55 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 23 Oct 2008 11:30:04 -0400
+X-Greylist: delayed 3175 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Oct 2008 11:30:04 EDT
+Date: Thu, 23 Oct 2008 17:30:01 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next: kernel/trace/trace.c:658: error:
+In-Reply-To: <c62985530810230757r411b4e3dj4ecec649cf8cf0b3@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0810231727430.18978@anakin>
+References: <20081023213637.eff9b414.sfr@canb.auug.org.au>
+ <20081023121145.GB27984@x200.localdomain> <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com>
+ <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com>
+ <49008D12.5090204@gmail.com> <Pine.LNX.4.64.0810231635440.18978@anakin>
+ <c62985530810230757r411b4e3dj4ecec649cf8cf0b3@mail.gmail.com>
 MIME-Version: 1.0
-To: Alistair John Strachan <alistair@devzero.co.uk>
-CC: Robert Moss <robert.von.moss@gmail.com>,
-       Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Framebuffer issues in 2.6.26 with uvesafb and vesafb. Linux is
- about choice!
-References: <6ffd69180810230054s3b6aff5y880a898c3fc66a37@mail.gmail.com> <20081023080459.GC5073@const.bordeaux.inria.fr> <6ffd69180810230421v1508664bgc6e454cde792154f@mail.gmail.com> <200810231322.15257.alistair@devzero.co.uk>
-In-Reply-To: <200810231322.15257.alistair@devzero.co.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463808415-835255333-1224775801=:18978"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alistair John Strachan wrote:
-> On Thursday 23 October 2008 12:21:09 Robert Moss wrote:
->> I also want to note, that I downloaded 2.6.27.3 and compiled, with
->> CONFIG_FB_VESA=Y, and still get excactly the same response as from
->> 2.6.26
-> 
-> Useful info, and I checked your configs and they enable the right options. 
-> Looks like you've found a real bug.
-> 
-> IIRC, a lot of real mode assembler (including the x86 vga/vesa stuff, iirc) 
-> was rewritten a year or so ago, in C. This might have been the time that this 
-> bug was introduced. I've added hpa to CC since I believe he was the author of 
-> these changes.
-> 
-> (Summary of the original report is that vga= vesa mode selection seems to have 
-> broken for Robert since at least 2.6.26, and after 2.6.24. From what I can see 
-> he has the right vesafb options enabled.)
-> 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-That happend in 2.6.23 I believe, so that would be unrelated.
+---1463808415-835255333-1224775801=:18978
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-The best would be to bisect the regression.  The second best would be if 
-he could run the "vesainfo" program from the Syslinux distribution (it's 
-a pre-boot program that dumps information on the VESA stack).  The third 
-best would be to set up Xorg to run the "vesa" driver, and send 
-/var/log/Xorg.0.log.
+On Thu, 23 Oct 2008, Frédéric Weisbecker wrote:
+> 2008/10/23 Geert Uytterhoeven <geert@linux-m68k.org>:
+> > If kernel/trace/trace.c calls irqs_disabled_flags(), it should include
+> > the include that defines irqs_disabled_flags(). You should not add it to
+> > some other random include.
+> >
+> > It's also happening on m68k:
+> > http://kisskb.ellerman.id.au/kisskb/buildresult/50641/
+> 
+> The fact is that other archs include this header into their
+> asm/system.h. It seems that's because
+> they need some non-traced irq_save/restore .
+> I wanted to stay in the same approach because future use of
+> raw_local_irq could be used elsewhere
+> and seem to work perfectly whithout adding special headers on most
+> arch. But there will be some
+> bug report for each future use of these functions for alpha.... (and
+> even m68k as it seems).
+> 
+> What do you think? Should I let this patch as is or send a new one
+> (and one other for m68k).
 
-	-hpa
+kernel/trace/trace.c needs to include at least <linux/irqflags.h>, as
+that's where irqs_disabled_flags() is defined.
 
+If there are still other issues with the raw_local_irq(), IMHO they should be
+fixed separately.
+
+Hmm, what's this doing in <linux/irqflags.h>:
+| #ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
+| ...
+| #endif          /* CONFIG_X86 */
+                     ^^^^^^^^^^
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+---1463808415-835255333-1224775801=:18978--
