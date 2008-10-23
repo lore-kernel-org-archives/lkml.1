@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757294AbYJWQGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757195AbYJWQJM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757294AbYJWQGq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 12:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755122AbYJWQGc
+	id S1757195AbYJWQJM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 12:09:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755064AbYJWQIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 12:06:32 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42185 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751746AbYJWQGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 12:06:31 -0400
-Date: Thu, 23 Oct 2008 18:06:10 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [bug #2] Re: [PATCH 00/35] cpumask: Replace cpumask_t with
-	struct cpumask
-Message-ID: <20081023160610.GA8853@elte.hu>
-References: <20081023020826.051012000@polaris-admin.engr.sgi.com> <20081023125529.GA18327@elte.hu> <20081023142025.GA18804@elte.hu> <200810240201.15037.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810240201.15037.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Thu, 23 Oct 2008 12:08:54 -0400
+Received: from styx.suse.cz ([82.119.242.94]:51659 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753239AbYJWQIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 12:08:53 -0400
+Subject: [PATCH V2 0/2] enable irqs when waiting for rwlocks
+From: Petr Tesarik <ptesarik@suse.cz>
+To: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Cc: tee@sgi.com, Robin Holt <holt@sgi.com>
+Content-Type: text/plain
+Organization: SUSE LINUX
+Date: Thu, 23 Oct 2008 17:57:31 +0200
+Message-Id: <1224777451.11530.52.camel@elijah.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+New in V2:
+ * get rid of ugly #ifdef's in kernel/spinlock.h
+ * convert __raw_{read|write}_lock_flags to an inline func
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+SGI has observed that on large systems, interrupts are not serviced for
+a long period of time when waiting for a rwlock. The following patch
+series re-enables irqs while waiting for the lock, resembling the code
+which is already there for spinlocks.
 
-> On Friday 24 October 2008 01:20:25 Ingo Molnar wrote:
-> > Thomas has started a -tip cross-build test, and there's massive
-> > cross-build failures as well due to the cpumask changes:
-> 
-> Yes.  linux-next reported the same thing.  I've backed out various 
-> arch changes for this reason.
->
-> > it seems to me that this commit is massively borked:
-> >
-> >   4a792c2: cpumask: make CONFIG_NR_CPUS always valid
-> 
-> Yep.  This is the big one I dropped.  There are a few others; Mike is 
-> just porting the changes across to your tree now.
+I only made the ia64 version, because the patch adds some overhead to
+the fast path. I assume there is currently no demand to have this for
+other architectures, because the systems are not so large. Of course,
+the possibility to implement raw_{read|write}_lock_flags for any
+architecture is still there.
 
-guys. I already spent hours integrating the "latest" of this stuff today 
-and established baseline quality for it on x86. I've dropped 4a792c2 and 
-pushed out a new tip/cpus4096-v2, please send append-only patches for 
-the rest of the changes.
+Petr Tesarik
 
-	Ingo
+
