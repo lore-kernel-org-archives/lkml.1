@@ -1,89 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbYJWTuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758744AbYJWTwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758577AbYJWTuF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 15:50:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbYJWTty
+	id S1758744AbYJWTwa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 15:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbYJWTwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 15:49:54 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:50216 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752610AbYJWTty (ORCPT
+	Thu, 23 Oct 2008 15:52:21 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:43628 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753369AbYJWTwV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 15:49:54 -0400
-Message-ID: <ac3eb2510810231249uf633483p6ea0f543ffdcf900@mail.gmail.com>
-Date: Thu, 23 Oct 2008 21:49:51 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: Help: undesired 10 seconds delay in creating USB devices
-Cc: "Gu, Mingkun" <Mingkun.Gu@gtech.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20081023193650.GB10397@kroah.com>
+	Thu, 23 Oct 2008 15:52:21 -0400
+Date: Thu, 23 Oct 2008 15:52:02 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] ftrace: move nmi die handler to arch specific
+Message-ID: <alpine.DEB.1.10.0810231550460.9459@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081023161355.GA8171@kroah.com>
-	 <32C88E5279F5DD46B7237443CD61E67901E455BB@cspmail02.gtk.gtech.com>
-	 <20081023193650.GB10397@kroah.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 23, 2008 at 21:36, Greg KH <greg@kroah.com> wrote:
-> On Thu, Oct 23, 2008 at 04:30:34PM -0300, Gu, Mingkun wrote:
->> > -----Original Message-----
->> > From: Greg KH [mailto:greg@kroah.com]
->> > Sent: Thursday, October 23, 2008 1:14 PM
->> > To: Gu, Mingkun
->> > Cc: linux-kernel@vger.kernel.org
->> > Subject: Re: Help: undesired 10 seconds delay in creating USB devices
->> >
->> > On Thu, Oct 23, 2008 at 01:11:00PM -0300, Gu, Mingkun wrote:
->> >
->> > Please stop sending email in HTML format, the mailing lists reject it.
->> >
->> > > [MKGU>] My device driver name is "usbled". Our USB device has
->> > > VendorID=11b4. After I unplugged the USB cable connecting to this
->> device
->> > > and kept the device driver "usbled" remaining loaded, I plugged in
->> the
->> > > USB cable back to the system again. I could see the device
->> information
->> > > retrieved from /proc/bus/usb/devices immediately but the device name
->> > > /dev/usbled0 was seen after near 10 seconds.
->> >
->> > That sounds like a udev script issue, not a kernel issue, correct?
->> >
->>
->> [MKGU>] Yes. It seems related to udev.
->>
->> > > > If you run 'udevadm monitor', does it show a 10 second delay?
->> > >
->> > > [MKGU>] I don't have the program 'udevadm' on my system.
->> >
->> > Do you have the program 'udevmonitor'?  I suggest trying that.
->> >
->>
->> [MKGU>] Yes, I ran "udevmonitor" and captured the following messages:
->> UEVENT[1224775488.005799] remove   /class/usb/usbled0 (usb)
->> UEVENT[1224775488.007901] remove   /class/usb (class)
->> UEVENT[1224775488.011992] remove
->> /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0 (usb)
->> UEVENT[1224775488.019706] remove
->> /devices/pci0000:00/0000:00:1d.1/usb3/3-1 (usb)
->> UEVENT[1224775496.176576] add
->> /devices/pci0000:00/0000:00:1d.1/usb3/3-1 (usb)
->> UEVENT[1224775496.181732] add
->> /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0 (usb)
->> UEVENT[1224775496.186031] add      /class/usb/usbled0 (usb)
->
-> Then I suggest filing a bug with your distro to get this looked at, as
-> they are responsible for the udev scripts here, nothing wrong with your
-> kernel :)
 
-You don't have UDEV[...] events here? The interesting output of
-udevmonitor would the timing difference between the kernel events and
-the udev events, but you completely miss the udev ones.
+Andrew Morton pointed out that some archs do not compile the ftrace code
+because their NMI code does not define a DIE_OOPS. The ftrace dump_on_oops
+code adds an NMI handler to dump out the contents of the buffer if we
+hit an oops or a NMI detected lockup.
 
-What version of udev, and which distro is that?
+The NMI handlers are called for other reasons than DIE_OOPS so the ftrace
+handler must distinguish between them. This patch creates a "weak" handler
+that does nothing and lets the arch define the NMI handler for ftrace.
 
-Kay
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ arch/x86/kernel/Makefile |    2 +-
+ arch/x86/kernel/ftrace.c |   17 +++++++++++++++++
+ kernel/trace/trace.c     |   27 +++++++++++++++------------
+ 3 files changed, 33 insertions(+), 13 deletions(-)
+
+Index: linux-tip.git/arch/x86/kernel/Makefile
+===================================================================
+--- linux-tip.git.orig/arch/x86/kernel/Makefile	2008-10-23 12:55:19.000000000 -0400
++++ linux-tip.git/arch/x86/kernel/Makefile	2008-10-23 15:23:06.000000000 -0400
+@@ -65,7 +65,7 @@ obj-$(CONFIG_X86_MPPARSE)	+= mpparse.o
+ obj-$(CONFIG_X86_LOCAL_APIC)	+= apic.o nmi.o
+ obj-$(CONFIG_X86_IO_APIC)	+= io_apic.o
+ obj-$(CONFIG_X86_REBOOTFIXUPS)	+= reboot_fixups_32.o
+-obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
++obj-$(CONFIG_TRACING)		+= ftrace.o
+ obj-$(CONFIG_KEXEC)		+= machine_kexec_$(BITS).o
+ obj-$(CONFIG_KEXEC)		+= relocate_kernel_$(BITS).o crash.o
+ obj-$(CONFIG_CRASH_DUMP)	+= crash_dump_$(BITS).o
+Index: linux-tip.git/arch/x86/kernel/ftrace.c
+===================================================================
+--- linux-tip.git.orig/arch/x86/kernel/ftrace.c	2008-10-23 12:55:19.000000000 -0400
++++ linux-tip.git/arch/x86/kernel/ftrace.c	2008-10-23 15:25:40.000000000 -0400
+@@ -14,13 +14,29 @@
+ #include <linux/uaccess.h>
+ #include <linux/ftrace.h>
+ #include <linux/percpu.h>
++#include <linux/kdebug.h>
+ #include <linux/init.h>
+ #include <linux/list.h>
+ 
+ #include <asm/ftrace.h>
+ #include <asm/nops.h>
+ 
++int ftrace_nmi_die_handler(struct notifier_block *self,
++			   unsigned long val,
++			   void *data)
++{
++	switch (val) {
++	case DIE_OOPS:
++		if (ftrace_dump_on_oops)
++			ftrace_dump();
++		break;
++	default:
++		break;
++	}
++	return NOTIFY_OK;
++}
+ 
++#ifdef CONFIG_DYNAMIC_FTRACE
+ /* Long is fine, even if it is only 4 bytes ;-) */
+ static unsigned long *ftrace_nop;
+ 
+@@ -171,3 +187,4 @@ int __init ftrace_dyn_arch_init(void *da
+ 
+ 	return 0;
+ }
++#endif /* CONFIG_DYNAMIC_FTRACE */
+Index: linux-tip.git/kernel/trace/trace.c
+===================================================================
+--- linux-tip.git.orig/kernel/trace/trace.c	2008-10-23 14:24:28.000000000 -0400
++++ linux-tip.git/kernel/trace/trace.c	2008-10-23 15:49:54.000000000 -0400
+@@ -3051,23 +3051,26 @@ static struct notifier_block trace_panic
+ 	.priority       = 150   /* priority: INT_MAX >= x >= 0 */
+ };
+ 
+-static int trace_die_handler(struct notifier_block *self,
+-			     unsigned long val,
+-			     void *data)
++/**
++ * ftrace_nmi_die_handler - handler to call by ftrace on NMI lockup
++ * @self: unused
++ * @val: NMI handler type variable
++ * @data: unused
++ *
++ * Architectures need to define their own NMI watchdog handler.
++ * The NMI handlers may be called for various reasons, but we
++ * only want to dump the ftrace buffers when it is a lockup.
++ * Unfortunately, not all architectures define DIE_OOPS.
++ */
++int __weak ftrace_nmi_die_handler(struct notifier_block *self,
++				  unsigned long val,
++				  void *data)
+ {
+-	switch (val) {
+-	case DIE_OOPS:
+-		if (ftrace_dump_on_oops)
+-			ftrace_dump();
+-		break;
+-	default:
+-		break;
+-	}
+ 	return NOTIFY_OK;
+ }
+ 
+ static struct notifier_block trace_die_notifier = {
+-	.notifier_call = trace_die_handler,
++	.notifier_call = ftrace_nmi_die_handler,
+ 	.priority = 200
+ };
+ 
+
