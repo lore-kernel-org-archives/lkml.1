@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbYJWSER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757936AbYJWSL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757119AbYJWSER (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 14:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755621AbYJWSEA
+	id S1757936AbYJWSL1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 14:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755307AbYJWSLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 14:04:00 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:15526 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755617AbYJWSD7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 14:03:59 -0400
-Date: Thu, 23 Oct 2008 20:03:51 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
-Cc: linux-kernel@vger.kernel.org, ben-linux@fluff.org
-Subject: Re: scx200_i2c driver fails to detect any i2c devices in 2.6.26
- (new patch)
-Message-ID: <20081023200351.29ecfb46@hyperion.delvare>
-In-Reply-To: <20081023175552.GD5682@csclub.uwaterloo.ca>
-References: <20081023165419.GA5682@csclub.uwaterloo.ca>
-	<20081023193519.2af62bb5@hyperion.delvare>
-	<20081023175311.GC5682@csclub.uwaterloo.ca>
-	<20081023175552.GD5682@csclub.uwaterloo.ca>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Oct 2008 14:11:09 -0400
+Received: from mail.atheros.com ([12.36.123.2]:44244 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755288AbYJWSLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 14:11:08 -0400
+Date: Thu, 23 Oct 2008 04:11:03 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: Greg KH <greg@kroah.com>
+CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       "otus-devel@lists.madwifi-project.org" 
+	<otus-devel@venema.h4ckr.net>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: Release of Atheros 802.11n USB Linux driver
+Message-ID: <20081023111103.GB5979@tesla>
+References: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com> <20081022065045.GA2400@kroah.com> <20081023062655.GA8039@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20081023062655.GA8039@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Oct 2008 13:55:52 -0400, Lennart Sorensen wrote:
-> The scx200_i2c driver is missing the .class parameter, which means no
-> i2c drivers are willing to probe for devices on the bus and attach to
-> them.
+On Wed, Oct 22, 2008 at 11:26:55PM -0700, Greg KH wrote:
+> On Tue, Oct 21, 2008 at 11:50:45PM -0700, Greg KH wrote:
+> > On Tue, Oct 21, 2008 at 07:04:17PM -0700, Luis R. Rodriguez wrote:
+> > > We would like to see our Atheros 802.11n USB Linux driver upstream
+> > > however we need help with this so we are releasing our Atheros 11n USB
+> > > Otus Linux driver under the ISC to the community. The goal is to work
+> > > with the community to help move this forward upstream. We are hoping
+> > > for community help and leadership on this (*cough*).
+> >
+> > Yeah!
+> >
+> > I'll grab this and put it in drivers/staging/ so it gets some users and
+> > more developers to help out with it.
 > 
-> This patch adds the missing .class parameter.
-> 
-> Signed-off-by: Len Sorensen <lsorense@csclub.uwaterloo.ca>
-> 
-> --- scx200_i2c.c	2008-05-20 09:39:24.000000000 -0400
-> +++ scx200_i2c.c.new	2008-10-23 13:51:57.000000000 -0400
-> @@ -81,6 +81,7 @@
->  
->  static struct i2c_adapter scx200_i2c_ops = {
->  	.owner		   = THIS_MODULE,
-> +	.class		   = I2C_CLASS_HWMON | I2C_CLASS_SPD,
->  	.id		   = I2C_HW_B_SCX200,
->  	.algo_data	   = &scx200_i2c_data,
->  	.name	= "NatSemi SCx200 I2C",
-> 
+> Ok, it seems to need some basic work to merely build properly on
+> "modern" kernel versions.
 
-Applied, thanks. I'll also take care to get this patch into
-2.6.27-stable and 2.6.26-stable.
+Yeah, it works up to 2.6.24.
 
--- 
-Jean Delvare
+> So, how should we do this if I want to move it into staging?  Can I just
+> take a snapshot of what you have in this repo, move it in-kernel, fix
+> the build errors and apply that patch (as your contribution of course)?
+
+That's the thing it needs Wireless Extension support for >= 2.6.24 so
+that needs to be done. I can try to do it but first comes ath9k, hence
+why we released it to engage with the community on adding that and to
+eventually push it upstream.
+
+> Then future development can go off of the in-kernel version?  Or do you
+> plan to keep this git tree active somehow?
+
+Yeah so the purpose of the git tree is to collect patches to allow users
+to use it with >= 2.6.24, all other focus should be on an in-kernel
+driver.
+
+  Luis
