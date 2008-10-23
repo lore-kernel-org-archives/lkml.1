@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbYJWNhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbYJWNiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756332AbYJWNhv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 09:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbYJWNh0
+	id S1755872AbYJWNiS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 09:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbYJWNh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 09:37:26 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:62143 "EHLO
+	Thu, 23 Oct 2008 09:37:27 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:54303 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751597AbYJWNhZ (ORCPT
+	with ESMTP id S1751571AbYJWNhZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 23 Oct 2008 09:37:25 -0400
-Message-Id: <20081023133722.894543902@goodmis.org>
+Message-Id: <20081023133723.084150860@goodmis.org>
 References: <20081023133256.926296694@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 23 Oct 2008 09:32:58 -0400
+Date: Thu, 23 Oct 2008 09:32:59 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
@@ -25,73 +25,141 @@ Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Wenji Huang <wenji.huang@oracle.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 02/12 v3] ftrace: dynamic ftrace process only text section
-Content-Disposition: inline; filename=ftrace-record-only-text.patch
+Subject: [PATCH 03/12 v3] ftrace: return error on failed modified text.
+Content-Disposition: inline; filename=ftrace-return-error-on-mod-code.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The text section stays in memory without ever leaving. With the exception
-of modules, but modules know how to handle that case. With the dynamic
-ftrace tracer, we need to make sure that it does not try to modify code
-that no longer exists. The only safe section is .text.
+Have the ftrace_modify_code return error values:
 
-This patch changes the recordmcount script to only record the mcount calls
-in the .text sections.
+  -EFAULT on error of reading the address
+
+  -EINVAL if what is read does not match what it expected
+
+  -EPERM  if the write fails to update after a successful match.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- scripts/recordmcount.pl |   17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
+ arch/x86/kernel/ftrace.c |   12 +++++++-----
+ include/linux/ftrace.h   |   24 ++++++++++++++++++++++--
+ kernel/trace/ftrace.c    |   21 +++++++++++++++------
+ 3 files changed, 44 insertions(+), 13 deletions(-)
 
-Index: linux-compile.git/scripts/recordmcount.pl
+Index: linux-compile.git/arch/x86/kernel/ftrace.c
 ===================================================================
---- linux-compile.git.orig/scripts/recordmcount.pl	2008-10-23 09:20:24.000000000 -0400
-+++ linux-compile.git/scripts/recordmcount.pl	2008-10-23 09:20:46.000000000 -0400
-@@ -109,6 +109,11 @@ if ($#ARGV < 6) {
- my ($arch, $bits, $objdump, $objcopy, $cc,
-     $ld, $nm, $rm, $mv, $inputfile) = @ARGV;
+--- linux-compile.git.orig/arch/x86/kernel/ftrace.c	2008-10-23 09:13:39.000000000 -0400
++++ linux-compile.git/arch/x86/kernel/ftrace.c	2008-10-23 09:27:46.000000000 -0400
+@@ -71,14 +71,16 @@ ftrace_modify_code(unsigned long ip, uns
+ 	 * No real locking needed, this code is run through
+ 	 * kstop_machine, or before SMP starts.
+ 	 */
+-	if (__copy_from_user_inatomic(replaced, (char __user *)ip, MCOUNT_INSN_SIZE))
+-		return 1;
++	if (__copy_from_user_inatomic(replaced, (char __user *)ip,
++				      MCOUNT_INSN_SIZE))
++		return -EFAULT;
  
-+# Acceptable sections to record.
-+my %text_sections = (
-+     ".text" => 1,
-+);
+ 	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
+-		return 2;
++		return -EINVAL;
+ 
+-	WARN_ON_ONCE(__copy_to_user_inatomic((char __user *)ip, new_code,
+-				    MCOUNT_INSN_SIZE));
++	if (__copy_to_user_inatomic((char __user *)ip, new_code,
++				    MCOUNT_INSN_SIZE))
++		return -EPERM;
+ 
+ 	sync_core();
+ 
+Index: linux-compile.git/kernel/trace/ftrace.c
+===================================================================
+--- linux-compile.git.orig/kernel/trace/ftrace.c	2008-10-23 09:13:39.000000000 -0400
++++ linux-compile.git/kernel/trace/ftrace.c	2008-10-23 09:20:55.000000000 -0400
+@@ -591,22 +591,22 @@ ftrace_code_disable(struct dyn_ftrace *r
+ {
+ 	unsigned long ip;
+ 	unsigned char *nop, *call;
+-	int failed;
++	int ret;
+ 
+ 	ip = rec->ip;
+ 
+ 	nop = ftrace_nop_replace();
+ 	call = ftrace_call_replace(ip, mcount_addr);
+ 
+-	failed = ftrace_modify_code(ip, call, nop);
+-	if (failed) {
+-		switch (failed) {
+-		case 1:
++	ret = ftrace_modify_code(ip, call, nop);
++	if (ret) {
++		switch (ret) {
++		case -EFAULT:
+ 			WARN_ON_ONCE(1);
+ 			pr_info("ftrace faulted on modifying ");
+ 			print_ip_sym(ip);
+ 			break;
+-		case 2:
++		case -EINVAL:
+ 			WARN_ON_ONCE(1);
+ 			pr_info("ftrace failed to modify ");
+ 			print_ip_sym(ip);
+@@ -615,6 +615,15 @@ ftrace_code_disable(struct dyn_ftrace *r
+ 			print_ip_ins(" replace: ", nop);
+ 			printk(KERN_CONT "\n");
+ 			break;
++		case -EPERM:
++			WARN_ON_ONCE(1);
++			pr_info("ftrace faulted on writing ");
++			print_ip_sym(ip);
++			break;
++		default:
++			WARN_ON_ONCE(1);
++			pr_info("ftrace faulted on unknown error ");
++			print_ip_sym(ip);
+ 		}
+ 
+ 		rec->flags |= FTRACE_FL_FAILED;
+Index: linux-compile.git/include/linux/ftrace.h
+===================================================================
+--- linux-compile.git.orig/include/linux/ftrace.h	2008-10-23 09:13:39.000000000 -0400
++++ linux-compile.git/include/linux/ftrace.h	2008-10-23 09:21:23.000000000 -0400
+@@ -72,13 +72,33 @@ extern unsigned char *ftrace_nop_replace
+ extern unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr);
+ extern int ftrace_dyn_arch_init(void *data);
+ extern int ftrace_mcount_set(unsigned long *data);
+-extern int ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+-			      unsigned char *new_code);
+ extern int ftrace_update_ftrace_func(ftrace_func_t func);
+ extern void ftrace_caller(void);
+ extern void ftrace_call(void);
+ extern void mcount_call(void);
+ 
++/**
++ * ftrace_modify_code - modify code segment
++ * @ip: the address of the code segment
++ * @old_code: the contents of what is expected to be there
++ * @new_code: the code to patch in
++ *
++ * This is a very sensitive operation and great care needs
++ * to be taken by the arch.  The operation should carefully
++ * read the location, check to see if what is read is indeed
++ * what we expect it to be, and then on success of the compare,
++ * it should write to the location.
++ *
++ * Return must be:
++ *  0 on success
++ *  -EFAULT on error reading the location
++ *  -EINVAL on a failed compare of the contents
++ *  -EPERM  on error writing to the location
++ * Any other value will be considered a failure.
++ */
++extern int ftrace_modify_code(unsigned long ip, unsigned char *old_code,
++			      unsigned char *new_code);
 +
- $objdump = "objdump" if ((length $objdump) == 0);
- $objcopy = "objcopy" if ((length $objcopy) == 0);
- $cc = "gcc" if ((length $cc) == 0);
-@@ -139,7 +144,7 @@ if ($arch eq "x86") {
- }
+ extern int skip_trace(unsigned long ip);
  
- if ($arch eq "x86_64") {
--    $section_regex = "Disassembly of section";
-+    $section_regex = "Disassembly of section\\s+(\\S+):";
-     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
-     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount([+-]0x[0-9a-zA-Z]+)?\$";
-     $type = ".quad";
-@@ -151,7 +156,7 @@ if ($arch eq "x86_64") {
-     $cc .= " -m64";
- 
- } elsif ($arch eq "i386") {
--    $section_regex = "Disassembly of section";
-+    $section_regex = "Disassembly of section\\s+(\\S+):";
-     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
-     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
-     $type = ".long";
-@@ -298,7 +303,13 @@ my $text;
- while (<IN>) {
-     # is it a section?
-     if (/$section_regex/) {
--	$read_function = 1;
-+
-+	# Only record text sections that we know are safe
-+	if (defined($text_sections{$1})) {
-+	    $read_function = 1;
-+	} else {
-+	    $read_function = 0;
-+	}
- 	# print out any recorded offsets
- 	update_funcs() if ($text_found);
- 
+ extern void ftrace_release(void *start, unsigned long size);
 
 -- 
