@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbYJWNiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbYJWNid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbYJWNiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 09:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbYJWNh1
+	id S1756641AbYJWNid (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 09:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYJWNh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 09:37:27 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:54303 "EHLO
+	Thu, 23 Oct 2008 09:37:28 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:62136 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751571AbYJWNhZ (ORCPT
+	with ESMTP id S1752027AbYJWNhZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 23 Oct 2008 09:37:25 -0400
-Message-Id: <20081023133723.084150860@goodmis.org>
+Message-Id: <20081023133722.718937147@goodmis.org>
 References: <20081023133256.926296694@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 23 Oct 2008 09:32:59 -0400
+Date: Thu, 23 Oct 2008 09:32:57 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
@@ -25,141 +25,77 @@ Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Wenji Huang <wenji.huang@oracle.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 03/12 v3] ftrace: return error on failed modified text.
-Content-Disposition: inline; filename=ftrace-return-error-on-mod-code.patch
+Subject: [PATCH 01/12 v3] ftrace: handle generic arch calls
+Content-Disposition: inline; filename=ftrace-rm-script-bit-interface.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Have the ftrace_modify_code return error values:
+The recordmcount script requires that the actual arch is passed in.
+This works well when ARCH=i386 or ARCH=x86_64 but does not handle the
+case of ARCH=x86.
 
-  -EFAULT on error of reading the address
-
-  -EINVAL if what is read does not match what it expected
-
-  -EPERM  if the write fails to update after a successful match.
+This patch adds a parameter to the function to pass in the number of
+bits of the architecture. So that it can determine if x86 should be
+run for x86_64 or i386 archs.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/x86/kernel/ftrace.c |   12 +++++++-----
- include/linux/ftrace.h   |   24 ++++++++++++++++++++++--
- kernel/trace/ftrace.c    |   21 +++++++++++++++------
- 3 files changed, 44 insertions(+), 13 deletions(-)
+ scripts/Makefile.build  |   10 ++++++++--
+ scripts/recordmcount.pl |   11 ++++++++++-
+ 2 files changed, 18 insertions(+), 3 deletions(-)
 
-Index: linux-compile.git/arch/x86/kernel/ftrace.c
+Index: linux-compile.git/scripts/Makefile.build
 ===================================================================
---- linux-compile.git.orig/arch/x86/kernel/ftrace.c	2008-10-23 09:13:39.000000000 -0400
-+++ linux-compile.git/arch/x86/kernel/ftrace.c	2008-10-23 09:27:46.000000000 -0400
-@@ -71,14 +71,16 @@ ftrace_modify_code(unsigned long ip, uns
- 	 * No real locking needed, this code is run through
- 	 * kstop_machine, or before SMP starts.
- 	 */
--	if (__copy_from_user_inatomic(replaced, (char __user *)ip, MCOUNT_INSN_SIZE))
--		return 1;
-+	if (__copy_from_user_inatomic(replaced, (char __user *)ip,
-+				      MCOUNT_INSN_SIZE))
-+		return -EFAULT;
+--- linux-compile.git.orig/scripts/Makefile.build	2008-10-22 15:09:04.000000000 -0400
++++ linux-compile.git/scripts/Makefile.build	2008-10-22 15:09:07.000000000 -0400
+@@ -198,10 +198,16 @@ cmd_modversions =							\
+ 	fi;
+ endif
  
- 	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
--		return 2;
-+		return -EINVAL;
- 
--	WARN_ON_ONCE(__copy_to_user_inatomic((char __user *)ip, new_code,
--				    MCOUNT_INSN_SIZE));
-+	if (__copy_to_user_inatomic((char __user *)ip, new_code,
-+				    MCOUNT_INSN_SIZE))
-+		return -EPERM;
- 
- 	sync_core();
- 
-Index: linux-compile.git/kernel/trace/ftrace.c
-===================================================================
---- linux-compile.git.orig/kernel/trace/ftrace.c	2008-10-23 09:13:39.000000000 -0400
-+++ linux-compile.git/kernel/trace/ftrace.c	2008-10-23 09:20:55.000000000 -0400
-@@ -591,22 +591,22 @@ ftrace_code_disable(struct dyn_ftrace *r
- {
- 	unsigned long ip;
- 	unsigned char *nop, *call;
--	int failed;
-+	int ret;
- 
- 	ip = rec->ip;
- 
- 	nop = ftrace_nop_replace();
- 	call = ftrace_call_replace(ip, mcount_addr);
- 
--	failed = ftrace_modify_code(ip, call, nop);
--	if (failed) {
--		switch (failed) {
--		case 1:
-+	ret = ftrace_modify_code(ip, call, nop);
-+	if (ret) {
-+		switch (ret) {
-+		case -EFAULT:
- 			WARN_ON_ONCE(1);
- 			pr_info("ftrace faulted on modifying ");
- 			print_ip_sym(ip);
- 			break;
--		case 2:
-+		case -EINVAL:
- 			WARN_ON_ONCE(1);
- 			pr_info("ftrace failed to modify ");
- 			print_ip_sym(ip);
-@@ -615,6 +615,15 @@ ftrace_code_disable(struct dyn_ftrace *r
- 			print_ip_ins(" replace: ", nop);
- 			printk(KERN_CONT "\n");
- 			break;
-+		case -EPERM:
-+			WARN_ON_ONCE(1);
-+			pr_info("ftrace faulted on writing ");
-+			print_ip_sym(ip);
-+			break;
-+		default:
-+			WARN_ON_ONCE(1);
-+			pr_info("ftrace faulted on unknown error ");
-+			print_ip_sym(ip);
- 		}
- 
- 		rec->flags |= FTRACE_FL_FAILED;
-Index: linux-compile.git/include/linux/ftrace.h
-===================================================================
---- linux-compile.git.orig/include/linux/ftrace.h	2008-10-23 09:13:39.000000000 -0400
-+++ linux-compile.git/include/linux/ftrace.h	2008-10-23 09:21:23.000000000 -0400
-@@ -72,13 +72,33 @@ extern unsigned char *ftrace_nop_replace
- extern unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr);
- extern int ftrace_dyn_arch_init(void *data);
- extern int ftrace_mcount_set(unsigned long *data);
--extern int ftrace_modify_code(unsigned long ip, unsigned char *old_code,
--			      unsigned char *new_code);
- extern int ftrace_update_ftrace_func(ftrace_func_t func);
- extern void ftrace_caller(void);
- extern void ftrace_call(void);
- extern void mcount_call(void);
- 
-+/**
-+ * ftrace_modify_code - modify code segment
-+ * @ip: the address of the code segment
-+ * @old_code: the contents of what is expected to be there
-+ * @new_code: the code to patch in
-+ *
-+ * This is a very sensitive operation and great care needs
-+ * to be taken by the arch.  The operation should carefully
-+ * read the location, check to see if what is read is indeed
-+ * what we expect it to be, and then on success of the compare,
-+ * it should write to the location.
-+ *
-+ * Return must be:
-+ *  0 on success
-+ *  -EFAULT on error reading the location
-+ *  -EINVAL on a failed compare of the contents
-+ *  -EPERM  on error writing to the location
-+ * Any other value will be considered a failure.
-+ */
-+extern int ftrace_modify_code(unsigned long ip, unsigned char *old_code,
-+			      unsigned char *new_code);
++ifdef CONFIG_64BIT
++arch_bits = 64
++else
++arch_bits = 32
++endif
 +
- extern int skip_trace(unsigned long ip);
+ ifdef CONFIG_FTRACE_MCOUNT_RECORD
+ cmd_record_mcount = perl $(srctree)/scripts/recordmcount.pl \
+-	"$(ARCH)" "$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" "$(NM)" "$(RM)" \
+-	"$(MV)" "$(@)";
++	"$(ARCH)" "$(arch_bits)" "$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" \
++	"$(NM)" "$(RM)" "$(MV)" "$(@)";
+ endif
  
- extern void ftrace_release(void *start, unsigned long size);
+ define rule_cc_o_c
+Index: linux-compile.git/scripts/recordmcount.pl
+===================================================================
+--- linux-compile.git.orig/scripts/recordmcount.pl	2008-10-22 15:09:04.000000000 -0400
++++ linux-compile.git/scripts/recordmcount.pl	2008-10-22 15:09:45.000000000 -0400
+@@ -106,7 +106,8 @@ if ($#ARGV < 6) {
+ 	exit(1);
+ }
+ 
+-my ($arch, $objdump, $objcopy, $cc, $ld, $nm, $rm, $mv, $inputfile) = @ARGV;
++my ($arch, $bits, $objdump, $objcopy, $cc,
++    $ld, $nm, $rm, $mv, $inputfile) = @ARGV;
+ 
+ $objdump = "objdump" if ((length $objdump) == 0);
+ $objcopy = "objcopy" if ((length $objcopy) == 0);
+@@ -129,6 +130,14 @@ my $function_regex;	# Find the name of a
+ 			#    (return offset and func name)
+ my $mcount_regex;	# Find the call site to mcount (return offset)
+ 
++if ($arch eq "x86") {
++    if ($bits == 64) {
++	$arch = "x86_64";
++    } else {
++	$arch = "i386";
++    }
++}
++
+ if ($arch eq "x86_64") {
+     $section_regex = "Disassembly of section";
+     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
 
 -- 
