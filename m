@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbYJWLgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbYJWLia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754908AbYJWLgt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 07:36:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbYJWLgk
+	id S1755352AbYJWLia (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 07:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYJWLiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 07:36:40 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:39704 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752204AbYJWLgj (ORCPT
+	Thu, 23 Oct 2008 07:38:22 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:62362 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752204AbYJWLiV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 07:36:39 -0400
-Date: Thu, 23 Oct 2008 07:36:37 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Jan Kiszka <jan.kiszka@siemens.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 08/13 v2] ftrace: do not trace init sections
-In-Reply-To: <49005CD0.2070807@siemens.com>
-Message-ID: <alpine.DEB.1.10.0810230732100.31839@gandalf.stny.rr.com>
-References: <20081022212721.167005680@goodmis.org> <20081022213552.440512191@goodmis.org> <49005CD0.2070807@siemens.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 23 Oct 2008 07:38:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=dXJ7gjRxF7ySBhPzdcx3d8VbHUFQfLz4zXy1KviPN98Uozk6MUWIJabu5jpEaOJgZ4
+         KpLHEFFFIkvb2EMromqKNR/EOd7k7sCb658YfB12faep88eTWWn01qp/UTZ5QT6mKSst
+         yaNU6r8VqeDbNmzsyN4ykRviSWXgsV0b01/Ks=
+Date: Thu, 23 Oct 2008 15:41:33 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: How do I printk <type> correctly?
+Message-ID: <20081023114133.GA30187@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+If variable is of Type	use	printk format specifier.
+---------------------------------------------------------
+		int			%d or %x
+		unsigned int		%u or %x
+		long			%ld ot %lx
+		unsigned long		%lu or %lx
+		long long		%lld or %llx
+		unsigned long long	%llu or %llx
+		size_t			%zu or %zx
+		ssize_t			%zd or %zx
 
-On Thu, 23 Oct 2008, Jan Kiszka wrote:
+Raw pointer value SHOULD be printed with %p.
 
-> Steven Rostedt wrote:
-> > The recordmcount script is now robust enough not to process any sections
-> > but the .text section. But the gcc compiler still adds a call to mcount.
-> > 
-> > Note: The function mcount looks like:
-> > 
-> >   ENTRY(mcount)
-> > 	ret
-> >   END(mcount)
-> > 
-> > Which means the overhead is just a return.
-> > 
-> > This patch adds notrace to the init sections to not even bother calling
-> > mcount (which simply returns).
-> 
-> Sorry for a potentially dumb question (didn't follow all recent ftrace
-> developments), but doesn't this mean that code in such sections is now
-> invisible for all tracers, even with dynamic tracing disabled (in which
-> case they should cause no problem)? What if you *do* want to have such
-> functions in your trace as they may contribute to problem or give other
-> useful hints?
+u64 SHOULD be printed with %llu/%llx, (unsigned long long):
 
-Not a dumb question, I've thought about this too.
+	printk("%llu", (unsigned long long)u64_var);
 
-Well, you can still add tracing into those functions, just the mcount call 
-will not be there. I've thought about other ways to handle this. Perhaps 
-add it only when DYNAMIC_FTRACE is configured. But that to me is a new 
-feature. The patches I'm submitting is to help with performance, bug 
-fixes, and sanity checks. So I left out any optional notraces.
+s64 SHOULD be printed with %lld/%llx, (long long):
 
-e.g. in init.h I could do something like.
+	printk("%lld", (long long)s64_var);
 
-#ifdef CONFIG_DYNAMIC_FTRACE
-# define init_notrace notrace
-#else
-# define init_notrace
-#endif
+If type is dependent on config option (sector_t), use format specifier
+of biggest type and explicitly cast to it.
 
-And then use the init_notrace throughout the file. If this is considered 
-something that is acceptible for adding into 28, I would be happy to 
-supply a patch.
+Reminder: sizeof() result is of type size_t.
 
--- Steve
-
+Thank you for your cooperation.
