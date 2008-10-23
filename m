@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbYJWQlz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbYJWQoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811AbYJWQlz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 12:41:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbYJWQln
+	id S1757606AbYJWQoT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 12:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbYJWQoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 12:41:43 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48274 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757388AbYJWQlj (ORCPT
+	Thu, 23 Oct 2008 12:44:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44447 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753101AbYJWQoH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 12:41:39 -0400
-Message-ID: <4900A8D4.4010806@zytor.com>
-Date: Thu, 23 Oct 2008 09:39:48 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 23 Oct 2008 12:44:07 -0400
+Date: Thu, 23 Oct 2008 09:43:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [git pull] core fixes
+In-Reply-To: <20081021144753.GA553@elte.hu>
+Message-ID: <alpine.LFD.2.00.0810230939080.3287@nehalem.linux-foundation.org>
+References: <20081021144753.GA553@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Bjorn Helgaas <bjorn.helgaas@hp.com>, john stultz <johnstul@us.ibm.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [RFC patch 15/15] LTTng timestamp x86
-References: <20081016232729.699004293@polymtl.ca> <alpine.LFD.2.00.0810201451190.3287@nehalem.linux-foundation.org> <48FD0633.70604@zytor.com> <200810211211.00332.bjorn.helgaas@hp.com> <alpine.LFD.2.00.0810230838410.3287@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0810230838410.3287@nehalem.linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+
+
+On Tue, 21 Oct 2008, Ingo Molnar wrote:
 > 
-> They are almost inevitable for another reason too: the interconnect seldom 
-> has a concept of "clock signal" other than for the signalling itself, and 
-> the signal clock is designed for the signal itself and is designed for 
-> signal integrity rather than "stable clock".
+> this is because the merge-base of this tree is 2e532d68a2, while your 
+> tree that merges this is fresher.
 > 
-> Does _any_ common interconnect have integral support for clock 
-> distribution?
-> 
+> I did not want to merge to your latest, to not create an unnecessary 
+> merge commit. But i could not find a way either how to generate a proper 
+> shortlog either.
 
-How do you mean "integral"?  All it really would end up being would be a 
-separate wire anyway carrying the 14.318 MHz clock, so the only way it 
-would ever be "integral" is as part of the slot connector definition.
+Just do
 
-Note that this is a *frequency standard*.  This is a much simpler task 
-than distributing a clock that has to be in phase with a bunch of data 
-wires.
+	# update the remote branches
+	git fetch linus
+	# get the log difference
+	git shortlog linus..
 
-> And no, nobody is going to add another clock network for just clock 
-> distribution. 
+because "git log" and friends don't care about the merge base, they only 
+care about the actual commit _set_difference_. So "linus.." is shorthand 
+for "linus..HEAD", which in turn means "Which commits are in HEAD but not 
+in 'linus".
 
-I have defitely seen machines with a common backplane clock source. 
-That does not mean that it is common.  I can certainly see the 
-redundancy issues being a big deal there.
+Doing a _diff_ is different, and when you do "git diff linus.." doesn't 
+mean a set difference, it means an "endpoint difference", and there you 
+need to find the merge base in order to get a sane answer. Of course, then 
+the diff won't necessarily be what I see, since common commits will 
+disappear. But even there, you can do
 
-> So even ignoring redundancy issues, and the fact that people want to 
-> hot-plug things (and yes, that would make a central clock interesting), I 
-> doubt any hw manufacturer really looks at it the way we do.
+	git diff linus...
 
-Hotplugging isn't so bad (the clock source is tiny, and goes on the 
-backplane.)  Redundancy is harder, but not impossible -- even cheap 
-TCXOs can usually operate either self-running or as slaves to an 
-incoming signal.  The hard part is to avoid partition on failure, since 
-in that case you have to handle the unsynchronized case correctly anyway.
+where the triple dots mean "symmetric set difference" for a log-based (ie 
+"set operation") operation, but means "difference from common merge base" 
+for an endpoint operation (ie "git diff").
 
-> The best we could hope for is some hardware assist for helping distribute 
-> a common clock. Ie not a real single crystal, but having time-packets in 
-> the interconnect that are used to synchronize nodes whenever there is 
-> communication between them. It's hard to do that in software, because the 
-> overhead is fairly high, but if hardware does at least some of it you 
-> could probably get a damn fine distributed clock source.
-> 
-> But I don't know if any hw people are worried enough about it to do it...
-
-Most likely not, which means that any solutions we as software guys 
-propose are probably pointless.
-
-	-hpa
-
+		Linus
