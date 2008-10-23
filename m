@@ -1,92 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbYJWJWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbYJWJa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754014AbYJWJWo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 05:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbYJWJWg
+	id S1753709AbYJWJa2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 05:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbYJWJaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 05:22:36 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:57227 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751428AbYJWJWf (ORCPT
+	Thu, 23 Oct 2008 05:30:15 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36782 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751601AbYJWJaN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 05:22:35 -0400
-Message-Id: <1224753754.1503.1280816335@webmail.messagingengine.com>
-X-Sasl-Enc: 9MkFevIQE0b1nHmTajS2ZCzTXfCVN26CEbiSXBKLMusl 1224753754
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "Neil Horman" <nhorman@tuxdriver.com>, "Ingo Molnar" <mingo@elte.hu>
-Cc: "Alexander van Heukelum" <heukelum@mailshack.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       vgoyal@redhat.com, hbabu@us.ibm.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, mingo@redhat.com,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Content-Disposition: inline
+	Thu, 23 Oct 2008 05:30:13 -0400
+Date: Thu, 23 Oct 2008 10:29:01 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <greg@kroah.com>
+Cc: Markus Rechberger <mrechberger@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       em28xx <em28xx@mcentral.de>, acano@fastmail.fm,
+       Andre Kelmanson <akelmanson@gmail.com>,
+       Bouwsma Barry <freebeer.bouwsma@gmail.com>,
+       Dan Kreiser <kreiser@informatik.hu-berlin.de>,
+       Frank Neuber <fn@kernelport.de>,
+       Jelle de Jong <jelledejong@powercraft.nl>,
+       John Stowers <john.stowers.lists@gmail.com>,
+       Lukas Kuna <lukas.kuna@evkanet.net>,
+       Stefan Vonolfen <stefan.vonolfen@gmail.com>,
+       Stephan Berberig <s.berberig@arcor.de>,
+       Thomas Giesecke <thomas.giesecke@ibgmbh-naumburg.de>,
+       Vitaly Wool <vwool@ru.mvista.com>, Zhenyu Wang <zhen78@gmail.com>
+Subject: Re: [PATCH 1/7] Adding empia base driver
+Message-ID: <20081023102901.59c14cf6@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081022220903.GA15278@kroah.com>
+References: <d9def9db0810221414w5348acf3re31a033ea7179462@mail.gmail.com>
+	<20081022220903.GA15278@kroah.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20081017210013.GD23591@hmsreliant.think-freely.org>
- <20081020121339.GE10594@elte.hu>
- <20081020134211.GA15574@hmsreliant.think-freely.org>
- <20081020150731.GA25999@mailshack.com>
- <20081020150834.GA26018@mailshack.com>
- <20081021144505.GA25750@hmsreliant.think-freely.org>
- <1224670721.25843.1280616145@webmail.messagingengine.com>
- <20081022104513.GA18951@hmsreliant.think-freely.org>
- <20081022120222.GE8095@elte.hu>
- <20081022191948.GB20423@hmsreliant.think-freely.org>
-Subject: Re: [PATCH] x86: make oops_begin and oops_end equal
-In-Reply-To: <20081022191948.GB20423@hmsreliant.think-freely.org>
-Date: Thu, 23 Oct 2008 11:22:34 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Oct 2008 15:19:48 -0400, "Neil Horman"
-<nhorman@tuxdriver.com> said:
-> On Wed, Oct 22, 2008 at 02:02:22PM +0200, Ingo Molnar wrote:
-> > 
-> > * Neil Horman <nhorman@tuxdriver.com> wrote:
-> > 
-> > > > Thanks for the review. I've sent a redone patch series just a moment 
-> > > > ago, based on your comments. There was also another problem with 
-> > > > these two patches: oops_end(flags, regs, signr) had special 
-> > > > behaviour for regs=NULL that I did not consider before. The series 
-> > > > has grown due to this issue...
-> > 
-> > [...]
-> > > Copy that.  Thanks for the quick turn-around.
-> > 
-> > applied to tip/x86/dumpstack, thanks guys!
-> > 
-> > Could you please also create arch/x86/kernel/dumpstack.c and move all 
-> > the now-unified bits there - before they get out of sync again?
-> > 
-> I can do this in the next day or so, unless you have an urge to Alexander
+> This is going to cause a big problem for distros as they will not know
+> which to enable, so they will probably just disable this one, which is
+> what I don't think you want to have happen :(
 
-Hi Neil,
+Before looking into any of this talk to the V4L and DVB maintainers,
+browse video4linux list and have a happy read of stuff like:
 
-Many thanks for the review of the patches, and please go ahead
-and finish the unification!
+http://thread.gmane.org/gmane.linux.drivers.dvb/35454
 
-Greetings,
-    Alexander
 
-> Neil
-> 
-> > 	Ingo
-> > 
-> 
-> -- 
-> /****************************************************
->  * Neil Horman <nhorman@tuxdriver.com>
->  * Software Engineer, Red Hat
->  ****************************************************/
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
+Now I wonder why Markus didn't cc Mauro on this despite Mauro being
+maintainer.
 
--- 
-http://www.fastmail.fm - A fast, anti-spam email service.
-
+Alan
