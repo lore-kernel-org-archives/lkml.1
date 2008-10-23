@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755056AbYJWWU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbYJWW3J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755056AbYJWWU3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 18:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbYJWWUS
+	id S1754614AbYJWW3J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 18:29:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbYJWW24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 18:20:18 -0400
-Received: from heinz.dinsnail.net ([87.106.63.74]:38978 "EHLO
-	heinz.dinsnail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751772AbYJWWUR (ORCPT
+	Thu, 23 Oct 2008 18:28:56 -0400
+Received: from mx03.syneticon.net ([87.79.32.166]:2724 "EHLO
+	mx03.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751561AbYJWW2z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 18:20:17 -0400
-Date: Thu, 23 Oct 2008 23:33:09 +0200
-From: Michael Weiser <michael@weiser.dinsnail.net>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: rtc/i2c-mpc stops working with 2.6.27 on Linkstation HG
-	(powerpc)
-Message-ID: <20081023213309.GA19777@weiser.dinsnail.net>
-References: <20081022191650.GA11406@weiser.dinsnail.net> <Pine.LNX.4.64.0810232029380.9657@axis700.grange>
+	Thu, 23 Oct 2008 18:28:55 -0400
+Message-ID: <4900FA92.4000409@wpkg.org>
+Date: Fri, 24 Oct 2008 00:28:34 +0200
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080929)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0810232029380.9657@axis700.grange>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-dinsnail.net-MailScanner-ID: m9NMK890010147
-X-MailScanner: Found to be clean
-X-MailScanner-From: michael@weiser.dinsnail.net
+To: LKML <linux-kernel@vger.kernel.org>
+CC: parag.lkml@gmail.com
+Subject: Re: Stale NFS File Handle but !NFS
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 23, 2008 at 08:30:23PM +0200, Guennadi Liakhovetski wrote:
+> Anyone got an idea why I am getting the below error with today's git
+> while compiling the kernel?
+> 
+>   LD      arch/x86/vdso/built-in.o
+> scripts/Makefile.build:373: net/netfilter/.xt_mac.o.cmd: Stale NFS file handle
+> make[2]: stat: net/netfilter/.xt_mac.o.cmd: Stale NFS file handle
+> make[2]: *** No rule to make target `net/netfilter/.xt_mac.o.cmd'.  Stop.
+> make[1]: *** [net/netfilter] Error 2
+> make: *** [net] Error 2
+> parag@parag-desktop:~/kernel-dev/linux-2.6-wk$ rm net/netfilter/.xt_mac.o.cmd
+> rm: cannot remove `net/netfilter/.xt_mac.o.cmd': Stale NFS file handle
+> parag@parag-desktop:~/kernel-dev/linux-2.6-wk$ sudo rm
+> net/netfilter/.xt_mac.o.cmd
+> 
+> Even trying 'sudo rm -f' on that file gives the same error.
+> 
+> I am not using NFS at all which makes this one sound weird!
 
-> > with 2.6.27(-gentoo) the rtc (Ricoh 5c372) is no longer found on my
-> > Linkstation HG. It seems, the i2c-mpc driver doesn't even find the I2C
-> > controller.
+Broken filesystem?
 
-> This is a known regression, see, e.g., here:
+You may try fscking the filesystem.
 
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-October/064318.html
 
-> waiting for someone to find time to fix it.
-
-Cheers. I found the thread but not the pertinent posts - the web mail
-archive I googled into must have been lagging. Sorry for the
-duplication.
 -- 
-bye, Michael
+Tomasz Chmielewski
+http://blog.wpkg.org
+
+
