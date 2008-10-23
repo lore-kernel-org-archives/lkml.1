@@ -1,98 +1,319 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbYJWLPA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756401AbYJWLPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbYJWLPA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 07:15:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbYJWLOv
+	id S1756401AbYJWLPe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 07:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYJWLPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 07:14:51 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:57233 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752964AbYJWLOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 07:14:50 -0400
-To: greg@kroah.com
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.27.2] Unnamed entry appears in/sys/module/usbcore/parameters/ .
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <200810210838.m9L8cegu033608@www262.sakura.ne.jp>
-	<20081021170002.GA24940@kroah.com>
-	<200810221951.JHF56206.JFQFMFSVtLOHOO@I-love.SAKURA.ne.jp>
-	<20081023051113.GA7719@kroah.com>
-In-Reply-To: <20081023051113.GA7719@kroah.com>
-Message-Id: <200810232014.HCE57837.MVJtOFQOFHFOSL@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Thu, 23 Oct 2008 20:14:47 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 23 Oct 2008 07:15:23 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:53542 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753024AbYJWLPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 07:15:20 -0400
+Message-ID: <49005C09.6010805@cn.fujitsu.com>
+Date: Thu, 23 Oct 2008 19:12:09 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: paulmck@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, rjw@sisk.pl,
+       dipankar@in.ibm.com, tglx@linuxtronix.de, andi@firstfloor.org
+Subject: Re: [PATCH] v3 rudimentary tracing for Classic RCU
+References: <20081006232837.GA1157@basil.nowhere.org> <20081007030822.GC6820@linux.vnet.ibm.com> <20081007071544.GC20740@one.firstfloor.org> <20081007152629.GH6384@linux.vnet.ibm.com> <20081007154939.GN20740@one.firstfloor.org> <20081007163401.GJ6384@linux.vnet.ibm.com> <20081007210947.GP20740@one.firstfloor.org> <20081007212215.GN6384@linux.vnet.ibm.com> <20081009010846.GA10188@linux.vnet.ibm.com> <20081010034421.GA12449@linux.vnet.ibm.com> <20081013230914.GA27467@linux.vnet.ibm.com>
+In-Reply-To: <20081013230914.GA27467@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
 
-I tested 2.6.27.3 on Debian Sarge. I got the same result.
+trivial ported it to seq_file.
+seq_file are very good for the output buffer.
 
-So, I tried to produce different results.
-
-I pruned declaration of module_param(usbfs_snoop) like
-
-  static int usbfs_snoop;
-  /*
-  module_param(usbfs_snoop, bool, S_IRUGO | S_IWUSR);
-  MODULE_PARM_DESC(usbfs_snoop, "true to log all usbfs traffic");
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/kernel/rcuclassic_trace.c b/kernel/rcuclassic_trace.c
+index d19780b..f19217c
+--- a/kernel/rcuclassic_trace.c
++++ b/kernel/rcuclassic_trace.c
+@@ -23,157 +23,167 @@
+  * 		Documentation/RCU
+  *
   */
+-#include <linux/types.h>
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/spinlock.h>
+-#include <linux/smp.h>
+ #include <linux/rcupdate.h>
+-#include <linux/interrupt.h>
+-#include <linux/sched.h>
+-#include <asm/atomic.h>
+-#include <linux/bitops.h>
+ #include <linux/module.h>
+-#include <linux/completion.h>
+-#include <linux/moduleparam.h>
+-#include <linux/percpu.h>
+-#include <linux/notifier.h>
+-#include <linux/cpu.h>
+-#include <linux/mutex.h>
+ #include <linux/debugfs.h>
++#include <linux/seq_file.h>
+ 
+-static DEFINE_MUTEX(rcuclassic_trace_mutex);
+-static char *rcuclassic_trace_buf;
+-#define RCUCLASSIC_TRACE_BUF_SIZE (128 * num_possible_cpus() + 100)
++static struct rcu_data *get_rcu_data_bh(int cpu)
++{
++	return &per_cpu(rcu_bh_data, cpu);
++}
+ 
+-static int print_one_rcu_data(struct rcu_data *rdp, char *buf, char *ebuf)
++static struct rcu_data *get_rcu_data(int cpu)
+ {
+-	int cnt = 0;
++	return &per_cpu(rcu_data, cpu);
++}
+ 
++static int show_rcu_data(struct seq_file *m, void *v)
++{
++	struct rcu_data *rdp = v;
+ 	if (!rdp->beenonline)
+ 		return 0;
+-	cnt += snprintf(&buf[cnt], ebuf - &buf[cnt],
+-		"%3d%cqb=%ld b=%ld pq=%d qsp=%d ql=%ld bl=%ld\n",
+-		rdp->cpu, cpu_is_offline(rdp->cpu) ? '!' : ' ',
+-		rdp->quiescbatch, rdp->batch, rdp->passed_quiesc,
+-		rdp->qs_pending, rdp->qlen, rdp->blimit);
+-	return cnt;
++
++	seq_printf(m, "processor\t: %d", rdp->cpu);
++	if (cpu_is_offline(rdp->cpu))
++		seq_puts(m, "!\n");
++	else
++		seq_puts(m, "\n");
++	seq_printf(m, "quiescbatch\t: %ld\n", rdp->quiescbatch);
++	seq_printf(m, "batch\t: %ld\n", rdp->batch);
++	seq_printf(m, "passed_quiesc\t: %d\n", rdp->passed_quiesc);
++	seq_printf(m, "qs_pending\t: %d\n", rdp->qs_pending);
++	seq_printf(m, "qlen\t: %ld\n", rdp->qlen);
++	seq_printf(m, "blimit\t: %ld\n", rdp->blimit);
++	seq_puts(m, "\n\n");
++	return 0;
+ }
+ 
+-#define PRINT_RCU_DATA(name, buf, ebuf) \
+-	do { \
+-		int _p_r_d_i; \
+-		\
+-		for_each_possible_cpu(_p_r_d_i) \
+-			(buf) += print_one_rcu_data(&per_cpu(name, _p_r_d_i), \
+-						    buf, ebuf); \
+-	} while (0)
+-
+-static ssize_t rcudata_read(struct file *filp, char __user *buffer,
+-				size_t count, loff_t *ppos)
++static void *c_start(struct seq_file *m, loff_t *pos)
+ {
+-	ssize_t bcount;
+-	char *buf = rcuclassic_trace_buf;
+-	char *ebuf = &rcuclassic_trace_buf[RCUCLASSIC_TRACE_BUF_SIZE];
+-
+-	mutex_lock(&rcuclassic_trace_mutex);
+-	buf += snprintf(buf, ebuf - buf, "rcu:\n");
+-	PRINT_RCU_DATA(rcu_data, buf, ebuf);
+-	buf += snprintf(buf, ebuf - buf, "rcu_bh:\n");
+-	PRINT_RCU_DATA(rcu_bh_data, buf, ebuf);
+-	bcount = simple_read_from_buffer(buffer, count, ppos,
+-			rcuclassic_trace_buf, strlen(rcuclassic_trace_buf));
+-	mutex_unlock(&rcuclassic_trace_mutex);
+-	return bcount;
++	typedef struct rcu_data *(*get_data_func)(int);
++
++	if (*pos == 0)	/* just in case, cpu 0 is not the first */
++		*pos = first_cpu(cpu_possible_map);
++	else
++		*pos = next_cpu_nr(*pos - 1, cpu_possible_map);
++	if ((*pos) < nr_cpu_ids)
++		return ((get_data_func)m->private)(*pos);
++	return NULL;
+ }
+ 
+-static int print_one_rcu_ctrlblk(struct rcu_ctrlblk *rcp, char *buf, char *ebuf)
++static void *c_next(struct seq_file *m, void *v, loff_t *pos)
+ {
+-	int cnt = 0;
+-
+-	cnt += snprintf(&buf[cnt], ebuf - &buf[cnt], "cur=%ld  completed=%ld  "
+-			"pending=%ld  s=%d\n\t",
+-			rcp->cur, rcp->completed,
+-			rcp->pending, rcp->signaled);
+-	cnt += cpulist_scnprintf(&buf[cnt], ebuf - &buf[cnt], rcp->cpumask);
+-	cnt += snprintf(&buf[cnt], ebuf - &buf[cnt], "\n");
+-	return cnt;
++	(*pos)++;
++	return c_start(m, pos);
+ }
+ 
+-static ssize_t rcucb_read(struct file *filp, char __user *buffer,
+-				size_t count, loff_t *ppos)
++static void c_stop(struct seq_file *m, void *v)
+ {
+-	ssize_t bcount;
+-	char *buf = rcuclassic_trace_buf;
+-	char *ebuf = &rcuclassic_trace_buf[RCUCLASSIC_TRACE_BUF_SIZE];
+-
+-	mutex_lock(&rcuclassic_trace_mutex);
+-	buf += snprintf(buf, ebuf - buf, "rcu: ");
+-	buf += print_one_rcu_ctrlblk(&rcu_ctrlblk, buf, ebuf);
+-	buf += snprintf(buf, ebuf - buf, "rcu_bh: ");
+-	buf += print_one_rcu_ctrlblk(&rcu_bh_ctrlblk, buf, ebuf);
+-	buf += snprintf(buf, ebuf - buf, "online: ");
+-	buf += cpulist_scnprintf(buf, ebuf - buf, cpu_online_map);
+-	buf += snprintf(buf, ebuf - buf, "\n");
+-	bcount = simple_read_from_buffer(buffer, count, ppos,
+-			rcuclassic_trace_buf, strlen(rcuclassic_trace_buf));
+-	mutex_unlock(&rcuclassic_trace_mutex);
+-	return bcount;
+ }
+ 
+-static struct file_operations rcudata_fops = {
+-	.owner = THIS_MODULE,
+-	.read = rcudata_read,
++const struct seq_operations rcu_data_seq_op = {
++	.start	= c_start,
++	.next	= c_next,
++	.stop	= c_stop,
++	.show	= show_rcu_data,
+ };
+ 
++static int rcu_data_open(struct inode *inode, struct file *file)
++{
++	int ret = seq_open(file, &rcu_data_seq_op);
++	if (ret)
++		return ret;
++	((struct seq_file *)file->private_data)->private = inode->i_private;
++	return 0;
++}
++
++static const struct file_operations rcu_data_fops = {
++	.owner		= THIS_MODULE,
++	.open		= rcu_data_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= seq_release,
++};
++
++static void print_one_rcu_ctrlblk(struct seq_file *m, struct rcu_ctrlblk *rcp)
++{
++	seq_printf(m, "cur=%ld  completed=%ld   pending=%ld  s=%d\n\t",
++			rcp->cur, rcp->completed, rcp->pending, rcp->signaled);
++	seq_cpumask(m, &rcp->cpumask);
++	seq_puts(m, "\n");
++}
++
++static int show_rcucb(struct seq_file *m, void *unused)
++{
++	seq_puts(m, "rcu: ");
++	print_one_rcu_ctrlblk(m, &rcu_ctrlblk);
++	seq_puts(m, "rcu_bh: ");
++	print_one_rcu_ctrlblk(m, &rcu_bh_ctrlblk);
++	seq_puts(m, "online: ");
++	seq_cpumask(m, &cpu_online_map);
++	seq_puts(m, "\n");
++	return 0;
++}
++
++static int rcucb_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, show_rcucb, NULL);
++}
++
+ static struct file_operations rcucb_fops = {
+-	.owner = THIS_MODULE,
+-	.read = rcucb_read,
++	.owner		= THIS_MODULE,
++	.open		= rcucb_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
+ };
+ 
+-static struct dentry *rcudir, *datadir, *cbdir;
+-static int rcuclassic_debugfs_init(void)
++static struct dentry *rcudir, *rcu_bh_data_file, *rcu_data_file, *rcucb_file;
++
++static int __init rcuclassic_trace_init(void)
+ {
+ 	rcudir = debugfs_create_dir("rcu", NULL);
+ 	if (!rcudir)
+ 		goto out;
+-	datadir = debugfs_create_file("rcudata", 0444, rcudir,
+-				      NULL, &rcudata_fops);
+-	if (!datadir)
+-		goto free_out;
+-	cbdir = debugfs_create_file("rcucb", 0444, rcudir, NULL, &rcucb_fops);
+-	if (!cbdir)
+-		goto free_out;
++
++	rcu_bh_data_file = debugfs_create_file("rcu_bh_data", 0444, rcudir,
++			get_rcu_data_bh, &rcu_data_fops);
++	if (!rcu_bh_data_file)
++		goto out_rcudir;
++
++	rcu_data_file = debugfs_create_file("rcu_data", 0444, rcudir,
++			get_rcu_data, &rcu_data_fops);
++	if (!rcu_data_file)
++		goto out_rcudata_bh_file;
++
++	rcucb_file = debugfs_create_file("rcucb", 0444, rcudir,
++			NULL, &rcucb_fops);
++	if (!rcucb_file)
++		goto out_rcudata_file;
+ 	return 0;
+-free_out:
+-	if (datadir)
+-		debugfs_remove(datadir);
++
++out_rcudata_file:
++	debugfs_remove(rcu_data_file);
++out_rcudata_bh_file:
++	debugfs_remove(rcu_bh_data_file);
++out_rcudir:
+ 	debugfs_remove(rcudir);
+ out:
+ 	return 1;
+ }
+ 
+-static int __init rcuclassic_trace_init(void)
+-{
+-	int ret;
+-
+-	rcuclassic_trace_buf = kmalloc(RCUCLASSIC_TRACE_BUF_SIZE, GFP_KERNEL);
+-	if (!rcuclassic_trace_buf)
+-		return 1;
+-	ret = rcuclassic_debugfs_init();
+-	if (ret)
+-		kfree(rcuclassic_trace_buf);
+-	return ret;
+-}
+-
+ static void __exit rcuclassic_trace_cleanup(void)
+ {
+-	debugfs_remove(datadir);
+-	debugfs_remove(cbdir);
++	debugfs_remove(rcucb_file);
++	debugfs_remove(rcu_data_file);
++	debugfs_remove(rcu_bh_data_file);
+ 	debugfs_remove(rcudir);
+-	kfree(rcuclassic_trace_buf);
+ }
+ 
+-
+ module_init(rcuclassic_trace_init);
+ module_exit(rcuclassic_trace_cleanup);
++
++MODULE_AUTHOR("Paul E. McKenney");
++MODULE_DESCRIPTION("Read-Copy Update tracing for classic implementation");
++MODULE_LICENSE("GPL");
 
-and I got the below result.
-
-  # ls -ail /sys/module/usbcore/parameters/
-  total 0
-  189 drwxr-xr-x  2 root root    0 Oct 24  2008
-  189 drwxr-xr-x  2 root root    0 Oct 24  2008 .
-  188 drwxr-xr-x  4 root root    0 Oct 24  2008 ..
-  190 -rw-r--r--  1 root root 4096 Oct 24  2008 autosuspend
-  192 -r--r--r--  1 root root 4096 Oct 24  2008 blinkenlights
-  193 -rw-r--r--  1 root root 4096 Oct 24  2008 old_scheme_first
-
-This time, 'use_both_schemes' entry became no-name.
-
-I added declaration of module_param(usbfs_aaaaa) and module_param(usbfs_zzzzz)
-like
-
-  static int usbfs_aaaaa;
-  module_param(usbfs_aaaaa, bool, S_IRUGO | S_IWUSR);
-  MODULE_PARM_DESC(usbfs_aaaaa, "true to log all usbfs traffic");
-  
-  static int usbfs_snoop;
-  module_param(usbfs_snoop, bool, S_IRUGO | S_IWUSR);
-  MODULE_PARM_DESC(usbfs_snoop, "true to log all usbfs traffic");
-  
-  static int usbfs_zzzzz;
-  module_param(usbfs_zzzzz, bool, S_IRUGO | S_IWUSR);
-  MODULE_PARM_DESC(usbfs_zzzzz, "true to log all usbfs traffic");
-
-and I got the below result.
-
-  # ls -ail /sys/module/usbcore/parameters/
-  total 0
-  189 drwxr-xr-x  2 root root    0 Oct 24  2008
-  189 drwxr-xr-x  2 root root    0 Oct 24  2008 .
-  188 drwxr-xr-x  4 root root    0 Oct 24  2008 ..
-  190 -rw-r--r--  1 root root 4096 Oct 24  2008 autosuspend
-  192 -r--r--r--  1 root root 4096 Oct 24  2008 blinkenlights
-  193 -rw-r--r--  1 root root 4096 Oct 24  2008 old_scheme_first
-  195 -rw-r--r--  1 root root 4096 Oct 24  2008 usbfs_aaaaa
-  196 -rw-r--r--  1 root root 4096 Oct 24  2008 usbfs_snoop
-  194 -rw-r--r--  1 root root 4096 Oct 24  2008 use_both_schemes
-
-This time, 'usbfs_zzzzz' entry became no-name.
-
-Greg KH wrote:
-> I really have no idea what is causing this, and can't seem to duplicate
-> this here at all.
-It seems to me that somebody is overwriting (or truncating) at address
-of module_param(usbfs_snoop) .
-
-Is there a way to change the address of module_param() defined by
-usbcore module?
-
-Regards.
