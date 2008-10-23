@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbYJWCgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757485AbYJWCgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbYJWCgM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 22:36:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754666AbYJWCfi
+	id S1757485AbYJWCgg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 22:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbYJWCfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 22:35:38 -0400
+	Wed, 22 Oct 2008 22:35:43 -0400
 Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:44454
 	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753527AbYJWCfg (ORCPT
+	by vger.kernel.org with ESMTP id S1754785AbYJWCfk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Oct 2008 22:35:36 -0400
+	Wed, 22 Oct 2008 22:35:40 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAIx//0h8qQJT/2dsb2JhbADAPYNO
+X-IronPort-Anti-Spam-Result: ApoEAIx//0h8qQJT/2dsb2JhbAC5MQiHBIJMCHo
 X-IronPort-AV: E=Sophos;i="4.33,468,1220198400"; 
-   d="scan'208";a="341660388"
+   d="scan'208";a="341660427"
 From: Ian Kent <raven@themaw.net>
-Subject: [PATCH 4/6] autofs4 - make autofs type usage explicit
+Subject: [PATCH 5/6] autofs4 - improve parameter usage
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
        autofs mailing list <autofs@linux.kernel.org>
-Date: Thu, 23 Oct 2008 10:35:32 +0800
-Message-ID: <20081023023532.4508.56823.stgit@raven.themaw.net>
+Date: Thu, 23 Oct 2008 10:35:38 +0800
+Message-ID: <20081023023538.4508.63914.stgit@raven.themaw.net>
 In-Reply-To: <20081023023513.4508.54940.stgit@raven.themaw.net>
 References: <20081023023513.4508.54940.stgit@raven.themaw.net>
 User-Agent: StGIT/0.14.2
@@ -32,231 +32,323 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch further improves autofs mount type usage and provides
-supplementry explanation of the changes made in the previous patch
-"autofs4 - cleanup autofs mount type usage".
-
-Changes introduced in "autofs4 - cleanup autofs mount type usage":
-
-- the type assigned at mount when no type is given is changed
-  from 0 to AUTOFS_TYPE_INDIRECT. This was done because 0 and
-  AUTOFS_TYPE_INDIRECT were being treated implicitly as the same
-  type.
-
-- previously, an offset mount had it's type set to
-  AUTOFS_TYPE_DIRECT|AUTOFS_TYPE_OFFSET but the mount control
-  re-implementation needs to be able distinguish all three types.
-  So this was changed to make the type setting explicit.
-
-- a type AUTOFS_TYPE_ANY was added for use by the re-implementation
-  when checking if a given path is a mountpoint. It's not really a
-  type as we use this to ask if a given path is a mountpoint in the
-  autofs_dev_ioctl_ismountpoint() function.
-
-Changes introduced in this patch:
-
-- macros to set and test the autofs mount types have been added to
-  improve readability and make the type usage explicit.
-
-- the mount type is used from user space for the mount control
-  re-implementtion so, for consistency, all the definitions have
-  been moved to the user space include file include/linux/auto_fs4.h.
+The parameter usage in the device node ioctl code uses arg1 and arg2
+as parameter names. This patch redefines the parameter names to reflect
+what they actually are in an effort to make the code more readable.
 
 Signed-off-by: Ian Kent <raven@themaw.net>
 Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
 
 ---
 
- fs/autofs4/autofs_i.h    |    2 --
- fs/autofs4/dev-ioctl.c   |    4 ++--
- fs/autofs4/expire.c      |    4 ++--
- fs/autofs4/inode.c       |   14 +++++++-------
- fs/autofs4/waitq.c       |    8 ++++----
- include/linux/auto_fs4.h |   28 ++++++++++++++++++++++++----
- 6 files changed, 39 insertions(+), 21 deletions(-)
+ fs/autofs4/dev-ioctl.c         |   54 +++++++++++++++--------------
+ include/linux/auto_dev-ioctl.h |   75 ++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 100 insertions(+), 29 deletions(-)
 
 
-diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
-index e0f16da..a768031 100644
---- a/fs/autofs4/autofs_i.h
-+++ b/fs/autofs4/autofs_i.h
-@@ -25,8 +25,6 @@
- #define AUTOFS_DEV_IOCTL_IOC_FIRST	(AUTOFS_DEV_IOCTL_VERSION)
- #define AUTOFS_DEV_IOCTL_IOC_COUNT	(AUTOFS_IOC_COUNT - 11)
- 
--#define AUTOFS_TYPE_TRIGGER	(AUTOFS_TYPE_DIRECT|AUTOFS_TYPE_OFFSET)
--
- #include <linux/kernel.h>
- #include <linux/slab.h>
- #include <linux/time.h>
 diff --git a/fs/autofs4/dev-ioctl.c b/fs/autofs4/dev-ioctl.c
-index 63bfb5d..5a35502 100644
+index 5a35502..9b78be9 100644
 --- a/fs/autofs4/dev-ioctl.c
 +++ b/fs/autofs4/dev-ioctl.c
-@@ -510,7 +510,7 @@ static int autofs_dev_ioctl_expire(struct file *fp,
- 	how = param->arg1;
- 	mnt = fp->f_path.mnt;
+@@ -159,7 +159,7 @@ static int autofs_dev_ioctl_protover(struct file *fp,
+ 				     struct autofs_sb_info *sbi,
+ 				     struct autofs_dev_ioctl *param)
+ {
+-	param->arg1 = sbi->version;
++	param->protover.version = sbi->version;
+ 	return 0;
+ }
  
--	if (sbi->type & AUTOFS_TYPE_TRIGGER)
-+	if (autofs_type_trigger(sbi->type))
- 		dentry = autofs4_expire_direct(sbi->sb, mnt, sbi, how);
- 	else
- 		dentry = autofs4_expire_indirect(sbi->sb, mnt, sbi, how);
-@@ -592,7 +592,7 @@ static int autofs_dev_ioctl_ismountpoint(struct file *fp,
- 	param->arg2 = 0;
+@@ -168,7 +168,7 @@ static int autofs_dev_ioctl_protosubver(struct file *fp,
+ 					struct autofs_sb_info *sbi,
+ 					struct autofs_dev_ioctl *param)
+ {
+-	param->arg1 = sbi->sub_version;
++	param->protosubver.sub_version = sbi->sub_version;
+ 	return 0;
+ }
  
- 	if (!fp || param->ioctlfd == -1) {
--		if (type == AUTOFS_TYPE_ANY) {
-+		if (autofs_type_any(type)) {
- 			struct super_block *sb;
+@@ -313,13 +313,13 @@ static int autofs_dev_ioctl_openmount(struct file *fp,
+ 	int err, fd;
  
- 			err = path_lookup(path, LOOKUP_FOLLOW, &nd);
-diff --git a/fs/autofs4/expire.c b/fs/autofs4/expire.c
-index 4b6fb3f..e3bd507 100644
---- a/fs/autofs4/expire.c
-+++ b/fs/autofs4/expire.c
-@@ -63,7 +63,7 @@ static int autofs4_mount_busy(struct vfsmount *mnt, struct dentry *dentry)
- 		struct autofs_sb_info *sbi = autofs4_sbi(dentry->d_sb);
+ 	/* param->path has already been checked */
+-	if (!param->arg1)
++	if (!param->openmount.devid)
+ 		return -EINVAL;
  
- 		/* This is an autofs submount, we can't expire it */
--		if (sbi->type == AUTOFS_TYPE_INDIRECT)
-+		if (autofs_type_indirect(sbi->type))
- 			goto done;
+ 	param->ioctlfd = -1;
  
- 		/*
-@@ -490,7 +490,7 @@ int autofs4_expire_multi(struct super_block *sb, struct vfsmount *mnt,
- 	if (arg && get_user(do_now, arg))
- 		return -EFAULT;
+ 	path = param->path;
+-	devid = param->arg1;
++	devid = param->openmount.devid;
  
--	if (sbi->type & AUTOFS_TYPE_TRIGGER)
-+	if (autofs_type_trigger(sbi->type))
- 		dentry = autofs4_expire_direct(sb, mnt, sbi, do_now);
- 	else
- 		dentry = autofs4_expire_indirect(sb, mnt, sbi, do_now);
-diff --git a/fs/autofs4/inode.c b/fs/autofs4/inode.c
-index 9408507..e014916 100644
---- a/fs/autofs4/inode.c
-+++ b/fs/autofs4/inode.c
-@@ -197,9 +197,9 @@ static int autofs4_show_options(struct seq_file *m, struct vfsmount *mnt)
- 	seq_printf(m, ",minproto=%d", sbi->min_proto);
- 	seq_printf(m, ",maxproto=%d", sbi->max_proto);
+ 	err = 0;
+ 	fd = autofs_dev_ioctl_open_mountpoint(path, devid);
+@@ -351,7 +351,7 @@ static int autofs_dev_ioctl_ready(struct file *fp,
+ {
+ 	autofs_wqt_t token;
  
--	if (sbi->type & AUTOFS_TYPE_OFFSET)
-+	if (autofs_type_offset(sbi->type))
- 		seq_printf(m, ",offset");
--	else if (sbi->type & AUTOFS_TYPE_DIRECT)
-+	else if (autofs_type_direct(sbi->type))
- 		seq_printf(m, ",direct");
- 	else
- 		seq_printf(m, ",indirect");
-@@ -284,13 +284,13 @@ static int parse_options(char *options, int *pipefd, uid_t *uid, gid_t *gid,
- 			*maxproto = option;
- 			break;
- 		case Opt_indirect:
--			*type = AUTOFS_TYPE_INDIRECT;
-+			set_autofs_type_indirect(*type);
- 			break;
- 		case Opt_direct:
--			*type = AUTOFS_TYPE_DIRECT;
-+			set_autofs_type_direct(*type);
- 			break;
- 		case Opt_offset:
--			*type = AUTOFS_TYPE_OFFSET;
-+			set_autofs_type_offset(*type);
- 			break;
- 		default:
- 			return 1;
-@@ -338,7 +338,7 @@ int autofs4_fill_super(struct super_block *s, void *data, int silent)
- 	sbi->sb = s;
- 	sbi->version = 0;
- 	sbi->sub_version = 0;
--	sbi->type = AUTOFS_TYPE_INDIRECT;
-+	set_autofs_type_indirect(sbi->type);
- 	sbi->min_proto = 0;
- 	sbi->max_proto = 0;
- 	mutex_init(&sbi->wq_mutex);
-@@ -380,7 +380,7 @@ int autofs4_fill_super(struct super_block *s, void *data, int silent)
+-	token = (autofs_wqt_t) param->arg1;
++	token = (autofs_wqt_t) param->ready.token;
+ 	return autofs4_wait_release(sbi, token, 0);
+ }
+ 
+@@ -366,8 +366,8 @@ static int autofs_dev_ioctl_fail(struct file *fp,
+ 	autofs_wqt_t token;
+ 	int status;
+ 
+-	token = (autofs_wqt_t) param->arg1;
+-	status = param->arg2 ? param->arg2 : -ENOENT;
++	token = (autofs_wqt_t) param->fail.token;
++	status = param->fail.status ? param->fail.status : -ENOENT;
+ 	return autofs4_wait_release(sbi, token, status);
+ }
+ 
+@@ -390,10 +390,10 @@ static int autofs_dev_ioctl_setpipefd(struct file *fp,
+ 	int pipefd;
+ 	int err = 0;
+ 
+-	if (param->arg1 == -1)
++	if (param->setpipefd.pipefd == -1)
+ 		return -EINVAL;
+ 
+-	pipefd = param->arg1;
++	pipefd = param->setpipefd.pipefd;
+ 
+ 	mutex_lock(&sbi->wq_mutex);
+ 	if (!sbi->catatonic) {
+@@ -435,8 +435,8 @@ static int autofs_dev_ioctl_timeout(struct file *fp,
+ {
+ 	unsigned long timeout;
+ 
+-	timeout = param->arg1;
+-	param->arg1 = sbi->exp_timeout / HZ;
++	timeout = param->timeout.timeout;
++	param->timeout.timeout = sbi->exp_timeout / HZ;
+ 	sbi->exp_timeout = timeout * HZ;
+ 	return 0;
+ }
+@@ -467,7 +467,7 @@ static int autofs_dev_ioctl_requester(struct file *fp,
+ 	path = param->path;
+ 	devid = sbi->sb->s_dev;
+ 
+-	param->arg1 = param->arg2 = -1;
++	param->requester.uid = param->requester.gid = -1;
+ 
+ 	/* Get nameidata of the parent directory */
+ 	err = path_lookup(path, LOOKUP_PARENT, &nd);
+@@ -483,8 +483,8 @@ static int autofs_dev_ioctl_requester(struct file *fp,
+ 		err = 0;
+ 		autofs4_expire_wait(nd.path.dentry);
+ 		spin_lock(&sbi->fs_lock);
+-		param->arg1 = ino->uid;
+-		param->arg2 = ino->gid;
++		param->requester.uid = ino->uid;
++		param->requester.gid = ino->gid;
+ 		spin_unlock(&sbi->fs_lock);
  	}
  
- 	root_inode->i_fop = &autofs4_root_operations;
--	root_inode->i_op = sbi->type & AUTOFS_TYPE_TRIGGER ?
-+	root_inode->i_op = autofs_type_trigger(sbi->type) ?
- 			&autofs4_direct_root_inode_operations :
- 			&autofs4_indirect_root_inode_operations;
+@@ -507,7 +507,7 @@ static int autofs_dev_ioctl_expire(struct file *fp,
+ 	int err = -EAGAIN;
+ 	int how;
  
-diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
-index 4b67c2a..acf88e8 100644
---- a/fs/autofs4/waitq.c
-+++ b/fs/autofs4/waitq.c
-@@ -337,7 +337,7 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
- 		 * is very similar for indirect mounts except only dentrys
- 		 * in the root of the autofs file system may be negative.
- 		 */
--		if (sbi->type & AUTOFS_TYPE_TRIGGER)
-+		if (autofs_type_trigger(sbi->type))
- 			return -ENOENT;
- 		else if (!IS_ROOT(dentry->d_parent))
- 			return -ENOENT;
-@@ -348,7 +348,7 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
- 		return -ENOMEM;
+-	how = param->arg1;
++	how = param->expire.how;
+ 	mnt = fp->f_path.mnt;
  
- 	/* If this is a direct mount request create a dummy name */
--	if (IS_ROOT(dentry) && sbi->type & AUTOFS_TYPE_TRIGGER)
-+	if (IS_ROOT(dentry) && autofs_type_trigger(sbi->type))
- 		qstr.len = sprintf(name, "%p", dentry);
- 	else {
- 		qstr.len = autofs4_getpath(sbi, dentry, &name);
-@@ -406,11 +406,11 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
- 				type = autofs_ptype_expire_multi;
+ 	if (autofs_type_trigger(sbi->type))
+@@ -543,9 +543,9 @@ static int autofs_dev_ioctl_askumount(struct file *fp,
+ 				      struct autofs_sb_info *sbi,
+ 				      struct autofs_dev_ioctl *param)
+ {
+-	param->arg1 = 0;
++	param->askumount.may_umount = 0;
+ 	if (may_umount(fp->f_path.mnt))
+-		param->arg1 = 1;
++		param->askumount.may_umount = 1;
+ 	return 0;
+ }
+ 
+@@ -578,6 +578,7 @@ static int autofs_dev_ioctl_ismountpoint(struct file *fp,
+ 	struct nameidata nd;
+ 	const char *path;
+ 	unsigned int type;
++	unsigned int devid, magic;
+ 	int err = -ENOENT;
+ 
+ 	if (param->size <= sizeof(*param)) {
+@@ -586,10 +587,10 @@ static int autofs_dev_ioctl_ismountpoint(struct file *fp,
+ 	}
+ 
+ 	path = param->path;
+-	type = param->arg1;
++	type = param->ismountpoint.in.type;
+ 
+-	param->arg1 = 0;
+-	param->arg2 = 0;
++	param->ismountpoint.out.devid = devid = 0;
++	param->ismountpoint.out.magic = magic = 0;
+ 
+ 	if (!fp || param->ioctlfd == -1) {
+ 		if (autofs_type_any(type)) {
+@@ -600,7 +601,7 @@ static int autofs_dev_ioctl_ismountpoint(struct file *fp,
+ 				goto out;
+ 
+ 			sb = nd.path.dentry->d_sb;
+-			param->arg1 = new_encode_dev(sb->s_dev);
++			devid = new_encode_dev(sb->s_dev);
  		} else {
- 			if (notify == NFY_MOUNT)
--				type = (sbi->type & AUTOFS_TYPE_TRIGGER) ?
-+				type = autofs_type_trigger(sbi->type) ?
- 					autofs_ptype_missing_direct :
- 					 autofs_ptype_missing_indirect;
- 			else
--				type = (sbi->type & AUTOFS_TYPE_TRIGGER) ?
-+				type = autofs_type_trigger(sbi->type) ?
- 					autofs_ptype_expire_direct :
- 					autofs_ptype_expire_indirect;
+ 			struct autofs_info *ino;
+ 
+@@ -613,14 +614,14 @@ static int autofs_dev_ioctl_ismountpoint(struct file *fp,
+ 				goto out_release;
+ 
+ 			ino = autofs4_dentry_ino(nd.path.dentry);
+-			param->arg1 = autofs4_get_dev(ino->sbi);
++			devid = autofs4_get_dev(ino->sbi);
  		}
-diff --git a/include/linux/auto_fs4.h b/include/linux/auto_fs4.h
-index 2253716..d827765 100644
---- a/include/linux/auto_fs4.h
-+++ b/include/linux/auto_fs4.h
-@@ -29,10 +29,30 @@
- #define AUTOFS_EXP_IMMEDIATE		1
- #define AUTOFS_EXP_LEAVES		2
  
--#define AUTOFS_TYPE_ANY			0x0000
--#define AUTOFS_TYPE_INDIRECT		0x0001
--#define AUTOFS_TYPE_DIRECT		0x0002
--#define AUTOFS_TYPE_OFFSET		0x0004
-+#define AUTOFS_TYPE_ANY			0U
-+#define AUTOFS_TYPE_INDIRECT		1U
-+#define AUTOFS_TYPE_DIRECT		2U
-+#define AUTOFS_TYPE_OFFSET		4U
-+
-+#define set_autofs_type_indirect(type)		(type = AUTOFS_TYPE_INDIRECT)
-+#define autofs_type_indirect(type)		(type == AUTOFS_TYPE_INDIRECT)
-+
-+#define set_autofs_type_direct(type)		(type = AUTOFS_TYPE_DIRECT)
-+#define autofs_type_direct(type)		(type == AUTOFS_TYPE_DIRECT)
-+
-+#define set_autofs_type_offset(type)		(type = AUTOFS_TYPE_OFFSET)
-+#define autofs_type_offset(type)		(type == AUTOFS_TYPE_OFFSET)
-+
-+#define autofs_type_trigger(type) \
-+	(type == AUTOFS_TYPE_DIRECT || type == AUTOFS_TYPE_OFFSET)
-+
-+/*
-+ * This isn't really a type as we use it to say "no type set" to
-+ * indicate we want to search for "any" mount in the
-+ * autofs_dev_ioctl_ismountpoint() device ioctl function.
-+ */
-+#define set_autofs_type_any(type)		(type = AUTOFS_TYPE_ANY)
-+#define autofs_type_any(type)			(type == AUTOFS_TYPE_ANY)
+ 		err = 0;
+ 		if (nd.path.dentry->d_inode &&
+ 		    nd.path.mnt->mnt_root == nd.path.dentry) {
+ 			err = 1;
+-			param->arg2 = nd.path.dentry->d_inode->i_sb->s_magic;
++			magic = nd.path.dentry->d_inode->i_sb->s_magic;
+ 		}
+ 	} else {
+ 		dev_t devid = new_encode_dev(sbi->sb->s_dev);
+@@ -633,18 +634,21 @@ static int autofs_dev_ioctl_ismountpoint(struct file *fp,
+ 		if (err)
+ 			goto out_release;
  
- /* Daemon notification packet types */
- enum autofs_notify {
+-		param->arg1 = autofs4_get_dev(sbi);
++		devid = autofs4_get_dev(sbi);
+ 
+ 		err = have_submounts(nd.path.dentry);
+ 
+ 		if (nd.path.mnt->mnt_mountpoint != nd.path.mnt->mnt_root) {
+ 			if (follow_down(&nd.path.mnt, &nd.path.dentry)) {
+ 				struct inode *inode = nd.path.dentry->d_inode;
+-				param->arg2 = inode->i_sb->s_magic;
++				magic = inode->i_sb->s_magic;
+ 			}
+ 		}
+ 	}
+ 
++	param->ismountpoint.out.devid = devid;
++	param->ismountpoint.out.magic = magic;
++
+ out_release:
+ 	path_put(&nd.path);
+ out:
+diff --git a/include/linux/auto_dev-ioctl.h b/include/linux/auto_dev-ioctl.h
+index f4d05cc..91a7739 100644
+--- a/include/linux/auto_dev-ioctl.h
++++ b/include/linux/auto_dev-ioctl.h
+@@ -10,6 +10,7 @@
+ #ifndef _LINUX_AUTO_DEV_IOCTL_H
+ #define _LINUX_AUTO_DEV_IOCTL_H
+ 
++#include <linux/string.h>
+ #include <linux/types.h>
+ 
+ #define AUTOFS_DEVICE_NAME		"autofs"
+@@ -25,6 +26,60 @@
+  * An ioctl interface for autofs mount point control.
+  */
+ 
++struct args_protover {
++	__u32	version;
++};
++
++struct args_protosubver {
++	__u32	sub_version;
++};
++
++struct args_openmount {
++	__u32	devid;
++};
++
++struct args_ready {
++	__u32	token;
++};
++
++struct args_fail {
++	__u32	token;
++	__s32	status;
++};
++
++struct args_setpipefd {
++	__s32	pipefd;
++};
++
++struct args_timeout {
++	__u64	timeout;
++};
++
++struct args_requester {
++	__u32	uid;
++	__u32	gid;
++};
++
++struct args_expire {
++	__u32	how;
++};
++
++struct args_askumount {
++	__u32	may_umount;
++};
++
++struct args_ismountpoint {
++	union {
++		struct args_in {
++			__u32	type;
++		} in;
++		struct args_out {
++			__u32	devid;
++			__u32	magic;
++		} out;
++	};
++};
++
+ /*
+  * All the ioctls use this structure.
+  * When sending a path size must account for the total length
+@@ -39,20 +94,32 @@ struct autofs_dev_ioctl {
+ 				 * including this struct */
+ 	__s32 ioctlfd;		/* automount command fd */
+ 
+-	__u32 arg1;		/* Command parameters */
+-	__u32 arg2;
++	/* Command parameters */
++
++	union {
++		struct args_protover		protover;
++		struct args_protosubver		protosubver;
++		struct args_openmount		openmount;
++		struct args_ready		ready;
++		struct args_fail		fail;
++		struct args_setpipefd		setpipefd;
++		struct args_timeout		timeout;
++		struct args_requester		requester;
++		struct args_expire		expire;
++		struct args_askumount		askumount;
++		struct args_ismountpoint	ismountpoint;
++	};
+ 
+ 	char path[0];
+ };
+ 
+ static inline void init_autofs_dev_ioctl(struct autofs_dev_ioctl *in)
+ {
++	memset(in, 0, sizeof(struct autofs_dev_ioctl));
+ 	in->ver_major = AUTOFS_DEV_IOCTL_VERSION_MAJOR;
+ 	in->ver_minor = AUTOFS_DEV_IOCTL_VERSION_MINOR;
+ 	in->size = sizeof(struct autofs_dev_ioctl);
+ 	in->ioctlfd = -1;
+-	in->arg1 = 0;
+-	in->arg2 = 0;
+ 	return;
+ }
+ 
 
