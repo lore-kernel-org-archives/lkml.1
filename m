@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbYJWQFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757294AbYJWQGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757218AbYJWQFm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 12:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756354AbYJWQFS
+	id S1757294AbYJWQGq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 12:06:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755122AbYJWQGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 12:05:18 -0400
-Received: from smtp-vbr3.xs4all.nl ([194.109.24.23]:3875 "EHLO
-	smtp-vbr3.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755584AbYJWQFQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 12:05:16 -0400
-Subject: Re: disk statistics issue in 2.6.27
-From: Miquel van Smoorenburg <mikevs@xs4all.net>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20081022171712.GO22217@kernel.dk>
-References: <20081019113102.GA18440@xs4all.net>
-	 <20081020171248.GE19428@kernel.dk>
-	 <1224686272.25437.14.camel@n2o.xs4all.nl>
-	 <20081022171712.GO22217@kernel.dk>
-Content-Type: text/plain
-Organization: XS4ALL Internet B.V.
-Date: Thu, 23 Oct 2008 18:05:02 +0200
-Message-Id: <1224777902.26805.17.camel@n2o.xs4all.nl>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Oct 2008 12:06:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42185 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751746AbYJWQGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 12:06:31 -0400
+Date: Thu, 23 Oct 2008 18:06:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [bug #2] Re: [PATCH 00/35] cpumask: Replace cpumask_t with
+	struct cpumask
+Message-ID: <20081023160610.GA8853@elte.hu>
+References: <20081023020826.051012000@polaris-admin.engr.sgi.com> <20081023125529.GA18327@elte.hu> <20081023142025.GA18804@elte.hu> <200810240201.15037.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810240201.15037.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-22 at 19:17 +0200, Jens Axboe wrote:
-> On Wed, Oct 22 2008, Miquel van Smoorenburg wrote:
-> > On Mon, 2008-10-20 at 19:12 +0200, Jens Axboe wrote:
-> > > On Sun, Oct 19 2008, Miquel van Smoorenburg wrote:
+
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
+
+> On Friday 24 October 2008 01:20:25 Ingo Molnar wrote:
+> > Thomas has started a -tip cross-build test, and there's massive
+> > cross-build failures as well due to the cpumask changes:
+> 
+> Yes.  linux-next reported the same thing.  I've backed out various 
+> arch changes for this reason.
 >
-> > > > I noticed that the "iostat -k -x 2" output does't make any sense.
-> > > > The number of reads/sec and number of writes/sec are about what I
-> > > > would expect, and so are the other fields, but rkB/sec and wkB/sec
-> > > > are  completely off-scale: gigabytes read/written per second.
-> > >
-> > 
-> > > Are the reported values in iostat any sort of multiple of the real
-> > > throughtput, or is is just insanely large?
-> > 
-> > It looks like it's a multiple, but it appears to vary between 128 and
-> > 512, and is different for reads and writes, so I do not know what to
-> > make of it.
-> > 
+> > it seems to me that this commit is massively borked:
+> >
+> >   4a792c2: cpumask: make CONFIG_NR_CPUS always valid
+> 
+> Yep.  This is the big one I dropped.  There are a few others; Mike is 
+> just porting the changes across to your tree now.
 
-I added some debug statements to block/blk-core.c, and it appears that
-blk_end_io() is always called with nr_bytes == 16320 Kbytes (16711680).
+guys. I already spent hours integrating the "latest" of this stuff today 
+and established baseline quality for it on x86. I've dropped 4a792c2 and 
+pushed out a new tip/cpus4096-v2, please send append-only patches for 
+the rest of the changes.
 
-Ofcourse I should have noticed earlier that iostat -x 2 always prints
-32640 as "average request size" (in sectors).
-
-Mike.
-
+	Ingo
