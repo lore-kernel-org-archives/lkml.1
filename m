@@ -1,38 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755183AbYJWJor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbYJWJpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755183AbYJWJor (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 05:44:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbYJWJoi
+	id S1753332AbYJWJpG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 05:45:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbYJWJow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 05:44:38 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46396 "EHLO
+	Thu, 23 Oct 2008 05:44:52 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46399 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751845AbYJWJoh (ORCPT
+	with ESMTP id S1755261AbYJWJov (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 05:44:37 -0400
-Date: Thu, 23 Oct 2008 11:46:18 +0200
+	Thu, 23 Oct 2008 05:44:51 -0400
+Date: Thu, 23 Oct 2008 11:46:32 +0200
 From: Pavel Machek <pavel@suse.cz>
 To: Pekka J Enberg <penberg@cs.helsinki.fi>
 Cc: Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] w35und: make wb35_probe() and wb35_disconnect()
-	funtions static
-Message-ID: <20081023094618.GB1849@elf.ucw.cz>
-References: <Pine.LNX.4.64.0810221905180.1679@melkki.cs.Helsinki.FI>
+Subject: Re: [PATCH 2/5] w35und: remove unused wb35_open() and wb35_close()
+	functions
+Message-ID: <20081023094632.GC1849@elf.ucw.cz>
+References: <Pine.LNX.4.64.0810221905550.1679@melkki.cs.Helsinki.FI>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0810221905180.1679@melkki.cs.Helsinki.FI>
+In-Reply-To: <Pine.LNX.4.64.0810221905550.1679@melkki.cs.Helsinki.FI>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-10-22 19:05:54, Pekka J Enberg wrote:
+On Wed 2008-10-22 19:06:13, Pekka J Enberg wrote:
 > From: Pekka Enberg <penberg@cs.helsinki.fi>
 > 
-> The wb35_probe() and wb35_disconnect() functions are only used in wbusb.c so
-> make them static and remove them from a header file.
+> The functions are not used anywhere so remove them.
 > 
 > Cc: Pavel Machek <pavel@suse.cz>
 > Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
@@ -40,49 +39,53 @@ On Wed 2008-10-22 19:05:54, Pekka J Enberg wrote:
 ACK.
 
 > ---
->  drivers/staging/winbond/linux/wbusb.c   |    6 ++----
->  drivers/staging/winbond/linux/wbusb_f.h |    4 ----
->  2 files changed, 2 insertions(+), 8 deletions(-)
+>  drivers/staging/winbond/linux/wbusb.c   |   19 -------------------
+>  drivers/staging/winbond/linux/wbusb_f.h |    2 --
+>  2 files changed, 0 insertions(+), 21 deletions(-)
 > 
 > diff --git a/drivers/staging/winbond/linux/wbusb.c b/drivers/staging/winbond/linux/wbusb.c
-> index b4be0d8..4b989c5 100644
+> index 4b989c5..c3394bf 100644
 > --- a/drivers/staging/winbond/linux/wbusb.c
 > +++ b/drivers/staging/winbond/linux/wbusb.c
-> @@ -173,9 +173,7 @@ static const struct ieee80211_ops wbsoft_ops = {
->  struct wbsoft_priv {
->  };
->  
-> -
-> -// Usb kernel subsystem will call this function when a new device is plugged into.
-> -int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
-> +static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
+> @@ -308,25 +308,6 @@ WbUsb_destroy(phw_data_t pHwData)
 >  {
->  	struct wb35_adapter *adapter;
->  	PWBUSB		pWbUsb;
-> @@ -329,7 +327,7 @@ int wb35_close(struct net_device *netdev)
->  	return 0;
 >  }
 >  
-> -void wb35_disconnect(struct usb_interface *intf)
-> +static void wb35_disconnect(struct usb_interface *intf)
+> -int wb35_open(struct net_device *netdev)
+> -{
+> -	struct wb35_adapter * adapter = (struct wb35_adapter *)netdev->priv;
+> -	phw_data_t pHwData = &adapter->sHwData;
+> -
+> -        netif_start_queue(netdev);
+> -
+> -	//TODO : put here temporarily
+> -	hal_set_accept_broadcast(pHwData, 1); // open accept broadcast
+> -
+> -	return 0;
+> -}
+> -
+> -int wb35_close(struct net_device *netdev)
+> -{
+> -	netif_stop_queue(netdev);
+> -	return 0;
+> -}
+> -
+>  static void wb35_disconnect(struct usb_interface *intf)
 >  {
 >  	struct wb35_adapter * adapter = usb_get_intfdata(intf);
->  	usb_set_intfdata(intf, NULL);
 > diff --git a/drivers/staging/winbond/linux/wbusb_f.h b/drivers/staging/winbond/linux/wbusb_f.h
-> index 5225fa4..0402f66 100644
+> index 0402f66..a1d5946 100644
 > --- a/drivers/staging/winbond/linux/wbusb_f.h
 > +++ b/drivers/staging/winbond/linux/wbusb_f.h
-> @@ -18,10 +18,6 @@ void WbUsb_destroy(phw_data_t pHwData);
+> @@ -11,8 +11,6 @@
+>  //
+>  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  
+> -int wb35_open(struct net_device *netdev);
+> -int wb35_close(struct net_device *netdev);
+>  unsigned char WbUsb_initial(phw_data_t pHwData);
+>  void WbUsb_destroy(phw_data_t pHwData);
 >  unsigned char WbWLanInitialize(struct wb35_adapter *adapter);
->  #define	WbUsb_Stop( _A )
->  
-> -int wb35_probe(struct usb_interface *intf,const struct usb_device_id *id_table);
-> -void wb35_disconnect(struct usb_interface *intf);
-> -
-> -
->  #define WbUsb_CheckForHang( _P )
->  #define WbUsb_DetectStart( _P, _I )
->  
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
