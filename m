@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754991AbYJWUv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757834AbYJWUvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754991AbYJWUv1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 16:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbYJWUvS
+	id S1757834AbYJWUvn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 16:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbYJWUvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 16:51:18 -0400
-Received: from kroah.org ([198.145.64.141]:51410 "EHLO coco.kroah.org"
+	Thu, 23 Oct 2008 16:51:20 -0400
+Received: from kroah.org ([198.145.64.141]:51420 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751122AbYJWUvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 16:51:17 -0400
-Date: Thu, 23 Oct 2008 13:37:32 -0700
+	id S1752944AbYJWUvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 16:51:19 -0400
+Date: Thu, 23 Oct 2008 13:46:28 -0700
 From: Greg KH <greg@kroah.com>
-To: Alex Chiang <achiang@hp.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Yinghai Lu <yinghai@kernel.org>, stable@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [stable] [BUG][PATCH] cpqphp: fix kernel NULL pointer
-	dereference
-Message-ID: <20081023203732.GA17600@kroah.com>
-References: <48F7DB17.9020302@jp.fujitsu.com> <20081017003334.GA28723@ldl.fc.hp.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: =?utf-8?B?0JXQstCz0LXQvdC40Lkg0JzQsNC90LDRh9C60LjQvQ==?= 
+	<sfstudio@mail.ru>,
+       gorcunov@gmail.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [stable] [PATCH] patch to 2.6.27 fix build rpm
+Message-ID: <20081023204628.GC17600@kroah.com>
+References: <20081015172412.GB20222@localhost> <E1KqAJK-000KWz-00.sfstudio-mail-ru@f121.mail.ru> <20081015184652.3a935e6f@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20081017003334.GA28723@ldl.fc.hp.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081015184652.3a935e6f@lxorguk.ukuu.org.uk>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 06:33:34PM -0600, Alex Chiang wrote:
-> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
-> > 
-> > The root cause of this problem seems that cpqphp driver calls
-> > pci_hp_register() wrongly. In current implementation, cpqphp driver
-> > passes 'ctrl->pci_dev->subordinate' as a second parameter for
-> > pci_hp_register(). But because hotplug slots and it's hotplug
-> > controller (exists as a pci funcion) are on the same bus, it should be
-> > 'ctrl->pci_dev->bus' instead.
-> > 
-> > Cc: <stable@kernel.org>
+On Wed, Oct 15, 2008 at 06:46:52PM +0100, Alan Cox wrote:
+> On Wed, 15 Oct 2008 23:37:26 +0600
+> Евгений Маначкин  <sfstudio@mail.ru> wrote:
 > 
-> Acked-by: Alex Chiang <achiang@hp.com>
+> > From: Evgeniy Manachkin <sfstudio@mail.ru>
+> > Subject: [PATCH] mkspec - fix build rpm
+> > 
+> > This is patch to fix incorrect mkspec script to make rpm correctly at 2.6.27 vanilla kernel. This is regression in 2.6.27. 2.6.26 make rpm work good.
+> > In 2.6.27 'make rpm' say error from rpmbuild "Many unpacked files (*.fw)." 
+> > This is patch fix it this error.
+> > 
+> > Sorry my English.
+> > 
+> > Signed-off-by: Evgeniy Manachkin <sfstudio@mail.ru>
+> 
+> Acked-by: Alan Cox <alan@redhat.com>
+> 
+> This should IMHO go straight into both upstream and 2.6.27.x as it is a
+> regression fix.
 
-This patch doesn't seem to have made it upstream.
+This doesn't seem to have gone into Linus's tree yet, can someone please
+resend it?
 
-Jesse, is it queued up in any of your trees?
+Also be sure to cc: stable@kernel.org on this patch as well.
 
 thanks,
 
 greg k-h
-
-> 
-> > Tested-by: Ingo Molnar <mingo@elte.hu>
-> > Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-> > 
-> > ---
-> >  drivers/pci/hotplug/cpqphp_core.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6-tip/drivers/pci/hotplug/cpqphp_core.c
-> > ===================================================================
-> > --- linux-2.6-tip.orig/drivers/pci/hotplug/cpqphp_core.c
-> > +++ linux-2.6-tip/drivers/pci/hotplug/cpqphp_core.c
-> > @@ -435,7 +435,7 @@ static int ctrl_slot_setup(struct contro
-> >  				slot->number, ctrl->slot_device_offset,
-> >  				slot_number);
-> >  		result = pci_hp_register(hotplug_slot,
-> > -					 ctrl->pci_dev->subordinate,
-> > +					 ctrl->pci_dev->bus,
-> >  					 slot->device);
-> >  		if (result) {
-> >  			err("pci_hp_register failed with error %d\n", result);
-> > 
-> 
-> _______________________________________________
-> stable mailing list
-> stable@linux.kernel.org
-> http://linux.kernel.org/mailman/listinfo/stable
