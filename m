@@ -1,148 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbYJWA6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbYJWA64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757304AbYJWA6m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Oct 2008 20:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbYJWA5x
+	id S1757602AbYJWA64 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Oct 2008 20:58:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYJWA5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Oct 2008 20:57:53 -0400
-Received: from ozlabs.org ([203.10.76.45]:40309 "EHLO ozlabs.org"
+	Wed, 22 Oct 2008 20:57:54 -0400
+Received: from ozlabs.org ([203.10.76.45]:40314 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752813AbYJWA5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753410AbYJWA5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 22 Oct 2008 20:57:51 -0400
 To: linux-kernel@vger.kernel.org
 From: Rusty Russell <rusty@rustcorp.com.au>
 Date: Thu Oct 23 11:55:16 EST 2008
 CC: travis@sgi.com
-Subject: [PATCH 2/7] work_on_cpu: use for drivers/acpi/processor_throttling.c
-Cc: Len Brown <lenb@kernel.org>
-Message-Id: <20081023005749.F1E89DDED6@ozlabs.org>
+Subject: [PATCH 5/7] work_on_cpu: use on PowerPC
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-Id: <20081023005750.A1F5DDDEF8@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Use work_on_cpu in two places instead of cpumask games.
+At least they had the decency to have a FIXME.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Len Brown <lenb@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- drivers/acpi/processor_throttling.c |   54 ++++++++++++++++++++----------------
- 1 file changed, 31 insertions(+), 23 deletions(-)
+ arch/powerpc/kernel/sysfs.c |   31 +++++--------------------------
+ 1 file changed, 5 insertions(+), 26 deletions(-)
 
-diff -r 6f4737048b99 drivers/acpi/processor_throttling.c
---- a/drivers/acpi/processor_throttling.c	Thu Oct 23 00:06:30 2008 +1100
-+++ b/drivers/acpi/processor_throttling.c	Thu Oct 23 00:20:57 2008 +1100
-@@ -824,26 +824,22 @@ static int acpi_processor_get_throttling
- 	return 0;
+diff -r 6f4737048b99 arch/powerpc/kernel/sysfs.c
+--- a/arch/powerpc/kernel/sysfs.c	Thu Oct 23 00:06:30 2008 +1100
++++ b/arch/powerpc/kernel/sysfs.c	Thu Oct 23 00:20:57 2008 +1100
+@@ -134,36 +134,15 @@ void ppc_enable_pmcs(void)
  }
+ EXPORT_SYMBOL(ppc_enable_pmcs);
  
-+static long get_throttling(void *_pr)
-+{
-+	struct acpi_processor *pr = _pr;
-+
-+	return pr->throttling.acpi_processor_get_throttling(pr);
-+}
-+
- static int acpi_processor_get_throttling(struct acpi_processor *pr)
- {
--	cpumask_t saved_mask;
--	int ret;
+-#if defined(CONFIG_6xx) || defined(CONFIG_PPC64)
+-/* XXX convert to rusty's on_one_cpu */
+-static unsigned long run_on_cpu(unsigned long cpu,
+-			        unsigned long (*func)(unsigned long),
+-				unsigned long arg)
+-{
+-	cpumask_t old_affinity = current->cpus_allowed;
+-	unsigned long ret;
 -
- 	if (!pr)
- 		return -EINVAL;
- 
- 	if (!pr->flags.throttling)
- 		return -ENODEV;
--	/*
--	 * Migrate task to the cpu pointed by pr.
--	 */
--	saved_mask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, &cpumask_of_cpu(pr->id));
--	ret = pr->throttling.acpi_processor_get_throttling(pr);
--	/* restore the previous state */
--	set_cpus_allowed_ptr(current, &saved_mask);
- 
+-	/* should return -EINVAL to userspace */
+-	if (set_cpus_allowed(current, cpumask_of_cpu(cpu)))
+-		return 0;
+-
+-	ret = func(arg);
+-
+-	set_cpus_allowed(current, old_affinity);
+-
 -	return ret;
-+	return work_on_cpu(pr->id, get_throttling, pr);
- }
- 
- static int acpi_processor_get_fadt_info(struct acpi_processor *pr)
-@@ -984,9 +980,22 @@ static int acpi_processor_set_throttling
- 	return 0;
- }
- 
-+struct set_throttling_info {
-+	struct acpi_processor *pr;
-+	struct acpi_processor_throttling *p_throttling;
-+	int target_state;
-+};
-+
-+static long set_throttling(void *_sti)
-+{
-+	struct set_throttling_info *s = _sti;
-+
-+	return s->p_throttling->acpi_processor_set_throttling(s->pr,
-+							      s->target_state);
-+}
-+
- int acpi_processor_set_throttling(struct acpi_processor *pr, int state)
- {
--	cpumask_t saved_mask;
- 	int ret = 0;
- 	unsigned int i;
- 	struct acpi_processor *match_pr;
-@@ -1003,7 +1012,6 @@ int acpi_processor_set_throttling(struct
- 	if ((state < 0) || (state > (pr->throttling.state_count - 1)))
- 		return -EINVAL;
- 
--	saved_mask = current->cpus_allowed;
- 	t_state.target_state = state;
- 	p_throttling = &(pr->throttling);
- 	cpus_and(online_throttling_cpus, cpu_online_map,
-@@ -1025,9 +1033,9 @@ int acpi_processor_set_throttling(struct
- 	 * it can be called only for the cpu pointed by pr.
- 	 */
- 	if (p_throttling->shared_type == DOMAIN_COORD_TYPE_SW_ANY) {
--		set_cpus_allowed_ptr(current, &cpumask_of_cpu(pr->id));
--		ret = p_throttling->acpi_processor_set_throttling(pr,
--						t_state.target_state);
-+		struct set_throttling_info sti
-+			= { pr, p_throttling, t_state.target_state };
-+		ret = work_on_cpu(pr->id, set_throttling, &sti);
- 	} else {
- 		/*
- 		 * When the T-state coordination is SW_ALL or HW_ALL,
-@@ -1035,6 +1043,8 @@ int acpi_processor_set_throttling(struct
- 		 * cpus.
- 		 */
- 		for_each_cpu_mask_nr(i, online_throttling_cpus) {
-+			struct set_throttling_info sti;
-+
- 			match_pr = per_cpu(processors, i);
- 			/*
- 			 * If the pointer is invalid, we will report the
-@@ -1056,10 +1066,10 @@ int acpi_processor_set_throttling(struct
- 				continue;
- 			}
- 			t_state.cpu = i;
--			set_cpus_allowed_ptr(current, &cpumask_of_cpu(i));
--			ret = match_pr->throttling.
--				acpi_processor_set_throttling(
--				match_pr, t_state.target_state);
-+			sti.pr = match_pr;
-+			sti.p_throttling = &match_pr->throttling;
-+			sti.target_state = t_state.target_state;
-+			ret = work_on_cpu(i, set_throttling, &sti);
- 		}
- 	}
- 	/*
-@@ -1073,8 +1083,6 @@ int acpi_processor_set_throttling(struct
- 		acpi_processor_throttling_notifier(THROTTLING_POSTCHANGE,
- 							&t_state);
- 	}
--	/* restore the previous state */
--	set_cpus_allowed_ptr(current, &saved_mask);
- 	return ret;
+-}
+-#endif
+-
+ #define SYSFS_PMCSETUP(NAME, ADDRESS) \
+-static unsigned long read_##NAME(unsigned long junk) \
++static long read_##NAME(void *junk) \
+ { \
+ 	return mfspr(ADDRESS); \
+ } \
+-static unsigned long write_##NAME(unsigned long val) \
++static long write_##NAME(void *val) \
+ { \
+ 	ppc_enable_pmcs(); \
+-	mtspr(ADDRESS, val); \
++	mtspr(ADDRESS, (unsigned long)val);	\
+ 	return 0; \
+ } \
+ static ssize_t show_##NAME(struct sys_device *dev, \
+@@ -171,7 +150,7 @@ static ssize_t show_##NAME(struct sys_de
+ 			char *buf) \
+ { \
+ 	struct cpu *cpu = container_of(dev, struct cpu, sysdev); \
+-	unsigned long val = run_on_cpu(cpu->sysdev.id, read_##NAME, 0); \
++	unsigned long val = work_on_cpu(cpu->sysdev.id, read_##NAME, NULL); \
+ 	return sprintf(buf, "%lx\n", val); \
+ } \
+ static ssize_t __used \
+@@ -183,7 +162,7 @@ static ssize_t __used \
+ 	int ret = sscanf(buf, "%lx", &val); \
+ 	if (ret != 1) \
+ 		return -EINVAL; \
+-	run_on_cpu(cpu->sysdev.id, write_##NAME, val); \
++	work_on_cpu(cpu->sysdev.id, write_##NAME, (void *)val);	\
+ 	return count; \
  }
  
 
