@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756583AbYJWSAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbYJWSER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756583AbYJWSAx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 14:00:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754350AbYJWSAi
+	id S1757119AbYJWSER (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 14:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755621AbYJWSEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 14:00:38 -0400
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:55022 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754216AbYJWSAg (ORCPT
+	Thu, 23 Oct 2008 14:04:00 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:15526 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755617AbYJWSD7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 14:00:36 -0400
-Message-ID: <4900BB0E.9000303@cs.columbia.edu>
-Date: Thu, 23 Oct 2008 13:57:34 -0400
-From: Shaya Potter <spotter@cs.columbia.edu>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
-MIME-Version: 1.0
-To: crispin@crispincowan.com
-CC: Kentaro Takeda <takedakn@nttdata.co.jp>,
-       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Toshiharu Harada <haradats@nttdata.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       Al Viro <viro@zeniv.linux.org.uk>, Christoph Hellwig <hch@lst.de>,
-       Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: [TOMOYO #11 (linux-next) 01/11] Introduce new LSM hooks where
- vfsmount is available.
-References: <20081020073423.024299308@nttdata.co.jp>	<20081020073643.986810046@nttdata.co.jp> <48FC7938.1070906@cs.columbia.edu> <20081020193428.8k6ottvjfc1woscw@webmail8.dotsterhost.com> <48FCF6CA.2060406@cs.columbia.edu>
-In-Reply-To: <48FCF6CA.2060406@cs.columbia.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 23 Oct 2008 14:03:59 -0400
+Date: Thu, 23 Oct 2008 20:03:51 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Cc: linux-kernel@vger.kernel.org, ben-linux@fluff.org
+Subject: Re: scx200_i2c driver fails to detect any i2c devices in 2.6.26
+ (new patch)
+Message-ID: <20081023200351.29ecfb46@hyperion.delvare>
+In-Reply-To: <20081023175552.GD5682@csclub.uwaterloo.ca>
+References: <20081023165419.GA5682@csclub.uwaterloo.ca>
+	<20081023193519.2af62bb5@hyperion.delvare>
+	<20081023175311.GC5682@csclub.uwaterloo.ca>
+	<20081023175552.GD5682@csclub.uwaterloo.ca>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shaya Potter wrote:
-> crispin@crispincowan.com wrote:
->> Quoting Shaya Potter <spotter@cs.columbia.edu>:
->>> I know I'm late to the game in this, but as I recently asked about this
->>> and didn't get an answer, I'll re-ask my approach.
->>>
->>> Why can't you do this
->>>
->>> in lookup()
->>>
->>> - resolve rules (not for single process, but for all processes) for
->>> said path and tag dentry (seem to already have a hook)
->>>
->>> in permission()
->>
->> Because it doesn't work 
->> http://kerneltrap.org/mailarchive/linux-fsdevel/2007/6/8/319446
->>
->> Quick summary: The difference between the pathname model and the label 
->> model is dynamism. The accessi really is determined by the pathname to 
->> the file that you used to access the file. If you try to compute 
->> access based on attributes tagged onto the file, then you have to 
->> re-compute those attributes every time someone renames a file.
+On Thu, 23 Oct 2008 13:55:52 -0400, Lennart Sorensen wrote:
+> The scx200_i2c driver is missing the .class parameter, which means no
+> i2c drivers are willing to probe for devices on the bus and attach to
+> them.
 > 
-> ok.  simple question then so why not just recompute them every every 
-> rename?  are rename's that common relative to all other file operations 
-> where we care?
+> This patch adds the missing .class parameter.
+> 
+> Signed-off-by: Len Sorensen <lsorense@csclub.uwaterloo.ca>
+> 
+> --- scx200_i2c.c	2008-05-20 09:39:24.000000000 -0400
+> +++ scx200_i2c.c.new	2008-10-23 13:51:57.000000000 -0400
+> @@ -81,6 +81,7 @@
+>  
+>  static struct i2c_adapter scx200_i2c_ops = {
+>  	.owner		   = THIS_MODULE,
+> +	.class		   = I2C_CLASS_HWMON | I2C_CLASS_SPD,
+>  	.id		   = I2C_HW_B_SCX200,
+>  	.algo_data	   = &scx200_i2c_data,
+>  	.name	= "NatSemi SCx200 I2C",
+> 
 
-just want to followup as didn't get a response.  If the problem is 
-rename(), what's the problem with dropping the label on rename() to 
-force a reevaluation on the next pass through the lookup() code.
+Applied, thanks. I'll also take care to get this patch into
+2.6.27-stable and 2.6.26-stable.
+
+-- 
+Jean Delvare
