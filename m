@@ -1,61 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbYJWUh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbYJWUiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755406AbYJWUh0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 16:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYJWUhO
+	id S1756212AbYJWUiT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 16:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYJWUiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 16:37:14 -0400
-Received: from kroah.org ([198.145.64.141]:56659 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752699AbYJWUhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 16:37:13 -0400
-Date: Thu, 23 Oct 2008 13:33:33 -0700
-From: Greg KH <greg@kroah.com>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: stable@kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [stable] [PATCH 0/2] x86: check correctness of IRQ0 override
-	on systems with ATI/AMD SB450/SB600 chipsets
-Message-ID: <20081023203333.GB10715@kroah.com>
-References: <20081015104118.GA4706@alberich.amd.com> <20081015191720.GA7966@kroah.com> <20081016120615.GE29183@alberich.amd.com>
+	Thu, 23 Oct 2008 16:38:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40878 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752619AbYJWUiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 16:38:06 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: Oops in ACPI with git latest
+Date: Thu, 23 Oct 2008 22:42:32 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-acpi@vger.kernel.org, "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>
+References: <1224791103.3330.37.camel@localhost.localdomain>
+In-Reply-To: <1224791103.3330.37.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081016120615.GE29183@alberich.amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200810232242.33480.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 02:06:15PM +0200, Andreas Herrmann wrote:
-> On Wed, Oct 15, 2008 at 12:17:20PM -0700, Greg KH wrote:
-> > On Wed, Oct 15, 2008 at 12:41:18PM +0200, Andreas Herrmann wrote:
-> > > Hi,
-> > > 
-> > > following patches should go into 2.6.27-stable tree.
-> > > 
-> > > They fix issues with HP Laptops that provide a wrong override for IRQ0
-> > > and which change the thermal trip point as soon as Linux unmasks
-> > > IOAPIC INT2.
-> > 
-> > Are these patches in the upstream Linus kernel already?
-> > 
-> > If so, can you please give us the git commit ids?
+On Thursday, 23 of October 2008, James Bottomley wrote:
+> ACPI Warning (nseval-0168): Insufficient arguments - method [_OSC] needs 5, found 4 [20080926]
+> ACPI Warning (nspredef-0252): \_SB_.PCI0._OSC: Parameter count mismatch - ASL declared 5, expected 4 [20080926]
+> ACPI Error (nspredef-0163): \_SB_.PCI0._OSC: Missing expected return value [20080926]
+> BUG: unable to handle kernel NULL pointer dereference at 00000000
+> IP: [<c0237671>] acpi_run_osc+0xa1/0x170
+> *pde = 00000000 
+> Oops: 0000 [#1] SMP 
+> last sysfs file: 
+> Dumping ftrace buffer:
+>    (ftrace buffer empty)
+> Modules linked in:
 > 
-> The one for SB450 is upstream. It's commit
-> 33fb0e4eb53f16af312f9698f974e2e64af39c12
-> 
-> The second one was posted yesterday and it is not yet commited.
-> 
-> BTW, I just posted another patch to remove superfluos DMI-quirks
-> that are related to HP Laptops with SB450/SB600.
-> IMHO this patch should go into stable as well. But first I'd like
-> to get a response from Ingo here.
+> Pid: 1, comm: swapper Not tainted (2.6.27 #124) IBM eServer 206m-[8485IZZ]-
+> EIP: 0060:[<c0237671>] EFLAGS: 00010246 CPU: 1
+> EIP is at acpi_run_osc+0xa1/0x170
+> EAX: 00000000 EBX: 00000010 ECX: 00000003 EDX: f704d4ec
+> ESI: 00000000 EDI: 00000000 EBP: f704fde4 ESP: f704fd7c
+>  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> Process swapper (pid: 1, ti=f704e000 task=f704d150 task.ti=f704e000)
+> Stack:
+>  f704fdc8 f704fdf0 00000001 00000003 00000010 c04f4a28 c014c3ab 00000001
+>  00000001 00000000 f68766a0 00000001 00000003 00000000 f704fdd4 00000003
+>  0000000c f704fdf0 c023759b 00000000 00000000 00000004 f704fd88 00000010
+> Call Trace:
+>  [<c014c3ab>] ? trace_hardirqs_on+0xb/0x10
+>  [<c023759b>] ? acpi_get_osc_data+0x5b/0x90
+>  [<c02378c4>] ? acpi_query_osc+0x74/0xa0
+>  [<c02486bb>] ? acpi_ns_get_device_callback+0xfe/0x112
+>  [<c0249dbe>] ? acpi_ns_walk_namespace+0x9a/0x110
+>  [<c033a5cc>] ? pci_init+0x0/0x44
+>  [<c0248541>] ? acpi_get_devices+0x47/0x5d
+>  [<c02485bd>] ? acpi_ns_get_device_callback+0x0/0x112
+>  [<c0237850>] ? acpi_query_osc+0x0/0xa0
+>  [<c0237918>] ? __pci_osc_support_set+0x28/0x30
+>  [<c033b99c>] ? msi_init+0x27/0x38
+>  [<c033a5fc>] ? pci_init+0x30/0x44
+>  [<c010111d>] ? do_one_initcall+0x2d/0x160
+>  [<c014c3ab>] ? trace_hardirqs_on+0xb/0x10
+>  [<c01d6c5e>] ? proc_register+0xee/0x1f0
+>  [<c03482ad>] ? _spin_unlock+0x1d/0x20
+>  [<c01d6c5e>] ? proc_register+0xee/0x1f0
+>  [<c01d6e64>] ? create_proc_entry+0x54/0xb0
+>  [<c01622a4>] ? register_irq_proc+0xa4/0xc0
+>  [<c016231c>] ? init_irq_proc+0x5c/0x70
+>  [<c0521325>] ? kernel_init+0x10f/0x166
+>  [<c0521216>] ? kernel_init+0x0/0x166
+>  [<c0104213>] ? kernel_thread_helper+0x7/0x14
+> Code: 00 00 00 c7 45 cc 00 00 00 00 c7 45 d4 03 00 00 00 c7 45 d8 0c 00 00 00 ba 80 41 4a c0 e8 67 10 01 00 89 c7 85 c0 75 4a 8b 75 e8 <83> 3e 03 75 5c 8b 46 08 8b 18 85 db 74 29 f6 c3 02 0f 85 82 00 
+> EIP: [<c0237671>] acpi_run_osc+0xa1/0x170 SS:ESP 0068:f704fd7c
+> ---[ end trace a7919e7f17c0a725 ]---
+> swapper used greatest stack depth: 5788 bytes left
+> Kernel panic - not syncing: Attempted to kill init!
 
-That patch is now in Linus's tree, but it doesn't apply.  Can you
-backport it to 2.6.27.3 and send it to stable@kernel.org if you still
-want this change to be in the 2.6.27 tree?
+Does this patch help?
 
-thanks,
+---
+ drivers/pci/pci-acpi.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-greg k-h
+Index: linux-2.6/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci-acpi.c
++++ linux-2.6/drivers/pci/pci-acpi.c
+@@ -83,6 +83,9 @@ static acpi_status acpi_run_osc(acpi_han
+ 	if (ACPI_FAILURE(status))
+ 		return status;
+ 
++	if (!output.pointer)
++		return AE_NULL_OBJECT;
++
+ 	out_obj = output.pointer;
+ 	if (out_obj->type != ACPI_TYPE_BUFFER) {
+ 		printk(KERN_DEBUG "Evaluate _OSC returns wrong type\n");
