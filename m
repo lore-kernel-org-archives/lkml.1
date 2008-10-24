@@ -1,96 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbYJXAkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbYJXApY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755631AbYJXAkh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 20:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYJXAk2
+	id S1755535AbYJXApY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 20:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbYJXApJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 20:40:28 -0400
-Received: from gw.goop.org ([64.81.55.164]:57146 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751675AbYJXAk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 20:40:27 -0400
-Message-ID: <49011979.8060301@goop.org>
-Date: Thu, 23 Oct 2008 17:40:25 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Chris Lalancette <clalance@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] xen: Fix Xen domU boot with batched mprotect
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 23 Oct 2008 20:45:09 -0400
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:36302 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751675AbYJXApI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 20:45:08 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjMFAICyAElMQWro/2dsb2JhbACBdsERg04
+Date: Thu, 23 Oct 2008 20:45:02 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: ltt-dev@lists.casi.polymtl.ca, "Martin J. Bligh" <mbligh@mbligh.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, systemtap@sources.redhat.com,
+       kernel-trace-list@redhat.com
+Subject: LTTng 0.44 and LTTV 0.11.3
+Message-ID: <20081024004502.GA21759@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 20:22:20 up 141 days,  5:02, 10 users,  load average: 1.02, 0.71,
+	0.70
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Lalancette <clalance@redhat.com>
+Hi,
 
-Recent i686 2.6.27 kernels with a certain amount of memory (between 736 and
-855MB) have a problem booting under a hypervisor that supports batched mprotect
-(this includes the RHEL-5 Xen hypervisor as well as any 3.3 or later Xen
-hypervisor).  The problem ends up being that xen_ptep_modify_prot_commit() is
-using virt_to_machine to calculate which pfn to update.  However, this only
-works for pages that are in the p2m list, and the pages coming from
-change_pte_range() in mm/mprotect.c are kmap_atomic pages.  Because of this, we
-can run into the situation where the lookup in the p2m table returns an
-INVALID_MFN, which we then try to pass to the hypervisor, which then (correctly)
-denies the request to a totally bogus pfn.
+Here is why I have been a bit more quiet in the past days. I announce
+the release of LTTng 0.44 based on kernel 2.6.27.2. The highlights :
 
-The right thing to do is to use arbitrary_virt_to_machine, so that we can be
-sure we are modifying the right pfn.  This unfortunately introduces a
-performance penalty because of a full page-table-walk, but we can avoid that
-penalty for pages in the p2m list by checking if virt_addr_valid is true, and if
-so, just doing the lookup in the p2m table.
+- includes trace_clock() patchset, which will also be posted on LKML for
+  review shortly (v2 of LTTng timestamping).
 
-The attached patch implements this, and allows my 2.6.27 i686 based guest with
-768MB of memory to boot on a RHEL-5 hypervisor again.  Thanks to Jeremy for the
-suggestions about how to fix this particular issue.
+- includes the specialized probes I have been talking about with the
+  Google team. This will mainly please Steven who want to write into C
+  structures without any marker overhead. Now you have it in LTTng.
+  There are restrictions about which types can be written into a
+  structure though, as not every types can be exported portably (e.g. no
+  bitfields can be used). This is made possible by optionally splitting
+  the marker declaration from the marker call to let someone declare a
+  marker only to keep track of the associated event types.
 
-Signed-off-by: Chris Lalancette <clalance@redhat.com>
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/x86/xen/mmu.c |   18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
+  For details, see :
+  http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=37f78b629d1eca204aa7edd282599727b7a8a377
 
-===================================================================
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -246,11 +246,21 @@ xmaddr_t arbitrary_virt_to_machine(void *vaddr)
- {
- 	unsigned long address = (unsigned long)vaddr;
- 	unsigned int level;
--	pte_t *pte = lookup_address(address, &level);
--	unsigned offset = address & ~PAGE_MASK;
-+	pte_t *pte;
-+	unsigned offset;
- 
--	BUG_ON(pte == NULL);
-+	/*
-+	 * if the PFN is in the linear mapped vaddr range, we can just use
-+	 * the (quick) virt_to_machine() p2m lookup
-+	 */
-+	if (virt_addr_valid(vaddr))
-+		return virt_to_machine(vaddr);
- 
-+	/* otherwise we have to do a (slower) full page-table walk */
-+
-+	pte = lookup_address(address, &level);
-+	BUG_ON(pte == NULL);
-+	offset = address & ~PAGE_MASK;
- 	return XMADDR(((phys_addr_t)pte_mfn(*pte) << PAGE_SHIFT) + offset);
- }
- 
-@@ -410,7 +420,7 @@ void xen_ptep_modify_prot_commit(struct mm_struct *mm, unsigned long addr,
- 
- 	xen_mc_batch();
- 
--	u.ptr = virt_to_machine(ptep).maddr | MMU_PT_UPDATE_PRESERVE_AD;
-+	u.ptr = arbitrary_virt_to_machine(ptep).maddr | MMU_PT_UPDATE_PRESERVE_AD;
- 	u.val = pte_val_ma(pte);
- 	xen_extend_mmu_update(&u);
- 
+- I created specialized probes for the main events generated by tbench
+  and went from 960 -> 1125 MB/s (~2000MB/s without tracing) in flight
+  recorder mode. That should please Martin for whom every cycle counts.
+  ;) We might want to dissect ltt-type-serializer.o, ltt-relay.o and
+  ltt-relay-alloc.o, because almost all the slowdown is located within
+  these "core" objects.
 
+  For details, see :
+  http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=0ac863964d4d2877eada0383e62d2021cfca6958
 
+- I have also vastly simplified locking in the markers and tracepoints
+  by using _only_ the modules mutex. I actually took this mutex out of
+  module.c and created its own file so tracepoints and markers can use
+  it. That should please Lai Jiangshan. Although he may have some work
+  to do to see how his new probes manager might benefit from it.
 
+  See :
+  http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=7aea87ac46df7613d68034f5904bc8d575069076
+  and
+  http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=5f6814237f7a67650e7b6214d916825e3f8fc1b7
+  http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=410ba66a1cbe27a611e1c18c0a53e87b4652a2c9
+
+So hopefully everyone will be happy with this new release. :)
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
