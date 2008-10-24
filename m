@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbYJXA2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbYJXAeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755083AbYJXA2p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 20:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbYJXA2f
+	id S1755535AbYJXAeW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 20:34:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbYJXAeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 20:28:35 -0400
-Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.108]:54336
-	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751246AbYJXA2e (ORCPT
+	Thu, 23 Oct 2008 20:34:13 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58021
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751221AbYJXAeM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 20:28:34 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgsBAOyzAEnLrQlq/2dsb2JhbAAIwmmDTg
-X-IronPort-AV: E=Sophos;i="4.33,473,1220198400"; 
-   d="scan'208";a="407421603"
-Subject: Re: [PATCH v2 RESEND] gpiolib: Add pin change notification
-From: Ben Nizette <bn@niasdigital.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: david-b@pacbell.net, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org
-In-Reply-To: <20081021133106.be5cc01c.akpm@linux-foundation.org>
-References: <1224543007.3954.71.camel@moss.renham>
-	 <20081021133106.be5cc01c.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: Nias Digital
-Date: Fri, 24 Oct 2008 11:28:17 +1100
-Message-Id: <1224808097.7082.3.camel@moss.renham>
+	Thu, 23 Oct 2008 20:34:12 -0400
+Date: Thu, 23 Oct 2008 17:33:49 -0700 (PDT)
+Message-Id: <20081023.173349.193701851.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Sparc
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 2008-10-21 at 13:31 -0700, Andrew Morton wrote:
-> On Tue, 21 Oct 2008 09:50:06 +1100
-> Ben Nizette <bn@niasdigital.com> wrote:
-> > +static irqreturn_t gpio_irq_handler(int irq, void *dev_id)
-> > +{
-> > +	struct gpio_desc *desc = dev_id;
-> > +	int gpio = desc - gpio_desc;
-> > +	int new, old;
-> > +
-> > +	if (!gpio_is_valid(gpio))
-> > +		return IRQ_NONE;
-> > +
-> > +	new = gpio_get_value(gpio);
-> > +	old = desc->val;
-> > +
-> > +	if ((new && !old && test_bit(ASYNC_RISING, &desc->flags)) ||
-> > +	    (!new && old && test_bit(ASYNC_FALLING, &desc->flags)))
-> > +		sysfs_notify(&desc->dev->kobj, NULL, "value");
-> 
-> eekeekeek!  sysfs_notify() does mutex_lock() and will die horridly if
-> called from an interrupt handler.
-> 
-> You should have got a storm of warnings when runtime testing this code.
-> Please ensure that all debug options are enabled when testing code. 
-> Documentation/SubmitChecklist has help.
+Several bug fixes and sparc support for checkstack:
 
-0_o yea that isn't great...  Thanks - shall respin and repost shortly.
+1) Two math-emu fixes, one courtesy of Kumar Gala.
 
+2) Section mismatch fixes for sparc32 from Frederic Weisbecker.
 
-	--Ben.
+3) CPU startup locking fix from Andrea Shepard.
 
+Please pull, thanks a lot!
+
+The following changes since commit 2515ddc6db8eb49a79f0fe5e67ff09ac7c81eab4:
+  Paul Mundt (1):
+        binfmt_elf_fdpic: Update for cputime changes.
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+
+Andrea Shepard (1):
+      sparc64: Fix race in arch/sparc64/kernel/trampoline.S
+
+David S. Miller (1):
+      math-emu: Fix thinko in _FP_DIV
+
+Frederic Weisbecker (2):
+      sparc: correct section of apc_no_idle
+      sparc: correct section of current_pc()
+
+Kumar Gala (1):
+      math-emu: Fix signalling of underflow and inexact while packing result.
+
+Martin Habets (1):
+      sparc: Add checkstack support
+
+ arch/sparc/kernel/apc.c          |    2 +-
+ arch/sparc/kernel/head.S         |    1 +
+ arch/sparc64/kernel/trampoline.S |   18 ++++++++++++++----
+ include/math-emu/op-common.h     |   19 +++++++++++++++----
+ scripts/checkstack.pl            |    4 ++++
+ 5 files changed, 35 insertions(+), 9 deletions(-)
