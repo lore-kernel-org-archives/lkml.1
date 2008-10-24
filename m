@@ -1,126 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbYJXMxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756433AbYJXMxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755694AbYJXMxA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 08:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbYJXMww
+	id S1756433AbYJXMxZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 08:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754081AbYJXMxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 08:52:52 -0400
-Received: from mk-outboundfilter-5.mail.uk.tiscali.com ([212.74.114.1]:17170
-	"EHLO mk-outboundfilter-5.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751176AbYJXMwv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 08:52:51 -0400
-X-Trace: 98104217/mk-outboundfilter-5.mail.uk.tiscali.com/F2S/$F2S-NILDRAM-ACCEPTED/f2s-nildram-customers/195.149.44.6
-X-SBRS: None
-X-RemoteIP: 195.149.44.6
-X-IP-MAIL-FROM: alistair@devzero.co.uk
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsYEACBiAUnDlSwG/2dsb2JhbACBdr9Kg1A
-X-IronPort-AV: E=Sophos;i="4.33,477,1220223600"; 
-   d="scan'208";a="98104217"
-X-IP-Direction: IN
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Linux 2.6.28-rc1
-Date: Fri, 24 Oct 2008 13:52:45 +0100
-User-Agent: KMail/1.10.1 (Linux/2.6.28-rc1-damocles; KDE/4.1.2; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org> <200810241224.38541.alistair@devzero.co.uk> <200810241345.04966.rjw@sisk.pl>
-In-Reply-To: <200810241345.04966.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810241352.45745.alistair@devzero.co.uk>
+	Fri, 24 Oct 2008 08:53:14 -0400
+Received: from main.gmane.org ([80.91.229.2]:44685 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753720AbYJXMxM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 08:53:12 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: w41ter@gmail.com
+Subject: Re: commit a802dd0e breaks console keyboard input
+Date: Fri, 24 Oct 2008 05:52:57 -0700
+Organization: none
+Message-ID: <alpine.LNX.2.00.0810240552320.2613@x9.ybpnyarg>
+References: <49011234.7090902@gmail.com> <20081024110742.GD4620@osiris.boeblingen.de.ibm.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: adsl-69-234-183-20.dsl.irvnca.pacbell.net
+In-Reply-To: <20081024110742.GD4620@osiris.boeblingen.de.ibm.com>
+User-Agent: Alpine 2.00 (LNX 1169 2008-08-27)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 24 October 2008 12:45:04 Rafael J. Wysocki wrote:
-> On Friday, 24 of October 2008, Alistair John Strachan wrote:
-> > On Friday 24 October 2008 05:10:29 Linus Torvalds wrote:
-> > > It's been two weeks, so it's time to close the merge window. A
-> > > 2.6.28-rc1 is out there, and it's hopefully all good.
+
+
+On Fri, 24 Oct 2008, Heiko Carstens wrote:
+
+> On Thu, Oct 23, 2008 at 05:09:24PM -0700, walt wrote:
+> > Hi team,
 > >
-> > It seems if you have a broken asm/ symlink in include/ (which happened as
-> > a result of the x86 header moves, for me) the kernel won't try to update
-> > it appropriately, and this breaks "make prepare".
+> > commit a802dd0eb5fc97a50cf1abb1f788a8f6cc5db635
+> > Author: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > Date:   Mon Oct 13 23:50:08 2008 +0200
 > >
-> > $ make    ARCH=x86_64 prepare
-> >   CHK     include/linux/version.h
-> >   CHK     include/linux/utsrelease.h
-> >   GEN     include/asm/asm-offsets.h
-> > /bin/sh: include/asm/asm-offsets.h: No such file or directory
-> > make[1]: *** [include/asm/asm-offsets.h] Error 1
-> > make: *** [prepare0] Error 2
+> >     Call init_workqueues before pre smp initcalls.
 > >
-> > rm -f include/asm fixes it
+> > This commit causes the console login prompt to ignore my keystrokes
+> > so I'm unable to log in (though ssh works fine).  Oddly, if I hit
+> > ctrl-alt-delete the machine does reboot, but no other keystrokes
+> > appear on the screen or have any effect that I can detect.
 > >
-> > This was just from taking a 2.6.27 tree, git clean -d -f, git pull, make
-> > oldconfig. Might be a nice thing to fix?
+> > No surprise that this problem appears only on my dual-core amd64
+> > machine, while the k7 single processor machine works normally.
+> >
+> > I've not seen anyone else complaining on the linux list, so maybe
+> > this is a BIOS bug on the affected machine?  It's an ECS mobo with
+> > a GeForce6100PM-M2 chipset, and I use a ps/2 keyboard.
 >
-> Hm, I didn't have any problems with compiling .28-rc1 on x86_64.
->
-> [Confused.]
+> Could you try the patch below and see if it makes any difference?
+> Thanks!
 
-This should reproduce it (whether or not it's a use-case we care about is 
-another matter). First, make sure your include/asm symlink has been removed, 
-then execute the following sequence:
+<patch snipped for brevity>
 
-git reset --hard v2.6.27 ; git clean -d -f
-git status ("Nothing to commit")
+No difference that I can detect, sorry.  The login prompt still
+ignores my keystrokes.  I'm happy to try any other ideas or patches.
+(Yes, I did use git bisect to find this commit.)
 
-cp /path/to/config .config
-make oldconfig prepare
-git clean -d -f ; git reset --hard
-git status ("Nothing to commit")
+Thanks.
 
-Observe at this point that include/asm is valid and points to include/asm-x86, 
-despite the clean and reset (I guess this file is being ignored). Now:
 
-git reset --hard v2.6.28-rc1 (Or whatever other method you might choose)
-git clean -d -f (Removes include/asm-x86)
-
-Observe at this point that include/asm is now invalid, and still points to the 
-removed include/asm-x86 directory.
-
-cp /path/to/config .config
-make oldconfig prepare
-
-Should fail at this point:
-
-scripts/kconfig/conf -o arch/x86/Kconfig
-#
-# configuration written to .config
-#
-scripts/kconfig/conf -s arch/x86/Kconfig
-  CHK     include/linux/version.h
-  UPD     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  UPD     include/linux/utsrelease.h
-  CC      kernel/bounds.s
-  GEN     include/linux/bounds.h
-  CC      arch/x86/kernel/asm-offsets.s
-  GEN     include/asm/asm-offsets.h
-/bin/sh: include/asm/asm-offsets.h: No such file or directory
-make[2]: *** [include/asm/asm-offsets.h] Error 1
-make[1]: *** [prepare0] Error 2
-make: *** [prepare] Error 2
-
-Can you confirm?
-
-I checked out Makefile and I believe it occurs because the current checks only 
-make sure a symlink exists, and if it does exist that its target matches up 
-with the selected architecture. It doesn't actually check the destination of 
-the symlink is valid.
-
-I'd suggest that it should do that too, and if the destination doesn't exist, 
-re-write the symlink when it does "mkdir include/asm-x86" further down, but 
-I'm not a kbuild expert.
-
--- 
-Cheers,
-Alistair.
