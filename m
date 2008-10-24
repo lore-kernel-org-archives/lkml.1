@@ -1,153 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbYJXSzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbYJXS45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754710AbYJXSzz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 14:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbYJXSzn
+	id S1756826AbYJXS45 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 14:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbYJXS4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 14:55:43 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:49096 "EHLO e8.ny.us.ibm.com"
+	Fri, 24 Oct 2008 14:56:48 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:47047 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753205AbYJXSzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 14:55:42 -0400
-Subject: Re: [PATCH] ehea: Add hugepage detection
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Thomas Klein <tklein@de.ibm.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Christoph Raisch <raisch@de.ibm.com>,
-       Hannes Hering <hering2@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, netdev <netdev@vger.kernel.org>,
-       badari@us.ibm.com, haveblue@us.ibm.com, tollefso@us.ibm.com
-In-Reply-To: <200810241307.31072.>
-References: <200810241307.31072.>
-Content-Type: text/plain
-Date: Fri, 24 Oct 2008 11:55:37 -0700
-Message-Id: <1224874537.12673.47.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	id S1752616AbYJXS4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 14:56:47 -0400
+Date: Fri, 24 Oct 2008 20:55:41 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andres Freund <andres@anarazel.de>,
+       Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
+       Nigel Cunningham <ncunningham@crca.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: Current suspend issues on Lenovo X200 (w/ Intel graphics)
+Message-ID: <20081024185541.GL22217@kernel.dk>
+References: <20081023204326.GB4175@denkbrett.schottelius.org> <200810242030.54273.rjw@sisk.pl> <20081024184727.GJ22217@kernel.dk> <200810242056.23272.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200810242056.23272.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-24 at 13:07 +0200, Thomas Klein wrote:
-> 16GB hugepages may not be part of a memory region (firmware restriction). This patch
-> modifies the walk_memory_resource callback fn to filter hugepages and add only standard
-> memory to the busmap which is later on used for MR registration.
-
-Does this support a case where a userspace app is reading network
-packets into a 16GB page backed area?  I think you need to elaborate on
-what kind of memory you need to have registered in these memory regions.
-It's hard to review what you've done here otherwise.
-
-> --- linux-2.6.27/drivers/net/ehea/ehea_qmr.c	2008-10-24 09:29:19.000000000 +0200
-> +++ patched_kernel/drivers/net/ehea/ehea_qmr.c	2008-10-24 09:45:15.000000000 +0200
-> @@ -636,6 +636,9 @@ static int ehea_update_busmap(unsigned l
->  {
->  	unsigned long i, start_section, end_section;
+On Fri, Oct 24 2008, Rafael J. Wysocki wrote:
+> On Friday, 24 of October 2008, Jens Axboe wrote:
+> > On Fri, Oct 24 2008, Rafael J. Wysocki wrote:
+> > > On Friday, 24 of October 2008, Jens Axboe wrote:
+> > > > On Fri, Oct 24 2008, Andres Freund wrote:
+> > > > > On Friday 24 October 2008 15:01:31 Nico -telmich- Schottelius wrote:
+> > > > > > > > Chipset Mobile Intel® GM45 Express Chipset found
+> > > > > > > This is going to be interesting. :-)
+> > > > > > > Nico, if the system is 64-bit, I'd recommend trying .28-rc1.
+> > > > > > Yes, I'm on amd64;
+> > > > > > As seen on my other post: xorg does not run on .28-rc1
+> > > > > The kernel has a fix for memory management for GM45 cards since 2.6.28-rc1 
+> > > > > which require a newer driver, so trying this may be benifical (patch in reply 
+> > > > > to your first post).
+> > > > 
+> > > > No go, same for me on x60 on ubuntu 8.10-rc1.
+> > > 
+> > > Is this a regression on your box?
+> > 
+> > Yes, definitely.
 > 
-> +	if (!pgnum)
-> +		return 0;
+> Which kernel did work?
 
-This probably needs a comment.  It's not obvious what it is doing.
+2.6.27, for instance. It's pretty much always worked, the last time it
+broke was the timer stuff around KS. Other than that, it's been very
+solid for a almost 2 years.
 
->  	if (!ehea_bmap) {
->  		ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
->  		if (!ehea_bmap)
-> @@ -692,10 +695,47 @@ int ehea_rem_sect_bmap(unsigned long pfn
->  	return ret;
->  }
-> 
-> -static int ehea_create_busmap_callback(unsigned long pfn,
-> -				       unsigned long nr_pages, void *arg)
-> +static int ehea_is_hugepage(unsigned long pfn)
-> +{
-> +	return ((((pfn << PAGE_SHIFT) & (EHEA_HUGEPAGE_SIZE - 1)) == 0)
-> +		&& (compound_order(pfn_to_page(pfn)) + PAGE_SHIFT
-> +		    == EHEA_HUGEPAGESHIFT) );
-> +}
-
-Whoa.  That's dense.  Can you actually read that in less than 5 minutes?
-Seriously.
-
-I'm not sure what else you use EHEA_HUGEPAGE_SIZE for or if this gets
-duplicated, but this would look nicer if you just had a:
-
-#define EHEA_HUGEPAGE_PFN_MASK ((EHEA_HUGEPAGE_SIZE - 1) >> PAGE_SHIFT)
-
-	if (pfn & EHEA_HUGEPAGE_PFN_MASK)
-		return 0;
-
-Or, with no new macro:
-
-	if ((pfn << PAGE_SHIFT) & (EHEA_HUGEPAGE_SIZE - 1) != 0)
-		return 0;
-
-	page_order = compound_order(pfn_to_page(pfn));
-	if (page_order + PAGE_SHIFT != EHEA_HUGEPAGESHIFT)
-		return 0;
-	return 1;
-}
-
-Please break that up into something that is truly readable.  gcc will
-generate the exact same code.
-
-> +static int ehea_create_busmap_callback(unsigned long initial_pfn,
-> +				       unsigned long total_nr_pages, void *arg)
->  {
-> -	return ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
-> +	int ret;
-> +	unsigned long pfn, start_pfn, end_pfn, nr_pages;
-> +
-> +	if ((total_nr_pages * PAGE_SIZE) < EHEA_HUGEPAGE_SIZE)
-> +		return ehea_update_busmap(initial_pfn, total_nr_pages,
-> +					  EHEA_BUSMAP_ADD_SECT);
-> +
-> +	/* Given chunk is >= 16GB -> check for hugepages */
-> +	start_pfn = initial_pfn;
-> +	end_pfn = initial_pfn + total_nr_pages;
-> +	pfn = start_pfn;
-> +
-> +	while (pfn < end_pfn) {
-> +		if (ehea_is_hugepage(pfn)) {
-> +			/* Add mem found in front of the hugepage */
-> +			nr_pages = pfn - start_pfn;
-> +			ret = ehea_update_busmap(start_pfn, nr_pages,
-> +						 EHEA_BUSMAP_ADD_SECT);
-> +			if (ret)
-> +				return ret;
-> +
-> +			/* Skip the hugepage */
-> +			pfn += (EHEA_HUGEPAGE_SIZE / PAGE_SIZE);
-> +			start_pfn = pfn;
-> +		} else
-> +			pfn += (EHEA_SECTSIZE / PAGE_SIZE);
-> +	}
-> +
-> +	/* Add mem found behind the hugepage(s)  */
-> +	nr_pages = pfn - start_pfn;
-> +	return ehea_update_busmap(start_pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
->  }
-> 
->  int ehea_create_busmap(void)
-> diff -Nurp -X dontdiff linux-2.6.27/drivers/net/ehea/ehea_qmr.h patched_kernel/drivers/net/ehea/ehea_qmr.h
-> --- linux-2.6.27/drivers/net/ehea/ehea_qmr.h	2008-10-24 09:29:19.000000000 +0200
-> +++ patched_kernel/drivers/net/ehea/ehea_qmr.h	2008-10-24 09:45:15.000000000 +0200
-> @@ -40,6 +40,8 @@
->  #define EHEA_PAGESIZE          (1UL << EHEA_PAGESHIFT)
->  #define EHEA_SECTSIZE          (1UL << 24)
->  #define EHEA_PAGES_PER_SECTION (EHEA_SECTSIZE >> EHEA_PAGESHIFT)
-> +#define EHEA_HUGEPAGESHIFT     34
-> +#define EHEA_HUGEPAGE_SIZE     (1UL << EHEA_HUGEPAGESHIFT)
-
-I'm a bit worried that you're basically duplicating hugetlb.h here.  Why
-not just use the existing 16GB page macros?  While you're at it please
-expand these to give some more useful macros so you don't have to do
-arithmetic on them in the code as much.
-
-#define EHEA_SECT_NR_PAGES (EHEA_SECTSIZE / PAGE_SIZE)
-
-for instance.
-
--- Dave
+-- 
+Jens Axboe
 
