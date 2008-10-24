@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757881AbYJXS5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbYJXTAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757881AbYJXS5X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 14:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYJXS5K
+	id S1755474AbYJXTAZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 15:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbYJXTAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 14:57:10 -0400
-Received: from mx1.moondrake.net ([212.85.150.166]:43649 "EHLO
-	mx1.mandriva.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752565AbYJXS5I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 14:57:08 -0400
-X-Greylist: delayed 1838 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Oct 2008 14:57:08 EDT
-X-Spam-Virus: No
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Pascal Terjan <pterjan@mandriva.com>
-Subject: Re: [git pull] fastboot tree for v2.6.28
-References: <20081010003241.GA23940@elte.hu>
-	<alpine.LFD.2.00.0810101254240.3503@nehalem.linux-foundation.org>
-	<20081010154929.6ec201fe@infradead.org>
-	<20081011064712.GA25451@elte.hu>
-	<20081011004840.5ad62ce0.akpm@linux-foundation.org>
-	<20081011082845.GA28715@elte.hu> <48F0B40A.8080007@zytor.com>
-From: Olivier Blin <blino@mandriva.com>
-Organization: Mandriva
-Date: Fri, 24 Oct 2008 20:26:26 +0200
-In-Reply-To: <48F0B40A.8080007@zytor.com> (H. Peter Anvin's message of "\(unknown date\)")
-Message-ID: <m363nhsvcd.fsf@dynamo.mandriva.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 24 Oct 2008 15:00:11 -0400
+Received: from home.keithp.com ([63.227.221.253]:37407 "EHLO keithp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752863AbYJXTAK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 15:00:10 -0400
+Subject: Re: Adding kmap_atomic_prot_pfn  (was: [git pull] drm patches for
+	2.6.27-rc1)
+From: Keith Packard <keithp@keithp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: keithp@keithp.com, nickpiggin@yahoo.com.au, airlied@linux.ie,
+       benh@kernel.crashing.org, Peter Anvin <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jbarnes@virtuousgeek.org, dri-devel@lists.sf.net,
+       Andrew Morton <akpm@linux-foundation.org>, yinghai@kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <alpine.LFD.2.00.0810240752300.3287@nehalem.linux-foundation.org>
+References: <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
+	 <20081018203741.GA23396@elte.hu> <1224366690.4384.89.camel@koto.keithp.com>
+	 <20081018223214.GA5093@elte.hu> <1224389697.4384.118.camel@koto.keithp.com>
+	 <1224398496.5303.7.camel@koto.keithp.com> <20081019175320.GA6442@elte.hu>
+	 <1224450291.5303.23.camel@koto.keithp.com> <20081020115810.GC10594@elte.hu>
+	 <1224517744.5195.1.camel@koto.keithp.com> <20081022093615.GF12453@elte.hu>
+	 <1224793332.22877.8.camel@koto.keithp.com>
+	 <20081023133840.d4eef579.akpm@linux-foundation.org>
+	 <alpine.LFD.2.00.0810231424220.3287@nehalem.linux-foundation.org>
+	 <1224813015.22877.51.camel@koto.keithp.com>
+	 <alpine.LFD.2.00.0810231934590.3287@nehalem.linux-foundation.org>
+	 <1224818645.7654.431.camel@pasglop>
+	 <1224826660.22877.83.camel@koto.keithp.com>
+	 <alpine.LFD.2.00.0810240752300.3287@nehalem.linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-3imfBnWvKRITK4IctLg5"
+Date: Fri, 24 Oct 2008 08:45:20 -0700
+Message-Id: <1224863120.22877.100.camel@koto.keithp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
 
-> Ingo Molnar wrote:
->>
->> a config option is definitely useful for users and distros. Having
->> the boot option is a good idea. Arjan, i thought we had a
->> fastboot=0/1 boot option but i cannot find it - could you please add
->> it?
->
-> In general, boolean options should be fastboot/nofastboot.  We have
-> plenty of inconsistency in that area, but we really don't need to add
-> more.
+--=-3imfBnWvKRITK4IctLg5
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Actually, the fastboot boot option is already used in RedHat's
-rc.sysinit (to skip fsck). Can't we have async_init/sync_init boot
-options to control this feature?
+On Fri, 2008-10-24 at 07:53 -0700, Linus Torvalds wrote:
 
-BTW, is there already some patch available for this option?
+> Actually, on 32-bit, the 'prot' should be there, as should the starting=20
+> physical page. Otherwise the two interfaces would be very odd, and you'd=20
+> have to repeat those arguments in all callers (ie both in "prepare" and=20
+> in the actual "access").
 
--- 
-Olivier Blin (blino) - Mandriva
+I suppose. What I did instead was create _wc versions of both the
+prepare and access functions to eliminate the need for additional data.
+Either way is fine with me; I took the route which didn't require an
+additional allocation.
+
+--=20
+keith.packard@intel.com
+
+--=-3imfBnWvKRITK4IctLg5
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQBJAe2QQp8BWwlsTdMRAirLAJ4986y9JT4P6qM+2X3CCMK2W/qaoQCcDBv0
+o9irxTuMjhmqnZeY5NCQRqg=
+=YiPw
+-----END PGP SIGNATURE-----
+
+--=-3imfBnWvKRITK4IctLg5--
+
