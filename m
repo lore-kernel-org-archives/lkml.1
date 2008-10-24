@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756427AbYJXEqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbYJXEqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756427AbYJXEqN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 00:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbYJXEjf
+	id S1757403AbYJXEqd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 00:46:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbYJXEjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 00:39:35 -0400
-Received: from kroah.org ([198.145.64.141]:51839 "EHLO coco.kroah.org"
+	Fri, 24 Oct 2008 00:39:36 -0400
+Received: from kroah.org ([198.145.64.141]:51865 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751854AbYJXEjZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 00:39:25 -0400
-Date: Thu, 23 Oct 2008 21:34:51 -0700
+	id S1752073AbYJXEj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 00:39:26 -0400
+Date: Thu, 23 Oct 2008 21:34:54 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, netfilter-devel@vger.kernel.org,
-       Patrick McHardy <kaber@trash.net>, davem@davemloft.net
-Subject: [patch 18/27] netfilter: restore lost ifdef guarding defrag
-	exception
-Message-ID: <20081024043451.GS30828@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [patch 19/27] anon_vma_prepare: properly lock even newly allocated
+	entries
+Message-ID: <20081024043454.GT30828@kroah.com>
 References: <20081024042023.054190751@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="netfilter-restore-lost-ifdef-guarding-defrag-exception.patch"
+Content-Disposition: inline; filename="anon_vma_prepare-properly-lock-even-newly-allocated-entries.patch"
 In-Reply-To: <20081024043303.GA30828@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,45 +42,104 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Patrick McHardy <kaber@trash.net>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-netfilter: restore lost #ifdef guarding defrag exception
+commit d9d332e0874f46b91d8ac4604b68ee42b8a7a2c6 upstream
 
-Upstream commit 38f7ac3eb:
+The anon_vma code is very subtle, and we end up doing optimistic lookups
+of anon_vmas under RCU in page_lock_anon_vma() with no locking.  Other
+CPU's can also see the newly allocated entry immediately after we've
+exposed it by setting "vma->anon_vma" to the new value.
 
-Nir Tzachar <nir.tzachar@gmail.com> reported a warning when sending
-fragments over loopback with NAT:
+We protect against the anon_vma being destroyed by having the SLAB
+marked as SLAB_DESTROY_BY_RCU, so the RCU lookup can depend on the
+allocation not being destroyed - but it might still be free'd and
+re-allocated here to a new vma.
 
-[ 6658.338121] WARNING: at net/ipv4/netfilter/nf_nat_standalone.c:89 nf_nat_fn+0x33/0x155()
+As a result, we should not do the anon_vma list ops on a newly allocated
+vma without proper locking.
 
-The reason is that defragmentation is skipped for already tracked connections.
-This is wrong in combination with NAT and ip_conntrack actually had some ifdefs
-to avoid this behaviour when NAT is compiled in.
-
-The entire "optimization" may seem a bit silly, for now simply restoring the
-lost #ifdef is the easiest solution until we can come up with something better.
-
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+Acked-by: Nick Piggin <npiggin@suse.de>
+Acked-by: Hugh Dickins <hugh@veritas.com>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c |    2 ++
- 1 file changed, 2 insertions(+)
+ mm/rmap.c |   42 ++++++++++++++++++++++++++++++++----------
+ 1 file changed, 32 insertions(+), 10 deletions(-)
 
---- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-+++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-@@ -150,10 +150,12 @@ static unsigned int ipv4_conntrack_defra
- 					  const struct net_device *out,
- 					  int (*okfn)(struct sk_buff *))
- {
-+#if !defined(CONFIG_NF_NAT) && !defined(CONFIG_NF_NAT_MODULE)
- 	/* Previously seen (loopback)?  Ignore.  Do this before
- 	   fragment check. */
- 	if (skb->nfct)
- 		return NF_ACCEPT;
-+#endif
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -55,7 +55,33 @@
  
- 	/* Gather fragments. */
- 	if (ip_hdr(skb)->frag_off & htons(IP_MF | IP_OFFSET)) {
+ struct kmem_cache *anon_vma_cachep;
+ 
+-/* This must be called under the mmap_sem. */
++/**
++ * anon_vma_prepare - attach an anon_vma to a memory region
++ * @vma: the memory region in question
++ *
++ * This makes sure the memory mapping described by 'vma' has
++ * an 'anon_vma' attached to it, so that we can associate the
++ * anonymous pages mapped into it with that anon_vma.
++ *
++ * The common case will be that we already have one, but if
++ * if not we either need to find an adjacent mapping that we
++ * can re-use the anon_vma from (very common when the only
++ * reason for splitting a vma has been mprotect()), or we
++ * allocate a new one.
++ *
++ * Anon-vma allocations are very subtle, because we may have
++ * optimistically looked up an anon_vma in page_lock_anon_vma()
++ * and that may actually touch the spinlock even in the newly
++ * allocated vma (it depends on RCU to make sure that the
++ * anon_vma isn't actually destroyed).
++ *
++ * As a result, we need to do proper anon_vma locking even
++ * for the new allocation. At the same time, we do not want
++ * to do any locking for the common case of already having
++ * an anon_vma.
++ *
++ * This must be called with the mmap_sem held for reading.
++ */
+ int anon_vma_prepare(struct vm_area_struct *vma)
+ {
+ 	struct anon_vma *anon_vma = vma->anon_vma;
+@@ -63,20 +89,17 @@ int anon_vma_prepare(struct vm_area_stru
+ 	might_sleep();
+ 	if (unlikely(!anon_vma)) {
+ 		struct mm_struct *mm = vma->vm_mm;
+-		struct anon_vma *allocated, *locked;
++		struct anon_vma *allocated;
+ 
+ 		anon_vma = find_mergeable_anon_vma(vma);
+-		if (anon_vma) {
+-			allocated = NULL;
+-			locked = anon_vma;
+-			spin_lock(&locked->lock);
+-		} else {
++		allocated = NULL;
++		if (!anon_vma) {
+ 			anon_vma = anon_vma_alloc();
+ 			if (unlikely(!anon_vma))
+ 				return -ENOMEM;
+ 			allocated = anon_vma;
+-			locked = NULL;
+ 		}
++		spin_lock(&anon_vma->lock);
+ 
+ 		/* page_table_lock to protect against threads */
+ 		spin_lock(&mm->page_table_lock);
+@@ -87,8 +110,7 @@ int anon_vma_prepare(struct vm_area_stru
+ 		}
+ 		spin_unlock(&mm->page_table_lock);
+ 
+-		if (locked)
+-			spin_unlock(&locked->lock);
++		spin_unlock(&anon_vma->lock);
+ 		if (unlikely(allocated))
+ 			anon_vma_free(allocated);
+ 	}
 
 -- 
