@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757294AbYJXVNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757411AbYJXVPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757294AbYJXVNv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 17:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224AbYJXVNo
+	id S1757411AbYJXVPn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 17:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbYJXVPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 17:13:44 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:64929 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753488AbYJXVNo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 17:13:44 -0400
-Message-ID: <49023A82.8040708@nortel.com>
-Date: Fri, 24 Oct 2008 15:13:38 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, efault@gmx.de,
-       vatsa@in.ibm.com
-Subject: Re: [PATCH 7/8] sched: non-zero lag renice
-References: <20081024090611.936552213@chello.nl> <20081024091109.912152294@chello.nl>  <49020A2A.5070809@nortel.com> <1224880083.7753.6.camel@twins>
-In-Reply-To: <1224880083.7753.6.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 24 Oct 2008 17:15:36 -0400
+Received: from waste.org ([66.93.16.53]:43853 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751198AbYJXVPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 17:15:36 -0400
+Subject: Re: Bloatwatch 2.6.28-rc1: last_sysfs_file
+From: Matt Mackall <mpm@selenic.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linuxfoundation.org>
+In-Reply-To: <1224881514.3248.46.camel@calx>
+References: <1224881514.3248.46.camel@calx>
+Content-Type: text/plain
+Date: Fri, 24 Oct 2008 16:15:23 -0500
+Message-Id: <1224882923.3248.51.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Oct 2008 21:13:39.0587 (UTC) FILETIME=[62C61530:01C9361D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Fri, 2008-10-24 at 11:47 -0600, Chris Friesen wrote:
->> Peter Zijlstra wrote:
->>
->>  > Then renicing, esp when lowering nice value (getting heavier), its possible
->>  > to get into a starvation scenario. If you got too much runtime as a very
->>  > light task, you get shot way far too the right, which means you'll have to
->>  > wait for a long time in order to run again.
->>  >
->>  > If during that wait you get reniced down, fairness would suggest you get run
->>  > earlier, because you deserve more time.
->>  >
->>  > This can be solved by scaling the vruntime so that we keep the real-time
->>  > lag invariant.
->>
->> If we've already been shot way out to the right, presumably that would give us 
->> a large real-time lag.  If we renice to a lower nice level, wouldn't we want 
->> to reduce the real-time lag rather than make it constant?
+On Fri, 2008-10-24 at 15:52 -0500, Matt Mackall wrote:
+> 2.6.28-rc1 adds 4k for last_sysfs_file debug tracking. That's one hell
+> of a long sysfs path.
+> 
+> http://www.selenic.com/bloatwatch/?cmd=compare;v1=2.6.27;v2=2.6.28-rc1;part=/built-in/fs/sysfs
 
-Sorry, the patches arrived out of order and my comments were sent out before 
-reading your definition of "lag" as "the difference between the service time 
-received from the ideal model and the actual scheduler".
+..especially given that printk is limited to 1k at a time.
 
-I was using a definition of lag as "amount of time before the process gets 
-scheduled again".
 
-Given your definition, I think the patch makes sense.
+sysfs: shrink last_sysfs_file to a reasonable size
 
-Chris
+sysfs was reserving 4k to store filenames for debug despite printk being
+limited to 1k. Shrink this to something more reasonable.
+
+Signed-off-by: Matt Mackall <mpm@selenic.com>
+
+diff -r ac8c82ff3be7 fs/sysfs/file.c
+--- a/fs/sysfs/file.c	Fri Oct 24 13:13:04 2008 -0500
++++ b/fs/sysfs/file.c	Fri Oct 24 16:11:53 2008 -0500
+@@ -25,7 +25,7 @@
+ #include "sysfs.h"
+ 
+ /* used in crash dumps to help with debugging */
+-static char last_sysfs_file[PATH_MAX];
++static char last_sysfs_file[200]; /* allow for disgustingly long paths */
+ void sysfs_printk_last_file(void)
+ {
+ 	printk(KERN_EMERG "last sysfs file: %s\n", last_sysfs_file);
+
+
+-- 
+Mathematics is the supreme nostalgia of our time.
+
