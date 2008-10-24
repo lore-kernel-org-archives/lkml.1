@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbYJXRuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbYJXRvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757548AbYJXRuH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 13:50:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbYJXRt4
+	id S1757471AbYJXRvg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 13:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbYJXRv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 13:49:56 -0400
-Received: from outbound-mail-32.bluehost.com ([69.89.18.152]:44117 "HELO
-	outbound-mail-32.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753780AbYJXRty (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 13:49:54 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=K57EWFhYG8V/1uwBHHJZ4CrPNMIt2GaAHn/jumdYu+GHV5Hg+Vx/eCsLsS+uGy7Di+qF6V2TFhTSvHI1DkAyQcBLMmSMu5RPSFrD0d0Lb1eglwQe+ub2TPxdAkQNWPpx;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] PCI hotplug printk format
-Date: Fri, 24 Oct 2008 10:49:41 -0700
-User-Agent: KMail/1.10.1 (Linux/2.6.26.5-45.fc9.x86_64; KDE/4.1.2; x86_64; ; )
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>,
-       torvalds <torvalds@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-References: <20081023213637.eff9b414.sfr@canb.auug.org.au> <20081023181455.336e5d03.randy.dunlap@oracle.com>
-In-Reply-To: <20081023181455.336e5d03.randy.dunlap@oracle.com>
+	Fri, 24 Oct 2008 13:51:28 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50242 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754304AbYJXRv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 13:51:27 -0400
+Message-ID: <49020B39.6080805@redhat.com>
+Date: Fri, 24 Oct 2008 13:51:53 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: maxk@qualcomm.com, LinuxPPC-dev list <linuxppc-dev@ozlabs.org>,
+       linux-kernel Kernel <linux-kernel@vger.kernel.org>, tglx@linutronix.de
+Subject: Re: default IRQ affinity change in v2.6.27 (breaking several SMP
+ PPC based systems)
+References: <4E3CD4D5-FC1B-40BF-A776-C612B95806B8@kernel.crashing.org> <4901E6FB.4070200@redhat.com> <36A821E7-7F37-42AF-9A05-7205FCBF89EE@kernel.crashing.org> <4901F31E.9040007@redhat.com> <5967704E-0117-46B8-8505-6A002502C38C@kernel.crashing.org>
+In-Reply-To: <5967704E-0117-46B8-8505-6A002502C38C@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810241049.42017.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, October 23, 2008 6:14 pm Randy Dunlap wrote:
-> I made this patch for linux-next, but now mainline has this same
-> code/warning.
->
->
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> Fix printk format warning:
->
-> linux-next-20081023/drivers/pci/hotplug/acpiphp_ibm.c:207: warning: format
-> '%08lx' expects type 'long unsigned int', but argument 3 has type 'long
-> long unsigned int'
->
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Kumar Gala wrote:
+> 
+> On Oct 24, 2008, at 11:09 AM, Chris Snook wrote:
+> 
+>> Kumar Gala wrote:
+>>> On Oct 24, 2008, at 10:17 AM, Chris Snook wrote:
+>>>> Kumar Gala wrote:
+>>>>> It appears the default IRQ affinity changes from being just cpu 0 
+>>>>> to all cpu's.  This breaks several PPC SMP systems in which only a 
+>>>>> single processor is allowed to be selected as the destination of 
+>>>>> the IRQ.
+>>>>> What is the right answer in fixing this?  Should we:
+>>>>>   cpumask_t irq_default_affinity = 1;
+>>>>> instead of
+>>>>>   cpumask_t irq_default_affinity = CPU_MASK_ALL?
+>>>>
+>>>> On those systems, perhaps, but not universally.  There's plenty of 
+>>>> hardware where the physical topology of the machine is abstracted 
+>>>> away from the OS, and you need to leave the mask wide open and let 
+>>>> the APIC figure out where to map the IRQs.  Ideally, we should 
+>>>> probably make this decision based on the APIC, but if there's no PPC 
+>>>> hardware that uses this technique, then it would suffice to make 
+>>>> this arch-specific.
+>>> What did those systems do before this patch?  Its one thing to expose 
+>>> a mask in the ability to change the default mask in 
+>>> /proc/irq/default_smp_affinity.  Its another (and a regression in my 
+>>> opinion) to change the mask value itself.
+>>
+>> Before the patch they took an extremely long time to boot if they had 
+>> storage attached to each node of a multi-chassis system, performed 
+>> poorly unless special irqbalance hackery or manual assignment was 
+>> used, and imposed artificial restrictions on the granularity of 
+>> hardware partitioning to ensure that CPU 0 would always be a CPU that 
+>> could service all interrupts necessary to boot the OS.
+>>
+>>> As for making it ARCH specific, that doesn't really help since not 
+>>> all PPC hw has the limitation I spoke of.  Not even all MPIC (in our 
+>>> cases) have the limitation.
+>>
+>> What did those systems do before this patch? :)
+>>
+>> Making it arch-specific is an extremely simple way to solve your 
+>> problem without making trouble for the people who wanted this patch in 
+>> the first place.  If PPC needs further refinement to handle particular 
+>> *PICs, you can implement that without touching any arch-generic code.
+> 
+> 
+> So why not just have x86 startup code set irq_default_affinity = 
+> CPU_MASK_ALL than?
 
-Spoke too soon, this one was already merged.
+It's an issue on Itanium as well, and potentially any SMP architecture with a 
+non-trivial interconnect.
 
-Jesse
+-- Chris
