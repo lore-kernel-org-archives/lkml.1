@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754400AbYJXJ64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbYJXJ7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754400AbYJXJ64 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 05:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbYJXJ6n
+	id S1755432AbYJXJ7T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 05:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbYJXJ6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 24 Oct 2008 05:58:43 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36221 "EHLO
+Received: from casper.infradead.org ([85.118.1.10]:36223 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751833AbYJXJ6m (ORCPT
+	with ESMTP id S1752124AbYJXJ6m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 24 Oct 2008 05:58:42 -0400
-Message-Id: <20081024091109.422586607@chello.nl>
+Message-Id: <20081024091109.585167877@chello.nl>
 References: <20081024090611.936552213@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Fri, 24 Oct 2008 11:06:12 +0200
+Date: Fri, 24 Oct 2008 11:06:14 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, efault@gmx.de, vatsa@in.ibm.com,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 1/8] sched: fix a find_busiest_group buglet
-Content-Disposition: inline; filename=sched-fbg-buglet.patch
+Subject: [PATCH 3/8] sched: weaken sync hint
+Content-Disposition: inline; filename=mike-weaken-sync.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In one of the group load balancer patches:
+From: Mike Galbraith <efault@gmx.de>
 
-	commit 408ed066b11cf9ee4536573b4269ee3613bd735e
-	Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-	Date:   Fri Jun 27 13:41:28 2008 +0200
-	Subject: sched: hierarchical load vs find_busiest_group
+Mysql+oltp and pgsql+oltp peaks are still shifted right. The below puts
+the peaks back to 1 client/server pair per core.
 
-The following change:
+Use the avg_overlap information to weaken the sync hint.
 
--               if (max_load - this_load + SCHED_LOAD_SCALE_FUZZ >=
-+               if (max_load - this_load + 2*busiest_load_per_task >=
-                                        busiest_load_per_task * imbn) {
-
-made the condition always true, because imbn is [1,2].
-Therefore, remove the 2*, and give the it a fair chance.
-
+Signed-off-by: Mike Galbraith <efault@gmx.de>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/sched.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/sched_fair.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/kernel/sched.c
+Index: linux-2.6/kernel/sched_fair.c
 ===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -3343,7 +3343,7 @@ small_imbalance:
- 		} else
- 			this_load_per_task = cpu_avg_load_per_task(this_cpu);
+--- linux-2.6.orig/kernel/sched_fair.c
++++ linux-2.6/kernel/sched_fair.c
+@@ -1228,10 +1228,9 @@ wake_affine(struct sched_domain *this_sd
+ 	if (!(this_sd->flags & SD_WAKE_AFFINE) || !sched_feat(AFFINE_WAKEUPS))
+ 		return 0;
  
--		if (max_load - this_load + 2*busiest_load_per_task >=
-+		if (max_load - this_load + busiest_load_per_task >=
- 					busiest_load_per_task * imbn) {
- 			*imbalance = busiest_load_per_task;
- 			return busiest;
+-	if (!sync && sched_feat(SYNC_WAKEUPS) &&
+-	    curr->se.avg_overlap < sysctl_sched_migration_cost &&
+-	    p->se.avg_overlap < sysctl_sched_migration_cost)
+-		sync = 1;
++	if (sync && (curr->se.avg_overlap > sysctl_sched_migration_cost ||
++			p->se.avg_overlap > sysctl_sched_migration_cost))
++		sync = 0;
+ 
+ 	/*
+ 	 * If sync wakeup then subtract the (maximum possible)
 
 -- 
 
