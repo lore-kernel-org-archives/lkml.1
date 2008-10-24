@@ -1,124 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbYJXGF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752568AbYJXGFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752744AbYJXGF1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 02:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbYJXGFR
+	id S1752568AbYJXGFu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 02:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbYJXGFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 02:05:17 -0400
-Received: from mx2.suse.de ([195.135.220.15]:57110 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751040AbYJXGFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 02:05:15 -0400
-Message-ID: <49016599.5030406@suse.de>
-Date: Fri, 24 Oct 2008 08:05:13 +0200
-From: Hannes Reinecke <hare@suse.de>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Michael Holzheu <HOLZHEU@de.ibm.com>
-Subject: [PATCH] DASD: send 'change' uevents
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/mixed;
- boundary="------------080002030203080504050806"
+	Fri, 24 Oct 2008 02:05:36 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:37399 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751066AbYJXGFf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 02:05:35 -0400
+Message-Id: <20081024060040.700343046@bull.net>
+References: <20081024060022.897705758@bull.net>
+User-Agent: quilt/0.46-1
+Date: Fri, 24 Oct 2008 08:00:23 +0200
+From: Nadia.Derbey@bull.net
+To: akpm@linux-foundation.org, cboulte@gmail.com
+Cc: manfred@colorfullife.com, linux-kernel@vger.kernel.org,
+       Nadia.Derbey@bull.net
+Subject: [PATCH 1/1] (v2) SYSVIPC - Fix the ipc structures initialization
+Content-Disposition: inline; filename=ipc-fix-sysvipc_structures_initialization.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080002030203080504050806
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
 
-Hi Martin,
+This patch is a fix for Bugzilla bug
+http://bugzilla.kernel.org/show_bug.cgi?id=11796.
 
-this patch modifies the DASD driver to sent out 'change' events
-whenever the internal state machine transitions in or out of the
-'ready' state. This is required for udev so that vol_id and friends
-can actually read from the disk.
+To summarize, a simple testcase is concurrently running an infinite loop on
+msgctl(IPC_STAT) and a call to msgget():
 
-Please apply.
+while (1)
+   msgctl(id, IPC_STAT)    1
+                           |
+                           |
+                           |
+                           2 id = msgget(key, IPC_CREAT)
+                           |
+                           |
+                           |
 
-Cheers,
+In the interval [1-2], the id doesn't exist yet.
 
-Hannes
--- 
-Dr. Hannes Reinecke		      zSeries & Storage
-hare@suse.de			      +49 911 74053 688
-SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Markus Rex, HRB 16746 (AG Nürnberg)
+In that test, the problem is the following:
+When we are calling ipc_addid() from msgget() the msq structure is not
+completely initialized. So idr_get_new() is inserting a pointer into the
+idr tree, and the structure which is pointed to has, among other fields,
+its lock uninitialized.
 
---------------080002030203080504050806
-Content-Type: text/plain;
- name="dasd-send-change-events"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="dasd-send-change-events"
+Since msgctl(IPC_STAT) is looping while (1), idr_find() returns the
+pointer as soon as it is inserted into the IDR tree. And ipc_lock()
+calls spin_lock(&mqs->lock), while we have not initialized that lock
+yet.
 
-DASD: Send 'change' uevents
+This patch moves the spin_lock_init() before the call to ipc_addid().
+It also sets the "deleted" flag to 1 in the window between ipc structure
+allocation and its locking in ipc_addid().
 
-A DASD is only useable after the internal state machine transitioned
-to 'ready', way after the device has been added to sysfs.
-So we need to send out a 'change' event here to notify udev.
+Regards,
+Nadia
 
-Signed-off-by: Hannes Reinecke <hare@suse.de>
 
-diff --git a/drivers/s390/block/dasd.c b/drivers/s390/block/dasd.c
-index 0a225cc..447fcdc 100644
---- a/drivers/s390/block/dasd.c
-+++ b/drivers/s390/block/dasd.c
-@@ -335,7 +335,9 @@ static int dasd_state_unfmt_to_basic(struct dasd_device *device)
- static int
- dasd_state_ready_to_online(struct dasd_device * device)
- {
--	int rc;
-+	int rc, i;
-+	struct gendisk *disk = device->bdev->bd_disk;
-+	struct hd_struct *p;
+Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
+
+---
+ ipc/util.c |   12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.27/ipc/util.c
+===================================================================
+--- linux-2.6.27.orig/ipc/util.c	2008-10-23 15:20:46.000000000 +0200
++++ linux-2.6.27/ipc/util.c	2008-10-24 09:03:06.000000000 +0200
+@@ -266,6 +266,17 @@ int ipc_addid(struct ipc_ids* ids, struc
+ 	if (ids->in_use >= size)
+ 		return -ENOSPC;
  
- 	if (device->discipline->ready_to_online) {
- 		rc = device->discipline->ready_to_online(device);
-@@ -345,6 +347,15 @@ dasd_state_ready_to_online(struct dasd_device * device)
- 	device->state = DASD_STATE_ONLINE;
- 	if (device->block)
- 		dasd_schedule_block_bh(device->block);
++	spin_lock_init(&new->lock);
 +
-+	kobject_uevent(&disk->kobj, KOBJ_CHANGE);
-+	/* send uevents for all partitions */
-+	for (i = 1; i < disk->minors; i++) {
-+		p = disk->part[i-1];
-+		if (!p || !p->nr_sects)
-+			continue;
-+		kobject_uevent(&p->kobj, KOBJ_CHANGE);
-+	}
- 	return 0;
- }
++	/*
++	 * We have a window between the time new is inserted into the idr
++	 * tree and the time it is actually locked.
++	 * In order to be safe during that window set the new ipc structure
++	 * as deleted: a concurrent ipc_lock() will see it as not present
++	 * until the initialization phase is complete.
++	 */
++	new->deleted = 1;
++
+ 	err = idr_get_new(&ids->ipcs_idr, new, &id);
+ 	if (err)
+ 		return err;
+@@ -280,7 +291,6 @@ int ipc_addid(struct ipc_ids* ids, struc
+ 		ids->seq = 0;
  
-@@ -353,7 +364,9 @@ dasd_state_ready_to_online(struct dasd_device * device)
-  */
- static int dasd_state_online_to_ready(struct dasd_device *device)
- {
--	int rc;
-+	int rc, i;
-+	struct gendisk *disk = device->bdev->bd_disk;
-+	struct hd_struct *p;
- 
- 	if (device->discipline->online_to_ready) {
- 		rc = device->discipline->online_to_ready(device);
-@@ -361,6 +374,14 @@ static int dasd_state_online_to_ready(struct dasd_device *device)
- 			return rc;
- 	}
- 	device->state = DASD_STATE_READY;
-+	/* send uevents for all partitions */
-+	for (i = 1; i < disk->minors; i++) {
-+		p = disk->part[i-1];
-+		if (!p || !p->nr_sects)
-+			continue;
-+		kobject_uevent(&p->kobj, KOBJ_CHANGE);
-+	}
-+	kobject_uevent(&disk->kobj, KOBJ_CHANGE);
- 	return 0;
- }
- 
+ 	new->id = ipc_buildid(id, new->seq);
+-	spin_lock_init(&new->lock);
+ 	new->deleted = 0;
+ 	rcu_read_lock();
+ 	spin_lock(&new->lock);
 
---------------080002030203080504050806--
+-- 
