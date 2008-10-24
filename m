@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbYJXNYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754114AbYJXNjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219AbYJXNYg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 09:24:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbYJXNY1
+	id S1754114AbYJXNjo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 09:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYJXNjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 09:24:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47805 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751040AbYJXNY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 09:24:26 -0400
-Date: Fri, 24 Oct 2008 15:25:09 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       travis@sgi.com, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Subject: Re: [PATCH 1/7] work_on_cpu: helper for doing task on a CPU.
-Message-ID: <20081024132509.GB17708@redhat.com>
-References: <20081023005751.53973DDEFE@ozlabs.org> <20081023094036.GA7593@redhat.com> <20081023143605.GN5255@in.ibm.com> <200810241404.35932.rusty@rustcorp.com.au> <20081024072147.GA5000@in.ibm.com> <20081024102957.GC4583@redhat.com> <20081024114018.GA24080@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081024114018.GA24080@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 24 Oct 2008 09:39:35 -0400
+Received: from lanfw001a.cxnet.dk ([87.72.215.196]:48513 "EHLO
+	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750939AbYJXNjf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 09:39:35 -0400
+X-Greylist: delayed 1940 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Oct 2008 09:39:35 EDT
+Subject: [PATCH trivial fix] Change UTF8 chars in Kconfig help text about
+	Oprofile AMD barcelona
+From: Jesper Dangaard Brouer <jdb@comx.dk>
+Reply-To: jdb@comx.dk
+To: linux-kernel@vger.kernel.org
+Cc: Robert Richter <robert.richter@amd.com>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Organization: ComX Networks A/S
+Date: Fri, 24 Oct 2008 15:05:12 +0200
+Message-Id: <1224853512.2019.129.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/24, Gautham R Shenoy wrote:
->
-> Having a rule that we shouldn't use work_on_cpu() in cpu-hotplug path
-> is a good thing. But maintaining it can be difficult.
->
-> We've seen that in the past with the cpucontrol mutex.
-> We had clear rules that functions which get called in
-> cpu-hotplug callback paths, shouldn't take this mutex. But with
-> functions that were called in the cpu-hotplug notifier
-> path as well as normal paths, it created a whole locking mess,
-> and took quite some time to fix.
->
-> Similarly, right now, we can have a BUG_ON() which notifies us whenever
-> someone ends up calling a function that invokes work_on_cpu() from the
-> CPU-Hotplug callpath. But we will fix it only when the BUG_ON() is hit.
->
-> On the other hand, if we have a mechanism that's guaranteed to work
-> irrespective of the callpaths, why not use that ?
 
-If we add another wq for work_on_cpu(), then we add another hard-to-maintain
-rule: get_online_cpus() must not be used by any work which can be queued
-on that wq. And, yet another per-cpu thread...
+Fixes screwing up text output when doing a make oldconfig and viewing
+help text of "OProfile AMD IBS support".  When the terminal is
+not using an UTF8 locale / LANG.  "make config" breaks terminal output
+and its not possible to continue.
 
-Personally I don't even think we need a BUG_ON() in work_on_cpu(), because
-I don't think cpu-hotplug path is so special.
+(Change added by changeset 852402cc Tue Jul 22 21:09:06 2008)
 
-Not that I have a strong opinion though.
+Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
+---
+ arch/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Oleg.
+diff --git a/arch/Kconfig b/arch/Kconfig
+index e6ab550..8977d99 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -21,7 +21,7 @@ config OPROFILE_IBS
+           Instruction-Based Sampling (IBS) is a new profiling
+           technique that provides rich, precise program performance
+           information. IBS is introduced by AMD Family10h processors
+-          (AMD Opteron Quad-Core processor “Barcelona”) to overcome
++          (AMD Opteron Quad-Core processor "Barcelona") to overcome
+           the limitations of conventional performance counter
+           sampling.
+ 
+-- 
+1.5.4.2
+
 
