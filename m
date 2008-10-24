@@ -1,65 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbYJXHdC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756464AbYJXHdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754799AbYJXHdC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 03:33:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751090AbYJXHcw
+	id S1756464AbYJXHdy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 03:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbYJXHdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 03:32:52 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:31428 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751432AbYJXHcv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 03:32:51 -0400
-Date: Fri, 24 Oct 2008 16:32:12 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>, tj@kernel.org,
-       torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: 2.6.27-rc1 (2fca5c): libata: kernel cant boot
-Message-ID: <20081024073212.GA4008@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Alexander Beregalov <a.beregalov@gmail.com>, tj@kernel.org,
-	torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
-	linux-ide@vger.kernel.org
-References: <a4423d670810240004t2d7c3bdah2bea77a6a49bb7c4@mail.gmail.com> <20081024070955.GN22217@kernel.dk> <20081024071329.GO22217@kernel.dk> <20081024071608.GA3879@linux-sh.org> <20081024072428.GP22217@kernel.dk>
+	Fri, 24 Oct 2008 03:33:45 -0400
+Received: from ns2.gothnet.se ([82.193.160.251]:5486 "EHLO
+	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751090AbYJXHdo convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 03:33:44 -0400
+Message-ID: <49017A2C.5010504@tungstengraphics.com>
+Date: Fri, 24 Oct 2008 09:33:00 +0200
+From: =?UTF-8?B?VGhvbWFzIEhlbGxzdHLDtm0=?= <thomas@tungstengraphics.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080926)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081024072428.GP22217@kernel.dk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Keith Packard <keithp@keithp.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, nickpiggin@yahoo.com.au,
+       airlied@linux.ie, dri-devel@lists.sf.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jbarnes@virtuousgeek.org, Peter Anvin <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, yinghai@kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Adding kmap_atomic_prot_pfn 
+References: <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>	<20081018203741.GA23396@elte.hu>	<1224366690.4384.89.camel@koto.keithp.com>	<20081018223214.GA5093@elte.hu>	<1224389697.4384.118.camel@koto.keithp.com>	<1224398496.5303.7.camel@koto.keithp.com>	<20081019175320.GA6442@elte.hu>	<1224450291.5303.23.camel@koto.keithp.com>	<20081020115810.GC10594@elte.hu>	<1224517744.5195.1.camel@koto.keithp.com>	<20081022093615.GF12453@elte.hu>	<1224793332.22877.8.camel@koto.keithp.com>	<20081023133840.d4eef579.akpm@linux-foundation.org>	<alpine.LFD.2.00.0810231424220.3287@nehalem.linux-foundation.org>	<1224813015.22877.51.camel@koto.keithp.com>	<alpine.LFD.2.00.0810231934590.3287@nehalem.linux-foundation.org> <1224829359.22877.86.camel@koto.keithp.com>
+In-Reply-To: <1224829359.22877.86.camel@koto.keithp.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+X-BitDefender-Scanner: Mail not scanned due to license constraints
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 24, 2008 at 09:24:29AM +0200, Jens Axboe wrote:
-> On Fri, Oct 24 2008, Paul Mundt wrote:
-> > On Fri, Oct 24, 2008 at 09:13:29AM +0200, Jens Axboe wrote:
-> > > Darn, this smells like a train wreck. I'm assuming this fixes it?
-> > > 
-> > Yes, that fixes it.
-> 
-> OK, that's pretty bad. 2.6.28-rc1 will not work on any box using libata
-> with non-ncq disks. If you need me, I'll be at the bar.
-> 
-At least you only missed -rc1 by a few hours, it was a good effort.. :-)
+Keith,
 
-> From e598055dde1951c47c8b3522616f6ebff0ed9847 Mon Sep 17 00:00:00 2001
-> From: Jens Axboe <jens.axboe@oracle.com>
-> Date: Fri, 24 Oct 2008 09:22:42 +0200
-> Subject: [PATCH] libata: fix bug with non-ncq devices
-> 
-> The recent commit 201f1b98822078c808b5e2d379a6ddbfc0a06ee1 to enable
-> support for block layer tagging in libata was broken for non-NCQ
-> devices. The block layer initializes the tag field to -1 to detect
-> invalid uses of a tag, and if the libata devices does NOT support
-> NCQ, we just used that field to index the internal command list.
-> So we need to check for -1 first and only use the tag field if
-> it's valid.
-> 
-> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+What you actually are doing here is claiming copyright on code that 
+other people have written, and tighten the export restrictions. 
+kmap_atomic_prot_pfn() appeared long ago in drm git with identical code 
+and purpose, but with different authors, and iounmap_atomic is identical 
+to kunmap_atomic.
 
-Tested-by: Paul Mundt <lethal@linux-sh.org>
+Pls fix.
 
-Thanks for the quick fix! Now I can go back to hacking on the stuff I
-was avoiding..
+/Thomas
+
+Keith Packard wrote:
+>
+> diff --git a/arch/x86/mm/iomap_32.c b/arch/x86/mm/iomap_32.c
+> new file mode 100644
+> index 0000000..c559599
+> --- /dev/null
+> +++ b/arch/x86/mm/iomap_32.c
+> @@ -0,0 +1,59 @@
+> +/*
+> + * Copyright © 2008 Keith Packard <keithp@keithp.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License along
+> + * with this program; if not, write to the Free Software Foundation, Inc.,
+> + * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+> + */
+> +
+> +#include <asm/iomap.h>
+> +#include <linux/module.h>
+> +
+> +/* Map 'pfn' using fixed map 'type' and protections 'prot'
+> + */
+> +void *
+> +iomap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot)
+> +{
+> +	enum fixed_addresses idx;
+> +	unsigned long vaddr;
+> +
+> +	pagefault_disable();
+> +
+> +	idx = type + KM_TYPE_NR*smp_processor_id();
+> +	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+> +	set_pte(kmap_pte-idx, pfn_pte(pfn, prot));
+> +	arch_flush_lazy_mmu_mode();
+> +
+> +	return (void*) vaddr;
+> +}
+> +EXPORT_SYMBOL_GPL(iomap_atomic_prot_pfn);
+> +
+> +void
+> +iounmap_atomic(void *kvaddr, enum km_type type)
+> +{
+> +	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
+> +	enum fixed_addresses idx = type + KM_TYPE_NR*smp_processor_id();
+> +
+> +	/*
+> +	 * Force other mappings to Oops if they'll try to access this pte
+> +	 * without first remap it.  Keeping stale mappings around is a bad idea
+> +	 * also, in case the page changes cacheability attributes or becomes
+> +	 * a protected page in a hypervisor.
+> +	 */
+> +	if (vaddr == __fix_to_virt(FIX_KMAP_BEGIN+idx))
+> +		kpte_clear_flush(kmap_pte-idx, vaddr);
+> +
+> +	arch_flush_lazy_mmu_mode();
+> +	pagefault_enable();
+> +}
+> +EXPORT_SYMBOL_GPL(iounmap_atomic);
+>   
+
+
+
