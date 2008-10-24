@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbYJXDYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755718AbYJXDd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756118AbYJXDYy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 23:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbYJXDYp
+	id S1755718AbYJXDd5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 23:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYJXDdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 23:24:45 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42716 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751474AbYJXDYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 23:24:45 -0400
-Subject: Re: Adding kmap_atomic_prot_pfn  (was: [git pull] drm patches for
-	2.6.27-rc1)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
+	Thu, 23 Oct 2008 23:33:47 -0400
+Received: from wx-out-0506.google.com ([66.249.82.236]:30461 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751474AbYJXDdq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 23:33:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=btiaLwaHKPManIfHrI2QZrhDIos4bijG+8ZVF7IAJRHmU45oVWmg6RtQW17cyNy5wV
+         /KQUhYCDy0LV1Q/uv9Az8vTUZfxGqsOXc0ntvBqgKUcxNRHNKg6/+S9DhKodzECFqtpV
+         1541ePbMqTqFYjaQXPyxYu21wSjbofcr/8NGg=
+Date: Thu, 23 Oct 2008 23:33:40 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Keith Packard <keithp@keithp.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       nickpiggin@yahoo.com.au, airlied@linux.ie,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jbarnes@virtuousgeek.org, dri-devel@lists.sf.net, yinghai@kernel.org,
-       Peter Anvin <hpa@zytor.com>
-In-Reply-To: <alpine.LFD.2.00.0810231934590.3287@nehalem.linux-foundation.org>
-References: <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
-	 <20081018203741.GA23396@elte.hu> <1224366690.4384.89.camel@koto.keithp.com>
-	 <20081018223214.GA5093@elte.hu> <1224389697.4384.118.camel@koto.keithp.com>
-	 <1224398496.5303.7.camel@koto.keithp.com> <20081019175320.GA6442@elte.hu>
-	 <1224450291.5303.23.camel@koto.keithp.com> <20081020115810.GC10594@elte.hu>
-	 <1224517744.5195.1.camel@koto.keithp.com> <20081022093615.GF12453@elte.hu>
-	 <1224793332.22877.8.camel@koto.keithp.com>
-	 <20081023133840.d4eef579.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0810231424220.3287@nehalem.linux-foundation.org>
-	 <1224813015.22877.51.camel@koto.keithp.com>
-	 <alpine.LFD.2.00.0810231934590.3287@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 24 Oct 2008 14:24:05 +1100
-Message-Id: <1224818645.7654.431.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: [git pull] Input updates for 2.6.28-rc1
+Message-ID: <20081024033339.GA14393@anvil.corenet.prv>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-23 at 19:48 -0700, Linus Torvalds wrote:
-> Then, there's the issue of 64-bit, and just mapping everything there, and 
-> the interface to that. I liked the trivial extension to "struct resource" 
-> to have a "cached mapping" pointer. So if we can just make it pass 
-> resources around and get a page that way (and not even need kmap() on 
-> 64-bit architections), that would be good.
+Hi Linus,
 
-I'm not that fan of carrying a mapping with a struct resource because if
-we do that we should probably also refcount the mapping, and then there
-is the whole question of mappings with different attributes, etc etc...
+Please pull from:
 
-Cheers,
-Ben.
+	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+or
+	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+
+to receive updates for the input subsystem. It contains completely new
+Elantech driver for touchpads found in EeePCs and other notebooks and a
+small update to i8042. Elantech driver has been cooking in -mm for a
+long time and also was present in -next for a week or so.
+
+Thanks!
+
+Changelog:
+---------
+
+Arjan Opmeer (1):
+      Input: psmouse - add support for Elantech touchpads
+
+Stefan Bader (1):
+      Input: i8042 - add Blue FB5601 to noloop exception table
 
 
+Diffstat:
+--------
+
+ Documentation/input/elantech.txt      |  405 ++++++++++++++++++++
+ drivers/input/mouse/Kconfig           |   25 ++-
+ drivers/input/mouse/Makefile          |    1 +
+ drivers/input/mouse/elantech.c        |  674 +++++++++++++++++++++++++++++++++
+ drivers/input/mouse/elantech.h        |  124 ++++++
+ drivers/input/mouse/psmouse-base.c    |   23 ++
+ drivers/input/mouse/psmouse.h         |    1 +
+ drivers/input/serio/i8042-x86ia64io.h |    8 +
+ 8 files changed, 1259 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/input/elantech.txt
+ create mode 100644 drivers/input/mouse/elantech.c
+ create mode 100644 drivers/input/mouse/elantech.h
+
+-- 
+Dmitry
