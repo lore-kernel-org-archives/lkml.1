@@ -1,35 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbYJXPEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbYJXPLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757237AbYJXPEU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 11:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbYJXPEI
+	id S1754782AbYJXPLx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 11:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbYJXPLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 11:04:08 -0400
-Received: from mga11.intel.com ([192.55.52.93]:53874 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753690AbYJXPEG convert rfc822-to-8bit (ORCPT
+	Fri, 24 Oct 2008 11:11:42 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:16131 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753273AbYJXPLl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 11:04:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,478,1220252400"; 
-   d="scan'208";a="631227261"
-From: "Moore, Robert" <robert.moore@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>
-CC: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
-       "Lin, Ming M" <ming.m.lin@intel.com>
-Date: Fri, 24 Oct 2008 08:04:01 -0700
-Subject: RE: Oops in ACPI with git latest
-Thread-Topic: Oops in ACPI with git latest
-Thread-Index: Ack1pS0a3lNAe0NTTYaP1A3sXtbl6wARIBqw
-Message-ID: <4911F71203A09E4D9981D27F9D8308580AA7FA56@orsmsx503.amr.corp.intel.com>
-References: <1224791103.3330.37.camel@localhost.localdomain>
- <200810232242.33480.rjw@sisk.pl>
- <1224811033.3330.54.camel@localhost.localdomain>
- <200810240847.49891.rjw@sisk.pl>
-In-Reply-To: <200810240847.49891.rjw@sisk.pl>
+	Fri, 24 Oct 2008 11:11:41 -0400
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       "Lawler, Tom" <Tom.Lawler@hp.com>
+CC: "James.Bottomley@HansenPartnership.com" 
+	<James.Bottomley@HansenPartnership.com>,
+       "Jens.Axboe@oracle.com" <Jens.Axboe@oracle.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Fri, 24 Oct 2008 15:10:57 +0000
+Subject: RE: [RFC PATCH] HP (Compaq) Smart Array 5xxx controller SCSI driver
+Thread-Topic: [RFC PATCH] HP (Compaq) Smart Array 5xxx controller SCSI driver
+Thread-Index: AcjpjZD6teMIDck+TnaAE6vNdxfLRBMXJAsw
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A77884C01B0C584@GVW0547EXC.americas.hpqcorp.net>
+References: <20080719195150Y.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080719195150Y.fujita.tomonori@lab.ntt.co.jp>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -42,66 +37,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes, please post the acpidump for the machine, we want to look at this _OSC method.
+Tomo wrote:
 
-Thanks.
-Bob
+>
+> My scsi driver is still in an early stage (I tried to keep
+> the changes minimum). I can detect logical units, mount a
+> file system, do lots of I/Os, however, there are lots of
+> TODOs in the management features.
+>
+> If I can get an ACK from HP about the long-term migration of
+> cciss to SCSI, I'm happy to keep working on the SCSI cciss
+> driver and maintain it until HP takes over the driver.
 
+Just a brief update. HP has developed a scsi version of cciss. It was originally done for another environment but we have decided to use it as the base for Linux. It was authored by Tom Lawler of HP. We are currently in the process of getting the Open Source Review Board approval to release the code to the community.
 
->-----Original Message-----
->From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
->owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
->Sent: Thursday, October 23, 2008 11:48 PM
->To: James Bottomley
->Cc: linux-acpi@vger.kernel.org; linux-kernel; Jesse Barnes; Len Brown; Lin,
->Ming M
->Subject: Re: Oops in ACPI with git latest
+It's unclear right now as to who will be the maintainer.
+
+-- mikem
+
 >
->On Friday, 24 of October 2008, James Bottomley wrote:
->> On Thu, 2008-10-23 at 22:42 +0200, Rafael J. Wysocki wrote:
->> > On Thursday, 23 of October 2008, James Bottomley wrote:
->> > > ACPI Warning (nseval-0168): Insufficient arguments - method [_OSC]
->needs 5, found 4 [20080926]
->> > > ACPI Warning (nspredef-0252): \_SB_.PCI0._OSC: Parameter count
->mismatch - ASL declared 5, expected 4 [20080926]
->> > > ACPI Error (nspredef-0163): \_SB_.PCI0._OSC: Missing expected return
->value [20080926]
->> > > BUG: unable to handle kernel NULL pointer dereference at 00000000
->> > Does this patch help?
->> >
->> > ---
->> >  drivers/pci/pci-acpi.c |    3 +++
->> >  1 file changed, 3 insertions(+)
->> >
->> > Index: linux-2.6/drivers/pci/pci-acpi.c
->> > ===================================================================
->> > --- linux-2.6.orig/drivers/pci/pci-acpi.c
->> > +++ linux-2.6/drivers/pci/pci-acpi.c
->> > @@ -83,6 +83,9 @@ static acpi_status acpi_run_osc(acpi_han
->> >  	if (ACPI_FAILURE(status))
->> >  		return status;
->> >
->> > +	if (!output.pointer)
->> > +		return AE_NULL_OBJECT;
->> > +
->> >  	out_obj = output.pointer;
->> >  	if (out_obj->type != ACPI_TYPE_BUFFER) {
->> >  		printk(KERN_DEBUG "Evaluate _OSC returns wrong type\n");
->>
->> Yes, that seems to fix it, thanks! ... I suppose the ASL error and
->> warnings need investigating too?
 >
->Unfortunately, they seem to indicate a BIOS breakage.
+> The patch is available at:
 >
->According to the spec, _OSC should take 4 arguments, but apparently on your
->system it wants 5.
+> http://www.kernel.org/pub/linux/kernel/people/tomo/ciss/0001-a
+> dd-HP-Compaq-Smart-Array-5xxx-controller-SCSI-dri.patch
 >
->The output of acpidump may be helpful, as Lin Ming already said.
+> clover:/home/fujita# insmod ciss.ko
+> clover:/home/fujita# lsscsi
+> (snip)
+> [1:0:0:0]    disk    HP       LOGICAL VOLUME   1.66  /dev/sde
+> [1:0:0:1]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdf
+> [1:0:0:2]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdg
+> [1:0:0:3]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdh
 >
->Thanks,
->Rafael
+> Yeah, it just works as SCSI disk, the dmesg says:
 >
->--
->To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> sd 1:0:0:0: [sde] Attached SCSI disk
+> sd 1:0:0:1: [sdf] 143305920 512-byte hardware sectors (73373
+> MB) sd 1:0:0:1: [sdf] Write Protect is off sd 1:0:0:1: [sdf]
+> Mode Sense: 5b 00 00 08 sd 1:0:0:1: [sdf] Write cache:
+> disabled, read cache: enabled, doesn't support DPO or FUA
+>
+> I needed a different name and just stole 'ciss' from *BSD.
+> But any names (like hpciss) works for me.
+>
+>
+> Thanks,
+>
