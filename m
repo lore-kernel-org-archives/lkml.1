@@ -1,41 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbYJXXH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755715AbYJXXJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756226AbYJXXH7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 19:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbYJXXHv
+	id S1755715AbYJXXJk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 19:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbYJXXJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 19:07:51 -0400
-Received: from ioctl.codeblau.de ([80.190.240.67]:52668 "EHLO codeblau.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750785AbYJXXHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 19:07:50 -0400
-Date: Sat, 25 Oct 2008 01:07:48 +0200
-From: Felix von Leitner <felix-linuxkernel@fefe.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linux Kernel Mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: MCEs
-Message-ID: <20081024230748.GA21365@codeblau.de>
-References: <20081024124502.GA9425@codeblau.de> <87r66598eq.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87r66598eq.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 24 Oct 2008 19:09:32 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:43839 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752061AbYJXXJb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 19:09:31 -0400
+From: Trent Piepho <tpiepho@freescale.com>
+To: linux-kernel@vger.kernel.org
+Cc: Trent Piepho <tpiepho@freescale.com>, linuxppc-dev@ozlabs.org,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Richard Purdie <rpurdie@rpsys.net>,
+       Sean MacLennan <smaclennan@pikatech.com>,
+       Wolfram Sang <w.sang@pengutronix.de>,
+       Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 1/4] of_gpio: Return GPIO flags from of_get_gpio()
+Date: Fri, 24 Oct 2008 16:08:58 -0700
+Message-Id: <1224889741-4167-1-git-send-email-tpiepho@freescale.com>
+X-Mailer: git-send-email 1.5.4.1
+In-Reply-To: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
+References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It's some sort of hardware problem, debugging it typically
-> either involves fixing the cooling or exchanging components.
+The device binding spec for OF GPIOs defines a flags field, but there is
+currently no way to get it.  This patch adds a parameter to of_get_gpio()
+where the flags will be returned if non-NULL.  of_get_gpio() in turn passes
+the parameter to the of_gpio_chip's xlate method, which can extract any
+flags present from the gpio_spec.
 
-Using an older kernel I get actual MCE messages that I can write down
-and decode using mcelog.
+The default (and currently only) of_gpio_chip xlate method,
+of_gpio_simple_xlate(), is modified to do this.
 
-It looks like the MCE handler is buggy in current kernels and will cause
-a panic instead of the MCE messages (or maybe in addition to and the
-panic obscures them by scrolling them out of my 80x25 screen).
+Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+---
+ drivers/mtd/nand/fsl_upm.c              |    2 +-
+ drivers/net/fs_enet/fs_enet-main.c      |    2 +-
+ drivers/net/phy/mdio-ofgpio.c           |    4 ++--
+ drivers/of/gpio.c                       |   13 ++++++++++---
+ drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
+ include/linux/of_gpio.h                 |   17 +++++++++++++----
+ 6 files changed, 28 insertions(+), 12 deletions(-)
 
-Is there a howto or wiki somewhere on how to parse mcelog decoded
-messages?
+diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
+index 024e3ff..a25d962 100644
+--- a/drivers/mtd/nand/fsl_upm.c
++++ b/drivers/mtd/nand/fsl_upm.c
+@@ -218,7 +218,7 @@ static int __devinit fun_probe(struct of_device *ofdev,
+ 	}
+ 	fun->upm_cmd_offset = *prop;
+ 
+-	fun->rnb_gpio = of_get_gpio(ofdev->node, 0);
++	fun->rnb_gpio = of_get_gpio(ofdev->node, 0, NULL);
+ 	if (fun->rnb_gpio >= 0) {
+ 		ret = gpio_request(fun->rnb_gpio, ofdev->dev.bus_id);
+ 		if (ret) {
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index cb51c1f..5a3c7ee 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -994,7 +994,7 @@ static int __devinit find_phy(struct device_node *np,
+ 		goto out_put_phy;
+ 	}
+ 
+-	bus_id = of_get_gpio(mdionode, 0);
++	bus_id = of_get_gpio(mdionode, 0, NULL);
+ 	if (bus_id < 0) {
+ 		struct resource res;
+ 		ret = of_address_to_resource(mdionode, 0, &res);
+diff --git a/drivers/net/phy/mdio-ofgpio.c b/drivers/net/phy/mdio-ofgpio.c
+index 2ff9775..e3757c6 100644
+--- a/drivers/net/phy/mdio-ofgpio.c
++++ b/drivers/net/phy/mdio-ofgpio.c
+@@ -78,8 +78,8 @@ static int __devinit mdio_ofgpio_bitbang_init(struct mii_bus *bus,
+ {
+ 	struct mdio_gpio_info *bitbang = bus->priv;
+ 
+-	bitbang->mdc = of_get_gpio(np, 0);
+-	bitbang->mdio = of_get_gpio(np, 1);
++	bitbang->mdc = of_get_gpio(np, 0, NULL);
++	bitbang->mdio = of_get_gpio(np, 1, NULL);
+ 
+ 	if (bitbang->mdc < 0 || bitbang->mdio < 0)
+ 		return -ENODEV;
+diff --git a/drivers/of/gpio.c b/drivers/of/gpio.c
+index 7cd7301..2123517 100644
+--- a/drivers/of/gpio.c
++++ b/drivers/of/gpio.c
+@@ -22,11 +22,12 @@
+  * of_get_gpio - Get a GPIO number from the device tree to use with GPIO API
+  * @np:		device node to get GPIO from
+  * @index:	index of the GPIO
++ * @flags:	GPIO's flags are returned here if non-NULL
+  *
+  * Returns GPIO number to use with Linux generic GPIO API, or one of the errno
+  * value on the error condition.
+  */
+-int of_get_gpio(struct device_node *np, int index)
++int of_get_gpio(struct device_node *np, int index, unsigned int *flags)
+ {
+ 	int ret;
+ 	struct device_node *gc;
+@@ -59,7 +60,9 @@ int of_get_gpio(struct device_node *np, int index)
+ 		goto err1;
+ 	}
+ 
+-	ret = of_gc->xlate(of_gc, np, gpio_spec);
++	if (flags)
++		*flags = 0;
++	ret = of_gc->xlate(of_gc, np, gpio_spec, flags);
+ 	if (ret < 0)
+ 		goto err1;
+ 
+@@ -77,19 +80,23 @@ EXPORT_SYMBOL(of_get_gpio);
+  * @of_gc:	pointer to the of_gpio_chip structure
+  * @np:		device node of the GPIO chip
+  * @gpio_spec:	gpio specifier as found in the device tree
++ * @flags:	if non-NUll flags are returned here
+  *
+  * This is simple translation function, suitable for the most 1:1 mapped
+  * gpio chips. This function performs only one sanity check: whether gpio
+  * is less than ngpios (that is specified in the gpio_chip).
+  */
+ int of_gpio_simple_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
+-			 const void *gpio_spec)
++			 const void *gpio_spec, unsigned int *flags)
+ {
+ 	const u32 *gpio = gpio_spec;
+ 
+ 	if (*gpio > of_gc->gc.ngpio)
+ 		return -EINVAL;
+ 
++	if (flags && of_gc->gpio_cells > 1)
++		*flags = gpio[1];
++
+ 	return *gpio;
+ }
+ EXPORT_SYMBOL(of_gpio_simple_xlate);
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+index bde4b4b..7835cd4 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -1094,7 +1094,7 @@ static int cpm_uart_init_port(struct device_node *np,
+ 	}
+ 
+ 	for (i = 0; i < NUM_GPIOS; i++)
+-		pinfo->gpios[i] = of_get_gpio(np, i);
++		pinfo->gpios[i] = of_get_gpio(np, i, NULL);
+ 
+ 	return cpm_uart_request_port(&pinfo->port);
+ 
+diff --git a/include/linux/of_gpio.h b/include/linux/of_gpio.h
+index 67db101..0d332bf 100644
+--- a/include/linux/of_gpio.h
++++ b/include/linux/of_gpio.h
+@@ -26,7 +26,7 @@ struct of_gpio_chip {
+ 	struct gpio_chip gc;
+ 	int gpio_cells;
+ 	int (*xlate)(struct of_gpio_chip *of_gc, struct device_node *np,
+-		     const void *gpio_spec);
++		     const void *gpio_spec, unsigned int *flags);
+ };
+ 
+ static inline struct of_gpio_chip *to_of_gpio_chip(struct gpio_chip *gc)
+@@ -35,6 +35,14 @@ static inline struct of_gpio_chip *to_of_gpio_chip(struct gpio_chip *gc)
+ }
+ 
+ /*
++ * Flags as returned by OF GPIO chip's xlate function.
++ * These do not need to be the same as the flags in the GPIO specifier in the
++ * OF device tree, but it's convenient if they are.  The mm chip OF GPIO
++ * driver works this way.
++ */
++#define OF_GPIO_ACTIVE_LOW	1
++
++/*
+  * OF GPIO chip for memory mapped banks
+  */
+ struct of_mm_gpio_chip {
+@@ -50,16 +58,17 @@ static inline struct of_mm_gpio_chip *to_of_mm_gpio_chip(struct gpio_chip *gc)
+ 	return container_of(of_gc, struct of_mm_gpio_chip, of_gc);
+ }
+ 
+-extern int of_get_gpio(struct device_node *np, int index);
++extern int of_get_gpio(struct device_node *np, int index, unsigned int *flags);
+ extern int of_mm_gpiochip_add(struct device_node *np,
+ 			      struct of_mm_gpio_chip *mm_gc);
+ extern int of_gpio_simple_xlate(struct of_gpio_chip *of_gc,
+ 				struct device_node *np,
+-				const void *gpio_spec);
++				const void *gpio_spec, unsigned int *flags);
+ #else
+ 
+ /* Drivers may not strictly depend on the GPIO support, so let them link. */
+-static inline int of_get_gpio(struct device_node *np, int index)
++static inline int of_get_gpio(struct device_node *np, int index,
++			      unsigned int *flags)
+ {
+ 	return -ENOSYS;
+ }
+-- 
+1.5.4.3
 
-Felix
