@@ -1,207 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756609AbYJXBG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbYJXBIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756609AbYJXBG3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 21:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbYJXBGS
+	id S1756089AbYJXBIS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 21:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbYJXBIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 21:06:18 -0400
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:36681 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750936AbYJXBGR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 21:06:17 -0400
-X-YMail-OSG: SIfk8NEVM1mj0.V4U35vV1Go_IIv6pXXax1owSK9jeJUISdWw8nm1lvNegb7beXcTedGGDIpwPvt6Y44tIEKw321dhcf70P11AOdBD9WXa8H9aZiz2NphqC5fsilkKngizNjWMJ7QFNtJhBOP74HX.IMwbqXVAbY24v8QOQM1owOmJbFsG8KQziK1_k-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH] [LIO-Target/ConfigFS]: Added iSCSI Initiator Node ACL
-	READ-ONLY Parameters
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Cc: Mike Christie <mchristie@redhat.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Christoph Hellwig <hch@lst.de>, Andrew Morton <akpm@osdl.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Alasdair G Kergon <agk@redhat.com>,
-       Ming Zhang <blackmagic02881@gmail.com>,
-       "Ross S. W. Walker" <rswwalker@gmail.com>,
-       Arne Redlich <agr@powerkom-dd.de>
-Content-Type: text/plain
-Date: Thu, 23 Oct 2008 18:06:13 -0700
-Message-Id: <1224810373.16558.13.camel@haakon2.linux-iscsi.org>
+	Thu, 23 Oct 2008 21:08:07 -0400
+Received: from mx2.suse.de ([195.135.220.15]:40069 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751673AbYJXBIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 21:08:05 -0400
+Date: Fri, 24 Oct 2008 03:08:03 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: hugh@veritas.com, apkm@linux-os.sc.intel.com, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] remap_pfn_range: store vm_pgoff for all linear_over_vma_region mappings
+Message-ID: <20081024010803.GB5004@wotan.suse.de>
+References: <20081023220913.GA20300@linux-os.sc.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081023220913.GA20300@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 836f7a0174727bc9d39619d01c24f0d8048f8a7d Mon Sep 17 00:00:00 2001
-From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Thu, 23 Oct 2008 06:59:20 -0700
-Subject: [PATCH] [LIO-Target/ConfigFS]: Added iSCSI Initiator Node ACL READ-ONLY Parameters
+On Thu, Oct 23, 2008 at 03:09:14PM -0700, Venki Pallipadi wrote:
+> 
+> While working on x86 PAT, we are having some hurdles with tracking
+> remap_pfn_range() regions, as later we do not have any information to say
+> whether that PFNMAP mapping is linear for the entire vma range or
+> it is smaller granularity regions within the vma.
+> 
+> A simple solution to this is to use vm_pgoff as an indicator for
+> linear mapping over the vma region. Currently, remap_pfn_range
+> only sets vm_pgoff only for COW mappings. Below patch changes the
+> logic and sets the vm_pgoff irrespective of COW.
+> 
+> >From our understanding of the code, this should not break anyone.
+> Just sending it as an RFC to get feedback on whether it is OK to do
+> something like this or are there any corner cases that we may
+> break or watch out for.
+> 
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 
-Added static struct config_item_type lio_target_nacl_param_cit that lives under
+Hmm, I can'tthink of why it would break, but I would like to see an
+entire patch. Obviously you won't try to decode this vma stuff
+directly from the PAT code, but just call mm helpers... ?
 
-/sys/kernel/config/target/iscsi/$TIQN/$TPGT/acl/$INITIATOR_ACL/param
-
-These configfs attributes are READ-ONLY and are the parameters defined as
-having a "session wide" scope.  These parameters represent the iSCSI Nexus
-(eg: Session) context's parameters.
-
-For Traditional iSCSI (RFC-3260) there is only "TargetAlias" parameter that is
- legal to be exchanged after during iSCSI full feature phase from iSCSI Target
-side's perspective in a "session wide" scope.
-
-Sending "TargetAlias"  while the iSCSI SessionType=Normal nexus is active is
-on the TODO list, and the current configfs attrib is to do with LIO-Target is:
-
-/sys/kernel/config/target/iscsi/$IQN/$TPGT/param/TargetAlias
-
-Signed-off-by: Nicholas A. Bellinger
----
- drivers/lio-core/iscsi_target_configfs.c |  100 +++++++++++++++++++++++++++++-
- drivers/lio-core/iscsi_target_core.h     |    1 +
- 2 files changed, 98 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/lio-core/iscsi_target_configfs.c b/drivers/lio-core/iscsi_target_configfs.c
-index 016ebad..fa3b6a0 100644
---- a/drivers/lio-core/iscsi_target_configfs.c
-+++ b/drivers/lio-core/iscsi_target_configfs.c
-@@ -818,6 +818,98 @@ static struct config_item_type lio_target_nacl_attrib_cit = {
+Thanks,
+Nick
  
- // End items for lio_target_nacl_attrib_cit
- 
-+// Start items for lio_target_nacl_param_cit
-+
-+#define DEF_NACL_PARAM(name)						\
-+static ssize_t lio_target_show_nacl_param_##name (			\
-+	struct iscsi_node_acl_s *nacl,					\
-+	char *page)							\
-+{									\
-+	iscsi_session_t *sess;						\
-+	ssize_t rb;							\
-+									\
-+	spin_lock_bh(&nacl->nacl_sess_lock);				\
-+	if (!(sess = nacl->nacl_sess)) {				\
-+		rb = snprintf(page, PAGE_SIZE,				\
-+			"No Active iSCSI Session\n");			\
-+	} else {							\
-+		rb = snprintf(page, PAGE_SIZE, "%u\n",			\
-+			(u32)SESS_OPS(sess)->name);			\
-+	}								\
-+	spin_unlock_bh(&nacl->nacl_sess_lock);				\
-+									\
-+	return(rb);							\
-+}
-+
-+CONFIGFS_EATTR_STRUCT(iscsi_nacl_param, iscsi_node_acl_s);
-+#define NACL_PARAM_ATTR(_name)						\
-+static struct iscsi_nacl_param_attribute iscsi_nacl_param_##_name =	\
-+                __CONFIGFS_EATTR_RO(_name,				\
-+		lio_target_show_nacl_param_##_name);			\
-+
-+DEF_NACL_PARAM(MaxConnections);
-+NACL_PARAM_ATTR(MaxConnections);
-+
-+DEF_NACL_PARAM(InitialR2T);
-+NACL_PARAM_ATTR(InitialR2T);
-+
-+DEF_NACL_PARAM(ImmediateData);
-+NACL_PARAM_ATTR(ImmediateData);
-+
-+DEF_NACL_PARAM(MaxBurstLength);
-+NACL_PARAM_ATTR(MaxBurstLength);
-+
-+DEF_NACL_PARAM(FirstBurstLength);
-+NACL_PARAM_ATTR(FirstBurstLength);
-+
-+DEF_NACL_PARAM(DefaultTime2Wait);
-+NACL_PARAM_ATTR(DefaultTime2Wait);
-+
-+DEF_NACL_PARAM(DefaultTime2Retain);
-+NACL_PARAM_ATTR(DefaultTime2Retain);
-+
-+DEF_NACL_PARAM(MaxOutstandingR2T);
-+NACL_PARAM_ATTR(MaxOutstandingR2T);
-+
-+DEF_NACL_PARAM(DataPDUInOrder);
-+NACL_PARAM_ATTR(DataPDUInOrder);
-+
-+DEF_NACL_PARAM(DataSequenceInOrder);
-+NACL_PARAM_ATTR(DataSequenceInOrder);
-+
-+DEF_NACL_PARAM(ErrorRecoveryLevel);
-+NACL_PARAM_ATTR(ErrorRecoveryLevel);
-+
-+CONFIGFS_EATTR_OPS_RO(iscsi_nacl_param, iscsi_node_acl_s, acl_param_group);
-+
-+static struct configfs_attribute *lio_target_nacl_param_attrs[] = {
-+	&iscsi_nacl_param_MaxConnections.attr,
-+	&iscsi_nacl_param_InitialR2T.attr,
-+	&iscsi_nacl_param_ImmediateData.attr,
-+	&iscsi_nacl_param_MaxBurstLength.attr,
-+	&iscsi_nacl_param_FirstBurstLength.attr,
-+	&iscsi_nacl_param_DefaultTime2Wait.attr,
-+	&iscsi_nacl_param_DefaultTime2Retain.attr,
-+	&iscsi_nacl_param_MaxOutstandingR2T.attr,
-+	&iscsi_nacl_param_DataPDUInOrder.attr,
-+	&iscsi_nacl_param_DataSequenceInOrder.attr,
-+	&iscsi_nacl_param_ErrorRecoveryLevel.attr,
-+	NULL,
-+};
-+
-+static struct configfs_item_operations lio_target_nacl_param_ops = {
-+	.show_attribute		= iscsi_nacl_param_attr_show,
-+	.store_attribute	= NULL,
-+};
-+
-+static struct config_item_type lio_target_nacl_param_cit = {
-+	.ct_item_ops	= &lio_target_nacl_param_ops,
-+	.ct_attrs	= lio_target_nacl_param_attrs,
-+	.ct_owner	= THIS_MODULE,
-+};
-+
-+// End items for lio_target_nacl_param_cit
-+
- // Start items for lio_target_initiator_cit
- 
- static int lio_target_initiator_lacl_link (struct config_item *lun_acl_ci, struct config_item *lun_ci)
-@@ -1391,14 +1483,16 @@ static struct config_group *lio_target_call_addnodetotpg (
- 	/*
- 	 * Create the default groups for iscsi_node_acl_t
- 	 */
--	if (!(nacl_cg->default_groups = kzalloc(sizeof(struct config_group) * 2,
-+	if (!(nacl_cg->default_groups = kzalloc(sizeof(struct config_group) * 3,
- 			GFP_KERNEL)))
- 		goto node_out;
- 
- 	config_group_init_type_name(&acl->acl_group, name, &lio_target_initiator_cit);
-+	config_group_init_type_name(&acl->acl_param_group, "param", &lio_target_nacl_param_cit);
- 	config_group_init_type_name(&nattr->acl_attrib_group, "attrib", &lio_target_nacl_attrib_cit);
--	nacl_cg->default_groups[0] = &nattr->acl_attrib_group;
--	nacl_cg->default_groups[1] = NULL;
-+	nacl_cg->default_groups[0] = &acl->acl_param_group;
-+	nacl_cg->default_groups[1] = &nattr->acl_attrib_group;
-+	nacl_cg->default_groups[2] = NULL;
- 
- 	printk("LIO_Target_ConfigFS: REGISTER -> %s TPGT: %hu Initiator: %s CmdSN Depth: %u\n",
- 		config_item_name(tiqn_ci), tpgt, name, acl->queue_depth);
-diff --git a/drivers/lio-core/iscsi_target_core.h b/drivers/lio-core/iscsi_target_core.h
-index fea0597..1324de7 100644
---- a/drivers/lio-core/iscsi_target_core.h
-+++ b/drivers/lio-core/iscsi_target_core.h
-@@ -1209,6 +1209,7 @@ typedef struct iscsi_node_acl_s {
- 	iscsi_node_attrib_t	node_attrib;
- 	iscsi_session_t		*nacl_sess;
- 	struct config_group	acl_group;
-+	struct config_group	acl_param_group;
- 	struct iscsi_portal_group_s *tpg;
- 	struct iscsi_node_acl_s	*next;
- 	struct iscsi_node_acl_s	*prev;
--- 
-1.5.4.1
-
-
-
+> ---
+>  mm/memory.c |    7 +++----
+>  1 file changed, 3 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6/mm/memory.c
+> ===================================================================
+> --- linux-2.6.orig/mm/memory.c	2008-10-21 09:58:47.000000000 -0700
+> +++ linux-2.6/mm/memory.c	2008-10-23 13:38:26.000000000 -0700
+> @@ -1575,11 +1575,10 @@ int remap_pfn_range(struct vm_area_struc
+>  	 * behaviour that some programs depend on. We mark the "original"
+>  	 * un-COW'ed pages by matching them up with "vma->vm_pgoff".
+>  	 */
+> -	if (is_cow_mapping(vma->vm_flags)) {
+> -		if (addr != vma->vm_start || end != vma->vm_end)
+> -			return -EINVAL;
+> +	if (addr == vma->vm_start && end == vma->vm_end)
+>  		vma->vm_pgoff = pfn;
+> -	}
+> +	else if (is_cow_mapping(vma->vm_flags))
+> +		return -EINVAL;
+>  
+>  	vma->vm_flags |= VM_IO | VM_RESERVED | VM_PFNMAP;
+>  
