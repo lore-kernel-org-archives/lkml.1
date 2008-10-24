@@ -1,157 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbYJXFIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbYJXFQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754224AbYJXFIc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 01:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYJXFIH
+	id S1754043AbYJXFQu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 01:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYJXFQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 01:08:07 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:39355 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752263AbYJXFIF (ORCPT
+	Fri, 24 Oct 2008 01:16:41 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:51188 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750939AbYJXFQk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 01:08:05 -0400
-Date: Fri, 24 Oct 2008 10:38:30 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Add hierarchical accounting to cpu accounting
-	controller
-Message-ID: <20081024050830.GA4387@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20081023054335.GC3280@in.ibm.com> <6599ad830810230849x71961a0asd7f00d3baa2f2271@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830810230849x71961a0asd7f00d3baa2f2271@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 24 Oct 2008 01:16:40 -0400
+Date: Thu, 23 Oct 2008 22:16:16 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: torvalds <torvalds@linux-foundation.org>, akpm <akpm@linux-foundation.org>
+Subject: [PATCH 2.6.28-rc1] docbooks: fix fatal errors: header files moved
+Message-Id: <20081023221616.f19a02b8.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 23, 2008 at 08:49:19AM -0700, Paul Menage wrote:
-> On Wed, Oct 22, 2008 at 10:43 PM, Bharata B Rao
-> <bharata@linux.vnet.ibm.com> wrote:
-> > ---
-> >  kernel/sched.c |   30 ++++++++++++++++++++++++------
-> >  1 file changed, 24 insertions(+), 6 deletions(-)
-> >
-> > --- a/kernel/sched.c
-> > +++ b/kernel/sched.c
-> > @@ -9131,10 +9131,15 @@ struct cpuacct {
-> >        struct cgroup_subsys_state css;
-> >        /* cpuusage holds pointer to a u64-type object on every cpu */
-> >        u64 *cpuusage;
-> > +       struct cpuacct *parent;
-> >  };
-> >
-> > +static struct cpuacct init_cpuacct_group;
-> 
-> Why are you making the root state static?
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Because it is not used anywhere outside sched.c. Is that a problem ?
-> 
-> >  struct cgroup_subsys cpuacct_subsys;
-> >
-> > +#define for_each_cpuacct_group(ca) \
-> > +               for (; ca; ca = ca->parent)
-> > +
-> 
-> This is only used once, so doesn't seem worth creating a new macro for.
+Fix docbook fatal errors (file location changed):
 
-Ok. Removed.
+docproc: lin2628-rc1/include/asm-x86/io_32.h: No such file or directory
+make[1]: *** [Documentation/DocBook/deviceiobook.xml] Error 1
 
-> 
-> >
-> > +       if (cgrp->parent) {
-> > +               ca->css.cgroup = cgrp;
-> 
-> The cgroup pointer in the css is maintained by cgroups - you don't
-> need to set it.
+docproc: lin2628-rc1/include/asm-x86/atomic_32.h: No such file or directory
+make[1]: *** [Documentation/DocBook/kernel-api.xml] Error 1
 
-Yes, I realized this immediately after my 1st post and posted
-a corrected version subsequently.
+docproc: lin2628-rc1/include/asm-x86/mca_dma.h: No such file or directory
+make[1]: *** [Documentation/DocBook/mcabook.xml] Error 1
 
-Paul, thanks for your review.
-
-Updated patch below:
-
-Add hierarchical accounting to cpu accounting controller
-
-Currently, while charging the task's cputime to its accounting group,
-the accounting group hierarchy isn't updated. This patch charges the cputime
-of a task to its accounting group and all its parent accounting groups.
-
-Reported-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- kernel/sched.c |   26 ++++++++++++++++++++------
- 1 file changed, 20 insertions(+), 6 deletions(-)
+ Documentation/DocBook/deviceiobook.tmpl   |    2 +-
+ Documentation/DocBook/kernel-api.tmpl     |   10 +++++-----
+ Documentation/DocBook/kernel-hacking.tmpl |    4 ++--
+ Documentation/DocBook/mcabook.tmpl        |    2 +-
+ 4 files changed, 9 insertions(+), 9 deletions(-)
 
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -9131,8 +9131,10 @@ struct cpuacct {
- 	struct cgroup_subsys_state css;
- 	/* cpuusage holds pointer to a u64-type object on every cpu */
- 	u64 *cpuusage;
-+	struct cpuacct *parent;
- };
+--- lin2628-rc1.orig/Documentation/DocBook/deviceiobook.tmpl
++++ lin2628-rc1/Documentation/DocBook/deviceiobook.tmpl
+@@ -316,7 +316,7 @@ CPU B:  spin_unlock_irqrestore(&amp;dev_
  
-+static struct cpuacct init_cpuacct_group;
- struct cgroup_subsys cpuacct_subsys;
+   <chapter id="pubfunctions">
+      <title>Public Functions Provided</title>
+-!Iinclude/asm-x86/io_32.h
++!Iarch/x86/include/asm/io_32.h
+ !Elib/iomap.c
+   </chapter>
  
- /* return cpu accounting group corresponding to this container */
-@@ -9153,17 +9155,27 @@ static inline struct cpuacct *task_ca(st
- static struct cgroup_subsys_state *cpuacct_create(
- 	struct cgroup_subsys *ss, struct cgroup *cgrp)
- {
--	struct cpuacct *ca = kzalloc(sizeof(*ca), GFP_KERNEL);
-+	struct cpuacct *ca;
+--- lin2628-rc1.orig/Documentation/DocBook/kernel-api.tmpl
++++ lin2628-rc1/Documentation/DocBook/kernel-api.tmpl
+@@ -45,8 +45,8 @@
+      </sect1>
  
--	if (!ca)
--		return ERR_PTR(-ENOMEM);
-+	if (!cgrp->parent) {
-+		/* This is early initialization for the top cgroup */
-+		ca = &init_cpuacct_group;
-+	} else {
-+		ca = kzalloc(sizeof(*ca), GFP_KERNEL);
-+		if (!ca)
-+			return ERR_PTR(-ENOMEM);
-+	}
+      <sect1><title>Atomic and pointer manipulation</title>
+-!Iinclude/asm-x86/atomic_32.h
+-!Iinclude/asm-x86/unaligned.h
++!Iarch/x86/include/asm/atomic_32.h
++!Iarch/x86/include/asm/unaligned.h
+      </sect1>
  
- 	ca->cpuusage = alloc_percpu(u64);
- 	if (!ca->cpuusage) {
--		kfree(ca);
-+		if (cgrp->parent)
-+			kfree(ca);
- 		return ERR_PTR(-ENOMEM);
- 	}
+      <sect1><title>Delaying, scheduling, and timer routines</title>
+@@ -119,7 +119,7 @@ X!Ilib/string.c
+ !Elib/string.c
+      </sect1>
+      <sect1><title>Bit Operations</title>
+-!Iinclude/asm-x86/bitops.h
++!Iarch/x86/include/asm/bitops.h
+      </sect1>
+   </chapter>
  
-+	if (cgrp->parent)
-+		ca->parent = cgroup_ca(cgrp->parent);
-+
- 	return &ca->css;
- }
+@@ -155,7 +155,7 @@ X!Ilib/string.c
+ !Emm/slab.c
+      </sect1>
+      <sect1><title>User Space Memory Access</title>
+-!Iinclude/asm-x86/uaccess_32.h
++!Iarch/x86/include/asm/uaccess_32.h
+ !Earch/x86/lib/usercopy_32.c
+      </sect1>
+      <sect1><title>More Memory Management Functions</title>
+@@ -265,7 +265,7 @@ X!Earch/x86/kernel/mca_32.c
+ -->
+ 	</sect2>
+ 	<sect2><title>MCA Bus DMA</title>
+-!Iinclude/asm-x86/mca_dma.h
++!Iarch/x86/include/asm/mca_dma.h
+ 	</sect2>
+      </sect1>
+   </chapter>
+--- lin2628-rc1.orig/Documentation/DocBook/mcabook.tmpl
++++ lin2628-rc1/Documentation/DocBook/mcabook.tmpl
+@@ -101,7 +101,7 @@
  
-@@ -9243,14 +9255,16 @@ static int cpuacct_populate(struct cgrou
- static void cpuacct_charge(struct task_struct *tsk, u64 cputime)
- {
- 	struct cpuacct *ca;
-+	int cpu;
+   <chapter id="dmafunctions">
+      <title>DMA Functions Provided</title>
+-!Iinclude/asm-x86/mca_dma.h
++!Iarch/x86/include/asm/mca_dma.h
+   </chapter>
  
- 	if (!cpuacct_subsys.active)
- 		return;
+ </book>
+--- lin2628-rc1.orig/Documentation/DocBook/kernel-hacking.tmpl
++++ lin2628-rc1/Documentation/DocBook/kernel-hacking.tmpl
+@@ -1239,7 +1239,7 @@ static struct block_device_operations op
+   </para>
  
-+	cpu = task_cpu(tsk);
- 	ca = task_ca(tsk);
--	if (ca) {
--		u64 *cpuusage = percpu_ptr(ca->cpuusage, task_cpu(tsk));
+   <para>
+-   <filename>include/asm-x86/delay_32.h:</filename>
++   <filename>arch/x86/include/asm/delay.h:</filename>
+   </para>
+   <programlisting>
+ #define ndelay(n) (__builtin_constant_p(n) ? \
+@@ -1265,7 +1265,7 @@ static struct block_device_operations op
+ </programlisting>
  
-+	for (; ca; ca = ca->parent) {
-+		u64 *cpuusage = percpu_ptr(ca->cpuusage, cpu);
- 		*cpuusage += cputime;
- 	}
- }
+   <para>
+-   <filename>include/asm-x86/uaccess_32.h:</filename>
++   <filename>arch/x86/include/asm/uaccess_32.h:</filename>
+   </para>
+ 
+   <programlisting>
