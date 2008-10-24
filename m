@@ -1,52 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbYJXNmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953AbYJXNmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754220AbYJXNmV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 09:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYJXNmE
+	id S1752953AbYJXNmg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 09:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYJXNmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 09:42:04 -0400
-Received: from mail.gmx.net ([213.165.64.20]:36697 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751159AbYJXNmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 09:42:01 -0400
-X-Authenticated: #3800222
-X-Provags-ID: V01U2FsdGVkX1+Uq8gbPZWUe9+xCAK/bPichKIs4AbG/mYWHUIEi/
-	nbnQ2YUwo8AeSh
-Message-ID: <4901D0A5.7060707@gmx.de>
-Date: Fri, 24 Oct 2008 15:41:57 +0200
-From: Joerg Albert <jal2@gmx.de>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Fri, 24 Oct 2008 09:42:16 -0400
+Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:58485 "EHLO
+	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753234AbYJXNmO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 09:42:14 -0400
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4901D0C1.9090004@gmail.com>
+Date: Fri, 24 Oct 2008 14:42:25 +0100
+From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080801)
 MIME-Version: 1.0
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-CC: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       otus-devel@venema.h4ckr.net
-Subject: Re: [otus-devel] Release of Atheros 802.11n USB Linux driver
-References: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com> <43e72e890810231637v51591edak5345faccd81d594b@mail.gmail.com>
-In-Reply-To: <43e72e890810231637v51591edak5345faccd81d594b@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: LKML <linux-kernel@vger.kernel.org>, eric miao <eric.y.miao@gmail.com>,
+       Mike Rapoport <mike@compulab.co.il>
+Subject: MFD missing Kconfig and Makefile entries for da903x
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/24/2008 01:37 AM, Luis R. Rodriguez wrote:
+Dear All,
 
-> So for those of you who want to know which devices to buy
+I'm either missing something or despite the da903x driver being
+merged it doesn't have suitable entries in the drivers/mfd/Kconfig
+etc.
 
-I'd guess the
+I'm guessing something went wrong merging the original patches
+of Eric and Mike?
 
-* AVM FRITZ!WLAN N USB Stick (USB ID 0x57c, 0x8401)
+Thanks,
 
-should be in this list, too.
-
-I don't own one (yet), but the Windows driver contains:
-$ strings -t x fwlanusbn_wxp.sys
-...
-4de20 Atheros OTUS Wireless Network Adapter
-...
-
-Could some owner please confirm the chipset of this stick?
-
+Jonathan
