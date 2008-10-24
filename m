@@ -1,52 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758243AbYJXSMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbYJXSSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758243AbYJXSMt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 14:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758050AbYJXSMi
+	id S1755876AbYJXSSb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 14:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbYJXSSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 14:12:38 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35650 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758007AbYJXSMh (ORCPT
+	Fri, 24 Oct 2008 14:18:23 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:38542 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750850AbYJXSSW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 14:12:37 -0400
-To: Mike Travis <travis@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@suse.cz>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Jack Steiner <steiner@sgi.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Richard Purdie <rpurdie@rpsys.net>,
+	Fri, 24 Oct 2008 14:18:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=HtqRj1oCtQvPdU6A845p4IuGMCp+wN2qWDrnQklIR4EHzycJji9HjroiLvuLdCl9Kw
+         NcTBgnWAxNJtobUSHCZdX5ZGcp/lnmWBHGym5p88AjkbtqtKodwRjKdgOqluhnHUTW8U
+         5BipKlPx5P59zcY/tyeIkmuOWPFaJDzbyQfu4=
+Subject: [PATCH] ubifs: endian handling fixes and annotations
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       Artem Bityutskiy <dedekind@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] SGI X86 UV: Provide a System Activity Indicator	driver
-From: Andi Kleen <andi@firstfloor.org>
-References: <4901AF28.4070606@sgi.com> <20081024120103.GD1680@elf.ucw.cz>
-	<20081024120544.GA9812@elte.hu> <4901BF30.3090708@sgi.com>
-Date: Fri, 24 Oct 2008 20:12:38 +0200
-In-Reply-To: <4901BF30.3090708@sgi.com> (Mike Travis's message of "Fri, 24 Oct 2008 05:27:28 -0700")
-Message-ID: <87mygt9815.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
+Date: Fri, 24 Oct 2008 10:52:57 -0700
+Message-Id: <1224870777.5966.3.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis <travis@sgi.com> writes:
->
-> I do use the timer mechanism (once per second) to update the scir state.
-> Unfortunately, the state is *always* not idle during the timer callback
-> (since we are actively executing), so I needed some way of knowing the
-> idle state prior to the timer callback.
+Noticed by sparse:
+fs/ubifs/file.c:75:2: warning: restricted __le64 degrades to integer
+fs/ubifs/file.c:629:4: warning: restricted __le64 degrades to integer
+fs/ubifs/dir.c:431:3: warning: restricted __le64 degrades to integer
 
-The idle thread always has pid 0. So if the timer sees current->pid == 0
-it interrupted idle.
+This should be checked to ensure the ubifs_assert is working as
+intended, I've done the suggested annotation in this patch.
 
-But sampling only once a second would be presumably not very accurate.
-You could just check the per cpu statistics the kernel keeps
-anyways in the timer.
+fs/ubifs/sb.c:298:6: warning: incorrect type in assignment (different base types)
+fs/ubifs/sb.c:298:6:    expected int [signed] [assigned] tmp
+fs/ubifs/sb.c:298:6:    got restricted __le64 [usertype] <noident>
+fs/ubifs/sb.c:299:19: warning: incorrect type in assignment (different base types)
+fs/ubifs/sb.c:299:19:    expected restricted __le64 [usertype] atime_sec
+fs/ubifs/sb.c:299:19:    got int [signed] [assigned] tmp
+fs/ubifs/sb.c:300:19: warning: incorrect type in assignment (different base types)
+fs/ubifs/sb.c:300:19:    expected restricted __le64 [usertype] ctime_sec
+fs/ubifs/sb.c:300:19:    got int [signed] [assigned] tmp
+fs/ubifs/sb.c:301:19: warning: incorrect type in assignment (different base types)
+fs/ubifs/sb.c:301:19:    expected restricted __le64 [usertype] mtime_sec
+fs/ubifs/sb.c:301:19:    got int [signed] [assigned] tmp
 
-I agree with Ingo that this doesn't belong in a idle notifier.
+This looks like a bugfix as your tmp was a u32 so there was truncation in
+the atime, mtime, ctime value, probably not intentional, add a tmp_le64
+and use it here.
 
--Andi
+fs/ubifs/key.h:348:9: warning: cast to restricted __le32
+fs/ubifs/key.h:348:9: warning: cast to restricted __le32
+fs/ubifs/key.h:419:9: warning: cast to restricted __le32
+
+Read from the annotated union member instead.
+
+fs/ubifs/recovery.c:175:13: warning: incorrect type in assignment (different base types)
+fs/ubifs/recovery.c:175:13:    expected unsigned int [unsigned] [usertype] save_flags
+fs/ubifs/recovery.c:175:13:    got restricted __le32 [usertype] flags
+fs/ubifs/recovery.c:186:13: warning: incorrect type in assignment (different base types)
+fs/ubifs/recovery.c:186:13:    expected restricted __le32 [usertype] flags
+fs/ubifs/recovery.c:186:13:    got unsigned int [unsigned] [usertype] save_flags
+
+Do byteshifting at compile time of the flag value.  Annotate the saved_flags
+as le32.
+
+fs/ubifs/debug.c:368:10: warning: cast to restricted __le32
+fs/ubifs/debug.c:368:10: warning: cast from restricted __le64
+
+Should be checked if the truncation was intentional, I've changed the
+printk to print the full width.
+
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ fs/ubifs/debug.c    |    4 ++--
+ fs/ubifs/dir.c      |    3 ++-
+ fs/ubifs/file.c     |    4 ++--
+ fs/ubifs/key.h      |    4 ++--
+ fs/ubifs/recovery.c |    4 ++--
+ fs/ubifs/sb.c       |    9 +++++----
+ 6 files changed, 15 insertions(+), 13 deletions(-)
+
+diff --git a/fs/ubifs/debug.c b/fs/ubifs/debug.c
+index 7186400..f9deccb 100644
+--- a/fs/ubifs/debug.c
++++ b/fs/ubifs/debug.c
+@@ -364,8 +364,8 @@ void dbg_dump_node(const struct ubifs_info *c, const void *node)
+ 		       le32_to_cpu(mst->ihead_lnum));
+ 		printk(KERN_DEBUG "\tihead_offs     %u\n",
+ 		       le32_to_cpu(mst->ihead_offs));
+-		printk(KERN_DEBUG "\tindex_size     %u\n",
+-		       le32_to_cpu(mst->index_size));
++		printk(KERN_DEBUG "\tindex_size     %llu\n",
++		       (unsigned long long)le64_to_cpu(mst->index_size));
+ 		printk(KERN_DEBUG "\tlpt_lnum       %u\n",
+ 		       le32_to_cpu(mst->lpt_lnum));
+ 		printk(KERN_DEBUG "\tlpt_offs       %u\n",
+diff --git a/fs/ubifs/dir.c b/fs/ubifs/dir.c
+index 8561890..198cf3e 100644
+--- a/fs/ubifs/dir.c
++++ b/fs/ubifs/dir.c
+@@ -428,7 +428,8 @@ static int ubifs_readdir(struct file *file, void *dirent, filldir_t filldir)
+ 		dbg_gen("feed '%s', ino %llu, new f_pos %#x",
+ 			dent->name, (unsigned long long)le64_to_cpu(dent->inum),
+ 			key_hash_flash(c, &dent->key));
+-		ubifs_assert(dent->ch.sqnum > ubifs_inode(dir)->creat_sqnum);
++		ubifs_assert(le64_to_cpu(dent->ch.sqnum) >
++			     ubifs_inode(dir)->creat_sqnum);
+ 
+ 		nm.len = le16_to_cpu(dent->nlen);
+ 		over = filldir(dirent, dent->name, nm.len, file->f_pos,
+diff --git a/fs/ubifs/file.c b/fs/ubifs/file.c
+index 51cf511..9124eee 100644
+--- a/fs/ubifs/file.c
++++ b/fs/ubifs/file.c
+@@ -72,7 +72,7 @@ static int read_block(struct inode *inode, void *addr, unsigned int block,
+ 		return err;
+ 	}
+ 
+-	ubifs_assert(dn->ch.sqnum > ubifs_inode(inode)->creat_sqnum);
++	ubifs_assert(le64_to_cpu(dn->ch.sqnum) > ubifs_inode(inode)->creat_sqnum);
+ 
+ 	len = le32_to_cpu(dn->size);
+ 	if (len <= 0 || len > UBIFS_BLOCK_SIZE)
+@@ -626,7 +626,7 @@ static int populate_page(struct ubifs_info *c, struct page *page,
+ 
+ 			dn = bu->buf + (bu->zbranch[nn].offs - offs);
+ 
+-			ubifs_assert(dn->ch.sqnum >
++			ubifs_assert(le64_to_cpu(dn->ch.sqnum) >
+ 				     ubifs_inode(inode)->creat_sqnum);
+ 
+ 			len = le32_to_cpu(dn->size);
+diff --git a/fs/ubifs/key.h b/fs/ubifs/key.h
+index 9ee6508..3f1f16b 100644
+--- a/fs/ubifs/key.h
++++ b/fs/ubifs/key.h
+@@ -345,7 +345,7 @@ static inline int key_type_flash(const struct ubifs_info *c, const void *k)
+ {
+ 	const union ubifs_key *key = k;
+ 
+-	return le32_to_cpu(key->u32[1]) >> UBIFS_S_KEY_BLOCK_BITS;
++	return le32_to_cpu(key->j32[1]) >> UBIFS_S_KEY_BLOCK_BITS;
+ }
+ 
+ /**
+@@ -416,7 +416,7 @@ static inline unsigned int key_block_flash(const struct ubifs_info *c,
+ {
+ 	const union ubifs_key *key = k;
+ 
+-	return le32_to_cpu(key->u32[1]) & UBIFS_S_KEY_BLOCK_MASK;
++	return le32_to_cpu(key->j32[1]) & UBIFS_S_KEY_BLOCK_MASK;
+ }
+ 
+ /**
+diff --git a/fs/ubifs/recovery.c b/fs/ubifs/recovery.c
+index 77d26c1..bed9742 100644
+--- a/fs/ubifs/recovery.c
++++ b/fs/ubifs/recovery.c
+@@ -168,12 +168,12 @@ static int write_rcvrd_mst_node(struct ubifs_info *c,
+ 				struct ubifs_mst_node *mst)
+ {
+ 	int err = 0, lnum = UBIFS_MST_LNUM, sz = c->mst_node_alsz;
+-	uint32_t save_flags;
++	__le32 save_flags;
+ 
+ 	dbg_rcvry("recovery");
+ 
+ 	save_flags = mst->flags;
+-	mst->flags = cpu_to_le32(le32_to_cpu(mst->flags) | UBIFS_MST_RCVRY);
++	mst->flags |= cpu_to_le32(UBIFS_MST_RCVRY);
+ 
+ 	ubifs_prepare_node(c, mst, UBIFS_MST_NODE_SZ, 1);
+ 	err = ubi_leb_change(c->ubi, lnum, mst, sz, UBI_SHORTTERM);
+diff --git a/fs/ubifs/sb.c b/fs/ubifs/sb.c
+index 2bf753b..0f39235 100644
+--- a/fs/ubifs/sb.c
++++ b/fs/ubifs/sb.c
+@@ -81,6 +81,7 @@ static int create_default_filesystem(struct ubifs_info *c)
+ 	int lpt_lebs, lpt_first, orph_lebs, big_lpt, ino_waste, sup_flags = 0;
+ 	int min_leb_cnt = UBIFS_MIN_LEB_CNT;
+ 	uint64_t tmp64, main_bytes;
++	__le64 tmp_le64;
+ 
+ 	/* Some functions called from here depend on the @c->key_len filed */
+ 	c->key_len = UBIFS_SK_LEN;
+@@ -295,10 +296,10 @@ static int create_default_filesystem(struct ubifs_info *c)
+ 	ino->ch.node_type = UBIFS_INO_NODE;
+ 	ino->creat_sqnum = cpu_to_le64(++c->max_sqnum);
+ 	ino->nlink = cpu_to_le32(2);
+-	tmp = cpu_to_le64(CURRENT_TIME_SEC.tv_sec);
+-	ino->atime_sec   = tmp;
+-	ino->ctime_sec   = tmp;
+-	ino->mtime_sec   = tmp;
++	tmp_le64 = cpu_to_le64(CURRENT_TIME_SEC.tv_sec);
++	ino->atime_sec   = tmp_le64;
++	ino->ctime_sec   = tmp_le64;
++	ino->mtime_sec   = tmp_le64;
+ 	ino->atime_nsec  = 0;
+ 	ino->ctime_nsec  = 0;
+ 	ino->mtime_nsec  = 0;
 -- 
-ak@linux.intel.com
+1.6.0.3.723.g757e
+
+
+
