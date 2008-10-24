@@ -1,134 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbYJXUQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757077AbYJXUQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbYJXUQT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 16:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbYJXUQD
+	id S1757077AbYJXUQv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 16:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbYJXUQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 16:16:03 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:65164 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754496AbYJXUQB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 16:16:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=LV7TPpLRtZ7TKnRZ6JGYJUIRts+QvRZl5xVToT19IX8wB/rNtAYxLnqFZIviie5UDp
-         Y/Bw4zDcSmTKoAf+VIdK8LtmEh/6iiv7N3+J263c4k8eESV7tH/aewdwRdGu/pMSJUft
-         CLIlqBiIHFHHkfrBbfdQElMObQXL6JAP68WK4=
-Message-ID: <d9def9db0810241315qde568c8yeff2af3511d24bb7@mail.gmail.com>
-Date: Fri, 24 Oct 2008 22:15:58 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Mauro Carvalho Chehab" <mchehab@infradead.org>
-Subject: Re: [PATCH 1/7] Adding empia base driver
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       em28xx <em28xx@mcentral.de>
-In-Reply-To: <20081024153509.0f51d676@pedra.chehab.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 24 Oct 2008 16:16:43 -0400
+Received: from igw2.br.ibm.com ([32.104.18.25]:56099 "EHLO igw2.br.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753817AbYJXUQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 16:16:41 -0400
+Subject: Re: [PATCH 1/3] integrity: TPM internel kernel interface
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>
+In-Reply-To: <20081022144944.GC21612@us.ibm.com>
+References: <cover.1223869200.git.zohar@localhost.localdomain>
+	 <c7ae4dc26c0c2897218851c7bdb056b4a4b49f26.1223869200.git.zohar@localhost.localdomain>
+	 <20081014222312.GA18343@hallyn.com>
+	 <1224679633.2786.20.camel@dyn536723.br.ibm.com>
+	 <20081022144944.GC21612@us.ibm.com>
+Content-Type: text/plain
+Date: Fri, 24 Oct 2008 18:16:03 -0200
+Message-Id: <1224879363.2778.22.camel@blackbox>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d9def9db0810221359h5118b8d2pd6d2b3f4f95496ce@mail.gmail.com>
-	 <20081024153509.0f51d676@pedra.chehab.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 24, 2008 at 7:35 PM, Mauro Carvalho Chehab
-<mchehab@infradead.org> wrote:
-> On Wed, 22 Oct 2008 22:59:00 +0200
-> "Markus Rechberger" <mrechberger@gmail.com> wrote:
->
->>     em2880-dvb:
->>     * supporting the digital part of Empia based devices, which
->> includes ATSC, ISDB-T and DVB-T
->>
->>     em28xx-aad.c:
->>     * alternative audio driver, can be used instead of em28xx-audio if
->> alsa is not available
->>     or not compiled into the kernel, it provides a raw interface to
->> the PCM samples
->>
->>     em28xx-audio.c:
->>     * em28xx alsa driver and audio driver for FM radio
->>
->>     em28xx-audioep.c:
->>     * em28xx alsa driver for devices which are set to vendor specific
->> audio on interface 1,
->>     in that case snd-usb-audio will not attach to the interface and
->> em28xx-audioep will be needed
->>
->>     em28xx-cards.c:
->>     * card definition and initial setup of devices.
->>
->>     em28xx-core.c:
->>     * core videohandling and VBI frame slicing
->>
->>     em28xx-i2c.c:
->>     * i2c setup and GPIO setup handling of the devices (including
->> em2888 based ones)
->>
->>     em28xx-input.c:
->>     * currently mostly disabled since the linuxtv input handling is
->> broken by design and racy
->>
->>     em28xx-keymaps.c:
->>     * keymap references of some remotes (could be merged into
->> ir-common, although as mentioned
->>     this should be in userland done by lirc).
->>
->>     em28xx-video.c:
->>     * inode handling for analog TV, radio and VBI, also some device probing
->>
->>     em28xx-webcam.c:
->>     * videology webcam specific i2c commands
->
-> NACK.
->
-> There's already a driver for em28xx. Be welcome sending incremental patches to
-> improve, like other developers do. But another driver for the same chip would
-> just create a mess.
->
+Serge,
 
-the description right above shows up what the current driver is
-missing, excluding the bugfixes.
-Technical reasons why the source is basically kept in the structure as
-it is, is eg. higher backward
-compatibility without having to update the whole system. See eeePC
-packages which are available
-from some vendors. The driver seamlessly works with the rest which is
-installed there, without
-any framework upgrade.
+On Wed, 2008-10-22 at 09:49 -0500, Serge E. Hallyn wrote:
+> Quoting Rajiv Andrade (srajiv@linux.vnet.ibm.com):
+> > On Tue, 2008-10-14 at 17:23 -0500, Serge E. Hallyn wrote:
+> > > Quoting Mimi Zohar (zohar@linux.vnet.ibm.com):
+> > > > The internal TPM kernel interface did not protect itself from
+> > > > the removal of the TPM driver, while being used.  We continue
+> > > > to protect the tpm_chip_list using the driver_lock as before,
+> > > > and are using an rcu lock to protect readers. The internal TPM
+> > > 
+> > > I still would like to see this spelled out somewhere - correct me
+> > > if I'm wrong but none of the patches sent so far have this spelled
+> > > out in in-line comments, do they?
+> > > 
+> > > It does look sane:
+> > > 
+> > > 	1. writes to tpm_chip_list are protected by driver_lock
+> > > 	2. readers of the list are protected by rcu
+> > > 	3. chips which are read from the tpm_chip_list, if they
+> > > 	   are used outside of the rcu_read_lock(), are pinned
+> > > 	   using get_device(chip->dev) before releasing the
+> > > 	   rcu_read_lock.
+> > > 
+> > > Like I say it looks sane, but something like the above summary
+> > > could stand to be in a comment on top of tpm.c or something.
+> > > 
+> > No problem, I'll submit a patch containing a proper comment section to
+> > be applied on top of these, maybe after they get accepted.
+> 
+> Great, thanks.
+> 
+> > > > kernel interface now protects itself from the driver being
+> > > > removed by incrementing the module reference count.
+> > > > 
+> > > > Resubmitting integrity-tpm-internal-kernel-interface.patch, which
+> > > > was previously Signed-off-by Kylene Hall.
+> > > > Updated per feedback:
+> > > > 
+> > > > Adds the following support:
+> > > >   - make internal kernel interface to transmit TPM commands global
+> > > >   - adds reading a pcr value
+> > > >   - adds extending a pcr value
+> > > >   - adds lookup the tpm_chip for given chip number and type
+> > > > 
+> > > > Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
+> > > > Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+> > > 
+> > > Now there are other, existing callers of tpm_transmit.  Are they
+> > > all protected by sysfs pinning the kobject and thereby the device,
+> > > for the duration of the call?
+> > > 
+> > 
+> > They aren't called through sysfs, but are still protected. These new
+> > functions get chip data consistently by using rcu_read. Then, after
+> > computing what's intended to be written back to the chip, tpm_transmit
+> > sends the new data while using tpm_mutex, so both operations are
+> > performed without the risk of a race condition.
+> 
+> Can you show me where the refcount for dev is incremented (under the
+> rcu_read_lock), either in sysfs code or tpm code?  I'm not finding
+> it, but it may just be done in some subtle way that I'm glossing over.
+> 
 
-Most users are currently using the drivers from mcentral.de since it's
-more stable and very
-well tested over the last 3 years. It was basically your decision to
-not merge it back then
-http://mcentral.de/v4l-dvb/
+The refcount is incremented/decremented in tpm_register_hardware() and
+tpm_remove_hardware() for tpm module, and tpm_open() and tpm_release()
+for tpm_tis module, all inside tpm.c. The last two are referenced in
+tpm_tis.c:
 
-I pulled out the source and moved it together then and worked on
-additional device support.
+tpm_tis.c
 
-http://mcentral.de/hg/~mrec/em28xx-new/shortlog
-There are more than 200 changesets pointing out how it evolved, if
-someone wants to have an indepth
-view about it. Bugreports and patches have been posted to the em28xx
-mailinglist where people worked
-on it, including enduser applications.
+static const struct file_operations tis_ops = {
+        .owner = THIS_MODULE,
+        .llseek = no_llseek,
+        .open = tpm_open,
+        .read = tpm_read,
+        .write = tpm_write,
+        .release = tpm_release,
+};
 
-The xc3028 as it is in the kernel is based on leaked and partly
-reverse engineered information.
-I know that because I was also CC'ed with the leaked driver information.
+thanks,
 
-The Xceive drivers which I submitted are the latest versions from
-Xceive addressing several bugs,
-you might not have access to their changelog.
+> thanks,
+> -serge
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Rajiv Andrade <srajiv@br.ibm.com>
+Security Development
+IBM Linux Technology Center
 
-Before continuing any discussion the sourcecode and every statement I
-made for those patchsets
-should be commented, otherwise a discussion won't go anywhere.
 
-br,
-Markus
