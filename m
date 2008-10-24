@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbYJXNRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbYJXNYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753925AbYJXNRs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 09:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbYJXNRj
+	id S1754219AbYJXNYg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 09:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbYJXNY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 09:17:39 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:45281 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751040AbYJXNRj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 09:17:39 -0400
-Date: Fri, 24 Oct 2008 09:17:37 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Rakib Mullick <rakib.mullick@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] ftrace: use a real variable for ftrace_nop in x86
-In-Reply-To: <alpine.DEB.1.10.0810240910020.3882@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0810240916350.3882@gandalf.stny.rr.com>
-References: <b9df5fa10810122250j1dd9c0eaq8c708c7b8e10a249@mail.gmail.com> <20081020162756.GA31201@elte.hu> <20081022070312.GA24749@elte.hu> <b9df5fa10810240409u311bb337x1ff9815431088685@mail.gmail.com> <20081024115005.GA5214@elte.hu>
- <alpine.DEB.1.10.0810240910020.3882@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 24 Oct 2008 09:24:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47805 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751040AbYJXNY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 09:24:26 -0400
+Date: Fri, 24 Oct 2008 15:25:09 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       travis@sgi.com, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Subject: Re: [PATCH 1/7] work_on_cpu: helper for doing task on a CPU.
+Message-ID: <20081024132509.GB17708@redhat.com>
+References: <20081023005751.53973DDEFE@ozlabs.org> <20081023094036.GA7593@redhat.com> <20081023143605.GN5255@in.ibm.com> <200810241404.35932.rusty@rustcorp.com.au> <20081024072147.GA5000@in.ibm.com> <20081024102957.GC4583@redhat.com> <20081024114018.GA24080@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081024114018.GA24080@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/24, Gautham R Shenoy wrote:
+>
+> Having a rule that we shouldn't use work_on_cpu() in cpu-hotplug path
+> is a good thing. But maintaining it can be difficult.
+>
+> We've seen that in the past with the cpucontrol mutex.
+> We had clear rules that functions which get called in
+> cpu-hotplug callback paths, shouldn't take this mutex. But with
+> functions that were called in the cpu-hotplug notifier
+> path as well as normal paths, it created a whole locking mess,
+> and took quite some time to fix.
+>
+> Similarly, right now, we can have a BUG_ON() which notifies us whenever
+> someone ends up calling a function that invokes work_on_cpu() from the
+> CPU-Hotplug callpath. But we will fix it only when the BUG_ON() is hit.
+>
+> On the other hand, if we have a mechanism that's guaranteed to work
+> irrespective of the callpaths, why not use that ?
 
-On Fri, 24 Oct 2008, Steven Rostedt wrote:
+If we add another wq for work_on_cpu(), then we add another hard-to-maintain
+rule: get_online_cpus() must not be used by any work which can be queued
+on that wq. And, yet another per-cpu thread...
 
-> 
-> The dynamic ftrace determines which nop is safe to use at start up.
-> When it finds a safe nop for patching, it sets a pointer called ftrace_nop
-> to point to the code. All call sites are then patched to this nop.
-> 
-> Later, when tracing is turned on, this ftrace_nop variable is again used
-> to compare the location to make sure it is a nop before we update it to
-> a mcount call. If this fails just once, a warning is outputed and ftrace
-> is disabled.
-> 
-> Rakib Mullick noted that the code that sets up the nop is a .init section
-> where as the nop itself is in the .text section. This is needed because
-> the nop is used later on after boot up. The problem is that the test of the
-> nop jumps back to the setup code and causes a "section mismatch" warning.
-> 
-> Rabik first recommended to convert the nop to .init.text, but as stated
-> above, this would fail since that text is used later.
-> 
-> The real solution is to extend Rabik's patch, and to make the ftrace_nop
-> into an array, and just save the code from the assembly to this array.
+Personally I don't even think we need a BUG_ON() in work_on_cpu(), because
+I don't think cpu-hotplug path is so special.
 
-Rereading what I sent, I see I misspelled Rakib's name twice.
+Not that I have a strong opinion though.
 
-Ingo, could you fix the changelog here before commiting it.
-
-Thanks,
-
--- Steve
+Oleg.
 
