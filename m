@@ -1,247 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbYJXP0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbYJXP1K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756559AbYJXP0a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 11:26:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbYJXP0V
+	id S1756920AbYJXP1K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 11:27:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbYJXP0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 11:26:21 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:56940 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753369AbYJXP0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 11:26:20 -0400
-To: greg@kroah.com
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.27.3 usbcore] Move __module_param_call(nousb) toimmediately after declaration of nousb.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <200810240158.m9O1w2PX032608@www262.sakura.ne.jp>
-	<20081024041917.GA16594@kroah.com>
-In-Reply-To: <20081024041917.GA16594@kroah.com>
-Message-Id: <200810250026.EGB05240.HJtQFOMSOVOFFL@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Sat, 25 Oct 2008 00:26:15 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 24 Oct 2008 11:26:55 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:46730 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752871AbYJXP0z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 11:26:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ixLgmfK4a3RXzIB0TicIfsk5BfB5IuDBuBRzuedv2o4biuNkBBL1oh8aiREoBaHnHw
+         QizhIG7dLGEFaOBbu/M1H4tJVdgAn1Szupcr/DKrm0JFQ0OelNHRvmrWFd3QbqXf1dfA
+         gYnt+d/+o0AHCUoGBPi7ooUy5UrKFwe1uF2XA=
+Message-ID: <c62985530810240826l2e025e94i51fdfd0fc70b0449@mail.gmail.com>
+Date: Fri, 24 Oct 2008 17:26:53 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [PATCH 5/5] tracing/ftrace: Introduce the big kernel lock tracer
+Cc: "Steven Rostedt" <rostedt@goodmis.org>, "Ingo Molnar" <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, systemtap@sources.redhat.com
+In-Reply-To: <20081024150239.GB20768@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48F10B0B.406@gmail.com>
+	 <c62985530810210528t416c82b2lbe8471322e8359c@mail.gmail.com>
+	 <y0mmygv18le.fsf@ton.toronto.redhat.com>
+	 <c62985530810240643q467a9060kaf906eb7865f0a7@mail.gmail.com>
+	 <20081024143744.GA20768@redhat.com>
+	 <alpine.DEB.1.10.0810241046300.3882@gandalf.stny.rr.com>
+	 <20081024150239.GB20768@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+2008/10/24 Frank Ch. Eigler <fche@redhat.com>:
+> That's what we do with the systemtap script, where kernel "handling"
+> consists of "running the machine code".
+>
+>> But have the user application interface be very simple, and perhaps
+>> even use perl or python.
+>
+> perl and python are pretty big procedural languages, and are not
+> easily compiled down to compact & quickly executed machine code.  (I
+> take it no one is suggesting including a perl or python VM in the
+> kernel.)  Plus, debugger-flavoured event-handling programming style
+> would not look nearly as compact in perl/python as in systemtap, which
+> is small and domain-specific.
+>
+> - FChE
+>
 
-I succeeded to produce this problem with 2.6.26 .
-Thus, at least, it is not a new bug introduced in 2.6.27 .
+Actually what I thought is a style like this (Python like):
 
-Greg KH wrote:
-> This really sounds like a compiler bug somewhere, reordering this
-> shouldn't "fix" this issue.
+probe = Systemtap.probeFunc("lock_kernel")
+probe.captureUtime("utime"))
+probe.captureBacktrace("trace")
+probe.trace()
 
-I think so too.
+For an obvious set of batch work like that, that could be possible,
+perhaps even easy
+to implement an Api...
+When the object calls trace(), the userspace Systemtap analyse the list
+of work to do and then translate into commands in kernel space.
 
-> Is 3.3.5 still supported by the Debian team?
+And the script could wait for events and then do its own processing
+with the captured events
+(do some operations on delays, on output....).
 
-I think Security Support for Debian Sarge terminated on March 31st 2008.
+for event in probe.getEvent(): #blocking
+    print event["utime"]
+    trace = event["trace"] #Systemtap.trace object with specific
+fields and a default string repr
+    print trace
 
-> I know the minimum gcc version is 3.2 for the kernel, so it's
-> strange that no one else sees this.
+It would be interpreted by Python itself, and you just have to capture
+commands and works
+sent through Api. Then, when the kernel has something to give, you
+just have to place it in the
+appripriate object and transmit it to the script which is waiting.
+Processing and output with the data are done by the python script.
+So actually, the python script only needs to ask you what data to
+capture. It's its own responsability to
+do wathever it wants with.
 
-Thus, it is likely that nobody is using gcc (GCC) 3.3.5 (Debian 1:3.3.5-13).
-
-> Can you duplicate this in a stand-alone test module?
-
-Here is the patch for 2.6.26.7 and 2.6.27.3 .
-But... please check this patch carefully. It seems that something is wrong.
-
-----------------------------------------
----
- drivers/usb/Makefile    |    2 ++
- drivers/usb/paramtest.c |   38 ++++++++++++++++++++++++++++++++++++++
- 2 files changed, 40 insertions(+)
-
---- linux-2.6.26.7.orig/drivers/usb/Makefile
-+++ linux-2.6.26.7/drivers/usb/Makefile
-@@ -2,6 +2,8 @@
- # Makefile for the kernel USB device drivers.
- #
- 
-+obj-y                           += paramtest.o
-+
- # Object files in subdirectories
- 
- obj-$(CONFIG_USB)		+= core/
---- /dev/null
-+++ linux-2.6.26.7/drivers/usb/paramtest.c
-@@ -0,0 +1,38 @@
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+
-+static int param1;
-+module_param(param1, bool, S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(param1, "param1");
-+
-+static int param2;
-+module_param (param2, bool, S_IRUGO);
-+MODULE_PARM_DESC (param2, "param2");
-+
-+static int param3;
-+module_param(param3, bool, S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(param3, "param3");
-+
-+static int param4;
-+module_param(param4, bool, S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(param4, "param4");
-+
-+static int param5;
-+__module_param_call("", param5, param_set_bool, param_get_bool, &param5, 0444);
-+
-+static int param6;
-+module_param_named(paramtest, param6, int, 0644);
-+MODULE_PARM_DESC(paramtest, "param6");
-+
-+static int __init paramtest_init(void)
-+{
-+	return 0;
-+}
-+
-+static void __exit paramtest_exit(void)
-+{
-+}
-+
-+subsys_initcall(paramtest_init);
-+module_exit(paramtest_exit);
-+MODULE_LICENSE("GPL");
-----------------------------------------
-
-Did I make a mistake in the above patch?
-I tested after applying the above patch, and all results are wrong.
-
-----------------------------------------
-# cat /proc/version
-Linux version 2.6.27.3 (root@tomoyo) (gcc version 4.1.2 20071124 (Red Hat 4.1.2-42)) #2 SMP Fri Oct 24 23:45:52 JST 2008
-# ls -ail /sys/module/paramtest/parameters/
-total 0
-197 drwxr-xr-x 2 root root    0 Oct 24 23:49 .
-196 drwxr-xr-x 3 root root    0 Oct 24 23:49 ..
-199 -r--r--r-- 1 root root 4096 Oct 24 23:49 amtest.param4
-202 -r--r--r-- 1 root root 4096 Oct 24 23:49 param2
-201 -rw-r--r-- 1 root root 4096 Oct 24 23:49 param3
-200 -rw-r--r-- 1 root root 4096 Oct 24 23:49 param4
-198 -rw-r--r-- 1 root root 4096 Oct 24 23:49 paramtest
-----------
-# cat /proc/version
-Linux version 2.6.26.7 (root@tomoyo) (gcc version 4.1.2 20071124 (Red Hat 4.1.2-42)) #2 SMP Fri Oct 24 23:47:07 JST 2008
-# ls -ail /sys/module/paramtest/parameters/
-total 0
-197 drwxr-xr-x 2 root root    0 Oct 24 23:52 .
-196 drwxr-xr-x 3 root root    0 Oct 24 23:52 ..
-199 -r--r--r-- 1 root root 4096 Oct 24 23:52 amtest.param4
-202 -r--r--r-- 1 root root 4096 Oct 24 23:52 param2
-201 -rw-r--r-- 1 root root 4096 Oct 24 23:52 param3
-200 -rw-r--r-- 1 root root 4096 Oct 24 23:52 param4
-198 -rw-r--r-- 1 root root 4096 Oct 24 23:52 paramtest
-----------
-# cat /proc/version
-Linux version 2.6.27.3 (root@tomoyo) (gcc version 3.3.5 (Debian 1:3.3.5-13)) #2 SMP Fri Oct 24 22:12:09 JST 2008
-tomoyo:~# ls -ail /sys/module/paramtest/parameters/
-total 0
-197 drwxr-xr-x  2 root root    0 Oct 24 22:14 .
-196 drwxr-xr-x  3 root root    0 Oct 24 22:14 ..
-202 -r--r--r--  1 root root 4096 Oct 24 22:14 amtest.paramtest
-198 -rw-r--r--  1 root root 4096 Oct 24 22:14 param1
-199 -r--r--r--  1 root root 4096 Oct 24 22:14 param2
-200 -rw-r--r--  1 root root 4096 Oct 24 22:14 param3
-201 -rw-r--r--  1 root root 4096 Oct 24 22:14 param4
-----------
-# cat /proc/version
-Linux version 2.6.26.7 (root@tomoyo) (gcc version 3.3.5 (Debian 1:3.3.5-13)) #2 SMP Fri Oct 24 22:10:11 JST 2008
-tomoyo:~# ls -ail /sys/module/paramtest/parameters/
-total 0
-197 drwxr-xr-x  2 root root    0 Oct 24 22:16 .
-196 drwxr-xr-x  3 root root    0 Oct 24 22:16 ..
-202 -r--r--r--  1 root root 4096 Oct 24 22:16 amtest.paramtest
-198 -rw-r--r--  1 root root 4096 Oct 24 22:16 param1
-199 -r--r--r--  1 root root 4096 Oct 24 22:16 param2
-200 -rw-r--r--  1 root root 4096 Oct 24 22:16 param3
-201 -rw-r--r--  1 root root 4096 Oct 24 22:16 param4
-----------------------------------------
-
-However, applying the below patch after the above patch
-prevents this problem from appearing.
-
-----------------------------------------
----
- drivers/usb/paramtest.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
---- linux-2.6.26.7.orig/drivers/usb/paramtest.c
-+++ linux-2.6.26.7/drivers/usb/paramtest.c
-@@ -18,12 +18,13 @@ module_param(param4, bool, S_IRUGO | S_I
- MODULE_PARM_DESC(param4, "param4");
- 
- static int param5;
--__module_param_call("", param5, param_set_bool, param_get_bool, &param5, 0444);
- 
- static int param6;
- module_param_named(paramtest, param6, int, 0644);
- MODULE_PARM_DESC(paramtest, "param6");
- 
-+__module_param_call("", param5, param_set_bool, param_get_bool, &param5, 0444);
-+
- static int __init paramtest_init(void)
- {
- 	return 0;
-----------------------------------------
-
-----------------------------------------
-# cat /proc/version
-Linux version 2.6.27.3 (root@tomoyo) (gcc version 4.1.2 20071124 (Red Hat 4.1.2-42)) #3 SMP Fri Oct 24 23:55:21 JST 2008
-# ls -ail /sys/module/paramtest/parameters/
-total 0
-197 drwxr-xr-x 2 root root    0 Oct 25 00:00 .
-196 drwxr-xr-x 3 root root    0 Oct 25 00:00 ..
-202 -rw-r--r-- 1 root root 4096 Oct 25 00:00 param1
-201 -r--r--r-- 1 root root 4096 Oct 25 00:00 param2
-200 -rw-r--r-- 1 root root 4096 Oct 25 00:00 param3
-199 -rw-r--r-- 1 root root 4096 Oct 25 00:00 param4
-198 -rw-r--r-- 1 root root 4096 Oct 25 00:00 paramtest
-----------
-# cat /proc/version
-Linux version 2.6.26.7 (root@tomoyo) (gcc version 4.1.2 20071124 (Red Hat 4.1.2-42)) #3 SMP Fri Oct 24 23:56:17 JST 2008
-# ls -ail /sys/module/paramtest/parameters/
-total 0
-197 drwxr-xr-x 2 root root    0 Oct 25 00:01 .
-196 drwxr-xr-x 3 root root    0 Oct 25 00:01 ..
-202 -rw-r--r-- 1 root root 4096 Oct 25 00:01 param1
-201 -r--r--r-- 1 root root 4096 Oct 25 00:01 param2
-200 -rw-r--r-- 1 root root 4096 Oct 25 00:01 param3
-199 -rw-r--r-- 1 root root 4096 Oct 25 00:01 param4
-198 -rw-r--r-- 1 root root 4096 Oct 25 00:01 paramtest
-----------
-# cat /proc/version
-Linux version 2.6.27.3 (root@tomoyo) (gcc version 3.3.5 (Debian 1:3.3.5-13)) #3 SMP Fri Oct 24 22:18:06 JST 2008
-tomoyo:~# ls -ail /sys/module/paramtest/parameters/
-total 0
-197 drwxr-xr-x  2 root root    0 Oct 24 22:21 .
-196 drwxr-xr-x  3 root root    0 Oct 24 22:21 ..
-198 -rw-r--r--  1 root root 4096 Oct 24 22:21 param1
-199 -r--r--r--  1 root root 4096 Oct 24 22:21 param2
-200 -rw-r--r--  1 root root 4096 Oct 24 22:21 param3
-201 -rw-r--r--  1 root root 4096 Oct 24 22:21 param4
-202 -rw-r--r--  1 root root 4096 Oct 24 22:21 paramtest
-----------
-# cat /proc/version
-Linux version 2.6.26.7 (root@tomoyo) (gcc version 3.3.5 (Debian 1:3.3.5-13)) #3 SMP Fri Oct 24 22:19:26 JST 2008
-tomoyo:~# ls -ail /sys/module/paramtest/parameters/
-total 0
-197 drwxr-xr-x  2 root root    0 Oct 24 22:24 .
-196 drwxr-xr-x  3 root root    0 Oct 24 22:24 ..
-198 -rw-r--r--  1 root root 4096 Oct 24 22:24 param1
-199 -r--r--r--  1 root root 4096 Oct 24 22:24 param2
-200 -rw-r--r--  1 root root 4096 Oct 24 22:24 param3
-201 -rw-r--r--  1 root root 4096 Oct 24 22:24 param4
-202 -rw-r--r--  1 root root 4096 Oct 24 22:24 paramtest
-----------------------------------------
-
-Well, I'm getting more and more confused.
-It may be gcc3's bug, it may not be gcc's bug.
-
-Regards.
+What do you think?
