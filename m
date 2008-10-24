@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757058AbYJXXS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbYJXXZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757058AbYJXXS7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 19:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754923AbYJXXSl
+	id S1756008AbYJXXZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 19:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbYJXXZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 19:18:41 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55487
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754612AbYJXXSk (ORCPT
+	Fri, 24 Oct 2008 19:25:17 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:40289 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751575AbYJXXZQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 19:18:40 -0400
-Date: Fri, 24 Oct 2008 16:18:18 -0700 (PDT)
-Message-Id: <20081024.161818.256978293.davem@davemloft.net>
-To: galak@kernel.crashing.org
-Cc: csnook@redhat.com, maxk@qualcomm.com, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de
-Subject: Re: default IRQ affinity change in v2.6.27 (breaking several SMP
- PPC based systems)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <36A821E7-7F37-42AF-9A05-7205FCBF89EE@kernel.crashing.org>
-References: <4E3CD4D5-FC1B-40BF-A776-C612B95806B8@kernel.crashing.org>
-	<4901E6FB.4070200@redhat.com>
-	<36A821E7-7F37-42AF-9A05-7205FCBF89EE@kernel.crashing.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Oct 2008 19:25:16 -0400
+Date: Sat, 25 Oct 2008 00:25:03 +0100
+From: Matthew Garrett <mjg@redhat.com>
+To: Dong-Jae Kang <baramsori72@gmail.com>
+Cc: balbir@linux.vnet.ibm.com, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
+       corsetproject@googlegroups.com,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [Question] power management related with cgroup based resource management
+Message-ID: <20081024232503.GA20140@srcf.ucam.org>
+References: <2891419e0810201954q57087fc8ufcaa0e42f3ca99e2@mail.gmail.com> <4901B5C2.9070108@linux.vnet.ibm.com> <2891419e0810240524u746b731cjcbd127fa4204bd4d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2891419e0810240524u746b731cjcbd127fa4204bd4d@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Fri, 24 Oct 2008 10:39:05 -0500
+On Fri, Oct 24, 2008 at 09:24:21PM +0900, Dong-Jae Kang wrote:
 
-> As for making it ARCH specific, that doesn't really help since not
-> all PPC hw has the limitation I spoke of.  Not even all MPIC (in our
-> cases) have the limitation.
+> I am interested in power management in server side.
+> and I just wonder this question, "Is there any related point between
+> cgroup framework and power management?"
 
-Since the PPC code knows exactly which MPICs have the problem the
-PPC code is where the constraining can occur.
+Not currently, though it would certainly be possible to use cgroups as a 
+mechanism for providing application-specific power management.
 
-I agree completely with the suggestion that the arch code has to
-interpret the cpumask as appropriate for the hardware, since the
-user can stick "illegal" values there anyways.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
