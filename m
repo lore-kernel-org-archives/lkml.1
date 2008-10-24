@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754231AbYJXOrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755728AbYJXOsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754231AbYJXOrt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 10:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYJXOrk
+	id S1755728AbYJXOsL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 10:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbYJXOrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 10:47:40 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:34198 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752031AbYJXOrj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 10:47:39 -0400
-Date: Fri, 24 Oct 2008 10:47:36 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Frank Ch. Eigler" <fche@redhat.com>
-cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       systemtap@sources.redhat.com
-Subject: Re: [PATCH 5/5] tracing/ftrace: Introduce the big kernel lock
- tracer
-In-Reply-To: <20081024143744.GA20768@redhat.com>
-Message-ID: <alpine.DEB.1.10.0810241046300.3882@gandalf.stny.rr.com>
-References: <48F10B0B.406@gmail.com> <c62985530810210528t416c82b2lbe8471322e8359c@mail.gmail.com> <y0mmygv18le.fsf@ton.toronto.redhat.com> <c62985530810240643q467a9060kaf906eb7865f0a7@mail.gmail.com> <20081024143744.GA20768@redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 24 Oct 2008 10:47:55 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:51600 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752269AbYJXOrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 10:47:55 -0400
+Subject: Re: [PATCH 2/3] integrity: Linux Integrity Module(LIM)
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <20081014132823.GA18474@infradead.org>
+References: <cover.1223869200.git.zohar@localhost.localdomain>
+	 <7c05f813215804a30d03821fd8e251b250d0e000.1223869200.git.zohar@localhost.localdomain>
+	 <20081014132823.GA18474@infradead.org>
+Content-Type: text/plain
+Date: Fri, 24 Oct 2008 10:47:49 -0400
+Message-Id: <1224859669.9634.33.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-10-14 at 09:28 -0400, Christoph Hellwig wrote: 
+> >  int vfs_permission(struct nameidata *nd, int mask)
+> >  {
+> > -	return inode_permission(nd->path.dentry->d_inode, mask);
+> > +	int retval;
+> > +
+> > +	retval = inode_permission(nd->path.dentry->d_inode, mask);
+> > +	if (retval)
+> > +		return retval;
+> > +	return integrity_inode_permission(NULL, &nd->path,
+> > +					  mask & (MAY_READ | MAY_WRITE |
+> > +						  MAY_EXEC));
+> >  }
+> >  
+> >  /**
+> > @@ -306,7 +314,14 @@ int vfs_permission(struct nameidata *nd, int mask)
+> >   */
+> >  int file_permission(struct file *file, int mask)
+> >  {
+> > -	return inode_permission(file->f_path.dentry->d_inode, mask);
+> > +	int retval;
+> > +
+> > +	retval = inode_permission(file->f_path.dentry->d_inode, mask);
+> > +	if (retval)
+> > +		return retval;
+> > +	return integrity_inode_permission(file, NULL,
+> > +					  mask & (MAY_READ | MAY_WRITE |
+> > +						  MAY_EXEC));
+> 
+> Please don't add anything here as these two wrappers will go away.
 
-On Fri, 24 Oct 2008, Frank Ch. Eigler wrote:
+Ok.
 
-> Hi -
-> 
-> On Fri, Oct 24, 2008 at 03:43:49PM +0200, Fr?d?ric Weisbecker wrote:
-> 
-> > > [...]  For comparison, this is how this sort of analysis may be
-> > > done with systemtap [...]
-> 
-> > That's a great and powerful tool.
-> > 
-> > But just one sorrow:
-> > I just think that's a pity that we have to use/learn a new scripting
-> > language to use it.
-> 
-> I understand.
-> 
-> > I would rather prefer to use an API that provides functions/objects
-> > for most common scripting languages.
-> 
-> That is an interesting idea.  One possible problem is that the final
-> complete script "program" needs to be translated to something that can
-> run quickly and safely inside the kernel.  Full python or perl runtime
-> + libraries would have been almost certainly unbearable.
+> Please only make decisions based on what you get in inode_permission().
 
-Why can't the userspace application convert the script to something easy 
-that the kernel can handle?  But have the user application interface be 
-very simple, and perhaps even use perl or python.
+Is there any way to read a file, in order to calculate a hash, based
+just on an inode and a mask?  As far as I'm aware, either a file, or a
+dentry and vfsmount structures, are needed.  Previously, only the
+dentry, not the vfsmount, was required, which is accessible from the
+inode. 
 
--- Steve
+Without access to the vfsmount in inode_permission(), as
+vfs_permission() is going away, the only option I see is to move the
+integrity_inode_permission() call up a level to may_open(), after the
+call to vfs_permission().  Would this be acceptable?  (And change the
+hook name to integrity_may_open.)
+
+Mimi
 
