@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752319AbYJXEHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752361AbYJXEKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752319AbYJXEHq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 00:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750817AbYJXEHi
+	id S1752361AbYJXEKk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 00:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbYJXEKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 00:07:38 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:27292 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750725AbYJXEHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 00:07:37 -0400
-From: Andrey Mirkin <major@openvz.org>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [Devel] Re: [PATCH 06/10] Introduce functions to dump mm
-Date: Fri, 24 Oct 2008 08:07:01 +0400
-User-Agent: KMail/1.8.2
-Cc: devel@openvz.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <1224285098-573-1-git-send-email-major@openvz.org> <200810231243.42181.major@openvz.org> <1224769880.12673.15.camel@nimitz>
-In-Reply-To: <1224769880.12673.15.camel@nimitz>
+	Fri, 24 Oct 2008 00:10:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42300 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750725AbYJXEKb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 00:10:31 -0400
+Date: Thu, 23 Oct 2008 21:10:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Linux 2.6.28-rc1
+Message-ID: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810240807.02820.major@openvz.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 23 October 2008 17:51 Dave Hansen wrote:
-> On Thu, 2008-10-23 at 12:43 +0400, Andrey Mirkin wrote:
-> > > > +#ifdef CONFIG_X86
-> > > > +       if (pmd_huge(*pmd)) {
-> > > > +               eprintk("page_huge\n");
-> > > > +               goto out_unsupported;
-> > > > +       }
-> > > > +#endif
-> > >
-> > > I take it you know that this breaks with the 1GB (x86_64) and 16GB
-> > > (ppc) large pages.
-> > >
-> > > Since you have the VMA, why not use is_vm_hugetlb_page()?
-> >
-> > Right now I'm checking VM_HUGETLB flag on VMAs in dump_one_vma().
-> > This checks were added for sanity purpose just to throw out all
-> > unsupported right now cases.
->
-> I'm telling you that it's no good.  Not only should this path never be
-> hit.  But, if it is, you'll crash anyway in some cases.
->
-> It's a bad check.  At best it misleads the reader to think that you've
-> covered your bases.
 
-Agree, I will rework this.
+It's been two weeks, so it's time to close the merge window. A 2.6.28-rc1 
+is out there, and it's hopefully all good.
 
-Andrey
+The changes in -rc1 are (as usual) too many to really enumerate, with the 
+bulk of them being - again as usual - drivers. In fact, that's doubly true 
+now that we merged the drivers from the staging tree. The dirstat output 
+makes that very obvious:
+
+   3.3% arch/arm/
+  14.2% arch/
+   3.1% crypto/
+   4.0% drivers/media/
+   3.7% drivers/net/wireless/
+  10.3% drivers/net/
+   6.5% drivers/staging/me4000/
+   8.5% drivers/staging/slicoss/
+   4.8% drivers/staging/wlan-ng/
+  29.7% drivers/staging/
+  63.6% drivers/
+   3.3% include/
+   4.6% net/
+   4.6% sound/
+
+but some other statistics may be fun: 
+
+ - 7141 non-merge commits (and 419 merges)
+
+ - average non-merge commit:
+	39 lines removed, 104 lines added
+   (not counting renames)
+
+ - About 880 individual authors
+	- 340 of which had just one commit
+	- while 183 authors had ten or more commits
+
+ - Most screwed-up clock award goes to:
+
+	Greg Kroah-Hartman
+
+   for his commit 51b90540, which claims to be from April 9 - six years 
+   ago! And it's a fix to a driver that was merged this July!
+
+Way to go, Greg!
+
+Anyway, have fun, please test it, and report any intersting anomalies you 
+find.
+
+			Linus
