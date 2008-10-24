@@ -1,88 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbYJXApY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbYJXAqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755535AbYJXApY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 20:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbYJXApJ
+	id S1756656AbYJXAqw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 20:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYJXAqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 20:45:09 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:36302 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751675AbYJXApI (ORCPT
+	Thu, 23 Oct 2008 20:46:44 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37654 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751955AbYJXAqn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 20:45:08 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjMFAICyAElMQWro/2dsb2JhbACBdsERg04
-Date: Thu, 23 Oct 2008 20:45:02 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: ltt-dev@lists.casi.polymtl.ca, "Martin J. Bligh" <mbligh@mbligh.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, systemtap@sources.redhat.com,
-       kernel-trace-list@redhat.com
-Subject: LTTng 0.44 and LTTV 0.11.3
-Message-ID: <20081024004502.GA21759@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 23 Oct 2008 20:46:43 -0400
+Message-ID: <49011AD7.7000901@zytor.com>
+Date: Thu, 23 Oct 2008 17:46:15 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: akataria@vmware.com, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>
+Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is
+ set.
+References: <1224703427.13953.8.camel@alok-dev1> <20081022195845.GP12825@one.firstfloor.org> <1224712846.13953.37.camel@alok-dev1> <20081022221316.GW12825@one.firstfloor.org> <1224713518.13953.46.camel@alok-dev1> <20081022225409.GB27492@one.firstfloor.org> <1224728478.13953.79.camel@alok-dev1> <20081023081052.GI27492@one.firstfloor.org> <1224805162.21776.45.camel@alok-dev1> <49010D1E.8070400@zytor.com> <20081024002511.GC27492@one.firstfloor.org>
+In-Reply-To: <20081024002511.GC27492@one.firstfloor.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 20:22:20 up 141 days,  5:02, 10 users,  load average: 1.02, 0.71,
-	0.70
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Andi Kleen wrote:
+>> As far as skipping the check, it makes sense for me in the case of known 
+>> virtualization platforms; a CPU feature bit, real or synthetic, is a 
+>> very clean way to do that. 
+> 
+> I don't think adding detection for non PV Hypervisors is anywhere clean
+> Even if it's only VMware today, tomorrow it will be a few more
+> and long term you might need to support all of the obscuro hypervisors
+> that are out there. Just seems like a slippery slope. Either it's 
+> paravirtual or it's not, but it should attempt to be both. If the hypervisor
+> doesn't emulate TSC well enough that the native code works it's entirely
+> reasonable to let it use some other timer, like it has been always
+> done in the past.
 
-Here is why I have been a bit more quiet in the past days. I announce
-the release of LTTng 0.44 based on kernel 2.6.27.2. The highlights :
+That is at least to some degree nonsense, simply because we are all well 
+down that particular "slippery slope": we have hardware blacklists and 
+whitelists, CPU-specific workarounds, and so on all over the place, and 
+in that sense a hypervisor really isn't different than another hardware 
+platform.
 
-- includes trace_clock() patchset, which will also be posted on LKML for
-  review shortly (v2 of LTTng timestamping).
-
-- includes the specialized probes I have been talking about with the
-  Google team. This will mainly please Steven who want to write into C
-  structures without any marker overhead. Now you have it in LTTng.
-  There are restrictions about which types can be written into a
-  structure though, as not every types can be exported portably (e.g. no
-  bitfields can be used). This is made possible by optionally splitting
-  the marker declaration from the marker call to let someone declare a
-  marker only to keep track of the associated event types.
-
-  For details, see :
-  http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=37f78b629d1eca204aa7edd282599727b7a8a377
-
-- I created specialized probes for the main events generated by tbench
-  and went from 960 -> 1125 MB/s (~2000MB/s without tracing) in flight
-  recorder mode. That should please Martin for whom every cycle counts.
-  ;) We might want to dissect ltt-type-serializer.o, ltt-relay.o and
-  ltt-relay-alloc.o, because almost all the slowdown is located within
-  these "core" objects.
-
-  For details, see :
-  http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=0ac863964d4d2877eada0383e62d2021cfca6958
-
-- I have also vastly simplified locking in the markers and tracepoints
-  by using _only_ the modules mutex. I actually took this mutex out of
-  module.c and created its own file so tracepoints and markers can use
-  it. That should please Lai Jiangshan. Although he may have some work
-  to do to see how his new probes manager might benefit from it.
-
-  See :
-  http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=7aea87ac46df7613d68034f5904bc8d575069076
-  and
-  http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=5f6814237f7a67650e7b6214d916825e3f8fc1b7
-  http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=410ba66a1cbe27a611e1c18c0a53e87b4652a2c9
-
-So hopefully everyone will be happy with this new release. :)
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	-hpa
