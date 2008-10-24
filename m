@@ -1,189 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYJXHng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbYJXHpD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753211AbYJXHng (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 03:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYJXHn2
+	id S1753807AbYJXHpD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 03:45:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbYJXHou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 03:43:28 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:58489 "EHLO
-	VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751057AbYJXHn1 (ORCPT
+	Fri, 24 Oct 2008 03:44:50 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:52948 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751117AbYJXHot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 03:43:27 -0400
-X-BigFish: VPS-7(zz936eQzzzzz2dh6bh34h43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,5,
-Message-ID: <49017C08.8080304@e2s.net>
-Date: Fri, 24 Oct 2008 09:40:56 +0200
-From: Matthias Kaehlcke <mkaehlcke@e2s.net>
-Organization: Electronic Engineering Solutions
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 24 Oct 2008 03:44:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=VlBiFsKUOx9MCt276n0wRLHeoS5p32YOPK+JLknfNKb1cN48xbts76AZ3mGVV7JWbm
+         poMmQhTdVub1esqy3xP5bVbZYBMoGGEXTNay91vqm2PQbo4PyVmrRpsOy7TzZECS4rij
+         T3SpkITlu8Z8Hmu/mV7Rtng6NfDyn7D0sYsuM=
+Message-ID: <a8e1da0810240044o115fa6e3h32c1184bcfc6f5e5@mail.gmail.com>
+Date: Fri, 24 Oct 2008 15:44:49 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: 2.6.27-rc1 (2fca5c): libata: kernel cant boot
+Cc: "Paul Mundt" <lethal@linux-sh.org>,
+       "Alexander Beregalov" <a.beregalov@gmail.com>, tj@kernel.org,
+       torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+In-Reply-To: <20081024072428.GP22217@kernel.dk>
 MIME-Version: 1.0
-To: axboe@kernel.dk, linux-kernel@vger.kernel.org
-Subject: loop: possible circular locking dependency detected
-Content-Type: multipart/mixed;
-	boundary="------------080008050408040209020804"
-X-OriginalArrivalTime: 24 Oct 2008 07:43:05.0850 (UTC) FILETIME=[26CEBDA0:01C935AC]
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a4423d670810240004t2d7c3bdah2bea77a6a49bb7c4@mail.gmail.com>
+	 <20081024070955.GN22217@kernel.dk> <20081024071329.GO22217@kernel.dk>
+	 <20081024071608.GA3879@linux-sh.org>
+	 <20081024072428.GP22217@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---------------080008050408040209020804
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
+On Fri, Oct 24, 2008 at 3:24 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Fri, Oct 24 2008, Paul Mundt wrote:
+>> On Fri, Oct 24, 2008 at 09:13:29AM +0200, Jens Axboe wrote:
+>> > On Fri, Oct 24 2008, Jens Axboe wrote:
+>> > > On Fri, Oct 24 2008, Alexander Beregalov wrote:
+>> > > > Hi
+>> > > >
+>> > > > commit 2fca5ccf97d2c28bcfce44f5b07d85e74e3cd18e
+>> > > > Author: Jens Axboe <jens.axboe@oracle.com>
+>> > > > Date:   Wed Oct 22 09:34:49 2008 +0200
+>> > > >
+>> > > >     libata: switch to using block layer tagging support
+>> > > >
+>> > > >
+>> > > > This kernel can not read even 0 sector on disk with rootfs. It
+>> > > > initialized disk, but cant read it at all.
+>> > > >  CMD646 on Sparc
+>> > > >
+>> > > > Rverting helped.
+>> > >
+>> > > Doh, how annoying! What driver does that controller use? PATA doesn't
+>> > > even use NCQ, so it's a bit of an oddity that it makes a difference at
+>> > > all.
+>> > >
+>> > > Can you provide the boot messages?
+>> >
+>> > Darn, this smells like a train wreck. I'm assuming this fixes it?
+>> >
+>> Yes, that fixes it.
 
-lockdep reports a possible circular locking in the following use case:
+To confirm: 2.6.28-rc1 ata-piix, fixed for me as well.
 
-1) setup a loop device backed by a partition on a mass storage device
-
-2) mount loop device
-
-3) read from the loop device
-
-4) unplug the mass storage device while reading (i know this is nasty, 
-but users do this kind of stuff ...)
-
-
-[42950404.410000] usb 1-3: USB disconnect, address 3
-[42950404.460000] sd 1:0:0:0: [sdb] Result: hostbyte=DID_NO_CONNECT 
-driverbyte=DRIVER_OK,SUGGEST_OK
-[42950404.470000] end_request: I/O error, dev sdb, sector 181704
-[42950404.470000] Buffer I/O error on device sdb1, logical block 22709
-[42950404.480000] Buffer I/O error on device sdb1, logical block 22710
-[42950404.480000] Buffer I/O error on device sdb1, logical block 22711
-[42950404.490000] Buffer I/O error on device sdb1, logical block 22712
-[42950404.500000] Buffer I/O error on device sdb1, logical block 22717
-[42950404.500000] Buffer I/O error on device sdb1, logical block 22718
-[42950404.500000] Buffer I/O error on device sdb1, logical block 22719
-[42950404.500000] Buffer I/O error on device sdb1, logical block 22720
-[42950404.500000] Buffer I/O error on device sdb1, logical block 22721
-[42950404.500000] Buffer I/O error on device sdb1, logical block 22722
-[42950404.540000] watchdog: executing timer ...
-[42950404.540000] sd 1:0:0:0: [sdb] Result: hostbyte=DID_NO_CONNECT 
-driverbyte=DRIVER_OK,SUGGEST_OK
-[42950404.550000] end_request: I/O error, dev sdb, sector 181736
-[42950405.250000]
-[42950405.250000] =======================================================
-[42950405.250000] [ INFO: possible circular locking dependency detected ]
-[42950405.250000] 2.6.26.3 #20
-[42950405.250000] -------------------------------------------------------
-[42950405.250000] exe/7044 is trying to acquire lock:
-[42950405.250000]  (&bdev->bd_mutex){--..}, at: [<c00dcaf0>] 
-__blkdev_put+0x28/0x158
-[42950405.250000]
-[42950405.250000] but task is already holding lock:
-[42950405.250000]  (&lo->lo_ctl_mutex){--..}, at: [<c01a0fb0>] 
-lo_ioctl+0x3c/0x8c0
-[42950405.250000]
-[42950405.250000] which lock already depends on the new lock.
-[42950405.250000]
-[42950405.250000]
-[42950405.250000] the existing dependency chain (in reverse order) is:
-[42950405.250000]
-[42950405.250000] -> #1 (&lo->lo_ctl_mutex){--..}:
-[42950405.250000]        [<c007b810>] lock_acquire+0x8c/0xa8
-[42950405.250000]        [<c02a512c>] mutex_lock_nested+0xa8/0x2b0
-[42950405.250000]        [<c01a04ac>] lo_open+0x28/0x44
-[42950405.250000]        [<c00dce14>] do_open+0x98/0x2e8
-[42950405.250000]        [<c00dd2c0>] blkdev_open+0x38/0x78
-[42950405.250000]        [<c00ad668>] __dentry_open+0x10c/0x2b0
-[42950405.250000]        [<c00ad850>] nameidata_to_filp+0x44/0x50
-[42950405.250000]        [<c00bb700>] do_filp_open+0x1cc/0x774
-[42950405.250000]        [<c00ad45c>] do_sys_open+0x58/0xe4
-[42950405.250000]        [<c00ad520>] sys_open+0x24/0x28
-[42950405.250000]        [<c003bb60>] ret_fast_syscall+0x0/0x2c
-[42950405.250000]
-[42950405.250000] -> #0 (&bdev->bd_mutex){--..}:
-[42950405.250000]        [<c007b810>] lock_acquire+0x8c/0xa8
-[42950405.250000]        [<c02a512c>] mutex_lock_nested+0xa8/0x2b0
-[42950405.250000]        [<c00dcaf0>] __blkdev_put+0x28/0x158
-[42950405.250000]        [<c00dcc34>] blkdev_put+0x14/0x18
-[42950405.250000]        [<c00dd8c8>] blkdev_close+0x30/0x44
-[42950405.250000]        [<c00b07c4>] __fput+0xbc/0x1b4
-[42950405.250000]        [<c00b0bd0>] fput+0x34/0x38
-[42950405.250000]        [<c01a0ac4>] loop_clr_fd+0x120/0x15c
-[42950405.250000]        [<c01a118c>] lo_ioctl+0x218/0x8c0
-[42950405.250000]        [<c01512f0>] blkdev_driver_ioctl+0x80/0x8c
-[42950405.250000]        [<c0151554>] blkdev_ioctl+0x258/0x884
-[42950405.250000]        [<c00dc38c>] block_ioctl+0x2c/0x30
-[42950405.250000]        [<c00bcb2c>] vfs_ioctl+0x38/0x9c
-[42950405.250000]        [<c00bcc00>] do_vfs_ioctl+0x70/0x304
-[42950405.250000]        [<c00bced4>] sys_ioctl+0x40/0x64
-[42950405.250000]        [<c003bb60>] ret_fast_syscall+0x0/0x2c
-[42950405.250000]
-[42950405.250000] other info that might help us debug this:
-[42950405.250000]
-[42950405.250000] 1 lock held by exe/7044:
-[42950405.250000]  #0:  (&lo->lo_ctl_mutex){--..}, at: [<c01a0fb0>] 
-lo_ioctl+0x3c/0x8c0
-[42950405.250000]
-[42950405.250000] stack backtrace:
-[42950405.250000] [<c003fee4>] (dump_stack+0x0/0x14) from [<c0078c44>] 
-(print_circular_bug_tail+0x80/0x94)
-[42950405.250000] [<c0078bc4>] (print_circular_bug_tail+0x0/0x94) from 
-[<c007b46c>] (__lock_acquire+0xce4/0xffc)
-[42950405.250000]  r5:c1c98418 r4:c1c983e0
-[42950405.250000] [<c007a788>] (__lock_acquire+0x0/0xffc) from 
-[<c007b810>] (lock_acquire+0x8c/0xa8)
-[42950405.250000] [<c007b784>] (lock_acquire+0x0/0xa8) from [<c02a512c>] 
-(mutex_lock_nested+0xa8/0x2b0)
-[42950405.250000]  r6:c191c000 r5:60000013 r4:c0fc0ccc
-[42950405.250000] [<c02a5084>] (mutex_lock_nested+0x0/0x2b0) from 
-[<c00dcaf0>] (__blkdev_put+0x28/0x158)
-[42950405.250000] [<c00dcac8>] (__blkdev_put+0x0/0x158) from 
-[<c00dcc34>] (blkdev_put+0x14/0x18)
-[42950405.250000] [<c00dcc20>] (blkdev_put+0x0/0x18) from [<c00dd8c8>] 
-(blkdev_close+0x30/0x44)
-[42950405.250000] [<c00dd898>] (blkdev_close+0x0/0x44) from [<c00b07c4>] 
-(__fput+0xbc/0x1b4)
-[42950405.250000]  r4:00000008
-[42950405.250000] [<c00b0708>] (__fput+0x0/0x1b4) from [<c00b0bd0>] 
-(fput+0x34/0x38)
-[42950405.250000] [<c00b0b9c>] (fput+0x0/0x38) from [<c01a0ac4>] 
-(loop_clr_fd+0x120/0x15c)
-[42950405.250000] [<c01a09a4>] (loop_clr_fd+0x0/0x15c) from [<c01a118c>] 
-(lo_ioctl+0x218/0x8c0)
-[42950405.250000] [<c01a0f74>] (lo_ioctl+0x0/0x8c0) from [<c01512f0>] 
-(blkdev_driver_ioctl+0x80/0x8c)
-[42950405.250000] [<c0151270>] (blkdev_driver_ioctl+0x0/0x8c) from 
-[<c0151554>] (blkdev_ioctl+0x258/0x884)
-[42950405.250000] [<c01512fc>] (blkdev_ioctl+0x0/0x884) from 
-[<c00dc38c>] (block_ioctl+0x2c/0x30)
-[42950405.250000] [<c00dc360>] (block_ioctl+0x0/0x30) from [<c00bcb2c>] 
-(vfs_ioctl+0x38/0x9c)
-[42950405.250000]  r4:c128e2e0
-[42950405.250000] [<c00bcaf4>] (vfs_ioctl+0x0/0x9c) from [<c00bcc00>] 
-(do_vfs_ioctl+0x70/0x304)
-[42950405.250000]  r6:00000000 r5:c128e2e0 r4:c1b120ec
-[42950405.250000] [<c00bcb90>] (do_vfs_ioctl+0x0/0x304) from 
-[<c00bced4>] (sys_ioctl+0x40/0x64)
-[42950405.250000]  r8:c003bd04 r7:00000036 r6:00004c01 r5:fffffff7 
-r4:c128e2e0
-[42950405.250000] [<c00bce94>] (sys_ioctl+0x0/0x64) from [<c003bb60>] 
-(ret_fast_syscall+0x0/0x2c)
-[42950405.250000]  r6:00000000 r5:00000001 r4:00000003
-
-the kernel version  is 2.6.26.3 (can't test with 2.6.27 due to an USB 
-issue) running on a ep9307 (ARM) CPU
-
---------------080008050408040209020804
-Content-Type: text/x-vcard; charset="utf-8"; name="mkaehlcke.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename="mkaehlcke.vcf"
-
-begin:vcard
-fn:Matthias Kaehlcke
-n:Kaehlcke;Matthias
-org:Electronic Engineering Solutions;Dept. de Software
-adr:;;C/ Sant Ferran, 10-16 bajos;Barcelona;;08031;Spain
-email;internet:mkaehlcke@e2s.net
-title:Ingeniero de Firmware
-tel;work:93 407 30 80
-tel;fax:93 433 56 71
-x-mozilla-html:FALSE
-url:http://www.e2s.net
-version:2.1
-end:vcard
+>
+> OK, that's pretty bad. 2.6.28-rc1 will not work on any box using libata
+> with non-ncq disks. If you need me, I'll be at the bar.
+>
+> ----------
+>
+> From e598055dde1951c47c8b3522616f6ebff0ed9847 Mon Sep 17 00:00:00 2001
+> From: Jens Axboe <jens.axboe@oracle.com>
+> Date: Fri, 24 Oct 2008 09:22:42 +0200
+> Subject: [PATCH] libata: fix bug with non-ncq devices
+>
+> The recent commit 201f1b98822078c808b5e2d379a6ddbfc0a06ee1 to enable
+> support for block layer tagging in libata was broken for non-NCQ
+> devices. The block layer initializes the tag field to -1 to detect
+> invalid uses of a tag, and if the libata devices does NOT support
+> NCQ, we just used that field to index the internal command list.
+> So we need to check for -1 first and only use the tag field if
+> it's valid.
+>
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  drivers/ata/libata-scsi.c |    6 +++++-
+>  1 files changed, 5 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+> index d5b9b72..4b95c43 100644
+> --- a/drivers/ata/libata-scsi.c
+> +++ b/drivers/ata/libata-scsi.c
+> @@ -708,7 +708,11 @@ static struct ata_queued_cmd *ata_scsi_qc_new(struct ata_device *dev,
+>  {
+>        struct ata_queued_cmd *qc;
+>
+> -       qc = ata_qc_new_init(dev, cmd->request->tag);
+> +       if (cmd->request->tag != -1)
+> +               qc = ata_qc_new_init(dev, cmd->request->tag);
+> +       else
+> +               qc = ata_qc_new_init(dev, 0);
+> +
+>        if (qc) {
+>                qc->scsicmd = cmd;
+>                qc->scsidone = done;
+> --
+> 1.6.0.2.588.g3102
+>
+>
+> --
+> Jens Axboe
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
 
---------------080008050408040209020804--
+
+-- 
+Regards
+dave
