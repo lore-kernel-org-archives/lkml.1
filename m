@@ -1,73 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752361AbYJXEKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751836AbYJXEOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752361AbYJXEKk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 00:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbYJXEKc
+	id S1751836AbYJXEOM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 00:14:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbYJXEN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 00:10:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42300 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750725AbYJXEKb (ORCPT
+	Fri, 24 Oct 2008 00:13:57 -0400
+Received: from mga14.intel.com ([143.182.124.37]:56798 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750959AbYJXEN4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 00:10:31 -0400
-Date: Thu, 23 Oct 2008 21:10:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Linux 2.6.28-rc1
-Message-ID: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 24 Oct 2008 00:13:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,474,1220252400"; 
+   d="scan'208";a="64704637"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Nick Piggin <npiggin@suse.de>
+CC: "hugh@veritas.com" <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Date: Thu, 23 Oct 2008 21:13:57 -0700
+Subject: RE: [RFC] remap_pfn_range: store vm_pgoff for all
+ linear_over_vma_region mappings
+Thread-Topic: [RFC] remap_pfn_range: store vm_pgoff for all
+ linear_over_vma_region mappings
+Thread-Index: Ack1dQHYULMD8tdaQ2+AW6zKTNL35AAGXBZQ
+Message-ID: <7E82351C108FA840AB1866AC776AEC4637DDFA48@orsmsx505.amr.corp.intel.com>
+References: <20081023220913.GA20300@linux-os.sc.intel.com>
+ <20081024010803.GB5004@wotan.suse.de>
+In-Reply-To: <20081024010803.GB5004@wotan.suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ 
 
-It's been two weeks, so it's time to close the merge window. A 2.6.28-rc1 
-is out there, and it's hopefully all good.
+>-----Original Message-----
+>From: Nick Piggin [mailto:npiggin@suse.de] 
+>Sent: Thursday, October 23, 2008 6:08 PM
+>To: Pallipadi, Venkatesh
+>Cc: hugh@veritas.com; apkm@linux-os.sc.intel.com; Ingo Molnar; 
+>linux-kernel
+>Subject: Re: [RFC] remap_pfn_range: store vm_pgoff for all 
+>linear_over_vma_region mappings
+>
+>On Thu, Oct 23, 2008 at 03:09:14PM -0700, Venki Pallipadi wrote:
+>> 
+>> While working on x86 PAT, we are having some hurdles with tracking
+>> remap_pfn_range() regions, as later we do not have any 
+>information to say
+>> whether that PFNMAP mapping is linear for the entire vma range or
+>> it is smaller granularity regions within the vma.
+>> 
+>> A simple solution to this is to use vm_pgoff as an indicator for
+>> linear mapping over the vma region. Currently, remap_pfn_range
+>> only sets vm_pgoff only for COW mappings. Below patch changes the
+>> logic and sets the vm_pgoff irrespective of COW.
+>> 
+>> >From our understanding of the code, this should not break anyone.
+>> Just sending it as an RFC to get feedback on whether it is OK to do
+>> something like this or are there any corner cases that we may
+>> break or watch out for.
+>> 
+>> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+>
+>Hmm, I can'tthink of why it would break, but I would like to see an
+>entire patch. Obviously you won't try to decode this vma stuff
+>directly from the PAT code, but just call mm helpers... ?
+>
 
-The changes in -rc1 are (as usual) too many to really enumerate, with the 
-bulk of them being - again as usual - drivers. In fact, that's doubly true 
-now that we merged the drivers from the staging tree. The dirstat output 
-makes that very obvious:
+Yes. We are thinking of it as a call similar to is_cow_mapping().
+May be is_linear_vma_mapping() or something like that. We should
+have the rest of the patches by next week.
 
-   3.3% arch/arm/
-  14.2% arch/
-   3.1% crypto/
-   4.0% drivers/media/
-   3.7% drivers/net/wireless/
-  10.3% drivers/net/
-   6.5% drivers/staging/me4000/
-   8.5% drivers/staging/slicoss/
-   4.8% drivers/staging/wlan-ng/
-  29.7% drivers/staging/
-  63.6% drivers/
-   3.3% include/
-   4.6% net/
-   4.6% sound/
-
-but some other statistics may be fun: 
-
- - 7141 non-merge commits (and 419 merges)
-
- - average non-merge commit:
-	39 lines removed, 104 lines added
-   (not counting renames)
-
- - About 880 individual authors
-	- 340 of which had just one commit
-	- while 183 authors had ten or more commits
-
- - Most screwed-up clock award goes to:
-
-	Greg Kroah-Hartman
-
-   for his commit 51b90540, which claims to be from April 9 - six years 
-   ago! And it's a fix to a driver that was merged this July!
-
-Way to go, Greg!
-
-Anyway, have fun, please test it, and report any intersting anomalies you 
-find.
-
-			Linus
+Thanks,
+Venki
