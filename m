@@ -1,97 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754561AbYJXKmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbYJXKtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754561AbYJXKmL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 06:42:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYJXKl4
+	id S1754058AbYJXKtY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 06:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbYJXKtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 06:41:56 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:49684 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750999AbYJXKlz convert rfc822-to-8bit (ORCPT
+	Fri, 24 Oct 2008 06:49:15 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43205 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751361AbYJXKtP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 06:41:55 -0400
-Date: Fri, 24 Oct 2008 06:41:52 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Markus Trippelsdorf <markus@trippelsdorf.de>
-Cc: linux-kernel@vger.kernel.org, eugene@ibrix.com, msnitzer@ibrix.com,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: ext3: fix ext3_dx_readdir hash collision handling - Regression
-Message-ID: <20081024104152.GB8658@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Markus Trippelsdorf <markus@trippelsdorf.de>,
-	linux-kernel@vger.kernel.org, eugene@ibrix.com, msnitzer@ibrix.com,
-	akpm@linux-foundation.org, torvalds@linux-foundation.org
-References: <20081022093201.GA2227@gentoox2.trippelsdorf.de> <20081023032832.GE10369@mit.edu> <20081023063740.GA2438@gentoox2.trippelsdorf.de> <20081024000109.GD7842@mit.edu> <20081024042851.GA2360@gentoox2.trippelsdorf.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20081024042851.GA2360@gentoox2.trippelsdorf.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Fri, 24 Oct 2008 06:49:15 -0400
+Subject: [PATCH] trace: add the MMIO-tracer to the tracer menu
+From: Peter Zijlstra <peterz@infradead.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Pekka Paalanen <pq@iki.fi>, Steven Rostedt <rostedt@goodmis.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 24 Oct 2008 12:49:17 +0200
+Message-Id: <1224845357.4075.0.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 24, 2008 at 06:28:51AM +0200, Markus Trippelsdorf wrote:
-> 
-> Notice that I don't use "rm -rf" but "rm -r". The problem only occurs
-> when I run "rm -r" without the "-f" switch.
-> 
+Subject: trace: add the MMIO-tracer to the tracer menu
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Fri Oct 24 12:46:04 CEST 2008
 
-Still having trouble reproducing it.  I'll try to look more at your
-.config.  One difference i can see right off the bat is that I'm still
-using an 32-bit x86 system, not a 64-bit x86 system.  That shouldn't
-make a difference, though....
+Add the MMIO-tracer to the tracer menu.
 
-							- Ted
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Pekka Paalanen <pq@iki.fi>
+---
+ arch/x86/Kconfig.debug |   28 ++--------------------------
+ kernel/trace/Kconfig   |   28 ++++++++++++++++++++++++++++
+ 2 files changed, 30 insertions(+), 26 deletions(-)
 
-Script started on Fri 24 Oct 2008 06:36:47 AM EDT
-Top-level shell (parent script)
-Using forwarded ssh authentication socket
-<tytso.root@closure> {/usr/projects/linux/ext4}  [btree-debug]
-498# mke2fs -t ext3 /dev/thunk/testext4
-mke2fs 1.41.3 (12-Oct-2008)
-Filesystem label=
-OS type: Linux
-Block size=4096 (log=2)
-Fragment size=4096 (log=2)
-65536 inodes, 262144 blocks
-13107 blocks (5.00%) reserved for the super user
-First data block=0
-Maximum filesystem blocks=268435456
-8 block groups
-32768 blocks per group, 32768 fragments per group
-8192 inodes per group
-Superblock backups stored on blocks: 
-	32768, 98304, 163840, 229376
+Index: linux-2.6/arch/x86/Kconfig.debug
+===================================================================
+--- linux-2.6.orig/arch/x86/Kconfig.debug
++++ linux-2.6/arch/x86/Kconfig.debug
+@@ -175,32 +175,8 @@ config IOMMU_LEAK
+ 	  Add a simple leak tracer to the IOMMU code. This is useful when you
+ 	  are debugging a buggy device driver that leaks IOMMU mappings.
+ 
+-config MMIOTRACE_HOOKS
+-	bool
+-
+-config MMIOTRACE
+-	bool "Memory mapped IO tracing"
+-	depends on DEBUG_KERNEL && PCI
+-	select TRACING
+-	select MMIOTRACE_HOOKS
+-	help
+-	  Mmiotrace traces Memory Mapped I/O access and is meant for
+-	  debugging and reverse engineering. It is called from the ioremap
+-	  implementation and works via page faults. Tracing is disabled by
+-	  default and can be enabled at run-time.
+-
+-	  See Documentation/tracers/mmiotrace.txt.
+-	  If you are not helping to develop drivers, say N.
+-
+-config MMIOTRACE_TEST
+-	tristate "Test module for mmiotrace"
+-	depends on MMIOTRACE && m
+-	help
+-	  This is a dumb module for testing mmiotrace. It is very dangerous
+-	  as it will write garbage to IO memory starting at a given address.
+-	  However, it should be safe to use on e.g. unused portion of VRAM.
+-
+-	  Say N, unless you absolutely know what you are doing.
++config HAVE_MMIOTRACE_SUPPORT
++	def_bool y
+ 
+ #
+ # IO delay types:
+Index: linux-2.6/kernel/trace/Kconfig
+===================================================================
+--- linux-2.6.orig/kernel/trace/Kconfig
++++ linux-2.6/kernel/trace/Kconfig
+@@ -194,4 +194,32 @@ config FTRACE_STARTUP_TEST
+ 	  functioning properly. It will do tests on all the configured
+ 	  tracers of ftrace.
+ 
++config MMIOTRACE_HOOKS
++	bool
++
++config MMIOTRACE
++	bool "Memory mapped IO tracing"
++	depends on HAVE_MMIOTRACE_SUPPORT && DEBUG_KERNEL && PCI
++	select TRACING
++	select MMIOTRACE_HOOKS
++	help
++	  Mmiotrace traces Memory Mapped I/O access and is meant for
++	  debugging and reverse engineering. It is called from the ioremap
++	  implementation and works via page faults. Tracing is disabled by
++	  default and can be enabled at run-time.
++
++	  See Documentation/tracers/mmiotrace.txt.
++	  If you are not helping to develop drivers, say N.
++
++config MMIOTRACE_TEST
++	tristate "Test module for mmiotrace"
++	depends on MMIOTRACE && m
++	help
++	  This is a dumb module for testing mmiotrace. It is very dangerous
++	  as it will write garbage to IO memory starting at a given address.
++	  However, it should be safe to use on e.g. unused portion of VRAM.
++
++	  Say N, unless you absolutely know what you are doing.
++
++
+ endmenu
 
-Writing inode tables: done
-Creating journal (8192 blocks): done
-Writing superblocks and filesystem accounting information: done
-
-This filesystem will be automatically checked every 22 mounts or
-180 days, whichever comes first.  Use tune2fs -c or -i to override.
-<tytso.root@closure> {/usr/projects/linux/ext4}  [btree-debug]
-499# debugfs -w /dev/thunk/testext4
-debugfs 1.41.3 (12-Oct-2008)
-debugfs:  ssv s_hash_seed c3188d40-b161-4458-b3f9-22ca7788110f
-debugfs:  ssv s_def_hash_version tea
-debugfs:  q
-<tytso.root@closure> {/usr/projects/linux/ext4}  [btree-debug]
-500# mount /dev/thunk/testext4 /mnt
-<tytso.root@closure> {/usr/projects/linux/ext4}  [btree-debug]
-501# tar -C /mnt -xjf /usr/projects/linux/linux-2.6.27.2.tar.bz2 
-<tytso.root@closure> {/usr/projects/linux/ext4}  [btree-debug]
-502# /bin/rm -r /mnt/linux-2.6.27.2/
-<tytso.root@closure> {/usr/projects/linux/ext4}  [btree-debug]
-503# umount /mnt/
-<tytso.root@closure> {/usr/projects/linux/ext4}  [btree-debug]
-504# uname -a
-Linux closure 2.6.27-00067-g5593f6c-dirty #13 SMP Thu Oct 23 22:22:03 EDT 2008 i686 GNU/Linux
-<tytso.root@closure> {/usr/projects/linux/ext4}  [btree-debug]
-505# exit
-
-Script done on Fri 24 Oct 2008 06:39:22 AM EDT
