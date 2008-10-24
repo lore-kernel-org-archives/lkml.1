@@ -1,150 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbYJXJ7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756343AbYJXJ7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755978AbYJXJ7g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 05:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYJXJ6q
+	id S1756343AbYJXJ7x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 05:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbYJXJ6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 05:58:46 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36224 "EHLO
+	Fri, 24 Oct 2008 05:58:49 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36226 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752605AbYJXJ6o (ORCPT
+	with ESMTP id S1753059AbYJXJ6s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 05:58:44 -0400
-Message-Id: <20081024091109.912152294@chello.nl>
+	Fri, 24 Oct 2008 05:58:48 -0400
+Message-Id: <20081024091109.832347739@chello.nl>
 References: <20081024090611.936552213@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Fri, 24 Oct 2008 11:06:18 +0200
+Date: Fri, 24 Oct 2008 11:06:17 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, efault@gmx.de, vatsa@in.ibm.com,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 7/8] sched: non-zero lag renice
-Content-Disposition: inline; filename=sched-non-zero-lag-renice.patch
+Subject: [PATCH 6/8] sched: avg_vruntime
+Content-Disposition: inline; filename=sched-avg-vruntime.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Then renicing, esp when lowering nice value (getting heavier), its possible
-to get into a starvation scenario. If you got too much runtime as a very
-light task, you get shot way far too the right, which means you'll have to
-wait for a long time in order to run again.
+Renicing requires scaling the lag. Therefore we need a way to compute the it.
+Lag is defined as the difference between the service time received from the
+ideal model and the actual scheduler.
 
-If during that wait you get reniced down, fairness would suggest you get run
-earlier, because you deserve more time.
+The defining property of a fair scheduler is that the sum of all lags is zero;
+which can be seen is trivially true for the ideal case, as all lags are zero.
 
-This can be solved by scaling the vruntime so that we keep the real-time
-lag invariant.
+Therefore, the average of all virtual runtimes will be the point of zero lag.
 
-So under transformation(w->w') keep dt == dt':
+We cannot prove fairness for CFS due to sleeper fairness (without it we can).
+However since we can observe it does converge to fairness in stable operation,
+we can say the zero lag point converges to the average.
 
-   dv = dt/w -> w dv = dt
-   w dv = w' dv' -> dv' = w/w' dv
+We can't just take the average of vruntime - as it will use the full range
+of its u64 and will wrap around. Instead we'll use the average of
+(vruntime - min_vruntime)
+
+\Sum_{i}^{n} 1/n (v_{i} - v) = 1/n (\Sum_{i}^{n} v_{i}) - vn
+
+By factoring out the 1/n (never storing that) we avoid rounding, which
+would bring an accumulating error.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/sched.c      |   14 +++++++-------
- kernel/sched_fair.c |   40 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 47 insertions(+), 7 deletions(-)
+ kernel/sched.c       |    3 ++
+ kernel/sched_debug.c |    3 ++
+ kernel/sched_fair.c  |   56 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 61 insertions(+), 1 deletion(-)
 
 Index: linux-2.6/kernel/sched.c
 ===================================================================
 --- linux-2.6.orig/kernel/sched.c
 +++ linux-2.6/kernel/sched.c
-@@ -4984,12 +4984,9 @@ void set_user_nice(struct task_struct *p
+@@ -383,6 +383,9 @@ struct cfs_rq {
+ 	struct load_weight load;
+ 	unsigned long nr_running;
  
- 	if (on_rq) {
- 		enqueue_task(rq, p, 0);
--		/*
--		 * If the task increased its priority or is running and
--		 * lowered its priority, then reschedule its CPU:
--		 */
--		if (delta < 0 || (delta > 0 && task_running(rq, p)))
--			resched_task(rq->curr);
++	long nr_queued;
++	s64 avg_vruntime;
 +
-+		check_class_changed(rq, p, p->sched_class, old_prio,
-+				    task_running(rq, p));
- 	}
- out_unlock:
- 	task_rq_unlock(rq, &flags);
-@@ -8744,6 +8741,7 @@ void sched_move_task(struct task_struct 
- static void __set_se_shares(struct sched_entity *se, unsigned long shares)
- {
- 	struct cfs_rq *cfs_rq = se->cfs_rq;
-+	unsigned long old_weight = se->load.weight;
- 	int on_rq;
+ 	u64 exec_clock;
+ 	u64 min_vruntime;
  
- 	on_rq = se->on_rq;
-@@ -8753,8 +8751,10 @@ static void __set_se_shares(struct sched
- 	se->load.weight = shares;
- 	se->load.inv_weight = 0;
+Index: linux-2.6/kernel/sched_debug.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_debug.c
++++ linux-2.6/kernel/sched_debug.c
+@@ -161,6 +161,9 @@ void print_cfs_rq(struct seq_file *m, in
+ 			SPLIT_NS(spread0));
+ 	SEQ_printf(m, "  .%-30s: %ld\n", "nr_running", cfs_rq->nr_running);
+ 	SEQ_printf(m, "  .%-30s: %ld\n", "load", cfs_rq->load.weight);
++	SEQ_printf(m, "  .%-30s: %Ld.%06ld\n", "avg_vruntime",
++			SPLIT_NS(avg_vruntime(cfs_rq)));
++
+ #ifdef CONFIG_SCHEDSTATS
+ #define P(n) SEQ_printf(m, "  .%-30s: %d\n", #n, rq->n);
  
--	if (on_rq)
-+	if (on_rq) {
- 		enqueue_entity(cfs_rq, se, 0);
-+		prio_changed_entity(cfs_rq, se, old_weight, shares);
-+	}
- }
- 
- static void set_se_shares(struct sched_entity *se, unsigned long shares)
 Index: linux-2.6/kernel/sched_fair.c
 ===================================================================
 --- linux-2.6.orig/kernel/sched_fair.c
 +++ linux-2.6/kernel/sched_fair.c
-@@ -1671,6 +1671,41 @@ static void task_new_fair(struct rq *rq,
- 	enqueue_task_fair(rq, p, 0);
+@@ -271,6 +271,56 @@ static inline s64 entity_key(struct cfs_
+ 	return se->vruntime - cfs_rq->min_vruntime;
  }
  
-+static void prio_changed_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
-+		unsigned long old_weight, unsigned long new_weight)
++static void
++avg_vruntime_add(struct cfs_rq *cfs_rq, struct sched_entity *se)
 +{
-+	u64 avg;
-+	s64 lag;
-+
-+	if (old_weight == new_weight)
-+		return;
-+
-+	/*
-+	 * XXX very likely we just did a dequeue/enqueue cycle already
-+	 * optimize this...
-+	 */
-+	update_curr(cfs_rq);
-+	avg = avg_vruntime(cfs_rq);
-+	if (se != cfs_rq->curr)
-+		__dequeue_entity(cfs_rq, se);
-+
-+	/*
-+	 * When changing weight, keep the lag invariant under real time.
-+	 * So under transformation(w->w') keep dt == dt':
-+	 *
-+	 *   dv = dt/w -> w dv = dt
-+	 *   w dv = w' dv' -> dv' = w/w' dv
-+	 */
-+	lag = (s64)(se->vruntime - avg);
-+	lag *= old_weight;
-+	lag = div_s64(lag, new_weight);
-+
-+	se->vruntime = avg + lag;
-+	if (se != cfs_rq->curr)
-+		__enqueue_entity(cfs_rq, se);
-+	update_min_vruntime(cfs_rq);
++	s64 key = entity_key(cfs_rq, se);
++	cfs_rq->avg_vruntime += key;
++	cfs_rq->nr_queued++;
 +}
 +
- /*
-  * Priority of the task has changed. Check to see if we preempt
-  * the current task.
-@@ -1678,6 +1713,11 @@ static void task_new_fair(struct rq *rq,
- static void prio_changed_fair(struct rq *rq, struct task_struct *p,
- 			      int oldprio, int running)
++static void
++avg_vruntime_sub(struct cfs_rq *cfs_rq, struct sched_entity *se)
++{
++	s64 key = entity_key(cfs_rq, se);
++	cfs_rq->avg_vruntime -= key;
++	cfs_rq->nr_queued--;
++}
++
++static inline
++void avg_vruntime_update(struct cfs_rq *cfs_rq, s64 delta)
++{
++	cfs_rq->avg_vruntime -= cfs_rq->nr_queued * delta;
++}
++
++static u64 avg_vruntime(struct cfs_rq *cfs_rq)
++{
++	s64 avg = cfs_rq->avg_vruntime;
++	long nr_queued = cfs_rq->nr_queued;
++
++	if (cfs_rq->curr) {
++		nr_queued++;
++		avg += entity_key(cfs_rq, cfs_rq->curr);
++	}
++
++	if (nr_queued)
++		avg = div_s64(avg, nr_queued);
++
++	return cfs_rq->min_vruntime + avg;
++}
++
++static void __update_min_vruntime(struct cfs_rq *cfs_rq, u64 vruntime)
++{
++	/*
++	 * open coded max_vruntime() to allow updating avg_vruntime
++	 */
++	s64 delta = (s64)(vruntime - cfs_rq->min_vruntime);
++	if (delta > 0) {
++		avg_vruntime_update(cfs_rq, delta);
++		cfs_rq->min_vruntime = vruntime;
++	}
++}
++
+ static void update_min_vruntime(struct cfs_rq *cfs_rq)
  {
-+	if (!rt_prio(oldprio))
-+		prio_changed_entity(&rq->cfs, &p->se,
-+				prio_to_weight[USER_PRIO(oldprio)],
-+				prio_to_weight[USER_PRIO(p->prio)]);
+ 	u64 vruntime = cfs_rq->min_vruntime;
+@@ -289,7 +339,7 @@ static void update_min_vruntime(struct c
+ 			vruntime = min_vruntime(vruntime, se->vruntime);
+ 	}
+ 
+-	cfs_rq->min_vruntime = max_vruntime(cfs_rq->min_vruntime, vruntime);
++	__update_min_vruntime(cfs_rq, vruntime);
+ }
+ 
+ /*
+@@ -303,6 +353,8 @@ static void __enqueue_entity(struct cfs_
+ 	s64 key = entity_key(cfs_rq, se);
+ 	int leftmost = 1;
+ 
++	avg_vruntime_add(cfs_rq, se);
 +
  	/*
- 	 * Reschedule if we are currently running on this runqueue and
- 	 * our priority decreased, or if we are not currently running on
+ 	 * Find the right place in the rbtree:
+ 	 */
+@@ -345,6 +397,8 @@ static void __dequeue_entity(struct cfs_
+ 		cfs_rq->next = NULL;
+ 
+ 	rb_erase(&se->run_node, &cfs_rq->tasks_timeline);
++
++	avg_vruntime_sub(cfs_rq, se);
+ }
+ 
+ static inline struct rb_node *first_fair(struct cfs_rq *cfs_rq)
 
 -- 
 
