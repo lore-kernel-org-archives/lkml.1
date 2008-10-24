@@ -1,165 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbYJXJ1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbYJXJdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754725AbYJXJ1c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 05:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYJXJ1V
+	id S1754353AbYJXJdm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 05:33:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbYJXJdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 05:27:21 -0400
-Received: from merkurneu.hrz.uni-giessen.de ([134.176.2.3]:51965 "EHLO
-	merkurneu.hrz.uni-giessen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751352AbYJXJ1U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 05:27:20 -0400
-X-Greylist: delayed 902 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Oct 2008 05:27:19 EDT
-To: Terleev Roman <lost@nx.uz>
-Subject: Re: PROBLEM: too much RX drop packets on kernel 2.6.26 and 2.6.27.x
-From: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
-Date: Fri, 24 Oct 2008 11:12:00 +0200
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+	Fri, 24 Oct 2008 05:33:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36039 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750778AbYJXJdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 05:33:32 -0400
+Date: Fri, 24 Oct 2008 11:33:42 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel@vger.kernel.org, travis@sgi.com,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: do_boot_cpu can deadlock?
+Message-ID: <20081024093342.GA4583@redhat.com>
+References: <20081023005751.53973DDEFE@ozlabs.org> <20081023094036.GA7593@redhat.com> <20081023143605.GN5255@in.ibm.com> <20081023163517.GB21008@redhat.com> <20081023170212.GA22599@redhat.com> <20081023182119.GA1480@in.ibm.com> <20081023184906.GA2612@localhost>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_hFZAJmbhAqeA5Ap"
-Message-Id: <200810241112.01255.marc.dietrich@ap.physik.uni-giessen.de>
-X-HRZ-JLUG-MailScanner-Information: Passed JLUG virus check
-X-HRZ-JLUG-MailScanner: No virus found
-X-MailScanner-From: marc.dietrich@ap.physik.uni-giessen.de
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081023184906.GA2612@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_hFZAJmbhAqeA5Ap
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
-Hi Terleev,
-
-On Friday 24 October 2008 10:00:07 Terleev Roman wrote:
-> hello, linux-kernel.
+On 10/23, Cyrill Gorcunov wrote:
 >
-> [1.] One line summary of the problem:
-> too much RX drop packets
->
-> [2.] Full description of the problem/report:
-> "Realtek Semiconductor Co., Ltd. RTL8111/8168B PCI Express Gigabit
-> Ethernet controller" - network is up and working, but too much more drop
-> packets:
->
-> working int:
-> #ifconfig eth0
-> eth0      Link encap:Ethernet  HWaddr 00:1F:D0:5C:1A:5A
->           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
->           RX packets:7323 errors:0 dropped:7564458177891 overruns:0 frame:0
->           TX packets:8388 errors:0 dropped:0 overruns:0 carrier:0
->           collisions:0 txqueuelen:1000
->           RX bytes:688493 (672.3 KiB)  TX bytes:5088993 (4.8 MiB)
->           Interrupt:251 Base address:0x4000
+> [Gautham R Shenoy - Thu, Oct 23, 2008 at 11:51:19PM +0530]
+> | On Thu, Oct 23, 2008 at 07:02:12PM +0200, Oleg Nesterov wrote:
+> | > Hmm. arch/x86/kernel/smpboot.c:do_boot_cpu() can deadlock ?
+> | > 
+> | > It is called from _cpu_up() under cpu_hotplug_begin(), and it
+> | > waits for c_idle.work. Again, if we have the pending work which
+> | > needs get_online_cpus() we seem to have problems.
+> | 
+> | Good point. Though this code gets triggered mostly during boot time when
+> | the CPUs are being brought online for the first time. If we have some
+> | work-item pending at that time, which needs get_online_cpus(), we could
+> | possibly see this deadlock.
+> | 
+> | > 
+> | > Oleg.
+> | 
+> | -- 
+> | Thanks and Regards
+> | gautham
+> | 
+> 
+> May I ask? If I understand right we do use this part of do_boot_cpu
+> 
+> 	if (!keventd_up() || current_is_keventd())
+> 		c_idle.work.func(&c_idle.work);
+> 	else {
+> 		schedule_work(&c_idle.work);
+> 		wait_for_completion(&c_idle.done);
+> 	}
+> 
+> if only we've been called the first time after power on. And all
+> subsequent call of this do_boot_cpu would lead to
+> 
+> 	if (c_idle.idle) {
+> 		c_idle.idle->thread.sp = (unsigned long) (((struct pt_regs *)
+> 			(THREAD_SIZE +  task_stack_page(c_idle.idle))) - 1);
+> 		init_idle(c_idle.idle, cpu);
+> 		goto do_rest;
+> 	}
+> 
+> ie go to do_rest and no wait_for_completion/schedule_work at all.
+> Did I miss something? *Sorry* in advance if the question is quite
+> not related. This work-pending situation is in 'possible' scenario
+> only (ie we don't have such a callers for now... yet)?
 
-does the attached patch (from git-net) fix it?
+There are no problems during boot time, afaics.
 
-To NetDev: Is this already in a stable-branch?
+kernel_init() calls smp_init() before do_basic_setup()->init_workqueues().
+This means that do_boot_cpu() won't use workqueues due to !keventd_up().
 
-Marc
+But let's suppose we boot with maxcpus=1, and then bring up another CPU.
+Or we really add the new physical CPU (I don't really know if this is
+possible on x86).
 
+Oleg.
 
-
---Boundary-00=_hFZAJmbhAqeA5Ap
-Content-Type: text/x-patch;
-  charset="utf-8";
-  name="0001-r8169-fix-RxMissed-register-access.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="0001-r8169-fix-RxMissed-register-access.patch"
-
-=46rom 422f23adb15141fffbba4c2579b26c59fabc3537 Mon Sep 17 00:00:00 2001
-=46rom: Francois Romieu <romieu@fr.zoreil.com>
-Date: Thu, 21 Aug 2008 23:20:40 +0200
-Subject: [PATCH] r8169: fix RxMissed register access
-
-=2D the register location is defined for the 8169 chipset only
-=2D only the lower 3 bytes of the register are valid
-
-Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
-Cc: Edward Hsu <edward_hsu@realtek.com.tw>
-=2D--
- drivers/net/r8169.c |   22 ++++++++++------------
- 1 files changed, 10 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index 0f6f974..4190ee7 100644
-=2D-- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -2099,8 +2099,6 @@ static void rtl_hw_start_8168(struct net_device *dev)
-=20
- 	RTL_R8(IntrMask);
-=20
-=2D	RTL_W32(RxMissed, 0);
-=2D
- 	rtl_set_rx_mode(dev);
-=20
- 	RTL_W8(ChipCmd, CmdTxEnb | CmdRxEnb);
-@@ -2143,8 +2141,6 @@ static void rtl_hw_start_8101(struct net_device *dev)
-=20
- 	RTL_R8(IntrMask);
-=20
-=2D	RTL_W32(RxMissed, 0);
-=2D
- 	rtl_set_rx_mode(dev);
-=20
- 	RTL_W8(ChipCmd, CmdTxEnb | CmdRxEnb);
-@@ -2922,6 +2918,17 @@ static int rtl8169_poll(struct napi_struct *napi, in=
-t budget)
- 	return work_done;
- }
-=20
-+static void rtl8169_rx_missed(struct net_device *dev, void __iomem *ioaddr)
-+{
-+	struct rtl8169_private *tp =3D netdev_priv(dev);
-+
-+	if (tp->mac_version > RTL_GIGA_MAC_VER_06)
-+		return;
-+
-+	dev->stats.rx_missed_errors +=3D (RTL_R32(RxMissed) & 0xffffff);
-+	RTL_W32(RxMissed, 0);
-+}
-+
- static void rtl8169_down(struct net_device *dev)
- {
- 	struct rtl8169_private *tp =3D netdev_priv(dev);
-@@ -2939,9 +2946,7 @@ core_down:
-=20
- 	rtl8169_asic_down(ioaddr);
-=20
-=2D	/* Update the error counts. */
-=2D	dev->stats.rx_missed_errors +=3D RTL_R32(RxMissed);
-=2D	RTL_W32(RxMissed, 0);
-+	rtl8169_rx_missed(dev, ioaddr);
-=20
- 	spin_unlock_irq(&tp->lock);
-=20
-@@ -3063,8 +3068,7 @@ static struct net_device_stats *rtl8169_get_stats(str=
-uct net_device *dev)
-=20
- 	if (netif_running(dev)) {
- 		spin_lock_irqsave(&tp->lock, flags);
-=2D		dev->stats.rx_missed_errors +=3D RTL_R32(RxMissed);
-=2D		RTL_W32(RxMissed, 0);
-+		rtl8169_rx_missed(dev, ioaddr);
- 		spin_unlock_irqrestore(&tp->lock, flags);
- 	}
-=20
-@@ -3089,8 +3093,7 @@ static int rtl8169_suspend(struct pci_dev *pdev, pm_m=
-essage_t state)
-=20
- 	rtl8169_asic_down(ioaddr);
-=20
-=2D	dev->stats.rx_missed_errors +=3D RTL_R32(RxMissed);
-=2D	RTL_W32(RxMissed, 0);
-+	rtl8169_rx_missed(dev, ioaddr);
-=20
- 	spin_unlock_irq(&tp->lock);
-=20
-
---Boundary-00=_hFZAJmbhAqeA5Ap--
