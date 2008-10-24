@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbYJXXZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbYJXX0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756008AbYJXXZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 19:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbYJXXZR
+	id S1757880AbYJXX0O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 19:26:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbYJXXZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 19:25:17 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:40289 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751575AbYJXXZQ (ORCPT
+	Fri, 24 Oct 2008 19:25:58 -0400
+Received: from wilson.telenet-ops.be ([195.130.132.42]:45403 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751983AbYJXXZ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 19:25:16 -0400
-Date: Sat, 25 Oct 2008 00:25:03 +0100
-From: Matthew Garrett <mjg@redhat.com>
-To: Dong-Jae Kang <baramsori72@gmail.com>
-Cc: balbir@linux.vnet.ibm.com, xen-devel@lists.xensource.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
-       corsetproject@googlegroups.com,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [Question] power management related with cgroup based resource management
-Message-ID: <20081024232503.GA20140@srcf.ucam.org>
-References: <2891419e0810201954q57087fc8ufcaa0e42f3ca99e2@mail.gmail.com> <4901B5C2.9070108@linux.vnet.ibm.com> <2891419e0810240524u746b731cjcbd127fa4204bd4d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2891419e0810240524u746b731cjcbd127fa4204bd4d@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Fri, 24 Oct 2008 19:25:57 -0400
+X-Greylist: delayed 2875 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Oct 2008 19:25:57 EDT
+Subject: Re: 2.6.27-rc8-git8: oops in process hald-addon-dell-backlight
+ (intel iommu related?)
+From: Frederik Himpe <fhimpe@telenet.be>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200810242349.02738.rjw@sisk.pl>
+References: <pan.2008.10.08.20.15.37@telenet.be>
+	 <pan.2008.10.08.20.41.23@telenet.be>  <200810242349.02738.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Sat, 25 Oct 2008 01:25:54 +0200
+Message-Id: <1224890754.13640.36.camel@Anastacia.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.0-2mdv2009.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 24, 2008 at 09:24:21PM +0900, Dong-Jae Kang wrote:
+On vr, 2008-10-24 at 23:49 +0200, Rafael J. Wysocki wrote:
+> On Wednesday, 8 of October 2008, Frederik Himpe wrote:
+> > On Wed, 08 Oct 2008 20:15:37 +0000, Frederik Himpe wrote:
+> > 
+> > > On my Dell Latitude E6400 system with Intel chipset and graphics, I get
+> > > this oops in my 2.6.27-rc8-git8 based kernel, which probably happens
+> > > when hald-addon-dell-backlight is started.
+> > > 
+> > > Complete dmesg and lspci info:
+> > > https://qa.mandriva.com/show_bug.cgi?id=44711
+> > 
+> > Booting with intel_iommu=off seems to fix this issue, and seems to make my 
+> > e1000e based network card stop from giving "transmit timed out" errors 
+> > after which it stopped working.
+> 
+> Is it necessary to boot 2.6.27 final on this box with intel_iommu=off, and if
+> so, is it still necessary in mainline?
 
-> I am interested in power management in server side.
-> and I just wonder this question, "Is there any related point between
-> cgroup framework and power management?"
+I just tested stock 2.6.27.3 and this machine (Dell Latitude E6400) is
+totally unusable without intel_iommu=off if Intel VT is enabled in the
+BIOS. During the boot process, stack traces start scrolling over the
+screen. In the end, it goes on starting X, and from that moment, the
+machine locks up completely. Booting in runlevel 3, I see lots of stack
+traces (too much to even be able to read them).
 
-Not currently, though it would certainly be possible to use cgroups as a 
-mechanism for providing application-specific power management.
+In the past (with Mandriva's 2.6.27-rc) it would at least succeed in
+booting (with one or a few backtraces), but even then the e1000e network
+card would timeout a few seconds after when starting to transfer some
+data, after which the network was totally unusable until a reboot. A
+reader of my blog confirmed having the same problem on this same type of
+laptop and also solving it by using intel_iommu=off.
+
+I entered some more information here:
+http://bugzilla.kernel.org/show_bug.cgi?id=11821
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Frederik Himpe <fhimpe@telenet.be>
+
