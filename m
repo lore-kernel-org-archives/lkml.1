@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbYJXBP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757808AbYJXBR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757057AbYJXBP7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 21:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751015AbYJXBPt
+	id S1757808AbYJXBR3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 21:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbYJXBRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 21:15:49 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:12765 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750813AbYJXBPs (ORCPT
+	Thu, 23 Oct 2008 21:17:17 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:34965 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752058AbYJXBRR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 21:15:48 -0400
-Date: Thu, 23 Oct 2008 18:14:55 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>,
-       torvalds <torvalds@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: [PATCH] PCI hotplug printk format
-Message-Id: <20081023181455.336e5d03.randy.dunlap@oracle.com>
-In-Reply-To: <20081023213637.eff9b414.sfr@canb.auug.org.au>
-References: <20081023213637.eff9b414.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Thu, 23 Oct 2008 21:17:17 -0400
+Subject: Re: Oops in ACPI with git latest
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>
+In-Reply-To: <200810232242.33480.rjw@sisk.pl>
+References: <1224791103.3330.37.camel@localhost.localdomain>
+	 <200810232242.33480.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Thu, 23 Oct 2008 20:17:12 -0500
+Message-Id: <1224811033.3330.54.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I made this patch for linux-next, but now mainline has this same code/warning.
+On Thu, 2008-10-23 at 22:42 +0200, Rafael J. Wysocki wrote:
+> On Thursday, 23 of October 2008, James Bottomley wrote:
+> > ACPI Warning (nseval-0168): Insufficient arguments - method [_OSC] needs 5, found 4 [20080926]
+> > ACPI Warning (nspredef-0252): \_SB_.PCI0._OSC: Parameter count mismatch - ASL declared 5, expected 4 [20080926]
+> > ACPI Error (nspredef-0163): \_SB_.PCI0._OSC: Missing expected return value [20080926]
+> > BUG: unable to handle kernel NULL pointer dereference at 00000000
+> Does this patch help?
+> 
+> ---
+>  drivers/pci/pci-acpi.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> Index: linux-2.6/drivers/pci/pci-acpi.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/pci-acpi.c
+> +++ linux-2.6/drivers/pci/pci-acpi.c
+> @@ -83,6 +83,9 @@ static acpi_status acpi_run_osc(acpi_han
+>  	if (ACPI_FAILURE(status))
+>  		return status;
+>  
+> +	if (!output.pointer)
+> +		return AE_NULL_OBJECT;
+> +
+>  	out_obj = output.pointer;
+>  	if (out_obj->type != ACPI_TYPE_BUFFER) {
+>  		printk(KERN_DEBUG "Evaluate _OSC returns wrong type\n");
+
+Yes, that seems to fix it, thanks! ... I suppose the ASL error and
+warnings need investigating too?
+
+James
 
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
-
-Fix printk format warning:
-
-linux-next-20081023/drivers/pci/hotplug/acpiphp_ibm.c:207: warning: format '%08lx' expects type 'long unsigned int', but argument 3 has type 'long long unsigned int'
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/pci/hotplug/acpiphp_ibm.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-next-20081023.orig/drivers/pci/hotplug/acpiphp_ibm.c
-+++ linux-next-20081023/drivers/pci/hotplug/acpiphp_ibm.c
-@@ -204,7 +204,7 @@ static int ibm_set_attention_status(stru
- 		err("APLS evaluation failed:  0x%08x\n", stat);
- 		return -ENODEV;
- 	} else if (!rc) {
--		err("APLS method failed:  0x%08lx\n", rc);
-+		err("APLS method failed:  0x%08llx\n", rc);
- 		return -ERANGE;
- 	}
- 	return 0;
