@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbYJXRxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757383AbYJXRzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757478AbYJXRxd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 13:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbYJXRx0
+	id S1757383AbYJXRzW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 13:55:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbYJXRzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 13:53:26 -0400
-Received: from ti-out-0910.google.com ([209.85.142.190]:51173 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751479AbYJXRxZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 13:53:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=fJUe6zcesZ+Chg+OmhuSaITQ4j2+wfSF1Qf1nmlK0IL6BZl6WNyazH6xvm7VsSsGNK
-         jmfDpK/7WcGXHGpcb/zbksbqSPifMtJzZ1S40tph7MS0IgON8BpwxReDgW6heUjJGeZc
-         LGRDlh3Ln7w0girgBCr0xaMn9T4Zto/3Wmkek=
-Message-ID: <e9c3a7c20810241053t2f991a62p1d03fb60f8750a89@mail.gmail.com>
-Date: Fri, 24 Oct 2008 10:53:21 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Venki Pallipadi" <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] Fix compile warning CONFIG_I7300_IDLE_IOAT_CHANNEL not defined
-Cc: "Len Brown" <lenb@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-In-Reply-To: <20081023223906.GA26918@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 24 Oct 2008 13:55:10 -0400
+Received: from waste.org ([66.93.16.53]:51739 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751864AbYJXRzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 13:55:09 -0400
+Subject: Re: Linux 2.6.28-rc1
+From: Matt Mackall <mpm@selenic.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Fenghua Yu <fenghua.yu@intel.com>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1224868194.3248.13.camel@calx>
+References: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org>
+	 <1224868194.3248.13.camel@calx>
+Content-Type: text/plain
+Date: Fri, 24 Oct 2008 12:54:32 -0500
+Message-Id: <1224870872.3248.20.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081023223906.GA26918@linux-os.sc.intel.com>
-X-Google-Sender-Auth: 5d160598d51cfa50
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 23, 2008 at 3:39 PM, Venki Pallipadi
-<venkatesh.pallipadi@intel.com> wrote:
->
-> When I7300_idle driver is not configured, there is a compile time
-> warning about IDLE_IOAT_CHANNEL not defined. Fix it.
->
+On Fri, 2008-10-24 at 12:10 -0500, Matt Mackall wrote:
+> On Thu, 2008-10-23 at 21:10 -0700, Linus Torvalds wrote:
+> > It's been two weeks, so it's time to close the merge window. A 2.6.28-rc1 
+> > is out there, and it's hopefully all good.
+> 
+> This fails building on allnoconfig on at least x86-64 because forbid_dac
+> used by arch/x86/kernel/pci-dma.c is defined off in
+> drivers/pci/quirks.c, which isn't built if CONFIG_PCI isn't set.
 
-Please copy Maciej and myself on ioat changes.
+(Also fails on x86-32)
 
-Thanks,
-Dan
+Bisection points to: 
+
+5b6985ce8ec7127b4d60ad450b64ca8b82748a3b
+intel-iommu: IA64 support
+
+-- 
+Mathematics is the supreme nostalgia of our time.
+
