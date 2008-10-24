@@ -1,87 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbYJXJdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755081AbYJXJgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754353AbYJXJdm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 05:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbYJXJdd
+	id S1755081AbYJXJgf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 05:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbYJXJg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 05:33:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36039 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750778AbYJXJdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 05:33:32 -0400
-Date: Fri, 24 Oct 2008 11:33:42 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org, travis@sgi.com,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: do_boot_cpu can deadlock?
-Message-ID: <20081024093342.GA4583@redhat.com>
-References: <20081023005751.53973DDEFE@ozlabs.org> <20081023094036.GA7593@redhat.com> <20081023143605.GN5255@in.ibm.com> <20081023163517.GB21008@redhat.com> <20081023170212.GA22599@redhat.com> <20081023182119.GA1480@in.ibm.com> <20081023184906.GA2612@localhost>
+	Fri, 24 Oct 2008 05:36:26 -0400
+Received: from web23506.mail.ird.yahoo.com ([87.248.115.34]:47960 "HELO
+	web23506.mail.ird.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751991AbYJXJgZ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 05:36:25 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=00CL8tn5w+6MEObHyULscb+RKvHqxANkB68CDfmgCSgH4r6yAyQMarcwTTw236tvKEzHEkWDGheKRuEjaSSgU8oW6YcX4mo1clMdreCijgV4+gTJtRsP8zptOhZiFIBFuPLuxcN0klueX+cGEKcIWJKHiPXp1xI7IVStH2sOHfg=;
+X-YMail-OSG: E6BpdS4VM1lO1sPYSGqgwlEhG.Fmwst_Q9r9YQZqkWx5R38bilTRWCK6EE_pTEIt5UcyTkpqATm1s8TQHOZdq.sEupOyZNoyGpfMmJaOIXdzJJedQxouHEl6py4wcGPYMbZ.Mo0QtaBx56.19F1g9zqqMR7uIGKZSeuYnNE2r8zbSg--
+X-Mailer: YahooMailWebService/0.7.247.3
+Date: Fri, 24 Oct 2008 09:29:42 +0000 (GMT)
+From: Michael Trimarchi <trimarchimichael@yahoo.it>
+Reply-To: trimarchimichael@yahoo.it
+Subject: MigoR and Scif Serial
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
+       Michael Trimarchi <trimarchi@gandalf.sssup.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081023184906.GA2612@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <800596.6344.qm@web23506.mail.ird.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/23, Cyrill Gorcunov wrote:
->
-> [Gautham R Shenoy - Thu, Oct 23, 2008 at 11:51:19PM +0530]
-> | On Thu, Oct 23, 2008 at 07:02:12PM +0200, Oleg Nesterov wrote:
-> | > Hmm. arch/x86/kernel/smpboot.c:do_boot_cpu() can deadlock ?
-> | > 
-> | > It is called from _cpu_up() under cpu_hotplug_begin(), and it
-> | > waits for c_idle.work. Again, if we have the pending work which
-> | > needs get_online_cpus() we seem to have problems.
-> | 
-> | Good point. Though this code gets triggered mostly during boot time when
-> | the CPUs are being brought online for the first time. If we have some
-> | work-item pending at that time, which needs get_online_cpus(), we could
-> | possibly see this deadlock.
-> | 
-> | > 
-> | > Oleg.
-> | 
-> | -- 
-> | Thanks and Regards
-> | gautham
-> | 
-> 
-> May I ask? If I understand right we do use this part of do_boot_cpu
-> 
-> 	if (!keventd_up() || current_is_keventd())
-> 		c_idle.work.func(&c_idle.work);
-> 	else {
-> 		schedule_work(&c_idle.work);
-> 		wait_for_completion(&c_idle.done);
-> 	}
-> 
-> if only we've been called the first time after power on. And all
-> subsequent call of this do_boot_cpu would lead to
-> 
-> 	if (c_idle.idle) {
-> 		c_idle.idle->thread.sp = (unsigned long) (((struct pt_regs *)
-> 			(THREAD_SIZE +  task_stack_page(c_idle.idle))) - 1);
-> 		init_idle(c_idle.idle, cpu);
-> 		goto do_rest;
-> 	}
-> 
-> ie go to do_rest and no wait_for_completion/schedule_work at all.
-> Did I miss something? *Sorry* in advance if the question is quite
-> not related. This work-pending situation is in 'possible' scenario
-> only (ie we don't have such a callers for now... yet)?
+Hi,
 
-There are no problems during boot time, afaics.
+I find some problem in MigoR board using scif serial device and console too.
 
-kernel_init() calls smp_init() before do_basic_setup()->init_workqueues().
-This means that do_boot_cpu() won't use workqueues due to !keventd_up().
+Looking at the setup-Sh7722.c, the platform sci port data has the irqs
+line equal to one interrupt. In the driver this line is multiplexed and
+using for manage all the interrupt (error, transmit, receive, etc...) but
+the sci_mpxed_interrupt check the wrong status for interrupt and break 
+error. They are on a single bit. So modify the code like this, resolve
+the issue.
 
-But let's suppose we boot with maxcpus=1, and then bring up another CPU.
-Or we really add the new physical CPU (I don't really know if this is
-possible on x86).
+ /* Error Interrupt */
+ if ((ssr_status & 0x0080) && (scr_status & 0x08)) <-----
+      sci_er_interrupt(irq, ptr);
+ /* Break Interrupt */
+ if ((ssr_status & 0x0010) && (scr_status & 0x08)) <-----
+      sci_br_interrupt(irq, ptr);
 
-Oleg.
+Is there any reasons to multiplex the serial interrupt on sh7722?
 
+Another question is:
+
+It is correct to implement the tx_empty like this?
+
+static unsigned int sci_tx_empty(struct uart_port *port)
+{
+        unsigned int ret = TIOCSER_TEMT;
+
+        /* Detect for scif device */
+        if (port->type == PORT_SCIF) {
+                if (scif_txroom(port) == SCIF_TXROOM_MAX)
+                        ret = TIOCSER_TEMT;
+                else
+                        ret = 0;
+        }
+        return ret;         
+}
+
+Regards Michael
+
+
+
+
+
+      Scopri il blog di Yahoo! Mail:
+Trucchi, novità e scrivi la tua opinione.
+http://www.ymailblogit.com/blog
