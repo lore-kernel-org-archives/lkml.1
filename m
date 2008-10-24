@@ -1,154 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755804AbYJXKAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbYJXKAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755804AbYJXKAU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 06:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbYJXJ6u
+	id S1756698AbYJXKAo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 06:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbYJXJ6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 05:58:50 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36227 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753156AbYJXJ6t (ORCPT
+	Fri, 24 Oct 2008 05:58:51 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44852 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753238AbYJXJ6t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 24 Oct 2008 05:58:49 -0400
-Message-Id: <20081024091109.503421146@chello.nl>
+Message-Id: <20081024091109.667495895@chello.nl>
 References: <20081024090611.936552213@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Fri, 24 Oct 2008 11:06:13 +0200
+Date: Fri, 24 Oct 2008 11:06:15 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, efault@gmx.de, vatsa@in.ibm.com,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 2/8] sched: more accurate min_vruntime accounting
-Content-Disposition: inline; filename=sched-min_vruntime-fiddle.patch
+Subject: [PATCH 4/8] sched: re-instate vruntime based wakeup preemption
+Content-Disposition: inline; filename=sched-fix-wakeup-preempt.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike noticed the current min_vruntime tracking can go wrong and skip the
-current task. If the only remaining task in the tree is a nice 19 task
-with huge vruntime, new tasks will be inserted too far to the right too,
-causing some interactibity issues.
+The advantage is that vruntime based wakeup preemption has a better
+conceptual model. Here wakeup_gran = 0 means: preempt when 'fair'.
+Therefore wakeup_gran is the granularity of unfairness we allow in order
+to make progress.
 
-min_vruntime can only change due to the leftmost entry disappearing
-(dequeue_entity()), or by the leftmost entry being incremented past the
-next entry, which elects a new leftmost (__update_curr())
-
-Due to the current entry not being part of the actual tree, we have to
-compare the leftmost tree entry with the current entry, and take the
-leftmost of these two.
-
-So create a update_min_vruntime() function that takes computes the
-leftmost vruntime in the system (either tree of current) and increases
-the cfs_rq->min_vruntime if the computed value is larger than the
-previously found min_vruntime. And call this from the two sites we've
-identified that can change min_vruntime.
-
-Reported-by: Mike Galbraith <efault@gmx.de>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/sched_fair.c |   49 +++++++++++++++++++++++++------------------------
- 1 file changed, 25 insertions(+), 24 deletions(-)
+ kernel/sched_fair.c |   98 ++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 92 insertions(+), 6 deletions(-)
 
 Index: linux-2.6/kernel/sched_fair.c
 ===================================================================
 --- linux-2.6.orig/kernel/sched_fair.c
 +++ linux-2.6/kernel/sched_fair.c
-@@ -271,6 +271,27 @@ static inline s64 entity_key(struct cfs_
- 	return se->vruntime - cfs_rq->min_vruntime;
+@@ -143,6 +143,49 @@ static inline struct sched_entity *paren
+ 	return se->parent;
  }
  
-+static void update_min_vruntime(struct cfs_rq *cfs_rq)
++/* return depth at which a sched entity is present in the hierarchy */
++static inline int depth_se(struct sched_entity *se)
 +{
-+	u64 vruntime = cfs_rq->min_vruntime;
++	int depth = 0;
 +
-+	if (cfs_rq->curr)
-+		vruntime = cfs_rq->curr->vruntime;
++	for_each_sched_entity(se)
++		depth++;
 +
-+	if (cfs_rq->rb_leftmost) {
-+		struct sched_entity *se = rb_entry(cfs_rq->rb_leftmost,
-+						   struct sched_entity,
-+						   run_node);
-+
-+		if (vruntime == cfs_rq->min_vruntime)
-+			vruntime = se->vruntime;
-+		else
-+			vruntime = min_vruntime(vruntime, se->vruntime);
-+	}
-+
-+	cfs_rq->min_vruntime = max_vruntime(cfs_rq->min_vruntime, vruntime);
++	return depth;
 +}
 +
- /*
-  * Enqueue an entity into the rb-tree:
-  */
-@@ -304,15 +325,8 @@ static void __enqueue_entity(struct cfs_
- 	 * Maintain a cache of leftmost tree entries (it is frequently
- 	 * used):
++static void
++find_matching_se(struct sched_entity **se, struct sched_entity **pse)
++{
++	int se_depth, pse_depth;
++
++	/*
++	 * preemption test can be made between sibling entities who are in the
++	 * same cfs_rq i.e who have a common parent. Walk up the hierarchy of
++	 * both tasks until we find their ancestors who are siblings of common
++	 * parent.
++	 */
++
++	/* First walk up until both entities are at same depth */
++	se_depth = depth_se(*se);
++	pse_depth = depth_se(*pse);
++
++	while (se_depth > pse_depth) {
++		se_depth--;
++		*se = parent_entity(*se);
++	}
++
++	while (pse_depth > se_depth) {
++		pse_depth--;
++		*pse = parent_entity(*pse);
++	}
++
++	while (!is_same_group(*se, *pse)) {
++		*se = parent_entity(*se);
++		*pse = parent_entity(*pse);
++	}
++}
++
+ #else	/* CONFIG_FAIR_GROUP_SCHED */
+ 
+ static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
+@@ -193,6 +236,11 @@ static inline struct sched_entity *paren
+ 	return NULL;
+ }
+ 
++static inline void
++find_matching_se(struct sched_entity **se, struct sched_entity **pse)
++{
++}
++
+ #endif	/* CONFIG_FAIR_GROUP_SCHED */
+ 
+ 
+@@ -1244,13 +1292,42 @@ static unsigned long wakeup_gran(struct 
+ 	 * More easily preempt - nice tasks, while not making it harder for
+ 	 * + nice tasks.
  	 */
--	if (leftmost) {
-+	if (leftmost)
- 		cfs_rq->rb_leftmost = &se->run_node;
--		/*
--		 * maintain cfs_rq->min_vruntime to be a monotonic increasing
--		 * value tracking the leftmost vruntime in the tree.
--		 */
--		cfs_rq->min_vruntime =
--			max_vruntime(cfs_rq->min_vruntime, se->vruntime);
--	}
+-	if (sched_feat(ASYM_GRAN))
+-		gran = calc_delta_mine(gran, NICE_0_LOAD, &se->load);
++	if (!sched_feat(ASYM_GRAN) || se->load.weight > NICE_0_LOAD)
++		gran = calc_delta_fair(sysctl_sched_wakeup_granularity, se);
  
- 	rb_link_node(&se->run_node, parent, link);
- 	rb_insert_color(&se->run_node, &cfs_rq->tasks_timeline);
-@@ -322,18 +336,9 @@ static void __dequeue_entity(struct cfs_
- {
- 	if (cfs_rq->rb_leftmost == &se->run_node) {
- 		struct rb_node *next_node;
--		struct sched_entity *next;
+ 	return gran;
+ }
  
- 		next_node = rb_next(&se->run_node);
- 		cfs_rq->rb_leftmost = next_node;
--
--		if (next_node) {
--			next = rb_entry(next_node,
--					struct sched_entity, run_node);
--			cfs_rq->min_vruntime =
--				max_vruntime(cfs_rq->min_vruntime,
--					     next->vruntime);
--		}
+ /*
++ * Should 'se' preempt 'curr'.
++ *
++ *             |s1
++ *        |s2
++ *   |s3
++ *         g
++ *      |<--->|c
++ *
++ *  w(c, s1) = -1
++ *  w(c, s2) =  0
++ *  w(c, s3) =  1
++ *
++ */
++static int
++wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
++{
++	s64 gran, vdiff = curr->vruntime - se->vruntime;
++
++	if (vdiff <= 0)
++		return -1;
++
++	gran = wakeup_gran(curr);
++	if (vdiff > gran)
++		return 1;
++
++	return 0;
++}
++
++/*
+  * Preempt the current task with a newly woken task if needed:
+  */
+ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int sync)
+@@ -1258,7 +1335,6 @@ static void check_preempt_wakeup(struct 
+ 	struct task_struct *curr = rq->curr;
+ 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
+ 	struct sched_entity *se = &curr->se, *pse = &p->se;
+-	s64 delta_exec;
+ 
+ 	if (unlikely(rt_prio(p->prio))) {
+ 		update_rq_clock(rq);
+@@ -1296,9 +1372,19 @@ static void check_preempt_wakeup(struct 
+ 		return;
  	}
  
- 	if (cfs_rq->next == se)
-@@ -472,6 +477,7 @@ __update_curr(struct cfs_rq *cfs_rq, str
- 	schedstat_add(cfs_rq, exec_clock, delta_exec);
- 	delta_exec_weighted = calc_delta_fair(delta_exec, curr);
- 	curr->vruntime += delta_exec_weighted;
-+	update_min_vruntime(cfs_rq);
+-	delta_exec = se->sum_exec_runtime - se->prev_sum_exec_runtime;
+-	if (delta_exec > wakeup_gran(pse))
+-		resched_task(curr);
++	find_matching_se(&se, &pse);
++
++	while (se) {
++		BUG_ON(!pse);
++
++		if (wakeup_preempt_entity(se, pse) == 1) {
++			resched_task(curr);
++			break;
++		}
++
++		se = parent_entity(se);
++		pse = parent_entity(pse);
++	}
  }
  
- static void update_curr(struct cfs_rq *cfs_rq)
-@@ -661,13 +667,7 @@ static void check_spread(struct cfs_rq *
- static void
- place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
- {
--	u64 vruntime;
--
--	if (first_fair(cfs_rq)) {
--		vruntime = min_vruntime(cfs_rq->min_vruntime,
--				__pick_next_entity(cfs_rq)->vruntime);
--	} else
--		vruntime = cfs_rq->min_vruntime;
-+	u64 vruntime = cfs_rq->min_vruntime;
- 
- 	/*
- 	 * The 'current' period is already promised to the current tasks,
-@@ -744,6 +744,7 @@ dequeue_entity(struct cfs_rq *cfs_rq, st
- 	if (se != cfs_rq->curr)
- 		__dequeue_entity(cfs_rq, se);
- 	account_entity_dequeue(cfs_rq, se);
-+	update_min_vruntime(cfs_rq);
- }
- 
- /*
+ static struct task_struct *pick_next_task_fair(struct rq *rq)
 
 -- 
 
