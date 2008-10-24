@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753261AbYJXWgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbYJXWjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753261AbYJXWgG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 18:36:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbYJXWfy
+	id S1753510AbYJXWjS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 18:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbYJXWjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 18:35:54 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48384 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751295AbYJXWfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 18:35:53 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Dave Young" <hidave.darkstar@gmail.com>
-Subject: Re: [BUG] hang with ath5k
-Date: Sat, 25 Oct 2008 00:40:23 +0200
-User-Agent: KMail/1.9.9
-Cc: "Jiri Slaby" <jirislaby@gmail.com>, ath5k-devel@venema.h4ckr.net,
-       linux-wireless@vger.kernel.org,
-       "kernel list" <linux-kernel@vger.kernel.org>
-References: <a8e1da0810140142g633486br12c2799b2fa1670e@mail.gmail.com> <48F6133D.1070508@gmail.com> <a8e1da0810152334x6c596f88i1fd74548dc166f3a@mail.gmail.com>
-In-Reply-To: <a8e1da0810152334x6c596f88i1fd74548dc166f3a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 24 Oct 2008 18:39:05 -0400
+Received: from yergi.telenet-ops.be ([195.130.132.36]:39309 "EHLO
+	yergi.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751366AbYJXWjE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 18:39:04 -0400
+Subject: Re: 2.6.27: add patch for ALPS touchpad on Latitude E6[45]00
+From: Frederik Himpe <fhimpe@telenet.be>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200810250026.50026.rjw@sisk.pl>
+References: <pan.2008.10.11.15.33.28@telenet.be>
+	 <200810250026.50026.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Sat, 25 Oct 2008 00:37:59 +0200
+Message-Id: <1224887879.4526.3.camel@Anastacia.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.0-2mdv2009.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810250040.24324.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 16 of October 2008, Dave Young wrote:
-> On Wed, Oct 15, 2008 at 11:58 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
-> > On 10/14/2008 10:42 AM, Dave Young wrote:
-> >> 1) run wpa_supplicant
-> >> 2) ctrl + C
-> >> 3) goto 1)
-> >
-> > It doesn't happen here. How many iterations in average you need to reproduce this?
-> >
+On za, 2008-10-25 at 00:26 +0200, Rafael J. Wysocki wrote:
+> On Saturday, 11 of October 2008, Frederik Himpe wrote:
+> > I need to add this patch to the 2.6.27 kernel to have my touchpad detected 
+> > correctly on my Latitude E6400 laptop. Is it possible to apply this to 
+> > 2.6.27 stable?
+> > 
+> > http://lkml.org/lkml/2008/9/7/133
 > 
-> About 15 times for me,
-> BTW, wpa_gui running while testing
+> Did 2.6.26 work for you correctly without this patch?
 
-Is this a regression from 2.6.26?
+I have this machine only for a few weeks and immediately used 2.6.27-rc,
+but I see no reason why it would work in 2.6.26. Note that the touchpad
+itself works, however it is not recognised by the synaptics driver,
+making it impossible to use any of the advanced features such as
+tap-to-click and scrolling.
 
-Rafael
+At least Mandriva 2009.0 and Ubuntu 8.10 include this patch in their
+kernels.
+
+-- 
+Frederik Himpe <fhimpe@telenet.be>
+
