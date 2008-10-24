@@ -1,80 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbYJXFj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbYJXFlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754493AbYJXFj2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 01:39:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYJXFjF
+	id S1754137AbYJXFlX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 01:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbYJXFlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 01:39:05 -0400
-Received: from home.keithp.com ([63.227.221.253]:46155 "EHLO keithp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752313AbYJXFjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 01:39:04 -0400
-Subject: Re: Adding kmap_atomic_prot_pfn  (was: [git pull] drm patches for
-	2.6.27-rc1)
-From: Keith Packard <keithp@keithp.com>
-To: benh@kernel.crashing.org
-Cc: keithp@keithp.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       nickpiggin@yahoo.com.au, airlied@linux.ie,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jbarnes@virtuousgeek.org, dri-devel@lists.sf.net, yinghai@kernel.org,
-       Peter Anvin <hpa@zytor.com>
-In-Reply-To: <1224818645.7654.431.camel@pasglop>
-References: <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
-	 <20081018203741.GA23396@elte.hu> <1224366690.4384.89.camel@koto.keithp.com>
-	 <20081018223214.GA5093@elte.hu> <1224389697.4384.118.camel@koto.keithp.com>
-	 <1224398496.5303.7.camel@koto.keithp.com> <20081019175320.GA6442@elte.hu>
-	 <1224450291.5303.23.camel@koto.keithp.com> <20081020115810.GC10594@elte.hu>
-	 <1224517744.5195.1.camel@koto.keithp.com> <20081022093615.GF12453@elte.hu>
-	 <1224793332.22877.8.camel@koto.keithp.com>
-	 <20081023133840.d4eef579.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0810231424220.3287@nehalem.linux-foundation.org>
-	 <1224813015.22877.51.camel@koto.keithp.com>
-	 <alpine.LFD.2.00.0810231934590.3287@nehalem.linux-foundation.org>
-	 <1224818645.7654.431.camel@pasglop>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-j0RrFCACXOzkulHUt+0U"
-Date: Thu, 23 Oct 2008 22:37:40 -0700
-Message-Id: <1224826660.22877.83.camel@koto.keithp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 24 Oct 2008 01:41:13 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56892 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751057AbYJXFlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 01:41:13 -0400
+Message-ID: <49015F45.1070002@cn.fujitsu.com>
+Date: Fri, 24 Oct 2008 13:38:13 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] rcupdate: reduce sys's overhead when rcu_barrier()s called
+ simultaneous
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-j0RrFCACXOzkulHUt+0U
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+rcu_barrier() queues rcu_head on all cpus, it will brings
+large overhead for a large system which has a lots cpu.
+this fix reduces sys's overhead when rcu_barrier()s called
+simultaneous.
 
-On Fri, 2008-10-24 at 14:24 +1100, Benjamin Herrenschmidt wrote:
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+index ad63af8..734850b 100644
+--- a/kernel/rcupdate.c
++++ b/kernel/rcupdate.c
+@@ -53,6 +53,9 @@ enum rcu_barrier {
+ 
+ static DEFINE_PER_CPU(struct rcu_head, rcu_barrier_head) = {NULL};
+ static atomic_t rcu_barrier_cpu_count;
++static unsigned long rcu_barrier_completed;
++static unsigned long rcu_barrier_completed_bh;
++static unsigned long rcu_barrier_completed_sched;
+ static DEFINE_MUTEX(rcu_barrier_mutex);
+ static struct completion rcu_barrier_completion;
+ 
+@@ -60,7 +63,7 @@ static struct completion rcu_barrier_completion;
+  * Awaken the corresponding synchronize_rcu() instance now that a
+  * grace period has elapsed.
+  */
+-void wakeme_after_rcu(struct rcu_head  *head)
++void wakeme_after_rcu(struct rcu_head *head)
+ {
+ 	struct rcu_synchronize *rcu;
+ 
+@@ -113,11 +116,20 @@ static void rcu_barrier_func(void *type)
+  * Orchestrate the specified type of RCU barrier, waiting for all
+  * RCU callbacks of the specified type to complete.
+  */
+-static void _rcu_barrier(enum rcu_barrier type)
++static void _rcu_barrier(enum rcu_barrier type, unsigned long *completed)
+ {
++	unsigned long batch = ACCESS_ONCE(*completed);
+ 	BUG_ON(in_interrupt());
+ 	/* Take cpucontrol mutex to protect against CPU hotplug */
+ 	mutex_lock(&rcu_barrier_mutex);
++
++	BUG_ON(*completed & 1);
++	if ((*completed - batch) >= 2) {
++		mutex_unlock(&rcu_barrier_mutex);
++		return;
++	}
++	(*completed)++;
++
+ 	init_completion(&rcu_barrier_completion);
+ 	/*
+ 	 * Initialize rcu_barrier_cpu_count to 1, then invoke
+@@ -133,6 +145,7 @@ static void _rcu_barrier(enum rcu_barrier type)
+ 	if (atomic_dec_and_test(&rcu_barrier_cpu_count))
+ 		complete(&rcu_barrier_completion);
+ 	wait_for_completion(&rcu_barrier_completion);
++	(*completed)++;
+ 	mutex_unlock(&rcu_barrier_mutex);
+ }
+ 
+@@ -141,7 +154,7 @@ static void _rcu_barrier(enum rcu_barrier type)
+  */
+ void rcu_barrier(void)
+ {
+-	_rcu_barrier(RCU_BARRIER_STD);
++	_rcu_barrier(RCU_BARRIER_STD, &rcu_barrier_completed);
+ }
+ EXPORT_SYMBOL_GPL(rcu_barrier);
+ 
+@@ -150,7 +163,7 @@ EXPORT_SYMBOL_GPL(rcu_barrier);
+  */
+ void rcu_barrier_bh(void)
+ {
+-	_rcu_barrier(RCU_BARRIER_BH);
++	_rcu_barrier(RCU_BARRIER_BH, &rcu_barrier_completed_bh);
+ }
+ EXPORT_SYMBOL_GPL(rcu_barrier_bh);
+ 
+@@ -159,7 +172,7 @@ EXPORT_SYMBOL_GPL(rcu_barrier_bh);
+  */
+ void rcu_barrier_sched(void)
+ {
+-	_rcu_barrier(RCU_BARRIER_SCHED);
++	_rcu_barrier(RCU_BARRIER_SCHED, &rcu_barrier_completed_sched);
+ }
+ EXPORT_SYMBOL_GPL(rcu_barrier_sched);
+ 
 
-> I'm not that fan of carrying a mapping with a struct resource because if
-> we do that we should probably also refcount the mapping, and then there
-> is the whole question of mappings with different attributes, etc etc...
-
-I'm fine with sticking the mapping in a separate structure; it's just
-the return from ioremap_wc on 64-bit systems, and nothing at all on
-32-bit systems. I don't really see the advantage of moving it into the
-resource, especially as we may need different access modes (UC vs WC)
-for different portions of a single BAR.
-
-We may want to add some bounds and access mode information to this
-structure to check for broken drivers.
-
---=20
-keith.packard@intel.com
-
---=-j0RrFCACXOzkulHUt+0U
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQBJAV8kQp8BWwlsTdMRAkITAJ0XZS2/Y15E2zIKUNlNzgepBIuIhQCfcAcZ
-r0CnS7FDHhyaekzlgOrXVW4=
-=MNfI
------END PGP SIGNATURE-----
-
---=-j0RrFCACXOzkulHUt+0U--
 
