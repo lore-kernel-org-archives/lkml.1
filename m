@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753735AbYJYLnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbYJYLoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753735AbYJYLnk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 07:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbYJYLnb
+	id S1752463AbYJYLoe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 07:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbYJYLo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 07:43:31 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:47274 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751346AbYJYLna (ORCPT
+	Sat, 25 Oct 2008 07:44:27 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:47676 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751822AbYJYLo0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 07:43:30 -0400
-X-Sasl-enc: ZrCx8OUCqc3NAmvIgZaQqZ3IT4EF8GZzSJyhsy/a3ZDF 1224935008
-Date: Sat, 25 Oct 2008 09:43:24 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, lenb@kernel.org, fabio.comolli@gmail.com
-Subject: Re: [Re: Linux 2.6.28-rc1] ACPI Warning (nspredef-0852)[...]
-Message-ID: <20081025114324.GA30862@khazad-dum.debian.net>
-References: <8db1092f0810250021p70be6b62wdbb9a4c1c20c7a27@mail.gmail.com> <200810251259.39233.rjw@sisk.pl>
+	Sat, 25 Oct 2008 07:44:26 -0400
+Date: Fri, 24 Oct 2008 16:44:47 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Markus Trippelsdorf <markus@trippelsdorf.de>, linux-kernel@vger.kernel.org,
+       eugene@ibrix.com, msnitzer@ibrix.com, akpm@linux-foundation.org
+Subject: Re: ext3: fix ext3_dx_readdir hash collision handling - Regression
+Message-ID: <20081024204446.GA12868@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Markus Trippelsdorf <markus@trippelsdorf.de>,
+	linux-kernel@vger.kernel.org, eugene@ibrix.com, msnitzer@ibrix.com,
+	akpm@linux-foundation.org
+References: <20081022093201.GA2227@gentoox2.trippelsdorf.de> <20081023032832.GE10369@mit.edu> <20081023063740.GA2438@gentoox2.trippelsdorf.de> <20081024000109.GD7842@mit.edu> <20081024042851.GA2360@gentoox2.trippelsdorf.de> <alpine.LFD.2.00.0810240853310.3287@nehalem.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200810251259.39233.rjw@sisk.pl>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LFD.2.00.0810240853310.3287@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 25 Oct 2008, Rafael J. Wysocki wrote:
-> On Saturday, 25 of October 2008, Maciej Rutecki wrote:
-> > During suspend to ram I have this message:
-> > 
-> > ACPI Warning (nspredef-0852): \_WAK: Return type mismatch - found
-> > Integer, expected Package [20080926]
-> > 
-> > s2ram seems works OK
-> > 
-> > dmesg, acpidump:
-> > http://unixy.pl/maciek/download/kernel/2.6.28-rc1_wak/
+On Fri, Oct 24, 2008 at 09:08:26AM -0700, Linus Torvalds wrote:
 > 
-> IMO it's yet another incarnation of
-> http://bugzilla.kernel.org/show_bug.cgi?id=11822
+> Hmm. Ted? I have not tried to revert that commit that Markus pinpointed 
+> (6a897cf447a83c9c3fd1b85a1e525c02d6eada7d: "ext3: fix ext3_dx_readdir hash 
+> collision handling"), but now that I look at that "git bug", I am getting 
+> pretty damn sure that it's exactly the same issue, and it's not a git bug 
+> at all.
 
-If this is an outright violation of the ACPI spec, let me know (and if
-possible, please tell me the spec page).  This is the kind of thing I expect
-it would be a no-brainer to get Lenovo to fix with a BIOS update.
+Yep, I can replicate it now.  It appears to only show up if you are
+running with an x86_64 kernel.  I normally run with an x86_32 kernel,
+so I didn't notice the problem.  The commit in question avoids
+returning duplicate entries when there is a hash collision;
+unfortunately, it seems to return duplicate entries for any large
+directory if you are running on x86_64 (and possibly/probably other
+64-bit platforms).  
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+I'm working on it, and should hopefully have a fix for you soon.  If
+this is too annoying, you can revert it and I'll resubmit a fixed
+version once I get a fix.
+
+						- Ted
