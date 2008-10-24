@@ -1,56 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755035AbYJXLuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbYJXLxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755035AbYJXLuj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 07:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756061AbYJXLu0
+	id S1756318AbYJXLxu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 07:53:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbYJXLxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 07:50:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44143 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755818AbYJXLuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 07:50:25 -0400
-Date: Fri, 24 Oct 2008 13:50:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Rakib Mullick <rakib.mullick@gmail.com>
-Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -mm] ftrace : Fix section mismatch warning.
-Message-ID: <20081024115005.GA5214@elte.hu>
-References: <b9df5fa10810122250j1dd9c0eaq8c708c7b8e10a249@mail.gmail.com> <20081020162756.GA31201@elte.hu> <20081022070312.GA24749@elte.hu> <b9df5fa10810240409u311bb337x1ff9815431088685@mail.gmail.com>
+	Fri, 24 Oct 2008 07:53:42 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:40537 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750808AbYJXLxm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 07:53:42 -0400
+Date: Fri, 24 Oct 2008 07:53:38 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: linux-kernel <linux-kernel@vger.kernel.org>, Pekka Paalanen <pq@iki.fi>
+Subject: Re: [PATCH] trace: add the MMIO-tracer to the tracer menu
+In-Reply-To: <1224845357.4075.0.camel@twins>
+Message-ID: <alpine.DEB.1.10.0810240752410.25677@gandalf.stny.rr.com>
+References: <1224845357.4075.0.camel@twins>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b9df5fa10810240409u311bb337x1ff9815431088685@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0144]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rakib Mullick <rakib.mullick@gmail.com> wrote:
+On Fri, 24 Oct 2008, Peter Zijlstra wrote:
 
-> Does the following solves the problem?
-> Thanks.
+> Subject: trace: add the MMIO-tracer to the tracer menu
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date: Fri Oct 24 12:46:04 CEST 2008
 > 
-> --- linux-2.6-orig/arch/x86/kernel/ftrace.c	2008-10-24 16:35:48.000000000 +0600
-> +++ linux-2.6/arch/x86/kernel/ftrace.c	2008-10-24 16:40:09.000000000 +0600
-> @@ -129,7 +129,7 @@ int __init ftrace_dyn_arch_init(void *da
->  	asm volatile (
->  		"jmp ftrace_test_jmp\n"
->  		/* This code needs to stay around */
-> -		".section .text, \"ax\"\n"
-> +		".section .text.init, \"ax\"\n"
+> Add the MMIO-tracer to the tracer menu.
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> CC: Pekka Paalanen <pq@iki.fi>
+> ---
+>  arch/x86/Kconfig.debug |   28 ++--------------------------
+>  kernel/trace/Kconfig   |   28 ++++++++++++++++++++++++++++
+>  2 files changed, 30 insertions(+), 26 deletions(-)
+> 
+> Index: linux-2.6/arch/x86/Kconfig.debug
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/Kconfig.debug
+> +++ linux-2.6/arch/x86/Kconfig.debug
+> @@ -175,32 +175,8 @@ config IOMMU_LEAK
+>  	  Add a simple leak tracer to the IOMMU code. This is useful when you
+>  	  are debugging a buggy device driver that leaks IOMMU mappings.
+>  
+> -config MMIOTRACE_HOOKS
+> -	bool
+> -
+> -config MMIOTRACE
+> -	bool "Memory mapped IO tracing"
+> -	depends on DEBUG_KERNEL && PCI
+> -	select TRACING
+> -	select MMIOTRACE_HOOKS
+> -	help
+> -	  Mmiotrace traces Memory Mapped I/O access and is meant for
+> -	  debugging and reverse engineering. It is called from the ioremap
+> -	  implementation and works via page faults. Tracing is disabled by
+> -	  default and can be enabled at run-time.
+> -
+> -	  See Documentation/tracers/mmiotrace.txt.
+> -	  If you are not helping to develop drivers, say N.
+> -
+> -config MMIOTRACE_TEST
+> -	tristate "Test module for mmiotrace"
+> -	depends on MMIOTRACE && m
+> -	help
+> -	  This is a dumb module for testing mmiotrace. It is very dangerous
+> -	  as it will write garbage to IO memory starting at a given address.
+> -	  However, it should be safe to use on e.g. unused portion of VRAM.
+> -
+> -	  Say N, unless you absolutely know what you are doing.
+> +config HAVE_MMIOTRACE_SUPPORT
+> +	def_bool y
+>  
+>  #
+>  # IO delay types:
+> Index: linux-2.6/kernel/trace/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/kernel/trace/Kconfig
+> +++ linux-2.6/kernel/trace/Kconfig
+> @@ -194,4 +194,32 @@ config FTRACE_STARTUP_TEST
+>  	  functioning properly. It will do tests on all the configured
+>  	  tracers of ftrace.
+>  
+> +config MMIOTRACE_HOOKS
+> +	bool
+> +
+> +config MMIOTRACE
+> +	bool "Memory mapped IO tracing"
+> +	depends on HAVE_MMIOTRACE_SUPPORT && DEBUG_KERNEL && PCI
+> +	select TRACING
 
-how about the "This code needs to stay around" comment?
+Since this was taken from the x86 Kconfig, do we need to add a
+"depends X86" ?
 
-	Ingo
+-- Steve
+
+> +	select MMIOTRACE_HOOKS
+> +	help
+> +	  Mmiotrace traces Memory Mapped I/O access and is meant for
+> +	  debugging and reverse engineering. It is called from the ioremap
+> +	  implementation and works via page faults. Tracing is disabled by
+> +	  default and can be enabled at run-time.
+> +
+> +	  See Documentation/tracers/mmiotrace.txt.
+> +	  If you are not helping to develop drivers, say N.
+> +
+> +config MMIOTRACE_TEST
+> +	tristate "Test module for mmiotrace"
+> +	depends on MMIOTRACE && m
+> +	help
+> +	  This is a dumb module for testing mmiotrace. It is very dangerous
+> +	  as it will write garbage to IO memory starting at a given address.
+> +	  However, it should be safe to use on e.g. unused portion of VRAM.
+> +
+> +	  Say N, unless you absolutely know what you are doing.
+> +
+> +
+>  endmenu
+> 
+> 
+> 
