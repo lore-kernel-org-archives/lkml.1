@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757962AbYJXWNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbYJXWPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757962AbYJXWNV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 18:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbYJXWNG
+	id S1758186AbYJXWPx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 18:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbYJXWPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 18:13:06 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:38214 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753488AbYJXWNF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 18:13:05 -0400
-Date: Fri, 24 Oct 2008 18:13:03 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Folkert van Heusden <folkert@vanheusden.com>,
-       Oliver Neukum <oliver@neukum.org>, <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: [2.6.27-rc7] oops in usbcore
-In-Reply-To: <200810242353.08576.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0810241809110.2180-100000@iolanthe.rowland.org>
+	Fri, 24 Oct 2008 18:15:46 -0400
+Received: from styx.suse.cz ([82.119.242.94]:50520 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755125AbYJXWPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 18:15:46 -0400
+Date: Sat, 25 Oct 2008 00:15:44 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Matt Mackall <mpm@selenic.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: Bloatwatch 2.6.28-rc1: i8042 DMI lookup tables
+In-Reply-To: <1224879959.3248.32.camel@calx>
+Message-ID: <alpine.LNX.1.10.0810250001530.27479@jikos.suse.cz>
+References: <1224879959.3248.32.camel@calx>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Oct 2008, Rafael J. Wysocki wrote:
+On Fri, 24 Oct 2008, Matt Mackall wrote:
 
-> On Thursday, 9 of October 2008, Folkert van Heusden wrote:
-> > > > lpc-ntpd is a atomic clock receiver driver doing read()-calls on an fd
-> > > > from a serial device (connected via usb), nothing fancy
-> > > > (http://vanheusden.com/lpc-ntpd/ ).
-> > > 
-> > > Which devices? Please post lsusb -v
-> > 
-> > thegate:/home/folkert# lsusb  -v > lsusb
-> > cannot read device status, Broken pipe (32)
-> > 
-> > Isn't that error odd?
-> > 
-> > The output is:
-
-...
-
-> > > But you do get this oops even without running that script, don't you?   
-> > 
-> > No, only with that script.
+> We've added 12k of new initdata to allnoconfig builds for i8042 DMI
+> lookup tables:
 > 
-> Is this still reproducible in mainline?
+> http://www.selenic.com/bloatwatch/?cmd=compare;v1=2.6.27;v2=2.6.28-rc1;part=/built-in/drivers
 > 
-> If not, is it reproducible with 2.6.27 final?
+> It looks like each table entry is > 320 bytes as we reserve four 80-byte
+> slots in each for DMI match strings. 
 
-I submitted a patch for this:
+Umm, and what is the actual problem with that, really?
 
-	http://marc.info/?l=linux-usb&m=122461735606713&w=2
+OK, we can remove it from .init, but then it will be rotting in memory 
+forever, which is quite sub-optimal, when this kind of DMI information is 
+needed only during initialization.
 
-It hasn't been merged yet, in any tree.
+We can make ->ident strings shorter, they do not serve any real purpose, 
+and are there just for readability. Is it worth that?
 
-Alan Stern
+We can make a config option which will guard existence of these lists, 
+such as CONFIG_INPUT_BLACKLISTS, let id default to y and depend on 
+EMBEDDED.
 
+Any other reasonable ideas?
+
+-- 
+Jiri Kosina
+SUSE Labs
