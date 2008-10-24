@@ -1,114 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033AbYJXNLO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbYJXNM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756033AbYJXNLO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 09:11:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbYJXNK5
+	id S1756209AbYJXNM3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 09:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYJXNMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 09:10:57 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:60699 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752848AbYJXNK4 (ORCPT
+	Fri, 24 Oct 2008 09:12:21 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:50351 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752393AbYJXNMU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 09:10:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=acRpFj9gDJuS1pqQW/Z+C+jWNgQ0CN88i5N2R88T0vl3lQJcF0kmkhijfX6xAjrzFa
-         RoE5bVRy+X9u/FbWzStTbq7cNRBM/20hWcdauTy5CVhHjOyqyqrlpfcua+ezI0Qmrvs1
-         V5/5gELnh3uBWKDfBV74HBF5qcCZIu0xIDfJA=
-Message-ID: <4901D8CD.7000405@gmail.com>
-Date: Fri, 24 Oct 2008 16:16:45 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
+	Fri, 24 Oct 2008 09:12:20 -0400
+Date: Fri, 24 Oct 2008 09:12:17 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
 To: Ingo Molnar <mingo@elte.hu>
-CC: Alexey Dobriyan <adobriyan@gmail.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] tracing: fix a build error on alpha and m68k
-References: <20081023213637.eff9b414.sfr@canb.auug.org.au> <20081023121145.GB27984@x200.localdomain> <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com> <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com> <49008D12.5090204@gmail.com> <Pine.LNX.4.64.0810231635440.18978@anakin> <c62985530810230757r411b4e3dj4ecec649cf8cf0b3@mail.gmail.com> <Pine.LNX.4.64.0810231727430.18978@anakin> <4900B414.7090002@gmail.com> <20081023163433.GA3160@x200.localdomain> <20081023163850.GB16591@elte.hu>
-In-Reply-To: <20081023163850.GB16591@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+cc: Rakib Mullick <rakib.mullick@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] ftrace: use a real variable for ftrace_nop in x86
+In-Reply-To: <20081024115005.GA5214@elte.hu>
+Message-ID: <alpine.DEB.1.10.0810240910020.3882@gandalf.stny.rr.com>
+References: <b9df5fa10810122250j1dd9c0eaq8c708c7b8e10a249@mail.gmail.com> <20081020162756.GA31201@elte.hu> <20081022070312.GA24749@elte.hu> <b9df5fa10810240409u311bb337x1ff9815431088685@mail.gmail.com> <20081024115005.GA5214@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> 
->> On Thu, Oct 23, 2008 at 07:27:48PM +0200, Frederic Weisbecker wrote:
->>> When tracing is enabled, some arch have included <linux/irqflags.h>
->>> on their <asm/system.h> but others like alpha or m68k don't.
->>>
->>> Build error on alpha:
->>>
->>> kernel/trace/trace.c: In function 'tracing_generic_entry_update':
->>> kernel/trace/trace.c:658: error: implicit declaration of function 'irqs_disabled_flags'
->>> kernel/trace/trace.c: In function 'tracing_cpumask_write':
->>> kernel/trace/trace.c:2145: error: implicit declaration of function 'raw_local_irq_disable'
->>> kernel/trace/trace.c:2162: error: implicit declaration of function 'raw_local_irq_enable'
->>> kernel/trace/trace.c: In function 'trace_die_handler':
->>> kernel/trace/trace.c:3039: error: 'DIE_OOPS' undeclared (first use in this function)
->>>
->>> Build error on m68k:
->>> http://kisskb.ellerman.id.au/kisskb/buildresult/50641/
->>>
->>>
->>> Include it on kernel/trace/trace.c
->>>
->>> Reported-by: Alexey Dobriyan <adobriyan@gmail.com>
->>> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
->>> ---
->>> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
->>> index 78d5661..deb9684 100644
->>> --- a/kernel/trace/trace.c
->>> +++ b/kernel/trace/trace.c
->>> @@ -34,6 +34,7 @@
->>>  
->>>  #include <linux/stacktrace.h>
->>>  #include <linux/ring_buffer.h>
->>> +#include <linux/irqflags.h>
->> Sure, except it doesn't fix anything.
-> 
-> hm, zapped the commit then.
-> 
-> the problem is most likely that none of these architectures is lockdep 
-> enabled, hence they have no irqtrace wrappers, hence not all of the 
-> tracers can be built on them?
-> 
-> 	Ingo
-> 
 
-I just testes my patch by building with a cross compiler on Alpha.
-Before the patch:
+The dynamic ftrace determines which nop is safe to use at start up.
+When it finds a safe nop for patching, it sets a pointer called ftrace_nop
+to point to the code. All call sites are then patched to this nop.
 
-kernel/trace/trace.c: In function 'tracing_generic_entry_update':
-kernel/trace/trace.c:664: error: implicit declaration of function 'irqs_disabled_flags'
-kernel/trace/trace.c: In function 'tracing_cpumask_write':
-kernel/trace/trace.c:2150: error: implicit declaration of function 'raw_local_irq_disable'
-kernel/trace/trace.c:2167: error: implicit declaration of function 'raw_local_irq_enable'
-kernel/trace/trace.c: In function 'trace_die_handler':
-kernel/trace/trace.c:3044: error: 'DIE_OOPS' undeclared (first use in this function)
-kernel/trace/trace.c:3044: error: (Each undeclared identifier is reported only once
-kernel/trace/trace.c:3044: error: for each function it appears in.)
+Later, when tracing is turned on, this ftrace_nop variable is again used
+to compare the location to make sure it is a nop before we update it to
+a mcount call. If this fails just once, a warning is outputed and ftrace
+is disabled.
 
-After the patch:
+Rakib Mullick noted that the code that sets up the nop is a .init section
+where as the nop itself is in the .text section. This is needed because
+the nop is used later on after boot up. The problem is that the test of the
+nop jumps back to the setup code and causes a "section mismatch" warning.
 
-kernel/trace/trace.c: In function 'tracing_generic_entry_update':
-kernel/trace/trace.c:664: error: implicit declaration of function 'irqs_disabled_flags'
-kernel/trace/trace.c: In function 'trace_die_handler':
-kernel/trace/trace.c:3044: error: 'DIE_OOPS' undeclared (first use in this function)
-kernel/trace/trace.c:3044: error: (Each undeclared identifier is reported only once
-kernel/trace/trace.c:3044: error: for each function it appears in.)
+Rabik first recommended to convert the nop to .init.text, but as stated
+above, this would fail since that text is used later.
 
-So the raw_local_irq_* functions are defined in linux/irqflags.h, even for arch that doesn't have CONFIG_TRACE_IRQFLAGS_SUPPORT. They just do a local_irq_save/restore.
-That's what we wanted. And we have to include it on trace.c for archs like alpha.
+The real solution is to extend Rabik's patch, and to make the ftrace_nop
+into an array, and just save the code from the assembly to this array.
 
-So this patch fixes it.
+Now the section can stay as an init section, and we have a nop to use
+later on.
 
-The DIE_OOPS should be fixed by a recent patch from Steven (ftrace: move nmi die handler to arch specific).
 
-The last issue is irqs_disabled_flags. But it's one other problem which is in discussion.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ arch/x86/kernel/ftrace.c |   16 +++++-----------
+ 1 file changed, 5 insertions(+), 11 deletions(-)
+
+Index: linux-tip.git/arch/x86/kernel/ftrace.c
+===================================================================
+--- linux-tip.git.orig/arch/x86/kernel/ftrace.c	2008-10-23 19:23:28.000000000 -0400
++++ linux-tip.git/arch/x86/kernel/ftrace.c	2008-10-24 08:51:59.000000000 -0400
+@@ -21,8 +21,7 @@
+ #include <asm/nops.h>
+ 
+ 
+-/* Long is fine, even if it is only 4 bytes ;-) */
+-static unsigned long *ftrace_nop;
++static unsigned char ftrace_nop[MCOUNT_INSN_SIZE];
+ 
+ union ftrace_code_union {
+ 	char code[MCOUNT_INSN_SIZE];
+@@ -40,7 +39,7 @@ static int ftrace_calc_offset(long ip, l
+ 
+ unsigned char *ftrace_nop_replace(void)
+ {
+-	return (char *)ftrace_nop;
++	return ftrace_nop;
+ }
+ 
+ unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+@@ -125,9 +124,6 @@ int __init ftrace_dyn_arch_init(void *da
+ 	 * TODO: check the cpuid to determine the best nop.
+ 	 */
+ 	asm volatile (
+-		"jmp ftrace_test_jmp\n"
+-		/* This code needs to stay around */
+-		".section .text, \"ax\"\n"
+ 		"ftrace_test_jmp:"
+ 		"jmp ftrace_test_p6nop\n"
+ 		"nop\n"
+@@ -138,8 +134,6 @@ int __init ftrace_dyn_arch_init(void *da
+ 		"jmp 1f\n"
+ 		"ftrace_test_nop5:"
+ 		".byte 0x66,0x66,0x66,0x66,0x90\n"
+-		"jmp 1f\n"
+-		".previous\n"
+ 		"1:"
+ 		".section .fixup, \"ax\"\n"
+ 		"2:	movl $1, %0\n"
+@@ -154,15 +148,15 @@ int __init ftrace_dyn_arch_init(void *da
+ 	switch (faulted) {
+ 	case 0:
+ 		pr_info("ftrace: converting mcount calls to 0f 1f 44 00 00\n");
+-		ftrace_nop = (unsigned long *)ftrace_test_p6nop;
++		memcpy(ftrace_nop, ftrace_test_p6nop, MCOUNT_INSN_SIZE);
+ 		break;
+ 	case 1:
+ 		pr_info("ftrace: converting mcount calls to 66 66 66 66 90\n");
+-		ftrace_nop = (unsigned long *)ftrace_test_nop5;
++		memcpy(ftrace_nop, ftrace_test_nop5, MCOUNT_INSN_SIZE);
+ 		break;
+ 	case 2:
+ 		pr_info("ftrace: converting mcount calls to jmp . + 5\n");
+-		ftrace_nop = (unsigned long *)ftrace_test_jmp;
++		memcpy(ftrace_nop, ftrace_test_jmp, MCOUNT_INSN_SIZE);
+ 		break;
+ 	}
+ 
+
+
+
