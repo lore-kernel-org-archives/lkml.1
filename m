@@ -1,65 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756314AbYJXLYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbYJXL0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756314AbYJXLYy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 07:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYJXLYq
+	id S1756612AbYJXL0A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 07:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbYJXLZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 07:24:46 -0400
-Received: from mk-outboundfilter-3.mail.uk.tiscali.com ([212.74.114.23]:27816
-	"EHLO mk-outboundfilter-3.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752021AbYJXLYp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 07:24:45 -0400
-X-Trace: 186055100/mk-outboundfilter-1.mail.uk.tiscali.com/F2S/$F2S-NILDRAM-ACCEPTED/f2s-nildram-customers/195.149.44.6/None/alistair@devzero.co.uk
-X-SBRS: None
-X-RemoteIP: 195.149.44.6
-X-IP-MAIL-FROM: alistair@devzero.co.uk
-X-MUA: KMail/1.10.1 (Linux/2.6.27-damocles; KDE/4.1.2; x86_64; ; )
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsYEAGtNAUnDlSwG/2dsb2JhbACBdb8mg1A
-X-IronPort-AV: E=Sophos;i="4.33,477,1220223600"; 
-   d="scan'208";a="186055100"
-X-IP-Direction: IN
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.28-rc1
-Date: Fri, 24 Oct 2008 12:24:38 +0100
-User-Agent: KMail/1.10.1 (Linux/2.6.27-damocles; KDE/4.1.2; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org>
+	Fri, 24 Oct 2008 07:25:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41719 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750808AbYJXLZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 07:25:50 -0400
+Date: Fri, 24 Oct 2008 13:25:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Pekka Paalanen <pq@iki.fi>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] trace: add the MMIO-tracer to the tracer menu
+Message-ID: <20081024112535.GA19786@elte.hu>
+References: <1224845357.4075.0.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810241224.38541.alistair@devzero.co.uk>
+In-Reply-To: <1224845357.4075.0.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 24 October 2008 05:10:29 Linus Torvalds wrote:
-> It's been two weeks, so it's time to close the merge window. A 2.6.28-rc1
-> is out there, and it's hopefully all good.
 
-It seems if you have a broken asm/ symlink in include/ (which happened as a 
-result of the x86 header moves, for me) the kernel won't try to update it 
-appropriately, and this breaks "make prepare".
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-$ make    ARCH=x86_64 prepare                                                                                                   
-  CHK     include/linux/version.h                                                                                                                            
-  CHK     include/linux/utsrelease.h                                                                                                                         
-  GEN     include/asm/asm-offsets.h                                                                                                                          
-/bin/sh: include/asm/asm-offsets.h: No such file or directory                                                                                                
-make[1]: *** [include/asm/asm-offsets.h] Error 1                                                                                                             
-make: *** [prepare0] Error 2
+> Subject: trace: add the MMIO-tracer to the tracer menu
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date: Fri Oct 24 12:46:04 CEST 2008
+> 
+> Add the MMIO-tracer to the tracer menu.
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> CC: Pekka Paalanen <pq@iki.fi>
+> ---
+>  arch/x86/Kconfig.debug |   28 ++--------------------------
+>  kernel/trace/Kconfig   |   28 ++++++++++++++++++++++++++++
+>  2 files changed, 30 insertions(+), 26 deletions(-)
+> 
+> Index: linux-2.6/arch/x86/Kconfig.debug
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/Kconfig.debug
+> +++ linux-2.6/arch/x86/Kconfig.debug
+> @@ -175,32 +175,8 @@ config IOMMU_LEAK
+>  	  Add a simple leak tracer to the IOMMU code. This is useful when you
+>  	  are debugging a buggy device driver that leaks IOMMU mappings.
+>  
+> -config MMIOTRACE_HOOKS
+> -	bool
+> -
+> -config MMIOTRACE
+> -	bool "Memory mapped IO tracing"
+> -	depends on DEBUG_KERNEL && PCI
+> -	select TRACING
+> -	select MMIOTRACE_HOOKS
+> -	help
+> -	  Mmiotrace traces Memory Mapped I/O access and is meant for
+> -	  debugging and reverse engineering. It is called from the ioremap
+> -	  implementation and works via page faults. Tracing is disabled by
+> -	  default and can be enabled at run-time.
+> -
+> -	  See Documentation/tracers/mmiotrace.txt.
+> -	  If you are not helping to develop drivers, say N.
+> -
+> -config MMIOTRACE_TEST
+> -	tristate "Test module for mmiotrace"
+> -	depends on MMIOTRACE && m
+> -	help
+> -	  This is a dumb module for testing mmiotrace. It is very dangerous
+> -	  as it will write garbage to IO memory starting at a given address.
+> -	  However, it should be safe to use on e.g. unused portion of VRAM.
+> -
+> -	  Say N, unless you absolutely know what you are doing.
+> +config HAVE_MMIOTRACE_SUPPORT
+> +	def_bool y
+>  
+>  #
+>  # IO delay types:
+> Index: linux-2.6/kernel/trace/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/kernel/trace/Kconfig
+> +++ linux-2.6/kernel/trace/Kconfig
+> @@ -194,4 +194,32 @@ config FTRACE_STARTUP_TEST
+>  	  functioning properly. It will do tests on all the configured
+>  	  tracers of ftrace.
+>  
+> +config MMIOTRACE_HOOKS
+> +	bool
+> +
+> +config MMIOTRACE
+> +	bool "Memory mapped IO tracing"
+> +	depends on HAVE_MMIOTRACE_SUPPORT && DEBUG_KERNEL && PCI
+> +	select TRACING
+> +	select MMIOTRACE_HOOKS
 
-rm -f include/asm fixes it
+change makes sense, but isnt MMIOTRACE_HOOKS basically overlapping 
+HAVE_MMIOTRACE_SUPPORT? So i think we could get rid of MMIOTRACE_HOOKS 
+altogether and just use HAVE_MMIOTRACE_SUPPORT.
 
-This was just from taking a 2.6.27 tree, git clean -d -f, git pull, make 
-oldconfig. Might be a nice thing to fix?
+Pekka?
 
--- 
-Cheers,
-Alistair.
+	Ingo
