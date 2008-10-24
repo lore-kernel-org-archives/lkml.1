@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbYJXOBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbYJXODg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755339AbYJXOBg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 10:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbYJXOB2
+	id S1754788AbYJXODg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 10:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbYJXOD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 10:01:28 -0400
-Received: from swm.pp.se ([212.247.200.143]:42956 "EHLO uplift.swm.pp.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751910AbYJXOB1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 10:01:27 -0400
-Date: Fri, 24 Oct 2008 16:01:25 +0200 (CEST)
-From: Mikael Abrahamsson <swmike@swm.pp.se>
-To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Nigel Cunningham <ncunningham@crca.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Current suspend issues on Lenovo X200 (w/ Intel graphics)
-In-Reply-To: <20081024130130.GA5816@denkbrett.schottelius.org>
-Message-ID: <alpine.DEB.1.10.0810241546460.4948@uplift.swm.pp.se>
-References: <20081023204326.GB4175@denkbrett.schottelius.org> <200810240006.19857.rjw@sisk.pl> <1224817394.6623.12.camel@nigel-laptop> <200810240911.05193.rjw@sisk.pl> <20081024130130.GA5816@denkbrett.schottelius.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-Organization: People's Front Against WWW
+	Fri, 24 Oct 2008 10:03:28 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:43689 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751775AbYJXOD1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 10:03:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=QZLLW8u9S91UUMBKbmYiKChuXNw0rwKoV1US2EbEFHrFQ1WciZVXTl/MuHITEbt+n/
+         xQGYzkd2cLZSCgF4/BwJ5Pnu2OMfYSSftoDRgZ4tWwBdjwykUXiFHRcMI0UZKrHvkofg
+         lvzalNFY1M4CL3aEF8dJNv2sLMS3V59wLO+c0=
+Message-ID: <9ea470500810240703p18bacb8ek8d1ff7f9f146b0d8@mail.gmail.com>
+Date: Fri, 24 Oct 2008 16:03:25 +0200
+From: "Boris Petkov" <petkovbb@googlemail.com>
+Reply-To: petkovbb@gmail.com
+To: "=?ISO-8859-1?Q?Toralf_F=F6rster?=" <toralf.foerster@gmx.de>
+Subject: Re: build issue #566 for v2.6.28-rc1 :undefined reference to `forbid_dac'
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+In-Reply-To: <200810241550.45435.toralf.foerster@gmx.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200810241550.45435.toralf.foerster@gmx.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Oct 2008, Nico -telmich- Schottelius wrote:
-
-> Yes, I'm on amd64;
-
-I'm on ubuntu 8.10-rc with all updates (so I'm on their 2.6.27-7 kernel) 
-on Lenovo X200.
-
-I can replicate the problems without X, I get an oops when it comes out of 
-sleep (can't scroll up and nothing in the log).
-
-If I shut down X, power down bluetooth (fn-F4) and rmmod btusb and 
-bluetooth, I can successfully get the X200 to sleep (by executing the 
-/etc/acpi/sleep.sh script) and come back up again properly.
-
-If I have X enabled, power down bluetooth, /etc/ini.d/bluetooth stop and 
-rmmod btusb/bluetooth, I still get the problem when coming out of sleep. I 
-get a mouse pointer (unmovable), black background, and after 5-10 seconds 
-I get hard power down (watchdog?).
-
-I have tried to ctrl-alt-F1 to text console and make it go to sleep to see 
-if this works in conjunction with X running, but it seems some X daemon is 
-catching/hindering the fn-F4 and ./sleep.sh, so I haven't been able to try 
-this.
-
-Anything else I can test that might help?
+See http://www.uwsg.iu.edu/hypermail/linux/kernel/0810.2/3670.html
 
 -- 
-Mikael Abrahamsson    email: swmike@swm.pp.se
+Regards/Gruss,
+Boris
