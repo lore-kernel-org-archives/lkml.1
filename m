@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbYJXRAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbYJXRCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755609AbYJXRAe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 13:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbYJXRAZ
+	id S1755977AbYJXRCg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 13:02:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbYJXRC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 13:00:25 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:56969 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753674AbYJXRAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 13:00:25 -0400
-Date: Fri, 24 Oct 2008 19:02:58 +0200
-From: Samuel Ortiz <sameo@openedhand.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Eric Miao <eric.miao@marvell.com>, Jonathan Cameron <jic23@cam.ac.uk>
-Subject: [GIT] mfd pull request
-Message-ID: <20081024170257.GA5528@sortiz.org>
-Reply-To: Samuel Ortiz <sameo@openedhand.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 24 Oct 2008 13:02:27 -0400
+Received: from vms044pub.verizon.net ([206.46.252.44]:58425 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752056AbYJXRC0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 13:02:26 -0400
+Date: Fri, 24 Oct 2008 13:02:18 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] Fix compile warning CONFIG_I7300_IDLE_IOAT_CHANNEL not
+ defined
+In-reply-to: <20081023223906.GA26918@linux-os.sc.intel.com>
+X-X-Sender: lenb@localhost.localdomain
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-id: <alpine.LFD.1.10.0810241302130.3056@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <20081023223906.GA26918@linux-os.sc.intel.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+applied.
 
-Could you please pull a couple of mfd fixes from:
-	
-	git://git.o-hand.com/linux-mfd for-linus
+thanks,
+-len
 
-The first one fixes a build failure when wm8400 is built in while i2c is a
-module.
-The second fix adds a left out Kconfig entry for da903x.
+On Thu, 23 Oct 2008, Venki Pallipadi wrote:
 
-Cheers,
-Samuel.
-
-The following changes since commit e013e13bf605b9e6b702adffbe2853cfc60e7806:
-  Jens Axboe (1):
-        libata: fix bug with non-ncq devices
-
-are available in the git repository at:
-
-  git://git.o-hand.com/linux-mfd for-linus
-
-Mark Brown (1):
-      mfd: Make WM8400 depend on I2C until SPI is submitted
-
-Samuel Ortiz (1):
-      mfd: add missing Kconfig entry for da903x
-
- drivers/mfd/Kconfig  |   12 ++++++++++++
- drivers/mfd/Makefile |    2 ++
- 2 files changed, 14 insertions(+), 0 deletions(-)
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+> 
+> When I7300_idle driver is not configured, there is a compile time
+> warning about IDLE_IOAT_CHANNEL not defined. Fix it.
+> 
+> Reported-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> 
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> 
+> ---
+>  drivers/dma/ioat_dma.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6/drivers/dma/ioat_dma.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/dma/ioat_dma.c	2008-10-23 15:27:43.000000000 -0700
+> +++ linux-2.6/drivers/dma/ioat_dma.c	2008-10-23 15:28:03.000000000 -0700
+> @@ -171,7 +171,7 @@ static int ioat_dma_enumerate_channels(s
+>  	xfercap_scale = readb(device->reg_base + IOAT_XFERCAP_OFFSET);
+>  	xfercap = (xfercap_scale == 0 ? -1 : (1UL << xfercap_scale));
+>  
+> -#if CONFIG_I7300_IDLE_IOAT_CHANNEL
+> +#ifdef CONFIG_I7300_IDLE_IOAT_CHANNEL
+>  	device->common.chancnt--;
+>  #endif
+>  	for (i = 0; i < device->common.chancnt; i++) {
+> 
