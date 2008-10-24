@@ -1,83 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbYJXLhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbYJXLiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754757AbYJXLhJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 07:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYJXLg6
+	id S1755460AbYJXLiT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 07:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbYJXLiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 07:36:58 -0400
-Received: from sh.osrg.net ([192.16.179.4]:60893 "EHLO sh.osrg.net"
+	Fri, 24 Oct 2008 07:38:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51012 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750808AbYJXLg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 07:36:58 -0400
-Date: Fri, 24 Oct 2008 20:36:34 +0900
-To: mingo@elte.hu
-Cc: fujita.tomonori@lab.ntt.co.jp, dwmw2@infradead.org,
-       torvalds@linux-foundation.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, tony.luck@intel.com
-Subject: Re: [GIT *] iommu fixes for 2.6.28
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081024112217.GA19266@elte.hu>
-References: <20081024110125.GA18869@elte.hu>
-	<20081024201041T.fujita.tomonori@lab.ntt.co.jp>
-	<20081024112217.GA19266@elte.hu>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081024203705B.fujita.tomonori@lab.ntt.co.jp>
+	id S1752187AbYJXLiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 07:38:05 -0400
+Date: Fri, 24 Oct 2008 13:37:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, lethal@linux-sh.org,
+       paulus@samba.org, benh@kernel.crashing.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [GIT PULL] s390 updates for 2.6.28-rc1
+Message-ID: <20081024113724.GA21375@elte.hu>
+References: <20081024105049.GC4620@osiris.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081024105049.GC4620@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Oct 2008 13:22:17 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
 
-> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> 
-> > On Fri, 24 Oct 2008 13:01:25 +0200
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > 
-> > > * David Woodhouse <dwmw2@infradead.org> wrote:
-> > > 
-> > > > This contains a few iommu-related fixes -- it restores DMA remapping 
-> > > > on newer Intel hardware, which was disabled by the interrupt remapping 
-> > > > patches, adds IA64 support for the Intel IOMMU, and some other small 
-> > > > fixes.
-> > > > 
-> > > >  MAINTAINERS                      |    7 +
-> > > >  arch/x86/kernel/amd_iommu_init.c |    2 +-
-> > > >  arch/x86/kernel/pci-dma.c        |   16 ---
-> > > >  drivers/pci/dmar.c               |  119 +++++++++++++-----
-> > > >  drivers/pci/intel-iommu.c        |  250 ++++++++++++++++++++------------------
-> > > >  drivers/pci/quirks.c             |   14 ++
-> > > >  include/asm-x86/iommu.h          |    4 +
-> > > >  include/linux/dma_remapping.h    |   27 ++--
-> > > >  include/linux/intel-iommu.h      |   66 ++++++++---
-> > > >  9 files changed, 305 insertions(+), 200 deletions(-)
-> > > 
-> > > hm, i just updated to v2.6.28-rc1, and these changes broke the x86 
-> > > 32-bit build:
-> > > 
-> > >   arch/x86/kernel/built-in.o: In function `dma_supported':
-> > >   (.text+0x5797): undefined reference to `forbid_dac'
-> > >   arch/x86/kernel/built-in.o: In function `iommu_setup':
-> > >   pci-dma.c:(.init.text+0x326c): undefined reference to `forbid_dac'
-> > >   pci-dma.c:(.init.text+0x328b): undefined reference to `forbid_dac'
-> > >   pci-dma.c:(.init.text+0x32aa): undefined reference to `forbid_dac'
-> > > 
-> > > seems to be caused by:
-> > > 
-> > >   5b6985c: intel-iommu: IA64 support
-> > 
-> > http://marc.info/?l=linux-kernel&m=122480590627590&w=2
-> > 
-> > 
-> > Sharing forbid_dac between IA64 and X86 doesn't make sense and IA64 
-> > doesn't even use forbid_dac... Reverting the forbid_dac relocation is 
-> > the right fix, I think.
-> 
-> could you send a patch for it please? Commit 5b6985c does many things at 
-> once so the revert is not trivial.
+* Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
 
-The above Fenghua's patch exactly does what I said (reverting the
-forbid_dac relocation, which the commit 5b6985c did).
+> The s390 vdso preparation patch "arch_setup_additional_pages argument" 
+> touches other architectures (x86, sh and powerpc):
+> 
+> arch_setup_additional_pages currently gets two arguments, the binary 
+> format descripton and an indication if the process uses an executable 
+> stack or not. The second argument is not used by anybody, it could be 
+> removed without replacement.
+
+hm, this is the first time i've seen this change, and it looks a bit 
+weird:
+
+--- a/arch/x86/include/asm/elf.h
++++ b/arch/x86/include/asm/elf.h
+@@ -325,7 +325,7 @@ struct linux_binprm;
+
+ #define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
+ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
+-                                      int executable_stack);
++                                      int uses_interp);
+
+why didnt you just add a new uses_interp argument?
+
+executable_stack is passed in to potentially enable architectures to be 
+aware of how conservative/legacy the address-space of the binary is - 
+whether to randomize the vdso, etc. exec-shield used to take advantage 
+of that.
+
+But there seems to be no in-tree use of that (and if one arises it can 
+just add back that parameter), and i dont want to stand in the way of 
+your pull request either, so for the x86 bits:
+
+ Acked-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
