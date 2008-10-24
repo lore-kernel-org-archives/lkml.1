@@ -1,91 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbYJXMWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbYJXMYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756060AbYJXMWT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 08:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbYJXMWJ
+	id S1752848AbYJXMYc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 08:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbYJXMYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 08:22:09 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:50761 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751275AbYJXMWG (ORCPT
+	Fri, 24 Oct 2008 08:24:24 -0400
+Received: from ti-out-0910.google.com ([209.85.142.186]:17704 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750808AbYJXMYX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 08:22:06 -0400
-Date: Fri, 24 Oct 2008 08:22:05 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Rakib Mullick <rakib.mullick@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -mm] ftrace : Fix section mismatch warning.
-In-Reply-To: <alpine.DEB.1.10.0810240802070.25677@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0810240821080.25677@gandalf.stny.rr.com>
-References: <b9df5fa10810122250j1dd9c0eaq8c708c7b8e10a249@mail.gmail.com> <20081020162756.GA31201@elte.hu> <20081022070312.GA24749@elte.hu> <b9df5fa10810240409u311bb337x1ff9815431088685@mail.gmail.com> <20081024115005.GA5214@elte.hu>
- <alpine.DEB.1.10.0810240802070.25677@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 24 Oct 2008 08:24:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Kh+Eogk/jG+trQjxEfCb4uuIp+3bQ/GLdshOSHFPO8SlLHABQclA2mHlV2goZaRCE3
+         7rrcy2XzE0YvfzzgexjJ+HxZM7p+dInOteVs7iDc0IbRr/F4wyQ8tFRcH3zljSvh/C+G
+         7Ovnr4mMcteGldy1dXRps30srImxnHof8Z+jo=
+Message-ID: <2891419e0810240524u746b731cjcbd127fa4204bd4d@mail.gmail.com>
+Date: Fri, 24 Oct 2008 21:24:21 +0900
+From: "Dong-Jae Kang" <baramsori72@gmail.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: [Question] power management related with cgroup based resource management
+Cc: xen-devel@lists.xensource.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       dm-devel@redhat.com, corsetproject@googlegroups.com,
+       "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
+In-Reply-To: <4901B5C2.9070108@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <2891419e0810201954q57087fc8ufcaa0e42f3ca99e2@mail.gmail.com>
+	 <4901B5C2.9070108@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, Balbir Singh
 
-On Fri, 24 Oct 2008, Steven Rostedt wrote:
-> 
-> The real solution should probably be this:
-> 
-> (Compiled tested only)
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  arch/x86/kernel/ftrace.c |   11 +++++------
->  1 file changed, 5 insertions(+), 6 deletions(-)
-> 
-> Index: linux-tip.git/arch/x86/kernel/ftrace.c
-> ===================================================================
-> --- linux-tip.git.orig/arch/x86/kernel/ftrace.c	2008-10-23 19:23:28.000000000 -0400
-> +++ linux-tip.git/arch/x86/kernel/ftrace.c	2008-10-24 08:11:57.000000000 -0400
-> @@ -22,7 +22,7 @@
->  
->  
->  /* Long is fine, even if it is only 4 bytes ;-) */
-> -static unsigned long *ftrace_nop;
-> +static unsigned long ftrace_nop[MCOUNT_INSN_SIZE];
+2008/10/24 Balbir Singh <balbir@linux.vnet.ibm.com>:
+> Dong-Jae Kang wrote:
+>> Hi, all
+>>
+>> These days, I am interested in green IT area for low power OS
+>> So, I have a question about it.
+>> Is there any good idea or comments about power management related with
+>> cgroup based resource management?
+>> I have no idea about that, but it seems to be possible to find a good concept.
+>> And I hope so
+>> Is it some strange question? ^^
+>
+> lesswatts.org, linux-pm (mailing list) are good sources on Power Management. I
+> would recommend asking at those mailing lists (there are several new features
+> like range timers, no idle hertz, sched_mc consolidation and much more). Could
+> you be specific about what you are looking for? Are you looking at
+> Server/Desktop power management?
+>
 
-I need to convert that to unsigned char ftrace_nop[]. I'll run some more 
-tests, and produce a real patch later.
+Thank you very much for your kind recommendation.^^
+this site information will be helpful for me.
+As your recommendation, I will try to contact to lesswatts.org,
+linux-pm (mailing list)
 
--- Steve
+I am interested in power management in server side.
+and I just wonder this question, "Is there any related point between
+cgroup framework and power management?"
 
->  
->  union ftrace_code_union {
->  	char code[MCOUNT_INSN_SIZE];
-> @@ -126,8 +126,7 @@ int __init ftrace_dyn_arch_init(void *da
->  	 */
->  	asm volatile (
->  		"jmp ftrace_test_jmp\n"
-> -		/* This code needs to stay around */
-> -		".section .text, \"ax\"\n"
-> +		".section .text.init, \"ax\"\n"
->  		"ftrace_test_jmp:"
->  		"jmp ftrace_test_p6nop\n"
->  		"nop\n"
-> @@ -154,15 +153,15 @@ int __init ftrace_dyn_arch_init(void *da
->  	switch (faulted) {
->  	case 0:
->  		pr_info("ftrace: converting mcount calls to 0f 1f 44 00 00\n");
-> -		ftrace_nop = (unsigned long *)ftrace_test_p6nop;
-> +		memcpy(ftrace_nop, ftrace_test_p6nop, MCOUNT_INSN_SIZE);
->  		break;
->  	case 1:
->  		pr_info("ftrace: converting mcount calls to 66 66 66 66 90\n");
-> -		ftrace_nop = (unsigned long *)ftrace_test_nop5;
-> +		memcpy(ftrace_nop, ftrace_test_nop5, MCOUNT_INSN_SIZE);
->  		break;
->  	case 2:
->  		pr_info("ftrace: converting mcount calls to jmp . + 5\n");
-> -		ftrace_nop = (unsigned long *)ftrace_test_jmp;
-> +		memcpy(ftrace_nop, ftrace_test_jmp, MCOUNT_INSN_SIZE);
->  		break;
->  	}
->  
-> 
+Thanks again
+
+Regards,
+Dong-Jae Kang
