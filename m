@@ -1,110 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755591AbYJXBL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbYJXBMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755591AbYJXBL5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 21:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbYJXBLq
+	id S1757442AbYJXBMz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 21:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbYJXBMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 21:11:46 -0400
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:23680 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750896AbYJXBLq (ORCPT
+	Thu, 23 Oct 2008 21:12:47 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:39787 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750813AbYJXBMq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 21:11:46 -0400
-X-YMail-OSG: foh38wgVM1k0El5GevKS0FAeiXZ5VEuorYmDkU6SlKixYXVWJ12LUgGiv4fvHSJlgo5J8SjcFHAao9goZOvFEw6Y2IlQL1im_WbGvOpSr1TG_G5F9yrKyIwsB2WT4h7ZyM2G5B4QoqsmRDH8c7rGMi7WPV_eaS16x6j8dcA87S0Tb3biW_etvEEtlco-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH] [ConfigFS]: Added CONFIGFS_EATTR_OPS_RO() to remove unused
-	store() function
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Joel Becker <joel.becker@oracle.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>
+	Thu, 23 Oct 2008 21:12:46 -0400
+Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is
+	set.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>
+In-Reply-To: <49010D1E.8070400@zytor.com>
+References: <20081021181536.GI12825@one.firstfloor.org>
+	 <1224616236.6161.60.camel@alok-dev1>
+	 <20081021192746.GJ12825@one.firstfloor.org>
+	 <1224703427.13953.8.camel@alok-dev1>
+	 <20081022195845.GP12825@one.firstfloor.org>
+	 <1224712846.13953.37.camel@alok-dev1>
+	 <20081022221316.GW12825@one.firstfloor.org>
+	 <1224713518.13953.46.camel@alok-dev1>
+	 <20081022225409.GB27492@one.firstfloor.org>
+	 <1224728478.13953.79.camel@alok-dev1>
+	 <20081023081052.GI27492@one.firstfloor.org>
+	 <1224805162.21776.45.camel@alok-dev1>  <49010D1E.8070400@zytor.com>
 Content-Type: text/plain
-Date: Thu, 23 Oct 2008 18:11:43 -0700
-Message-Id: <1224810703.16558.19.camel@haakon2.linux-iscsi.org>
+Organization: VMware INC.
+Date: Thu, 23 Oct 2008 18:12:43 -0700
+Message-Id: <1224810764.21776.74.camel@alok-dev1>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi again,
+On Thu, 2008-10-23 at 16:47 -0700, H. Peter Anvin wrote:
+> Alok Kataria wrote:
+> >
+> > I am ok with the CONSTANT_TSC bit check, but if people think that its
+> > not important to skip this for native, i think adding a new flag to skip
+> > this should be safe enough.
+> >
+> > Ingo, HPA your views on this whole detection and skipping thing ?
+> >
+> 
+> Okay, first of all, I'm somewhat leery (to put it mildly) of trusting a
+> CPUID bit to tell me a *system* property, which is that all cores in the
+> system are synchronized.  The CPU designer will know that all the cores
+> in the *package* are synchronized, but if that extends system-wide is a
+> property beyond the CPU.  Now, if I'm not completely mistaken, in the
+> case of AMD this bit is actually set by the BIOS via a magic MSR, but
+> that doesn't mean it can't be wrong.
+> 
+> As far as skipping the check, it makes sense for me in the case of known
+> virtualization platforms; a CPU feature bit, real or synthetic, is a
+> very clean way to do that.  In general we should centralize CPU
+> knowledge to arch/x86/kernel/cpu and have the code outside look for
+> specific feature flags, and that applies to virtualization platforms, too.
 
-Added another change to the CONFIGFS_EATTR() macros I am using in
-drivers/lio-core/configfs_macros.h:
+I agree with the synthetic cpu feature thing.
+Do you think i should use one of the existing word like the word 3 which
+is for synthesized feature bits ? Or is it better to define a new
+virtualization specific word ?
 
-When using __CONFIGFS_ATTR_RO(), I noticed that CONFIGFS_ATTR_OPS() was
-getting the compiler warning about unused store() functions.  So I ended
-up breaking out the 3 functions into three different macros..
+Thanks,
+Alok
 
-Thanks!
-
---nab
-
->From 4cfb0287a2fc48bc414e3467edb8cdfc88c2fc72 Mon Sep 17 00:00:00 2001
-From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Thu, 23 Oct 2008 06:56:29 -0700
-Subject: [PATCH] [ConfigFS]: Added CONFIGFS_EATTR_OPS_RO() to remove unused store() function
-
-Added CONFIGFS_EATTR_OPS_RO() macro only defines show().  This patch also
-breaks out the show()/store() and to_##_name() functions into their own
-macros.
-
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/lio-core/configfs_macros.h |   19 ++++++++++++++++---
- 1 files changed, 16 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/lio-core/configfs_macros.h b/drivers/lio-core/configfs_macros.h
-index 4dd3f1e..2185822 100644
---- a/drivers/lio-core/configfs_macros.h
-+++ b/drivers/lio-core/configfs_macros.h
-@@ -98,12 +98,14 @@ struct _name##_attribute {						\
-  *		                      ^^_item^^^^^  ^^_item_member^^^
-  * This macro expects the attributes to be named "struct <name>_attribute".
-  */
--#define CONFIGFS_EATTR_OPS(_name, _item, _item_member)			\
-+#define CONFIGFS_EATTR_OPS_TO_FUNC(_name, _item, _item_member)		\
- static struct _item *to_##_name(struct config_item *ci)			\
- {									\
- 	return((ci) ? container_of(to_config_group(ci), struct _item,	\
- 		_item_member) : NULL);					\
--}									\
-+}
-+
-+#define CONFIGFS_EATTR_OPS_SHOW(_name, _item)				\
- static ssize_t _name##_attr_show(struct config_item *item,		\
- 				 struct configfs_attribute *attr,	\
- 				 char *page)				\
-@@ -116,7 +118,9 @@ static ssize_t _name##_attr_show(struct config_item *item,		\
- 	if (_name##_attr->show)						\
- 		ret = _name##_attr->show(_item, page);			\
- 	return ret;							\
--}									\
-+}
-+
-+#define CONFIGFS_EATTR_OPS_STORE(_name, _item)				\
- static ssize_t _name##_attr_store(struct config_item *item,		\
- 				  struct configfs_attribute *attr,	\
- 				  const char *page, size_t count)	\
-@@ -131,4 +135,13 @@ static ssize_t _name##_attr_store(struct config_item *item,		\
- 	return ret;							\
- }
- 
-+#define CONFIGFS_EATTR_OPS(_name, _item, _item_member)			\
-+CONFIGFS_EATTR_OPS_TO_FUNC(_name, _item, _item_member);			\
-+CONFIGFS_EATTR_OPS_SHOW(_name, _item);					\
-+CONFIGFS_EATTR_OPS_STORE(_name, _item);	
-+
-+#define CONFIGFS_EATTR_OPS_RO(_name, _item, _item_member)		\
-+CONFIGFS_EATTR_OPS_TO_FUNC(_name, _item, _item_member);			\
-+CONFIGFS_EATTR_OPS_SHOW(_name, _item);
-+
- #endif /* _CONFIGFS_MACROS_H_ */
--- 
-1.5.4.1
-
-
+> 
+>         -hpa
 
