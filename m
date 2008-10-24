@@ -1,182 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbYJXKAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756174AbYJXKA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756698AbYJXKAo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 06:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbYJXJ6v
+	id S1756174AbYJXKA7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 06:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbYJXJ6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 05:58:51 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44852 "EHLO
+	Fri, 24 Oct 2008 05:58:52 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44854 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753238AbYJXJ6t (ORCPT
+	with ESMTP id S1753394AbYJXJ6v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 05:58:49 -0400
-Message-Id: <20081024091109.667495895@chello.nl>
-References: <20081024090611.936552213@chello.nl>
+	Fri, 24 Oct 2008 05:58:51 -0400
+Message-Id: <20081024090611.936552213@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Fri, 24 Oct 2008 11:06:15 +0200
+Date: Fri, 24 Oct 2008 11:06:11 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, efault@gmx.de, vatsa@in.ibm.com,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 4/8] sched: re-instate vruntime based wakeup preemption
-Content-Disposition: inline; filename=sched-fix-wakeup-preempt.patch
-X-Bad-Reply: References but no 'Re:' in Subject.
+Subject: [PATCH 0/8] scheduler patches
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The advantage is that vruntime based wakeup preemption has a better
-conceptual model. Here wakeup_gran = 0 means: preempt when 'fair'.
-Therefore wakeup_gran is the granularity of unfairness we allow in order
-to make progress.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/sched_fair.c |   98 ++++++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 92 insertions(+), 6 deletions(-)
+1-3 definite 28 patches
+4-5 wanna-be 28 patches
+6-8 29 work
 
-Index: linux-2.6/kernel/sched_fair.c
-===================================================================
---- linux-2.6.orig/kernel/sched_fair.c
-+++ linux-2.6/kernel/sched_fair.c
-@@ -143,6 +143,49 @@ static inline struct sched_entity *paren
- 	return se->parent;
- }
- 
-+/* return depth at which a sched entity is present in the hierarchy */
-+static inline int depth_se(struct sched_entity *se)
-+{
-+	int depth = 0;
-+
-+	for_each_sched_entity(se)
-+		depth++;
-+
-+	return depth;
-+}
-+
-+static void
-+find_matching_se(struct sched_entity **se, struct sched_entity **pse)
-+{
-+	int se_depth, pse_depth;
-+
-+	/*
-+	 * preemption test can be made between sibling entities who are in the
-+	 * same cfs_rq i.e who have a common parent. Walk up the hierarchy of
-+	 * both tasks until we find their ancestors who are siblings of common
-+	 * parent.
-+	 */
-+
-+	/* First walk up until both entities are at same depth */
-+	se_depth = depth_se(*se);
-+	pse_depth = depth_se(*pse);
-+
-+	while (se_depth > pse_depth) {
-+		se_depth--;
-+		*se = parent_entity(*se);
-+	}
-+
-+	while (pse_depth > se_depth) {
-+		pse_depth--;
-+		*pse = parent_entity(*pse);
-+	}
-+
-+	while (!is_same_group(*se, *pse)) {
-+		*se = parent_entity(*se);
-+		*pse = parent_entity(*pse);
-+	}
-+}
-+
- #else	/* CONFIG_FAIR_GROUP_SCHED */
- 
- static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
-@@ -193,6 +236,11 @@ static inline struct sched_entity *paren
- 	return NULL;
- }
- 
-+static inline void
-+find_matching_se(struct sched_entity **se, struct sched_entity **pse)
-+{
-+}
-+
- #endif	/* CONFIG_FAIR_GROUP_SCHED */
- 
- 
-@@ -1244,13 +1292,42 @@ static unsigned long wakeup_gran(struct 
- 	 * More easily preempt - nice tasks, while not making it harder for
- 	 * + nice tasks.
- 	 */
--	if (sched_feat(ASYM_GRAN))
--		gran = calc_delta_mine(gran, NICE_0_LOAD, &se->load);
-+	if (!sched_feat(ASYM_GRAN) || se->load.weight > NICE_0_LOAD)
-+		gran = calc_delta_fair(sysctl_sched_wakeup_granularity, se);
- 
- 	return gran;
- }
- 
- /*
-+ * Should 'se' preempt 'curr'.
-+ *
-+ *             |s1
-+ *        |s2
-+ *   |s3
-+ *         g
-+ *      |<--->|c
-+ *
-+ *  w(c, s1) = -1
-+ *  w(c, s2) =  0
-+ *  w(c, s3) =  1
-+ *
-+ */
-+static int
-+wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
-+{
-+	s64 gran, vdiff = curr->vruntime - se->vruntime;
-+
-+	if (vdiff <= 0)
-+		return -1;
-+
-+	gran = wakeup_gran(curr);
-+	if (vdiff > gran)
-+		return 1;
-+
-+	return 0;
-+}
-+
-+/*
-  * Preempt the current task with a newly woken task if needed:
-  */
- static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int sync)
-@@ -1258,7 +1335,6 @@ static void check_preempt_wakeup(struct 
- 	struct task_struct *curr = rq->curr;
- 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
- 	struct sched_entity *se = &curr->se, *pse = &p->se;
--	s64 delta_exec;
- 
- 	if (unlikely(rt_prio(p->prio))) {
- 		update_rq_clock(rq);
-@@ -1296,9 +1372,19 @@ static void check_preempt_wakeup(struct 
- 		return;
- 	}
- 
--	delta_exec = se->sum_exec_runtime - se->prev_sum_exec_runtime;
--	if (delta_exec > wakeup_gran(pse))
--		resched_task(curr);
-+	find_matching_se(&se, &pse);
-+
-+	while (se) {
-+		BUG_ON(!pse);
-+
-+		if (wakeup_preempt_entity(se, pse) == 1) {
-+			resched_task(curr);
-+			break;
-+		}
-+
-+		se = parent_entity(se);
-+		pse = parent_entity(pse);
-+	}
- }
- 
- static struct task_struct *pick_next_task_fair(struct rq *rq)
-
--- 
 
