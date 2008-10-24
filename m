@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbYJXXoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbYJXXpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755176AbYJXXoY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 19:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYJXXoQ
+	id S1756546AbYJXXpQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 19:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbYJXXpC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 19:44:16 -0400
-Received: from mk-outboundfilter-5.mail.uk.tiscali.com ([212.74.114.1]:34726
-	"EHLO mk-outboundfilter-5.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751321AbYJXXoP (ORCPT
+	Fri, 24 Oct 2008 19:45:02 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:22411 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751969AbYJXXpA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 19:44:15 -0400
-X-Trace: 98338152/mk-outboundfilter-5.mail.uk.tiscali.com/F2S/$F2S-NILDRAM-ACCEPTED/f2s-nildram-customers/195.149.44.6
-X-SBRS: None
-X-RemoteIP: 195.149.44.6
-X-IP-MAIL-FROM: alistair@devzero.co.uk
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAGP6AUnDlSwG/2dsb2JhbACBdsApg08
-X-IronPort-AV: E=Sophos;i="4.33,481,1220223600"; 
-   d="scan'208";a="98338152"
-X-IP-Direction: IN
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: Linux 2.6.28-rc1
-Date: Sat, 25 Oct 2008 00:44:12 +0100
-User-Agent: KMail/1.10.1 (Linux/2.6.28-rc1-damocles; KDE/4.1.2; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org> <200810241224.38541.alistair@devzero.co.uk> <20081024191552.GA14894@uranus.ravnborg.org>
-In-Reply-To: <20081024191552.GA14894@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Fri, 24 Oct 2008 19:45:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=ikTsezBK9m2D2vi3ybiRpbWr2Agn+aWwh+OFJvd+8d6Gh6J3rNr/+l31yGL8+tVc0x
+         pccP1cHRGG3mXgZG33SdKFnJ36niUoyRU9FytLGwzaoxs+qB/M8srfPxp8+Ubx1EpqLM
+         kEQW9kaeevVQL/zb95dzt8jBBAhy3miUtjvgg=
+Subject: [PATCH] ibmpex: trivial endian annotation in extract_data helper
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 24 Oct 2008 16:44:58 -0700
+Message-Id: <1224891898.5784.0.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810250044.12372.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 24 October 2008 20:15:52 Sam Ravnborg wrote:
-> On Fri, Oct 24, 2008 at 12:24:38PM +0100, Alistair John Strachan wrote:
-> > On Friday 24 October 2008 05:10:29 Linus Torvalds wrote:
-> > > It's been two weeks, so it's time to close the merge window. A
-> > > 2.6.28-rc1 is out there, and it's hopefully all good.
-> >
-> > It seems if you have a broken asm/ symlink in include/ (which happened as
-> > a result of the x86 header moves, for me) the kernel won't try to update
-> > it appropriately, and this breaks "make prepare".
-> >
-> > $ make    ARCH=x86_64 prepare
-> >   CHK     include/linux/version.h
-> >   CHK     include/linux/utsrelease.h
-> >   GEN     include/asm/asm-offsets.h
-> > /bin/sh: include/asm/asm-offsets.h: No such file or directory
-> > make[1]: *** [include/asm/asm-offsets.h] Error 1
-> > make: *** [prepare0] Error 2
-> >
-> > rm -f include/asm fixes it
-> >
-> > This was just from taking a 2.6.27 tree, git clean -d -f, git pull, make
-> > oldconfig. Might be a nice thing to fix?
->
-> The following patch add another special case hwre we delete stale symlinks.
-> In my limited testing it fixes the issue - can you try to give it a spin.
+This helper is used in few enough locations that open-coding it
+at the call sites may be better than the helper.
 
-Fixes it here, thanks.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ drivers/hwmon/ibmpex.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/drivers/hwmon/ibmpex.c b/drivers/hwmon/ibmpex.c
+index 537d9fb..a363633 100644
+--- a/drivers/hwmon/ibmpex.c
++++ b/drivers/hwmon/ibmpex.c
+@@ -40,7 +40,7 @@
+ 
+ static inline u16 extract_value(const char *data, int offset)
+ {
+-	return be16_to_cpup((u16 *)&data[offset]);
++	return be16_to_cpup((__be16 *)&data[offset]);
+ }
+ 
+ #define TEMP_SENSOR		1
 -- 
-Cheers,
-Alistair.
+1.6.0.3.729.g6ea410
+
+
+
