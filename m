@@ -1,122 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756634AbYJXUit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbYJXUm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756634AbYJXUit (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 16:38:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbYJXUil
+	id S1756798AbYJXUm6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 16:42:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbYJXUmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 16:38:41 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:39358 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752822AbYJXUik (ORCPT
+	Fri, 24 Oct 2008 16:42:49 -0400
+Received: from vms044pub.verizon.net ([206.46.252.44]:53605 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753793AbYJXUms (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 16:38:40 -0400
-Date: Fri, 24 Oct 2008 15:31:48 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       James Morris <jmorris@namei.org>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] integrity: TPM internel kernel interface
-Message-ID: <20081024203148.GB29782@us.ibm.com>
-References: <cover.1223869200.git.zohar@localhost.localdomain> <c7ae4dc26c0c2897218851c7bdb056b4a4b49f26.1223869200.git.zohar@localhost.localdomain> <20081014222312.GA18343@hallyn.com> <1224679633.2786.20.camel@dyn536723.br.ibm.com> <20081022144944.GC21612@us.ibm.com> <1224879363.2778.22.camel@blackbox>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1224879363.2778.22.camel@blackbox>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 24 Oct 2008 16:42:48 -0400
+Date: Fri, 24 Oct 2008 16:42:29 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: Oops in ACPI with git latest
+In-reply-to: <200810242150.31809.rjw@sisk.pl>
+X-X-Sender: lenb@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Message-id: <alpine.LFD.1.10.0810241642240.3056@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <1224791103.3330.37.camel@localhost.localdomain>
+ <200810242043.04078.rjw@sisk.pl> <200810241222.32979.jbarnes@virtuousgeek.org>
+ <200810242150.31809.rjw@sisk.pl>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Rajiv Andrade (srajiv@linux.vnet.ibm.com):
-> Serge,
-> 
-> On Wed, 2008-10-22 at 09:49 -0500, Serge E. Hallyn wrote:
-> > Quoting Rajiv Andrade (srajiv@linux.vnet.ibm.com):
-> > > On Tue, 2008-10-14 at 17:23 -0500, Serge E. Hallyn wrote:
-> > > > Quoting Mimi Zohar (zohar@linux.vnet.ibm.com):
-> > > > > The internal TPM kernel interface did not protect itself from
-> > > > > the removal of the TPM driver, while being used.  We continue
-> > > > > to protect the tpm_chip_list using the driver_lock as before,
-> > > > > and are using an rcu lock to protect readers. The internal TPM
-> > > > 
-> > > > I still would like to see this spelled out somewhere - correct me
-> > > > if I'm wrong but none of the patches sent so far have this spelled
-> > > > out in in-line comments, do they?
-> > > > 
-> > > > It does look sane:
-> > > > 
-> > > > 	1. writes to tpm_chip_list are protected by driver_lock
-> > > > 	2. readers of the list are protected by rcu
-> > > > 	3. chips which are read from the tpm_chip_list, if they
-> > > > 	   are used outside of the rcu_read_lock(), are pinned
-> > > > 	   using get_device(chip->dev) before releasing the
-> > > > 	   rcu_read_lock.
-> > > > 
-> > > > Like I say it looks sane, but something like the above summary
-> > > > could stand to be in a comment on top of tpm.c or something.
-> > > > 
-> > > No problem, I'll submit a patch containing a proper comment section to
-> > > be applied on top of these, maybe after they get accepted.
-> > 
-> > Great, thanks.
-> > 
-> > > > > kernel interface now protects itself from the driver being
-> > > > > removed by incrementing the module reference count.
-> > > > > 
-> > > > > Resubmitting integrity-tpm-internal-kernel-interface.patch, which
-> > > > > was previously Signed-off-by Kylene Hall.
-> > > > > Updated per feedback:
-> > > > > 
-> > > > > Adds the following support:
-> > > > >   - make internal kernel interface to transmit TPM commands global
-> > > > >   - adds reading a pcr value
-> > > > >   - adds extending a pcr value
-> > > > >   - adds lookup the tpm_chip for given chip number and type
-> > > > > 
-> > > > > Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
-> > > > > Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-> > > > 
-> > > > Now there are other, existing callers of tpm_transmit.  Are they
-> > > > all protected by sysfs pinning the kobject and thereby the device,
-> > > > for the duration of the call?
-> > > > 
-> > > 
-> > > They aren't called through sysfs, but are still protected. These new
-> > > functions get chip data consistently by using rcu_read. Then, after
-> > > computing what's intended to be written back to the chip, tpm_transmit
-> > > sends the new data while using tpm_mutex, so both operations are
-> > > performed without the risk of a race condition.
-> > 
-> > Can you show me where the refcount for dev is incremented (under the
-> > rcu_read_lock), either in sysfs code or tpm code?  I'm not finding
-> > it, but it may just be done in some subtle way that I'm glossing over.
-> > 
-> 
-> The refcount is incremented/decremented in tpm_register_hardware() and
-> tpm_remove_hardware() for tpm module, and tpm_open() and tpm_release()
-> for tpm_tis module, all inside tpm.c. The last two are referenced in
-> tpm_tis.c:
-> 
-> tpm_tis.c
-> 
-> static const struct file_operations tis_ops = {
->         .owner = THIS_MODULE,
->         .llseek = no_llseek,
->         .open = tpm_open,
->         .read = tpm_read,
->         .write = tpm_write,
->         .release = tpm_release,
-> };
-> 
-> thanks,
-
-Yup, perfect.  Don't know how I was missing that.
-
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-
-to the set.
+applied.
 
 thanks,
--serge
+-len
+
+On Fri, 24 Oct 2008, Rafael J. Wysocki wrote:
+
+> On Friday, 24 of October 2008, Jesse Barnes wrote:
+> > On Friday, October 24, 2008 11:43 am Rafael J. Wysocki wrote:
+> > > On Friday, 24 of October 2008, Jesse Barnes wrote:
+> > > > So who wants to send me a final patch for this?
+> > >
+> > > I already did: http://marc.info/?l=linux-kernel&m=122484871717023&w=4
+> > > but I can remove the "!output.pointer || " if you prefer. :-)
+> > 
+> > Yeah Bob said it would likely contain garbage anyway, so we should just remove 
+> > it.
+> 
+> OK, here you go.
+> 
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: Prevent acpi_run_osc from using NULL objects
+> 
+> Check if the object returned by acpi_evaluate_object() in
+> acpi_run_osc() is not NULL before using it.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/pci/pci-acpi.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> Index: linux-2.6/drivers/pci/pci-acpi.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/pci-acpi.c
+> +++ linux-2.6/drivers/pci/pci-acpi.c
+> @@ -83,6 +83,9 @@ static acpi_status acpi_run_osc(acpi_han
+>  	if (ACPI_FAILURE(status))
+>  		return status;
+>  
+> +	if (!output.length)
+> +		return AE_NULL_OBJECT;
+> +
+>  	out_obj = output.pointer;
+>  	if (out_obj->type != ACPI_TYPE_BUFFER) {
+>  		printk(KERN_DEBUG "Evaluate _OSC returns wrong type\n");
+> 
