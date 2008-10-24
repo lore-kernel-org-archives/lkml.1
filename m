@@ -1,54 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758414AbYJXWV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757855AbYJXWWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758414AbYJXWV1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 18:21:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756637AbYJXWVQ
+	id S1757855AbYJXWWR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 18:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756527AbYJXWWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 18:21:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48334 "EHLO ogre.sisk.pl"
+	Fri, 24 Oct 2008 18:22:05 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48342 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756622AbYJXWVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 18:21:15 -0400
+	id S1755691AbYJXWWD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 18:22:03 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-Date: Sat, 25 Oct 2008 00:25:34 +0200
+To: Frederik Himpe <fhimpe@telenet.be>
+Subject: Re: 2.6.27: add patch for ALPS touchpad on Latitude E6[45]00
+Date: Sat, 25 Oct 2008 00:26:49 +0200
 User-Agent: KMail/1.9.9
-Cc: Evgeniy Polyakov <s0mbre@tservice.net.ru>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Mike Galbraith <efault@gmx.de>
-References: <20081009231759.GA8664@tservice.net.ru> <20081010115518.GA3159@tservice.net.ru> <20081010115725.GD19487@elte.hu>
-In-Reply-To: <20081010115725.GD19487@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+References: <pan.2008.10.11.15.33.28@telenet.be>
+In-Reply-To: <pan.2008.10.11.15.33.28@telenet.be>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810250025.35734.rjw@sisk.pl>
+Message-Id: <200810250026.50026.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 10 of October 2008, Ingo Molnar wrote:
+On Saturday, 11 of October 2008, Frederik Himpe wrote:
+> I need to add this patch to the 2.6.27 kernel to have my touchpad detected 
+> correctly on my Latitude E6400 laptop. Is it possible to apply this to 
+> 2.6.27 stable?
 > 
-> * Evgeniy Polyakov <s0mbre@tservice.net.ru> wrote:
-> 
-> > On Fri, Oct 10, 2008 at 01:42:45PM +0200, Ingo Molnar (mingo@elte.hu) wrote:
-> > > > vanilla 27: 347.222
-> > > > no TSO/GSO: 357.331
-> > > > no hrticks: 382.983
-> > > > no balance: 389.802
-> > > 
-> > > okay. The target is 470 MB/sec, right? (Assuming the workload is sane 
-> > > and 'fixing' it does not mean we have to schedule worse.)
-> > 
-> > Well, that's where I started/stopped, so maybe we will even move
-> > further? :)
-> 
-> that's the right attitude ;)
+> http://lkml.org/lkml/2008/9/7/133
 
-Can anyone please tell me if there was any conclusion of this thread?
+Did 2.6.26 work for you correctly without this patch?
 
-Thanks,
 Rafael
