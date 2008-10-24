@@ -1,134 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbYJXNna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbYJXNoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753324AbYJXNna (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 09:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbYJXNnF
+	id S1756673AbYJXNoH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 09:44:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYJXNnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 09:43:05 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:56846 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753579AbYJXNnB (ORCPT
+	Fri, 24 Oct 2008 09:43:52 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:29580 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751366AbYJXNnv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 09:43:01 -0400
-Date: Fri, 24 Oct 2008 09:42:59 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] ftrace: handle archs that do not support
- irqs_disabled_flags
-In-Reply-To: <4901D8CD.7000405@gmail.com>
-Message-ID: <alpine.DEB.1.10.0810240937130.3882@gandalf.stny.rr.com>
-References: <20081023213637.eff9b414.sfr@canb.auug.org.au> <20081023121145.GB27984@x200.localdomain> <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com> <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com> <49008D12.5090204@gmail.com>
- <Pine.LNX.4.64.0810231635440.18978@anakin> <c62985530810230757r411b4e3dj4ecec649cf8cf0b3@mail.gmail.com> <Pine.LNX.4.64.0810231727430.18978@anakin> <4900B414.7090002@gmail.com> <20081023163433.GA3160@x200.localdomain> <20081023163850.GB16591@elte.hu>
- <4901D8CD.7000405@gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 24 Oct 2008 09:43:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=uso+vd09Z9wG8n7EBPND/mbVosVhB7+h2VjKL8VlzVqdh8mJhaC5FPnvnW+72KqvmF
+         9cjH56U9L4rvkXiXWoYM97FUs++Rn4mHQL42l4Rq3zTrTtZm4gn88SF16iz44stE8qUh
+         QBAR2wacno1g/j2vk9UUXgjDyFCy5G93RjLVI=
+Message-ID: <c62985530810240643q467a9060kaf906eb7865f0a7@mail.gmail.com>
+Date: Fri, 24 Oct 2008 15:43:49 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [PATCH 5/5] tracing/ftrace: Introduce the big kernel lock tracer
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Steven Rostedt" <rostedt@goodmis.org>, systemtap@sources.redhat.com
+In-Reply-To: <y0mmygv18le.fsf@ton.toronto.redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48F10B0B.406@gmail.com>
+	 <c62985530810210528t416c82b2lbe8471322e8359c@mail.gmail.com>
+	 <y0mmygv18le.fsf@ton.toronto.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2008/10/23 Frank Ch. Eigler <fche@redhat.com>:
+> For comparison, this is how this sort of analysis may be done with
+> systemtap, just for fun collecting locking latency on a
+> per-locker/unlocker (stack traceback) basis.  We don't have the stack
+> traceback extended right into userspace yet, but will before too long.
+>
+>
+> % cat bkl.stp
+> probe kernel.function("lock_kernel") {
+>        locker=backtrace()
+>        locktime=gettimeofday_us()
+> }
+>
+> probe kernel.function("lock_kernel").return {
+>        unlocktime=gettimeofday_us()
+>        delay = unlocktime-locktime
+>        lockhistory[locker,unlocker] <<< delay
+> }
+>
+> probe kernel.function("unlock_kernel") {
+>        unlocker=backtrace()
+> }
+>
+> global locker, unlocker, locktime, lockhistory
+>
+> probe end,timer.s(30) { // interrupt any time; automatic ending in 30s
+>        foreach ([l,u] in lockhistory+) { // in increasing order of @count()
+>
+>                println("locker:") print_stack (l)
+>                println("unlocker:") print_stack (u)
+>
+>                println(@hist_log (lockhistory[l,u]))
+>
+>                if (@max (lockhistory[l,u]) > 100)
+>                   println("--- holy cow, that can take a long time ---")
+>        }
+>        exit()
+> }
+>
+>
+>
+> % sudo stap bkl.stp
+> [...]
+> locker:
+>  0xffffffff812bdcec : lock_kernel+0x1/0x37 [kernel]
+>  0xffffffff812bf12b : kretprobe_trampoline_holder+0x4/0x50 [kernel]
+>  0xffffffff811b067b : write_chan+0x273/0x338 [kernel]
+>  0xffffffff810305e0 : default_wake_function+0x0/0xf [kernel]
+>  0xffffffff811ade5f : tty_write+0x184/0x213 [kernel]
+>  0xffffffff811b0408 : write_chan+0x0/0x338 [kernel]
+>  0x00000ffffffff810
+> unlocker:
+>  0xffffffff812bdca9 : unlock_kernel+0x1/0x31 [kernel]
+>  0xffffffff811b064e : write_chan+0x246/0x338 [kernel]
+>  0xffffffff810305e0 : default_wake_function+0x0/0xf [kernel]
+>  0xffffffff811ade5f : tty_write+0x184/0x213 [kernel]
+>  0xffffffff811b0408 : write_chan+0x0/0x338 [kernel]
+>  0xffffffff810b6f89 : vfs_write+0xae/0x157 [kernel]
+>  0x00000fffffffff7f
+> value |-------------------------------------------------- count
+>    0 |                                                     3
+>    1 |@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    570
+>    2 |@@@@@@@@@@@@@                                      159
+>    4 |                                                     9
+>    8 |@                                                   16
+>   16 |                                                     3
+>   32 |@@                                                  35
+>   64 |                                                     5
+>  128 |                                                     0
+>  256 |                                                     0
+>
+> locker:
+>  0xffffffff812bdcec : lock_kernel+0x1/0x37 [kernel]
+>  0xffffffff812bf12b : kretprobe_trampoline_holder+0x4/0x50 [kernel]
+>  0xffffffff810305e0 : default_wake_function+0x0/0xf [kernel]
+>  0xffffffff811ade5f : tty_write+0x184/0x213 [kernel]
+>  0xffffffff811b0408 : write_chan+0x0/0x338 [kernel]
+>  0xffffffff810b6f89 : vfs_write+0xae/0x157 [kernel]
+>  0x00000fffffffff7f
+> unlocker:
+>  0xffffffff812bdca9 : unlock_kernel+0x1/0x31 [kernel]
+>  0xffffffff811b064e : write_chan+0x246/0x338 [kernel]
+>  0xffffffff810305e0 : default_wake_function+0x0/0xf [kernel]
+>  0xffffffff811ade5f : tty_write+0x184/0x213 [kernel]
+>  0xffffffff811b0408 : write_chan+0x0/0x338 [kernel]
+>  0xffffffff810b6f89 : vfs_write+0xae/0x157 [kernel]
+>  0x00000fffffffff7f
+> value |-------------------------------------------------- count
+>    0 |                                                     0
+>    1 |@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@      454
+>    2 |@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  497
+>    4 |@@                                                  21
+>    8 |@                                                   15
+>   16 |                                                     1
+>   32 |@@@                                                 33
+>   64 |                                                     2
+>  128 |                                                     0
+>  256 |                                                     0
+>
+>
+>
+> NB: Observed lock times in the 1-2 us range indicate no contention, as
+> that's on the order of magnitude of the (un)lock_kernel kprobe
+> overheads.
 
-Some architectures do not support a way to read the irq flags that
-is set from "local_irq_save(flags)" to determine if interrupts were
-disabled or enabled. Ftrace uses this information to display to the user
-if the trace occurred with interrupts enabled or disabled.
+That's a great and powerful tool.
 
-Besides the fact that those archs that do not support this will fail to
-compile, unless they fix it, we do not want to have the trace simply
-say interrupts were not disabled or they were enabled, without knowing
-the real answer.
-
-This patch adds a 'X' in the output to let the user know that the
-architecture they are running on does not support a way for the tracer
-to determine if interrupts were enabled or disabled. It also lets those
-same archs compile with tracing enabled.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- Documentation/ftrace.txt |    3 +++
- kernel/trace/trace.c     |    7 ++++++-
- kernel/trace/trace.h     |   20 +++++++++++---------
- 3 files changed, 20 insertions(+), 10 deletions(-)
-
-Index: linux-tip.git/Documentation/ftrace.txt
-===================================================================
---- linux-tip.git.orig/Documentation/ftrace.txt	2008-10-23 19:23:26.000000000 -0400
-+++ linux-tip.git/Documentation/ftrace.txt	2008-10-24 09:32:42.000000000 -0400
-@@ -291,6 +291,9 @@ explains which is which.
-   CPU#: The CPU which the process was running on.
- 
-   irqs-off: 'd' interrupts are disabled. '.' otherwise.
-+	    Note: If the architecture does not support a way to
-+		  read the irq flags variable, an 'X' will always
-+		  be printed here.
- 
-   need-resched: 'N' task need_resched is set, '.' otherwise.
- 
-Index: linux-tip.git/kernel/trace/trace.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/trace.c	2008-10-23 19:24:15.000000000 -0400
-+++ linux-tip.git/kernel/trace/trace.c	2008-10-24 09:31:17.000000000 -0400
-@@ -677,7 +677,11 @@ tracing_generic_entry_update(struct trac
- 	entry->preempt_count		= pc & 0xff;
- 	entry->pid			= (tsk) ? tsk->pid : 0;
- 	entry->flags =
-+#ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
- 		(irqs_disabled_flags(flags) ? TRACE_FLAG_IRQS_OFF : 0) |
-+#else
-+		TRACE_FLAG_IRQS_NOSUPPORT |
-+#endif
- 		((pc & HARDIRQ_MASK) ? TRACE_FLAG_HARDIRQ : 0) |
- 		((pc & SOFTIRQ_MASK) ? TRACE_FLAG_SOFTIRQ : 0) |
- 		(need_resched() ? TRACE_FLAG_NEED_RESCHED : 0);
-@@ -1265,7 +1269,8 @@ lat_print_generic(struct trace_seq *s, s
- 	trace_seq_printf(s, "%8.8s-%-5d ", comm, entry->pid);
- 	trace_seq_printf(s, "%3d", cpu);
- 	trace_seq_printf(s, "%c%c",
--			(entry->flags & TRACE_FLAG_IRQS_OFF) ? 'd' : '.',
-+			(entry->flags & TRACE_FLAG_IRQS_OFF) ? 'd' :
-+			 (entry->flags & TRACE_FLAG_IRQS_NOSUPPORT) ? 'X' : '.',
- 			((entry->flags & TRACE_FLAG_NEED_RESCHED) ? 'N' : '.'));
- 
- 	hardirq = entry->flags & TRACE_FLAG_HARDIRQ;
-Index: linux-tip.git/kernel/trace/trace.h
-===================================================================
---- linux-tip.git.orig/kernel/trace/trace.h	2008-10-23 12:55:37.000000000 -0400
-+++ linux-tip.git/kernel/trace/trace.h	2008-10-24 09:27:10.000000000 -0400
-@@ -120,18 +120,20 @@ struct trace_boot {
- /*
-  * trace_flag_type is an enumeration that holds different
-  * states when a trace occurs. These are:
-- *  IRQS_OFF	- interrupts were disabled
-- *  NEED_RESCED - reschedule is requested
-- *  HARDIRQ	- inside an interrupt handler
-- *  SOFTIRQ	- inside a softirq handler
-- *  CONT	- multiple entries hold the trace item
-+ *  IRQS_OFF		- interrupts were disabled
-+ *  IRQS_NOSUPPORT 	- arch does not support irqs_disabled_flags
-+ *  NEED_RESCED		- reschedule is requested
-+ *  HARDIRQ		- inside an interrupt handler
-+ *  SOFTIRQ		- inside a softirq handler
-+ *  CONT		- multiple entries hold the trace item
-  */
- enum trace_flag_type {
- 	TRACE_FLAG_IRQS_OFF		= 0x01,
--	TRACE_FLAG_NEED_RESCHED		= 0x02,
--	TRACE_FLAG_HARDIRQ		= 0x04,
--	TRACE_FLAG_SOFTIRQ		= 0x08,
--	TRACE_FLAG_CONT			= 0x10,
-+	TRACE_FLAG_IRQS_NOSUPPORT	= 0x02,
-+	TRACE_FLAG_NEED_RESCHED		= 0x04,
-+	TRACE_FLAG_HARDIRQ		= 0x08,
-+	TRACE_FLAG_SOFTIRQ		= 0x10,
-+	TRACE_FLAG_CONT			= 0x20,
- };
- 
- #define TRACE_BUF_SIZE		1024
-
-
+But just one sorrow:
+I just think that's a pity that we have to use/learn a new scripting
+language to use it.
+I would rather prefer to use an API that provides functions/objects
+for most common scripting languages.
