@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbYJXBil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbYJXBki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755374AbYJXBil (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 21:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbYJXBic
+	id S1756245AbYJXBki (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 21:40:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbYJXBk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 21:38:32 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:36419 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751551AbYJXBic (ORCPT
+	Thu, 23 Oct 2008 21:40:29 -0400
+Received: from el-out-1112.google.com ([209.85.162.182]:40535 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750747AbYJXBk3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 21:38:32 -0400
-Date: Thu, 23 Oct 2008 18:38:05 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: general@lists.openfabrics.org, rolandd@cisco.com,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH] maintainers: moderated mailing list
-Message-Id: <20081023183805.92bc39ab.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 23 Oct 2008 21:40:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=SDCdc1swxu1qBWb3nSg0T/hs/rOiKIFDSwv7my4Ug/ZeN4GzTziR5+yfAMYphwc2x6
+         HhRBP44OGmMLNFB3UqR1xHeltBvSvi3H4ceoVaABPGAZNDi16mVr/vdNx8Eq3o/D9S0R
+         rqBHgnNrA0BU6xhZ2FyUzb++CjDbbBk8TUGzQ=
+Message-ID: <43e72e890810231840t2b5dd812p50d2325a967e6d4@mail.gmail.com>
+Date: Thu, 23 Oct 2008 18:40:27 -0700
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: "Zhang Yanmin" <yanmin.zhang@intel.com>,
+       "Shaohua Li" <shaohua.li@intel.com>
+Subject: CONFIG_PCIEASPM needed for ASPM?
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt700.oracle.com [141.146.40.70]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.49012708.0116:SCFSTAT928724,ss=1,fgs=0
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+I know, the question is silly right? I thought so too, but I started
+reviewing the code and noticed most of it is just setting up values in
+data structures for the kernel's awareness of capabilities, it also
+updates the state in case of BIOS foobar, and there is also clock
+retraining if possible to reduce latency. Is that it? Did I miss
+something or is it really possible for devices to be able to use
+L0s|L1 or L1 by just having a BIOS which does things correctly?
 
-I got the "list is moderated message," so add it here.
+That is can our devices be using ASPM without any OS interaction,
+without CONFIG_PCIEASPM enabled?
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- MAINTAINERS |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thanks,
 
---- linux-next-20081023.orig/MAINTAINERS
-+++ linux-next-20081023/MAINTAINERS
-@@ -2144,7 +2144,7 @@ P:	Sean Hefty
- M:	sean.hefty@intel.com
- P:	Hal Rosenstock
- M:	hal.rosenstock@gmail.com
--L:	general@lists.openfabrics.org
-+L:	general@lists.openfabrics.org (moderated for non-subscribers)
- W:	http://www.openib.org/
- T:	git kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git
- S:	Supported
+  Luis
