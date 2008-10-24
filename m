@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbYJXEkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbYJXElh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754010AbYJXEkh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 00:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbYJXEjI
+	id S1752875AbYJXElh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 00:41:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbYJXEjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 00:39:08 -0400
-Received: from kroah.org ([198.145.64.141]:51641 "EHLO coco.kroah.org"
+	Fri, 24 Oct 2008 00:39:12 -0400
+Received: from kroah.org ([198.145.64.141]:51682 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751244AbYJXEjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 00:39:04 -0400
-Date: Thu, 23 Oct 2008 21:33:36 -0700
+	id S1751707AbYJXEjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 00:39:08 -0400
+Date: Thu, 23 Oct 2008 21:33:50 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 03/27] x86 ACPI: fix breakage of resume on 64-bit UP
-	systems with SMP kernel
-Message-ID: <20081024043336.GD30828@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
+Subject: [patch 06/27] USB: dont rebind drivers after failed resume or reset
+Message-ID: <20081024043350.GG30828@kroah.com>
 References: <20081024042023.054190751@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-acpi-fix-breakage-of-resume-on-64-bit-up-systems-with-smp-kernel.patch"
+Content-Disposition: inline; filename="usb-don-t-rebind-drivers-after-failed-resume-or-reset.patch"
 In-Reply-To: <20081024043303.GA30828@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,56 +39,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 3038edabf48f01421c621cb77a712b446d3a5d67 upstream
+commit 6c6409459a18a825ce12ecb003d5686af61f7a2f upstream
 
-x86 ACPI: Fix breakage of resume on 64-bit UP systems with SMP kernel
+This patch (as1152) may help prevent some problems associated with the
+new policy of unbinding drivers that don't support suspend/resume or
+pre_reset/post_reset.  If for any reason the resume or reset fails, and
+the device is logically disconnected, there's no point in trying to
+rebind the driver.  So the patch checks for success before carrying
+out the unbind/rebind.
 
-We are now using per CPU GDT tables in head_64.S and the original
-early_gdt_descr.address is invalidated after boot by
-setup_per_cpu_areas().  This breaks resume from suspend to RAM on
-x86_64 UP systems using SMP kernels, because this part of head_64.S
-is also executed during the resume and the invalid GDT address
-causes the system to crash.  It doesn't break on 'true' SMP systems,
-because early_gdt_descr.address is modified every time
-native_cpu_up() runs.  However, during resume it should point to the
-GDT of the boot CPU rather than to another CPU's GDT.
+There was a report from one user that this fixed a problem he was
+experiencing, but the details never became fully clear.  In any case,
+adding these tests can't hurt.
 
-For this reason, during suspend to RAM always make
-early_gdt_descr.address point to the boot CPU's GDT.
-
-This fixes http://bugzilla.kernel.org/show_bug.cgi?id=11568, which
-is a regression from 2.6.26.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Reported-and-tested-by: Andy Wettstein <ajw1980@gmail.com>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/acpi/sleep.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/usb/core/driver.c |    3 ++-
+ drivers/usb/core/hub.c    |    2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
---- a/arch/x86/kernel/acpi/sleep.c
-+++ b/arch/x86/kernel/acpi/sleep.c
-@@ -10,6 +10,7 @@
- #include <linux/dmi.h>
- #include <linux/cpumask.h>
- #include <asm/segment.h>
-+#include <asm/desc.h>
+--- a/drivers/usb/core/driver.c
++++ b/drivers/usb/core/driver.c
+@@ -1609,7 +1609,8 @@ int usb_external_resume_device(struct us
+ 	status = usb_resume_both(udev);
+ 	udev->last_busy = jiffies;
+ 	usb_pm_unlock(udev);
+-	do_unbind_rebind(udev, DO_REBIND);
++	if (status == 0)
++		do_unbind_rebind(udev, DO_REBIND);
  
- #include "realmode/wakeup.h"
- #include "sleep.h"
-@@ -98,6 +99,8 @@ int acpi_save_state_mem(void)
- 	header->trampoline_segment = setup_trampoline() >> 4;
- #ifdef CONFIG_SMP
- 	stack_start.sp = temp_stack + 4096;
-+	early_gdt_descr.address =
-+			(unsigned long)get_cpu_gdt_table(smp_processor_id());
- #endif
- 	initial_code = (unsigned long)wakeup_long64;
- 	saved_magic = 0x123456789abcdef0;
+ 	/* Now that the device is awake, we can start trying to autosuspend
+ 	 * it again. */
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -3424,7 +3424,7 @@ int usb_reset_device(struct usb_device *
+ 						USB_INTERFACE_BOUND)
+ 					rebind = 1;
+ 			}
+-			if (rebind)
++			if (ret == 0 && rebind)
+ 				usb_rebind_intf(cintf);
+ 		}
+ 	}
 
 -- 
