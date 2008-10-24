@@ -1,78 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbYJXBIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755591AbYJXBL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756089AbYJXBIS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 21:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbYJXBIH
+	id S1755591AbYJXBL5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 21:11:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbYJXBLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 21:08:07 -0400
-Received: from mx2.suse.de ([195.135.220.15]:40069 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751673AbYJXBIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 21:08:05 -0400
-Date: Fri, 24 Oct 2008 03:08:03 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: hugh@veritas.com, apkm@linux-os.sc.intel.com, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] remap_pfn_range: store vm_pgoff for all linear_over_vma_region mappings
-Message-ID: <20081024010803.GB5004@wotan.suse.de>
-References: <20081023220913.GA20300@linux-os.sc.intel.com>
+	Thu, 23 Oct 2008 21:11:46 -0400
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:23680 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750896AbYJXBLq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 21:11:46 -0400
+X-YMail-OSG: foh38wgVM1k0El5GevKS0FAeiXZ5VEuorYmDkU6SlKixYXVWJ12LUgGiv4fvHSJlgo5J8SjcFHAao9goZOvFEw6Y2IlQL1im_WbGvOpSr1TG_G5F9yrKyIwsB2WT4h7ZyM2G5B4QoqsmRDH8c7rGMi7WPV_eaS16x6j8dcA87S0Tb3biW_etvEEtlco-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH] [ConfigFS]: Added CONFIGFS_EATTR_OPS_RO() to remove unused
+	store() function
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Joel Becker <joel.becker@oracle.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Content-Type: text/plain
+Date: Thu, 23 Oct 2008 18:11:43 -0700
+Message-Id: <1224810703.16558.19.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081023220913.GA20300@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 23, 2008 at 03:09:14PM -0700, Venki Pallipadi wrote:
-> 
-> While working on x86 PAT, we are having some hurdles with tracking
-> remap_pfn_range() regions, as later we do not have any information to say
-> whether that PFNMAP mapping is linear for the entire vma range or
-> it is smaller granularity regions within the vma.
-> 
-> A simple solution to this is to use vm_pgoff as an indicator for
-> linear mapping over the vma region. Currently, remap_pfn_range
-> only sets vm_pgoff only for COW mappings. Below patch changes the
-> logic and sets the vm_pgoff irrespective of COW.
-> 
-> >From our understanding of the code, this should not break anyone.
-> Just sending it as an RFC to get feedback on whether it is OK to do
-> something like this or are there any corner cases that we may
-> break or watch out for.
-> 
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Hi again,
 
-Hmm, I can'tthink of why it would break, but I would like to see an
-entire patch. Obviously you won't try to decode this vma stuff
-directly from the PAT code, but just call mm helpers... ?
+Added another change to the CONFIGFS_EATTR() macros I am using in
+drivers/lio-core/configfs_macros.h:
 
-Thanks,
-Nick
+When using __CONFIGFS_ATTR_RO(), I noticed that CONFIGFS_ATTR_OPS() was
+getting the compiler warning about unused store() functions.  So I ended
+up breaking out the 3 functions into three different macros..
+
+Thanks!
+
+--nab
+
+>From 4cfb0287a2fc48bc414e3467edb8cdfc88c2fc72 Mon Sep 17 00:00:00 2001
+From: Nicholas Bellinger <nab@linux-iscsi.org>
+Date: Thu, 23 Oct 2008 06:56:29 -0700
+Subject: [PATCH] [ConfigFS]: Added CONFIGFS_EATTR_OPS_RO() to remove unused store() function
+
+Added CONFIGFS_EATTR_OPS_RO() macro only defines show().  This patch also
+breaks out the show()/store() and to_##_name() functions into their own
+macros.
+
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+---
+ drivers/lio-core/configfs_macros.h |   19 ++++++++++++++++---
+ 1 files changed, 16 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/lio-core/configfs_macros.h b/drivers/lio-core/configfs_macros.h
+index 4dd3f1e..2185822 100644
+--- a/drivers/lio-core/configfs_macros.h
++++ b/drivers/lio-core/configfs_macros.h
+@@ -98,12 +98,14 @@ struct _name##_attribute {						\
+  *		                      ^^_item^^^^^  ^^_item_member^^^
+  * This macro expects the attributes to be named "struct <name>_attribute".
+  */
+-#define CONFIGFS_EATTR_OPS(_name, _item, _item_member)			\
++#define CONFIGFS_EATTR_OPS_TO_FUNC(_name, _item, _item_member)		\
+ static struct _item *to_##_name(struct config_item *ci)			\
+ {									\
+ 	return((ci) ? container_of(to_config_group(ci), struct _item,	\
+ 		_item_member) : NULL);					\
+-}									\
++}
++
++#define CONFIGFS_EATTR_OPS_SHOW(_name, _item)				\
+ static ssize_t _name##_attr_show(struct config_item *item,		\
+ 				 struct configfs_attribute *attr,	\
+ 				 char *page)				\
+@@ -116,7 +118,9 @@ static ssize_t _name##_attr_show(struct config_item *item,		\
+ 	if (_name##_attr->show)						\
+ 		ret = _name##_attr->show(_item, page);			\
+ 	return ret;							\
+-}									\
++}
++
++#define CONFIGFS_EATTR_OPS_STORE(_name, _item)				\
+ static ssize_t _name##_attr_store(struct config_item *item,		\
+ 				  struct configfs_attribute *attr,	\
+ 				  const char *page, size_t count)	\
+@@ -131,4 +135,13 @@ static ssize_t _name##_attr_store(struct config_item *item,		\
+ 	return ret;							\
+ }
  
-> ---
->  mm/memory.c |    7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
-> 
-> Index: linux-2.6/mm/memory.c
-> ===================================================================
-> --- linux-2.6.orig/mm/memory.c	2008-10-21 09:58:47.000000000 -0700
-> +++ linux-2.6/mm/memory.c	2008-10-23 13:38:26.000000000 -0700
-> @@ -1575,11 +1575,10 @@ int remap_pfn_range(struct vm_area_struc
->  	 * behaviour that some programs depend on. We mark the "original"
->  	 * un-COW'ed pages by matching them up with "vma->vm_pgoff".
->  	 */
-> -	if (is_cow_mapping(vma->vm_flags)) {
-> -		if (addr != vma->vm_start || end != vma->vm_end)
-> -			return -EINVAL;
-> +	if (addr == vma->vm_start && end == vma->vm_end)
->  		vma->vm_pgoff = pfn;
-> -	}
-> +	else if (is_cow_mapping(vma->vm_flags))
-> +		return -EINVAL;
->  
->  	vma->vm_flags |= VM_IO | VM_RESERVED | VM_PFNMAP;
->  
++#define CONFIGFS_EATTR_OPS(_name, _item, _item_member)			\
++CONFIGFS_EATTR_OPS_TO_FUNC(_name, _item, _item_member);			\
++CONFIGFS_EATTR_OPS_SHOW(_name, _item);					\
++CONFIGFS_EATTR_OPS_STORE(_name, _item);	
++
++#define CONFIGFS_EATTR_OPS_RO(_name, _item, _item_member)		\
++CONFIGFS_EATTR_OPS_TO_FUNC(_name, _item, _item_member);			\
++CONFIGFS_EATTR_OPS_SHOW(_name, _item);
++
+ #endif /* _CONFIGFS_MACROS_H_ */
+-- 
+1.5.4.1
+
+
+
