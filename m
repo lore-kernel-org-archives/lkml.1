@@ -1,58 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753890AbYJXPDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbYJXPEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753890AbYJXPDV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 11:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755740AbYJXPC4
+	id S1757237AbYJXPEU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 11:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbYJXPEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 11:02:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41984 "EHLO mx2.redhat.com"
+	Fri, 24 Oct 2008 11:04:08 -0400
+Received: from mga11.intel.com ([192.55.52.93]:53874 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755449AbYJXPCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 11:02:55 -0400
-Date: Fri, 24 Oct 2008 11:02:39 -0400
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       systemtap@sources.redhat.com
-Subject: Re: [PATCH 5/5] tracing/ftrace: Introduce the big kernel lock tracer
-Message-ID: <20081024150239.GB20768@redhat.com>
-References: <48F10B0B.406@gmail.com> <c62985530810210528t416c82b2lbe8471322e8359c@mail.gmail.com> <y0mmygv18le.fsf@ton.toronto.redhat.com> <c62985530810240643q467a9060kaf906eb7865f0a7@mail.gmail.com> <20081024143744.GA20768@redhat.com> <alpine.DEB.1.10.0810241046300.3882@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810241046300.3882@gandalf.stny.rr.com>
-User-Agent: Mutt/1.4.1i
+	id S1753690AbYJXPEG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 11:04:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,478,1220252400"; 
+   d="scan'208";a="631227261"
+From: "Moore, Robert" <robert.moore@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>
+CC: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
+       "Lin, Ming M" <ming.m.lin@intel.com>
+Date: Fri, 24 Oct 2008 08:04:01 -0700
+Subject: RE: Oops in ACPI with git latest
+Thread-Topic: Oops in ACPI with git latest
+Thread-Index: Ack1pS0a3lNAe0NTTYaP1A3sXtbl6wARIBqw
+Message-ID: <4911F71203A09E4D9981D27F9D8308580AA7FA56@orsmsx503.amr.corp.intel.com>
+References: <1224791103.3330.37.camel@localhost.localdomain>
+ <200810232242.33480.rjw@sisk.pl>
+ <1224811033.3330.54.camel@localhost.localdomain>
+ <200810240847.49891.rjw@sisk.pl>
+In-Reply-To: <200810240847.49891.rjw@sisk.pl>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
+Yes, please post the acpidump for the machine, we want to look at this _OSC method.
 
-On Fri, Oct 24, 2008 at 10:47:36AM -0400, Steven Rostedt wrote:
-> [...]
-> > > I would rather prefer to use an API that provides functions/objects
-> > > for most common scripting languages.
-> > 
-> > That is an interesting idea.  One possible problem is that the final
-> > complete script "program" needs to be translated to something that can
-> > run quickly and safely inside the kernel.  Full python or perl runtime
-> > + libraries would have been almost certainly unbearable.
+Thanks.
+Bob
+
+
+>-----Original Message-----
+>From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
+>owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
+>Sent: Thursday, October 23, 2008 11:48 PM
+>To: James Bottomley
+>Cc: linux-acpi@vger.kernel.org; linux-kernel; Jesse Barnes; Len Brown; Lin,
+>Ming M
+>Subject: Re: Oops in ACPI with git latest
 >
-> Why can't the userspace application convert the script to something
-> easy that the kernel can handle?
-
-That's what we do with the systemtap script, where kernel "handling"
-consists of "running the machine code".
-
-> But have the user application interface be very simple, and perhaps
-> even use perl or python.
-
-perl and python are pretty big procedural languages, and are not
-easily compiled down to compact & quickly executed machine code.  (I
-take it no one is suggesting including a perl or python VM in the
-kernel.)  Plus, debugger-flavoured event-handling programming style
-would not look nearly as compact in perl/python as in systemtap, which
-is small and domain-specific.
-
-- FChE
+>On Friday, 24 of October 2008, James Bottomley wrote:
+>> On Thu, 2008-10-23 at 22:42 +0200, Rafael J. Wysocki wrote:
+>> > On Thursday, 23 of October 2008, James Bottomley wrote:
+>> > > ACPI Warning (nseval-0168): Insufficient arguments - method [_OSC]
+>needs 5, found 4 [20080926]
+>> > > ACPI Warning (nspredef-0252): \_SB_.PCI0._OSC: Parameter count
+>mismatch - ASL declared 5, expected 4 [20080926]
+>> > > ACPI Error (nspredef-0163): \_SB_.PCI0._OSC: Missing expected return
+>value [20080926]
+>> > > BUG: unable to handle kernel NULL pointer dereference at 00000000
+>> > Does this patch help?
+>> >
+>> > ---
+>> >  drivers/pci/pci-acpi.c |    3 +++
+>> >  1 file changed, 3 insertions(+)
+>> >
+>> > Index: linux-2.6/drivers/pci/pci-acpi.c
+>> > ===================================================================
+>> > --- linux-2.6.orig/drivers/pci/pci-acpi.c
+>> > +++ linux-2.6/drivers/pci/pci-acpi.c
+>> > @@ -83,6 +83,9 @@ static acpi_status acpi_run_osc(acpi_han
+>> >  	if (ACPI_FAILURE(status))
+>> >  		return status;
+>> >
+>> > +	if (!output.pointer)
+>> > +		return AE_NULL_OBJECT;
+>> > +
+>> >  	out_obj = output.pointer;
+>> >  	if (out_obj->type != ACPI_TYPE_BUFFER) {
+>> >  		printk(KERN_DEBUG "Evaluate _OSC returns wrong type\n");
+>>
+>> Yes, that seems to fix it, thanks! ... I suppose the ASL error and
+>> warnings need investigating too?
+>
+>Unfortunately, they seem to indicate a BIOS breakage.
+>
+>According to the spec, _OSC should take 4 arguments, but apparently on your
+>system it wants 5.
+>
+>The output of acpidump may be helpful, as Lin Ming already said.
+>
+>Thanks,
+>Rafael
+>
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
