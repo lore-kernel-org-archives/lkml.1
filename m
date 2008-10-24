@@ -1,104 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbYJXHZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbYJXH3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754877AbYJXHZk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 03:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbYJXHZa
+	id S1755243AbYJXH3z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 03:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbYJXH3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 03:25:30 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:51656 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751552AbYJXHZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 03:25:29 -0400
-Date: Fri, 24 Oct 2008 09:24:29 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>, tj@kernel.org,
-       torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: 2.6.27-rc1 (2fca5c): libata: kernel cant boot
-Message-ID: <20081024072428.GP22217@kernel.dk>
-References: <a4423d670810240004t2d7c3bdah2bea77a6a49bb7c4@mail.gmail.com> <20081024070955.GN22217@kernel.dk> <20081024071329.GO22217@kernel.dk> <20081024071608.GA3879@linux-sh.org>
+	Fri, 24 Oct 2008 03:29:47 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:62910 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752027AbYJXH3q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 03:29:46 -0400
+Date: Fri, 24 Oct 2008 09:28:27 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: walt <w41ter@gmail.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: commit a802dd0e breaks console keyboard input
+Message-ID: <20081024072826.GA4620@osiris.boeblingen.de.ibm.com>
+References: <49011234.7090902@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081024071608.GA3879@linux-sh.org>
+In-Reply-To: <49011234.7090902@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 24 2008, Paul Mundt wrote:
-> On Fri, Oct 24, 2008 at 09:13:29AM +0200, Jens Axboe wrote:
-> > On Fri, Oct 24 2008, Jens Axboe wrote:
-> > > On Fri, Oct 24 2008, Alexander Beregalov wrote:
-> > > > Hi
-> > > > 
-> > > > commit 2fca5ccf97d2c28bcfce44f5b07d85e74e3cd18e
-> > > > Author: Jens Axboe <jens.axboe@oracle.com>
-> > > > Date:   Wed Oct 22 09:34:49 2008 +0200
-> > > > 
-> > > >     libata: switch to using block layer tagging support
-> > > > 
-> > > > 
-> > > > This kernel can not read even 0 sector on disk with rootfs. It
-> > > > initialized disk, but cant read it at all.
-> > > >  CMD646 on Sparc
-> > > > 
-> > > > Rverting helped.
-> > > 
-> > > Doh, how annoying! What driver does that controller use? PATA doesn't
-> > > even use NCQ, so it's a bit of an oddity that it makes a difference at
-> > > all.
-> > > 
-> > > Can you provide the boot messages?
-> > 
-> > Darn, this smells like a train wreck. I'm assuming this fixes it?
-> > 
-> Yes, that fixes it.
+On Thu, Oct 23, 2008 at 05:09:24PM -0700, walt wrote:
+> Hi team,
+>
+> commit a802dd0eb5fc97a50cf1abb1f788a8f6cc5db635
+> Author: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Date:   Mon Oct 13 23:50:08 2008 +0200
+>
+>     Call init_workqueues before pre smp initcalls.
+>
+> This commit causes the console login prompt to ignore my keystrokes
+> so I'm unable to log in (though ssh works fine).  Oddly, if I hit
+> ctrl-alt-delete the machine does reboot, but no other keystrokes
+> appear on the screen or have any effect that I can detect.
+>
+> No surprise that this problem appears only on my dual-core amd64
+> machine, while the k7 single processor machine works normally.
+>
+> I've not seen anyone else complaining on the linux list, so maybe
+> this is a BIOS bug on the affected machine?  It's an ECS mobo with
+> a GeForce6100PM-M2 chipset, and I use a ps/2 keyboard.
 
-OK, that's pretty bad. 2.6.28-rc1 will not work on any box using libata
-with non-ncq disks. If you need me, I'll be at the bar.
-
-----------
-
->From e598055dde1951c47c8b3522616f6ebff0ed9847 Mon Sep 17 00:00:00 2001
-From: Jens Axboe <jens.axboe@oracle.com>
-Date: Fri, 24 Oct 2008 09:22:42 +0200
-Subject: [PATCH] libata: fix bug with non-ncq devices
-
-The recent commit 201f1b98822078c808b5e2d379a6ddbfc0a06ee1 to enable
-support for block layer tagging in libata was broken for non-NCQ
-devices. The block layer initializes the tag field to -1 to detect
-invalid uses of a tag, and if the libata devices does NOT support
-NCQ, we just used that field to index the internal command list.
-So we need to check for -1 first and only use the tag field if
-it's valid.
-
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
----
- drivers/ata/libata-scsi.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index d5b9b72..4b95c43 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -708,7 +708,11 @@ static struct ata_queued_cmd *ata_scsi_qc_new(struct ata_device *dev,
- {
- 	struct ata_queued_cmd *qc;
- 
--	qc = ata_qc_new_init(dev, cmd->request->tag);
-+	if (cmd->request->tag != -1)
-+		qc = ata_qc_new_init(dev, cmd->request->tag);
-+	else
-+		qc = ata_qc_new_init(dev, 0);
-+
- 	if (qc) {
- 		qc->scsicmd = cmd;
- 		qc->scsidone = done;
--- 
-1.6.0.2.588.g3102
-
-
--- 
-Jens Axboe
-
+Uh? How did you get to this commit? I assume a git bisect?
+Strange.. I'm going to have a look at it.
