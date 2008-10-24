@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753084AbYJXTUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbYJXTUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753084AbYJXTUk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 15:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbYJXTUI
+	id S1755932AbYJXTUz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 15:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbYJXTUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 15:20:08 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58186 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752317AbYJXTUD (ORCPT
+	Fri, 24 Oct 2008 15:20:36 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:39224 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753517AbYJXTUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 15:20:03 -0400
-Message-ID: <49021FCD.8080209@zytor.com>
-Date: Fri, 24 Oct 2008 12:19:41 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 24 Oct 2008 15:20:34 -0400
+Date: Fri, 24 Oct 2008 21:20:31 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>, linux-mm@kvack.org,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use
+	schedule_on_each_cpu()
+Message-ID: <20081024192031.GA4155@osiris.boeblingen.de.ibm.com>
+References: <2f11576a0810210851g6e0d86benef5d801871886dd7@mail.gmail.com> <2f11576a0810211018g5166c1byc182f1194cfdd45d@mail.gmail.com> <20081023235425.9C40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: akataria@vmware.com, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is
- set.
-References: <1224713518.13953.46.camel@alok-dev1> <20081022225409.GB27492@one.firstfloor.org> <1224728478.13953.79.camel@alok-dev1> <20081023081052.GI27492@one.firstfloor.org> <1224805162.21776.45.camel@alok-dev1> <49010D1E.8070400@zytor.com> <20081024002511.GC27492@one.firstfloor.org> <49011AD7.7000901@zytor.com> <20081024072320.GE27492@one.firstfloor.org> <4901EA14.9070300@zytor.com> <20081024192532.GG27492@one.firstfloor.org>
-In-Reply-To: <20081024192532.GG27492@one.firstfloor.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081023235425.9C40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
+On Fri, Oct 24, 2008 at 12:00:17AM +0900, KOSAKI Motohiro wrote:
+> Hi Heiko,
+> > This bug is caused by folloing dependencys.
+> > 
+> > some VM place has
+> >       mmap_sem -> kevent_wq
+> > 
+> > net/core/dev.c::dev_ioctl()  has
+> >      rtnl_lock  ->  mmap_sem        (*) almost ioctl has
+> > copy_from_user() and it cause page fault.
+> > 
+> > linkwatch_event has
+> >     kevent_wq -> rtnl_lock
+> > 
+> > 
+> > So, I think VM subsystem shouldn't use kevent_wq because many driver
+> > use ioctl and work queue combination.
+> > then drivers fixing isn't easy.
+> > 
+> > I'll make the patch soon.
 > 
-> In the field they will just continue using clock=pit, like they
-> always did on vmware. And also they will not update the Linux kernel.
-> 
+> My box can't reproduce this issue.
+> Could you please test on following patch?
 
-That is a totally bogus assumption.  You will typically have the host 
-platform (Vmware in this case) move much much slower than the guests.
+Your patch seems to fix the issue. At least I don't see the warning anymore ;)
 
-> This is strictly for new installations. And I frankly don't 
-> see why Linux needs to get white listed workarounds when the 
-> Hypervisor couldn't as well be fixed. We have the bizarre
-> situation here where a HV vendor tries to add workarounds
-> to Linux instead of fixing it on their products.
-
-... just like every other hardware vendor.
-
-	-hpa
+Thanks,
+Heiko
