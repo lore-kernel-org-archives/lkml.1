@@ -1,63 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754419AbYJXHGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbYJXHJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754419AbYJXHGp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 03:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbYJXHGh
+	id S1754245AbYJXHJp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 03:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYJXHJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 03:06:37 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42597 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751876AbYJXHGg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 03:06:36 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Nigel Cunningham <ncunningham@crca.org.au>,
-       Nico Schottelius <nico-linux-next@schottelius.org>
-Subject: Re: Current suspend issues on Lenovo X200 (w/ Intel graphics)
-Date: Fri, 24 Oct 2008 09:11:04 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <20081023204326.GB4175@denkbrett.schottelius.org> <200810240006.19857.rjw@sisk.pl> <1224817394.6623.12.camel@nigel-laptop>
-In-Reply-To: <1224817394.6623.12.camel@nigel-laptop>
+	Fri, 24 Oct 2008 03:09:35 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:19067 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751913AbYJXHJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 03:09:34 -0400
+Date: Fri, 24 Oct 2008 16:08:57 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, tj@kernel.org,
+       jeff@garzik.org
+Subject: Re: [PATCH 2/2] libata: switch to using block layer tagging support
+Message-ID: <20081024070857.GA3785@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Jens Axboe <jens.axboe@oracle.com>, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org, tj@kernel.org, jeff@garzik.org
+References: <1224661243-7929-1-git-send-email-jens.axboe@oracle.com> <1224661243-7929-3-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810240911.05193.rjw@sisk.pl>
+In-Reply-To: <1224661243-7929-3-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 24 of October 2008, Nigel Cunningham wrote:
-> Hey Rafael :)
+On Wed, Oct 22, 2008 at 09:40:43AM +0200, Jens Axboe wrote:
+> libata currently has a pretty dumb ATA_MAX_QUEUE loop for finding
+> a free tag to use. Instead of fixing that up, convert libata to
+> using block layer tagging - gets rid of code in libata, and is also
+> much faster.
 > 
-> On Fri, 2008-10-24 at 00:06 +0200, Rafael J. Wysocki wrote:
-> > On Thursday, 23 of October 2008, Nico Schottelius wrote:
-> > > First of all, this was wrong:
-> > > 
-> > > Nico -telmich- Schottelius [Thu, Oct 23, 2008 at 10:43:26PM +0200]:
-> > > >  - 2.6.27: system freeze instead of wakeup
-> > > >    -> shows parts of the X screen, but does not react on ping
-> > > 
-> > > System does not freeze, but reboots instead.
-> > > 
-> > > Tried next-20081023 and 2.6.27 with acpi_sleep=s3_bios:
-> > > 
-> > > - suspend and wakeup on console works fine for both!
-> > > - no X running on next
-> > > - 2.6.27 + X -> reboot on wakeup
-> > 
-> > Let me guess, you have a NVidia graphics?
-> 
-> Not this time. Going off the other log he posted, it's...
-> 
-> Chipset Mobile Intel® GM45 Express Chipset found
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 
-This is going to be interesting. :-)
+Unfortunately this change breaks SATA for me, bisecting picked out this
+commit especially.
 
-Nico, if the system is 64-bit, I'd recommend trying .28-rc1.
+Before:
 
-Thanks,
-Rafael
+sata_sil 0000:00:01.0: Applying R_ERR on DMA activate FIS errata fix
+scsi0 : sata_sil
+scsi1 : sata_sil
+ata1: SATA max UDMA/100 mmio m512@0xfd000200 tf 0xfd000280 irq 66
+ata2: SATA max UDMA/100 mmio m512@0xfd000200 tf 0xfd0002c0 irq 66
+ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ata1.00: ATA-7: SAMSUNG HM080JI, YC100-02, max UDMA7
+ata1.00: 156368016 sectors, multi 0: LBA48 NCQ (depth 0/32)
+ata1.00: configured for UDMA/100
+ata2: SATA link down (SStatus 0 SControl 310)
+scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HM080JI  YC10 PQ: 0 ANSI: 5
+sd 0:0:0:0: [sda] 156368016 512-byte hardware sectors: (80.0 GB/74.5 GiB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+sd 0:0:0:0: [sda] 156368016 512-byte hardware sectors: (80.0 GB/74.5 GiB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ sda: sda1 sda2
+sd 0:0:0:0: [sda] Attached SCSI disk
+
+After:
+
+sata_sil 0000:00:01.0: Applying R_ERR on DMA activate FIS errata fix
+scsi0 : sata_sil
+scsi1 : sata_sil
+ata1: SATA max UDMA/100 mmio m512@0xfd000200 tf 0xfd000280 irq 66
+ata2: SATA max UDMA/100 mmio m512@0xfd000200 tf 0xfd0002c0 irq 66
+ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ata1.00: ATA-7: SAMSUNG HM080JI, YC100-02, max UDMA7
+ata1.00: 156368016 sectors, multi 0: LBA48 NCQ (depth 0/32)
+ata1.00: configured for UDMA/100
+ata2: SATA link down (SStatus 0 SControl 310)
+scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HM080JI  YC10 PQ: 0 ANSI: 5
+sd 0:0:0:0: [sda] 156368016 512-byte hardware sectors: (80.0 GB/74.5 GiB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+sd 0:0:0:0: [sda] 156368016 512-byte hardware sectors: (80.0 GB/74.5 GiB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ sda:
+
+Where it hangs until it times out after 180 seconds.
+
+Built with:
+
+CONFIG_ATA=y
+CONFIG_SATA_PMP=y
+CONFIG_ATA_SFF=y
+CONFIG_SATA_SIL=y
+
+I have no idea where to start looking at this, so hopefully someone has some
+suggestions :-)
