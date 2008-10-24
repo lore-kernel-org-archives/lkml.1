@@ -1,80 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755081AbYJXJgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbYJXJiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755081AbYJXJgf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 05:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbYJXJg0
+	id S1755268AbYJXJiA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 05:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbYJXJhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 05:36:26 -0400
-Received: from web23506.mail.ird.yahoo.com ([87.248.115.34]:47960 "HELO
-	web23506.mail.ird.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751991AbYJXJgZ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 05:36:25 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=00CL8tn5w+6MEObHyULscb+RKvHqxANkB68CDfmgCSgH4r6yAyQMarcwTTw236tvKEzHEkWDGheKRuEjaSSgU8oW6YcX4mo1clMdreCijgV4+gTJtRsP8zptOhZiFIBFuPLuxcN0klueX+cGEKcIWJKHiPXp1xI7IVStH2sOHfg=;
-X-YMail-OSG: E6BpdS4VM1lO1sPYSGqgwlEhG.Fmwst_Q9r9YQZqkWx5R38bilTRWCK6EE_pTEIt5UcyTkpqATm1s8TQHOZdq.sEupOyZNoyGpfMmJaOIXdzJJedQxouHEl6py4wcGPYMbZ.Mo0QtaBx56.19F1g9zqqMR7uIGKZSeuYnNE2r8zbSg--
-X-Mailer: YahooMailWebService/0.7.247.3
-Date: Fri, 24 Oct 2008 09:29:42 +0000 (GMT)
-From: Michael Trimarchi <trimarchimichael@yahoo.it>
-Reply-To: trimarchimichael@yahoo.it
-Subject: MigoR and Scif Serial
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
-       Michael Trimarchi <trimarchi@gandalf.sssup.it>
+	Fri, 24 Oct 2008 05:37:52 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47011 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751624AbYJXJhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 05:37:51 -0400
+Date: Fri, 24 Oct 2008 11:32:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas@tungstengraphics.com>
+Cc: Keith Packard <keithp@keithp.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>, nickpiggin@yahoo.com.au,
+       airlied@linux.ie, dri-devel@lists.sf.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jbarnes@virtuousgeek.org, Peter Anvin <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, yinghai@kernel.org
+Subject: Re: Adding kmap_atomic_prot_pfn
+Message-ID: <20081024093233.GA20310@elte.hu>
+References: <20081022093615.GF12453@elte.hu> <1224793332.22877.8.camel@koto.keithp.com> <20081023133840.d4eef579.akpm@linux-foundation.org> <alpine.LFD.2.00.0810231424220.3287@nehalem.linux-foundation.org> <1224813015.22877.51.camel@koto.keithp.com> <alpine.LFD.2.00.0810231934590.3287@nehalem.linux-foundation.org> <1224829359.22877.86.camel@koto.keithp.com> <49017A2C.5010504@tungstengraphics.com> <20081024083830.GB6734@elte.hu> <49019307.6070207@tungstengraphics.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <800596.6344.qm@web23506.mail.ird.yahoo.com>
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49019307.6070207@tungstengraphics.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I find some problem in MigoR board using scif serial device and console too.
+* Thomas Hellström <thomas@tungstengraphics.com> wrote:
 
-Looking at the setup-Sh7722.c, the platform sci port data has the irqs
-line equal to one interrupt. In the driver this line is multiplexed and
-using for manage all the interrupt (error, transmit, receive, etc...) but
-the sci_mpxed_interrupt check the wrong status for interrupt and break 
-error. They are on a single bit. So modify the code like this, resolve
-the issue.
+> Ingo Molnar wrote:
+>> * Thomas Hellström <thomas@tungstengraphics.com> wrote:
+>>
+>>   
+>>> Keith,
+>>>
+>>> What you actually are doing here is claiming copyright on code that  
+>>> other people have written, and tighten the export restrictions.   
+>>> kmap_atomic_prot_pfn() appeared long ago in drm git with identical  
+>>> code and purpose, but with different authors, and iounmap_atomic is  
+>>> identical to kunmap_atomic.
+>>>     
+>>
+>>   
+>>>> +EXPORT_SYMBOL_GPL(iomap_atomic_prot_pfn);
+>>>>       
+>>
+>> you want to use this facility in a binary-only driver?
+>>
+>> 	Ingo
+>>   
+> At this point I have no such use for it, no.
+> The original user was a MIT style licenced driver.
 
- /* Error Interrupt */
- if ((ssr_status & 0x0080) && (scr_status & 0x08)) <-----
-      sci_er_interrupt(irq, ptr);
- /* Break Interrupt */
- if ((ssr_status & 0x0010) && (scr_status & 0x08)) <-----
-      sci_br_interrupt(irq, ptr);
+okay, then just to put this question to rest: i wrote the original 
+32-bit highmem code ~10 years ago. I wrote the first version of fixmap 
+support - in fact i coined the term. I wrote the first version of the 
+atomic-kmap facility as well.
 
-Is there any reasons to multiplex the serial interrupt on sh7722?
+All of that code is licensed under the GPLv2. So if anyone wants to make 
+any copyright claims about highmem/kmap/fixmap derivative works, 
+consider it in that light.
 
-Another question is:
+Regarding this new API variant that Keith wrote: it would be silly and 
+dangerous to export it anywhere but to in-kernel drivers. The API 
+disables preemption on 32-bit and rummages deep in the guts of the 
+kernel as well, uses up a precious resource (fixmap slots), etc. It's 
+internal and we eventually might want to deprecate forms of it and 
+concentrate on the good 64-bit performance side.
 
-It is correct to implement the tx_empty like this?
-
-static unsigned int sci_tx_empty(struct uart_port *port)
-{
-        unsigned int ret = TIOCSER_TEMT;
-
-        /* Detect for scif device */
-        if (port->type == PORT_SCIF) {
-                if (scif_txroom(port) == SCIF_TXROOM_MAX)
-                        ret = TIOCSER_TEMT;
-                else
-                        ret = 0;
-        }
-        return ret;         
-}
-
-Regards Michael
-
-
-
-
-
-      Scopri il blog di Yahoo! Mail:
-Trucchi, novità e scrivi la tua opinione.
-http://www.ymailblogit.com/blog
+	Ingo
