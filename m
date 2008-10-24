@@ -1,63 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbYJXG0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbYJXG2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752812AbYJXG0q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 02:26:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYJXG0i
+	id S1755389AbYJXG2j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 02:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbYJXG23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 02:26:38 -0400
-Received: from home.keithp.com ([63.227.221.253]:38958 "EHLO keithp.com"
+	Fri, 24 Oct 2008 02:28:29 -0400
+Received: from venema.h4ckr.net ([217.24.1.135]:59949 "EHLO venema.h4ckr.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751040AbYJXG0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 02:26:37 -0400
-Subject: Re: [PATCH] Add io-mapping functions to dynamically map large
-	device apertures
-From: Keith Packard <keithp@keithp.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: keithp@keithp.com, Ingo Molnar <mingo@elte.hu>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081023214948.0c248345.randy.dunlap@oracle.com>
-References: <20081022093615.GF12453@elte.hu>
-	 <1224746087-13991-1-git-send-email-keithp@keithp.com>
-	 <1224746087-13991-2-git-send-email-keithp@keithp.com>
-	 <20081023214948.0c248345.randy.dunlap@oracle.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-4thOE/wkKELpZmcnfrfv"
-Date: Thu, 23 Oct 2008 23:26:25 -0700
-Message-Id: <1224829585.22877.88.camel@koto.keithp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1751679AbYJXG22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 02:28:28 -0400
+Message-ID: <1577.217.24.1.233.1224829703.squirrel@webmail.madwifi.org>
+In-Reply-To: <43e72e890810231637v51591edak5345faccd81d594b@mail.gmail.com>
+References: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com>
+    <43e72e890810231637v51591edak5345faccd81d594b@mail.gmail.com>
+Date: Fri, 24 Oct 2008 08:28:23 +0200 (CEST)
+Subject: Re: [otus-devel] Release of Atheros 802.11n USB Linux driver
+From: "Michael Renzmann" <mrenzmann@madwifi.org>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "Linux-Kernel" <linux-kernel@vger.kernel.org>,
+       otus-devel@venema.h4ckr.net
+User-Agent: SquirrelMail/1.4.9a
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi.
 
---=-4thOE/wkKELpZmcnfrfv
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Luis R. Rodriguez wrote:
+> So for those of you who want to know which devices to buy
 
-On Thu, 2008-10-23 at 21:49 -0700, Randy Dunlap wrote:
+What about the Unex DNUA-81 [1]? According to the datasheet it is using UB82.
 
-(A bunch of helpful edits for the io-mapping.txt file)
+Bye, Mike
 
-Thanks! They're in my tree and will get included in the next version of
-this patch.
-
---=20
-keith.packard@intel.com
-
---=-4thOE/wkKELpZmcnfrfv
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQBJAWqRQp8BWwlsTdMRAhAXAJ0Z84WM5pbh7gAG7ipz6H+292lw2ACfcbyO
-hewFRcMl5/vI2zlxsZoifew=
-=6z9F
------END PGP SIGNATURE-----
-
---=-4thOE/wkKELpZmcnfrfv--
+[1] http://www.unex.com.tw/product/dnua-81
 
