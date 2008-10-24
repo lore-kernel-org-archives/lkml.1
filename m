@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbYJXEjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753204AbYJXEkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327AbYJXEjr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 00:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYJXEjE
+	id S1753204AbYJXEkG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 00:40:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbYJXEjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 00:39:04 -0400
-Received: from kroah.org ([198.145.64.141]:51604 "EHLO coco.kroah.org"
+	Fri, 24 Oct 2008 00:39:07 -0400
+Received: from kroah.org ([198.145.64.141]:51618 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751146AbYJXEjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 00:39:02 -0400
-Date: Thu, 23 Oct 2008 21:33:27 -0700
+	id S1751176AbYJXEjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 00:39:03 -0400
+Date: Thu, 23 Oct 2008 21:33:31 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,74 +23,52 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: [patch 01/27] gpiolib: fix oops in gpio_get_value_cansleep()
-Message-ID: <20081024043327.GB30828@kroah.com>
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Doug Thompson <dougthompson@xmission.com>
+Subject: [patch 02/27] edac cell: fix incorrect edac_mode
+Message-ID: <20081024043331.GC30828@kroah.com>
 References: <20081024042023.054190751@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="gpiolib-fix-oops-in-gpio_get_value_cansleep.patch"
+Content-Disposition: inline; filename="edac-cell-fix-incorrect-edac_mode.patch"
 In-Reply-To: <20081024043303.GA30828@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us
+2.6.27-stable review patch.  If anyone has any objections, please let us 
 know.
 
 ------------------
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+commit 3b274f44d2ca05f719fe39947b6a5293a2dbd8fd upstream
 
-commit 978ccaa8ea5d8c7bf6b676209f2fc126eae6355b upstream
+The cell_edac driver is setting the edac_mode field of the csrow's to an
+incorrect value, causing the sysfs show routine for that field to go out
+of an array bound and Oopsing the kernel when used.
 
-We can get the following oops from gpio_get_value_cansleep() when a GPIO
-controller doesn't provide a get() callback:
-
- Unable to handle kernel paging request for instruction fetch
- Faulting instruction address: 0x00000000
- Oops: Kernel access of bad area, sig: 11 [#1]
- [...]
- NIP [00000000] 0x0
- LR [c0182fb0] gpio_get_value_cansleep+0x40/0x50
- Call Trace:
- [c7b79e80] [c0183f28] gpio_value_show+0x5c/0x94
- [c7b79ea0] [c01a584c] dev_attr_show+0x30/0x7c
- [c7b79eb0] [c00d6b48] fill_read_buffer+0x68/0xe0
- [c7b79ed0] [c00d6c54] sysfs_read_file+0x94/0xbc
- [c7b79ef0] [c008f24c] vfs_read+0xb4/0x16c
- [c7b79f10] [c008f580] sys_read+0x4c/0x90
- [c7b79f40] [c0013a14] ret_from_syscall+0x0/0x38
-
-It's OK to request the value of *any* GPIO; most GPIOs are bidirectional,
-so configuring them as outputs just enables an output driver and doesn't
-disable the input logic.
-
-So the problem is that gpio_get_value_cansleep() isn't making the same
-sanity check that gpio_get_value() does: making sure this GPIO isn't one
-of the atypical "no input logic" cases.
-
-Reported-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpio/gpiolib.c |    2 +-
+ drivers/edac/cell_edac.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -1020,7 +1020,7 @@ int gpio_get_value_cansleep(unsigned gpi
- 
- 	might_sleep_if(extra_checks);
- 	chip = gpio_to_chip(gpio);
--	return chip->get(chip, gpio - chip->base);
-+	return chip->get ? chip->get(chip, gpio - chip->base) : 0;
- }
- EXPORT_SYMBOL_GPL(gpio_get_value_cansleep);
- 
+--- a/drivers/edac/cell_edac.c
++++ b/drivers/edac/cell_edac.c
+@@ -142,7 +142,7 @@ static void __devinit cell_edac_init_csr
+ 		csrow->nr_pages = (r.end - r.start + 1) >> PAGE_SHIFT;
+ 		csrow->last_page = csrow->first_page + csrow->nr_pages - 1;
+ 		csrow->mtype = MEM_XDR;
+-		csrow->edac_mode = EDAC_FLAG_EC | EDAC_FLAG_SECDED;
++		csrow->edac_mode = EDAC_SECDED;
+ 		dev_dbg(mci->dev,
+ 			"Initialized on node %d, chanmask=0x%x,"
+ 			" first_page=0x%lx, nr_pages=0x%x\n",
 
 -- 
