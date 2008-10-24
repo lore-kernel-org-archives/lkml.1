@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754114AbYJXNjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbYJXNmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754114AbYJXNjo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 09:39:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYJXNjf
+	id S1754220AbYJXNmV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 09:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYJXNmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 09:39:35 -0400
-Received: from lanfw001a.cxnet.dk ([87.72.215.196]:48513 "EHLO
-	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750939AbYJXNjf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 09:39:35 -0400
-X-Greylist: delayed 1940 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Oct 2008 09:39:35 EDT
-Subject: [PATCH trivial fix] Change UTF8 chars in Kconfig help text about
-	Oprofile AMD barcelona
-From: Jesper Dangaard Brouer <jdb@comx.dk>
-Reply-To: jdb@comx.dk
-To: linux-kernel@vger.kernel.org
-Cc: Robert Richter <robert.richter@amd.com>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Organization: ComX Networks A/S
-Date: Fri, 24 Oct 2008 15:05:12 +0200
-Message-Id: <1224853512.2019.129.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Fri, 24 Oct 2008 09:42:04 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36697 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751159AbYJXNmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 09:42:01 -0400
+X-Authenticated: #3800222
+X-Provags-ID: V01U2FsdGVkX1+Uq8gbPZWUe9+xCAK/bPichKIs4AbG/mYWHUIEi/
+	nbnQ2YUwo8AeSh
+Message-ID: <4901D0A5.7060707@gmx.de>
+Date: Fri, 24 Oct 2008 15:41:57 +0200
+From: Joerg Albert <jal2@gmx.de>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+CC: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       otus-devel@venema.h4ckr.net
+Subject: Re: [otus-devel] Release of Atheros 802.11n USB Linux driver
+References: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com> <43e72e890810231637v51591edak5345faccd81d594b@mail.gmail.com>
+In-Reply-To: <43e72e890810231637v51591edak5345faccd81d594b@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/24/2008 01:37 AM, Luis R. Rodriguez wrote:
 
-Fixes screwing up text output when doing a make oldconfig and viewing
-help text of "OProfile AMD IBS support".  When the terminal is
-not using an UTF8 locale / LANG.  "make config" breaks terminal output
-and its not possible to continue.
+> So for those of you who want to know which devices to buy
 
-(Change added by changeset 852402cc Tue Jul 22 21:09:06 2008)
+I'd guess the
 
-Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
----
- arch/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+* AVM FRITZ!WLAN N USB Stick (USB ID 0x57c, 0x8401)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index e6ab550..8977d99 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -21,7 +21,7 @@ config OPROFILE_IBS
-           Instruction-Based Sampling (IBS) is a new profiling
-           technique that provides rich, precise program performance
-           information. IBS is introduced by AMD Family10h processors
--          (AMD Opteron Quad-Core processor “Barcelona”) to overcome
-+          (AMD Opteron Quad-Core processor "Barcelona") to overcome
-           the limitations of conventional performance counter
-           sampling.
- 
--- 
-1.5.4.2
+should be in this list, too.
 
+I don't own one (yet), but the Windows driver contains:
+$ strings -t x fwlanusbn_wxp.sys
+...
+4de20 Atheros OTUS Wireless Network Adapter
+...
+
+Could some owner please confirm the chipset of this stick?
 
