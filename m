@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757949AbYJXTAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758050AbYJXTBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757949AbYJXTAk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 15:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbYJXTAN
+	id S1758050AbYJXTBV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 15:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbYJXTBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 15:00:13 -0400
-Received: from home.keithp.com ([63.227.221.253]:37421 "EHLO keithp.com"
+	Fri, 24 Oct 2008 15:01:05 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47595 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753242AbYJXTAL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 15:00:11 -0400
-Subject: Re: Adding kmap_atomic_prot_pfn
-From: Keith Packard <keithp@keithp.com>
-To: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@tungstengraphics.com>
-Cc: keithp@keithp.com, nickpiggin@yahoo.com.au, airlied@linux.ie,
-       yinghai@kernel.org, Peter Anvin <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jbarnes@virtuousgeek.org, dri-devel@lists.sf.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <49017A2C.5010504@tungstengraphics.com>
-References: <alpine.LFD.2.00.0810181220510.3438@nehalem.linux-foundation.org>
-	 <20081018203741.GA23396@elte.hu>	<1224366690.4384.89.camel@koto.keithp.com>
-	 <20081018223214.GA5093@elte.hu>	<1224389697.4384.118.camel@koto.keithp.com>
-	 <1224398496.5303.7.camel@koto.keithp.com>	<20081019175320.GA6442@elte.hu>
-	 <1224450291.5303.23.camel@koto.keithp.com>	<20081020115810.GC10594@elte.hu>
-	 <1224517744.5195.1.camel@koto.keithp.com>	<20081022093615.GF12453@elte.hu>
-	 <1224793332.22877.8.camel@koto.keithp.com>
-	 <20081023133840.d4eef579.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0810231424220.3287@nehalem.linux-foundation.org>
-	 <1224813015.22877.51.camel@koto.keithp.com>
-	 <alpine.LFD.2.00.0810231934590.3287@nehalem.linux-foundation.org>
-	 <1224829359.22877.86.camel@koto.keithp.com>
-	 <49017A2C.5010504@tungstengraphics.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-qfjxnpC7eYWMaEHIXmm+"
-Date: Fri, 24 Oct 2008 08:48:47 -0700
-Message-Id: <1224863327.22877.106.camel@koto.keithp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1753709AbYJXTBE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 15:01:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: Current suspend issues on Lenovo X200 (w/ Intel graphics)
+Date: Fri, 24 Oct 2008 21:05:45 +0200
+User-Agent: KMail/1.9.9
+Cc: Andres Freund <andres@anarazel.de>,
+       "Nico -telmich- Schottelius" <nico-linux-next@schottelius.org>,
+       Nigel Cunningham <ncunningham@crca.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <20081023204326.GB4175@denkbrett.schottelius.org> <200810242056.23272.rjw@sisk.pl> <20081024185541.GL22217@kernel.dk>
+In-Reply-To: <20081024185541.GL22217@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200810242105.46282.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday, 24 of October 2008, Jens Axboe wrote:
+> On Fri, Oct 24 2008, Rafael J. Wysocki wrote:
+> > On Friday, 24 of October 2008, Jens Axboe wrote:
+> > > On Fri, Oct 24 2008, Rafael J. Wysocki wrote:
+> > > > On Friday, 24 of October 2008, Jens Axboe wrote:
+> > > > > On Fri, Oct 24 2008, Andres Freund wrote:
+> > > > > > On Friday 24 October 2008 15:01:31 Nico -telmich- Schottelius wrote:
+> > > > > > > > > Chipset Mobile Intel® GM45 Express Chipset found
+> > > > > > > > This is going to be interesting. :-)
+> > > > > > > > Nico, if the system is 64-bit, I'd recommend trying .28-rc1.
+> > > > > > > Yes, I'm on amd64;
+> > > > > > > As seen on my other post: xorg does not run on .28-rc1
+> > > > > > The kernel has a fix for memory management for GM45 cards since 2.6.28-rc1 
+> > > > > > which require a newer driver, so trying this may be benifical (patch in reply 
+> > > > > > to your first post).
+> > > > > 
+> > > > > No go, same for me on x60 on ubuntu 8.10-rc1.
+> > > > 
+> > > > Is this a regression on your box?
+> > > 
+> > > Yes, definitely.
+> > 
+> > Which kernel did work?
+> 
+> 2.6.27, for instance. It's pretty much always worked, the last time it
+> broke was the timer stuff around KS. Other than that, it's been very
+> solid for a almost 2 years.
 
---=-qfjxnpC7eYWMaEHIXmm+
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+So it's a recent breakage for you.  May be a different issue from the x200 one,
+only the symptoms are similar (well, the symptoms are usually similar if failing
+resume is involved).
 
-On Fri, 2008-10-24 at 09:33 +0200, Thomas Hellstr=C3=B6m wrote:
-> Keith,
->=20
-> What you actually are doing here is claiming copyright on code that=20
-> other people have written, and tighten the export restrictions.=20
-> kmap_atomic_prot_pfn() appeared long ago in drm git with identical code=20
-> and purpose, but with different authors, and iounmap_atomic is identical=20
-> to kunmap_atomic.
-
-Yeah, I just stuck my usual license header on it and didn't think about
-authorship. I'll fix that, once we figure out what the appropriate name
-is.
-
-But, as this code is clearly a trivial adaptation of the existing kernel
-code, it should carry a GPLv2 license. I'm also not particular as to the
-EXPORT restriction, I was just following the EXPORT advice given for the
-other newly exposed kernel symbols we're using.
-
---=20
-keith.packard@intel.com
-
---=-qfjxnpC7eYWMaEHIXmm+
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQBJAe5fQp8BWwlsTdMRAoymAKDkHnjX6k+ke+eLAFfFbGOhqRYj8ACgnY0P
-BPH85Rh5Tu12F9phX4BCC7o=
-=OFFe
------END PGP SIGNATURE-----
-
---=-qfjxnpC7eYWMaEHIXmm+--
 
