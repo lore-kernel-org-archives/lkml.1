@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbYJXBMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbYJXBP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757442AbYJXBMz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 21:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbYJXBMr
+	id S1757057AbYJXBP7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 21:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751015AbYJXBPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 21:12:47 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:39787 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750813AbYJXBMq (ORCPT
+	Thu, 23 Oct 2008 21:15:49 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:12765 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750813AbYJXBPs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 21:12:46 -0400
-Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is
-	set.
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-In-Reply-To: <49010D1E.8070400@zytor.com>
-References: <20081021181536.GI12825@one.firstfloor.org>
-	 <1224616236.6161.60.camel@alok-dev1>
-	 <20081021192746.GJ12825@one.firstfloor.org>
-	 <1224703427.13953.8.camel@alok-dev1>
-	 <20081022195845.GP12825@one.firstfloor.org>
-	 <1224712846.13953.37.camel@alok-dev1>
-	 <20081022221316.GW12825@one.firstfloor.org>
-	 <1224713518.13953.46.camel@alok-dev1>
-	 <20081022225409.GB27492@one.firstfloor.org>
-	 <1224728478.13953.79.camel@alok-dev1>
-	 <20081023081052.GI27492@one.firstfloor.org>
-	 <1224805162.21776.45.camel@alok-dev1>  <49010D1E.8070400@zytor.com>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Thu, 23 Oct 2008 18:12:43 -0700
-Message-Id: <1224810764.21776.74.camel@alok-dev1>
+	Thu, 23 Oct 2008 21:15:48 -0400
+Date: Thu, 23 Oct 2008 18:14:55 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>,
+       torvalds <torvalds@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: [PATCH] PCI hotplug printk format
+Message-Id: <20081023181455.336e5d03.randy.dunlap@oracle.com>
+In-Reply-To: <20081023213637.eff9b414.sfr@canb.auug.org.au>
+References: <20081023213637.eff9b414.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-23 at 16:47 -0700, H. Peter Anvin wrote:
-> Alok Kataria wrote:
-> >
-> > I am ok with the CONSTANT_TSC bit check, but if people think that its
-> > not important to skip this for native, i think adding a new flag to skip
-> > this should be safe enough.
-> >
-> > Ingo, HPA your views on this whole detection and skipping thing ?
-> >
-> 
-> Okay, first of all, I'm somewhat leery (to put it mildly) of trusting a
-> CPUID bit to tell me a *system* property, which is that all cores in the
-> system are synchronized.  The CPU designer will know that all the cores
-> in the *package* are synchronized, but if that extends system-wide is a
-> property beyond the CPU.  Now, if I'm not completely mistaken, in the
-> case of AMD this bit is actually set by the BIOS via a magic MSR, but
-> that doesn't mean it can't be wrong.
-> 
-> As far as skipping the check, it makes sense for me in the case of known
-> virtualization platforms; a CPU feature bit, real or synthetic, is a
-> very clean way to do that.  In general we should centralize CPU
-> knowledge to arch/x86/kernel/cpu and have the code outside look for
-> specific feature flags, and that applies to virtualization platforms, too.
+I made this patch for linux-next, but now mainline has this same code/warning.
 
-I agree with the synthetic cpu feature thing.
-Do you think i should use one of the existing word like the word 3 which
-is for synthesized feature bits ? Or is it better to define a new
-virtualization specific word ?
 
-Thanks,
-Alok
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> 
->         -hpa
+Fix printk format warning:
 
+linux-next-20081023/drivers/pci/hotplug/acpiphp_ibm.c:207: warning: format '%08lx' expects type 'long unsigned int', but argument 3 has type 'long long unsigned int'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/pci/hotplug/acpiphp_ibm.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-next-20081023.orig/drivers/pci/hotplug/acpiphp_ibm.c
++++ linux-next-20081023/drivers/pci/hotplug/acpiphp_ibm.c
+@@ -204,7 +204,7 @@ static int ibm_set_attention_status(stru
+ 		err("APLS evaluation failed:  0x%08x\n", stat);
+ 		return -ENODEV;
+ 	} else if (!rc) {
+-		err("APLS method failed:  0x%08lx\n", rc);
++		err("APLS method failed:  0x%08llx\n", rc);
+ 		return -ERANGE;
+ 	}
+ 	return 0;
