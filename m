@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757988AbYJXEsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757826AbYJXEtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757988AbYJXEsi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 00:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbYJXEjm
+	id S1757826AbYJXEtZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 00:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYJXEjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 00:39:42 -0400
-Received: from kroah.org ([198.145.64.141]:51997 "EHLO coco.kroah.org"
+	Fri, 24 Oct 2008 00:39:44 -0400
+Received: from kroah.org ([198.145.64.141]:51882 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751821AbYJXEjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 00:39:37 -0400
-Date: Thu, 23 Oct 2008 21:35:30 -0700
+	id S1752584AbYJXEj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 00:39:27 -0400
+Date: Thu, 23 Oct 2008 21:34:57 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,16 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Elias Oltmanns <eo@nebensachen.de>,
-       Bob Copeland <me@bobcopeland.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 27/27] ath5k: fix suspend-related oops on rmmod
-Message-ID: <20081024043530.GB30828@kroah.com>
+       alan@lxorguk.ukuu.org.uk,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [patch 20/27] hvc_console: Fix free_irq in spinlocked section
+Message-ID: <20081024043457.GU30828@kroah.com>
 References: <20081024042023.054190751@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline; filename="ath5k-fix-suspend-related-oops-on-rmmod.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="hvc_console-fix-free_irq-in-spinlocked-section.patch"
 In-Reply-To: <20081024043303.GA30828@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,145 +41,60 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Bob Copeland <me@bobcopeland.com>
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 
-commit 8bdd5b9c6bd53add260756b6673a0545fbdbba21 upstream
+commit eef2622a9fcfa964073333ea72c7c9cd20ad45e6 upstream
 
-Based on a patch by Elias Oltmanns, we call ath5k_init in resume even
-if we didn't previously open the device.  Besides starting up the
-device unnecessarily, this also causes an oops on rmmod because
-mac80211 will not invoke ath5k_stop and softirqs are left running after
-the module has been unloaded.  Add a new state bit, ATH_STAT_STARTED,
-to indicate that we have been started up.
+hvc_console: Fix free_irq in spinlocked section
 
-Reported-by: Toralf Förster <toralf.foerster@gmx.de>
-Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
-Signed-off-by: Bob Copeland <me@bobcopeland.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+    commit 611e097d7707741a336a0677d9d69bec40f29f3d
+    Author: Christian Borntraeger <borntraeger@de.ibm.com>
+    hvc_console: rework setup to replace irq functions with callbacks
+    introduced a spinlock recursion problem. The notifier_del is
+    called with a lock held, and in turns calls free_irq which then
+    complains when manipulating procfs. This fixes it by moving the
+    call to the notifier to outside of the locked section.
+
+Signed-off-by: Christian Borntraeger<borntraeger@de.ibm.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ath5k/base.c |   28 ++++++++++++++++++++--------
- drivers/net/wireless/ath5k/base.h |    3 ++-
- 2 files changed, 22 insertions(+), 9 deletions(-)
+ drivers/char/hvc_console.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
---- a/drivers/net/wireless/ath5k/base.c
-+++ b/drivers/net/wireless/ath5k/base.c
-@@ -294,9 +294,9 @@ static inline u64 ath5k_extend_tsf(struc
- }
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -367,13 +367,13 @@ static void hvc_close(struct tty_struct 
+ 	spin_lock_irqsave(&hp->lock, flags);
  
- /* Interrupt handling */
--static int 	ath5k_init(struct ath5k_softc *sc);
-+static int 	ath5k_init(struct ath5k_softc *sc, bool is_resume);
- static int 	ath5k_stop_locked(struct ath5k_softc *sc);
--static int 	ath5k_stop_hw(struct ath5k_softc *sc);
-+static int 	ath5k_stop_hw(struct ath5k_softc *sc, bool is_suspend);
- static irqreturn_t ath5k_intr(int irq, void *dev_id);
- static void 	ath5k_tasklet_reset(unsigned long data);
+ 	if (--hp->count == 0) {
+-		if (hp->ops->notifier_del)
+-			hp->ops->notifier_del(hp, hp->data);
+-
+ 		/* We are done with the tty pointer now. */
+ 		hp->tty = NULL;
+ 		spin_unlock_irqrestore(&hp->lock, flags);
  
-@@ -584,7 +584,7 @@ ath5k_pci_suspend(struct pci_dev *pdev, 
- 
- 	ath5k_led_off(sc);
- 
--	ath5k_stop_hw(sc);
-+	ath5k_stop_hw(sc, true);
- 
- 	free_irq(pdev->irq, sc);
- 	pci_save_state(pdev);
-@@ -621,7 +621,7 @@ ath5k_pci_resume(struct pci_dev *pdev)
- 		goto err_no_irq;
- 	}
- 
--	err = ath5k_init(sc);
-+	err = ath5k_init(sc, true);
- 	if (err)
- 		goto err_irq;
- 	ath5k_led_enable(sc);
-@@ -2197,12 +2197,17 @@ ath5k_beacon_config(struct ath5k_softc *
- \********************/
- 
- static int
--ath5k_init(struct ath5k_softc *sc)
-+ath5k_init(struct ath5k_softc *sc, bool is_resume)
- {
- 	int ret;
- 
- 	mutex_lock(&sc->lock);
- 
-+	if (is_resume && !test_bit(ATH_STAT_STARTED, sc->status))
-+		goto out_ok;
++		if (hp->ops->notifier_del)
++			hp->ops->notifier_del(hp, hp->data);
 +
-+	__clear_bit(ATH_STAT_STARTED, sc->status);
+ 		/*
+ 		 * Chain calls chars_in_buffer() and returns immediately if
+ 		 * there is no buffered data otherwise sleeps on a wait queue
+@@ -416,11 +416,11 @@ static void hvc_hangup(struct tty_struct
+ 	hp->n_outbuf = 0;
+ 	hp->tty = NULL;
+ 
++	spin_unlock_irqrestore(&hp->lock, flags);
 +
- 	ATH5K_DBG(sc, ATH5K_DEBUG_RESET, "mode %d\n", sc->opmode);
+ 	if (hp->ops->notifier_del)
+ 			hp->ops->notifier_del(hp, hp->data);
  
- 	/*
-@@ -2250,12 +2255,16 @@ ath5k_init(struct ath5k_softc *sc)
- 		AR5K_INT_MIB;
- 
- 	ath5k_hw_set_intr(sc->ah, sc->imask);
-+
-+	__set_bit(ATH_STAT_STARTED, sc->status);
-+
- 	/* Set ack to be sent at low bit-rates */
- 	ath5k_hw_set_ack_bitrate_high(sc->ah, false);
- 
- 	mod_timer(&sc->calib_tim, round_jiffies(jiffies +
- 			msecs_to_jiffies(ath5k_calinterval * 1000)));
- 
-+out_ok:
- 	ret = 0;
- done:
- 	mmiowb();
-@@ -2310,7 +2319,7 @@ ath5k_stop_locked(struct ath5k_softc *sc
-  * stop is preempted).
-  */
- static int
--ath5k_stop_hw(struct ath5k_softc *sc)
-+ath5k_stop_hw(struct ath5k_softc *sc, bool is_suspend)
- {
- 	int ret;
- 
-@@ -2341,6 +2350,9 @@ ath5k_stop_hw(struct ath5k_softc *sc)
- 		}
- 	}
- 	ath5k_txbuf_free(sc, sc->bbuf);
-+	if (!is_suspend)
-+		__clear_bit(ATH_STAT_STARTED, sc->status);
-+
- 	mmiowb();
- 	mutex_unlock(&sc->lock);
- 
-@@ -2719,12 +2731,12 @@ err:
- 
- static int ath5k_start(struct ieee80211_hw *hw)
- {
--	return ath5k_init(hw->priv);
-+	return ath5k_init(hw->priv, false);
- }
- 
- static void ath5k_stop(struct ieee80211_hw *hw)
- {
--	ath5k_stop_hw(hw->priv);
-+	ath5k_stop_hw(hw->priv, false);
- }
- 
- static int ath5k_add_interface(struct ieee80211_hw *hw,
---- a/drivers/net/wireless/ath5k/base.h
-+++ b/drivers/net/wireless/ath5k/base.h
-@@ -132,11 +132,12 @@ struct ath5k_softc {
- 	size_t			desc_len;	/* size of TX/RX descriptors */
- 	u16			cachelsz;	/* cache line size */
- 
--	DECLARE_BITMAP(status, 4);
-+	DECLARE_BITMAP(status, 5);
- #define ATH_STAT_INVALID	0		/* disable hardware accesses */
- #define ATH_STAT_MRRETRY	1		/* multi-rate retry support */
- #define ATH_STAT_PROMISC	2
- #define ATH_STAT_LEDSOFT	3		/* enable LED gpio status */
-+#define ATH_STAT_STARTED	4		/* opened & irqs enabled */
- 
- 	unsigned int		filter_flags;	/* HW flags, AR5K_RX_FILTER_* */
- 	unsigned int		curmode;	/* current phy mode */
+-	spin_unlock_irqrestore(&hp->lock, flags);
+-
+ 	while(temp_open_count) {
+ 		--temp_open_count;
+ 		kref_put(&hp->kref, destroy_hvc_struct);
 
 -- 
