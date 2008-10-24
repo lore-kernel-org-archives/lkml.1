@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbYJXLWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756314AbYJXLYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753321AbYJXLWo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 07:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYJXLWg
+	id S1756314AbYJXLYy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 07:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYJXLYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 07:22:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51189 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750808AbYJXLWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 07:22:35 -0400
-Date: Fri, 24 Oct 2008 13:22:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: dwmw2@infradead.org, torvalds@linux-foundation.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, tony.luck@intel.com
-Subject: Re: [GIT *] iommu fixes for 2.6.28
-Message-ID: <20081024112217.GA19266@elte.hu>
-References: <1224616464.16910.103.camel@macbook.infradead.org> <20081024110125.GA18869@elte.hu> <20081024201041T.fujita.tomonori@lab.ntt.co.jp>
+	Fri, 24 Oct 2008 07:24:46 -0400
+Received: from mk-outboundfilter-3.mail.uk.tiscali.com ([212.74.114.23]:27816
+	"EHLO mk-outboundfilter-3.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752021AbYJXLYp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 07:24:45 -0400
+X-Trace: 186055100/mk-outboundfilter-1.mail.uk.tiscali.com/F2S/$F2S-NILDRAM-ACCEPTED/f2s-nildram-customers/195.149.44.6/None/alistair@devzero.co.uk
+X-SBRS: None
+X-RemoteIP: 195.149.44.6
+X-IP-MAIL-FROM: alistair@devzero.co.uk
+X-MUA: KMail/1.10.1 (Linux/2.6.27-damocles; KDE/4.1.2; x86_64; ; )
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsYEAGtNAUnDlSwG/2dsb2JhbACBdb8mg1A
+X-IronPort-AV: E=Sophos;i="4.33,477,1220223600"; 
+   d="scan'208";a="186055100"
+X-IP-Direction: IN
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.28-rc1
+Date: Fri, 24 Oct 2008 12:24:38 +0100
+User-Agent: KMail/1.10.1 (Linux/2.6.27-damocles; KDE/4.1.2; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081024201041T.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Message-Id: <200810241224.38541.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 24 October 2008 05:10:29 Linus Torvalds wrote:
+> It's been two weeks, so it's time to close the merge window. A 2.6.28-rc1
+> is out there, and it's hopefully all good.
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+It seems if you have a broken asm/ symlink in include/ (which happened as a 
+result of the x86 header moves, for me) the kernel won't try to update it 
+appropriately, and this breaks "make prepare".
 
-> On Fri, 24 Oct 2008 13:01:25 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * David Woodhouse <dwmw2@infradead.org> wrote:
-> > 
-> > > This contains a few iommu-related fixes -- it restores DMA remapping 
-> > > on newer Intel hardware, which was disabled by the interrupt remapping 
-> > > patches, adds IA64 support for the Intel IOMMU, and some other small 
-> > > fixes.
-> > > 
-> > >  MAINTAINERS                      |    7 +
-> > >  arch/x86/kernel/amd_iommu_init.c |    2 +-
-> > >  arch/x86/kernel/pci-dma.c        |   16 ---
-> > >  drivers/pci/dmar.c               |  119 +++++++++++++-----
-> > >  drivers/pci/intel-iommu.c        |  250 ++++++++++++++++++++------------------
-> > >  drivers/pci/quirks.c             |   14 ++
-> > >  include/asm-x86/iommu.h          |    4 +
-> > >  include/linux/dma_remapping.h    |   27 ++--
-> > >  include/linux/intel-iommu.h      |   66 ++++++++---
-> > >  9 files changed, 305 insertions(+), 200 deletions(-)
-> > 
-> > hm, i just updated to v2.6.28-rc1, and these changes broke the x86 
-> > 32-bit build:
-> > 
-> >   arch/x86/kernel/built-in.o: In function `dma_supported':
-> >   (.text+0x5797): undefined reference to `forbid_dac'
-> >   arch/x86/kernel/built-in.o: In function `iommu_setup':
-> >   pci-dma.c:(.init.text+0x326c): undefined reference to `forbid_dac'
-> >   pci-dma.c:(.init.text+0x328b): undefined reference to `forbid_dac'
-> >   pci-dma.c:(.init.text+0x32aa): undefined reference to `forbid_dac'
-> > 
-> > seems to be caused by:
-> > 
-> >   5b6985c: intel-iommu: IA64 support
-> 
-> http://marc.info/?l=linux-kernel&m=122480590627590&w=2
-> 
-> 
-> Sharing forbid_dac between IA64 and X86 doesn't make sense and IA64 
-> doesn't even use forbid_dac... Reverting the forbid_dac relocation is 
-> the right fix, I think.
+$ make    ARCH=x86_64 prepare                                                                                                   
+  CHK     include/linux/version.h                                                                                                                            
+  CHK     include/linux/utsrelease.h                                                                                                                         
+  GEN     include/asm/asm-offsets.h                                                                                                                          
+/bin/sh: include/asm/asm-offsets.h: No such file or directory                                                                                                
+make[1]: *** [include/asm/asm-offsets.h] Error 1                                                                                                             
+make: *** [prepare0] Error 2
 
-could you send a patch for it please? Commit 5b6985c does many things at 
-once so the revert is not trivial.
+rm -f include/asm fixes it
 
-	Ingo
+This was just from taking a 2.6.27 tree, git clean -d -f, git pull, make 
+oldconfig. Might be a nice thing to fix?
+
+-- 
+Cheers,
+Alistair.
