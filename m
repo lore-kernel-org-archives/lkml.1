@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbYJXHP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbYJXHQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbYJXHP5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 03:15:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbYJXHPs
+	id S1756223AbYJXHQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 03:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbYJXHQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 03:15:48 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48559 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752097AbYJXHPs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 03:15:48 -0400
-Date: Fri, 24 Oct 2008 09:23:20 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>, akataria@vmware.com,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is set.
-Message-ID: <20081024072320.GE27492@one.firstfloor.org>
-References: <1224712846.13953.37.camel@alok-dev1> <20081022221316.GW12825@one.firstfloor.org> <1224713518.13953.46.camel@alok-dev1> <20081022225409.GB27492@one.firstfloor.org> <1224728478.13953.79.camel@alok-dev1> <20081023081052.GI27492@one.firstfloor.org> <1224805162.21776.45.camel@alok-dev1> <49010D1E.8070400@zytor.com> <20081024002511.GC27492@one.firstfloor.org> <49011AD7.7000901@zytor.com>
-Mime-Version: 1.0
+	Fri, 24 Oct 2008 03:16:50 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:34848 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751483AbYJXHQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 03:16:49 -0400
+Date: Fri, 24 Oct 2008 16:16:08 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Alexander Beregalov <a.beregalov@gmail.com>, tj@kernel.org,
+       torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: 2.6.27-rc1 (2fca5c): libata: kernel cant boot
+Message-ID: <20081024071608.GA3879@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Alexander Beregalov <a.beregalov@gmail.com>, tj@kernel.org,
+	torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+	linux-ide@vger.kernel.org
+References: <a4423d670810240004t2d7c3bdah2bea77a6a49bb7c4@mail.gmail.com> <20081024070955.GN22217@kernel.dk> <20081024071329.GO22217@kernel.dk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49011AD7.7000901@zytor.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20081024071329.GO22217@kernel.dk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That is at least to some degree nonsense, simply because we are all well 
-> down that particular "slippery slope": we have hardware blacklists and 
-
-The big difference is that hardware cannot be easily fixed, hypervisors
-are just software and can as simply as Linux. Also there are at least 
-standardized simple ways to detect hardware and platforms using standard 
-enumeration interfaces like PCI or DMI, while each Hypervisor detection 
-seems to need huge amounts of custom (and likely fragile) complicated code.
-iirc there was a vmware detection patch around and it was disgusting iirc.
-
-Also I think this concept of "not PV, but then again a little"
-concept that is mandated here is not a useful one.
-
-Either do a proper PV interface and then just write a custom
-clock driver and paravirt ops interface to make everything really fast,
-or just use the direct hardware interface and fix the hypervisor
-to do it properly.
-
-Especially VMware has this already (although 32bit only).
-
-Ok the tsc_sync issue is borderline, but that one seems 
-to be more a case of tweaking the existing algorithms
-to be a little more tolerant.
-
--Andi
--- 
-ak@linux.intel.com
+On Fri, Oct 24, 2008 at 09:13:29AM +0200, Jens Axboe wrote:
+> On Fri, Oct 24 2008, Jens Axboe wrote:
+> > On Fri, Oct 24 2008, Alexander Beregalov wrote:
+> > > Hi
+> > > 
+> > > commit 2fca5ccf97d2c28bcfce44f5b07d85e74e3cd18e
+> > > Author: Jens Axboe <jens.axboe@oracle.com>
+> > > Date:   Wed Oct 22 09:34:49 2008 +0200
+> > > 
+> > >     libata: switch to using block layer tagging support
+> > > 
+> > > 
+> > > This kernel can not read even 0 sector on disk with rootfs. It
+> > > initialized disk, but cant read it at all.
+> > >  CMD646 on Sparc
+> > > 
+> > > Rverting helped.
+> > 
+> > Doh, how annoying! What driver does that controller use? PATA doesn't
+> > even use NCQ, so it's a bit of an oddity that it makes a difference at
+> > all.
+> > 
+> > Can you provide the boot messages?
+> 
+> Darn, this smells like a train wreck. I'm assuming this fixes it?
+> 
+Yes, that fixes it.
