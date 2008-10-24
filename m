@@ -1,98 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbYJXTt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756162AbYJXTua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755497AbYJXTt4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 15:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbYJXTtt
+	id S1756162AbYJXTua (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 15:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbYJXTuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 15:49:49 -0400
-Received: from main.gmane.org ([80.91.229.2]:51117 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750936AbYJXTtt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 15:49:49 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Thomas Guyot-Sionnest <dermoth@aei.ca>
-Subject: Re: CFQ Idle class slowing down everything?
-Date: Fri, 24 Oct 2008 15:49:29 -0400
-Message-ID: <490226C9.4000406@aei.ca>
-References: <gcm0sv$ra4$1@ger.gmane.org> <20081014121859.4778abcf.akpm@linux-foundation.org>
+	Fri, 24 Oct 2008 15:50:13 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:45051 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751252AbYJXTuL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 15:50:11 -0400
+Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is
+	set.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>
+In-Reply-To: <20081024193414.GH27492@one.firstfloor.org>
+References: <1224728478.13953.79.camel@alok-dev1>
+	 <20081023081052.GI27492@one.firstfloor.org>
+	 <1224805162.21776.45.camel@alok-dev1> <49010D1E.8070400@zytor.com>
+	 <20081024002511.GC27492@one.firstfloor.org> <49011AD7.7000901@zytor.com>
+	 <20081024072320.GE27492@one.firstfloor.org> <4901EA14.9070300@zytor.com>
+	 <20081024192532.GG27492@one.firstfloor.org> <49021FCD.8080209@zytor.com>
+	 <20081024193414.GH27492@one.firstfloor.org>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Fri, 24 Oct 2008 12:50:10 -0700
+Message-Id: <1224877810.28224.18.camel@alok-dev1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: dsl-216-221-37-62.aei.ca
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-In-Reply-To: <20081014121859.4778abcf.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14/10/08 03:18 PM, Andrew Morton wrote:
->> On Thu, 09 Oct 2008 18:34:06 -0400 Thomas Guyot-Sionnest <dermoth@aei.ca> wrote:
->> Hey,
->>
->> I tried to use CFQ and ionice to help some I/O intensive tasks on a
->> MySQL slave, and it turned out to makes thing much worse to the point I
->> can figure out what it could be beside a bug. Tested on 2.6.20.1, but I
->> could eventually upgrade if there's CFQ bugfixes I'm missing. The
->> filesystem is ReiserFS.
->>
->> When "idle", the slave do mostly random writes: about 15 rtps and 200
->> wtps. For testing I ended up running dd to read files from disk to
->> /dev/null while avoiding the system cache (had 42GB of data to read
->> from, and <1GB of ram cache/buffers). Here's some sample results (I
->> tried them multiple times with similar results every time). I monitored
->> the iops with "sar -b 1 0"
->>
->> Under deadline-iosched:
->>
->> 262144000 bytes (262 MB) copied, 9.68511 seconds, 27.1 MB/s
->> rtps raised over 200, wtps gets down to ~100 and then back up after the
->> read operation (as MySQL catch up)
->>
->> Under cfq-ipoched without ionice:
->>
->> 262144000 bytes (262 MB) copied, 4.78834 seconds, 54.7 MB/s
->> rtps raise over 400, wtps gets down near 0 then back up after the read.
->> I can expect it as cfq does not manage the write queue, so it gives most
->> bandwidth to dd
->>
->> Under cfq-ipoched with ionice -c3 (mysqld was "best-effort: prio 4"):
->> 13369344 bytes (13 MB) copied, 39.7619 seconds, 336 kB/s (After pressing
->> CTRL-C to avoid tripping off alerting on MySQL replication)
->>
->> Mysql was lagging behind at pretty much the same rate with and without
->> "ionice -c3", but with the latter the copy operation was also incredibly
->> slower. During the read operation rtps was around 3 and wtps was between
->> 10 and 20, far beyond what that raid array is able to do with pure
->> random operations.
->>
->> Any ides what's going on with this scheduler?
->>
->> FWIW the dd command was:
->>
->> dd if=<file> of=/dev/null bs=128k skip=NNNN count=2000
->> Where NNNN is a multiple of 2000 incremented by 1 on every run.
->>
+On Fri, 2008-10-24 at 12:34 -0700, Andi Kleen wrote:
+> On Fri, Oct 24, 2008 at 12:19:41PM -0700, H. Peter Anvin wrote:
+> > Andi Kleen wrote:
+> > >
+> > >In the field they will just continue using clock=pit, like they
+> > >always did on vmware. And also they will not update the Linux kernel.
+> > >
+> >
+> > That is a totally bogus assumption.  You will typically have the host
+> > platform (Vmware in this case) move much much slower than the guests.
 > 
-> Yes, 2.6.20 is dreadfully old.  If you can retest a recent kernel it would really help, thanks.
+> The people running on older hypervisors will just continue using
+> PIT timer. They won't get nohz, but i guess without updates
+> they don't expect new features.
 
-Did it, although I had to patch it as the AACRAID driver is broken since
-2.6.25! See:
-http://bugzilla.kernel.org/show_bug.cgi?id=9133
-https://bugzilla.redhat.com/show_bug.cgi?id=453472
-https://bugzilla.redhat.com/show_bug.cgi?id=457552
-http://marc.info/?l=linux-kernel&m=122166454808377&w=2
+As hpa rightly said, people could still upgrade the kernel and not the
+hypervisor and would expect things to work correctly.
+So this is just about making sure that the new features in kernel which
+are on by default don't break when we run on older products.
+> 
+> > >This is strictly for new installations. And I frankly don't
+> > >see why Linux needs to get white listed workarounds when the
+> > >Hypervisor couldn't as well be fixed. We have the bizarre
+> > >situation here where a HV vendor tries to add workarounds
+> > >to Linux instead of fixing it on their products.
+> >
+> > ... just like every other hardware vendor.
+> 
+> Hardware vendors can't fix it without long lead time.
+> Software vendors can as easily as Linux.
+> 
+> Also we're talking about an optimization here (enabling NOHZ), not a
+> correctness issue. So your analogy to hardware workarounds
+> is already dubious.
 
-With 2.6.27.2 the Idle class performs much better now, and using it, my
-dd command has less impact on the MySQL replication than using the
-default class.
+Its not like we are trying to add VMware checks all over the kernel to
+enhance the performance or something of that sought.  Its just about the
+timer emulation which needs to be tweaked a little. 
 
-Interestingly though, the CFQ Idle class it still clearly having more
-impact on replication than using the deadline scheduler. Anyone
-interested in more details (I compiled the kernel with a bunch of IO
-scheduler statistics in case it would be needed).
+Also i think you would agree that fixing timer related issues like the
+acpi_pm thing are inherently difficult to fix on virtualized hardware
+without the kernel cooperating. The constraints here are different since
+the physical cpu can be time shared btween vcpu's, which can break a lot
+of assumptions related to timing. I like, hpa's approach of using cpuid
+bits (synthetic/real) to get these things communicated to the kernel so
+that things are consistent with  how the OS communicates with the
+hardware.
 
+Another thing that I may like to highlight is that, with the advent of
+hardware assisted virtualization, the kernel should be able to
+virtualize the processor, without requiring any major changes for para
+virtualizing the cpu.  And thats the approach we will like to take as
+well, i.e. communicate most of the things to the kernel using standard
+communication methods like CPUid/MSR's. And i think this is just a step
+towards that. 
 
-Thomas
+So in short we should view virtualization platform as just a special
+hardware as far as the kernel is concerned.
+
+Thanks,
+Alok
+
+> 
+> -Andi
+> --
+> ak@linux.intel.com
 
