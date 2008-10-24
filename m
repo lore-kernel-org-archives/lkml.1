@@ -1,105 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbYJXHWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbYJXHZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755527AbYJXHWX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 03:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbYJXHWO
+	id S1754877AbYJXHZk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 03:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbYJXHZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 03:22:14 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:41449 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751552AbYJXHWO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 03:22:14 -0400
-Date: Fri, 24 Oct 2008 12:51:47 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
-       travis@sgi.com, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/7] work_on_cpu: helper for doing task on a CPU.
-Message-ID: <20081024072147.GA5000@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20081023005751.53973DDEFE@ozlabs.org> <20081023094036.GA7593@redhat.com> <20081023143605.GN5255@in.ibm.com> <200810241404.35932.rusty@rustcorp.com.au>
+	Fri, 24 Oct 2008 03:25:30 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:51656 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751552AbYJXHZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 03:25:29 -0400
+Date: Fri, 24 Oct 2008 09:24:29 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Alexander Beregalov <a.beregalov@gmail.com>, tj@kernel.org,
+       torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: 2.6.27-rc1 (2fca5c): libata: kernel cant boot
+Message-ID: <20081024072428.GP22217@kernel.dk>
+References: <a4423d670810240004t2d7c3bdah2bea77a6a49bb7c4@mail.gmail.com> <20081024070955.GN22217@kernel.dk> <20081024071329.GO22217@kernel.dk> <20081024071608.GA3879@linux-sh.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200810241404.35932.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20081024071608.GA3879@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 24, 2008 at 02:04:35PM +1100, Rusty Russell wrote:
-> On Friday 24 October 2008 01:36:05 Gautham R Shenoy wrote:
-> > OK, how about doing the following? That will solve the problem
-> > of deadlock you pointed out in patch 6.
-> >
-> > 		get_online_cpus();
-> > 		if (likely(per_cpu(cpu_state, cpuid) == CPU_ONLINE)) {
-> > 			schedule_work_on(cpu, &wfc.work);
-> > 			flush_work(&wfc.work);
-> > 		} else if (per_cpu(cpu_state, cpuid) != CPU_DEAD)) {
-> > 			/*
-> > 			 * We're the CPU-Hotplug thread. Call the
-> > 			 * function synchronously so that we don't
-> > 			 * deadlock with any pending work-item blocked
-> > 			 * on get_online_cpus()
-> > 			 */
-> > 			 cpumask_t  orignal_mask = current->cpus_allowed;
-> > 			 set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu);
-> > 			 wfc.ret = fn(arg);
-> > 			 set_cpus_allowed_ptr(current, &original_mask);
-> > 		}
-> 
-> Hi Gautham, Oleg,
-> 
-> Unfortunately that's exactly what I'm trying to get away from: another cpumask 
-> on the stack :(
+On Fri, Oct 24 2008, Paul Mundt wrote:
+> On Fri, Oct 24, 2008 at 09:13:29AM +0200, Jens Axboe wrote:
+> > On Fri, Oct 24 2008, Jens Axboe wrote:
+> > > On Fri, Oct 24 2008, Alexander Beregalov wrote:
+> > > > Hi
+> > > > 
+> > > > commit 2fca5ccf97d2c28bcfce44f5b07d85e74e3cd18e
+> > > > Author: Jens Axboe <jens.axboe@oracle.com>
+> > > > Date:   Wed Oct 22 09:34:49 2008 +0200
+> > > > 
+> > > >     libata: switch to using block layer tagging support
+> > > > 
+> > > > 
+> > > > This kernel can not read even 0 sector on disk with rootfs. It
+> > > > initialized disk, but cant read it at all.
+> > > >  CMD646 on Sparc
+> > > > 
+> > > > Rverting helped.
+> > > 
+> > > Doh, how annoying! What driver does that controller use? PATA doesn't
+> > > even use NCQ, so it's a bit of an oddity that it makes a difference at
+> > > all.
+> > > 
+> > > Can you provide the boot messages?
+> > 
+> > Darn, this smells like a train wreck. I'm assuming this fixes it?
+> > 
+> Yes, that fixes it.
 
-Oh, okay, understood.
-> 
-> The cpu hotplug thread is just whoever wrote 0 to "online" in sys.  And in 
-> fact it already plays with its cpumask, which should be fixed too.
+OK, that's pretty bad. 2.6.28-rc1 will not work on any box using libata
+with non-ncq disks. If you need me, I'll be at the bar.
 
-Right, we do that during cpu_offline to ensure that we don't run on the
-cpu which is to be offlined.
+----------
 
-> 
-> I think we should BUG_ON(per_cpu(cpu_state, cpuid) != CPU_DEAD) to ensure we 
-> never use work_on_cpu in the hotplug cpu path.  Then we use 
-> smp_call_function() for that hard intel_cacheinfo case.  Finally, we fix the 
-> cpu hotplug path to use schedule_work_on() itself rather than playing games 
-> with cpumask.
-> 
-> If you agree, I'll spin the patches...
+>From e598055dde1951c47c8b3522616f6ebff0ed9847 Mon Sep 17 00:00:00 2001
+From: Jens Axboe <jens.axboe@oracle.com>
+Date: Fri, 24 Oct 2008 09:22:42 +0200
+Subject: [PATCH] libata: fix bug with non-ncq devices
 
-How about the following?
+The recent commit 201f1b98822078c808b5e2d379a6ddbfc0a06ee1 to enable
+support for block layer tagging in libata was broken for non-NCQ
+devices. The block layer initializes the tag field to -1 to detect
+invalid uses of a tag, and if the libata devices does NOT support
+NCQ, we just used that field to index the internal command list.
+So we need to check for -1 first and only use the tag field if
+it's valid.
 
-We go with this method, but instead of piggybacking on
-the generic kevents workqueue, we create our own on_each_cpu_wq, for this
-purpose.
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ drivers/ata/libata-scsi.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-Since the worker threads of this workqueue run only the work-items
-queued by us, and since we take care of the cpu-hotplug locking _before_
-queueing the work item, we can be sure that we won't deadlock
-since no work-item when running can block on get_online_cpus().
+diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+index d5b9b72..4b95c43 100644
+--- a/drivers/ata/libata-scsi.c
++++ b/drivers/ata/libata-scsi.c
+@@ -708,7 +708,11 @@ static struct ata_queued_cmd *ata_scsi_qc_new(struct ata_device *dev,
+ {
+ 	struct ata_queued_cmd *qc;
+ 
+-	qc = ata_qc_new_init(dev, cmd->request->tag);
++	if (cmd->request->tag != -1)
++		qc = ata_qc_new_init(dev, cmd->request->tag);
++	else
++		qc = ata_qc_new_init(dev, 0);
++
+ 	if (qc) {
+ 		qc->scsicmd = cmd;
+ 		qc->scsidone = done;
+-- 
+1.6.0.2.588.g3102
 
-This would hold good even for those work-items queued from
-the CPU-Hotplug notifier call path.
-
-Thus we can have the same semantics everywhere, rather than having
-multiple cases.
-
-Does this make sense?
-> 
-> Thanks for the brainpower,
-> Rusty.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
 
 -- 
-Thanks and Regards
-gautham
+Jens Axboe
+
