@@ -1,92 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbYJXQXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756981AbYJXQYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757215AbYJXQXe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 12:23:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbYJXQXF
+	id S1756981AbYJXQYi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 12:24:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbYJXQYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 12:23:05 -0400
-Received: from mga09.intel.com ([134.134.136.24]:15644 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753008AbYJXQXC convert rfc822-to-8bit (ORCPT
+	Fri, 24 Oct 2008 12:24:30 -0400
+Received: from ganymede.vroon.org ([195.66.242.11]:41935 "EHLO
+	ganymede.vroon.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753008AbYJXQYa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 12:23:02 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,479,1220252400"; 
-   d="scan'208";a="455178395"
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: Sanjoy Mahajan <sanjoy@MIT.EDU>
-CC: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDEV list <netdev@vger.kernel.org>,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>
-Date: Fri, 24 Oct 2008 09:22:58 -0700
-Subject: RE: e1000e fails after several S3 resumes (2.6.26 Debian, TP T60) 
-Thread-Topic: e1000e fails after several S3 resumes (2.6.26 Debian, TP T60) 
-Thread-Index: Ack15FQf/7CxBWBVSgScUt4tzEo+uwAD9snw
-Message-ID: <F169D4F5E1F1974DBFAFABF47F60C10A069DFFA0@orsmsx507.amr.corp.intel.com>
-References: Your message of "Thu, 23 Oct 2008 15:42:55 PDT."
-             <F169D4F5E1F1974DBFAFABF47F60C10A069DFD62@orsmsx507.amr.corp.intel.com>
- (sfid-20081023_194301_937814_89312B9F)  <E1KtNaz-0003Xx-0y@approx.mit.edu>
-In-Reply-To: <E1KtNaz-0003Xx-0y@approx.mit.edu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Fri, 24 Oct 2008 12:24:30 -0400
+Subject: Re: MCEs
+From: Tony Vroon <tony@vroon.org>
+To: Felix von Leitner <felix-linuxkernel@fefe.de>
+Cc: Linux Kernel Mailing list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081024124502.GA9425@codeblau.de>
+References: <20081024124502.GA9425@codeblau.de>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-41KTcAxM9lcd/PsL55G+"
+Date: Fri, 24 Oct 2008 17:23:18 +0100
+Message-Id: <1224865398.9632.22.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sanjoy Mahajan wrote:
->> hm, does your kernel have CONFIG_PM defined?
-> 
-> It does have that defined:
 
-ok
- 
->> if it happens again please include lspci -vvv before and after
->> ethtool -r (see below)
-> 
-> I will.  Now I'm running BIOS 2.23, so I'm curious whether that
-> 'upgrade' fixes the problem.
-> 
-> I say 'upgrade' because now S3 sleep and wakeup often take 60 seconds.
-> I've also noticed ACPI errors in the 'dmesg'.  Once I have something
-> reproducible I'll file a bugzilla report.
+--=-41KTcAxM9lcd/PsL55G+
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-ick, it would be nice if the system vendors actually tested their acpi implementations on multiple OSes.
- 
->> device was also claiming successfully transmitting, so I don't know
->> why the DHCP packets don't work, can you tcpdump on the network or
->> the dhcp server by chance?
-> 
-> I'll do that too on the next failure.  Is 'tcpdump host 18.38.0.1'
-> sufficient or do I need a few -v switches?
+On Fri, 2008-10-24 at 14:45 +0200, Felix von Leitner wrote:
+> Now the most common causes for MCEs are apparently heat issues and bad
+> memory.  I can rule out both.
 
-I'm mostly looking for the conversation back and forth, so that should be fine.
-Keep in mind that the first dhcp packet is usually a broadcast (not to a 
-particular IP)
- 
->> can you ifconfig eth0 promisc before doing suspend?  I'd be curious
->> if that fixed it.
-> 
-> If/when it reproduces, I'll add that line to the pre-suspend code.  (I
-> use 's2ram', which I think sleeps with 'echo mem > /sys/power/state'
-> and does a vt switch on wakeup).
+Are you sure? I have had MCEs and instability for a while now, and using
+mcelog --k8 --dmi /dev/mcelog
 
-okay, thanks
- 
-> Generally: For making debugging go smoothly, is it worth running a
-> vanilla kernel rather than the Debian one?  I could try 2.6.26.7 or
-> 2.6.27.3.  Is running 2.6.27.y not as useful as running 2.6.26.y, in
-> case the bug is merely hidden but not solved in the new kernel?  On
-> the other hand, I'm tempted to try 2.6.27.y in case it fixes the slow
-> suspend/resume.
+I finally got a clear "this component is at fault" message, pinpointing
+DIMM 4 on CPU 2. I shuffled the DIMMs around and then used the machine
+again.
+The message shifted with the DIMM, to DIMM 1 on CPU 1. Memtest86+
+doesn't appear to stress the hardware enough to provoke single or
+multi-bit errors though. (So, a few successful passes in memtest86+ does
+not rule out a RAM problem)
 
-I think you should definitely try 2.6.27.y, the e1000e versions in the kernel 
-are different than what is in ubuntu at least, so not sure if that applies to 
-debian.
+Temperatures can also get high at locations in the machine that have no
+sensors (specifically voltage regulators). To check for heat problems
+you could operate your tower case whilst lying on the floor, so hot air
+rises up past the PCI/PCIe cards instead of getting trapped underneath
+them.
+
+Note that LKML isn't the friendliest place to get MCE debugging, as it
+will be considered a hardware fault and thus off-topic.
+Consider an MCE like a 'check engine' light in your car. It doesn't tell
+you what's wrong, just that it's bad and should be investigated.
+
+Regards,
+Tony V.
+
+--=-41KTcAxM9lcd/PsL55G+
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkkB9nYACgkQp5vW4rUFj5ravgCeI0v0ui8UXN21LmVr3wsvg/Fy
+C5kAnjVoNllbGbMNS27m8oSi4s966dcJ
+=Lyef
+-----END PGP SIGNATURE-----
+
+--=-41KTcAxM9lcd/PsL55G+--
+
