@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbYJXDD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbYJXDEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755965AbYJXDD2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 23:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYJXDDU
+	id S1756505AbYJXDEo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 23:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbYJXDEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 23:03:20 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:44047 "EHLO crca.org.au"
+	Thu, 23 Oct 2008 23:04:35 -0400
+Received: from ozlabs.org ([203.10.76.45]:44301 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751935AbYJXDDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 23:03:19 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: Current suspend issues on Lenovo X200
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nico Schottelius <nico-linux-next@schottelius.org>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200810240006.19857.rjw@sisk.pl>
-References: <20081023204326.GB4175@denkbrett.schottelius.org>
-	 <20081023210707.GA5089@denkbrett.schottelius.org>
-	 <200810240006.19857.rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8
-Organization: Christian Reformed Churches of Australia
-Date: Fri, 24 Oct 2008 14:03:14 +1100
-Message-Id: <1224817394.6623.12.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	id S1752707AbYJXDEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Oct 2008 23:04:35 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: ego@in.ibm.com
+Subject: Re: [PATCH 1/7] work_on_cpu: helper for doing task on a CPU.
+Date: Fri, 24 Oct 2008 14:04:35 +1100
+User-Agent: KMail/1.9.10
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
+       travis@sgi.com, Ingo Molnar <mingo@elte.hu>
+References: <20081023005751.53973DDEFE@ozlabs.org> <20081023094036.GA7593@redhat.com> <20081023143605.GN5255@in.ibm.com>
+In-Reply-To: <20081023143605.GN5255@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810241404.35932.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Rafael :)
+On Friday 24 October 2008 01:36:05 Gautham R Shenoy wrote:
+> OK, how about doing the following? That will solve the problem
+> of deadlock you pointed out in patch 6.
+>
+> 		get_online_cpus();
+> 		if (likely(per_cpu(cpu_state, cpuid) == CPU_ONLINE)) {
+> 			schedule_work_on(cpu, &wfc.work);
+> 			flush_work(&wfc.work);
+> 		} else if (per_cpu(cpu_state, cpuid) != CPU_DEAD)) {
+> 			/*
+> 			 * We're the CPU-Hotplug thread. Call the
+> 			 * function synchronously so that we don't
+> 			 * deadlock with any pending work-item blocked
+> 			 * on get_online_cpus()
+> 			 */
+> 			 cpumask_t  orignal_mask = current->cpus_allowed;
+> 			 set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu);
+> 			 wfc.ret = fn(arg);
+> 			 set_cpus_allowed_ptr(current, &original_mask);
+> 		}
 
-On Fri, 2008-10-24 at 00:06 +0200, Rafael J. Wysocki wrote:
-> On Thursday, 23 of October 2008, Nico Schottelius wrote:
-> > First of all, this was wrong:
-> > 
-> > Nico -telmich- Schottelius [Thu, Oct 23, 2008 at 10:43:26PM +0200]:
-> > >  - 2.6.27: system freeze instead of wakeup
-> > >    -> shows parts of the X screen, but does not react on ping
-> > 
-> > System does not freeze, but reboots instead.
-> > 
-> > Tried next-20081023 and 2.6.27 with acpi_sleep=s3_bios:
-> > 
-> > - suspend and wakeup on console works fine for both!
-> > - no X running on next
-> > - 2.6.27 + X -> reboot on wakeup
-> 
-> Let me guess, you have a NVidia graphics?
+Hi Gautham, Oleg,
 
-Not this time. Going off the other log he posted, it's...
+Unfortunately that's exactly what I'm trying to get away from: another cpumask 
+on the stack :(
 
-Chipset Mobile Intel® GM45 Express Chipset found
+The cpu hotplug thread is just whoever wrote 0 to "online" in sys.  And in 
+fact it already plays with its cpumask, which should be fixed too.
 
-Regards,
+I think we should BUG_ON(per_cpu(cpu_state, cpuid) != CPU_DEAD) to ensure we 
+never use work_on_cpu in the hotplug cpu path.  Then we use 
+smp_call_function() for that hard intel_cacheinfo case.  Finally, we fix the 
+cpu hotplug path to use schedule_work_on() itself rather than playing games 
+with cpumask.
 
-Nigel
+If you agree, I'll spin the patches...
 
+Thanks for the brainpower,
+Rusty.
