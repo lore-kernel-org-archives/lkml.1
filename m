@@ -1,52 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752106AbYJXEtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758693AbYJXEun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752106AbYJXEtl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 00:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbYJXEj6
+	id S1758693AbYJXEun (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 00:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757572AbYJXErX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 00:39:58 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:47137 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751735AbYJXEj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 00:39:57 -0400
-From: Andrey Mirkin <major@openvz.org>
-To: devel@openvz.org
-Subject: Re: [Devel] Re: [PATCH 05/10] Introduce function to dump process
-Date: Fri, 24 Oct 2008 08:40:16 +0400
-User-Agent: KMail/1.8.2
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <1224285098-573-1-git-send-email-major@openvz.org> <1224285098-573-6-git-send-email-major@openvz.org> <20081020174801.GB29092@us.ibm.com>
-In-Reply-To: <20081020174801.GB29092@us.ibm.com>
+	Fri, 24 Oct 2008 00:47:23 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:27176 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757514AbYJXErW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 00:47:22 -0400
+Message-ID: <49015358.9050308@ct.jp.nec.com>
+Date: Thu, 23 Oct 2008 21:47:20 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Mike Travis <travis@sgi.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH -tip/cpus4096-v2] cpumask: fix cpumask of call_function_data
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810240840.17531.major@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 20 October 2008 21:48 Serge E. Hallyn wrote:
-> Quoting Andrey Mirkin (major@openvz.org):
-> > +	t->cpt_uid = tsk->uid;
-> > +	t->cpt_euid = tsk->euid;
-> > +	t->cpt_suid = tsk->suid;
-> > +	t->cpt_fsuid = tsk->fsuid;
-> > +	t->cpt_gid = tsk->gid;
-> > +	t->cpt_egid = tsk->egid;
-> > +	t->cpt_sgid = tsk->sgid;
-> > +	t->cpt_fsgid = tsk->fsgid;
->
-> I don't see where any of these are restored.  (Obviously, I wanted
-> to think about how you're verifying the restarter's authorization
-> to do so)
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Well, right now I don't use them during restore to simplify restart procedure 
-and make it more clear for reviewers. In OpenVZ we are doing all restart 
-procedure with root's privileges and relying on fact that all such IDs will 
-be the same during restart (as we are restarting a container and its file 
-system will be the same during restart).
+The following assignment in smp_call_function_many() may cause unexpected
+behavior, when !CPUMASK_OFFSTACK.
+	data->cpumask = allbutself;
 
-Andrey
+Because it copys pointer of stack and the value will be modified after
+exit from smp_call_function_many().
+
+The type of cpumask field of call_function_data structure should be
+cpumask_var_t and an operation to assign is needed.
+
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ include/linux/cpumask.h |    9 +++++++++
+ kernel/smp.c            |    4 ++--
+ 2 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
+index d1f22ee..7bfc0f1 100644
+--- a/include/linux/cpumask.h
++++ b/include/linux/cpumask.h
+@@ -511,6 +511,10 @@ typedef struct cpumask *cpumask_var_t;
+ 
+ bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags);
+ void free_cpumask_var(cpumask_var_t mask);
++static inline void assign_cpumask_var(cpumask_var_t *dst, cpumask_var_t src)
++{
++	*dst = src;
++}
+ 
+ #else
+ typedef struct cpumask cpumask_var_t[1];
+@@ -524,6 +528,11 @@ static inline void free_cpumask_var(cpumask_var_t mask)
+ {
+ }
+ 
++static inline void assign_cpumask_var(cpumask_var_t *dst, cpumask_var_t src)
++{
++	(*dst)[0] = src[0];
++}
++
+ #endif /* CONFIG_CPUMASK_OFFSTACK */
+ 
+ /*
+diff --git a/kernel/smp.c b/kernel/smp.c
+index dccbb42..da98191 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -24,7 +24,7 @@ struct call_function_data {
+ 	struct call_single_data csd;
+ 	spinlock_t lock;
+ 	unsigned int refs;
+-	struct cpumask *cpumask;
++	cpumask_var_t cpumask;
+ 	struct rcu_head rcu_head;
+ };
+ 
+@@ -370,7 +370,7 @@ void smp_call_function_many(const struct cpumask *mask,
+ 	data->csd.func = func;
+ 	data->csd.info = info;
+ 	data->refs = num_cpus;
+-	data->cpumask = allbutself;
++	assign_cpumask_var(&data->cpumask, allbutself);
+ 
+ 	spin_lock_irqsave(&call_function_lock, flags);
+ 	list_add_tail_rcu(&data->csd.list, &call_function_queue);
+-- 
+1.5.6
+
