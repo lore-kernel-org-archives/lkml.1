@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbYJXP6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbYJXQIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756198AbYJXP6p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 11:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbYJXP6h
+	id S1754567AbYJXQIv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 12:08:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbYJXQIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 11:58:37 -0400
-Received: from gate.crashing.org ([63.228.1.57]:58664 "EHLO gate.crashing.org"
+	Fri, 24 Oct 2008 12:08:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40050 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751556AbYJXP6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 11:58:36 -0400
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, maxk@qualcomm.com,
-       Andrew Morton <akpm@osdl.org>, tglx@linutronix.de
-Subject: [PATCH] genirq: Set initial default irq affinity to just CPU0
-Date: Fri, 24 Oct 2008 10:57:38 -0500
-Message-Id: <1224863858-7933-1-git-send-email-galak@kernel.crashing.org>
-X-Mailer: git-send-email 1.5.5.1
+	id S1752046AbYJXQIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 12:08:41 -0400
+Message-ID: <4901F31E.9040007@redhat.com>
+Date: Fri, 24 Oct 2008 12:09:02 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: maxk@qualcomm.com, LinuxPPC-dev list <linuxppc-dev@ozlabs.org>,
+       linux-kernel Kernel <linux-kernel@vger.kernel.org>, tglx@linutronix.de
+Subject: Re: default IRQ affinity change in v2.6.27 (breaking several SMP
+ PPC based systems)
+References: <4E3CD4D5-FC1B-40BF-A776-C612B95806B8@kernel.crashing.org> <4901E6FB.4070200@redhat.com> <36A821E7-7F37-42AF-9A05-7205FCBF89EE@kernel.crashing.org>
+In-Reply-To: <36A821E7-7F37-42AF-9A05-7205FCBF89EE@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 18404756765c713a0be4eb1082920c04822ce588 introduced a regression
-on a subset of SMP based PPC systems whose interrupt controller only
-allow setting an irq to a single processor.  The previous behavior
-was only CPU0 was initially setup to get interrupts.  Revert back
-to that behavior.
+Kumar Gala wrote:
+> 
+> On Oct 24, 2008, at 10:17 AM, Chris Snook wrote:
+> 
+>> Kumar Gala wrote:
+>>> It appears the default IRQ affinity changes from being just cpu 0 to 
+>>> all cpu's.  This breaks several PPC SMP systems in which only a 
+>>> single processor is allowed to be selected as the destination of the 
+>>> IRQ.
+>>> What is the right answer in fixing this?  Should we:
+>>>    cpumask_t irq_default_affinity = 1;
+>>> instead of
+>>>    cpumask_t irq_default_affinity = CPU_MASK_ALL?
+>>
+>> On those systems, perhaps, but not universally.  There's plenty of 
+>> hardware where the physical topology of the machine is abstracted away 
+>> from the OS, and you need to leave the mask wide open and let the APIC 
+>> figure out where to map the IRQs.  Ideally, we should probably make 
+>> this decision based on the APIC, but if there's no PPC hardware that 
+>> uses this technique, then it would suffice to make this arch-specific.
+> 
+> 
+> What did those systems do before this patch?  Its one thing to expose a 
+> mask in the ability to change the default mask in 
+> /proc/irq/default_smp_affinity.  Its another (and a regression in my 
+> opinion) to change the mask value itself.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- kernel/irq/manage.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Before the patch they took an extremely long time to boot if they had storage 
+attached to each node of a multi-chassis system, performed poorly unless special 
+irqbalance hackery or manual assignment was used, and imposed artificial 
+restrictions on the granularity of hardware partitioning to ensure that CPU 0 
+would always be a CPU that could service all interrupts necessary to boot the OS.
 
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index c498a1b..728d36a 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -17,7 +17,7 @@
- 
- #ifdef CONFIG_SMP
- 
--cpumask_t irq_default_affinity = CPU_MASK_ALL;
-+cpumask_t irq_default_affinity = CPU_MASK_CPU0;
- 
- /**
-  *	synchronize_irq - wait for pending IRQ handlers (on other CPUs)
--- 
-1.5.5.1
+> As for making it ARCH specific, that doesn't really help since not all 
+> PPC hw has the limitation I spoke of.  Not even all MPIC (in our cases) 
+> have the limitation.
 
+What did those systems do before this patch? :)
+
+Making it arch-specific is an extremely simple way to solve your problem without 
+making trouble for the people who wanted this patch in the first place.  If PPC 
+needs further refinement to handle particular *PICs, you can implement that 
+without touching any arch-generic code.
+
+-- Chris
