@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758050AbYJXTBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755103AbYJXTL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758050AbYJXTBV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 15:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbYJXTBF
+	id S1755103AbYJXTL0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 15:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbYJXTLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 15:01:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47595 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753709AbYJXTBE convert rfc822-to-8bit (ORCPT
+	Fri, 24 Oct 2008 15:11:18 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:38487 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750930AbYJXTLS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 15:01:04 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Current suspend issues on Lenovo X200 (w/ Intel graphics)
-Date: Fri, 24 Oct 2008 21:05:45 +0200
-User-Agent: KMail/1.9.9
-Cc: Andres Freund <andres@anarazel.de>,
-       "Nico -telmich- Schottelius" <nico-linux-next@schottelius.org>,
-       Nigel Cunningham <ncunningham@crca.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <20081023204326.GB4175@denkbrett.schottelius.org> <200810242056.23272.rjw@sisk.pl> <20081024185541.GL22217@kernel.dk>
-In-Reply-To: <20081024185541.GL22217@kernel.dk>
+	Fri, 24 Oct 2008 15:11:18 -0400
+Message-ID: <49021DD2.2070504@zytor.com>
+Date: Fri, 24 Oct 2008 12:11:14 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200810242105.46282.rjw@sisk.pl>
+To: Uros Bizjak <ubizjak@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH, x86]: Implement change_bit with immediate operand as
+ "lock xorb"
+References: <5787cf470810240501j3522e8c8ld9a8498ff1bfef21@mail.gmail.com>
+In-Reply-To: <5787cf470810240501j3522e8c8ld9a8498ff1bfef21@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 24 of October 2008, Jens Axboe wrote:
-> On Fri, Oct 24 2008, Rafael J. Wysocki wrote:
-> > On Friday, 24 of October 2008, Jens Axboe wrote:
-> > > On Fri, Oct 24 2008, Rafael J. Wysocki wrote:
-> > > > On Friday, 24 of October 2008, Jens Axboe wrote:
-> > > > > On Fri, Oct 24 2008, Andres Freund wrote:
-> > > > > > On Friday 24 October 2008 15:01:31 Nico -telmich- Schottelius wrote:
-> > > > > > > > > Chipset Mobile Intel® GM45 Express Chipset found
-> > > > > > > > This is going to be interesting. :-)
-> > > > > > > > Nico, if the system is 64-bit, I'd recommend trying .28-rc1.
-> > > > > > > Yes, I'm on amd64;
-> > > > > > > As seen on my other post: xorg does not run on .28-rc1
-> > > > > > The kernel has a fix for memory management for GM45 cards since 2.6.28-rc1 
-> > > > > > which require a newer driver, so trying this may be benifical (patch in reply 
-> > > > > > to your first post).
-> > > > > 
-> > > > > No go, same for me on x60 on ubuntu 8.10-rc1.
-> > > > 
-> > > > Is this a regression on your box?
-> > > 
-> > > Yes, definitely.
-> > 
-> > Which kernel did work?
+Uros Bizjak wrote:
+> Hello!
 > 
-> 2.6.27, for instance. It's pretty much always worked, the last time it
-> broke was the timer stuff around KS. Other than that, it's been very
-> solid for a almost 2 years.
+> Implement change_bit with immediate bit count as "lock xorb". This is
+> similar to  "lock orb" and "lock andb"  for set_bit and clear_bit
+> functions.
+> 
 
-So it's a recent breakage for you.  May be a different issue from the x200 one,
-only the symptoms are similar (well, the symptoms are usually similar if failing
-resume is involved).
+Looks good, but please resubmit your patch with a Signed-off-by: line 
+and Cc: x86@kernel.org on the submission.
 
+Thanks!
 
+	-hpa
