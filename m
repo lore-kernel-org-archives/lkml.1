@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbYJXTWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753117AbYJXT0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754171AbYJXTWw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 15:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbYJXTWn
+	id S1753117AbYJXT0p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 15:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYJXT0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 15:22:43 -0400
-Received: from outbound-mail-03.bluehost.com ([69.89.21.13]:38363 "HELO
-	outbound-mail-03.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750979AbYJXTWn (ORCPT
+	Fri, 24 Oct 2008 15:26:38 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:54410 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751096AbYJXT0h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 15:22:43 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=sYjatwb35qPq4z5EmzoPkhThQvWUYSg8YQNWdzBmfw6B6KNcI4DSBjdC4DpabDsuxxhPwq4Rs5C62kINQRS6OEGOyjvFQN+KQS+WMDdOefR7TTDQ2ZGGBjLbY5iRSt2D;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Oops in ACPI with git latest
-Date: Fri, 24 Oct 2008 12:22:32 -0700
-User-Agent: KMail/1.10.1 (Linux/2.6.26.5-45.fc9.x86_64; KDE/4.1.2; x86_64; ; )
-Cc: "Moore, Robert" <robert.moore@intel.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-References: <1224791103.3330.37.camel@localhost.localdomain> <200810241104.19704.jbarnes@virtuousgeek.org> <200810242043.04078.rjw@sisk.pl>
-In-Reply-To: <200810242043.04078.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Oct 2008 15:26:37 -0400
+Date: Fri, 24 Oct 2008 21:34:14 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, akataria@vmware.com,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>
+Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is set.
+Message-ID: <20081024193414.GH27492@one.firstfloor.org>
+References: <1224728478.13953.79.camel@alok-dev1> <20081023081052.GI27492@one.firstfloor.org> <1224805162.21776.45.camel@alok-dev1> <49010D1E.8070400@zytor.com> <20081024002511.GC27492@one.firstfloor.org> <49011AD7.7000901@zytor.com> <20081024072320.GE27492@one.firstfloor.org> <4901EA14.9070300@zytor.com> <20081024192532.GG27492@one.firstfloor.org> <49021FCD.8080209@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810241222.32979.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <49021FCD.8080209@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, October 24, 2008 11:43 am Rafael J. Wysocki wrote:
-> On Friday, 24 of October 2008, Jesse Barnes wrote:
-> > So who wants to send me a final patch for this?
->
-> I already did: http://marc.info/?l=linux-kernel&m=122484871717023&w=4
-> but I can remove the "!output.pointer || " if you prefer. :-)
+On Fri, Oct 24, 2008 at 12:19:41PM -0700, H. Peter Anvin wrote:
+> Andi Kleen wrote:
+> >
+> >In the field they will just continue using clock=pit, like they
+> >always did on vmware. And also they will not update the Linux kernel.
+> >
+> 
+> That is a totally bogus assumption.  You will typically have the host 
+> platform (Vmware in this case) move much much slower than the guests.
 
-Yeah Bob said it would likely contain garbage anyway, so we should just remove 
-it.
+The people running on older hypervisors will just continue using
+PIT timer. They won't get nohz, but i guess without updates
+they don't expect new features.
 
-Jesse
+> >This is strictly for new installations. And I frankly don't 
+> >see why Linux needs to get white listed workarounds when the 
+> >Hypervisor couldn't as well be fixed. We have the bizarre
+> >situation here where a HV vendor tries to add workarounds
+> >to Linux instead of fixing it on their products.
+> 
+> ... just like every other hardware vendor.
+
+Hardware vendors can't fix it without long lead time.
+Software vendors can as easily as Linux.
+
+Also we're talking about an optimization here (enabling NOHZ), not a 
+correctness issue. So your analogy to hardware workarounds
+is already dubious.
+
+-Andi
+-- 
+ak@linux.intel.com
