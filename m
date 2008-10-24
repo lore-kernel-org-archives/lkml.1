@@ -1,307 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756409AbYJXUEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbYJXUPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756409AbYJXUEz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 16:04:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbYJXUEq
+	id S1755393AbYJXUPt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 16:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbYJXUPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 16:04:46 -0400
-Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:38752 "HELO
-	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752607AbYJXUEo (ORCPT
+	Fri, 24 Oct 2008 16:15:41 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:37485 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753052AbYJXUPk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 16:04:44 -0400
-X-YMail-OSG: bDhro58VM1lI46hQcYIB1n1xhzEq5fWuW65IATR_WBczFQgcp7OEbnEmjB0X3xCMgRH9JqMKG3fjTpDrpmJwV9kv58SYlBkDmgpgLIgBMv0S88u237xPTvm4mIQJPqL_PWY7pqWYBSrra45hNHkDSKaIRzs35oZDrAQgEA3f8w4oXRaCvi3HkxkUVcA-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH] [Target_Core_Mod/ConfigFS]: Added storage object attributes
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Andrew Morton <akpm@osdl.org>, Christoph Hellwig <hch@lst.de>,
-       Ming Zhang <blackmagic02881@gmail.com>,
-       "Ross S. W. Walker" <rswwalker@gmail.com>,
-       Arne Redlich <agr@powerkom-dd.de>, Hannes Reinecke <hare@suse.de>
-Content-Type: text/plain
-Date: Fri, 24 Oct 2008 13:04:42 -0700
-Message-Id: <1224878682.16558.55.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 24 Oct 2008 16:15:40 -0400
+Message-ID: <49022D90.6080606@vmware.com>
+Date: Fri, 24 Oct 2008 13:18:24 -0700
+From: Dan Hecht <dhecht@vmware.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Alok Kataria <akataria@vmware.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>, dhecht@vmware.com
+Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is
+ set.
+References: <1224713518.13953.46.camel@alok-dev1> <20081022225409.GB27492@one.firstfloor.org> <1224728478.13953.79.camel@alok-dev1> <20081023081052.GI27492@one.firstfloor.org> <1224805162.21776.45.camel@alok-dev1> <49010D1E.8070400@zytor.com> <20081024002511.GC27492@one.firstfloor.org> <49011AD7.7000901@zytor.com> <20081024072320.GE27492@one.firstfloor.org> <4901EA14.9070300@zytor.com> <20081024192532.GG27492@one.firstfloor.org>
+In-Reply-To: <20081024192532.GG27492@one.firstfloor.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 6f57b78ab1fca92d1fc85b6b82c15b12fccf256a Mon Sep 17 00:00:00 2001
-From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Fri, 24 Oct 2008 01:12:25 -0700
-Subject: [PATCH] [Target_Core_Mod/ConfigFS]: Added storage object attributes
+On 10/24/2008 12:25 PM, Andi Kleen wrote:
+>> BIOSes are also just software, and we have to deal with bugs in them
+>> *all the time*.  The reality is that we're going to have to deal with
+>> both vendor and user reluctance to upgrade, and therefore have to deal
+>> with brokenness in the field.
+> 
+> In the field they will just continue using clock=pit, like they
+> always did on vmware. And also they will not update the Linux kernel.
+> 
+> This is strictly for new installations. And I frankly don't
+> see why Linux needs to get white listed workarounds when the
+> Hypervisor couldn't as well be fixed. We have the bizarre
+> situation here where a HV vendor tries to add workarounds
+> to Linux instead of fixing it on their products.
+> 
 
-Added storage object attributes that live under:
+What exactly would you like vmware to fix?  VMware fully virtualizes 
+x86.  However, when running the kernel on virtual cpus, as compared to 
+running on a physical cpus, the timing characteristics are different -- 
+  virtual cpus have to time share physical cpus with each other.
 
-/sys/kernel/config/target/core/$PLUGIN_HBA/$STORAGE_OBJECT/attrib/
+So, timing assumptions that the kernel makes when running directly on 
+physical cpus no longer hold when running on virtual cpus.
 
-here is what they look like:
+Prior to clocksource/clockevents, the timing assumptions that the Linux 
+kernel made were terrible for hypervisors.  Now, the assumptions are 
+much better.  However, three *minor* assumptions that the kernel makes 
+are violated when running on a hypervisor:
 
-`-- target
-    |-- core
-    |   |-- iblock_0
-    |   |   |-- hba_info
-    |   |   `-- lvm_test0
-    |   |       |-- attrib
-    |   |       |   |-- hw_max_sectors
-    |   |       |   |-- hw_queue_depth
-    |   |       |   |-- max_sectors
-    |   |       |   |-- queue_depth
-    |   |       |   |-- status_thread
-    |   |       |   |-- status_thread_tur
-    |   |       |   `-- task_timeout
-    |   |       |-- control
-    |   |       |-- enable
-    |   |       |-- fd
-    |   |       `-- info
-    |   |-- pscsi_0
-    |   |   |-- hba_info
-    |   |   `-- sdd
-    |   |       |-- attrib
-    |   |       |   |-- hw_max_sectors
-    |   |       |   |-- hw_queue_depth
-    |   |       |   |-- max_sectors
-    |   |       |   |-- queue_depth
-    |   |       |   |-- status_thread
-    |   |       |   |-- status_thread_tur
-    |   |       |   `-- task_timeout
-    |   |       |-- control
-    |   |       |-- enable
-    |   |       |-- fd
-    |   |       `-- info
+1) The fast-path TSC calibration code makes assumptions about being able 
+to sample various counters in sequence in a set amount of time that are 
+not true when running virtualized.  (Actually, it makes assumptions that 
+aren't really true 100% of the time on physical cpus, but in that case 
+the odds of violating the assumptions (by hitting an SMI at exactly the 
+right time and length) are really rare.
 
-These are the equivalent functionality of the IOCTL op:
+Note that accurate calibration of the TSC is extremely important in 
+clocksource kernels since any error will lead to long term drift of 
+wallclock time.
 
-target-ctl setdevattrib <storage object parameters>
+2) There is no guarantee that the acpi_pm timer will be sampled at least 
+every 4.68 seconds (the wrap interval), because the vcpu, in extreme 
+circumstances, may not have a chance to run in that time.  Thus, the 
+acpi_pm timer is not suitable to be used as a clocksource watchdog when 
+running on a hypervisor.
 
-Just as with 'setdevattrib', some of the cannot be changed while
-$STORAGE_OBJECT has an active export to $FABRIC_MOD.
+3) Virtual TSCs can be kept nearly in sync, but because the virtual TSC 
+offset is set by software, it's not perfect.  So, the TSC 
+synchronization test can fail.  (Really, it can fail on native as well, 
+and that's why the tests for backwards TSC were added to 
+read_tsc()/vread_tsc()).
 
-*queue_depth and *max_sectors  are determined by target_core_mod's subsystem
-plugins (Linux/SCSI, Linux/IBLOCK, Linux/FILEIO), and in some cases
-with a real backing struct block_device, are subject to *REAL* hardware and HBA
-limitiations.
+Clearly, #1 and #2 *cannot* be fixed in the hypervisor.  These are cases 
+where the kernel is making assumptions that just are not true when 
+running on certain platforms (i.e. hypervisors).  Let's fix them.
 
-Also, updated target_core_store_dev_enable() to use new
-se_subsystem_api_t->create_virtdevice() function parameters.
+#3, as you have suggested below, can perhaps be fixed by loosening the 
+check a bit to allow some leeway for marginally offset TSCs.
 
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/lio-core/target_core_configfs.c |  135 ++++++++++++++++++++++++++++++-
- 1 files changed, 132 insertions(+), 3 deletions(-)
+> Now making generic code a little more flexible in what
+> it accepts is fine though (like relaxing tsc_sync or
+> checking and trusting UNSTABLE_TSC). That will scale at least
+> and doesn't need significant new code.
+> 
 
-diff --git a/drivers/lio-core/target_core_configfs.c b/drivers/lio-core/target_core_configfs.c
-index 264dcdb..a5792e3 100644
---- a/drivers/lio-core/target_core_configfs.c
-+++ b/drivers/lio-core/target_core_configfs.c
-@@ -39,13 +39,13 @@
- #include <iscsi_protocol.h>
- #include <iscsi_debug_opcodes.h>
- #include <iscsi_target_core.h>
-+#include <target_core_base.h>
- #include <iscsi_target_error.h>
- #include <iscsi_target_ioctl.h>
- #include <iscsi_target_ioctl_defs.h>
- #include <target_core_device.h>
- #include <iscsi_target_device.h>
- #include <target_core_hba.h>
--#include <iscsi_target_info.h>
- #include <target_core_plugin.h>
- #include <target_core_transport.h>
- #include <iscsi_target.h>
-@@ -57,6 +57,7 @@
- 
- #include <target_core_fabric_ops.h>
- #include <target_core_configfs.h>
-+#include <configfs_macros.h>
- 
- extern se_global_t *se_global;
- 
-@@ -516,6 +517,118 @@ EXPORT_SYMBOL(target_fabric_configfs_deregister);
- // Stop functions called by external Target Fabrics Modules
- //##############################################################################
- 
-+// Start functions for struct config_item_type target_core_dev_attrib_cit
-+
-+#define DEF_DEV_ATTRIB_SHOW(_name)						\
-+static ssize_t target_core_dev_show_attr_##_name (				\
-+	struct se_dev_attrib_s *da,						\
-+	char *page)								\
-+{										\
-+	se_device_t *dev;							\
-+	se_subsystem_dev_t *se_dev = da->da_sub_dev;				\
-+	ssize_t rb;								\
-+										\
-+	spin_lock(&se_dev->se_dev_lock);					\
-+	if (!(dev = se_dev->se_dev_ptr)) {					\
-+		spin_unlock(&se_dev->se_dev_lock); 				\
-+		return(-ENODEV);						\
-+	}									\
-+	rb = snprintf(page, PAGE_SIZE, "%u\n", (u32)DEV_ATTRIB(dev)->_name);	\
-+	spin_unlock(&se_dev->se_dev_lock);					\
-+										\
-+	return(rb);								\
-+}									
-+
-+#define DEF_DEV_ATTRIB_STORE(_name)						\
-+static ssize_t target_core_dev_store_attr_##_name (				\
-+	struct se_dev_attrib_s *da,						\
-+	const char *page,							\
-+	size_t count)								\
-+{										\
-+	se_device_t *dev;							\
-+	se_subsystem_dev_t *se_dev = da->da_sub_dev;				\
-+	char *endptr;								\
-+	u32 val;								\
-+	int ret;								\
-+										\
-+	spin_lock(&se_dev->se_dev_lock);					\
-+	if (!(dev = se_dev->se_dev_ptr)) {					\
-+		spin_unlock(&se_dev->se_dev_lock);				\
-+		return(-ENODEV);						\
-+	}									\
-+	val = simple_strtoul(page, &endptr, 0);					\
-+	ret = se_dev_set_##_name(dev, (u32)val);				\
-+	spin_unlock(&se_dev->se_dev_lock);					\
-+										\
-+	return((!ret) ? count : -EINVAL);					\
-+}
-+
-+#define DEF_DEV_ATTRIB(_name)							\
-+DEF_DEV_ATTRIB_SHOW(_name);							\
-+DEF_DEV_ATTRIB_STORE(_name);
-+
-+#define DEF_DEV_ATTRIB_RO(_name)						\
-+DEF_DEV_ATTRIB_SHOW(_name);
-+
-+CONFIGFS_EATTR_STRUCT(target_core_dev_attrib, se_dev_attrib_s);
-+#define SE_DEV_ATTR(_name, _mode)						\
-+static struct target_core_dev_attrib_attribute target_core_dev_attrib_##_name = \
-+		__CONFIGFS_EATTR(_name, _mode,					\
-+		target_core_dev_show_attr_##_name,				\
-+		target_core_dev_store_attr_##_name);		
-+
-+#define SE_DEV_ATTR_RO(_name);							\
-+static struct target_core_dev_attrib_attribute target_core_dev_attrib_##_name = \
-+		__CONFIGFS_EATTR_RO(_name,					\
-+		target_core_dev_show_attr_##_name);
-+
-+DEF_DEV_ATTRIB(status_thread);
-+SE_DEV_ATTR(status_thread, S_IRUGO | S_IWUSR);
-+
-+DEF_DEV_ATTRIB(status_thread_tur);
-+SE_DEV_ATTR(status_thread_tur, S_IRUGO | S_IWUSR);
-+
-+DEF_DEV_ATTRIB_RO(hw_max_sectors);
-+SE_DEV_ATTR_RO(hw_max_sectors);
-+
-+DEF_DEV_ATTRIB(max_sectors);
-+SE_DEV_ATTR(max_sectors, S_IRUGO | S_IWUSR);
-+
-+DEF_DEV_ATTRIB_RO(hw_queue_depth);
-+SE_DEV_ATTR_RO(hw_queue_depth);
-+
-+DEF_DEV_ATTRIB(queue_depth);
-+SE_DEV_ATTR(queue_depth, S_IRUGO | S_IWUSR);
-+
-+DEF_DEV_ATTRIB(task_timeout);
-+SE_DEV_ATTR(task_timeout, S_IRUGO | S_IWUSR);
-+
-+CONFIGFS_EATTR_OPS(target_core_dev_attrib, se_dev_attrib_s, da_group);
-+
-+static struct configfs_attribute *target_core_dev_attrib_attrs[] = {
-+	&target_core_dev_attrib_status_thread.attr,
-+	&target_core_dev_attrib_status_thread_tur.attr,
-+	&target_core_dev_attrib_hw_max_sectors.attr,
-+	&target_core_dev_attrib_max_sectors.attr,
-+	&target_core_dev_attrib_hw_queue_depth.attr,
-+	&target_core_dev_attrib_queue_depth.attr,
-+	&target_core_dev_attrib_task_timeout.attr,
-+	NULL,
-+};
-+
-+static struct configfs_item_operations target_core_dev_attrib_ops = {
-+	.show_attribute		= target_core_dev_attrib_attr_show,
-+	.store_attribute	= target_core_dev_attrib_attr_store,
-+};
-+
-+static struct config_item_type target_core_dev_attrib_cit = {
-+	.ct_item_ops		= &target_core_dev_attrib_ops,
-+	.ct_attrs		= target_core_dev_attrib_attrs,	
-+	.ct_owner		= THIS_MODULE,	
-+};
-+
-+// End functions for struct config_item_type target_core_dev_attrib_cit
-+
- //  Start functions for struct config_item_type target_core_dev_cit
- 
- static ssize_t target_core_show_dev_info (void *p, char *page)
-@@ -646,7 +759,7 @@ static ssize_t target_core_store_dev_enable (void *p, const char *page, size_t c
- 	if (t->check_configfs_dev_params(hba, se_dev) < 0)
- 		return(-EINVAL);
- 
--	dev = t->create_virtdevice(hba, se_dev->se_dev_su_ptr);
-+	dev = t->create_virtdevice(hba, se_dev, se_dev->se_dev_su_ptr);
- 	if (!(dev) || IS_ERR(dev))
- 		return(-EINVAL);
- 
-@@ -727,6 +840,7 @@ static struct config_group *target_core_call_createdev (
- 	se_hba_t *hba, *hba_p;
- 	se_subsystem_api_t *t;
- 	struct config_item *hba_ci;
-+	struct config_group *dev_cg = NULL;
- 	int ret = 0;
- 
- 	if (!(hba_ci = &group->cg_item)) {
-@@ -754,7 +868,15 @@ static struct config_group *target_core_call_createdev (
- 		printk(KERN_ERR "Unable to allocate memory for se_subsystem_dev_t\n");
- 		return(NULL);
- 	}
-+	spin_lock_init(&se_dev->se_dev_lock);
-+	se_dev->se_dev_attrib.da_sub_dev = se_dev;
-+
- 	se_dev->se_dev_hba = hba;
-+	dev_cg = &se_dev->se_dev_group;
-+
-+	if (!(dev_cg->default_groups = kzalloc(sizeof(struct config_group) * 2,
-+			GFP_KERNEL)))
-+		goto out;
- 
- 	/*
- 	 * Set se_dev_ptr from se_subsystem_api_t returned void ptr..
-@@ -765,7 +887,12 @@ static struct config_group *target_core_call_createdev (
- 		goto out;
- 	}
- 
--	config_group_init_type_name(&se_dev->se_dev_group, name, &target_core_dev_cit);
-+	config_group_init_type_name(&se_dev->se_dev_group, name,
-+			&target_core_dev_cit);
-+	config_group_init_type_name(&se_dev->se_dev_attrib.da_group, "attrib",
-+			&target_core_dev_attrib_cit);
-+	dev_cg->default_groups[0] = &se_dev->se_dev_attrib.da_group;
-+	dev_cg->default_groups[1] = NULL;
- 
- 	printk("Target_Core_ConfigFS: Allocated se_subsystem_dev_t: %p se_dev_su_ptr: %p\n",
- 			se_dev, se_dev->se_dev_su_ptr);
-@@ -773,6 +900,8 @@ static struct config_group *target_core_call_createdev (
- 	core_put_hba(hba);
- 	return(&se_dev->se_dev_group);
- out:
-+	if (dev_cg)
-+		kfree(dev_cg->default_groups);
- 	kfree(se_dev);
- 	core_put_hba(hba);
- 	return(NULL);
--- 
-1.5.4.1
+I think everyone can agree that this is the preferred approach, in 
+general.  And in fact it was the approach Alok first used for the TSC 
+frequency calibration problem (this is one reason why he merged the 
+32-bit and 64-bit TSC code -- to standardize on the more robust 64-bit 
+calibration code).  But, in the end, folks wanted a "fast" TSC 
+calibration path, and that path makes assumptions that just won't be 
+true when running on a hypervisor, so we are left with skipping that 
+path if we are on a virtual cpu.
 
+Also, with regards to your claim that users should continue to use 
+clock=pit like options on newer kernels: that is just plain *wrong*. 
+The reason for clock=pit (really clock=pmtmr) recommendation on 
+pre-clocksource kernels wasn't to avoid using the TSC, but it was simply 
+a workaround to avoid the kernel code that attempted to compensate for 
+lost ticks (but would do so incorrectly in the case of late, but not 
+lost, interrupts -- again, it was a kernel timing assumption that was 
+invalid on hypervisors).
 
-
+Dan
