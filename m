@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbYJXRlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbYJXRnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757379AbYJXRlZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 13:41:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbYJXRlR
+	id S1757327AbYJXRnV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 13:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbYJXRnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 13:41:17 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:54171 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750817AbYJXRlQ (ORCPT
+	Fri, 24 Oct 2008 13:43:14 -0400
+Received: from outbound-mail-101.bluehost.com ([69.89.22.11]:36431 "HELO
+	outbound-mail-101.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753231AbYJXRnN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 13:41:16 -0400
-Message-ID: <4902086E.6030900@freescale.com>
-Date: Fri, 24 Oct 2008 12:39:58 -0500
-From: Scott Wood <scottwood@freescale.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 24 Oct 2008 13:43:13 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=Z9ZUlLArG7G2SyRWc80Nifzsgq6xEQsabx3fk2saYMEWpgtcWZfbnW1R/mDOmj+RDGIJSDsFdCxTJaA5RB0aJuBbrdFUsL2ExLPS1B90bLFHJTdddQ73KUnPabzXSe1Y;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] PCI hotplug printk format
+Date: Fri, 24 Oct 2008 10:42:57 -0700
+User-Agent: KMail/1.10.1 (Linux/2.6.26.5-45.fc9.x86_64; KDE/4.1.2; x86_64; ; )
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>,
+       torvalds <torvalds@linux-foundation.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+References: <20081023213637.eff9b414.sfr@canb.auug.org.au> <20081023181455.336e5d03.randy.dunlap@oracle.com>
+In-Reply-To: <20081023181455.336e5d03.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-CC: Chris Snook <csnook@redhat.com>,
-       LinuxPPC-dev list <linuxppc-dev@ozlabs.org>, tglx@linutronix.de,
-       linux-kernel Kernel <linux-kernel@vger.kernel.org>, maxk@qualcomm.com
-Subject: Re: default IRQ affinity change in v2.6.27 (breaking several SMP
- PPC	based systems)
-References: <4E3CD4D5-FC1B-40BF-A776-C612B95806B8@kernel.crashing.org>	<4901E6FB.4070200@redhat.com>	<36A821E7-7F37-42AF-9A05-7205FCBF89EE@kernel.crashing.org>	<4901F31E.9040007@redhat.com> <5967704E-0117-46B8-8505-6A002502C38C@kernel.crashing.org>
-In-Reply-To: <5967704E-0117-46B8-8505-6A002502C38C@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810241042.58241.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kumar Gala wrote:
-> So why not just have x86 startup code set irq_default_affinity = 
-> CPU_MASK_ALL than?
+On Thursday, October 23, 2008 6:14 pm Randy Dunlap wrote:
+> I made this patch for linux-next, but now mainline has this same
+> code/warning.
+>
+>
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 
-That doesn't really solve the problem, as a user could still manually 
-set an invalid affinity.  The MPIC driver should reduce the affinity 
-itself to what the hardware can handle.
+Thanks Randy, I've queued it up.
 
--Scott
+Jesse
