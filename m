@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbYJXSD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbYJXSEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757445AbYJXSD6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 14:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbYJXSDu
+	id S1757922AbYJXSEg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 14:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151AbYJXSE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 14:03:50 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:34670 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751198AbYJXSDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 14:03:50 -0400
-Date: Fri, 24 Oct 2008 20:02:48 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andres Freund <andres@anarazel.de>
-Cc: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Nigel Cunningham <ncunningham@crca.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Current suspend issues on Lenovo X200 (w/ Intel graphics)
-Message-ID: <20081024180248.GH22217@kernel.dk>
-References: <20081023204326.GB4175@denkbrett.schottelius.org> <200810240911.05193.rjw@sisk.pl> <20081024130130.GA5816@denkbrett.schottelius.org> <200810241630.52740.andres@anarazel.de>
+	Fri, 24 Oct 2008 14:04:29 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60123 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751256AbYJXSE2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 14:04:28 -0400
+To: Felix von Leitner <felix-linuxkernel@fefe.de>
+Cc: Linux Kernel Mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: MCEs
+From: Andi Kleen <andi@firstfloor.org>
+References: <20081024124502.GA9425@codeblau.de>
+Date: Fri, 24 Oct 2008 20:04:29 +0200
+In-Reply-To: <20081024124502.GA9425@codeblau.de> (Felix von Leitner's message of "Fri, 24 Oct 2008 14:45:02 +0200")
+Message-ID: <87r66598eq.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200810241630.52740.andres@anarazel.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 24 2008, Andres Freund wrote:
-> On Friday 24 October 2008 15:01:31 Nico -telmich- Schottelius wrote:
-> > > > Chipset Mobile Intel® GM45 Express Chipset found
-> > > This is going to be interesting. :-)
-> > > Nico, if the system is 64-bit, I'd recommend trying .28-rc1.
-> > Yes, I'm on amd64;
-> > As seen on my other post: xorg does not run on .28-rc1
-> The kernel has a fix for memory management for GM45 cards since 2.6.28-rc1 
-> which require a newer driver, so trying this may be benifical (patch in reply 
-> to your first post).
+Felix von Leitner <felix-linuxkernel@fefe.de> writes:
 
-No go, same for me on x60 on ubuntu 8.10-rc1.
+> This is the kind of MCE that freezes the box and causes a panic.  The
+> trace does not end up in syslog.  I found a program called mcelog which
+> I am supposed to call regularly from cron, but how can that help me when
+> the first MCE I get insta-panics the box?
 
--- 
-Jens Axboe
+When you do a warm boot (not power cycle, but reset button or 
+panic=30) then the panic mce will be logged after reboot.
+
+> Now the most common causes for MCEs are apparently heat issues and bad
+> memory.  I can rule out both.  Could this be an artifact of some bad
+> ACPI tables?
+>
+> How do you debug this kind of problem?
+
+It's some sort of hardware problem, debugging it typically
+either involves fixing the cooling or exchanging components.
+
+-Andi
 
