@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756865AbYJXU1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757375AbYJXU2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756865AbYJXU1a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 16:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbYJXU1V
+	id S1757375AbYJXU2T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 16:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbYJXU2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 16:27:21 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:61208 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751975AbYJXU1U (ORCPT
+	Fri, 24 Oct 2008 16:28:11 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:36955 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753914AbYJXU2K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 16:27:20 -0400
-Date: Fri, 24 Oct 2008 16:27:05 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-Subject: RE: [PATCH] Subject: Prevent acpi_run_osc from using NULL objects
- (was: Re: Oops in ACPI with git latest)
-In-reply-to: <4911F71203A09E4D9981D27F9D8308580AA7FA4F@orsmsx503.amr.corp.intel.com>
-X-X-Sender: lenb@localhost.localdomain
-To: "Moore, Robert" <robert.moore@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Message-id: <alpine.LFD.1.10.0810241625170.3056@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <1224791103.3330.37.camel@localhost.localdomain>
- <1224811642.3330.57.camel@localhost.localdomain>
- <200810240857.18190.rjw@sisk.pl> <200810241349.43166.rjw@sisk.pl>
- <4911F71203A09E4D9981D27F9D8308580AA7FA4F@orsmsx503.amr.corp.intel.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 24 Oct 2008 16:28:10 -0400
+X-SourceIP: 213.46.9.244
+Subject: Re: [PATCH 7/8] sched: non-zero lag renice
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, efault@gmx.de,
+       vatsa@in.ibm.com
+In-Reply-To: <49020A2A.5070809@nortel.com>
+References: <20081024090611.936552213@chello.nl>
+	 <20081024091109.912152294@chello.nl>  <49020A2A.5070809@nortel.com>
+Content-Type: text/plain
+Date: Fri, 24 Oct 2008 22:28:03 +0200
+Message-Id: <1224880083.7753.6.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-10-24 at 11:47 -0600, Chris Friesen wrote:
+> Peter Zijlstra wrote:
+> 
+>  > Then renicing, esp when lowering nice value (getting heavier), its possible
+>  > to get into a starvation scenario. If you got too much runtime as a very
+>  > light task, you get shot way far too the right, which means you'll have to
+>  > wait for a long time in order to run again.
+>  >
+>  > If during that wait you get reniced down, fairness would suggest you get run
+>  > earlier, because you deserve more time.
+>  >
+>  > This can be solved by scaling the vruntime so that we keep the real-time
+>  > lag invariant.
+> 
+> If we've already been shot way out to the right, presumably that would give us 
+> a large real-time lag.  If we renice to a lower nice level, wouldn't we want 
+> to reduce the real-time lag rather than make it constant?
+
+Ah, see but a 1ms real-time lag might be gigantic on weight=15, but
+nearly nothing on weight=88761.
+
+1e6 * 1024/15 is massively larger than 1e6 * 1024/88761.
+
+1000000*1024/15 = 68266666
+1000000*1024/88761 = 11536
 
 
-> We've just recently deployed a new module that validates the inputs and outputs
-> for the predefined ACPI methods (Those that start with underscore).
-> 
-> That is the source of these messages:
-> 
-> > > ACPI Warning (nspredef-0252): \_SB_.PCI0._OSC: Parameter count mismatch - ASL declared 5, expected 4 [20080926]
-> > > ACPI Error (nspredef-0163): \_SB_.PCI0._OSC: Missing expected return value [20080926]
-> 
-> For the initial version of this module, we only output messages when the inputs and/or
-> outputs don't match the requirements of the ACPI specification. 
-> 
-> We can change this to returning exceptions in the future.
 
-I expect we're going to have a bunch of false positives with this one,
-and indeed may need to even pare the warnings back to only
-when CONFIG_ACPI_DEBUG, or acpi=strict or something.
 
--Len
