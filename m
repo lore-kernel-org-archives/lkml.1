@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbYJXEp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbYJXEpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754783AbYJXEp2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 00:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYJXEjd
+	id S1757218AbYJXEpt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 00:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYJXEjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 00:39:33 -0400
-Received: from kroah.org ([198.145.64.141]:51830 "EHLO coco.kroah.org"
+	Fri, 24 Oct 2008 00:39:32 -0400
+Received: from kroah.org ([198.145.64.141]:51810 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752958AbYJXEjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 00:39:23 -0400
-Date: Thu, 23 Oct 2008 21:34:46 -0700
+	id S1752907AbYJXEjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 00:39:22 -0400
+Date: Thu, 23 Oct 2008 21:34:43 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,46 +24,78 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, netfilter-devel@vger.kernel.org,
        Patrick McHardy <kaber@trash.net>, davem@davemloft.net,
-       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>
-Subject: [patch 17/27] netfilter: snmp nat leaks memory in case of failure
-Message-ID: <20081024043446.GR30828@kroah.com>
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Jan Engelhardt <jengelh@medozas.de>
+Subject: [patch 16/27] netfilter: xt_iprange: fix range inversion match
+Message-ID: <20081024043443.GQ30828@kroah.com>
 References: <20081024042023.054190751@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline; filename="netfilter-snmp-nat-leaks-memory-in-case-of-failure.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="netfilter-xt_iprange-fix-range-inversion-match.patch"
 In-Reply-To: <20081024043303.GA30828@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.27-stable review patch.  If anyone has any objections, please let us 
 know.
 
 ------------------
-From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+From: Alexey Dobriyan <adobriyan@gmail.com>
 
-netfilter: snmp nat leaks memory in case of failure
+netfilter: xt_iprange: fix range inversion match
 
-Upstream commit 311670f3e:
+Upstream commit 6def1eb48:
 
-Signed-off-by: Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>
+Inverted IPv4 v1 and IPv6 v0 matches don't match anything since 2.6.25-rc1!
+
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Acked-by: Jan Engelhardt <jengelh@medozas.de>
 Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/netfilter/nf_nat_snmp_basic.c |    1 +
- 1 file changed, 1 insertion(+)
+ net/netfilter/xt_iprange.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- a/net/ipv4/netfilter/nf_nat_snmp_basic.c
-+++ b/net/ipv4/netfilter/nf_nat_snmp_basic.c
-@@ -742,6 +742,7 @@ static unsigned char snmp_object_decode(
- 			*obj = kmalloc(sizeof(struct snmp_object) + len,
- 				       GFP_ATOMIC);
- 			if (*obj == NULL) {
-+				kfree(p);
- 				kfree(id);
- 				if (net_ratelimit())
- 					printk("OOM in bsalg (%d)\n", __LINE__);
+--- a/net/netfilter/xt_iprange.c
++++ b/net/netfilter/xt_iprange.c
+@@ -67,7 +67,7 @@ iprange_mt4(const struct sk_buff *skb, c
+ 	if (info->flags & IPRANGE_SRC) {
+ 		m  = ntohl(iph->saddr) < ntohl(info->src_min.ip);
+ 		m |= ntohl(iph->saddr) > ntohl(info->src_max.ip);
+-		m ^= info->flags & IPRANGE_SRC_INV;
++		m ^= !!(info->flags & IPRANGE_SRC_INV);
+ 		if (m) {
+ 			pr_debug("src IP " NIPQUAD_FMT " NOT in range %s"
+ 			         NIPQUAD_FMT "-" NIPQUAD_FMT "\n",
+@@ -81,7 +81,7 @@ iprange_mt4(const struct sk_buff *skb, c
+ 	if (info->flags & IPRANGE_DST) {
+ 		m  = ntohl(iph->daddr) < ntohl(info->dst_min.ip);
+ 		m |= ntohl(iph->daddr) > ntohl(info->dst_max.ip);
+-		m ^= info->flags & IPRANGE_DST_INV;
++		m ^= !!(info->flags & IPRANGE_DST_INV);
+ 		if (m) {
+ 			pr_debug("dst IP " NIPQUAD_FMT " NOT in range %s"
+ 			         NIPQUAD_FMT "-" NIPQUAD_FMT "\n",
+@@ -123,14 +123,14 @@ iprange_mt6(const struct sk_buff *skb, c
+ 	if (info->flags & IPRANGE_SRC) {
+ 		m  = iprange_ipv6_sub(&iph->saddr, &info->src_min.in6) < 0;
+ 		m |= iprange_ipv6_sub(&iph->saddr, &info->src_max.in6) > 0;
+-		m ^= info->flags & IPRANGE_SRC_INV;
++		m ^= !!(info->flags & IPRANGE_SRC_INV);
+ 		if (m)
+ 			return false;
+ 	}
+ 	if (info->flags & IPRANGE_DST) {
+ 		m  = iprange_ipv6_sub(&iph->daddr, &info->dst_min.in6) < 0;
+ 		m |= iprange_ipv6_sub(&iph->daddr, &info->dst_max.in6) > 0;
+-		m ^= info->flags & IPRANGE_DST_INV;
++		m ^= !!(info->flags & IPRANGE_DST_INV);
+ 		if (m)
+ 			return false;
+ 	}
 
 -- 
