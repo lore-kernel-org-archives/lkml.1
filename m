@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbYJXHsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbYJXHw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbYJXHsf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 03:48:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYJXHs0
+	id S1753993AbYJXHw7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 03:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbYJXHwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 03:48:26 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:43481 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbYJXHs0 (ORCPT
+	Fri, 24 Oct 2008 03:52:49 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:15195 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751174AbYJXHws (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 03:48:26 -0400
-Date: Fri, 24 Oct 2008 10:48:23 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: akpm@linux-foundation.org
-cc: zanussi@comcast.net, mathieu.desnoyers@polymtl.ca,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] relayfs: fix infinite loop with splice()
-Message-ID: <Pine.LNX.4.64.0810241046240.16432@melkki.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 24 Oct 2008 03:52:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=HQUeDWBRZGs23BByiq6XEIqwDZHOpp4cm++plgIWZYPzh83pNn8pIppFXqUBqHlyy9
+         096tyLbjo+pgxur+VGHO9OVfX9970ZdPvUkMnm/RLkzAr6wsiHk1+PPiXojOJFPB36W1
+         FPNVW3rXtPVZlfGKGg4qJW6IlZHTJwbAHLZOc=
+Message-ID: <807b3a220810240052n6a8b41b0x1ea9c88124b3f5f8@mail.gmail.com>
+Date: Fri, 24 Oct 2008 13:22:46 +0530
+From: "Nikanth K" <nikanth@gmail.com>
+To: "device-mapper development" <dm-devel@redhat.com>
+Subject: Re: [dm-devel] [PATCH 11/13] dm: enable request-based dm
+Cc: jens.axboe@oracle.com, agk@redhat.com,
+       James.Bottomley@hansenpartnership.com, j-nomura@ce.jp.nec.com,
+       k-ueda@ct.jp.nec.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, "Nikanth Karthikesan" <knikanth@suse.de>
+In-Reply-To: <20080912.104634.08318008.k-ueda@ct.jp.nec.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080912.103814.74754581.k-ueda@ct.jp.nec.com>
+	 <20080912.104634.08318008.k-ueda@ct.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tom Zanussi <zanussi@comcast.net>
+On Fri, Sep 12, 2008 at 8:16 PM, Kiyoshi Ueda <k-ueda@ct.jp.nec.com> wrote:
+> This patch enables request-based dm.
+>
+> o Request-based dm and bio-based dm coexist, since there are
+>  some target drivers which are more fitting to bio-based dm.
+>  Also, there are other bio-based devices in the kernel
+>  (e.g. md, loop).
+>  Since bio-based device can't receive struct request,
+>  there are some limitations on device stacking between
+>  bio-based and request-based.
+>
+>                     type of underlying device
+>                   bio-based      requeset-based
+>   ----------------------------------------------
+>    bio-based         OK                OK
+>    request-based     NG                OK
+>
 
-Running kmemtraced, which uses splice() on relayfs, causes a hard lock on
-x86-64 SMP. As described by Tom Zanussi:
+So will some configurations would become impossible, if a target is
+made request-based and bio-based one is removed. Hope both
+types of targets would co-exist and would be selectable for sometime.
 
-  It looks like you hit the same problem as described here:
+>  The device type is recognized by the queue flag in the kernel,
+>  so dm follows that.
+>
+> o The type of a dm device is decided at the first table loading time.
+>  Until then, mempool creations are deferred, since mempools for
+>  request-based dm are different from those for bio-based dm.
+>  Once the type of a dm device is decided, the type can't be changed.
+>
+> o Currently, request-based dm supports only tables that have a single
+>  target.
 
-  commit 8191ecd1d14c6914c660dfa007154860a7908857
+Barrier support should be straight forward?
 
-      splice: fix infinite loop in generic_file_splice_read()
-
-  relay uses the same loop but it never got noticed or fixed.
-
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Tested-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- kernel/relay.c |    7 ++-----
- 1 files changed, 2 insertions(+), 5 deletions(-)
-
-diff --git a/kernel/relay.c b/kernel/relay.c
-index 8d13a78..6a4d439 100644
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -1318,12 +1318,9 @@ static ssize_t relay_file_splice_read(struct file *in,
- 		if (ret < 0)
- 			break;
- 		else if (!ret) {
--			if (spliced)
--				break;
--			if (flags & SPLICE_F_NONBLOCK) {
-+			if (flags & SPLICE_F_NONBLOCK)
- 				ret = -EAGAIN;
--				break;
--			}
-+			break;
- 		}
- 
- 		*ppos += ret;
--- 
-1.5.4.3
-
+Thanks
+Nikanth Karthikesan
