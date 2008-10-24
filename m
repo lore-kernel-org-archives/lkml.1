@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753523AbYJXEnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbYJXEoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753523AbYJXEnr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 00:43:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbYJXEjU
+	id S1756107AbYJXEoN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 00:44:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbYJXEjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 00:39:20 -0400
-Received: from kroah.org ([198.145.64.141]:51755 "EHLO coco.kroah.org"
+	Fri, 24 Oct 2008 00:39:25 -0400
+Received: from kroah.org ([198.145.64.141]:51768 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751854AbYJXEjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 00:39:16 -0400
-Date: Thu, 23 Oct 2008 21:34:27 -0700
+	id S1751867AbYJXEjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 00:39:17 -0400
+Date: Thu, 23 Oct 2008 21:34:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mikulas Patocka <mpatocka@redhat.com>,
-       Alasdair G Kergon <agk@redhat.com>
-Subject: [patch 12/27] dm exception store: fix misordered writes
-Message-ID: <20081024043427.GM30828@kroah.com>
+       alan@lxorguk.ukuu.org.uk, iommu@lists.linux-foundation.org,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       David Woodhouse <David.Woodhouse@intel.com>
+Subject: [patch 13/27] amd_iommu: fix nasty bug that caused
+	ILLEGAL_DEVICE_TABLE_ENTRY errors
+Message-ID: <20081024043430.GN30828@kroah.com>
 References: <20081024042023.054190751@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="dm-exception-store-fix-misordered-writes.patch"
+Content-Disposition: inline; filename="amd_iommu-fix-nasty-bug-that-caused-illegal_device_table_entry-errors.patch"
 In-Reply-To: <20081024043303.GA30828@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,49 +43,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Mikulas Patocka <mpatocka@redhat.com>
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
 
-commit 7acedc5b98a2fcff64f00c21110aae7d3ac2f7df upstream
+commit f609891f428e1c20e270e7c350daf8c93cc459d7 upstream
 
-We must zero the next chunk on disk *before* writing out the current chunk, not
-after.  Otherwise if the machine crashes at the wrong time, the "end of metadata"
-marker may be missing.
+We are on 64-bit so better use u64 instead of u32 to deal with
+addresses:
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+static void __init iommu_set_device_table(struct amd_iommu *iommu)
+{
+        u64 entry;
+  ...
+        entry = virt_to_phys(amd_iommu_dev_table);
+  ...
+
+(I am wondering why gcc 4.2.x did not warn about the assignment
+between u32 and unsigned long.)
+
+Cc: iommu@lists.linux-foundation.org
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/dm-exception-store.c |   11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ arch/x86/kernel/amd_iommu_init.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/md/dm-exception-store.c
-+++ b/drivers/md/dm-exception-store.c
-@@ -603,17 +603,22 @@ static void persistent_commit(struct exc
- 		return;
+--- a/arch/x86/kernel/amd_iommu_init.c
++++ b/arch/x86/kernel/amd_iommu_init.c
+@@ -210,7 +210,7 @@ static void __init iommu_set_exclusion_r
+ /* Programs the physical address of the device table into the IOMMU hardware */
+ static void __init iommu_set_device_table(struct amd_iommu *iommu)
+ {
+-	u32 entry;
++	u64 entry;
  
- 	/*
-+	 * If we completely filled the current area, then wipe the next one.
-+	 */
-+	if ((ps->current_committed == ps->exceptions_per_area) &&
-+	     zero_disk_area(ps, ps->current_area + 1))
-+		ps->valid = 0;
-+
-+	/*
- 	 * Commit exceptions to disk.
- 	 */
--	if (area_io(ps, WRITE))
-+	if (ps->valid && area_io(ps, WRITE))
- 		ps->valid = 0;
+ 	BUG_ON(iommu->mmio_base == NULL);
  
- 	/*
- 	 * Advance to the next area if this one is full.
- 	 */
- 	if (ps->current_committed == ps->exceptions_per_area) {
--		if (zero_disk_area(ps, ps->current_area + 1))
--			ps->valid = 0;
- 		ps->current_committed = 0;
- 		ps->current_area++;
- 		zero_memory_area(ps);
 
 -- 
