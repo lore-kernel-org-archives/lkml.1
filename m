@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759210AbYJXBSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759293AbYJXBTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759210AbYJXBSy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 21:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758811AbYJXBSX
+	id S1759293AbYJXBTR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 21:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759149AbYJXBSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 21:18:23 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:59155 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758754AbYJXBSW (ORCPT
+	Thu, 23 Oct 2008 21:18:45 -0400
+Received: from rcsinet13.oracle.com ([148.87.113.125]:23820 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759129AbYJXBSo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 21:18:22 -0400
-Message-ID: <4901224C.6060003@zytor.com>
-Date: Thu, 23 Oct 2008 18:18:04 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: akataria@vmware.com
-CC: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH] Skip tsc synchronization checks if CONSTANT_TSC bit is
- set.
-References: <20081021181536.GI12825@one.firstfloor.org>	 <1224616236.6161.60.camel@alok-dev1>	 <20081021192746.GJ12825@one.firstfloor.org>	 <1224703427.13953.8.camel@alok-dev1>	 <20081022195845.GP12825@one.firstfloor.org>	 <1224712846.13953.37.camel@alok-dev1>	 <20081022221316.GW12825@one.firstfloor.org>	 <1224713518.13953.46.camel@alok-dev1>	 <20081022225409.GB27492@one.firstfloor.org>	 <1224728478.13953.79.camel@alok-dev1>	 <20081023081052.GI27492@one.firstfloor.org>	 <1224805162.21776.45.camel@alok-dev1>  <49010D1E.8070400@zytor.com> <1224810764.21776.74.camel@alok-dev1>
-In-Reply-To: <1224810764.21776.74.camel@alok-dev1>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 23 Oct 2008 21:18:44 -0400
+Date: Thu, 23 Oct 2008 18:17:45 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+Subject: [PATCH] coda: credentials error
+Message-Id: <20081023181745.7991a823.randy.dunlap@oracle.com>
+In-Reply-To: <20081023213637.eff9b414.sfr@canb.auug.org.au>
+References: <20081023213637.eff9b414.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.49012245.015E:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alok Kataria wrote:
-> 
-> I agree with the synthetic cpu feature thing.
-> Do you think i should use one of the existing word like the word 3 which
-> is for synthesized feature bits ? Or is it better to define a new
-> virtualization specific word ?
-> 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-I don't see any point in using anything other than word 3 until it fills up.
+Needs a header file for credentials struct:
 
-What we want to end up with is cleanly separated: hypervisor detection, 
-hypervisor features/workaround settings, and the implementation of those.
+linux-next-20081023/fs/coda/file.c:177: error: dereferencing pointer to incomplete type
 
-	-hpa
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ fs/coda/file.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- linux-next-20081023.orig/fs/coda/file.c
++++ linux-next-20081023/fs/coda/file.c
+@@ -13,6 +13,7 @@
+ #include <linux/file.h>
+ #include <linux/fs.h>
+ #include <linux/stat.h>
++#include <linux/cred.h>
+ #include <linux/errno.h>
+ #include <linux/smp_lock.h>
+ #include <linux/string.h>
