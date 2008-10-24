@@ -1,80 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbYJXLVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbYJXLWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756155AbYJXLVz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 07:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751356AbYJXLVq
+	id S1753321AbYJXLWo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 07:22:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYJXLWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 07:21:46 -0400
-Received: from mail.phnxsoft.com ([195.227.45.4]:1048 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750808AbYJXLVp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 07:21:45 -0400
-Message-ID: <4901AFB8.1030806@imap.cc>
-Date: Fri, 24 Oct 2008 13:21:28 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.17) Gecko/20080829 SeaMonkey/1.1.12
+	Fri, 24 Oct 2008 07:22:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51189 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750808AbYJXLWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 07:22:35 -0400
+Date: Fri, 24 Oct 2008 13:22:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: dwmw2@infradead.org, torvalds@linux-foundation.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, tony.luck@intel.com
+Subject: Re: [GIT *] iommu fixes for 2.6.28
+Message-ID: <20081024112217.GA19266@elte.hu>
+References: <1224616464.16910.103.camel@macbook.infradead.org> <20081024110125.GA18869@elte.hu> <20081024201041T.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Hansjoerg Lipp <hjlipp@web.de>
-Subject: Re: [PATCH 72/80] tty: fix up gigaset a bit
-References: <20081013092758.21645.2359.stgit@localhost.localdomain>	<20081013094438.21645.30934.stgit@localhost.localdomain>	<48F762CA.4080608@imap.cc>	<20081017124004.64d3f2cf@lxorguk.ukuu.org.uk>	<48FB27F1.9010007@imap.cc> <20081022100045.2f06e977@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081022100045.2f06e977@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigFD071BF516D1BB61349C2DC9"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081024201041T.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigFD071BF516D1BB61349C2DC9
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-On 22.10.2008 11:00 Alan Cox wrote:
-> Fiddling with tty->disc_data by hand probably currently does the right
-> thing. I don't guarantee it will continue to do so after the BKL remova=
-l
-> gets to ldisc setting.
+* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-I never expected you to guarantee anything. :-)
-Anyway, I'll continue keeping my eyes open for changes in the tty area.
-Should you come across a specific problem with the driver, feel free
-to drop me a line.
+> On Fri, 24 Oct 2008 13:01:25 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * David Woodhouse <dwmw2@infradead.org> wrote:
+> > 
+> > > This contains a few iommu-related fixes -- it restores DMA remapping 
+> > > on newer Intel hardware, which was disabled by the interrupt remapping 
+> > > patches, adds IA64 support for the Intel IOMMU, and some other small 
+> > > fixes.
+> > > 
+> > >  MAINTAINERS                      |    7 +
+> > >  arch/x86/kernel/amd_iommu_init.c |    2 +-
+> > >  arch/x86/kernel/pci-dma.c        |   16 ---
+> > >  drivers/pci/dmar.c               |  119 +++++++++++++-----
+> > >  drivers/pci/intel-iommu.c        |  250 ++++++++++++++++++++------------------
+> > >  drivers/pci/quirks.c             |   14 ++
+> > >  include/asm-x86/iommu.h          |    4 +
+> > >  include/linux/dma_remapping.h    |   27 ++--
+> > >  include/linux/intel-iommu.h      |   66 ++++++++---
+> > >  9 files changed, 305 insertions(+), 200 deletions(-)
+> > 
+> > hm, i just updated to v2.6.28-rc1, and these changes broke the x86 
+> > 32-bit build:
+> > 
+> >   arch/x86/kernel/built-in.o: In function `dma_supported':
+> >   (.text+0x5797): undefined reference to `forbid_dac'
+> >   arch/x86/kernel/built-in.o: In function `iommu_setup':
+> >   pci-dma.c:(.init.text+0x326c): undefined reference to `forbid_dac'
+> >   pci-dma.c:(.init.text+0x328b): undefined reference to `forbid_dac'
+> >   pci-dma.c:(.init.text+0x32aa): undefined reference to `forbid_dac'
+> > 
+> > seems to be caused by:
+> > 
+> >   5b6985c: intel-iommu: IA64 support
+> 
+> http://marc.info/?l=linux-kernel&m=122480590627590&w=2
+> 
+> 
+> Sharing forbid_dac between IA64 and X86 doesn't make sense and IA64 
+> doesn't even use forbid_dac... Reverting the forbid_dac relocation is 
+> the right fix, I think.
 
-> If you really don't need the poll then it can go - for 2.6.29. The
-> current code isn't wrong on a functional level it just returns unexpect=
-ed
-> results in the unplug case.
+could you send a patch for it please? Commit 5b6985c does many things at 
+once so the revert is not trivial.
 
-Ok, if it won't make it for 2.6.28 anyway then I don't have to rush
-and can take my time submitting this through the proper channels.
-
-Thanks,
-Tilman
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enigFD071BF516D1BB61349C2DC9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFJAa+5Q3+did9BuFsRAgjDAJ9kUQnm2yvUwjOfvTEyeXv85ODW6gCcCGnZ
-AAcUcYXLRAw/4ByP3mSkSmo=
-=lz0p
------END PGP SIGNATURE-----
-
---------------enigFD071BF516D1BB61349C2DC9--
+	Ingo
