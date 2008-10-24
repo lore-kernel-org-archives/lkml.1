@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbYJXRDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbYJXREX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756535AbYJXRDs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 13:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbYJXRDj
+	id S1757042AbYJXREX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 13:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbYJXREO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 13:03:39 -0400
-Received: from vms044pub.verizon.net ([206.46.252.44]:59650 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752848AbYJXRDi (ORCPT
+	Fri, 24 Oct 2008 13:04:14 -0400
+Received: from vms042pub.verizon.net ([206.46.252.42]:44823 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754142AbYJXREM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 13:03:38 -0400
-Date: Fri, 24 Oct 2008 13:02:58 -0400 (EDT)
+	Fri, 24 Oct 2008 13:04:12 -0400
+Date: Fri, 24 Oct 2008 13:03:48 -0400 (EDT)
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] Disable ioat channel only on platforms where ile driver
- can load
-In-reply-to: <20081022233451.GA28775@linux-os.sc.intel.com>
+Subject: Re: [PATCH] Cleanup of i7300_idle based on review comments
+In-reply-to: <20081022235103.GA31369@linux-os.sc.intel.com>
 X-X-Sender: lenb@localhost.localdomain
 To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Andi Kleen <ak@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+Cc: randy.dunlap@oracle.com, Andi Kleen <ak@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>,
        "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        "Henroid, Andrew D" <andrew.d.henroid@intel.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Message-id: <alpine.LFD.1.10.0810241302510.3056@localhost.localdomain>
+Message-id: <alpine.LFD.1.10.0810241303400.3056@localhost.localdomain>
 MIME-version: 1.0
 Content-type: TEXT/PLAIN; charset=US-ASCII
 References: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@intel.com>
@@ -34,6 +34,7 @@ References: <1d80ebdb81444701024ad9b9f026516561496a43.1223706853.git.len.brown@i
  <7E82351C108FA840AB1866AC776AEC4637CD27F3@orsmsx505.amr.corp.intel.com>
  <48FED3FA.6040703@linux.intel.com>
  <20081022233451.GA28775@linux-os.sc.intel.com>
+ <20081022235103.GA31369@linux-os.sc.intel.com>
 User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -46,251 +47,129 @@ thanks,
 
 On Wed, 22 Oct 2008, Venki Pallipadi wrote:
 
-> On Wed, Oct 22, 2008 at 12:19:22AM -0700, Andi Kleen wrote:
-> > Pallipadi, Venkatesh wrote:
-> > >
-> > >>> +#if CONFIG_I7300_IDLE_IOAT_CHANNEL
-> > >>> +     device->common.chancnt--;
-> > >>> +#endif
-> > >> I still think this lone decrement looks fishy. Can there please be some
-> > >> explanation how it exactly relates to the i7300 idle driver, where the
-> > >> matching increment is, etc.?
-> > >
-> > > No. This is not a increment/decrement thing. It is basically telling other
-> > > Users of IOAT that they have one IOAT channel less that they can use.
-> > > The last IOAT channel is used by i7300 idle driver to get the throttling to
-> > > work.
-> > 
-> > Ok then it should be made conditional on the i7300 actually be available
-> > in the system?  It looks like you do it always no matter what chipset is in there.
 > 
-> Does the patch below look OK?
 > 
-> Thanks,
-> Venki
-> 
-> Based on input from Andi Kleen:
-> share the platform detection code with ioat_dma and disable the channel in
-> dma engine only for specific platforms.
+> Cleanup of i7300 idle driver based on review comments from Randy Dunlap,
+> Andi Kleen and Len Brown.
 > 
 > Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 > 
 > ---
->  drivers/dma/ioat_dma.c     |    5 ++
->  drivers/idle/i7300_idle.c  |   72 +--------------------------------------
->  include/linux/i7300_idle.h |   83 +++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 89 insertions(+), 71 deletions(-)
+>  drivers/idle/Kconfig      |   11 ++++++-----
+>  drivers/idle/i7300_idle.c |   33 ++++++++++++++++++---------------
+>  2 files changed, 24 insertions(+), 20 deletions(-)
 > 
+> Index: linux-acpi-2.6/drivers/idle/Kconfig
+> ===================================================================
+> --- linux-acpi-2.6.orig/drivers/idle/Kconfig	2008-10-22 11:43:08.000000000 -0700
+> +++ linux-acpi-2.6/drivers/idle/Kconfig	2008-10-22 11:43:37.000000000 -0700
+> @@ -5,12 +5,13 @@ config I7300_IDLE_IOAT_CHANNEL
+>  	bool
+>  
+>  config I7300_IDLE
+> -	tristate "Intel chipset idle power saving driver"
+> +	tristate "Intel chipset idle memory power saving driver"
+>  	select I7300_IDLE_IOAT_CHANNEL
+> -	depends on X86_64
+> +	depends on X86_64 && EXPERIMENTAL
+>  	help
+> -	  Enable idle power savings with certain Intel server chipsets.
+> -	  The chipset must have I/O AT support, such as the Intel 7300.
+> -	  The power savings depends on the type and quantity of DRAM devices.
+> +	  Enable memory power savings when idle with certain Intel server
+> +	  chipsets. The chipset must have I/O AT support, such as the
+> +	  Intel 7300. The power savings depends on the type and quantity of
+> +	  DRAM devices.
+>  
+>  endmenu
 > Index: linux-acpi-2.6/drivers/idle/i7300_idle.c
 > ===================================================================
-> --- linux-acpi-2.6.orig/drivers/idle/i7300_idle.c	2008-10-22 11:42:04.000000000 -0700
-> +++ linux-acpi-2.6/drivers/idle/i7300_idle.c	2008-10-22 11:42:46.000000000 -0700
-> @@ -25,6 +25,7 @@
->  #include <linux/delay.h>
->  #include <linux/debugfs.h>
->  #include <linux/stop_machine.h>
-> +#include <linux/i7300_idle.h>
+> --- linux-acpi-2.6.orig/drivers/idle/i7300_idle.c	2008-10-22 11:43:08.000000000 -0700
+> +++ linux-acpi-2.6/drivers/idle/i7300_idle.c	2008-10-22 11:43:37.000000000 -0700
+> @@ -35,6 +35,8 @@
+>  #define I7300_IDLE_DRIVER_VERSION	"1.55"
+>  #define I7300_PRINT			"i7300_idle:"
 >  
->  #include <asm/idle.h>
+> +#define MAX_STOP_RETRIES	10
+> +
+>  static int debug;
+>  module_param_named(debug, debug, uint, 0644);
+>  MODULE_PARM_DESC(debug, "Enable debug printks in this driver");
+> @@ -47,12 +49,12 @@ MODULE_PARM_DESC(debug, "Enable debug pr
+>   *  0 = No throttling
+>   *  1 = Throttle when > 4 activations per eval window (Maximum throttling)
+>   *  2 = Throttle when > 8 activations
+> - *  168 = Throttle when > 168 activations (Minimum throttling)
+> + *  168 = Throttle when > 672 activations (Minimum throttling)
+>   */
+> -#define MAX_THRTLWLIMIT		168
+> -static uint i7300_idle_thrtlowlm = 1;
+> -module_param_named(thrtlwlimit, i7300_idle_thrtlowlm, uint, 0644);
+> -MODULE_PARM_DESC(thrtlwlimit,
+> +#define MAX_THROTTLE_LOW_LIMIT		168
+> +static uint throttle_low_limit = 1;
+> +module_param_named(throttle_low_limit, throttle_low_limit, uint, 0644);
+> +MODULE_PARM_DESC(throttle_low_limit,
+>  		"Value for THRTLOWLM activation field "
+>  		"(0 = disable throttle, 1 = Max throttle, 168 = Min throttle)");
 >  
-> @@ -505,77 +506,8 @@ static struct notifier_block i7300_idle_
->  	.notifier_call = i7300_idle_notifier,
->  };
->  
-> -/*
-> - * I/O AT controls (PCI bus 0 device 8 function 0)
-> - * DIMM controls (PCI bus 0 device 16 function 1)
-> - */
-> -#define IOAT_BUS 0
-> -#define IOAT_DEVFN PCI_DEVFN(8, 0)
-> -#define MEMCTL_BUS 0
-> -#define MEMCTL_DEVFN PCI_DEVFN(16, 1)
-> -
-> -struct fbd_ioat {
-> -	unsigned int vendor;
-> -	unsigned int ioat_dev;
-> -};
-> -
-> -/*
-> - * The i5000 chip-set has the same hooks as the i7300
-> - * but support is disabled by default because this driver
-> - * has not been validated on that platform.
-> - */
-> -#define SUPPORT_I5000 0
-> -
-> -static const struct fbd_ioat fbd_ioat_list[] = {
-> -	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_CNB},
-> -#if SUPPORT_I5000
-> -	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT},
-> -#endif
-> -	{0, 0}
-> -};
-> -
-> -/* table of devices that work with this driver */
-> -static const struct pci_device_id pci_tbl[] = {
-> -	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_FBD_CNB) },
-> -#if SUPPORT_I5000
-> -	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_5000_ERR) },
-> -#endif
-> -	{ } /* Terminating entry */
-> -};
-> -
->  MODULE_DEVICE_TABLE(pci, pci_tbl);
->  
-> -/* Check for known platforms with I/O-AT */
-> -static int __init i7300_idle_platform_probe(void)
-> -{
-> -	int i;
-> -
-> -	fbd_dev = pci_get_bus_and_slot(MEMCTL_BUS, MEMCTL_DEVFN);
-> -	if (!fbd_dev)
-> -		return -ENODEV;
-> -
-> -	for (i = 0; pci_tbl[i].vendor != 0; i++) {
-> -		if (fbd_dev->vendor == pci_tbl[i].vendor &&
-> -		    fbd_dev->device == pci_tbl[i].device) {
-> -			break;
-> -		}
-> -	}
-> -	if (pci_tbl[i].vendor == 0)
-> -		return -ENODEV;
-> -
-> -	ioat_dev = pci_get_bus_and_slot(IOAT_BUS, IOAT_DEVFN);
-> -	if (!ioat_dev)
-> -		return -ENODEV;
-> -
-> -	for (i = 0; fbd_ioat_list[i].vendor != 0; i++) {
-> -		if (ioat_dev->vendor == fbd_ioat_list[i].vendor &&
-> -		    ioat_dev->device == fbd_ioat_list[i].ioat_dev) {
-> -			return 0;
-> -		}
-> -	}
-> -	return -ENODEV;
-> -}
-> -
->  int stats_open_generic(struct inode *inode, struct file *fp)
+> @@ -111,9 +113,9 @@ static int i7300_idle_ioat_start(void)
+>  static void i7300_idle_ioat_stop(void)
 >  {
->  	fp->private_data = inode->i_private;
-> @@ -617,7 +549,7 @@ static int __init i7300_idle_init(void)
->  	cpus_clear(idle_cpumask);
->  	total_us = 0;
+>  	int i;
+> -	u8 sts;
+> +	u64 sts;
 >  
-> -	if (i7300_idle_platform_probe())
-> +	if (i7300_idle_platform_probe(&fbd_dev, &ioat_dev))
->  		return -ENODEV;
+> -	for (i = 0; i < 5; i++) {
+> +	for (i = 0; i < MAX_STOP_RETRIES; i++) {
+>  		writeb(IOAT_CHANCMD_RESET,
+>  			ioat_chanbase + IOAT1_CHANCMD_OFFSET);
 >  
->  	if (i7300_idle_thrt_save())
-> Index: linux-acpi-2.6/include/linux/i7300_idle.h
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-acpi-2.6/include/linux/i7300_idle.h	2008-10-22 11:42:46.000000000 -0700
-> @@ -0,0 +1,83 @@
-> +
-> +#ifndef I7300_IDLE_H
-> +#define I7300_IDLE_H
-> +
-> +#include <linux/pci.h>
-> +
-> +/*
-> + * I/O AT controls (PCI bus 0 device 8 function 0)
-> + * DIMM controls (PCI bus 0 device 16 function 1)
-> + */
-> +#define IOAT_BUS 0
-> +#define IOAT_DEVFN PCI_DEVFN(8, 0)
-> +#define MEMCTL_BUS 0
-> +#define MEMCTL_DEVFN PCI_DEVFN(16, 1)
-> +
-> +struct fbd_ioat {
-> +	unsigned int vendor;
-> +	unsigned int ioat_dev;
-> +};
-> +
-> +/*
-> + * The i5000 chip-set has the same hooks as the i7300
-> + * but support is disabled by default because this driver
-> + * has not been validated on that platform.
-> + */
-> +#define SUPPORT_I5000 0
-> +
-> +static const struct fbd_ioat fbd_ioat_list[] = {
-> +	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_CNB},
-> +#if SUPPORT_I5000
-> +	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT},
-> +#endif
-> +	{0, 0}
-> +};
-> +
-> +/* table of devices that work with this driver */
-> +static const struct pci_device_id pci_tbl[] = {
-> +	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_FBD_CNB) },
-> +#if SUPPORT_I5000
-> +	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_5000_ERR) },
-> +#endif
-> +	{ } /* Terminating entry */
-> +};
-> +
-> +/* Check for known platforms with I/O-AT */
-> +static inline int i7300_idle_platform_probe(struct pci_dev **fbd_dev,
-> +						struct pci_dev **ioat_dev)
-> +{
-> +	int i;
-> +	struct pci_dev *memdev, *dmadev;
-> +
-> +	memdev = pci_get_bus_and_slot(MEMCTL_BUS, MEMCTL_DEVFN);
-> +	if (!memdev)
-> +		return -ENODEV;
-> +
-> +	for (i = 0; pci_tbl[i].vendor != 0; i++) {
-> +		if (memdev->vendor == pci_tbl[i].vendor &&
-> +		    memdev->device == pci_tbl[i].device) {
-> +			break;
-> +		}
-> +	}
-> +	if (pci_tbl[i].vendor == 0)
-> +		return -ENODEV;
-> +
-> +	dmadev = pci_get_bus_and_slot(IOAT_BUS, IOAT_DEVFN);
-> +	if (!dmadev)
-> +		return -ENODEV;
-> +
-> +	for (i = 0; fbd_ioat_list[i].vendor != 0; i++) {
-> +		if (dmadev->vendor == fbd_ioat_list[i].vendor &&
-> +		    dmadev->device == fbd_ioat_list[i].ioat_dev) {
-> +			if (fbd_dev)
-> +				*fbd_dev = memdev;
-> +			if (ioat_dev)
-> +				*ioat_dev = dmadev;
-> +
-> +			return 0;
-> +		}
-> +	}
-> +	return -ENODEV;
-> +}
-> +
-> +#endif
-> Index: linux-acpi-2.6/drivers/dma/ioat_dma.c
-> ===================================================================
-> --- linux-acpi-2.6.orig/drivers/dma/ioat_dma.c	2008-10-22 11:42:04.000000000 -0700
-> +++ linux-acpi-2.6/drivers/dma/ioat_dma.c	2008-10-22 11:42:46.000000000 -0700
-> @@ -33,6 +33,7 @@
->  #include <linux/delay.h>
->  #include <linux/dma-mapping.h>
->  #include <linux/workqueue.h>
-> +#include <linux/i7300_idle.h>
->  #include "ioatdma.h"
->  #include "ioatdma_registers.h"
->  #include "ioatdma_hw.h"
-> @@ -172,7 +173,9 @@ static int ioat_dma_enumerate_channels(s
->  	xfercap = (xfercap_scale == 0 ? -1 : (1UL << xfercap_scale));
+> @@ -127,9 +129,10 @@ static void i7300_idle_ioat_stop(void)
 >  
->  #if CONFIG_I7300_IDLE_IOAT_CHANNEL
-> -	device->common.chancnt--;
-> +	if (i7300_idle_platform_probe(NULL, NULL) == 0) {
-> +		device->common.chancnt--;
+>  	}
+>  
+> -	if (i == 5)
+> -		dprintk("failed to suspend+reset I/O AT after 5 retries\n");
+> -
+> +	if (i == MAX_STOP_RETRIES) {
+> +		dprintk("failed to stop I/O AT after %d retries\n",
+> +			MAX_STOP_RETRIES);
 > +	}
->  #endif
->  	for (i = 0; i < device->common.chancnt; i++) {
->  		ioat_chan = kzalloc(sizeof(*ioat_chan), GFP_KERNEL);
+>  }
+>  
+>  /* Test I/O AT by copying 1024 byte from 2k to 1k */
+> @@ -276,7 +279,7 @@ static void __exit i7300_idle_ioat_exit(
+>  	i7300_idle_ioat_stop();
+>  
+>  	/* Wait for a while for the channel to halt before releasing */
+> -	for (i = 0; i < 10; i++) {
+> +	for (i = 0; i < MAX_STOP_RETRIES; i++) {
+>  		writeb(IOAT_CHANCMD_RESET,
+>  		       ioat_chanbase + IOAT1_CHANCMD_OFFSET);
+>  
+> @@ -390,9 +393,9 @@ static void i7300_idle_start(void)
+>  	new_ctl = i7300_idle_thrtctl_saved & ~DIMM_THRTCTL_THRMHUNT;
+>  	pci_write_config_byte(fbd_dev, DIMM_THRTCTL, new_ctl);
+>  
+> -	limit = i7300_idle_thrtlowlm;
+> -	if (unlikely(limit > MAX_THRTLWLIMIT))
+> -		limit = MAX_THRTLWLIMIT;
+> +	limit = throttle_low_limit;
+> +	if (unlikely(limit > MAX_THROTTLE_LOW_LIMIT))
+> +		limit = MAX_THROTTLE_LOW_LIMIT;
+>  
+>  	pci_write_config_byte(fbd_dev, DIMM_THRTLOW, limit);
+>  
+> @@ -441,7 +444,7 @@ static int i7300_idle_notifier(struct no
+>  	static ktime_t idle_begin_time;
+>  	static int time_init = 1;
+>  
+> -	if (!i7300_idle_thrtlowlm)
+> +	if (!throttle_low_limit)
+>  		return 0;
+>  
+>  	if (unlikely(time_init)) {
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
