@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbYJXMNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbYJXMPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755301AbYJXMNZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 08:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbYJXMNQ
+	id S1756185AbYJXMPq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 08:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbYJXMPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 08:13:16 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53469 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750808AbYJXMNP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 08:13:15 -0400
-Message-ID: <4901BC16.4000002@sgi.com>
-Date: Fri, 24 Oct 2008 05:14:14 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 24 Oct 2008 08:15:36 -0400
+Received: from h155.mvista.com ([63.81.120.155]:38298 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753243AbYJXMPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 08:15:34 -0400
+Message-ID: <4901BC5E.7040607@ru.mvista.com>
+Date: Fri, 24 Oct 2008 16:15:26 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Jack Steiner <steiner@sgi.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Richard Purdie <rpurdie@rpsys.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] SGI X86 UV: Provide a System Activity Indicator	driver
-References: <4901AF28.4070606@sgi.com> <20081024120103.GD1680@elf.ucw.cz>
-In-Reply-To: <20081024120103.GD1680@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       "benh@kernel.crashing.org" <benh@kernel.crashing.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       bzolnier@gmail.com
+Subject: Re: linux-next: Tree for October 24 - powerpc - build failure with
+ !CONFIG_BLK_DEV_IDEDMA_PMAC
+References: <20081024171932.1e8131d0.sfr@canb.auug.org.au> <20081024113856.GA4252@linux.vnet.ibm.com>
+In-Reply-To: <20081024113856.GA4252@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Fri 2008-10-24 04:19:04, Mike Travis wrote:
->> [Ingo - could you let me know what's holding up this driver?
->> Thanks!, Mike]
-> 
-> I thought that...
-> 
->  > +static __init void uv_scir_register_cpu_notifier(void)
->> +{
->> +	hotcpu_notifier(uv_scir_cpu_notify, 0);
->> +	idle_notifier_register(&uv_idle_notifier);
->> +}
-> 
-> ...Ingo said that idle_notifier_register is deprecated and going away?
-> 
-> 									Pavel
+Hello.
 
-Is there any other way to get an indication then?  This is also in ia64 code
-though not with the formality of a callback -- it's a static function pointer:
+Kamalesh Babulal wrote:
 
-arch/ia64/kernel/process.c:
-	void (*ia64_mark_idle)(int);
+>  next-20081024 randconfig build fails on the powerpc, with
+>
+> drivers/ide/pmac.c: In function 'pmac_ide_set_pio_mode':
+> drivers/ide/pmac.c:527: error: implicit declaration of function 'kauai_lookup_timing'
+> drivers/ide/pmac.c:527: error: 'shasta_pio_timings' undeclared (first use in this function)
+> drivers/ide/pmac.c:527: error: (Each undeclared identifier is reported only once
+> drivers/ide/pmac.c:527: error: for each function it appears in.)
+> drivers/ide/pmac.c:534: error: 'kauai_pio_timings' undeclared (first use in this function)
+> drivers/ide/pmac.c: In function 'pmac_ide_do_resume':
+> drivers/ide/pmac.c:914: error: 'IDE_WAKEUP_DELAY' undeclared (first use in this function)
+> drivers/ide/pmac.c: At top level:
+> drivers/ide/pmac.c:1007: error: 'pmac_ide_init_dma' undeclared here (not in a function)
+> drivers/ide/pmac.c: In function 'pmac_ide_setup_device':
+> drivers/ide/pmac.c:1107: error: 'IDE_WAKEUP_DELAY' undeclared (first use in this function)
+> drivers/ide/pmac.c: In function 'pmac_ide_macio_attach':
+> drivers/ide/pmac.c:1209: error: 'pmac_ide_hwif_t' has no member named 'dma_regs'
+> drivers/ide/pmac.c:1210: error: 'pmac_ide_hwif_t' has no member named 'dma_regs'
+> make[2]: *** [drivers/ide/pmac.o] Error 1
+>   
 
-arch/ia64/sn/kernel/setup.c:
-	ia64_mark_idle = &snidle;
+   Hm, looks like this configuration was never buildable -- #ifdef's are 
+missing and wrongly placed. CCing Ben Herrenschmidt...
 
-arch/ia64/sn/kernel/idle.c
-	void snidle(int state)
-	{
-	        if (state) {
-	                if (pda->idle_flag == 0) {
-	                        /*
-	                         * Turn the activity LED off.
-        	                 */
-        	                set_led_bits(0, LED_CPU_ACTIVITY);
-        	        }
+MBR, Sergei
 
-	       	        pda->idle_flag = 1;
-	        } else {
-	                /*
-	                 * Turn the activity LED on.
-	                 */
-	                set_led_bits(LED_CPU_ACTIVITY, LED_CPU_ACTIVITY);
 
-	                pda->idle_flag = 0;
-	        }
-	}
-
-As I mentioned, I would be happy to use an alternative but I haven't yet found one.
-Should I put the above into x86_64?
-
-Thanks,
-Mike
