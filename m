@@ -1,100 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757244AbYJXFn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757465AbYJXFnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757244AbYJXFn3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 01:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756938AbYJXFnB
+	id S1757465AbYJXFnr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 01:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbYJXFnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 01:43:01 -0400
-Received: from sh.osrg.net ([192.16.179.4]:46381 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756895AbYJXFm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 01:42:59 -0400
-Date: Fri, 24 Oct 2008 14:41:01 +0900
-To: linux-parisc@vger.kernel.org
-Cc: kyle@mcmartin.ca, matthew@wil.cx, grundler@parisc-linux.org,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] parisc: remove dead BIO_VMERGE_BOUNDARY and
- BIO_VMERGE_MAX_SIZE definitions
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081024143826Z.fujita.tomonori@lab.ntt.co.jp>
+	Fri, 24 Oct 2008 01:43:25 -0400
+Received: from kroah.org ([198.145.64.141]:59054 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755571AbYJXFnY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 01:43:24 -0400
+Date: Thu, 23 Oct 2008 22:41:11 -0700
+From: Greg KH <greg@kroah.com>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/27] 2.6.27.4-stable review
+Message-ID: <20081024054111.GB17405@kroah.com>
+References: <20081024043303.GA30828@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081024043303.GA30828@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The block layer dropped the virtual merge feature
-(b8b3e16cfe6435d961f6aaebcfd52a1ff2a988c5). BIO_VMERGE_BOUNDARY and
-BIO_VMERGE_MAX_SIZE definitions are meaningless now.
+On Thu, Oct 23, 2008 at 09:33:03PM -0700, Greg KH wrote:
+> The whole patch series can be found in one patch at:
+> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.4-rc1.gz
+> and the diffstat can be found below.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/parisc/include/asm/io.h |    6 ------
- arch/parisc/kernel/setup.c   |    5 -----
- drivers/parisc/ccio-dma.c    |    2 --
- drivers/parisc/sba_iommu.c   |    2 --
- 4 files changed, 0 insertions(+), 15 deletions(-)
+There was a build error in this release, so I've now put up a -rc2
+version at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.4-rc2.gz
 
-diff --git a/arch/parisc/include/asm/io.h b/arch/parisc/include/asm/io.h
-index 55ddb18..b92efb3 100644
---- a/arch/parisc/include/asm/io.h
-+++ b/arch/parisc/include/asm/io.h
-@@ -4,12 +4,6 @@
- #include <linux/types.h>
- #include <asm/pgtable.h>
- 
--extern unsigned long parisc_vmerge_boundary;
--extern unsigned long parisc_vmerge_max_size;
--
--#define BIO_VMERGE_BOUNDARY	parisc_vmerge_boundary
--#define BIO_VMERGE_MAX_SIZE	parisc_vmerge_max_size
--
- #define virt_to_phys(a) ((unsigned long)__pa(a))
- #define phys_to_virt(a) __va(a)
- #define virt_to_bus virt_to_phys
-diff --git a/arch/parisc/kernel/setup.c b/arch/parisc/kernel/setup.c
-index 7d27853..8d8b024 100644
---- a/arch/parisc/kernel/setup.c
-+++ b/arch/parisc/kernel/setup.c
-@@ -58,11 +58,6 @@ int parisc_bus_is_phys __read_mostly = 1;	/* Assume no IOMMU is present */
- EXPORT_SYMBOL(parisc_bus_is_phys);
- #endif
- 
--/* This sets the vmerge boundary and size, it's here because it has to
-- * be available on all platforms (zero means no-virtual merging) */
--unsigned long parisc_vmerge_boundary = 0;
--unsigned long parisc_vmerge_max_size = 0;
--
- void __init setup_cmdline(char **cmdline_p)
- {
- 	extern unsigned int boot_args[];
-diff --git a/drivers/parisc/ccio-dma.c b/drivers/parisc/ccio-dma.c
-index dcc1e99..62cc21d 100644
---- a/drivers/parisc/ccio-dma.c
-+++ b/drivers/parisc/ccio-dma.c
-@@ -1578,8 +1578,6 @@ static int __init ccio_probe(struct parisc_device *dev)
- 
- 	ioc_count++;
- 
--	parisc_vmerge_boundary = IOVP_SIZE;
--	parisc_vmerge_max_size = BITS_PER_LONG * IOVP_SIZE;
- 	parisc_has_iommu();
- 	return 0;
- }
-diff --git a/drivers/parisc/sba_iommu.c b/drivers/parisc/sba_iommu.c
-index bc73b96..bdc9a0a 100644
---- a/drivers/parisc/sba_iommu.c
-+++ b/drivers/parisc/sba_iommu.c
-@@ -1979,8 +1979,6 @@ sba_driver_callback(struct parisc_device *dev)
- 	proc_create("sba_iommu-bitmap", 0, root, &sba_proc_bitmap_fops);
- #endif
- 
--	parisc_vmerge_boundary = IOVP_SIZE;
--	parisc_vmerge_max_size = IOVP_SIZE * BITS_PER_LONG;
- 	parisc_has_iommu();
- 	return 0;
- }
--- 
-1.5.4.2
+and the diffstat is below.
 
+thanks,
+
+greg k-h
+
+ Makefile                                       |    2 
+ arch/x86/kernel/acpi/sleep.c                   |    3 +
+ arch/x86/kernel/amd_iommu_init.c               |    2 
+ drivers/acpi/hardware/hwsleep.c                |   37 ++++-----------
+ drivers/acpi/sleep/main.c                      |   10 ++++
+ drivers/char/hvc_console.c                     |   10 ++--
+ drivers/edac/cell_edac.c                       |    2 
+ drivers/gpio/gpiolib.c                         |    2 
+ drivers/md/dm-kcopyd.c                         |   13 +++++
+ drivers/md/dm-snap.c                           |   10 +---
+ drivers/net/wireless/ath5k/base.c              |   28 ++++++++---
+ drivers/net/wireless/ath5k/base.h              |    3 -
+ drivers/pci/hotplug/cpqphp_core.c              |    2 
+ drivers/scsi/device_handler/scsi_dh_rdac.c     |    2 
+ drivers/usb/atm/speedtch.c                     |   12 +++++
+ drivers/usb/class/cdc-acm.c                    |    3 -
+ drivers/usb/class/cdc-wdm.c                    |    2 
+ drivers/usb/core/driver.c                      |    3 -
+ drivers/usb/core/hub.c                         |    2 
+ fs/cifs/readdir.c                              |    3 -
+ fs/ext2/dir.c                                  |   60 ++++++++++++++-----------
+ fs/ext3/dir.c                                  |   10 ++--
+ fs/ext4/dir.c                                  |   11 +++-
+ fs/proc/task_mmu.c                             |   34 +++++++++-----
+ kernel/sched_stats.h                           |    2 
+ mm/rmap.c                                      |   42 +++++++++++++----
+ net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c |    2 
+ net/ipv4/netfilter/nf_nat_snmp_basic.c         |    1 
+ net/netfilter/xt_iprange.c                     |    8 +--
+ 29 files changed, 206 insertions(+), 115 deletions(-)
