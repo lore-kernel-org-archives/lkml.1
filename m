@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755035AbYJXNCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbYJXNHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755035AbYJXNCV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 09:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbYJXNCL
+	id S1754009AbYJXNHG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 09:07:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbYJXNGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 09:02:11 -0400
-Received: from mx3.schottelius.org ([77.109.138.221]:47767 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752137AbYJXNCJ (ORCPT
+	Fri, 24 Oct 2008 09:06:51 -0400
+Received: from mu-out-0910.google.com ([209.85.134.187]:48578 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751269AbYJXNGu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 09:02:09 -0400
-Date: Fri, 24 Oct 2008 15:01:31 +0200
-From: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Current suspend issues on Lenovo X200 (w/ Intel graphics)
-Message-ID: <20081024130130.GA5816@denkbrett.schottelius.org>
-Mail-Followup-To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Nigel Cunningham <ncunningham@crca.org.au>,
-	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <20081023204326.GB4175@denkbrett.schottelius.org> <200810240006.19857.rjw@sisk.pl> <1224817394.6623.12.camel@nigel-laptop> <200810240911.05193.rjw@sisk.pl>
+	Fri, 24 Oct 2008 09:06:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jpqI8v/ooLJC9fi7X2k3Ic/C3CHVe9tJerlLP1ROzw/01L/UmGIchBDG5O2DzhJjpB
+         D8wjt3WdsoaMXs0FM3ClqmmoInOiLMDRSambnaWg/Hfht0iU/j/cPugdelqog0twUDwH
+         le1WC3LS/r3fECqQz70uQp1gOiRWj1oYa+6s0=
+Message-ID: <50a66e370810240606ncb3dcd6gc949b734b1dcf488@mail.gmail.com>
+Date: Fri, 24 Oct 2008 09:06:49 -0400
+From: "Todd Hayton" <todd.hayton@gmail.com>
+To: "Pekka Savola" <pekkas@netcore.fi>
+Subject: Re: IPv6 multicast forwarding
+Cc: "=?ISO-8859-1?Q?Alejandro_Riveira_Fern=E1ndez?=" <ariveira@gmail.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <alpine.LRH.2.00.0810241307360.1106@netcore.fi>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="9jxsPFA5p3P2qPhR"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <200810240911.05193.rjw@sisk.pl>
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.27-rc9-denkbrett x86_64)
+References: <50a66e370810231511m10a10ca2oa870e9fbd55f4b0e@mail.gmail.com>
+	 <20081024111044.74c15155@varda>
+	 <alpine.LRH.2.00.0810241307360.1106@netcore.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 24, 2008 at 6:12 AM, Pekka Savola <pekkas@netcore.fi> wrote:
+> On Fri, 24 Oct 2008, Alejandro Riveira Fernández wrote:
+>>>
+>>> Let me apologize in advance for the length of this message - it is long!
+>>>
+>>> I'm trying to test out IPv6 multicast forwarding on a 2.6.26 kernel
+>>> and I'm getting some strange values for the upcall messages from the
+>>> kernel. My code is below, but to give an overview, my setup is as
+>>> follows:
+>>>
+>>>    sender ------ ff15::1 -----> [eth1] linux 2.6.26 [eth0] ------> ...
+>
+> Maybe this isn't the bug you're looking for but you shouldn't be using ff1x
+> multicast addresses in a test like this; ff1x means that the multicast group
+> is of "interface-local scope" and it isn't useful for multicast forwarding.
+>  So the kernel might be correct in not installing multicast forwarding state
+> for a group address like this (but if it's a conscious decision, maybe the
+> failure mode should be better).  See S 2.7 of RFC4291.
+>
 
---9jxsPFA5p3P2qPhR
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hey there, thanks for the response! I may be misinterpreting the RFC
+but I thought ff15::1 was a site-local address. As in I break down
+ff15::1 as follows -
 
-Rafael J. Wysocki [Fri, Oct 24, 2008 at 09:11:04AM +0200]:
-> > Not this time. Going off the other log he posted, it's...
-> >=20
-> > Chipset Mobile Intel=AE GM45 Express Chipset found
->=20
-> This is going to be interesting. :-)
->=20
-> Nico, if the system is 64-bit, I'd recommend trying .28-rc1.
+0xff : identifies the address as multicast
+0x15 : 4-bits flags and 4-bits scope where
+  flags = 0x1 meaning that the T bit is set as this address is not a
+permanently assigned address
+  scope = 0x5 indicating site-local scope
 
-Yes, I'm on amd64;
+Todd H
 
-As seen on my other post: xorg does not run on .28-rc1
 
-Nico
-
---9jxsPFA5p3P2qPhR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkBxyoACgkQuL75KpiFGIyx8gCg2SO3ynwE0VP7di5X5tpuSMfa
-KsQAnRKsfCD4ibSLg06pr+DjIU+8QPhy
-=JIEv
------END PGP SIGNATURE-----
-
---9jxsPFA5p3P2qPhR--
+> --
+> Pekka Savola                 "You each name yourselves king, yet the
+> Netcore Oy                    kingdom bleeds."
+> Systems. Networks. Security. -- George R.R. Martin: A Clash of Kings
