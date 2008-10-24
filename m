@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbYJXElh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbYJXEkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752875AbYJXElh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 00:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbYJXEjM
+	id S1754505AbYJXEkw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 00:40:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbYJXEjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 00:39:12 -0400
-Received: from kroah.org ([198.145.64.141]:51682 "EHLO coco.kroah.org"
+	Fri, 24 Oct 2008 00:39:09 -0400
+Received: from kroah.org ([198.145.64.141]:51660 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751707AbYJXEjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 00:39:08 -0400
-Date: Thu, 23 Oct 2008 21:33:50 -0700
+	id S1751449AbYJXEjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 00:39:05 -0400
+Date: Thu, 23 Oct 2008 21:33:40 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 06/27] USB: dont rebind drivers after failed resume or reset
-Message-ID: <20081024043350.GG30828@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Miao Xie <miaox@cn.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 04/27] sched: fix the wrong mask_len
+Message-ID: <20081024043340.GE30828@kroah.com>
 References: <20081024042023.054190751@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-don-t-rebind-drivers-after-failed-resume-or-reset.patch"
+Content-Disposition: inline; filename="sched-fix-the-wrong-mask_len.patch"
 In-Reply-To: <20081024043303.GA30828@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,51 +40,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Miao Xie <miaox@cn.fujitsu.com>
 
-commit 6c6409459a18a825ce12ecb003d5686af61f7a2f upstream
+commit c851c8676bd7ae456e9b3af8e6bb2c434eddcc75 upstream
 
-This patch (as1152) may help prevent some problems associated with the
-new policy of unbinding drivers that don't support suspend/resume or
-pre_reset/post_reset.  If for any reason the resume or reset fails, and
-the device is logically disconnected, there's no point in trying to
-rebind the driver.  So the patch checks for success before carrying
-out the unbind/rebind.
+If NR_CPUS isn't a multiple of 32, we get a truncated string of sched
+domains by catting /proc/schedstat. This is caused by the wrong mask_len.
 
-There was a report from one user that this fixed a problem he was
-experiencing, but the details never became fully clear.  In any case,
-adding these tests can't hurt.
+This patch fixes it.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/core/driver.c |    3 ++-
- drivers/usb/core/hub.c    |    2 +-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ kernel/sched_stats.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/usb/core/driver.c
-+++ b/drivers/usb/core/driver.c
-@@ -1609,7 +1609,8 @@ int usb_external_resume_device(struct us
- 	status = usb_resume_both(udev);
- 	udev->last_busy = jiffies;
- 	usb_pm_unlock(udev);
--	do_unbind_rebind(udev, DO_REBIND);
-+	if (status == 0)
-+		do_unbind_rebind(udev, DO_REBIND);
+--- a/kernel/sched_stats.h
++++ b/kernel/sched_stats.h
+@@ -9,7 +9,7 @@
+ static int show_schedstat(struct seq_file *seq, void *v)
+ {
+ 	int cpu;
+-	int mask_len = NR_CPUS/32 * 9;
++	int mask_len = (NR_CPUS/32 + 1) * 9;
+ 	char *mask_str = kmalloc(mask_len, GFP_KERNEL);
  
- 	/* Now that the device is awake, we can start trying to autosuspend
- 	 * it again. */
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -3424,7 +3424,7 @@ int usb_reset_device(struct usb_device *
- 						USB_INTERFACE_BOUND)
- 					rebind = 1;
- 			}
--			if (rebind)
-+			if (ret == 0 && rebind)
- 				usb_rebind_intf(cintf);
- 		}
- 	}
+ 	if (mask_str == NULL)
 
 -- 
