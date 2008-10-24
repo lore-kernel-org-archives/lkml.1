@@ -1,106 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbYJXSGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757287AbYJXSJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757966AbYJXSGn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 14:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbYJXSGb
+	id S1757287AbYJXSJh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 14:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbYJXSJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 14:06:31 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:46511 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750918AbYJXSGa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 14:06:30 -0400
-Subject: Re: [Re: Linux 2.6.28-rc1] scsi 4:0:0:0: timing out command,
-	waited 22s
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org,
-       SCSI development list <linux-scsi@vger.kernel.org>
-In-Reply-To: <8db1092f0810241057j51f0b70eo3cea4499422f0d38@mail.gmail.com>
-References: <8db1092f0810241057j51f0b70eo3cea4499422f0d38@mail.gmail.com>
+	Fri, 24 Oct 2008 14:09:29 -0400
+Received: from mail-out1.uio.no ([129.240.10.57]:38723 "EHLO mail-out1.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750832AbYJXSJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 14:09:28 -0400
+Subject: Re: High load in 2.6.27, NFS / rpcauth_lookup_credcache()?
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Max Kellermann <max@duempel.org>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+In-Reply-To: <20081024083913.GA15197@squirrel.roonstrasse.net>
+References: <20081022091207.GA12996@squirrel.roonstrasse.net>
+	 <20081023123628.GA18549@squirrel.roonstrasse.net>
+	 <1224773745.7625.4.camel@localhost>
+	 <20081024083913.GA15197@squirrel.roonstrasse.net>
 Content-Type: text/plain
-Date: Fri, 24 Oct 2008 13:06:27 -0500
-Message-Id: <1224871587.3307.19.camel@localhost.localdomain>
+Date: Fri, 24 Oct 2008 14:09:23 -0400
+Message-Id: <1224871763.22672.33.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, MISSING_SUBJECT=0.001,NO_RECEIVED=-0.001, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 8CDBD97A6F43869247DA6676D8B4E05F04CD8806
+X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 137 max/h 9 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-24 at 19:57 +0200, Maciej Rutecki wrote:
-> During boot I have this message:
+On Fri, 2008-10-24 at 10:39 +0200, Max Kellermann wrote:
+> On 2008/10/23 16:55, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> > Can you add a '-v' to the rpc.gssd daemon startup line? I'd like to see
+> > how often you are creating new gss contexts.
 > 
-> ata_piix 0000:00:1f.1: version 2.12
-> ata_piix 0000:00:1f.1: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> ata_piix 0000:00:1f.1: setting latency timer to 64
-> scsi4 : ata_piix
-> scsi5 : ata_piix
-> ata5: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0x60a0 irq 14
-> ata6: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0x60a8 irq 15
-> ata5.00: ATAPI: MATSHITADVD-RAM UJ-840S, 1.11, max MWDMA2
-> ata5.00: configured for MWDMA2
-> ata6: port disabled. ignoring.
-> scsi 4:0:0:0: timing out command, waited 22s
-> scsi 4:0:0:0: timing out command, waited 22s
-> scsi 4:0:0:0: timing out command, waited 22s
-> scsi 4:0:0:0: timing out command, waited 22s
-> scsi 4:0:0:0: timing out command, waited 22s
-> scsi 4:0:0:0: timing out command, waited 22s
-> 	ata5: WARNING: synchronous SCSI scan failed without making any progress,
->                   switching to async
-> 
-> DVD drive doesn't work. Under 2.6.27 (stable and -rc) works OK.
-> 
-> Dmesg ang config:
-> http://unixy.pl/maciek/download/kernel/2.6.28-rc1/
+> There is no rpc.gssd running on any of these servers, we're using
+> plain NFSv3 without (protocol based) authentication.  Do you want me
+> to start it anyway?
 
-You need this patch:
+Sorry. I misread your email. I read it as saying that you had krb5
+enabled on your mountpoint, but what you really said was just that you
+have compiled up the module.
 
-James
+OK, could you please describe your environment a bit. Do you have lots
+of different users logged in at the same time, or do you perhaps use
+newgrp or su to switch uid/gids a lot on your processes?
+I'm trying to see if there might be a reason for the lookup in the
+credcache being such a heavy duty operation in your setup.
 
----
-
-commit e013e13bf605b9e6b702adffbe2853cfc60e7806
-Author: Jens Axboe <jens.axboe@oracle.com>
-Date:   Fri Oct 24 09:22:42 2008 +0200
-
-    libata: fix bug with non-ncq devices
-    
-    The recent commit 2fca5ccf97d2c28bcfce44f5b07d85e74e3cd18e ("libata:
-    switch to using block layer tagging support") to enable support for
-    block layer tagging in libata was broken for non-NCQ devices
-    
-    The block layer initializes the tag field to -1 to detect invalid uses
-    of a tag, and if the libata devices does NOT support NCQ, we just used
-    that field to index the internal command list.  So we need to check for
-    -1 first and only use the tag field if it's valid.
-    
-    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-    Reported-by: Alexander Beregalov <a.beregalov@gmail.com>
-    Tested-by: Paul Mundt <lethal@linux-sh.org>
-    Tested-by: Dave Young <hidave.darkstar@gmail.com>
-    Tested-by: Rafael J. Wysocki <rjw@sisk.pl>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index d5b9b72..4b95c43 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -708,7 +708,11 @@ static struct ata_queued_cmd *ata_scsi_qc_new(struct ata_device *dev,
- {
- 	struct ata_queued_cmd *qc;
- 
--	qc = ata_qc_new_init(dev, cmd->request->tag);
-+	if (cmd->request->tag != -1)
-+		qc = ata_qc_new_init(dev, cmd->request->tag);
-+	else
-+		qc = ata_qc_new_init(dev, 0);
-+
- 	if (qc) {
- 		qc->scsicmd = cmd;
- 		qc->scsidone = done;
-
+Cheers
+  Trond
 
