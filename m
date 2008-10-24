@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757423AbYJXXNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbYJXXOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757423AbYJXXNk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 19:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYJXXNc
+	id S1758159AbYJXXOQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 19:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbYJXXN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 19:13:32 -0400
-Received: from ndjsnpf02.ndc.nasa.gov ([198.117.1.122]:38252 "EHLO
-	ndjsnpf02.ndc.nasa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbYJXXNb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 19:13:31 -0400
-Message-ID: <4902568D.1090107@nasa.gov>
-Date: Fri, 24 Oct 2008 16:13:17 -0700
-From: Jeff Becker <Jeffrey.C.Becker@nasa.gov>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, akpm <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, general@lists.openfabrics.org,
-       Jeff Squyres <jsquyres@cisco.com>
-Subject: Re: [ofa-general] Re: [PATCH] maintainers: moderated mailing list
-References: <20081023183805.92bc39ab.randy.dunlap@oracle.com>	<adabpxarofg.fsf@cisco.com> <4901F249.1030206@nasa.gov> <ada7i7xsioy.fsf@cisco.com>
-In-Reply-To: <ada7i7xsioy.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 24 Oct 2008 19:13:58 -0400
+Received: from waste.org ([66.93.16.53]:59887 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752390AbYJXXN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 19:13:57 -0400
+Subject: Re: Bloatwatch 2.6.28-rc1: i8042 DMI lookup tables
+From: Matt Mackall <mpm@selenic.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@redhat.com>
+In-Reply-To: <alpine.LNX.1.10.0810250001530.27479@jikos.suse.cz>
+References: <1224879959.3248.32.camel@calx>
+	 <alpine.LNX.1.10.0810250001530.27479@jikos.suse.cz>
+Content-Type: text/plain
+Date: Fri, 24 Oct 2008 18:13:22 -0500
+Message-Id: <1224890002.3248.71.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Oct 2008 23:13:30.0551 (UTC) FILETIME=[20EC1C70:01C9362E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
->  > Currently, I run the mail server. We switched to moderated lists in
->  > mid-August due to a huge increase in spam.
->
-> It was just that one backscatter flood targeting the ewg list, right?
->
-> It's really annoying to people trying to report bugs etc to get the
-> bounce about subscribers-only lists.  Would it make sense to move the
-> hosting of the general list to vger.kernel.org, since they have a lot
-> more resources/experience as mail admins and seem to be able to run open
-> but relatively spam-free lists?
->   
-That's OK with me.
+On Sat, 2008-10-25 at 00:15 +0200, Jiri Kosina wrote:
+> On Fri, 24 Oct 2008, Matt Mackall wrote:
+> 
+> > We've added 12k of new initdata to allnoconfig builds for i8042 DMI
+> > lookup tables:
+> > 
+> > http://www.selenic.com/bloatwatch/?cmd=compare;v1=2.6.27;v2=2.6.28-rc1;part=/built-in/drivers
+> > 
+> > It looks like each table entry is > 320 bytes as we reserve four 80-byte
+> > slots in each for DMI match strings. 
+> 
+> Umm, and what is the actual problem with that, really?
 
--jeff
->  - R.
->   
+The actual problem is that if the kernel grows by 12k every time a
+developer says "what's the big deal?" the kernel will become very large
+indeed.
+
+> OK, we can remove it from .init, but then it will be rotting in memory 
+> forever, which is quite sub-optimal, when this kind of DMI information is 
+> needed only during initialization.
+
+I wasn't complaining that they were in init, but rather that they were
+12k. For something like 37 entries. The entry size is ridiculous and
+looks to have grown by a factor of 10 since 2.6.27. What, as they say,
+is up with that?
+
+It looks like David Woodhouse is to blame:
+
+commit d945b697d0eea5a811ec299c5f1a25889bb0242b
+Automatic MODULE_ALIAS() for DMI match tables.
+
+This is probably also responsible for most of the growth in x86 I
+mentioned elsewhere, so it's about 25-30k damage in total. David?
+
+-- 
+Mathematics is the supreme nostalgia of our time.
 
