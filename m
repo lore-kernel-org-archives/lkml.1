@@ -1,98 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbYJXVoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757828AbYJXVo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757363AbYJXVoK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 17:44:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbYJXVnz
+	id S1757828AbYJXVo1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 17:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbYJXVn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 17:43:55 -0400
-Received: from kroah.org ([198.145.64.141]:39492 "EHLO coco.kroah.org"
+	Fri, 24 Oct 2008 17:43:58 -0400
+Received: from kroah.org ([198.145.64.141]:39507 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754680AbYJXVny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 17:43:54 -0400
-Date: Fri, 24 Oct 2008 14:30:45 -0700
+	id S1755130AbYJXVn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 17:43:57 -0400
+Date: Fri, 24 Oct 2008 14:38:52 -0700
 From: Greg KH <greg@kroah.com>
-To: Michael Krufky <mkrufky@linuxtv.org>
-Cc: Mike Isely <isely@pobox.com>, Justin Piszcz <jpiszcz@lucidpixels.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Oliver Neukum <oliver@neukum.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: Bug fix for pvrusb2 driver [was: Re: Kernel 2.6.26.5 ->
-	2.6.27.2 [USB REGRESSION] (USB -> D_STATE)]
-Message-ID: <20081024213045.GA16003@kroah.com>
-References: <Pine.LNX.4.44L0.0810201203530.2719-100000@iolanthe.rowland.org> <Pine.LNX.4.64.0810201134400.12643@cnc.isely.net> <20081020172914.GA9624@kroah.com> <Pine.LNX.4.64.0810231114320.1475@cnc.isely.net> <20081023191543.GA10017@kroah.com> <Pine.LNX.4.64.0810231451080.1475@cnc.isely.net> <37219a840810231504r6a1d7c1eu5b2b05a6258a3597@mail.gmail.com> <alpine.DEB.1.10.0810231810480.16804@p34.internal.lan> <Pine.LNX.4.64.0810240043000.5947@cnc.isely.net> <37219a840810240829jab70eder1e9172e2a1cfcbdd@mail.gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: "Theodore Ts'o" <tytso@mit.edu>, Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       torvalds@linux-foundation.org, Eugene Teo <eteo@redhat.com>,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>,
+       Randy Dunlap <rdunlap@xenotime.net>, Willy Tarreau <w@1wt.eu>,
+       Michael Krufky <mkrufky@linuxtv.org>, alan@lxorguk.ukuu.org.uk,
+       Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
+       akpm@linux-foundation.org, Jake Edge <jake@lwn.net>,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>
+Subject: Re: [stable] [patch 00/27] 2.6.27.4-stable review
+Message-ID: <20081024213852.GA20713@kroah.com>
+References: <20081024043303.GA30828@kroah.com> <20081024054111.GB17405@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <37219a840810240829jab70eder1e9172e2a1cfcbdd@mail.gmail.com>
+In-Reply-To: <20081024054111.GB17405@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 24, 2008 at 11:29:36AM -0400, Michael Krufky wrote:
-> On Fri, Oct 24, 2008 at 1:43 AM, Mike Isely <isely@isely.net> wrote:
-> > On Thu, 23 Oct 2008, Justin Piszcz wrote:
-> >
-> >>
-> >>
-> >> On Thu, 23 Oct 2008, Michael Krufky wrote:
-> >>
-> >> > On Thu, Oct 23, 2008 at 3:54 PM, Mike Isely <isely@isely.net> wrote:
-> >> > > On Thu, 23 Oct 2008, Greg KH wrote:
-> >> > >
-> >> > > > On Thu, Oct 23, 2008 at 11:27:11AM -0500, Mike Isely wrote:
-> >> > > > > On Mon, 20 Oct 2008, Greg KH wrote:
-> >> > > > >
-> >> > >
-> >> > >   [...]
-> >> > >
-> >> > > > > >
-> >> > > > > > Will this patch be sent to the -stable group, to fix this regression
-> >> > > > > > in
-> >> > > > > > 2.6.27?  Or should they take Alan's fix instead?
-> >> > > > > >
-> >> > > > >
-> >> > > > > Greg:
-> >>
-> >> [ .. ]
-> >>
-> >> > The changeset in Linus tree is: c82732a42896364296599b0f73f01c5e3fd781ae
-> >> >
-> >> > Reviewed-by: Michael Krufky <mkrufky@linuxtv.org>
-> >> >
-> >> > Please wait on test results from Mike Isely or I confirming that
-> >> > digital mode still works properly before queuing this one.
-> >> >
-> >> > Thanks,
-> >> >
-> >> > Mike Krufky
-> >> >
-> >>
-> >> I only tested analog here for the 1950 FYI.
-> >>
-> >> Justin.
-> >
-> > Analog and digital HVR-1950 operation are unaffected by the reset fix
-> > here.  This is safe.
-> >
-> >  -Mike
-> >
-> > --
-> >
-> > Mike Isely
-> > isely @ pobox (dot) com
-> > PGP: 03 54 43 4D 75 E5 CC 92 71 16 01 E2 B5 F5 C1 E8
-> >
+On Thu, Oct 23, 2008 at 10:41:11PM -0700, Greg KH wrote:
+> On Thu, Oct 23, 2008 at 09:33:03PM -0700, Greg KH wrote:
+> > The whole patch series can be found in one patch at:
+> > 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.4-rc1.gz
+> > and the diffstat can be found below.
 > 
-> I concur.  This patch is fine for -stable.  (I tested digital myself
-> last night / this morning and its fine)
-> 
-> Greg -- any chance you can slip this in to 2.6.27.4 ?  The driver is
-> entirely broken otherwise.
+> There was a build error in this release, so I've now put up a -rc2
+> version at:
+> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.4-rc2.gz
 
-Yes, I will add it right now.
+And there was an error in this release as well, the ath5k patch was
+dropped as it was found to cause regressions itself.
 
-thanks for your persistance.
+Also a pvrusb2 patch was added to let the device work again with the
+2.6.27 kernel, which is always a nice thing to have.  I'll follow up
+this message with that patch.
+
+I've now put up a -rc3 version at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.4-rc3.gz
+
+and the diffstat is below.
+
+thanks,
 
 greg k-h
+
+ Makefile                                       |    2 
+ arch/x86/kernel/acpi/sleep.c                   |    3 +
+ arch/x86/kernel/amd_iommu_init.c               |    2 
+ drivers/acpi/hardware/hwsleep.c                |   37 ++++-----------
+ drivers/acpi/sleep/main.c                      |   10 ++++
+ drivers/char/hvc_console.c                     |   10 ++--
+ drivers/edac/cell_edac.c                       |    2 
+ drivers/gpio/gpiolib.c                         |    2 
+ drivers/md/dm-kcopyd.c                         |   13 +++++
+ drivers/md/dm-snap.c                           |   10 +---
+ drivers/media/video/pvrusb2/pvrusb2-hdw.c      |    6 --
+ drivers/pci/hotplug/cpqphp_core.c              |    2 
+ drivers/scsi/device_handler/scsi_dh_rdac.c     |    2 
+ drivers/usb/atm/speedtch.c                     |   12 +++++
+ drivers/usb/class/cdc-acm.c                    |    3 -
+ drivers/usb/class/cdc-wdm.c                    |    2 
+ drivers/usb/core/driver.c                      |    3 -
+ drivers/usb/core/hub.c                         |    2 
+ fs/cifs/readdir.c                              |    3 -
+ fs/ext2/dir.c                                  |   60 ++++++++++++++-----------
+ fs/ext3/dir.c                                  |   10 ++--
+ fs/ext4/dir.c                                  |   11 +++-
+ fs/proc/task_mmu.c                             |   34 +++++++++-----
+ kernel/sched_stats.h                           |    2 
+ mm/rmap.c                                      |   42 +++++++++++++----
+ net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c |    2 
+ net/ipv4/netfilter/nf_nat_snmp_basic.c         |    1 
+ net/netfilter/xt_iprange.c                     |    8 +--
+ 28 files changed, 184 insertions(+), 112 deletions(-)
