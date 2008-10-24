@@ -1,114 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753948AbYJXH6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbYJXH7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753948AbYJXH6W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 03:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYJXH6O
+	id S1754783AbYJXH7l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 03:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbYJXH7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 03:58:14 -0400
-Received: from verein.lst.de ([213.95.11.210]:50437 "EHLO verein.lst.de"
+	Fri, 24 Oct 2008 03:59:33 -0400
+Received: from verein.lst.de ([213.95.11.210]:50454 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751174AbYJXH6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 03:58:13 -0400
-Date: Fri, 24 Oct 2008 09:58:10 +0200
+	id S1751756AbYJXH7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 03:59:32 -0400
+Date: Fri, 24 Oct 2008 09:59:29 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: viro@zeniv.linux.org.uk
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] pass a struct path * to may_open
-Message-ID: <20081024075810.GA20486@lst.de>
+Subject: [PATCH] kill vfs_permission
+Message-ID: <20081024075929.GB20486@lst.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No need for the nameidata in may_open - a struct path is enough.
+With all the nameidata removal there's no point anymore for this helper.
+Of the three callers left two will go away with the next lookup series
+anyway.
+
+Also add proper kerneldoc to inode_permission as this is the main
+permission check routine now.
 
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 
+Index: linux-2.6/fs/exec.c
+===================================================================
+--- linux-2.6.orig/fs/exec.c	2008-10-23 23:12:14.000000000 +0200
++++ linux-2.6/fs/exec.c	2008-10-23 23:12:18.000000000 +0200
+@@ -126,7 +126,8 @@ asmlinkage long sys_uselib(const char __
+ 	if (nd.path.mnt->mnt_flags & MNT_NOEXEC)
+ 		goto exit;
+ 
+-	error = vfs_permission(&nd, MAY_READ | MAY_EXEC | MAY_OPEN);
++	error = inode_permission(nd.path.dentry->d_inode,
++				 MAY_READ | MAY_EXEC | MAY_OPEN);
+ 	if (error)
+ 		goto exit;
+ 
+@@ -679,7 +680,7 @@ struct file *open_exec(const char *name)
+ 	if (nd.path.mnt->mnt_flags & MNT_NOEXEC)
+ 		goto out_path_put;
+ 
+-	err = vfs_permission(&nd, MAY_EXEC | MAY_OPEN);
++	err = inode_permission(nd.path.dentry->d_inode, MAY_EXEC | MAY_OPEN);
+ 	if (err)
+ 		goto out_path_put;
+ 
 Index: linux-2.6/fs/namei.c
 ===================================================================
---- linux-2.6.orig/fs/namei.c	2008-10-23 20:19:55.000000000 +0200
-+++ linux-2.6/fs/namei.c	2008-10-23 23:07:11.000000000 +0200
-@@ -1491,9 +1491,9 @@ int vfs_create(struct inode *dir, struct
- 	return error;
+--- linux-2.6.orig/fs/namei.c	2008-10-23 23:12:14.000000000 +0200
++++ linux-2.6/fs/namei.c	2008-10-23 23:14:43.000000000 +0200
+@@ -226,6 +226,16 @@ int generic_permission(struct inode *ino
+ 	return -EACCES;
  }
  
--int may_open(struct nameidata *nd, int acc_mode, int flag)
-+int may_open(struct path *path, int acc_mode, int flag)
++/**
++ * inode_permission  -  check for access rights to a given inode
++ * @inode:	inode to check permission on
++ * @mask:	right to check for (%MAY_READ, %MAY_WRITE, %MAY_EXEC)
++ *
++ * Used to check for read/write/execute permissions on an inode.
++ * We use "fsuid" for this, letting us set arbitrary permissions
++ * for filesystem access without changing the "normal" uids which
++ * are used for other things.
++ */
+ int inode_permission(struct inode *inode, int mask)
  {
--	struct dentry *dentry = nd->path.dentry;
-+	struct dentry *dentry = path->dentry;
- 	struct inode *inode = dentry->d_inode;
- 	int error;
- 
-@@ -1514,15 +1514,16 @@ int may_open(struct nameidata *nd, int a
- 	if (S_ISFIFO(inode->i_mode) || S_ISSOCK(inode->i_mode)) {
- 	    	flag &= ~O_TRUNC;
- 	} else if (S_ISBLK(inode->i_mode) || S_ISCHR(inode->i_mode)) {
--		if (nd->path.mnt->mnt_flags & MNT_NODEV)
-+		if (path->mnt->mnt_flags & MNT_NODEV)
- 			return -EACCES;
- 
- 		flag &= ~O_TRUNC;
- 	}
- 
--	error = vfs_permission(nd, acc_mode);
-+	error = inode_permission(inode, acc_mode);
- 	if (error)
- 		return error;
-+
- 	/*
- 	 * An append-only file must be opened in append mode for writing.
- 	 */
-@@ -1591,7 +1592,7 @@ static int __open_namei_create(struct na
- 	if (error)
- 		return error;
- 	/* Don't check for write permission, don't truncate */
--	return may_open(nd, 0, flag & ~O_TRUNC);
-+	return may_open(&nd->path, 0, flag & ~O_TRUNC);
+ 	int retval;
+@@ -265,21 +275,6 @@ int inode_permission(struct inode *inode
  }
  
- /*
-@@ -1777,7 +1778,7 @@ ok:
- 		if (error)
- 			goto exit;
- 	}
--	error = may_open(&nd, acc_mode, flag);
-+	error = may_open(&nd.path, acc_mode, flag);
- 	if (error) {
- 		if (will_write)
- 			mnt_drop_write(nd.path.mnt);
-Index: linux-2.6/fs/nfsctl.c
-===================================================================
---- linux-2.6.orig/fs/nfsctl.c	2008-10-23 20:19:55.000000000 +0200
-+++ linux-2.6/fs/nfsctl.c	2008-10-23 23:05:49.000000000 +0200
-@@ -36,9 +36,10 @@ static struct file *do_open(char *name, 
- 		return ERR_PTR(error);
+ /**
+- * vfs_permission  -  check for access rights to a given path
+- * @nd:		lookup result that describes the path
+- * @mask:	right to check for (%MAY_READ, %MAY_WRITE, %MAY_EXEC)
+- *
+- * Used to check for read/write/execute permissions on a path.
+- * We use "fsuid" for this, letting us set arbitrary permissions
+- * for filesystem access without changing the "normal" uids which
+- * are used for other things.
+- */
+-int vfs_permission(struct nameidata *nd, int mask)
+-{
+-	return inode_permission(nd->path.dentry->d_inode, mask);
+-}
+-
+-/**
+  * file_permission  -  check for additional access rights to a given file
+  * @file:	file to check access rights for
+  * @mask:	right to check for (%MAY_READ, %MAY_WRITE, %MAY_EXEC)
+@@ -289,7 +284,7 @@ int vfs_permission(struct nameidata *nd,
+  *
+  * Note:
+  *	Do not use this function in new code.  All access checks should
+- *	be done using vfs_permission().
++ *	be done using inode_permission().
+  */
+ int file_permission(struct file *file, int mask)
+ {
+@@ -859,7 +854,8 @@ static int __link_path_walk(const char *
+ 		nd->flags |= LOOKUP_CONTINUE;
+ 		err = exec_permission_lite(inode);
+ 		if (err == -EAGAIN)
+-			err = vfs_permission(nd, MAY_EXEC);
++			err = inode_permission(nd->path.dentry->d_inode,
++					       MAY_EXEC);
+  		if (err)
+ 			break;
  
- 	if (flags == O_RDWR)
--		error = may_open(&nd,MAY_READ|MAY_WRITE,FMODE_READ|FMODE_WRITE);
-+		error = may_open(&nd.path, MAY_READ|MAY_WRITE,
-+					   FMODE_READ|FMODE_WRITE);
- 	else
--		error = may_open(&nd, MAY_WRITE, FMODE_WRITE);
-+		error = may_open(&nd.path, MAY_WRITE, FMODE_WRITE);
- 
- 	if (!error)
- 		return dentry_open(nd.path.dentry, nd.path.mnt, flags);
+@@ -2851,7 +2847,6 @@ EXPORT_SYMBOL(path_lookup);
+ EXPORT_SYMBOL(kern_path);
+ EXPORT_SYMBOL(vfs_path_lookup);
+ EXPORT_SYMBOL(inode_permission);
+-EXPORT_SYMBOL(vfs_permission);
+ EXPORT_SYMBOL(file_permission);
+ EXPORT_SYMBOL(unlock_rename);
+ EXPORT_SYMBOL(vfs_create);
 Index: linux-2.6/include/linux/fs.h
 ===================================================================
---- linux-2.6.orig/include/linux/fs.h	2008-10-23 23:02:29.000000000 +0200
-+++ linux-2.6/include/linux/fs.h	2008-10-23 23:05:49.000000000 +0200
-@@ -1865,7 +1865,7 @@ extern void free_write_pipe(struct file 
- 
- extern struct file *do_filp_open(int dfd, const char *pathname,
- 		int open_flag, int mode);
--extern int may_open(struct nameidata *, int, int);
-+extern int may_open(struct path *, int, int);
- 
- extern int kernel_read(struct file *, unsigned long, char *, unsigned long);
- extern struct file * open_exec(const char *);
+--- linux-2.6.orig/include/linux/fs.h	2008-10-23 23:14:56.000000000 +0200
++++ linux-2.6/include/linux/fs.h	2008-10-23 23:14:59.000000000 +0200
+@@ -1209,7 +1209,6 @@ extern void unlock_super(struct super_bl
+ /*
+  * VFS helper functions..
+  */
+-extern int vfs_permission(struct nameidata *, int);
+ extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
+ extern int vfs_mkdir(struct inode *, struct dentry *, int);
+ extern int vfs_mknod(struct inode *, struct dentry *, int, dev_t);
