@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbYJXEz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYJXFAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757185AbYJXEz7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 00:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbYJXEzu
+	id S1754023AbYJXFAT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 01:00:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYJXFAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 00:55:50 -0400
-Received: from cantor.suse.de ([195.135.220.2]:50394 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751249AbYJXEzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 00:55:49 -0400
-Date: Fri, 24 Oct 2008 06:55:47 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-       Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>, linux-mm@kvack.org,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use schedule_on_each_cpu()
-Message-ID: <20081024045547.GA24555@wotan.suse.de>
-References: <20081023235425.9C40.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081024012831.GE5004@wotan.suse.de> <20081024135149.9C46.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081024135149.9C46.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.9i
+	Fri, 24 Oct 2008 01:00:05 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:30085 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbYJXFAD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 01:00:03 -0400
+Message-ID: <4901564F.7020308@ct.jp.nec.com>
+Date: Thu, 23 Oct 2008 21:59:59 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Mike Travis <travis@sgi.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH -tip/cpus4096-v2] cpumask: fix memory leak and cpumask corruption
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 24, 2008 at 01:54:46PM +0900, KOSAKI Motohiro wrote:
-> > > 
-> > > Actually, schedule_on_each_cpu() is very problematic function.
-> > > it introduce the dependency of all worker on keventd_wq, 
-> > > but we can't know what lock held by worker in kevend_wq because
-> > > keventd_wq is widely used out of kernel drivers too.
-> > > 
-> > > So, the task of any lock held shouldn't wait on keventd_wq.
-> > > Its task should use own special purpose work queue.
-> > 
-> > I don't see a better way to solve it, other than avoiding lru_add_drain_all
-> 
-> Well,
-> 
-> Unfortunately, lru_add_drain_all is also used some other VM place
-> (page migration and memory hotplug).
-> and page migration's usage is the same of this mlock usage.
-> (1. grab mmap_sem  2.  call lru_add_drain_all)
-> 
-> Then, change mlock usage isn't solution ;-)
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-No, not mlock alone.
+On CONFIG_CPUMASK_OFFSTACK enabled kernel, when exiting
+smp_call_function_many() without calling arch_send_call_function_ipi()
+allbutself should be freed.
+
+Also, the memory for allbutself shouldn't be freed when
+arch_send_call_function_ipi() is called.  The memory region will be
+referenced in generic_smp_call_function_interrupt(). And the memory
+will be freed at rcu_free_call_data().
+
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ kernel/smp.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/smp.c b/kernel/smp.c
+index da98191..96b39e3 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -88,6 +88,7 @@ static void rcu_free_call_data(struct rcu_head *head)
+ 	struct call_function_data *data;
+ 
+ 	data = container_of(head, struct call_function_data, rcu_head);
++	free_cpumask_var(data->cpumask);
+ 
+ 	kfree(data);
+ }
+@@ -347,7 +348,7 @@ void smp_call_function_many(const struct cpumask *mask,
+ 	 * into a targetted single call instead since it's faster.
+ 	 */
+ 	if (!num_cpus)
+-		return;
++		goto out;
+ 	else if (num_cpus == 1) {
+ 		cpu = cpumask_first(allbutself);
+ 		smp_call_function_single(cpu, func, info, wait);
+@@ -382,9 +383,12 @@ void smp_call_function_many(const struct cpumask *mask,
+ 	/* optionally wait for the CPUs to complete */
+ 	if (wait) {
+ 		csd_flag_wait(&data->csd);
+-		if (unlikely(slowpath))
++		if (unlikely(slowpath)) {
+ 			smp_call_function_mask_quiesce_stack(allbutself);
++			free_cpumask_var(allbutself);
++		}
+ 	}
++	return;
+ out:
+ 	free_cpumask_var(allbutself);
+ }
+-- 
+1.5.6
+
+
