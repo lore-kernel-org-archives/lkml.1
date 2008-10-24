@@ -1,50 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758572AbYJXXPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758733AbYJXXP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758572AbYJXXPk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 19:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbYJXXPU
+	id S1758733AbYJXXP4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 19:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758559AbYJXXPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 19:15:20 -0400
-Received: from gate.crashing.org ([63.228.1.57]:35870 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753842AbYJXXPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 19:15:18 -0400
-Subject: Re: linux-next: Tree for October 24 - powerpc - build failure with
-	!CONFIG_BLK_DEV_IDEDMA_PMAC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       bzolnier@gmail.com
-In-Reply-To: <49024EA3.1080404@ru.mvista.com>
-References: <20081024171932.1e8131d0.sfr@canb.auug.org.au>
-	 <20081024113856.GA4252@linux.vnet.ibm.com> <4901BC5E.7040607@ru.mvista.com>
-	 <1224886062.7654.464.camel@pasglop>  <49024EA3.1080404@ru.mvista.com>
-Content-Type: text/plain
-Date: Sat, 25 Oct 2008 10:10:18 +1100
-Message-Id: <1224889818.7654.466.camel@pasglop>
+	Fri, 24 Oct 2008 19:15:37 -0400
+Received: from pqueueb.post.tele.dk ([193.162.153.10]:38043 "EHLO
+	pqueueb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758472AbYJXXPf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 19:15:35 -0400
+Date: Fri, 24 Oct 2008 21:15:52 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Alistair John Strachan <alistair@devzero.co.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.28-rc1
+Message-ID: <20081024191552.GA14894@uranus.ravnborg.org>
+References: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org> <200810241224.38541.alistair@devzero.co.uk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810241224.38541.alistair@devzero.co.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-10-25 at 02:39 +0400, Sergei Shtylyov wrote:
-> >>    Hm, looks like this configuration was never buildable --
-> #ifdef's are 
-> >> missing and wrongly placed. CCing Ben Herrenschmidt...
-> >>     
-> >
-> > What configuration ?
-> >   
+On Fri, Oct 24, 2008 at 12:24:38PM +0100, Alistair John Strachan wrote:
+> On Friday 24 October 2008 05:10:29 Linus Torvalds wrote:
+> > It's been two weeks, so it's time to close the merge window. A 2.6.28-rc1
+> > is out there, and it's hopefully all good.
 > 
->    See the subject.
+> It seems if you have a broken asm/ symlink in include/ (which happened as a 
+> result of the x86 header moves, for me) the kernel won't try to update it 
+> appropriately, and this breaks "make prepare".
+> 
+> $ make    ARCH=x86_64 prepare                                                                                                   
+>   CHK     include/linux/version.h                                                                                                                            
+>   CHK     include/linux/utsrelease.h                                                                                                                         
+>   GEN     include/asm/asm-offsets.h                                                                                                                          
+> /bin/sh: include/asm/asm-offsets.h: No such file or directory                                                                                                
+> make[1]: *** [include/asm/asm-offsets.h] Error 1                                                                                                             
+> make: *** [prepare0] Error 2
+> 
+> rm -f include/asm fixes it
+> 
+> This was just from taking a 2.6.27 tree, git clean -d -f, git pull, make 
+> oldconfig. Might be a nice thing to fix?
 
-Ah ok. We should probably just remove the option...
+The following patch add another special case hwre we delete stale symlinks.
+In my limited testing it fixes the issue - can you try to give it a spin.
 
-Ben.
+	Sam
 
-
+diff --git a/Makefile b/Makefile
+index f6703f1..9dc7427 100644
+--- a/Makefile
++++ b/Makefile
+@@ -961,6 +961,7 @@ export CPPFLAGS_vmlinux.lds += -P -C -U$(ARCH)
+ 
+ # The asm symlink changes when $(ARCH) changes.
+ # Detect this and ask user to run make mrproper
++# If asm is a stale symlink (point to dir that does not exist) remove it
+ define check-symlink
+ 	set -e;                                                            \
+ 	if [ -L include/asm ]; then                                        \
+@@ -970,6 +971,7 @@ define check-symlink
+ 			echo "       set ARCH or save .config and run 'make mrproper' to fix it";             \
+ 			exit 1;                                            \
+ 		fi;                                                        \
++		test -e $$asmlink || rm include/asm;                       \
+ 	fi
+ endef
+ 
