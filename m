@@ -1,61 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbYJXLS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbYJXLVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756397AbYJXLS4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 07:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYJXLSr
+	id S1756155AbYJXLVz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 07:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751356AbYJXLVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 07:18:47 -0400
-Received: from ozlabs.org ([203.10.76.45]:60857 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751793AbYJXLSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 07:18:46 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH 1/7] work_on_cpu: helper for doing task on a CPU.
-Date: Fri, 24 Oct 2008 22:18:50 +1100
-User-Agent: KMail/1.9.10
-Cc: Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-       travis@sgi.com, Ingo Molnar <mingo@elte.hu>
-References: <20081023005751.53973DDEFE@ozlabs.org> <20081024072147.GA5000@in.ibm.com> <20081024102957.GC4583@redhat.com>
-In-Reply-To: <20081024102957.GC4583@redhat.com>
+	Fri, 24 Oct 2008 07:21:46 -0400
+Received: from mail.phnxsoft.com ([195.227.45.4]:1048 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750808AbYJXLVp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 07:21:45 -0400
+Message-ID: <4901AFB8.1030806@imap.cc>
+Date: Fri, 24 Oct 2008 13:21:28 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.17) Gecko/20080829 SeaMonkey/1.1.12
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810242218.50370.rusty@rustcorp.com.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Hansjoerg Lipp <hjlipp@web.de>
+Subject: Re: [PATCH 72/80] tty: fix up gigaset a bit
+References: <20081013092758.21645.2359.stgit@localhost.localdomain>	<20081013094438.21645.30934.stgit@localhost.localdomain>	<48F762CA.4080608@imap.cc>	<20081017124004.64d3f2cf@lxorguk.ukuu.org.uk>	<48FB27F1.9010007@imap.cc> <20081022100045.2f06e977@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081022100045.2f06e977@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigFD071BF516D1BB61349C2DC9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 24 October 2008 21:29:57 Oleg Nesterov wrote:
-> On 10/24, Gautham R Shenoy wrote:
-> > On Fri, Oct 24, 2008 at 02:04:35PM +1100, Rusty Russell wrote:
-> > > I think we should BUG_ON(per_cpu(cpu_state, cpuid) != CPU_DEAD) to
-> > > ensure we never use work_on_cpu in the hotplug cpu path.  Then we use
-> > > smp_call_function() for that hard intel_cacheinfo case.  Finally, we
-> > > fix the cpu hotplug path to use schedule_work_on() itself rather than
-> > > playing games with cpumask.
-> > >
-> > > If you agree, I'll spin the patches...
-> >
-> > How about the following?
-> >
-> > We go with this method, but instead of piggybacking on
-> > the generic kevents workqueue, we create our own on_each_cpu_wq, for this
-> > purpose.
->
-> Gautham, Rusty, I am a bit lost on this discussion...
->
-> Why should we care about this deadlock? Just do not use work_on_cpu() from
-> the hotplug cpu path, that is all.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigFD071BF516D1BB61349C2DC9
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-No, I agree with you (Oleg).  Gautham's proposal would work, but at the cost 
-of yet another thread per CPU :(
+On 22.10.2008 11:00 Alan Cox wrote:
+> Fiddling with tty->disc_data by hand probably currently does the right
+> thing. I don't guarantee it will continue to do so after the BKL remova=
+l
+> gets to ldisc setting.
 
-Since we know how to handle the one problematic case Oleg spotted, *and* we 
-know how to BUG_ON to make sure noone introduces new ones, I think this is 
-clearest.
+I never expected you to guarantee anything. :-)
+Anyway, I'll continue keeping my eyes open for changes in the tty area.
+Should you come across a specific problem with the driver, feel free
+to drop me a line.
+
+> If you really don't need the poll then it can go - for 2.6.29. The
+> current code isn't wrong on a functional level it just returns unexpect=
+ed
+> results in the unplug case.
+
+Ok, if it won't make it for 2.6.28 anyway then I don't have to rush
+and can take my time submitting this through the proper channels.
 
 Thanks,
-Rusty.
+Tilman
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enigFD071BF516D1BB61349C2DC9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFJAa+5Q3+did9BuFsRAgjDAJ9kUQnm2yvUwjOfvTEyeXv85ODW6gCcCGnZ
+AAcUcYXLRAw/4ByP3mSkSmo=
+=lz0p
+-----END PGP SIGNATURE-----
+
+--------------enigFD071BF516D1BB61349C2DC9--
