@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755715AbYJXXJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbYJXXJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755715AbYJXXJk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 19:09:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbYJXXJc
+	id S1757371AbYJXXJz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 19:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbYJXXJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 19:09:32 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:43839 "EHLO
+	Fri, 24 Oct 2008 19:09:40 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:43865 "EHLO
 	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752061AbYJXXJb (ORCPT
+	with ESMTP id S1753818AbYJXXJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 19:09:31 -0400
+	Fri, 24 Oct 2008 19:09:38 -0400
 From: Trent Piepho <tpiepho@freescale.com>
 To: linux-kernel@vger.kernel.org
 Cc: Trent Piepho <tpiepho@freescale.com>, linuxppc-dev@ozlabs.org,
@@ -18,9 +18,9 @@ Cc: Trent Piepho <tpiepho@freescale.com>, linuxppc-dev@ozlabs.org,
        Sean MacLennan <smaclennan@pikatech.com>,
        Wolfram Sang <w.sang@pengutronix.de>,
        Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 1/4] of_gpio: Return GPIO flags from of_get_gpio()
-Date: Fri, 24 Oct 2008 16:08:58 -0700
-Message-Id: <1224889741-4167-1-git-send-email-tpiepho@freescale.com>
+Subject: [PATCH 2/4] leds: Support OpenFirmware led bindings
+Date: Fri, 24 Oct 2008 16:08:59 -0700
+Message-Id: <1224889741-4167-2-git-send-email-tpiepho@freescale.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
 References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
@@ -28,182 +28,404 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The device binding spec for OF GPIOs defines a flags field, but there is
-currently no way to get it.  This patch adds a parameter to of_get_gpio()
-where the flags will be returned if non-NULL.  of_get_gpio() in turn passes
-the parameter to the of_gpio_chip's xlate method, which can extract any
-flags present from the gpio_spec.
+Add bindings to support LEDs defined as of_platform devices in addition to
+the existing bindings for platform devices.
 
-The default (and currently only) of_gpio_chip xlate method,
-of_gpio_simple_xlate(), is modified to do this.
+New options in Kconfig allow the platform binding code and/or the
+of_platform code to be turned on.  The of_platform code is of course only
+available on archs that have OF support.
+
+The existing probe and remove methods are refactored to use new functions
+create_gpio_led(), to create and register one led, and delete_gpio_led(),
+to unregister and free one led.  The new probe and remove methods for the
+of_platform driver can then share most of the common probe and remove code
+with the platform driver.
+
+The suspend and resume methods aren't shared, but they are very short.  The
+actual led driving code is the same for LEDs created by either binding.
+
+The OF bindings are based on patch by Anton Vorontsov
+<avorontsov@ru.mvista.com>.  They have been extended to allow multiple LEDs
+per device.
 
 Signed-off-by: Trent Piepho <tpiepho@freescale.com>
 ---
- drivers/mtd/nand/fsl_upm.c              |    2 +-
- drivers/net/fs_enet/fs_enet-main.c      |    2 +-
- drivers/net/phy/mdio-ofgpio.c           |    4 ++--
- drivers/of/gpio.c                       |   13 ++++++++++---
- drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
- include/linux/of_gpio.h                 |   17 +++++++++++++----
- 6 files changed, 28 insertions(+), 12 deletions(-)
+ Documentation/powerpc/dts-bindings/gpio/led.txt |   46 ++++-
+ drivers/leds/Kconfig                            |   21 ++-
+ drivers/leds/leds-gpio.c                        |  230 ++++++++++++++++++-----
+ 3 files changed, 243 insertions(+), 54 deletions(-)
 
-diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
-index 024e3ff..a25d962 100644
---- a/drivers/mtd/nand/fsl_upm.c
-+++ b/drivers/mtd/nand/fsl_upm.c
-@@ -218,7 +218,7 @@ static int __devinit fun_probe(struct of_device *ofdev,
- 	}
- 	fun->upm_cmd_offset = *prop;
+diff --git a/Documentation/powerpc/dts-bindings/gpio/led.txt b/Documentation/powerpc/dts-bindings/gpio/led.txt
+index ff51f4c..9f969c2 100644
+--- a/Documentation/powerpc/dts-bindings/gpio/led.txt
++++ b/Documentation/powerpc/dts-bindings/gpio/led.txt
+@@ -1,15 +1,43 @@
+-LED connected to GPIO
++LEDs connected to GPIO lines
  
--	fun->rnb_gpio = of_get_gpio(ofdev->node, 0);
-+	fun->rnb_gpio = of_get_gpio(ofdev->node, 0, NULL);
- 	if (fun->rnb_gpio >= 0) {
- 		ret = gpio_request(fun->rnb_gpio, ofdev->dev.bus_id);
- 		if (ret) {
-diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-index cb51c1f..5a3c7ee 100644
---- a/drivers/net/fs_enet/fs_enet-main.c
-+++ b/drivers/net/fs_enet/fs_enet-main.c
-@@ -994,7 +994,7 @@ static int __devinit find_phy(struct device_node *np,
- 		goto out_put_phy;
- 	}
- 
--	bus_id = of_get_gpio(mdionode, 0);
-+	bus_id = of_get_gpio(mdionode, 0, NULL);
- 	if (bus_id < 0) {
- 		struct resource res;
- 		ret = of_address_to_resource(mdionode, 0, &res);
-diff --git a/drivers/net/phy/mdio-ofgpio.c b/drivers/net/phy/mdio-ofgpio.c
-index 2ff9775..e3757c6 100644
---- a/drivers/net/phy/mdio-ofgpio.c
-+++ b/drivers/net/phy/mdio-ofgpio.c
-@@ -78,8 +78,8 @@ static int __devinit mdio_ofgpio_bitbang_init(struct mii_bus *bus,
- {
- 	struct mdio_gpio_info *bitbang = bus->priv;
- 
--	bitbang->mdc = of_get_gpio(np, 0);
--	bitbang->mdio = of_get_gpio(np, 1);
-+	bitbang->mdc = of_get_gpio(np, 0, NULL);
-+	bitbang->mdio = of_get_gpio(np, 1, NULL);
- 
- 	if (bitbang->mdc < 0 || bitbang->mdio < 0)
- 		return -ENODEV;
-diff --git a/drivers/of/gpio.c b/drivers/of/gpio.c
-index 7cd7301..2123517 100644
---- a/drivers/of/gpio.c
-+++ b/drivers/of/gpio.c
-@@ -22,11 +22,12 @@
-  * of_get_gpio - Get a GPIO number from the device tree to use with GPIO API
-  * @np:		device node to get GPIO from
-  * @index:	index of the GPIO
-+ * @flags:	GPIO's flags are returned here if non-NULL
-  *
-  * Returns GPIO number to use with Linux generic GPIO API, or one of the errno
-  * value on the error condition.
-  */
--int of_get_gpio(struct device_node *np, int index)
-+int of_get_gpio(struct device_node *np, int index, unsigned int *flags)
- {
- 	int ret;
- 	struct device_node *gc;
-@@ -59,7 +60,9 @@ int of_get_gpio(struct device_node *np, int index)
- 		goto err1;
- 	}
- 
--	ret = of_gc->xlate(of_gc, np, gpio_spec);
-+	if (flags)
-+		*flags = 0;
-+	ret = of_gc->xlate(of_gc, np, gpio_spec, flags);
- 	if (ret < 0)
- 		goto err1;
- 
-@@ -77,19 +80,23 @@ EXPORT_SYMBOL(of_get_gpio);
-  * @of_gc:	pointer to the of_gpio_chip structure
-  * @np:		device node of the GPIO chip
-  * @gpio_spec:	gpio specifier as found in the device tree
-+ * @flags:	if non-NUll flags are returned here
-  *
-  * This is simple translation function, suitable for the most 1:1 mapped
-  * gpio chips. This function performs only one sanity check: whether gpio
-  * is less than ngpios (that is specified in the gpio_chip).
-  */
- int of_gpio_simple_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
--			 const void *gpio_spec)
-+			 const void *gpio_spec, unsigned int *flags)
- {
- 	const u32 *gpio = gpio_spec;
- 
- 	if (*gpio > of_gc->gc.ngpio)
- 		return -EINVAL;
- 
-+	if (flags && of_gc->gpio_cells > 1)
-+		*flags = gpio[1];
+ Required properties:
+-- compatible : should be "gpio-led".
+-- label : (optional) the label for this LED. If omitted, the label is
++- compatible : should be "gpio-leds".
 +
- 	return *gpio;
- }
- EXPORT_SYMBOL(of_gpio_simple_xlate);
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-index bde4b4b..7835cd4 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -1094,7 +1094,7 @@ static int cpm_uart_init_port(struct device_node *np,
- 	}
++Each LED is represented as a sub-node of the gpio-leds device.  Each
++node's name represents the name of the corresponding LED.
++
++LED sub-node properties:
++- gpios :  Should specify the LED's GPIO, see "Specifying GPIO information
++  for devices" in Documentation/powerpc/booting-without-of.txt.  Active
++  low LEDs should be indicated using flags in the GPIO specifier. 
++- label :  (optional) The label for this LED.  If omitted, the label is
+   taken from the node name (excluding the unit address).
+-- gpios : should specify LED GPIO.
++- linux,default-trigger :  (optional) This parameter, if present, is a
++  string defining the trigger assigned to the LED.  Current triggers are:
++    "backlight" - LED will act as a back-light, controlled by the framebuffer
++		  system
++    "default-on" - LED will turn on
++    "heartbeat" - LED "double" flashes at a load average based rate
++    "ide-disk" - LED indicates disk activity
++    "timer" - LED flashes at a fixed, configurable rate
  
- 	for (i = 0; i < NUM_GPIOS; i++)
--		pinfo->gpios[i] = of_get_gpio(np, i);
-+		pinfo->gpios[i] = of_get_gpio(np, i, NULL);
+-Example:
++Examples:
  
- 	return cpm_uart_request_port(&pinfo->port);
- 
-diff --git a/include/linux/of_gpio.h b/include/linux/of_gpio.h
-index 67db101..0d332bf 100644
---- a/include/linux/of_gpio.h
-+++ b/include/linux/of_gpio.h
-@@ -26,7 +26,7 @@ struct of_gpio_chip {
- 	struct gpio_chip gc;
- 	int gpio_cells;
- 	int (*xlate)(struct of_gpio_chip *of_gc, struct device_node *np,
--		     const void *gpio_spec);
-+		     const void *gpio_spec, unsigned int *flags);
+-led@0 {
+-	compatible = "gpio-led";
+-	label = "hdd";
+-	gpios = <&mcu_pio 0 1>;
++leds {
++	compatible = "gpio-leds";
++	hdd {
++		label = "IDE Activity";
++		gpios = <&mcu_pio 0 1>; /* Active low */
++		linux,default-trigger = "ide-disk";
++	};
  };
- 
- static inline struct of_gpio_chip *to_of_gpio_chip(struct gpio_chip *gc)
-@@ -35,6 +35,14 @@ static inline struct of_gpio_chip *to_of_gpio_chip(struct gpio_chip *gc)
- }
- 
- /*
-+ * Flags as returned by OF GPIO chip's xlate function.
-+ * These do not need to be the same as the flags in the GPIO specifier in the
-+ * OF device tree, but it's convenient if they are.  The mm chip OF GPIO
-+ * driver works this way.
-+ */
-+#define OF_GPIO_ACTIVE_LOW	1
 +
-+/*
-  * OF GPIO chip for memory mapped banks
-  */
- struct of_mm_gpio_chip {
-@@ -50,16 +58,17 @@ static inline struct of_mm_gpio_chip *to_of_mm_gpio_chip(struct gpio_chip *gc)
- 	return container_of(of_gc, struct of_mm_gpio_chip, of_gc);
++run-control {
++	compatible = "gpio-leds";
++	red {
++		gpios = <&mpc8572 6 0>;
++	};
++	green {
++		gpios = <&mpc8572 7 0>;
++	};
++}
+diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+index e7fb7d2..6c6dc96 100644
+--- a/drivers/leds/Kconfig
++++ b/drivers/leds/Kconfig
+@@ -111,7 +111,26 @@ config LEDS_GPIO
+ 	help
+ 	  This option enables support for the LEDs connected to GPIO
+ 	  outputs. To be useful the particular board must have LEDs
+-	  and they must be connected to the GPIO lines.
++	  and they must be connected to the GPIO lines.  The LEDs must be
++	  defined as platform devices and/or OpenFirmware platform devices.
++	  The code to use these bindings can be selected below.
++
++config LEDS_GPIO_PLATFORM
++	bool "Platform device bindings for GPIO LEDs"
++	depends on LEDS_GPIO
++	default y
++	help
++	  Let the leds-gpio driver drive LEDs which have been defined as
++	  platform devices.  If you don't know what this means, say yes.
++
++config LEDS_GPIO_OF
++	bool "OpenFirmware platform device bindings for GPIO LEDs"
++	depends on LEDS_GPIO && OF_DEVICE
++	default y
++	help
++	  Let the leds-gpio driver drive LEDs which have been defined as
++	  of_platform devices.  For instance, LEDs which are listed in a "dts"
++	  file.
+ 
+ config LEDS_HP_DISK
+ 	tristate "LED Support for disk protection LED on HP notebooks"
+diff --git a/drivers/leds/leds-gpio.c b/drivers/leds/leds-gpio.c
+index b13bd29..f41b841 100644
+--- a/drivers/leds/leds-gpio.c
++++ b/drivers/leds/leds-gpio.c
+@@ -3,6 +3,7 @@
+  *
+  * Copyright (C) 2007 8D Technologies inc.
+  * Raphael Assenat <raph@8d.com>
++ * Copyright (C) 2008 Freescale Semiconductor, Inc.
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License version 2 as
+@@ -71,50 +72,67 @@ static int gpio_blink_set(struct led_classdev *led_cdev,
+ 	return led_dat->platform_gpio_blink_set(led_dat->gpio, delay_on, delay_off);
  }
  
--extern int of_get_gpio(struct device_node *np, int index);
-+extern int of_get_gpio(struct device_node *np, int index, unsigned int *flags);
- extern int of_mm_gpiochip_add(struct device_node *np,
- 			      struct of_mm_gpio_chip *mm_gc);
- extern int of_gpio_simple_xlate(struct of_gpio_chip *of_gc,
- 				struct device_node *np,
--				const void *gpio_spec);
-+				const void *gpio_spec, unsigned int *flags);
- #else
- 
- /* Drivers may not strictly depend on the GPIO support, so let them link. */
--static inline int of_get_gpio(struct device_node *np, int index)
-+static inline int of_get_gpio(struct device_node *np, int index,
-+			      unsigned int *flags)
+-static int gpio_led_probe(struct platform_device *pdev)
++static int __devinit create_gpio_led(const struct gpio_led *template,
++	struct gpio_led_data *led_dat, struct device *parent,
++	int (*blink_set)(unsigned, unsigned long *, unsigned long *))
++{
++	int ret;
++
++	ret = gpio_request(template->gpio, template->name);
++	if (ret < 0)
++		return ret;
++
++	led_dat->cdev.name = template->name;
++	led_dat->cdev.default_trigger = template->default_trigger;
++	led_dat->gpio = template->gpio;
++	led_dat->can_sleep = gpio_cansleep(template->gpio);
++	led_dat->active_low = template->active_low;
++	if (blink_set) {
++		led_dat->platform_gpio_blink_set = blink_set;
++		led_dat->cdev.blink_set = gpio_blink_set;
++	}
++	led_dat->cdev.brightness_set = gpio_led_set;
++	led_dat->cdev.brightness = LED_OFF;
++
++	gpio_direction_output(led_dat->gpio, led_dat->active_low);
++
++	INIT_WORK(&led_dat->work, gpio_led_work);
++
++	ret = led_classdev_register(parent, &led_dat->cdev);
++	if (ret < 0)
++		gpio_free(led_dat->gpio);
++
++	return ret;
++}
++
++static void delete_gpio_led(struct gpio_led_data *led)
++{
++	led_classdev_unregister(&led->cdev);
++	cancel_work_sync(&led->work);
++	gpio_free(led->gpio);
++}
++
++/* Code to creates LEDs from platform devices */
++#ifdef CONFIG_LEDS_GPIO_PLATFORM
++static int __devinit gpio_led_probe(struct platform_device *pdev)
  {
- 	return -ENOSYS;
- }
+ 	struct gpio_led_platform_data *pdata = pdev->dev.platform_data;
+-	struct gpio_led *cur_led;
+-	struct gpio_led_data *leds_data, *led_dat;
++	struct gpio_led_data *leds_data;
+ 	int i, ret = 0;
+ 
+ 	if (!pdata)
+ 		return -EBUSY;
+ 
+ 	leds_data = kzalloc(sizeof(struct gpio_led_data) * pdata->num_leds,
+-				GFP_KERNEL);
++			    GFP_KERNEL);
+ 	if (!leds_data)
+ 		return -ENOMEM;
+ 
+ 	for (i = 0; i < pdata->num_leds; i++) {
+-		cur_led = &pdata->leds[i];
+-		led_dat = &leds_data[i];
+-
+-		ret = gpio_request(cur_led->gpio, cur_led->name);
++		ret = create_gpio_led(&pdata->leds[i], &leds_data[i],
++				      &pdev->dev, pdata->gpio_blink_set);
+ 		if (ret < 0)
+ 			goto err;
+-
+-		led_dat->cdev.name = cur_led->name;
+-		led_dat->cdev.default_trigger = cur_led->default_trigger;
+-		led_dat->gpio = cur_led->gpio;
+-		led_dat->can_sleep = gpio_cansleep(cur_led->gpio);
+-		led_dat->active_low = cur_led->active_low;
+-		if (pdata->gpio_blink_set) {
+-			led_dat->platform_gpio_blink_set = pdata->gpio_blink_set;
+-			led_dat->cdev.blink_set = gpio_blink_set;
+-		}
+-		led_dat->cdev.brightness_set = gpio_led_set;
+-		led_dat->cdev.brightness = LED_OFF;
+-
+-		gpio_direction_output(led_dat->gpio, led_dat->active_low);
+-
+-		INIT_WORK(&led_dat->work, gpio_led_work);
+-
+-		ret = led_classdev_register(&pdev->dev, &led_dat->cdev);
+-		if (ret < 0) {
+-			gpio_free(led_dat->gpio);
+-			goto err;
+-		}
+ 	}
+ 
+ 	platform_set_drvdata(pdev, leds_data);
+@@ -122,13 +140,8 @@ static int gpio_led_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ err:
+-	if (i > 0) {
+-		for (i = i - 1; i >= 0; i--) {
+-			led_classdev_unregister(&leds_data[i].cdev);
+-			cancel_work_sync(&leds_data[i].work);
+-			gpio_free(leds_data[i].gpio);
+-		}
+-	}
++	for (i = i - 1; i >= 0; i--)
++		delete_gpio_led(&leds_data[i]);
+ 
+ 	kfree(leds_data);
+ 
+@@ -143,11 +156,8 @@ static int __devexit gpio_led_remove(struct platform_device *pdev)
+ 
+ 	leds_data = platform_get_drvdata(pdev);
+ 
+-	for (i = 0; i < pdata->num_leds; i++) {
+-		led_classdev_unregister(&leds_data[i].cdev);
+-		cancel_work_sync(&leds_data[i].work);
+-		gpio_free(leds_data[i].gpio);
+-	}
++	for (i = 0; i < pdata->num_leds; i++)
++		delete_gpio_led(&leds_data[i]);
+ 
+ 	kfree(leds_data);
+ 
+@@ -211,7 +221,139 @@ static void __exit gpio_led_exit(void)
+ module_init(gpio_led_init);
+ module_exit(gpio_led_exit);
+ 
+-MODULE_AUTHOR("Raphael Assenat <raph@8d.com>");
++MODULE_ALIAS("platform:leds-gpio");
++#endif /* CONFIG_LEDS_GPIO_PLATFORM */
++
++/* Code to create from OpenFirmware platform devices */
++#ifdef CONFIG_LEDS_GPIO_OF
++#include <linux/of_platform.h>
++#include <linux/of_gpio.h>
++
++struct gpio_led_of_platform_data {
++	int num_leds;
++	struct gpio_led_data led_data[];
++};
++
++static int __devinit of_gpio_leds_probe(struct of_device *ofdev,
++					const struct of_device_id *match)
++{
++	struct device_node *np = ofdev->node, *child;
++	struct gpio_led led;
++	struct gpio_led_of_platform_data *pdata;
++	int count = 0, ret;
++
++	/* count LEDs defined by this device, so we know how much to allocate */
++	for_each_child_of_node(np, child)
++		count++;
++	if (!count)
++		return 0; /* or ENODEV? */
++
++	pdata = kzalloc(sizeof(*pdata) + sizeof(struct gpio_led_data) * count,
++			GFP_KERNEL);
++	if (!pdata)
++		return -ENOMEM;
++
++	memset(&led, 0, sizeof(led));
++	for_each_child_of_node(np, child) {
++		unsigned int flags;
++
++		led.gpio = of_get_gpio(child, 0, &flags);
++		led.active_low = flags & OF_GPIO_ACTIVE_LOW;
++		led.name = of_get_property(child, "label", NULL) ? : child->name;
++		led.default_trigger =
++			of_get_property(child, "linux,default-trigger", NULL);
++
++		ret = create_gpio_led(&led, &pdata->led_data[pdata->num_leds++],
++				      &ofdev->dev, NULL);
++		if (ret < 0)
++			goto err;
++	}
++
++	dev_set_drvdata(&ofdev->dev, pdata);
++
++	return 0;
++
++err:
++	for (count = pdata->num_leds - 2; count >= 0; count--)
++		delete_gpio_led(&pdata->led_data[count]);
++
++	kfree(pdata);
++
++	return ret;
++}
++
++static int __devexit of_gpio_leds_remove(struct of_device *ofdev)
++{
++	struct gpio_led_of_platform_data *pdata = dev_get_drvdata(&ofdev->dev);
++	int i;
++
++	for (i = 0; i < pdata->num_leds; i++)
++		delete_gpio_led(&pdata->led_data[i]);
++
++	kfree(pdata);
++
++	dev_set_drvdata(&ofdev->dev, NULL);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int of_gpio_led_suspend(struct of_device *ofdev, pm_message_t state)
++{
++	struct gpio_led_of_platform_data *pdata = dev_get_drvdata(&ofdev->dev);
++	int i;
++
++	for (i = 0; i < pdata->num_leds; i++)
++		led_classdev_suspend(&pdata->leds_data[i].cdev);
++
++	return 0;
++}
++
++static int of_gpio_led_resume(struct of_device *ofdev)
++{
++	struct gpio_led_of_platform_data *pdata = dev_get_drvdata(&ofdev->dev);
++	int i;
++
++	for (i = 0; i < pdata->num_leds; i++)
++		led_classdev_resume(&pdata->leds_data[i].cdev);
++
++	return 0;
++}
++#else
++#define of_gpio_led_suspend NULL
++#define of_gpio_led_resume NULL
++#endif /* CONFIG_PM */
++
++static const struct of_device_id of_gpio_leds_match[] = {
++	{ .compatible = "gpio-leds", },
++	{},
++};
++
++static struct of_platform_driver of_gpio_leds_driver = {
++	.driver = {
++		.name = "of_gpio_leds",
++		.owner = THIS_MODULE,
++	},
++	.match_table = of_gpio_leds_match,
++	.probe = of_gpio_leds_probe,
++	.remove = __devexit_p(of_gpio_leds_remove),
++	.suspend = of_gpio_led_suspend,
++	.resume = of_gpio_led_resume,
++};
++
++static int __init of_gpio_leds_init(void)
++{
++	return of_register_platform_driver(&of_gpio_leds_driver);
++}
++module_init(of_gpio_leds_init);
++
++static void __exit of_gpio_leds_exit(void)
++{
++	of_unregister_platform_driver(&of_gpio_leds_driver);
++}
++module_exit(of_gpio_leds_exit);
++#endif
++
++MODULE_AUTHOR("Raphael Assenat <raph@8d.com>, Trent Piepho <tpiepho@freescale.com>");
+ MODULE_DESCRIPTION("GPIO LED driver");
+ MODULE_LICENSE("GPL");
+-MODULE_ALIAS("platform:leds-gpio");
 -- 
 1.5.4.3
 
