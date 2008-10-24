@@ -1,97 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbYJXScL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbYJXSiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756823AbYJXScL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 14:32:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbYJXSb5
+	id S1755227AbYJXSiS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 14:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbYJXSiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 14:31:57 -0400
-Received: from outbound-mail-149.bluehost.com ([67.222.38.39]:41795 "HELO
-	outbound-mail-149.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752605AbYJXSb4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 14:31:56 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=gzIw7kVgVqLb6kXu49BwBN81DScZekHFy7U5K1cTFEJBe4lw9gVQRG0bVOFjSUfVPU0oUG5VKWKyBcLAmn2QLat2yzyo8K0RgvckcEtushdhlE2JVpQ2SjKsc0//36bg;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Mathieu Taillefumier <mathieu.taillefumier@free.fr>
-Subject: Re: [Bug] pci allocation resources problems on x86_64
-Date: Fri, 24 Oct 2008 11:31:54 -0700
-User-Agent: KMail/1.10.1 (Linux/2.6.26.5-45.fc9.x86_64; KDE/4.1.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <49019FE4.50001@free.fr> <4901A4C2.5020805@free.fr>
-In-Reply-To: <4901A4C2.5020805@free.fr>
+	Fri, 24 Oct 2008 14:38:08 -0400
+Received: from spider.morgul.net ([128.30.28.25]:40147 "EHLO spider.morgul.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754192AbYJXSiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 14:38:06 -0400
+X-Greylist: delayed 1970 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Oct 2008 14:38:05 EDT
+Date: Fri, 24 Oct 2008 14:05:15 -0400
+To: linux-kernel@vger.kernel.org
+Subject: iwl4965 crash in iwl-tx.c
+Message-ID: <20081024180514.GA14438@morgul.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="1ugEqy3masBx2OgH"
 Content-Disposition: inline
-Message-Id: <200810241131.55129.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Noah Meyerhans <frodo@morgul.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, October 24, 2008 3:34 am Mathieu Taillefumier wrote:
-> Hi
->
-> Sorry, the first files iomem and ioports are not the right one (I used
-> the mem option to check if it has any effects). Please find the right
-> one in attachments. Sorry again for this mistake.
->
-> regards
->
-> Mathieu
->
-> > Hi,
-> >
-> > The kernel does not seems to allocate the pci resources correctly on
-> > sony laptop (VGN-SZ71 series) when pcmcia slot is used.
-> >
-> > I track down this bug for long now and I was able to identify where it
-> > is probably coming from. The laptop I am using possess a pcmcia card
-> > slot  that I am using for a tvcard. The kernel is a x86_64 bits kernel
-> > (2.6.27.2) and the laptop has 4G of memory. In this case the
-> > initialization of the tv-card is pure garbage and the kernel oops
-> > after that. Now if I start the laptop with 2G and the same kernel then
-> > everything works fine. From that I can assume that the problem does
-> > not come from the tvcard driver and maybe not from the pcmcia driver
-> > (although I am not completely sure). After discussing on the dvb
-> > mailling list we arrive to the conclusion that the problem is probably
-> > coming from pci allocation ressources.
-> >
-> > additional informations :
-> >
-> > Configurations that work
-> >
-> > - x86_64 kernels with 2G of memory
-> > - x86 kernels with 4G of memory without PAE activated nor 64 bits
-> > resources allocations option activated.
-> >
-> > Config that do not work
-> >
-> > - x86_64 kernels with 4G of memory
-> > - x86 kernels with 4G of memory with 64bits resources allocation
-> > activated (without PAE).
-> >
-> > The problem can be reproduced with kernel-next and the kernel-git so
-> > far and probably with earlier kernels although I have try this
-> >
-> > cat /proc/version
-> > Linux version 2.6.27.2-intel-nogem (root@coesite) (gcc version 4.3.1
-> > (GCC) ) #4 SMP Wed Oct 22 12:05:55 CEST 2008
-> > the lspci output are in one of the files and different dmesg are
-> > included. the dmesg-diff give the differences between the working one
-> > and the buggy one.
-> >
-> > I would like to help debugging this
 
-Ultimately we need to do better at grabbing space for PCI allocations on x86.  
-I was hoping we'd have some patches in 2.6.28 that would help here, but they 
-weren't ready in time.  Can you file a kernel.org bug for this problem with 
-the files attached?  I'll try to find time to put together some 
-improvements...
+--1ugEqy3masBx2OgH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Hi all.  I've recently experienced frequent crashes related to the
+iwl4965 wireless interface in my Thinkpad X300.  Kernel output,
+generated by 2.6.27.3, is included below.  I've experienced similar
+problems with older kernels as packaged by Debian beginning no later
+than 2.6.24.  The crash doesn't seem directly related to network load,
+and will happen even if the interface is completely idle except for
+normal broadcast traffic and other background noise.
 
+lspci reports the hardware as:
+03:00.0 Network controller: Intel Corporation PRO/Wireless 4965 AG or AGN Network Connection (rev 61)
+        Subsystem: Intel Corporation Lenovo ThinkPad T51
+        Flags: fast devsel, IRQ 17
+        Memory at f9f00000 (64-bit, non-prefetchable) [size=8K]
+        Capabilities: [c8] Power Management version 3
+        Capabilities: [d0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+        Capabilities: [e0] Express Endpoint, MSI 00
+        Capabilities: [100] Advanced Error Reporting <?>
+        Capabilities: [140] Device Serial Number 6d-57-26-ff-ff-3b-1f-00
+        Kernel driver in use: iwlagn
+        Kernel modules: iwlagn
+
+
+I'm happy to test patches or provide additional information if it's
+helpful...
+
+Thanks,
+noah
+
+[ 3365.764593] iwlagn: Error wrong command queue 63 command id 0x0
+[ 3365.764649] ------------[ cut here ]------------
+[ 3365.764657] kernel BUG at drivers/net/wireless/iwlwifi/iwl-tx.c:1198!
+[ 3365.764666] invalid opcode: 0000 [#1] SMP
+[ 3365.764679] Modules linked in: netconsole configfs i915 drm rfcomm l2cap uinput ppdev parport_pc lp parport ipv6 acpi_cpufreq cpufreq_powersave cpufreq_stats cpufreq_userspace cpufreq_conservative cpufreq_ondemand freq_table fuse loop joydev snd_hda_intel hci_usb bluetooth snd_seq_dummy snd_seq_oss snd_pcm_oss snd_mixer_oss arc4 snd_seq_midi snd_rawmidi snd_pcm snd_seq_midi_event snd_seq ecb crypto_blkcipher psmouse serio_raw uvcvideo snd_timer compat_ioctl32 snd_seq_device pcspkr videodev v4l1_compat snd i2c_i801 i2c_core iTCO_wdt iwlagn soundcore iwlcore snd_page_alloc mac80211 battery cfg80211 ac video output button intel_agp agpgart thinkpad_acpi rfkill evdev led_class nvram ext3 jbd mbcache sg sr_mod cdrom sd_mod piix ide_pci_generic ide_core ata_generic ahci ata_piix libata scsi_mod dock ehci_hcd uhci_hcd usbcore e1000e thermal processor fan thermal_sys
+[ 3365.765112]
+[ 3365.765121] Pid: 3415, comm: Xorg Not tainted (2.6.27.3-custom #1)
+[ 3365.765130] EIP: 0060:[<f8d9cec9>] EFLAGS: 00013096 CPU: 0
+[ 3365.765170] EIP is at iwl_tx_cmd_complete+0x3a/0x21f [iwlcore]
+[ 3365.765178] EAX: 00000046 EBX: f7bc0de0 ECX: f4a27edc EDX: f8da27c5
+[ 3365.765185] ESI: ee458000 EDI: f7bc2770 EBP: f750f058 ESP: f4a27ed8
+[ 3365.765192]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+[ 3365.765200] Process Xorg (pid: 3415, ti=f4a26000 task=f752e5e0 task.ti=f4a26000)
+[ 3365.765207] Stack: f8da27c5 0000003f 00000000 00000000 00000000 00000000 00000001 ffffffff
+[ 3365.765246]        f2a03780 00000000 f7bc0de0 f7bc2770 00000001 f750f058 f8db1632 00000000
+[ 3365.765285]        2e458000 f7bc3144 f7bc3138 00000026 00000025 00000008 00000000 f7bc0de0
+[ 3365.765330] Call Trace:
+[ 3365.765352]  [<f8db1632>] iwl_rx_handle+0xff/0x1ed [iwlagn]
+[ 3365.765385]  [<f8db18cb>] iwl4965_irq_tasklet+0x1ab/0x248 [iwlagn]
+[ 3365.765411]  [<c012807a>] tasklet_action+0x6a/0xc9
+[ 3365.765429]  [<c01285b7>] __do_softirq+0x78/0xe4
+[ 3365.765443]  [<c0128668>] do_softirq+0x45/0x53
+[ 3365.765458]  [<c0128770>] irq_exit+0x35/0x69
+[ 3365.765472]  [<c0105fda>] do_IRQ+0x52/0x64
+[ 3365.765487]  [<c010434f>] common_interrupt+0x23/0x28
+[ 3365.765504]  =======================
+[ 3365.765514] Code: b1 ac 00 00 00 66 8b 46 06 0f b6 d4 81 e2 bf 00 00 00 83 fa 04 0f 84 d7 01 00 00 0f b6 46 04 50 52 68 c5 27 da f8 e8 c1 ae 52 c7 <0f> 0b 83 c4 0c eb fe 48 21 e8 0f b6 c0 8b 84 83 5c 34 00 00 89
+[ 3365.765757] EIP: [<f8d9cec9>] iwl_tx_cmd_complete+0x3a/0x21f [iwlcore] SS:ESP 0068:f4a27ed8
+[ 3365.765803] Kernel panic - not syncing: Fatal exception in interrupt
+[ 3365.765815] ------------[ cut here ]------------
+[ 3365.765822] WARNING: at kernel/smp.c:332 smp_call_function_mask+0x34/0x18f()
+[ 3365.765832] Modules linked in: netconsole configfs i915 drm rfcomm l2cap uinput ppdev parport_pc lp parport ipv6 acpi_cpufreq cpufreq_powersave cpufreq_stats cpufreq_userspace cpufreq_conservative cpufreq_ondemand freq_table fuse loop joydev snd_hda_intel hci_usb bluetooth snd_seq_dummy snd_seq_oss snd_pcm_oss snd_mixer_oss arc4 snd_seq_midi snd_rawmidi snd_pcm snd_seq_midi_event snd_seq ecb crypto_blkcipher psmouse serio_raw uvcvideo snd_timer compat_ioctl32 snd_seq_device pcspkr videodev v4l1_compat snd i2c_i801 i2c_core iTCO_wdt iwlagn soundcore iwlcore snd_page_alloc mac80211 battery cfg80211 ac video output button intel_agp agpgart thinkpad_acpi rfkill evdev led_class nvram ext3 jbd mbcache sg sr_mod cdrom sd_mod piix ide_pci_generic ide_core ata_generic ahci ata_piix libata scsi_mod dock ehci_hcd uhci_hcd usbcore e1000e thermal processor fan thermal_sys
+[ 3365.766351] Pid: 3415, comm: Xorg Tainted: G      D   2.6.27.3-custom #1
+[ 3365.766358]  [<c01240f2>] warn_on_slowpath+0x40/0x63
+[ 3365.766384]  [<c0271417>] netpoll_send_udp+0xa8/0x1d5
+[ 3365.766399]  [<f911913c>] write_msg+0x80/0xbf [netconsole]
+[ 3365.766421]  [<f91190bc>] write_msg+0x0/0xbf [netconsole]
+[ 3365.766436]  [<c02c9acc>] _spin_lock_irqsave+0x23/0x29
+[ 3365.766448]  [<c0124360>] __call_console_drivers+0x4f/0x5b
+[ 3365.766460]  [<c012476e>] release_console_sem+0x17b/0x194
+[ 3365.766472]  [<c013f8bb>] smp_call_function_mask+0x34/0x18f
+[ 3365.766485]  [<c010f1b1>] stop_this_cpu+0x0/0x41
+[ 3365.766498]  [<c0148608>] crash_kexec+0xa9/0xb0
+[ 3365.766516]  [<f8d9cedd>] iwl_tx_cmd_complete+0x4e/0x21f [iwlcore]
+[ 3365.766547]  [<c0148608>] crash_kexec+0xa9/0xb0
+[ 3365.766560]  [<c013fa25>] smp_call_function+0xf/0x11
+[ 3365.766572]  [<c010f188>] native_smp_send_stop+0x18/0x41
+[ 3365.766584]  [<c02c7cee>] panic+0x47/0xe3
+[ 3365.766597]  [<c0104a14>] oops_end+0x7f/0x8f
+[ 3365.766608]  [<c01057b8>] do_invalid_op+0x0/0x6b
+[ 3365.766620]  [<c010581a>] do_invalid_op+0x62/0x6b
+[ 3365.766638]  [<f8d9cec9>] iwl_tx_cmd_complete+0x3a/0x21f [iwlcore]
+[ 3365.766669]  [<c011ad73>] __wake_up+0x29/0x39
+[ 3365.766682]  [<c01245f1>] wake_up_klogd+0x2b/0x2d
+[ 3365.766694]  [<c02c9daa>] error_code+0x72/0x78
+[ 3365.766717]  [<f8d9cec9>] iwl_tx_cmd_complete+0x3a/0x21f [iwlcore]
+[ 3365.766846]  [<f8db1632>] iwl_rx_handle+0xff/0x1ed [iwlagn]
+[ 3365.766871]  [<f8db18cb>] iwl4965_irq_tasklet+0x1ab/0x248 [iwlagn]
+[ 3365.766893]  [<c012807a>] tasklet_action+0x6a/0xc9
+[ 3365.766905]  [<c01285b7>] __do_softirq+0x78/0xe4
+[ 3365.766916]  [<c0128668>] do_softirq+0x45/0x53
+[ 3365.766926]  [<c0128770>] irq_exit+0x35/0x69
+[ 3365.766937]  [<c0105fda>] do_IRQ+0x52/0x64
+[ 3365.766948]  [<c010434f>] common_interrupt+0x23/0x28
+[ 3365.766960]  =======================
+[ 3365.766966] ---[ end trace e5b066fc1a519937 ]---
+[ 3365.766975] ------------[ cut here ]------------
+[ 3365.766982] WARNING: at kernel/smp.c:219 smp_call_function_single+0x32/0xbd()
+[ 3365.766988] Modules linked in: netconsole configfs i915 drm rfcomm l2cap uinput ppdev parport_pc lp parport ipv6 acpi_cpufreq cpufreq_powersave cpufreq_stats cpufreq_userspace cpufreq_conservative cpufreq_ondemand freq_table fuse loop joydev snd_hda_intel hci_usb bluetooth snd_seq_dummy snd_seq_oss snd_pcm_oss snd_mixer_oss arc4 snd_seq_midi snd_rawmidi snd_pcm snd_seq_midi_event snd_seq ecb crypto_blkcipher psmouse serio_raw uvcvideo snd_timer compat_ioctl32 snd_seq_device pcspkr videodev v4l1_compat snd i2c_i801 i2c_core iTCO_wdt iwlagn soundcore iwlcore snd_page_alloc mac80211 battery cfg80211
+
+
+
+--1ugEqy3masBx2OgH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFJAg5aYrVLjBFATsMRAtb+AJ9/JyGvkdP19ijqZM0OtKhc2lcSgQCeNIVz
+4wv8eHyQyGV2JSStef53v0c=
+=6Op7
+-----END PGP SIGNATURE-----
+
+--1ugEqy3masBx2OgH--
