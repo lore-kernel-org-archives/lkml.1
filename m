@@ -1,54 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759293AbYJXBTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbYJXBZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759293AbYJXBTR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Oct 2008 21:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759149AbYJXBSp
+	id S1757164AbYJXBZk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Oct 2008 21:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbYJXBZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Oct 2008 21:18:45 -0400
-Received: from rcsinet13.oracle.com ([148.87.113.125]:23820 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759129AbYJXBSo (ORCPT
+	Thu, 23 Oct 2008 21:25:28 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:24996 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751015AbYJXBZ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Oct 2008 21:18:44 -0400
-Date: Thu, 23 Oct 2008 18:17:45 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH] coda: credentials error
-Message-Id: <20081023181745.7991a823.randy.dunlap@oracle.com>
-In-Reply-To: <20081023213637.eff9b414.sfr@canb.auug.org.au>
-References: <20081023213637.eff9b414.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Thu, 23 Oct 2008 21:25:27 -0400
+X-YMail-OSG: dSnMqO4VM1m0RCxPunwqh3mZOl6hZZ1RMtutLZooxID9wCTcXNmrS0cew70iEC2b1mfRGLoqMT5DuVTC4vtcpXXuBgqXmdJuxICktF3ZAubS5Uu5Zk8YG6i0UbrYCPOkJPUjG2Nh4XTpLEJ7R8kFStLZz9yFvkcmrGUOv4odQxEWcGeupprJzvhGj_c-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH] [LIO-Target/ConfigFS]: Convert NACL_ATTR() and TPG_ATTR()
+	to use internal show()/store()
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 23 Oct 2008 18:25:24 -0700
+Message-Id: <1224811524.16558.24.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt704.oracle.com [141.146.40.82]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.49012245.015E:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+>From dce9b1143bf4a6fe4562972ded9cd5af30781ca2 Mon Sep 17 00:00:00 2001
+From: Nicholas Bellinger <nab@linux-iscsi.org>
+Date: Thu, 23 Oct 2008 07:33:10 -0700
+Subject: [PATCH] [LIO-Target/ConfigFS]: Convert NACL_ATTR() and TPG_ATTR() to use internal show()/store()
 
-Needs a header file for credentials struct:
+Using __CONFIGFS_EATTR_RO() and following TPG_PARAM_ATTR() and NACL_PARAM_ATTR(),
+use the same internal function with macro agrument "_name" and get rid "_store"
+and "_store" as macro arguments.
 
-linux-next-20081023/fs/coda/file.c:177: error: dereferencing pointer to incomplete type
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
 ---
- fs/coda/file.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/lio-core/iscsi_target_configfs.c |   72 +++++++++---------------------
+ 1 files changed, 22 insertions(+), 50 deletions(-)
 
---- linux-next-20081023.orig/fs/coda/file.c
-+++ linux-next-20081023/fs/coda/file.c
-@@ -13,6 +13,7 @@
- #include <linux/file.h>
- #include <linux/fs.h>
- #include <linux/stat.h>
-+#include <linux/cred.h>
- #include <linux/errno.h>
- #include <linux/smp_lock.h>
- #include <linux/string.h>
+diff --git a/drivers/lio-core/iscsi_target_configfs.c b/drivers/lio-core/iscsi_target_configfs.c
+index fa3b6a0..0cf1813 100644
+--- a/drivers/lio-core/iscsi_target_configfs.c
++++ b/drivers/lio-core/iscsi_target_configfs.c
+@@ -727,66 +727,51 @@ static ssize_t lio_target_store_nacl_attrib_##name (			\
+  * Define the iSCSI Node attributes using hybrid wrappers from include/linux/configfs.h
+  */
+ CONFIGFS_EATTR_STRUCT(iscsi_node_attrib, iscsi_node_attrib_s);
+-#define NACL_ATTR(_name, _mode, _show, _store)				\
++#define NACL_ATTR(_name, _mode)						\
+ static struct iscsi_node_attrib_attribute iscsi_node_attrib_##_name =	\
+-		__CONFIGFS_EATTR(_name, _mode, _show, _store)
++		__CONFIGFS_EATTR(_name, _mode,				\
++		lio_target_show_nacl_attrib_##_name,			\
++		lio_target_store_nacl_attrib_##_name);			
+ /*
+  * Define iscsi_node_attrib_s_dataout_timeout
+  */
+ DEF_NACL_ATTRIB(dataout_timeout);
+-NACL_ATTR(dataout_timeout, S_IRUGO | S_IWUSR,
+-	lio_target_show_nacl_attrib_dataout_timeout,
+-	lio_target_store_nacl_attrib_dataout_timeout);
++NACL_ATTR(dataout_timeout, S_IRUGO | S_IWUSR);
+ /*
+  * Define iscsi_node_attrib_s_dataout_timeout_retries
+  */
+ DEF_NACL_ATTRIB(dataout_timeout_retries);
+-NACL_ATTR(dataout_timeout_retries, S_IRUGO | S_IWUSR,
+-	lio_target_show_nacl_attrib_dataout_timeout_retries,
+-	lio_target_store_nacl_attrib_dataout_timeout_retries);
++NACL_ATTR(dataout_timeout_retries, S_IRUGO | S_IWUSR);
+ /*
+  * Define iscsi_node_attrib_s_default_erl
+  */
+ DEF_NACL_ATTRIB(default_erl);
+-NACL_ATTR(default_erl, S_IRUGO | S_IWUSR,
+-	lio_target_show_nacl_attrib_default_erl,
+-	lio_target_store_nacl_attrib_default_erl);
++NACL_ATTR(default_erl, S_IRUGO | S_IWUSR);
+ /*
+  * Define iscsi_node_attrib_s_nopin_timeout
+  */
+ DEF_NACL_ATTRIB(nopin_timeout);
+-NACL_ATTR(nopin_timeout, S_IRUGO | S_IWUSR,
+-	lio_target_show_nacl_attrib_nopin_timeout,
+-	lio_target_store_nacl_attrib_nopin_timeout);
++NACL_ATTR(nopin_timeout, S_IRUGO | S_IWUSR);
+ /*
+  * Define iscsi_node_attrib_s_nopin_response_timeout
+  */
+ DEF_NACL_ATTRIB(nopin_response_timeout);
+-NACL_ATTR(nopin_response_timeout, S_IRUGO | S_IWUSR,
+-	lio_target_show_nacl_attrib_nopin_response_timeout,
+-	lio_target_store_nacl_attrib_nopin_response_timeout);
++NACL_ATTR(nopin_response_timeout, S_IRUGO | S_IWUSR);
+ /*
+  * Define iscsi_node_attrib_s_random_datain_pdu_offsets
+  */
+ DEF_NACL_ATTRIB(random_datain_pdu_offsets);
+-NACL_ATTR(random_datain_pdu_offsets, S_IRUGO | S_IWUSR,
+-	lio_target_show_nacl_attrib_random_datain_pdu_offsets,
+-	lio_target_store_nacl_attrib_random_datain_pdu_offsets);
++NACL_ATTR(random_datain_pdu_offsets, S_IRUGO | S_IWUSR);
+ /*
+  * Define iscsi_node_attrib_s_random_datain_seq_offsets
+  */
+ DEF_NACL_ATTRIB(random_datain_seq_offsets);
+-NACL_ATTR(random_datain_seq_offsets, S_IRUGO | S_IWUSR,
+-	lio_target_show_nacl_attrib_random_datain_seq_offsets,
+-	lio_target_store_nacl_attrib_random_datain_seq_offsets);
++NACL_ATTR(random_datain_seq_offsets, S_IRUGO | S_IWUSR);
+ /*
+  * Define iscsi_node_attrib_s_random_r2t_offsets
+  */
+ DEF_NACL_ATTRIB(random_r2t_offsets);
+-NACL_ATTR(random_r2t_offsets, S_IRUGO | S_IWUSR,
+-	lio_target_show_nacl_attrib_random_r2t_offsets,
+-	lio_target_store_nacl_attrib_random_r2t_offsets);
+-
++NACL_ATTR(random_r2t_offsets, S_IRUGO | S_IWUSR);
+ /*
+  * Finally, define functions iscsi_node_attrib_s_attr_show() and
+  * iscsi_node_attrib_s_attr_store() for lio_target_nacl_attrib_ops below..
+@@ -1617,58 +1602,45 @@ out:									\
+ CONFIGFS_EATTR_STRUCT(iscsi_tpg_attrib, iscsi_tpg_attrib_s);
+ #define TPG_ATTR(_name, _mode, _show, _store)				\
+ static struct iscsi_tpg_attrib_attribute iscsi_tpg_attrib_##_name =	\
+-	__CONFIGFS_EATTR(_name, _mode, _show, _store)
++	__CONFIGFS_EATTR(_name, _mode,					\
++		lio_target_show_tpg_attrib_##_name,			\
++		lio_target_store_tpg_attrib_##_name);		
+ 
+ /*
+  * Define iscsi_tpg_attrib_s_authentication
+  */
+ DEF_TPG_ATTRIB(authentication);
+-TPG_ATTR(authentication, S_IRUGO | S_IWUSR,
+-	lio_target_show_tpg_attrib_authentication,
+-	lio_target_store_tpg_attrib_authentication);
++TPG_ATTR(authentication, S_IRUGO | S_IWUSR);
+ /*
+  * Define iscsi_tpg_attrib_s_login_timeout
+  */
+ DEF_TPG_ATTRIB(login_timeout);
+-TPG_ATTR(login_timeout, S_IRUGO | S_IWUSR,
+-	lio_target_show_tpg_attrib_login_timeout,
+-	lio_target_store_tpg_attrib_login_timeout);
++TPG_ATTR(login_timeout, S_IRUGO | S_IWUSR);
+ /*
+  * Define iscsi_tpg_attrib_s_netif_timeout
+  */
+ DEF_TPG_ATTRIB(netif_timeout);
+-TPG_ATTR(netif_timeout, S_IRUGO | S_IWUSR,
+-	lio_target_show_tpg_attrib_netif_timeout,
+-	lio_target_store_tpg_attrib_netif_timeout);
++TPG_ATTR(netif_timeout, S_IRUGO | S_IWUSR);
+ /*
+  * Define iscsi_tpg_attrib_s_generate_node_acls
+  */
+ DEF_TPG_ATTRIB(generate_node_acls);
+-TPG_ATTR(generate_node_acls, S_IRUGO | S_IWUSR,
+-	lio_target_show_tpg_attrib_generate_node_acls,
+-	lio_target_store_tpg_attrib_generate_node_acls);
++TPG_ATTR(generate_node_acls, S_IRUGO | S_IWUSR);
+ /*
+  * Define iscsi_tpg_attrib_s_default_cmdsn_depth
+  */
+ DEF_TPG_ATTRIB(default_cmdsn_depth);
+-TPG_ATTR(default_cmdsn_depth, S_IRUGO | S_IWUSR,
+-	lio_target_show_tpg_attrib_default_cmdsn_depth,
+-	lio_target_store_tpg_attrib_default_cmdsn_depth);
++TPG_ATTR(default_cmdsn_depth, S_IRUGO | S_IWUSR);
+ /*
+  Define iscsi_tpg_attrib_scache_dynamic_acls
+  */
+ DEF_TPG_ATTRIB(cache_dynamic_acls);
+-TPG_ATTR(cache_dynamic_acls, S_IRUGO | S_IWUSR,
+-	lio_target_show_tpg_attrib_cache_dynamic_acls,
+-	lio_target_store_tpg_attrib_cache_dynamic_acls);
++TPG_ATTR(cache_dynamic_acls, S_IRUGO | S_IWUSR);
+ /*
+  * Define iscsi_tpg_attrib_sdemo_mode_lun_access
+  */
+ DEF_TPG_ATTRIB(demo_mode_lun_access);
+-TPG_ATTR(demo_mode_lun_access, S_IRUGO | S_IWUSR,
+-	lio_target_show_tpg_attrib_demo_mode_lun_access,
+-	lio_target_store_tpg_attrib_demo_mode_lun_access);
+-
++TPG_ATTR(demo_mode_lun_access, S_IRUGO | S_IWUSR);
+ /*
+  * Finally, define functions iscsi_tpg_attrib_s_attr_show() and
+  * iscsi_tpg_attrib_s_attr_store() for lio_target_tpg_attrib_ops below..
+-- 
+1.5.4.1
+
+
+
