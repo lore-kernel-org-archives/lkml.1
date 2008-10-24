@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbYJXEpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756427AbYJXEqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757218AbYJXEpt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 00:45:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYJXEjc
+	id S1756427AbYJXEqN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 00:46:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbYJXEjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 00:39:32 -0400
-Received: from kroah.org ([198.145.64.141]:51810 "EHLO coco.kroah.org"
+	Fri, 24 Oct 2008 00:39:35 -0400
+Received: from kroah.org ([198.145.64.141]:51839 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752907AbYJXEjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 00:39:22 -0400
-Date: Thu, 23 Oct 2008 21:34:43 -0700
+	id S1751854AbYJXEjZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 00:39:25 -0400
+Date: Thu, 23 Oct 2008 21:34:51 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,79 +23,63 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, netfilter-devel@vger.kernel.org,
-       Patrick McHardy <kaber@trash.net>, davem@davemloft.net,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Jan Engelhardt <jengelh@medozas.de>
-Subject: [patch 16/27] netfilter: xt_iprange: fix range inversion match
-Message-ID: <20081024043443.GQ30828@kroah.com>
+       Patrick McHardy <kaber@trash.net>, davem@davemloft.net
+Subject: [patch 18/27] netfilter: restore lost ifdef guarding defrag
+	exception
+Message-ID: <20081024043451.GS30828@kroah.com>
 References: <20081024042023.054190751@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="netfilter-xt_iprange-fix-range-inversion-match.patch"
+Content-Disposition: inline; filename="netfilter-restore-lost-ifdef-guarding-defrag-exception.patch"
 In-Reply-To: <20081024043303.GA30828@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.27-stable review patch.  If anyone has any objections, please let us 
 know.
 
 ------------------
-From: Alexey Dobriyan <adobriyan@gmail.com>
+From: Patrick McHardy <kaber@trash.net>
 
-netfilter: xt_iprange: fix range inversion match
+netfilter: restore lost #ifdef guarding defrag exception
 
-Upstream commit 6def1eb48:
+Upstream commit 38f7ac3eb:
 
-Inverted IPv4 v1 and IPv6 v0 matches don't match anything since 2.6.25-rc1!
+Nir Tzachar <nir.tzachar@gmail.com> reported a warning when sending
+fragments over loopback with NAT:
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-Acked-by: Jan Engelhardt <jengelh@medozas.de>
+[ 6658.338121] WARNING: at net/ipv4/netfilter/nf_nat_standalone.c:89 nf_nat_fn+0x33/0x155()
+
+The reason is that defragmentation is skipped for already tracked connections.
+This is wrong in combination with NAT and ip_conntrack actually had some ifdefs
+to avoid this behaviour when NAT is compiled in.
+
+The entire "optimization" may seem a bit silly, for now simply restoring the
+lost #ifdef is the easiest solution until we can come up with something better.
+
 Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/netfilter/xt_iprange.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/net/netfilter/xt_iprange.c
-+++ b/net/netfilter/xt_iprange.c
-@@ -67,7 +67,7 @@ iprange_mt4(const struct sk_buff *skb, c
- 	if (info->flags & IPRANGE_SRC) {
- 		m  = ntohl(iph->saddr) < ntohl(info->src_min.ip);
- 		m |= ntohl(iph->saddr) > ntohl(info->src_max.ip);
--		m ^= info->flags & IPRANGE_SRC_INV;
-+		m ^= !!(info->flags & IPRANGE_SRC_INV);
- 		if (m) {
- 			pr_debug("src IP " NIPQUAD_FMT " NOT in range %s"
- 			         NIPQUAD_FMT "-" NIPQUAD_FMT "\n",
-@@ -81,7 +81,7 @@ iprange_mt4(const struct sk_buff *skb, c
- 	if (info->flags & IPRANGE_DST) {
- 		m  = ntohl(iph->daddr) < ntohl(info->dst_min.ip);
- 		m |= ntohl(iph->daddr) > ntohl(info->dst_max.ip);
--		m ^= info->flags & IPRANGE_DST_INV;
-+		m ^= !!(info->flags & IPRANGE_DST_INV);
- 		if (m) {
- 			pr_debug("dst IP " NIPQUAD_FMT " NOT in range %s"
- 			         NIPQUAD_FMT "-" NIPQUAD_FMT "\n",
-@@ -123,14 +123,14 @@ iprange_mt6(const struct sk_buff *skb, c
- 	if (info->flags & IPRANGE_SRC) {
- 		m  = iprange_ipv6_sub(&iph->saddr, &info->src_min.in6) < 0;
- 		m |= iprange_ipv6_sub(&iph->saddr, &info->src_max.in6) > 0;
--		m ^= info->flags & IPRANGE_SRC_INV;
-+		m ^= !!(info->flags & IPRANGE_SRC_INV);
- 		if (m)
- 			return false;
- 	}
- 	if (info->flags & IPRANGE_DST) {
- 		m  = iprange_ipv6_sub(&iph->daddr, &info->dst_min.in6) < 0;
- 		m |= iprange_ipv6_sub(&iph->daddr, &info->dst_max.in6) > 0;
--		m ^= info->flags & IPRANGE_DST_INV;
-+		m ^= !!(info->flags & IPRANGE_DST_INV);
- 		if (m)
- 			return false;
- 	}
+--- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
++++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
+@@ -150,10 +150,12 @@ static unsigned int ipv4_conntrack_defra
+ 					  const struct net_device *out,
+ 					  int (*okfn)(struct sk_buff *))
+ {
++#if !defined(CONFIG_NF_NAT) && !defined(CONFIG_NF_NAT_MODULE)
+ 	/* Previously seen (loopback)?  Ignore.  Do this before
+ 	   fragment check. */
+ 	if (skb->nfct)
+ 		return NF_ACCEPT;
++#endif
+ 
+ 	/* Gather fragments. */
+ 	if (ip_hdr(skb)->frag_off & htons(IP_MF | IP_OFFSET)) {
 
 -- 
