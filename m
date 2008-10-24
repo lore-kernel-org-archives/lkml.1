@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752720AbYJXWcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753084AbYJXWe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752720AbYJXWcR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 18:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750918AbYJXWcD
+	id S1753084AbYJXWe0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 18:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYJXWeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 18:32:03 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59726
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750714AbYJXWcB (ORCPT
+	Fri, 24 Oct 2008 18:34:18 -0400
+Received: from mga01.intel.com ([192.55.52.88]:26809 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751203AbYJXWeR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 18:32:01 -0400
-Date: Fri, 24 Oct 2008 15:31:39 -0700 (PDT)
-Message-Id: <20081024.153139.36591021.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: alistair@devzero.co.uk, rjw@sisk.pl, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.28-rc1
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.00.0810240801540.3287@nehalem.linux-foundation.org>
-References: <200810241345.04966.rjw@sisk.pl>
-	<200810241352.45745.alistair@devzero.co.uk>
-	<alpine.LFD.2.00.0810240801540.3287@nehalem.linux-foundation.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Oct 2008 18:34:17 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,481,1220252400"; 
+   d="scan'208";a="395759286"
+From: "Moore, Robert" <robert.moore@intel.com>
+To: Fabio Comolli <fabio.comolli@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: ACPI mailing list <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Date: Fri, 24 Oct 2008 15:34:14 -0700
+Subject: RE: ACPI warning in 2.6.28-rc1
+Thread-Topic: ACPI warning in 2.6.28-rc1
+Thread-Index: Ack2JS/XPlJIvQLBTbeEa+db1cdqegAA2ufQ
+Message-ID: <4911F71203A09E4D9981D27F9D8308580AA800C4@orsmsx503.amr.corp.intel.com>
+References: <b637ec0b0810241509j43a6bfc9q506dc16a612e7f06@mail.gmail.com>
+In-Reply-To: <b637ec0b0810241509j43a6bfc9q506dc16a612e7f06@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 24 Oct 2008 08:17:53 -0700 (PDT)
+Please send the acpidump for the machine so we can look at the method.
+Thanks,
+Bob
 
-> Now, _another_ part (and arguably the really core reason) of this problem 
-> is that our Makefile rules for the asm include directory is weak and 
-> unreliable in the presense of already-existing unexpected entries.
 
-I guess we could use seperate "stamp" files to deal with this.
-
-Along with the generated file "foo" there is a "foo.stamp" file
-that is generated with "touch" after "foo" is built.
-
-Then "foo"'s update rule is whether the "foo.stamp" is out of date
-wrt. it's dependencies.
+>-----Original Message-----
+>From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
+>owner@vger.kernel.org] On Behalf Of Fabio Comolli
+>Sent: Friday, October 24, 2008 3:09 PM
+>To: Linux Kernel Mailing List
+>Cc: ACPI mailing list; Len Brown
+>Subject: ACPI warning in 2.6.28-rc1
+>
+>Hi all.
+>As the subject says:
+>
+>ACPI Warning (nspredef-0858): \_SB_.PCI0.LPCB.EC0_.BAT0._BIF: Return
+>Package type mismatch at index 11 - found Buffer, expected String
+>[20080926]
+>
+>No functional problems so far.
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
