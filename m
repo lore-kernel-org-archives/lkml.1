@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbYJXOMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbYJXORT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754711AbYJXOMc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 10:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbYJXOMU
+	id S1754149AbYJXORT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 10:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbYJXORJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 10:12:20 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:60088 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752621AbYJXOMT (ORCPT
+	Fri, 24 Oct 2008 10:17:09 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:49021 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751719AbYJXORJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 10:12:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:sender;
-        b=pQ3HOX3+7TTrdYI4vndKyb/rMGcYHnLaBBDmfWqKnT6bHxg+jUPwXIwnHV3qi7ml75
-         SDsJTZYgW5fbYEvo3Adf4NFWesEB6C7FjHPEgawhA+ADijNcKosElxss8+TAo4dUsOlp
-         SRNlWnvvPbFkzfJOHtNk5Ec8cFN/4tGy+XhxA=
-Date: Fri, 24 Oct 2008 10:10:42 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: greg@kroah.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Update stable tree documentation
-Message-ID: <20081024141042.GB2299@yoda.jdub.homelinux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 24 Oct 2008 10:17:09 -0400
+Subject: Re: [PROBLEM] hard-lock with kmemtrace, relayfs, and splice
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Peter Teoh <htmldeveloper@gmail.com>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       zanussi@comcast.net, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <804dabb00810232144w4a618737l28c1d63108594d1e@mail.gmail.com>
+References: <20080923212914.GB5237@localhost>
+	 <1223386477.28348.42.camel@penberg-laptop>
+	 <1223623191.8959.26.camel@penberg-laptop>
+	 <1223628687.8959.37.camel@penberg-laptop>
+	 <1223629803.8959.40.camel@penberg-laptop>
+	 <1223631723.8959.46.camel@penberg-laptop>
+	 <804dabb00810232144w4a618737l28c1d63108594d1e@mail.gmail.com>
+Date: Fri, 24 Oct 2008 17:15:56 +0300
+Message-Id: <1224857756.5519.5.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update the documentation for the stable tree rules to reflect
-that device IDs and quirks are also suitable for -stable
-kernels.
+On Fri, 2008-10-24 at 12:44 +0800, Peter Teoh wrote:
+> after doing a
+> 
+> git clone git://repo.or.cz/linux-2.6/kmemtrace.git
+> 
+> I reboot the OS and encountered several application crashes.....the
+> logs are as per attached....please comment.
+> 
+> for bug0 and bug1, the system go into a state of complete
+> non-responsive, even connecting via SSH into the system becomes
+> impossible, and bug0 and bug1 was generated just before it goes into
+> this state.
+> 
+> for bug2, the mouse seemed to respond, i managed to output the dmesg
+> (which is bug2 itself).
+> 
+> any comments?
 
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Hmm, you're hitting out-of-memory. I can't immediately see how kmemtrace
+is at fault here. Eduard, thoughts?
 
----
-
-diff --git a/Documentation/stable_kernel_rules.txt b/Documentation/stable_kernel_rules.txt
-index 4cfc788..a452227 100644
---- a/Documentation/stable_kernel_rules.txt
-+++ b/Documentation/stable_kernel_rules.txt
-@@ -12,6 +12,7 @@ Rules on what kind of patches are accepted, and which ones are not, into the
-    marked CONFIG_BROKEN), an oops, a hang, data corruption, a real
-    security issue, or some "oh, that's not good" issue.  In short, something
-    critical.
-+ - New device IDs and quirks are also accepted.
-  - No "theoretical race condition" issues, unless an explanation of how the
-    race can be exploited is also provided.
-  - It cannot contain any "trivial" fixes in it (spelling changes,
