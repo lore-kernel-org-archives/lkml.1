@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbYJXQTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756741AbYJXQUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755950AbYJXQTm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 12:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbYJXQTc
+	id S1756741AbYJXQUe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 12:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYJXQUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 12:19:32 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:35624 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752927AbYJXQTb (ORCPT
+	Fri, 24 Oct 2008 12:20:25 -0400
+Received: from ndjsnpf03.ndc.nasa.gov ([198.117.1.123]:53410 "EHLO
+	ndjsnpf03.ndc.nasa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752639AbYJXQUY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 12:19:31 -0400
-Date: Fri, 24 Oct 2008 12:19:29 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-cc: greg@kroah.com, <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2.6.27.3 usbcore] Move __module_param_call(nousb)
- toimmediately after declaration of nousb.
-In-Reply-To: <200810250026.EGB05240.HJtQFOMSOVOFFL@I-love.SAKURA.ne.jp>
-Message-ID: <Pine.LNX.4.44L0.0810241217500.2180-100000@iolanthe.rowland.org>
+	Fri, 24 Oct 2008 12:20:24 -0400
+X-Greylist: delayed 1104 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Oct 2008 12:20:24 EDT
+Message-ID: <4901F249.1030206@nasa.gov>
+Date: Fri, 24 Oct 2008 09:05:29 -0700
+From: Jeff Becker <Jeffrey.C.Becker@nasa.gov>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Roland Dreier <rdreier@cisco.com>
+CC: Randy Dunlap <randy.dunlap@oracle.com>, akpm <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, general@lists.openfabrics.org,
+       Jeff Squyres <jsquyres@cisco.com>
+Subject: Re: [ofa-general] Re: [PATCH] maintainers: moderated mailing list
+References: <20081023183805.92bc39ab.randy.dunlap@oracle.com> <adabpxarofg.fsf@cisco.com>
+In-Reply-To: <adabpxarofg.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Oct 2008 16:01:55.0563 (UTC) FILETIME=[D64E83B0:01C935F1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 25 Oct 2008, Tetsuo Handa wrote:
+Hi Roland
 
-> Hello.
-> 
-> I succeeded to produce this problem with 2.6.26 .
-> Thus, at least, it is not a new bug introduced in 2.6.27 .
-> 
-> Greg KH wrote:
-> > This really sounds like a compiler bug somewhere, reordering this
-> > shouldn't "fix" this issue.
-> 
-> I think so too.
+Roland Dreier wrote:
+>  > I got the "list is moderated message," so add it here.
+>
+> ugh, our list isn't supposed to be moderated.  Anyone know who's in
+> charge of the mail server now?  Can we get this fixed?
+>   
+Currently, I run the mail server. We switched to moderated lists in
+mid-August due to a huge increase in spam.
 
-> Well, I'm getting more and more confused.
-> It may be gcc3's bug, it may not be gcc's bug.
+-jeff
 
-Why don't you simply look at the output from the compiler?  Either the 
-.o file or else the intermediate .s file.
-
-Alan Stern
+> _______________________________________________
+> general mailing list
+> general@lists.openfabrics.org
+> http://lists.openfabrics.org/cgi-bin/mailman/listinfo/general
+>
+> To unsubscribe, please visit http://openib.org/mailman/listinfo/openib-general
+>   
 
