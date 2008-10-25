@@ -1,68 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755981AbYJYDee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbYJYDhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755981AbYJYDee (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 23:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbYJYDbu
+	id S1755259AbYJYDhq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 23:37:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbYJYDhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 23:31:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:19879 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753003AbYJYDad (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 23:30:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Y6/j9GP2vwBREkGq9QFTF0iIJTjEc6N2PDbDdluF/yPlp+30rbtG55xcsqaZ55Teja
-         xym4q566TTMWFguYtl8CBNj/adT02C5b0eUY8rPN1NEZ6Q+TEMGJ4oQBY5sx2n7xum68
-         LRg/KSG6otWZKAqhp/CBBZO7b5Mv+pvPmnhnA=
-From: Joe Damato <ice799@gmail.com>
-To: linux-x86_64@vger.kernel.org, linux-newbie@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Joe Damato <ice799@gmail.com>
-Subject: [PATCH 04/12] x86: Add macros for gate_desc
-Date: Fri, 24 Oct 2008 20:15:24 -0700
-Message-Id: <a9cabc5cabdb5a10631e2a6dc330c54826f2b210.1224903712.git.ice799@gmail.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <4810cc08c12cd78612b53f9b52d7ba93a9b03fd0.1224903712.git.ice799@gmail.com>
-References: <>
- <1224904532-9586-1-git-send-email-ice799@gmail.com>
- <52f8491fb5d55c0171840b01638ea6db0a98f3be.1224903712.git.ice799@gmail.com>
- <03269a2e8f455b431612a32e8cce048e98c75b27.1224903712.git.ice799@gmail.com>
- <4810cc08c12cd78612b53f9b52d7ba93a9b03fd0.1224903712.git.ice799@gmail.com>
-In-Reply-To: <52f8491fb5d55c0171840b01638ea6db0a98f3be.1224903712.git.ice799@gmail.com>
-References: <52f8491fb5d55c0171840b01638ea6db0a98f3be.1224903712.git.ice799@gmail.com>
+	Fri, 24 Oct 2008 23:37:33 -0400
+Received: from mail.gmx.net ([213.165.64.20]:50360 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752120AbYJYDhc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 23:37:32 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19ywiF7Ibpyqt7Y2SNeVcrNUrcUsP902z44H9SV7w
+	c/KwDpyqaBxrQk
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+From: Mike Galbraith <efault@gmx.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>, Evgeniy Polyakov <s0mbre@tservice.net.ru>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, David Miller <davem@davemloft.net>
+In-Reply-To: <200810250025.35734.rjw@sisk.pl>
+References: <20081009231759.GA8664@tservice.net.ru>
+	 <20081010115518.GA3159@tservice.net.ru> <20081010115725.GD19487@elte.hu>
+	 <200810250025.35734.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Sat, 25 Oct 2008 05:37:28 +0200
+Message-Id: <1224905848.5161.27.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add useful macros which can be used to access the lo and hi 32bit words, get the offset of the handler, and get the segment for gate_descs.
+On Sat, 2008-10-25 at 00:25 +0200, Rafael J. Wysocki wrote:
+> On Friday, 10 of October 2008, Ingo Molnar wrote:
+> > 
+> > * Evgeniy Polyakov <s0mbre@tservice.net.ru> wrote:
+> > 
+> > > On Fri, Oct 10, 2008 at 01:42:45PM +0200, Ingo Molnar (mingo@elte.hu) wrote:
+> > > > > vanilla 27: 347.222
+> > > > > no TSO/GSO: 357.331
+> > > > > no hrticks: 382.983
+> > > > > no balance: 389.802
+> > > > 
+> > > > okay. The target is 470 MB/sec, right? (Assuming the workload is sane 
+> > > > and 'fixing' it does not mean we have to schedule worse.)
+> > > 
+> > > Well, that's where I started/stopped, so maybe we will even move
+> > > further? :)
+> > 
+> > that's the right attitude ;)
+> 
+> Can anyone please tell me if there was any conclusion of this thread?
 
-Signed-off-by: Joe Damato <ice799@gmail.com>
----
- include/asm-x86/desc_defs.h |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+Part of the .27 regression was added scheduler overhead going from .26
+to .27.  The scheduler overhead is now gone, but an unidentified source
+of localhost throughput loss remains for both SMP and UP configs.
 
-diff --git a/include/asm-x86/desc_defs.h b/include/asm-x86/desc_defs.h
-index 012df1f..d6a5310 100644
---- a/include/asm-x86/desc_defs.h
-+++ b/include/asm-x86/desc_defs.h
-@@ -75,8 +75,13 @@ typedef struct ldttss_desc64 tss_desc;
- typedef struct gate_struct gate_desc;
- typedef struct desc_struct ldt_desc;
- typedef struct desc_struct tss_desc;
--#define gate_offset(g)		(((g).b & 0xffff0000) | ((g).a & 0x0000ffff))
--#define gate_segment(g)		((g).a >> 16)
-+#define desc_lo(d)		(((u32 *)&d)[0])
-+#define desc_hi(d)		(((u32 *)&d)[1])
-+#define gate_offset(g)		(((g).base1 << 16) | ((g).base0 & 0x0000ffff))
-+#define gate_segment(g)		((g).seg_sel >> 16)
-+#define ldttss_offset(d)	(((d).base2 << 24 ) | ((d).base1 << 16) |\
-+				 ((d).base0 & 0x0000ffff))
-+#define ldttss_limit(d)		((d).limit0)
- #endif
- 
- struct desc_ptr {
--- 
-1.5.4.3
+	-Mike
+
+My last test data, updated to reflect recent commits:
+
+Legend:
+clock  = v2.6.26..5052696 + 5052696..v2.6.27-rc7 sched clock changes
+weight = a7be37a + c9c294a + ced8aa1 (adds math overhead)
+buddy  = 103638d (adds math overhead)
+buddy_overhead = b0aa51b (removes math overhead of buddy)
+revert_to_per_rq_vruntime = f9c0b09 (+2 lines, removes math overhead of weight)
+
+2.6.26.6-up virgin
+ring-test   - 1.169 us/cycle  = 855 KHz                                 1.000
+netperf     - 130967.54 131143.75 130914.96 rr/s    avg 131008.75 rr/s  1.000
+tbench      - 357.593 355.455 356.048 MB/sec        avg 356.365 MB/sec  1.000
+
+2.6.26.6-up + clock + buddy + weight (== .27 scheduler)
+ring-test   - 1.234 us/cycle  = 810 KHz                                  .947 [cmp1]
+netperf     - 128026.62 128118.48 127973.54 rr/s    avg 128039.54 rr/s   .977
+tbench      - 342.011 345.307 343.535 MB/sec        avg 343.617 MB/sec   .964
+
+2.6.26.6-up + clock + buddy + weight + revert_to_per_rq_vruntime + buddy_overhead
+ring-test   - 1.174 us/cycle  = 851 KHz                                  .995 [cmp2]
+netperf     - 133928.03 134265.41 134297.06 rr/s    avg 134163.50 rr/s  1.024
+tbench      - 358.049 359.529 358.342 MB/sec        avg 358.640 MB/sec  1.006
+
+                                                       versus .26 counterpart
+2.6.27-up virgin
+ring-test   - 1.193 us/cycle  = 838 KHz                                 1.034 [vs cmp1]
+netperf     - 121293.48 121700.96 120716.98 rr/s    avg 121237.14 rr/s   .946
+tbench      - 340.362 339.780 341.353 MB/sec        avg 340.498 MB/sec   .990
+
+2.6.27-up + revert_to_per_rq_vruntime + buddy_overhead
+ring-test   - 1.122 us/cycle  = 891 KHz                                 1.047 [vs cmp2]
+netperf     - 119353.27 118600.98 119719.12 rr/s    avg 119224.45 rr/s   .900
+tbench      - 338.701 338.508 338.562 MB/sec        avg 338.590 MB/sec   .951
+
+SMP config
+
+2.6.26.6-smp virgin
+ring-test   - 1.575 us/cycle  = 634 KHz                                 1.000
+netperf     - 400487.72 400321.98 404165.10 rr/s    avg 401658.26 rr/s  1.000
+tbench      - 1178.27 1177.18 1184.61 MB/sec        avg 1180.02 MB/sec  1.000
+
+2.6.26.6-smp + clock + buddy + weight + revert_to_per_rq_vruntime + buddy_overhead
+ring-test   - 1.575 us/cycle  = 634 KHz                                 1.000
+netperf     - 412191.70 411873.15 414638.27 rr/s    avg 412901.04 rr/s  1.027
+tbench      - 1193.18 1200.93 1199.61 MB/sec        avg 1197.90 MB/sec  1.015
+
+                                                             versus 26.6 plus
+2.6.27-smp virgin
+ring-test   - 1.674 us/cycle  = 597 KHz                                  .941
+netperf     - 382536.26 380931.29 380552.82 rr/s    avg 381340.12 rr/s   .923
+tbench      - 1151.47 1143.21 1154.17 MB/sec        avg 1149.616 MB/sec  .959
+
+2.6.27-smp + revert_to_per_rq_vruntime + buddy_overhead
+ring-test   - 1.570 us/cycle  = 636 KHz                                 1.003
+netperf     - 386487.91 389858.00 388180.91 rr/s    avg 388175.60 rr/s   .940
+tbench      - 1179.52 1184.25 1180.18 MB/sec        avg 1181.31 MB/sec   .986
+
+
 
