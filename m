@@ -1,66 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751961AbYJYUB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752015AbYJYULs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751961AbYJYUB3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 16:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbYJYUBV
+	id S1752015AbYJYULs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 16:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbYJYULi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 16:01:21 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:58323 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750918AbYJYUBU (ORCPT
+	Sat, 25 Oct 2008 16:11:38 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:51321 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750813AbYJYULh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 16:01:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=CnuNAh16nORxbTFx9alDsQfoV8sXBthq9EIiVAdhLxGiA5bjVWkdpTiNxqOR2jdVop
-         Ch1KkgySrDKJcn2LgwNlqdthZUuhTcf1z1Tp5q5rJVhx9p2vRowmixSrZn8EVNgTsi7l
-         JoN8OrktVhmg9wGuTS171BXksXMGkHCkKFozM=
-Date: Sat, 25 Oct 2008 22:00:59 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Antonino Daplas <adaplas@gmail.com>, Krzysztof Helt <krzysztof.h1@wp.pl>,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: [PATCH] fbcon: don't inline updatescrollmode
-Message-ID: <20081025200055.GE10932@joi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sat, 25 Oct 2008 16:11:37 -0400
+Subject: Re: usb hdd problems with 2.6.27.2
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Luciano Rocha <luciano@eurotux.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0810251548300.7245-100000@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.0810251548300.7245-100000@netrider.rowland.org>
+Content-Type: text/plain
+Date: Sat, 25 Oct 2008 15:11:33 -0500
+Message-Id: <1224965493.3449.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Updatescrollmode is marked inline, but it's big and is called only from
-non-critical codepaths (fbcon_resize, fbcon_switch, fbcon_modechanged).
-Dropping it saves almost 800 bytes of text size.
+On Sat, 2008-10-25 at 15:50 -0400, Alan Stern wrote:
+> On Sat, 25 Oct 2008, Rafael J. Wysocki wrote:
+> 
+> > [Adding CCs]
+> > 
+> > On Wednesday, 22 of October 2008, Luciano Rocha wrote:
+> > > 
+> > > Hello,
+> > > 
+> > > An external HDD, usb-encased, works fine under 2.6.26.5, but under
+> > > 2.6.27.2 I get hundreds of errors per second, of 'No Sense [current]'.
+> 
+> You can use usbmon to capture the details of what happens when you plug
+> in the drive.  Instructions are in the kernel source file
+> Documentation/usb/usbmon.txt.
 
-   text    data     bss     dec     hex filename
-  23859     287    8448   32594    7f52 drivers/video/console/fbcon.o.before
-  23065     287    8448   31800    7c38 drivers/video/console/fbcon.o.after
+Try reversing this patch (apply with patch -p1 -R)
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+James
+
 ---
- drivers/video/console/fbcon.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 64b3d30..b92947d 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -2118,7 +2118,7 @@ static void fbcon_bmove_rec(struct vc_data *vc, struct display *p, int sy, int s
- 		   height, width);
- }
- 
--static __inline__ void updatescrollmode(struct display *p,
-+static void updatescrollmode(struct display *p,
- 					struct fb_info *info,
- 					struct vc_data *vc)
- {
--- 
-1.5.6.4
+commit 10dab22664914505dcb804d9ad09cad6bc94d349
+Author: Jamie Wellnitz <Jamie.Wellnitz@emulex.com>
+Date:   Thu Sep 11 21:39:36 2008 -0400
+
+    [SCSI] sd: Fix handling of NO_SENSE check condition
+    
+    The current handling of NO_SENSE check condition is the same as
+    RECOVERED_ERROR, and assumes that in both cases, the I/O was fully
+    transferred.
+    
+    We have seen cases of arrays returning with NO_SENSE (no error), but
+    the I/O was not completely transferred, thus residual set.  Thus,
+    rather than return good_bytes as the entire transfer, set good_bytes
+    to 0, so that the midlayer then applies the residual in calculating
+    the transfer, and for sd, will fail the I/O and fall into a retry
+    path.
+    
+    Signed-off-by: Jamie Wellnitz <Jamie.Wellnitz@emulex.com>
+    Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index 7c4d2e6..55e6ed4 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -1054,7 +1054,6 @@ static int sd_done(struct scsi_cmnd *SCpnt)
+ 		good_bytes = sd_completed_bytes(SCpnt);
+ 		break;
+ 	case RECOVERED_ERROR:
+-	case NO_SENSE:
+ 		/* Inform the user, but make sure that it's not treated
+ 		 * as a hard error.
+ 		 */
+@@ -1063,6 +1062,15 @@ static int sd_done(struct scsi_cmnd *SCpnt)
+ 		memset(SCpnt->sense_buffer, 0, SCSI_SENSE_BUFFERSIZE);
+ 		good_bytes = scsi_bufflen(SCpnt);
+ 		break;
++	case NO_SENSE:
++		/* This indicates a false check condition, so ignore it.  An
++		 * unknown amount of data was transferred so treat it as an
++		 * error.
++		 */
++		scsi_print_sense("sd", SCpnt);
++		SCpnt->result = 0;
++		memset(SCpnt->sense_buffer, 0, SCSI_SENSE_BUFFERSIZE);
++		break;
+ 	case ABORTED_COMMAND:
+ 		if (sshdr.asc == 0x10) { /* DIF: Disk detected corruption */
+ 			scsi_print_result(SCpnt);
+
 
