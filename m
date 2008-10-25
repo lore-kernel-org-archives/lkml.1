@@ -1,64 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752035AbYJYTib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751969AbYJYTrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752035AbYJYTib (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 15:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbYJYTiY
+	id S1751969AbYJYTrn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 15:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751041AbYJYTre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 15:38:24 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:23076 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750854AbYJYTiX (ORCPT
+	Sat, 25 Oct 2008 15:47:34 -0400
+Received: from casper.infradead.org ([85.118.1.10]:43061 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbYJYTre convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 15:38:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=TIV6ni1Jkn7NPFN5DRSDpLCKusxVizdypkkcufaTyPFy8c0bkwnpdCGO6+lm3otQum
-         DXLe5df9Zn9A4P7z+0PshUUIqNvJ3X+uK+hocx+Wlbeio1LFUZDlm0Itf7WcCClg8yxW
-         jO64iYALMslCPckE6YnyD9A4KWV4uqmdiFcwo=
-Message-ID: <2c0942db0810251238u7eae212ct76af5c6d05126260@mail.gmail.com>
-Date: Sat, 25 Oct 2008 12:38:22 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: [2.6.28-rc1 regression] wmifinfo dockapp takes 100% of cpu (bisected)
-Cc: "Marcin Slusarz" <marcin.slusarz@gmail.com>,
-       "Carlos R. Mafra" <crmafra2@gmail.com>,
-       "Arjan van de Ven" <arjan@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081025121244.07cdd6d7@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081025094043.GA4438@localhost.aei.mpg.de>
-	 <490327B6.2090903@linux.intel.com>
-	 <20081025071348.63c426d9@infradead.org>
-	 <20081025162503.GA4001@localhost.aei.mpg.de>
-	 <20081025180322.GA10932@joi> <20081025121244.07cdd6d7@infradead.org>
-X-Google-Sender-Auth: 6a68ecb385108ebe
+	Sat, 25 Oct 2008 15:47:34 -0400
+Date: Sat, 25 Oct 2008 12:47:47 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: torvalds@linux-foundation.com
+Cc: "Carlos R. Mafra" <crmafra2@gmail.com>,
+       Marcin Slusarz <marcin.slusarz@gmail.com>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, tglx@tglx.de, mingo@elte.hu
+Subject: [PATCH] select: deal with math overflow from borderline valid
+ userland data
+Message-ID: <20081025124747.5de4d8e7@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 25, 2008 at 12:12 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Sat, 25 Oct 2008 20:03:27 +0200
-> Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
->> > >           if (copy_from_user(&tv, tvp, sizeof(tv)))
->> > >                   return -EFAULT;
->> > >
->> > > +         while (tv.tv_usec > USEC_PER_SEC && i < 1000) {
->>                                   ^
->> should be >=
->
-> yeah thanks for catching that. Note to self: don't code before coffee
->
-> I'm not very happy with a while loop; but at least it solves the problem
->
-> I'll try to make it nicer than this ...
+Hi Linus,
 
-Regardless, you may wish to make a set_normalized_timeval and place it
-in kernel/time.c right after the current set_nromalized_timespec.
-Comparing the two, you'll also want to handle the case where tv_usec
-is negative.
+please apply this patch, it fixes a regression in 2.6.28-rc1.
+
+
+
+>From fdaacc0a980f5d323a21610f7f75b2e92470172e Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Sat, 25 Oct 2008 12:41:41 -0700
+Subject: [PATCH] select: deal with math overflow from borderline valid userland data
+
+Some userland apps seem to pass in a "0" for the seconds, and several
+seconds worth of usecs to select(). The old kernels accepted this just
+fine, so the new kernels must too.
+However, due to the upscaling of the microseconds to nanoseconds we had
+some cases where we got math overflow, and depending on the GCC version
+(due to inlining decisions) that actually resulted in an -EINVAL return.
+
+This patch fixes this by adding the excess microseconds to the seconds field.
+
+Also with thanks to Marcin Slusarz for spotting some implementation bugs
+in the diagnostics patches.
+
+Reported-by: Carlos R. Mafra <crmafra2@gmail.com>
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ fs/compat.c |    5 +++--
+ fs/select.c |    5 +++--
+ 2 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/fs/compat.c b/fs/compat.c
+index fe3c9bf..1510879 100644
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -1684,8 +1684,9 @@ asmlinkage long compat_sys_select(int n, compat_ulong_t __user *inp,
+ 			return -EFAULT;
+ 
+ 		to = &end_time;
+-		if (poll_select_set_timeout(to, tv.tv_sec,
+-					    tv.tv_usec * NSEC_PER_USEC))
++		if (poll_select_set_timeout(to, 
++				tv.tv_sec + (tv.tv_usec / USEC_PER_SEC),
++				(tv.tv_usec % USEC_PER_SEC) * NSEC_PER_USEC))
+ 			return -EINVAL;
+ 	}
+ 
+diff --git a/fs/select.c b/fs/select.c
+index 448e440..7fc3124 100644
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -519,8 +519,9 @@ asmlinkage long sys_select(int n, fd_set __user *inp, fd_set __user *outp,
+ 			return -EFAULT;
+ 
+ 		to = &end_time;
+-		if (poll_select_set_timeout(to, tv.tv_sec,
+-					    tv.tv_usec * NSEC_PER_USEC))
++		if (poll_select_set_timeout(to, 
++				tv.tv_sec + (tv.tv_usec / USEC_PER_SEC),
++				(tv.tv_usec % USEC_PER_SEC) * NSEC_PER_USEC))
+ 			return -EINVAL;
+ 	}
+ 
+-- 
+1.5.6.5
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
