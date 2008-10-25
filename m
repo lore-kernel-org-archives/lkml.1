@@ -1,72 +1,261 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752620AbYJYVxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753126AbYJYVye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752620AbYJYVxu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 17:53:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYJYVxm
+	id S1753126AbYJYVye (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 17:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbYJYVyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 17:53:42 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:33488 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751190AbYJYVxl (ORCPT
+	Sat, 25 Oct 2008 17:54:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51774 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751193AbYJYVyR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 17:53:41 -0400
-X-Greylist: delayed 26256 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Oct 2008 17:53:41 EDT
-Date: Sat, 25 Oct 2008 23:52:45 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Greg KH <greg@kroah.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next: left over things in linux-next after 2.6.28-c1
-Message-ID: <20081025215245.GA27572@uranus.ravnborg.org>
-References: <20081026005009.50dbbb33.sfr@canb.auug.org.au> <20081025143715.GB30900@uranus.ravnborg.org> <20081025211651.GA32027@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 25 Oct 2008 17:54:17 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: 2.6.28-rc1-git1: Reported regressions from 2.6.27
+Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20081025211651.GA32027@kroah.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <nw2Y6lk-0lG.A.VUB.RV5AJB@chimera>
+Date: Sat, 25 Oct 2008 22:02:47 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 25, 2008 at 02:16:51PM -0700, Greg KH wrote:
-> On Sat, Oct 25, 2008 at 04:37:15PM +0200, Sam Ravnborg wrote:
-> > > tests
-> > > 
-> > > 	Ananth N Mavinakayanahalli (7):
-> > > 	      Add tests/ directory
-> > > 	      Move locking selftests to tests/
-> > > 	      Move rcutorture to tests/
-> > > 	      Move rtmutex tester to tests/
-> > > 	      Move lkdtm to tests/
-> > > 	      Move kprobes smoke tests to tests/
-> > > 	      Move backtrace selftests to tests/
-> > 
-> > I have almost given up on this.
-> > Three merge attemps failed for different reasons,
-> > and I will not even have time for my maintainership
-> > duties the next months.
-> > 
-> > Anyone that can bring it forward?
-> 
-> What are the reasons this is failing?  Is it just moving different files
-> around into the tests/ directory?  Or is it new functionality here?
-> 
-> If just moving stuff, is that really needed?
+This message contains a list of some regressions from 2.6.27, for which there
+are no fixes in the mainline I know of.  If any of them have been fixed already,
+please let me know.
 
-The incentive was to have a common place to add small tests that
-could be used to verify that the kernel works as expected.
->From inkernel modules (like rcutorture) to small userspace
-utilities such as something massaging the epoll interface or
-similar.
+If you know of any other unresolved regressions from 2.6.27, please let me know
+either and I'll add them to the list.  Also, please let me know if any of the
+entries below are invalid.
 
-The above was just to get it started.
+Each entry from the list will be sent additionally in an automatic reply to
+this message with CCs to the people involved in reporting and handling the
+issue.
 
-Having a set of tests to run when introducing a new syscall
-would make it much easier for an arch maintainer to verify
-that the implemented syscall works as expected.
 
-And forcing the developer to use the interface from user-space
-will hopefully catch a few issues earlier.
+Listed regressions statistics:
 
-	Sam
+  Date          Total  Pending  Unresolved
+  ----------------------------------------
+  2008-10-25       26       25          20
+
+
+Unresolved regressions
+----------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11854
+Subject		: v2.6.28-rc1: readlink /proc/*/exe returns uninitialized data to userspace
+Submitter	: Vegard Nossum <vegard.nossum@gmail.com>
+Date		: 2008-10-25 17:14 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=122495490201663&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11853
+Subject		: Random problems with 2.6.28-rc1-git1
+Submitter	: Mikko C. <mikko.cal@gmail.com>
+Date		: 2008-10-25 14:53 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=122494643521893&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11852
+Subject		: v2.6.28-rc1: Regression in ext3/jbd
+Submitter	: Vegard Nossum <vegard.nossum@gmail.com>
+Date		: 2008-10-25 11:22 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=122493379905812&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11849
+Subject		: default IRQ affinity change in v2.6.27 (breaking several SMP PPC based systems)
+Submitter	: Kumar Gala <galak@kernel.crashing.org>
+Date		: 2008-10-24 12:45 (2 days old)
+References	: http://marc.info/?l=linux-kernel&m=122485245924125&w=4
+Handled-By	: Chris Snook <csnook@redhat.com>
+		  Scott Wood <scottwood@freescale.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11848
+Subject		: 2.6.28-rc1: NCQ devices connected to PMP are  still dead
+Submitter	: Petr Vandrovec <vandrove@vc.cvut.cz>
+Date		: 2008-10-25 11:17 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=122493470907259&w=4
+Handled-By	: Jens Axboe <jens.axboe@oracle.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11845
+Subject		: Suspend regression on Lenovo x60
+Submitter	: Jens Axboe <jens.axboe@oracle.com>
+Date		: 2008-10-24 18:02 (2 days old)
+References	: http://marc.info/?l=linux-next&m=122487159829507&w=4
+Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11841
+Subject		: plenty of line "ACPI: EC: non-query interrupt received, switching to interrupt mode" in dmesg
+Submitter	: François Valenduc <francois.valenduc@tvcablenet.be>
+Date		: 2008-10-25 10:29 (1 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11838
+Subject		: general protection fault:  from release_blocks_on_commit
+Submitter	: Eric Paris <eparis@redhat.com>
+Date		: 2008-10-21 14:03 (5 days old)
+References	: http://lkml.org/lkml/2008/10/21/248
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11835
+Subject		: 2.6.27-git8: max1111_read_channel and corgi_ssp_ads7846_putget missing
+Submitter	: Pavel Machek <pavel@suse.cz>
+Date		: 2008-10-20 12:10 (6 days old)
+References	: http://marc.info/?l=linux-kernel&m=122450475101945&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11834
+Subject		: iwl3945: if I leave my machine running overnight, wifi will not work in the morning
+Submitter	: Pavel Machek <pavel@suse.cz>
+Date		: 2008-10-19 21:40 (7 days old)
+References	: http://marc.info/?l=linux-kernel&m=122445440206101&w=4
+Handled-By	: reinette chatre <reinette.chatre@intel.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11833
+Subject		: 2.6.27-git8 compile error in drivers/mfd/wm8350-core.c
+Submitter	: Tilman Schmidt <tilman@imap.cc>
+Date		: 2008-10-19 18:17 (7 days old)
+References	: http://marc.info/?l=linux-kernel&m=122444027920472&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11828
+Subject		: Linux 2.6.27-git3: no SD card reader
+Submitter	: J.A. Magallón <jamagallon@ono.com>
+Date		: 2008-10-14 0:54 (12 days old)
+References	: http://marc.info/?l=linux-kernel&m=122394573904699&w=4
+Handled-By	: Pierre Ossman <drzeus-list@drzeus.cx>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11827
+Subject		: suspend broken on powerbook5,6
+Submitter	: Johannes Berg <johannes@sipsolutions.net>
+Date		: 2008-10-25 05:07 (1 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11826
+Subject		: extreme slowness of IO stuff using 2.6.28-rc1
+Submitter	: Yves-Alexis Perez <corsac@debian.org>
+Date		: 2008-10-25 04:25 (1 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11824
+Subject		: raw1394: possible deadlock if accessed by multithreaded app
+Submitter	: Stefan Richter <stefan-r-bz@s5r6.in-berlin.de>
+Date		: 2008-10-25 02:08 (1 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11822
+Subject		: ACPI Warning (nspredef-0858): _SB_.PCI0.LPC_.EC__.BAT0._BIF: Return Package type mismatch at index 9 - found Buffer, expected String [20080926]
+Submitter	: Len Brown <len.brown@intel.com>
+Date		: 2008-10-25 01:26 (1 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11806
+Subject		: iwl3945 fails with microcode error
+Submitter	: Johannes Berg <johannes@sipsolutions.net>
+Date		: 2008-10-22 02:36 (4 days old)
+References	: http://marc.info/?l=linux-kernel&m=122450235730661&w=4
+Handled-By	: Reinette Chatre <reinette.chatre@intel.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11805
+Subject		: mounting XFS produces a segfault
+Submitter	: Tiago Maluta <maluta_tiago@yahoo.com.br>
+Date		: 2008-10-21 18:00 (5 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11799
+Subject		: xorg can not start up with stolen memory
+Submitter	: arrow zhang <arrow.ebd@gmail.com>
+Date		: 2008-10-21 06:08 (5 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11798
+Subject		: [Radeon Xpress 1100 IGP] DRI fail on recent kernel updates
+Submitter	: Gu Rui <chaos.proton@gmail.com>
+Date		: 2008-10-21 04:28 (5 days old)
+
+
+Regressions with patches
+------------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11851
+Subject		: wmifinfo dockapp takes 100% of cpu
+Submitter	: Carlos R. Mafra <crmafra2@gmail.com>
+Date		: 2008-10-25 9:40 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=122492763030453&w=4
+Handled-By	: Arjan van de Ven <arjan@linux.intel.com>
+		  Marcin Slusarz <marcin.slusarz@gmail.com>
+Patch		: http://marc.info/?l=linux-kernel&m=122496409612709&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11847
+Subject		: 2.6.28-rc1 fails building on allnoconfig
+Submitter	: Matt Mackall <mpm@selenic.com>
+Date		: 2008-10-24 17:09 (2 days old)
+References	: http://marc.info/?l=linux-kernel&m=122487097728241&w=4
+		  http://marc.info/?l=linux-pci&m=122485633732409&w=4
+Handled-By	: Fenghua Yu <fenghua.yu@intel.com>
+Patch		: http://marc.info/?l=linux-kernel&m=122487160129531&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11846
+Subject		: commit a802dd0e breaks console keyboard input
+Submitter	: walt <w41ter@gmail.com>
+Date		: 2008-10-24 0:09 (2 days old)
+References	: http://marc.info/?l=linux-kernel&m=122480701528944&w=4
+Handled-By	: Heiko Carstens <heiko.carstens@de.ibm.com>
+Patch		: http://marc.info/?l=linux-kernel&m=122487763507703&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11844
+Subject		: ext3: fix ext3_dx_readdir hash collision handling
+Submitter	: Markus Trippelsdorf <markus@trippelsdorf.de>
+Date		: 2008-10-25 11:56 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=122493582908742&w=4
+Handled-By	: Theodore Tso <tytso@mit.edu>
+Patch		: http://marc.info/?l=linux-kernel&m=122493582908742&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11825
+Subject		: appletouch broken
+Submitter	: Johannes Berg <johannes@sipsolutions.net>
+Date		: 2008-10-25 03:55 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=122433436930451&w=4
+Handled-By	: Jiri Slaby <jirislaby@gmail.com>
+		  Jiri Kosina <jkosina@suse.cz>
+Patch		: http://marc.info/?l=linux-kernel&m=122442584100873&w=4
+
+
+For details, please visit the bug entries and follow the links given in
+references.
+
+As you can see, there is a Bugzilla entry for each of the listed regressions.
+There also is a Bugzilla entry used for tracking the regressions from 2.6.27,
+unresolved as well as resolved, at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=11808
+
+Please let me know if there are any Bugzilla entries that should be added to
+the list in there.
+
+Thanks,
+Rafael
+
