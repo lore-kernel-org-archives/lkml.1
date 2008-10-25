@@ -1,99 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbYJYSjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbYJYSqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753212AbYJYSjk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 14:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751131AbYJYSjb
+	id S1753988AbYJYSqf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 14:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYJYSq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 14:39:31 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:45288 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbYJYSja (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 14:39:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=IhRdqnkmwAEJtv47cnA4F77JpvFY22fWiaFQuIMY0oonRhBvGqClQ0DJ/PGNSIuAYV
-         zhv/qJTbKWIASQcxrqwbJLkL8yr5axdJSIGIei5f9+X25u3irrJ7Q2LYhHKDpTRJmXrG
-         Y69W/BdTUCkflCr4H0rUZYA4iMRDFlnzWZxG8=
-Date: Sat, 25 Oct 2008 20:39:09 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.28-rc1 regression] wmifinfo dockapp takes 100% of cpu
-	(bisected)
-Message-ID: <20081025183905.GC10932@joi>
-References: <20081025094043.GA4438@localhost.aei.mpg.de> <490327B6.2090903@linux.intel.com> <20081025071348.63c426d9@infradead.org> <20081025162503.GA4001@localhost.aei.mpg.de> <20081025180322.GA10932@joi> <20081025182929.GA3921@localhost.aei.mpg.de>
+	Sat, 25 Oct 2008 14:46:26 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:34678 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751273AbYJYSqZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Oct 2008 14:46:25 -0400
+Date: Sat, 25 Oct 2008 20:45:08 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Petr Vandrovec <vandrove@vc.cvut.cz>
+Cc: Elias Oltmanns <eo@nebensachen.de>, Paul Mundt <lethal@linux-sh.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>, tj@kernel.org,
+       torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: 2.6.27-rc1 (2fca5c): libata: kernel cant boot
+Message-ID: <20081025184506.GM22217@kernel.dk>
+References: <a4423d670810240004t2d7c3bdah2bea77a6a49bb7c4@mail.gmail.com> <20081024070955.GN22217@kernel.dk> <20081024071329.GO22217@kernel.dk> <20081024071608.GA3879@linux-sh.org> <20081024072428.GP22217@kernel.dk> <873aimv0v8.fsf@denkblock.local> <20081024084818.GB22217@kernel.dk> <4903004D.2050904@vc.cvut.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081025182929.GA3921@localhost.aei.mpg.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <4903004D.2050904@vc.cvut.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-one more thing:
+On Sat, Oct 25 2008, Petr Vandrovec wrote:
+> Jens Axboe wrote:
+> >On Fri, Oct 24 2008, Elias Oltmanns wrote:
+> >>Jens Axboe <jens.axboe@oracle.com> wrote:
+> >>>From e598055dde1951c47c8b3522616f6ebff0ed9847 Mon Sep 17 00:00:00 2001
+> >>>From: Jens Axboe <jens.axboe@oracle.com>
+> >>>Date: Fri, 24 Oct 2008 09:22:42 +0200
+> >>>Subject: [PATCH] libata: fix bug with non-ncq devices
+> >>>
+> >>>The recent commit 201f1b98822078c808b5e2d379a6ddbfc0a06ee1 to enable
+> >>Wouldn't that be commit 2fca5ccf97d2c28bcfce44f5b07d85e74e3cd18e?
+> >
+> >Yes that is correct, the other commit is actually a private one in my
+> >tree for other libata changes. Updated patch below, thanks for checking!
+> >
+> >From e598055dde1951c47c8b3522616f6ebff0ed9847 Mon Sep 17 00:00:00 2001
+> >From: Jens Axboe <jens.axboe@oracle.com>
+> >Date: Fri, 24 Oct 2008 09:22:42 +0200
+> >Subject: [PATCH] libata: fix bug with non-ncq devices
+> 
+> Hello,
+>   this fixes my DVD, but unfortunately NCQ devices connected to PMP are 
+> still dead - apparently as soon as mount() tries to do serious I/O on 
+> the drive.  Backing out both post-2.6.28-rc1 fix as well as your 
+> original change brings storage back.  I suspect that problem is that 
+> with PMP same tag cannot be (should not be?  must not be?) used on 
+> multiple devices behind PMP - and before your change tags were allocated 
+> per-port, while now they are allocated per-device.
 
-On Sat, Oct 25, 2008 at 08:29:29PM +0200, Carlos R. Mafra wrote:
-> > > > diff --git a/fs/compat.c b/fs/compat.c
-> > > > index fe3c9bf..95ceee6 100644
-> > > > --- a/fs/compat.c
-> > > > +++ b/fs/compat.c
-> > > > @@ -1680,9 +1680,16 @@ asmlinkage long compat_sys_select(int n, compat_ulong_t __user *inp,
-> > > >  	int ret;
-> > > >  
-> > > >  	if (tvp) {
-> > > > +		int i;
+That would indeed break, this requires allocating the tag map in the
 
-"i" should be initialized to 0
+-- 
+Jens Axboe
 
-> > > >  		if (copy_from_user(&tv, tvp, sizeof(tv)))
-> > > >  			return -EFAULT;
-> > > >  
-> > > > +		while (tv.tv_usec > USEC_PER_SEC && i < 1000) {
-> >                                   ^ 
-> > should be >=
-> > 
-> > > > +			i++;
-> > > > +			tv.tv_sec ++;
-> > > > +			tv.tv_usec -= USEC_PER_SEC;
-> > > > +		}
-> > > > +
-> > > >  		to = &end_time;
-> > > >  		if (poll_select_set_timeout(to, tv.tv_sec,
-> > > >  					    tv.tv_usec * NSEC_PER_USEC))
-> > > > diff --git a/fs/select.c b/fs/select.c
-> > > > index 448e440..e4e7cdb 100644
-> > > > --- a/fs/select.c
-> > > > +++ b/fs/select.c
-> > > > @@ -515,9 +515,16 @@ asmlinkage long sys_select(int n, fd_set __user *inp, fd_set __user *outp,
-> > > >  	int ret;
-> > > >  
-> > > >  	if (tvp) {
-> > > > +		int i = 0;
-> > > >  		if (copy_from_user(&tv, tvp, sizeof(tv)))
-> > > >  			return -EFAULT;
-> > > >  
-> > > > +		while (tv.tv_usec > USEC_PER_SEC && i < 1000) {
-> > 
-> > and here too
-> 
-> 
-> Yes, changing to >= solves the problem here.
-> 
-> Thanks Arjan and Marcin!
-> 
-> 
-> > > > +			i++;
-> > > > +			tv.tv_sec ++;
-> > > > +			tv.tv_usec -= USEC_PER_SEC;
-> > > > +		}
-> > > > +
-> > > >  		to = &end_time;
-> > > >  		if (poll_select_set_timeout(to, tv.tv_sec,
-> > > >  					    tv.tv_usec * NSEC_PER_USEC))
-> > > > 
-> > > > -- 
