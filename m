@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753127AbYJYVXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752630AbYJYV0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753127AbYJYVXs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 17:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYJYVXk
+	id S1752630AbYJYV0r (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 17:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYJYV0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 17:23:40 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42796 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751496AbYJYVXj (ORCPT
+	Sat, 25 Oct 2008 17:26:39 -0400
+Received: from queueout04-winn.ispmail.ntl.com ([81.103.221.58]:39371 "EHLO
+	queueout04-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751131AbYJYV0j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 17:23:39 -0400
-Message-ID: <49038E40.2070300@zytor.com>
-Date: Sat, 25 Oct 2008 14:23:12 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Robert Moss <robert.von.moss@gmail.com>
-CC: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       linux-kernel@vger.kernel.org, alistair@devzero.co.uk
-Subject: Re: Framebuffer issues in 2.6.26 with uvesafb and vesafb. Linux is
- about choice!
-References: <6ffd69180810230054s3b6aff5y880a898c3fc66a37@mail.gmail.com>	 <20081023080459.GC5073@const.bordeaux.inria.fr>	 <6ffd69180810230421v1508664bgc6e454cde792154f@mail.gmail.com>	 <20081024092418.GA10246@const.bordeaux.inria.fr> <6ffd69180810251322n350b6f6dqf496d7e5972165f5@mail.gmail.com>
-In-Reply-To: <6ffd69180810251322n350b6f6dqf496d7e5972165f5@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 25 Oct 2008 17:26:39 -0400
+Subject: [PATCH] usbtmc: Use explicit unsigned type for input buffer
+	instead of char*
+From: Chris Malley <mail@chrismalley.co.uk>
+To: gregkh <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 25 Oct 2008 22:07:32 +0100
+Message-Id: <1224968852.25054.3.camel@helix.beotel.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
+X-Cloudmark-Analysis: v=1.0 c=1 a=yRtVjkoVhBMA:10 a=917E5eeKf20A:10 a=aqaR7bKOnZvmi7SDNv4A:9 a=Go4lZDGTbgwJN386DVF58d3cpWMA:4 a=EVQZQ8nMr7cA:10 a=iYlkOlhu7C0A:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Moss wrote:
-> ok, this morning, I turned on my computer, and it gave me the error
-> message again:
-> 
-> Undefined video mode number: 317
+From: Chris Malley <mail@chrismalley.co.uk>
 
-Your VESA BIOS seems to have some serious braindamage (the fact that the 
-modes don't list at all is evidence of that), but finding out what can 
-be done to help it would be useful.
+Silences compiler warning about comparison with 0x80, and type now matches the
+corresponding _bulk_out function.
 
-Again, a git bisect between v2.6.24 and v2.6.26 would be best:
+drivers/usb/class/usbtmc.c: In function ‘usbtmc_ioctl_abort_bulk_in’:
+drivers/usb/class/usbtmc.c:163: warning: comparison is always false due to limited range of data type
 
-git clone \
-     git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-cd linux-2.6.git
-git bisect start
-git bisect bad v2.6.26
-git bisect good v2.6.24
-<build and test kernel>
-git bisect <good,bad>
-<keep going until one commit shows up>
+Signed-off-by: Chris Malley <mail@chrismalley.co.uk>
+---
+ drivers/usb/class/usbtmc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-If a commit doesn't build or otherwise exhibit a different problem 
-(meaning "no info available"), use "git bisect skip".
+diff --git a/drivers/usb/class/usbtmc.c b/drivers/usb/class/usbtmc.c
+index 543811f..8e74657 100644
+--- a/drivers/usb/class/usbtmc.c
++++ b/drivers/usb/class/usbtmc.c
+@@ -133,7 +133,7 @@ static int usbtmc_release(struct inode *inode, struct file *file)
+ 
+ static int usbtmc_ioctl_abort_bulk_in(struct usbtmc_device_data *data)
+ {
+-	char *buffer;
++	u8 *buffer;
+ 	struct device *dev;
+ 	int rv;
+ 	int n;
+-- 
 
-	-hpa
