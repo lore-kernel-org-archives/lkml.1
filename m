@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbYJYO73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbYJYPGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753885AbYJYO73 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 10:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbYJYO7V
+	id S1753402AbYJYPGk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 11:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbYJYPGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 10:59:21 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3079 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751597AbYJYO7U (ORCPT
+	Sat, 25 Oct 2008 11:06:32 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60068 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752191AbYJYPGb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 10:59:20 -0400
-Date: Sat, 25 Oct 2008 10:59:19 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Larry Finger <Larry.Finger@lwfinger.net>
-cc: Greg KH <greg@kroah.com>, USB list <linux-usb@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] usbcore: Limit number of 'unable to enumerate USB device'
- messages
-In-Reply-To: <49028F9D.3020208@lwfinger.net>
-Message-ID: <Pine.LNX.4.44L0.0810251058050.3569-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 25 Oct 2008 11:06:31 -0400
+Date: Sat, 25 Oct 2008 08:06:38 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: [pull request] getting rid of __cpuinit
+Message-ID: <20081025080638.6203c874@infradead.org>
+In-Reply-To: <20081025143528.GA30900@uranus.ravnborg.org>
+References: <20081024142056.6a2d082a@infradead.org>
+	<20081025075925.GA22805@uranus.ravnborg.org>
+	<20081025070043.50578543@infradead.org>
+	<20081025143528.GA30900@uranus.ravnborg.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Oct 2008, Larry Finger wrote:
+On Sat, 25 Oct 2008 16:35:28 +0200
+Sam Ravnborg <sam@ravnborg.org> wrote:
+> So if you look at the size of the cpuinit/exit sections in the
+> before case you get the real space saving that is lost in the
+> embedded case after your patch is applied.
+> The space savings that happen after early init.
 
-> Greg KH wrote:
-> > 
-> > The latest tree should warn you if you load the host controller drivers
-> > in the wrong order, so this shouldn't really be an issue anymore, right?
-> 
-> I have not seen such warhings, thus I expect loading is in the proper order.
-> > 
-> > Like Alan said, proper log messages would be helpful here.
-> 
-> Agreed, but I have no idea what I should be looking for. For the moment, I have
-> lots of test prints looking for the sequence of events that lead to this
-> spamming of the logs.
-
-Just build your test kernel with USB debugging enabled, and when you 
-get that spamming, post the complete dmesg log.
-
-Alan Stern
+[linux.trees.git]# objdump -h vmlinux.before  | grep init.text
+ 25 .init.text    00037c25  ffffffff8152a000  000000000152a000  0092a000
+[inux.trees.git]# objdump -h vmlinux.after  | grep init.text
+ 25 .init.text    000316c2  ffffffff81542000  0000000001542000  00942000
 
