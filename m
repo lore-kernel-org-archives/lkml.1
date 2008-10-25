@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbYJYV6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbYJYV7E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752617AbYJYV6j (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 17:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbYJYV6R
+	id S1753254AbYJYV7E (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 17:59:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbYJYV6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 17:58:17 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51815 "EHLO ogre.sisk.pl"
+	Sat, 25 Oct 2008 17:58:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51816 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751252AbYJYV6P convert rfc822-to-8bit (ORCPT
+	id S1751328AbYJYV6Q convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 17:58:15 -0400
+	Sat, 25 Oct 2008 17:58:16 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "arrow zhang" <arrow.ebd@gmail.com>
+       "Tiago Maluta" <maluta_tiago@yahoo.com.br>
 References: <nw2Y6lk-0lG.A.VUB.RV5AJB@chimera>
 In-Reply-To: <nw2Y6lk-0lG.A.VUB.RV5AJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <t1C3RWL0r7M.A.X8C.CW5AJB@chimera>
-Subject: [Bug #11799] xorg can not start up with stolen memory
+Message-ID: <t1C3RWL0r7M.A.x6C.AW5AJB@chimera>
+Subject: [Bug #11805] mounting XFS produces a segfault
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat, 25 Oct 2008 22:06:44 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,9 +35,9 @@ from 2.6.27.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11799
-Subject		: xorg can not start up with stolen memory
-Submitter	: arrow zhang <arrow.ebd@gmail.com>
-Date		: 2008-10-21 06:08 (5 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11805
+Subject		: mounting XFS produces a segfault
+Submitter	: Tiago Maluta <maluta_tiago@yahoo.com.br>
+Date		: 2008-10-21 18:00 (5 days old)
 
 
