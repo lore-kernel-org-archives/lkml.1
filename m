@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411AbYJYS5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbYJYTMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754411AbYJYS5s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 14:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbYJYS5j
+	id S1753966AbYJYTMo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 15:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbYJYTMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 14:57:39 -0400
-Received: from h155.mvista.com ([63.81.120.155]:6900 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751557AbYJYS5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 14:57:38 -0400
-Message-ID: <49036C17.1060604@ru.mvista.com>
-Date: Sat, 25 Oct 2008 22:57:27 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: benh@kernel.crashing.org, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Subject: Re: linux-next: Tree for October 24 - powerpc - build failure with
- !CONFIG_BLK_DEV_IDEDMA_PMAC
-References: <20081024171932.1e8131d0.sfr@canb.auug.org.au> <49024EA3.1080404@ru.mvista.com> <1224889818.7654.466.camel@pasglop> <200810251519.57543.bzolnier@gmail.com>
-In-Reply-To: <200810251519.57543.bzolnier@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sat, 25 Oct 2008 15:12:35 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36275 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751761AbYJYTMf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Oct 2008 15:12:35 -0400
+Date: Sat, 25 Oct 2008 12:12:44 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: "Carlos R. Mafra" <crmafra2@gmail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.28-rc1 regression] wmifinfo dockapp takes 100% of cpu
+ (bisected)
+Message-ID: <20081025121244.07cdd6d7@infradead.org>
+In-Reply-To: <20081025180322.GA10932@joi>
+References: <20081025094043.GA4438@localhost.aei.mpg.de>
+	<490327B6.2090903@linux.intel.com>
+	<20081025071348.63c426d9@infradead.org>
+	<20081025162503.GA4001@localhost.aei.mpg.de>
+	<20081025180322.GA10932@joi>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Sat, 25 Oct 2008 20:03:27 +0200
+Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+> > >  		if (copy_from_user(&tv, tvp, sizeof(tv)))
+> > >  			return -EFAULT;
+> > >  
+> > > +		while (tv.tv_usec > USEC_PER_SEC && i < 1000) {
+>                                   ^ 
+> should be >=
 
-Bartlomiej Zolnierkiewicz wrote:
+yeah thanks for catching that. Note to self: don't code before coffee
 
->>>>>    Hm, looks like this configuration was never buildable -- #ifdef's are missing and wrongly placed. CCing Ben Herrenschmidt...   
->>>>>           
->>>> What configuration ?
->>>>   
->>>>         
->>>    See the subject.
->>>       
->> Ah ok. We should probably just remove the option...
->>     
->
-> Fine with me.  Anybody want an easy +1 patch-point? :)
->   
+I'm not very happy with a while loop; but at least it solves the problem
 
-   BTW, why this option selects BLK_DEV_IDEDMA_PCI?
-
-MBR, Sergei
+I'll try to make it nicer than this ...
 
 
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
