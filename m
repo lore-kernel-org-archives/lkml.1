@@ -1,41 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752956AbYJYFR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbYJYFkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752956AbYJYFR0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 01:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbYJYFRQ
+	id S1753250AbYJYFkg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 01:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYJYFkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 01:17:16 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56081
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750798AbYJYFRP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 01:17:15 -0400
-Date: Fri, 24 Oct 2008 22:16:53 -0700 (PDT)
-Message-Id: <20081024.221653.23695396.davem@davemloft.net>
-To: efault@gmx.de
-Cc: rjw@sisk.pl, mingo@elte.hu, s0mbre@tservice.net.ru, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1224905848.5161.27.camel@marge.simson.net>
-References: <20081010115725.GD19487@elte.hu>
-	<200810250025.35734.rjw@sisk.pl>
-	<1224905848.5161.27.camel@marge.simson.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Sat, 25 Oct 2008 01:40:25 -0400
+Received: from 1wt.eu ([62.212.114.60]:4921 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751222AbYJYFkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Oct 2008 01:40:24 -0400
+Date: Sat, 25 Oct 2008 07:40:19 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Joe Damato <ice799@gmail.com>
+Cc: linux-x86_64@vger.kernel.org, linux-newbie@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/12] x86: Cleanup idt, gdt/ldt/tss structs
+Message-ID: <20081025054018.GU24654@1wt.eu>
+References: <1224904532-9586-1-git-send-email-ice799@gmail.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1224904532-9586-1-git-send-email-ice799@gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Galbraith <efault@gmx.de>
-Date: Sat, 25 Oct 2008 05:37:28 +0200
+On Fri, Oct 24, 2008 at 08:15:20PM -0700, Joe Damato wrote:
+> Hi -
+> 
+> This is my first submission to the kernel, so (beware!) please let me know if I can make any improvements on these patches.
 
-> Part of the .27 regression was added scheduler overhead going from .26
-> to .27.  The scheduler overhead is now gone, but an unidentified source
-> of localhost throughput loss remains for both SMP and UP configs.
+It looks like you provide one patch per file. You should group some of them
+together so that each patch does a functional change and everything still
+builds after incrementally applying that patch. The way you have splitted
+them will break builds if someone tries to build after patch 1 for instance.
 
-It has to be the TSO thinky Evgeniy hit too right?
+Willy
 
-If not, please bisect this.
