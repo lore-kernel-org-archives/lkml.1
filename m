@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbYJYQVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbYJYQWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753331AbYJYQVX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 12:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbYJYQVO
+	id S1754156AbYJYQWJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 12:22:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYJYQV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 12:21:14 -0400
-Received: from ti-out-0910.google.com ([209.85.142.185]:38424 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752144AbYJYQVO (ORCPT
+	Sat, 25 Oct 2008 12:21:56 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:45368 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752541AbYJYQV4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 12:21:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=XeZ0RZiiz1C+xnMAwJF9SP0kDNH5SeRSux5ox2/U488H8obNumrRCwsdGz4UoF61r7
-         JA3/cnl10maxk9+xzmLw7Y4QMgbdO74CLWZsSoWvNPL1RyaL9XAQTzBNV1BIUQ+z/pv5
-         F/27gC0SvMJzsN9qmWyBq2okMODJxjSBYYRBc=
-From: Qinghuang Feng <qhfeng.kernel@gmail.com>
-To: "Randy.Dunlap" <rdunlap@xenotime.net>
-Subject: [PATCH]mm/oom_kill.c: cleanup kerneldoc of badness()
-Date: Sun, 26 Oct 2008 00:21:08 +0800
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Sat, 25 Oct 2008 12:21:56 -0400
+Date: Sat, 25 Oct 2008 18:21:16 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: [pull request] getting rid of __cpuinit
+Message-ID: <20081025162116.GA13303@uranus.ravnborg.org>
+References: <20081024142056.6a2d082a@infradead.org> <20081025075925.GA22805@uranus.ravnborg.org> <20081025070043.50578543@infradead.org> <20081025143528.GA30900@uranus.ravnborg.org> <20081025080638.6203c874@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810260021.08146.qhfeng.kernel@gmail.com>
+In-Reply-To: <20081025080638.6203c874@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paramter @mem has been removed since v2.6.26, now delete it's comment.
+On Sat, Oct 25, 2008 at 08:06:38AM -0700, Arjan van de Ven wrote:
+> On Sat, 25 Oct 2008 16:35:28 +0200
+> Sam Ravnborg <sam@ravnborg.org> wrote:
+> > So if you look at the size of the cpuinit/exit sections in the
+> > before case you get the real space saving that is lost in the
+> > embedded case after your patch is applied.
+> > The space savings that happen after early init.
+> 
+> [linux.trees.git]# objdump -h vmlinux.before  | grep init.text
+>  25 .init.text    00037c25  ffffffff8152a000  000000000152a000  0092a000
+> [inux.trees.git]# objdump -h vmlinux.after  | grep init.text
+>  25 .init.text    000316c2  ffffffff81542000  0000000001542000  00942000
 
-Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
----
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index 64e5b4b..460f90e 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -38,7 +38,6 @@ static DEFINE_SPINLOCK(zone_scan_mutex);
-  * badness - calculate a numeric value for how bad this task has been
-  * @p: task struct of which task we should calculate
-  * @uptime: current uptime in seconds
-- * @mem: target memory controller
-  *
-  * The formula used is relatively simple and documented inline in the
-  * function. The main rationale is that we want to select a good task
+So with your config we will loose a saving of 25955 bytes
+of text.
+
+I tried to look a the numbers of a defconfig build here.
+cpuinit.text equals 0x5d97 = 23959
+cpuinit.data equals 0x3574 = 13684
+
+[objdump of vmlinux.o gives you the size of the cpuinit sections]
+
+So if we decide to drop cpuinit then it should be based on the
+above figure and not the 2k figure you gave in the original mail.
+
+Or even better we should see the difference with a typical
+embedded configuration and not some big defconfig build.
+I will assume the saving is less on a typical embedded
+configuration.
+
+	Sam
