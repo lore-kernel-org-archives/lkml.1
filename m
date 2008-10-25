@@ -1,74 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751256AbYJYCJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752643AbYJYCdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751256AbYJYCJM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 22:09:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbYJYCI5
+	id S1752643AbYJYCdT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 22:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbYJYCdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 22:08:57 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:44297 "EHLO smtps.tip.net.au"
+	Fri, 24 Oct 2008 22:33:08 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:49925 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751717AbYJYCI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 22:08:57 -0400
-Date: Sat, 25 Oct 2008 13:08:51 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Howells <dhowells@redhat.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       jmorris@us.ibm.com
-Subject: Re: [PATCH] User namespaces: set of cleanups (v2)
-Message-Id: <20081025130851.379cfac0.sfr@canb.auug.org.au>
-In-Reply-To: <11290.1224873841@redhat.com>
-References: <20081024174838.GA24466@us.ibm.com>
-	<11290.1224873841@redhat.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__25_Oct_2008_13_08_51_+1100_7jjf3vG=YXE+2exR"
+	id S1751256AbYJYCdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 22:33:06 -0400
+Date: Fri, 24 Oct 2008 19:33:03 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] timers: Handle HRTIMER_CB_IRQSAFE_UNLOCKED correctly
+	from softirq context
+Message-ID: <20081025023303.GD6248@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20081023215003.GC1480@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081023215003.GC1480@in.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__25_Oct_2008_13_08_51_+1100_7jjf3vG=YXE+2exR
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Oct 24, 2008 at 03:20:03AM +0530, Gautham R Shenoy wrote:
+> timers: Handle HRTIMER_CB_IRQSAFE_UNLOCKED correctly from softirq context
+> 
+> From: Gautham R Shenoy <ego@in.ibm.com>
+> 
+> While migrating the the CB_IRQSAFE_UNLOCKED timers during a cpu-offline,
+> we queue them on the cb_pending list, so that they won't go
+> stale.
+> 
+> Thus, when the callbacks of the timers run from the softirq context,
+> they could run into potential deadlocks, since these callbacks
+> assume that they're running with irq's disabled, thereby annoying
+> lockdep (see below)!
+> 
+> Fix this by emulating hardirq context while running these callbacks from
+> the hrtimer softirq.
 
-Hi David,
+Good catch!!!  One confusion (probably on my part) below.
 
-On Fri, 24 Oct 2008 19:44:01 +0100 David Howells <dhowells@redhat.com> wrot=
-e:
->
-> Serge E. Hallyn <serue@us.ibm.com> wrote:
->=20
-> > I've just tested with David's plain creds-v3 tree
->=20
-> Note the creds-v4 branch is now current.  Is it worth me replacing that w=
-ith a
-> tree that just has a master branch to simplify things?
+> =================================
+> [ INFO: inconsistent lock state ]
+> 2.6.27 #2
+> --------------------------------
+> inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+> ksoftirqd/0/4 [HC0[0]:SC1[1]:HE1:SE0] takes:
+>  (&rq->lock){++..}, at: [<c011db84>] sched_rt_period_timer+0x9e/0x1fc
+> {in-hardirq-W} state was registered at:
+>   [<c014103c>] __lock_acquire+0x549/0x121e
+>   [<c0107890>] native_sched_clock+0x88/0x99
+>   [<c013aa12>] clocksource_get_next+0x39/0x3f
+>   [<c0139abc>] update_wall_time+0x616/0x7df
+>   [<c0141d6b>] lock_acquire+0x5a/0x74
+>   [<c0121724>] scheduler_tick+0x3a/0x18d
+>   [<c047ed45>] _spin_lock+0x1c/0x45
+>   [<c0121724>] scheduler_tick+0x3a/0x18d
+>   [<c0121724>] scheduler_tick+0x3a/0x18d
+>   [<c012c436>] update_process_times+0x3a/0x44
+>   [<c013c044>] tick_periodic+0x63/0x6d
+>   [<c013c062>] tick_handle_periodic+0x14/0x5e
+>   [<c010568c>] timer_interrupt+0x44/0x4a
+>   [<c0150c9f>] handle_IRQ_event+0x13/0x3d
+>   [<c0151c14>] handle_level_irq+0x79/0xbd
+>   [<c0105634>] do_IRQ+0x69/0x7d
+>   [<c01041e4>] common_interrupt+0x28/0x30
+>   [<c047007b>] aac_probe_one+0x1a3/0x3f3
+>   [<c047ec2d>] _spin_unlock_irqrestore+0x36/0x39
+>   [<c01512b4>] setup_irq+0x1be/0x1f9
+>   [<c065d70b>] start_kernel+0x259/0x2c5
+>   [<ffffffff>] 0xffffffff
+> irq event stamp: 50102
+> hardirqs last  enabled at (50102): [<c047ebf4>] _spin_unlock_irq+0x20/0x23
+> hardirqs last disabled at (50101): [<c047edc2>] _spin_lock_irq+0xa/0x4b
+> softirqs last  enabled at (50088): [<c0128ba6>] do_softirq+0x37/0x4d
+> softirqs last disabled at (50099): [<c0128ba6>] do_softirq+0x37/0x4d
+> 
+> other info that might help us debug this:
+> no locks held by ksoftirqd/0/4.
+> 
+> stack backtrace:
+> Pid: 4, comm: ksoftirqd/0 Not tainted 2.6.27 #2
+>  [<c013f6cb>] print_usage_bug+0x13e/0x147
+>  [<c013fef5>] mark_lock+0x493/0x797
+>  [<c01410b1>] __lock_acquire+0x5be/0x121e
+>  [<c0141d6b>] lock_acquire+0x5a/0x74
+>  [<c011db84>] sched_rt_period_timer+0x9e/0x1fc
+>  [<c047ed45>] _spin_lock+0x1c/0x45
+>  [<c011db84>] sched_rt_period_timer+0x9e/0x1fc
+>  [<c011db84>] sched_rt_period_timer+0x9e/0x1fc
+>  [<c01210fd>] finish_task_switch+0x41/0xbd
+>  [<c0107890>] native_sched_clock+0x88/0x99
+>  [<c011dae6>] sched_rt_period_timer+0x0/0x1fc
+>  [<c0136dda>] run_hrtimer_pending+0x54/0xe5
+>  [<c011dae6>] sched_rt_period_timer+0x0/0x1fc
+>  [<c0128afb>] __do_softirq+0x7b/0xef
+>  [<c0128ba6>] do_softirq+0x37/0x4d
+>  [<c0128c12>] ksoftirqd+0x56/0xc5
+>  [<c0128bbc>] ksoftirqd+0x0/0xc5
+>  [<c0134649>] kthread+0x38/0x5d
+>  [<c0134611>] kthread+0x0/0x5d
+>  [<c0104477>] kernel_thread_helper+0x7/0x10
+>  =======================
+> 
+> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+> 
+>  kernel/hrtimer.c |   21 ++++++++++++++++++---
+>  1 files changed, 18 insertions(+), 3 deletions(-)
+> 
+> 
+> diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+> index cdec83e..60aaad6 100644
+> --- a/kernel/hrtimer.c
+> +++ b/kernel/hrtimer.c
+> @@ -1188,6 +1188,7 @@ static void run_hrtimer_pending(struct hrtimer_cpu_base *cpu_base)
+>  		enum hrtimer_restart (*fn)(struct hrtimer *);
+>  		struct hrtimer *timer;
+>  		int restart;
+> +		int emulate_hardirq_ctx = 0;
+> 
+>  		timer = list_entry(cpu_base->cb_pending.next,
+>  				   struct hrtimer, cb_entry);
+> @@ -1196,12 +1197,26 @@ static void run_hrtimer_pending(struct hrtimer_cpu_base *cpu_base)
+>  		timer_stats_account_hrtimer(timer);
+> 
+>  		fn = timer->function;
+> +		/*
+> +		 * A timer might have been added to the cb_pending list
+> +		 * when it was migrated during a cpu-offline operation.
+> +		 * Emulate hardirq context for such timers.
+> +		 */
+> +		if (timer->cb_mode == HRTIMER_CB_IRQSAFE_PERCPU ||
+> +		    timer->cb_mode == HRTIMER_CB_IRQSAFE_UNLOCKED)
+> +			emulate_hardirq_ctx = 1;
 
-It would be good if you could have a "next" (or "creds-next" or
-something) branch in your tree and I can fetch that (that way I don't
-have to keep updating my configs).  It is OK if thet branch rebases and
-may just be an alias for another branch (or a subset if you have
-experimental stuff in there.  Remember "posted, reviewed, tested before
-it is in linux-next".
+Is this the case where we need to emulate a hardirq context?
 
-Thanks.
+> +
+>  		__remove_hrtimer(timer, timer->base, HRTIMER_STATE_CALLBACK, 0);
+> -		spin_unlock_irq(&cpu_base->lock);
+> +		spin_unlock(&cpu_base->lock);
+> 
+> -		restart = fn(timer);
+> +		if (likely(!emulate_hardirq_ctx)) {
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+If so, why the "!" above?
 
---Signature=_Sat__25_Oct_2008_13_08_51_+1100_7jjf3vG=YXE+2exR
-Content-Type: application/pgp-signature
+Or am I misinterpreting the name of the variable?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+							Thanx, Paul
 
-iEYEARECAAYFAkkCf7MACgkQjjKRsyhoI8zIrACgoYPSu0buce5XGuKpM1o7xgww
-7+8An0oji/ivHVXocA9gz4CDVYcZVzLU
-=kTNv
------END PGP SIGNATURE-----
-
---Signature=_Sat__25_Oct_2008_13_08_51_+1100_7jjf3vG=YXE+2exR--
+> +			local_irq_enable();
+> +			restart = fn(timer);
+> +			local_irq_disable();
+> +		} else
+> +			restart = fn(timer);
+> 
+> -		spin_lock_irq(&cpu_base->lock);
+> +		spin_lock(&cpu_base->lock);
+> 
+>  		timer->state &= ~HRTIMER_STATE_CALLBACK;
+>  		if (restart == HRTIMER_RESTART) {
+> -- 
+> Thanks and Regards
+> gautham
