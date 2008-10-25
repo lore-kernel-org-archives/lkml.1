@@ -1,96 +1,381 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbYJYLW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753080AbYJYLht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754034AbYJYLW5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 07:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbYJYLWs
+	id S1753080AbYJYLht (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 07:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbYJYLhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 07:22:48 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:45459 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751930AbYJYLWr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 07:22:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=wssXUum8M3HH7FXRIsg+qdwn5UqKwF7VrktreQt6IoDKjrKf3vssCLSFiJpFnnJeyG
-         6QerUkBdiBEi5OUlKFHLmSum8TB4Cs/3jZDmWJNw3dFJuNmvaEPe8VW3EVW/qCxt6yt5
-         l5BkIrGpp59F5yrFqlGZdw3tH/aGas3Dr1vvI=
-Message-ID: <19f34abd0810250422t17990222x78fcf0fad2e6f04b@mail.gmail.com>
-Date: Sat, 25 Oct 2008 13:22:45 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Hidehiro Kawai" <hidehiro.kawai.ez@hitachi.com>,
-       "Theodore Tso" <tytso@mit.edu>
-Subject: v2.6.28-rc1: Regression in ext3/jbd
-Cc: "Jan Kara" <jack@ucw.cz>, "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       "Al Viro" <viro@zeniv.linux.org.uk>, linux-ext4@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "Ingo Molnar" <mingo@elte.hu>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+	Sat, 25 Oct 2008 07:37:38 -0400
+Received: from mailgw.cvut.cz ([147.32.3.235]:49032 "EHLO mailgw.cvut.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751089AbYJYLhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Oct 2008 07:37:36 -0400
+X-Greylist: delayed 1193 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Oct 2008 07:37:35 EDT
+Message-ID: <4903004D.2050904@vc.cvut.cz>
+Date: Sat, 25 Oct 2008 04:17:33 -0700
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.17) Gecko/20080829 Iceape/1.1.12 (Debian-1.1.12-1)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Elias Oltmanns <eo@nebensachen.de>, Paul Mundt <lethal@linux-sh.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>, tj@kernel.org,
+       torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: 2.6.27-rc1 (2fca5c): libata: kernel cant boot
+References: <a4423d670810240004t2d7c3bdah2bea77a6a49bb7c4@mail.gmail.com> <20081024070955.GN22217@kernel.dk> <20081024071329.GO22217@kernel.dk> <20081024071608.GA3879@linux-sh.org> <20081024072428.GP22217@kernel.dk> <873aimv0v8.fsf@denkblock.local> <20081024084818.GB22217@kernel.dk>
+In-Reply-To: <20081024084818.GB22217@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sorry in advance for the huge Cc, most of it is from the commit.]
+Jens Axboe wrote:
+> On Fri, Oct 24 2008, Elias Oltmanns wrote:
+>> Jens Axboe <jens.axboe@oracle.com> wrote:
+>>> From e598055dde1951c47c8b3522616f6ebff0ed9847 Mon Sep 17 00:00:00 2001
+>>> From: Jens Axboe <jens.axboe@oracle.com>
+>>> Date: Fri, 24 Oct 2008 09:22:42 +0200
+>>> Subject: [PATCH] libata: fix bug with non-ncq devices
+>>>
+>>> The recent commit 201f1b98822078c808b5e2d379a6ddbfc0a06ee1 to enable
+>> Wouldn't that be commit 2fca5ccf97d2c28bcfce44f5b07d85e74e3cd18e?
+> 
+> Yes that is correct, the other commit is actually a private one in my
+> tree for other libata changes. Updated patch below, thanks for checking!
+> 
+> From e598055dde1951c47c8b3522616f6ebff0ed9847 Mon Sep 17 00:00:00 2001
+> From: Jens Axboe <jens.axboe@oracle.com>
+> Date: Fri, 24 Oct 2008 09:22:42 +0200
+> Subject: [PATCH] libata: fix bug with non-ncq devices
 
-Hi,
+Hello,
+   this fixes my DVD, but unfortunately NCQ devices connected to PMP are 
+still dead - apparently as soon as mount() tries to do serious I/O on 
+the drive.  Backing out both post-2.6.28-rc1 fix as well as your 
+original change brings storage back.  I suspect that problem is that 
+with PMP same tag cannot be (should not be?  must not be?) used on 
+multiple devices behind PMP - and before your change tags were allocated 
+per-port, while now they are allocated per-device.
+							Petr
 
-This commit:
-
-commit 2d7c820e56ce83b23daee9eb5343730fb309418e
-Author: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Date:   Wed Oct 22 14:15:01 2008 -0700
-
-    ext3: add checks for errors from jbd
-
-introduces a regression which was discovered by kmemcheck:
-
-WARNING: kmemcheck: Caught 32-bit read from freed memory (f4f1b804)
-00b0f1f4fbffffff404439ef008830f20200000097970000ad4eaddeffffffff
- i i i i f f f f f f f f f f f f f f f f f f f f f f f f f f f f
-         ^
-
-Pid: 9550, comm: umount Not tainted (2.6.28-rc1 #58) 945P-A
-EIP: 0060:[<c05bdf38>] EFLAGS: 00010246 CPU: 0
-EIP is at __journal_abort_soft+0x18/0xa0
-EAX: f4f1b800 EBX: f4f1b800 ECX: c0462799 EDX: fffffffb
-ESI: fffffffb EDI: f4f1a800 EBP: f145dea8 ESP: c25699c8
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-CR0: 8005003b CR2: f6c1d704 CR3: 31448000 CR4: 00000650
-DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-DR6: ffff4ff0 DR7: 00000400
- [<c05bdfc8>] journal_abort+0x8/0x10
- [<c0589eb5>] ext3_abort+0xb5/0xc0
- [<c058a300>] ext3_put_super+0x160/0x230
- [<c04ec02a>] generic_shutdown_super+0x5a/0xe0
-
-In particular, this hunk is guilty:
-
--       journal_destroy(sbi->s_journal);
-+       if (journal_destroy(sbi->s_journal) < 0)
-+               ext3_abort(sb, __func__, "Couldn't clean up the journal");
-
-because journal_destroy() will free the journal regardless of whether
-it returned < 0 or not. And then ext3_abort() makes some calls that
-dereference the (freed) journal. These are the line numbers for the
-backtrace:
-
-addr2line -e vmlinux -i c05bdf38 c05bdfc8 c0589eb5 c058a300 c04ec02a
-fs/jbd/journal.c:1502
-fs/jbd/journal.c:1560
-fs/ext3/super.c:284
-fs/ext3/super.c:397
-fs/super.c:307
-
-(as of e013e13bf605b9e6b702adffbe2853cfc60e7806 in Linus's tree).
-
-I hope this helps.
+P.S.: And disk connected to port #0 required poweroff/poweron cycle to 
+get back to life.
 
 
-Vegard
+
+Oct 25 02:21:54 gwy kernel: sata_sil24 0000:05:00.0: version 1.1
+Oct 25 02:21:54 gwy kernel: ACPI: PCI Interrupt Link [APC5] enabled at 
+IRQ 16
+Oct 25 02:21:54 gwy kernel: sata_sil24 0000:05:00.0: PCI INT A -> 
+Link[APC5] -> GSI 16 (level, low) -> IRQ 16
+Oct 25 02:21:54 gwy kernel: sata_sil24 0000:05:00.0: setting latency 
+timer to 64
+Oct 25 02:21:54 gwy kernel: scsi6 : sata_sil24
+Oct 25 02:21:54 gwy kernel: scsi7 : sata_sil24
+Oct 25 02:21:54 gwy kernel: ata7: SATA max UDMA/100 host m128@0xfdaff000 
+port 0xfdaf8000 irq 16
+Oct 25 02:21:54 gwy kernel: ata8: SATA max UDMA/100 host m128@0xfdaff000 
+port 0xfdafa000 irq 16
+Oct 25 02:21:54 gwy kernel: ata8: SATA link up 3.0 Gbps (SStatus 123 
+SControl 0)
+Oct 25 02:21:54 gwy kernel: ata8.15: Port Multiplier 1.1, 0x1095:0x3726 
+r23, 6 ports, feat 0x1/0x9
+Oct 25 02:21:54 gwy kernel: ata8.00: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.00: SATA link up 3.0 Gbps (SStatus 123 
+SControl 320)
+Oct 25 02:21:54 gwy kernel: ata8.01: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.01: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:21:54 gwy kernel: ata8.02: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.02: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:21:54 gwy kernel: ata8.03: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.03: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:21:54 gwy kernel: ata8.04: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.04: SATA link down (SStatus 0 SControl 320)
+Oct 25 02:21:54 gwy kernel: ata8.05: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.05: SATA link up 1.5 Gbps (SStatus 113 
+SControl 320)
+Oct 25 02:21:54 gwy kernel: ata8.00: failed to IDENTIFY (I/O error, 
+err_mask=0x11)
+Oct 25 02:21:54 gwy kernel: ata8.15: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8: controller in dubious state, 
+performing PORT_RST
+Oct 25 02:21:54 gwy kernel: ata8.15: SATA link up 3.0 Gbps (SStatus 123 
+SControl 0)
+Oct 25 02:21:54 gwy kernel: ata8.00: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.00: SATA link up 3.0 Gbps (SStatus 123 
+SControl 320)
+Oct 25 02:21:54 gwy kernel: ata8.01: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.01: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:21:54 gwy kernel: ata8.02: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.02: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:21:54 gwy kernel: ata8.03: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.03: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:21:54 gwy kernel: ata8.05: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.05: SATA link up 1.5 Gbps (SStatus 113 
+SControl 320)
+Oct 25 02:21:54 gwy kernel: ata8.00: failed to IDENTIFY (I/O error, 
+err_mask=0x11)
+Oct 25 02:21:54 gwy kernel: ata8.15: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8: controller in dubious state, 
+performing PORT_RST
+Oct 25 02:21:54 gwy kernel: ata8.15: SATA link up 3.0 Gbps (SStatus 123 
+SControl 0)
+Oct 25 02:21:54 gwy kernel: ata8.00: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.00: SATA link up 3.0 Gbps (SStatus 123 
+SControl 320)
+Oct 25 02:21:54 gwy kernel: ata8.01: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.01: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:21:54 gwy kernel: ata8.02: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.02: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:21:54 gwy kernel: ata8.03: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.03: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:21:54 gwy kernel: ata8.04: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.04: SATA link down (SStatus 0 SControl 320)
+Oct 25 02:21:54 gwy kernel: ata8.05: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.05: SATA link up 1.5 Gbps (SStatus 113 
+SControl 320)
+Oct 25 02:21:54 gwy kernel: ata8.00: failed to IDENTIFY (I/O error, 
+err_mask=0x11)
+Oct 25 02:21:54 gwy kernel: ata8.00: failed to recover link after 3 
+tries, disabling
+Oct 25 02:21:54 gwy kernel: ata8.15: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8: controller in dubious state, 
+performing PORT_RST
+Oct 25 02:21:54 gwy kernel: ata8.15: SATA link up 3.0 Gbps (SStatus 123 
+SControl 0)
+Oct 25 02:21:54 gwy kernel: ata8.01: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.01: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:21:54 gwy kernel: ata8.02: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.02: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:21:54 gwy kernel: ata8.03: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.03: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:21:54 gwy kernel: ata8.05: hard resetting link
+Oct 25 02:21:54 gwy kernel: ata8.05: SATA link up 1.5 Gbps (SStatus 113 
+SControl 320)
+Oct 25 02:21:54 gwy kernel: ata8.01: ATA-7: Hitachi HDS721010KLA330, 
+GKAOA70M, max UDMA/133
+Oct 25 02:21:54 gwy kernel: ata8.01: 1953525168 sectors, multi 16: LBA48 
+NCQ (depth 31/32)
+Oct 25 02:21:54 gwy kernel: ata8.01: configured for UDMA/100
+Oct 25 02:21:54 gwy kernel: ata8.02: ATA-7: Hitachi HDS721010KLA330, 
+GKAOA70F, max UDMA/133
+Oct 25 02:21:54 gwy kernel: ata8.02: 1953525168 sectors, multi 16: LBA48 
+NCQ (depth 31/32)
+Oct 25 02:21:54 gwy kernel: ata8.02: configured for UDMA/100
+Oct 25 02:21:54 gwy kernel: ata8.03: ATA-7: Hitachi HDS721010KLA330, 
+GKAOA70M, max UDMA/133
+Oct 25 02:21:54 gwy kernel: ata8.03: 1953525168 sectors, multi 16: LBA48 
+NCQ (depth 31/32)
+Oct 25 02:21:54 gwy kernel: ata8.03: configured for UDMA/100
+Oct 25 02:21:54 gwy kernel: ata8: EH complete
+Oct 25 02:21:54 gwy kernel: scsi 7:1:0:0: Direct-Access     ATA 
+Hitachi HDS72101 GKAO PQ: 0 ANSI: 5
+Oct 25 02:21:54 gwy kernel: sd 7:1:0:0: [sdh] 1953525168 512-byte 
+hardware sectors: (1000GB/931GiB)
+Oct 25 02:21:54 gwy kernel: sd 7:1:0:0: [sdh] Write Protect is off
+Oct 25 02:21:54 gwy kernel: sd 7:1:0:0: [sdh] Mode Sense: 00 3a 00 00
+Oct 25 02:21:54 gwy kernel: sd 7:1:0:0: [sdh] Write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Oct 25 02:21:54 gwy kernel: sd 7:1:0:0: [sdh] 1953525168 512-byte 
+hardware sectors: (1000GB/931GiB)
+Oct 25 02:21:54 gwy kernel: sd 7:1:0:0: [sdh] Write Protect is off
+Oct 25 02:21:54 gwy kernel: sd 7:1:0:0: [sdh] Mode Sense: 00 3a 00 00
+Oct 25 02:21:54 gwy kernel: sd 7:1:0:0: [sdh] Write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Oct 25 02:21:54 gwy kernel:  sdh: sdh1
+Oct 25 02:21:54 gwy kernel: sd 7:1:0:0: [sdh] Attached SCSI disk
+Oct 25 02:21:54 gwy kernel: sd 7:1:0:0: Attached scsi generic sg9 type 0
+Oct 25 02:21:54 gwy kernel: scsi 7:2:0:0: Direct-Access     ATA 
+Hitachi HDS72101 GKAO PQ: 0 ANSI: 5
+Oct 25 02:21:54 gwy kernel: sd 7:2:0:0: [sdi] 1953525168 512-byte 
+hardware sectors: (1000GB/931GiB)
+Oct 25 02:21:54 gwy kernel: sd 7:2:0:0: [sdi] Write Protect is off
+Oct 25 02:21:54 gwy kernel: sd 7:2:0:0: [sdi] Mode Sense: 00 3a 00 00
+Oct 25 02:21:54 gwy kernel: sd 7:2:0:0: [sdi] Write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Oct 25 02:21:54 gwy kernel: sd 7:2:0:0: [sdi] 1953525168 512-byte 
+hardware sectors: (1000GB/931GiB)
+Oct 25 02:21:54 gwy kernel: sd 7:2:0:0: [sdi] Write Protect is off
+Oct 25 02:21:54 gwy kernel: sd 7:2:0:0: [sdi] Mode Sense: 00 3a 00 00
+Oct 25 02:21:54 gwy kernel: sd 7:2:0:0: [sdi] Write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Oct 25 02:21:54 gwy kernel:  sdi: sdi1
+Oct 25 02:21:54 gwy kernel: sd 7:2:0:0: [sdi] Attached SCSI disk
+Oct 25 02:21:54 gwy kernel: sd 7:2:0:0: Attached scsi generic sg10 type 0
+Oct 25 02:21:54 gwy kernel: scsi 7:3:0:0: Direct-Access     ATA 
+Hitachi HDS72101 GKAO PQ: 0 ANSI: 5
+Oct 25 02:21:54 gwy kernel: sd 7:3:0:0: [sdj] 1953525168 512-byte 
+hardware sectors: (1000GB/931GiB)
+Oct 25 02:21:54 gwy kernel: sd 7:3:0:0: [sdj] Write Protect is off
+Oct 25 02:21:54 gwy kernel: sd 7:3:0:0: [sdj] Mode Sense: 00 3a 00 00
+Oct 25 02:21:54 gwy kernel: sd 7:3:0:0: [sdj] Write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Oct 25 02:21:54 gwy kernel: sd 7:3:0:0: [sdj] 1953525168 512-byte 
+hardware sectors: (1000GB/931GiB)
+Oct 25 02:21:54 gwy kernel: sd 7:3:0:0: [sdj] Write Protect is off
+Oct 25 02:21:54 gwy kernel: sd 7:3:0:0: [sdj] Mode Sense: 00 3a 00 00
+Oct 25 02:21:54 gwy kernel: sd 7:3:0:0: [sdj] Write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Oct 25 02:21:54 gwy kernel:  sdj: sdj1
+Oct 25 02:21:54 gwy kernel: sd 7:3:0:0: [sdj] Attached SCSI disk
+Oct 25 02:21:54 gwy kernel: sd 7:3:0:0: Attached scsi generic sg11 type 0
+Oct 25 02:23:09 gwy kernel: ata8.03: exception Emask 0x10 SAct 0x0 SErr 
+0x4010000 action 0xf
+Oct 25 02:23:09 gwy kernel: ata8.03: SError: { PHYRdyChg DevExch }
+Oct 25 02:23:09 gwy kernel: ata8.00: failed to read SCR 2 (Emask=0x40)
+Oct 25 02:23:09 gwy kernel: ata8.00: COMRESET failed (errno=-5)
+Oct 25 02:23:09 gwy kernel: ata8.00: failed to write SCR 1 (Emask=0x40)
+Oct 25 02:23:09 gwy kernel: ata8.00: failed to clear SError.N (errno=-5)
+Oct 25 02:23:09 gwy kernel: ata8.15: hard resetting link
+Oct 25 02:23:11 gwy kernel: ata8.15: SATA link down (SStatus 0 SControl 0)
+Oct 25 02:23:14 gwy kernel: ata8.15: failed to read PMP GSCR[0] (Emask=0x1)
+Oct 25 02:23:14 gwy kernel: ata8.15: PMP revalidation failed (errno=-5)
+Oct 25 02:23:16 gwy kernel: ata8.15: hard resetting link
+Oct 25 02:23:18 gwy kernel: ata8.15: SATA link up 3.0 Gbps (SStatus 123 
+SControl 0)
+Oct 25 02:23:18 gwy kernel: ata8.01: hard resetting link
+Oct 25 02:23:19 gwy kernel: ata8.01: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:23:19 gwy kernel: ata8.02: hard resetting link
+Oct 25 02:23:19 gwy kernel: ata8.02: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:23:19 gwy kernel: ata8.03: hard resetting link
+Oct 25 02:23:20 gwy kernel: ata8.03: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:23:20 gwy kernel: ata8.04: hard resetting link
+Oct 25 02:23:20 gwy kernel: ata8.04: SATA link down (SStatus 0 SControl 320)
+Oct 25 02:23:20 gwy kernel: ata8.05: hard resetting link
+Oct 25 02:23:21 gwy kernel: ata8.05: SATA link up 1.5 Gbps (SStatus 113 
+SControl 320)
+Oct 25 02:23:21 gwy kernel: ata8.01: failed to IDENTIFY (I/O error, 
+err_mask=0x11)
+Oct 25 02:23:21 gwy kernel: ata8.01: revalidation failed (errno=-5)
+Oct 25 02:23:23 gwy kernel: ata8.15: hard resetting link
+Oct 25 02:23:23 gwy kernel: ata8: controller in dubious state, 
+performing PORT_RST
+Oct 25 02:23:25 gwy kernel: ata8.15: SATA link up 3.0 Gbps (SStatus 123 
+SControl 0)
+Oct 25 02:23:26 gwy kernel: ata8.01: hard resetting link
+Oct 25 02:23:26 gwy kernel: ata8.01: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:23:26 gwy kernel: ata8.02: hard resetting link
+Oct 25 02:23:26 gwy kernel: ata8.02: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:23:26 gwy kernel: ata8.03: hard resetting link
+Oct 25 02:23:27 gwy kernel: ata8.03: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:23:27 gwy kernel: ata8.05: hard resetting link
+Oct 25 02:23:27 gwy kernel: ata8.05: SATA link up 1.5 Gbps (SStatus 113 
+SControl 320)
+Oct 25 02:23:27 gwy kernel: ata8.01: failed to IDENTIFY (I/O error, 
+err_mask=0x11)
+Oct 25 02:23:27 gwy kernel: ata8.01: revalidation failed (errno=-5)
+Oct 25 02:23:30 gwy kernel: ata8.15: hard resetting link
+Oct 25 02:23:30 gwy kernel: ata8: controller in dubious state, 
+performing PORT_RST
+Oct 25 02:23:33 gwy kernel: ata8.15: SATA link up 3.0 Gbps (SStatus 123 
+SControl 0)
+Oct 25 02:23:33 gwy kernel: ata8.01: hard resetting link
+Oct 25 02:23:33 gwy kernel: ata8.01: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:23:33 gwy kernel: ata8.02: hard resetting link
+Oct 25 02:23:34 gwy kernel: ata8.02: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:23:34 gwy kernel: ata8.03: hard resetting link
+Oct 25 02:23:34 gwy kernel: ata8.03: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:23:34 gwy kernel: ata8.04: hard resetting link
+Oct 25 02:23:34 gwy kernel: ata8.04: SATA link down (SStatus 0 SControl 320)
+Oct 25 02:23:34 gwy kernel: ata8.05: hard resetting link
+Oct 25 02:23:35 gwy kernel: ata8.05: SATA link up 1.5 Gbps (SStatus 113 
+SControl 320)
+Oct 25 02:23:35 gwy kernel: ata8.01: configured for UDMA/100
+Oct 25 02:23:35 gwy kernel: ata8.02: failed to IDENTIFY (I/O error, 
+err_mask=0x11)
+Oct 25 02:23:35 gwy kernel: ata8.02: revalidation failed (errno=-5)
+Oct 25 02:23:38 gwy kernel: ata8.15: hard resetting link
+Oct 25 02:23:38 gwy kernel: ata8: controller in dubious state, 
+performing PORT_RST
+Oct 25 02:23:40 gwy kernel: ata8.15: SATA link up 3.0 Gbps (SStatus 123 
+SControl 0)
+Oct 25 02:23:40 gwy kernel: ata8.01: hard resetting link
+Oct 25 02:23:40 gwy kernel: ata8.01: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:23:40 gwy kernel: ata8.02: hard resetting link
+Oct 25 02:23:41 gwy kernel: ata8.02: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:23:41 gwy kernel: ata8.03: hard resetting link
+Oct 25 02:23:41 gwy kernel: ata8.03: SATA link up 3.0 Gbps (SStatus 123 
+SControl 300)
+Oct 25 02:23:41 gwy kernel: ata8.05: hard resetting link
+Oct 25 02:23:42 gwy kernel: ata8.05: SATA link up 1.5 Gbps (SStatus 113 
+SControl 320)
+Oct 25 02:23:42 gwy kernel: ata8.01: configured for UDMA/100
+Oct 25 02:23:42 gwy kernel: ata8.02: configured for UDMA/100
+Oct 25 02:23:42 gwy kernel: ata8.03: configured for UDMA/100
+Oct 25 02:23:42 gwy kernel: ata8.15: exception Emask 0x10 SAct 0x0 SErr 
+0x0 action 0x9 t4
+Oct 25 02:23:42 gwy kernel: ata8.15: irq_stat 0x00060002
+Oct 25 02:23:42 gwy kernel: ata8: EH complete
+Oct 25 02:23:42 gwy kernel: sd 7:1:0:0: [sdh] 1953525168 512-byte 
+hardware sectors: (1000GB/931GiB)
+Oct 25 02:23:42 gwy kernel: sd 7:1:0:0: [sdh] Write Protect is off
+Oct 25 02:23:42 gwy kernel: sd 7:1:0:0: [sdh] Mode Sense: 00 3a 00 00
+Oct 25 02:23:42 gwy kernel: sd 7:1:0:0: [sdh] Write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Oct 25 02:23:42 gwy kernel: sd 7:2:0:0: [sdi] 1953525168 512-byte 
+hardware sectors: (1000GB/931GiB)
+Oct 25 02:23:42 gwy kernel: sd 7:2:0:0: [sdi] Write Protect is off
+Oct 25 02:23:42 gwy kernel: sd 7:2:0:0: [sdi] Mode Sense: 00 3a 00 00
+Oct 25 02:23:42 gwy kernel: sd 7:2:0:0: [sdi] Write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Oct 25 02:23:42 gwy kernel: sd 7:3:0:0: [sdj] 1953525168 512-byte 
+hardware sectors: (1000GB/931GiB)
+Oct 25 02:23:42 gwy kernel: sd 7:3:0:0: [sdj] Write Protect is off
+Oct 25 02:23:42 gwy kernel: sd 7:3:0:0: [sdj] Mode Sense: 00 3a 00 00
+Oct 25 02:23:42 gwy kernel: sd 7:3:0:0: [sdj] Write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Oct 25 02:23:42 gwy kernel: sd 7:1:0:0: [sdh] 1953525168 512-byte 
+hardware sectors: (1000GB/931GiB)
+Oct 25 02:23:42 gwy kernel: sd 7:1:0:0: [sdh] Write Protect is off
+Oct 25 02:23:42 gwy kernel: sd 7:1:0:0: [sdh] Mode Sense: 00 3a 00 00
+Oct 25 02:23:42 gwy kernel: sd 7:1:0:0: [sdh] Write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Oct 25 02:23:42 gwy kernel: sd 7:2:0:0: [sdi] 1953525168 512-byte 
+hardware sectors: (1000GB/931GiB)
+Oct 25 02:23:42 gwy kernel: sd 7:2:0:0: [sdi] Write Protect is off
+Oct 25 02:23:42 gwy kernel: sd 7:2:0:0: [sdi] Mode Sense: 00 3a 00 00
+Oct 25 02:23:42 gwy kernel: sd 7:2:0:0: [sdi] Write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Oct 25 02:23:42 gwy kernel: sd 7:3:0:0: [sdj] 1953525168 512-byte 
+hardware sectors: (1000GB/931GiB)
+Oct 25 02:23:42 gwy kernel: sd 7:3:0:0: [sdj] Write Protect is off
+Oct 25 02:23:42 gwy kernel: sd 7:3:0:0: [sdj] Mode Sense: 00 3a 00 00
+Oct 25 02:23:42 gwy kernel: sd 7:3:0:0: [sdj] Write cache: enabled, read 
+cache: enabled, doesn't support DPO or FUA
+Oct 25 02:23:51 gwy kernel: kjournald starting.  Commit interval 5 seconds
+Oct 25 02:23:51 gwy kernel: EXT3 FS on sdi1, internal journal
+Oct 25 02:23:51 gwy kernel: EXT3-fs: mounted filesystem with ordered 
+data mode.
+Oct 25 02:23:51 gwy kernel: kjournald starting.  Commit interval 5 seconds
+Oct 25 02:23:51 gwy kernel: EXT3 FS on sdh1, internal journal
+Oct 25 02:23:51 gwy kernel: EXT3-fs: mounted filesystem with ordered 
+data mode.
+Oct 25 02:23:51 gwy kernel: kjournald starting.  Commit interval 5 seconds
+Oct 25 02:23:51 gwy kernel: EXT3 FS on sdj1, internal journal
+Oct 25 02:23:51 gwy kernel: EXT3-fs: mounted filesystem with ordered 
+data mode.
+
+
