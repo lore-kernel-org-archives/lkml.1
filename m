@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752191AbYJYTu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751778AbYJYT4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752191AbYJYTu1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 15:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbYJYTuK
+	id S1751778AbYJYT4S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 15:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbYJYT4B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 15:50:10 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3202 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750928AbYJYTuJ (ORCPT
+	Sat, 25 Oct 2008 15:56:01 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:24410 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751037AbYJYTz7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 15:50:09 -0400
-Date: Sat, 25 Oct 2008 15:50:07 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Luciano Rocha <luciano@eurotux.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-Subject: Re: usb hdd problems with 2.6.27.2
-In-Reply-To: <200810252125.44184.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0810251548300.7245-100000@netrider.rowland.org>
+	Sat, 25 Oct 2008 15:55:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=MOlYviMQAGjUWkrPYepZrKFSGIe+W5rkJQSlFmlTqoWCkZZQhgZZMYqNCQRJtXzv82
+         XZH0V4+0sTHFtX/TZXwj6vF6cOxz0hokp6KIID5Y5rZ44h1ZFVtodMMey9iC6rgi/biY
+         Gm0oGBlAartOJCKzACpyYpUn4FT133fpw1znA=
+Message-ID: <86802c440810251255ncbbed09l9404c03406c61f05@mail.gmail.com>
+Date: Sat, 25 Oct 2008 12:55:59 -0700
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: mathieu.taillefumier@free.fr
+Subject: Re: [Bug] pci allocation resources problems on x86_64
+Cc: "Jesse Barnes" <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <1224938637.4903148d28cfc@imp.free.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <49019FE4.50001@free.fr> <4901A4C2.5020805@free.fr>
+	 <200810241131.55129.jbarnes@virtuousgeek.org>
+	 <1224879041.49022bc1562bb@imp.free.fr>
+	 <86802c440810250145qa09a9ay919203055f8e85f0@mail.gmail.com>
+	 <1224938637.4903148d28cfc@imp.free.fr>
+X-Google-Sender-Auth: 63574ee0f2d96842
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 25 Oct 2008, Rafael J. Wysocki wrote:
+On Sat, Oct 25, 2008 at 5:43 AM,  <mathieu.taillefumier@free.fr> wrote:
+> Hi,
+>
+> It is not possible to modify anything from the bios at least nothing related to
+> memory. So what do you suggest forcing the pci_mem_start. When I look at the
+> dmesg file I find some open windows such as 0xc0000001 -> 0xdfffffff and
+> 0xf0000001 -> to 0xfebffffff or something like that.
 
-> [Adding CCs]
-> 
-> On Wednesday, 22 of October 2008, Luciano Rocha wrote:
-> > 
-> > Hello,
-> > 
-> > An external HDD, usb-encased, works fine under 2.6.26.5, but under
-> > 2.6.27.2 I get hundreds of errors per second, of 'No Sense [current]'.
+your BIOS only leave 0xc0000000 - 0xc7ffffff for kernel to allocate
+that to unassigned resource.
 
-You can use usbmon to capture the details of what happens when you plug
-in the drive.  Instructions are in the kernel source file
-Documentation/usb/usbmon.txt.
+and your device for bus 0x0a need 0x4000000 for mmio and 0x4000000 for
+pref mmio.
 
-Alan Stern
+but 1f.3 is not assigned resource too, need to make sure if it really
+need to assigned resource by OS too...
+kernel should allocate 0xca00000 to it..., so simplely use quirks to disable it.
 
+YH
