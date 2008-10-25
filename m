@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756480AbYJYAGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752917AbYJYAPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756480AbYJYAGS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 20:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbYJYAGJ
+	id S1752917AbYJYAPs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 20:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbYJYAPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 20:06:09 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:4864 "EHLO
+	Fri, 24 Oct 2008 20:15:39 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:61131 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751131AbYJYAGI (ORCPT
+	with ESMTP id S1751256AbYJYAPj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 20:06:08 -0400
+	Fri, 24 Oct 2008 20:15:39 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
-	mime-version:content-type;
-	b=frHAgx1gqpdmJP/VmNRKNTwiJ3foWQ+MJ1YfwNeB2EtYsgn+pjjZaEhYirEDS807l
-	eavLWPkHiTwrb/nk6/58w==
-Date: Fri, 24 Oct 2008 17:05:26 -0700 (PDT)
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type;
+	b=a+LIjhGU2oY3XSEpAIihaA/JOS3CJc6noNwHT4KHM2eojDujnTLnyr9uNCtPx7LmT
+	3VZrdrwgUSW16OTHWzOuA==
+Date: Fri, 24 Oct 2008 17:15:32 -0700 (PDT)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Andrew Morton <akpm@linux-foundation.org>
 cc: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org
 Subject: [patch] oom: print triggering task's cpuset and mems allowed
-Message-ID: <alpine.DEB.1.10.0810241704380.15988@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.1.10.0810241704380.15988@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.1.10.0810241714290.16902@chino.kir.corp.google.com>
+References: <alpine.DEB.1.10.0810241704380.15988@chino.kir.corp.google.com>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -38,6 +40,8 @@ We also print the task's cpuset name for informational purposes.
 Cc: Paul Menage <menage@google.com>
 Signed-off-by: David Rientjes <rientjes@google.com>
 ---
+ Updated version of the same patch for -mm inclusion.
+
  include/linux/cpuset.h |    7 +++++++
  kernel/cpuset.c        |   15 +++++++++++++++
  mm/oom_kill.c          |   22 ++++++++++++++++++++++
@@ -106,12 +110,12 @@ diff --git a/mm/oom_kill.c b/mm/oom_kill.c
 +{
 +	char buffer[BUFFER_LEN];
 +
-+	if (cpuset_get_name(current, BUFFER_LEN, buffer) > 0) {
++	if (cpuset_get_name(p, BUFFER_LEN, buffer) > 0) {
 +		char nodelist[BUFFER_LEN];
 +
-+		nodelist_scnprintf(nodelist, BUFFER_LEN, current->mems_allowed);
++		nodelist_scnprintf(nodelist, BUFFER_LEN, p->mems_allowed);
 +		printk(KERN_ERR "%s cpuset=%s mems_allowed=%s\n",
-+		       current->comm, buffer, nodelist);
++		       p->comm, buffer, nodelist);
 +	}
 +}
 +#else
