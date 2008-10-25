@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752747AbYJYK7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbYJYLJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752747AbYJYK7g (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 06:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbYJYK73
+	id S1752755AbYJYLJT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 07:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbYJYLI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 06:59:29 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:54311 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbYJYK72 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 06:59:28 -0400
-Subject: Re: [PATCH] ubifs: endian handling fixes and annotations
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1224870777.5966.3.camel@brick>
-References: <1224870777.5966.3.camel@brick>
-Content-Type: text/plain; charset=utf-8
-Date: Sat, 25 Oct 2008 13:57:36 +0300
-Message-Id: <1224932256.4466.135.camel@sauron>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 25 Oct 2008 10:58:48.0022 (UTC) FILETIME=[A819BF60:01C93690]
-X-Nokia-AV: Clean
+	Sat, 25 Oct 2008 07:08:59 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50180 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751197AbYJYLI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Oct 2008 07:08:59 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+Date: Sat, 25 Oct 2008 13:13:20 +0200
+User-Agent: KMail/1.9.9
+Cc: mingo@elte.hu, s0mbre@tservice.net.ru, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, efault@gmx.de
+References: <20081010115518.GA3159@tservice.net.ru> <200810250025.35734.rjw@sisk.pl> <20081024.163111.244324800.davem@davemloft.net>
+In-Reply-To: <20081024.163111.244324800.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810251313.21120.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey,
-
-On Fri, 2008-10-24 at 10:52 -0700, Harvey Harrison wrote:
-> Noticed by sparse:
-> fs/ubifs/file.c:75:2: warning: restricted __le64 degrades to integer
-> fs/ubifs/file.c:629:4: warning: restricted __le64 degrades to integer
-> fs/ubifs/dir.c:431:3: warning: restricted __le64 degrades to integer
+On Saturday, 25 of October 2008, David Miller wrote:
+> From: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Date: Sat, 25 Oct 2008 00:25:34 +0200
 > 
-> This should be checked to ensure the ubifs_assert is working as
-> intended, I've done the suggested annotation in this patch.
+> > On Friday, 10 of October 2008, Ingo Molnar wrote:
+> > > 
+> > > * Evgeniy Polyakov <s0mbre@tservice.net.ru> wrote:
+> > > 
+> > > > On Fri, Oct 10, 2008 at 01:42:45PM +0200, Ingo Molnar (mingo@elte.hu) wrote:
+> > > > > > vanilla 27: 347.222
+> > > > > > no TSO/GSO: 357.331
+> > > > > > no hrticks: 382.983
+> > > > > > no balance: 389.802
+> > > > > 
+> > > > > okay. The target is 470 MB/sec, right? (Assuming the workload is sane 
+> > > > > and 'fixing' it does not mean we have to schedule worse.)
+> > > > 
+> > > > Well, that's where I started/stopped, so maybe we will even move
+> > > > further? :)
+> > > 
+> > > that's the right attitude ;)
+> > 
+> > Can anyone please tell me if there was any conclusion of this thread?
 > 
-> fs/ubifs/sb.c:298:6: warning: incorrect type in assignment (different base types)
-> fs/ubifs/sb.c:298:6:    expected int [signed] [assigned] tmp
-> fs/ubifs/sb.c:298:6:    got restricted __le64 [usertype] <noident>
-> fs/ubifs/sb.c:299:19: warning: incorrect type in assignment (different base types)
-> fs/ubifs/sb.c:299:19:    expected restricted __le64 [usertype] atime_sec
-> fs/ubifs/sb.c:299:19:    got int [signed] [assigned] tmp
-> fs/ubifs/sb.c:300:19: warning: incorrect type in assignment (different base types)
-> fs/ubifs/sb.c:300:19:    expected restricted __le64 [usertype] ctime_sec
-> fs/ubifs/sb.c:300:19:    got int [signed] [assigned] tmp
-> fs/ubifs/sb.c:301:19: warning: incorrect type in assignment (different base types)
-> fs/ubifs/sb.c:301:19:    expected restricted __le64 [usertype] mtime_sec
-> fs/ubifs/sb.c:301:19:    got int [signed] [assigned] tmp
+> I made some more analysis in private with Ingo and Peter Z. and found
+> that the tbench decreases correlate pretty much directly with the
+> ongoing increasing cpu cost of wake_up() and friends in the fair
+> scheduler.
+> 
+> The largest increase in computational cost of wakeups came in 2.6.27
+> when the hrtimer bits got added, it more than tripled the cost of a wakeup.
+> In 2.6.28-rc1 the hrtimer feature has been disabled, but I think that
+> should be backports into the 2.6.27-stable branch.
 
-... snip ...
+Thanks a lot for the info.
 
-thanks for the patch. It's shame we did not fix this ourselves. We did
-run sparse before submitting UBIFS and did not see these warnings.
-Probably sparse has been improved recently. Anyway, thank you, I'll look
-closer at your patch and apply it to ubifs-2.6.git.
+Could you please give me a pointer to the commit disabling the hrtimer feature?
 
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
-
+Rafael
