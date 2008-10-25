@@ -1,60 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbYJYQWJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbYJYQYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754156AbYJYQWJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 12:22:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYJYQV4
+	id S1754100AbYJYQYU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 12:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382AbYJYQYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 12:21:56 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:45368 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752541AbYJYQV4 (ORCPT
+	Sat, 25 Oct 2008 12:24:11 -0400
+Received: from gv-out-0910.google.com ([216.239.58.184]:19908 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752239AbYJYQYK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 12:21:56 -0400
-Date: Sat, 25 Oct 2008 18:21:16 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
+	Sat, 25 Oct 2008 12:24:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hMlygMcGRn8pQ7Hg/QCeOqtRPLzJnkpAcLt22cut6JWQeMpETFnOml0EcFxA5VNvMJ
+         1FcWEyUYdqcAVn4oqNvlelVEtcd9Vs9b9FlaWa1BLdOSpO/AeNcKbNuPWvkwBT8CH4gj
+         TDAdVSlQZRrJ/P+SSigTv2ETl1NxEOJWMS1KY=
+Date: Sat, 25 Oct 2008 18:25:05 +0200
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
 To: Arjan van de Ven <arjan@infradead.org>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Matt Mackall <mpm@selenic.com>
-Subject: Re: [pull request] getting rid of __cpuinit
-Message-ID: <20081025162116.GA13303@uranus.ravnborg.org>
-References: <20081024142056.6a2d082a@infradead.org> <20081025075925.GA22805@uranus.ravnborg.org> <20081025070043.50578543@infradead.org> <20081025143528.GA30900@uranus.ravnborg.org> <20081025080638.6203c874@infradead.org>
-Mime-Version: 1.0
+Cc: Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.28-rc1 regression] wmifinfo dockapp takes 100% of cpu
+	(bisected)
+Message-ID: <20081025162503.GA4001@localhost.aei.mpg.de>
+References: <20081025094043.GA4438@localhost.aei.mpg.de> <490327B6.2090903@linux.intel.com> <20081025071348.63c426d9@infradead.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081025080638.6203c874@infradead.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20081025071348.63c426d9@infradead.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 25, 2008 at 08:06:38AM -0700, Arjan van de Ven wrote:
-> On Sat, 25 Oct 2008 16:35:28 +0200
-> Sam Ravnborg <sam@ravnborg.org> wrote:
-> > So if you look at the size of the cpuinit/exit sections in the
-> > before case you get the real space saving that is lost in the
-> > embedded case after your patch is applied.
-> > The space savings that happen after early init.
+On Sat 25.Oct'08 at  7:13:48 -0700, Arjan van de Ven wrote:
+> On Sat, 25 Oct 2008 07:05:42 -0700
+> Arjan van de Ven <arjan@linux.intel.com> wrote:
 > 
-> [linux.trees.git]# objdump -h vmlinux.before  | grep init.text
->  25 .init.text    00037c25  ffffffff8152a000  000000000152a000  0092a000
-> [inux.trees.git]# objdump -h vmlinux.after  | grep init.text
->  25 .init.text    000316c2  ffffffff81542000  0000000001542000  00942000
+> > Carlos R. Mafra wrote:
+> > 
+> > 
+> > Hi,
+> > 
+> > the line below is the key one:
+> > 
+> > > select(4, [3], NULL, NULL, {0, 5000000}) = -1 EINVAL (Invalid
+> > > argument)
+> > 
+> > the application gives us an invalid timeval; it should have been (5,
+> > 0) However, if the kernel accepted this before the kernel needs to
+> > now also accept it obviously, I'll look into it
+> 
+> This patch should fix it; I'm a bit worried that I need to fix up
+> userlands "mess", but ok. I also checked all other converted functions,
+> and only select has this problem. The problem is that the conversion
+> from microseconds to nanoseconds is overflowing ;-(
+> 
+> can you give this one a test?
 
-So with your config we will loose a saving of 25955 bytes
-of text.
+Your patch did not solve it.
 
-I tried to look a the numbers of a defconfig build here.
-cpuinit.text equals 0x5d97 = 23959
-cpuinit.data equals 0x3574 = 13684
+But you are right that the program I use is a mess, it was doing
 
-[objdump of vmlinux.o gives you the size of the cpuinit sections]
+    tv.tv_sec = 0;
+    tv.tv_usec = 5000000L;
 
-So if we decide to drop cpuinit then it should be based on the
-above figure and not the 2k figure you gave in the original mail.
+So I changed it to
 
-Or even better we should see the difference with a typical
-embedded configuration and not some big defconfig build.
-I will assume the saving is less on a typical embedded
-configuration.
+    tv.tv_sec = 5;
+    tv.tv_usec = 0;
 
-	Sam
+and it worked (with and without your patch).
+
+>From what I understand this is what your patch does,
+so it is strange that it didn't work...
+
+> diff --git a/fs/compat.c b/fs/compat.c
+> index fe3c9bf..95ceee6 100644
+> --- a/fs/compat.c
+> +++ b/fs/compat.c
+> @@ -1680,9 +1680,16 @@ asmlinkage long compat_sys_select(int n, compat_ulong_t __user *inp,
+>  	int ret;
+>  
+>  	if (tvp) {
+> +		int i;
+>  		if (copy_from_user(&tv, tvp, sizeof(tv)))
+>  			return -EFAULT;
+>  
+> +		while (tv.tv_usec > USEC_PER_SEC && i < 1000) {
+> +			i++;
+> +			tv.tv_sec ++;
+> +			tv.tv_usec -= USEC_PER_SEC;
+> +		}
+> +
+>  		to = &end_time;
+>  		if (poll_select_set_timeout(to, tv.tv_sec,
+>  					    tv.tv_usec * NSEC_PER_USEC))
+> diff --git a/fs/select.c b/fs/select.c
+> index 448e440..e4e7cdb 100644
+> --- a/fs/select.c
+> +++ b/fs/select.c
+> @@ -515,9 +515,16 @@ asmlinkage long sys_select(int n, fd_set __user *inp, fd_set __user *outp,
+>  	int ret;
+>  
+>  	if (tvp) {
+> +		int i = 0;
+>  		if (copy_from_user(&tv, tvp, sizeof(tv)))
+>  			return -EFAULT;
+>  
+> +		while (tv.tv_usec > USEC_PER_SEC && i < 1000) {
+> +			i++;
+> +			tv.tv_sec ++;
+> +			tv.tv_usec -= USEC_PER_SEC;
+> +		}
+> +
+>  		to = &end_time;
+>  		if (poll_select_set_timeout(to, tv.tv_sec,
+>  					    tv.tv_usec * NSEC_PER_USEC))
+> 
+> -- 
+> Arjan van de Ven 	Intel Open Source Technology Centre
+> For development, discussion and tips for power savings, 
+> visit http://www.lesswatts.org
