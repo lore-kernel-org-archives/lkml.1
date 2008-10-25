@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbYJYXLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754828AbYJYXPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756205AbYJYXLl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 19:11:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756273AbYJYXLA
+	id S1754828AbYJYXPh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 19:15:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbYJYXP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 19:11:00 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:54653 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756528AbYJYXK6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 19:10:58 -0400
-Date: Sun, 26 Oct 2008 01:10:19 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: David Miller <davem@davemloft.net>
-cc: efault@gmx.de, rjw@sisk.pl, Ingo Molnar <mingo@elte.hu>,
-       s0mbre@tservice.net.ru, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-In-Reply-To: <20081025.002420.82739316.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0810260055070.22126@twin.jikos.cz>
-References: <20081024.221653.23695396.davem@davemloft.net>
- <1224914333.3822.18.camel@marge.simson.net> <1224917623.4929.15.camel@marge.simson.net>
- <20081025.002420.82739316.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 25 Oct 2008 19:15:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46483 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751346AbYJYXP2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Oct 2008 19:15:28 -0400
+Date: Sat, 25 Oct 2008 16:14:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Antonino Daplas <adaplas@gmail.com>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH RESEND] vgacon: remember scrollback buffer on console
+ switch
+Message-Id: <20081025161456.643b36c6.akpm@linux-foundation.org>
+In-Reply-To: <20081025224247.GA25497@joi>
+References: <20081025195814.GD10932@joi>
+	<20081025134615.36f7285f.akpm@linux-foundation.org>
+	<20081025224247.GA25497@joi>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 25 Oct 2008, David Miller wrote:
+On Sun, 26 Oct 2008 00:43:01 +0200 Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
 
-> But note that tbench performance improved a bit in 2.6.25.
-> In my tests I noticed a similar effect, but from 2.6.23 to 2.6.24,
-> weird.
-> Just for the public record here are the numbers I got in my testing.
+> PS: why DECLARE_MUTEX _defines_ _semaphore_?
 
-I have been currently looking at very similarly looking issue. For the 
-public record, here are the numbers we have been able to come up with so 
-far (measured with dbench, so the absolute values are slightly different, 
-but still shows similar pattern)
+The kernel gets definition-vs-declaration confused in several places.
 
-208.4 MB/sec  -- vanilla 2.6.16.60
-201.6 MB/sec  -- vanilla 2.6.20.1
-172.9 MB/sec  -- vanilla 2.6.22.19
-74.2 MB/sec   -- vanilla 2.6.23
- 46.1 MB/sec  -- vanilla 2.6.24.2
- 30.6 MB/sec  -- vanilla 2.6.26.1
+> there are only 8 uses of this
+> macro so it's not a big problem to rename it to e.g. DEFINE_SEMAPHORE (I can
+> provide a patch)
 
-I.e. huge drop for 2.6.23 (this was with default configs for each 
-respective kernel).
-2.6.23-rc1 shows 80.5 MB/s, i.e. a few % better than final 2.6.23, but 
-still pretty bad. 
+I'd say that s/declare/define/ at such a late stage in the semaphore's
+lifetime would be of dubious value.  But getting "MUTEX" out of that
+macro's name would be a very good thing - it's a bad overlap with struct
+mutex.  Send patch :)
 
-I have gone through the commits that went into -rc1 and tried to figure 
-out which one could be responsible. Here are the numbers:
-
- 85.3 MB/s for 2ba2d00363 (just before on-deman readahead has been merged)
- 82.7 MB/s for 45426812d6 (before cond_resched() has been added into page 
-187.7 MB/s for c1e4fe711a4 (just before CFS scheduler has been merged)
-                           invalidation code)
-
-So the current bigest suspect is CFS, but I don't have enough numbers yet 
-to be able to point a finger to it with 100% certainity. Hopefully soon.
-
-Just my $0.02
-
--- 
-Jiri Kosina
-SUSE Labs
 
