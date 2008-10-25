@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbYJYAWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753210AbYJYAXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757237AbYJYAWt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 20:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757872AbYJYAWR
+	id S1753210AbYJYAXG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 20:23:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757643AbYJYAWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 20:22:17 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:43530 "EHLO
+	Fri, 24 Oct 2008 20:22:19 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:43535 "EHLO
 	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757643AbYJYAWB (ORCPT
+	by vger.kernel.org with ESMTP id S1757741AbYJYAWD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 20:22:01 -0400
-Subject: [PATCH 3/4] Add a synthetic TSC_RELIABLE feature bit.
+	Fri, 24 Oct 2008 20:22:03 -0400
+Subject: [PATCH 4/4] Skip verification by the watchdog for TSC clocksource.
 From: Alok Kataria <akataria@vmware.com>
 Reply-To: akataria@vmware.com
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
        LKML <linux-kernel@vger.kernel.org>,
        the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
+       Daniel Hecht <dhecht@vmware.com>, Jeff Hansen <x@jeffhansen.com>,
+       Chris Snook <csnook@redhat.com>
 Content-Type: text/plain
 Organization: VMware INC.
-Date: Fri, 24 Oct 2008 17:22:00 -0700
-Message-Id: <1224894120.28224.73.camel@alok-dev1>
+Date: Fri, 24 Oct 2008 17:22:01 -0700
+Message-Id: <1224894121.28224.75.camel@alok-dev1>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
@@ -29,132 +30,141 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86: Add a synthetic TSC_RELIABLE feature bit.
+[X86] Skip verification by the watchdog for TSC clocksource.
 
 From: Alok N Kataria <akataria@vmware.com>
 
-Virtual TSCs can be kept nearly in sync, but because the virtual TSC
-offset is set by software, it's not perfect.  So, the TSC
-synchronization test can fail. Even then the TSC can be used as a
-clocksource since the VMware platform exports a reliable TSC to the
-guest for timekeeping purposes. Use this bit to check if we need to
-skip the TSC sync checks.
+This is achieved by resetting the CLOCKSOURCE_MUST_VERIFY flag.
 
-Along with this also set the CONSTANT_TSC bit when on VMware, since we
-still want to use TSC as clocksource on VM running over hardware which
-has unsynchronized TSC's (opteron's), since the hypervisor will take
-care of providing consistent TSC to the guest.
+We add a tsc=reliable commandline option to enable this.
+This enables legacy hardware without HPET, LAPIC, or ACPI timers
+to enter high-resolution timer mode.
 
+Along with that have extended this to be used in virtualization environement
+too. Now we also set this flag if the X86_FEATURE_TSC_RELIABLE bit is set.
+
+This is important since there is a wrap-around problem with the acpi_pm timer.
+The acpi_pm counter is just 24bits and this can overflow in ~4 seconds. With
+the NO_HZ kernels in virtualized environment, there can be situations when
+the guest is descheduled for longer duration, as a result we may miss the wrap
+of the acpi counter. When TSC is used as a clocksource and acpi_pm timer is
+being used as the watchdog clocksource this error in acpi_pm results in TSC
+being marked as unstable, and essentially results in time dropping in chunks
+of 4 seconds whenever this wrap is missed. Since the virtualized TSC is
+reliable on VMware, we should always use the TSCs clocksource on VMware, so
+we skip the verfication at runtime, by checking for the feature bit.
+
+Since we reset the flag for mgeode systems too, i have combined
+the mgeode case with the feature bit check.
+
+Signed-off-by: Jeff Hansen <jhansen@cardaccess-inc.com>
 Signed-off-by: Alok N Kataria <akataria@vmware.com>
 Signed-off-by: Dan Hecht <dhecht@vmware.com>
+Cc: Chris Snook <csnook@redhat.com>
 Cc: H. Peter Anvin <hpa@zytor.com>
 ---
 
- arch/x86/include/asm/cpufeature.h |    1 +
- arch/x86/include/asm/vmware.h     |    1 +
- arch/x86/kernel/cpu/hypervisor.c  |   11 ++++++++++-
- arch/x86/kernel/cpu/vmware.c      |   18 ++++++++++++++++++
- arch/x86/kernel/tsc_sync.c        |    8 +++++++-
- 5 files changed, 37 insertions(+), 2 deletions(-)
+ Documentation/kernel-parameters.txt |    7 +++++++
+ arch/x86/kernel/tsc.c               |   33 +++++++++++++++++++++------------
+ 2 files changed, 28 insertions(+), 12 deletions(-)
 
 
-diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
-index 78478f2..7f9fa2b 100644
---- a/arch/x86/include/asm/cpufeature.h
-+++ b/arch/x86/include/asm/cpufeature.h
-@@ -92,6 +92,7 @@
- #define X86_FEATURE_NOPL	(3*32+20) /* The NOPL (0F 1F) instructions */
- #define X86_FEATURE_AMDC1E	(3*32+21) /* AMD C1E detected */
- #define X86_FEATURE_XTOPOLOGY	(3*32+21) /* cpu topology enum extensions */
-+#define X86_FEATURE_TSC_RELIABLE (3*32+22) /* TSC is known to be reliable */
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index d2c115b..e42b9d9 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2278,6 +2278,13 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			Format:
+ 			<io>,<irq>,<dma>,<dma2>,<sb_io>,<sb_irq>,<sb_dma>,<mpu_io>,<mpu_irq>
  
- /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
- #define X86_FEATURE_XMM3	(4*32+ 0) /* "pni" SSE-3 */
-diff --git a/arch/x86/include/asm/vmware.h b/arch/x86/include/asm/vmware.h
-index 02dfea5..c11b7e1 100644
---- a/arch/x86/include/asm/vmware.h
-+++ b/arch/x86/include/asm/vmware.h
-@@ -22,5 +22,6 @@
++	tsc=		Disable clocksource-must-verify flag for TSC.
++			Format: <string>
++			[x86] reliable: mark tsc clocksource as reliable, this
++			disables clocksource verification at runtime.
++			Used to enable high-resolution timer mode on older
++			hardware, and in virtualized environment.
++
+ 	turbografx.map[2|3]=	[HW,JOY]
+ 			TurboGraFX parallel port interface
+ 			Format:
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 189741f..10413b4 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -32,6 +32,7 @@ static int tsc_unstable;
+    erroneous rdtsc usage on !cpu_has_tsc processors */
+ static int tsc_disabled = -1;
  
- extern unsigned long vmware_get_tsc_khz(void);
- extern int vmware_platform(void);
-+extern void vmware_set_feature_bits(struct cpuinfo_x86 *c);
++static int tsc_clocksource_reliable;
+ /*
+  * Scheduler clock - returns current time in nanosec units.
+  */
+@@ -99,6 +100,15 @@ int __init notsc_setup(char *str)
  
- #endif
-diff --git a/arch/x86/kernel/cpu/hypervisor.c b/arch/x86/kernel/cpu/hypervisor.c
-index 7bd5506..35ae2b7 100644
---- a/arch/x86/kernel/cpu/hypervisor.c
-+++ b/arch/x86/kernel/cpu/hypervisor.c
-@@ -41,8 +41,17 @@ unsigned long get_hypervisor_tsc_freq(void)
- 	return 0;
- }
+ __setup("notsc", notsc_setup);
  
-+static inline void __cpuinit
-+hypervisor_set_feature_bits(struct cpuinfo_x86 *c)
++static int __init tsc_setup(char *str)
 +{
-+	if (boot_cpu_data.x86_hyper_vendor == X86_HYPER_VENDOR_VMWARE) {
-+		vmware_set_feature_bits(c);
-+		return;
-+	}
++	if (!strcmp(str, "reliable"))
++		tsc_clocksource_reliable = 1;
++	return 1;
 +}
 +
- void __cpuinit init_hypervisor(struct cpuinfo_x86 *c)
- {
- 	detect_hypervisor_vendor(c);
-+	hypervisor_set_feature_bits(c);
- }
++__setup("tsc=", tsc_setup);
++
+ #define MAX_RETRIES     5
+ #define SMI_TRESHOLD    50000
+ 
+@@ -738,24 +748,21 @@ static struct dmi_system_id __initdata bad_tsc_dmi_table[] = {
+ 	{}
+ };
+ 
+-/*
+- * Geode_LX - the OLPC CPU has a possibly a very reliable TSC
+- */
++static void __init check_system_tsc_reliable(void)
++{
+ #ifdef CONFIG_MGEODE_LX
+-/* RTSC counts during suspend */
++	/* RTSC counts during suspend */
+ #define RTSC_SUSP 0x100
 -
-diff --git a/arch/x86/kernel/cpu/vmware.c b/arch/x86/kernel/cpu/vmware.c
-index 650de86..5539e59 100644
---- a/arch/x86/kernel/cpu/vmware.c
-+++ b/arch/x86/kernel/cpu/vmware.c
-@@ -85,3 +85,21 @@ unsigned long vmware_get_tsc_khz(void)
- 	BUG_ON(!vmware_platform());
- 	return __vmware_get_tsc_khz();
- }
-+
-+/*
-+ * VMware hypervisor takes care of exporting a reliable TSC to the guest.
-+ * Still, due to timing difference when running on virtual cpus, the TSC can
-+ * be marked as unstable in some cases. For example, the TSC sync check at
-+ * bootup can fail due to a marginal offset between vcpus' TSCs (though the
-+ * TSCs do not drift from each other).  Also, the ACPI PM timer clocksource
-+ * is not suitable as a watchdog when running on a hypervisor because the
-+ * kernel may miss a wrap of the counter if the vcpu is descheduled for a
-+ * long time. To skip these checks at runtime we set these capability bits,
-+ * so that the kernel could just trust the hypervisor with providing a
-+ * reliable virtual TSC that is suitable for timekeeping.
-+ */
-+void __cpuinit vmware_set_feature_bits(struct cpuinfo_x86 *c)
-+{
-+	set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
-+	set_cpu_cap(c, X86_FEATURE_TSC_RELIABLE);
+-static void __init check_geode_tsc_reliable(void)
+-{
+ 	unsigned long res_low, res_high;
+ 
+ 	rdmsr_safe(MSR_GEODE_BUSCONT_CONF0, &res_low, &res_high);
++	/* Geode_LX - the OLPC CPU has a possibly a very reliable TSC */
+ 	if (res_low & RTSC_SUSP)
+-		clocksource_tsc.flags &= ~CLOCK_SOURCE_MUST_VERIFY;
+-}
+-#else
+-static inline void check_geode_tsc_reliable(void) { }
++		tsc_clocksource_reliable = 1;
+ #endif
++	if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE))
++		tsc_clocksource_reliable = 1;
 +}
-diff --git a/arch/x86/kernel/tsc_sync.c b/arch/x86/kernel/tsc_sync.c
-index 9ffb01c..5977c40 100644
---- a/arch/x86/kernel/tsc_sync.c
-+++ b/arch/x86/kernel/tsc_sync.c
-@@ -108,6 +108,12 @@ void __cpuinit check_tsc_sync_source(int cpu)
- 	if (unsynchronized_tsc())
- 		return;
  
-+	if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE)) {
-+		printk(KERN_INFO
-+		       "Skipping synchronization checks as TSC is reliable.\n");
-+		return;
-+	}
-+
- 	printk(KERN_INFO "checking TSC synchronization [CPU#%d -> CPU#%d]:",
- 			  smp_processor_id(), cpu);
- 
-@@ -161,7 +167,7 @@ void __cpuinit check_tsc_sync_target(void)
+ /*
+  * Make an educated guess if the TSC is trustworthy and synchronized
+@@ -790,6 +797,8 @@ static void __init init_tsc_clocksource(void)
  {
- 	int cpus = 2;
+ 	clocksource_tsc.mult = clocksource_khz2mult(tsc_khz,
+ 			clocksource_tsc.shift);
++	if (tsc_clocksource_reliable)
++		clocksource_tsc.flags &= ~CLOCK_SOURCE_MUST_VERIFY;
+ 	/* lower the rating if we already know its unstable: */
+ 	if (check_tsc_unstable()) {
+ 		clocksource_tsc.rating = 0;
+@@ -850,7 +859,7 @@ void __init tsc_init(void)
+ 	if (unsynchronized_tsc())
+ 		mark_tsc_unstable("TSCs unsynchronized");
  
--	if (unsynchronized_tsc())
-+	if (unsynchronized_tsc() || boot_cpu_has(X86_FEATURE_TSC_RELIABLE))
- 		return;
+-	check_geode_tsc_reliable();
++	check_system_tsc_reliable();
+ 	init_tsc_clocksource();
+ }
  
- 	/*
 
 
