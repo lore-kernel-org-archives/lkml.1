@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbYJYVXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753127AbYJYVXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752827AbYJYVXU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 17:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbYJYVWw
+	id S1753127AbYJYVXs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 17:23:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYJYVXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 17:22:52 -0400
-Received: from kroah.org ([198.145.64.141]:52985 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751356AbYJYVWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 17:22:50 -0400
-Date: Sat, 25 Oct 2008 14:20:37 -0700
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next: left over things in linux-next after 2.6.28-c1
-Message-ID: <20081025212037.GB32027@kroah.com>
-References: <20081026005009.50dbbb33.sfr@canb.auug.org.au>
+	Sat, 25 Oct 2008 17:23:40 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:42796 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751496AbYJYVXj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Oct 2008 17:23:39 -0400
+Message-ID: <49038E40.2070300@zytor.com>
+Date: Sat, 25 Oct 2008 14:23:12 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081026005009.50dbbb33.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Robert Moss <robert.von.moss@gmail.com>
+CC: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       linux-kernel@vger.kernel.org, alistair@devzero.co.uk
+Subject: Re: Framebuffer issues in 2.6.26 with uvesafb and vesafb. Linux is
+ about choice!
+References: <6ffd69180810230054s3b6aff5y880a898c3fc66a37@mail.gmail.com>	 <20081023080459.GC5073@const.bordeaux.inria.fr>	 <6ffd69180810230421v1508664bgc6e454cde792154f@mail.gmail.com>	 <20081024092418.GA10246@const.bordeaux.inria.fr> <6ffd69180810251322n350b6f6dqf496d7e5972165f5@mail.gmail.com>
+In-Reply-To: <6ffd69180810251322n350b6f6dqf496d7e5972165f5@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 26, 2008 at 12:50:09AM +1100, Stephen Rothwell wrote:
-> Hi all,
+Robert Moss wrote:
+> ok, this morning, I turned on my computer, and it gave me the error
+> message again:
 > 
-> The following is an approximate list of commits left in linux-next
-> relative to 2.6.28-rc1.  Some things here may have been included in
-> Linus' tree in a slightly different form.  The kvm tree is excluded from
-> this list because the bits of it submitted to Linus are often different
-> to what is in linux-next (my scipt says that it has ~1400 outstanding
-> commits).
+> Undefined video mode number: 317
 
-Nice report, thanks for doing this.
+Your VESA BIOS seems to have some serious braindamage (the fact that the 
+modes don't list at all is evidence of that), but finding out what can 
+be done to help it would be useful.
 
-> driver-core.current
-> 
-> 	Andi Kleen (1):
-> 	      sysfs: Fix return values for sysdev_store_{ulong,int}
-> 
-> 	Greg Kroah-Hartman (1):
-> 	      Document kernel taint flags properly
-> 
-> 	Qinghuang Feng (1):
-> 	      driver core: drivers/base/sys.c: update comments
+Again, a git bisect between v2.6.24 and v2.6.26 would be best:
 
-Yes, all of these will be sent to Linus soon.
+git clone \
+     git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+cd linux-2.6.git
+git bisect start
+git bisect bad v2.6.26
+git bisect good v2.6.24
+<build and test kernel>
+git bisect <good,bad>
+<keep going until one commit shows up>
 
-> usb
-> 
-> 	Denis Joseph Barrow (2):
-> 	      HSO: fix hso_serial_close refcounting
-> 	      HSO: put linefeeds on printk's in hso.c
+If a commit doesn't build or otherwise exhibit a different problem 
+(meaning "no info available"), use "git bisect skip".
 
-I'm holding on to these so they don't get lost, but Denis is reworking
-them at the moment to make them fix the problems correctly.
-
-> 	Greg Kroah-Hartman (2):
-> 	      USB: remove warn() macro from usb.h
-> 	      USB: remove info() macro from usb.h
-
-I had hopes for these to be merged, but don't think they will be due to
-some remaining usages in the media tree.  I'll wait until 2.6.29 to push
-them in.
-
-> xfs
-
-<snip>
-
-wow, did XFS ever merge with Linus?  That looks like a lot of
-outstanding patches :(
-
-thanks,
-
-greg k-h
+	-hpa
