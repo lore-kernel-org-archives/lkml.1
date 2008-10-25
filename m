@@ -1,69 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbYJYH60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbYJYIGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752502AbYJYH60 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 03:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbYJYH6R
+	id S1753241AbYJYIGG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 04:06:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbYJYIFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 03:58:17 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:56362 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751734AbYJYH6R (ORCPT
+	Sat, 25 Oct 2008 04:05:48 -0400
+Received: from ti-out-0910.google.com ([209.85.142.188]:3533 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752291AbYJYIFo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 03:58:17 -0400
-Date: Sat, 25 Oct 2008 09:59:25 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Matt Mackall <mpm@selenic.com>
-Subject: Re: [pull request] getting rid of __cpuinit
-Message-ID: <20081025075925.GA22805@uranus.ravnborg.org>
-References: <20081024142056.6a2d082a@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 25 Oct 2008 04:05:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=UgeZz88SWgJJpN6j1+bMMt2iXHteHCx3KPDlb8CmRcRkCw/UK0CwnSOiQ8vYooag1W
+         HK2oYOjVVa+jivsDVVfn9eW+WSN1+OGVYiJ7B5anhlToFieWxqsnafWN96WOKNJZlGOa
+         Uh1anfrJ2PXd6v1+EkSH3hoLFilyzHvfK1vqY=
+Message-ID: <2891419e0810250105j3e210df0pa3ba9665bd35313a@mail.gmail.com>
+Date: Sat, 25 Oct 2008 17:05:40 +0900
+From: "Dong-Jae Kang" <baramsori72@gmail.com>
+To: "Matthew Garrett" <mjg@redhat.com>
+Subject: Re: [Question] power management related with cgroup based resource management
+Cc: balbir@linux.vnet.ibm.com, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
+       corsetproject@googlegroups.com,
+       "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
+In-Reply-To: <20081024232503.GA20140@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081024142056.6a2d082a@infradead.org>
-User-Agent: Mutt/1.4.2.1i
+References: <2891419e0810201954q57087fc8ufcaa0e42f3ca99e2@mail.gmail.com>
+	 <4901B5C2.9070108@linux.vnet.ibm.com>
+	 <2891419e0810240524u746b731cjcbd127fa4204bd4d@mail.gmail.com>
+	 <20081024232503.GA20140@srcf.ucam.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 24, 2008 at 02:20:56PM -0700, Arjan van de Ven wrote:
-> Hi Linus,
-> 
-> this is one of those pull requests for which the best timing is likely at the 
-> end of the merge window due to touching a large number of files in a trivial way.
-> In fact, 6 of the 8 patches were done via regexps:
-> 
-> find -name "*.c" | xargs sed -i "s/^__cpuinit //g"
-> find arch/ -name "*.h" | xargs sed -i "s/ __cpuinit//g"
-> find -name "*.c" | xargs sed -i "s/ __cpuinit$//g"
-> find -name "*.c" | xargs sed -i "s/ __cpuinitdata//g"
-> find -name "*.c" | xargs sed -i "s/ __cpuexit / /g"
-> find -name "*.c" | xargs sed -i "s/ __cpuinit / /g"
-> 
-> (I suppose asking for a "git sed" is too much to do...)
-> 
-> The point of this series is to get rid of __cpuinit. (I'll be working on other __XXXXinit after this)
-> __cpuinit is a NOOP for CONFIG_HOTPLUG_CPU, which on for just about anybody in practice 
-> (in fact I had to disable 6 common options to even be ABLE to turn it off for size testing) 
-> and all distros also ship with it enabled.
-> 
-> Yet it's a rather error prone construct since the rules of this sort of __XXXXinit thing are
-> rather complex and convoluted.. better to just get rid of it entirely.
-> 
-> As for the code size effect, after I spent a bunch of time cursing and trying to find out
-> how to disable HOTPLUG_CPU, I managed to get an x86-64 build that actually shows how much space 
-> we ACTUALLY save with all the __cpuinit's in the tree... it's less than 2Kb. That is, if you manage
-> to turn it actually off.
-> 
->    text	   data	    bss	    dec	    hex	filename
-> 4618096	1358684	 848588	6825368	 682598	vmlinux.before
-> 4619965	1356908	 848716	6825589  682675	vmlinux.after
+Thank you for your positive opinion about my question
 
-The interesting number here is the size of the cpuinit/cpuexit sections.
-cpuinit sections are discarded after init and cpuexit sections are discarded
-if you do not use modules.
+I also hope cgroup framework has good point related with power management
+I think I need more re-consideration for it. ^^
 
-Can you share these numbers with us?
+How do you think about cgroup based management of new HW devices, for
+example, SSD, NVRAM and so on.
+Is there any requirement for it ?
+and is there any required work for it?
+I didn't seriously consider  about that until now.^^ so I don't have cool idea
+but, I think it is worthy to find new domain to be applied by existing
+technology
 
-	Sam
+thank you.
+
+Best Regards,
+Dong-Jae Kang
+
+2008/10/25 Matthew Garrett <mjg@redhat.com>:
+> On Fri, Oct 24, 2008 at 09:24:21PM +0900, Dong-Jae Kang wrote:
+>
+>> I am interested in power management in server side.
+>> and I just wonder this question, "Is there any related point between
+>> cgroup framework and power management?"
+>
+> Not currently, though it would certainly be possible to use cgroups as a
+> mechanism for providing application-specific power management.
+>
+> --
+> Matthew Garrett | mjg59@srcf.ucam.org
+>
+
+
+
+-- 
+-------------------------------------------------------------------------------------------------
+   DONG-JAE, KANG
+   Senior Member of Engineering Staff
+   Internet Platform Research Dept, S/W Content Research Lab
+   Electronics and Telecommunications Research Institute(ETRI)
+   138 Gajeongno, Yuseong-gu, Daejeon, 305-700 KOREA
+   Phone : 82-42-860-1561 Fax : 82-42-860-6699
+   Mobile : 82-10-9919-2353 E-mail : djkang@etri.re.kr (MSN)
+-------------------------------------------------------------------------------------------------
