@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbYJYO2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbYJYOgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753402AbYJYO2P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 10:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbYJYO17
+	id S1752702AbYJYOgS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 10:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYJYOgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 10:27:59 -0400
-Received: from h4.dl5rb.org.uk ([81.2.74.4]:44511 "EHLO
-	ditditdahdahdah-dahdahdahditdit.dl5rb.org.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751915AbYJYO16 (ORCPT
+	Sat, 25 Oct 2008 10:36:06 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:59446 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751374AbYJYOgF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 10:27:58 -0400
-Date: Sat, 25 Oct 2008 15:27:44 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [MIPS] IP22: Small cleanups
-Message-ID: <20081025142740.GB1827@linux-mips.org>
-References: <1224888417-26494-1-git-send-email-dmitri.vorobiev@movial.fi>
-MIME-Version: 1.0
+	Sat, 25 Oct 2008 10:36:05 -0400
+Date: Sat, 25 Oct 2008 16:37:15 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next: left over things in linux-next after 2.6.28-c1
+Message-ID: <20081025143715.GB30900@uranus.ravnborg.org>
+References: <20081026005009.50dbbb33.sfr@canb.auug.org.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1224888417-26494-1-git-send-email-dmitri.vorobiev@movial.fi>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081026005009.50dbbb33.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 25, 2008 at 01:46:56AM +0300, Dmitri Vorobiev wrote:
+> tests
+> 
+> 	Ananth N Mavinakayanahalli (7):
+> 	      Add tests/ directory
+> 	      Move locking selftests to tests/
+> 	      Move rcutorture to tests/
+> 	      Move rtmutex tester to tests/
+> 	      Move lkdtm to tests/
+> 	      Move kprobes smoke tests to tests/
+> 	      Move backtrace selftests to tests/
 
-> diff --git a/arch/mips/sgi-ip22/ip22-int.c b/arch/mips/sgi-ip22/ip22-int.c
-> index f6d9bf4..5b9b4f3 100644
-> --- a/arch/mips/sgi-ip22/ip22-int.c
-> +++ b/arch/mips/sgi-ip22/ip22-int.c
-> @@ -16,6 +16,7 @@
->  #include <linux/sched.h>
->  #include <linux/interrupt.h>
->  #include <linux/irq.h>
-> +#include <linux/time.h>
->  
->  #include <asm/mipsregs.h>
->  #include <asm/addrspace.h>
-> @@ -23,7 +24,6 @@
->  #include <asm/sgi/ioc.h>
->  #include <asm/sgi/hpc3.h>
->  #include <asm/sgi/ip22.h>
-> -#include <asm/time.h>
+I have almost given up on this.
+Three merge attemps failed for different reasons,
+and I will not even have time for my maintainership
+duties the next months.
 
-<linux/time.h> does not include <asm/time.h>.  This sort of stuff happens
-if you believe checkpatch.pl.  You only got away because the header isn't
-needed anyway.  I'll apply the patch with this bit dropped.
+Anyone that can bring it forward?
 
-  Ralf
+	Sam
 
-PS: Suspicion breeds confidence.  At least in case of checkpatch ;-)
