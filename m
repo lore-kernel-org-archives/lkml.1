@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753218AbYJYLNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbYJYLQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753218AbYJYLNg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 07:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbYJYLN2
+	id S1753507AbYJYLQz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 07:16:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYJYLQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 07:13:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50198 "EHLO ogre.sisk.pl"
+	Sat, 25 Oct 2008 07:16:47 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50230 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751427AbYJYLN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 07:13:28 -0400
+	id S1751525AbYJYLQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Oct 2008 07:16:46 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Yinghai Lu" <yinghai@kernel.org>
-Subject: Re: oops while booting with recent git kernel
-Date: Sat, 25 Oct 2008 13:18:15 +0200
+To: Frederik Himpe <fhimpe@telenet.be>
+Subject: Re: 2.6.27-rc8-git8: oops in process hald-addon-dell-backlight (intel iommu related?)
+Date: Sat, 25 Oct 2008 13:21:33 +0200
 User-Agent: KMail/1.9.9
-Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Arkadiusz Miskiewicz" <a.miskiewicz@gmail.com>,
-       linux-kernel@vger.kernel.org
-References: <200810121227.09114.a.miskiewicz@gmail.com> <200810250029.35880.rjw@sisk.pl> <86802c440810241719l3e045a8fl33fd5f348857324e@mail.gmail.com>
-In-Reply-To: <86802c440810241719l3e045a8fl33fd5f348857324e@mail.gmail.com>
+Cc: linux-kernel@vger.kernel.org
+References: <pan.2008.10.08.20.15.37@telenet.be> <200810242349.02738.rjw@sisk.pl> <1224890754.13640.36.camel@Anastacia.local>
+In-Reply-To: <1224890754.13640.36.camel@Anastacia.local>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810251318.15743.rjw@sisk.pl>
+Message-Id: <200810251321.33709.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 25 of October 2008, Yinghai Lu wrote:
-> On Fri, Oct 24, 2008 at 3:29 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Tuesday, 14 of October 2008, Vegard Nossum wrote:
-> >> On Sun, Oct 12, 2008 at 12:27 PM, Arkadiusz Miskiewicz
-> >> <a.miskiewicz@gmail.com> wrote:
-> >> >
-> >> > Not sure if it's worth to report this before all initial merges happen but
-> >> > here it is anyway.
-> >> >
-> >> > git kernel with latest commit:
-> >> > commit fd048088306656824958e7783ffcee27e241b361
-> >> > Date:   Sat Oct 11 13:23:48 2008 -0700
-> >> >
-> >> > booted on thinkpad z60m results with such oops:
-> >> > http://carme.pld-linux.org/~arekm/img_2325_small.png
-> >> >
-> >> > Config used:
-> >> > http://carme.pld-linux.org/~arekm/img_2325_small.config
-> >>
-> >> Thanks for the report.
-> >>
-> >> It seems to be an instance of this (known bad) code:
-> >> http://lkml.org/lkml/2008/9/4/386
-> >>
-> >> So hopefully it will be fixed soon.
-> >
-> > Has it been fixed, actually?
+On Saturday, 25 of October 2008, Frederik Himpe wrote:
+> On vr, 2008-10-24 at 23:49 +0200, Rafael J. Wysocki wrote:
+> > On Wednesday, 8 of October 2008, Frederik Himpe wrote:
+> > > On Wed, 08 Oct 2008 20:15:37 +0000, Frederik Himpe wrote:
+> > > 
+> > > > On my Dell Latitude E6400 system with Intel chipset and graphics, I get
+> > > > this oops in my 2.6.27-rc8-git8 based kernel, which probably happens
+> > > > when hald-addon-dell-backlight is started.
+> > > > 
+> > > > Complete dmesg and lspci info:
+> > > > https://qa.mandriva.com/show_bug.cgi?id=44711
+> > > 
+> > > Booting with intel_iommu=off seems to fix this issue, and seems to make my 
+> > > e1000e based network card stop from giving "transmit timed out" errors 
+> > > after which it stopped working.
+> > 
+> > Is it necessary to boot 2.6.27 final on this box with intel_iommu=off, and if
+> > so, is it still necessary in mainline?
 > 
-> should be fixed by in upstream.. already
+> I just tested stock 2.6.27.3 and this machine (Dell Latitude E6400) is
+> totally unusable without intel_iommu=off if Intel VT is enabled in the
+> BIOS. During the boot process, stack traces start scrolling over the
+> screen. In the end, it goes on starting X, and from that moment, the
+> machine locks up completely. Booting in runlevel 3, I see lots of stack
+> traces (too much to even be able to read them).
+> 
+> In the past (with Mandriva's 2.6.27-rc) it would at least succeed in
+> booting (with one or a few backtraces), but even then the e1000e network
+> card would timeout a few seconds after when starting to transfer some
+> data, after which the network was totally unusable until a reboot. A
+> reader of my blog confirmed having the same problem on this same type of
+> laptop and also solving it by using intel_iommu=off.
+> 
+> I entered some more information here:
+> http://bugzilla.kernel.org/show_bug.cgi?id=11821
 
 OK, thanks.
+
+I won't consider this as a regression, then.
+
+Rafael
