@@ -1,85 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbYJYKHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752471AbYJYKjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753792AbYJYKHq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 06:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbYJYKHf
+	id S1752471AbYJYKjR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 06:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbYJYKjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 06:07:35 -0400
-Received: from mx.sz.bfs.de ([194.94.69.70]:59840 "EHLO mx.sz.bfs.de"
+	Sat, 25 Oct 2008 06:39:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44398 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751556AbYJYKHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 06:07:34 -0400
-X-Greylist: delayed 1657 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Oct 2008 06:07:33 EDT
-Message-ID: <4902E95E.2040307@bfs.de>
-Date: Sat, 25 Oct 2008 11:39:42 +0200
-From: walter harms <wharms@bfs.de>
-Reply-To: wharms@bfs.de
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	id S1751011AbYJYKjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Oct 2008 06:39:06 -0400
+Message-ID: <4902F710.3020100@redhat.com>
+Date: Sat, 25 Oct 2008 06:38:08 -0400
+From: Chris Snook <csnook@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Joe Damato <ice799@gmail.com>
-Cc: linux-x86_64@vger.kernel.org, linux-newbie@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/12] x86: Cleanup idt, gdt/ldt/tss structs
-References: <> <1224904532-9586-1-git-send-email-ice799@gmail.com>
-In-Reply-To: <1224904532-9586-1-git-send-email-ice799@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+To: Matt Mackall <mpm@selenic.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linuxfoundation.org>
+Subject: Re: Bloatwatch 2.6.28-rc1: last_sysfs_file
+References: <1224881514.3248.46.camel@calx> <1224882923.3248.51.camel@calx>
+In-Reply-To: <1224882923.3248.51.camel@calx>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi joe,
-i am not a maintainer here so my comments are my private commonts so ..
-1. this is a lot of work and thx for it
-
-patch 2/12:
-personaly i am not a fan of typedefs especially like this one:
-typedef struct gate_struct gate_desc;
-they make people think they move a int or something around that is a fat
-struct in real. do you really need a typedef ? or can you live with "struct gate_struct" instead ?
-
-(see: also http://www.linuxjournal.com/article/5780 section: typedef Is Evil )
-
-patch 6/12 (same goes for others)
-is is possible to be more verbose ? what does l/d/g mean ? maybe an enum ?
-+	desc->avl    = flags & 0x1;
-+	desc->l      = (flags & 0x2) >> 1;
-+	desc->d      = (flags & 0x4) >> 2;
-+	desc->g      = (flags & 0x8) >> 3;
-
-i noticed you are accessing hi/lo often. you can use a macro like:
-
-from: highuid.h
-#define low_16_bits(x)  ((x) & 0xFFFF)
-#define high_16_bits(x) (((x) & 0xFFFF0000) >> 16)
-
-or use a union {
-	int foo;
-	char bar[4];
-	}
-
-
-
-keep on going ...
-	walter
-
-
-Joe Damato schrieb:
-> Hi -
+Matt Mackall wrote:
+> On Fri, 2008-10-24 at 15:52 -0500, Matt Mackall wrote:
+>> 2.6.28-rc1 adds 4k for last_sysfs_file debug tracking. That's one hell
+>> of a long sysfs path.
+>>
+>> http://www.selenic.com/bloatwatch/?cmd=compare;v1=2.6.27;v2=2.6.28-rc1;part=/built-in/fs/sysfs
 > 
-> This is my first submission to the kernel, so (beware!) please let me know if I can make any improvements on these patches.
-> 
-> I attempted to clean up the x86 structs for 32bit cpus that store IDT/LDT/GDT data by removing the fields labeled "a" and "b" in favor of more descriptive field names. I added some macros and went through the kernel cleaning up the various places where "a" and "b" were used.
-> 
-> I tried building my kernel with my .config and then also did a make allyesconfig build to help ensure I found everything that was using the old structure names. I also tried a few grep patterns. Hopefully I got everyone out.
+> ..especially given that printk is limited to 1k at a time.
 > 
 > 
-> Thanks,
-> Joe Damato
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> sysfs: shrink last_sysfs_file to a reasonable size
+> 
+> sysfs was reserving 4k to store filenames for debug despite printk being
+> limited to 1k. Shrink this to something more reasonable.
+> 
+> Signed-off-by: Matt Mackall <mpm@selenic.com>
+> 
+> diff -r ac8c82ff3be7 fs/sysfs/file.c
+> --- a/fs/sysfs/file.c	Fri Oct 24 13:13:04 2008 -0500
+> +++ b/fs/sysfs/file.c	Fri Oct 24 16:11:53 2008 -0500
+> @@ -25,7 +25,7 @@
+>  #include "sysfs.h"
+>  
+>  /* used in crash dumps to help with debugging */
+> -static char last_sysfs_file[PATH_MAX];
+> +static char last_sysfs_file[200]; /* allow for disgustingly long paths */
+>  void sysfs_printk_last_file(void)
+>  {
+>  	printk(KERN_EMERG "last sysfs file: %s\n", last_sysfs_file);
 > 
 > 
-> 
+
+Please don't use magic numbers.  Use a symbolic constant, and modify printk.c to 
+use the same.  If we're going to impose limits lower than the maximum, let's at 
+least be consistent about it.
+
+-- Chris
