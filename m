@@ -1,80 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752519AbYJYCFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751256AbYJYCJM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752519AbYJYCFr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 22:05:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYJYCFj
+	id S1751256AbYJYCJM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 22:09:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbYJYCI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 22:05:39 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:43961 "EHLO smtps.tip.net.au"
+	Fri, 24 Oct 2008 22:08:57 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:44297 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751256AbYJYCFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 22:05:38 -0400
-Date: Sat, 25 Oct 2008 13:05:31 +1100
+	id S1751717AbYJYCI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Oct 2008 22:08:57 -0400
+Date: Sat, 25 Oct 2008 13:08:51 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: David Howells <dhowells@redhat.com>, lkml <linux-kernel@vger.kernel.org>,
+To: David Howells <dhowells@redhat.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
        jmorris@us.ibm.com
 Subject: Re: [PATCH] User namespaces: set of cleanups (v2)
-Message-Id: <20081025130531.ca063206.sfr@canb.auug.org.au>
-In-Reply-To: <20081024174838.GA24466@us.ibm.com>
+Message-Id: <20081025130851.379cfac0.sfr@canb.auug.org.au>
+In-Reply-To: <11290.1224873841@redhat.com>
 References: <20081024174838.GA24466@us.ibm.com>
+	<11290.1224873841@redhat.com>
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
  micalg="PGP-SHA1";
- boundary="Signature=_Sat__25_Oct_2008_13_05_31_+1100_mrE8gbUqdLCt/Xc/"
+ boundary="Signature=_Sat__25_Oct_2008_13_08_51_+1100_7jjf3vG=YXE+2exR"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__25_Oct_2008_13_05_31_+1100_mrE8gbUqdLCt/Xc/
+--Signature=_Sat__25_Oct_2008_13_08_51_+1100_7jjf3vG=YXE+2exR
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Serge,
+Hi David,
 
-On Fri, 24 Oct 2008 12:48:38 -0500 "Serge E. Hallyn" <serue@us.ibm.com> wro=
-te:
+On Fri, 24 Oct 2008 19:44:01 +0100 David Howells <dhowells@redhat.com> wrot=
+e:
 >
-> would you mind applying the patch below behind
-> git://git.kernel.org/pub/scm/linux/kernel/git/dhowells/cred-2.6.git#creds=
--v3?
+> Serge E. Hallyn <serue@us.ibm.com> wrote:
 >=20
-> Assuming David has no objections?
+> > I've just tested with David's plain creds-v3 tree
 >=20
-> I've just tested with David's plain creds-v3 tree and had no problems.
-> (compiled with CONFIG_USER_NS=3Dy|n and CONFIG_KEYS=3Dy|n, boot+ltp with
-> both =3Dy)
->=20
-> Or would it fit your model better if I found a place to keep a quilt
-> patchset or git tree?
+> Note the creds-v4 branch is now current.  Is it worth me replacing that w=
+ith a
+> tree that just has a master branch to simplify things?
 
-Better if you can set up a git tree (or quilt series) somewhere as I
-intend to only carry fixup patches myself in linux-next (so far).  Also
-that means when you update your patches, I will just fetch them
-automatically.
+It would be good if you could have a "next" (or "creds-next" or
+something) branch in your tree and I can fetch that (that way I don't
+have to keep updating my configs).  It is OK if thet branch rebases and
+may just be an alias for another branch (or a subset if you have
+experimental stuff in there.  Remember "posted, reviewed, tested before
+it is in linux-next".
 
-If this stuff depends on David's work, then I need to know that
-explicitly so I can do ordering.  If it depends closely (i.e. changes in
-Davids tree need to be reflected in yours) then you and David need to
-come to some arrangement (maybe David could host your tree as a branch of
-his (managing conflicts/updates).
+Thanks.
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
---Signature=_Sat__25_Oct_2008_13_05_31_+1100_mrE8gbUqdLCt/Xc/
+--Signature=_Sat__25_Oct_2008_13_08_51_+1100_7jjf3vG=YXE+2exR
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkkCfusACgkQjjKRsyhoI8yqeQCeLJ3srBifA68QmPMHIyJoe8AY
-jK4AnihgYUZHeKAQBmaxhMXHLg09VX8s
-=EJOG
+iEYEARECAAYFAkkCf7MACgkQjjKRsyhoI8zIrACgoYPSu0buce5XGuKpM1o7xgww
+7+8An0oji/ivHVXocA9gz4CDVYcZVzLU
+=kTNv
 -----END PGP SIGNATURE-----
 
---Signature=_Sat__25_Oct_2008_13_05_31_+1100_mrE8gbUqdLCt/Xc/--
+--Signature=_Sat__25_Oct_2008_13_08_51_+1100_7jjf3vG=YXE+2exR--
