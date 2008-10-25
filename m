@@ -1,170 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753210AbYJYAXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752326AbYJYAqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753210AbYJYAXG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Oct 2008 20:23:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757643AbYJYAWT
+	id S1752326AbYJYAqT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Oct 2008 20:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbYJYAqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Oct 2008 20:22:19 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:43535 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757741AbYJYAWD (ORCPT
+	Fri, 24 Oct 2008 20:46:09 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:28316 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832AbYJYAqH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Oct 2008 20:22:03 -0400
-Subject: [PATCH 4/4] Skip verification by the watchdog for TSC clocksource.
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>, Jeff Hansen <x@jeffhansen.com>,
-       Chris Snook <csnook@redhat.com>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Fri, 24 Oct 2008 17:22:01 -0700
-Message-Id: <1224894121.28224.75.camel@alok-dev1>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+	Fri, 24 Oct 2008 20:46:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=v46a979r+tJ0+fgICdZV/o5GOLTyiR1ycfYpjkVDi3tWgLTXe4UCDnsm1t5t+stpfr
+         lYAw6MTPntJ4ET8HkG6g4AC/tZV1lrZh9iCinZpkWQXrYkCI3sIpfje/NqC4JfRFW9SX
+         30RBrSOjEsOQGYsAmsWFwJK0d9OCoLQny9Lkk=
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: Bloatwatch 2.6.28-rc1: i8042 DMI lookup tables
+Date: Fri, 24 Oct 2008 20:46:02 -0400
+User-Agent: KMail/1.9.9
+Cc: Jiri Kosina <jkosina@suse.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@redhat.com>
+References: <1224879959.3248.32.camel@calx> <alpine.LNX.1.10.0810250001530.27479@jikos.suse.cz> <1224890002.3248.71.camel@calx>
+In-Reply-To: <1224890002.3248.71.camel@calx>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810242046.02743.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[X86] Skip verification by the watchdog for TSC clocksource.
+On Friday 24 October 2008, Matt Mackall wrote:
+> On Sat, 2008-10-25 at 00:15 +0200, Jiri Kosina wrote:
+> > On Fri, 24 Oct 2008, Matt Mackall wrote:
+> > 
+> > > We've added 12k of new initdata to allnoconfig builds for i8042 DMI
+> > > lookup tables:
+> > > 
+> > > http://www.selenic.com/bloatwatch/?cmd=compare;v1=2.6.27;v2=2.6.28-rc1;part=/built-in/drivers
+> > > 
+> > > It looks like each table entry is > 320 bytes as we reserve four 80-byte
+> > > slots in each for DMI match strings. 
+> > 
+> > Umm, and what is the actual problem with that, really?
+> 
+> The actual problem is that if the kernel grows by 12k every time a
+> developer says "what's the big deal?" the kernel will become very large
+> indeed.
+> 
+> > OK, we can remove it from .init, but then it will be rotting in memory 
+> > forever, which is quite sub-optimal, when this kind of DMI information is 
+> > needed only during initialization.
+> 
+> I wasn't complaining that they were in init, but rather that they were
+> 12k. For something like 37 entries. The entry size is ridiculous and
+> looks to have grown by a factor of 10 since 2.6.27. What, as they say,
+> is up with that?
+> 
+> It looks like David Woodhouse is to blame:
+> 
+> commit d945b697d0eea5a811ec299c5f1a25889bb0242b
+> Automatic MODULE_ALIAS() for DMI match tables.
+> 
+> This is probably also responsible for most of the growth in x86 I
+> mentioned elsewhere, so it's about 25-30k damage in total. David?
+> 
 
-From: Alok N Kataria <akataria@vmware.com>
+I think that the net effect of this change is positive. While it is
+true that the size of the kernel image grew we do discard more memory
+(most of DMI tables are marked __initdata) than we were able to do
+before DMI strings were embedded into dmi_strmatch so the footprint of
+the running kernel now should be smaller. Having said this I wonder if
+we could reduce the length of these strings form 79 to let's say 39. 
 
-This is achieved by resetting the CLOCKSOURCE_MUST_VERIFY flag.
+I would like to get rid of .ident strings in cases when drivers don't
+use them for anything, this should free some more memory.
 
-We add a tsc=reliable commandline option to enable this.
-This enables legacy hardware without HPET, LAPIC, or ACPI timers
-to enter high-resolution timer mode.
-
-Along with that have extended this to be used in virtualization environement
-too. Now we also set this flag if the X86_FEATURE_TSC_RELIABLE bit is set.
-
-This is important since there is a wrap-around problem with the acpi_pm timer.
-The acpi_pm counter is just 24bits and this can overflow in ~4 seconds. With
-the NO_HZ kernels in virtualized environment, there can be situations when
-the guest is descheduled for longer duration, as a result we may miss the wrap
-of the acpi counter. When TSC is used as a clocksource and acpi_pm timer is
-being used as the watchdog clocksource this error in acpi_pm results in TSC
-being marked as unstable, and essentially results in time dropping in chunks
-of 4 seconds whenever this wrap is missed. Since the virtualized TSC is
-reliable on VMware, we should always use the TSCs clocksource on VMware, so
-we skip the verfication at runtime, by checking for the feature bit.
-
-Since we reset the flag for mgeode systems too, i have combined
-the mgeode case with the feature bit check.
-
-Signed-off-by: Jeff Hansen <jhansen@cardaccess-inc.com>
-Signed-off-by: Alok N Kataria <akataria@vmware.com>
-Signed-off-by: Dan Hecht <dhecht@vmware.com>
-Cc: Chris Snook <csnook@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
----
-
- Documentation/kernel-parameters.txt |    7 +++++++
- arch/x86/kernel/tsc.c               |   33 +++++++++++++++++++++------------
- 2 files changed, 28 insertions(+), 12 deletions(-)
-
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index d2c115b..e42b9d9 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2278,6 +2278,13 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Format:
- 			<io>,<irq>,<dma>,<dma2>,<sb_io>,<sb_irq>,<sb_dma>,<mpu_io>,<mpu_irq>
- 
-+	tsc=		Disable clocksource-must-verify flag for TSC.
-+			Format: <string>
-+			[x86] reliable: mark tsc clocksource as reliable, this
-+			disables clocksource verification at runtime.
-+			Used to enable high-resolution timer mode on older
-+			hardware, and in virtualized environment.
-+
- 	turbografx.map[2|3]=	[HW,JOY]
- 			TurboGraFX parallel port interface
- 			Format:
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 189741f..10413b4 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -32,6 +32,7 @@ static int tsc_unstable;
-    erroneous rdtsc usage on !cpu_has_tsc processors */
- static int tsc_disabled = -1;
- 
-+static int tsc_clocksource_reliable;
- /*
-  * Scheduler clock - returns current time in nanosec units.
-  */
-@@ -99,6 +100,15 @@ int __init notsc_setup(char *str)
- 
- __setup("notsc", notsc_setup);
- 
-+static int __init tsc_setup(char *str)
-+{
-+	if (!strcmp(str, "reliable"))
-+		tsc_clocksource_reliable = 1;
-+	return 1;
-+}
-+
-+__setup("tsc=", tsc_setup);
-+
- #define MAX_RETRIES     5
- #define SMI_TRESHOLD    50000
- 
-@@ -738,24 +748,21 @@ static struct dmi_system_id __initdata bad_tsc_dmi_table[] = {
- 	{}
- };
- 
--/*
-- * Geode_LX - the OLPC CPU has a possibly a very reliable TSC
-- */
-+static void __init check_system_tsc_reliable(void)
-+{
- #ifdef CONFIG_MGEODE_LX
--/* RTSC counts during suspend */
-+	/* RTSC counts during suspend */
- #define RTSC_SUSP 0x100
--
--static void __init check_geode_tsc_reliable(void)
--{
- 	unsigned long res_low, res_high;
- 
- 	rdmsr_safe(MSR_GEODE_BUSCONT_CONF0, &res_low, &res_high);
-+	/* Geode_LX - the OLPC CPU has a possibly a very reliable TSC */
- 	if (res_low & RTSC_SUSP)
--		clocksource_tsc.flags &= ~CLOCK_SOURCE_MUST_VERIFY;
--}
--#else
--static inline void check_geode_tsc_reliable(void) { }
-+		tsc_clocksource_reliable = 1;
- #endif
-+	if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE))
-+		tsc_clocksource_reliable = 1;
-+}
- 
- /*
-  * Make an educated guess if the TSC is trustworthy and synchronized
-@@ -790,6 +797,8 @@ static void __init init_tsc_clocksource(void)
- {
- 	clocksource_tsc.mult = clocksource_khz2mult(tsc_khz,
- 			clocksource_tsc.shift);
-+	if (tsc_clocksource_reliable)
-+		clocksource_tsc.flags &= ~CLOCK_SOURCE_MUST_VERIFY;
- 	/* lower the rating if we already know its unstable: */
- 	if (check_tsc_unstable()) {
- 		clocksource_tsc.rating = 0;
-@@ -850,7 +859,7 @@ void __init tsc_init(void)
- 	if (unsynchronized_tsc())
- 		mark_tsc_unstable("TSCs unsynchronized");
- 
--	check_geode_tsc_reliable();
-+	check_system_tsc_reliable();
- 	init_tsc_clocksource();
- }
- 
-
-
+-- 
+Dmitry
