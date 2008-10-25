@@ -1,93 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752486AbYJYIYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbYJYI1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752486AbYJYIYk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 04:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbYJYIYZ
+	id S1753528AbYJYI1k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 04:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbYJYI1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 04:24:25 -0400
-Received: from nelson.telenet-ops.be ([195.130.133.66]:58939 "EHLO
-	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751878AbYJYIYX (ORCPT
+	Sat, 25 Oct 2008 04:27:31 -0400
+Received: from el-out-1112.google.com ([209.85.162.180]:38602 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbYJYI1a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 04:24:23 -0400
-Date: Sat, 25 Oct 2008 10:24:11 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Richard Henderson <rth@twiddle.net>, Greg Ungerer <gerg@uclinux.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] ftrace: handle archs that do not support irqs_disabled_flags
-In-Reply-To: <alpine.DEB.1.10.0810240937130.3882@gandalf.stny.rr.com>
-Message-ID: <Pine.LNX.4.64.0810251018370.15317@anakin>
-References: <20081023213637.eff9b414.sfr@canb.auug.org.au>
- <20081023121145.GB27984@x200.localdomain> <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com>
- <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com>
- <49008D12.5090204@gmail.com> <Pine.LNX.4.64.0810231635440.18978@anakin>
- <c62985530810230757r411b4e3dj4ecec649cf8cf0b3@mail.gmail.com>
- <Pine.LNX.4.64.0810231727430.18978@anakin> <4900B414.7090002@gmail.com>
- <20081023163433.GA3160@x200.localdomain> <20081023163850.GB16591@elte.hu>
- <4901D8CD.7000405@gmail.com> <alpine.DEB.1.10.0810240937130.3882@gandalf.stny.rr.com>
+	Sat, 25 Oct 2008 04:27:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :x-enigmail-version:content-type:content-transfer-encoding;
+        b=AukghsLP1u+BWabV4gFib/npQWWzy85wwv4HvK3sUG37w56UwX/UjS17HkWPDPbhF6
+         5ymfmEx5aPh0rrGUQ42RtvstmFhC07f6uidcd1hFsx1VEkKOOYjuVihb+Cy0d1k97jUM
+         RJGoC/qF4XYf+oAiHEze0k34AwJ8uyND3EItw=
+Message-ID: <4902D885.6050303@gmail.com>
+Date: Sat, 25 Oct 2008 01:27:49 -0700
+From: Rob MacKinnon <c4blem0nkey@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080904)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: tmpfs support of xattrs?
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Oct 2008, Steven Rostedt wrote:
-> Some architectures do not support a way to read the irq flags that
-> is set from "local_irq_save(flags)" to determine if interrupts were
-> disabled or enabled. Ftrace uses this information to display to the user
-> if the trace occurred with interrupts enabled or disabled.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Both alpha
+The background: So during the initial configuration of a box I enabled
+the xattr flags for ext3 and options of xattr in coreutils, and at the
+time didn't realize that I'd hit a snag that would finally annoy me
+enough after a month of getting a non-fatal error messages from cp "cp:
+listing attributes of `/dev/null`: Invalid argument" to spend half a day
+researching the cause and a potential solution.
 
-	#define irqs_disabled() (getipl() == IPL_MAX)
+Setup: udev mounts a tmpfs to /dev then fills it with device nodes.
+Problem: the resulting tmpfs has no xattr support.
+Therefore: Tmpfs without xattrs, and coreutils  and everywhere else with
+xattr support, cp freaks.
 
-and m68k
+Is there sometime in the forseable future when the tmpfs module will
+support for xattrs in the stable branch, or should I "holler at the
+maintainers of coreutils to fix their broken code in cp". Even better
+(and I like this option the most) a little of both?
 
-	static inline int irqs_disabled(void)
-	{
-		unsigned long flags;
-		local_save_flags(flags);
-		return flags & ~ALLOWINT;
-	}
+- -- Rob
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-do have irqs_disabled(), but they don't have irqs_disabled_flags().
-
-M68knommu has both, but they don't check the same thing:
-
-	#define irqs_disabled()                 \
-	({                                      \
-		unsigned long flags;            \
-		local_save_flags(flags);        \
-		((flags & 0x0700) == 0x0700);   \
-	})
-
-	static inline int irqs_disabled_flags(unsigned long flags)
-	{
-		if (flags & 0x0700)
-			return 0;
-		else
-			return 1;
-	}
-
-Is there a semantic difference between them (except that the latter takes the
-flags as a parameter)?
-
-Or can we just extract the core logic of irqs_disabled() into
-irqs_disabled_flags()?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+iQIcBAEBAgAGBQJJAtiFAAoJEPviweVbLO8VHFIP/jEDHs9aZb+mnR6RxwwOCASy
+gYqqdiwzlnBezFVwiIE3pEK4f3jxsn7WJDWV64MqjtHB7POvguqGJPs7BBMsFVNq
+Gs5Q/hkC1GSYp7+PkC28Ft8cg0ukm5o5hiwd0s7TW5g+bMK1/Xh4Rq4j8rRixzHG
+Qnq/KyBlO77DKzLbBVZHMg6GWasvKc50w4bLGr134CKNnFb+EKSc3NJAMwuwKhZG
+YUfn1LPhaF0jepGyr58cTnXcy0BrOkwUmKe9TsTytHuz3NjpXXhlMymj72U0C/Jo
+ZD+olEVJshBXUfn3HrmXeL78YCQLheK56/YA3MbOSuwKjzPHn0BLkFvvhD7ks3Md
+S2NrdJaJ+d9BafDRBCEbTqtR2xvka9JU3c1Oo5qS6O1BOWZY3QH9XN9s5526wqq1
+r91F6D8EcrAFVly/FTDv57QXuRZ8hjddhFb8PuJMuVF3KD/zRp4/s4os4/INdVa8
+CTDhomId6SftMPMAc3F/QquXN1EVd9FsMTL+81auegrv6HkiyWBf+lxhSIhSo2dk
+3u6mGujpEezwSPVyQ0+5yxyEYHtW14ioVQtEOQPuk3Kp+IjSBo9b/HA+Y52Dv9V1
+T6U6vtw/F4SbgvZ+vpSJPznu3f7DxhhtSBq4dAvsVn+a1h7fD2WgAh52TL/gQzxo
+5yAlYi4DYSlMMJGPxEiZ
+=Ezq7
+-----END PGP SIGNATURE-----
