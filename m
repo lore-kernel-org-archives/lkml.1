@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbYJYXK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbYJYXLZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756552AbYJYXK5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 19:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756119AbYJYXJG
+	id S1756601AbYJYXLZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 19:11:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756118AbYJYXJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 19:09:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52307 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756059AbYJYXJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 19:09:04 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Tilman Schmidt <tilman@imap.cc>
-Subject: Re: [Bug #11833] 2.6.27-git8 compile error in drivers/mfd/wm8350-core.c
-Date: Sun, 26 Oct 2008 01:13:35 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <nw2Y6lk-0lG.A.VUB.RV5AJB@chimera> <t1C3RWL0r7M.A.rkC.xV5AJB@chimera> <4903A598.7020706@imap.cc>
-In-Reply-To: <4903A598.7020706@imap.cc>
+	Sat, 25 Oct 2008 19:09:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56333 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756046AbYJYXJN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Oct 2008 19:09:13 -0400
+Date: Sat, 25 Oct 2008 16:08:19 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>, Hugh Dickins <hugh@veritas.com>,
+       walt <w41ter@gmail.com>
+Subject: Re: [PULL] module, param and stop_machine patches
+In-Reply-To: <alpine.LFD.2.00.0810251554030.3327@nehalem.linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0810251603310.3327@nehalem.linux-foundation.org>
+References: <200810221005.59874.rusty@rustcorp.com.au> <alpine.LFD.2.00.0810251416130.3327@nehalem.linux-foundation.org> <200810260924.09479.rusty@rustcorp.com.au> <alpine.LFD.2.00.0810251529240.3327@nehalem.linux-foundation.org>
+ <alpine.LFD.2.00.0810251554030.3327@nehalem.linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810260113.35856.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 26 of October 2008, Tilman Schmidt wrote:
-> Rafael J. Wysocki schrieb:
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.27.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11833
-> > Subject		: 2.6.27-git8 compile error in drivers/mfd/wm8350-core.c
-> > Submitter	: Tilman Schmidt <tilman@imap.cc>
-> > Date		: 2008-10-19 18:17 (7 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=122444027920472&w=4
-> 
-> Fixed in 2.6.28-rc1 by commit c7752351c34d852ca0da697f812534101eecd82e:
-> mfd: Don't use NO_IRQ in WM8350
 
-Thanks, closed.
 
-Rafael
+On Sat, 25 Oct 2008, Linus Torvalds wrote:
+>
+> -early_initcall(stop_machine_init);
+> +core_initcall(stop_machine_init);
+
+Btw, this obviously implies that all stop_machine() users had better be 
+later in the boot sequence.
+
+And no, I didn't check that exhaustively. There's the tracing 
+infrastructure, and it's also core_initcall(), but it should be linked 
+later. And module loading will happen later. mm/page_alloc.c has special 
+code for bootup, and intel-rng.c should be a normal driver.
+
+So it _should_ be ok. But I really didn't test. And my default kernel 
+config doesn't even have CONFIG_STOP_MACHINE enabled, so I'm not the best 
+person to test. 
+
+		Linus
