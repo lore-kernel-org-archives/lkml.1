@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbYJYLoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbYJYL4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752463AbYJYLoe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 07:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbYJYLo1
+	id S1753543AbYJYL4o (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 07:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbYJYL4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 07:44:27 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:47676 "EHLO
+	Sat, 25 Oct 2008 07:56:36 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:49606 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751822AbYJYLo0 (ORCPT
+	with ESMTP id S1751622AbYJYL4f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 07:44:26 -0400
-Date: Fri, 24 Oct 2008 16:44:47 -0400
+	Sat, 25 Oct 2008 07:56:35 -0400
+Date: Sat, 25 Oct 2008 07:56:31 -0400
 From: Theodore Tso <tytso@mit.edu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Markus Trippelsdorf <markus@trippelsdorf.de>, linux-kernel@vger.kernel.org,
        eugene@ibrix.com, msnitzer@ibrix.com, akpm@linux-foundation.org
-Subject: Re: ext3: fix ext3_dx_readdir hash collision handling - Regression
-Message-ID: <20081024204446.GA12868@mit.edu>
+Subject: [PATCH] Re: ext3: fix ext3_dx_readdir hash collision handling -
+	Regression
+Message-ID: <20081025115631.GA17661@mit.edu>
 Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
 	Linus Torvalds <torvalds@linux-foundation.org>,
 	Markus Trippelsdorf <markus@trippelsdorf.de>,
@@ -35,24 +36,121 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 24, 2008 at 09:08:26AM -0700, Linus Torvalds wrote:
-> 
-> Hmm. Ted? I have not tried to revert that commit that Markus pinpointed 
-> (6a897cf447a83c9c3fd1b85a1e525c02d6eada7d: "ext3: fix ext3_dx_readdir hash 
-> collision handling"), but now that I look at that "git bug", I am getting 
-> pretty damn sure that it's exactly the same issue, and it's not a git bug 
-> at all.
+I believe I've found the problem.  I'm still not 100% sure why I'm not
+seeing this on a 32-bit kernel, so I want to do a bit more testing to
+make sure I completely understand what was happening.  However, once I
+reproduced it on a a 64-bit kernel, it was pretty clear what the
+problem was.  The problem only happens when the directory is changing
+out from under us (which would be the case when the directory is
+getting deleted via "/bin/rm -r" or "git clean").  When that happens,
+the following check causes us to reload the rbtree we use to return
+the directory entries in hash sort error:
 
-Yep, I can replicate it now.  It appears to only show up if you are
-running with an x86_64 kernel.  I normally run with an x86_32 kernel,
-so I didn't notice the problem.  The commit in question avoids
-returning duplicate entries when there is a hash collision;
-unfortunately, it seems to return duplicate entries for any large
-directory if you are running on x86_64 (and possibly/probably other
-64-bit platforms).  
+		/*
+		 * Fill the rbtree if we have no more entries,
+		 * or the inode has changed since we last read in the
+		 * cached entries.
+		 */
+		if ((!info->curr_node) ||
+		    (filp->f_version != inode->i_version)) {
+			info->curr_node = NULL;
+			free_rb_tree_fname(&info->root);
+			filp->f_version = inode->i_version;
+			ret = ext3_htree_fill_tree(filp, info->curr_hash,
+						   info->curr_minor_hash,
+						   &info->next_hash);
 
-I'm working on it, and should hopefully have a fix for you soon.  If
-this is too annoying, you can revert it and I'll resubmit a fixed
-version once I get a fix.
 
-						- Ted
+Unfortunately, the commit which which fixes the duplicated entries
+when there are hash collisions wasn't properly setting info->curr_hash
+and info->curr_minor_hash after going to the next node, which results
+the first entry being returned twice on the subsequent getdents()
+system call.  What I don't understand was why I wasn't seeing this on
+a 32-bit kernel (maybe I screwed up my test environment; this problem
+should have occurred regardless of the 32-bit or 64-bit environment).
+
+In any case, if folks could test to see whether this patch fixes
+things, I'd appreciate it.  (Patch for ext3 and ext4 follows).
+
+							- Ted
+
+diff --git a/fs/ext3/dir.c b/fs/ext3/dir.c
+index 4c82531..5853f44 100644
+--- a/fs/ext3/dir.c
++++ b/fs/ext3/dir.c
+@@ -456,17 +456,8 @@ static int ext3_dx_readdir(struct file * filp,
+ 	if (info->extra_fname) {
+ 		if (call_filldir(filp, dirent, filldir, info->extra_fname))
+ 			goto finished;
+-
+ 		info->extra_fname = NULL;
+-		info->curr_node = rb_next(info->curr_node);
+-		if (!info->curr_node) {
+-			if (info->next_hash == ~0) {
+-				filp->f_pos = EXT3_HTREE_EOF;
+-				goto finished;
+-			}
+-			info->curr_hash = info->next_hash;
+-			info->curr_minor_hash = 0;
+-		}
++		goto next_node;
+ 	} else if (!info->curr_node)
+ 		info->curr_node = rb_first(&info->root);
+ 
+@@ -498,9 +489,14 @@ static int ext3_dx_readdir(struct file * filp,
+ 		info->curr_minor_hash = fname->minor_hash;
+ 		if (call_filldir(filp, dirent, filldir, fname))
+ 			break;
+-
++	next_node:
+ 		info->curr_node = rb_next(info->curr_node);
+-		if (!info->curr_node) {
++		if (info->curr_node) {
++			fname = rb_entry(info->curr_node, struct fname,
++					 rb_hash);
++			info->curr_hash = fname->hash;
++			info->curr_minor_hash = fname->minor_hash;
++		} else {
+ 			if (info->next_hash == ~0) {
+ 				filp->f_pos = EXT3_HTREE_EOF;
+ 				break;
+diff --git a/fs/ext4/dir.c b/fs/ext4/dir.c
+index 3ca6a2b..fed5b61 100644
+--- a/fs/ext4/dir.c
++++ b/fs/ext4/dir.c
+@@ -459,17 +459,8 @@ static int ext4_dx_readdir(struct file *filp,
+ 	if (info->extra_fname) {
+ 		if (call_filldir(filp, dirent, filldir, info->extra_fname))
+ 			goto finished;
+-
+ 		info->extra_fname = NULL;
+-		info->curr_node = rb_next(info->curr_node);
+-		if (!info->curr_node) {
+-			if (info->next_hash == ~0) {
+-				filp->f_pos = EXT4_HTREE_EOF;
+-				goto finished;
+-			}
+-			info->curr_hash = info->next_hash;
+-			info->curr_minor_hash = 0;
+-		}
++		goto next_node;
+ 	} else if (!info->curr_node)
+ 		info->curr_node = rb_first(&info->root);
+ 
+@@ -501,9 +492,14 @@ static int ext4_dx_readdir(struct file *filp,
+ 		info->curr_minor_hash = fname->minor_hash;
+ 		if (call_filldir(filp, dirent, filldir, fname))
+ 			break;
+-
++	next_node:
+ 		info->curr_node = rb_next(info->curr_node);
+-		if (!info->curr_node) {
++		if (info->curr_node) {
++			fname = rb_entry(info->curr_node, struct fname,
++					 rb_hash);
++			info->curr_hash = fname->hash;
++			info->curr_minor_hash = fname->minor_hash;
++		} else {
+ 			if (info->next_hash == ~0) {
+ 				filp->f_pos = EXT4_HTREE_EOF;
+ 				break;
