@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751794AbYJYKnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbYJYKvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751794AbYJYKnP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 06:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbYJYKm6
+	id S1752795AbYJYKvt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 06:51:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYJYKvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 06:42:58 -0400
-Received: from pne-smtpout1-sn2.hy.skanova.net ([81.228.8.83]:61066 "EHLO
-	pne-smtpout1-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752033AbYJYKm5 (ORCPT
+	Sat, 25 Oct 2008 06:51:41 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:43278 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751208AbYJYKvk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 06:42:57 -0400
-X-Greylist: delayed 4187 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Oct 2008 06:42:57 EDT
-Message-ID: <4902E7C7.9010607@euromail.se>
-Date: Sat, 25 Oct 2008 11:32:55 +0200
-From: Henrik Rydberg <rydberg@euromail.se>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Sat, 25 Oct 2008 06:51:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Z7yOn6FKM3AGsvspOQ11ELbxg6Z+GJ/lAZ1L0olpH19GmQ50OVUIvDDlpeFfNxdL61
+         u41xzvsxvOFncX2bSAACPb+vqBERnE0fJ05X9iQJn5H2/nZQkZIX/0GAqgBLAqfsMEdF
+         tmr5g9opkx84pwKQ0+UoXVyca4kcdaRcwoeL4=
+Message-ID: <c62985530810250351u40b671afg2fada687ee1d62f4@mail.gmail.com>
+Date: Sat, 25 Oct 2008 12:51:39 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH][RFC] ftrace: function oprofiler
+Cc: LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Arjan van de Ven" <arjan@infradead.org>
+In-Reply-To: <alpine.DEB.1.10.0810250130020.27727@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: akpm@osdl.org
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] hwmon: applesmc: Add support for Macbook Pro 5
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.DEB.1.10.0810250130020.27727@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds accelerometer, backlight and temperature sensor
-support for the new unibody Macbook Pro 5.
+Hi Steven,
 
-Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
----
- drivers/hwmon/applesmc.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+2008/10/25 Steven Rostedt <rostedt@goodmis.org>:
+> # cat /debug/tracing/ftrace_profile | sort -brn | head -20
+>   280075  : __rcu_read_unlock+0xb/0xa2
+>   280065  : __rcu_read_lock+0x11/0xb3
 
-diff --git a/drivers/hwmon/applesmc.c b/drivers/hwmon/applesmc.c
-index 074f7f4..9f04283 100644
---- a/drivers/hwmon/applesmc.c
-+++ b/drivers/hwmon/applesmc.c
-@@ -121,6 +121,10 @@ static const char* temperature_sensors_sets[][36] = {
- /* Set 11: Macbook 5,1 */
- 	{ "TB0T", "TB1T", "TB2T", "TB3T", "TC0D", "TC0P", "TN0D", "TN0P",
- 	  "TTF0", "Th0H", "Th1H", "ThFH", "Ts0P", "Ts0S", NULL },
-+/* Set 12: Macbook Pro 5,1 */
-+	{ "TB0T", "TB1T", "TB2T", "TB3T", "TC0D", "TC0F", "TC0P", "TG0D",
-+	  "TG0F", "TG0H", "TG0P", "TG0T", "TG1H", "TN0D", "TN0P", "TTF0",
-+	  "Th2H", "Tm0P", "Ts0P", "Ts0S", NULL },
- };
+The rcu function are on top of this profile. May be it's because you use
+rcu when you touch your hash table.
+Wouldn't be interesting to disable the counter adding for these
+functions when they
+are used at this time?
 
- /* List of keys used to read/write fan speeds */
-@@ -1285,6 +1289,8 @@ static __initdata struct dmi_match_data applesmc_dmi_data[] = {
- 	{ .accelerometer = 0, .light = 0, .temperature_set = 10 },
- /* MacBook 5: accelerometer, backlight and temperature set 11 */
- 	{ .accelerometer = 1, .light = 1, .temperature_set = 11 },
-+/* MacBook Pro 5: accelerometer, backlight and temperature set 12 */
-+	{ .accelerometer = 1, .light = 1, .temperature_set = 12 },
- };
+> +config FUNCTION_PROFILER
+> +       bool "Trace max stack"
 
- /* Note that DMI_MATCH(...,"MacBook") will match "MacBookPro1,1".
-@@ -1294,6 +1300,10 @@ static __initdata struct dmi_system_id applesmc_whitelist[] = {
- 	  DMI_MATCH(DMI_BOARD_VENDOR, "Apple"),
- 	  DMI_MATCH(DMI_PRODUCT_NAME, "MacBookAir") },
- 		&applesmc_dmi_data[7]},
-+	{ applesmc_dmi_match, "Apple MacBook Pro 5", {
-+	  DMI_MATCH(DMI_BOARD_VENDOR, "Apple"),
-+	  DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro5") },
-+		&applesmc_dmi_data[12]},
- 	{ applesmc_dmi_match, "Apple MacBook Pro 4", {
- 	  DMI_MATCH(DMI_BOARD_VENDOR, "Apple"),
- 	  DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro4") },
--- 
-1.5.6.3
-
-
-
+Copy-paste error? :-)
