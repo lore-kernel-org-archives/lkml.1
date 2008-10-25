@@ -1,74 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbYJYLVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbYJYLW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753921AbYJYLVz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 07:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbYJYLVp
+	id S1754034AbYJYLW5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 07:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbYJYLWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 07:21:45 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50253 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751557AbYJYLVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 07:21:44 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [2.6.27-rc7] oops in usbcore
-Date: Sat, 25 Oct 2008 13:26:15 +0200
-User-Agent: KMail/1.9.9
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       Oliver Neukum <oliver@neukum.org>, linux-kernel@vger.kernel.org,
-       USB list <linux-usb@vger.kernel.org>
-References: <200810242353.08576.rjw@sisk.pl> <Pine.LNX.4.44L0.0810241809110.2180-100000@iolanthe.rowland.org> <20081024221639.GA23702@kroah.com>
-In-Reply-To: <20081024221639.GA23702@kroah.com>
+	Sat, 25 Oct 2008 07:22:48 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:45459 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751930AbYJYLWr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Oct 2008 07:22:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=wssXUum8M3HH7FXRIsg+qdwn5UqKwF7VrktreQt6IoDKjrKf3vssCLSFiJpFnnJeyG
+         6QerUkBdiBEi5OUlKFHLmSum8TB4Cs/3jZDmWJNw3dFJuNmvaEPe8VW3EVW/qCxt6yt5
+         l5BkIrGpp59F5yrFqlGZdw3tH/aGas3Dr1vvI=
+Message-ID: <19f34abd0810250422t17990222x78fcf0fad2e6f04b@mail.gmail.com>
+Date: Sat, 25 Oct 2008 13:22:45 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Hidehiro Kawai" <hidehiro.kawai.ez@hitachi.com>,
+       "Theodore Tso" <tytso@mit.edu>
+Subject: v2.6.28-rc1: Regression in ext3/jbd
+Cc: "Jan Kara" <jack@ucw.cz>, "Stephen Rothwell" <sfr@canb.auug.org.au>,
+       "Al Viro" <viro@zeniv.linux.org.uk>, linux-ext4@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Ingo Molnar" <mingo@elte.hu>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810251326.15821.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 25 of October 2008, Greg KH wrote:
-> On Fri, Oct 24, 2008 at 06:13:03PM -0400, Alan Stern wrote:
-> > On Fri, 24 Oct 2008, Rafael J. Wysocki wrote:
-> > 
-> > > On Thursday, 9 of October 2008, Folkert van Heusden wrote:
-> > > > > > lpc-ntpd is a atomic clock receiver driver doing read()-calls on an fd
-> > > > > > from a serial device (connected via usb), nothing fancy
-> > > > > > (http://vanheusden.com/lpc-ntpd/ ).
-> > > > > 
-> > > > > Which devices? Please post lsusb -v
-> > > > 
-> > > > thegate:/home/folkert# lsusb  -v > lsusb
-> > > > cannot read device status, Broken pipe (32)
-> > > > 
-> > > > Isn't that error odd?
-> > > > 
-> > > > The output is:
-> > 
-> > ...
-> > 
-> > > > > But you do get this oops even without running that script, don't you?   
-> > > > 
-> > > > No, only with that script.
-> > > 
-> > > Is this still reproducible in mainline?
-> > > 
-> > > If not, is it reproducible with 2.6.27 final?
-> > 
-> > I submitted a patch for this:
-> > 
-> > 	http://marc.info/?l=linux-usb&m=122461735606713&w=2
-> > 
-> > It hasn't been merged yet, in any tree.
-> 
-> I'm a bit hesitant to add it for .28, especially as this isn't a
-> "regression" per-say, but something that we have always done wrong, and
-> it changes the core USB code.
+[Sorry in advance for the huge Cc, most of it is from the commit.]
 
-OK, I'm not going to list it, then.
+Hi,
 
-Thanks,
-Rafael
+This commit:
+
+commit 2d7c820e56ce83b23daee9eb5343730fb309418e
+Author: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Date:   Wed Oct 22 14:15:01 2008 -0700
+
+    ext3: add checks for errors from jbd
+
+introduces a regression which was discovered by kmemcheck:
+
+WARNING: kmemcheck: Caught 32-bit read from freed memory (f4f1b804)
+00b0f1f4fbffffff404439ef008830f20200000097970000ad4eaddeffffffff
+ i i i i f f f f f f f f f f f f f f f f f f f f f f f f f f f f
+         ^
+
+Pid: 9550, comm: umount Not tainted (2.6.28-rc1 #58) 945P-A
+EIP: 0060:[<c05bdf38>] EFLAGS: 00010246 CPU: 0
+EIP is at __journal_abort_soft+0x18/0xa0
+EAX: f4f1b800 EBX: f4f1b800 ECX: c0462799 EDX: fffffffb
+ESI: fffffffb EDI: f4f1a800 EBP: f145dea8 ESP: c25699c8
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+CR0: 8005003b CR2: f6c1d704 CR3: 31448000 CR4: 00000650
+DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+DR6: ffff4ff0 DR7: 00000400
+ [<c05bdfc8>] journal_abort+0x8/0x10
+ [<c0589eb5>] ext3_abort+0xb5/0xc0
+ [<c058a300>] ext3_put_super+0x160/0x230
+ [<c04ec02a>] generic_shutdown_super+0x5a/0xe0
+
+In particular, this hunk is guilty:
+
+-       journal_destroy(sbi->s_journal);
++       if (journal_destroy(sbi->s_journal) < 0)
++               ext3_abort(sb, __func__, "Couldn't clean up the journal");
+
+because journal_destroy() will free the journal regardless of whether
+it returned < 0 or not. And then ext3_abort() makes some calls that
+dereference the (freed) journal. These are the line numbers for the
+backtrace:
+
+addr2line -e vmlinux -i c05bdf38 c05bdfc8 c0589eb5 c058a300 c04ec02a
+fs/jbd/journal.c:1502
+fs/jbd/journal.c:1560
+fs/ext3/super.c:284
+fs/ext3/super.c:397
+fs/super.c:307
+
+(as of e013e13bf605b9e6b702adffbe2853cfc60e7806 in Linus's tree).
+
+I hope this helps.
+
+
+Vegard
