@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753053AbYJYV61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbYJYV6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753053AbYJYV61 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 17:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbYJYV6Q
+	id S1752617AbYJYV6j (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 17:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbYJYV6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 17:58:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51814 "EHLO ogre.sisk.pl"
+	Sat, 25 Oct 2008 17:58:17 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51815 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750850AbYJYV6P convert rfc822-to-8bit (ORCPT
+	id S1751252AbYJYV6P convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 25 Oct 2008 17:58:15 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       "Reinette Chatre" <reinette.chatre@intel.com>
+       "arrow zhang" <arrow.ebd@gmail.com>
 References: <nw2Y6lk-0lG.A.VUB.RV5AJB@chimera>
 In-Reply-To: <nw2Y6lk-0lG.A.VUB.RV5AJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <t1C3RWL0r7M.A.L5C.-V5AJB@chimera>
-Subject: [Bug #11806] iwl3945 fails with microcode error
+Message-ID: <t1C3RWL0r7M.A.X8C.CW5AJB@chimera>
+Subject: [Bug #11799] xorg can not start up with stolen memory
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat, 25 Oct 2008 22:06:44 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,11 +35,9 @@ from 2.6.27.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11806
-Subject		: iwl3945 fails with microcode error
-Submitter	: Johannes Berg <johannes@sipsolutions.net>
-Date		: 2008-10-22 02:36 (4 days old)
-References	: http://marc.info/?l=linux-kernel&m=122450235730661&w=4
-Handled-By	: Reinette Chatre <reinette.chatre@intel.com>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11799
+Subject		: xorg can not start up with stolen memory
+Submitter	: arrow zhang <arrow.ebd@gmail.com>
+Date		: 2008-10-21 06:08 (5 days old)
 
 
