@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752015AbYJYULs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751972AbYJYUWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752015AbYJYULs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 16:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbYJYULi
+	id S1751972AbYJYUWo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 16:22:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbYJYUWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 16:11:38 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:51321 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750813AbYJYULh (ORCPT
+	Sat, 25 Oct 2008 16:22:35 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:40953 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750876AbYJYUWf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 16:11:37 -0400
-Subject: Re: usb hdd problems with 2.6.27.2
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Luciano Rocha <luciano@eurotux.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.0810251548300.7245-100000@netrider.rowland.org>
-References: <Pine.LNX.4.44L0.0810251548300.7245-100000@netrider.rowland.org>
-Content-Type: text/plain
-Date: Sat, 25 Oct 2008 15:11:33 -0500
-Message-Id: <1224965493.3449.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sat, 25 Oct 2008 16:22:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=j1OxdgY3VpDDVPCbCGhNh8uduRHYa4eryFNn01UjzTO/CLcsC17lCbVMnSU+0kyIHj
+         Bo/5d8LSaXQnBGtcdOTIbvlYYHNiG/qoYslFejTDd1EQnKjBOjYge1asljoUrS7FMyvA
+         O+nvqECBcmlgh2K2p/xI7Gbfqns9glcrxpkdA=
+Message-ID: <6ffd69180810251322n350b6f6dqf496d7e5972165f5@mail.gmail.com>
+Date: Sat, 25 Oct 2008 13:22:33 -0700
+From: "Robert Moss" <robert.von.moss@gmail.com>
+To: "Samuel Thibault" <samuel.thibault@ens-lyon.org>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       alistair@devzero.co.uk
+Subject: Re: Framebuffer issues in 2.6.26 with uvesafb and vesafb. Linux is about choice!
+In-Reply-To: <20081024092418.GA10246@const.bordeaux.inria.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <6ffd69180810230054s3b6aff5y880a898c3fc66a37@mail.gmail.com>
+	 <20081023080459.GC5073@const.bordeaux.inria.fr>
+	 <6ffd69180810230421v1508664bgc6e454cde792154f@mail.gmail.com>
+	 <20081024092418.GA10246@const.bordeaux.inria.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-10-25 at 15:50 -0400, Alan Stern wrote:
-> On Sat, 25 Oct 2008, Rafael J. Wysocki wrote:
-> 
-> > [Adding CCs]
-> > 
-> > On Wednesday, 22 of October 2008, Luciano Rocha wrote:
-> > > 
-> > > Hello,
-> > > 
-> > > An external HDD, usb-encased, works fine under 2.6.26.5, but under
-> > > 2.6.27.2 I get hundreds of errors per second, of 'No Sense [current]'.
-> 
-> You can use usbmon to capture the details of what happens when you plug
-> in the drive.  Instructions are in the kernel source file
-> Documentation/usb/usbmon.txt.
+ok, this morning, I turned on my computer, and it gave me the error
+message again:
 
-Try reversing this patch (apply with patch -p1 -R)
+Undefined video mode number: 317
 
-James
-
----
-
-commit 10dab22664914505dcb804d9ad09cad6bc94d349
-Author: Jamie Wellnitz <Jamie.Wellnitz@emulex.com>
-Date:   Thu Sep 11 21:39:36 2008 -0400
-
-    [SCSI] sd: Fix handling of NO_SENSE check condition
-    
-    The current handling of NO_SENSE check condition is the same as
-    RECOVERED_ERROR, and assumes that in both cases, the I/O was fully
-    transferred.
-    
-    We have seen cases of arrays returning with NO_SENSE (no error), but
-    the I/O was not completely transferred, thus residual set.  Thus,
-    rather than return good_bytes as the entire transfer, set good_bytes
-    to 0, so that the midlayer then applies the residual in calculating
-    the transfer, and for sd, will fail the I/O and fall into a retry
-    path.
-    
-    Signed-off-by: Jamie Wellnitz <Jamie.Wellnitz@emulex.com>
-    Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index 7c4d2e6..55e6ed4 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -1054,7 +1054,6 @@ static int sd_done(struct scsi_cmnd *SCpnt)
- 		good_bytes = sd_completed_bytes(SCpnt);
- 		break;
- 	case RECOVERED_ERROR:
--	case NO_SENSE:
- 		/* Inform the user, but make sure that it's not treated
- 		 * as a hard error.
- 		 */
-@@ -1063,6 +1062,15 @@ static int sd_done(struct scsi_cmnd *SCpnt)
- 		memset(SCpnt->sense_buffer, 0, SCSI_SENSE_BUFFERSIZE);
- 		good_bytes = scsi_bufflen(SCpnt);
- 		break;
-+	case NO_SENSE:
-+		/* This indicates a false check condition, so ignore it.  An
-+		 * unknown amount of data was transferred so treat it as an
-+		 * error.
-+		 */
-+		scsi_print_sense("sd", SCpnt);
-+		SCpnt->result = 0;
-+		memset(SCpnt->sense_buffer, 0, SCSI_SENSE_BUFFERSIZE);
-+		break;
- 	case ABORTED_COMMAND:
- 		if (sshdr.asc == 0x10) { /* DIF: Disk detected corruption */
- 			scsi_print_result(SCpnt);
+I immediately restarted, and this time appened edd=off to the kernel
+line. It started up without incident. But I can't be sure if it was
+the appendage that caused it, or if for some reason, it randomly
+decided to work, however, because the 2.6.24 kernel never failed me,
+and I could never get the other, higher kernels to work (repeatedly) i
+believe this may have something to do with it, but of course, i'm not
+sure what edd=off does, I would guess enhanced display detection, but
+thats just a guess,
 
 
+On Fri, Oct 24, 2008 at 2:24 AM, Samuel Thibault
+<samuel.thibault@ens-lyon.org> wrote:
+> Robert Moss, le Thu 23 Oct 2008 04:21:09 -0700, a écrit :
+>> Ok on both 2.6.24 AND 2.6.26, i get the same thing from vga=ask then scan,
+>> 0 F00  80x25
+>> 1 F01  80x50
+>> 2 F02  80x43
+>> 3 F03  80x28
+>> 4 F05  80x36
+>> 5 F06  80x36
+>> 6 F07  80x60
+>
+> Could you try edd=off?
+>
+> Samuel
+>
