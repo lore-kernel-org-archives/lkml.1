@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbYJYWFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbYJYWFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754962AbYJYWFc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 18:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbYJYV7n
+	id S1755305AbYJYWFt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 18:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbYJYV7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 17:59:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51880 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753530AbYJYV7k convert rfc822-to-8bit (ORCPT
+	Sat, 25 Oct 2008 17:59:55 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:44085 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754299AbYJYV7y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 17:59:40 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Hidehiro Kawai" <hidehiro.kawai.ez@hitachi.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>
-References: <nw2Y6lk-0lG.A.VUB.RV5AJB@chimera>
-In-Reply-To: <nw2Y6lk-0lG.A.VUB.RV5AJB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-MIME-Version: 1.0
+	Sat, 25 Oct 2008 17:59:54 -0400
+X-Greylist: delayed 2832 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Oct 2008 17:59:53 EDT
+Date: Sat, 25 Oct 2008 23:59:59 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: kbuild maintainer news [Was: kbuild fixes for -rc1]
+Message-ID: <20081025215959.GA27617@uranus.ravnborg.org>
+References: <20081025211107.GA20417@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <t1C3RWL0r7M.A.ykB.YV5AJB@chimera>
-Subject: [Bug #11852] v2.6.28-rc1: Regression in ext3/jbd
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 25 Oct 2008 22:06:49 +0200 (CEST)
+In-Reply-To: <20081025211107.GA20417@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of recent regressions.
+In case anyone was wondering...
+I have been busy moving to a new house the last couple of months.
 
-The following bug entry is on the current list of known regressions
-from 2.6.27.  Please verify if it still should be listed and let me know
-(either way).
+As we are now well installed (as in the important stuff is finished)
+I can now spend some time as kbuild maintainer again.
 
+But in order not to be buried alive in email I deleted
+all mails I received in my absense period.
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11852
-Subject		: v2.6.28-rc1: Regression in ext3/jbd
-Submitter	: Vegard Nossum <vegard.nossum@gmail.com>
-Date		: 2008-10-25 11:22 (1 days old)
-References	: http://marc.info/?l=linux-kernel&m=122493379905812&w=4
+So if you have any pending kbuild patches around please
+resend them to me with a cc: to at least linux-kbuild.
 
+But please do not expect promt replies there is still
+a shitload of things to do.
 
+	Sam
+ 
