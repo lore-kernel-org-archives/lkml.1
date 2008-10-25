@@ -1,145 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbYJYORu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbYJYOXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753212AbYJYORu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 10:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYJYORm
+	id S1753143AbYJYOXh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 10:23:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbYJYOX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 10:17:42 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:41859 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751954AbYJYORl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 10:17:41 -0400
-Date: Sat, 25 Oct 2008 16:16:22 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: walt <w41ter@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: commit a802dd0e breaks console keyboard input
-Message-ID: <20081025141622.GA4397@osiris.boeblingen.de.ibm.com>
-References: <49011234.7090902@gmail.com> <20081024110742.GD4620@osiris.boeblingen.de.ibm.com> <alpine.LNX.2.00.0810240552320.2613@x9.ybpnyarg> <20081024194414.GB4155@osiris.boeblingen.de.ibm.com> <490256B7.1050906@gmail.com>
+	Sat, 25 Oct 2008 10:23:29 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:40196 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751961AbYJYOX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Oct 2008 10:23:28 -0400
+Date: Sat, 25 Oct 2008 07:23:25 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] timers: Handle HRTIMER_CB_IRQSAFE_UNLOCKED correctly
+	from softirq context
+Message-ID: <20081025142325.GB8446@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20081023215003.GC1480@in.ibm.com> <20081025023303.GD6248@linux.vnet.ibm.com> <20081025045238.GA27934@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <490256B7.1050906@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081025045238.GA27934@in.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 24, 2008 at 04:13:59PM -0700, walt wrote:
->> Please try the patch below. It basically reverts the whole stop_machine
->> patches. That way we should know if it really comes from the moved init
->> call or if it is some other weird bug. I would have expected more bug
->> reports if the stop_machine patches would be broken. Hmmm...
->
-> <second patch snipped for brevity>
->
-> Yes your second patch fixes the keyboard problem, thanks.  The lack of
-> other complainers is what made me think of a BIOS bug, but that's just
-> wild guesswork on my part.  I'm happy to keep trying patches if you can
-> keep making them :-)
+On Sat, Oct 25, 2008 at 10:22:38AM +0530, Gautham R Shenoy wrote:
+> On Fri, Oct 24, 2008 at 07:33:03PM -0700, Paul E. McKenney wrote:
+> > On Fri, Oct 24, 2008 at 03:20:03AM +0530, Gautham R Shenoy wrote:
+> > > timers: Handle HRTIMER_CB_IRQSAFE_UNLOCKED correctly from softirq context
+> > > 
+> > > From: Gautham R Shenoy <ego@in.ibm.com>
+> > > 
+> > > While migrating the the CB_IRQSAFE_UNLOCKED timers during a cpu-offline,
+> > > we queue them on the cb_pending list, so that they won't go
+> > > stale.
+> > > 
+> > > Thus, when the callbacks of the timers run from the softirq context,
+> > > they could run into potential deadlocks, since these callbacks
+> > > assume that they're running with irq's disabled, thereby annoying
+> > > lockdep (see below)!
+> > > 
+> > > Fix this by emulating hardirq context while running these callbacks from
+> > > the hrtimer softirq.
+> > 
+> > Good catch!!!  One confusion (probably on my part) below.
+> 
+> Hmm.. Let's see...
 
-Thanks a lot for testing and your patience!
-The patch below moves the init call to its old place but makes the
-stop_machine initialization happen later. I added a BUG_ON to catch possible
-early calls, but there shouldn't be any. I think the patch should solve
-the regression you are seeing. Could you give it a try please?
-The patch applies on top of latest Linus' git tree.
+Gah!!!
 
-Thanks,
-Heiko
+I am so used to seeing sequences of code that disable irqs and then
+re-enable them that I misread the original, failing to see that you
+were -enabling- irqs and then re-disabling them.  :-/
 
----
- include/linux/stop_machine.h |    6 ++++++
- init/main.c                  |    5 +++--
- kernel/stop_machine.c        |    9 ++++++---
- 3 files changed, 15 insertions(+), 5 deletions(-)
+Never mind!!!  Sorry for the noise...
 
-Index: linux-2.6/include/linux/stop_machine.h
-===================================================================
---- linux-2.6.orig/include/linux/stop_machine.h
-+++ linux-2.6/include/linux/stop_machine.h
-@@ -35,6 +35,9 @@ int stop_machine(int (*fn)(void *), void
-  * won't come or go while it's being called.  Used by hotplug cpu.
-  */
- int __stop_machine(int (*fn)(void *), void *data, const cpumask_t *cpus);
-+
-+void stop_machine_init(void);
-+
- #else
- 
- static inline int stop_machine(int (*fn)(void *), void *data,
-@@ -46,5 +49,8 @@ static inline int stop_machine(int (*fn)
- 	local_irq_enable();
- 	return ret;
- }
-+
-+static inline void stop_machine_init(void) { }
-+
- #endif /* CONFIG_SMP */
- #endif /* _LINUX_STOP_MACHINE */
-Index: linux-2.6/init/main.c
-===================================================================
---- linux-2.6.orig/init/main.c
-+++ linux-2.6/init/main.c
-@@ -38,6 +38,7 @@
- #include <linux/moduleparam.h>
- #include <linux/kallsyms.h>
- #include <linux/writeback.h>
-+#include <linux/stop_machine.h>
- #include <linux/cpu.h>
- #include <linux/cpuset.h>
- #include <linux/cgroup.h>
-@@ -768,6 +769,8 @@ static void __init do_initcalls(void)
- static void __init do_basic_setup(void)
- {
- 	rcu_init_sched(); /* needed by module_init stage. */
-+	init_workqueues();
-+	stop_machine_init();
- 	usermodehelper_init();
- 	driver_init();
- 	init_irq_proc();
-@@ -851,8 +854,6 @@ static int __init kernel_init(void * unu
- 
- 	cad_pid = task_pid(current);
- 
--	init_workqueues();
--
- 	smp_prepare_cpus(setup_max_cpus);
- 
- 	do_pre_smp_initcalls();
-Index: linux-2.6/kernel/stop_machine.c
-===================================================================
---- linux-2.6.orig/kernel/stop_machine.c
-+++ linux-2.6/kernel/stop_machine.c
-@@ -43,6 +43,7 @@ static struct workqueue_struct *stop_mac
- static struct stop_machine_data active, idle;
- static const cpumask_t *active_cpus;
- static void *stop_machine_work;
-+static int stop_machine_initialized;
- 
- static void set_state(enum stopmachine_state newstate)
- {
-@@ -114,6 +115,7 @@ int __stop_machine(int (*fn)(void *), vo
- 	struct work_struct *sm_work;
- 	int i;
- 
-+	BUG_ON(!stop_machine_initialized);
- 	/* Set up initial state. */
- 	mutex_lock(&lock);
- 	num_threads = num_online_cpus();
-@@ -154,10 +156,11 @@ int stop_machine(int (*fn)(void *), void
- }
- EXPORT_SYMBOL_GPL(stop_machine);
- 
--static int __init stop_machine_init(void)
-+void __init stop_machine_init(void)
- {
- 	stop_machine_wq = create_rt_workqueue("kstop");
-+	BUG_ON(!stop_machine_wq);
- 	stop_machine_work = alloc_percpu(struct work_struct);
--	return 0;
-+	BUG_ON(!stop_machine_work);
-+	stop_machine_initialized = 1;
- }
--early_initcall(stop_machine_init);
+							Thanx, Paul
+
+> > > diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+> > > index cdec83e..60aaad6 100644
+> > > --- a/kernel/hrtimer.c
+> > > +++ b/kernel/hrtimer.c
+> > > @@ -1188,6 +1188,7 @@ static void run_hrtimer_pending(struct hrtimer_cpu_base *cpu_base)
+> > >  		enum hrtimer_restart (*fn)(struct hrtimer *);
+> > >  		struct hrtimer *timer;
+> > >  		int restart;
+> > > +		int emulate_hardirq_ctx = 0;
+> > > 
+> > >  		timer = list_entry(cpu_base->cb_pending.next,
+> > >  				   struct hrtimer, cb_entry);
+> > > @@ -1196,12 +1197,26 @@ static void run_hrtimer_pending(struct hrtimer_cpu_base *cpu_base)
+> > >  		timer_stats_account_hrtimer(timer);
+> > > 
+> > >  		fn = timer->function;
+> > > +		/*
+> > > +		 * A timer might have been added to the cb_pending list
+> > > +		 * when it was migrated during a cpu-offline operation.
+> > > +		 * Emulate hardirq context for such timers.
+> > > +		 */
+> > > +		if (timer->cb_mode == HRTIMER_CB_IRQSAFE_PERCPU ||
+> > > +		    timer->cb_mode == HRTIMER_CB_IRQSAFE_UNLOCKED)
+> > > +			emulate_hardirq_ctx = 1;
+> > 
+> > Is this the case where we need to emulate a hardirq context?
+> Indeed it is.
+> 
+> > 
+> > > +
+> > >  		__remove_hrtimer(timer, timer->base, HRTIMER_STATE_CALLBACK, 0);
+> > > -		spin_unlock_irq(&cpu_base->lock); 
+>                      ^^^^^^^^^^ ----------------------------------------(A)
+> > > +		spin_unlock(&cpu_base->lock);
+> > > 
+> > > -		restart = fn(timer);
+> > > +		if (likely(!emulate_hardirq_ctx)) {
+> > 
+> > If so, why the "!" above?
+> 
+> Since this function runs from the HRTIMER_SOFTIRQ, it enables interrupts
+> before calling the hrtimer-callback function. This has been the original
+> behaviour (see A above)
+> 
+> We would like to retain this behavior for the normal cases where we
+> don't want to emulate hard-irq context.
+> So if you see below, all we're doing in the normal case is enabling the
+> interrupts before calling the callback in the normal case, and
+> keeping the interrupts disabled when we want to emulate the hard-irq case.
+> Because HRTIMER_CB_IRQSAFE_UNLOCKED callbacks assume that they run with
+> interrupts disabled.
+> 
+> > 
+> > Or am I misinterpreting the name of the variable?
+> > 
+> > 							Thanx, Paul
+> > 
+> > > +			local_irq_enable();
+> 				  ^^^^^^^^ ----------------------- (B)
+> > > +			restart = fn(timer);
+> > > +			local_irq_disable();
+> > > +		} else
+> > > +			restart = fn(timer);
+> > > 
+> 
+> 
+> Probably it may appear as though we're doing something special
+> for the "!" case, but infact it's the opposite.
+> 
+> Hmmm, how about the following instead ?
+> 
+> Thanks and Regards
+> gautham.
+> 
+> --------->
+> timers: Handle HRTIMER_CB_IRQSAFE_UNLOCKED correctly from softirq context
+> 
+> From: Gautham R Shenoy <ego@in.ibm.com>
+> 
+> While migrating the the CB_IRQSAFE_UNLOCKED timers during a cpu-offline,
+> we queue them on the cb_pending list, so that they won't go
+> stale.
+> 
+> Thus, when the callbacks of the timers run from the softirq context,
+> they could run into potential deadlocks, since these callbacks
+> assume that they're running with irq's disabled, thereby annoying
+> lockdep!
+> 
+> Fix this by emulating hardirq context while running these callbacks from
+> the hrtimer softirq.
+> 
+> =================================
+> [ INFO: inconsistent lock state ]
+> 2.6.27 #2
+> --------------------------------
+> inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+> ksoftirqd/0/4 [HC0[0]:SC1[1]:HE1:SE0] takes:
+>  (&rq->lock){++..}, at: [<c011db84>] sched_rt_period_timer+0x9e/0x1fc
+> {in-hardirq-W} state was registered at:
+>   [<c014103c>] __lock_acquire+0x549/0x121e
+>   [<c0107890>] native_sched_clock+0x88/0x99
+>   [<c013aa12>] clocksource_get_next+0x39/0x3f
+>   [<c0139abc>] update_wall_time+0x616/0x7df
+>   [<c0141d6b>] lock_acquire+0x5a/0x74
+>   [<c0121724>] scheduler_tick+0x3a/0x18d
+>   [<c047ed45>] _spin_lock+0x1c/0x45
+>   [<c0121724>] scheduler_tick+0x3a/0x18d
+>   [<c0121724>] scheduler_tick+0x3a/0x18d
+>   [<c012c436>] update_process_times+0x3a/0x44
+>   [<c013c044>] tick_periodic+0x63/0x6d
+>   [<c013c062>] tick_handle_periodic+0x14/0x5e
+>   [<c010568c>] timer_interrupt+0x44/0x4a
+>   [<c0150c9f>] handle_IRQ_event+0x13/0x3d
+>   [<c0151c14>] handle_level_irq+0x79/0xbd
+>   [<c0105634>] do_IRQ+0x69/0x7d
+>   [<c01041e4>] common_interrupt+0x28/0x30
+>   [<c047007b>] aac_probe_one+0x1a3/0x3f3
+>   [<c047ec2d>] _spin_unlock_irqrestore+0x36/0x39
+>   [<c01512b4>] setup_irq+0x1be/0x1f9
+>   [<c065d70b>] start_kernel+0x259/0x2c5
+>   [<ffffffff>] 0xffffffff
+> irq event stamp: 50102
+> hardirqs last  enabled at (50102): [<c047ebf4>] _spin_unlock_irq+0x20/0x23
+> hardirqs last disabled at (50101): [<c047edc2>] _spin_lock_irq+0xa/0x4b
+> softirqs last  enabled at (50088): [<c0128ba6>] do_softirq+0x37/0x4d
+> softirqs last disabled at (50099): [<c0128ba6>] do_softirq+0x37/0x4d
+> 
+> other info that might help us debug this:
+> no locks held by ksoftirqd/0/4.
+> 
+> stack backtrace:
+> Pid: 4, comm: ksoftirqd/0 Not tainted 2.6.27 #2
+>  [<c013f6cb>] print_usage_bug+0x13e/0x147
+>  [<c013fef5>] mark_lock+0x493/0x797
+>  [<c01410b1>] __lock_acquire+0x5be/0x121e
+>  [<c0141d6b>] lock_acquire+0x5a/0x74
+>  [<c011db84>] sched_rt_period_timer+0x9e/0x1fc
+>  [<c047ed45>] _spin_lock+0x1c/0x45
+>  [<c011db84>] sched_rt_period_timer+0x9e/0x1fc
+>  [<c011db84>] sched_rt_period_timer+0x9e/0x1fc
+>  [<c01210fd>] finish_task_switch+0x41/0xbd
+>  [<c0107890>] native_sched_clock+0x88/0x99
+>  [<c011dae6>] sched_rt_period_timer+0x0/0x1fc
+>  [<c0136dda>] run_hrtimer_pending+0x54/0xe5
+>  [<c011dae6>] sched_rt_period_timer+0x0/0x1fc
+>  [<c0128afb>] __do_softirq+0x7b/0xef
+>  [<c0128ba6>] do_softirq+0x37/0x4d
+>  [<c0128c12>] ksoftirqd+0x56/0xc5
+>  [<c0128bbc>] ksoftirqd+0x0/0xc5
+>  [<c0134649>] kthread+0x38/0x5d
+>  [<c0134611>] kthread+0x0/0x5d
+>  [<c0104477>] kernel_thread_helper+0x7/0x10
+>  =======================
+> 
+> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+> 
+>  kernel/hrtimer.c |   17 ++++++++++++++++-
+>  1 files changed, 16 insertions(+), 1 deletions(-)
+> 
+> 
+> diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+> index cdec83e..f49bc14 100644
+> --- a/kernel/hrtimer.c
+> +++ b/kernel/hrtimer.c
+> @@ -1188,6 +1188,7 @@ static void run_hrtimer_pending(struct hrtimer_cpu_base *cpu_base)
+>  		enum hrtimer_restart (*fn)(struct hrtimer *);
+>  		struct hrtimer *timer;
+>  		int restart;
+> +		int emulate_hardirq_ctx = 0;
+> 
+>  		timer = list_entry(cpu_base->cb_pending.next,
+>  				   struct hrtimer, cb_entry);
+> @@ -1196,10 +1197,24 @@ static void run_hrtimer_pending(struct hrtimer_cpu_base *cpu_base)
+>  		timer_stats_account_hrtimer(timer);
+> 
+>  		fn = timer->function;
+> +		/*
+> +		 * A timer might have been added to the cb_pending list
+> +		 * when it was migrated during a cpu-offline operation.
+> +		 * Emulate hardirq context for such timers.
+> +		 */
+> +		if (timer->cb_mode == HRTIMER_CB_IRQSAFE_PERCPU ||
+> +		    timer->cb_mode == HRTIMER_CB_IRQSAFE_UNLOCKED)
+> +			emulate_hardirq_ctx = 1;
+> +
+>  		__remove_hrtimer(timer, timer->base, HRTIMER_STATE_CALLBACK, 0);
+>  		spin_unlock_irq(&cpu_base->lock);
+> 
+> -		restart = fn(timer);
+> +		if (unlikely(emulate_hardirq_ctx)) {
+> +			local_irq_disable();
+> +			restart = fn(timer);
+> +			local_irq_enable();
+> +		} else
+> +			restart = fn(timer);
+> 
+>  		spin_lock_irq(&cpu_base->lock);
+> 
+> 
+> 
+> -- 
+> Thanks and Regards
+> gautham
