@@ -1,522 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbYJZAzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbYJZBG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754615AbYJZAzY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 20:55:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYJZAzL
+	id S1754311AbYJZBG5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 21:06:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbYJZBGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 20:55:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:58021 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751781AbYJZAzJ (ORCPT
+	Sat, 25 Oct 2008 21:06:49 -0400
+Received: from cpsmtpo-eml06.KPNXCHANGE.COM ([213.75.38.155]:6884 "EHLO
+	cpsmtpo-eml06.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752292AbYJZBGr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 20:55:09 -0400
-Date: Sat, 25 Oct 2008 20:55:05 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH v2][RFC] ftrace: function oprofiler
-In-Reply-To: <alpine.DEB.1.10.0810250130020.27727@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0810252049020.7650@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0810250130020.27727@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sat, 25 Oct 2008 21:06:47 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: kbuild maintainer news [Was: kbuild fixes for -rc1]
+Date: Sun, 26 Oct 2008 03:06:43 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
+References: <20081025211107.GA20417@uranus.ravnborg.org> <20081025211107.GA20417@uranus.ravnborg.org> <20081025215959.GA27617@uranus.ravnborg.org>
+In-reply-To: <20081025215959.GA27617@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_kK8AJ0rEcDNQD8m"
+Message-Id: <200810260206.44969.elendil@planet.nl>
+X-OriginalArrivalTime: 26 Oct 2008 01:06:45.0228 (UTC) FILETIME=[1D474AC0:01C93707]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[
-  Still not ready for inclussion. (well, not tested enough)
+--Boundary-00=_kK8AJ0rEcDNQD8m
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-  Changes since v1:
+Sam Ravnborg wrote:
+> So if you have any pending kbuild patches around please
+> resend them to me with a cc: to at least linux-kbuild.
 
-   I took a more casual look over the code and realized how bad
-   I can write when I'm half asleep. I fixed several nasty
-   (and stupid) race conditions.  I still did not spend that
-   much time on this code, but it should be much safer.
+A similar patch to what you just pushed for rpm's to avoid package 
+installation problems due to firmware is waiting also for deb-pkg.
+Please push the patch in [1] to Linus and stable. Original mail attached.
 
-   One of the changes was to turn the counter into an atomic
-   int. This means that we can overflow after a function was hit
-   over 4 billion times. I added a check for this and the hash
-   will add a '!' if the overflow happens. The final version of
-   this code will probably use atomic_long, but that is still
-   only 32bits on a i386.
+Cheers,
+FJP
 
-   Also fixed the cut and paste error that Frederic pointed out.
-]
-
-
-This is a function profiler to count the number of times a function is hit.
-It creates two files:
-
-  /debugfs/tracing/ftrace_profile_enable
-  /debugfs/tracing/ftrace_profile
-
-For example, to run this I did this as soon as I was able to log in.
-
-# echo 1 > /debug/tracing/ftrace_profile_enable
-
- [ waited a while for the rest of the boot process to run. ]
-
-# echo 0 > /debug/tracing/ftrace_profile_enable
-
-And then I was able to get a list of counts functions were hit.
-
-# cat /debug/tracing/ftrace_profile | head
-entries: 2274
-overruns: 0
-  COUNT       FUNCTION
-     7628  : dnotify_parent+0xd/0x78
-    10101  : hrtimer_get_next_event+0x11/0xc7
-    17937  : inotify_dentry_parent_queue_event+0x11/0x94
-    17952  : inotify_inode_queue_event+0x11/0xe1
-    10103  : rcu_needs_cpu+0x4/0x53
-        1  : printk_needs_cpu+0x4/0x27
-     7314  : printk_needs_cpu+0x4/0x27
+[1] http://lkml.org/lkml/2008/9/13/102
 
 
-I preallocate 5000 entries (later this needs to be configurable).
-If we hit more than 5000 functions, they are counted in the overruns.
 
-I'm also able to use sort to get the top 20 hits:
+--Boundary-00=_kK8AJ0rEcDNQD8m
+Content-Type: message/rfc822;
+  name="forwarded message"
+Content-Transfer-Encoding: 7bit
+Content-Description: Jonathan McDowell <noodles@earth.li>: Re: [PATCH] Fixup deb-pkg target to generate separate firmware deb.
+Content-Disposition: inline
 
-# cat /debug/tracing/ftrace_profile | sort -brn | head -20
-   280075  : __rcu_read_unlock+0xb/0xa2
-   280065  : __rcu_read_lock+0x11/0xb3
-   262811  : dput+0x7/0x162
-   138868  : path_put+0x9/0x35
-   117843  : __phys_addr+0x4/0x39
-   116320  : current_kernel_time+0x8/0x34
-   111272  : kfree+0x11/0xda
-   101832  : unroll_tree_refs+0x11/0xb4
-   101769  : audit_syscall_exit+0x11/0x312
-   101702  : audit_syscall_entry+0x11/0x181
-    90910  : set_normalized_timespec+0x4/0x38
-    88359  : getnstimeofday+0x7/0x9e
-    88309  : ktime_get_ts+0x7/0x53
-    85135  : kmem_cache_free+0x11/0xb9
-    83917  : ktime_get+0x8/0x47
-    51756  : fget+0x7/0x83
-    48623  : mntput_no_expire+0x11/0x140
-    46224  : vm_normal_page+0x4/0x2c
-    41200  : put_page+0xd/0xf5
-    39938  : sys_fcntl+0x11/0x344
+Return-path: <noodles@earth.li>
+X-Spam-Checker-Version: SpamAssassin 3.2.3 (2007-08-08) on elrond.fjphome.nl
+X-Spam-Level: 
+X-Spam-Status: No, score=-3.2 required=3.5 tests=AWL,BAYES_00,
+	RCVD_IN_DNSWL_LOW,RDNS_NONE autolearn=ham version=3.2.3
+Envelope-to: fjp@localhost
+Delivery-date: Sat, 13 Sep 2008 18:20:02 +0200
+Received: from localhost
+	([127.0.0.1] helo=elrond.fjphome.nl ident=fjp)
+	by elrond.fjphome.nl with esmtp (Exim 4.63)
+	(envelope-from <noodles@earth.li>)
+	id 1KeXqs-0004jK-B4
+	for fjp@localhost; Sat, 13 Sep 2008 18:20:02 +0200
+Received: from pop.wxs.nl [195.121.6.53]
+	by elrond.fjphome.nl with POP3 (fetchmail-6.3.6)
+	for <fjp@localhost> (single-drop); Sat, 13 Sep 2008 18:20:02 +0200 (CEST)
+Received: from hpsmtp-eml01.kpnxchange.com ([10.94.77.135]) by CPEXBE-EML18.kpnsp.local with Microsoft SMTPSVC(6.0.3790.1830);
+	 Sat, 13 Sep 2008 18:08:31 +0200
+Received: from the.earth.li ([217.147.81.2]) by hpsmtp-eml01.kpnxchange.com with Microsoft SMTPSVC(6.0.3790.3959);
+	 Sat, 13 Sep 2008 18:08:31 +0200
+Received: from noodles by the.earth.li with local (Exim 4.63)
+	(envelope-from <noodles@earth.li>)
+	id 1KeXfj-000140-GK; Sat, 13 Sep 2008 17:08:31 +0100
+Date: Sat, 13 Sep 2008 17:08:31 +0100
+From: Jonathan McDowell <noodles@earth.li>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org,
+ linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH] Fixup deb-pkg target to generate separate firmware deb.
+Message-ID: <20080913160831.GE30927@earth.li>
+References: <20080912112042.GX30927@earth.li> <200809131035.18477.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200809131035.18477.elendil@planet.nl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 13 Sep 2008 16:08:31.0656 (UTC) FILETIME=[F775C280:01C915BA]
+X-Length: 4638
+X-UID: 618
 
+[Adding linux-kbuild as that seems to be the closest to a maintainer for
+scripts/package/]
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/Kconfig          |   11 +
- kernel/trace/Makefile         |    1 
- kernel/trace/trace_oprofile.c |  361 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 373 insertions(+)
+On Sat, Sep 13, 2008 at 10:35:18AM +0200, Frans Pop wrote:
+> On Friday 12 September 2008, Jonathan McDowell wrote:
+> > The below is a simplistic fix for "make deb-pkg"; it splits the
+> > firmware out to a linux-firmware-image package and adds an
+> > (unversioned) Suggests to the linux package for this firmware.
+> >
+> > Frans, does this solve your problem in an acceptable manner?
+> 
+> Yes it does. Thanks for the patch Jonathan.
+> Tested both with kernel configs that result in firmware and that do not 
+> result in firmware.
+> 
+> A few minor nitpicks below.
 
-Index: linux-tip.git/kernel/trace/trace_oprofile.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-tip.git/kernel/trace/trace_oprofile.c	2008-10-25 20:48:03.000000000 -0400
-@@ -0,0 +1,361 @@
-+/*
-+ * Function profiler
-+ *
-+ * Copyright (C) 2008 Steven Rostedt <srostedt@redhat.com>
-+ */
-+#include <linux/kallsyms.h>
-+#include <linux/seq_file.h>
-+#include <linux/spinlock.h>
-+#include <linux/debugfs.h>
-+#include <linux/uaccess.h>
-+#include <linux/module.h>
-+#include <linux/ftrace.h>
-+#include <linux/hash.h>
-+#include <linux/fs.h>
-+#include <asm/local.h>
-+#include "trace.h"
-+
-+#define FTRACE_PROFILE_HASHBITS	10
-+#define FTRACE_PROFILE_HASHSIZE	(1<<FTRACE_PROFILE_HASHBITS)
-+
-+static DEFINE_PER_CPU(local_t, trace_active);
-+static int ftrace_profile_enabled;
-+
-+struct ftrace_node {
-+	struct hlist_node node;
-+	unsigned long	  ip;
-+	atomic_t	  count;
-+	int		  overflow;
-+};
-+
-+static struct hlist_head function_hash[FTRACE_PROFILE_HASHSIZE];
-+
-+/* TODO: make user configurable */
-+static int ftrace_hash_size = 5000;
-+static int ftrace_hash_occupied;
-+static int ftrace_hash_overrun;
-+
-+static struct ftrace_node *ftrace_node_list;
-+static struct ftrace_node *ftrace_free_node;
-+
-+static raw_spinlock_t ftrace_profile_lock =
-+	(raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
-+
-+static int
-+ftrace_profile_alloc_hash_list(void)
-+{
-+	/* FIXME: size may be too much for kmalloc */
-+	ftrace_node_list = kzalloc(sizeof(struct ftrace_node) *
-+				   ftrace_hash_size, GFP_KERNEL);
-+	if (!ftrace_node_list)
-+		return -ENOMEM;
-+
-+	ftrace_free_node = ftrace_node_list;
-+
-+	return 0;
-+}
-+
-+static void
-+ftrace_profile_init_hash(void)
-+{
-+	ftrace_free_node = ftrace_node_list;
-+	memset(ftrace_node_list, 0, sizeof(*ftrace_node_list) *
-+	       ftrace_hash_size);
-+	memset(function_hash, 0, sizeof(function_hash));
-+}
-+
-+static void
-+ftrace_profile_free_hash_list(void)
-+{
-+	kfree(ftrace_node_list);
-+
-+	ftrace_node_list = ftrace_free_node = NULL;
-+}
-+
-+static struct ftrace_node *
-+ftrace_profile_alloc_node(void)
-+{
-+	if (ftrace_hash_occupied >= ftrace_hash_size)
-+		return NULL;
-+
-+	ftrace_hash_occupied++;
-+
-+	return ftrace_free_node++;
-+}
-+
-+static struct ftrace_node *
-+ftrace_ip_in_hash(unsigned long ip, unsigned long key)
-+{
-+	struct ftrace_node *p;
-+	struct hlist_node *t;
-+
-+	hlist_for_each_entry_rcu(p, t, &function_hash[key], node) {
-+		if (p->ip == ip)
-+			return p;
-+	}
-+
-+	return NULL;
-+}
-+
-+static inline void
-+ftrace_add_hash(struct ftrace_node *node, unsigned long key)
-+{
-+	hlist_add_head_rcu(&node->node, &function_hash[key]);
-+}
-+
-+static void
-+ftrace_profile_trace_call(unsigned long ip, unsigned long parent_ip)
-+{
-+	struct ftrace_node *p;
-+	int cpu, resched;
-+	unsigned long key;
-+	unsigned long before, after;
-+
-+	if (unlikely(!ftrace_enabled || !ftrace_profile_enabled))
-+		return;
-+
-+	resched = need_resched();
-+	preempt_disable_notrace();
-+
-+	cpu = raw_smp_processor_id();
-+	if (local_inc_return(&per_cpu(trace_active, cpu)) != 1)
-+		goto out;
-+
-+	key = hash_long(ip, FTRACE_PROFILE_HASHBITS);
-+	p = ftrace_ip_in_hash(ip, key);
-+
-+	if (!p) {
-+		unsigned long flags;
-+
-+		local_irq_save(flags);
-+		__raw_spin_lock(&ftrace_profile_lock);
-+
-+		/* Make sure it was not added on another CPU */
-+		p = ftrace_ip_in_hash(ip, key);
-+		if (p)
-+			goto unlock;
-+
-+		p = ftrace_profile_alloc_node();
-+		if (!p) {
-+			ftrace_hash_overrun++;
-+			__raw_spin_unlock(&ftrace_profile_lock);
-+			local_irq_restore(flags);
-+			goto out;
-+		}
-+		p->ip = ip;
-+		ftrace_add_hash(p, key);
-+
-+	unlock:
-+		__raw_spin_unlock(&ftrace_profile_lock);
-+		local_irq_restore(flags);
-+	}
-+
-+	if (p->overflow)
-+		goto out;
-+
-+	before = atomic_read(&p->count);
-+	after = atomic_inc_return(&p->count);
-+	if (before > after)
-+		p->overflow = 1;
-+
-+ out:
-+	local_dec(&per_cpu(trace_active, cpu));
-+	/* prevent recursion in schedule */
-+	if (resched)
-+		preempt_enable_no_resched_notrace();
-+	else
-+		preempt_enable_notrace();
-+}
-+
-+static struct ftrace_ops trace_ops __read_mostly =
-+{
-+	.func = ftrace_profile_trace_call,
-+};
-+
-+static void *
-+t_next(struct seq_file *m, void *v, loff_t *pos)
-+{
-+	long i = (long)m->private;
-+
-+	(*pos)++;
-+
-+	i++;
-+
-+	if (i >= ftrace_hash_occupied)
-+		return NULL;
-+
-+	m->private = (void *)i;
-+
-+	return &m->private;
-+}
-+
-+static void *t_start(struct seq_file *m, loff_t *pos)
-+{
-+	void *t = &m->private;
-+	loff_t l = 0;
-+
-+	local_irq_disable();
-+
-+	for (; t && l < *pos; t = t_next(m, t, &l))
-+		;
-+
-+	return t;
-+}
-+
-+static void t_stop(struct seq_file *m, void *p)
-+{
-+	local_irq_enable();
-+}
-+
-+static int trace_lookup_hash(struct seq_file *m, long i)
-+{
-+	unsigned long addr = ftrace_node_list[i].ip;
-+#ifdef CONFIG_KALLSYMS
-+	char str[KSYM_SYMBOL_LEN];
-+
-+	sprint_symbol(str, addr);
-+
-+	return seq_printf(m, "%s\n", str);
-+#else
-+	return seq_printf(m, "%p\n", (void*)addr);
-+#endif
-+}
-+
-+static int t_show(struct seq_file *m, void *v)
-+{
-+	long i = *(long *)v;
-+
-+	if (i < 0) {
-+		seq_printf(m, "entries: %d\n", ftrace_hash_occupied);
-+		seq_printf(m, "overruns: %d\n", ftrace_hash_overrun);
-+
-+		seq_printf(m, "  COUNT       FUNCTION\n");
-+		return 0;
-+	}
-+
-+	if (i >= ftrace_hash_occupied)
-+		return 0;
-+
-+	seq_printf(m, " %8u%c : ",
-+		   atomic_read(&ftrace_node_list[i].count),
-+		   ftrace_node_list[i].overflow ? '!' : ' ');
-+	trace_lookup_hash(m, i);
-+
-+	return 0;
-+}
-+
-+static struct seq_operations ftrace_profile_seq_ops = {
-+	.start		= t_start,
-+	.next		= t_next,
-+	.stop		= t_stop,
-+	.show		= t_show,
-+};
-+
-+static int ftrace_profile_open(struct inode *inode, struct file *file)
-+{
-+	int ret;
-+
-+	ret = seq_open(file, &ftrace_profile_seq_ops);
-+	if (!ret) {
-+		struct seq_file *m = file->private_data;
-+		m->private = (void *)-1;
-+	}
-+
-+	return ret;
-+}
-+
-+static struct file_operations ftrace_profile_fops = {
-+	.open		= ftrace_profile_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+};
-+
-+static ssize_t
-+ftrace_profile_enable_read(struct file *filp, char __user *ubuf,
-+			   size_t cnt, loff_t *ppos)
-+{
-+	char buf[64];
-+	int r;
-+
-+	r = sprintf(buf, "%d\n", ftrace_profile_enabled);
-+	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
-+}
-+
-+static ssize_t
-+ftrace_profile_enable_write(struct file *filp, const char __user *ubuf,
-+			    size_t cnt, loff_t *ppos)
-+{
-+	char buf[64];
-+	long val;
-+	int ret;
-+
-+	if (!ftrace_node_list)
-+		return -ENODEV;
-+
-+	if (cnt >= sizeof(buf))
-+		return -EINVAL;
-+
-+	if (copy_from_user(&buf, ubuf, cnt))
-+		return -EFAULT;
-+
-+	buf[cnt] = 0;
-+
-+	ret = strict_strtoul(buf, 10, &val);
-+	if (ret < 0)
-+		return ret;
-+
-+	val = !!val;
-+
-+	if (val == ftrace_profile_enabled)
-+		goto out;
-+
-+	if (val) {
-+		/* start it up */
-+		ftrace_profile_init_hash();
-+		register_ftrace_function(&trace_ops);
-+		ftrace_profile_enabled = 1;
-+	} else {
-+		ftrace_profile_enabled = 0;
-+		unregister_ftrace_function(&trace_ops);
-+	}
-+
-+ out:
-+	filp->f_pos += cnt;
-+
-+	return cnt;
-+}
-+
-+static struct file_operations ftrace_profile_enable_fops = {
-+	.open		= tracing_open_generic,
-+	.read		= ftrace_profile_enable_read,
-+	.write		= ftrace_profile_enable_write,
-+};
-+
-+
-+static __init int ftrace_profile_init(void)
-+{
-+	struct dentry *d_tracer;
-+	struct dentry *entry;
-+	int ret;
-+
-+	ret = ftrace_profile_alloc_hash_list();
-+	if (ret)
-+		return ret;
-+
-+	d_tracer = tracing_init_dentry();
-+
-+	entry = debugfs_create_file("ftrace_profile_enable", 0644, d_tracer,
-+				    NULL, &ftrace_profile_enable_fops);
-+	if (!entry)
-+		pr_warning("Could not create debugfs 'ftrace_profile_enable' entry\n");
-+
-+	entry = debugfs_create_file("ftrace_profile", 0444, d_tracer,
-+				    NULL, &ftrace_profile_fops);
-+	if (!entry)
-+		pr_warning("Could not create debugfs 'ftrace_profile' entry\n");
-+
-+
-+	return 0;
-+}
-+
-+device_initcall(ftrace_profile_init);
-Index: linux-tip.git/kernel/trace/Kconfig
-===================================================================
---- linux-tip.git.orig/kernel/trace/Kconfig	2008-10-23 12:55:37.000000000 -0400
-+++ linux-tip.git/kernel/trace/Kconfig	2008-10-25 11:50:18.000000000 -0400
-@@ -156,6 +156,17 @@ config STACK_TRACER
+Ta, I've fixed both the indents. I've also changed the firmware package
+to be arch: all.
+
+> > Signed-Off-By: Jonathan McDowell <noodles@earth.li>
+> Acked-by: Frans Pop <elendil@planet.nl>
  
- 	  Say N if unsure.
+-----
+diff --git a/scripts/package/builddeb b/scripts/package/builddeb
+index ba6bf5d..1264b8e 100644
+--- a/scripts/package/builddeb
++++ b/scripts/package/builddeb
+@@ -15,15 +15,18 @@ set -e
+ version=$KERNELRELEASE
+ revision=`cat .version`
+ tmpdir="$objtree/debian/tmp"
++fwdir="$objtree/debian/fwtmp"
+ packagename=linux-$version
++fwpackagename=linux-firmware-image
  
-+config FUNCTION_PROFILER
-+	bool "Trace function profiler"
-+	depends on HAVE_FUNCTION_TRACER
-+	depends on DEBUG_KERNEL
-+	select FUNCTION_TRACER
-+	help
-+	  This special tracer that makes a histogram of all the functions
-+	  that it encounters.
-+
-+	  Say N if unsure.
-+
- config DYNAMIC_FTRACE
- 	bool "enable/disable ftrace tracepoints dynamically"
- 	depends on FUNCTION_TRACER
-Index: linux-tip.git/kernel/trace/Makefile
-===================================================================
---- linux-tip.git.orig/kernel/trace/Makefile	2008-10-23 12:55:37.000000000 -0400
-+++ linux-tip.git/kernel/trace/Makefile	2008-10-25 00:58:07.000000000 -0400
-@@ -22,6 +22,7 @@ obj-$(CONFIG_PREEMPT_TRACER) += trace_ir
- obj-$(CONFIG_SCHED_TRACER) += trace_sched_wakeup.o
- obj-$(CONFIG_NOP_TRACER) += trace_nop.o
- obj-$(CONFIG_STACK_TRACER) += trace_stack.o
-+obj-$(CONFIG_FUNCTION_PROFILER) += trace_oprofile.o
- obj-$(CONFIG_MMIOTRACE) += trace_mmiotrace.o
- obj-$(CONFIG_BOOT_TRACER) += trace_boot.o
+ if [ "$ARCH" == "um" ] ; then
+ 	packagename=user-mode-linux-$version
+ fi
  
+ # Setup the directory structure
+-rm -rf "$tmpdir"
++rm -rf "$tmpdir" "$fwdir"
+ mkdir -p "$tmpdir/DEBIAN" "$tmpdir/lib" "$tmpdir/boot"
++mkdir -p "$fwdir/DEBIAN" "$fwdir/lib"
+ if [ "$ARCH" == "um" ] ; then
+ 	mkdir -p "$tmpdir/usr/lib/uml/modules/$version" "$tmpdir/usr/share/doc/$packagename" "$tmpdir/usr/bin"
+ fi
+@@ -107,6 +110,7 @@ Standards-Version: 3.6.1
+ 
+ Package: $packagename
+ Provides: kernel-image-$version, linux-image-$version
++Suggests: $fwpackagename
+ Architecture: any
+ Description: Linux kernel, version $version
+  This package contains the Linux kernel, modules and corresponding other
+@@ -118,8 +122,24 @@ fi
+ chown -R root:root "$tmpdir"
+ chmod -R go-w "$tmpdir"
+ 
++# Do we have firmware? Move it out of the way and build it into a package.
++if [ -e "$tmpdir/lib/firmware" ]; then
++	mv "$tmpdir/lib/firmware" "$fwdir/lib/"
++
++	cat <<EOF >> debian/control
++
++Package: $fwpackagename
++Architecture: all
++Description: Linux kernel firmware, version $version
++ This package contains firmware from the Linux kernel, version $version
++EOF
++
++	dpkg-gencontrol -isp -p$fwpackagename -P"$fwdir"
++	dpkg --build "$fwdir" ..
++fi
++
+ # Perform the final magic
+-dpkg-gencontrol -isp
++dpkg-gencontrol -isp -p$packagename
+ dpkg --build "$tmpdir" ..
+ 
+ exit 0
+-----
+
+J.
+
+-- 
+"Just because I'll spend 4 hours automating a task that takes 4 minutes
+by hand doesn't mean I'm not lazy." -- Mike Sphar, asr
 
 
+--Boundary-00=_kK8AJ0rEcDNQD8m--
