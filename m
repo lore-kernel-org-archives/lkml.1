@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbYJZGeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752586AbYJZHEB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754171AbYJZGeU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 02:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbYJZGeL
+	id S1752586AbYJZHEB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 03:04:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbYJZHDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 02:34:11 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40144 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752543AbYJZGeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 02:34:11 -0400
-Subject: Re: [PATCH] genirq: Set initial default irq affinity to just CPU0
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: David Miller <davem@davemloft.net>
-Cc: galak@kernel.crashing.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, torvalds@osdl.org, maxk@qualcomm.com,
-       tglx@linutronix.de
-In-Reply-To: <20081025.210412.206011121.davem@davemloft.net>
-References: <1224863858-7933-1-git-send-email-galak@kernel.crashing.org>
-	 <20081024.161813.193686281.davem@davemloft.net>
-	 <1224970389.7654.473.camel@pasglop>
-	 <20081025.210412.206011121.davem@davemloft.net>
-Content-Type: text/plain
-Date: Sun, 26 Oct 2008 17:33:35 +1100
-Message-Id: <1225002815.7654.487.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 26 Oct 2008 03:03:52 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:32747 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750957AbYJZHDv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 03:03:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ETtYZR158BJLyRnPhzByZHZlIPEFPyGWeQv4670Z0P3/0B07Bp4wIcCC3JX+h/GRvD
+         EGfbp3xRYpSN/eMqvcpuki2twNE1lQnlDbIJevfsXX/ymjw2EpGFIznpeZhJePbz+lrd
+         mgCJk1nEpuHTV9cRd5TNoT3VlZMEKyHy00Pf8=
+Message-ID: <4904164F.5090006@gmail.com>
+Date: Sun, 26 Oct 2008 09:03:43 +0200
+From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+CC: mingo@elte.hu, srostedt@redhat.com, a.p.zijlstra@chello.nl,
+       sandmann@daimi.au.dk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] Add support for userspace stacktraces in tracing/iter_ctrl
+References: <1223817124-27239-1-git-send-email-edwintorok@gmail.com>	 <1223817124-27239-3-git-send-email-edwintorok@gmail.com> <c62985530810252105k3bce2339k5a49c09fa502ac67@mail.gmail.com>
+In-Reply-To: <c62985530810252105k3bce2339k5a49c09fa502ac67@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-10-25 at 21:04 -0700, David Miller wrote:
-> But back to my original wonder, since I've always tipped off of this
-> generic IRQ layer cpu mask, when was it ever defaulting to zero
-> and causing the behvaior your powerpc guys actually want? :-)
+On 2008-10-26 06:05, Frédéric Weisbecker wrote:
+> Hi Török,
+>
+> I just read a bit more those two patches about user stack tracing.
+> Note that despite the recent changes on the tracing Api
+> (ring buffer and other stuff), it still applies well, with some little
+> hunks. But it needs some updates to support the last changes.
+>
+> I adapted the patch and it builds well, but I didn't tested yet.
+> However, some parts are "architecture dependent", I guess these
+> special pieces would find a better place in the arch directory. So it
+> would let a proper and seperated implementation.
+>   
 
-Well, I'm not sure what Kumar wants. Most powerpc SMP setups actually
-want to spread interrupts to all CPUs, and those who can't tend to just
-not implement set_affinity... So Kumar must have a special case of MPIC
-usage here on FSL platforms.
+Hi,
 
-In any case, the platform limitations should be dealt with there or the
-user could break it by manipulating affinity via /proc anyway.
+The stacktrace code itself is in the arch directory, did I miss anything
+else that should belong there?
 
-By yeah, I do expect default affinity to be all CPUs and in fact, I even
-have an -OLD- comment in the code that says
-
- 	/* let the mpic know we want intrs. default affinitya is 0xffffffff ...
-
-Now, I've tried to track that down but it's hard because the generic code
-seem to have changed in many ways around affinity handling...
-
-So it looks like nowadays, the generic setup_irq() will call
-irq_select_affinity() when an interrupt is first requested. Unless
-you set CONFIG_AUTO_IRQ_AFFINITY and implement your own
-irq_select_affinity(), thus, you will get the default one which copies
-the content of this global irq_default_affinity to the interrupt.
-
-However it does that _after_ your IRQ startup() has been called
-(yes, this is very fishy), and so after you did your irq_choose_cpu()...
-
-This is all very messy, along with hooks for balancing and other confusing
-stuff that I suspect keeps changing. I'll have to spend more time next
-week to sort out what exactly is happening on powerpc and whether we
-get our interrupts spread or not...
-
-That's the downside of having more generic irq code I suppose: now people
-keep rewriting half of the generic code with x86 exclusively in mind and
-we have to be extra careful :-)
-
-Cheers,
-Ben.
+arch/x86/kernel/stacktrace.c |   57 +++++++++++++++++++++++++++++++++++
+include/linux/stacktrace.h   |    8 +++++
 
 
+> And most arch implement a stacktrace implementation, even if yours
+> involve special operations such as copy_from_user, I wonder if the
+> already established code couldn't be reused for your needs.
+>   
+
+I think it would make sense to use oprofile's code of user stacktracing,
+there  is a backtrace
+operation in 'struct oprofile_operations'. Perhaps that could be
+extended so that non-oprofile code can call it?
+[currently it uses oprofile_add_trace to store the stacktrace]
+
+Best regards,
+--Edwin
