@@ -1,78 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbYJZKi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbYJZKlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbYJZKi5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 06:38:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbYJZKis
+	id S1754762AbYJZKlS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 06:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYJZKlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 06:38:48 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:7467 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752349AbYJZKiq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 06:38:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=Q2IVD67BidKAMYtb54kDnFqfbG8V1z1t2jjfqeZBZRFTkcmZtrlFoMOisJ2KizkArJ
-         mNPvNdCnJsStWYNce8+JKux0ArDsmRTDe4Q2YNrxER2W7lNYZ86Jfw6s4Hy8fnC5YJwq
-         937n0xmBDMSP0a3BILi2rAEFR8yE4CDNg5StU=
-Message-ID: <490448B0.8050307@gmail.com>
-Date: Sun, 26 Oct 2008 11:38:40 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: Francois Romieu <romieu@fr.zoreil.com>
-CC: Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Edward Hsu <edward_hsu@realtek.com.tw>,
-       Ivan Vecera <ivecera@redhat.com>
-Subject: Re: r8169 MAC addresses broken
-References: <490380C8.6070003@simon.arlott.org.uk> <4903947A.3060206@gmail.com> <20081025223443.GA30913@electric-eye.fr.zoreil.com>
-In-Reply-To: <20081025223443.GA30913@electric-eye.fr.zoreil.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sun, 26 Oct 2008 06:41:10 -0400
+Received: from 1wt.eu ([62.212.114.60]:4937 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752676AbYJZKlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 06:41:09 -0400
+Date: Sun, 26 Oct 2008 11:41:04 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: =?iso-8859-1?Q?J=F6rg?= Dohle <j.d.-linux-kernel@arcor.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: How can I build a 2.4 kernel on a 2.6 System
+Message-ID: <20081026104103.GW24654@1wt.eu>
+References: <16891148.1224850600689.JavaMail.ngmail@webmail18.arcor-online.net> <20081024202955.GT24654@1wt.eu> <20CDA8F07DE345B8AA01B3C43EE8A6F7@pc686xpp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20CDA8F07DE345B8AA01B3C43EE8A6F7@pc686xpp>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Francois Romieu napsal(a):
-> Jiri Slaby <jirislaby@gmail.com> :
-> [...]
->> Ah, I thought I have broken hardware. I have similar problem, my mac is
->> initially all zeroes. When I set it up, it works until suspend. After that I
->> need to unbind the driver, bind it again, and it works then (mac is still the
->> set one).
->>
->> I'm out of the notebook right now, but it is 10ec:8168:
->> 06:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168B PCI
->> Express Gigabit Ethernet controller (rev 01)
->> 	Subsystem: ASUSTeK Computer Inc. Unknown device 11f5
->>
->> I used it perfectly far later than 2.6.24 (maybe 2.6.26?), 2.6.27 is yet
->> defunct.
+On Sun, Oct 26, 2008 at 11:32:17AM +0100, Jörg Dohle wrote:
+> Hello Willy
 > 
-> 2.6.27 proper ? That's bad news.
+> Thanks for answering, but I have a problem with the compiling.
+> When I try to compile the 2.4 kernel with the following commands:
 > 
-> Can you send a dmesg for 2.6.27 and 2.6.28-rc1 ?
+> # make clean && make mrproper
+> then I restore the .config file
+> # make oldconfig
+> # make dep && make bzImage respectively make modules
+> 
+> 
+> I get the following error message:
+> 
+> make[1]: Leaving directory 
+> `/fileserver/99_Frei/kernel-build-tree/linux-2.4.21-57.EL'
 
-2.6.28-rc1 doesn't boot, the rest of dmesgs is at:
-http://decibel.fi.muni.cz/~xslaby/r8169_mac/
+OK, first it's an RHEL3 kernel, not a mainline one. The difference can
+sometimes be important.
 
-However I may have a hw failure or some bug overwrote my eeprom, I see this
-in current mmotm:
-r8169 0000:06:00.0: PCI INT A disabled
-r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
-r8169 0000:06:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-r8169 0000:06:00.0: setting latency timer to 64
-r8169: mac_version = 0x0c
-r8169 0000:06:00.0: irq 43 for MSI/MSI-X
-r8169: MAC address found in EEPROM: 00:00:00:00:00:00
-eth0: RTL8168b/8111b at 0xffffc200042b0000, 00:00:00:00:00:00, XID 38000000
-IRQ 43
-r8169: mac_version = 0x0c
+> gcc -D__KERNEL__ 
+> -I/fileserver/99_Frei/kernel-build-tree/linux-2.4.21-57.EL/include -Wall 
+> -Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common 
+>  -Wno-unused -fomit-frame-pointer -pipe -freorder-blocks  -march=i386   
+>  -DKBUILD_BASENAME=main -c -o init/main.o init/main.c
+> init/main.c:1: Fehler: Die ausgewählte CPU unterstützt nicht den x86-64 
+> Befehlssatz
+> 
+> English translation (by google)
+> init / main.c: 1: Error: The selected CPU does not support x86-64 
+> instruction
 
-which looks like even in the eeprom are all zeroes now. Also 2.6.25 is
-affected by this now and it worked (from_Jul dmesg).
+You might get native error messages by doing "export LANG=C" before
+building. I think that the problem you're encountering is simply
+because by default you're trying to build for a different architecture.
+
+You should try appending "ARCH=i386" to all your make commands :
+
+# make oldconfig ARCH=i386
+# make dep ARCH=i386 && make bzImage ARCH=i386
+# make modules ARCH=i386
+
+It should theorically work, but since this is not used very often, it is
+possible that you still get minor trouble.
+
+Regards,
+Willy
+
