@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbYJZDnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbYJZDzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753245AbYJZDnz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 23:43:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbYJZDnr
+	id S1753709AbYJZDzf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 23:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYJZDzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 23:43:47 -0400
-Received: from ppsw-1.csi.cam.ac.uk ([131.111.8.131]:45393 "EHLO
-	ppsw-1.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751982AbYJZDnq (ORCPT
+	Sat, 25 Oct 2008 23:55:25 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55062
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750824AbYJZDzY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 23:43:46 -0400
-X-Greylist: delayed 1639 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Oct 2008 23:43:46 EDT
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Francois Valenduc <francois.valenduc@tvcablenet.be>
-Subject: Re: [Bug #11841] plenty of line "ACPI: EC: non-query interrupt received, switching to interrupt mode" in dmesg
-References: <bqZlc-1BT-11@gated-at.bofh.it> <bqZuJ-22l-15@gated-at.bofh.it>
-From: Sanjoy Mahajan <sanjoy@mrao.cam.ac.uk>
-Date: 26 Oct 2008 03:16:25 +0000
-In-Reply-To: <bqZuJ-22l-15@gated-at.bofh.it>
-Message-ID: <r6ljwccagm.fsf@skye.inf.phy.cam.ac.uk>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 25 Oct 2008 23:55:24 -0400
+Date: Sat, 25 Oct 2008 20:55:01 -0700 (PDT)
+Message-Id: <20081025.205501.193695937.davem@davemloft.net>
+To: rjw@sisk.pl
+Cc: mingo@elte.hu, s0mbre@tservice.net.ru, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, efault@gmx.de
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200810251313.21120.rjw@sisk.pl>
+References: <200810250025.35734.rjw@sisk.pl>
+	<20081024.163111.244324800.davem@davemloft.net>
+	<200810251313.21120.rjw@sisk.pl>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The following bug entry is on the current list of known regressions
-> from 2.6.27.
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Date: Sat, 25 Oct 2008 13:13:20 +0200
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11841
-> Subject : plenty of line "ACPI: EC: non-query interrupt received, switching to interrupt mode" in dmesg
+> Could you please give me a pointer to the commit disabling the hrtimer feature?
 
-I see these messages already with 2.6.27.3:
+Here it is:
 
-  # grep non-query /var/log/dmesg
-  [    0.205977] ACPI: EC: non-query interrupt received, switching to interrupt mode
+commit 0c4b83da58ec2e96ce9c44c211d6eac5f9dae478
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Mon Oct 20 14:27:43 2008 +0200
 
-There are 9 more occurrences in the current ring buffer:
-  # dmesg |grep non-query | wc -l
-  9
+    sched: disable the hrtick for now
+    
+    David Miller reported that hrtick update overhead has tripled the
+    wakeup overhead on Sparc64.
+    
+    That is too much - disable the HRTICK feature for now by default,
+    until a faster implementation is found.
+    
+    Reported-by: David Miller <davem@davemloft.net>
+    Acked-by: Peter Zijlstra <peterz@infradead.org>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Each one happens right after waking from S3 sleep, for example:
-
-  [70168.288590] CPU1 is up
-  [70168.288594] ACPI: Waking up from system sleep state S3
-  [70169.624254] ACPI: EC: non-query interrupt received, switching to interrupt mode
-
-The setup is a TP T60 w/ Intel graphics, wireless (i.e. no taint),
-Debian unstable, but with vanilla kernel 2.6.27.3.
-
--Sanjoy
+diff --git a/kernel/sched_features.h b/kernel/sched_features.h
+index 7c9e8f4..fda0162 100644
+--- a/kernel/sched_features.h
++++ b/kernel/sched_features.h
+@@ -5,7 +5,7 @@ SCHED_FEAT(START_DEBIT, 1)
+ SCHED_FEAT(AFFINE_WAKEUPS, 1)
+ SCHED_FEAT(CACHE_HOT_BUDDY, 1)
+ SCHED_FEAT(SYNC_WAKEUPS, 1)
+-SCHED_FEAT(HRTICK, 1)
++SCHED_FEAT(HRTICK, 0)
+ SCHED_FEAT(DOUBLE_TICK, 0)
+ SCHED_FEAT(ASYM_GRAN, 1)
+ SCHED_FEAT(LB_BIAS, 1)
