@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbYJZN6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbYJZOFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755182AbYJZN6T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 09:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbYJZN6H
+	id S1755179AbYJZOFq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 10:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbYJZOFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 09:58:07 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:57784 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753416AbYJZN6G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 09:58:06 -0400
-Date: Sun, 26 Oct 2008 09:58:01 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH v2][RFC] ftrace: function oprofiler
-In-Reply-To: <1225017357.27415.5.camel@twins>
-Message-ID: <alpine.DEB.1.10.0810260951500.20123@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0810250130020.27727@gandalf.stny.rr.com>  <alpine.DEB.1.10.0810252049020.7650@gandalf.stny.rr.com> <1225017357.27415.5.camel@twins>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 26 Oct 2008 10:05:37 -0400
+Received: from os.eurotux.com ([216.75.63.6]:51877 "EHLO os.eurotux.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752368AbYJZOFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 10:05:36 -0400
+Date: Sun, 26 Oct 2008 14:05:29 +0000
+From: Luciano Rocha <luciano@eurotux.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>
+Subject: Re: usb hdd problems with 2.6.27.2
+Message-ID: <20081026140529.GA4614@bit.office.eurotux.com>
+Mail-Followup-To: Luciano Rocha <luciano@eurotux.com>,
+	James Bottomley <James.Bottomley@HansenPartnership.com>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux-Kernel <linux-kernel@vger.kernel.org>,
+	USB list <linux-usb@vger.kernel.org>,
+	SCSI development list <linux-scsi@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0810251548300.7245-100000@netrider.rowland.org> <1224965493.3449.7.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="W/nzBZO5zC0uMSeA"
+Content-Disposition: inline
+In-Reply-To: <1224965493.3449.7.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.14 (2007-03-31)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Sun, 26 Oct 2008, Peter Zijlstra wrote:
+--W/nzBZO5zC0uMSeA
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Sat, 2008-10-25 at 20:55 -0400, Steven Rostedt wrote:
-> 
-> > This is a function profiler to count the number of times a function is hit.
-> 
-> I have to ask, _why_?
-> 
-> It seems like a nice enough gimmick, but is this information actually
-> useful?
+On Sat, Oct 25, 2008 at 03:11:33PM -0500, James Bottomley wrote:
+> On Sat, 2008-10-25 at 15:50 -0400, Alan Stern wrote:
+> > On Sat, 25 Oct 2008, Rafael J. Wysocki wrote:
+> >=20
+> > > [Adding CCs]
+> > >=20
+> > > On Wednesday, 22 of October 2008, Luciano Rocha wrote:
+> > > >=20
+> > > > Hello,
+> > > >=20
+> > > > An external HDD, usb-encased, works fine under 2.6.26.5, but under
+> > > > 2.6.27.2 I get hundreds of errors per second, of 'No Sense [current=
+]'.
+> >=20
+> > You can use usbmon to capture the details of what happens when you plug
+> > in the drive.  Instructions are in the kernel source file
+> > Documentation/usb/usbmon.txt.
+>=20
+> Try reversing this patch (apply with patch -p1 -R)
 
-Well, it does let you know for sure which functions are the hottest paths.
-Perhaps you have a "slow path" function. This will show you how slow
-that slow path is. That is, how many times it is hit compared to the
-fast path.
+I'll try it tomorrow.
 
-With dynamic ftrace, you can also pick and choose which functions
-are to be counted.
+Thanks,
+Luciano Rocha
 
-What is also nice about it (and something that I will use it for), is that
-it will show you the functions that will be hit the most during a trace. 
-If you do not care about those functions, then you can easily filter them 
-out for your trace.
+--=20
+Luciano Rocha <luciano@eurotux.com>
+Eurotux Inform=E1tica, S.A. <http://www.eurotux.com/>
 
-This patch is also a proof of concept. I'm sure others can think of more 
-useful things to do by adding more stuff to this patch.
+--W/nzBZO5zC0uMSeA
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
--- Steve
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEARECAAYFAkkEeSkACgkQinSul6a7oB9UGwCdEZtTS3op9DBnac+k7giz1OI5
+nb0AoJ0bC8NiqOBqzzQbSi8i/eSggUwu
+=bL7H
+-----END PGP SIGNATURE-----
+
+--W/nzBZO5zC0uMSeA--
