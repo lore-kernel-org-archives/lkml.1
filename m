@@ -1,45 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbYJZHUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752883AbYJZHZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834AbYJZHUR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 03:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYJZHUE
+	id S1752883AbYJZHZz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 03:25:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbYJZHZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 03:20:04 -0400
-Received: from fwil.voltaire.com ([193.47.165.2]:49001 "EHLO exil.voltaire.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751037AbYJZHUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 03:20:03 -0400
-Message-ID: <49041A1F.3070806@voltaire.com>
-Date: Sun, 26 Oct 2008 09:19:59 +0200
-From: Or Gerlitz <ogerlitz@voltaire.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Sun, 26 Oct 2008 03:25:46 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:17395 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750957AbYJZHZq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 03:25:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=vb62TpqHA6ZwJHpKmKbZin43H2XATML/PNNfPJoEhIraRZk3pHsy2bmtN4389zMS5p
+         uKzOB6knjVH/AcoOopNxg6u6fI14FOGPUGVvN/XD1zgKq4FM8Bd7XtXsaWmfRifsJ0wi
+         /zVknDclKYA6H3hgcyykqO5nmilqdkXrXRmO0=
+Message-ID: <49041B73.8060603@gmail.com>
+Date: Sun, 26 Oct 2008 08:25:39 +0100
+From: "Mikko C." <mikko.cal@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080927)
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, ericvh@gmail.com,
-       rolandd@cisco.com, v9fs-developer@lists.sourceforge.net,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] Re: linux-next: Tree for October 23
-References: <20081023213637.eff9b414.sfr@canb.auug.org.au> <20081023180412.394d40c2.randy.dunlap@oracle.com>
-In-Reply-To: <20081023180412.394d40c2.randy.dunlap@oracle.com>
+To: Jiri Kosina <jkosina@suse.cz>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Random problems with 2.6.28-rc1-git1
+References: <490332E5.3020108@gmail.com> <Pine.LNX.4.64.0810260235490.22126@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0810260235490.22126@twin.jikos.cz>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Oct 2008 07:19:59.0480 (UTC) FILETIME=[414AF780:01C9373B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> Building with CONFIG_INFINIBAND=m, kconfig allows CONFIG_NET_9P_RDMA=m,
-> so one module wants symbols from the other (net/9p wants symbols from rmda_*).
+Jiri Kosina ha scritto:
+> On Sat, 25 Oct 2008, Mikko C. wrote:
+>   
+>> Today I tried upgrading to 2.6.28-rc1-git1 (-rc1 couldn't even mount the 
+>> disk). I'm having some problems with it :)
+>> 1) Whenever I try to unload (rmmod or modprobe -r) *any* modules (even 
+>>    if not used), the system hangs.  I can still move the mouse and see 
+>>    the cursor moving, but I can't type, can't switch console, nothing.  
+>>    Because of this, I can't shutdown the system properly because it 
+>>    hangs when "Unloading ALSA modules"
+>>     
 >
-> ERROR: "rdma_destroy_id" [net/9p/9pnet_rdma.ko] undefined!
-> ERROR: "rdma_connect" [net/9p/9pnet_rdma.ko] undefined!
-> ...
-> Is this supposed to be allowed/possible?  Otherwise NET_9P_RDMA might have to depend on INFINBAND=y...
-No, there's no need to config INFINIBAND at built it.  What's the value 
-of CONFIG_INFINIBAND_ADDR_TRANS ?
+> If rmmod never returns, alt-sysrq-t output should show us where it got 
+> stuck.
+>
+>   
+Thanks for your answer
+I tried Alt-Sysrq-T after a rmmod, but all I get is:
+"SysRq : Show State"
 
-Or.
+Is it normal? Does it dump the information to a log?
+Sorry but I never used sysrq in the past.
 
+>> 2) Sometimes (randomly it seems) the system doesn't detect any usb 
+>>    devices:  I have an external HD and a Logitech mouse. Sometimes they 
+>>    are recognized, sometimes not.  Unplugging and re-plugging them 
+>>    doesn't help. lsusb shows no attached device.
+>>     
+>
+> Compiling with CONFIG_USB_DEBUG and sending report to 
+> linux-usb@vger.kernel.org with the output included might be a good start.
+>   
+Ok, done: http://marc.info/?l=linux-usb&m=122500580917403&w=2
 
+Thanks
