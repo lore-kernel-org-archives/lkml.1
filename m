@@ -1,66 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbYJZVMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbYJZVRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753965AbYJZVMw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 17:12:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbYJZVMh
+	id S1753647AbYJZVRm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 17:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbYJZVRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 17:12:37 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:56281 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751686AbYJZVMg (ORCPT
+	Sun, 26 Oct 2008 17:17:34 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:36894 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751772AbYJZVRe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 17:12:36 -0400
-Subject: Re: [PATCH] wireless: fix regression caused by regulatory config
-	option
-From: Marcel Holtmann <holtmann@linux.intel.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: "John W. Linville" <linville@tuxdriver.com>, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@sisk.pl,
-       rodriguez@atheros.com, johannes@sipsolutions.net
-In-Reply-To: <20081026131818.7517c103@infradead.org>
-References: <20081026103024.2712ddc9@infradead.org>
-	 <20081026200939.GC12648@tuxdriver.com>
-	 <20081026131818.7517c103@infradead.org>
-Content-Type: text/plain
-Date: Sun, 26 Oct 2008 23:12:37 +0100
-Message-Id: <1225059157.7157.3.camel@californication>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sun, 26 Oct 2008 17:17:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=NlN+z6N02KCj2XxgtJjx5s3DH91trJY+LMxnDj68/Y+xK6EcdOfpfsQPozfK/SzZng
+         7v3OLpSP2Byetipu9mzpQmdho9ylJOIyU8eLboA/OmdA0ruZk0zr9YclaAGcFpmue6TW
+         SNKeENVX9IS+ouivA342kkHK0zpnTLzXXAzaM=
+Message-ID: <c62985530810261417r7538fa4ct10c060300f357d29@mail.gmail.com>
+Date: Sun, 26 Oct 2008 22:17:31 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] ftrace: Add a script to produce a hierarchical view of a function trace
+Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4904DD15.4040005@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4904DD15.4040005@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arjan,
-
-> > > Change the default to "y" and also adjust the config text a little
-> > > to reflect this.
-> > 
-> > Is it common practice to have compatibility options default to
-> > "y"?  I'm not saying it shouldn't be, just wondering if it has been
-> > traditionally?
-> 
-> yes
-> 
-> default should be "keep working as before"
-> 
-> it's not always nice, especially if you're trying to get rid of some
-> nasty stuff, but think of it this way: you should be able to use a
-> new kernel on an existing distro, at least for a reasonable type of
-> distro (eg something shipped in, say, the last 2 years). In this case:
-> even Fedora 10 is not likely to work!
-
-I think with the new patches from Johannes to make the regulatory
-interaction easier for hardware that has hardware/EEPROM based
-regulatory enforcement like our wireless cards, it should be all good.
-
-That seems to be 2.6.20 stuff and then it seems to be safe to remove the
-WIRELESS_OLD_REGULATORY option and it would still work with old
-userspace (or missing crda/iw) in cases the hardware does regulatory
-enforcement.
-
-Regards
-
-Marcel
-
-
+Hmm... Broken because of an inline attachment by thunderbird.
+Sorry, I'm resending it properly.
