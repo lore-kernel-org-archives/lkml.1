@@ -1,190 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbYJZBG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669AbYJZCVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754311AbYJZBG5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 21:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbYJZBGt
+	id S1752669AbYJZCVn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 22:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbYJZCVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 21:06:49 -0400
-Received: from cpsmtpo-eml06.KPNXCHANGE.COM ([213.75.38.155]:6884 "EHLO
-	cpsmtpo-eml06.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752292AbYJZBGr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 21:06:47 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: kbuild maintainer news [Was: kbuild fixes for -rc1]
-Date: Sun, 26 Oct 2008 03:06:43 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-References: <20081025211107.GA20417@uranus.ravnborg.org> <20081025211107.GA20417@uranus.ravnborg.org> <20081025215959.GA27617@uranus.ravnborg.org>
-In-reply-To: <20081025215959.GA27617@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_kK8AJ0rEcDNQD8m"
-Message-Id: <200810260206.44969.elendil@planet.nl>
-X-OriginalArrivalTime: 26 Oct 2008 01:06:45.0228 (UTC) FILETIME=[1D474AC0:01C93707]
+	Sat, 25 Oct 2008 22:21:35 -0400
+Received: from main.gmane.org ([80.91.229.2]:33232 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751327AbYJZCVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Oct 2008 22:21:34 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Marcus Furlong <furlongm@hotmail.com>
+Subject: 2.6.27.3 possible recursive locking detected - hfsplus
+Date: Sun, 26 Oct 2008 03:23:25 +0000
+Message-ID: <ge0k71$91g$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 84-203-37-182.mysmart.ie
+User-Agent: KNode/0.10.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_kK8AJ0rEcDNQD8m
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Sam Ravnborg wrote:
-> So if you have any pending kbuild patches around please
-> resend them to me with a cc: to at least linux-kbuild.
-
-A similar patch to what you just pushed for rpm's to avoid package 
-installation problems due to firmware is waiting also for deb-pkg.
-Please push the patch in [1] to Linus and stable. Original mail attached.
-
-Cheers,
-FJP
-
-[1] http://lkml.org/lkml/2008/9/13/102
-
-
-
---Boundary-00=_kK8AJ0rEcDNQD8m
-Content-Type: message/rfc822;
-  name="forwarded message"
-Content-Transfer-Encoding: 7bit
-Content-Description: Jonathan McDowell <noodles@earth.li>: Re: [PATCH] Fixup deb-pkg target to generate separate firmware deb.
-Content-Disposition: inline
-
-Return-path: <noodles@earth.li>
-X-Spam-Checker-Version: SpamAssassin 3.2.3 (2007-08-08) on elrond.fjphome.nl
-X-Spam-Level: 
-X-Spam-Status: No, score=-3.2 required=3.5 tests=AWL,BAYES_00,
-	RCVD_IN_DNSWL_LOW,RDNS_NONE autolearn=ham version=3.2.3
-Envelope-to: fjp@localhost
-Delivery-date: Sat, 13 Sep 2008 18:20:02 +0200
-Received: from localhost
-	([127.0.0.1] helo=elrond.fjphome.nl ident=fjp)
-	by elrond.fjphome.nl with esmtp (Exim 4.63)
-	(envelope-from <noodles@earth.li>)
-	id 1KeXqs-0004jK-B4
-	for fjp@localhost; Sat, 13 Sep 2008 18:20:02 +0200
-Received: from pop.wxs.nl [195.121.6.53]
-	by elrond.fjphome.nl with POP3 (fetchmail-6.3.6)
-	for <fjp@localhost> (single-drop); Sat, 13 Sep 2008 18:20:02 +0200 (CEST)
-Received: from hpsmtp-eml01.kpnxchange.com ([10.94.77.135]) by CPEXBE-EML18.kpnsp.local with Microsoft SMTPSVC(6.0.3790.1830);
-	 Sat, 13 Sep 2008 18:08:31 +0200
-Received: from the.earth.li ([217.147.81.2]) by hpsmtp-eml01.kpnxchange.com with Microsoft SMTPSVC(6.0.3790.3959);
-	 Sat, 13 Sep 2008 18:08:31 +0200
-Received: from noodles by the.earth.li with local (Exim 4.63)
-	(envelope-from <noodles@earth.li>)
-	id 1KeXfj-000140-GK; Sat, 13 Sep 2008 17:08:31 +0100
-Date: Sat, 13 Sep 2008 17:08:31 +0100
-From: Jonathan McDowell <noodles@earth.li>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org,
- linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] Fixup deb-pkg target to generate separate firmware deb.
-Message-ID: <20080913160831.GE30927@earth.li>
-References: <20080912112042.GX30927@earth.li> <200809131035.18477.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809131035.18477.elendil@planet.nl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 13 Sep 2008 16:08:31.0656 (UTC) FILETIME=[F775C280:01C915BA]
-X-Length: 4638
-X-UID: 618
-
-[Adding linux-kbuild as that seems to be the closest to a maintainer for
-scripts/package/]
-
-On Sat, Sep 13, 2008 at 10:35:18AM +0200, Frans Pop wrote:
-> On Friday 12 September 2008, Jonathan McDowell wrote:
-> > The below is a simplistic fix for "make deb-pkg"; it splits the
-> > firmware out to a linux-firmware-image package and adds an
-> > (unversioned) Suggests to the linux package for this firmware.
-> >
-> > Frans, does this solve your problem in an acceptable manner?
-> 
-> Yes it does. Thanks for the patch Jonathan.
-> Tested both with kernel configs that result in firmware and that do not 
-> result in firmware.
-> 
-> A few minor nitpicks below.
-
-Ta, I've fixed both the indents. I've also changed the firmware package
-to be arch: all.
-
-> > Signed-Off-By: Jonathan McDowell <noodles@earth.li>
-> Acked-by: Frans Pop <elendil@planet.nl>
- 
------
-diff --git a/scripts/package/builddeb b/scripts/package/builddeb
-index ba6bf5d..1264b8e 100644
---- a/scripts/package/builddeb
-+++ b/scripts/package/builddeb
-@@ -15,15 +15,18 @@ set -e
- version=$KERNELRELEASE
- revision=`cat .version`
- tmpdir="$objtree/debian/tmp"
-+fwdir="$objtree/debian/fwtmp"
- packagename=linux-$version
-+fwpackagename=linux-firmware-image
- 
- if [ "$ARCH" == "um" ] ; then
- 	packagename=user-mode-linux-$version
- fi
- 
- # Setup the directory structure
--rm -rf "$tmpdir"
-+rm -rf "$tmpdir" "$fwdir"
- mkdir -p "$tmpdir/DEBIAN" "$tmpdir/lib" "$tmpdir/boot"
-+mkdir -p "$fwdir/DEBIAN" "$fwdir/lib"
- if [ "$ARCH" == "um" ] ; then
- 	mkdir -p "$tmpdir/usr/lib/uml/modules/$version" "$tmpdir/usr/share/doc/$packagename" "$tmpdir/usr/bin"
- fi
-@@ -107,6 +110,7 @@ Standards-Version: 3.6.1
- 
- Package: $packagename
- Provides: kernel-image-$version, linux-image-$version
-+Suggests: $fwpackagename
- Architecture: any
- Description: Linux kernel, version $version
-  This package contains the Linux kernel, modules and corresponding other
-@@ -118,8 +122,24 @@ fi
- chown -R root:root "$tmpdir"
- chmod -R go-w "$tmpdir"
- 
-+# Do we have firmware? Move it out of the way and build it into a package.
-+if [ -e "$tmpdir/lib/firmware" ]; then
-+	mv "$tmpdir/lib/firmware" "$fwdir/lib/"
-+
-+	cat <<EOF >> debian/control
-+
-+Package: $fwpackagename
-+Architecture: all
-+Description: Linux kernel firmware, version $version
-+ This package contains firmware from the Linux kernel, version $version
-+EOF
-+
-+	dpkg-gencontrol -isp -p$fwpackagename -P"$fwdir"
-+	dpkg --build "$fwdir" ..
-+fi
-+
- # Perform the final magic
--dpkg-gencontrol -isp
-+dpkg-gencontrol -isp -p$packagename
- dpkg --build "$tmpdir" ..
- 
- exit 0
------
-
-J.
-
--- 
-"Just because I'll spend 4 hours automating a task that takes 4 minutes
-by hand doesn't mean I'm not lazy." -- Mike Sphar, asr
+[  271.041479] =============================================
+[  271.041488] [ INFO: possible recursive locking detected ]
+[  271.041495] 2.6.27.3 #1
+[  271.041499] ---------------------------------------------
+[  271.041505] rm/8081 is trying to acquire lock:
+[  271.041510]  (&sb->s_type->i_mutex_key#11){--..}, at: [<c0246caf>]
+hfsplus_block_free+0x4f/0x1a0
+[  271.041531]
+[  271.041533] but task is already holding lock:
+[  271.041538]  (&sb->s_type->i_mutex_key#11){--..}, at: [<c01a8dc6>]
+vfs_unlink+0x56/0xd0
+[  271.041555]
+[  271.041557] other info that might help us debug this:
+[  271.041563] 3 locks held by rm/8081:
+[  271.041567]  #0:  (&type->i_mutex_dir_key#6/1){--..}, at: [<c01aa846>]
+do_unlinkat+0x66/0x150
+[  271.041587]  #1:  (&sb->s_type->i_mutex_key#11){--..}, at: [<c01a8dc6>]
+vfs_unlink+0x56/0xd0
+[  271.041605]  #2:  (&HFSPLUS_I(inode).extents_lock){--..}, at: [<c0241067>]
+hfsplus_file_truncate+0x137/0x360
+[  271.041622]
+[  271.041624] stack backtrace:
+[  271.041630] Pid: 8081, comm: rm Not tainted 2.6.27.3 #1
+[  271.041637]  [<c0169834>] validate_chain+0xbd4/0xeb0
+[  271.041649]  [<c015e044>] ? down+0x14/0x40
+[  271.041660]  [<c0169d49>] __lock_acquire+0x239/0x950
+[  271.041671]  [<c016a4be>] lock_acquire+0x5e/0x80
+[  271.041680]  [<c0246caf>] ? hfsplus_block_free+0x4f/0x1a0
+[  271.041691]  [<c04abe30>] mutex_lock_nested+0x90/0x2a0
+[  271.041702]  [<c0246caf>] ? hfsplus_block_free+0x4f/0x1a0
+[  271.041713]  [<c0246caf>] ? hfsplus_block_free+0x4f/0x1a0
+[  271.041724]  [<c0246caf>] hfsplus_block_free+0x4f/0x1a0
+[  271.041733]  [<c01685db>] ? trace_hardirqs_on+0xb/0x10
+[  271.041744]  [<c0240961>] hfsplus_free_extents+0x61/0xa0
+[  271.041754]  [<c024126c>] hfsplus_file_truncate+0x33c/0x360
+[  271.041766]  [<c023f6bf>] hfsplus_delete_inode+0x6f/0x80
+[  271.041775]  [<c0241fae>] hfsplus_unlink+0x14e/0x190
+[  271.041785]  [<c01a8dc6>] ? vfs_unlink+0x56/0xd0
+[  271.041796]  [<c01a8dc6>] ? vfs_unlink+0x56/0xd0
+[  271.041807]  [<c01a8dda>] vfs_unlink+0x6a/0xd0
+[  271.041816]  [<c01b9044>] ? mnt_want_write+0x64/0xa0
+[  271.041827]  [<c01aa910>] do_unlinkat+0x130/0x150
+[  271.041837]  [<c0131bb7>] ? do_page_fault+0x2c7/0x670
+[  271.041849]  [<c01ac4d7>] ? do_vfs_ioctl+0x57/0x2b0
+[  271.041860]  [<c02d9f44>] ? trace_hardirqs_on_thunk+0xc/0x10
+[  271.041871]  [<c01318f0>] ? do_page_fault+0x0/0x670
+[  271.041882]  [<c0168544>] ? trace_hardirqs_on_caller+0xc4/0x150
+[  271.041893]  [<c01aaa53>] sys_unlinkat+0x23/0x40
+[  271.041902]  [<c011bd09>] sysenter_do_call+0x12/0x35
+[  271.041912]  [<c0110000>] ? x86_emulate_insn+0xcd0/0x39d0
+[  271.041925]  =======================
 
 
---Boundary-00=_kK8AJ0rEcDNQD8m--
