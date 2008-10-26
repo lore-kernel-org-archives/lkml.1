@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbYJZHQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbYJZHUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754391AbYJZHQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 03:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYJZHQr
+	id S1753834AbYJZHUR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 03:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYJZHUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 03:16:47 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:14695 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751985AbYJZHQq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 03:16:46 -0400
-Message-ID: <4904195F.1050508@larces.uece.br>
-Date: Sun, 26 Oct 2008 04:16:47 -0300
-From: Sergio Luis <sergio@larces.uece.br>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Sun, 26 Oct 2008 03:20:04 -0400
+Received: from fwil.voltaire.com ([193.47.165.2]:49001 "EHLO exil.voltaire.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751037AbYJZHUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 03:20:03 -0400
+Message-ID: <49041A1F.3070806@voltaire.com>
+Date: Sun, 26 Oct 2008 09:19:59 +0200
+From: Or Gerlitz <ogerlitz@voltaire.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Dan Williams <dcbw@redhat.com>
-CC: libertas-dev@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [patch 2/2] libertas: free sk_buff with kfree_skb
-Content-Type: text/plain; charset=ISO-8859-1
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, ericvh@gmail.com,
+       rolandd@cisco.com, v9fs-developer@lists.sourceforge.net,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: linux-next: Tree for October 23
+References: <20081023213637.eff9b414.sfr@canb.auug.org.au> <20081023180412.394d40c2.randy.dunlap@oracle.com>
+In-Reply-To: <20081023180412.394d40c2.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Oct 2008 07:19:59.0480 (UTC) FILETIME=[414AF780:01C9373B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-free sk_buff with kfree_skb, instead of kree
- 
-Signed-off-by: Sergio Luis <sergio@larces.uece.br>
-Cc: Dan Williams <dcbw@redhat.com>
+Randy Dunlap wrote:
+> Building with CONFIG_INFINIBAND=m, kconfig allows CONFIG_NET_9P_RDMA=m,
+> so one module wants symbols from the other (net/9p wants symbols from rmda_*).
+>
+> ERROR: "rdma_destroy_id" [net/9p/9pnet_rdma.ko] undefined!
+> ERROR: "rdma_connect" [net/9p/9pnet_rdma.ko] undefined!
+> ...
+> Is this supposed to be allowed/possible?  Otherwise NET_9P_RDMA might have to depend on INFINBAND=y...
+No, there's no need to config INFINIBAND at built it.  What's the value 
+of CONFIG_INFINIBAND_ADDR_TRANS ?
 
-drivers/net/wireless/libertas/rx.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Or.
 
-diff --git a/drivers/net/wireless/libertas/rx.c b/drivers/net/wireless/libertas/rx.c
-index 5749f22..079e6aa 100644
---- a/drivers/net/wireless/libertas/rx.c
-+++ b/drivers/net/wireless/libertas/rx.c
-@@ -328,7 +328,7 @@ static int process_rxed_802_11_packet(struct lbs_private *priv,
- 		lbs_deb_rx("rx err: frame received with bad length\n");
- 		priv->stats.rx_length_errors++;
- 		ret = -EINVAL;
--		kfree(skb);
-+		kfree_skb(skb);
- 		goto done;
- 	}
- 
+
