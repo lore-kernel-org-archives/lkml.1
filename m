@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752586AbYJZHEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752736AbYJZHLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752586AbYJZHEB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 03:04:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbYJZHDw
+	id S1752736AbYJZHLs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 03:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbYJZHLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 03:03:52 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:32747 "EHLO
+	Sun, 26 Oct 2008 03:11:39 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:46070 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750957AbYJZHDv (ORCPT
+	with ESMTP id S1751190AbYJZHLi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 03:03:51 -0400
+	Sun, 26 Oct 2008 03:11:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=ETtYZR158BJLyRnPhzByZHZlIPEFPyGWeQv4670Z0P3/0B07Bp4wIcCC3JX+h/GRvD
-         EGfbp3xRYpSN/eMqvcpuki2twNE1lQnlDbIJevfsXX/ymjw2EpGFIznpeZhJePbz+lrd
-         mgCJk1nEpuHTV9cRd5TNoT3VlZMEKyHy00Pf8=
-Message-ID: <4904164F.5090006@gmail.com>
-Date: Sun, 26 Oct 2008 09:03:43 +0200
-From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FzcH0e0upKDkpeEz8YUi3uZY4jJB1yCiZGBIF+n1bzm0Io8OgpuP+Zq1iGPs1+XF92
+         9n1eNcpriZfxZ5W4EYYp+7A6nQdobHSCyafRmCrOzSiBaU9cISPPx//Ks8XVrRNrjxHc
+         mIc/MA6INsW4cTbm64SFCAARq6k85u9zeFCNU=
+Date: Sun, 26 Oct 2008 10:11:32 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Joshua Hoblitt <j_kernel@hoblitt.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Bug #11543] kernel panic: softlockup in tick_periodic() ???
+Message-ID: <20081026071132.GB7639@localhost>
+References: <3ZqdCuOdOqB.A.EPE.fJ6AJB@chimera> <gLTYxg3cC1.A.csF.wK6AJB@chimera>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-CC: mingo@elte.hu, srostedt@redhat.com, a.p.zijlstra@chello.nl,
-       sandmann@daimi.au.dk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] Add support for userspace stacktraces in tracing/iter_ctrl
-References: <1223817124-27239-1-git-send-email-edwintorok@gmail.com>	 <1223817124-27239-3-git-send-email-edwintorok@gmail.com> <c62985530810252105k3bce2339k5a49c09fa502ac67@mail.gmail.com>
-In-Reply-To: <c62985530810252105k3bce2339k5a49c09fa502ac67@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <gLTYxg3cC1.A.csF.wK6AJB@chimera>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008-10-26 06:05, Frédéric Weisbecker wrote:
-> Hi Török,
->
-> I just read a bit more those two patches about user stack tracing.
-> Note that despite the recent changes on the tracing Api
-> (ring buffer and other stuff), it still applies well, with some little
-> hunks. But it needs some updates to support the last changes.
->
-> I adapted the patch and it builds well, but I didn't tested yet.
-> However, some parts are "architecture dependent", I guess these
-> special pieces would find a better place in the arch directory. So it
-> would let a proper and seperated implementation.
->   
+[Rafael J. Wysocki - Sat, Oct 25, 2008 at 11:07:49PM +0200]
+| This message has been generated automatically as a part of a report
+| of regressions introduced between 2.6.26 and 2.6.27.
+| 
+| The following bug entry is on the current list of known regressions
+| introduced between 2.6.26 and 2.6.27.  Please verify if it still should
+| be listed and let me know (either way).
+| 
+| 
+| Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11543
+| Subject		: kernel panic: softlockup in tick_periodic() ???
+| Submitter	: Joshua Hoblitt <j_kernel@hoblitt.com>
+| Date		: 2008-09-11 16:46 (45 days old)
+| References	: http://marc.info/?l=linux-kernel&m=122117786124326&w=4
+| Handled-By	: Thomas Gleixner <tglx@linutronix.de>
+| 		  Cyrill Gorcunov <gorcunov@gmail.com>
+| 		  Ingo Molnar <mingo@elte.hu>
+| 
+| 
 
-Hi,
+It's still there but with completely out of 'subject' problems.
 
-The stacktrace code itself is in the arch directory, did I miss anything
-else that should belong there?
-
-arch/x86/kernel/stacktrace.c |   57 +++++++++++++++++++++++++++++++++++
-include/linux/stacktrace.h   |    8 +++++
-
-
-> And most arch implement a stacktrace implementation, even if yours
-> involve special operations such as copy_from_user, I wonder if the
-> already established code couldn't be reused for your needs.
->   
-
-I think it would make sense to use oprofile's code of user stacktracing,
-there  is a backtrace
-operation in 'struct oprofile_operations'. Perhaps that could be
-extended so that non-oprofile code can call it?
-[currently it uses oprofile_add_trace to store the stacktrace]
-
-Best regards,
---Edwin
+		- Cyrill -
