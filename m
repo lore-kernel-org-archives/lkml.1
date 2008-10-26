@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbYJZO0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbYJZOlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755355AbYJZO0P (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 10:26:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbYJZOZ7
+	id S1755231AbYJZOlS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 10:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754449AbYJZOlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 10:25:59 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:50385 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753962AbYJZOZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 10:25:58 -0400
-Date: Sun, 26 Oct 2008 07:25:56 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+	Sun, 26 Oct 2008 10:41:06 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57858 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752471AbYJZOlE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 10:41:04 -0400
+Subject: Re: [PATCH] Rename DECLARE_MUTEX to DEFINE_SEMAPHORE
+From: Peter Zijlstra <peterz@infradead.org>
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH v2][RFC] ftrace: function oprofiler
-Message-ID: <20081026142556.GB6419@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <alpine.DEB.1.10.0810250130020.27727@gandalf.stny.rr.com> <alpine.DEB.1.10.0810252049020.7650@gandalf.stny.rr.com> <1225017357.27415.5.camel@twins> <alpine.DEB.1.10.0810260951500.20123@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810260951500.20123@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+       Matthew Wilcox <willy@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <c384c5ea0810260711l1103a103j6c3739fe3a8d9e74@mail.gmail.com>
+References: <20081026120609.GA10728@joi> <1225028346.32713.11.camel@twins>
+	 <c384c5ea0810260711l1103a103j6c3739fe3a8d9e74@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Sun, 26 Oct 2008 15:41:03 +0100
+Message-Id: <1225032063.32713.17.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 26, 2008 at 09:58:01AM -0400, Steven Rostedt wrote:
+On Sun, 2008-10-26 at 15:11 +0100, Leon Woestenberg wrote:
+> Hello,
 > 
-> On Sun, 26 Oct 2008, Peter Zijlstra wrote:
-> 
-> > On Sat, 2008-10-25 at 20:55 -0400, Steven Rostedt wrote:
-> > 
-> > > This is a function profiler to count the number of times a function is hit.
-> > 
-> > I have to ask, _why_?
-> > 
-> > It seems like a nice enough gimmick, but is this information actually
-> > useful?
-> 
-> Well, it does let you know for sure which functions are the hottest paths.
-> Perhaps you have a "slow path" function. This will show you how slow
-> that slow path is. That is, how many times it is hit compared to the
-> fast path.
+> On Sun, Oct 26, 2008 at 2:39 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Sun, 2008-10-26 at 13:06 +0100, Marcin Slusarz wrote:
+> >> DECLARE_MUTEX is doubly misleading name (it actually _defines_ struct
+> >> _semaphore_ initialized to 1) and it can be confused with DEFINE_MUTEX
+> >> (which defines real struct mutex). Rename it.
+> >
+> > I'd prefer DEFINE_BINARY_SEM or somesuch
+> >
+> But it is not a binary semaphore, or is it?
 
-And the ratio between the "hot path" and the "slow path" can be very
-helpful in working out what sorts of optimizations can be used.  Is a
-give optimization that gains a factor of ten on the hot path and loses
-a factor of 50 on the slow path a win?
+> #define DECLARE_MUTEX(name) __DECLARE_SEMAPHORE_GENERIC(name,1)
 
-Of course, you also need some estimate of the cost of the hot paths
-and the slow paths.
-
-						Thanx, Paul
-
-> With dynamic ftrace, you can also pick and choose which functions
-> are to be counted.
-> 
-> What is also nice about it (and something that I will use it for), is that
-> it will show you the functions that will be hit the most during a trace. 
-> If you do not care about those functions, then you can easily filter them 
-> out for your trace.
-> 
-> This patch is also a proof of concept. I'm sure others can think of more 
-> useful things to do by adding more stuff to this patch.
-
-
+I thought that 1 made it a binary sem.
