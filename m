@@ -1,71 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753002AbYJZL3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752805AbYJZL3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753002AbYJZL3Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 07:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbYJZL3M
+	id S1752805AbYJZL3q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 07:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753155AbYJZL3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 07:29:12 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53748 "EHLO ogre.sisk.pl"
+	Sun, 26 Oct 2008 07:29:30 -0400
+Received: from broadrack.ru ([195.178.208.66]:35610 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752537AbYJZL3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 07:29:11 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Miller <davem@davemloft.net>
+	id S1753941AbYJZL3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 07:29:30 -0400
+Date: Sun, 26 Oct 2008 14:29:24 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>, Evgeniy Polyakov <s0mbre@tservice.net.ru>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-Date: Sun, 26 Oct 2008 12:33:41 +0100
-User-Agent: KMail/1.9.9
-Cc: mingo@elte.hu, s0mbre@tservice.net.ru, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, efault@gmx.de
-References: <200810250025.35734.rjw@sisk.pl> <200810251313.21120.rjw@sisk.pl> <20081025.205501.193695937.davem@davemloft.net>
-In-Reply-To: <20081025.205501.193695937.davem@davemloft.net>
+Message-ID: <20081026112924.GA29258@ioremap.net>
+References: <20081009231759.GA8664@tservice.net.ru> <20081010115518.GA3159@tservice.net.ru> <20081010115725.GD19487@elte.hu> <200810250025.35734.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810261233.42187.rjw@sisk.pl>
+In-Reply-To: <200810250025.35734.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 26 of October 2008, David Miller wrote:
-> From: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Date: Sat, 25 Oct 2008 13:13:20 +0200
+On Sat, Oct 25, 2008 at 12:25:34AM +0200, Rafael J. Wysocki (rjw@sisk.pl) wrote:
+> > > > > vanilla 27: 347.222
+> > > > > no TSO/GSO: 357.331
+> > > > > no hrticks: 382.983
+> > > > > no balance: 389.802
 > 
-> > Could you please give me a pointer to the commit disabling the hrtimer feature?
-> 
-> Here it is:
+> Can anyone please tell me if there was any conclusion of this thread?
 
-Thanks a lot!
+For the reference, just pulled git tree (4403b4 commit): 361.184
+and with dirty_ratio set to 50: 361.086
+without scheduler domain tuning things are essentially the same: 361.367
 
-> commit 0c4b83da58ec2e96ce9c44c211d6eac5f9dae478
-> Author: Ingo Molnar <mingo@elte.hu>
-> Date:   Mon Oct 20 14:27:43 2008 +0200
-> 
->     sched: disable the hrtick for now
->     
->     David Miller reported that hrtick update overhead has tripled the
->     wakeup overhead on Sparc64.
->     
->     That is too much - disable the HRTICK feature for now by default,
->     until a faster implementation is found.
->     
->     Reported-by: David Miller <davem@davemloft.net>
->     Acked-by: Peter Zijlstra <peterz@infradead.org>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> diff --git a/kernel/sched_features.h b/kernel/sched_features.h
-> index 7c9e8f4..fda0162 100644
-> --- a/kernel/sched_features.h
-> +++ b/kernel/sched_features.h
-> @@ -5,7 +5,7 @@ SCHED_FEAT(START_DEBIT, 1)
->  SCHED_FEAT(AFFINE_WAKEUPS, 1)
->  SCHED_FEAT(CACHE_HOT_BUDDY, 1)
->  SCHED_FEAT(SYNC_WAKEUPS, 1)
-> -SCHED_FEAT(HRTICK, 1)
-> +SCHED_FEAT(HRTICK, 0)
->  SCHED_FEAT(DOUBLE_TICK, 0)
->  SCHED_FEAT(ASYM_GRAN, 1)
->  SCHED_FEAT(LB_BIAS, 1)
+So, things are getting worse with time, and previous tunes do not help
+anymore.
 
-Rafael
+-- 
+	Evgeniy Polyakov
