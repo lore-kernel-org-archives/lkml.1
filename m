@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbYJZOLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbYJZOTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755229AbYJZOLo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 10:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbYJZOLg
+	id S1755229AbYJZOTl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 10:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbYJZOTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 10:11:36 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:64356 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752295AbYJZOLf (ORCPT
+	Sun, 26 Oct 2008 10:19:33 -0400
+Received: from wilson.telenet-ops.be ([195.130.132.42]:60636 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753878AbYJZOTc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 10:11:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=WEqJAqlkSKO5PrHhtiDj/9NfjyuDJ4Ru1ckCciHc94XJXK5ram229XPCGWWFvpKL6f
-         JBqP921ldOg4hdF5Ma/3f7eyjtkiIM4TB9Zh6t4t2413fi2UOhr9Ipc2VO09bkSpR7XV
-         rkIZlCTfItoLY9M3EpUyeh0AZ3j7hZT/0ZXjY=
-Message-ID: <c384c5ea0810260711l1103a103j6c3739fe3a8d9e74@mail.gmail.com>
-Date: Sun, 26 Oct 2008 15:11:33 +0100
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: [PATCH] Rename DECLARE_MUTEX to DEFINE_SEMAPHORE
-Cc: "Marcin Slusarz" <marcin.slusarz@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Matthew Wilcox" <willy@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1225028346.32713.11.camel@twins>
+	Sun, 26 Oct 2008 10:19:32 -0400
+Date: Sun, 26 Oct 2008 15:19:20 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Dennis Aberilla <denzzzhome@yahoo.com>,
+       Alessandro Zummo <a.zummo@towertech.it>,
+       David Brownell <david-b@pacbell.net>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] rtc: ds3234 doesn't link when built-in
+Message-ID: <Pine.LNX.4.64.0810261518010.15317@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081026120609.GA10728@joi> <1225028346.32713.11.camel@twins>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+When ds3234 is built-in, the final links fails with the following vague error
+message:
 
-On Sun, Oct 26, 2008 at 2:39 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Sun, 2008-10-26 at 13:06 +0100, Marcin Slusarz wrote:
->> DECLARE_MUTEX is doubly misleading name (it actually _defines_ struct
->> _semaphore_ initialized to 1) and it can be confused with DEFINE_MUTEX
->> (which defines real struct mutex). Rename it.
->
-> I'd prefer DEFINE_BINARY_SEM or somesuch
->
-But it is not a binary semaphore, or is it?
+`.exit.text' referenced in section `.data' of drivers/built-in.o: defined in discarded section `.exit.text' of drivers/built-in.o
 
-Also, at least under 2.6.24,
+ds3234_remove() cannot be marked __exit, as it's accessed via __devexit_p().
+In addition, mark ds3234_probe() __devinit while we're at it.
 
-#define DECLARE_MUTEX(name) __DECLARE_SEMAPHORE_GENERIC(name,1)
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/rtc/rtc-ds3234.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-thus the DECLARE is wrong there as well?
+--- a/drivers/rtc/rtc-ds3234.c
++++ b/drivers/rtc/rtc-ds3234.c
+@@ -189,7 +189,7 @@ static const struct rtc_class_ops ds3234
+ 	.set_time	= ds3234_set_time,
+ };
+ 
+-static int ds3234_probe(struct spi_device *spi)
++static int __devinit ds3234_probe(struct spi_device *spi)
+ {
+ 	struct rtc_device *rtc;
+ 	unsigned char tmp;
+@@ -249,7 +249,7 @@ static int ds3234_probe(struct spi_devic
+ 	return 0;
+ }
+ 
+-static int __exit ds3234_remove(struct spi_device *spi)
++static int __devexit ds3234_remove(struct spi_device *spi)
+ {
+ 	struct ds3234 *chip = platform_get_drvdata(spi);
+ 	struct rtc_device *rtc = chip->rtc;
 
-Regards,
--- 
-Leon
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
