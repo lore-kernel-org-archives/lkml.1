@@ -1,41 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbYJZUTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756216AbYJZUXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756110AbYJZUTy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 16:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbYJZUTq
+	id S1756216AbYJZUXZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 16:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755565AbYJZUW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 16:19:46 -0400
-Received: from web56305.mail.re3.yahoo.com ([216.252.110.229]:36358 "HELO
-	web56305.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754150AbYJZUTp (ORCPT
+	Sun, 26 Oct 2008 16:22:57 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:52297 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755151AbYJZUW4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 16:19:45 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=eJxA0EpO+YaaPO95lOtKh7RnRVv3p6sUL98p7F6Mm+kuHKwCKlaNtLmi5KvrRpOUzRkg9NxW/ZzUiGRtMPkIfzgGWFdPByvILgh/VidcCVqJ2KZHkLvxKp/CPgP2+plJh1K1Z87IMVaF78RsjyfQhYG0RzCf2sFur6rl5EVNDrQ=;
-X-YMail-OSG: JBi5HnkVM1lVFjOUf8DbsZLNPbWZ2jtQ2zYczO3E6luIjlsKqepJrvBrJyZHpyzKq0Iz3wQmOxSb4x_8RiKheDni5.9hPEJ8zu9dzFa0JYQDV41xtGRNkahUr8_MYNtPHZM0xmzj5h7FMLjVfF3GUObt4vpdQCx1snQM0l8-
-X-Mailer: YahooMailWebService/0.7.247.3
-Date: Sun, 26 Oct 2008 13:19:44 -0700 (PDT)
-From: Paul P <ppak_98@yahoo.com>
-Reply-To: ppak_98@yahoo.com
-Subject: Fw: Re: unexpected extra pollout events from epoll
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <521981.87335.qm@web56305.mail.re3.yahoo.com>
+	Sun, 26 Oct 2008 16:22:56 -0400
+Subject: Re: [PATCH] wireless: fix regression caused by regulatory config
+	option
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "John W. Linville" <linville@tuxdriver.com>, torvalds@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@sisk.pl,
+       rodriguez@atheros.com
+In-Reply-To: <20081026131818.7517c103@infradead.org>
+References: <20081026103024.2712ddc9@infradead.org>
+	 <20081026200939.GC12648@tuxdriver.com>
+	 <20081026131818.7517c103@infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-o9E+oGLcfqVPTJlPMJSw"
+Date: Sun, 26 Oct 2008 21:22:16 +0100
+Message-Id: <1225052537.3746.5.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm not too familiar with the edge triggered mode, but
-> you shouldn't be requesting EPOLLOUT notifications if you don't care
-> about them (i.e. if you are not trying to write anything).
- 
-I am trying to write something, but I don't understand this behavior because it will screw up my notifications when I'm trying to see if I should write
-more because of the extra notifications.  Even before I started writing anything, I'm getting these epollout events which I was not expecting.
 
-Paul
+--=-o9E+oGLcfqVPTJlPMJSw
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Sun, 2008-10-26 at 13:18 -0700, Arjan van de Ven wrote:
 
-      
+> > Is it common practice to have compatibility options default to
+> > "y"?  I'm not saying it shouldn't be, just wondering if it has been
+> > traditionally?
+>=20
+> yes
+>=20
+> default should be "keep working as before"
+>=20
+> it's not always nice, especially if you're trying to get rid of some
+> nasty stuff, but think of it this way: you should be able to use a
+> new kernel on an existing distro, at least for a reasonable type of
+> distro (eg something shipped in, say, the last 2 years). In this case:
+> even Fedora 10 is not likely to work!
+
+Well, actually, it _ought_ to work fine, with a smaller set of channels,
+but you seem to be hit an iwlwifi bug that triggers only with this,
+which is rather odd.
+
+johannes
+
+--=-o9E+oGLcfqVPTJlPMJSw
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJBNFzAAoJEKVg1VMiehFYUdMP/R+r/r0lUzFZnVELjJwW653S
+AUJQd1zO2pbQ71sk+/KaWBDvw4QgDlydbW+6kcQg3aFnV/IJzMvXHvjoDvz3PtUf
+G+3F/Qfns73V4hYI2dhxUm52tVDT9W1HS/UXqVmxtahhljF4TcZn5gv60KWUBdAH
+e2jwQVubSipEB9/Wb8WCGRmhKXntA2LCzX3OLiawJZHpl+XRByjw148VIe56jI4G
+5hzeRfefvl48oCn0+zVY+RQrWb3k+J2/wGDS48V8zH0cdOSUtz6CHBiNo3qPu+ld
+cL05sHC5kBOpe+uWs1K4rYf+MdLlYzHNcgFzNIbXgBgXkX9FtDoksjgdVg/P1xVJ
+ln54uSKfYoykgrA9/hwsfboLOXFWWPOD8Xuc33t7yGvgTtbTJZeYUZ3XisKb3CPz
+3UEmL/Rkls4oabGgu50p/0okbaaMtHCasUX7cOt2B9yaZgjGbYttIA7+3WntGzCB
+XfIHhAkdCX2cb3zrGpfwAuqVyETbM24lWqcaB/zq/VPzPgw+Yz5nKDBgYxSmcfVd
+mh1FIRuYDkSmTTfHJQjJhyP+k53hQhzQxRo5K3fqWbeJpQhHideYaUR4i72CJnHp
+p+XgZTLnQt1fbc1LKuPaN//7YKI10B4uwjJSyPeRRrJd709qh3B/b2Rd887bIDKJ
+e27CxCsicXXG0djqc8S3
+=Th9c
+-----END PGP SIGNATURE-----
+
+--=-o9E+oGLcfqVPTJlPMJSw--
+
