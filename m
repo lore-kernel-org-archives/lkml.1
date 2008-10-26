@@ -1,77 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755531AbYJZPgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbYJZPvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755531AbYJZPgy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 11:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbYJZPgq
+	id S1755506AbYJZPvw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 11:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542AbYJZPvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 11:36:46 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:27823 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754074AbYJZPgp (ORCPT
+	Sun, 26 Oct 2008 11:51:44 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:1183 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753788AbYJZPvm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 11:36:45 -0400
-Date: Sun, 26 Oct 2008 16:36:24 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Wolfgang Grandegger <wg@grandegger.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] hwmon: w83781d doesn't link when built-in
-Message-ID: <20081026163624.622a0931@hyperion.delvare>
-In-Reply-To: <Pine.LNX.4.64.0810261519410.15317@anakin>
-References: <Pine.LNX.4.64.0810261519410.15317@anakin>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 26 Oct 2008 11:51:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=SiXfcPOcICexV2T4oL4KkLpoO/HD/6EeBN6N20FUN8Du/wFWmGGruuMuA4sTWjcDvy
+         mKUYmOlVvQ0oFd0jWZspo5mbwAg3YzHzuiX29Xfa97ho5fbo7ycPeUY/YWRQ+oLcghvN
+         rCaS4LdpMfuTUcTqqPou8u+q1seL2z3IrRmkk=
+Message-ID: <2f11576a0810260851h15cb7e1ahb454b70a2e99e1a8@mail.gmail.com>
+Date: Mon, 27 Oct 2008 00:51:41 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use schedule_on_each_cpu()
+Cc: "Heiko Carstens" <heiko.carstens@de.ibm.com>,
+       "Nick Piggin" <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       "Hugh Dickins" <hugh@veritas.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Rik van Riel" <riel@redhat.com>,
+       "Lee Schermerhorn" <lee.schermerhorn@hp.com>, linux-mm@kvack.org,
+       "Christoph Lameter" <cl@linux-foundation.org>,
+       "Gautham Shenoy" <ego@in.ibm.com>, "Oleg Nesterov" <oleg@tv-sign.ru>,
+       "Rusty Russell" <rusty@rustcorp.com.au>, mpm <mpm@selenic.com>
+In-Reply-To: <1225028946.32713.16.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <2f11576a0810210851g6e0d86benef5d801871886dd7@mail.gmail.com>
+	 <2f11576a0810211018g5166c1byc182f1194cfdd45d@mail.gmail.com>
+	 <20081023235425.9C40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <1225019176.32713.5.camel@twins>
+	 <2f11576a0810260637q21eaec62q4e2662742541e771@mail.gmail.com>
+	 <1225028946.32713.16.camel@twins>
+X-Google-Sender-Auth: d99c4d77321cd850
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Geert,
+>> >> @@ -611,4 +613,8 @@ void __init swap_setup(void)
+>> >>  #ifdef CONFIG_HOTPLUG_CPU
+>> >>       hotcpu_notifier(cpu_swap_callback, 0);
+>> >>  #endif
+>> >> +
+>> >> +     vm_wq = create_workqueue("vm_work");
+>> >> +     BUG_ON(!vm_wq);
+>> >> +
+>> >>  }
+>> >
+>> > While I really hate adding yet another per-cpu thread for this, I don't
+>> > see another way out atm.
+>>
+>> Can I ask the reason of your hate?
+>> if I don't know it, making improvement patch is very difficult to me.
+>
+> There seems to be no drive to keep them down, ps -def output it utterly
+> dominated by kernel threads on a freshly booted machine with many cpus.
 
-On Sun, 26 Oct 2008 15:20:26 +0100 (CET), Geert Uytterhoeven wrote:
-> When w83781d is built-in, the final links fails with the following vague error
-> message:
-> 
-> `.exit.text' referenced in section `.init.text' of drivers/built-in.o: defined
-> in discarded section `.exit.text' of drivers/built-in.o
-> 
-> w83781d_isa_unregister() cannot be marked __exit, as it's also called from
-> sensors_w83781d_init(), which is marked __init.
+True. but I don't think it is big problem. because
 
-Good catch, thanks for reporting. For some reason the link doesn't fail
-here.
+1. people can use grep filter easily.
+2. that is just "sense of beauty" issue. not real pain.
+3. current ps output is already utterly filled by kernel thread on
+large server :)
+    the patch doesn't introduce new problem.
 
-> 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
->  drivers/hwmon/w83781d.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> --- a/drivers/hwmon/w83781d.c
-> +++ b/drivers/hwmon/w83781d.c
-> @@ -1968,7 +1968,7 @@ exit:
->  	return res;
->  }
->  
-> -static void __exit
-> +static void
->  w83781d_isa_unregister(void)
->  {
->  	if (pdev) {
-> @@ -2017,7 +2017,7 @@ w83781d_isa_register(void)
->  	return 0;
->  }
->  
-> -static void __exit
-> +static void
->  w83781d_isa_unregister(void)
->  {
->  }
+> And while they are not _that_ expensive to have around, they are not
+> free either, I imagine the tiny-linux folks having an interest in
+> keeping these down too.
 
-Applied, thanks. I'll send this to Linus together with several other
-hwmon patches later today.
+In my embedded job experience, I don't hear that.
+Their folks strongly interest to memory size and cpu usage, but don't
+interest # of thread so much.
 
--- 
-Jean Delvare
+Yes, too many thread spent many memory by stack. but the patch
+introduce only one thread on embedded device.
+
+
+Perhaps, I misunderstand your intension. so can you point your
+previous discussion url?
