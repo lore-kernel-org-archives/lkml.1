@@ -1,91 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753475AbYJZHy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbYJZIQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753475AbYJZHy5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 03:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbYJZHyt
+	id S1753562AbYJZIQi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 04:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYJZIQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 03:54:49 -0400
-Received: from ti-out-0910.google.com ([209.85.142.185]:50795 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750957AbYJZHys (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 03:54:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=IV1d2OiswkQdcgdtCPQD/x2AJc4uXt8HFjziXtEPB4gd4sf45HOTkLeQNQWVuAYzL2
-         jjsGrnjyyckZLJdksXzuQS9+E2qUgrKGjyByjMVIZyb83hhfrWlUqvSGboGEMbSGnXYF
-         738Wx6ssETCtu71K1ts4EOtL6zRc1V/2dCHUk=
-Message-ID: <2891419e0810260054p777a0602ndb4242628a7503d2@mail.gmail.com>
-Date: Sun, 26 Oct 2008 16:54:45 +0900
-From: "Dong-Jae Kang" <baramsori72@gmail.com>
-To: "Paul Menage" <menage@google.com>
-Subject: Re: [Question] power management related with cgroup based resource management
-Cc: "Matthew Garrett" <mjg@redhat.com>, balbir@linux.vnet.ibm.com,
-       xen-devel@lists.xensource.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       dm-devel@redhat.com, corsetproject@googlegroups.com,
-       "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
-In-Reply-To: <6599ad830810250843u10f65917x3388276211e90316@mail.gmail.com>
+	Sun, 26 Oct 2008 04:16:24 -0400
+Received: from ozlabs.org ([203.10.76.45]:42840 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751713AbYJZIQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 04:16:21 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PULL] module, param and stop_machine patches
+Date: Sun, 26 Oct 2008 19:16:16 +1100
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>, Hugh Dickins <hugh@veritas.com>,
+       walt <w41ter@gmail.com>
+References: <200810221005.59874.rusty@rustcorp.com.au> <200810260924.09479.rusty@rustcorp.com.au> <alpine.LFD.2.00.0810251529240.3327@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0810251529240.3327@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <2891419e0810201954q57087fc8ufcaa0e42f3ca99e2@mail.gmail.com>
-	 <4901B5C2.9070108@linux.vnet.ibm.com>
-	 <2891419e0810240524u746b731cjcbd127fa4204bd4d@mail.gmail.com>
-	 <20081024232503.GA20140@srcf.ucam.org>
-	 <2891419e0810250105j3e210df0pa3ba9665bd35313a@mail.gmail.com>
-	 <6599ad830810250843u10f65917x3388276211e90316@mail.gmail.com>
+Message-Id: <200810261916.17311.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Paul Menage
-
-Thank you for your comments
-
-> Control Groups is just a framework for associating state with
-> (user-created) groups of processes. So if you have a problem to solve
-> that involves tracking state for different processes, or applying
-> different behaviour to groups of processes based on that group's
-> state, then cgroups may well be an appropriate tool.
+On Sunday 26 October 2008 09:33:43 Linus Torvalds wrote:
+> On Sun, 26 Oct 2008, Rusty Russell wrote:
+> > Thanks, Heiko tracked this down; he's probably sleeping now but Hugh and
+> > Walt reported this fixes it for them and it makes sense.
 >
-> In the case you mention (management of new devices) that's already
-> somewhat covered by the existing device isolation subsystem - you can
-> create a cgroup that has (or doesn't have) access to particular HW
-> devices.
->
-In some aspect, your opinion is right.
-Existing controller(ex. disk IO controllers) can be run on new HW
-devices(ex. SSD), existing block layer and so on.
+> I'm not seeing any "tracked it down".
 
-but, what I mean is that such controllers can support more performance
-if the controllers are rewrited with reconsideration of the features
-of new HW devices. in other words, what I mean can be optimization of
-controllers for new devices
-For example,
-In case of SSD, current IO scheduler layer is needed ? although i can
-not sure about it ^^
-or process sleep is needed after throwing the IO requests to storage ?
-the role of page cache in SSD or NVRAM is less important than in
-normal HDD and ....
+He tracked it down to moving init_workqueues() too early, so he moved that
+back.
 
-I heard that many research centers in comanies and universities have
-studied about smiliar research
-of course, it can be OS itself, device drivers, block layer, file
-systems and memory management
+> And it then mixes things up with 'stop_machine_init()' mess. Why does that
+> need to run so early?
 
-Under this trend,
-I just wonder whether the trend can be reflected to cgroup  based
-controllers or not.
-and whether it is meaningful or not?
-How do you think about this?
-My opinion may be some humble ^^
+The S/390 guys want to run it stop_machine v. early, so when Heiko introduced
+stop_machine_init() he made it an early_initcall().
 
-Thank you
--- 
-Best Regards,
-Dong-Jae Kang
+> IOW, I don't think that patch is anything but a "hey, test if it works
+> with this". None of the changes or the problems are explained.
+
+Indeed.
+
+Turns out it's the cpu_online_map difference.  If init_workqueues() is called
+too early, only the boot cpu is set.  We then only create_workqueue_thread()
+for the boot cpu.
+
+If CONFIG_HOTPLUG_CPU=y, it's fine since the hotplug callback will create the
+workqueue threads for the other cpus as they come up.  Without it, the kevent
+workqueues on non-boot cpus don't get processed.
+
+Still boots for me, but was a bit sick (varying, but no keyboard was one
+symptom).
+
+> Nor do I see a sign-off from Heiko on it.
+
+I thought mine would be sufficient since we both work for IBM?
+
+> I also don't want to see more BUG_ON()'s there. Make them warnings or
+> something.
+
+OK, I just killed them.  It'll crash anyway.
+
+Rusty.
+
+Subject: Fix boot problems caused by moving init_workqueues()
+Date: Sat, 25 Oct 2008 16:16:22 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+
+The patch below moves the init_workqueues() call to its old place but
+makes the stop_machine initialization happen later (but still before
+core_initcalls).
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ include/linux/stop_machine.h |    6 ++++++
+ init/main.c                  |    5 +++--
+ kernel/stop_machine.c        |    9 ++++++---
+ 3 files changed, 15 insertions(+), 5 deletions(-)
+
+diff -r 2b5f764088ee include/linux/stop_machine.h
+--- a/include/linux/stop_machine.h	Sun Oct 26 18:50:23 2008 +1100
++++ b/include/linux/stop_machine.h	Sun Oct 26 19:13:04 2008 +1100
+@@ -35,6 +35,9 @@ int stop_machine(int (*fn)(void *), void
+  * won't come or go while it's being called.  Used by hotplug cpu.
+  */
+ int __stop_machine(int (*fn)(void *), void *data, const cpumask_t *cpus);
++
++void stop_machine_init(void);
++
+ #else
+ 
+ static inline int stop_machine(int (*fn)(void *), void *data,
+@@ -46,5 +49,8 @@ static inline int stop_machine(int (*fn)
+ 	local_irq_enable();
+ 	return ret;
+ }
++
++static inline void stop_machine_init(void) { }
++
+ #endif /* CONFIG_SMP */
+ #endif /* _LINUX_STOP_MACHINE */
+diff -r 2b5f764088ee init/main.c
+--- a/init/main.c	Sun Oct 26 18:50:23 2008 +1100
++++ b/init/main.c	Sun Oct 26 19:13:04 2008 +1100
+@@ -38,6 +38,7 @@
+ #include <linux/moduleparam.h>
+ #include <linux/kallsyms.h>
+ #include <linux/writeback.h>
++#include <linux/stop_machine.h>
+ #include <linux/cpu.h>
+ #include <linux/cpuset.h>
+ #include <linux/cgroup.h>
+@@ -767,6 +768,8 @@ static void __init do_basic_setup(void)
+ static void __init do_basic_setup(void)
+ {
+ 	rcu_init_sched(); /* needed by module_init stage. */
++	init_workqueues();
++	stop_machine_init();
+ 	usermodehelper_init();
+ 	driver_init();
+ 	init_irq_proc();
+@@ -850,8 +853,6 @@ static int __init kernel_init(void * unu
+ 
+ 	cad_pid = task_pid(current);
+ 
+-	init_workqueues();
+-
+ 	smp_prepare_cpus(setup_max_cpus);
+ 
+ 	do_pre_smp_initcalls();
+diff -r 2b5f764088ee kernel/stop_machine.c
+--- a/kernel/stop_machine.c	Sun Oct 26 18:50:23 2008 +1100
++++ b/kernel/stop_machine.c	Sun Oct 26 19:13:04 2008 +1100
+@@ -154,10 +154,8 @@ int stop_machine(int (*fn)(void *), void
+ }
+ EXPORT_SYMBOL_GPL(stop_machine);
+ 
+-static int __init stop_machine_init(void)
++void __init stop_machine_init(void)
+ {
+ 	stop_machine_wq = create_rt_workqueue("kstop");
+ 	stop_machine_work = alloc_percpu(struct work_struct);
+-	return 0;
+ }
+-early_initcall(stop_machine_init);
