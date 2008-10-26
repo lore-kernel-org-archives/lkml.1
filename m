@@ -1,42 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755105AbYJZNtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbYJZNub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755105AbYJZNtf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 09:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbYJZNt0
+	id S1754965AbYJZNub (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 09:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbYJZNuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 09:49:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47571 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753096AbYJZNtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 09:49:25 -0400
-Date: Sun, 26 Oct 2008 09:49:05 -0400
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, fweisbec@gmail.com, mingo@elte.hu,
-       srostedt@redhat.com, sandmann@daimi.au.dk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] Add support for userspace stacktraces in tracing/iter_ctrl
-Message-ID: <20081026134904.GG8210@redhat.com>
-References: <1223817124-27239-1-git-send-email-edwintorok@gmail.com> <1223817124-27239-3-git-send-email-edwintorok@gmail.com> <c62985530810252105k3bce2339k5a49c09fa502ac67@mail.gmail.com> <y0mbpx71oqp.fsf@ton.toronto.redhat.com> <1225027782.32713.10.camel@twins> <490472E5.2070207@gmail.com>
+	Sun, 26 Oct 2008 09:50:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51153 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753034AbYJZNuW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 09:50:22 -0400
+Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use
+ schedule_on_each_cpu()
+From: Peter Zijlstra <peterz@infradead.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>, linux-mm@kvack.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Gautham Shenoy <ego@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Rusty Russell <rusty@rustcorp.com.au>, mpm <mpm@selenic.com>
+In-Reply-To: <2f11576a0810260637q21eaec62q4e2662742541e771@mail.gmail.com>
+References: <2f11576a0810210851g6e0d86benef5d801871886dd7@mail.gmail.com>
+	 <2f11576a0810211018g5166c1byc182f1194cfdd45d@mail.gmail.com>
+	 <20081023235425.9C40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <1225019176.32713.5.camel@twins>
+	 <2f11576a0810260637q21eaec62q4e2662742541e771@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Sun, 26 Oct 2008 14:49:06 +0100
+Message-Id: <1225028946.32713.16.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <490472E5.2070207@gmail.com>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
+On Sun, 2008-10-26 at 22:37 +0900, KOSAKI Motohiro wrote:
+> Hi Peter,
+> 
+> >> @@ -611,4 +613,8 @@ void __init swap_setup(void)
+> >>  #ifdef CONFIG_HOTPLUG_CPU
+> >>       hotcpu_notifier(cpu_swap_callback, 0);
+> >>  #endif
+> >> +
+> >> +     vm_wq = create_workqueue("vm_work");
+> >> +     BUG_ON(!vm_wq);
+> >> +
+> >>  }
+> >
+> > While I really hate adding yet another per-cpu thread for this, I don't
+> > see another way out atm.
+> 
+> Can I ask the reason of your hate?
+> if I don't know it, making improvement patch is very difficult to me.
 
-On Sun, Oct 26, 2008 at 03:38:45PM +0200, Török Edwin wrote:
+There seems to be no drive to keep them down, ps -def output it utterly
+dominated by kernel threads on a freshly booted machine with many cpus.
 
-> [...]  In userspace I can get a stacktrace using DWARF unwind info,
-> but doing that in the kernel would be too expensive, right? [...]
+And while they are not _that_ expensive to have around, they are not
+free either, I imagine the tiny-linux folks having an interest in
+keeping these down too.
 
-We're experimenting with just that in systemtap.  The expenses
-(memory: megabytes of unwind data, time: running code to process it)
-would be paid only for the duration of a systemtap script that needs
-that particular sort of information.
-
-- FChE
+> > Oleg, Rusty, ego, you lot were discussing a similar extra per-cpu
+> > workqueue, can we merge these two?
