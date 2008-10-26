@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690AbYJZReS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbYJZReg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755690AbYJZReS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 13:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbYJZReE
+	id S1755961AbYJZReg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 13:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbYJZReX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 13:34:04 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3481 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752791AbYJZReC (ORCPT
+	Sun, 26 Oct 2008 13:34:23 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48265 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755773AbYJZReW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 13:34:02 -0400
-Date: Sun, 26 Oct 2008 13:34:00 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Mikko C." <mikko.cal@gmail.com>
-cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Bug in workqueues [was: Usb devices randomly aren't detected with
- 2.6.28-rc1-git1]
-In-Reply-To: <4904A77C.7090805@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0810261327170.25044-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 26 Oct 2008 13:34:22 -0400
+Date: Sun, 26 Oct 2008 10:34:39 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Francois Romieu <romieu@fr.zoreil.com>, Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, Edward Hsu <edward_hsu@realtek.com.tw>,
+       Ivan Vecera <ivecera@redhat.com>
+Subject: Re: r8169 MAC addresses broken
+Message-ID: <20081026103439.7a60005a@infradead.org>
+In-Reply-To: <4904A7C5.7090801@gmail.com>
+References: <490380C8.6070003@simon.arlott.org.uk>
+	<4903947A.3060206@gmail.com>
+	<20081025223443.GA30913@electric-eye.fr.zoreil.com>
+	<4904A7C5.7090801@gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is no longer a USB issue, so I'm asking for help from the general 
-kernel community.  Background can be found in Bugzilla #11853.
+On Sun, 26 Oct 2008 18:24:21 +0100
+Jiri Slaby <jirislaby@gmail.com> wrote:
 
-On Sun, 26 Oct 2008, Mikko C. wrote:
+> On 10/26/2008 12:34 AM, Francois Romieu wrote:
+> > It may go away if one comments out rtl_init_mac_address in
+> > rtl8169_init_one
+> 
+> Hmm, no. How can one restore eeprom contents without making a brick
+> from the notebook? I seem to have all zeroes in the eeprom mac
+> address area. --
 
-> Mikko C. ha scritto:
-> > Alan Stern ha scritto:
-> >>
-> >> I don't see anything in there that looks particularly suspicious.  
-> >> The nature of your errors suggests that the default workqueue has 
-> >> crashed or hung, but it shows up okay in the dump.  Are you sure this 
-> >> dump was made when the devices failed to appear?
-> >>
-> >>  
-> >
-> > Yes, I'm 100% sure.
-> >
-> >> What happens when you try to rmmod the ALSA modules?  Does rmmod 
-> >> crash with an error or does it hang?  If it hangs, can you get 
-> >> another task dump showing the hanging process?
-> >>   
-> >
-> > Whenever I try rmmoding something, it hangs (no crash) and I'm not 
-> > able to do anything, beside moving the mouse.
-> > I posted here: http://marc.info/?l=linux-kernel&m=122502213503239&w=4
-> > but that's probably not enough, so I will try getting a full dump.
-> >
-> Here it is: http://bugzilla.kernel.org/attachment.cgi?id=18452&action=view
+same here...  :(
 
-The task dump shows rmmod waiting for flush_workqueue().  But the 
-events/0 task doesn't appear to be hung, and the task dump taken before 
-running rmmod shows events/0 doing something different.
-
-So apparently flush_workqueue() isn't working.
-
-Alan Stern
-
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
