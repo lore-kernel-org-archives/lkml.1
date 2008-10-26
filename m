@@ -1,63 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbYJZLKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbYJZLMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754054AbYJZLKI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 07:10:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbYJZLJ4
+	id S1753993AbYJZLMT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 07:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752504AbYJZLMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 07:09:56 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53681 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751827AbYJZLJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 07:09:55 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dave Chinner <david@fromorbit.com>
-Subject: Re: [Bug #11805] mounting XFS produces a segfault
-Date: Sun, 26 Oct 2008 12:14:27 +0100
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Tiago Maluta <maluta_tiago@yahoo.com.br>
-References: <nw2Y6lk-0lG.A.VUB.RV5AJB@chimera> <t1C3RWL0r7M.A.x6C.AW5AJB@chimera> <20081026000804.GC11948@disturbed>
-In-Reply-To: <20081026000804.GC11948@disturbed>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810261214.28369.rjw@sisk.pl>
+	Sun, 26 Oct 2008 07:12:09 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:42327 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752425AbYJZLMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 07:12:07 -0400
+Date: Sun, 26 Oct 2008 12:11:55 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] mmc_block: print better data error message after
+ timeout
+Message-ID: <20081026121155.69692474@mjolnir.drzeus.cx>
+In-Reply-To: <48F7411F.3020109@nokia.com>
+References: <48F7411F.3020109@nokia.com>
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-8327-1225019525-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 26 of October 2008, Dave Chinner wrote:
-> On Sat, Oct 25, 2008 at 10:06:44PM +0200, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.27.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11805
-> > Subject		: mounting XFS produces a segfault
-> > Submitter	: Tiago Maluta <maluta_tiago@yahoo.com.br>
-> > Date		: 2008-10-21 18:00 (5 days old)
-> 
-> Ah - this was reported as a 2.6.26 -> 2.6.27 regression, not a
-> .27->.28-rcX regression.
-> 
-> Even so, it's not obviously an XFS regression as the problem is
-> that alloc_pages(GFP_KERNEL) is the new failure on .27. The fact
-> that XFS never handled the allocation failure is not a new bug
-> or regression - it has never caught failures during log
-> allocation...
-> 
-> So really, if you want to look for a regression here, it is the
-> change of behaviour in the VM leading to a memory allocation failure
-> where it has never, ever previously failed...
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-OK, I moved it to the list of regressions introduced between .26 and .27.
+--=_freyr.drzeus.cx-8327-1225019525-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Rafael
+On Thu, 16 Oct 2008 16:26:55 +0300
+Adrian Hunter <ext-adrian.hunter@nokia.com> wrote:
+
+> In particular, if the card gets an ECC error it will
+> timeout, in which case it is much more helpful to see
+> an ECC error rather than a timeout error.
+>=20
+> Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+> ---
+
+Woo. I think you're the first I've seen that has been able to trigger
+an actual card error. :)
+
+As for the patch, I like the idea but I'm not entirely satisfied with
+the implementation.
+
+> +static void print_data_error(struct mmc_blk_request *brq, struct mmc_car=
+d *card,
+> +			     struct request *req)
+> +{
+> +	struct mmc_command cmd;
+> +	char *emsg;
+> +	u32 status;
+> +	int status_err =3D 0;
+> +
+> +	if (brq->data.error !=3D -ETIMEDOUT || mmc_host_is_spi(card->host))
+> +		goto out_print;
+> +
+
+The error codes are more of a hint than anything else, so you should
+check the status for all non-zero codes. You should also not just check
+data.error, but all of them.
+
+And why exclude spi?
+
+> +	if (brq->mrq.stop)
+> +		/* 'Stop' response contains card status */
+> +		status =3D brq->mrq.stop->resp[0];
+> +	else {
+> +		cmd.opcode =3D MMC_SEND_STATUS;
+> +		cmd.arg =3D card->rca << 16;
+> +		cmd.flags =3D MMC_RSP_R1 | MMC_CMD_AC;
+> +		status_err =3D mmc_wait_for_cmd(card->host, &cmd, 0);
+> +		if (status_err)
+> +			goto out_print;
+> +		status =3D cmd.resp[0];
+> +	}
+
+Errors can occur on writes as well, so I suggest accumulating the
+status bits instead of trying to get the entire set in one go. I.e.:
+
+status =3D 0;
+if (mrq.stop)
+	status |=3D mrq.stop.resp[0];
+while (card not ready)
+	status |=3D send_status();
+
+IOW, you should do this in the main handler (that already has the
+status loop for writes).
+
+> +
+> +	emsg =3D (status & R1_CARD_ECC_FAILED) ? "ECC" : "I/O";
+> +
+
+There are also some other error codes that can be of interest.
+"Internal controller error" for example.
+
+(it's probably also better to state "Unknown" error and not "I/O" for
+the fallback)
+
+> @@ -281,10 +322,8 @@ static int mmc_blk_issue_rq(struct mmc_queue *mq, st=
+ruct request *req)
+>  			       req->rq_disk->disk_name, brq.cmd.error);
+>  		}
+> =20
+> -		if (brq.data.error) {
+> -			printk(KERN_ERR "%s: error %d transferring data\n",
+> -			       req->rq_disk->disk_name, brq.data.error);
+> -		}
+> +		if (brq.data.error)
+> +			print_data_error(&brq, card, req);
+> =20
+
+Please keep the old message and add this as a new extra piece of
+information. It is helpful for debugging to see both what the driver
+and the card reported.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-8327-1225019525-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEUEARECAAYFAkkEUIEACgkQ7b8eESbyJLjRsgCg5fiWRwB/w3eDrWrniguOZnO2
+OeAAljRlhu+jHexSqepst5CC7SCnQh0=
+=nLGh
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-8327-1225019525-0001-2--
