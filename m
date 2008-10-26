@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbYJZKlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbYJZKsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbYJZKlS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 06:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYJZKlK
+	id S1754746AbYJZKsA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 06:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYJZKrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 06:41:10 -0400
-Received: from 1wt.eu ([62.212.114.60]:4937 "EHLO 1wt.eu"
+	Sun, 26 Oct 2008 06:47:52 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:42399 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752676AbYJZKlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 06:41:09 -0400
-Date: Sun, 26 Oct 2008 11:41:04 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: =?iso-8859-1?Q?J=F6rg?= Dohle <j.d.-linux-kernel@arcor.de>
+	id S1752638AbYJZKrv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 06:47:51 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: v4l-dvb-maintainer@linuxtv.org, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: How can I build a 2.4 kernel on a 2.6 System
-Message-ID: <20081026104103.GW24654@1wt.eu>
-References: <16891148.1224850600689.JavaMail.ngmail@webmail18.arcor-online.net> <20081024202955.GT24654@1wt.eu> <20CDA8F07DE345B8AA01B3C43EE8A6F7@pc686xpp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20CDA8F07DE345B8AA01B3C43EE8A6F7@pc686xpp>
-User-Agent: Mutt/1.5.11
+Subject: [PATCH] linux/video_{de,en}coder.h: cleanup for userspace
+Date: Sun, 26 Oct 2008 06:47:44 -0400
+Message-Id: <1225018064-3312-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 26, 2008 at 11:32:17AM +0100, Jörg Dohle wrote:
-> Hello Willy
-> 
-> Thanks for answering, but I have a problem with the compiling.
-> When I try to compile the 2.4 kernel with the following commands:
-> 
-> # make clean && make mrproper
-> then I restore the .config file
-> # make oldconfig
-> # make dep && make bzImage respectively make modules
-> 
-> 
-> I get the following error message:
-> 
-> make[1]: Leaving directory 
-> `/fileserver/99_Frei/kernel-build-tree/linux-2.4.21-57.EL'
+Make sure the linux/video_{de,en}coder.h header files include other header
+files that they use (for types and structures).
 
-OK, first it's an RHEL3 kernel, not a mainline one. The difference can
-sometimes be important.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ include/linux/video_decoder.h |    3 +++
+ include/linux/video_encoder.h |    2 ++
+ 2 files changed, 5 insertions(+), 0 deletions(-)
 
-> gcc -D__KERNEL__ 
-> -I/fileserver/99_Frei/kernel-build-tree/linux-2.4.21-57.EL/include -Wall 
-> -Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common 
->  -Wno-unused -fomit-frame-pointer -pipe -freorder-blocks  -march=i386   
->  -DKBUILD_BASENAME=main -c -o init/main.o init/main.c
-> init/main.c:1: Fehler: Die ausgewählte CPU unterstützt nicht den x86-64 
-> Befehlssatz
-> 
-> English translation (by google)
-> init / main.c: 1: Error: The selected CPU does not support x86-64 
-> instruction
-
-You might get native error messages by doing "export LANG=C" before
-building. I think that the problem you're encountering is simply
-because by default you're trying to build for a different architecture.
-
-You should try appending "ARCH=i386" to all your make commands :
-
-# make oldconfig ARCH=i386
-# make dep ARCH=i386 && make bzImage ARCH=i386
-# make modules ARCH=i386
-
-It should theorically work, but since this is not used very often, it is
-possible that you still get minor trouble.
-
-Regards,
-Willy
+diff --git a/include/linux/video_decoder.h b/include/linux/video_decoder.h
+index 121e26d..25a191a 100644
+--- a/include/linux/video_decoder.h
++++ b/include/linux/video_decoder.h
+@@ -1,6 +1,9 @@
+ #ifndef _LINUX_VIDEO_DECODER_H
+ #define _LINUX_VIDEO_DECODER_H
+ 
++#include <linux/types.h>
++#include <linux/videodev.h>
++
+ #define HAVE_VIDEO_DECODER 1
+ 
+ struct video_decoder_capability { /* this name is too long */
+diff --git a/include/linux/video_encoder.h b/include/linux/video_encoder.h
+index 4b0e690..b7b6423 100644
+--- a/include/linux/video_encoder.h
++++ b/include/linux/video_encoder.h
+@@ -1,6 +1,8 @@
+ #ifndef _LINUX_VIDEO_ENCODER_H
+ #define _LINUX_VIDEO_ENCODER_H
+ 
++#include <linux/types.h>
++
+ struct video_encoder_capability { /* this name is too long */
+ 	__u32	flags;
+ #define	VIDEO_ENCODER_PAL	1	/* can encode PAL signal */
+-- 
+1.6.0.2
 
