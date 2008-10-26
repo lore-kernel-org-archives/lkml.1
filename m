@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbYJZLrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbYJZLtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752734AbYJZLrb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 07:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYJZLrX
+	id S1753391AbYJZLtQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 07:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751742AbYJZLtC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 07:47:23 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:36714 "EHLO smtp.drzeus.cx"
+	Sun, 26 Oct 2008 07:49:02 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:34183 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750957AbYJZLrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 07:47:22 -0400
-Date: Sun, 26 Oct 2008 12:47:19 +0100
+	id S1750957AbYJZLtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 07:49:00 -0400
+Date: Sun, 26 Oct 2008 12:48:56 +0100
 From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Yauhen Kharuzhy <jekhor@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Yauhen Kharuzhy <jekhor@gmail.com>
-Subject: Re: [PATCH] MMC: Fix race condition in resume/card detect code
-Message-ID: <20081026124719.3da77e6f@mjolnir.drzeus.cx>
-In-Reply-To: <1224531708-13624-1-git-send-email-jekhor@gmail.com>
-References: <20081018191147.00327019@mjolnir.drzeus.cx>
-	<1224531708-13624-1-git-send-email-jekhor@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] pci: use pci_ioremap_bar() in drivers/mmc
+Message-ID: <20081026124856.7f2607e6@mjolnir.drzeus.cx>
+In-Reply-To: <20081020215624.18c5b604@infradead.org>
+References: <20081020215624.18c5b604@infradead.org>
 X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,71 +25,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Oct 2008 22:41:48 +0300
-Yauhen Kharuzhy <jekhor@gmail.com> wrote:
+On Mon, 20 Oct 2008 21:56:24 -0700
+Arjan van de Ven <arjan@infradead.org> wrote:
 
-> When device wakes up by card change interrupt and MMC_UNSAFE_RESUME is
-> enabled then race condition between mmc_rescan() and
-> mmc_resume()/mmc_sd_resume() appeared.
+> From 6fc220a25ecbb0576179c6b4472e7262389b25e8 Mon Sep 17 00:00:00 2001
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Sun, 28 Sep 2008 16:15:56 -0700
+> Subject: [PATCH] pci: use pci_ioremap_bar() in drivers/mmc
 > 
+> Use the new pci_ioremap_bar() function in drivers/mmc.
+> pci_ioremap_bar() just takes a pci device and a bar number, with the goal
+> of making it really hard to get wrong, while also having a central place
+> to stick sanity checks.
+> 
+> CC: Pierre Ossman <drzeus@drzeus.cx>
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> ---
 
-Having thought a bit more about this, I'm not sure where the race is.
-mmc_sd_resume() will be called before mmc_detect_change() is.
-
-There is a race if the drivers call mmc_detect_change() before
-mmc_resume_host() has returned, but that is a driver bug. I won't
-object to adding a safe guard against that, but the commit message
-should reflect that scenario and not something else. There should also
-be some printk() to indicate that the driver is up to no good.
-
-> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-> index 044d84e..427f283 100644
-> --- a/drivers/mmc/core/core.c
-> +++ b/drivers/mmc/core/core.c
-> @@ -657,6 +657,9 @@ void mmc_rescan(struct work_struct *work)
->  	u32 ocr;
->  	int err;
->  
-> +	if (host->suspended)
-> +		return;
-> +
->  	mmc_bus_get(host);
->  
->  	if (host->bus_ops == NULL) {
-
-Was there no way to query the PM layer for this information?
-
-> @@ -805,6 +810,8 @@ int mmc_resume_host(struct mmc_host *host)
->  	 */
->  	mmc_detect_change(host, 1);
->  
-> +	host->suspended = 0;
-> +
->  	return 0;
->  }
->  
-
-You've added a new race here. ;)
-
-You should set suspended to 0 before calling mmc_detect_change(), not
-after. The point was to protect bus_ops->resume(), nothing else.
-
-> diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-> index 9c288c9..a584239 100644
-> --- a/include/linux/mmc/host.h
-> +++ b/include/linux/mmc/host.h
-> @@ -139,6 +139,9 @@ struct mmc_host {
->  #ifdef CONFIG_MMC_DEBUG
->  	unsigned int		removed:1;	/* host is being removed */
->  #endif
-> +#ifdef CONFIG_MMC_UNSAFE_RESUME
-> +	unsigned int		suspended:1;
-> +#endif
->  
->  	struct mmc_card		*card;		/* device attached to this host */
->  
-
-No #ifdef for this as there are no where this variable is referenced.
+Looks sane. Queued.
 
 Rgds
 -- 
