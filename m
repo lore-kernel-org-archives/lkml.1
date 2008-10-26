@@ -1,64 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbYJZOUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755315AbYJZOYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755006AbYJZOUv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 10:20:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbYJZOUa
+	id S1755315AbYJZOYV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 10:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbYJZOYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 10:20:30 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39677 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754014AbYJZOU3 (ORCPT
+	Sun, 26 Oct 2008 10:24:13 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:47725 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753876AbYJZOYM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 10:20:29 -0400
-Date: Sun, 26 Oct 2008 07:20:41 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH v2][RFC] ftrace: function oprofiler
-Message-ID: <20081026072041.141b46ec@infradead.org>
-In-Reply-To: <1225017357.27415.5.camel@twins>
-References: <alpine.DEB.1.10.0810250130020.27727@gandalf.stny.rr.com>
-	<alpine.DEB.1.10.0810252049020.7650@gandalf.stny.rr.com>
-	<1225017357.27415.5.camel@twins>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 26 Oct 2008 10:24:12 -0400
+Message-ID: <f3f71ab90810260724i4db015d8r2eb562d9ef142fe1@mail.gmail.com>
+Date: Sun, 26 Oct 2008 14:24:10 +0000
+From: "Mike Lothian" <mike@fireburn.co.uk>
+To: linux-kernel@vger.kernel.org
+Subject: Reiser4 and d_alloc_anon
+Cc: reiserfs-devel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 26 Oct 2008 11:35:57 +0100
-Peter Zijlstra <peterz@infradead.org> wrote:
+Hi
 
-> On Sat, 2008-10-25 at 20:55 -0400, Steven Rostedt wrote:
-> 
-> > This is a function profiler to count the number of times a function
-> > is hit.
-> 
-> I have to ask, _why_?
-> 
-> It seems like a nice enough gimmick, but is this information actually
-> useful?
+Reiser4 still uses d_alloc_anon and is't compiling on Linus's tree
 
-yes.
+I took a look at:
 
-If you are diagnosing "my system suddenly became slow", and if you have
-a baseline, a fingerprint like this can be used by less-trained people
-to look up the next steps in the diagnostics.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=440037287c5ebb07033ab927ca16bb68c291d309
 
+But it looks like it isn't a case of renaming to d_obtain_alias
 
+Does any one have a patch for this?
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Cheers
+
+Mike
