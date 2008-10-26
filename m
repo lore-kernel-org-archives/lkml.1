@@ -1,44 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754394AbYJZKgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbYJZKhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754394AbYJZKgP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 06:36:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbYJZKf7
+	id S1754700AbYJZKhw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 06:37:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbYJZKho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 06:35:59 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48562 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752423AbYJZKf6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 06:35:58 -0400
-Subject: Re: [PATCH v2][RFC] ftrace: function oprofiler
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <alpine.DEB.1.10.0810252049020.7650@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0810250130020.27727@gandalf.stny.rr.com>
-	 <alpine.DEB.1.10.0810252049020.7650@gandalf.stny.rr.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Sun, 26 Oct 2008 11:35:57 +0100
-Message-Id: <1225017357.27415.5.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Sun, 26 Oct 2008 06:37:44 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:58689 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752440AbYJZKhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 06:37:43 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] linux/timex.h: cleanup for userspace
+Date: Sun, 26 Oct 2008 06:37:31 -0400
+Message-Id: <1225017451-19133-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-10-25 at 20:55 -0400, Steven Rostedt wrote:
+Move all the kernel-specific defines and includes into the __KERNEL__
+section so that they don't get leaked into userspace.
 
-> This is a function profiler to count the number of times a function is hit.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ include/linux/timex.h |   73 +++++++++++++++++++++++++------------------------
+ 1 files changed, 37 insertions(+), 36 deletions(-)
 
-I have to ask, _why_?
+diff --git a/include/linux/timex.h b/include/linux/timex.h
+index 9007313..4bbbab5 100644
+--- a/include/linux/timex.h
++++ b/include/linux/timex.h
+@@ -53,47 +53,11 @@
+ #ifndef _LINUX_TIMEX_H
+ #define _LINUX_TIMEX_H
+ 
+-#include <linux/compiler.h>
+ #include <linux/time.h>
+ 
+-#include <asm/param.h>
+-
+ #define NTP_API		4	/* NTP API version */
+ 
+ /*
+- * SHIFT_KG and SHIFT_KF establish the damping of the PLL and are chosen
+- * for a slightly underdamped convergence characteristic. SHIFT_KH
+- * establishes the damping of the FLL and is chosen by wisdom and black
+- * art.
+- *
+- * MAXTC establishes the maximum time constant of the PLL. With the
+- * SHIFT_KG and SHIFT_KF values given and a time constant range from
+- * zero to MAXTC, the PLL will converge in 15 minutes to 16 hours,
+- * respectively.
+- */
+-#define SHIFT_PLL	4	/* PLL frequency factor (shift) */
+-#define SHIFT_FLL	2	/* FLL frequency factor (shift) */
+-#define MAXTC		10	/* maximum time constant (shift) */
+-
+-/*
+- * SHIFT_USEC defines the scaling (shift) of the time_freq and
+- * time_tolerance variables, which represent the current frequency
+- * offset and maximum frequency tolerance.
+- */
+-#define SHIFT_USEC 16		/* frequency offset scale (shift) */
+-#define PPM_SCALE (NSEC_PER_USEC << (NTP_SCALE_SHIFT - SHIFT_USEC))
+-#define PPM_SCALE_INV_SHIFT 19
+-#define PPM_SCALE_INV ((1ll << (PPM_SCALE_INV_SHIFT + NTP_SCALE_SHIFT)) / \
+-		       PPM_SCALE + 1)
+-
+-#define MAXPHASE 500000000l	/* max phase error (ns) */
+-#define MAXFREQ 500000		/* max frequency error (ns/s) */
+-#define MAXFREQ_SCALED ((s64)MAXFREQ << NTP_SCALE_SHIFT)
+-#define MINSEC 256		/* min interval between updates (s) */
+-#define MAXSEC 2048		/* max interval between updates (s) */
+-#define NTP_PHASE_LIMIT ((MAXPHASE / NSEC_PER_USEC) << 5) /* beyond max. dispersion */
+-
+-/*
+  * syscall interface - used (mainly by NTP daemon)
+  * to discipline kernel clock oscillator
+  */
+@@ -199,9 +163,46 @@ struct timex {
+ #define TIME_BAD	TIME_ERROR /* bw compat */
+ 
+ #ifdef __KERNEL__
++#include <linux/compiler.h>
++#include <linux/types.h>
++
++#include <asm/param.h>
+ #include <asm/timex.h>
+ 
+ /*
++ * SHIFT_KG and SHIFT_KF establish the damping of the PLL and are chosen
++ * for a slightly underdamped convergence characteristic. SHIFT_KH
++ * establishes the damping of the FLL and is chosen by wisdom and black
++ * art.
++ *
++ * MAXTC establishes the maximum time constant of the PLL. With the
++ * SHIFT_KG and SHIFT_KF values given and a time constant range from
++ * zero to MAXTC, the PLL will converge in 15 minutes to 16 hours,
++ * respectively.
++ */
++#define SHIFT_PLL	4	/* PLL frequency factor (shift) */
++#define SHIFT_FLL	2	/* FLL frequency factor (shift) */
++#define MAXTC		10	/* maximum time constant (shift) */
++
++/*
++ * SHIFT_USEC defines the scaling (shift) of the time_freq and
++ * time_tolerance variables, which represent the current frequency
++ * offset and maximum frequency tolerance.
++ */
++#define SHIFT_USEC 16		/* frequency offset scale (shift) */
++#define PPM_SCALE (NSEC_PER_USEC << (NTP_SCALE_SHIFT - SHIFT_USEC))
++#define PPM_SCALE_INV_SHIFT 19
++#define PPM_SCALE_INV ((1ll << (PPM_SCALE_INV_SHIFT + NTP_SCALE_SHIFT)) / \
++		       PPM_SCALE + 1)
++
++#define MAXPHASE 500000000l	/* max phase error (ns) */
++#define MAXFREQ 500000		/* max frequency error (ns/s) */
++#define MAXFREQ_SCALED ((s64)MAXFREQ << NTP_SCALE_SHIFT)
++#define MINSEC 256		/* min interval between updates (s) */
++#define MAXSEC 2048		/* max interval between updates (s) */
++#define NTP_PHASE_LIMIT ((MAXPHASE / NSEC_PER_USEC) << 5) /* beyond max. dispersion */
++
++/*
+  * kernel variables
+  * Note: maximum error = NTP synch distance = dispersion + delay / 2;
+  * estimated error = NTP dispersion.
+-- 
+1.6.0.2
 
-It seems like a nice enough gimmick, but is this information actually
-useful?
