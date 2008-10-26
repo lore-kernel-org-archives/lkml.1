@@ -1,88 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbYJZWGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754510AbYJZWHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753455AbYJZWGu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 18:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbYJZWGn
+	id S1754510AbYJZWHi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 18:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbYJZWH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 18:06:43 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:48257 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752376AbYJZWGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 18:06:42 -0400
-Date: Mon, 27 Oct 2008 00:05:39 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: "J.R. Mauro" <jrm8005@gmail.com>
-Cc: Greg KH <greg@kroah.com>, Huang Weiyi <weiyi.huang@gmail.com>,
-       gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: staging: me4000: remove duplicated #include's
-Message-ID: <20081026220539.GC1586@cs181140183.pp.htv.fi>
-References: <20081018113833.61B4.WEIYI.HUANG@gmail.com> <20081020211822.GA30320@kroah.com> <20081026213335.GB1586@cs181140183.pp.htv.fi> <3aaafc130810261440q1f801a3bv8b74d5629aa1edfc@mail.gmail.com>
+	Sun, 26 Oct 2008 18:07:28 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:41013 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752393AbYJZWH1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 18:07:27 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 26 Oct 2008 15:07:24 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Paul P <ppak_98@yahoo.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: unexpected extra pollout events from epoll
+In-Reply-To: <401776.11819.qm@web56305.mail.re3.yahoo.com>
+Message-ID: <Pine.LNX.4.64.0810261452221.19212@alien.or.mcafeemobile.com>
+References: <401776.11819.qm@web56305.mail.re3.yahoo.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <3aaafc130810261440q1f801a3bv8b74d5629aa1edfc@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 26, 2008 at 05:40:04PM -0400, J.R. Mauro wrote:
-> On Sun, Oct 26, 2008 at 5:33 PM, Adrian Bunk <bunk@kernel.org> wrote:
-> > On Mon, Oct 20, 2008 at 02:18:22PM -0700, Greg KH wrote:
-> >> On Sat, Oct 18, 2008 at 11:52:15AM +0800, Huang Weiyi wrote:
-> >> > Removed duplicated #include's in drivers/staging/me4000/me4000.c
-> >> >    asm/uaccess.h
-> >> >    linux/fs.h
-> >> >
-> >> > Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
-> >> >
-> >> > diff --git a/drivers/staging/me4000/me4000.c b/drivers/staging/me4000/me4000.c
-> >> > index 862dd7f..90de6f0 100644
-> >> > --- a/drivers/staging/me4000/me4000.c
-> >> > +++ b/drivers/staging/me4000/me4000.c
-> >> > @@ -30,7 +30,6 @@
-> >> >  #include <asm/uaccess.h>
-> >> >  #include <linux/errno.h>
-> >> >  #include <linux/delay.h>
-> >> > -#include <linux/fs.h>
-> >> >  #include <linux/mm.h>
-> >> >  #include <linux/unistd.h>
-> >> >  #include <linux/list.h>
-> >> > @@ -39,7 +38,6 @@
-> >> >  #include <linux/poll.h>
-> >> >  #include <linux/vmalloc.h>
-> >> >  #include <asm/pgtable.h>
-> >> > -#include <asm/uaccess.h>
-> >> >  #include <linux/types.h>
-> >> >
-> >> >  #include <linux/slab.h>
-> >>
-> >> Hm, this doesn't apply anymore as some cleanups went in that should have
-> >> just made this not needed.
-> >>
-> >> But if you have a script I can run somewhere to verify it, I'd
-> >> appreciate it.
-> >
-> > linux-2.6$ make help | grep include
-> >  includecheck    - Check for duplicate included header files
-> > linux-2.6$
+On Sun, 26 Oct 2008, Paul P wrote:
+
+> I am programming a server using the epoll interface and have the receive portion of the server working fine, but for some reason as I implement the send portion, I noticed a few things that seem like strange behaviors in the implementation of epoll in the kernel.
 > 
-> Is there a way to get this to just check in a user-specified
-> directory? I didn't see any options for that and adding
-> M=drivers/staging didn't help.
+> I'm running Opensuse 11 and it has a 2.6.25 kernel.
+> 
+> The behavior that I can seeing is when I do a full read on an edge 
+> triggered fd, for some reason, it seems to be triggering an epollout 
+> event after each loop of the read events on a socket. (before I've done 
+> any writes at all to the socket)
+> 
+> This is very strange behavior as I would expect that the epollout event 
+> would only be triggered if I did a write and the socket recieved an ack 
+> which cleared out the send buffer.
+> 
+> The documentation on epollout is really sparse, so any help at all from 
+> the list would be very much appreciated.  Do I need to manually arm the 
+> epollout flag after a write?  I thought this was only necessary for 
+> level triggered epoll.
 
-Pipe the output through grep.
+The way epoll works, is by hooking into the existing kernel poll 
+subsystem. It hooks into the poll wakeups, via callback, and it that way 
+it knows that "something" is changed. Then it reads the status of a file 
+via f_op->poll() to know the status.
+What happens is that, if you listen for EPOLLIN|EPOLLOUT, when a packet 
+arrives the callback hook is hit, and the file is put into a maybe-ready 
+list. Maybe-ready because at the time of the callback, epoll has no clue 
+of what happened.
+After that, via epoll_wait(), f_op->poll() is called to get the status of 
+the file, and since POLLIN|POLLOUT is returned (and since you're listening 
+for EPOLLIN|EPOLLOUT), that gets reported back to you.
+The POLLOUT event, by meaning a buffer-full->buffer-avail transition, did 
+not really happen, but since POLLOUT is true, that gets reported back too.
+This, again, since epoll has no clue of what happened at callback hit time.
+I'm working on changes that will make epoll aware (by using the existing 
+support for the "key" parameter of wakeups) of events at callback time, 
+but this is something that is still up for discussion and definitely won't 
+be in .28.
+The best way to do it ATM, is to wait for POLLOUT only when really needed.
 
-Or if you really want to limit what gets checked, setting the path in 
-the Makefile is trivial.
 
-cu
-Adrian
 
--- 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+- Davide
+
 
