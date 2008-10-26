@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbYJZDzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752496AbYJZEEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753709AbYJZDzf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 23:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYJZDzZ
+	id S1752496AbYJZEEo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 00:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750713AbYJZEEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 23:55:25 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55062
+	Sun, 26 Oct 2008 00:04:35 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47104
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750824AbYJZDzY (ORCPT
+	by vger.kernel.org with ESMTP id S1750710AbYJZEEf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 23:55:24 -0400
-Date: Sat, 25 Oct 2008 20:55:01 -0700 (PDT)
-Message-Id: <20081025.205501.193695937.davem@davemloft.net>
-To: rjw@sisk.pl
-Cc: mingo@elte.hu, s0mbre@tservice.net.ru, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, efault@gmx.de
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+	Sun, 26 Oct 2008 00:04:35 -0400
+Date: Sat, 25 Oct 2008 21:04:12 -0700 (PDT)
+Message-Id: <20081025.210412.206011121.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Cc: galak@kernel.crashing.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, torvalds@osdl.org, maxk@qualcomm.com,
+       tglx@linutronix.de
+Subject: Re: [PATCH] genirq: Set initial default irq affinity to just CPU0
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <200810251313.21120.rjw@sisk.pl>
-References: <200810250025.35734.rjw@sisk.pl>
-	<20081024.163111.244324800.davem@davemloft.net>
-	<200810251313.21120.rjw@sisk.pl>
+In-Reply-To: <1224970389.7654.473.camel@pasglop>
+References: <1224863858-7933-1-git-send-email-galak@kernel.crashing.org>
+	<20081024.161813.193686281.davem@davemloft.net>
+	<1224970389.7654.473.camel@pasglop>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,39 +30,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Sat, 25 Oct 2008 13:13:20 +0200
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Sun, 26 Oct 2008 08:33:09 +1100
 
-> Could you please give me a pointer to the commit disabling the hrtimer feature?
+> Well, I don't know how you do it but on powerpc, we explicitely fill the
+> affinity masks at boot time when we can spread interrupts... Maybe we
+> should change it the other way around and limit the mask when we can't ?
+> It's hard to tell for sure at this stage.
 
-Here it is:
+On sparc64 we look at the cpu mask configured for the interrupt and do
+one of two things:
 
-commit 0c4b83da58ec2e96ce9c44c211d6eac5f9dae478
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Mon Oct 20 14:27:43 2008 +0200
+1) If all bits are set, we round robin assign a cpu at IRQ enable time.
 
-    sched: disable the hrtick for now
-    
-    David Miller reported that hrtick update overhead has tripled the
-    wakeup overhead on Sparc64.
-    
-    That is too much - disable the HRTICK feature for now by default,
-    until a faster implementation is found.
-    
-    Reported-by: David Miller <davem@davemloft.net>
-    Acked-by: Peter Zijlstra <peterz@infradead.org>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+2) Else we pick the first bit set in the mask.
 
-diff --git a/kernel/sched_features.h b/kernel/sched_features.h
-index 7c9e8f4..fda0162 100644
---- a/kernel/sched_features.h
-+++ b/kernel/sched_features.h
-@@ -5,7 +5,7 @@ SCHED_FEAT(START_DEBIT, 1)
- SCHED_FEAT(AFFINE_WAKEUPS, 1)
- SCHED_FEAT(CACHE_HOT_BUDDY, 1)
- SCHED_FEAT(SYNC_WAKEUPS, 1)
--SCHED_FEAT(HRTICK, 1)
-+SCHED_FEAT(HRTICK, 0)
- SCHED_FEAT(DOUBLE_TICK, 0)
- SCHED_FEAT(ASYM_GRAN, 1)
- SCHED_FEAT(LB_BIAS, 1)
+One modification I want to make is to make case #1 NUMA aware.
+
+But back to my original wonder, since I've always tipped off of this
+generic IRQ layer cpu mask, when was it ever defaulting to zero
+and causing the behvaior your powerpc guys actually want? :-)
+
