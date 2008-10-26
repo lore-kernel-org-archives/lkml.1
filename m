@@ -1,78 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753342AbYJZLmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbYJZLrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753342AbYJZLmv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 07:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYJZLmm
+	id S1752734AbYJZLrb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 07:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYJZLrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 07:42:42 -0400
-Received: from mtagate1.uk.ibm.com ([194.196.100.161]:36147 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752044AbYJZLml (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 07:42:41 -0400
-Date: Sun, 26 Oct 2008 13:42:39 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>, Hugh Dickins <hugh@veritas.com>,
-       walt <w41ter@gmail.com>
-Subject: Re: [PULL] module, param and stop_machine patches
-Message-ID: <20081026124239.GA4787@osiris.boeblingen.de.ibm.com>
-References: <200810221005.59874.rusty@rustcorp.com.au> <200810260924.09479.rusty@rustcorp.com.au> <alpine.LFD.2.00.0810251529240.3327@nehalem.linux-foundation.org> <200810261916.17311.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810261916.17311.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 26 Oct 2008 07:47:23 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:36714 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750957AbYJZLrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 07:47:22 -0400
+Date: Sun, 26 Oct 2008 12:47:19 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Yauhen Kharuzhy <jekhor@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Yauhen Kharuzhy <jekhor@gmail.com>
+Subject: Re: [PATCH] MMC: Fix race condition in resume/card detect code
+Message-ID: <20081026124719.3da77e6f@mjolnir.drzeus.cx>
+In-Reply-To: <1224531708-13624-1-git-send-email-jekhor@gmail.com>
+References: <20081018191147.00327019@mjolnir.drzeus.cx>
+	<1224531708-13624-1-git-send-email-jekhor@gmail.com>
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 26, 2008 at 07:16:16PM +1100, Rusty Russell wrote:
-> On Sunday 26 October 2008 09:33:43 Linus Torvalds wrote:
-> > On Sun, 26 Oct 2008, Rusty Russell wrote:
-> > > Thanks, Heiko tracked this down; he's probably sleeping now but Hugh and
-> > > Walt reported this fixes it for them and it makes sense.
-> > I'm not seeing any "tracked it down".
-> He tracked it down to moving init_workqueues() too early, so he moved that
-> back.
-> 
-> > And it then mixes things up with 'stop_machine_init()' mess. Why does that
-> > need to run so early?
-> 
-> The S/390 guys want to run it stop_machine v. early, so when Heiko introduced
-> stop_machine_init() he made it an early_initcall().
-> 
-> > IOW, I don't think that patch is anything but a "hey, test if it works
-> > with this". None of the changes or the problems are explained.
-> 
-> Indeed.
-> 
-> Turns out it's the cpu_online_map difference.  If init_workqueues() is called
-> too early, only the boot cpu is set.  We then only create_workqueue_thread()
-> for the boot cpu.
-> 
-> If CONFIG_HOTPLUG_CPU=y, it's fine since the hotplug callback will create the
-> workqueue threads for the other cpus as they come up.  Without it, the kevent
-> workqueues on non-boot cpus don't get processed.
-> 
-> Still boots for me, but was a bit sick (varying, but no keyboard was one
-> symptom).
+On Mon, 20 Oct 2008 22:41:48 +0300
+Yauhen Kharuzhy <jekhor@gmail.com> wrote:
 
-Yes, it's all my fault. I always think in terms of CONFIG_HOTPLUG_CPU=y, so
-I couldn't make any sense of the bug reports and just reverted the
-init_workqueues() call move and added an explicit stop_machine_init() call,
-so that we don't depend on linkage order.
-Thanks for tracking it down, Rusty!
+> When device wakes up by card change interrupt and MMC_UNSAFE_RESUME is
+> enabled then race condition between mmc_rescan() and
+> mmc_resume()/mmc_sd_resume() appeared.
+> 
 
-> > Nor do I see a sign-off from Heiko on it.
+Having thought a bit more about this, I'm not sure where the race is.
+mmc_sd_resume() will be called before mmc_detect_change() is.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+There is a race if the drivers call mmc_detect_change() before
+mmc_resume_host() has returned, but that is a driver bug. I won't
+object to adding a safe guard against that, but the commit message
+should reflect that scenario and not something else. There should also
+be some printk() to indicate that the driver is up to no good.
 
-But I guess you don't need that anymore since you already committed a
-fix for this.
+> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+> index 044d84e..427f283 100644
+> --- a/drivers/mmc/core/core.c
+> +++ b/drivers/mmc/core/core.c
+> @@ -657,6 +657,9 @@ void mmc_rescan(struct work_struct *work)
+>  	u32 ocr;
+>  	int err;
+>  
+> +	if (host->suspended)
+> +		return;
+> +
+>  	mmc_bus_get(host);
+>  
+>  	if (host->bus_ops == NULL) {
 
-Thanks,
-Heiko
+Was there no way to query the PM layer for this information?
+
+> @@ -805,6 +810,8 @@ int mmc_resume_host(struct mmc_host *host)
+>  	 */
+>  	mmc_detect_change(host, 1);
+>  
+> +	host->suspended = 0;
+> +
+>  	return 0;
+>  }
+>  
+
+You've added a new race here. ;)
+
+You should set suspended to 0 before calling mmc_detect_change(), not
+after. The point was to protect bus_ops->resume(), nothing else.
+
+> diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
+> index 9c288c9..a584239 100644
+> --- a/include/linux/mmc/host.h
+> +++ b/include/linux/mmc/host.h
+> @@ -139,6 +139,9 @@ struct mmc_host {
+>  #ifdef CONFIG_MMC_DEBUG
+>  	unsigned int		removed:1;	/* host is being removed */
+>  #endif
+> +#ifdef CONFIG_MMC_UNSAFE_RESUME
+> +	unsigned int		suspended:1;
+> +#endif
+>  
+>  	struct mmc_card		*card;		/* device attached to this host */
+>  
+
+No #ifdef for this as there are no where this variable is referenced.
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
