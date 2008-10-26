@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbYJZOlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbYJZOmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755231AbYJZOlS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 10:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754449AbYJZOlG
+	id S1755386AbYJZOmw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 10:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754695AbYJZOmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 10:41:06 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57858 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752471AbYJZOlE (ORCPT
+	Sun, 26 Oct 2008 10:42:45 -0400
+Received: from web56305.mail.re3.yahoo.com ([216.252.110.229]:46007 "HELO
+	web56305.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754687AbYJZOmo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 10:41:04 -0400
-Subject: Re: [PATCH] Rename DECLARE_MUTEX to DEFINE_SEMAPHORE
-From: Peter Zijlstra <peterz@infradead.org>
-To: Leon Woestenberg <leon.woestenberg@gmail.com>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <c384c5ea0810260711l1103a103j6c3739fe3a8d9e74@mail.gmail.com>
-References: <20081026120609.GA10728@joi> <1225028346.32713.11.camel@twins>
-	 <c384c5ea0810260711l1103a103j6c3739fe3a8d9e74@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Sun, 26 Oct 2008 15:41:03 +0100
-Message-Id: <1225032063.32713.17.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Sun, 26 Oct 2008 10:42:44 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=xYXgUlCUUooMa2tszBXTqepJIrP4QBm2sTU5ryIU39GDm+ZVRFwlj362XrVLEl465FpNJt3jcEY0kJVxQrlK3JkYMLmQwIZWRd1xuPtLSqnoZJaJ3E1Pg+z+g7pVNDkab6eXAaA153KFPpMP6+f4zEPp4xMIMx7ZCqDgP3DRJ7M=;
+X-YMail-OSG: r1BdH.YVM1mFYsebowoSo0WktSePlQAN8bG1UxUXxgByug2o2lWhFL1SnG.KY325ei4wSl3jm5BzsE3NMeK9yfo4R09ymas7pLSbxthEYVvzcrR61TrSLgezXMfy4w0qV3qDpBfimx4YtvYWpRZhNSGFvuok6ei2y1qULbM-
+X-Mailer: YahooMailWebService/0.7.247.3
+Date: Sun, 26 Oct 2008 07:42:42 -0700 (PDT)
+From: Paul P <ppak_98@yahoo.com>
+Reply-To: ppak_98@yahoo.com
+Subject: unexpected extra pollout events from epoll
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <401776.11819.qm@web56305.mail.re3.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-10-26 at 15:11 +0100, Leon Woestenberg wrote:
-> Hello,
-> 
-> On Sun, Oct 26, 2008 at 2:39 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Sun, 2008-10-26 at 13:06 +0100, Marcin Slusarz wrote:
-> >> DECLARE_MUTEX is doubly misleading name (it actually _defines_ struct
-> >> _semaphore_ initialized to 1) and it can be confused with DEFINE_MUTEX
-> >> (which defines real struct mutex). Rename it.
-> >
-> > I'd prefer DEFINE_BINARY_SEM or somesuch
-> >
-> But it is not a binary semaphore, or is it?
+I am programming a server using the epoll interface and have the receive portion of the server working fine, but for some reason as I implement the send portion, I noticed a few things that seem like strange behaviors in the implementation of epoll in the kernel.
 
-> #define DECLARE_MUTEX(name) __DECLARE_SEMAPHORE_GENERIC(name,1)
+I'm running Opensuse 11 and it has a 2.6.25 kernel.
 
-I thought that 1 made it a binary sem.
+The behavior that I can seeing is when I do a full read on an edge triggered fd, for some reason, it seems to be triggering an epollout event after each loop of the read events on a socket. (before I've done any writes at all to the socket)
+
+This is very strange behavior as I would expect that the epollout event would only be triggered if I did a write and the socket recieved an ack which cleared out the send buffer.
+
+The documentation on epollout is really sparse, so any help at all from the list would be very much appreciated.  Do I need to manually arm the epollout flag after a write?  I thought this was only necessary for level triggered epoll.
+
+I was hoping someone more knowledgeable on the subject here might be able to help explain the epollout behavior and whether or not the extra events are normal and if so, what is the traditional way to handle these extra events in an edge triggered scenario.
+
+Thanks!
+
+Paul
+
+
+      
