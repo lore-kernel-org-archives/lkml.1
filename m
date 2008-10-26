@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752917AbYJZUmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752586AbYJZUmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752917AbYJZUmV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 16:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbYJZUmK
+	id S1752586AbYJZUmt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 16:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYJZUmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 16:42:10 -0400
-Received: from khc.piap.pl ([195.187.100.11]:47724 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750799AbYJZUmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 16:42:09 -0400
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Francois Romieu <romieu@fr.zoreil.com>, Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Edward Hsu <edward_hsu@realtek.com.tw>,
-       Ivan Vecera <ivecera@redhat.com>
-Subject: Re: r8169 MAC addresses broken
-References: <490380C8.6070003@simon.arlott.org.uk>
-	<4903947A.3060206@gmail.com>
-	<20081025223443.GA30913@electric-eye.fr.zoreil.com>
-	<490448B0.8050307@gmail.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sun, 26 Oct 2008 21:42:06 +0100
-In-Reply-To: <490448B0.8050307@gmail.com> (Jiri Slaby's message of "Sun\, 26 Oct 2008 11\:38\:40 +0100")
-Message-ID: <m31vy3jdgh.fsf@maximus.localdomain>
+	Sun, 26 Oct 2008 16:42:39 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:25734 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751574AbYJZUmi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 16:42:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=APHZW6zM0jo5OXsx5aYRYnOkkVy0yhYiuWWHvmnLGbhvu4Yn4+ZUk2AFk7bQqggGOr
+         AeC4PvwQ6IIYzVnyQEl0GLp7c5UGa4euI8RKTXSJ6ZGkbsXW6lsTNHE+ND6ITgYR4wGR
+         JsSqiB+d7roRv3SyONHRZAi2pH0CtCrcrNjaw=
+Date: Sun, 26 Oct 2008 23:45:57 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Vlada Peric <vlada.peric@gmail.com>
+Cc: linux-kernel@vger.kernel.org, kkeil@suse.de, kai.germaschewski@gmx.de
+Subject: Re: [PATCH] isdn: fix section mismatch warnings in isdn/hisax
+Message-ID: <20081026204557.GA3295@x200.localdomain>
+References: <6e4284620810261325n643cba26v129f2b076888bac9@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6e4284620810261325n643cba26v129f2b076888bac9@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby <jirislaby@gmail.com> writes:
+On Sun, Oct 26, 2008 at 09:25:25PM +0100, Vlada Peric wrote:
+> -static int HiSax_inithardware(int *busy_flag)
+> +static int __devinit HiSax_inithardware(int *busy_flag)
 
-> However I may have a hw failure or some bug overwrote my eeprom, I see this
-> in current mmotm:
-> r8169 0000:06:00.0: PCI INT A disabled
-> r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
-> r8169 0000:06:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-> r8169 0000:06:00.0: setting latency timer to 64
-> r8169: mac_version = 0x0c
-> r8169 0000:06:00.0: irq 43 for MSI/MSI-X
-> r8169: MAC address found in EEPROM: 00:00:00:00:00:00
+> -int hisax_init_pcmcia(void *pcm_iob, int *busy_flag, struct IsdnCard *card)
+> +int __devinit hisax_init_pcmcia(void *pcm_iob, int *busy_flag, struct
 
-Note there is no msg about missing EEPROM signature. I wonder what
-exactly is in the EEPROM. A modified (and again reversed) "[PATCH 1/1]
-r8169: revert "read MAC address from EEPROM on init" should be able to
-show it.
+Let's remove __devinit, not spread it.
 
-There seem to be a DOS tool on RTL WWW to change the EEPROM data.
--- 
-Krzysztof Halasa
+	Alexey, who honestly tried to fix all section mismatches
+		on fatconfig and miserably failed because after ISDN
+		part took like 90% of resulting patch and the question
+		whether root annotations are correct in the first place
+		became louder and louder.
