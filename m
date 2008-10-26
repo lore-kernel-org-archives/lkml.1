@@ -1,36 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754322AbYJZAmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbYJZApq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754322AbYJZAmS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 20:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbYJZAmK
+	id S1754589AbYJZApq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 20:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYJZApi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 20:42:10 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:60519 "EHLO twin.jikos.cz"
+	Sat, 25 Oct 2008 20:45:38 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:60781 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751283AbYJZAmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 20:42:09 -0400
-Date: Sun, 26 Oct 2008 02:42:06 +0200 (CEST)
+	id S1751981AbYJZApi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Oct 2008 20:45:38 -0400
+Date: Sun, 26 Oct 2008 02:45:34 +0200 (CEST)
 From: Jiri Kosina <jkosina@suse.cz>
 X-X-Sender: jikos@twin.jikos.cz
-To: Sid Boyce <g3vbv@blueyonder.co.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: RE: Random problems with 2.6.28-rc1-git1
-In-Reply-To: <49038555.4010507@blueyonder.co.uk>
-Message-ID: <Pine.LNX.4.64.0810260241290.22126@twin.jikos.cz>
-References: <49038555.4010507@blueyonder.co.uk>
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Soeren Sonnenburg <kernel@nn7.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.28-rc1 regression] appletouch
+In-Reply-To: <49038C5C.7000708@gmail.com>
+Message-ID: <Pine.LNX.4.64.0810260244450.22126@twin.jikos.cz>
+References: <1224966797.5303.3.camel@localhost> <49038C5C.7000708@gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 25 Oct 2008, Sid Boyce wrote:
+On Sat, 25 Oct 2008, Jiri Slaby wrote:
 
-> Thunderbird crashes out for me, no problems with 2.6.27-git10. I didn't 
-> try 2.6.28-rc1.
+> > I've noticed that the mouse does no longer work in X using 2.6.28-rc1 
+> > nor does the fn-key emulation work on my macbookpro 1,1.
+> > It perfectly works with 2.6.27.3...
+> Please follow
+> http://bugzilla.kernel.org/show_bug.cgi?id=11825
 
-Does strace output of thunderbird start reveal any obvious reason for the 
-crash on current git tree?
+Yup. The patch fixing this issue is in the bunch for which the pull 
+request has already been sent to Linus, but it didn't happen yet.
 
 -- 
 Jiri Kosina
