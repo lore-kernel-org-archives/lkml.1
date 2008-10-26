@@ -1,129 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbYJZTlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754988AbYJZT42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755336AbYJZTlT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 15:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbYJZTlJ
+	id S1754988AbYJZT42 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 15:56:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbYJZT4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 15:41:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58716 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753011AbYJZTlG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 15:41:06 -0400
-Date: Sun, 26 Oct 2008 12:41:04 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Linux 2.6.28-rc2
-Message-ID: <alpine.LFD.2.00.0810261221350.3386@nehalem.linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 26 Oct 2008 15:56:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55244 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753796AbYJZT4T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 15:56:19 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Nigel Cunningham <ncunningham@crca.org.au>,
+       Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen filesystems.
+Date: Sun, 26 Oct 2008 21:01:08 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
+References: <1224886068.6478.21.camel@nigel-laptop>
+In-Reply-To: <1224886068.6478.21.camel@nigel-laptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810262101.08822.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday, 25 of October 2008, Nigel Cunningham wrote:
+> Hi.
 
-It's not been a week yet, but we had a few annoying brown-paper-bugs in 
--rc1 that made it hard for many people to test without applying patches. 
-So rather than wait out the week, I'll just make an -rc2 early, with the 
-fixes for the problems that kept people from testing it.
+Hi Nigel,
 
-And hey, maybe we can even _continue_ the nice model of "just small fixes 
-after -rc1". I know, it sounds insane, but it's a real pleasure to do an 
--rc2 with just a handful of fixes for real problems that real people see. 
-What a concept!
+> While working on freezing fuse filesystems, I found that if a filesystem
+> is frozen when we try to freeze processes, freezing can fail because
+> threads are waiting in vfs_check_frozen for the filesystem to be thawed.
+> We should thus not count such threads.
+> 
+> The check will be safe if a filesystem is thawed while we're freezing
+> processes because filesystem thaws are only invoked from userspace. Any
+> waiting processes will be woken and frozen prior to us completing the
+> freezing of userspace (the caller invoking the filesystem thaw will be
+> freezing) or - in the worst case - together with kernel threads.
 
-Anyway, as a result, the shortlog and diffstats are both tiny, and easily 
-appended. There's a few hwmon fixes and some pretty trivial ones, but the 
-noticeable ones are:
+While your description above seems completely correct to me and I have no
+objections to the patch, I'd prefer it if someone having more experience with
+the VFS looked at it.  Miklos, can you have a look, please?
 
- - the non-NCQ libata breakage thing that broke lots of peoples setups 
+Thanks,
+Rafael
 
- - the workqueue init bug that caused various random problems if you had 
-   a SMP machine and did not enable HOTPLUG_CPU. Symptoms included boot 
-   hangs, or hung applications (eg sound from firefox) or lack of USB 
-   activity (eg "no keyboard reaction")
 
- - some broken apps seemed to be unhappy that we checked the 'struct 
-   timeval' timeout to select for sanity, since they initialized it with 
-   insane multi-second microsecond fields. Oh, well.
-
- - ext3/ext4 had introduced a bug where the same directory entry might get 
-   returned twice under some circumstances, which didn't faze most 
-   programs, but caused problems for at least "rm -r" and "git clean"
-
-There's other stuff in there too, but not much, and most of it is pretty 
-trivial (eg odd config issues, or the explanation for why you should 
-enable the regulatory option for wireless) or much harder to trigger (the 
-eventpoll oops fix). Or small fixes to random drivers (hwmon and the r8169 
-fix).
-
-			Linus
-
----
-Al Viro (2):
-      fix allmodconfig breakage
-      arm ide breakage
-
-Alistair John Strachan (2):
-      hwmon: (abituguru3) Cosmetic whitespace fixes
-      hwmon: (abituguru3) enable DMI probing feature on AW9D-MAX
-
-Arjan van de Ven (2):
-      wireless: fix regression caused by regulatory config option
-      select: deal with math overflow from borderline valid userland data
-
-Davide Libenzi (1):
-      epoll: avoid double-inserts in case of EFAULT
-
-Francois Romieu (1):
-      r8169: revert "read MAC address from EEPROM on init"
-
-Geert Uytterhoeven (2):
-      hwmon: (w83781d) Fix linking when built-in
-      m68k: Disable Amiga serial console support if modular
-
-Jean Delvare (4):
-      hwmon-vid: Add support for AMD family 10h CPUs
-      hwmon: (lm90) Fix handling of hysteresis value
-      hwmon: (lm90) Add support for the LM99 16 degree offset
-      hwmon: (adt7473) Fix voltage conversion routines
-
-Jens Axboe (1):
-      libata: fix bug with non-ncq devices
-
-Linus Torvalds (2):
-      Revert "Call init_workqueues before pre smp initcalls."
-      Linux 2.6.28-rc2
-
-Stephen Rothwell (1):
-      cgroup: remove unused variable
-
-Theodore Ts'o (2):
-      ext3: Fix duplicate entries returned from getdents() system call
-      ext4: Fix duplicate entries returned from getdents() system call
-
----
- Documentation/hwmon/lm90   |    2 +-
- Makefile                   |    2 +-
- drivers/ata/libata-scsi.c  |    6 ++-
- drivers/char/amiserial.c   |    6 ++-
- drivers/hwmon/abituguru3.c |   30 +++++++-------
- drivers/hwmon/adt7473.c    |   29 ++++----------
- drivers/hwmon/hwmon-vid.c  |    1 +
- drivers/hwmon/lm90.c       |   52 ++++++++++++++++++++++---
- drivers/hwmon/w83781d.c    |    4 +-
- drivers/ide/icside.c       |    4 +-
- drivers/ide/rapide.c       |    4 +-
- drivers/net/r8169.c        |   88 --------------------------------------------
- fs/compat.c                |    5 +-
- fs/eventpoll.c             |   11 ++++-
- fs/ext3/dir.c              |   20 ++++------
- fs/ext4/dir.c              |   20 ++++------
- fs/select.c                |    5 +-
- init/main.c                |    3 +-
- kernel/cgroup.c            |    2 +-
- kernel/stop_machine.c      |    2 +-
- net/wireless/Kconfig       |   11 ++---
- scripts/kconfig/confdata.c |    3 +-
- 22 files changed, 127 insertions(+), 183 deletions(-)
+> Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
+> 
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index a6a625b..c9b055d 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -8,6 +8,7 @@
+>  
+>  #include <linux/limits.h>
+>  #include <linux/ioctl.h>
+> +#include <linux/freezer.h>
+>  
+>  /*
+>   * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
+> @@ -1187,8 +1190,11 @@ enum {
+>  	SB_FREEZE_TRANS = 2,
+>  };
+>  
+> -#define vfs_check_frozen(sb, level) \
+> -	wait_event((sb)->s_wait_unfrozen, ((sb)->s_frozen < (level)))
+> +#define vfs_check_frozen(sb, level) do { \
+> +	freezer_do_not_count(); \
+> +	wait_event((sb)->s_wait_unfrozen, ((sb)->s_frozen < (level))); \
+> +	freezer_count(); \
+> +} while (0)
+>  
+>  #define get_fs_excl() atomic_inc(&current->fs_excl)
+>  #define put_fs_excl() atomic_dec(&current->fs_excl)
+> 
+> 
