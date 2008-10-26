@@ -1,83 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756216AbYJZUXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756191AbYJZUZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756216AbYJZUXZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 16:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755565AbYJZUW5
+	id S1756191AbYJZUZg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 16:25:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754381AbYJZUZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 16:22:57 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:52297 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755151AbYJZUW4 (ORCPT
+	Sun, 26 Oct 2008 16:25:28 -0400
+Received: from ik-out-1112.google.com ([66.249.90.183]:56277 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754305AbYJZUZ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 16:22:56 -0400
-Subject: Re: [PATCH] wireless: fix regression caused by regulatory config
-	option
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: "John W. Linville" <linville@tuxdriver.com>, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@sisk.pl,
-       rodriguez@atheros.com
-In-Reply-To: <20081026131818.7517c103@infradead.org>
-References: <20081026103024.2712ddc9@infradead.org>
-	 <20081026200939.GC12648@tuxdriver.com>
-	 <20081026131818.7517c103@infradead.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-o9E+oGLcfqVPTJlPMJSw"
-Date: Sun, 26 Oct 2008 21:22:16 +0100
-Message-Id: <1225052537.3746.5.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sun, 26 Oct 2008 16:25:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=V7eVVBkHd5ae2y6hTX/ZXzzGVK8nmxDQbd+TNZ5C/xo34Nbje+ptxKV27lFPG0miNo
+         q1hTNvLbH8rOVH1ohNonH9W8U1goiUoVWo7POPO7nOjcE2phY+cObomlrqw+ELfUbbuO
+         1OFW2WqHstPGkMRDyBWJDzDRKJAOBAFVfJBIs=
+Message-ID: <6e4284620810261325n643cba26v129f2b076888bac9@mail.gmail.com>
+Date: Sun, 26 Oct 2008 21:25:25 +0100
+From: "Vlada Peric" <vlada.peric@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] isdn: fix section mismatch warnings in isdn/hisax
+Cc: kkeil@suse.de, kai.germaschewski@gmx.de
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m9QKPedq020050
 
-
---=-o9E+oGLcfqVPTJlPMJSw
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Sun, 2008-10-26 at 13:18 -0700, Arjan van de Ven wrote:
-
-> > Is it common practice to have compatibility options default to
-> > "y"?  I'm not saying it shouldn't be, just wondering if it has been
-> > traditionally?
->=20
-> yes
->=20
-> default should be "keep working as before"
->=20
-> it's not always nice, especially if you're trying to get rid of some
-> nasty stuff, but think of it this way: you should be able to use a
-> new kernel on an existing distro, at least for a reasonable type of
-> distro (eg something shipped in, say, the last 2 years). In this case:
-> even Fedora 10 is not likely to work!
-
-Well, actually, it _ought_ to work fine, with a smaller set of channels,
-but you seem to be hit an iwlwifi bug that triggers only with this,
-which is rather odd.
-
-johannes
-
---=-o9E+oGLcfqVPTJlPMJSw
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJBNFzAAoJEKVg1VMiehFYUdMP/R+r/r0lUzFZnVELjJwW653S
-AUJQd1zO2pbQ71sk+/KaWBDvw4QgDlydbW+6kcQg3aFnV/IJzMvXHvjoDvz3PtUf
-G+3F/Qfns73V4hYI2dhxUm52tVDT9W1HS/UXqVmxtahhljF4TcZn5gv60KWUBdAH
-e2jwQVubSipEB9/Wb8WCGRmhKXntA2LCzX3OLiawJZHpl+XRByjw148VIe56jI4G
-5hzeRfefvl48oCn0+zVY+RQrWb3k+J2/wGDS48V8zH0cdOSUtz6CHBiNo3qPu+ld
-cL05sHC5kBOpe+uWs1K4rYf+MdLlYzHNcgFzNIbXgBgXkX9FtDoksjgdVg/P1xVJ
-ln54uSKfYoykgrA9/hwsfboLOXFWWPOD8Xuc33t7yGvgTtbTJZeYUZ3XisKb3CPz
-3UEmL/Rkls4oabGgu50p/0okbaaMtHCasUX7cOt2B9yaZgjGbYttIA7+3WntGzCB
-XfIHhAkdCX2cb3zrGpfwAuqVyETbM24lWqcaB/zq/VPzPgw+Yz5nKDBgYxSmcfVd
-mh1FIRuYDkSmTTfHJQjJhyP+k53hQhzQxRo5K3fqWbeJpQhHideYaUR4i72CJnHp
-p+XgZTLnQt1fbc1LKuPaN//7YKI10B4uwjJSyPeRRrJd709qh3B/b2Rd887bIDKJ
-e27CxCsicXXG0djqc8S3
-=Th9c
------END PGP SIGNATURE-----
-
---=-o9E+oGLcfqVPTJlPMJSw--
-
+I am not subscribed to the list, please CC me directly.
+Fix the following warnings (6 total):WARNING: drivers/isdn/hisax/hisax.o(.text+0x9c5): Section mismatch inreference from the function HiSax_inithardware() to the function.devinit.text:hisax_cs_setup_card()The function HiSax_inithardware() referencesthe function __devinit hisax_cs_setup_card().This is often because HiSax_inithardware lacks a __devinitannotation or the annotation of hisax_cs_setup_card is wrong.
+WARNING: drivers/isdn/hisax/hisax.o(.text+0xb45): Section mismatch inreference from the function hisax_init_pcmcia() to the function.devinit.text:hisax_cs_setup_card()The function hisax_init_pcmcia() referencesthe function __devinit hisax_cs_setup_card().This is often because hisax_init_pcmcia lacks a __devinitannotation or the annotation of hisax_cs_setup_card is wrong.
+Signed-off-by: Vlada PeriÊ <vlada.peric <at> gmail.com>Cc: Karsten Keil <kkeil <at> suse.de>Cc: Kai Germaschewski <kai.germaschewski <at> gmx.de>--- drivers/isdn/hisax/config.c |    4 ++-- 1 files changed, 2 insertions(+), 2 deletions(-)
+diff --git a/drivers/isdn/hisax/config.c b/drivers/isdn/hisax/config.cindex 84d75a3..db2aebc 100644--- a/drivers/isdn/hisax/config.c+++ b/drivers/isdn/hisax/config.c@@ -1213,7 +1213,7 @@ static void HiSax_shiftcards(int idx) 		memcpy(&cards[i], &cards[i + 1], sizeof(cards[i])); }
+-static int HiSax_inithardware(int *busy_flag)+static int __devinit HiSax_inithardware(int *busy_flag) { 	int foundcards = 0; 	int i = 0;@@ -1542,7 +1542,7 @@ static void __exit HiSax_exit(void) 	printk(KERN_INFO "HiSax module removed\n"); }
+-int hisax_init_pcmcia(void *pcm_iob, int *busy_flag, struct IsdnCard *card)+int __devinit hisax_init_pcmcia(void *pcm_iob, int *busy_flag, structIsdnCard *card) { 	u_char ids[16]; 	int ret = -1;-- 1.6.0.3ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
