@@ -1,78 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbYJZLIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbYJZLKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754015AbYJZLIv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 07:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYJZLIm
+	id S1754054AbYJZLKI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 07:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbYJZLJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 07:08:42 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:47777 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752661AbYJZLIl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 07:08:41 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sun, 26 Oct 2008 12:03:37 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [Bug 11823][PATCH] ieee1394: dv1394: fix possible deadlock in
- multithreaded clients
-To: linux1394-devel@lists.sourceforge.net
-cc: bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
-       Johannes Weiner <hannes@saeurebad.de>
-In-Reply-To: <4902E80B.7090805@s5r6.in-berlin.de>
-Message-ID: <tkrat.306c405611bf6756@s5r6.in-berlin.de>
-References: <bug-11823-4803@http.bugzilla.kernel.org/>
- <4902E80B.7090805@s5r6.in-berlin.de>
+	Sun, 26 Oct 2008 07:09:56 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53681 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751827AbYJZLJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 07:09:55 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Dave Chinner <david@fromorbit.com>
+Subject: Re: [Bug #11805] mounting XFS produces a segfault
+Date: Sun, 26 Oct 2008 12:14:27 +0100
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Tiago Maluta <maluta_tiago@yahoo.com.br>
+References: <nw2Y6lk-0lG.A.VUB.RV5AJB@chimera> <t1C3RWL0r7M.A.x6C.AW5AJB@chimera> <20081026000804.GC11948@disturbed>
+In-Reply-To: <20081026000804.GC11948@disturbed>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810261214.28369.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a possible though highly unlikely deadlock:
+On Sunday, 26 of October 2008, Dave Chinner wrote:
+> On Sat, Oct 25, 2008 at 10:06:44PM +0200, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.27.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11805
+> > Subject		: mounting XFS produces a segfault
+> > Submitter	: Tiago Maluta <maluta_tiago@yahoo.com.br>
+> > Date		: 2008-10-21 18:00 (5 days old)
+> 
+> Ah - this was reported as a 2.6.26 -> 2.6.27 regression, not a
+> .27->.28-rcX regression.
+> 
+> Even so, it's not obviously an XFS regression as the problem is
+> that alloc_pages(GFP_KERNEL) is the new failure on .27. The fact
+> that XFS never handled the allocation failure is not a new bug
+> or regression - it has never caught failures during log
+> allocation...
+> 
+> So really, if you want to look for a regression here, it is the
+> change of behaviour in the VM leading to a memory allocation failure
+> where it has never, ever previously failed...
 
-Thread A:                  Thread B:
- - acquire mmap_sem         - dv1394_ioctl/read/write()
- - dv1394_mmap()            - acquire video->mtx
- - acquire video->mtx       - copy_to/from_user(), possible page fault:
-                              acquire mmap_sem
+OK, I moved it to the list of regressions introduced between .26 and .27.
 
-The simplest fix is to use mutex_trylock() instead of mutex_lock() in
-dv1394_mmap().  This changes the behavior under contention in a way
-which is visible to userspace clients.  However, my guess is that no
-clients exist which use mmap vs. ioctl/read/write on the dv1394
-character device file interface in concurrent threads.
-
-Reported-by: Johannes Weiner <hannes@saeurebad.de>
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/ieee1394/dv1394.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
-Index: linux/drivers/ieee1394/dv1394.c
-===================================================================
---- linux.orig/drivers/ieee1394/dv1394.c
-+++ linux/drivers/ieee1394/dv1394.c
-@@ -1270,8 +1270,14 @@ static int dv1394_mmap(struct file *file
- 	struct video_card *video = file_to_video_card(file);
- 	int retval = -EINVAL;
- 
--	/* serialize mmap */
--	mutex_lock(&video->mtx);
-+	/*
-+	 * We cannot use the blocking variant mutex_lock here because .mmap
-+	 * is called with mmap_sem held, while .ioctl, .read, .write acquire
-+	 * video->mtx and subsequently call copy_to/from_user which will
-+	 * grab mmap_sem in case of a page fault.
-+	 */
-+	if (!mutex_trylock(&video->mtx))
-+		return -EAGAIN;
- 
- 	if ( ! video_card_initialized(video) ) {
- 		retval = do_dv1394_init_default(video);
-
--- 
-Stefan Richter
--=====-==--- =-=- ==-=-
-http://arcgraph.de/sr/
-
+Thanks,
+Rafael
