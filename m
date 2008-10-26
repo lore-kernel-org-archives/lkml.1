@@ -1,91 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753606AbYJZCmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753095AbYJZDBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753606AbYJZCmj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 22:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYJZCmR
+	id S1753095AbYJZDBr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 23:01:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYJZDBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 22:42:17 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:36170 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751753AbYJZCmQ (ORCPT
+	Sat, 25 Oct 2008 23:01:39 -0400
+Received: from smtp2.Stanford.EDU ([171.67.20.25]:34007 "EHLO
+	smtp2.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751451AbYJZDBi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 22:42:16 -0400
-From: "Theodore Ts'o" <tytso@mit.edu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Markus Trippelsdorf <markus@trippelsdorf.de>, linux-kernel@vger.kernel.org,
-       eugene@ibrix.com, msnitzer@ibrix.com, akpm@linux-foundation.org,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 1/2] ext3: Fix duplicate entries returned from getdents() system call
-Date: Sat, 25 Oct 2008 22:42:12 -0400
-Message-Id: <1224988933-13343-1-git-send-email-tytso@mit.edu>
-X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
-In-Reply-To: <20081026023914.GA10603@mit.edu>
-References: <20081026023914.GA10603@mit.edu>
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Sat, 25 Oct 2008 23:01:38 -0400
+X-Greylist: delayed 540 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Oct 2008 23:01:38 EDT
+Subject: 2.6.26.[6|7] vs. rt11 vs. alsa (usb) midi
+From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+To: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Cc: Fernando Pablo Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+Content-Type: text/plain
+Date: Sat, 25 Oct 2008 19:46:27 -0700
+Message-Id: <1224989187.3706.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a regression caused by commit 6a897cf4, "ext3: fix ext3_dx_readdir
-hash collision handling", where deleting files in a large directory
-(requiring more than one getdents system call), results in some
-filenames being returned twice.  This was caused by a failure to
-update info->curr_hash and info->curr_minor_hash, so that if the
-directory had gotten modified since the last getdents() system call
-(as would be the case if the user is running "rm -r" or "git clean"),
-a directory entry would get returned twice to the userspace.
+Hi... anyone out there also having problem with this combination?
+   2.6.26.7 or 2.6.26.6 with 2.6.26.6-rt11 and alsa MIDI
+It looks to me like alsa midi is broken. 
 
-This patch fixes the bug reported by Markus Trippelsdorf at:
-http://bugzilla.kernel.org/show_bug.cgi?id=11844
+Probably an interaction with the realtime kernel patch. A Fedora kernel
+based on 2.6.26.6 (2.6.26.6-49 on fc8) works fine, a very similarly
+patched kernel that includes the realtime patch does not. The
+configurations for both are almost the same (today I tried to change
+some of the most obvious differences and rebuild, with the same
+result). 
 
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Tested-by: Markus Trippelsdorf <markus@trippelsdorf.de>
----
- fs/ext3/dir.c |   20 ++++++++------------
- 1 files changed, 8 insertions(+), 12 deletions(-)
+No problems with 2.6.24.7-rt21. 
 
-diff --git a/fs/ext3/dir.c b/fs/ext3/dir.c
-index 4c82531..5853f44 100644
---- a/fs/ext3/dir.c
-+++ b/fs/ext3/dir.c
-@@ -456,17 +456,8 @@ static int ext3_dx_readdir(struct file * filp,
- 	if (info->extra_fname) {
- 		if (call_filldir(filp, dirent, filldir, info->extra_fname))
- 			goto finished;
--
- 		info->extra_fname = NULL;
--		info->curr_node = rb_next(info->curr_node);
--		if (!info->curr_node) {
--			if (info->next_hash == ~0) {
--				filp->f_pos = EXT3_HTREE_EOF;
--				goto finished;
--			}
--			info->curr_hash = info->next_hash;
--			info->curr_minor_hash = 0;
--		}
-+		goto next_node;
- 	} else if (!info->curr_node)
- 		info->curr_node = rb_first(&info->root);
- 
-@@ -498,9 +489,14 @@ static int ext3_dx_readdir(struct file * filp,
- 		info->curr_minor_hash = fname->minor_hash;
- 		if (call_filldir(filp, dirent, filldir, fname))
- 			break;
--
-+	next_node:
- 		info->curr_node = rb_next(info->curr_node);
--		if (!info->curr_node) {
-+		if (info->curr_node) {
-+			fname = rb_entry(info->curr_node, struct fname,
-+					 rb_hash);
-+			info->curr_hash = fname->hash;
-+			info->curr_minor_hash = fname->minor_hash;
-+		} else {
- 			if (info->next_hash == ~0) {
- 				filp->f_pos = EXT3_HTREE_EOF;
- 				break;
--- 
-1.5.6.1.205.ge2c7.dirty
+Test: boot, login, plugin an external usb keyboard (Yamaha P250), it is
+recognized, use qjackctl alsa patchbay to connect it to kmidimon,
+kmidimon sees only _one_ midi message and that's it. Kmidimon can't be
+killed after that. 
+
+-- Fernando
+
 
