@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753172AbYJ0JFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbYJ0JFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753172AbYJ0JFU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 05:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbYJ0JFF
+	id S1753345AbYJ0JFn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 05:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYJ0JFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 05:05:05 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35702 "EHLO UNKNOWN"
+	Mon, 27 Oct 2008 05:05:07 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35698 "EHLO UNKNOWN"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751937AbYJ0JFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751582AbYJ0JFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 27 Oct 2008 05:05:04 -0400
-Date: Sun, 26 Oct 2008 18:40:25 +0100
+Date: Sun, 26 Oct 2008 19:41:09 +0100
 From: Pavel Machek <pavel@suse.cz>
-To: Eric Piel <eric.piel@tremplin-utc.net>
-Cc: Thomas Renninger <trenn@suse.de>, akpm@linux-foundation.org,
-       burman.yan@gmail.com, rpurdie@rpsys.net,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
-Subject: Re: leds-hp-disk vs lis3lv02d
-Message-ID: <20081026174023.GA1847@ucw.cz>
-References: <200810162255.m9GMtKj4001733@imap1.linux-foundation.org> <200810192106.15905.trenn@suse.de> <20081019204819.GC1465@ucw.cz> <4902F817.4050108@tremplin-utc.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-stable@vger.kernel.org
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Stanislav Brabec <utx@penguin.cz>,
+       kernel list <linux-kernel@vger.kernel.org>, rpurdie@rpsys.net,
+       lenz@cs.wisc.edu, Dirk@opfer-online.de, arminlitzel@web.de,
+       pavel.urban@ct.cz, metan@atrey.karlin.mff.cuni.cz,
+       thommycheck@gmail.com, milan@ucw.cz
+Subject: [Patch 2.6.27] fix booting on Sharp Zaurus c3000
+Message-ID: <20081026184108.GB1847@ucw.cz>
+References: <20081009091929.GE29957@atrey.karlin.mff.cuni.cz> <20081015101747.GB28824@atrey.karlin.mff.cuni.cz> <20081015113923.GA21756@flint.arm.linux.org.uk> <200810250001.04835.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4902F817.4050108@tremplin-utc.net>
+In-Reply-To: <200810250001.04835.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,28 +32,108 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> >> shouldn't this one be integrated into Eric's/Yan's driver?
+> > > Thanks for the effort, but it looks like it did not make it, right?
 > > 
-> > It is separate piece of hardware, completely unrelated to lids3v
-> > chip. No, it should not be integrated, but I'll makesure they work
-> > toggether well.
-> Hello,
-> I think I talked too fast: it seems impossible to have both drivers
-> (leds-hp-disk and lis3lv02d) working at the same time. Only the first
-> driver loaded is used.
+> > Correct - Linus was unpredictable and released 2.6.27 that evening,
+> > four days early giving me no time to push the fix to him.
+> > 
+> > However, it's gone in as part of the first ARM merge, so should be in
+> > -rc1.
 > 
-> After a little look at it, I think it comes from the fact that both
-> drivers are assigned to the same MODALIAS (HPQ0004). The ACPI PNP
-> (through the generic bus infrastructure) only declare the device to one
-> of the drivers supporting it, not all of them.
+> Is it in -stable?  if not, is it considered as -stable material?
 
-I can reproduce it here and it obviously needs fixing. OTOH  it should
-not block merge; both drivers still work and are useful.
+Yes, I guess it should go to stable.
 
-> How can I tell to ACPI that it should load both drivers for the same PNP
-> ID match?
+commit 69fc7eed5f56bce15b239e5110de2575a6970df4
+Author: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Date:   Thu Oct 9 16:58:13 2008 +0100
 
-I'll take a look if I can figure something out...
+    [ARM] 5300/1: fixup spitz reset during boot
+    
+    Some machines don't have the pullup/down on their reset
+    pin, so configuring the reset generating pin as input makes
+    them reset immediately. Fix that by making reset pin direction
+    configurable.
+    
+Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+diff --git a/arch/arm/mach-pxa/include/mach/reset.h b/arch/arm/mach-pxa/include/mach/reset.h
+index 9489a48..7b8842c 100644
+--- a/arch/arm/mach-pxa/include/mach/reset.h
++++ b/arch/arm/mach-pxa/include/mach/reset.h
+@@ -10,9 +10,12 @@
+ extern unsigned int reset_status;
+ extern void clear_reset_status(unsigned int mask);
+ 
+-/*
+- * register GPIO as reset generator
++/**
++ * init_gpio_reset() - register GPIO as reset generator
++ *
++ * @gpio - gpio nr
++ * @output - set gpio as out/low instead of input during normal work
+  */
+-extern int init_gpio_reset(int gpio);
++extern int init_gpio_reset(int gpio, int output);
+ 
+ #endif /* __ASM_ARCH_RESET_H */
+diff --git a/arch/arm/mach-pxa/reset.c b/arch/arm/mach-pxa/reset.c
+index 31d7885..1b2af57 100644
+--- a/arch/arm/mach-pxa/reset.c
++++ b/arch/arm/mach-pxa/reset.c
+@@ -20,7 +20,7 @@ static void do_hw_reset(void);
+ 
+ static int reset_gpio = -1;
+ 
+-int init_gpio_reset(int gpio)
++int init_gpio_reset(int gpio, int output)
+ {
+ 	int rc;
+ 
+@@ -30,9 +30,12 @@ int init_gpio_reset(int gpio)
+ 		goto out;
+ 	}
+ 
+-	rc = gpio_direction_input(gpio);
++	if (output)
++		rc = gpio_direction_output(gpio, 0);
++	else
++		rc = gpio_direction_input(gpio);
+ 	if (rc) {
+-		printk(KERN_ERR "Can't configure reset_gpio for input\n");
++		printk(KERN_ERR "Can't configure reset_gpio\n");
+ 		gpio_free(gpio);
+ 		goto out;
+ 	}
+diff --git a/arch/arm/mach-pxa/spitz.c b/arch/arm/mach-pxa/spitz.c
+index 9b4f24c..524f656 100644
+--- a/arch/arm/mach-pxa/spitz.c
++++ b/arch/arm/mach-pxa/spitz.c
+@@ -618,7 +618,7 @@ static void spitz_restart(char mode)
+ 
+ static void __init common_init(void)
+ {
+-	init_gpio_reset(SPITZ_GPIO_ON_RESET);
++	init_gpio_reset(SPITZ_GPIO_ON_RESET, 1);
+ 	pm_power_off = spitz_poweroff;
+ 	arm_pm_restart = spitz_restart;
+ 
+diff --git a/arch/arm/mach-pxa/tosa.c b/arch/arm/mach-pxa/tosa.c
+index 9f3ef9e..130e37e 100644
+--- a/arch/arm/mach-pxa/tosa.c
++++ b/arch/arm/mach-pxa/tosa.c
+@@ -781,7 +781,7 @@ static void __init tosa_init(void)
+ 	gpio_set_wake(MFP_PIN_GPIO1, 1);
+ 	/* We can't pass to gpio-keys since it will drop the Reset altfunc */
+ 
+-	init_gpio_reset(TOSA_GPIO_ON_RESET);
++	init_gpio_reset(TOSA_GPIO_ON_RESET, 0);
+ 
+ 	pm_power_off = tosa_poweroff;
+ 	arm_pm_restart = tosa_restart;
+
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
