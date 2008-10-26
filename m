@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755845AbYJZRis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbYJZRrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755845AbYJZRis (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 13:38:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753681AbYJZRik
+	id S1755891AbYJZRrw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 13:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754051AbYJZRrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 13:38:40 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:38340 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753540AbYJZRik (ORCPT
+	Sun, 26 Oct 2008 13:47:42 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:44034 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751889AbYJZRrl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 13:38:40 -0400
-Subject: Re: [PATCH] DASD: send 'change' uevents
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Hannes Reinecke <hare@suse.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Michael Holzheu <HOLZHEU@de.ibm.com>,
-       Stefan Weinhuber <wein@de.ibm.com>
-In-Reply-To: <49016599.5030406@suse.de>
-References: <49016599.5030406@suse.de>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Sun, 26 Oct 2008 19:29:57 +0100
-Message-Id: <1225045797.14057.15.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 26 Oct 2008 13:47:41 -0400
+Date: Sun, 26 Oct 2008 18:46:54 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, Edward Hsu <edward_hsu@realtek.com.tw>,
+       Ivan Vecera <ivecera@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: r8169 MAC addresses broken
+Message-ID: <20081026174654.GB24790@electric-eye.fr.zoreil.com>
+References: <490380C8.6070003@simon.arlott.org.uk> <4903947A.3060206@gmail.com> <20081025223443.GA30913@electric-eye.fr.zoreil.com> <4904A7C5.7090801@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4904A7C5.7090801@gmail.com>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hannes,
+Jiri Slaby <jirislaby@gmail.com> :
+[...]
+> Hmm, no. How can one restore eeprom contents without making a brick from the
+> notebook? I seem to have all zeroes in the eeprom mac address area.
 
-On Fri, 2008-10-24 at 08:05 +0200, Hannes Reinecke wrote:
-> this patch modifies the DASD driver to sent out 'change' events
-> whenever the internal state machine transitions in or out of the
-> 'ready' state. This is required for udev so that vol_id and friends
-> can actually read from the disk.
-> 
-> Please apply.
+:o(
 
-Looks reasonable to me. Stefan can you take a look at this please?
+Same thing if you unplug the battery ?
 
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+Ueimor
