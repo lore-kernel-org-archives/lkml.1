@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbYJZLUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbYJZLVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753537AbYJZLUe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 07:20:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbYJZLUZ
+	id S1753155AbYJZLVP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 07:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbYJZLU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 07:20:25 -0400
-Received: from h4.dl5rb.org.uk ([81.2.74.4]:39250 "EHLO
-	ditditdahdahdah-dahdahdahditdit.dl5rb.org.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751962AbYJZLUY (ORCPT
+	Sun, 26 Oct 2008 07:20:58 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:48006 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752502AbYJZLU4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 07:20:24 -0400
-Date: Sun, 26 Oct 2008 10:18:26 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [RFC patch 05/15] get_cycles() : MIPS HAVE_GET_CYCLES_32
-Message-ID: <20081026101826.GB24378@linux-mips.org>
-References: <20081016232729.699004293@polymtl.ca> <20081016234656.224625422@polymtl.ca>
+	Sun, 26 Oct 2008 07:20:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=NF2i/IYIcoslj6Lg+XLWb+abmyYx1Na5/nSJaruumlMGtB7wj8m93J9PpUKfD/vXA7
+         /eDU0ZFd4Z136gw5BgKoqmbf2KAflD8vZKU2GE+mCBLRlEzN7PzWpnXwt1/S2ePFklJm
+         NrwXm1zqlDOU8kfK4aW+U3oS9gcgHdDJak5XY=
+Date: Sun, 26 Oct 2008 14:20:47 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Joshua Hoblitt <j_kernel@hoblitt.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Bug #11543] kernel panic: softlockup in tick_periodic() ???
+Message-ID: <20081026112047.GC7639@localhost>
+References: <3ZqdCuOdOqB.A.EPE.fJ6AJB@chimera> <gLTYxg3cC1.A.csF.wK6AJB@chimera> <20081026071132.GB7639@localhost> <200810261203.43348.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081016234656.224625422@polymtl.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200810261203.43348.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 16, 2008 at 07:27:34PM -0400, Mathieu Desnoyers wrote:
+[Rafael J. Wysocki - Sun, Oct 26, 2008 at 12:03:42PM +0100]
+| On Sunday, 26 of October 2008, Cyrill Gorcunov wrote:
+| > [Rafael J. Wysocki - Sat, Oct 25, 2008 at 11:07:49PM +0200]
+| > | This message has been generated automatically as a part of a report
+| > | of regressions introduced between 2.6.26 and 2.6.27.
+| > | 
+| > | The following bug entry is on the current list of known regressions
+| > | introduced between 2.6.26 and 2.6.27.  Please verify if it still should
+| > | be listed and let me know (either way).
+| > | 
+| > | 
+| > | Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11543
+| > | Subject		: kernel panic: softlockup in tick_periodic() ???
+| > | Submitter	: Joshua Hoblitt <j_kernel@hoblitt.com>
+| > | Date		: 2008-09-11 16:46 (45 days old)
+| > | References	: http://marc.info/?l=linux-kernel&m=122117786124326&w=4
+| > | Handled-By	: Thomas Gleixner <tglx@linutronix.de>
+| > | 		  Cyrill Gorcunov <gorcunov@gmail.com>
+| > | 		  Ingo Molnar <mingo@elte.hu>
+| > | 
+| > | 
+| > 
+| > It's still there but with completely out of 'subject' problems.
+| 
+| OK, what subject will be more appropriate?
+| 
+| Rafael
+| 
 
-> partly reverts commit efb9ca08b5a2374b29938cdcab417ce4feb14b54. Selects
-> HAVE_GET_CYCLES_32 only on CPUs where it is safe to use it.
-> 
-> Currently consider the "_WORKAROUND" cases for 4000 and 4400 to be unsafe, but
-> should probably add other sub-architecture to the blacklist.
-> 
-> Do not define HAVE_GET_CYCLES because MIPS does not provide 64-bit tsc (only
-> 32-bits).
+Not sure Rafael -- now Joshua have different type
+of kernel errors -- and NULL deref and do_IRQ hang.
+Joshua?
 
-[...]
-
-> Index: linux-2.6-lttng/include/asm-mips/timex.h
-> ===================================================================
-> --- linux-2.6-lttng.orig/include/asm-mips/timex.h	2008-10-16 12:25:47.000000000 -0400
-> +++ linux-2.6-lttng/include/asm-mips/timex.h	2008-10-16 12:34:18.000000000 -0400
-> @@ -29,14 +29,39 @@
->   * which isn't an evil thing.
->   *
->   * We know that all SMP capable CPUs have cycle counters.
-> + *
-> + * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> + * HAVE_GET_CYCLES makes sure that this case is handled properly :
-> + *
-> + * Ralf Baechle <ralf@linux-mips.org> :
-> + * This avoids us executing an mfc0 c0_count instruction on processors which
-> + * don't have but also on certain R4000 and R4400 versions where reading from
-> + * the count register just in the very moment when its value equals c0_compare
-> + * will result in the timer interrupt getting lost.
->   */
-
-The usual workaround for this processor bug is to check if the value of
-the c0_count and c0_compare registers are close.  Clone, not identical to
-allow for the time skew in the pipeline.  If they are close, then
-execute the timer interrupt handler.  See also the R4000/R4400 errata.
-
-  Ralf
+		- Cyrill -
