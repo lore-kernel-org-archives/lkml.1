@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753095AbYJZDBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbYJZDMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753095AbYJZDBr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 23:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYJZDBj
+	id S1753371AbYJZDMG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 23:12:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbYJZDLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 23:01:39 -0400
-Received: from smtp2.Stanford.EDU ([171.67.20.25]:34007 "EHLO
-	smtp2.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751451AbYJZDBi (ORCPT
+	Sat, 25 Oct 2008 23:11:54 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:58692 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751753AbYJZDLx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 23:01:38 -0400
-X-Greylist: delayed 540 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Oct 2008 23:01:38 EDT
-Subject: 2.6.26.[6|7] vs. rt11 vs. alsa (usb) midi
-From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-To: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Cc: Fernando Pablo Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-Content-Type: text/plain
-Date: Sat, 25 Oct 2008 19:46:27 -0700
-Message-Id: <1224989187.3706.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+	Sat, 25 Oct 2008 23:11:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=qz/eWk9xJnVwqlnj3zDhrCcrlyUNdkqxIZQhudCN0IoZ+FETXZFVPs3owu/SOZYuSg
+         Y+PRYqxKXHzYEg/TT4cNz2M9S1ssTa4i5l22E38hRUWOsx6ICbmuApnhK3rMi0iWeJQG
+         WgzVjGPpO2NoEUk4pPpGvXBxepVohoxLML5cM=
+Message-ID: <4903DFF4.5000602@gmail.com>
+Date: Sat, 25 Oct 2008 20:11:48 -0700
+From: walt <w41ter@gmail.com>
+User-Agent: Thunderbird/3.0a2pre (X11; 2008102512)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PULL] module, param and stop_machine patches
+References: <200810221005.59874.rusty@rustcorp.com.au> <alpine.LFD.2.00.0810251416130.3327@nehalem.linux-foundation.org> <200810260924.09479.rusty@rustcorp.com.au> <alpine.LFD.2.00.0810251529240.3327@nehalem.linux-foundation.org> <alpine.LFD.2.00.0810251554030.3327@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0810251554030.3327@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi... anyone out there also having problem with this combination?
-   2.6.26.7 or 2.6.26.6 with 2.6.26.6-rt11 and alsa MIDI
-It looks to me like alsa midi is broken. 
+Linus Torvalds wrote:
+>
+> On Sat, 25 Oct 2008, Linus Torvalds wrote:
+>> Is there any reason why the real patch isn't just to make
+>> 'stop_machine_init' a 'core_initcall()' instead of 'early_initcall()'?
+>
+> IOW, something like this (untested)
+>
+> 		Linus
 
-Probably an interaction with the realtime kernel patch. A Fedora kernel
-based on 2.6.26.6 (2.6.26.6-49 on fc8) works fine, a very similarly
-patched kernel that includes the realtime patch does not. The
-configurations for both are almost the same (today I tried to change
-some of the most obvious differences and rebuild, with the same
-result). 
+<patch snipped for brevity>
 
-No problems with 2.6.24.7-rt21. 
+This patch also fixes the keyboard problem I reported originally.
 
-Test: boot, login, plugin an external usb keyboard (Yamaha P250), it is
-recognized, use qjackctl alsa patchbay to connect it to kmidimon,
-kmidimon sees only _one_ midi message and that's it. Kmidimon can't be
-killed after that. 
-
--- Fernando
 
 
