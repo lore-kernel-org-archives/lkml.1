@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbYJZPPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755511AbYJZPUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755486AbYJZPPa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 11:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbYJZPPK
+	id S1755511AbYJZPUb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 11:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625AbYJZPUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 11:15:10 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:42835 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754558AbYJZPPJ (ORCPT
+	Sun, 26 Oct 2008 11:20:17 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:4870 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754326AbYJZPUQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 11:15:09 -0400
-Subject: Re: Timeout regression introduced by
-	242f9dcb8ba6f68fcd217a119a7648a4f69290e9
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <49043C7C.8050207@kernel.org>
-References: <49043C7C.8050207@kernel.org>
-Content-Type: text/plain
-Date: Sun, 26 Oct 2008 10:15:05 -0500
-Message-Id: <1225034105.3958.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Sun, 26 Oct 2008 11:20:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=QLvR97HV3la1UoO/5PvE7mgTqOHo6d1xlUzsXjbplnfXm8CJrAS6UlryQXVWFjqdeh
+         h5UEPy0wItcVMieg0pXtcyM9Vy+BjFVBFElNxy6WJFPx3bbIEXgFwpXk0wvKcJM+EraI
+         ANeC6Cn6DDwX0YihxdMw6QjNKo6BJK4cKeU4A=
+Message-ID: <c384c5ea0810260820ye9ebd70y587c013c7bef2579@mail.gmail.com>
+Date: Sun, 26 Oct 2008 16:20:14 +0100
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: [PATCH] Rename DECLARE_MUTEX to DEFINE_SEMAPHORE
+Cc: "Marcin Slusarz" <marcin.slusarz@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Matthew Wilcox" <willy@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1225032063.32713.17.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081026120609.GA10728@joi> <1225028346.32713.11.camel@twins>
+	 <c384c5ea0810260711l1103a103j6c3739fe3a8d9e74@mail.gmail.com>
+	 <1225032063.32713.17.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-10-26 at 18:46 +0900, Tejun Heo wrote:
-> Hello, Jens.
-> 
-> Commit 242f9dcb8ba6f68fcd217a119a7648a4f69290e9 introduces a strange
-> regression for libata.  The second timeout gives puts different
-> pointer from the issued command onto eh_cmd_q breaking libata EH
-> command matching which triggers WARN_ON() in ata_eh_finish() and hangs
-> command processing or causes oops later depending on circumstances.
-> 
-> Here are logs with induced timeouts (patch attached).  In commit
-> 242f9dcb8, the XXX messages for the second timeout shows different
-> scsi_cmd pointers for eh_cmd_q and qc->scmd which is initialized by
-> ata_scsi_qc_new() during command translation.
+Hello,
 
-I can't see a way we could be getting a different command passed in from
-the actual one, since the only way to lose the command from the request
-is to go through the command completion routines which free it (and end
-the request).
+On Sun, Oct 26, 2008 at 3:41 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Sun, 2008-10-26 at 15:11 +0100, Leon Woestenberg wrote:
+>> On Sun, Oct 26, 2008 at 2:39 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+>> > On Sun, 2008-10-26 at 13:06 +0100, Marcin Slusarz wrote:
+>> >> DECLARE_MUTEX is doubly misleading name (it actually _defines_ struct
+>> >> _semaphore_ initialized to 1) and it can be confused with DEFINE_MUTEX
+>> >> (which defines real struct mutex). Rename it.
+>> >
+>> > I'd prefer DEFINE_BINARY_SEM or somesuch
+>> >
+>> But it is not a binary semaphore, or is it?
+>
+>> #define DECLARE_MUTEX(name) __DECLARE_SEMAPHORE_GENERIC(name,1)
+>
+> I thought that 1 made it a binary sem.
+>
+I thought it only initialized the semaphore count to 1, but not
+disallowing it to be upped.  Maybe am I just plain wrong, and I should
+be zapped to kernelnewbies instead. :-/
 
-However, since the WARN_ON is specifically comparing the command with
-the one found by the active tag, could this actually be a problem caused
-by block tags?  I note that libata still uses its own array of
-outstanding tags (ap->qcmd[tag]) instead of finding them using
-blk_queue_find_tag() (or scsi_find_tag()).
-
-James
-
-
+Regards,
+-- 
+Leon
