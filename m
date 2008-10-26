@@ -1,86 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbYJZOFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbYJZOLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755179AbYJZOFq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 10:05:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbYJZOFh
+	id S1755229AbYJZOLo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 10:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbYJZOLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 10:05:37 -0400
-Received: from os.eurotux.com ([216.75.63.6]:51877 "EHLO os.eurotux.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752368AbYJZOFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 10:05:36 -0400
-Date: Sun, 26 Oct 2008 14:05:29 +0000
-From: Luciano Rocha <luciano@eurotux.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-Subject: Re: usb hdd problems with 2.6.27.2
-Message-ID: <20081026140529.GA4614@bit.office.eurotux.com>
-Mail-Followup-To: Luciano Rocha <luciano@eurotux.com>,
-	James Bottomley <James.Bottomley@HansenPartnership.com>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux-Kernel <linux-kernel@vger.kernel.org>,
-	USB list <linux-usb@vger.kernel.org>,
-	SCSI development list <linux-scsi@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0810251548300.7245-100000@netrider.rowland.org> <1224965493.3449.7.camel@localhost.localdomain>
+	Sun, 26 Oct 2008 10:11:36 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:64356 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752295AbYJZOLf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 10:11:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=WEqJAqlkSKO5PrHhtiDj/9NfjyuDJ4Ru1ckCciHc94XJXK5ram229XPCGWWFvpKL6f
+         JBqP921ldOg4hdF5Ma/3f7eyjtkiIM4TB9Zh6t4t2413fi2UOhr9Ipc2VO09bkSpR7XV
+         rkIZlCTfItoLY9M3EpUyeh0AZ3j7hZT/0ZXjY=
+Message-ID: <c384c5ea0810260711l1103a103j6c3739fe3a8d9e74@mail.gmail.com>
+Date: Sun, 26 Oct 2008 15:11:33 +0100
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: [PATCH] Rename DECLARE_MUTEX to DEFINE_SEMAPHORE
+Cc: "Marcin Slusarz" <marcin.slusarz@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Matthew Wilcox" <willy@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1225028346.32713.11.camel@twins>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="W/nzBZO5zC0uMSeA"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1224965493.3449.7.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.14 (2007-03-31)
+References: <20081026120609.GA10728@joi> <1225028346.32713.11.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
---W/nzBZO5zC0uMSeA
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, Oct 26, 2008 at 2:39 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Sun, 2008-10-26 at 13:06 +0100, Marcin Slusarz wrote:
+>> DECLARE_MUTEX is doubly misleading name (it actually _defines_ struct
+>> _semaphore_ initialized to 1) and it can be confused with DEFINE_MUTEX
+>> (which defines real struct mutex). Rename it.
+>
+> I'd prefer DEFINE_BINARY_SEM or somesuch
+>
+But it is not a binary semaphore, or is it?
 
-On Sat, Oct 25, 2008 at 03:11:33PM -0500, James Bottomley wrote:
-> On Sat, 2008-10-25 at 15:50 -0400, Alan Stern wrote:
-> > On Sat, 25 Oct 2008, Rafael J. Wysocki wrote:
-> >=20
-> > > [Adding CCs]
-> > >=20
-> > > On Wednesday, 22 of October 2008, Luciano Rocha wrote:
-> > > >=20
-> > > > Hello,
-> > > >=20
-> > > > An external HDD, usb-encased, works fine under 2.6.26.5, but under
-> > > > 2.6.27.2 I get hundreds of errors per second, of 'No Sense [current=
-]'.
-> >=20
-> > You can use usbmon to capture the details of what happens when you plug
-> > in the drive.  Instructions are in the kernel source file
-> > Documentation/usb/usbmon.txt.
->=20
-> Try reversing this patch (apply with patch -p1 -R)
+Also, at least under 2.6.24,
 
-I'll try it tomorrow.
+#define DECLARE_MUTEX(name) __DECLARE_SEMAPHORE_GENERIC(name,1)
 
-Thanks,
-Luciano Rocha
+thus the DECLARE is wrong there as well?
 
---=20
-Luciano Rocha <luciano@eurotux.com>
-Eurotux Inform=E1tica, S.A. <http://www.eurotux.com/>
-
---W/nzBZO5zC0uMSeA
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkEeSkACgkQinSul6a7oB9UGwCdEZtTS3op9DBnac+k7giz1OI5
-nb0AoJ0bC8NiqOBqzzQbSi8i/eSggUwu
-=bL7H
------END PGP SIGNATURE-----
-
---W/nzBZO5zC0uMSeA--
+Regards,
+-- 
+Leon
