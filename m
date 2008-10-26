@@ -1,69 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752305AbYJZIyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbYJZJBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752305AbYJZIyS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 04:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915AbYJZIyE
+	id S1754545AbYJZJBM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 05:01:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbYJZJAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 04:54:04 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:10152 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751896AbYJZIyB (ORCPT
+	Sun, 26 Oct 2008 05:00:53 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:47338 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751742AbYJZJAw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 04:54:01 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -9.389
-Message-ID: <49043024.2010008@tremplin-utc.net>
-Date: Sun, 26 Oct 2008 09:53:56 +0100
-From: Eric Piel <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.17) Gecko/20080929 Mandriva/2.0.0.17-2mdv2009.0 (2009.0) Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       Yan Burman <burman.yan@gmail.com>, Pau Oliva Fora <pau@eslack.org>
-Subject: [PATCH] LIS3LV02D: Conform to the new ACPI API
-References: <20081022154459.GA26291@elf.ucw.cz>
-In-Reply-To: <20081022154459.GA26291@elf.ucw.cz>
-Content-Type: text/plain; charset=UTF-8
+	Sun, 26 Oct 2008 05:00:52 -0400
+X-SourceIP: 213.46.9.244
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Jiri Kosina <jkosina@suse.cz>, David Miller <davem@davemloft.net>,
+       rjw@sisk.pl, Ingo Molnar <mingo@elte.hu>, s0mbre@tservice.net.ru,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1225010790.8566.22.camel@marge.simson.net>
+References: <20081024.221653.23695396.davem@davemloft.net>
+	 <1224914333.3822.18.camel@marge.simson.net>
+	 <1224917623.4929.15.camel@marge.simson.net>
+	 <20081025.002420.82739316.davem@davemloft.net>
+	 <Pine.LNX.4.64.0810260055070.22126@twin.jikos.cz>
+	 <1225010790.8566.22.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Sun, 26 Oct 2008 10:00:48 +0100
+Message-Id: <1225011648.27415.4.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2008-10-26 at 09:46 +0100, Mike Galbraith wrote: 
+> On Sun, 2008-10-26 at 01:10 +0200, Jiri Kosina wrote:
+> > On Sat, 25 Oct 2008, David Miller wrote:
+> > 
+> > > But note that tbench performance improved a bit in 2.6.25.
+> > > In my tests I noticed a similar effect, but from 2.6.23 to 2.6.24,
+> > > weird.
+> > > Just for the public record here are the numbers I got in my testing.
+> > 
+> > I have been currently looking at very similarly looking issue. For the 
+> > public record, here are the numbers we have been able to come up with so 
+> > far (measured with dbench, so the absolute values are slightly different, 
+> > but still shows similar pattern)
+> > 
+> > 208.4 MB/sec  -- vanilla 2.6.16.60
+> > 201.6 MB/sec  -- vanilla 2.6.20.1
+> > 172.9 MB/sec  -- vanilla 2.6.22.19
+> > 74.2 MB/sec   -- vanilla 2.6.23
+> >  46.1 MB/sec  -- vanilla 2.6.24.2
+> >  30.6 MB/sec  -- vanilla 2.6.26.1
+> > 
+> > I.e. huge drop for 2.6.23 (this was with default configs for each 
+> > respective kernel).
+> > 2.6.23-rc1 shows 80.5 MB/s, i.e. a few % better than final 2.6.23, but 
+> > still pretty bad. 
+> > 
+> > I have gone through the commits that went into -rc1 and tried to figure 
+> > out which one could be responsible. Here are the numbers:
+> > 
+> >  85.3 MB/s for 2ba2d00363 (just before on-deman readahead has been merged)
+> >  82.7 MB/s for 45426812d6 (before cond_resched() has been added into page 
+> > 187.7 MB/s for c1e4fe711a4 (just before CFS scheduler has been merged)
+> >                            invalidation code)
+> > 
+> > So the current bigest suspect is CFS, but I don't have enough numbers yet 
+> > to be able to point a finger to it with 100% certainity. Hopefully soon.
 
-ACPI API has been updated to allow 64bit return values in
-acpi_evaluate_integer(). Update also the lis3lv02d driver so that it
-works with 2.6.28-rc1.
+> I reproduced this on my Q6600 box.  However, I also reproduced it with
+> 2.6.22.19.  What I think you're seeing is just dbench creating a
+> massive train wreck. 
 
-Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
----
- drivers/hwmon/lis3lv02d.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+wasn't dbench one of those non-benchmarks that thrives on randomness and
+unfairness?
 
-diff --git a/drivers/hwmon/lis3lv02d.c b/drivers/hwmon/lis3lv02d.c
-index 06d544e..752b5c4 100644
---- a/drivers/hwmon/lis3lv02d.c
-+++ b/drivers/hwmon/lis3lv02d.c
-@@ -112,7 +112,7 @@ static acpi_status lis3lv02d_acpi_read(acpi_handle
-handle, int reg, u8 *ret)
- {
- 	union acpi_object arg0 = { ACPI_TYPE_INTEGER };
- 	struct acpi_object_list args = { 1, &arg0 };
--	unsigned long lret;
-+	unsigned long long lret;
- 	acpi_status status;
+Andrew said recently:
+  "dbench is pretty chaotic and it could be that a good change causes
+dbench to get worse.  That's happened plenty of times in the past."
 
- 	arg0.integer.value = reg;
-@@ -132,7 +132,7 @@ static acpi_status lis3lv02d_acpi_read(acpi_handle
-handle, int reg, u8 *ret)
-  */
- static acpi_status lis3lv02d_acpi_write(acpi_handle handle, int reg, u8
-val)
- {
--	unsigned long ret; /* Not used when writting */
-+	unsigned long long ret; /* Not used when writting */
- 	union acpi_object in_obj[2];
- 	struct acpi_object_list args = { 2, in_obj };
+So I'm not inclined to worry too much about dbench in any way shape or
+form.
 
--- 
-1.6.0.2
+
 
