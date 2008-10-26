@@ -1,72 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYJZXMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbYJZX0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbYJZXMR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 19:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYJZXMG
+	id S1754864AbYJZX0n (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 19:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbYJZX0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 19:12:06 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:56783 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752080AbYJZXMF (ORCPT
+	Sun, 26 Oct 2008 19:26:34 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:53433 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753121AbYJZX0d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 19:12:05 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 26 Oct 2008 16:12:01 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Paul P <ppak_98@yahoo.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: unexpected extra pollout events from epoll
-In-Reply-To: <99943.65323.qm@web56305.mail.re3.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0810261600200.19212@alien.or.mcafeemobile.com>
-References: <99943.65323.qm@web56305.mail.re3.yahoo.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sun, 26 Oct 2008 19:26:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=H/Q8KVd+1x/taD49SvPu+Ssw9z8GtiVQgGvCnyYHZeb19yTCWv/HU+mUiHNN6ejX89
+         bXHWjdKjI58C4jOpWyPa0jw27hI2/ybPy+UEs0o7rm29bDNw44Ngj+rLoGpEN1c198rL
+         Js/XORGHLI4p15CiihjQn2R/PfrEqJwDVC8lY=
+Message-ID: <c62985530810261626r2b80a1ebne7d26fa71b3c364c@mail.gmail.com>
+Date: Mon, 27 Oct 2008 00:26:31 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH][RESEND] ftrace: Add a script to produce a hierarchical view of a function trace
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.DEB.1.10.0810261903110.26269@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4904DF39.9070203@gmail.com>
+	 <alpine.DEB.1.10.0810261903110.26269@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Can you try to trim lines at 80 chars or so?]
+2008/10/27 Steven Rostedt <rostedt@goodmis.org>:
+>
+>
+> On Sun, 26 Oct 2008, Frederic Weisbecker wrote:
+>
+>> This script parses a function trace and then produces a hierarchical view of the
+>> function call stack after processing it into a tree.
+>>
+>> You can see the result on attachment. You will find the raw trace and the hierarchical view.
+>
+> Very nice and useful tool!
+>
+> Just one thing...
+>
+>>
+>> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+>> ---
+>> diff --git a/scripts/draw_functrace.py b/scripts/draw_functrace.py
+>> new file mode 100755
+>> index 0000000..e6496bd
+>> --- /dev/null
+>> +++ b/scripts/draw_functrace.py
+>> @@ -0,0 +1,119 @@
+>> +#!/usr/bin/python
+>> +
+>> +"""
+>> +Copyright 2008 (c) Frederic Weisbecker <fweisbec@gmail.com>
+>> +Licensed under the terms of the GNU GPL License version 2
+>> +
+>> +This script parses a trace provided by the function tracer in
+>> +kernel/trace/trace_functions.c
+>> +The resulted trace is processed into a tree to produce a more human
+>> +view of the call stack by drawing textual but hierarchical tree of
+>> +calls. Only the functions's names and the the call time are provided.
+>> +
+>> +Usage:
+>> +     Be sure that you have CONFIG_FUNCTION_TRACER
+>> +     # mkdir /debugfs
+>> +     # mount -t debug debug /debug
+>> +     # echo function > /debug/tracing/current_tracer
+>> +     # cat /debug/tracing/current_tracer > ~/raw_trace_func
+>
+> Do you really mean to write "function" into ~/raw_trace_func?
 
 
-On Sun, 26 Oct 2008, Paul P wrote:
+Oops. No I wanted to write
 
-> > After that, via epoll_wait(), f_op->poll() is called to get the status 
-> > of  the file, and since POLLIN|POLLOUT is returned (and since you're 
-> > listening for EPOLLIN|EPOLLOUT), that gets reported back to you. The 
-> > POLLOUT event, by meaning a buffer-full->buffer-avail transition, did 
-> > not really happen, but since POLLOUT is true, that gets reported back 
-> > too.
-> 
-> Ok, so make sure I understand you correctly, you're saying that 
-> currently the kernel doesn't have awareness of the difference between 
-> EPOLLIN and EPOLLOUT events because at the time of the event, both 
-> EPOLLIN/EPOLLOUT are returned from the kernel and that at least for the 
-> near term that's not going to change.  At some point, we can expect the 
-> EPOLLOUT to give the correct event, but not till later than .28.
+cat /debug/tracing/trace_pipe > ~/raw_trace_func
 
-The kernel knows the difference between EPOLLIN and EPOLLOUT, of course. 
-At the moment though, such condition is not reported during wakeups, and 
-this is what is going to be changing.
+> Also, I just tried this out (replacing current_tracer with trace) and I
+> just get ---Root (Nowhere)
 
-
-
-> > The best way to do it ATM, is to wait for POLLOUT only when
-> > really needed.
-> 
-> I'm a little unclear how to do this.  If I set the epoll_wait call to 
-> wait for just epollin events, that's fine.  But when I send a large 
-> buffer of data and use epoll_ctl to look for epollin|epollout events, 
-> don't I have the same problem?  
-
-You do that by writing data until it's finished, or you get EAGAIN. If you 
-get EAGAIN, you listen for EPOLLOUT.
-Reading is same, but you'd wait for EPOLLIN.
-
-
-
-- Davide
-
-
+Really? Could you send me your trace? Perhaps a problem with the
+regular expression.
