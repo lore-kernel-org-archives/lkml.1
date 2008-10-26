@@ -1,81 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbYJZS6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756035AbYJZTBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756041AbYJZS6a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 14:58:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbYJZS6W
+	id S1756035AbYJZTBU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 15:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbYJZTBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 14:58:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33297 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752964AbYJZS6W (ORCPT
+	Sun, 26 Oct 2008 15:01:05 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:11871 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752418AbYJZTBD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 14:58:22 -0400
-Date: Sun, 26 Oct 2008 11:58:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, davidel@xmailserver.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: kerneloops.org: 2.6.28-rc regression in epoll (list
- corruption)
-In-Reply-To: <20081026112920.28e7dccc@infradead.org>
-Message-ID: <alpine.LFD.2.00.0810261141350.5200@nehalem.linux-foundation.org>
-References: <20081026112920.28e7dccc@infradead.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 26 Oct 2008 15:01:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=HxWAtqwxxy9Oyu5sT1IZ7gkh+TjFh4yq4QSQM4gNkfR0r+hknZ40qA9DDAqPNI/1HR
+         SRP8OoRjT61ps2mWFdH87qofRkedSAsZ81ooAkfa2+z8cDoBu2qvyh8pRtcc/w8eaAkF
+         K8805Imacvi1YSTAQsrNPFU1JKPl69ZPNz/6Q=
+Message-ID: <4904BE67.5000603@gmail.com>
+Date: Sun, 26 Oct 2008 20:00:55 +0100
+From: "Mikko C." <mikko.cal@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080927)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Bug in workqueues [was: Usb devices randomly aren't detected
+ with 2.6.28-rc1-git1]
+References: <Pine.LNX.4.44L0.0810261327170.25044-100000@netrider.rowland.org> <200810261855.47580.rjw@sisk.pl> <alpine.LFD.2.00.0810261057290.5200@nehalem.linux-foundation.org> <200810261914.40825.rjw@sisk.pl> <alpine.LFD.2.00.0810261117030.5200@nehalem.linux-foundation.org> <4904B6CC.7000403@gmail.com> <alpine.LFD.2.00.0810261133150.5200@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0810261133150.5200@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 26 Oct 2008, Arjan van de Ven wrote:
+Linus Torvalds ha scritto:
+> On Sun, 26 Oct 2008, Mikko C. wrote:
+>   
+>> Here's the full config: http://pastebin.com/d1481da76
+>>     
 >
-> This one is upcoming fast (and I just hit it as well)
-> 
-> http://www.kerneloops.org/searchweek.php?search=ep_poll_callback
-> 
-> seems epoll grew some list corruption....
+> Ok, you do indeed not have HOTPLUG_CPU, so I'd be willing to bet this is 
+> it.
+>   
+>> Does -rc1-git2 not have the fix yet?
+>>     
+>
+> It should indeed be in -rc1-git2, so you can test it that way. 
+>   
 
-It sounds very much like f337b9c58332bdecde965b436e47ea4c94d30da0 ("epoll: 
-drop unnecessary test") deleted a test that wasn't so unnecessary after 
-all..
+-git2 seems to fix all the issues I had:
 
-That ep_poll_callback() code is:
+- rmmod works fine
+- Sound is back and apps using it don't freeze
+- usb devices seem to be detected correctly
+- I will test wifi, but the first boot was ok (if not, I guess it's not 
+related to this).
 
-        /* If this file is already in the ready list we exit soon */
-        if (ep_is_linked(&epi->rdllink))
-                goto is_linked;
+I guess next time I'll be more patient and wait a little more before 
+trying a new kernel as soon as it's out :P
 
-        list_add_tail(&epi->rdllink, &ep->rdllist);
+Thanks!!!
 
-and the unnecessary test that was removed looks _very_ much like that kind 
-of code.
-
-Thomas? Davide?
-
-And if somebody knows how to reproduce this reliably, it would be really 
-good to hear if doing a revert on that thing just fixed it. It should 
-revert cleanly - it's the only change to fs/eventpoll.c since 2.6.27.
-
-I'm somewhat inclined to revert it without even getting confirmation, 
-since I wanted to do an early -rc2 today with all the brown-paper-bag 
-fixes that have accumulated. But it would be good to get some 
-confirmation.
-
-Btw, that whole logic in ep_send_events() sounds a bit scary. It says:
-
-	We can loop without lock because this is a task private list.
-
-and it's true that "txlist" is a private list, but it still seems to 
-depend on the fact that none of the "struct epitem"s on that list can be 
-reached by any other means. And that whole thing depends on the magic 
-behaviour of 'ep->ovflist', but there are a lot of code sequences that do 
-*not* seem to test that at all.
-
-Maybe the rqace/bug has always been there (ie some sequence that works 
-with an "epi->rdllink" without checking ovflist), but the "unnecessary" 
-test protected us from seeing it in practice.
-
-			Linus
+Mikko
