@@ -1,189 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbYJZLHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753613AbYJZLIG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753234AbYJZLHW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 07:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbYJZLHJ
+	id S1753613AbYJZLIG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 07:08:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbYJZLHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 07:07:09 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41348 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751703AbYJZLHG (ORCPT
+	Sun, 26 Oct 2008 07:07:55 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:47774 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751962AbYJZLHy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 07:07:06 -0400
-Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use
- schedule_on_each_cpu()
-From: Peter Zijlstra <peterz@infradead.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>, linux-mm@kvack.org,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Gautham Shenoy <ego@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <20081023235425.9C40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <2f11576a0810210851g6e0d86benef5d801871886dd7@mail.gmail.com>
-	 <2f11576a0810211018g5166c1byc182f1194cfdd45d@mail.gmail.com>
-	 <20081023235425.9C40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Sun, 26 Oct 2008 12:06:16 +0100
-Message-Id: <1225019176.32713.5.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Sun, 26 Oct 2008 07:07:54 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 26 Oct 2008 12:02:03 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [Bug 11824][PATCH] ieee1394: raw1394: fix possible deadlock in
+ multithreaded clients
+To: linux1394-devel@lists.sourceforge.net
+cc: bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       Dan Dennedy <dan@dennedy.org>, Johannes Weiner <hannes@saeurebad.de>
+In-Reply-To: <4902F41E.5070306@s5r6.in-berlin.de>
+Message-ID: <tkrat.94e673551b87c230@s5r6.in-berlin.de>
+References: <bug-11824-4803@http.bugzilla.kernel.org/>
+ <4902F41E.5070306@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-24 at 00:00 +0900, KOSAKI Motohiro wrote:
+Regression in 2.6.28-rc1:  When I added the new state_mutex which
+prevents corruption of raw1394's internal state when accessed by
+multithreaded client applications, the following possible though
+highly unlikely deadlock slipped in:
 
-> It because following three circular locking dependency.
-> 
-> Some VM place has
->       mmap_sem -> kevent_wq via lru_add_drain_all()
-> 
-> net/core/dev.c::dev_ioctl()  has
->      rtnl_lock  ->  mmap_sem        (*) the ioctl has copy_from_user() and it can do page fault.
-> 
-> linkwatch_event has
->      kevent_wq -> rtnl_lock
-> 
-> 
-> Actually, schedule_on_each_cpu() is very problematic function.
-> it introduce the dependency of all worker on keventd_wq, 
-> but we can't know what lock held by worker in kevend_wq because
-> keventd_wq is widely used out of kernel drivers too.
-> 
-> So, the task of any lock held shouldn't wait on keventd_wq.
-> Its task should use own special purpose work queue.
-> 
-> 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Reported-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> CC: Christoph Lameter <cl@linux-foundation.org>
-> CC: Nick Piggin <npiggin@suse.de>
-> CC: Hugh Dickins <hugh@veritas.com>,
-> CC: Andrew Morton <akpm@linux-foundation.org>,
-> CC: Linus Torvalds <torvalds@linux-foundation.org>,
-> CC: Rik van Riel <riel@redhat.com>,
-> CC: Lee Schermerhorn <lee.schermerhorn@hp.com>,
-> 
->  linux-2.6.27-git10-vm_wq/include/linux/workqueue.h |    1 
->  linux-2.6.27-git10-vm_wq/kernel/workqueue.c        |   37 +++++++++++++++++++++
->  linux-2.6.27-git10-vm_wq/mm/swap.c                 |    8 +++-
->  3 files changed, 45 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6.27-git10-vm_wq/include/linux/workqueue.h
-> ===================================================================
-> --- linux-2.6.27-git10-vm_wq.orig/include/linux/workqueue.h	2008-10-23 21:01:38.000000000 +0900
-> +++ linux-2.6.27-git10-vm_wq/include/linux/workqueue.h	2008-10-23 22:34:20.000000000 +0900
-> @@ -195,6 +195,7 @@ extern int schedule_delayed_work(struct 
->  extern int schedule_delayed_work_on(int cpu, struct delayed_work *work,
->  					unsigned long delay);
->  extern int schedule_on_each_cpu(work_func_t func);
-> +int queue_work_on_each_cpu(struct workqueue_struct *wq, work_func_t func);
->  extern int current_is_keventd(void);
->  extern int keventd_up(void);
->  
-> Index: linux-2.6.27-git10-vm_wq/kernel/workqueue.c
-> ===================================================================
-> --- linux-2.6.27-git10-vm_wq.orig/kernel/workqueue.c	2008-10-23 21:01:38.000000000 +0900
-> +++ linux-2.6.27-git10-vm_wq/kernel/workqueue.c	2008-10-23 22:34:20.000000000 +0900
-> @@ -674,6 +674,8 @@ EXPORT_SYMBOL(schedule_delayed_work_on);
->   * Returns -ve errno on failure.
->   *
->   * schedule_on_each_cpu() is very slow.
-> + * caller should NOT held any lock, otherwise flush_work(keventd_wq) can
-> + * cause dead-lock.
+Thread A:                  Thread B:
+ - acquire mmap_sem         - raw1394_write() or raw1394_ioctl()
+ - raw1394_mmap()           - acquire state_mutex
+ - acquire state_mutex      - copy_to/from_user(), possible page fault:
+                              acquire mmap_sem
 
-I think this is too strong.
+The simplest fix is to use mutex_trylock() instead of mutex_lock() in
+raw1394_mmap().  This changes the behavior under contention in a way
+which is visible to userspace clients.  However, since multithreaded
+access was entirely buggy before state_mutex was added and libraw1394's
+documentation advised application programmers to use a handle only in a
+single thread, this change in behaviour should not be an issue in
+practice at all.
 
-> */
->  int schedule_on_each_cpu(work_func_t func)
->  {
-> @@ -698,6 +700,41 @@ int schedule_on_each_cpu(work_func_t fun
->  	return 0;
->  }
->  
-> +/**
-> + * queue_work_on_each_cpu - call a function on each online CPU
-> + *
-> + * @wq:   the workqueue
-> + * @func: the function to call
-> + *
-> + * Returns zero on success.
-> + * Returns -ve errno on failure.
-> + *
-> + * similar to schedule_on_each_cpu(), but wq argument is there.
-> + * queue_work_on_each_cpu() is very slow.
-> + */
-> +int queue_work_on_each_cpu(struct workqueue_struct *wq, work_func_t func)
-> +{
-> +	int cpu;
-> +	struct work_struct *works;
-> +
-> +	works = alloc_percpu(struct work_struct);
-> +	if (!works)
-> +		return -ENOMEM;
-> +
-> +	get_online_cpus();
-> +	for_each_online_cpu(cpu) {
-> +		struct work_struct *work = per_cpu_ptr(works, cpu);
-> +
-> +		INIT_WORK(work, func);
-> +		queue_work_on(cpu, wq, work);
-> +	}
-> +	for_each_online_cpu(cpu)
-> +		flush_work(per_cpu_ptr(works, cpu));
-> +	put_online_cpus();
-> +	free_percpu(works);
-> +	return 0;
-> +}
-> +
+Since we have to use mutex_trylock() in raw1394_mmap() regardless
+whether /dev/raw1394 was opened with O_NONBLOCK or not, we now use
+mutex_trylock() unconditionally everywhere for state_mutex, just to have
+consistent behavior.
 
-Which gives the opportunity to implement schedule_on_each_cpu() with
-this.
+Reported-by: Johannes Weiner <hannes@saeurebad.de>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
 
-> void flush_scheduled_work(void)
->  {
->  	flush_workqueue(keventd_wq);
-> Index: linux-2.6.27-git10-vm_wq/mm/swap.c
-> ===================================================================
-> --- linux-2.6.27-git10-vm_wq.orig/mm/swap.c	2008-10-23 21:01:38.000000000 +0900
-> +++ linux-2.6.27-git10-vm_wq/mm/swap.c	2008-10-23 22:53:27.000000000 +0900
-> @@ -39,6 +39,8 @@ int page_cluster;
->  static DEFINE_PER_CPU(struct pagevec[NR_LRU_LISTS], lru_add_pvecs);
->  static DEFINE_PER_CPU(struct pagevec, lru_rotate_pvecs);
->  
-> +static struct workqueue_struct *vm_wq __read_mostly;
-> +
->  /*
->   * This path almost never happens for VM activity - pages are normally
->   * freed via pagevecs.  But it gets used by networking.
-> @@ -310,7 +312,7 @@ static void lru_add_drain_per_cpu(struct
->   */
->  int lru_add_drain_all(void)
->  {
-> -	return schedule_on_each_cpu(lru_add_drain_per_cpu);
-> +	return queue_work_on_each_cpu(vm_wq, lru_add_drain_per_cpu);
->  }
->  
->  #else
-> @@ -611,4 +613,8 @@ void __init swap_setup(void)
->  #ifdef CONFIG_HOTPLUG_CPU
->  	hotcpu_notifier(cpu_swap_callback, 0);
->  #endif
-> +
-> +	vm_wq = create_workqueue("vm_work");
-> +	BUG_ON(!vm_wq);
-> +
->  }
+Background:  That new state_mutex went only in because raw1394_ioctl()
+already head some weak protection by the Big Kernel Lock, which I
+removed for the general reasons pro BKL removal (get better performance
+with local locks; make the locking clearer, easier to debug, more
+reliable).
 
-While I really hate adding yet another per-cpu thread for this, I don't
-see another way out atm.
+ drivers/ieee1394/raw1394.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-Oleg, Rusty, ego, you lot were discussing a similar extra per-cpu
-workqueue, can we merge these two?
+Index: linux/drivers/ieee1394/raw1394.c
+===================================================================
+--- linux.orig/drivers/ieee1394/raw1394.c
++++ linux/drivers/ieee1394/raw1394.c
+@@ -2268,7 +2268,8 @@ static ssize_t raw1394_write(struct file
+ 		return -EFAULT;
+ 	}
+ 
+-	mutex_lock(&fi->state_mutex);
++	if (!mutex_trylock(&fi->state_mutex))
++		return -EAGAIN;
+ 
+ 	switch (fi->state) {
+ 	case opened:
+@@ -2548,7 +2549,8 @@ static int raw1394_mmap(struct file *fil
+ 	struct file_info *fi = file->private_data;
+ 	int ret;
+ 
+-	mutex_lock(&fi->state_mutex);
++	if (!mutex_trylock(&fi->state_mutex))
++		return -EAGAIN;
+ 
+ 	if (fi->iso_state == RAW1394_ISO_INACTIVE)
+ 		ret = -EINVAL;
+@@ -2669,7 +2671,8 @@ static long raw1394_ioctl(struct file *f
+ 		break;
+ 	}
+ 
+-	mutex_lock(&fi->state_mutex);
++	if (!mutex_trylock(&fi->state_mutex))
++		return -EAGAIN;
+ 
+ 	switch (fi->iso_state) {
+ 	case RAW1394_ISO_INACTIVE:
+
+-- 
+Stefan Richter
+-=====-==--- =-=- ==-=-
+http://arcgraph.de/sr/
+
