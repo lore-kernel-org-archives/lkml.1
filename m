@@ -1,134 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754720AbYJZAZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbYJZA3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754720AbYJZAZh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Oct 2008 20:25:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbYJZAZ2
+	id S1754303AbYJZA3O (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Oct 2008 20:29:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbYJZA27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Oct 2008 20:25:28 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:12360 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751679AbYJZAZ2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Oct 2008 20:25:28 -0400
-Date: Sat, 25 Oct 2008 17:24:36 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: torvalds <torvalds@linux-foundation.org>, akpm <akpm@linux-foundation.org>
-Subject: [PATCH 2.6.28-rc1++ resend] docbooks: fix fatal filename errors
-Message-Id: <20081025172436.aaac22d4.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Sat, 25 Oct 2008 20:28:59 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:59801 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751972AbYJZA26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Oct 2008 20:28:58 -0400
+Date: Sun, 26 Oct 2008 02:28:20 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+cc: Matt Mackall <mpm@selenic.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: Bloatwatch 2.6.28-rc1: i8042 DMI lookup tables
+In-Reply-To: <200810242046.02743.dmitry.torokhov@gmail.com>
+Message-ID: <Pine.LNX.4.64.0810260226080.22126@twin.jikos.cz>
+References: <1224879959.3248.32.camel@calx> <alpine.LNX.1.10.0810250001530.27479@jikos.suse.cz>
+ <1224890002.3248.71.camel@calx> <200810242046.02743.dmitry.torokhov@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Fri, 24 Oct 2008, Dmitry Torokhov wrote:
 
-Fix docbook fatal errors (file location changed):
+> I would like to get rid of .ident strings in cases when drivers don't
+> use them for anything, this should free some more memory.
 
-docproc: lin2628-rc1/include/asm-x86/io_32.h: No such file or directory
-make[1]: *** [Documentation/DocBook/deviceiobook.xml] Error 1
+Yes, that could be nice thing to do indeed. They are usually used only to 
+store a human-readable description of the device anyway, which is then not 
+printed anywhere, and therefore a plain C comment should be sufficient 
+instead.
 
-docproc: lin2628-rc1/include/asm-x86/atomic_32.h: No such file or directory
-make[1]: *** [Documentation/DocBook/kernel-api.xml] Error 1
+It will require fixing dmi_check_system() though, as it's one of those 
+rare functions actually using ->ident field for detecting end of the list.
 
-docproc: lin2628-rc1/include/asm-x86/mca_dma.h: No such file or directory
-make[1]: *** [Documentation/DocBook/mcabook.xml] Error 1
+-- 
+Jiri Kosina
+SUSE Labs
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/DocBook/deviceiobook.tmpl   |    2 +-
- Documentation/DocBook/kernel-api.tmpl     |   10 +++++-----
- Documentation/DocBook/kernel-hacking.tmpl |    4 ++--
- Documentation/DocBook/mcabook.tmpl        |    2 +-
- 4 files changed, 9 insertions(+), 9 deletions(-)
-
---- linux-2.6.28-rc1-git1.orig/Documentation/DocBook/deviceiobook.tmpl
-+++ linux-2.6.28-rc1-git1/Documentation/DocBook/deviceiobook.tmpl
-@@ -316,7 +316,7 @@ CPU B:  spin_unlock_irqrestore(&amp;dev_
- 
-   <chapter id="pubfunctions">
-      <title>Public Functions Provided</title>
--!Iinclude/asm-x86/io_32.h
-+!Iarch/x86/include/asm/io_32.h
- !Elib/iomap.c
-   </chapter>
- 
---- linux-2.6.28-rc1-git1.orig/Documentation/DocBook/kernel-api.tmpl
-+++ linux-2.6.28-rc1-git1/Documentation/DocBook/kernel-api.tmpl
-@@ -45,8 +45,8 @@
-      </sect1>
- 
-      <sect1><title>Atomic and pointer manipulation</title>
--!Iinclude/asm-x86/atomic_32.h
--!Iinclude/asm-x86/unaligned.h
-+!Iarch/x86/include/asm/atomic_32.h
-+!Iarch/x86/include/asm/unaligned.h
-      </sect1>
- 
-      <sect1><title>Delaying, scheduling, and timer routines</title>
-@@ -119,7 +119,7 @@ X!Ilib/string.c
- !Elib/string.c
-      </sect1>
-      <sect1><title>Bit Operations</title>
--!Iinclude/asm-x86/bitops.h
-+!Iarch/x86/include/asm/bitops.h
-      </sect1>
-   </chapter>
- 
-@@ -155,7 +155,7 @@ X!Ilib/string.c
- !Emm/slab.c
-      </sect1>
-      <sect1><title>User Space Memory Access</title>
--!Iinclude/asm-x86/uaccess_32.h
-+!Iarch/x86/include/asm/uaccess_32.h
- !Earch/x86/lib/usercopy_32.c
-      </sect1>
-      <sect1><title>More Memory Management Functions</title>
-@@ -265,7 +265,7 @@ X!Earch/x86/kernel/mca_32.c
- -->
- 	</sect2>
- 	<sect2><title>MCA Bus DMA</title>
--!Iinclude/asm-x86/mca_dma.h
-+!Iarch/x86/include/asm/mca_dma.h
- 	</sect2>
-      </sect1>
-   </chapter>
---- linux-2.6.28-rc1-git1.orig/Documentation/DocBook/mcabook.tmpl
-+++ linux-2.6.28-rc1-git1/Documentation/DocBook/mcabook.tmpl
-@@ -101,7 +101,7 @@
- 
-   <chapter id="dmafunctions">
-      <title>DMA Functions Provided</title>
--!Iinclude/asm-x86/mca_dma.h
-+!Iarch/x86/include/asm/mca_dma.h
-   </chapter>
- 
- </book>
---- linux-2.6.28-rc1-git1.orig/Documentation/DocBook/kernel-hacking.tmpl
-+++ linux-2.6.28-rc1-git1/Documentation/DocBook/kernel-hacking.tmpl
-@@ -1239,7 +1239,7 @@ static struct block_device_operations op
-   </para>
- 
-   <para>
--   <filename>include/asm-x86/delay_32.h:</filename>
-+   <filename>arch/x86/include/asm/delay.h:</filename>
-   </para>
-   <programlisting>
- #define ndelay(n) (__builtin_constant_p(n) ? \
-@@ -1265,7 +1265,7 @@ static struct block_device_operations op
- </programlisting>
- 
-   <para>
--   <filename>include/asm-x86/uaccess_32.h:</filename>
-+   <filename>arch/x86/include/asm/uaccess_32.h:</filename>
-   </para>
- 
-   <programlisting>
