@@ -1,50 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbYJZUSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbYJZUTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756101AbYJZUSk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 16:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbYJZUSV
+	id S1756110AbYJZUTy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 16:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbYJZUTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 16:18:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35095 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754899AbYJZUSR (ORCPT
+	Sun, 26 Oct 2008 16:19:46 -0400
+Received: from web56305.mail.re3.yahoo.com ([216.252.110.229]:36358 "HELO
+	web56305.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754150AbYJZUTp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 16:18:17 -0400
-Date: Sun, 26 Oct 2008 13:16:44 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "John W. Linville" <linville@tuxdriver.com>
-cc: Arjan van de Ven <arjan@infradead.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl, rodriguez@atheros.com,
-       johannes@sipsolutions.net
-Subject: Re: [PATCH] wireless: fix regression caused by regulatory config
- option
-In-Reply-To: <20081026200939.GC12648@tuxdriver.com>
-Message-ID: <alpine.LFD.2.00.0810261315040.3386@nehalem.linux-foundation.org>
-References: <20081026103024.2712ddc9@infradead.org> <20081026200939.GC12648@tuxdriver.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 26 Oct 2008 16:19:45 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=eJxA0EpO+YaaPO95lOtKh7RnRVv3p6sUL98p7F6Mm+kuHKwCKlaNtLmi5KvrRpOUzRkg9NxW/ZzUiGRtMPkIfzgGWFdPByvILgh/VidcCVqJ2KZHkLvxKp/CPgP2+plJh1K1Z87IMVaF78RsjyfQhYG0RzCf2sFur6rl5EVNDrQ=;
+X-YMail-OSG: JBi5HnkVM1lVFjOUf8DbsZLNPbWZ2jtQ2zYczO3E6luIjlsKqepJrvBrJyZHpyzKq0Iz3wQmOxSb4x_8RiKheDni5.9hPEJ8zu9dzFa0JYQDV41xtGRNkahUr8_MYNtPHZM0xmzj5h7FMLjVfF3GUObt4vpdQCx1snQM0l8-
+X-Mailer: YahooMailWebService/0.7.247.3
+Date: Sun, 26 Oct 2008 13:19:44 -0700 (PDT)
+From: Paul P <ppak_98@yahoo.com>
+Reply-To: ppak_98@yahoo.com
+Subject: Fw: Re: unexpected extra pollout events from epoll
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <521981.87335.qm@web56305.mail.re3.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I'm not too familiar with the edge triggered mode, but
+> you shouldn't be requesting EPOLLOUT notifications if you don't care
+> about them (i.e. if you are not trying to write anything).
+ 
+I am trying to write something, but I don't understand this behavior because it will screw up my notifications when I'm trying to see if I should write
+more because of the extra notifications.  Even before I started writing anything, I'm getting these epollout events which I was not expecting.
+
+Paul
 
 
-On Sun, 26 Oct 2008, John W. Linville wrote:
-> 
-> Is it common practice to have compatibility options default to
-> "y"?  I'm not saying it shouldn't be, just wondering if it has been
-> traditionally?
-
-Yes. Generally the rule should be that
-
-	make oldconfig
-
-with 'default values for all new options' should give you a configuration 
-that is essentially identical to the old one.
-
-So if it's a config option to enable compatibility with old kernels, it 
-should default to 'y'. If it's a new driver or a new feature that didn't 
-exist in previous kernels, it should default to 'n'.
-
-			Linus
+      
