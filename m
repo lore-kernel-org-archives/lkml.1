@@ -1,54 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbYJZReg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbYJZRfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755961AbYJZReg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 13:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbYJZReX
+	id S1755910AbYJZRfb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 13:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbYJZRfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 13:34:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48265 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755773AbYJZReW (ORCPT
+	Sun, 26 Oct 2008 13:35:20 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:45764 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753262AbYJZRfS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 13:34:22 -0400
-Date: Sun, 26 Oct 2008 10:34:39 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Francois Romieu <romieu@fr.zoreil.com>, Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Edward Hsu <edward_hsu@realtek.com.tw>,
-       Ivan Vecera <ivecera@redhat.com>
-Subject: Re: r8169 MAC addresses broken
-Message-ID: <20081026103439.7a60005a@infradead.org>
-In-Reply-To: <4904A7C5.7090801@gmail.com>
-References: <490380C8.6070003@simon.arlott.org.uk>
-	<4903947A.3060206@gmail.com>
-	<20081025223443.GA30913@electric-eye.fr.zoreil.com>
-	<4904A7C5.7090801@gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+	Sun, 26 Oct 2008 13:35:18 -0400
+Subject: Re: [GIT PULL] s390 updates for 2.6.28-rc1
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>, lethal@linux-sh.org,
+       paulus@samba.org, benh@kernel.crashing.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, Roland McGrath <roland@redhat.com>
+In-Reply-To: <20081024113724.GA21375@elte.hu>
+References: <20081024105049.GC4620@osiris.boeblingen.de.ibm.com>
+	 <20081024113724.GA21375@elte.hu>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Sun, 26 Oct 2008 19:26:33 +0100
+Message-Id: <1225045593.14057.11.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 26 Oct 2008 18:24:21 +0100
-Jiri Slaby <jirislaby@gmail.com> wrote:
-
-> On 10/26/2008 12:34 AM, Francois Romieu wrote:
-> > It may go away if one comments out rtl_init_mac_address in
-> > rtl8169_init_one
+On Fri, 2008-10-24 at 13:37 +0200, Ingo Molnar wrote:
+> * Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
 > 
-> Hmm, no. How can one restore eeprom contents without making a brick
-> from the notebook? I seem to have all zeroes in the eeprom mac
-> address area. --
+> > The s390 vdso preparation patch "arch_setup_additional_pages argument" 
+> > touches other architectures (x86, sh and powerpc):
+> > 
+> > arch_setup_additional_pages currently gets two arguments, the binary 
+> > format descripton and an indication if the process uses an executable 
+> > stack or not. The second argument is not used by anybody, it could be 
+> > removed without replacement.
+> 
+> hm, this is the first time i've seen this change,
 
-same here...  :(
+The code is relatively new and I planned it for the merge window for
+2.6.29. I still have to nag our performance team to do some tests with
+it.
+
+> and it looks a bit weird:
+> 
+> --- a/arch/x86/include/asm/elf.h
+> +++ b/arch/x86/include/asm/elf.h
+> @@ -325,7 +325,7 @@ struct linux_binprm;
+> 
+>  #define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
+>  extern int arch_setup_additional_pages(struct linux_binprm *bprm,
+> -                                      int executable_stack);
+> +                                      int uses_interp);
+> 
+> why didnt you just add a new uses_interp argument?
+
+I could have but I noticed at the same time that executable_stack is
+unused. If somebody finds a need for the executable_stack argument it
+can easily re-added but I can't think of a use for it. Ergo I removed
+it.
+
+> executable_stack is passed in to potentially enable architectures to be 
+> aware of how conservative/legacy the address-space of the binary is - 
+> whether to randomize the vdso, etc. exec-shield used to take advantage 
+> of that.
+
+What has address space layout / randomization to do with
+executable_stack? You lost me there.
+
+> But there seems to be no in-tree use of that (and if one arises it can 
+> just add back that parameter), and i dont want to stand in the way of 
+> your pull request either, so for the x86 bits:
+> 
+>  Acked-by: Ingo Molnar <mingo@elte.hu>
+
+Thanks. I'll add it.
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
