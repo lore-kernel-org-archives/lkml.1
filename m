@@ -1,93 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992AbYJZFWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbYJZF3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753992AbYJZFWA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 01:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYJZFVu
+	id S1754080AbYJZF3q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 01:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbYJZF3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 01:21:50 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50141 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751881AbYJZFVt (ORCPT
+	Sun, 26 Oct 2008 01:29:37 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:21390 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752132AbYJZF3h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 01:21:49 -0400
-Date: Sat, 25 Oct 2008 22:22:08 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       torvalds@linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: bisected: 2.6.28-rc broke my iwl4965 wireless
-Message-ID: <20081025222208.1d2a2c8b@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 26 Oct 2008 01:29:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ppayJsYRtpPq4QY3Up7IEGVy/FNtLkk93/bGwlYqQbtc6eAMjviuJDPnybZ2JE1V+s
+         TKWGoBjzZQpKZxtL0w9dloI93pvcUtztTlWhwmnJ6RtqW53hXswbBL8oETN37fQPs7Xv
+         rE0cB89KP2dUVFIFuYW7vhRXbTTWLB/yWGV28=
+Date: Sun, 26 Oct 2008 08:32:55 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix allmodconfig breakage
+Message-ID: <20081026053255.GA2702@x200.localdomain>
+References: <20081025211107.GA20417@uranus.ravnborg.org> <20081026051234.GN28946@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081026051234.GN28946@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[resend, first version got corrupted]
+On Sun, Oct 26, 2008 at 05:12:34AM +0000, Al Viro wrote:
+> 	If you use KCONFIG_ALLCONFIG (even with empty file) you get
+> broken allmodconfig/allyesconfig; CONFIG_MODULES gets turned off,
+> with obvious massive fallout.
+> 
+> 	Breakage had been introduced when conf_set_all_new_symbols()
+> got used for allmodconfig et.al.
+> 
+> 	What happens is that sym_calc_value(modules_sym) done in
+> conf_read_simple() sets SYMBOL_VALID on both modules_sym and MODULES.
+> When we get to conf_set_all_new_symbols(), we set sym->def[S_DEF_USER]
+> on everything, but it has no effect on sym->curr for the symbols that
+> already have SYMBOL_VALID - these are stuck.
+> 
+> 	Solution: use sym_clear_all_valid() in there.  Note that it
+> makes reevaluation of modules_sym redundant - sym_clear_all_valid()
+> will do that itself.
 
-2.6.28-rc1 broke my (intel 4965) wireless, and I've bisected it down to
-the commit below..... something's fishy with this...
+Fixes http://bugzilla.kernel.org/show_bug.cgi?id=11512
 
-
-b2e1b30290539b344cbaff0d9da38012e03aa347 is first bad commit
-commit b2e1b30290539b344cbaff0d9da38012e03aa347
-Author: Luis R. Rodriguez <lrodriguez@atheros.com>
-Date:   Tue Sep 9 23:19:48 2008 -0700
-
-    cfg80211: Add new wireless regulatory infrastructure
-    
-    This adds the new wireless regulatory infrastructure. The
-    main motiviation behind this was to centralize regulatory
-    code as each driver was implementing their own regulatory solution,
-    and to replace the initial centralized code we have where:
-    
-    * only 3 regulatory domains are supported: US, JP and EU
-    * regulatory domains can only be changed through module parameter
-    * all rules were built statically in the kernel
-    
-    We now have support for regulatory domains for many countries
-    and regulatory domains are now queried through a userspace agent
-    through udev allowing distributions to update regulatory rules
-    without updating the kernel.
-    
-    Each driver can regulatory_hint() a regulatory domain
-    based on either their EEPROM mapped regulatory domain value to a
-    respective ISO/IEC 3166-1 country code or pass an internally built
-    regulatory domain. We also add support to let the user set the
-    regulatory domain through userspace in case of faulty EEPROMs to
-    further help compliance.
-  
-    Support for world roaming will be added soon for cards capable of
-    this.
-    
-    For more information see:
-    
-    http://wireless.kernel.org/en/developers/Regulatory/CRDA
-    
-    For now we leave an option to enable the old module parameter,
-    ieee80211_regdom, and to build the 3 old regdomains statically
-    (US, JP and EU). This option is CONFIG_WIRELESS_OLD_REGULATORY.
-    These old static definitions and the module parameter is being
-    scheduled for removal for 2.6.29. Note that if you use this
-    you won't make use of a world regulatory domain as its pointless.
-    If you leave this option enabled and if CRDA is present and you
-    use US or JP we will try to ask CRDA to update us a regulatory
-    domain for us.
-    
-    Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
-    Signed-off-by: John W. Linville <linville@tuxdriver.com>
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+> diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+> index b91cf24..830d9ea 100644
+> --- a/scripts/kconfig/confdata.c
+> +++ b/scripts/kconfig/confdata.c
+> @@ -852,8 +852,7 @@ void conf_set_all_new_symbols(enum conf_def_mode mode)
+>  
+>  	}
+>  
+> -	if (modules_sym)
+> -		sym_calc_value(modules_sym);
+> +	sym_clear_all_valid();
+>  
+>  	if (mode != def_random)
+>  		return;
