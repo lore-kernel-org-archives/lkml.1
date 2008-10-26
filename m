@@ -1,86 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754419AbYJZLxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbYJZLzG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754419AbYJZLxv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 07:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYJZLxe
+	id S1754655AbYJZLzG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 07:55:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbYJZLyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 07:53:34 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:41464 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752863AbYJZLxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 07:53:33 -0400
-Date: Sun, 26 Oct 2008 22:53:24 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Howells <dhowells@redhat.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       jmorris@us.ibm.com
-Subject: Re: [PATCH] User namespaces: set of cleanups (v2)
-Message-Id: <20081026225324.6231397d.sfr@canb.auug.org.au>
-In-Reply-To: <10752.1225019273@redhat.com>
-References: <20081025130851.379cfac0.sfr@canb.auug.org.au>
-	<20081024174838.GA24466@us.ibm.com>
-	<11290.1224873841@redhat.com>
-	<10752.1225019273@redhat.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__26_Oct_2008_22_53_24_+1100_2zkpqZB5CY/VAqNc"
+	Sun, 26 Oct 2008 07:54:55 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:37073 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751679AbYJZLyy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 07:54:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=i78iqvm/n6roa03Ovk5V3Ej1zqrjcCGlqzoqnTbTMyrBQiimXQ6mwnPn08Rgil1ATl
+         1ugQbkY5SzMjGc7IiAwrvSIDfI15mOu0u3ZiiKNIpCBfuxiqOg0KvR7qdC1CAD65H+ZG
+         oMYY2yzz3impRpDzYyvvQNCu/P4NV9PoNdMgs=
+Message-ID: <49045A88.2010508@gmail.com>
+Date: Sun, 26 Oct 2008 12:54:48 +0100
+From: "Mikko C." <mikko.cal@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080927)
+MIME-Version: 1.0
+To: Andres Freund <andres@anarazel.de>
+CC: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: Random problems with 2.6.28-rc1-git1
+References: <490332E5.3020108@gmail.com> <Pine.LNX.4.64.0810260235490.22126@twin.jikos.cz> <49041B73.8060603@gmail.com> <200810261231.02764.andres@anarazel.de>
+In-Reply-To: <200810261231.02764.andres@anarazel.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__26_Oct_2008_22_53_24_+1100_2zkpqZB5CY/VAqNc
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi David,
-
-On Sun, 26 Oct 2008 11:07:53 +0000 David Howells <dhowells@redhat.com> wrot=
-e:
+Andres Freund ha scritto:
+> Hi,
 >
-> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->=20
-> > It would be good if you could have a "next" (or "creds-next" or
-> > something) branch in your tree and I can fetch that (that way I don't
-> > have to keep updating my configs).  It is OK if thet branch rebases and
-> > may just be an alias for another branch (or a subset if you have
-> > experimental stuff in there.  Remember "posted, reviewed, tested before
-> > it is in linux-next".
->=20
-> Those patches aren't likely to change much, and they get hit with LTP
-> regularly.
+> On Sunday 26 October 2008 08:25:39 Mikko C. wrote:
+>   
+>>> If rmmod never returns, alt-sysrq-t output should show us where it got
+>>> stuck.
+>>>       
+>> Thanks for your answer
+>> I tried Alt-Sysrq-T after a rmmod, but all I get is:
+>> "SysRq : Show State"
+>> Is it normal? Does it dump the information to a log?
+>> Sorry but I never used sysrq in the past.
+>>     
+> You propably have to set the loglevel to something higher before. Either use 
+> dmesg -n 6 or so or sysrq-6.
+>
+> Andres
+>   
+Ok, got it.
 
-They already changed between what I thought was the correct branch and
-what was the correct branch :-)
+Oct 26 12:39:56 gentoo rmmod         D ffffffff80532a80     0  5264   5088
+Oct 26 12:39:56 gentoo ffff880079b5bd78 0000000000000082 
+0000000000000000 ffff880079b5bd3c
+Oct 26 12:39:56 gentoo ffffffff806d3000 ffff88007fafb600 
+ffff88007f863000 ffff88007fafb850
+Oct 26 12:39:56 gentoo 00000001895a50c0 00000000fffe90e8 
+ffff88007fafb850 00000000000160d1
+Oct 26 12:39:56 gentoo Call Trace:
+Oct 26 12:39:56 gentoo [<ffffffff8052332d>] schedule_timeout+0xad/0xf0
+Oct 26 12:39:56 gentoo [<ffffffff80522578>] wait_for_common+0x148/0x170
+Oct 26 12:39:56 gentoo [<ffffffff80231770>] default_wake_function+0x0/0x10
+Oct 26 12:39:56 gentoo [<ffffffff8022da33>] __wake_up+0x43/0x70
+Oct 26 12:39:56 gentoo [<ffffffff8024a464>] flush_cpu_workqueue+0x44/0x90
+Oct 26 12:39:56 gentoo [<ffffffff8024a690>] wq_barrier_func+0x0/0x10
+Oct 26 12:39:56 gentoo [<ffffffff8025e150>] __try_stop_module+0x0/0x30
+Oct 26 12:39:56 gentoo [<ffffffff8024a5cb>] flush_workqueue+0x3b/0x60
+Oct 26 12:39:56 gentoo [<ffffffff8025e150>] __try_stop_module+0x0/0x30
+Oct 26 12:39:56 gentoo [<ffffffff8026997c>] __stop_machine+0x10c/0x130
+Oct 26 12:39:56 gentoo [<ffffffff80261ced>] sys_delete_module+0x17d/0x290
+Oct 26 12:39:56 gentoo [<ffffffff80288c68>] do_munmap+0x348/0x390
+Oct 26 12:39:56 gentoo [<ffffffff803a0d51>] __up_write+0x21/0x150
+Oct 26 12:39:56 gentoo [<ffffffff8020b94b>] system_call_fastpath+0x16/0x1b
 
-> What base for the patches?  Linus's head?
-
-Yes. Or whatever it is based on now if that merges OK with Linus' head
-(try a test merge).  Just don't base on linux-next :-)
-
-What I want is exactly what you will ask/have asked Linus to fetch but
-without the branch name changing .. I care more about the name changing
-than the contents changing.
-
-So .. what branch do I fetch tomorrow?  (Hint: if you have your version
-for Linus checked out then type "git branch next" and reply to this email
-saying "next" :-))
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sun__26_Oct_2008_22_53_24_+1100_2zkpqZB5CY/VAqNc
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkEWjQACgkQjjKRsyhoI8xvsACfTj6fUvVuqVXT++Uld155sT8s
-q30AnRnaxu6JNQ43Dd5fY9CyHTnvNacW
-=J7hb
------END PGP SIGNATURE-----
-
---Signature=_Sun__26_Oct_2008_22_53_24_+1100_2zkpqZB5CY/VAqNc--
+Let me know if it's enough.
+Thanks
