@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbYJZQLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbYJZQMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755879AbYJZQLe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 12:11:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165AbYJZQL0
+	id S1755963AbYJZQMH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 12:12:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755240AbYJZQLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 12:11:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38825 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755058AbYJZQL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 12:11:26 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20081026225324.6231397d.sfr@canb.auug.org.au>
-References: <20081026225324.6231397d.sfr@canb.auug.org.au> <20081025130851.379cfac0.sfr@canb.auug.org.au> <20081024174838.GA24466@us.ibm.com> <11290.1224873841@redhat.com> <10752.1225019273@redhat.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: dhowells@redhat.com, "Serge E. Hallyn" <serue@us.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>, jmorris@us.ibm.com
-Subject: Re: [PATCH] User namespaces: set of cleanups (v2)
-Date: Sun, 26 Oct 2008 16:11:20 +0000
-Message-ID: <11616.1225037480@redhat.com>
+	Sun, 26 Oct 2008 12:11:54 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:3464 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753964AbYJZQLx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 12:11:53 -0400
+Date: Sun, 26 Oct 2008 12:11:52 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+cc: greg@kroah.com, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2.6.27.3 usbcore] Move __module_param_call(nousb) to
+ immediately after declaration of nousb.
+In-Reply-To: <200810251010.CHE87503.tSJMOOQVLFFOFH@I-love.SAKURA.ne.jp>
+Message-ID: <Pine.LNX.4.44L0.0810251126390.4073-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+On Sat, 25 Oct 2008, Tetsuo Handa wrote:
 
-> > Those patches aren't likely to change much, and they get hit with LTP
-> > regularly.
+> Hello.
 > 
-> They already changed between what I thought was the correct branch and
-> what was the correct branch :-)
+> I tried on Fedora 9 (gcc (GCC) 4.3.0 20080428 (Red Hat 4.3.0-8)),
+> and I got the same result.
+> 
+> Just applying http://lkml.org/lkml/diff/2008/10/24/240/1 :
 
-If you're talking about between James's two creds branches, he did ask you to
-pull from the new one - just before you went on holiday, so I suspect you
-didn't see it till you got back.
+You've got a possible problem here:
 
-If you're talking about my creds-v3 and creds-v4 branches, the difference was
-merge conflicts with Linus, nothing more.  And really, I should just have
-thrown the merge on top of creds-v3 rather than trying to maintain my patchset
-and producing a creds-v4.  That's one of the reasons I'd like to recreate my
-kernel.org tree - to get rid of the unnecessary labels.
+> +static int param6;
+> +module_param_named(paramtest, param6, int, 0644);
+> +MODULE_PARM_DESC(paramtest, "param6");
 
-David
+You used paramtest as both the name of the module and the name of 
+the parameter.  I don't know if that would cause the error you're 
+seeing, though.  You might want to try again using a different name, 
+like param6test.
+
+Alan Stern
+
