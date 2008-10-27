@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752050AbYJ0Pc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751967AbYJ0Pdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752050AbYJ0Pc3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 11:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYJ0PcS
+	id S1751967AbYJ0Pdc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 11:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYJ0PdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 11:32:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59923 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752852AbYJ0PcR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 11:32:17 -0400
-Date: Mon, 27 Oct 2008 16:31:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       torvalds@linux-foundation.org, Matthew Wilcox <matthew@wil.cx>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: RFC: [PATCH] resource: ensure MMIO exclusivity for device
-	drivers
-Message-ID: <20081027153158.GJ5704@elte.hu>
-References: <20081022205656.184929ed@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081022205656.184929ed@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Mon, 27 Oct 2008 11:33:18 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:49625 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751768AbYJ0PdR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 11:33:17 -0400
+Subject: Re: usb hdd problems with 2.6.27.2
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Douglas Gilbert <dgilbert@interlog.com>,
+       Luciano Rocha <luciano@eurotux.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0810271117530.4059-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0810271117530.4059-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Mon, 27 Oct 2008 10:33:12 -0500
+Message-Id: <1225121592.5146.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2008-10-27 at 11:25 -0400, Alan Stern wrote:
+> On Mon, 27 Oct 2008, Douglas Gilbert wrote:
+> > BTW a single disk in RAID 0 (seen on a HP E200 controller)
+> > has a shortened capacity value seen in the midlevel on the
+> > corresponding logical drive. That missing chunk is probably
+> > where the RAID controller puts its control information.
+> > Anyway, playing with the capacity value returned by READ
+> > CAPACITY certainly has a precedent.
+> 
+> usb-storage isn't in the business of altering the data it gets from a 
+> device.  It's just a transport.  That's why the sdev->fix_capacity flag 
+> exists; we tell the upper layer that the data it gets is going to be 
+> wrong and let the upper layer worry about fixing things up.
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
+And you do this by setting US_FL_FIX_CAPACITY in unusual_devs.h
 
-> 
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Wed, 22 Oct 2008 19:55:31 -0700
-> Subject: [PATCH] resource: ensure MMIO exclusivity for device drivers
-> 
-> Device drivers that use pci_request_regions() (and similar APIs) have a
-> reasonable expectation that they are the only ones accessing their device.
-> As part of the e1000e hunt, we were afraid that some userland (X or some
-> bootsplash stuff) was mapping the MMIO region that the driver thought it
-> had exclusively via /dev/mem or via various sysfs resource mappings.
-> 
-> This patch adds the option for device drivers to cause their reserved
-> regions to be on the "banned from /dev/mem use" list, so now both kernel memory
-> and device-exclusive MMIO regions are banned.
-> NOTE: This is only active when CONFIG_STRICT_DEVMEM is set.
-> 
-> In addition to the config option, a kernel parameter iomem=relaxed is
-> provided for the cases where developers want to diagnose, in the field,
-> drivers issues from userspace despite the drivers explicit request.
-> 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+James
 
-the concept looks fine to me - the stricter we are in this area the 
-better IMO. Unless there are objections, i guess it's best to do this 
-via the PCI tree?
 
-	Ingo
