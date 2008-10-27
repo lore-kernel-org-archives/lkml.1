@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753773AbYJ0WDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbYJ0WEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753773AbYJ0WDh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 18:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYJ0WD2
+	id S1753997AbYJ0WEo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 18:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYJ0WEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 18:03:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50832 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751614AbYJ0WD2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 18:03:28 -0400
-Date: Mon, 27 Oct 2008 15:02:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dean Nelson <dcn@sgi.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sgi-xp: only build for ia64-sn2 when
- CONFIG_IA64_GENERIC specified v.2
-Message-Id: <20081027150256.8fb5bc19.akpm@linux-foundation.org>
-In-Reply-To: <20081023183335.GA24139@sgi.com>
-References: <20081023183335.GA24139@sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Oct 2008 18:04:36 -0400
+Received: from enyo.dsw2k3.info ([195.71.86.239]:43499 "EHLO enyo.dsw2k3.info"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752138AbYJ0WEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 18:04:35 -0400
+Date: Mon, 27 Oct 2008 23:04:19 +0100
+From: Matthias Schniedermeyer <ms@citd.de>
+To: Hartmut Niemann <Hartmut.Niemann@gmx.de>
+Cc: Simon Horman <horms@verge.net.au>, linux-kernel@vger.kernel.org,
+       Trond.Myklebust@netapp.com
+Subject: Re: [PATCH] Documentation/filesystems/nfsroot.txt: CONFIG_IP_PNP
+	must be set
+Message-ID: <20081027220419.GA12618@citd.de>
+References: <200810252347.01484.Hartmut.Niemann@gmx.de> <20081027052409.GC6818@verge.net.au> <200810272241.14531.Hartmut.Niemann@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810272241.14531.Hartmut.Niemann@gmx.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Oct 2008 13:33:35 -0500
-Dean Nelson <dcn@sgi.com> wrote:
-
-> For the time being build for ia64-sn2 alone when CONFIG_IA64_GENERIC is
-> specified.
+On 27.10.2008 22:41, Hartmut Niemann wrote:
+> The file nfsroot.txt fails to mention, that Kernel level autoconfiguration 
+> CONFIG_IP_PNP must be selected in order to be able to even see
+> the option "Root file system on NFS" (CONFIG_ROOT_NFS)
 > 
+> I reordered the section 1 of nfsroot.txt and emphasized the dependency.
+> (And I fixed some chapter numbering in section 3).
 
-It is 100% unclear (to me) why this change is being made.
+Technically you neither need autoconfiguration nor CONFIG_ROOT_NFS.
 
-Apparently this is considered a needed-in-2.6.28 change.  But I don't
-know why.
+With an initrd/initramfs you can do the whole procedure from userspace.
 
-If I knew that then I'd be in a better position to work out whether it
-is also needed in 2.6.27.x, to which it also applies cleanly.
+And AFAIR a few years back those options where on the brink of beeing 
+deprecated for just that reason.
 
-IOW: better changelogs, please.
+
+Just my 2 cents.
+
+
+
+
+Bis denn
+
+-- 
+Real Programmers consider "what you see is what you get" to be just as 
+bad a concept in Text Editors as it is in women. No, the Real Programmer
+wants a "you asked for it, you got it" text editor -- complicated, 
+cryptic, powerful, unforgiving, dangerous.
 
