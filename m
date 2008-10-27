@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752874AbYJ0NWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbYJ0NX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752874AbYJ0NWU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 09:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYJ0NWM
+	id S1753208AbYJ0NX0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 09:23:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYJ0NXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 09:22:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52568 "EHLO mx3.mail.elte.hu"
+	Mon, 27 Oct 2008 09:23:16 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47747 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752366AbYJ0NWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 09:22:11 -0400
-Date: Mon, 27 Oct 2008 14:21:59 +0100
+	id S1752234AbYJ0NXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 09:23:15 -0400
+Date: Mon, 27 Oct 2008 14:23:07 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] timers: Handle HRTIMER_CB_IRQSAFE_UNLOCKED correctly
-	from softirq context
-Message-ID: <20081027132159.GF25371@elte.hu>
-References: <20081023215003.GC1480@in.ibm.com> <20081025023303.GD6248@linux.vnet.ibm.com> <20081025045238.GA27934@in.ibm.com> <20081025142325.GB8446@linux.vnet.ibm.com>
+To: Dan McGee <dpmcgee@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com
+Subject: Re: [PATCH] Remove IRQBALANCE crud
+Message-ID: <20081027132307.GG25371@elte.hu>
+References: <1224794642-30350-1-git-send-email-dpmcgee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081025142325.GB8446@linux.vnet.ibm.com>
+In-Reply-To: <1224794642-30350-1-git-send-email-dpmcgee@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,24 +36,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+* Dan McGee <dpmcgee@gmail.com> wrote:
 
-> > > > Fix this by emulating hardirq context while running these callbacks from
-> > > > the hrtimer softirq.
-> > > 
-> > > Good catch!!!  One confusion (probably on my part) below.
-> > 
-> > Hmm.. Let's see...
+> CONFIG_IRQBALANCE was removed in commit 8b8e8c1bf; this ifdef was still
+> around.
 > 
-> Gah!!!
-> 
-> I am so used to seeing sequences of code that disable irqs and then 
-> re-enable them that I misread the original, failing to see that you 
-> were -enabling- irqs and then re-disabling them.  :-/
-> 
-> Never mind!!!  Sorry for the noise...
+> Signed-off-by: Dan McGee <dpmcgee@gmail.com>
+> ---
+>  arch/x86/include/asm/irq.h |    4 ----
+>  1 files changed, 0 insertions(+), 4 deletions(-)
 
-ok - i've applied Gautham's fix to tip/timers/urgent, with your and 
-Peter's Acked-by lines.
+good catch - applied to tip/x86/cleanups, thanks Dan!
 
 	Ingo
