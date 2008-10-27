@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbYJ0R2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbYJ0R3E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753188AbYJ0R2b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 13:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYJ0R2V
+	id S1753451AbYJ0R3E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 13:29:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYJ0R2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 13:28:21 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59754 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751372AbYJ0R2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 13:28:20 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Carlos R. Mafra" <crmafra2@gmail.com>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: Suspend to RAM regression in 2.6.28-rc2 (bisected)
-Date: Mon, 27 Oct 2008 18:32:39 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, tomas.winkler@intel.com, kernel@nn7.de,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org
-References: <20081027162054.GA4015@localhost.aei.mpg.de>
-In-Reply-To: <20081027162054.GA4015@localhost.aei.mpg.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810271832.40717.rjw@sisk.pl>
+	Mon, 27 Oct 2008 13:28:53 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45482 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751826AbYJ0R2w convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 13:28:52 -0400
+Date: Mon, 27 Oct 2008 10:29:13 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: =?UTF-8?B?RnLDqWTDqXJpYw==?= Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][RESEND] ftrace: Add a script to produce a hierarchical
+ view of a function trace
+Message-ID: <20081027102913.33c51ba6@infradead.org>
+In-Reply-To: <20081027102757.GK8116@elte.hu>
+References: <4904DF39.9070203@gmail.com>
+	<alpine.DEB.1.10.0810261903110.26269@gandalf.stny.rr.com>
+	<490513D5.7080806@gmail.com>
+	<20081027100148.GB8116@elte.hu>
+	<c62985530810270326v79528ca9ne88c2c3c9da6558c@mail.gmail.com>
+	<20081027102757.GK8116@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Added some CCs]
+On Mon, 27 Oct 2008 11:27:57 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-On Monday, 27 of October 2008, Carlos R. Mafra wrote:
-> Hi,
 > 
-> So I managed to bisect my suspend to RAM regression in 2.6.27-rc2
-> to commit 3b7ee69d0caefbdb85a606a98bff841b8c63b97e ("mac80211: disassociate 
-> when moving to new BSS") by Tomas Winkler (Cc:-ed).
+> * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
 > 
-> Unfortunately it doesn't revert cleanly so I can't double check it.
+> > 2008/10/27 Ingo Molnar <mingo@elte.hu>:
+> > > nice! Applied it to tip/tracing/ftrace. I've added Steve's
+> > > Acked-by,
+> > 
+> > 
+> > Thanks!
+> > 
+> > 
+> > > and i've moved the script to scripts/tracing/ - now that we'll
+> > > have a handful of utility scripts there we might as well separate
+> > > it a bit more clearly from the usual body of kernel scripts.
+> > >
+> > > i think we should move the other utility scripts there too. (but
+> > > not the recordmcount script - that is an infrastructure script,
+> > > not a utility script)
+> > 
+> > 
+> > Good idea, for example bootgraph.pl matches the case, if Arjan
+> > agrees.
 > 
-> My laptop is a Vaio FZ240E Core2Duo@2GHz and I use the iwlagn module
-> for the wireless connection.
-> 
-> The symptom is that suspending to RAM from inside X with 'echo mem >
-> /sys/power/state' leaves me a black screen when resuming back.
-> 
-> I can test any patches and provide more information of my laptop too.
 
-Carlos, thanks a lot for bisecting this.
-
-Johannes, can you pls have a look?
-
-Thanks,
-Rafael
+bootgraph.pl is sort of borderline since it also works without tracing
+but I'm not opposed to it if it makes scripts/ more organized
