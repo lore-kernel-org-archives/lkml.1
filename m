@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753062AbYJ0Hvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbYJ0H5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753062AbYJ0Hvp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 03:51:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYJ0Hvi
+	id S1752591AbYJ0H5U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 03:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbYJ0H5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 03:51:38 -0400
-Received: from ozlabs.org ([203.10.76.45]:58115 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751962AbYJ0Hvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 03:51:37 -0400
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+	Mon, 27 Oct 2008 03:57:13 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46961 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751116AbYJ0H5M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 03:57:12 -0400
+Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use
+ schedule_on_each_cpu()
+From: Peter Zijlstra <peterz@infradead.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>, linux-mm@kvack.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Gautham Shenoy <ego@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Rusty Russell <rusty@rustcorp.com.au>, mpm <mpm@selenic.com>
+In-Reply-To: <20081027120405.1B45.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <2f11576a0810260851h15cb7e1ahb454b70a2e99e1a8@mail.gmail.com>
+	 <1225037872.32713.22.camel@twins>
+	 <20081027120405.1B45.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH] OF-device: Don't overwrite numa_node in device registration
-Message-Id: <1225093885.321819.747371980567.1.gpush@pingu>
-To: Ben Herrenschmidt <benh@kernel.crashing.org>
-Cc: <cbe-oss-dev@ozlabs.org>, <linuxppc-dev@ozlabs.org>, <davem@davemloft.net>,
-       <linux-kernel@vger.kernel.org>
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Mon, 27 Oct 2008 18:51:25 +1100
+Date: Mon, 27 Oct 2008 08:56:30 +0100
+Message-Id: <1225094190.16159.3.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, the numa_node of OF-devices will be overwritten during
-device_register, which simply sets the node to -1. On cell machines,
-this means that devices can't find their IOMMU, which is referenced
-through the device's numa node.
+On Mon, 2008-10-27 at 12:14 +0900, KOSAKI Motohiro wrote:
+> > Right, and would be about 4k+sizeof(task_struct), some people might be
+> > bothered, but most won't care.
+> > 
+> > > Perhaps, I misunderstand your intension. so can you point your
+> > > previous discussion url?
+> > 
+> > my google skillz fail me, but once in a while people complain that we
+> > have too many kernel threads.
+> > 
+> > Anyway, if we can re-use this per-cpu workqueue for more goals, I guess
+> > there is even less of an objection.
+> 
+> In general, you are right.
+> but this is special case. mmap_sem is really widely used various subsystem and drivers.
+> (because page fault via copy_user introduce to depend on mmap_sem)
+> 
+> Then, any work-queue reu-sing can cause similar dead-lock easily.
 
-Set the numa node for OF devices with no parent, and use the
-lower-level device_initialize and device_add functions, so that the
-node is preserved.
+Yeah, I know, and the cpu-hotplug discussion needed another thread due
+to yet another locking incident. I was hoping these two could go
+together.
 
-We can remove the call to set_dev_node in of_device_alloc, as it
-will be overwritten during register.
+Neither are general-purpose workqueues, both need to stay away from the
+normal eventd due to deadlocks.
 
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-
----
-Ben: please apply pending davem's approval - this fixes a
-regression in 2.6.28
-
----
- arch/powerpc/kernel/of_device.c |    1 -
- drivers/of/device.c             |   11 ++++++++++-
- 2 files changed, 10 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/of_device.c b/arch/powerpc/kernel/of_device.c
-index 93ae5b1..f3c9cae 100644
---- a/arch/powerpc/kernel/of_device.c
-+++ b/arch/powerpc/kernel/of_device.c
-@@ -78,7 +78,6 @@ struct of_device *of_device_alloc(struct device_node *np,
- 	dev->dev.parent = parent;
- 	dev->dev.release = of_release_dev;
- 	dev->dev.archdata.of_node = np;
--	set_dev_node(&dev->dev, of_node_to_nid(np));
- 
- 	if (bus_id)
- 		strlcpy(dev->dev.bus_id, bus_id, BUS_ID_SIZE);
-diff --git a/drivers/of/device.c b/drivers/of/device.c
-index 51e5214..224ae6b 100644
---- a/drivers/of/device.c
-+++ b/drivers/of/device.c
-@@ -105,7 +105,16 @@ EXPORT_SYMBOL(of_release_dev);
- int of_device_register(struct of_device *ofdev)
- {
- 	BUG_ON(ofdev->node == NULL);
--	return device_register(&ofdev->dev);
-+
-+	device_initialize(&ofdev->dev);
-+
-+	/* device_add will assume that this device is on the same node as
-+	 * the parent. If there is no parent defined, set the node
-+	 * explicitly */
-+	if (!ofdev->dev.parent)
-+		set_dev_node(&ofdev->dev, of_node_to_nid(ofdev->node));
-+
-+	return device_add(&ofdev->dev);
- }
- EXPORT_SYMBOL(of_device_register);
- 
+ego, does you extra thread ever use mmap_sem?
