@@ -1,79 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbYJ0QmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbYJ0Qm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847AbYJ0QmK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 12:42:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYJ0Ql0
+	id S1753925AbYJ0Qm2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 12:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbYJ0Qlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 12:41:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59129 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751988AbYJ0QlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 12:41:25 -0400
-Message-Id: <20081027164234.927398000@napanee.usersys.redhat.com>
-References: <20081027164233.132189000@napanee.usersys.redhat.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 27 Oct 2008 12:42:35 -0400
-From: Aristeu Rozanski <aris@redhat.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 2/2] NMI watchdog: disable NMIs on LVT0 in case NMI watchdog is not working
-Content-Disposition: inline; filename=nmi-disable_nmi_delivery_on_lint0_if_nmi_watchdog_is_not_functional.patch
+	Mon, 27 Oct 2008 12:41:49 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:43746 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753300AbYJ0Qls (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 12:41:48 -0400
+Subject: Re: bisected: 2.6.28-rc broke my iwl4965 wireless
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+In-Reply-To: <20081027163812.GB6377@tesla> (sfid-20081027_173820_318230_ACAD18C7)
+References: <20081025222208.1d2a2c8b@infradead.org>
+	 <20081027163812.GB6377@tesla> (sfid-20081027_173820_318230_ACAD18C7)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-8HvvIqjmKeRLps5zwWdp"
+Date: Mon, 27 Oct 2008 17:41:34 +0100
+Message-Id: <1225125694.3796.28.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, if the NMI watchdog fails using IOAPIC method, it'll only disable
-interrupts on 8259 if the timer is passing thru it. This patch disables
-NMI delivery on LINT0 if the NMI watchdog initial test fails, just for safety.
 
-Signed-off-by: Aristeu Rozanski <aris@redhat.com>
+--=-8HvvIqjmKeRLps5zwWdp
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
----
- arch/x86/kernel/nmi.c |   18 +++++++++++-------
- 1 file changed, 11 insertions(+), 7 deletions(-)
+On Mon, 2008-10-27 at 09:38 -0700, Luis R. Rodriguez wrote:
 
---- linus-2.6.orig/arch/x86/kernel/nmi.c	2008-10-27 11:59:49.000000000 -0400
-+++ linus-2.6/arch/x86/kernel/nmi.c	2008-10-27 11:59:49.000000000 -0400
-@@ -131,6 +131,11 @@ static void report_broken_nmi(int cpu, i
- 	atomic_dec(&nmi_active);
- }
- 
-+static void __acpi_nmi_disable(void *__unused)
-+{
-+	apic_write(APIC_LVT0, APIC_DM_NMI | APIC_LVT_MASKED);
-+}
-+
- int __init check_nmi_watchdog(void)
- {
- 	unsigned int *prev_nmi_count;
-@@ -179,8 +184,12 @@ int __init check_nmi_watchdog(void)
- 	kfree(prev_nmi_count);
- 	return 0;
- error:
--	if (nmi_watchdog == NMI_IO_APIC && !timer_through_8259)
--		disable_8259A_irq(0);
-+	if (nmi_watchdog == NMI_IO_APIC) {
-+		if (!timer_through_8259)
-+			disable_8259A_irq(0);
-+		on_each_cpu(__acpi_nmi_disable, NULL, 1);
-+	}
-+
- #ifdef CONFIG_X86_32
- 	timer_ack = 0;
- #endif
-@@ -285,11 +294,6 @@ void acpi_nmi_enable(void)
- 		on_each_cpu(__acpi_nmi_enable, NULL, 1);
- }
- 
--static void __acpi_nmi_disable(void *__unused)
--{
--	apic_write(APIC_LVT0, APIC_DM_NMI | APIC_LVT_MASKED);
--}
--
- /*
-  * Disable timer based NMIs on all CPUs:
-  */
+> > 2.6.28-rc1 broke my (intel 4965) wireless, and I've bisected it down to
+> > the commit below..... something's fishy with this...
 
--- 
-Aristeu
+> Additionally if the old behaviour is desired for now (until distributions
+> catch up and add CRDA) CONFIG_WIRELESS_OLD_REGULATORY can be enabled
+> and you'll get the old behaviour of defaulting to country "US".
+
+Luis, Arjan's bug is actually indicative of a driver bug, he told me
+that he actually runs into driver message like "cannot set TX power
+while scanning", and it's fixed by setting WIRELESS_OLD_REGULATORY for
+some reason. Arjan, do you still have the actual messages you get when
+it fails? That's a separate bug we should address, rather than relying
+on it not happening with the old regulatory setting.
+
+johannes
+
+--=-8HvvIqjmKeRLps5zwWdp
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJBe87AAoJEKVg1VMiehFY2AsQAIEMsK0HKHWQ3k1aRyETRkJV
+OiGqANDU9i0nCGO7Y4TWZqJzUJtu1/vEdbfwhW6ZXPdsT2WKwrmHVsAX0PnpZH+Q
+OZDVRF/eePx0e+gpUiJVnmg/KHfRtd5cYiXt1tOQZejvSYAU3pRc7Yp0GGub/HoY
+gG0q7Q6HarW+zNCrPqQNDxa/Ug0hlaXc3EAl8SD/CWe0li5V35ZkDnay1QR+Z35K
+EPVCKDvMUV2+w4lI9cvSZ2+epbWeYqQ1xgxiv9GP8KIzJT1LqDRS0yeuMHVNq01S
+t7BaTfaVPp83mUkWqaSXdgJ6i6r4OQb6ZmpcLdATmqXP+EMSRCq3YcdJThMuWqyy
+6xUoyGx3dQyJw+gGJxs17gbARILMGMX8lhNPUBuN+hhl07n0I+M4W4H0IXbF/PTL
+syIceJhzOL5Qh5kvngLEM/yEGEgDj5VfFzKb+AR5uFbiHCwWx3KYvZ5csVsZWSzm
+b5DA/RGGUNeV8owa6g9/1Aa5GNMT3yarFNe4GxxVpiY/di36tSwv8EWG3BFlxjLU
+TTbjChnwkBhgFxKRAA5Pk5g60Kyqznukfn4NDMBkLAy15goBGt/8uCI/f85HrgdL
+BOrH8oBgDFFTxtXzEhGc2bDWk9Ue3y/cUuRZxh6odCYTCklXaihc7n6rDs5gJGlh
+hadv/GfPgJp+l/k+i601
+=VlGa
+-----END PGP SIGNATURE-----
+
+--=-8HvvIqjmKeRLps5zwWdp--
 
