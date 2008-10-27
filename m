@@ -1,140 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbYJ0JFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbYJ0JMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753345AbYJ0JFn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 05:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYJ0JFH
+	id S1752777AbYJ0JMW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 05:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYJ0JMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 05:05:07 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35698 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751582AbYJ0JFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 05:05:04 -0400
-Date: Sun, 26 Oct 2008 19:41:09 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-stable@vger.kernel.org
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Stanislav Brabec <utx@penguin.cz>,
-       kernel list <linux-kernel@vger.kernel.org>, rpurdie@rpsys.net,
-       lenz@cs.wisc.edu, Dirk@opfer-online.de, arminlitzel@web.de,
-       pavel.urban@ct.cz, metan@atrey.karlin.mff.cuni.cz,
-       thommycheck@gmail.com, milan@ucw.cz
-Subject: [Patch 2.6.27] fix booting on Sharp Zaurus c3000
-Message-ID: <20081026184108.GB1847@ucw.cz>
-References: <20081009091929.GE29957@atrey.karlin.mff.cuni.cz> <20081015101747.GB28824@atrey.karlin.mff.cuni.cz> <20081015113923.GA21756@flint.arm.linux.org.uk> <200810250001.04835.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810250001.04835.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 27 Oct 2008 05:12:13 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:55798 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750965AbYJ0JMM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 05:12:12 -0400
+Subject: Re: [GIT PULL/RESEND] kernel message catalog patches
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.00.0810261212290.5200@nehalem.linux-foundation.org>
+References: <1224168620.9617.14.camel@localhost>
+	 <1224230354.4631.1.camel@localhost>
+	 <20081021092148.GB4980@osiris.boeblingen.de.ibm.com>
+	 <alpine.LFD.2.00.0810230835150.3287@nehalem.linux-foundation.org>
+	 <20081023210446.GA12003@osiris.boeblingen.de.ibm.com>
+	 <alpine.LFD.2.00.0810231433380.3287@nehalem.linux-foundation.org>
+	 <1225049195.14057.72.camel@localhost>
+	 <alpine.LFD.2.00.0810261212290.5200@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Mon, 27 Oct 2008 11:01:28 +0100
+Message-Id: <1225101688.15777.6.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > Thanks for the effort, but it looks like it did not make it, right?
+On Sun, 2008-10-26 at 12:12 -0700, Linus Torvalds wrote:
+> On Sun, 26 Oct 2008, Martin Schwidefsky wrote:
+> > > But if it's in-kernel, other people are then going to complain about them 
+> > > not being maintained. And quite frankly, I'm neither willing nor 
+> > > interested in hearing those complaints or making them more "valid".
 > > 
-> > Correct - Linus was unpredictable and released 2.6.27 that evening,
-> > four days early giving me no time to push the fix to him.
-> > 
-> > However, it's gone in as part of the first ARM merge, so should be in
-> > -rc1.
+> > The usual answer to complaints of this sort is "send a patch", isn't it?
 > 
-> Is it in -stable?  if not, is it considered as -stable material?
+> Yes. And why don't you do all that, and not involve me at all, and keep 
+> all of this entirely out of the kernel?
 
-Yes, I guess it should go to stable.
-
-commit 69fc7eed5f56bce15b239e5110de2575a6970df4
-Author: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Date:   Thu Oct 9 16:58:13 2008 +0100
-
-    [ARM] 5300/1: fixup spitz reset during boot
-    
-    Some machines don't have the pullup/down on their reset
-    pin, so configuring the reset generating pin as input makes
-    them reset immediately. Fix that by making reset pin direction
-    configurable.
-    
-Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-
-diff --git a/arch/arm/mach-pxa/include/mach/reset.h b/arch/arm/mach-pxa/include/mach/reset.h
-index 9489a48..7b8842c 100644
---- a/arch/arm/mach-pxa/include/mach/reset.h
-+++ b/arch/arm/mach-pxa/include/mach/reset.h
-@@ -10,9 +10,12 @@
- extern unsigned int reset_status;
- extern void clear_reset_status(unsigned int mask);
- 
--/*
-- * register GPIO as reset generator
-+/**
-+ * init_gpio_reset() - register GPIO as reset generator
-+ *
-+ * @gpio - gpio nr
-+ * @output - set gpio as out/low instead of input during normal work
-  */
--extern int init_gpio_reset(int gpio);
-+extern int init_gpio_reset(int gpio, int output);
- 
- #endif /* __ASM_ARCH_RESET_H */
-diff --git a/arch/arm/mach-pxa/reset.c b/arch/arm/mach-pxa/reset.c
-index 31d7885..1b2af57 100644
---- a/arch/arm/mach-pxa/reset.c
-+++ b/arch/arm/mach-pxa/reset.c
-@@ -20,7 +20,7 @@ static void do_hw_reset(void);
- 
- static int reset_gpio = -1;
- 
--int init_gpio_reset(int gpio)
-+int init_gpio_reset(int gpio, int output)
- {
- 	int rc;
- 
-@@ -30,9 +30,12 @@ int init_gpio_reset(int gpio)
- 		goto out;
- 	}
- 
--	rc = gpio_direction_input(gpio);
-+	if (output)
-+		rc = gpio_direction_output(gpio, 0);
-+	else
-+		rc = gpio_direction_input(gpio);
- 	if (rc) {
--		printk(KERN_ERR "Can't configure reset_gpio for input\n");
-+		printk(KERN_ERR "Can't configure reset_gpio\n");
- 		gpio_free(gpio);
- 		goto out;
- 	}
-diff --git a/arch/arm/mach-pxa/spitz.c b/arch/arm/mach-pxa/spitz.c
-index 9b4f24c..524f656 100644
---- a/arch/arm/mach-pxa/spitz.c
-+++ b/arch/arm/mach-pxa/spitz.c
-@@ -618,7 +618,7 @@ static void spitz_restart(char mode)
- 
- static void __init common_init(void)
- {
--	init_gpio_reset(SPITZ_GPIO_ON_RESET);
-+	init_gpio_reset(SPITZ_GPIO_ON_RESET, 1);
- 	pm_power_off = spitz_poweroff;
- 	arm_pm_restart = spitz_restart;
- 
-diff --git a/arch/arm/mach-pxa/tosa.c b/arch/arm/mach-pxa/tosa.c
-index 9f3ef9e..130e37e 100644
---- a/arch/arm/mach-pxa/tosa.c
-+++ b/arch/arm/mach-pxa/tosa.c
-@@ -781,7 +781,7 @@ static void __init tosa_init(void)
- 	gpio_set_wake(MFP_PIN_GPIO1, 1);
- 	/* We can't pass to gpio-keys since it will drop the Reset altfunc */
- 
--	init_gpio_reset(TOSA_GPIO_ON_RESET);
-+	init_gpio_reset(TOSA_GPIO_ON_RESET, 0);
- 
- 	pm_power_off = tosa_poweroff;
- 	arm_pm_restart = tosa_restart;
-
+Ok, understood. Not that the reaction surprises me, seems like nobody
+likes documentation (including me). What I will do is to replace the
+kmsg_xxx macros with the pr_xxx macros in the device drivers patches and
+request the pull as a cleanup for 2.6.29. The out-of-tree kmsg patches
+will then play tricks with pr_xxx analog to dev_xxx. That way the patch
+should be minimal.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
