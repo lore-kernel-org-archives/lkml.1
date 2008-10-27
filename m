@@ -1,117 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754555AbYJ0W1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753568AbYJ0W2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754555AbYJ0W1b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 18:27:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbYJ0W1V
+	id S1753568AbYJ0W2L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 18:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbYJ0W1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 18:27:21 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48320 "EHLO mx2.redhat.com"
+	Mon, 27 Oct 2008 18:27:54 -0400
+Received: from smtp27.orange.fr ([80.12.242.94]:18113 "EHLO smtp27.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752112AbYJ0W1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 18:27:20 -0400
-Message-ID: <49064027.9010509@redhat.com>
-Date: Mon, 27 Oct 2008 17:26:47 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1751643AbYJ0W1w convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 18:27:52 -0400
+X-ME-UUID: 20081027222749978.EECAE1C000A1@mwinf2703.orange.fr
+Message-ID: <4906405F.6080708@cosmosbay.com>
+Date: Mon, 27 Oct 2008 23:27:43 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Eric Paris <eparis@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       sandeen@redhat.com
-Subject: Re: general protection fault:  from release_blocks_on_commit
-References: <1224612181.19719.20.camel@paris-laptop> <20081027181928.GB23111@mit.edu>
-In-Reply-To: <20081027181928.GB23111@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: benli@broadcom.com
+Cc: willy@linux.intel.com, jbarnes@virtuousgeek.org,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [PATCH] PCI: Limit VPD length for Broadcom 5708S
+References: <48920413.6080508@cosmosbay.com>
+In-Reply-To: <48920413.6080508@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
+Eric Dumazet a écrit :
+> While trying to upgrade kernel from 2.6.25 to 2.6.26 on a ProLiant 
+> BL460c G1,
+> I faced this problem on integrated Broadcom 5708S NIC when trying to UP 
+> them.
+> 
+> bnx2: fw sync timeout, reset code = 1030003
+> 
+> I noticed that commit 99cb233d60cbe644203f19938c729ea2bb004d70 (PCI: 
+> Limit VPD read/write lengths for Broadcom 5706, 5708, 5709 rev.A)
+> was probably a good candidate to solve the problem.
+> 
+> Apparently, it added PCI quirks for a list of Broadcom NICs, but
+> quirk_brcm_570x_limit_vpd() ignores part of them.
+> 
+> I found the following patch useful to restore correct operation on my 
+> machine.
+> 
+> Some information about this nic :
+> 
+> 03:00.0 Ethernet controller: Broadcom Corporation NetXtreme II BCM5708S 
+> Gigabit Ethernet (rev 12)
+>        Subsystem: Hewlett-Packard Company NC373i Integrated 
+> Multifunction Gigabit Server Adapter
+>        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- 
+> ParErr+ Stepping- SERR+ FastB2B-
+>        Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
+> <TAbort- <MAbort- >SERR- <PERR-
+>        Latency: 64 (16000ns min), Cache Line Size 10
+>        Interrupt: pin A routed to IRQ 222
+>        Region 0: Memory at f6000000 (64-bit, non-prefetchable) [size=32M]
+>        [virtual] Expansion ROM at d1200000 [disabled] [size=16K]
+>        Capabilities: [40] PCI-X non-bridge device.
+>                Command: DPERE- ERO- RBC=0 OST=4
+>                Status: Bus=3 Dev=0 Func=0 64bit+ 133MHz+ SCD- USC-, 
+> DC=simple, DMMRBC=0, DMOST=4, DMCRS=2, RSCEM-
+>        Capabilities: [48] Power Management version 2
+>                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA 
+> PME(D0-,D1-,D2-,D3hot+,D3cold+)
+>                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+>        Capabilities: [50] Vital Product Data
+>        Capabilities: [58] Message Signalled Interrupts: 64bit+ Queue=0/0 
+> Enable+
+>                Address: 00000000feeff00c  Data: 4179
+> 
+> after applying patch :
+> 
+> # hexdump -C 
+> "/sys/devices/pci0000:00/0000:00:1c.0/0000:02:00.0/0000:03:00.0/vpd"
+> 00000000  82 2f 00 48 50 20 4e 43  33 37 33 69 20 4d 75 6c  |./.HP 
+> NC373i Mul|
+> 00000010  74 69 66 75 6e 63 74 69  6f 6e 20 47 69 67 61 62  |tifunction 
+> Gigab|
+> 00000020  69 74 20 53 65 72 76 65  72 20 41 64 61 70 74 65  |it Server 
+> Adapte|
+> 00000030  72 00 90 4a 00 50 4e 03  4e 2f 41 45 43 03 4e 2f  
+> |r..J.PN.N/AEC.N/|
+> 00000040  41 53 4e 0a 30 31 32 33  34 35 36 37 38 39 4d 4e  
+> |ASN.0123456789MN|
+> 00000050  04 31 30 33 43 52 56 26  a2 00 00 00 00 00 00 00  
+> |.103CRV&........|
+> 00000060  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  
+> |................|
+> 00000070  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 78  
+> |...............x|
+> 00000080
+> 
+> Patch against current Linus tree, should also be sent for linux-2.6.26.2 
+> inclusion.
+> 
+> I have no idea if 5706S and 5709S also needs this truncation of VPD length
+> 
+> Thank you
+> 
+> [PATCH] PCI: Limit VPD length for Broadcom 5708S
+> 
+> BCM5708S wont work correctly unless VPD length truncated to 128
+> 
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> 
+> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+> index 0fb3650..59667e5 100644
+> --- a/drivers/pci/quirks.c
+> +++ b/drivers/pci/quirks.c
+> @@ -1756,9 +1756,12 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_VIA, 
+> 0x324e, quirk_via_cx700_pci_parking_c
+>  */
+> static void __devinit quirk_brcm_570x_limit_vpd(struct pci_dev *dev)
+> {
+> -    /*  Only disable the VPD capability for 5706, 5708, and 5709 rev. A */
+> +    /*
+> +     * Only disable the VPD capability for 5706, 5708, 5708S and 5709 
+> rev. A
+> +     */
+>     if ((dev->device == PCI_DEVICE_ID_NX2_5706) ||
+>         (dev->device == PCI_DEVICE_ID_NX2_5708) ||
+> +        (dev->device == PCI_DEVICE_ID_NX2_5708S) ||
+>         ((dev->device == PCI_DEVICE_ID_NX2_5709) &&
+>          (dev->revision & 0xf0) == 0x0)) {
+>         if (dev->vpd)
+> 
 
-> On Tue, Oct 21, 2008 at 02:03:01PM -0400, Eric Paris wrote:
->   
->> I can consistently get the below backtrace any time I try to shutdown my
->> machine.  This machine has ext4 as it's root FS.  This is 100%
->> reproducible.  I backed out commit
->> 3e624fc72fba09b6f999a9fbb87b64efccd38036 and it fixed the problem.
->>
->> This is a regression.
->>     
->
-> Can you send me your .config, please?  I'm trying to duplicate it on
-> my end.  
->
-> 						- Ted
->   
-Ted, you probably need some slab debugging on to hit it.
+Hi all
 
-I think the problem is that jbd2_journal_commit_transaction may call
-__jbd2_journal_drop_transaction(journal, commit_transaction) if the
-checkpoint lists are NULL, and this frees the commit_transaction.
+Just tried linux-2.6.28-rc2 on same platform.
 
-However, the call to ->j_commit_callback() tries to use it after that.
+Same problem again...
 
-I'm out of time for now to be sure this is the right fix, but something
-like this perhaps?
-
-Index: linux-2.6/fs/jbd2/commit.c
-===================================================================
---- linux-2.6.orig/fs/jbd2/commit.c	2008-10-27 11:24:42.000000000 -0500
-+++ linux-2.6/fs/jbd2/commit.c	2008-10-27 17:19:22.771063324 -0500
-@@ -992,15 +992,15 @@ restart_loop:
- 			commit_transaction->t_cpprev->t_cpnext =
- 				commit_transaction;
- 		}
-+		if (journal->j_commit_callback)
-+			journal->j_commit_callback(journal, commit_transaction);
-+
-+		trace_mark(jbd2_end_commit, "dev %s transaction %d head %d",
-+			   journal->j_devname, commit_transaction->t_tid,
-+			   journal->j_tail_sequence);
- 	}
- 	spin_unlock(&journal->j_list_lock);
- 
--	if (journal->j_commit_callback)
--		journal->j_commit_callback(journal, commit_transaction);
--
--	trace_mark(jbd2_end_commit, "dev %s transaction %d head %d",
--		   journal->j_devname, commit_transaction->t_tid,
--		   journal->j_tail_sequence);
- 	jbd_debug(1, "JBD: commit %d complete, head %d\n",
- 		  journal->j_commit_sequence, journal->j_tail_sequence);
- 
-
-Also, I'm not certain that it matters, but the loop in 
-release_blocks_on_commit() is kfreeing list entries w/o taking
-them off the list; I suppose maybe this is safe if the whole thing
-is getting discarded when we're done, but just to keep things sane,
-would this make sense (also, I think we need to double-check use of
-s_md_lock; it's taken when adding things to the list, but not when
-freeing/removing ... if it's needed, isn't it needed on both ends...):
+Broadcom NetXtreme II Gigabit Ethernet Driver bnx2 v1.8.1 (Oct 7, 2008)
+bnx2 0000:03:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+eth0: Broadcom NetXtreme II BCM5708 1000Base-SX (B2) PCI-X 64-bit 133MHz found at mem f6000000, IRQ 16, node addr 00:1e:0b:ec:d3:dc
+bnx2 0000:07:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+eth1: Broadcom NetXtreme II BCM5708 1000Base-SX (B2) PCI-X 64-bit 133MHz found at mem fa000000, IRQ 16, node addr 00:1e:0b:ec:d3:d2
+bnx2 0000:03:00.0: irq 45 for MSI/MSI-X
+bnx2: fw sync timeout, reset code = 1030003
+bnx2 0000:07:00.0: irq 45 for MSI/MSI-X
+bnx2: fw sync timeout, reset code = 1030003
+bnx2 0000:03:00.0: irq 45 for MSI/MSI-X
+bnx2: fw sync timeout, reset code = 1030006
 
 
-Index: linux-2.6/fs/ext4/mballoc.c
-===================================================================
---- linux-2.6.orig/fs/ext4/mballoc.c	2008-10-27 11:24:41.000000000 -0500
-+++ linux-2.6/fs/ext4/mballoc.c	2008-10-27 17:19:43.401064490 -0500
-@@ -2644,6 +2644,7 @@ static void release_blocks_on_commit(jou
- 	struct super_block *sb = journal->j_private;
- 	struct ext4_buddy e4b;
- 	struct ext4_group_info *db;
-+	struct ext4_sb_info *sbi = EXT4_SB(sb);
- 	int err, count = 0, count2 = 0;
- 	struct ext4_free_data *entry;
- 	ext4_fsblk_t discard_block;
-@@ -2683,6 +2684,9 @@ static void release_blocks_on_commit(jou
- 			   (unsigned long long) discard_block, entry->count);
- 		sb_issue_discard(sb, discard_block, entry->count);
- 
-+		spin_lock(&sbi->s_md_lock);
-+		list_del(&entry->list);
-+		spin_unlock(&sbi->s_md_lock);
- 		kmem_cache_free(ext4_free_ext_cachep, entry);
- 		ext4_mb_release_desc(&e4b);
- 	}
+2.6.27.4 is running fine on this machine
 
--Eric
+Any ideas ?
+
+Thank you
+
+Eric
+
+
 
