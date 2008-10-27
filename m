@@ -1,81 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752296AbYJ0PDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752606AbYJ0PEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752296AbYJ0PDZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 11:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbYJ0PDP
+	id S1752606AbYJ0PEz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 11:04:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbYJ0PEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 11:03:15 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:51902 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750717AbYJ0PDO (ORCPT
+	Mon, 27 Oct 2008 11:04:46 -0400
+Received: from host0.dyn.jankratochvil.net ([89.250.240.59]:47565 "EHLO
+	host0.dyn.jankratochvil.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750967AbYJ0PEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 11:03:14 -0400
-Subject: Re: Timeout regression introduced
-	by	242f9dcb8ba6f68fcd217a119a7648a4f69290e9
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <49051EA4.3040403@kernel.org>
-References: <49043C7C.8050207@kernel.org>
-	 <1225034105.3958.4.camel@localhost.localdomain>
-	 <49051EA4.3040403@kernel.org>
-Content-Type: text/plain
-Date: Mon, 27 Oct 2008 10:03:09 -0500
-Message-Id: <1225119789.5146.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Oct 2008 11:04:45 -0400
+X-Greylist: delayed 463 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Oct 2008 11:04:44 EDT
+Date: Mon, 27 Oct 2008 15:56:48 +0100
+From: Jan Kratochvil <jan.kratochvil@redhat.com>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: inconsistent behavior with ptrace(TRACEME) and fork/exec
+Message-ID: <20081027145648.GA15791@host0.dyn.jankratochvil.net>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="k+w/mQv8wyuph6w0"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-27 at 10:51 +0900, Tejun Heo wrote:
-> James Bottomley wrote:
-> > On Sun, 2008-10-26 at 18:46 +0900, Tejun Heo wrote:
-> >> Hello, Jens.
-> >>
-> >> Commit 242f9dcb8ba6f68fcd217a119a7648a4f69290e9 introduces a strange
-> >> regression for libata.  The second timeout gives puts different
-> >> pointer from the issued command onto eh_cmd_q breaking libata EH
-> >> command matching which triggers WARN_ON() in ata_eh_finish() and hangs
-> >> command processing or causes oops later depending on circumstances.
-> >>
-> >> Here are logs with induced timeouts (patch attached).  In commit
-> >> 242f9dcb8, the XXX messages for the second timeout shows different
-> >> scsi_cmd pointers for eh_cmd_q and qc->scmd which is initialized by
-> >> ata_scsi_qc_new() during command translation.
-> > 
-> > I can't see a way we could be getting a different command passed in from
-> > the actual one, since the only way to lose the command from the request
-> > is to go through the command completion routines which free it (and end
-> > the request).
-> 
-> I have no idea either.  It's something in the timeout logic because on
-> the issue path the scmd pointer is identical but on tiemout pointer
-> for another scmd is queued on eh_cmd_q, which doesn't make much sense.
 
-OK, so if we take the first trace as definitive, since it shows the same
-command going around twice (being freed and reallocated from the slab in
-between), it does tend to imply the one on eh_cmd_q is bogus.
+--k+w/mQv8wyuph6w0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Could you print out all scsi commands going into ata_qc_issue so we can
-see if there's a clue in where this one is coming from?
+On Wed, 19 Jul 2006 21:18:29 +0200, Mike Frysinger wrote:
+> my understanding is that if a parent forks and the child does
+> a ptrace(TRACEME) right before doing an exec(), the kernel should always
+> halt it and wait indefinitely for the parent to start ptracing it.
 
-> > However, since the WARN_ON is specifically comparing the command with
-> > the one found by the active tag, could this actually be a problem caused
-> > by block tags?  I note that libata still uses its own array of
-> > outstanding tags (ap->qcmd[tag]) instead of finding them using
-> > blk_queue_find_tag() (or scsi_find_tag()).
-> 
-> Nope, the tested commits are before the block queue tag transition and
-> I tested two consecutive commits.  242f9dcb^ is okay.  242f9dcb is
-> not.
-
-Well, it was worth a shot.
-
-James
+Yes, just the parent must process the event (signal).  In your testcase the
+parent finished before the signal could be delivered.  If the tracer exits the
+tracee's tracing is finished and it continues freely.
 
 
+> unfortunately, this behavior seems to be unreliable.
+
+Fixed the races in your code and I do not see there any problem, do you?
+The ptrace problems/testsuite is being maintained at:
+  http://sourceware.org/systemtap/wiki/utrace/tests
+
+
+Regards,
+Jan
+
+--k+w/mQv8wyuph6w0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="ptrace-vfork-traceme.c"
+
+#define _GNU_SOURCE
+#include <errno.h>
+#include <signal.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/ptrace.h>
+#include <sys/wait.h>
+
+#define fail(msg, args...) \
+do { \
+	fprintf(stderr, "FAIL:%i: " msg "\n", __LINE__, ## args); \
+	exit(1); \
+} while (0)
+
+static void child_exit(int sig)
+{
+	int status;
+#if 0 /* Correct behavior.  */
+	printf("failure, child exited with %i: %s\n", sig, strsignal(sig));
+#endif
+	printf("wait() = %i\n", wait(&status));
+	printf("status = 0x%x\n", status);
+	printf("\tWIFEXITED = %i\n", WIFEXITED(status));
+	printf("\tWEXITSTATUS = %i\n", WEXITSTATUS(status));
+	printf("\tWIFSIGNALED = %i\n", WIFSIGNALED(status));
+	printf("\tWTERMSIG = %i (%s)\n", WTERMSIG(status), strsignal(WTERMSIG(status)));
+	/* WIFSTOPPED happens.  */
+	printf("\tWIFSTOPPED = %i\n", WIFSTOPPED(status));
+	/* SIGTRAP happens.  */
+	printf("\tWSTOPSIG = %i (%s)\n", WSTOPSIG(status), strsignal(WSTOPSIG(status)));
+#if 0 /* We can continue.  Just calling printf() from a signal handler is not
+	 correct.  */
+	exit(1);
+#endif
+}
+
+int main(int argc, char *argv[])
+{
+	long pret;
+	pid_t pid;
+
+	/* child process ... shouldnt be executed, but just in case ... */
+	if (argc > 1 && !strcmp(argv[1], "child"))
+#if 0 /* Parent did not kill us, after its child_exit() messages we should get
+         here.  */
+		fail("kernel should have halted me...");
+#else
+		{ puts ("child exiting"); exit (0); }
+#endif
+
+	/* vfork() child must not call ptrace().  */
+	pid = fork();
+	if (pid == -1)
+		fail("vfork() didnt work: %m");
+	else if (!pid) {
+		/* do the child stuff here */
+		errno = 0;
+		pret = ptrace(PTRACE_TRACEME, 0, NULL, NULL);
+		if (pret && errno)
+			fail("ptrace(PTRACE_TRACEME) = %li: %m", pret);
+
+		int eret = execlp(argv[0], argv[0], "child", NULL);
+		fail("execlp() = %i", eret);
+	}
+
+	/* do the parent stuff here */
+	signal(SIGCHLD, child_exit);
+
+	/* We cannot PTRACE_PEEKUSER here as the child still may not have
+	   called PTRACE_TRACEME.  */
+	pause ();
+
+	errno = 0;
+	pret = ptrace(PTRACE_PEEKUSER, pid, NULL, NULL);
+	if (pret && errno)
+		fail("ptrace(PTRACE_PEEKUSER, %i) = %li: %m", pid, pret);
+
+	puts("SUCCESS! :D");
+
+	return 0;
+}
+
+--k+w/mQv8wyuph6w0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="ptrace-vfork-traceme.c.patch"
+
+--- ptrace-vfork-traceme.c-orig	2008-10-27 15:41:51.000000000 +0100
++++ ptrace-vfork-traceme.c	2008-10-27 15:47:05.000000000 +0100
+@@ -18,14 +18,23 @@ do { \
+ static void child_exit(int sig)
+ {
+ 	int status;
++#if 0 /* Correct behavior.  */
+ 	printf("failure, child exited with %i: %s\n", sig, strsignal(sig));
++#endif
+ 	printf("wait() = %i\n", wait(&status));
+-	printf("status = %i\n", status);
++	printf("status = 0x%x\n", status);
+ 	printf("\tWIFEXITED = %i\n", WIFEXITED(status));
+ 	printf("\tWEXITSTATUS = %i\n", WEXITSTATUS(status));
+ 	printf("\tWIFSIGNALED = %i\n", WIFSIGNALED(status));
+ 	printf("\tWTERMSIG = %i (%s)\n", WTERMSIG(status), strsignal(WTERMSIG(status)));
++	/* WIFSTOPPED happens.  */
++	printf("\tWIFSTOPPED = %i\n", WIFSTOPPED(status));
++	/* SIGTRAP happens.  */
++	printf("\tWSTOPSIG = %i (%s)\n", WSTOPSIG(status), strsignal(WSTOPSIG(status)));
++#if 0 /* We can continue.  Just calling printf() from a signal handler is not
++	 correct.  */
+ 	exit(1);
++#endif
+ }
+ 
+ int main(int argc, char *argv[])
+@@ -35,9 +44,15 @@ int main(int argc, char *argv[])
+ 
+ 	/* child process ... shouldnt be executed, but just in case ... */
+ 	if (argc > 1 && !strcmp(argv[1], "child"))
++#if 0 /* Parent did not kill us, after its child_exit() messages we should get
++         here.  */
+ 		fail("kernel should have halted me...");
++#else
++		{ puts ("child exiting"); exit (0); }
++#endif
+ 
+-	pid = vfork();
++	/* vfork() child must not call ptrace().  */
++	pid = fork();
+ 	if (pid == -1)
+ 		fail("vfork() didnt work: %m");
+ 	else if (!pid) {
+@@ -54,6 +69,10 @@ int main(int argc, char *argv[])
+ 	/* do the parent stuff here */
+ 	signal(SIGCHLD, child_exit);
+ 
++	/* We cannot PTRACE_PEEKUSER here as the child still may not have
++	   called PTRACE_TRACEME.  */
++	pause ();
++
+ 	errno = 0;
+ 	pret = ptrace(PTRACE_PEEKUSER, pid, NULL, NULL);
+ 	if (pret && errno)
+
+--k+w/mQv8wyuph6w0--
