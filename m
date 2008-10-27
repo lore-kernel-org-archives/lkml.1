@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbYJ0UT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754392AbYJ0UUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754204AbYJ0UT4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 16:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbYJ0UTi
+	id S1754392AbYJ0UUW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 16:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYJ0UUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 16:19:38 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:24135 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753092AbYJ0UTh (ORCPT
+	Mon, 27 Oct 2008 16:20:01 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:12903 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754253AbYJ0UT6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 16:19:37 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=EsmNQY/3N0DTR3dRHLydcjp/P+8s21RJxX1VWcm9Ecg0tSRru9Ps3nsDuMsYQIh5ltSvt+LhPqSjaEgfyW3QZ5iF/4hLnUrgF+GH7ibylih5/YgrA1bTKpx/512mnFfQmU26Qe8Dl9Vkmk04QTGFx6D/+Ncpa/aD4K4obZx8kqE=  ;
-X-YMail-OSG: AGiwUFwVM1nGjM8fJZUDJJ0ZUwmYj.960sngXPbUtifD0buXI66DL5DwtEIBujW_e.pJK9l9lpk1KSM41yB04W8EzgQF1r8U8EkYXnTSFxINnqj.wJqhzJmKGygEDuwAuEPTrQs5je_wT6ZYVGr6ra4WqELBm.H.7PzcGCYXx8Go0yzpC_igl5ZzIDOM
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [rtc-linux] [PATCH 2/2] rtc: rtc-wm8350: Add support for WM8350 RTC
-Date: Mon, 27 Oct 2008 13:19:34 -0700
-User-Agent: KMail/1.9.10
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-       rtc-linux@googlegroups.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <1225121905-23782-1-git-send-email-broonie@opensource.wolfsonmicro.com> <200810271303.21634.david-b@pacbell.net> <20081027200900.GA31757@rakim.wolfsonmicro.main>
-In-Reply-To: <20081027200900.GA31757@rakim.wolfsonmicro.main>
+	Mon, 27 Oct 2008 16:19:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=PALJDTpDGErNwrAjUjPYHEFbIWZMLy4+EQm1x/CMv3i6OXQrN2wJIqRUauyiUE5BsX
+         oRnwTbq3wAwp2WQ2tuijHV4Wlkr7okexkrjPnLsXzt1G9o6aYNqoOE4iUbN54sCCk9Dw
+         2CeC/4RNTvL0uS+M362RJ8XUWzmDHph36wt3c=
+Message-ID: <8db1092f0810271319s5d15c2ffrab37a548fa388738@mail.gmail.com>
+Date: Mon, 27 Oct 2008 21:19:56 +0100
+From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Re: Linux 2.6.28-rc1] ACPI Warning (nspredef-0852)[...]
+Cc: "Robert Hancock" <hancockr@shaw.ca>,
+       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, lenb@kernel.org, fabio.comolli@gmail.com
+In-Reply-To: <8db1092f0810251151l4c7f9382r34defa6d4d6ee24c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810271319.35256.david-b@pacbell.net>
+References: <fa.1HaqObZirROiyqr922A7hRDVc54@ifi.uio.no>
+	 <fa.Rzh43vSl9NX1QQ2nOYQSgEJcZAw@ifi.uio.no> <49035313.9080309@shaw.ca>
+	 <200810252004.01274.rjw@sisk.pl>
+	 <8db1092f0810251151l4c7f9382r34defa6d4d6ee24c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 27 October 2008, Mark Brown wrote:
-> On Mon, Oct 27, 2008 at 01:03:21PM -0700, David Brownell wrote:
-> > On Monday 27 October 2008, Alessandro Zummo wrote:
-> > >  (and a detailed checklist at http://groups.google.com/group/rtc-linux/web/checklist )
-> 
-> > Also:  rtc_ops.ioctl() method should only handle RTC_{AIE,UIE}_{ON,OFF},
-> > since the other standard ioctls have rtc_ops equivalents.
-> 
-> > (This code is fine in both respects.  Though since I've received three
-> > copies of the driver since it was merged to MM, maybe I missed something.)
-> 
-> Unfortunately I added the __devexit_p() annotation in response to
-> Alessandro's comments.  I'll remove it again,
+2008/10/25 Maciej Rutecki <maciej.rutecki@gmail.com>:
+> Suspend to ram, but another machine (previous PC, now laptop) and
+> another problem:
+>
+> ACPI: EC: missing confirmations, switch off interrupt mode.
+> ACPI Exception (evregion-0419): AE_TIME, Returned by Handler for
+> [EmbeddedControl] [20080926]
+> ACPI Error (psparse-0524): Method parse/execution failed [\_TZ_.C31E]
+> (Node f7019858), AE_TIME
+> ACPI Error (psparse-0524): Method parse/execution failed
+> [\_TZ_.TZ3_._TMP] (Node f7019ed0), AE_TIME
+>
+> It doesn't happened immediately after s2ram but is correlation between
+> s2ram and this error.
 
-No, don't -- that's why I said "this code is fine..." !!
-
-You're not using platform_driver_probe(), so it's appropriate to
-use the __devexit() route.
-
-
-> other than that all that's 
-> changed is a tweak to the module description and Andrew's change to use
-> schedule_timeout_uninterruptible().
-> 
-> How should these drivers be merged?
-
-Andrew is the keeper of the RTC patch queue, so I suggest you issue
-one patch against the two in MM:
-
-	rtc-rtc-wm8350-add-support-for-wm8350-rtc.patch
-	rtc-rtc-wm8350-add-support-for-wm8350-rtc-fix.patch
-
-That would probably cause the least amount of extra work for Andrew.
-
-- Dave
-
- 
+I was wrong; it happens not only after suspend to ram but sometimes
+after normal boot.
 
 
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
