@@ -1,94 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbYJ0Jbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbYJ0JcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753136AbYJ0Jbl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 05:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbYJ0Jbb
+	id S1753291AbYJ0JcS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 05:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbYJ0JcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 05:31:31 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40085 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752058AbYJ0Jba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 05:31:30 -0400
-Date: Mon, 27 Oct 2008 10:30:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: zbr@ioremap.net, akpm@linux-foundation.org, a.p.zijlstra@chello.nl,
-       efault@gmx.de, jkosina@suse.cz, rjw@sisk.pl, s0mbre@tservice.net.ru,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-Message-ID: <20081027093035.GA23743@elte.hu>
-References: <20081026092722.GA24799@ioremap.net> <20081026023439.c6cf4e94.akpm@linux-foundation.org> <20081026100555.GA26033@ioremap.net> <20081026.193451.36032548.davem@davemloft.net>
+	Mon, 27 Oct 2008 05:32:06 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:35341 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752182AbYJ0JcD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 05:32:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=TxqLRUbaa3ocalrKu/T9KjQq0xEryUVpUA0nlUMyCB2pIjV1L7IXNYVr9vf56etCcs
+         DTHKWRxbEsfl2WTbMk4MDgBP9W4f96SaMO5bydHSScJzM0ZuZe1/p8WVExpKtbSSjO2h
+         FEoaeu+AZNJTmWdVbTfXbP9sBii6ZbIW5eX1s=
+Message-ID: <6e4284620810270231y7d03d898p8d2d832bec42b10e@mail.gmail.com>
+Date: Mon, 27 Oct 2008 10:31:59 +0100
+From: "Vlada Peric" <vlada.peric@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] cirrusfb: remove unused variables
+Cc: krzysztof.h1@wp.pl
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Disposition: inline
-In-Reply-To: <20081026.193451.36032548.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m9R9WMdq026846
 
-
-* David Miller <davem@davemloft.net> wrote:
-
-> From: Evgeniy Polyakov <zbr@ioremap.net>
-> Date: Sun, 26 Oct 2008 13:05:55 +0300
-> 
-> > I'm not surprised there were no changes when I reported hrtimers to be
-> > the main guilty factor in my setup for dbench tests, and only when David
-> > showed that they also killed his sparks via wake_up(), something was
-> > done. Now this regression even dissapeared from the list.
-> > Good direction, we should always follow this.
-> 
-> Yes, this situation was in my opinion a complete fucking joke.  
-> Someone like me shouldn't have to do all of the hard work for the 
-> scheduler folks in order for a bug like this to get seriously looked 
-> at.
-
-yeah, that overhead was bad, and once it became clear that you had 
-high-resolution timers enabled for your benchmaking runs (which is 
-default-off and which is still rare for benchmarking runs - despite 
-being a popular end-user feature) we immediately disabled the hrtick via 
-this upstream commit:
-
-  0c4b83d: sched: disable the hrtick for now
-
-that commit is included in v2.6.28-rc1 so this particular issue should 
-be resolved.
-
-high-resolution timers are still default-disabled in the upstream 
-kernel, so this never affected usual configs that folks keep 
-benchmarking - it only affected those who decided they want higher 
-resolution timers and more precise scheduling.
-
-Anyway, the sched-hrtick is off now, and we wont turn it back on without 
-making sure that it's really low cost in the hotpath.
-
-Regarding tbench, a workload that context-switches in excess of 100,000 
-per second is inevitably going to show scheduler overhead - so you'll 
-get the best numbers if you eliminate all/most scheduler code from the 
-hotpath. We are working on various patches to mitigate the cost some 
-more - and your patches and feedback is welcome as well.
-
-But it's a difficult call with no silver bullets. On one hand we have 
-folks putting more and more stuff into the context-switching hotpath on 
-the (mostly valid) point that the scheduler is a slowpath compared to 
-most other things. On the other hand we've got folks doing 
-high-context-switch ratio benchmarks and complaining about the overhead 
-whenever something goes in that improves the quality of scheduling of a 
-workload that does not context-switch as massively as tbench. It's a 
-difficult balance and we cannot satisfy both camps.
-
-Nevertheless, this is not a valid argument in favor of the hrtick 
-overhead: that was clearly excessive overhead and we zapped it.
-
-	Ingo
+After commit a1d35a7a (cirrusfb: use modedb and add mode_option parameter),these variables are no longer used, so remove them to fix compilation warning.
+Signed-off-by: Vlada PeriÊ <vlada.peric@gmail.com>CC: Krzysztof Helt <krzysztof.h1@wp.pl>--- drivers/video/cirrusfb.c |    3 +-- 1 files changed, 1 insertions(+), 2 deletions(-)
+diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.cindex 048b139..ace4001 100644--- a/drivers/video/cirrusfb.c+++ b/drivers/video/cirrusfb.c@@ -2462,8 +2462,7 @@ static int __init cirrusfb_init(void)
+ #ifndef MODULE static int __init cirrusfb_setup(char *options) {-	char *this_opt, s[32];-	int i;+	char *this_opt;
+ 	DPRINTK("ENTER\n");
+-- 1.6.0.3ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
