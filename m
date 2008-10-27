@@ -1,73 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbYJ0WdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbYJ0Wej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbYJ0WdB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 18:33:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbYJ0Wcx
+	id S1753873AbYJ0Wej (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 18:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbYJ0Web
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 18:32:53 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:51362 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751685AbYJ0Wcw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 18:32:52 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Mon, 27 Oct 2008 23:28:14 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [patch 2.6.27.y 4/6] firewire: fix struct fw_node memory leak
-To: stable@kernel.org
-cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.df6e0a4afb92ef6e@s5r6.in-berlin.de>
-Message-ID: <tkrat.e499a05eaa0ec529@s5r6.in-berlin.de>
-References: <tkrat.df6e0a4afb92ef6e@s5r6.in-berlin.de>
+	Mon, 27 Oct 2008 18:34:31 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:44627 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751328AbYJ0Wea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 18:34:30 -0400
+Date: Mon, 27 Oct 2008 15:34:29 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rcupdate: reduce sys's overhead when rcu_barrier()s
+	called simultaneous
+Message-ID: <20081027223429.GJ6783@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <49015F45.1070002@cn.fujitsu.com> <20081026215531.GA6236@linux.vnet.ibm.com> <4905567D.9080600@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4905567D.9080600@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Date: Thu, 16 Oct 2008 18:00:15 -0400
-From: Jay Fenlason <fenlason@redhat.com>
+On Mon, Oct 27, 2008 at 01:49:49PM +0800, Lai Jiangshan wrote:
+> Paul E. McKenney wrote:
+> > On Fri, Oct 24, 2008 at 01:38:13PM +0800, Lai Jiangshan wrote:
+> >> rcu_barrier() queues rcu_head on all cpus, it will brings
+> >> large overhead for a large system which has a lots cpu.
+> >> this fix reduces sys's overhead when rcu_barrier()s called
+> >> simultaneous.
+> > 
+> > Hello, Jiangshan,
+> > 
+> > If we were to have problems with many concurrent rcu_barrier()
+> > calls stacking up, this patch looks like it would be a reasonable
+> > was of addressing those problems.
+> > 
+> > But do we really have problems with this at the moment?
+> > 
+> > 							Thanx, Paul
+> 
+> Hi, Paul,
+> 
+> 	Thanks, we do not have problems with this at the moment.
+> 
+> 	I suddenly had an association of ideas to synchronize_srcu(),
+> so I made use of the ideas in synchronize_srcu() and this patch was made.
 
-With the bus_resets patch applied, it is easy to see this memory leak
-by repeatedly resetting the firewire bus while running slabtop in
-another window.  Just watch kmalloc-32 grow and grow...
+Absolutely nothing wrong with that!  ;-)
 
-Same as commit 77e557191701afa55ae7320d42ad6458a2ad292e.
+We should make sure that this patch is kept somewhere so that if
+problems arise, it can be brought to bear quickly and easily.  One
+approach would be to keep it in a git tree, but that would likely
+incur merge overhead.  Another approach would be to have an RCU
+web page maintaining patches such as this one.
 
-Signed-off-by: Jay Fenlason <fenlason@redhat.com>
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-topology.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+Thoughts?
 
-Index: linux/drivers/firewire/fw-topology.c
-===================================================================
---- linux.orig/drivers/firewire/fw-topology.c
-+++ linux/drivers/firewire/fw-topology.c
-@@ -413,7 +413,7 @@ static void
- update_tree(struct fw_card *card, struct fw_node *root)
- {
- 	struct list_head list0, list1;
--	struct fw_node *node0, *node1;
-+	struct fw_node *node0, *node1, *next1;
- 	int i, event;
- 
- 	INIT_LIST_HEAD(&list0);
-@@ -485,7 +485,9 @@ update_tree(struct fw_card *card, struct
- 		}
- 
- 		node0 = fw_node(node0->link.next);
--		node1 = fw_node(node1->link.next);
-+		next1 = fw_node(node1->link.next);
-+		fw_node_put(node1);
-+		node1 = next1;
- 	}
- }
- 
+							Thanx, Paul
 
--- 
-Stefan Richter
--=====-==--- =-=- ==-==
-http://arcgraph.de/sr/
-
+> 							Thanx, Lai.
+> 
+> 
+> > 
+> >> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> >> ---
+> >> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+> >> index ad63af8..734850b 100644
+> >> --- a/kernel/rcupdate.c
+> >> +++ b/kernel/rcupdate.c
+> >> @@ -53,6 +53,9 @@ enum rcu_barrier {
+> >>
+> >>  static DEFINE_PER_CPU(struct rcu_head, rcu_barrier_head) = {NULL};
+> >>  static atomic_t rcu_barrier_cpu_count;
+> >> +static unsigned long rcu_barrier_completed;
+> >> +static unsigned long rcu_barrier_completed_bh;
+> >> +static unsigned long rcu_barrier_completed_sched;
+> >>  static DEFINE_MUTEX(rcu_barrier_mutex);
+> >>  static struct completion rcu_barrier_completion;
+> >>
+> >> @@ -60,7 +63,7 @@ static struct completion rcu_barrier_completion;
+> >>   * Awaken the corresponding synchronize_rcu() instance now that a
+> >>   * grace period has elapsed.
+> >>   */
+> >> -void wakeme_after_rcu(struct rcu_head  *head)
+> >> +void wakeme_after_rcu(struct rcu_head *head)
+> >>  {
+> >>  	struct rcu_synchronize *rcu;
+> >>
+> >> @@ -113,11 +116,20 @@ static void rcu_barrier_func(void *type)
+> >>   * Orchestrate the specified type of RCU barrier, waiting for all
+> >>   * RCU callbacks of the specified type to complete.
+> >>   */
+> >> -static void _rcu_barrier(enum rcu_barrier type)
+> >> +static void _rcu_barrier(enum rcu_barrier type, unsigned long *completed)
+> >>  {
+> >> +	unsigned long batch = ACCESS_ONCE(*completed);
+> >>  	BUG_ON(in_interrupt());
+> >>  	/* Take cpucontrol mutex to protect against CPU hotplug */
+> >>  	mutex_lock(&rcu_barrier_mutex);
+> >> +
+> >> +	BUG_ON(*completed & 1);
+> >> +	if ((*completed - batch) >= 2) {
+> >> +		mutex_unlock(&rcu_barrier_mutex);
+> >> +		return;
+> >> +	}
+> >> +	(*completed)++;
+> >> +
+> >>  	init_completion(&rcu_barrier_completion);
+> >>  	/*
+> >>  	 * Initialize rcu_barrier_cpu_count to 1, then invoke
+> >> @@ -133,6 +145,7 @@ static void _rcu_barrier(enum rcu_barrier type)
+> >>  	if (atomic_dec_and_test(&rcu_barrier_cpu_count))
+> >>  		complete(&rcu_barrier_completion);
+> >>  	wait_for_completion(&rcu_barrier_completion);
+> >> +	(*completed)++;
+> >>  	mutex_unlock(&rcu_barrier_mutex);
+> >>  }
+> >>
+> >> @@ -141,7 +154,7 @@ static void _rcu_barrier(enum rcu_barrier type)
+> >>   */
+> >>  void rcu_barrier(void)
+> >>  {
+> >> -	_rcu_barrier(RCU_BARRIER_STD);
+> >> +	_rcu_barrier(RCU_BARRIER_STD, &rcu_barrier_completed);
+> >>  }
+> >>  EXPORT_SYMBOL_GPL(rcu_barrier);
+> >>
+> >> @@ -150,7 +163,7 @@ EXPORT_SYMBOL_GPL(rcu_barrier);
+> >>   */
+> >>  void rcu_barrier_bh(void)
+> >>  {
+> >> -	_rcu_barrier(RCU_BARRIER_BH);
+> >> +	_rcu_barrier(RCU_BARRIER_BH, &rcu_barrier_completed_bh);
+> >>  }
+> >>  EXPORT_SYMBOL_GPL(rcu_barrier_bh);
+> >>
+> >> @@ -159,7 +172,7 @@ EXPORT_SYMBOL_GPL(rcu_barrier_bh);
+> >>   */
+> >>  void rcu_barrier_sched(void)
+> >>  {
+> >> -	_rcu_barrier(RCU_BARRIER_SCHED);
+> >> +	_rcu_barrier(RCU_BARRIER_SCHED, &rcu_barrier_completed_sched);
+> >>  }
+> >>  EXPORT_SYMBOL_GPL(rcu_barrier_sched);
+> >>
+> >>
+> >>
+> > 
+> > 
+> > 
+> 
+> 
