@@ -1,173 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752913AbYJ0PxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752614AbYJ0Pzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752913AbYJ0PxR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 11:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYJ0PxD
+	id S1752614AbYJ0Pzz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 11:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750918AbYJ0Pzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 11:53:03 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56903 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751601AbYJ0PxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 11:53:01 -0400
-Date: Mon, 27 Oct 2008 16:52:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Rakib Mullick <rakib.mullick@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] ftrace: use a real variable for ftrace_nop in x86
-Message-ID: <20081027155244.GR5704@elte.hu>
-References: <b9df5fa10810122250j1dd9c0eaq8c708c7b8e10a249@mail.gmail.com> <20081020162756.GA31201@elte.hu> <20081022070312.GA24749@elte.hu> <b9df5fa10810240409u311bb337x1ff9815431088685@mail.gmail.com> <20081024115005.GA5214@elte.hu> <alpine.DEB.1.10.0810240910020.3882@gandalf.stny.rr.com> <alpine.DEB.1.10.0810240916350.3882@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810240916350.3882@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Mon, 27 Oct 2008 11:55:47 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:35989 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbYJ0Pzq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 11:55:46 -0400
+Subject: Re: [GIT PULL/RESEND] kernel message catalog patches
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.00.0810270750100.3386@nehalem.linux-foundation.org>
+References: <1224168620.9617.14.camel@localhost>
+	 <1224230354.4631.1.camel@localhost>
+	 <20081021092148.GB4980@osiris.boeblingen.de.ibm.com>
+	 <alpine.LFD.2.00.0810230835150.3287@nehalem.linux-foundation.org>
+	 <20081023210446.GA12003@osiris.boeblingen.de.ibm.com>
+	 <alpine.LFD.2.00.0810231433380.3287@nehalem.linux-foundation.org>
+	 <1225049195.14057.72.camel@localhost>
+	 <alpine.LFD.2.00.0810261212290.5200@nehalem.linux-foundation.org>
+	 <1225101688.15777.6.camel@localhost>
+	 <alpine.LFD.2.00.0810270750100.3386@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Mon, 27 Oct 2008 16:52:06 +0100
+Message-Id: <1225122726.15777.42.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
+On Mon, 2008-10-27 at 08:05 -0700, Linus Torvalds wrote:
 > 
-> On Fri, 24 Oct 2008, Steven Rostedt wrote:
+> On Mon, 27 Oct 2008, Martin Schwidefsky wrote:
+> > 
+> > Ok, understood. Not that the reaction surprises me, seems like nobody
+> > likes documentation (including me).
 > 
-> > 
-> > The dynamic ftrace determines which nop is safe to use at start up.
-> > When it finds a safe nop for patching, it sets a pointer called ftrace_nop
-> > to point to the code. All call sites are then patched to this nop.
-> > 
-> > Later, when tracing is turned on, this ftrace_nop variable is again used
-> > to compare the location to make sure it is a nop before we update it to
-> > a mcount call. If this fails just once, a warning is outputed and ftrace
-> > is disabled.
-> > 
-> > Rakib Mullick noted that the code that sets up the nop is a .init section
-> > where as the nop itself is in the .text section. This is needed because
-> > the nop is used later on after boot up. The problem is that the test of the
-> > nop jumps back to the setup code and causes a "section mismatch" warning.
-> > 
-> > Rabik first recommended to convert the nop to .init.text, but as stated
-> > above, this would fail since that text is used later.
-> > 
-> > The real solution is to extend Rabik's patch, and to make the ftrace_nop
-> > into an array, and just save the code from the assembly to this array.
+> It's that I don't like out-of-line documentation. It's a damn pain to 
+> maintain, and it's _especially_ so when it's for small details rather than 
+> "big picture" issues.
+
+Yes, indeed. The farther away the documentation is from the source code
+the harder it will be to maintain. That is why I would like to see it in
+the linux source tree.
+
+> I also consider this to be _exactly_ the same issue as translating kernel 
+> messages into another language (which people have also wanted to do), 
+> except the "other language" is a S390-specific "odd-speak" rather than a 
+> real language.
+
+The message tag would be the way to find the translation in some
+database from the plain english output you'll find on the screen.
+
+> I have to say that I also dislike the technical implementation. I don't 
+> like having yet another printk() wrapper - your "kmsg_warn()" won't play 
+> well with people who have messages they want to print, but that use helper 
+> routines - or then you'd need to essentially change _every_ printk to a 
+> kmsg_xyz(). 
+
+Today I've replaced kmsg_xyz() with pr_xyz(). The current code now plays
+tricks with two families of printk macros: dev_xyz() and pr_xyz().
+If you ask Greg every device driver should be using dev_xyz() for its
+printks anyway..
+
+> So if you want to have a hash (so that you can identify the _format_ 
+> string rather than the printed out message), I personally think you'd be 
+> better off thinking of it purely the same way as CONFIG_PRINTK_TIME, and 
+> just have a config option that disables or enables the hashing of the 
+> format string, the same way we have an option for disabling or enabling of 
+> the timestamping of the printk.
+
+In that case ALL printk messages would suddenly grow a hash. Which
+precludes the use of the component name as part of the message since we
+would need to add a component name for every single printk - that won't
+happen.
+Without a component name we are forced to use a larger number of bits
+for the hash to avoid collisions. For 10,000 printks and a 32 bit hash
+the likelyhood of a collision is already bigger than 2%, so we'd need
+something bigger than 32 bit. With a component name in addition to the
+hash you can split the printks into groups which greatly reduces the
+danger of a collision.
+
+> I also suspect that it would be better to not _print_ it, but only put it 
+> into the dmesg logs (the same way we do with the urgency level marker).
 > 
-> Rereading what I sent, I see I misspelled Rakib's name twice.
-> 
-> Ingo, could you fix the changelog here before commiting it.
+> IOW, I think we could put a few lines of code in "vprintk" that just 
+> hashes ove 'fmt' and then adds that to the output.
 
-done - find the tip/tracing/urgent commit below. I also added an 
-Impact: line.
+A dev_xyz() message would then look like this:
 
-	Ingo
+<level> <hash>: <driver-name> <device-name>: <the message text>
 
----------------->
->From 8115f3f0c939c5db0fe3c6c6c58911fd3a205b1e Mon Sep 17 00:00:00 2001
-From: Steven Rostedt <rostedt@goodmis.org>
-Date: Fri, 24 Oct 2008 09:12:17 -0400
-Subject: [PATCH] ftrace: use a real variable for ftrace_nop in x86
+The prefix is rather lengthy, no ?
 
-Impact: avoid section mismatch warning, clean up
+> And as for the actual explanations: either they need to be totally outside 
+> the kernel (in a project of their own), or they'd need to be "kernel-doc" 
+> style things that are _in_ the source code. Not in Documentation/. Not 
+> separate from the printk() that they are associated with.
 
-The dynamic ftrace determines which nop is safe to use at start up.
-When it finds a safe nop for patching, it sets a pointer called ftrace_nop
-to point to the code. All call sites are then patched to this nop.
+The kmsg comments are already formatted in the kernel-doc style and you
+can put the comment anywhere in the source file that contains the
+printk. The Documentation/ is an extra path where the script looks for
+the comments. I can easily drop that part. So yes, the concept is that
+you can keep the message comment close to the printk.
 
-Later, when tracing is turned on, this ftrace_nop variable is again used
-to compare the location to make sure it is a nop before we update it to
-an mcount call. If this fails just once, a warning is printed and ftrace
-is disabled.
+-- 
+blue skies,
+  Martin.
 
-Rakib Mullick noted that the code that sets up the nop is a .init section
-where as the nop itself is in the .text section. This is needed because
-the nop is used later on after boot up. The problem is that the test of the
-nop jumps back to the setup code and causes a "section mismatch" warning.
+"Reality continues to ruin my life." - Calvin.
 
-Rakib first recommended to convert the nop to .init.text, but as stated
-above, this would fail since that text is used later.
 
-The real solution is to extend Rabik's patch, and to make the ftrace_nop
-into an array, and just save the code from the assembly to this array.
-
-Now the section can stay as an init section, and we have a nop to use
-later on.
-
-Reported-by: Rakib Mullick <rakib.mullick@gmail.com>
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/ftrace.c |   16 +++++-----------
- 1 files changed, 5 insertions(+), 11 deletions(-)
-
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index b1e5e22..50ea0ac 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -21,8 +21,7 @@
- #include <asm/nops.h>
- 
- 
--/* Long is fine, even if it is only 4 bytes ;-) */
--static unsigned long *ftrace_nop;
-+static unsigned char ftrace_nop[MCOUNT_INSN_SIZE];
- 
- union ftrace_code_union {
- 	char code[MCOUNT_INSN_SIZE];
-@@ -40,7 +39,7 @@ static int ftrace_calc_offset(long ip, long addr)
- 
- unsigned char *ftrace_nop_replace(void)
- {
--	return (char *)ftrace_nop;
-+	return ftrace_nop;
- }
- 
- unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
-@@ -125,9 +124,6 @@ int __init ftrace_dyn_arch_init(void *data)
- 	 * TODO: check the cpuid to determine the best nop.
- 	 */
- 	asm volatile (
--		"jmp ftrace_test_jmp\n"
--		/* This code needs to stay around */
--		".section .text, \"ax\"\n"
- 		"ftrace_test_jmp:"
- 		"jmp ftrace_test_p6nop\n"
- 		"nop\n"
-@@ -138,8 +134,6 @@ int __init ftrace_dyn_arch_init(void *data)
- 		"jmp 1f\n"
- 		"ftrace_test_nop5:"
- 		".byte 0x66,0x66,0x66,0x66,0x90\n"
--		"jmp 1f\n"
--		".previous\n"
- 		"1:"
- 		".section .fixup, \"ax\"\n"
- 		"2:	movl $1, %0\n"
-@@ -154,15 +148,15 @@ int __init ftrace_dyn_arch_init(void *data)
- 	switch (faulted) {
- 	case 0:
- 		pr_info("ftrace: converting mcount calls to 0f 1f 44 00 00\n");
--		ftrace_nop = (unsigned long *)ftrace_test_p6nop;
-+		memcpy(ftrace_nop, ftrace_test_p6nop, MCOUNT_INSN_SIZE);
- 		break;
- 	case 1:
- 		pr_info("ftrace: converting mcount calls to 66 66 66 66 90\n");
--		ftrace_nop = (unsigned long *)ftrace_test_nop5;
-+		memcpy(ftrace_nop, ftrace_test_nop5, MCOUNT_INSN_SIZE);
- 		break;
- 	case 2:
- 		pr_info("ftrace: converting mcount calls to jmp . + 5\n");
--		ftrace_nop = (unsigned long *)ftrace_test_jmp;
-+		memcpy(ftrace_nop, ftrace_test_jmp, MCOUNT_INSN_SIZE);
- 		break;
- 	}
- 
