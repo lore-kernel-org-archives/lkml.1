@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753192AbYJ0H05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752955AbYJ0Hb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753192AbYJ0H05 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 03:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbYJ0H0t
+	id S1752955AbYJ0Hb6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 03:31:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbYJ0Hbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 03:26:49 -0400
-Received: from mail9.hitachi.co.jp ([133.145.228.44]:32827 "EHLO
+	Mon, 27 Oct 2008 03:31:49 -0400
+Received: from mail9.hitachi.co.jp ([133.145.228.44]:33974 "EHLO
 	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751591AbYJ0H0s (ORCPT
+	with ESMTP id S1751591AbYJ0Hbs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 03:26:48 -0400
-X-AuditID: 0ac90648-a8af8ba000000c36-08-49056d3589bc
-Message-ID: <49056D29.2010700@hitachi.com>
-Date: Mon, 27 Oct 2008 16:26:33 +0900
+	Mon, 27 Oct 2008 03:31:48 -0400
+X-AuditID: 0ac90647-ad453ba00000286d-5b-49056e625a95
+Message-ID: <49056E53.9050601@hitachi.com>
+Date: Mon, 27 Oct 2008 16:31:31 +0900
 From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
 User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
     Gecko/20030624 Netscape/7.1 (ax)
@@ -25,7 +25,9 @@ Cc: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@ucw.cz>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
 Subject: [PATCH 1/2] ext3: fix a bug accessing freed memory in ext3_abort
 References: <19f34abd0810250422t17990222x78fcf0fad2e6f04b@mail.gmail.com>
 In-Reply-To: <19f34abd0810250422t17990222x78fcf0fad2e6f04b@mail.gmail.com>
@@ -97,5 +99,7 @@ Index: linux-2.6.28-rc2/fs/ext3/super.c
  	if (!(sb->s_flags & MS_RDONLY)) {
  		EXT3_CLEAR_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER);
  		es->s_state = cpu_to_le16(sbi->s_mount_state);
+
+
 
 
