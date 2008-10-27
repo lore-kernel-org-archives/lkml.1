@@ -1,100 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753427AbYJ0NAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbYJ0NCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753427AbYJ0NAs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 09:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbYJ0M7x
+	id S1753312AbYJ0NCu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 09:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbYJ0NCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 08:59:53 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:40205 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752712AbYJ0M7v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 08:59:51 -0400
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
-       "axboe@kernel.dk" <axboe@kernel.dk>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] Remove XFS specific ioctl interfaces for freeze feature
-Message-Id: <20081027215913t-sato@mail.jp.nec.com>
-Mime-Version: 1.0
-X-Mailer: WeMail32[2.51] ID:1K0086
-From: Takashi Sato <t-sato@yk.jp.nec.com>
-Date: Mon, 27 Oct 2008 21:59:13 +0900
+	Mon, 27 Oct 2008 09:02:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34239 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752543AbYJ0NCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 09:02:40 -0400
+Date: Mon, 27 Oct 2008 14:02:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       Mike Travis <travis@sgi.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -tip/cpus4096-v2] cpumask: fix cpumask of
+	call_function_data
+Message-ID: <20081027130225.GA25323@elte.hu>
+References: <49015358.9050308@ct.jp.nec.com> <200810242215.19440.rusty@rustcorp.com.au> <20081027125512.GD12461@elte.hu> <20081027125904.GA24347@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20081027125904.GA24347@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It removes XFS specific ioctl interfaces and request codes
-for freeze feature.
-This patch has been supplied by David Chinner.
 
-Signed-off-by: Dave Chinner <dgc@sgi.com>
-Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> > If there's any chance for this in v2.6.28 then only if we disable 
+> > the dynamic API branch altogether [CONFIG_MAXCPUS] and keep that 
+> > for v2.6.29. This means we'd bring in the API changes which should 
+> > have trivial impact only - and none of the riskier changes.
+> 
+> in any case, i've started testing tip/cpus4096-v2 again on x86 - the 
+> problem with d4de5a above was the only outstanding known issue, 
+> right?
+
+plus there are also the fixlets below.
+
+	Ingo
+
+-------------->
+>From a14b735fb7a82bb6561449dda4067365af7ee95c Mon Sep 17 00:00:00 2001
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Thu, 23 Oct 2008 14:35:31 -0700
+Subject: [PATCH] cpumask: fixlets
+
+[ from Mike ]
+
+Here are the only changes I could find from Rusty's last patches that
+apply to tip/cpus4096-v2.
+
+* Fix NR_CPUS reference in arch/powerpc/platforms/cell/spu_base.c
+
+* modify arch/x86/Kconfig so CONFIG_NR_CPUS is always defined.  Also it
+  does not prompt if MAXSMP is set.
+
+* change include/linux/threads.h so CONFIG_NR_CPUS is defined for those
+  arch's that do not define it.
+
+Signed-of-by: Rusty Russell <rusty@rustcorp.com.au>
+Signed-of-by: Mike Travis <travis@sgi.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- fs/xfs/linux-2.6/xfs_ioctl.c   |   15 ---------------
- fs/xfs/linux-2.6/xfs_ioctl32.c |    2 --
- fs/xfs/xfs_fs.h                |    4 ++--
- 3 files changed, 2 insertions(+), 19 deletions(-)
+ arch/powerpc/platforms/cell/spu_base.c |    9 ++++++---
+ arch/x86/Kconfig                       |    2 +-
+ include/linux/threads.h                |   16 ++++++++--------
+ 3 files changed, 15 insertions(+), 12 deletions(-)
 
-diff -uprN -X linux-2.6.28-rc2-freeze/Documentation/dontdiff linux-2.6.28-rc2-freeze/fs/xfs/linux-2.6/xfs_ioctl.c linux-
-2.6.28-rc2-xfs/fs/xfs/linux-2.6/xfs_ioctl.c
---- linux-2.6.28-rc2-freeze/fs/xfs/linux-2.6/xfs_ioctl.c	2008-10-27 10:10:24.000000000 +0900
-+++ linux-2.6.28-rc2-xfs/fs/xfs/linux-2.6/xfs_ioctl.c	2008-10-27 10:19:00.000000000 +0900
-@@ -1528,21 +1528,6 @@ xfs_ioctl(
- 		return -error;
- 	}
+diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
+index a5bdb89..a876904 100644
+--- a/arch/powerpc/platforms/cell/spu_base.c
++++ b/arch/powerpc/platforms/cell/spu_base.c
+@@ -111,10 +111,13 @@ void spu_flush_all_slbs(struct mm_struct *mm)
+  */
+ static inline void mm_needs_global_tlbie(struct mm_struct *mm)
+ {
+-	int nr = (NR_CPUS > 1) ? NR_CPUS : NR_CPUS + 1;
+-
+ 	/* Global TLBIE broadcast required with SPEs. */
+-	__cpus_setall(&mm->cpu_vm_mask, nr);
++	if (NR_CPUS > 1)
++		cpumask_setall(&mm->cpu_vm_mask);
++	else {
++		cpumask_set_cpu(0, &mm->cpu_vm_mask);
++		cpumask_set_cpu(1, &mm->cpu_vm_mask);
++	}
+ }
  
--	case XFS_IOC_FREEZE:
--		if (!capable(CAP_SYS_ADMIN))
--			return -EPERM;
--
--		if (inode->i_sb->s_frozen == SB_UNFROZEN)
--			freeze_bdev(inode->i_sb->s_bdev);
--		return 0;
--
--	case XFS_IOC_THAW:
--		if (!capable(CAP_SYS_ADMIN))
--			return -EPERM;
--		if (inode->i_sb->s_frozen != SB_UNFROZEN)
--			thaw_bdev(inode->i_sb->s_bdev, inode->i_sb);
--		return 0;
--
- 	case XFS_IOC_GOINGDOWN: {
- 		__uint32_t in;
+ void spu_associate_mm(struct spu *spu, struct mm_struct *mm)
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index d574cd6..a901f59 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -585,9 +585,9 @@ config MAXSMP
+ 	  If unsure, say N.
  
-diff -uprN -X linux-2.6.28-rc2-freeze/Documentation/dontdiff linux-2.6.28-rc2-freeze/fs/xfs/linux-2.6/xfs_ioctl32.c linu
-x-2.6.28-rc2-xfs/fs/xfs/linux-2.6/xfs_ioctl32.c
---- linux-2.6.28-rc2-freeze/fs/xfs/linux-2.6/xfs_ioctl32.c	2008-10-27 10:10:24.000000000 +0900
-+++ linux-2.6.28-rc2-xfs/fs/xfs/linux-2.6/xfs_ioctl32.c	2008-10-27 10:19:00.000000000 +0900
-@@ -398,8 +398,6 @@ xfs_compat_ioctl(
- 	case XFS_IOC_FSGROWFSDATA:
- 	case XFS_IOC_FSGROWFSLOG:
- 	case XFS_IOC_FSGROWFSRT:
--	case XFS_IOC_FREEZE:
--	case XFS_IOC_THAW:
- 	case XFS_IOC_GOINGDOWN:
- 	case XFS_IOC_ERROR_INJECTION:
- 	case XFS_IOC_ERROR_CLEARALL:
-diff -uprN -X linux-2.6.28-rc2-freeze/Documentation/dontdiff linux-2.6.28-rc2-freeze/fs/xfs/xfs_fs.h linux-2.6.28-rc2-xf
-s/fs/xfs/xfs_fs.h
---- linux-2.6.28-rc2-freeze/fs/xfs/xfs_fs.h	2008-10-27 10:10:24.000000000 +0900
-+++ linux-2.6.28-rc2-xfs/fs/xfs/xfs_fs.h	2008-10-27 10:19:00.000000000 +0900
-@@ -477,8 +477,8 @@ typedef struct xfs_handle {
- #define XFS_IOC_ERROR_INJECTION	     _IOW ('X', 116, struct xfs_error_injection)
- #define XFS_IOC_ERROR_CLEARALL	     _IOW ('X', 117, struct xfs_error_injection)
- /*	XFS_IOC_ATTRCTL_BY_HANDLE -- deprecated 118	 */
--#define XFS_IOC_FREEZE		     _IOWR('X', 119, int)
--#define XFS_IOC_THAW		     _IOWR('X', 120, int)
-+/*	XFS_IOC_FREEZE		  -- FIFREEZE   119	 */
-+/*	XFS_IOC_THAW		  -- FITHAW     120	 */
- #define XFS_IOC_FSSETDM_BY_HANDLE    _IOW ('X', 121, struct xfs_fsop_setdm_handlereq)
- #define XFS_IOC_ATTRLIST_BY_HANDLE   _IOW ('X', 122, struct xfs_fsop_attrlist_handlereq)
- #define XFS_IOC_ATTRMULTI_BY_HANDLE  _IOW ('X', 123, struct xfs_fsop_attrmulti_handlereq)
+ config NR_CPUS
+-	depends on SMP
+  	int "Maximum number of CPUs" if SMP && !MAXSMP
+  	range 2 512 if SMP && !MAXSMP
++	default "1" if !SMP
+ 	default "4096" if MAXSMP
+  	default "32" if X86_NUMAQ || X86_SUMMIT || X86_BIGSMP || X86_ES7000
+ 	default "8"
+diff --git a/include/linux/threads.h b/include/linux/threads.h
+index 38d1a5d..052b12b 100644
+--- a/include/linux/threads.h
++++ b/include/linux/threads.h
+@@ -8,17 +8,17 @@
+  */
+ 
+ /*
+- * Maximum supported processors that can run under SMP.  This value is
+- * set via configure setting.  The maximum is equal to the size of the
+- * bitmasks used on that platform, i.e. 32 or 64.  Setting this smaller
+- * saves quite a bit of memory.
++ * Maximum supported processors.  Setting this smaller saves quite a
++ * bit of memory.  Use nr_cpu_ids instead of this except for static bitmaps.
+  */
+-#ifdef CONFIG_SMP
+-#define NR_CPUS		CONFIG_NR_CPUS
+-#else
+-#define NR_CPUS		1
++#ifndef CONFIG_NR_CPUS
++/* FIXME: This should be fixed in the arch's Kconfig */
++#define CONFIG_NR_CPUS	1
+ #endif
+ 
++/* Places which use this should consider cpumask_var_t. */
++#define NR_CPUS		CONFIG_NR_CPUS
++
+ #define MIN_THREADS_LEFT_FOR_ROOT 4
+ 
+ /*
