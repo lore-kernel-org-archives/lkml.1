@@ -1,40 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbYJ0JcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbYJ0Jfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753291AbYJ0JcS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 05:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbYJ0JcG
+	id S1753205AbYJ0Jfg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 05:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbYJ0JfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 05:32:06 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:35341 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752182AbYJ0JcD (ORCPT
+	Mon, 27 Oct 2008 05:35:24 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:61115 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752106AbYJ0JfX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 05:32:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=TxqLRUbaa3ocalrKu/T9KjQq0xEryUVpUA0nlUMyCB2pIjV1L7IXNYVr9vf56etCcs
-         DTHKWRxbEsfl2WTbMk4MDgBP9W4f96SaMO5bydHSScJzM0ZuZe1/p8WVExpKtbSSjO2h
-         FEoaeu+AZNJTmWdVbTfXbP9sBii6ZbIW5eX1s=
-Message-ID: <6e4284620810270231y7d03d898p8d2d832bec42b10e@mail.gmail.com>
-Date: Mon, 27 Oct 2008 10:31:59 +0100
-From: "Vlada Peric" <vlada.peric@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] cirrusfb: remove unused variables
-Cc: krzysztof.h1@wp.pl
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
+	Mon, 27 Oct 2008 05:35:23 -0400
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [PATCH] ehea: Add hugepage detection
 Content-Disposition: inline
+From: Thomas Klein <tklein@de.ibm.com>
+Cc: Christoph Raisch <raisch@de.ibm.com>, Hannes Hering <hering2@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>,
+       "netdev" <netdev@vger.kernel.org>, badari@us.ibm.com,
+       haveblue@us.ibm.com, tollefso@us.ibm.com
+Date: Mon, 27 Oct 2008 10:33:47 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200810271033.47632.tklein@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m9R9WMdq026846
 
-After commit a1d35a7a (cirrusfb: use modedb and add mode_option parameter),these variables are no longer used, so remove them to fix compilation warning.
-Signed-off-by: Vlada Periæ <vlada.peric@gmail.com>CC: Krzysztof Helt <krzysztof.h1@wp.pl>--- drivers/video/cirrusfb.c |    3 +-- 1 files changed, 1 insertions(+), 2 deletions(-)
-diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.cindex 048b139..ace4001 100644--- a/drivers/video/cirrusfb.c+++ b/drivers/video/cirrusfb.c@@ -2462,8 +2462,7 @@ static int __init cirrusfb_init(void)
- #ifndef MODULE static int __init cirrusfb_setup(char *options) {-	char *this_opt, s[32];-	int i;+	char *this_opt;
- 	DPRINTK("ENTER\n");
--- 1.6.0.3ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Dave,
+
+thanks for your valuable comments - see mine below. I'll send a reworked patch asap.
+
+Thomas
+
+
+On Friday 24 October 2008 08:55:37 pm you wrote:
+> On Fri, 2008-10-24 at 13:07 +0200, Thomas Klein wrote:
+> > 16GB hugepages may not be part of a memory region (firmware restriction). This patch
+> > modifies the walk_memory_resource callback fn to filter hugepages and add only standard
+> > memory to the busmap which is later on used for MR registration.
+> 
+> Does this support a case where a userspace app is reading network
+> packets into a 16GB page backed area?  I think you need to elaborate on
+> what kind of memory you need to have registered in these memory regions.
+> It's hard to review what you've done here otherwise.
+> 
+> > --- linux-2.6.27/drivers/net/ehea/ehea_qmr.c	2008-10-24 09:29:19.000000000 +0200
+> > +++ patched_kernel/drivers/net/ehea/ehea_qmr.c	2008-10-24 09:45:15.000000000 +0200
+> > @@ -636,6 +636,9 @@ static int ehea_update_busmap(unsigned l
+> >  {
+> >  	unsigned long i, start_section, end_section;
+> > 
+> > +	if (!pgnum)
+> > +		return 0;
+> 
+> This probably needs a comment.  It's not obvious what it is doing.
+
+I decided to just rename the var to nr_pages as it is used in all other
+busmap-related functions in our code. That makes the condition check quite
+obvious.
+
+> 
+> >  	if (!ehea_bmap) {
+> >  		ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
+> >  		if (!ehea_bmap)
+> > @@ -692,10 +695,47 @@ int ehea_rem_sect_bmap(unsigned long pfn
+> >  	return ret;
+> >  }
+> > 
+> > -static int ehea_create_busmap_callback(unsigned long pfn,
+> > -				       unsigned long nr_pages, void *arg)
+> > +static int ehea_is_hugepage(unsigned long pfn)
+> > +{
+> > +	return ((((pfn << PAGE_SHIFT) & (EHEA_HUGEPAGE_SIZE - 1)) == 0)
+> > +		&& (compound_order(pfn_to_page(pfn)) + PAGE_SHIFT
+> > +		    == EHEA_HUGEPAGESHIFT) );
+> > +}
+> 
+> Whoa.  That's dense.  Can you actually read that in less than 5 minutes?
+> Seriously.
+
+Thanks for this comment. I totally agree - and I'm happy to aerate it a bit.
+I had been urged to make it dense during our internal review ;-)
+
+> 
+> I'm not sure what else you use EHEA_HUGEPAGE_SIZE for or if this gets
+> duplicated, but this would look nicer if you just had a:
+> 
+> #define EHEA_HUGEPAGE_PFN_MASK ((EHEA_HUGEPAGE_SIZE - 1) >> PAGE_SHIFT)
+> 
+> 	if (pfn & EHEA_HUGEPAGE_PFN_MASK)
+> 		return 0;
+> 
+> Or, with no new macro:
+> 
+> 	if ((pfn << PAGE_SHIFT) & (EHEA_HUGEPAGE_SIZE - 1) != 0)
+> 		return 0;
+> 
+> 	page_order = compound_order(pfn_to_page(pfn));
+> 	if (page_order + PAGE_SHIFT != EHEA_HUGEPAGESHIFT)
+> 		return 0;
+> 	return 1;
+> }
+> 
+> Please break that up into something that is truly readable.  gcc will
+> generate the exact same code.
+> 
+> > +static int ehea_create_busmap_callback(unsigned long initial_pfn,
+> > +				       unsigned long total_nr_pages, void *arg)
+> >  {
+> > -	return ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
+> > +	int ret;
+> > +	unsigned long pfn, start_pfn, end_pfn, nr_pages;
+> > +
+> > +	if ((total_nr_pages * PAGE_SIZE) < EHEA_HUGEPAGE_SIZE)
+> > +		return ehea_update_busmap(initial_pfn, total_nr_pages,
+> > +					  EHEA_BUSMAP_ADD_SECT);
+> > +
+> > +	/* Given chunk is >= 16GB -> check for hugepages */
+> > +	start_pfn = initial_pfn;
+> > +	end_pfn = initial_pfn + total_nr_pages;
+> > +	pfn = start_pfn;
+> > +
+> > +	while (pfn < end_pfn) {
+> > +		if (ehea_is_hugepage(pfn)) {
+> > +			/* Add mem found in front of the hugepage */
+> > +			nr_pages = pfn - start_pfn;
+> > +			ret = ehea_update_busmap(start_pfn, nr_pages,
+> > +						 EHEA_BUSMAP_ADD_SECT);
+> > +			if (ret)
+> > +				return ret;
+> > +
+> > +			/* Skip the hugepage */
+> > +			pfn += (EHEA_HUGEPAGE_SIZE / PAGE_SIZE);
+> > +			start_pfn = pfn;
+> > +		} else
+> > +			pfn += (EHEA_SECTSIZE / PAGE_SIZE);
+> > +	}
+> > +
+> > +	/* Add mem found behind the hugepage(s)  */
+> > +	nr_pages = pfn - start_pfn;
+> > +	return ehea_update_busmap(start_pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
+> >  }
+> > 
+> >  int ehea_create_busmap(void)
+> > diff -Nurp -X dontdiff linux-2.6.27/drivers/net/ehea/ehea_qmr.h patched_kernel/drivers/net/ehea/ehea_qmr.h
+> > --- linux-2.6.27/drivers/net/ehea/ehea_qmr.h	2008-10-24 09:29:19.000000000 +0200
+> > +++ patched_kernel/drivers/net/ehea/ehea_qmr.h	2008-10-24 09:45:15.000000000 +0200
+> > @@ -40,6 +40,8 @@
+> >  #define EHEA_PAGESIZE          (1UL << EHEA_PAGESHIFT)
+> >  #define EHEA_SECTSIZE          (1UL << 24)
+> >  #define EHEA_PAGES_PER_SECTION (EHEA_SECTSIZE >> EHEA_PAGESHIFT)
+> > +#define EHEA_HUGEPAGESHIFT     34
+> > +#define EHEA_HUGEPAGE_SIZE     (1UL << EHEA_HUGEPAGESHIFT)
+> 
+> I'm a bit worried that you're basically duplicating hugetlb.h here.  Why
+> not just use the existing 16GB page macros?  While you're at it please
+> expand these to give some more useful macros so you don't have to do
+> arithmetic on them in the code as much.
+
+I don't agree at this point. The 16GB hugepages we're dealing with here are
+imho a different thing than the hugetlb stuff. Furthermore as far as I can see
+the hugetlb macros vary depending on the kernel configuration while the ehea
+driver requires them to be constant independently from the kernel config.
+Please correct me if I missed something here.
+
+> 
+> #define EHEA_SECT_NR_PAGES (EHEA_SECTSIZE / PAGE_SIZE)
+> 
+> for instance.
+> 
+> -- Dave
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
+
