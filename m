@@ -1,76 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbYJ0TKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753557AbYJ0TLv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753470AbYJ0TKy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 15:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYJ0TKo
+	id S1753557AbYJ0TLv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 15:11:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbYJ0TLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 15:10:44 -0400
-Received: from ox1.aei.mpg.de ([194.94.224.6]:56894 "EHLO ox1.aei.mpg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751464AbYJ0TKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 15:10:43 -0400
-Date: Mon, 27 Oct 2008 20:11:18 +0100
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Soeren Sonnenburg <kernel@nn7.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, tomas.winkler@intel.com,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org
-Subject: Re: Suspend to RAM regression in 2.6.28-rc2 (bisected)
-Message-ID: <20081027191118.GA4058@localhost.aei.mpg.de>
-References: <20081027162054.GA4015@localhost.aei.mpg.de> <200810271832.40717.rjw@sisk.pl> <1225130844.4466.0.camel@localhost> <1225132278.3796.32.camel@johannes.berg> <1225133082.3796.35.camel@johannes.berg> <20081027190011.GA3951@localhost.aei.mpg.de> <1225134195.3796.39.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1225134195.3796.39.camel@johannes.berg>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 27 Oct 2008 15:11:40 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36042 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751281AbYJ0TLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 15:11:39 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+g2Vsh/RGguY+900AopPnZISMblUnUzaPzYtJ/h8
+	FuriJVxNDpXoc7
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+From: Mike Galbraith <efault@gmx.de>
+To: Rick Jones <rick.jones2@hp.com>
+Cc: David Miller <davem@davemloft.net>, rjw@sisk.pl, mingo@elte.hu,
+       s0mbre@tservice.net.ru, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <4905F9BD.100@hp.com>
+References: <1224905848.5161.27.camel@marge.simson.net>
+	 <20081024.221653.23695396.davem@davemloft.net>
+	 <1224914333.3822.18.camel@marge.simson.net>
+	 <20081025.001940.251852864.davem@davemloft.net>
+	 <1224919985.5373.10.camel@marge.simson.net>  <4905F9BD.100@hp.com>
+Content-Type: text/plain
+Date: Mon, 27 Oct 2008 20:11:30 +0100
+Message-Id: <1225134690.4942.11.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.59
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 27.Oct'08 at 20:03:15 +0100, Johannes Berg wrote:
-> On Mon, 2008-10-27 at 20:00 +0100, Carlos R. Mafra wrote:
-> > On Mon 27.Oct'08 at 19:44:42 +0100, Johannes Berg wrote:
-> > > On Mon, 2008-10-27 at 19:31 +0100, Johannes Berg wrote:
-> > > > On Mon, 2008-10-27 at 19:07 +0100, Soeren Sonnenburg wrote:
-> > > > 
-> > > > > > Johannes, can you pls have a look?
-> > > > 
-> > > > I did, and I have no idea. Makes no sense at all.
-> > > 
-> > > The only thing I can remotely think of is that iwlwifi doesn't like
-> > > being called back from within the call that it did to mac80211, which
-> > > obviously happens here. But I have no idea, the code as it stands is
-> > > correct, just the interaction with iwlwifi's resume seems to be broken.
-> > > 
-> > > Try this patch instead:
-> > 
-> > Yep, with this patch it also works!
+On Mon, 2008-10-27 at 10:26 -0700, Rick Jones wrote:
+> Mike Galbraith wrote:
+> > That's exactly what I've been trying to look into, but combined with
+> > netperf.  The thing is an incredibly twisted maze of _this_ affects
+> > _that_... sometimes involving magic and/or mythical creatures.
 > 
-> > > --- everything.orig/drivers/net/wireless/iwlwifi/iwl-agn.c	2008-10-27 19:44:12.000000000 +0100
-> > > +++ everything/drivers/net/wireless/iwlwifi/iwl-agn.c	2008-10-27 19:44:15.000000000 +0100
-> > > @@ -2084,7 +2084,6 @@ static void iwl_alive_start(struct iwl_p
-> > >  		iwl4965_error_recovery(priv);
-> > >  
-> > >  	iwl_power_update_mode(priv, 1);
-> > > -	ieee80211_notify_mac(priv->hw, IEEE80211_NOTIFY_RE_ASSOC);
-> 
-> alright, well, if nothing else turns up soon then we should probably put
-> this patch in rather than reverting the other one, imho mac80211 is
-> doing the right thing there and the driver is calling into it at a point
-> where either mac80211 or the driver cannot handle it.
-> 
-> Do you get any kernel messages output? If you do, could you put messages
-> into each line of ieee80211_set_disassoc to see where it hangs?
+> I cannot guarantee it will help, but the global -T option to pin netperf 
+> or netserver to a specific CPU might help cut-down the variables.
 
-No messages appear, just a black screen.
+Yup, and how.  Early on, the other variables drove me bat-shit frigging
+_nuts_.  I eventually selected a UP config to test _because_ those other
+variables combined with SMP overhead and config options drove crazy ;-) 
 
-But I can use the SysRq keys, and when I umount the
-screen shows the message that umount succeed. I also tried SysRq+t but
-the messages appear to fast to read.
+> FWIW netperf top of trunk omni tests can now also determine and report 
+> the state of SELinux.  They also have code to accept or generate their 
+> own RFC4122-esque UUID.  Define some connical tests and then ever closer 
+> to just needing some database-fu and automagic testing I suppose... 
+> things I do not presently posess but am curious enough to follow some 
+> pointers.
 
+Hrm. I'm going to have to save that, and parse a few times. (usual)
 
-> 
-> johannes
+> happy benchmarking,
 
+Not really, but I can't seem to give up ;-)
+
+	-Mike
 
