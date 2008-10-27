@@ -1,76 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbYJ0TmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752139AbYJ0TnL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbYJ0TmE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 15:42:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYJ0Tlv
+	id S1752139AbYJ0TnL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 15:43:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYJ0Tmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 15:41:51 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54555
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751673AbYJ0Tlv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 15:41:51 -0400
-Date: Mon, 27 Oct 2008 12:41:26 -0700 (PDT)
-Message-Id: <20081027.124126.74749150.davem@davemloft.net>
-To: ebiederm@xmission.com
-Cc: benjamin.thery@bull.net, serue@us.ibm.com, netdev@vger.kernel.org,
-       gregkh@suse.de, viro@ftp.linux.org.uk, dlezcano@fr.ibm.com,
-       linux-kernel@vger.kernel.org, htejun@gmail.com, den@openvz.org,
-       containers@lists.linux-foundation.org
-Subject: Re: [PATCH] netns: Coexist with the sysfs limitations v2
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <m1fxmni9uv.fsf_-_@frodo.ebiederm.org>
-References: <20081022212124.GA9910@us.ibm.com>
-	<49003019.40904@bull.net>
-	<m1fxmni9uv.fsf_-_@frodo.ebiederm.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Oct 2008 15:42:55 -0400
+Received: from ox1.aei.mpg.de ([194.94.224.6]:59044 "EHLO ox1.aei.mpg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750999AbYJ0Tmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 15:42:54 -0400
+Date: Mon, 27 Oct 2008 20:43:28 +0100
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: Re: [Bug #11851] wmifinfo dockapp takes 100% of cpu
+Message-ID: <20081027194328.GA4353@localhost.aei.mpg.de>
+References: <nw2Y6lk-0lG.A.VUB.RV5AJB@chimera> <t1C3RWL0r7M.A.ltB.aV5AJB@chimera>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <t1C3RWL0r7M.A.ltB.aV5AJB@chimera>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 23 Oct 2008 08:56:08 -0700
-
-> To make testing of the network namespace simpler allow
-> the network namespace code and the sysfs code to be
-> compiled and run at the same time.  To do this only
-> virtual devices are allowed in the additional network
-> namespaces and those virtual devices are not placed
-> in the kobject tree.
+On Sat 25.Oct'08 at 22:06:49 +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Since virtual devices don't actually do anything interesting
-> hardware wise that needs device management there should
-> be no loss in keeping them out of the kobject tree and
-> by implication sysfs.  The gain in ease of testing
-> and code coverage should be significant.
+> The following bug entry is on the current list of known regressions
+> from 2.6.27.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-> Changelog:
 > 
-> v2: As pointed out by Benjamin Thery it only makes sense to call
->     device_rename in the initial network namespace for now.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> Acked-by: Benjamin Thery <benjamin.thery@bull.net>
-> Tested-by: Serge Hallyn <serue@us.ibm.com>
-> Acked-by: Serge Hallyn <serue@us.ibm.com>
-> Acked-by: Daniel Lezcano <dlezcano@fr.ibm.com>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11851
+> Subject		: wmifinfo dockapp takes 100% of cpu
+> Submitter	: Carlos R. Mafra <crmafra2@gmail.com>
+> Date		: 2008-10-25 9:40 (1 days old)
+> References	: http://marc.info/?l=linux-kernel&m=122492763030453&w=4
+> Handled-By	: Arjan van de Ven <arjan@linux.intel.com>
+> 		  Marcin Slusarz <marcin.slusarz@gmail.com>
+> Patch		: http://marc.info/?l=linux-kernel&m=122496409612709&w=4
 
-So let's figure out what happens with this patch.
-I'm personally ok with the change, the question is when
-and where.
 
-My net-2.6 tree was closed to new features long ago, so I really
-don't want to try to merge this sucker into 2.6.28-rcX :-)  But if
-you guys think that is prudent, feel free to submit it directly to
-Linus and add my signoff:
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-otherwise if we shoot for 2.6.29 I would suggest that we wait until
-the merge window to see if the sysfs issues get sorted, and if not
-we slip this patch into to tree instead.
-
-Let me know what you guys plan to do with this.
+Fixed by commit 4d36a9e65d4966b433b2f3424d9457468bc80e00 
