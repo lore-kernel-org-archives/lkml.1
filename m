@@ -1,160 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbYJ0Wej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbYJ0WlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753873AbYJ0Wej (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 18:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbYJ0Web
+	id S1752766AbYJ0WlQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 18:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbYJ0Wk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 18:34:31 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:44627 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751328AbYJ0Wea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 18:34:30 -0400
-Date: Mon, 27 Oct 2008 15:34:29 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rcupdate: reduce sys's overhead when rcu_barrier()s
-	called simultaneous
-Message-ID: <20081027223429.GJ6783@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <49015F45.1070002@cn.fujitsu.com> <20081026215531.GA6236@linux.vnet.ibm.com> <4905567D.9080600@cn.fujitsu.com>
+	Mon, 27 Oct 2008 18:40:59 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:9539 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbYJ0Wk6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 18:40:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=PPsaWeGW70SsHJN+s19KFXWtZMeRQMwdMq9eoyXgwUf4xF2D6uAAtm3ib31BR/VTq5
+         sd5k540wR0mZ9zP0BNyoSDR1Jl0u5pxpC/Nu6Q6ZMJ2GeGrCJW/jTJEpJxhGykytlvQn
+         BfcQMyTJeznn7Yl9/o8snwVlxPNkQJGKrVvAc=
+Message-ID: <1ba2fa240810271540t1d1ba5c9me60f86dec357f53e@mail.gmail.com>
+Date: Tue, 28 Oct 2008 00:40:55 +0200
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+Subject: Re: Suspend to RAM regression in 2.6.28-rc2 (bisected)
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       "Soeren Sonnenburg" <kernel@nn7.de>, linux-kernel@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <20081027222852.GA3907@localhost.aei.mpg.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4905567D.9080600@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <20081027162054.GA4015@localhost.aei.mpg.de>
+	 <1225134823.3796.45.camel@johannes.berg>
+	 <20081027203925.GA4416@localhost.aei.mpg.de>
+	 <200810272151.01244.rjw@sisk.pl>
+	 <1ba2fa240810271407o15f1f150t2d2793f4e5ad6e5b@mail.gmail.com>
+	 <20081027222852.GA3907@localhost.aei.mpg.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 27, 2008 at 01:49:49PM +0800, Lai Jiangshan wrote:
-> Paul E. McKenney wrote:
-> > On Fri, Oct 24, 2008 at 01:38:13PM +0800, Lai Jiangshan wrote:
-> >> rcu_barrier() queues rcu_head on all cpus, it will brings
-> >> large overhead for a large system which has a lots cpu.
-> >> this fix reduces sys's overhead when rcu_barrier()s called
-> >> simultaneous.
-> > 
-> > Hello, Jiangshan,
-> > 
-> > If we were to have problems with many concurrent rcu_barrier()
-> > calls stacking up, this patch looks like it would be a reasonable
-> > was of addressing those problems.
-> > 
-> > But do we really have problems with this at the moment?
-> > 
-> > 							Thanx, Paul
-> 
-> Hi, Paul,
-> 
-> 	Thanks, we do not have problems with this at the moment.
-> 
-> 	I suddenly had an association of ideas to synchronize_srcu(),
-> so I made use of the ideas in synchronize_srcu() and this patch was made.
+On Tue, Oct 28, 2008 at 12:28 AM, Carlos R. Mafra <crmafra2@gmail.com> wrote:
+> On Mon 27.Oct'08 at 23:07:00 +0200, Tomas Winkler wrote:
+>>[...]
+>>
+>> Can someone try this one (it might be space broken I've just pasted
+>> that in) It's on top of 1d63e726408dfdb3e10ed8f00c383b30ebb333d3
+>> (latest linux-2.6.git)
+>
+>
+> Yes, this one also works for me (I applied it manually).
+Good, this was actually part of some older and bigger patch I wasn't
+aware it has this affect. It has some millage in iwl5000 branch.
+RFKIll went through some changes in the mainline so it wasn't merged yet.
 
-Absolutely nothing wrong with that!  ;-)
+commit a91ad840c23a70bc0eabe239e178e0d979a6d44e
+Author: Emmanuel Grumbach <emmanuel.grumbach@intel.com>
+Date:   Mon Jun 30 17:48:26 2008 +0300
+iwlwifi: bug fixes in RF-kill flows
 
-We should make sure that this patch is kept somewhere so that if
-problems arise, it can be brought to bear quickly and easily.  One
-approach would be to keep it in a git tree, but that would likely
-incur merge overhead.  Another approach would be to have an RCU
-web page maintaining patches such as this one.
-
-Thoughts?
-
-							Thanx, Paul
-
-> 							Thanx, Lai.
-> 
-> 
-> > 
-> >> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> >> ---
-> >> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-> >> index ad63af8..734850b 100644
-> >> --- a/kernel/rcupdate.c
-> >> +++ b/kernel/rcupdate.c
-> >> @@ -53,6 +53,9 @@ enum rcu_barrier {
-> >>
-> >>  static DEFINE_PER_CPU(struct rcu_head, rcu_barrier_head) = {NULL};
-> >>  static atomic_t rcu_barrier_cpu_count;
-> >> +static unsigned long rcu_barrier_completed;
-> >> +static unsigned long rcu_barrier_completed_bh;
-> >> +static unsigned long rcu_barrier_completed_sched;
-> >>  static DEFINE_MUTEX(rcu_barrier_mutex);
-> >>  static struct completion rcu_barrier_completion;
-> >>
-> >> @@ -60,7 +63,7 @@ static struct completion rcu_barrier_completion;
-> >>   * Awaken the corresponding synchronize_rcu() instance now that a
-> >>   * grace period has elapsed.
-> >>   */
-> >> -void wakeme_after_rcu(struct rcu_head  *head)
-> >> +void wakeme_after_rcu(struct rcu_head *head)
-> >>  {
-> >>  	struct rcu_synchronize *rcu;
-> >>
-> >> @@ -113,11 +116,20 @@ static void rcu_barrier_func(void *type)
-> >>   * Orchestrate the specified type of RCU barrier, waiting for all
-> >>   * RCU callbacks of the specified type to complete.
-> >>   */
-> >> -static void _rcu_barrier(enum rcu_barrier type)
-> >> +static void _rcu_barrier(enum rcu_barrier type, unsigned long *completed)
-> >>  {
-> >> +	unsigned long batch = ACCESS_ONCE(*completed);
-> >>  	BUG_ON(in_interrupt());
-> >>  	/* Take cpucontrol mutex to protect against CPU hotplug */
-> >>  	mutex_lock(&rcu_barrier_mutex);
-> >> +
-> >> +	BUG_ON(*completed & 1);
-> >> +	if ((*completed - batch) >= 2) {
-> >> +		mutex_unlock(&rcu_barrier_mutex);
-> >> +		return;
-> >> +	}
-> >> +	(*completed)++;
-> >> +
-> >>  	init_completion(&rcu_barrier_completion);
-> >>  	/*
-> >>  	 * Initialize rcu_barrier_cpu_count to 1, then invoke
-> >> @@ -133,6 +145,7 @@ static void _rcu_barrier(enum rcu_barrier type)
-> >>  	if (atomic_dec_and_test(&rcu_barrier_cpu_count))
-> >>  		complete(&rcu_barrier_completion);
-> >>  	wait_for_completion(&rcu_barrier_completion);
-> >> +	(*completed)++;
-> >>  	mutex_unlock(&rcu_barrier_mutex);
-> >>  }
-> >>
-> >> @@ -141,7 +154,7 @@ static void _rcu_barrier(enum rcu_barrier type)
-> >>   */
-> >>  void rcu_barrier(void)
-> >>  {
-> >> -	_rcu_barrier(RCU_BARRIER_STD);
-> >> +	_rcu_barrier(RCU_BARRIER_STD, &rcu_barrier_completed);
-> >>  }
-> >>  EXPORT_SYMBOL_GPL(rcu_barrier);
-> >>
-> >> @@ -150,7 +163,7 @@ EXPORT_SYMBOL_GPL(rcu_barrier);
-> >>   */
-> >>  void rcu_barrier_bh(void)
-> >>  {
-> >> -	_rcu_barrier(RCU_BARRIER_BH);
-> >> +	_rcu_barrier(RCU_BARRIER_BH, &rcu_barrier_completed_bh);
-> >>  }
-> >>  EXPORT_SYMBOL_GPL(rcu_barrier_bh);
-> >>
-> >> @@ -159,7 +172,7 @@ EXPORT_SYMBOL_GPL(rcu_barrier_bh);
-> >>   */
-> >>  void rcu_barrier_sched(void)
-> >>  {
-> >> -	_rcu_barrier(RCU_BARRIER_SCHED);
-> >> +	_rcu_barrier(RCU_BARRIER_SCHED, &rcu_barrier_completed_sched);
-> >>  }
-> >>  EXPORT_SYMBOL_GPL(rcu_barrier_sched);
-> >>
-> >>
-> >>
-> > 
-> > 
-> > 
-> 
-> 
+Tomas
+>
+>
+>> diff --git a/drivers/net/wireless/iwlwifi/iwl-agn.c
+>> b/drivers/net/wireless/iwlwifi/iwl-agn.c
+>> index 24a1aeb..321dbc8 100644
+>> --- a/drivers/net/wireless/iwlwifi/iwl-agn.c
+>> +++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
+>> @@ -2090,7 +2090,6 @@ static void iwl_alive_start(struct iwl_priv *priv)
+>>                 iwl4965_error_recovery(priv);
+>>
+>>         iwl_power_update_mode(priv, 1);
+>> -       ieee80211_notify_mac(priv->hw, IEEE80211_NOTIFY_RE_ASSOC);
+>>
+>>         if (test_and_clear_bit(STATUS_MODE_PENDING, &priv->status))
+>>                 iwl4965_set_mode(priv, priv->iw_mode);
+>> @@ -2342,6 +2341,7 @@ static void iwl_bg_alive_start(struct work_struct *data)
+>>         mutex_lock(&priv->mutex);
+>>         iwl_alive_start(priv);
+>>         mutex_unlock(&priv->mutex);
+>> +       ieee80211_notify_mac(priv->hw, IEEE80211_NOTIFY_RE_ASSOC);
+>>  }
+>>
+>>  static void iwl4965_bg_rf_kill(struct work_struct *work)
+>>
+>>
+>> Thanks
+>> Tomas
+>
