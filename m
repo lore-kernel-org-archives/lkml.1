@@ -1,66 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751919AbYJ0O1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314AbYJ0O1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751919AbYJ0O1c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 10:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbYJ0O1V
+	id S1752314AbYJ0O1p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 10:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbYJ0O1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 10:27:21 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:4565 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbYJ0O1U (ORCPT
+	Mon, 27 Oct 2008 10:27:24 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56220 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751150AbYJ0O1X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 10:27:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding:sender;
-        b=sHHqyS0nFUilNohRt/MLGI8Y3paPpiBx+UJx8F+gqdp/yN24j454j/Smur/4vCL5uX
-         oaGU3QhCM3LZy+7Rqmha/7fQRUDQ83XUgUyPD/wV0BO3+xfHbn1YqRKMYOCxWrbzqrAB
-         SvmaCCDjXVd9XRnMMNeJoxX80lnFtOCWSWQaY=
-Message-ID: <4905CFC3.1060907@tuffmail.co.uk>
-Date: Mon, 27 Oct 2008 14:27:15 +0000
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Mon, 27 Oct 2008 10:27:23 -0400
+From: Alan Cox <alan@redhat.com>
+Subject: [PATCH] nfsd: Fix vm overcommit crash
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Date: Mon, 27 Oct 2008 14:27:28 +0000
+Message-ID: <20081027142445.21908.74962.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-To: dri-devel@lists.sourceforge.net
-CC: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: 2.6.28-rc1: [drm:i915] *ERROR* ... Disabling tiling
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What does this mean, should I do anything about it?  Is tiling nice to have?
+Junjiro R. Okajima reported a problem where knfsd crashes if you are using
+it to export shmemfs objects and run strict overcommit. In this situation
+the current->mm based modifier to the overcommit goes through a NULL
+pointer.
 
-It sounds like GEM broke something - though maybe it just added a more 
-verbose error report.
+We could simply check for NULL and skip the modifier but we've caught other
+real bugs in the past from mm being NULL here - cases where we did need a
+valid mm set up (eg the exec bug about a year ago).
 
-System: EeePC 701
-Kernel: v2.6.36-rc1-5-g23cf24c
-Chipset: Intel mobile 915G-something
-Regretably necessary kernel boot option: noapic
+To preserve the checks and get the logic we want shuffle the checking
+around and add a new helper to the vm_ security wrappers. While at it the
+checks are switched to WARN_ON - we need to know if someone gets current->mm
+wrong in the other calls but we don't need to crash.
 
+Also fix a current->mm reference in nommu that should use the passed mm
 
-[    1.438441] Linux agpgart interface v0.103
-[    1.438441] agpgart-intel 0000:00:00.0: Intel 915GM Chipset
-[    1.438441] agpgart-intel 0000:00:00.0: detected 7932K stolen memory
-[    1.443353] agpgart-intel 0000:00:00.0: AGP aperture is 256M @ 0xd0000000
-[    1.443353] [drm] Initialized drm 1.1.0 20060810
-[    1.443353] pci 0000:00:02.0: PCI INT A -> Link[LNKA] -> GSI 5 
-(level, low) -> IRQ 5
-[    1.443353] pci 0000:00:02.0: setting latency timer to 64
-[    1.443353] [drm:i915_gem_detect_bit_6_swizzle] *ERROR* Couldn't read 
-from MCHBAR.  Disabling
-tiling.
-[    1.443353] [drm:i915_driver_load] *ERROR* failed to enable MSI
+Signed-off-by: Alan Cox <alan@redhat.com>
+---
 
+ include/linux/security.h |    1 +
+ mm/mmap.c                |    3 ++-
+ mm/nommu.c               |    3 ++-
+ mm/shmem.c               |    4 ++--
+ security/security.c      |    9 +++++++++
+ 5 files changed, 16 insertions(+), 4 deletions(-)
 
-I expect noapic explains the MSI failure.  I can boot without noapic if 
-necessary for testing, but I can't run with it because I get nasty hangs 
-& reboots.  I don't see why that merits an *ERROR*... anyway, what I'm 
-interested in is the "Disabling tiling".
+diff --git a/include/linux/security.h b/include/linux/security.h
+index f5c4a51..a2b8430 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -1585,6 +1585,7 @@ int security_syslog(int type);
+ int security_settime(struct timespec *ts, struct timezone *tz);
+ int security_vm_enough_memory(long pages);
+ int security_vm_enough_memory_mm(struct mm_struct *mm, long pages);
++int security_vm_enough_memory_kern(long pages);
+ int security_bprm_alloc(struct linux_binprm *bprm);
+ void security_bprm_free(struct linux_binprm *bprm);
+ void security_bprm_apply_creds(struct linux_binprm *bprm, int unsafe);
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 74f4d15..de14ac2 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -175,7 +175,8 @@ int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
+ 
+ 	/* Don't let a single process grow too big:
+ 	   leave 3% of the size of this process for other processes */
+-	allowed -= mm->total_vm / 32;
++	if (mm)
++		allowed -= mm->total_vm / 32;
+ 
+ 	/*
+ 	 * cast `allowed' as a signed long because vm_committed_space
+diff --git a/mm/nommu.c b/mm/nommu.c
+index 2696b24..7695dc8 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -1454,7 +1454,8 @@ int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
+ 
+ 	/* Don't let a single process grow too big:
+ 	   leave 3% of the size of this process for other processes */
+-	allowed -= current->mm->total_vm / 32;
++	if (mm)
++		allowed -= mm->total_vm / 32;
+ 
+ 	/*
+ 	 * cast `allowed' as a signed long because vm_committed_space
+diff --git a/mm/shmem.c b/mm/shmem.c
+index d38d7e6..1677b3e 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -162,7 +162,7 @@ static inline struct shmem_sb_info *SHMEM_SB(struct super_block *sb)
+ static inline int shmem_acct_size(unsigned long flags, loff_t size)
+ {
+ 	return (flags & VM_ACCOUNT)?
+-		security_vm_enough_memory(VM_ACCT(size)): 0;
++		security_vm_enough_memory_kern(VM_ACCT(size)): 0;
+ }
+ 
+ static inline void shmem_unacct_size(unsigned long flags, loff_t size)
+@@ -180,7 +180,7 @@ static inline void shmem_unacct_size(unsigned long flags, loff_t size)
+ static inline int shmem_acct_block(unsigned long flags)
+ {
+ 	return (flags & VM_ACCOUNT)?
+-		0: security_vm_enough_memory(VM_ACCT(PAGE_CACHE_SIZE));
++		0: security_vm_enough_memory_kern(VM_ACCT(PAGE_CACHE_SIZE));
+ }
+ 
+ static inline void shmem_unacct_blocks(unsigned long flags, long pages)
+diff --git a/security/security.c b/security/security.c
+index 255b085..c0acfa7 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -198,14 +198,23 @@ int security_settime(struct timespec *ts, struct timezone *tz)
+ 
+ int security_vm_enough_memory(long pages)
+ {
++	WARN_ON(current->mm == NULL);
+ 	return security_ops->vm_enough_memory(current->mm, pages);
+ }
+ 
+ int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
+ {
++	WARN_ON(mm == NULL);
+ 	return security_ops->vm_enough_memory(mm, pages);
+ }
+ 
++int security_vm_enough_memory_kern(long pages)
++{
++	/* If current->mm is a kernel thread then we will pass NULL,
++	   for this specific case that is fine */
++	return security_ops->vm_enough_memory(current->mm, pages);
++}
++
+ int security_bprm_alloc(struct linux_binprm *bprm)
+ {
+ 	return security_ops->bprm_alloc_security(bprm);
 
-Thanks
-Alan
