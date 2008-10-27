@@ -1,70 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752819AbYJ0Bv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753027AbYJ0CJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752819AbYJ0Bv5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 21:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbYJ0Bvq
+	id S1753027AbYJ0CJW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 22:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYJ0CJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 21:51:46 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46931 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751724AbYJ0Bvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 21:51:45 -0400
-Message-ID: <49051EA4.3040403@kernel.org>
-Date: Mon, 27 Oct 2008 10:51:32 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Sun, 26 Oct 2008 22:09:08 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:50694 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751513AbYJ0CJH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 22:09:07 -0400
+Message-ID: <4905229F.2090805@zytor.com>
+Date: Sun, 26 Oct 2008 19:08:31 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Timeout regression introduced by	242f9dcb8ba6f68fcd217a119a7648a4f69290e9
-References: <49043C7C.8050207@kernel.org> <1225034105.3958.4.camel@localhost.localdomain>
-In-Reply-To: <1225034105.3958.4.camel@localhost.localdomain>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+To: Frans Pop <elendil@planet.nl>
+CC: Harvey Harrison <harvey.harrison@gmail.com>, johannes@sipsolutions.net,
+       davem@davemloft.net, anders@anduras.de, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCHv2] printk: add the %pM, %p4, %p6 format specifiers
+References: <1224892008.3919.27.camel@johannes.berg> <49035AF0.6040700@anduras.de> <1225008096.3478.3.camel@johannes.berg> <20081026.010329.11475786.davem@davemloft.net> <1225009308.3478.22.camel@johannes.berg> <1225009822.3478.30.camel@johannes.berg> <1225047674.10060.10.camel@brick> <1225049591.3746.0.camel@johannes.berg> <1225049929.10060.11.camel@brick> <1225050015.3746.2.camel@johannes.berg> <1225060789.10060.13.camel@brick> <1225060789.10060.13.camel@brick> <1225067465.5672.1.camel@brick> <200810270221.08675.elendil@planet.nl>
+In-Reply-To: <200810270221.08675.elendil@planet.nl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 27 Oct 2008 01:51:39 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Sun, 2008-10-26 at 18:46 +0900, Tejun Heo wrote:
->> Hello, Jens.
->>
->> Commit 242f9dcb8ba6f68fcd217a119a7648a4f69290e9 introduces a strange
->> regression for libata.  The second timeout gives puts different
->> pointer from the issued command onto eh_cmd_q breaking libata EH
->> command matching which triggers WARN_ON() in ata_eh_finish() and hangs
->> command processing or causes oops later depending on circumstances.
->>
->> Here are logs with induced timeouts (patch attached).  In commit
->> 242f9dcb8, the XXX messages for the second timeout shows different
->> scsi_cmd pointers for eh_cmd_q and qc->scmd which is initialized by
->> ata_scsi_qc_new() during command translation.
-> 
-> I can't see a way we could be getting a different command passed in from
-> the actual one, since the only way to lose the command from the request
-> is to go through the command completion routines which free it (and end
-> the request).
+Frans Pop wrote:
+>> + * - '4' For a 4-byte IPv4 address, it prints the address in the
+>> + *       usual colon-separated hex notation
 
-I have no idea either.  It's something in the timeout logic because on
-the issue path the scmd pointer is identical but on tiemout pointer
-for another scmd is queued on eh_cmd_q, which doesn't make much sense.
+Since when are IPv4 addresses "usually" printed in colon-separated hex?
 
-> However, since the WARN_ON is specifically comparing the command with
-> the one found by the active tag, could this actually be a problem caused
-> by block tags?  I note that libata still uses its own array of
-> outstanding tags (ap->qcmd[tag]) instead of finding them using
-> blk_queue_find_tag() (or scsi_find_tag()).
-
-Nope, the tested commits are before the block queue tag transition and
-I tested two consecutive commits.  242f9dcb^ is okay.  242f9dcb is
-not.
-
-Thanks.
-
--- 
-tejun
+	-hpa
