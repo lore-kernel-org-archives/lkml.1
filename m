@@ -1,70 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752698AbYJ0MjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752705AbYJ0MpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752698AbYJ0MjY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 08:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYJ0MjQ
+	id S1752705AbYJ0MpY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 08:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbYJ0MpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 08:39:16 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:34812 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752045AbYJ0MjP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 08:39:15 -0400
-To: ncunningham@crca.org.au
-CC: rjw@sisk.pl, miklos@szeredi.hu, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <1225107607.26724.9.camel@nigel-laptop> (message from Nigel
-	Cunningham on Mon, 27 Oct 2008 22:40:07 +1100)
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
-	filesystems.
-References: <1224886068.6478.21.camel@nigel-laptop>
-	 <E1KuQ1J-0002Vw-9Q@pomaz-ex.szeredi.hu>
-	 <1225106427.26724.5.camel@nigel-laptop>  <200810271237.40049.rjw@sisk.pl> <1225107607.26724.9.camel@nigel-laptop>
-Message-Id: <E1KuRN4-0002gS-Hq@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 27 Oct 2008 13:38:58 +0100
+	Mon, 27 Oct 2008 08:45:11 -0400
+Received: from ns2.suse.de ([195.135.220.15]:57230 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751190AbYJ0MpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 08:45:10 -0400
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Linux - Novell
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: leds-hp-disk vs lis3lv02d
+Date: Mon, 27 Oct 2008 13:45:03 +0100
+User-Agent: KMail/1.9.9
+Cc: Eric Piel <eric.piel@tremplin-utc.net>, akpm@linux-foundation.org,
+       burman.yan@gmail.com, rpurdie@rpsys.net,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
+       Kay Sievers <kasievers@suse.de>, hmh@hmh.eng.br
+References: <200810162255.m9GMtKj4001733@imap1.linux-foundation.org> <4902F817.4050108@tremplin-utc.net> <20081026174023.GA1847@ucw.cz>
+In-Reply-To: <20081026174023.GA1847@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810271345.04961.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Oct 2008, Nigel Cunningham wrote:
-> Hi.
-> 
-> On Mon, 2008-10-27 at 12:37 +0100, Rafael J. Wysocki wrote:
-> > Well, I guess it's better if you post the entire thing so that we can see
-> > what the role of the $subject patch is in it, even if this patch finally gets
-> > merged separately.
-> 
-> Ah.. that makes me see how vfs_check_frozen was getting triggered...
-> (fs/namei.c, below).
+On Sunday 26 October 2008 18:40:25 Pavel Machek wrote:
+> Hi!
+>
+> > >> shouldn't this one be integrated into Eric's/Yan's driver?
+> > >
+> > > It is separate piece of hardware, completely unrelated to lids3v
+> > > chip. No, it should not be integrated, but I'll makesure they work
+> > > toggether well.
+> >
+> > Hello,
+> > I think I talked too fast: it seems impossible to have both drivers
+> > (leds-hp-disk and lis3lv02d) working at the same time. Only the first
+> > driver loaded is used.
+> >
+> > After a little look at it, I think it comes from the fact that both
+> > drivers are assigned to the same MODALIAS (HPQ0004). The ACPI PNP
+> > (through the generic bus infrastructure) only declare the device to one
+> > of the drivers supporting it, not all of them.
+>
+> I can reproduce it here and it obviously needs fixing.
+These are the first ACPI drivers who register for the same ACPI Hardware ID.
 
-Nigel, thanks for the patch, it makes thinks a lot clearer.
+> OTOH  it should 
+> not block merge; both drivers still work and are useful.
+But for long-term the HPQ0004 specific things in the lids3v driver should get 
+merged with your HP leds driver also registering for HPQ0004 and the lids3v 
+specific things should get a separate driver which HPQ0004 driver makes use 
+of?
+So in the end also for the HPQ0004 device only one driver should register for?
+>
+> > How can I tell to ACPI that it should load both drivers for the same PNP
+> > ID match?
+>
+> I'll take a look if I can figure something out...
+Kay may know whether this should work and how.
+IMO having several drivers registering for the same HID should get avoided if 
+possible, it's confusing.
 
->From a quick look through the patch it seems to solve a bunch of cases
-where new fuse requests during the freezing could cause problems.  But
-it doesn't do anything with requests that are already under way when
-the freezing starts, which would still result in all the same
-problems.
+     Thomas
 
-Take this scenario:
-
- 1) process A does rename("/mnt/fuse/a", "/mnt/fuse/b")
- 2) request goes to process B serving the fuse filesystem
- 3) filesystems are frozen, no new fuse requests
- 4) processes are frozen, let's say B first, then A
- 5) freezing A will fail, since it's still waiting for the request to finish
-
-Several solutions have been posted, none of which really solve the problem:
-
- a) Let's tag fuse server processes and freeze them later.  This is
- basically impossible, because many processes could be interoperating
- and there's no way to know which is depending on which (example:
- sshfs uses ssh for communication, which possibly relies on openvpn
- process for packet transmission).
-
- b) While waiting for replies to fuse request, allow process to
- freeze.  Does not fully solve the problem, as VFS might be holding
- locks, and other processes waiting for those locks will not be
- freezable.
-
-Miklos
+Pavel: I am also not sure whether it's a good idea to mis-use the HP's LED for 
+mail notification or similar or to expose this one as a general LED. This LED 
+is intended to be used with the disk parking feature by the vendor?
+I don't know the LED interface well, but if it's now possible that every mail 
+or other app can reprogram the disk parking LED for it's own purposes, this 
+sounds wrong. The LED can still be accessed and activated, e.g. when disk 
+gets parked behind the OS'es back. If this is a nice hack to e.g. use LED for 
+suspend debugging or similar, then it should be well hidden to the outside 
+world.
