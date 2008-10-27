@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbYJ0RdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753062AbYJ0Re5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753199AbYJ0RdA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 13:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbYJ0Rcr
+	id S1753062AbYJ0Re5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 13:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYJ0Ret
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 13:32:47 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50444 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751201AbYJ0Rcr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 13:32:47 -0400
-Date: Mon, 27 Oct 2008 10:33:03 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-Subject: Re: bisected: 2.6.28-rc broke my iwl4965 wireless
-Message-ID: <20081027103303.0fed7aa0@infradead.org>
-In-Reply-To: <20081027163812.GB6377@tesla>
-References: <20081025222208.1d2a2c8b@infradead.org>
-	<20081027163812.GB6377@tesla>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 27 Oct 2008 13:34:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59778 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750876AbYJ0Res (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 13:34:48 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+Subject: Re: Suspend to RAM regression in 2.6.28-rc2 (bisected)
+Date: Mon, 27 Oct 2008 18:39:38 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, tomas.winkler@intel.com, kernel@nn7.de
+References: <20081027162054.GA4015@localhost.aei.mpg.de>
+In-Reply-To: <20081027162054.GA4015@localhost.aei.mpg.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200810271839.39236.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Oct 2008 09:38:12 -0700
-"Luis R. Rodriguez" <lrodriguez@atheros.com> wrote:
-
-> Additionally if the old behaviour is desired for now (until
-> distributions catch up and add CRDA) CONFIG_WIRELESS_OLD_REGULATORY
-> can be enabled and you'll get the old behaviour of defaulting to
-> country "US".
+On Monday, 27 of October 2008, Carlos R. Mafra wrote:
+> Hi,
 > 
-> Please let me know if there are any issues.
+> So I managed to bisect my suspend to RAM regression in 2.6.27-rc2
+> to commit 3b7ee69d0caefbdb85a606a98bff841b8c63b97e ("mac80211: disassociate 
+> when moving to new BSS") by Tomas Winkler (Cc:-ed).
+> 
+> Unfortunately it doesn't revert cleanly so I can't double check it.
 
-the point is that this compatibility behavior should have been the
-default... since it'll be at least 6 months before current distros will
-even ship the userland..
+Why are you saying it doesn't revert cleanly?  For me it does revert without
+rejects from 2.6.28-rc2.
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Thanks,
+Rafael
