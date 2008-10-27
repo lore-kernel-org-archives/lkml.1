@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753059AbYJ0BS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbYJ0BVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753059AbYJ0BS1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 21:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbYJ0BSS
+	id S1753141AbYJ0BVX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 21:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbYJ0BVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 21:18:18 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:43045 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750710AbYJ0BSS (ORCPT
+	Sun, 26 Oct 2008 21:21:12 -0400
+Received: from hpsmtp-eml11.KPNXCHANGE.COM ([213.75.38.111]:21058 "EHLO
+	hpsmtp-eml11.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750710AbYJ0BVM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 21:18:18 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 26 Oct 2008 18:18:00 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Paul P <ppak_98@yahoo.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: unexpected extra pollout events from epoll
-In-Reply-To: <107660.83879.qm@web56306.mail.re3.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0810261812510.19212@alien.or.mcafeemobile.com>
-References: <107660.83879.qm@web56306.mail.re3.yahoo.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sun, 26 Oct 2008 21:21:12 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Subject: Re: [RFC PATCHv2] printk: add the %pM, %p4, %p6 format specifiers
+Date: Mon, 27 Oct 2008 02:21:06 +0100
+User-Agent: KMail/1.9.9
+Cc: johannes@sipsolutions.net, davem@davemloft.net, anders@anduras.de,
+       netdev@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <1224892008.3919.27.camel@johannes.berg> <49035AF0.6040700@anduras.de> <1225008096.3478.3.camel@johannes.berg> <20081026.010329.11475786.davem@davemloft.net> <1225009308.3478.22.camel@johannes.berg> <1225009822.3478.30.camel@johannes.berg> <1225047674.10060.10.camel@brick> <1225049591.3746.0.camel@johannes.berg> <1225049929.10060.11.camel@brick> <1225050015.3746.2.camel@johannes.berg> <1225060789.10060.13.camel@brick> <1225060789.10060.13.camel@brick> <1225067465.5672.1.camel@brick>
+In-reply-To: <1225067465.5672.1.camel@brick>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810270221.08675.elendil@planet.nl>
+X-OriginalArrivalTime: 27 Oct 2008 01:21:09.0078 (UTC) FILETIME=[4A961760:01C937D2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 26 Oct 2008, Paul P wrote:
+Harvey Harrison wrote:
+> diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+> index a013bbc..eec3879 100644
+> --- a/lib/vsprintf.c
+> +++ b/lib/vsprintf.c
+> @@ -592,6 +644,12 @@ static char *resource_string(char *buf, char *end,
+> struct resource *res, int fie
+>   * - 'S' For symbolic direct pointers
+>   * - 'R' For a struct resource pointer, it prints the range of
+>   *       addresses (not the name nor the flags)
+> + * - 'M' For a 6-byte MAC address, it prints the address in the
+> + *       usual colon-separated hex notation
+> + * - '4' For a 4-byte IPv4 address, it prints the address in the
+> + *       usual colon-separated hex notation
+> + * - 'M' For a 16-byte IPv6 address, it prints the address in colon separated
+> + *       big-endian 16 bit hex notation
 
-> > You do that by writing data until it's finished, or you
-> > get EAGAIN. If you
-> > get EAGAIN, you listen for EPOLLOUT.
-> > Reading is same, but you'd wait for EPOLLIN.
-> 
-> I've got a few questions about this approach.  The most logical 
-> way to do this seems to be:
-> 
-> 1) Leave the epoll_wait with the EPOLLIN|EPOLLOUT event flags and
->  use epoll_ctl to switch the interest mask for each fd between EPOLLIN 
-> and EPOLLOUT on a per fd basis.
-
-Which version of epoll do you have? The epoll_wait() function does not 
-accept an event mask (like you write above, EPOLLIN|EPOLLOUT). It never 
-had.
-But yes, you'd switch interest with epoll_ctl().
-
-
-
-> 2) When I'm ready to write, I do a write and if it does not fully 
-> write and I get the EAGAIN flag, I switch the fd with epoll_ctl(fd,MOD,EPOLLOUT). 
-
-As optimization, if the EPOLLOUT bit is already set, you don't need to 
-keep calling epoll_ctl(fd,MOD,EPOLLOUT).
-
-
-
-> However, I get strange behavior when I tried adding fd's with only the 
-> EPOLLIN interest mask. If I use epoll_wait with both the EPOLLIN and 
-> EPOLLOUT interest mask, but add fd's with only the EPOLLIN interest mask,
-> I still seem to get EPOLLOUT events on the fd.
-
-Again, how the heck do you "use epoll_wait with both the EPOLLIN and 
-EPOLLOUT"?!? There is not such a thing.
-
-
-
-
-> So, I'm a little confused.
-
->From the wording above, that doesn't seem like a wrong guess.
-
-
-
-- Davide
-
-
+Shouldn't that last one be '6' instead of 'M'?
