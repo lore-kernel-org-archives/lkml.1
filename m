@@ -1,105 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751918AbYJ0G5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752607AbYJ0G77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751918AbYJ0G5z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 02:57:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbYJ0G5q
+	id S1752607AbYJ0G77 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 02:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbYJ0G7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 02:57:46 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:53720 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbYJ0G5p (ORCPT
+	Mon, 27 Oct 2008 02:59:50 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:39265 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbYJ0G7u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 02:57:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=T0jLWkVDFPPxhE92D/JwUfnLpGvbGkZQyi8XvkqyGZta/kCaw2Jl5cpzzKQohSIILb
-         rzn1Fz0jL/W90DFnZbQtXRP6iZRB0tF0+hqERvRHP0MN57Oei9RTjWVadaWlGLd3UWmW
-         /2VQ1eS1ebB39MaqXU3oJwpyCoFkwCn2aVzP0=
-Message-ID: <661de9470810262357y6c560facl87dcaea3ce35e3ac@mail.gmail.com>
-Date: Mon, 27 Oct 2008 12:27:44 +0530
-From: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-To: bharata@linux.vnet.ibm.com
-Subject: Re: [PATCH] Add hierarchical accounting to cpu accounting controller
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Paul Menage" <menage@google.com>, linux-kernel@vger.kernel.org,
-       "Srivatsa Vaddagiri" <vatsa@linux.vnet.ibm.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <20081027044319.GA4386@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081023054335.GC3280@in.ibm.com>
-	 <6599ad830810230849x71961a0asd7f00d3baa2f2271@mail.gmail.com>
-	 <20081024050830.GA4387@in.ibm.com>
-	 <6599ad830810241037h575ec17bgb43f750d99bd1518@mail.gmail.com>
-	 <20081025060157.GA4614@in.ibm.com>
-	 <6599ad830810250838q3f96644bm6dfee8ba9f35dfa3@mail.gmail.com>
-	 <20081027101703.e954071d.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20081027044319.GA4386@in.ibm.com>
-X-Google-Sender-Auth: 207d58808ba1b5c7
+	Mon, 27 Oct 2008 02:59:50 -0400
+Subject: Re: [RFC PATCHv2] printk: add the %pM, %p4, %p6 format specifiers
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: David Miller <davem@davemloft.net>, anders@anduras.de,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1225067465.5672.1.camel@brick> (sfid-20081027_013109_949949_342DF4F2)
+References: <1224892008.3919.27.camel@johannes.berg>
+	 <49035AF0.6040700@anduras.de> <1225008096.3478.3.camel@johannes.berg>
+	 <20081026.010329.11475786.davem@davemloft.net>
+	 <1225009308.3478.22.camel@johannes.berg>
+	 <1225009822.3478.30.camel@johannes.berg>  <1225047674.10060.10.camel@brick>
+	 (sfid-20081026_200122_320043_BFBB81CD)  <1225049591.3746.0.camel@johannes.berg>
+	 <1225049929.10060.11.camel@brick>
+	 (sfid-20081026_203902_019881_0F8064FC)  <1225050015.3746.2.camel@johannes.berg>
+	 <1225060789.10060.13.camel@brick>  <1225067465.5672.1.camel@brick>
+	 (sfid-20081027_013109_949949_342DF4F2)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-0JnT+V8zZ9Q25vWHZbAQ"
+Date: Mon, 27 Oct 2008 07:59:25 +0100
+Message-Id: <1225090765.3746.7.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 27, 2008 at 10:13 AM, Bharata B Rao
-<bharata@linux.vnet.ibm.com> wrote:
-> On Mon, Oct 27, 2008 at 10:17:03AM +0900, KAMEZAWA Hiroyuki wrote:
->> On Sat, 25 Oct 2008 08:38:52 -0700
->> "Paul Menage" <menage@google.com> wrote:
->>
->> > On Fri, Oct 24, 2008 at 11:01 PM, Bharata B Rao
->> > <bharata@linux.vnet.ibm.com> wrote:
->> > >
->> > > Reported-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
->> > > Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
->> >
->> > Reviewed-by: Paul Menage <menage@google.com>
->
-> Thanks Paul.
->
->> >
->> > So in technical terms this patch looks fine now. There's still the
->> > question of whether it's OK to change the existing API, since it's
->> > been in the kernel in its currently (non-hierarchical) form for
->> > several releases now.
->
-> Hmm... Can we consider this as an API change ? Currently cpuacct.usage
-> readers of a parent accounting group are missing the usage contributions
-> from its children groups. I would consider this patch as fixing the
-> above problem by correctly reflecting the cpu usage for every accounting
-> group.
->
 
-If a particular application desires to derive the usage of its
-immediate tasks and does not care about subcgroups, it is a simple
-iteration (after this fix)
+--=-0JnT+V8zZ9Q25vWHZbAQ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-cpuacct - sigma(cpuacct_child)
+On Sun, 2008-10-26 at 17:31 -0700, Harvey Harrison wrote:
+> Add format specifiers for printing out colon-separated bytes:
+>=20
+> MAC addresses (%pM):
+> xx:xx:xx:xx:xx:xx
+>=20
+> IPv4 addresses (%p4):
+> xx:xx:xx:xx
 
-and currently if we cared about child accounting, we could do
+As hpa points out, the usual notation would be %d.%d.%d.%d :)
 
-cpuacct + recursively(sigma(cpuacct_child))
+> %#pM, %#p4, %#p6 are also supported and print without the colon
+> separators.
 
-In that sense this fix makes more sense, but like Paul said we need to
-figure out if it is an API change. My take is that it is a BUG fix,
-since we do care about child subgroups in accounting.
+The # for ipv4 we might use for cpu-endian rather than network-endian
+maybe?
 
+Also can you keep mac/ip address patches split up so we can use my
+version of the mac address patch (it's already well-tested)?
 
->> >
->> Hmm..how about having 2 params as "aggregated usage" and "private usage" ?
->>
->>  cpuacct.usage.
->>  cpuacct.all_subtree_usage.
->
-> Is there really a need to differentiate between aggregated and private
-> usage other than to maintain the current behaviour ?
->
+johannes
 
-That might be useful to have, but as above it can always be derived.
+--=-0JnT+V8zZ9Q25vWHZbAQ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Balbir
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJBWbJAAoJEKVg1VMiehFYNuYP/0hrWNJAyccXLxOhAa7QjiBy
+dGUwn5hIDipE8s+03avJWAq2T85EOXDAgSL+vjh6z6LS+N3YqzalrP+vsmQVjDEY
+h2evusaEMJnyyPqyZxf/S7WUZ2DG5a11LkYwNJLcxUKiNLldXErwZvgzrIWwgfRV
+N6prQ2pehPFe7hoyjGnzKb/+B2z3E8Hu5NytqQCf0rDLMvm8TE2E6srqapZVk1dZ
+AkpA2QffR93nGsl9JepqUdb3f3bxJaSVF9To1aABkbXeTKO4h4WUiWoDgY1WM1H+
+Ymnw6oaB2aQOG+j7p9CCN0KSiC70UuQm3HWCIjOoIeUjxXEIxnbYIQiJYkOnntMV
+XgyxlnalRPWBOqV444rQHWb2yF3UJnCrL3RWupzoj6aT60oNj20lDKIkF8EoOgrC
+j5zrC5TkG2QQhDSbYUCJdjy96XftUQCPghcXFuq1eCSd8+4FSvS2Jz7WC0nQSvoU
+KYtCi222pB7nmXwVz965pmI4KJ7oOA8w4PDzcxClJ3JQNaGr9e+1yZCQHlqMwX4g
+LFGX3kEQ5cILa4UzcQ0iBYa6Pw4Q8KZD/hngxTqO3pFkdSokVw/UTjSnItHl7KXa
+LR4EtoQYwOm9sjgF0EUzz7b9NzC7zy60MIZ5JbJ8zTyxJ7NfO5PZA1qLjbTKsJrG
+Jr3hXYdkDH2XKtvdOPpc
+=b5el
+-----END PGP SIGNATURE-----
+
+--=-0JnT+V8zZ9Q25vWHZbAQ--
+
