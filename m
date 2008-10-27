@@ -1,94 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752472AbYJ0Ouc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751930AbYJ0O4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752472AbYJ0Ouc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 10:50:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbYJ0OuO
+	id S1751930AbYJ0O4a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 10:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbYJ0O4V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 10:50:14 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:40621 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752024AbYJ0OuN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 10:50:13 -0400
-Message-ID: <4905D568.20701@sgi.com>
-Date: Mon, 27 Oct 2008 07:51:20 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 27 Oct 2008 10:56:21 -0400
+Received: from smtp.infotech.no ([82.134.31.41]:49329 "EHLO
+	elrond2.infotech.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750782AbYJ0O4T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 10:56:19 -0400
+Message-ID: <4905D68D.7030407@interlog.com>
+Date: Mon, 27 Oct 2008 10:56:13 -0400
+From: Douglas Gilbert <dgilbert@interlog.com>
+Reply-To: dgilbert@interlog.com
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andi Kleen <andi@firstfloor.org>, Pavel Machek <pavel@suse.cz>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Jack Steiner <steiner@sgi.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Richard Purdie <rpurdie@rpsys.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/1] SGI x86 UV: Update SCIR driver to use idle_cpu function
-References: <4901AF28.4070606@sgi.com> <20081024120103.GD1680@elf.ucw.cz> <20081024120544.GA9812@elte.hu> <4901BF30.3090708@sgi.com> <87mygt9815.fsf@basil.nowhere.org> <490249CF.2080308@sgi.com> <49024B1D.1050407@sgi.com> <20081027114205.GB5631@elte.hu>
-In-Reply-To: <20081027114205.GB5631@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Luciano Rocha <luciano@eurotux.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>
+Subject: Re: usb hdd problems with 2.6.27.2
+References: <Pine.LNX.4.44L0.0810271007030.4059-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0810271007030.4059-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: SGI x86 UV: Update SCIR driver to use idle_cpu function
+Alan Stern wrote:
+> On Mon, 27 Oct 2008, Luciano Rocha wrote:
+> 
+>> On Sat, Oct 25, 2008 at 03:50:07PM -0400, Alan Stern wrote:
+>>> On Sat, 25 Oct 2008, Rafael J. Wysocki wrote:
+>>>
+>>>> [Adding CCs]
+>>>>
+>>>> On Wednesday, 22 of October 2008, Luciano Rocha wrote:
+>>>>> Hello,
+>>>>>
+>>>>> An external HDD, usb-encased, works fine under 2.6.26.5, but under
+>>>>> 2.6.27.2 I get hundreds of errors per second, of 'No Sense [current]'.
+>>> You can use usbmon to capture the details of what happens when you plug
+>>> in the drive.  Instructions are in the kernel source file
+>>> Documentation/usb/usbmon.txt.
+>>>
+>> Now in 2.6.27.4, same problem. The usb traffic is:
+> 
+> This looks exactly like the "infinite retry" problem I warned about 
+> earlier.  Here are the important parts of the log.  For people who 
+> don't know how to interpret these messages, the CDB starts in the 16th 
+> byte of the 31-byte messages.  For example, the first command here 
+> starts with 0x25 and so it is READ CAPACITY:
+> 
+>> f21e7cc0 3570408174 S Bo:1:008:1 -115 31 = 55534243 06000000 08000000 80000a25 00000000 00000000 00000000 000000
+>> f21e7cc0 3570408264 C Bo:1:008:1 0 31 >
+>> f21e72c0 3570408280 S Bi:1:008:2 -115 8 <
+>> f21e72c0 3570408389 C Bi:1:008:2 0 8 = 2e9390b0 00000200
+>> f21e7cc0 3570408400 S Bi:1:008:2 -115 13 <
+>> f21e7cc0 3570408513 C Bi:1:008:2 0 13 = 55534253 06000000 00000000 00
+> 
+> The response is 0x2e9390b0.  In typical broken fashion, that is 
+> undoubtedly the total number of sectors rather than the highest sector 
+> number.
 
-> Please send the cpu_idle() cleanup patch separately.
+Since the READ CAPACITY "off by one" error is so common,
+perhaps drivers such as usb-storage could have a hook to
+do a pseudo READ CAPACITY. Then if the capacity value
+looked odd (in both senses) the driver could do an IO to
+the suspect block and if that failed decrement the capacity
+value passed back to the mid level.
+Put another way, why don't these defective devices trip up
+another OS?
 
-Change UV heartbeat function to use idle_cpu to determine cpu's
-"idleness".  Realign uv_hub definitions.
+BTW a single disk in RAID 0 (seen on a HP E200 controller)
+has a shortened capacity value seen in the midlevel on the
+corresponding logical drive. That missing chunk is probably
+where the RAID controller puts its control information.
+Anyway, playing with the capacity value returned by READ
+CAPACITY certainly has a precedent.
 
-Signed-of-by: Mike Travis <travis@sgi.com>
----
- arch/x86/include/asm/uv/uv_hub.h |   26 +++++++++++++-------------
- arch/x86/kernel/genx2apic_uv_x.c |    4 ++--
- 2 files changed, 15 insertions(+), 15 deletions(-)
+> Later on the system tries to read the contents of what it thinks is the 
+> last sector:
 
---- test-tip-latest.orig/arch/x86/include/asm/uv/uv_hub.h
-+++ test-tip-latest/arch/x86/include/asm/uv/uv_hub.h
-@@ -128,19 +128,19 @@ struct uv_scir_s {
-  * They are kept together in a struct to minimize cache misses.
-  */
- struct uv_hub_info_s {
--	unsigned long	global_mmr_base;
--	unsigned long	gpa_mask;
--	unsigned long	gnode_upper;
--	unsigned long	lowmem_remap_top;
--	unsigned long	lowmem_remap_base;
--	unsigned short	pnode;
--	unsigned short	pnode_mask;
--	unsigned short	coherency_domain_number;
--	unsigned short	numa_blade_id;
--	unsigned char	blade_processor_id;
--	unsigned char	m_val;
--	unsigned char	n_val;
--	struct uv_scir_s scir;
-+	unsigned long		global_mmr_base;
-+	unsigned long		gpa_mask;
-+	unsigned long		gnode_upper;
-+	unsigned long		lowmem_remap_top;
-+	unsigned long		lowmem_remap_base;
-+	unsigned short		pnode;
-+	unsigned short		pnode_mask;
-+	unsigned short		coherency_domain_number;
-+	unsigned short		numa_blade_id;
-+	unsigned char		blade_processor_id;
-+	unsigned char		m_val;
-+	unsigned char		n_val;
-+	struct uv_scir_s	scir;
- };
- 
- DECLARE_PER_CPU(struct uv_hub_info_s, __uv_hub_info);
---- test-tip-latest.orig/arch/x86/kernel/genx2apic_uv_x.c
-+++ test-tip-latest/arch/x86/kernel/genx2apic_uv_x.c
-@@ -371,8 +371,8 @@ static void uv_heartbeat(unsigned long i
- 	/* flip heartbeat bit */
- 	bits ^= SCIR_CPU_HEARTBEAT;
- 
--	/* are we the idle thread? */
--	if (current->pid == 0)
-+	/* is this cpu idle? */
-+	if (idle_cpu(smp_processor_id()))
- 		bits &= ~SCIR_CPU_ACTIVITY;
- 	else
- 		bits |= SCIR_CPU_ACTIVITY;
+I know that happens but it seems strange that upper levels
+are reading a block that has never been written to. Read ahead?
+
+Doug Gilbert
+
+
+>> f21e7cc0 3570515635 S Bo:1:008:1 -115 31 = 55534243 0c000000 00020000 80000a28 002e9390 b0000001 00000000 000000
+>> f21e7cc0 3570515762 C Bo:1:008:1 0 31 >
+>> f21e76c0 3570515776 S Bi:1:008:2 -115 512 <
+>> f21e76c0 3570516261 C Bi:1:008:2 -32 0
+>> f21e7cc0 3570516281 S Co:1:008:0 s 02 01 0000 0082 0000 0
+>> f21e7cc0 3570516387 C Co:1:008:0 0 0
+>> f21e7cc0 3570516399 S Bi:1:008:2 -115 13 <
+>> f21e7cc0 3570516511 C Bi:1:008:2 0 13 = 55534253 0c000000 00020000 01
+> 
+> There's no data in the response, and the 01 on the line above 
+> indicates Check Condition status.
+> 
+>> f21e7cc0 3570516524 S Bo:1:008:1 -115 31 = 55534243 0d000000 12000000 80000603 00000012 00000000 00000000 000000
+>> f21e7cc0 3570516636 C Bo:1:008:1 0 31 >
+>> f21e76c0 3570516649 S Bi:1:008:2 -115 18 <
+>> f21e76c0 3570516762 C Bi:1:008:2 0 18 = 70000000 0000000a 00000000 00000000 0000
+>> f21e7cc0 3570516779 S Bi:1:008:2 -115 13 <
+>> f21e7cc0 3570516886 C Bi:1:008:2 0 13 = 55534253 0d000000 00000000 00
+> 
+> The automatically-generated REQUEST SENSE gets the 18-byte response you 
+> see above.  It is entirely empty (No Sense).
+> 
+> The remainder of the trace shows the same command being repeated over 
+> and over again, with the same result each time.
+> 
+>> f21e7cc0 3570516936 S Bo:1:008:1 -115 31 = 55534243 0e000000 00020000 80000a28 002e9390 b0000001 00000000 000000
+>> f21e7cc0 3570517012 C Bo:1:008:1 0 31 >
+>> f21e76c0 3570517031 S Bi:1:008:2 -115 512 <
+>> f21e76c0 3570517511 C Bi:1:008:2 -32 0
+>> f21e7cc0 3570517533 S Co:1:008:0 s 02 01 0000 0082 0000 0
+>> f21e7cc0 3570517637 C Co:1:008:0 0 0
+>> f21e7cc0 3570517648 S Bi:1:008:2 -115 13 <
+>> f21e7cc0 3570517762 C Bi:1:008:2 0 13 = 55534253 0e000000 00020000 01
+>> f21e7cc0 3570517775 S Bo:1:008:1 -115 31 = 55534243 0f000000 12000000 80000603 00000012 00000000 00000000 000000
+>> f21e7cc0 3570517886 C Bo:1:008:1 0 31 >
+>> f21e76c0 3570517897 S Bi:1:008:2 -115 18 <
+>> f21e76c0 3570518011 C Bi:1:008:2 0 18 = 70000000 0000000a 00000000 00000000 0000
+>> f21e7cc0 3570518027 S Bi:1:008:2 -115 13 <
+>> f21e7cc0 3570518136 C Bi:1:008:2 0 13 = 55534253 0f000000 00000000 00
+> etc...
+> 
+> There's a patch which might help resolve this problem:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=8bfa24727087d7252f9ecfb5fea2dfc92d797fbd
+> 
+> It is already present in 2.6.28-rc1, so it's worth a try.  If it does
+> fix things, let me know so I can submit it for a future 2.6.27.stable
+> release.
+> 
+> Alan Stern
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
