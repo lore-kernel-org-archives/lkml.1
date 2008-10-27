@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752576AbYJ0JTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbYJ0JWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752576AbYJ0JTN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 05:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbYJ0JS6
+	id S1752758AbYJ0JWU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 05:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbYJ0JWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 05:18:58 -0400
-Received: from gw.goop.org ([64.81.55.164]:36908 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751133AbYJ0JS5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 05:18:57 -0400
-Message-ID: <49058774.3030506@goop.org>
-Date: Mon, 27 Oct 2008 20:18:44 +1100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	Mon, 27 Oct 2008 05:22:12 -0400
+Received: from mail.ku-gbr.de ([81.3.11.18]:50956 "EHLO ku-gbr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750863AbYJ0JWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 05:22:11 -0400
+Date: Mon, 27 Oct 2008 10:22:08 +0100
+From: Konstantin Kletschke <lists@ku-gbr.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
+Message-ID: <20081027092208.GC16491@anita.doom>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <20081006211906.GA31148@anita.doom> <20081006212307.GA881@anita.doom> <48EAB535.8010203@kernel.org> <20081007060357.GA16761@anita.doom> <48EB1993.1030606@panasas.com> <20081008080848.GA20525@anita.doom> <48F3088C.9010002@kernel.org> <48F308E8.4030503@kernel.org> <20081013142951.GB23124@anita.doom> <48F58A96.8040406@kernel.org>
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, jens.axboe@oracle.com
-Subject: Re: [PATCH 2/2] x86: replace BIO_VMERGE_BOUNDARY with BIOVEC_PHYS_MERGEABLE
-References: <4902371A.5050303@goop.org>	<20081027125139I.fujita.tomonori@lab.ntt.co.jp>	<49057A15.7030007@goop.org> <20081027173739Q.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081027173739Q.fujita.tomonori@lab.ntt.co.jp>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48F58A96.8040406@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> I'm not familiar with what Xen does but why can't Xen just override
-> BIOVEC_PHYS_MERGEABLE?
->
-> Why does Xen need to hook BIOVEC_PHYS_MERGEABLE to the iommu_bio_merge
-> parameter (as this patch does)? BIOVEC_PHYS_MERGEABLE and the
-> iommu_bio_merge parameter are not related at all.
->   
+Hello Tejun!
 
-No, it doesn't.  It was convenient to reuse that mechanism, but I can 
-easily re-add something else (which would be more or less identical).
+After my short reply I had a 2.6.27 running with
 
-    J
+[-- Attachment #2: sata_nv-nf2-hrst-debug-take2.patch --]
 
+fine so far. It bootet immediately at any time I powercycled the
+machine. Hot, cold and reboot seems to be no problem, no
+/var/log/messages flooding also.
+
+I just wanted to inform you, whatever the investigations result into, on
+_my_ machine this incarnation is just fine.
+
+Regards, Konsti
+
+
+
+-- 
+GPG KeyID EF62FCEF
+Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
