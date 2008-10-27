@@ -1,76 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752581AbYJ0IFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754AbYJ0ILU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752581AbYJ0IFX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 04:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbYJ0IEv
+	id S1752754AbYJ0ILU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 04:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYJ0ILL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 04:04:51 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49735 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752279AbYJ0IEt (ORCPT
+	Mon, 27 Oct 2008 04:11:11 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33737 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751739AbYJ0ILK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 04:04:49 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use schedule_on_each_cpu()
-Cc: kosaki.motohiro@jp.fujitsu.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       Hugh Dickins <hugh@veritas.com>,
+	Mon, 27 Oct 2008 04:11:10 -0400
+Date: Mon, 27 Oct 2008 09:11:08 +0100
+From: Jan Kara <jack@suse.cz>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Jan Kara <jack@ucw.cz>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Al Viro <viro@zeniv.linux.org.uk>, linux-ext4@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>, linux-mm@kvack.org,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Gautham Shenoy <ego@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Rusty Russell <rusty@rustcorp.com.au>, mpm <mpm@selenic.com>
-In-Reply-To: <1225094190.16159.3.camel@twins>
-References: <20081027120405.1B45.KOSAKI.MOTOHIRO@jp.fujitsu.com> <1225094190.16159.3.camel@twins>
-Message-Id: <20081027170156.9659.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] ext3: fix a bug accessing freed memory in ext3_abort
+Message-ID: <20081027081108.GB23804@atrey.karlin.mff.cuni.cz>
+References: <19f34abd0810250422t17990222x78fcf0fad2e6f04b@mail.gmail.com> <49056D29.2010700@hitachi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Mon, 27 Oct 2008 17:03:51 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49056D29.2010700@hitachi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 2008-10-27 at 12:14 +0900, KOSAKI Motohiro wrote:
-> > > Right, and would be about 4k+sizeof(task_struct), some people might be
-> > > bothered, but most won't care.
-> > > 
-> > > > Perhaps, I misunderstand your intension. so can you point your
-> > > > previous discussion url?
-> > > 
-> > > my google skillz fail me, but once in a while people complain that we
-> > > have too many kernel threads.
-> > > 
-> > > Anyway, if we can re-use this per-cpu workqueue for more goals, I guess
-> > > there is even less of an objection.
+> Hi Vegard,
+> 
+> Vegard Nossum wrote:
+> 
+> > commit 2d7c820e56ce83b23daee9eb5343730fb309418e
+> > Author: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> > Date:   Wed Oct 22 14:15:01 2008 -0700
 > > 
-> > In general, you are right.
-> > but this is special case. mmap_sem is really widely used various subsystem and drivers.
-> > (because page fault via copy_user introduce to depend on mmap_sem)
+> >     ext3: add checks for errors from jbd
 > > 
-> > Then, any work-queue reu-sing can cause similar dead-lock easily.
+> > introduces a regression which was discovered by kmemcheck:
 > 
-> Yeah, I know, and the cpu-hotplug discussion needed another thread due
-> to yet another locking incident. I was hoping these two could go
-> together.
-
-Yeah, I found its thread. (I think it is "work_on_cpu: helper for doing task on a CPU.", right?)
-So I'll read it soon.
-
-Please wait a bit.
-
-
+> Thank you for reporting this regression.  It's my fault.
+> I send patches to fix.
 > 
-> Neither are general-purpose workqueues, both need to stay away from the
-> normal eventd due to deadlocks.
+> Regards,
 > 
-> ego, does you extra thread ever use mmap_sem?
+> 
+> Subject: [PATCH 1/2] ext3: fix a bug accessing freed memory in ext3_abort
+> 
+> Vegard Nossum reported a bug which accesses freed memory.  When
+> journal has been aborted, ext3_put_super() calls ext3_abort() after
+> freeing the journal_t object, and then ext3_abort() accesses it.
+> This patch fix it.
+> 
+> Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+  The patch looks fine. Acked-by: Jan Kara <jack@suse.cz>
 
-
-
-
-
+								Honza
+> ---
+>  fs/ext3/super.c |   10 +++++++---
+>  1 file changed, 7 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6.28-rc2/fs/ext3/super.c
+> ===================================================================
+> --- linux-2.6.28-rc2.orig/fs/ext3/super.c
+> +++ linux-2.6.28-rc2/fs/ext3/super.c
+> @@ -281,7 +281,8 @@ void ext3_abort (struct super_block * sb
+>  	EXT3_SB(sb)->s_mount_state |= EXT3_ERROR_FS;
+>  	sb->s_flags |= MS_RDONLY;
+>  	EXT3_SB(sb)->s_mount_opt |= EXT3_MOUNT_ABORT;
+> -	journal_abort(EXT3_SB(sb)->s_journal, -EIO);
+> +	if (EXT3_SB(sb)->s_journal)
+> +		journal_abort(EXT3_SB(sb)->s_journal, -EIO);
+>  }
+>  
+>  void ext3_warning (struct super_block * sb, const char * function,
+> @@ -390,11 +391,14 @@ static void ext3_put_super (struct super
+>  {
+>  	struct ext3_sb_info *sbi = EXT3_SB(sb);
+>  	struct ext3_super_block *es = sbi->s_es;
+> -	int i;
+> +	int i, err;
+>  
+>  	ext3_xattr_put_super(sb);
+> -	if (journal_destroy(sbi->s_journal) < 0)
+> +	err = journal_destroy(sbi->s_journal);
+> +	sbi->s_journal = NULL;
+> +	if (err < 0)
+>  		ext3_abort(sb, __func__, "Couldn't clean up the journal");
+> +
+>  	if (!(sb->s_flags & MS_RDONLY)) {
+>  		EXT3_CLEAR_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER);
+>  		es->s_state = cpu_to_le16(sbi->s_mount_state);
+> 
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
