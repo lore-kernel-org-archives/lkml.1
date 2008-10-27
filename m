@@ -1,339 +1,245 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbYJ0X56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbYJ0X71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753135AbYJ0X56 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 19:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbYJ0X5u
+	id S1753241AbYJ0X71 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 19:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbYJ0X7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 19:57:50 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:37194 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751731AbYJ0X5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 19:57:49 -0400
-Date: Mon, 27 Oct 2008 16:57:48 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rjw@sisk.pl,
-       dipankar@in.ibm.com, tglx@linuxtronix.de, andi@firstfloor.org
-Subject: Re: [PATCH] v3 rudimentary tracing for Classic RCU
-Message-ID: <20081027235748.GA3647@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20081007154939.GN20740@one.firstfloor.org> <20081007163401.GJ6384@linux.vnet.ibm.com> <20081007210947.GP20740@one.firstfloor.org> <20081007212215.GN6384@linux.vnet.ibm.com> <20081009010846.GA10188@linux.vnet.ibm.com> <20081010034421.GA12449@linux.vnet.ibm.com> <20081013230914.GA27467@linux.vnet.ibm.com> <49005C09.6010805@cn.fujitsu.com> <20081026215930.GC6236@linux.vnet.ibm.com> <20081027215029.GA31664@linux.vnet.ibm.com>
+	Mon, 27 Oct 2008 19:59:17 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:3607 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751256AbYJ0X7Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 19:59:16 -0400
+Message-ID: <490655B6.4030406@caviumnetworks.com>
+Date: Mon, 27 Oct 2008 16:58:46 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081027215029.GA31664@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: linux-mips <linux-mips@linux-mips.org>
+CC: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Paoletti, Tomaso" <Tomaso.Paoletti@caviumnetworks.com>
+Subject: [PATCH 00/36] Add Cavium OCTEON processor support (v2).
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Oct 2008 23:58:46.0712 (UTC) FILETIME=[F31EA380:01C9388F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 27, 2008 at 02:50:29PM -0700, Paul E. McKenney wrote:
-> On Sun, Oct 26, 2008 at 02:59:30PM -0700, Paul E. McKenney wrote:
-> > On Thu, Oct 23, 2008 at 07:12:09PM +0800, Lai Jiangshan wrote:
-> > > 
-> > > trivial ported it to seq_file.
-> > > seq_file are very good for the output buffer.
-> > 
-> > Thank you for putting this together!!!  Looks good at first glance --
-> > I will test it out.
-> 
-> So it does seem to operate correctly.  I combined it with my patch and
-> applied against 2.6.27 for ease of testing.
-> 
-> One question -- why the multi-line format?  This would be a bit
-> awkward on a 128-CPU system, let alone on a 4,096-CPU system.
-> Or am I missing some trick here?
+This patch set introduces preliminary support for Cavium Networks'
+OCTEON processor family.  More information about these processors may
+be obtained here:
 
-To clarify, by "missing some trick", I am wondering if there is some
-command that works in blocks of lines.  After all, /proc/cpuinfo
-produces the same sort of output that your patch does.  ;-)
+http://www.caviumnetworks.com/OCTEON_MIPS64.html
 
-							Thanx, Paul
+This initial patch set adds support for booting an initramfs to a
+serial console.  Follow-on patch sets will add support for the on-chip
+ethernet, USB, PCI, PCIe, I2c and other peripherals.
 
-> > > Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> > > ---
-> > > diff --git a/kernel/rcuclassic_trace.c b/kernel/rcuclassic_trace.c
-> > > index d19780b..f19217c
-> > > --- a/kernel/rcuclassic_trace.c
-> > > +++ b/kernel/rcuclassic_trace.c
-> > > @@ -23,157 +23,167 @@
-> > >   * 		Documentation/RCU
-> > >   *
-> > >   */
-> > > -#include <linux/types.h>
-> > > -#include <linux/kernel.h>
-> > > -#include <linux/init.h>
-> > > -#include <linux/spinlock.h>
-> > > -#include <linux/smp.h>
-> > >  #include <linux/rcupdate.h>
-> > > -#include <linux/interrupt.h>
-> > > -#include <linux/sched.h>
-> > > -#include <asm/atomic.h>
-> > > -#include <linux/bitops.h>
-> > >  #include <linux/module.h>
-> > > -#include <linux/completion.h>
-> > > -#include <linux/moduleparam.h>
-> > > -#include <linux/percpu.h>
-> > > -#include <linux/notifier.h>
-> > > -#include <linux/cpu.h>
-> > > -#include <linux/mutex.h>
-> > >  #include <linux/debugfs.h>
-> > > +#include <linux/seq_file.h>
-> > > 
-> > > -static DEFINE_MUTEX(rcuclassic_trace_mutex);
-> > > -static char *rcuclassic_trace_buf;
-> > > -#define RCUCLASSIC_TRACE_BUF_SIZE (128 * num_possible_cpus() + 100)
-> > > +static struct rcu_data *get_rcu_data_bh(int cpu)
-> > > +{
-> > > +	return &per_cpu(rcu_bh_data, cpu);
-> > > +}
-> > > 
-> > > -static int print_one_rcu_data(struct rcu_data *rdp, char *buf, char *ebuf)
-> > > +static struct rcu_data *get_rcu_data(int cpu)
-> > >  {
-> > > -	int cnt = 0;
-> > > +	return &per_cpu(rcu_data, cpu);
-> > > +}
-> > > 
-> > > +static int show_rcu_data(struct seq_file *m, void *v)
-> > > +{
-> > > +	struct rcu_data *rdp = v;
-> > >  	if (!rdp->beenonline)
-> > >  		return 0;
-> > > -	cnt += snprintf(&buf[cnt], ebuf - &buf[cnt],
-> > > -		"%3d%cqb=%ld b=%ld pq=%d qsp=%d ql=%ld bl=%ld\n",
-> > > -		rdp->cpu, cpu_is_offline(rdp->cpu) ? '!' : ' ',
-> > > -		rdp->quiescbatch, rdp->batch, rdp->passed_quiesc,
-> > > -		rdp->qs_pending, rdp->qlen, rdp->blimit);
-> > > -	return cnt;
-> > > +
-> > > +	seq_printf(m, "processor\t: %d", rdp->cpu);
-> > > +	if (cpu_is_offline(rdp->cpu))
-> > > +		seq_puts(m, "!\n");
-> > > +	else
-> > > +		seq_puts(m, "\n");
-> > > +	seq_printf(m, "quiescbatch\t: %ld\n", rdp->quiescbatch);
-> > > +	seq_printf(m, "batch\t: %ld\n", rdp->batch);
-> > > +	seq_printf(m, "passed_quiesc\t: %d\n", rdp->passed_quiesc);
-> > > +	seq_printf(m, "qs_pending\t: %d\n", rdp->qs_pending);
-> > > +	seq_printf(m, "qlen\t: %ld\n", rdp->qlen);
-> > > +	seq_printf(m, "blimit\t: %ld\n", rdp->blimit);
-> > > +	seq_puts(m, "\n\n");
-> > > +	return 0;
-> > >  }
-> > > 
-> > > -#define PRINT_RCU_DATA(name, buf, ebuf) \
-> > > -	do { \
-> > > -		int _p_r_d_i; \
-> > > -		\
-> > > -		for_each_possible_cpu(_p_r_d_i) \
-> > > -			(buf) += print_one_rcu_data(&per_cpu(name, _p_r_d_i), \
-> > > -						    buf, ebuf); \
-> > > -	} while (0)
-> > > -
-> > > -static ssize_t rcudata_read(struct file *filp, char __user *buffer,
-> > > -				size_t count, loff_t *ppos)
-> > > +static void *c_start(struct seq_file *m, loff_t *pos)
-> > >  {
-> > > -	ssize_t bcount;
-> > > -	char *buf = rcuclassic_trace_buf;
-> > > -	char *ebuf = &rcuclassic_trace_buf[RCUCLASSIC_TRACE_BUF_SIZE];
-> > > -
-> > > -	mutex_lock(&rcuclassic_trace_mutex);
-> > > -	buf += snprintf(buf, ebuf - buf, "rcu:\n");
-> > > -	PRINT_RCU_DATA(rcu_data, buf, ebuf);
-> > > -	buf += snprintf(buf, ebuf - buf, "rcu_bh:\n");
-> > > -	PRINT_RCU_DATA(rcu_bh_data, buf, ebuf);
-> > > -	bcount = simple_read_from_buffer(buffer, count, ppos,
-> > > -			rcuclassic_trace_buf, strlen(rcuclassic_trace_buf));
-> > > -	mutex_unlock(&rcuclassic_trace_mutex);
-> > > -	return bcount;
-> > > +	typedef struct rcu_data *(*get_data_func)(int);
-> > > +
-> > > +	if (*pos == 0)	/* just in case, cpu 0 is not the first */
-> > > +		*pos = first_cpu(cpu_possible_map);
-> > > +	else
-> > > +		*pos = next_cpu_nr(*pos - 1, cpu_possible_map);
-> > > +	if ((*pos) < nr_cpu_ids)
-> > > +		return ((get_data_func)m->private)(*pos);
-> > > +	return NULL;
-> > >  }
-> > > 
-> > > -static int print_one_rcu_ctrlblk(struct rcu_ctrlblk *rcp, char *buf, char *ebuf)
-> > > +static void *c_next(struct seq_file *m, void *v, loff_t *pos)
-> > >  {
-> > > -	int cnt = 0;
-> > > -
-> > > -	cnt += snprintf(&buf[cnt], ebuf - &buf[cnt], "cur=%ld  completed=%ld  "
-> > > -			"pending=%ld  s=%d\n\t",
-> > > -			rcp->cur, rcp->completed,
-> > > -			rcp->pending, rcp->signaled);
-> > > -	cnt += cpulist_scnprintf(&buf[cnt], ebuf - &buf[cnt], rcp->cpumask);
-> > > -	cnt += snprintf(&buf[cnt], ebuf - &buf[cnt], "\n");
-> > > -	return cnt;
-> > > +	(*pos)++;
-> > > +	return c_start(m, pos);
-> > >  }
-> > > 
-> > > -static ssize_t rcucb_read(struct file *filp, char __user *buffer,
-> > > -				size_t count, loff_t *ppos)
-> > > +static void c_stop(struct seq_file *m, void *v)
-> > >  {
-> > > -	ssize_t bcount;
-> > > -	char *buf = rcuclassic_trace_buf;
-> > > -	char *ebuf = &rcuclassic_trace_buf[RCUCLASSIC_TRACE_BUF_SIZE];
-> > > -
-> > > -	mutex_lock(&rcuclassic_trace_mutex);
-> > > -	buf += snprintf(buf, ebuf - buf, "rcu: ");
-> > > -	buf += print_one_rcu_ctrlblk(&rcu_ctrlblk, buf, ebuf);
-> > > -	buf += snprintf(buf, ebuf - buf, "rcu_bh: ");
-> > > -	buf += print_one_rcu_ctrlblk(&rcu_bh_ctrlblk, buf, ebuf);
-> > > -	buf += snprintf(buf, ebuf - buf, "online: ");
-> > > -	buf += cpulist_scnprintf(buf, ebuf - buf, cpu_online_map);
-> > > -	buf += snprintf(buf, ebuf - buf, "\n");
-> > > -	bcount = simple_read_from_buffer(buffer, count, ppos,
-> > > -			rcuclassic_trace_buf, strlen(rcuclassic_trace_buf));
-> > > -	mutex_unlock(&rcuclassic_trace_mutex);
-> > > -	return bcount;
-> > >  }
-> > > 
-> > > -static struct file_operations rcudata_fops = {
-> > > -	.owner = THIS_MODULE,
-> > > -	.read = rcudata_read,
-> > > +const struct seq_operations rcu_data_seq_op = {
-> > > +	.start	= c_start,
-> > > +	.next	= c_next,
-> > > +	.stop	= c_stop,
-> > > +	.show	= show_rcu_data,
-> > >  };
-> > > 
-> > > +static int rcu_data_open(struct inode *inode, struct file *file)
-> > > +{
-> > > +	int ret = seq_open(file, &rcu_data_seq_op);
-> > > +	if (ret)
-> > > +		return ret;
-> > > +	((struct seq_file *)file->private_data)->private = inode->i_private;
-> > > +	return 0;
-> > > +}
-> > > +
-> > > +static const struct file_operations rcu_data_fops = {
-> > > +	.owner		= THIS_MODULE,
-> > > +	.open		= rcu_data_open,
-> > > +	.read		= seq_read,
-> > > +	.llseek		= seq_lseek,
-> > > +	.release	= seq_release,
-> > > +};
-> > > +
-> > > +static void print_one_rcu_ctrlblk(struct seq_file *m, struct rcu_ctrlblk *rcp)
-> > > +{
-> > > +	seq_printf(m, "cur=%ld  completed=%ld   pending=%ld  s=%d\n\t",
-> > > +			rcp->cur, rcp->completed, rcp->pending, rcp->signaled);
-> > > +	seq_cpumask(m, &rcp->cpumask);
-> > > +	seq_puts(m, "\n");
-> > > +}
-> > > +
-> > > +static int show_rcucb(struct seq_file *m, void *unused)
-> > > +{
-> > > +	seq_puts(m, "rcu: ");
-> > > +	print_one_rcu_ctrlblk(m, &rcu_ctrlblk);
-> > > +	seq_puts(m, "rcu_bh: ");
-> > > +	print_one_rcu_ctrlblk(m, &rcu_bh_ctrlblk);
-> > > +	seq_puts(m, "online: ");
-> > > +	seq_cpumask(m, &cpu_online_map);
-> > > +	seq_puts(m, "\n");
-> > > +	return 0;
-> > > +}
-> > > +
-> > > +static int rcucb_open(struct inode *inode, struct file *file)
-> > > +{
-> > > +	return single_open(file, show_rcucb, NULL);
-> > > +}
-> > > +
-> > >  static struct file_operations rcucb_fops = {
-> > > -	.owner = THIS_MODULE,
-> > > -	.read = rcucb_read,
-> > > +	.owner		= THIS_MODULE,
-> > > +	.open		= rcucb_open,
-> > > +	.read		= seq_read,
-> > > +	.llseek		= seq_lseek,
-> > > +	.release	= single_release,
-> > >  };
-> > > 
-> > > -static struct dentry *rcudir, *datadir, *cbdir;
-> > > -static int rcuclassic_debugfs_init(void)
-> > > +static struct dentry *rcudir, *rcu_bh_data_file, *rcu_data_file, *rcucb_file;
-> > > +
-> > > +static int __init rcuclassic_trace_init(void)
-> > >  {
-> > >  	rcudir = debugfs_create_dir("rcu", NULL);
-> > >  	if (!rcudir)
-> > >  		goto out;
-> > > -	datadir = debugfs_create_file("rcudata", 0444, rcudir,
-> > > -				      NULL, &rcudata_fops);
-> > > -	if (!datadir)
-> > > -		goto free_out;
-> > > -	cbdir = debugfs_create_file("rcucb", 0444, rcudir, NULL, &rcucb_fops);
-> > > -	if (!cbdir)
-> > > -		goto free_out;
-> > > +
-> > > +	rcu_bh_data_file = debugfs_create_file("rcu_bh_data", 0444, rcudir,
-> > > +			get_rcu_data_bh, &rcu_data_fops);
-> > > +	if (!rcu_bh_data_file)
-> > > +		goto out_rcudir;
-> > > +
-> > > +	rcu_data_file = debugfs_create_file("rcu_data", 0444, rcudir,
-> > > +			get_rcu_data, &rcu_data_fops);
-> > > +	if (!rcu_data_file)
-> > > +		goto out_rcudata_bh_file;
-> > > +
-> > > +	rcucb_file = debugfs_create_file("rcucb", 0444, rcudir,
-> > > +			NULL, &rcucb_fops);
-> > > +	if (!rcucb_file)
-> > > +		goto out_rcudata_file;
-> > >  	return 0;
-> > > -free_out:
-> > > -	if (datadir)
-> > > -		debugfs_remove(datadir);
-> > > +
-> > > +out_rcudata_file:
-> > > +	debugfs_remove(rcu_data_file);
-> > > +out_rcudata_bh_file:
-> > > +	debugfs_remove(rcu_bh_data_file);
-> > > +out_rcudir:
-> > >  	debugfs_remove(rcudir);
-> > >  out:
-> > >  	return 1;
-> > >  }
-> > > 
-> > > -static int __init rcuclassic_trace_init(void)
-> > > -{
-> > > -	int ret;
-> > > -
-> > > -	rcuclassic_trace_buf = kmalloc(RCUCLASSIC_TRACE_BUF_SIZE, GFP_KERNEL);
-> > > -	if (!rcuclassic_trace_buf)
-> > > -		return 1;
-> > > -	ret = rcuclassic_debugfs_init();
-> > > -	if (ret)
-> > > -		kfree(rcuclassic_trace_buf);
-> > > -	return ret;
-> > > -}
-> > > -
-> > >  static void __exit rcuclassic_trace_cleanup(void)
-> > >  {
-> > > -	debugfs_remove(datadir);
-> > > -	debugfs_remove(cbdir);
-> > > +	debugfs_remove(rcucb_file);
-> > > +	debugfs_remove(rcu_data_file);
-> > > +	debugfs_remove(rcu_bh_data_file);
-> > >  	debugfs_remove(rcudir);
-> > > -	kfree(rcuclassic_trace_buf);
-> > >  }
-> > > 
-> > > -
-> > >  module_init(rcuclassic_trace_init);
-> > >  module_exit(rcuclassic_trace_cleanup);
-> > > +
-> > > +MODULE_AUTHOR("Paul E. McKenney");
-> > > +MODULE_DESCRIPTION("Read-Copy Update tracing for classic implementation");
-> > > +MODULE_LICENSE("GPL");
-> > > 
+With this second version of the patches I think we have fixed or
+removed the parts flagged as objectionable in the first round of
+reviews.  In addition to more general cleanups I fixed the following
+issues:
+
+* externs declared in mm/fault.c moved to fpu_emulator.h
+
+* Corrected spelling of hazard in patch commentary.
+
+* Useless checking in pmd_none removed.
+
+* ebase calculation generalized.
+
+* ST0_KX setting for 32bit kernel removed (there is now no 32bit
+  kernel support)
+
+Without further ado, I will reply with the following 36 patches (5 of
+which will also go to linux-serial):
+
+  01 - Add Cavium OCTEON processor support files to arch/mips/cavium-octeon.
+  02 - Add Cavium OCTEON files to arch/mips/include/asm/mach-cavium-octeon
+  03 - Add Cavium OCTEON processor support files to arch/mips/kernel.
+  04 - Add Cavium OCTEON processor support files to arch/mips/mm.
+  05 - Add Cavium OCTEON processor support files to and
+    arch/mips/cavium-octeon/executive
+  06 - Add Cavium OCTEON processor CSR definitions
+  07 - Don't assume boot CPU is CPU0 if MIPS_DISABLE_BOOT_CPU_ZERO set.
+  08 - For Cavium OCTEON handle hazards as per the R10000 handling.
+  09 - Enable mips32 style bitops for Cavium OCTEON.
+  10 - Cavium OCTEON: Set hwrena and lazily restore CP2 state.
+  11 - MIPSR2 ebase isn't just CAC_BASE
+  12 - Add Cavium OCTEON to arch/mips/Kconfig
+  13 - Add Cavium OCTEON processor constants.
+  14 - Rewrite cpu_to_name so it has one statement per line.
+  15 - Probe for Cavium OCTEON CPUs.
+  16 - MIPS: Hook Cavium OCTEON cache init into cache.c
+  17 - cavium: Hook Cavium specifics into main arch/mips dir
+  18 - Cavium OCTEON modify core io.h macros to account for the Octeon
+    Errata Core-301.
+  19 - Cavium OCTEON: increase MAX_DMA address.
+  20 - Cavium OCTEON: add in icache and dcache error functions.
+  21 - Cavium OCTEON: Add cop2/cvmseg state entries to processor.h.
+  22 - Add Cavium OCTEON specific registers to ptrace.h and asm-offsets.c
+  23 - Add SMP_ICACHE_FLUSH for the Cavium CPU family.
+  24 - Cavium OCTEON: PT vs MFC0 reorder, multiplier state preservation.
+  25 - Add Cavium OCTEON irq hazard in asmmacro.h.
+  26 - Compute branch returns for Cavium OCTEON specific branch
+    instructions.
+  27 - Add Cavium OCTEON slot into proper tlb category.
+  28 - MIPS: move FPU emulator externs to fpu_emulator.h
+  29 - Cavium OCTEON FPU EMU exception as TLB exception
+
+These five to linux-serial, linux-kernel, and akpm as well:
+  30 - Don't clobber spinlocks in 8250.
+  31 - Generic 8250 serial driver changes to support future OCTEON serial
+    patches.
+  32 - Allow port type to be specified when calling
+    serial8250_register_port.
+  33 - Allow port type to specify bugs that are not probed for.
+  34 - 8250 serial driver changes for Cavium OCTEON.
+
+
+  35 - Adjust the dma-common.c platform hooks.
+  36 - Add defconfig for Cavium OCTEON.
+
+ arch/mips/Kconfig                                  |   74 +-
+ arch/mips/Makefile                                 |   13 +
+ arch/mips/cavium-octeon/Kconfig                    |   85 +
+ arch/mips/cavium-octeon/Makefile                   |   21 +
+ arch/mips/cavium-octeon/console.c                  |   34 +
+ arch/mips/cavium-octeon/dma-octeon.c               |  324 +
+ arch/mips/cavium-octeon/executive/Makefile         |   26 +
+ arch/mips/cavium-octeon/executive/cvmx-asm.h       |  427 +
+ arch/mips/cavium-octeon/executive/cvmx-bootinfo.h  |  238 +
+ arch/mips/cavium-octeon/executive/cvmx-bootmem.c   |  897 +
+ arch/mips/cavium-octeon/executive/cvmx-bootmem.h   |  403 +
+ .../cavium-octeon/executive/cvmx-csr-addresses.h   | 8391 ++++++
+ arch/mips/cavium-octeon/executive/cvmx-csr-enums.h |   86 +
+ .../cavium-octeon/executive/cvmx-csr-typedefs.h    |27517 ++++++++++++++++++++
+ arch/mips/cavium-octeon/executive/cvmx-csr.h       |  199 +
+ arch/mips/cavium-octeon/executive/cvmx-interrupt.h |  255 +
+ arch/mips/cavium-octeon/executive/cvmx-l2c.c       |  711 +
+ arch/mips/cavium-octeon/executive/cvmx-l2c.h       |  328 +
+ .../executive/cvmx-linux-kernel-exports.c          |   30 +
+ arch/mips/cavium-octeon/executive/cvmx-packet.h    |   64 +
+ arch/mips/cavium-octeon/executive/cvmx-platform.h  |   56 +
+ arch/mips/cavium-octeon/executive/cvmx-spinlock.h  |  376 +
+ arch/mips/cavium-octeon/executive/cvmx-sysinfo.c   |  113 +
+ arch/mips/cavium-octeon/executive/cvmx-sysinfo.h   |  144 +
+ arch/mips/cavium-octeon/executive/cvmx-warn.c      |   44 +
+ arch/mips/cavium-octeon/executive/cvmx-warn.h      |   46 +
+ arch/mips/cavium-octeon/executive/cvmx.h           |  772 +
+ arch/mips/cavium-octeon/executive/octeon-feature.h |  120 +
+ arch/mips/cavium-octeon/executive/octeon-model.c   |  328 +
+ arch/mips/cavium-octeon/executive/octeon-model.h   |  225 +
+ arch/mips/cavium-octeon/flash_setup.c              |   76 +
+ arch/mips/cavium-octeon/hal.c                      |  496 +
+ arch/mips/cavium-octeon/hal.h                      |  190 +
+ arch/mips/cavium-octeon/i8259.c                    |  180 +
+ arch/mips/cavium-octeon/irq.c                      |   61 +
+ arch/mips/cavium-octeon/octeon-memcpy.S            |  521 +
+ arch/mips/cavium-octeon/serial.c                   |  187 +
+ arch/mips/cavium-octeon/setup.c                    |  387 +
+ arch/mips/cavium-octeon/smp.c                      |  231 +
+ arch/mips/cavium-octeon/userio.c                   |  156 +
+ arch/mips/configs/cavium-octeon_defconfig          | 1160 +
+ arch/mips/include/asm/asmmacro.h                   |   10 +
+ arch/mips/include/asm/bitops.h                     |    3 +-
+ arch/mips/include/asm/cpu-features.h               |    7 +
+ arch/mips/include/asm/cpu.h                        |   14 +
+ arch/mips/include/asm/dma.h                        |    7 +
+ arch/mips/include/asm/fpu_emulator.h               |    5 +
+ arch/mips/include/asm/hazards.h                    |    4 +-
+ arch/mips/include/asm/io.h                         |   14 +
+ .../asm/mach-cavium-octeon/cpu-feature-overrides.h |   63 +
+ .../include/asm/mach-cavium-octeon/dma-coherence.h |   64 +
+ arch/mips/include/asm/mach-cavium-octeon/irq.h     |  253 +
+ .../asm/mach-cavium-octeon/kernel-entry-init.h     |  140 +
+ .../asm/mach-cavium-octeon/octeon-hal-read-write.h |   38 +
+ arch/mips/include/asm/mach-cavium-octeon/war.h     |   26 +
+ arch/mips/include/asm/mach-generic/dma-coherence.h |   26 +-
+ arch/mips/include/asm/mach-ip27/dma-coherence.h    |   26 +-
+ arch/mips/include/asm/mach-ip32/dma-coherence.h    |   26 +-
+ arch/mips/include/asm/mach-jazz/dma-coherence.h    |   26 +-
+ arch/mips/include/asm/mach-lemote/dma-coherence.h  |   26 +-
+ arch/mips/include/asm/mipsregs.h                   |    5 +
+ arch/mips/include/asm/module.h                     |    2 +
+ arch/mips/include/asm/processor.h                  |   69 +
+ arch/mips/include/asm/ptrace.h                     |    4 +
+ arch/mips/include/asm/smp.h                        |    3 +
+ arch/mips/include/asm/stackframe.h                 |   46 +
+ arch/mips/kernel/Makefile                          |    9 +
+ arch/mips/kernel/asm-offsets.c                     |   31 +
+ arch/mips/kernel/branch.c                          |   33 +
+ arch/mips/kernel/cpu-probe.c                       |  182 +-
+ arch/mips/kernel/irq-octeon.c                      |  464 +
+ arch/mips/kernel/octeon_switch.S                   |  506 +
+ arch/mips/kernel/smp.c                             |    2 +
+ arch/mips/kernel/traps.c                           |   34 +-
+ arch/mips/kernel/unaligned.c                       |    2 +-
+ arch/mips/lib/Makefile                             |    1 +
+ arch/mips/math-emu/dsemul.h                        |    1 -
+ arch/mips/mm/Makefile                              |    5 +
+ arch/mips/mm/c-octeon.c                            |  309 +
+ arch/mips/mm/cache.c                               |    6 +
+ arch/mips/mm/cex-oct.S                             |   70 +
+ arch/mips/mm/dma-default.c                         |   24 +-
+ arch/mips/mm/fault.c                               |   16 +
+ arch/mips/mm/tlbex.c                               |    1 +
+ drivers/serial/8250.c                              |  233 +-
+ drivers/serial/8250.h                              |    3 +
+ drivers/serial/serial_core.c                       |    7 +-
+ include/linux/serial_8250.h                        |    2 +
+ include/linux/serial_core.h                        |    7 +-
+ include/linux/serial_reg.h                         |    6 +
+ 90 files changed, 48682 insertions(+), 171 deletions(-)
+ create mode 100644 arch/mips/cavium-octeon/Kconfig
+ create mode 100644 arch/mips/cavium-octeon/Makefile
+ create mode 100644 arch/mips/cavium-octeon/console.c
+ create mode 100644 arch/mips/cavium-octeon/dma-octeon.c
+ create mode 100644 arch/mips/cavium-octeon/executive/Makefile
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-asm.h
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-bootinfo.h
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-bootmem.c
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-bootmem.h
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-csr-addresses.h
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-csr-enums.h
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-csr-typedefs.h
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-csr.h
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-interrupt.h
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-l2c.c
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-l2c.h
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-linux-kernel-exports.c
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-packet.h
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-platform.h
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-spinlock.h
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-sysinfo.c
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-sysinfo.h
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-warn.c
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx-warn.h
+ create mode 100644 arch/mips/cavium-octeon/executive/cvmx.h
+ create mode 100644 arch/mips/cavium-octeon/executive/octeon-feature.h
+ create mode 100644 arch/mips/cavium-octeon/executive/octeon-model.c
+ create mode 100644 arch/mips/cavium-octeon/executive/octeon-model.h
+ create mode 100644 arch/mips/cavium-octeon/flash_setup.c
+ create mode 100644 arch/mips/cavium-octeon/hal.c
+ create mode 100644 arch/mips/cavium-octeon/hal.h
+ create mode 100644 arch/mips/cavium-octeon/i8259.c
+ create mode 100644 arch/mips/cavium-octeon/irq.c
+ create mode 100644 arch/mips/cavium-octeon/octeon-memcpy.S
+ create mode 100644 arch/mips/cavium-octeon/serial.c
+ create mode 100644 arch/mips/cavium-octeon/setup.c
+ create mode 100644 arch/mips/cavium-octeon/smp.c
+ create mode 100644 arch/mips/cavium-octeon/userio.c
+ create mode 100644 arch/mips/configs/cavium-octeon_defconfig
+ create mode 100644 arch/mips/include/asm/mach-cavium-octeon/cpu-feature-overrides.h
+ create mode 100644 arch/mips/include/asm/mach-cavium-octeon/dma-coherence.h
+ create mode 100644 arch/mips/include/asm/mach-cavium-octeon/irq.h
+ create mode 100644 arch/mips/include/asm/mach-cavium-octeon/kernel-entry-init.h
+ create mode 100644 arch/mips/include/asm/mach-cavium-octeon/octeon-hal-read-write.h
+ create mode 100644 arch/mips/include/asm/mach-cavium-octeon/war.h
+ create mode 100644 arch/mips/kernel/irq-octeon.c
+ create mode 100644 arch/mips/kernel/octeon_switch.S
+ create mode 100644 arch/mips/mm/c-octeon.c
+ create mode 100644 arch/mips/mm/cex-oct.S
+
