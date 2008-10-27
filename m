@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752603AbYJ0KnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbYJ0Knw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752603AbYJ0KnG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 06:43:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbYJ0Kmw
+	id S1752856AbYJ0Knw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 06:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbYJ0Knn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 06:42:52 -0400
-Received: from styx.suse.cz ([82.119.242.94]:50382 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751406AbYJ0Kmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 06:42:51 -0400
-Date: Mon, 27 Oct 2008 11:42:50 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       David Miller <davem@davemloft.net>, rjw@sisk.pl,
-       Ingo Molnar <mingo@elte.hu>, s0mbre@tservice.net.ru,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-In-Reply-To: <alpine.LNX.1.10.0810262002450.12928@jikos.suse.cz>
-Message-ID: <alpine.LNX.1.10.0810271138470.12928@jikos.suse.cz>
-References: <20081024.221653.23695396.davem@davemloft.net> <1224914333.3822.18.camel@marge.simson.net> <1224917623.4929.15.camel@marge.simson.net> <20081025.002420.82739316.davem@davemloft.net> <Pine.LNX.4.64.0810260055070.22126@twin.jikos.cz>
- <1225010790.8566.22.camel@marge.simson.net> <1225011648.27415.4.camel@twins> <20081026021153.47878580.akpm@linux-foundation.org> <alpine.LNX.1.10.0810262002450.12928@jikos.suse.cz>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Mon, 27 Oct 2008 06:43:43 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51095 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751328AbYJ0Knm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 06:43:42 -0400
+Date: Mon, 27 Oct 2008 11:43:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Jan Kara <jack@ucw.cz>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Al Viro <viro@zeniv.linux.org.uk>, linux-ext4@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: Re: [PATCH 2/2] ext4: fix a bug accessing freed memory in
+	ext4_abort
+Message-ID: <20081027104325.GA13641@elte.hu>
+References: <19f34abd0810250422t17990222x78fcf0fad2e6f04b@mail.gmail.com> <49056D29.2010700@hitachi.com> <49056FA5.7070202@hitachi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49056FA5.7070202@hitachi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 26 Oct 2008, Jiri Kosina wrote:
 
-> > > > > 208.4 MB/sec  -- vanilla 2.6.16.60
-> > > > > 201.6 MB/sec  -- vanilla 2.6.20.1
-> > > > > 172.9 MB/sec  -- vanilla 2.6.22.19
-> > > > > 74.2 MB/sec   -- vanilla 2.6.23
-> > > > >  46.1 MB/sec  -- vanilla 2.6.24.2
-> > > > >  30.6 MB/sec  -- vanilla 2.6.26.1
-> > > > > I.e. huge drop for 2.6.23 (this was with default configs for each 
-> > > > > respective kernel).
-> > Was this when we decreased the default value of
-> > /proc/sys/vm/dirty_ratio, perhaps?  dbench is sensitive to that.
-> 2.6.28 gives 41.8 MB/s with /proc/sys/vm/dirty_ratio == 50. So small 
-> improvement, but still far far away from the throughput of pre-2.6.23 
-> kernels.
+* Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> wrote:
 
-Ok, so another important datapoint:
+> Vegard Nossum reported a bug which accesses freed memory.  When
+> journal has been aborted, ext4_put_super() calls ext4_abort() after
+> freeing the journal_t object, and then ext4_abort() accesses it.
+> This patch fix it.
+> 
+> Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
 
-with c1e4fe711a4 (just before CFS has been merged for 2.6.23), the dbench 
-throughput measures
+could you please put the word "kmemcheck" into the commit log? ("found 
+via kmemcheck" or so) We want to have an easily git-greppable track 
+record of upstream kernel bugs that were found via kmemcheck. (and 
+there's already a long list)
 
-	187.7 MB/s
-
-in our testing conditions (default config).
-
-With c31f2e8a42c4 (just after CFS has been merged for 2.6.23), the 
-throughput measured by dbench is
-
-	82.3 MB/s
-
-This is the huge drop we have been looking for. After this, the 
-performance was still going down gradually, up to ~45 MS/ we are measuring 
-for 2.6.27. But the biggest drop (more than 50%) points directly to CFS 
-merge.
-
--- 
-Jiri Kosina
-SUSE Labs
+	Ingo
