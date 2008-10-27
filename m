@@ -1,98 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299AbYJ0AuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbYJ0A7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752299AbYJ0AuL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 20:50:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYJ0At5
+	id S1752791AbYJ0A7A (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 20:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbYJ0A6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 20:49:57 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:64967 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751541AbYJ0At4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 20:49:56 -0400
-Date: Mon, 27 Oct 2008 01:49:42 +0100 (MET)
-Message-Id: <200810270049.m9R0ngI8027933@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: jgarzik@pobox.com
-Subject: [PATCH 2.6.28-rc2] sata_promise: proper hardreset
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, stable@kernel.org
+	Sun, 26 Oct 2008 20:58:51 -0400
+Received: from web56306.mail.re3.yahoo.com ([216.252.110.230]:36538 "HELO
+	web56306.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751483AbYJ0A6u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 20:58:50 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=xtB6tG6IJI0tYjIpNnRcwnEFOJZGk9pjvVuOHTOEjLGkpDusER1tIVyKOnvbz5eKH8xMX0SIydXfJ4wYJbm8J+DEOKaSQhnUuUCcpWI5AYg73DGhMCVvMKQ2gvBDtNv6q31DlOmB67SqHOwW4wlpR+IIYCaRFixIdoZebZOVe68=;
+X-YMail-OSG: SqjSyTMVM1n31EIh_Lj7zXXm84oBglpRLcODI.wfGc640xuv7h2lD4Wba_cZufCo9ODN_ozHe4zrALRmRGo87SW3tvW9THHWuyS_N5DTYjfPt6tu.9L0.8AM2h8nb18sJpE1fWdCZIjF7Be9h1ibi2LpFrwDrU1rV0Q4J_w-
+X-Mailer: YahooMailWebService/0.7.247.3
+Date: Sun, 26 Oct 2008 17:58:49 -0700 (PDT)
+From: Paul P <ppak_98@yahoo.com>
+Reply-To: ppak_98@yahoo.com
+Subject: Re: unexpected extra pollout events from epoll
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <107660.83879.qm@web56306.mail.re3.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Promise ATA engines need to be reset when errors are detected.
-That's currently done for errors detected by sata_promise itself,
-but it's not done for errors like timeouts detected outside of
-the low-level driver.
+> You do that by writing data until it's finished, or you
+> get EAGAIN. If you
+> get EAGAIN, you listen for EPOLLOUT.
+> Reading is same, but you'd wait for EPOLLIN.
 
-The effect of this omission is that a timeout tends to result
-in a sequence of failed COMRESETs after which libata EH gives
-up and disables the port. At that point the port's ATA engine
-hangs and even reloading the driver will not resume it.
+I've got a few questions about this approach.  The most logical 
+way to do this seems to be:
 
-To fix this, make sata_promise override ->hardreset with code
-which calls pdc_reset_port() on the port in question before
-calling libata's hardreset. libata ignores its own hardreset on
-PATA ports, so we need a special ->hardreset for PATA ports
-that doesn't call into libata after the pdc_reset_port().
+1) Leave the epoll_wait with the EPOLLIN|EPOLLOUT event flags and
+ use epoll_ctl to switch the interest mask for each fd between EPOLLIN 
+and EPOLLOUT on a per fd basis.
 
-Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
----
-This should also go into the 2.6.27 and 2.6.26 stable branches.
-In older branches libata EH is different and I'm seeing different
-behaviour on timeouts, so I don't think this should go in as-is
-in 2.6.25 and older.
+2) When I'm ready to write, I do a write and if it does not fully 
+write and I get the EAGAIN flag, I switch the fd with epoll_ctl(fd,MOD,EPOLLOUT). 
 
- drivers/ata/sata_promise.c |   20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+However, I get strange behavior when I tried adding fd's with only the 
+EPOLLIN interest mask. If I use epoll_wait with both the EPOLLIN and 
+EPOLLOUT interest mask, but add fd's with only the EPOLLIN interest mask,
+I still seem to get EPOLLOUT events on the fd.
 
-diff -rupN linux-2.6.28-rc2/drivers/ata/sata_promise.c linux-2.6.28-rc2.sata_promise-proper-hardreset/drivers/ata/sata_promise.c
---- linux-2.6.28-rc2/drivers/ata/sata_promise.c	2008-10-26 21:35:33.000000000 +0100
-+++ linux-2.6.28-rc2.sata_promise-proper-hardreset/drivers/ata/sata_promise.c	2008-10-26 23:46:03.000000000 +0100
-@@ -153,6 +153,10 @@ static void pdc_freeze(struct ata_port *
- static void pdc_sata_freeze(struct ata_port *ap);
- static void pdc_thaw(struct ata_port *ap);
- static void pdc_sata_thaw(struct ata_port *ap);
-+static int pdc_pata_hardreset(struct ata_link *link, unsigned int *class,
-+			      unsigned long deadline);
-+static int pdc_sata_hardreset(struct ata_link *link, unsigned int *class,
-+			      unsigned long deadline);
- static void pdc_error_handler(struct ata_port *ap);
- static void pdc_post_internal_cmd(struct ata_queued_cmd *qc);
- static int pdc_pata_cable_detect(struct ata_port *ap);
-@@ -186,6 +190,7 @@ static struct ata_port_operations pdc_sa
- 	.scr_read		= pdc_sata_scr_read,
- 	.scr_write		= pdc_sata_scr_write,
- 	.port_start		= pdc_sata_port_start,
-+	.hardreset		= pdc_sata_hardreset,
- };
- 
- /* First-generation chips need a more restrictive ->check_atapi_dma op */
-@@ -200,6 +205,7 @@ static struct ata_port_operations pdc_pa
- 	.freeze			= pdc_freeze,
- 	.thaw			= pdc_thaw,
- 	.port_start		= pdc_common_port_start,
-+	.hardreset		= pdc_pata_hardreset,
- };
- 
- static const struct ata_port_info pdc_port_info[] = {
-@@ -693,6 +699,20 @@ static void pdc_sata_thaw(struct ata_por
- 	readl(host_mmio + hotplug_offset); /* flush */
- }
- 
-+static int pdc_pata_hardreset(struct ata_link *link, unsigned int *class,
-+			      unsigned long deadline)
-+{
-+	pdc_reset_port(link->ap);
-+	return 0;
-+}
-+
-+static int pdc_sata_hardreset(struct ata_link *link, unsigned int *class,
-+			      unsigned long deadline)
-+{
-+	pdc_reset_port(link->ap);
-+	return sata_sff_hardreset(link, class, deadline);
-+}
-+
- static void pdc_error_handler(struct ata_port *ap)
- {
- 	if (!(ap->pflags & ATA_PFLAG_FROZEN))
+Am I supposed to change the main loop with epoll_wait so that when one 
+socket is reading that I switch the main loop to get EPOLLOUT events?  
+That means that I'm not receiving on any fd while I'm sending, so this 
+probably isn't right.
+
+So, I'm a little confused.
+
+Thanks in advance.
+
+Paul
+
+
+
+      
