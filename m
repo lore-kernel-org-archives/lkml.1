@@ -1,67 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753260AbYJ0RMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752205AbYJ0RRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753260AbYJ0RMb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 13:12:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbYJ0RMX
+	id S1752205AbYJ0RRn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 13:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYJ0RRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 13:12:23 -0400
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:34061 "EHLO
-	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750928AbYJ0RMW (ORCPT
+	Mon, 27 Oct 2008 13:17:36 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:37266 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751092AbYJ0RRf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 13:12:22 -0400
-Message-ID: <4905F648.4030402@cs.columbia.edu>
-Date: Mon, 27 Oct 2008 13:11:36 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Peter Chubb <peterc@gelato.unsw.edu.au>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, hpa@zytor.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de
-Subject: Re: [RFC v7][PATCH 2/9] General infrastructure for checkpoint	restart
-References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu>	 <1224481237-4892-3-git-send-email-orenl@cs.columbia.edu>	 <20081021124130.a002e838.akpm@linux-foundation.org>	 <20081021202410.GA10423@us.ibm.com>	<48FE82DF.6030005@cs.columbia.edu>	 <20081022152804.GA23821@us.ibm.com>	<48FF4EB2.5060206@cs.columbia.edu>	 <87tzayh27r.wl%peter@chubb.wattle.id.au> <49059FED.4030202@cs.columbia.edu> <1225125752.12673.79.camel@nimitz>
-In-Reply-To: <1225125752.12673.79.camel@nimitz>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 27 Oct 2008 13:17:35 -0400
+Subject: Re: [PATCH] memory hotplug: fix page_zone() calculation in
+	test_pages_isolated()
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
+       y-goto@jp.fujitsu.com
+In-Reply-To: <4905F114.3030406@de.ibm.com>
+References: <4905F114.3030406@de.ibm.com>
+Content-Type: text/plain
+Date: Mon, 27 Oct 2008 18:17:26 +0100
+Message-Id: <1225127846.20384.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ouch, stupid Thunderbird broke the patch (or stupid me used Thunderbird...),
+will send a new one.
 
-Dave Hansen wrote:
-> On Mon, 2008-10-27 at 07:03 -0400, Oren Laadan wrote:
->>> In our implementation, we simply refused to checkpoint setid
->> programs.
->>
->> True. And this works very well for HPC applications.
->>
->> However, it doesn't work so well for server applications, for
->> instance.
->>
->> Also, you could use file system snapshotting to ensure that the file
->> system view does not change, and still face the same issue.
->>
->> So I'm perfectly ok with deferring this discussion to a later time :)
-> 
-> Oren, is this a good place to stick a process_deny_checkpoint()?  Both
-> so we refuse to checkpoint, and document this as something that has to
-> be addressed later?
-
-why refuse to checkpoint ?
-
-if I'm root, and I want to checkpoint, and later restart, my sshd server
-(assuming we support listening sockets) - then why not ?
-
-we can just let it be, and have the restart fail (if it isn't root that
-does the restart); perhaps add something like warn_checkpoint() (similar
-to deny, but only warns) ?
-
-Oren.
+Gerald
 
 
