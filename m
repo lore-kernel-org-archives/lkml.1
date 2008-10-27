@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601AbYJ0J6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752880AbYJ0J6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752601AbYJ0J6Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 05:58:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbYJ0J55
+	id S1752880AbYJ0J6z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 05:58:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbYJ0J6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 05:57:57 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53842
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751496AbYJ0J54 (ORCPT
+	Mon, 27 Oct 2008 05:58:47 -0400
+Received: from smtp4.netcologne.de ([194.8.194.137]:41670 "EHLO
+	smtp4.netcologne.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751559AbYJ0J6q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 05:57:56 -0400
-Date: Mon, 27 Oct 2008 02:57:33 -0700 (PDT)
-Message-Id: <20081027.025733.48914319.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: zbr@ioremap.net, akpm@linux-foundation.org, a.p.zijlstra@chello.nl,
-       efault@gmx.de, jkosina@suse.cz, rjw@sisk.pl, s0mbre@tservice.net.ru,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081027093035.GA23743@elte.hu>
-References: <20081026100555.GA26033@ioremap.net>
-	<20081026.193451.36032548.davem@davemloft.net>
-	<20081027093035.GA23743@elte.hu>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Oct 2008 05:58:46 -0400
+Date: Mon, 27 Oct 2008 10:58:43 +0100
+From: Max Kellermann <max@duempel.org>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: Re: High load in 2.6.27, NFS / rpcauth_lookup_credcache()?
+Message-ID: <20081027095843.GA10937@squirrel.roonstrasse.net>
+Mail-Followup-To: Trond Myklebust <trond.myklebust@fys.uio.no>,
+	linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+References: <20081022091207.GA12996@squirrel.roonstrasse.net> <20081023123628.GA18549@squirrel.roonstrasse.net> <1224773745.7625.4.camel@localhost> <20081024083913.GA15197@squirrel.roonstrasse.net> <1224871763.22672.33.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1224871763.22672.33.camel@localhost>
+X-Terrorism: FBI NSA CIA Clinton Bush Blair Urane Nuclear Bomb Terror
+	Hussein Iraq Iran Syria Plutonium Bin Laden World Trade Center
+	Afghanistan Taliban Jaish Rocket Guantanamo Ziercke
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 27 Oct 2008 10:30:35 +0100
+On 2008/10/24 20:09, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> OK, could you please describe your environment a bit. Do you have lots
+> of different users logged in at the same time, or do you perhaps use
+> newgrp or su to switch uid/gids a lot on your processes?
+> I'm trying to see if there might be a reason for the lookup in the
+> credcache being such a heavy duty operation in your setup.
 
-> But it's a difficult call with no silver bullets. On one hand we have 
-> folks putting more and more stuff into the context-switching hotpath on 
-> the (mostly valid) point that the scheduler is a slowpath compared to 
-> most other things.
+It's a web server for shared hosting.  The web space is mounted via
+NFSv3 from a NetApp.  There is a huge number of web sites on this
+cluster.  All web sites are owned by the same UID, and the web server
+runs as a different UID (read-only access).
 
-This I heavily disagree with.  The scheduler should be so cheap
-that you cannot possibly notice that it is even there for a benchmark
-like tbench.
+Each time a CGI starts, its uid is changed to the one "owner" UID
+(similar to mod_suexec, but there's only one UID for all customer
+accounts).  Each time a CGI starts, its chroot (pivot_root) is
+constructed with several bind mounts (in a separate namespace with
+CLONE_NEWNS).
 
-If we now think it's ok that picking which task to run is more
-expensive than writing 64 bytes over a TCP socket and then blocking on
-a read, I'd like to stop using Linux. :-) That's "real work" and if
-the scheduler is more expensive than "real work" we lose.
+There are no new users or groups being created.  There are only 2 UIDs
+accessing NFS: the webserver (ro) and CGI (rw).
 
-I do want to remind you of a thread you participated in, in April,
-where you complained about loopback TCP performance:
-
-	http://marc.info/?l=linux-netdev&m=120696343707674&w=2
-
-It might be fruitful for you to rerun your tests with CFS reverted
-(start with 2.6.22 and progressively run your benchmark on every
-release), you know, just for fun :-)
-
-> On the other hand we've got folks doing high-context-switch ratio
-> benchmarks and complaining about the overhead whenever something
-> goes in that improves the quality of scheduling of a workload that
-> does not context-switch as massively as tbench. It's a difficult
-> balance and we cannot satisfy both camps.
-
-We've always been proud of our scheduling overhead being extremely
-low, and you have to face the simple fact that starting in 2.6.23 it's
-been getting progressively more and more expensive.
-
-Consistently so.
-
-People even noticed it.
+Max
