@@ -1,40 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753538AbYJ0Sc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753454AbYJ0Sdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753538AbYJ0Sc3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 14:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbYJ0ScU
+	id S1753454AbYJ0Sdp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 14:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbYJ0Sde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 14:32:20 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:53987 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751636AbYJ0ScU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 14:32:20 -0400
-Date: Mon, 27 Oct 2008 11:32:09 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ibmpex: trivial endian annotation in extract_data
-	helper
-Message-ID: <20081027183209.GU7771@tree.beaverton.ibm.com>
-Reply-To: djwong@us.ibm.com
-References: <1224891898.5784.0.camel@brick>
+	Mon, 27 Oct 2008 14:33:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45385 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751559AbYJ0Sde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 14:33:34 -0400
+Date: Mon, 27 Oct 2008 19:33:12 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jiri Kosina <jkosina@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       David Miller <davem@davemloft.net>, rjw@sisk.pl, s0mbre@tservice.net.ru,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+Message-ID: <20081027183312.GD11494@elte.hu>
+References: <1224917623.4929.15.camel@marge.simson.net> <20081025.002420.82739316.davem@davemloft.net> <Pine.LNX.4.64.0810260055070.22126@twin.jikos.cz> <1225010790.8566.22.camel@marge.simson.net> <1225011648.27415.4.camel@twins> <20081026021153.47878580.akpm@linux-foundation.org> <alpine.LNX.1.10.0810262002450.12928@jikos.suse.cz> <alpine.LNX.1.10.0810271138470.12928@jikos.suse.cz> <20081027112750.GA2771@elte.hu> <20081027113306.5b1d5898@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1224891898.5784.0.camel@brick>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20081027113306.5b1d5898@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 24, 2008 at 04:44:58PM -0700, Harvey Harrison wrote:
-> This helper is used in few enough locations that open-coding it
-> at the call sites may be better than the helper.
 
-I'm not sure how this comment relates to the diff.
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-That said, the diff itself is ok by me.
+> > The way to get the best possible dbench numbers in CPU-bound dbench 
+> > runs, you have to throw away the scheduler completely, and do this 
+> > instead:
+> > 
+> >  - first execute all requests of client 1
+> >  - then execute all requests of client 2
+> >  ....
+> >  - execute all requests of client N
+> 
+> Rubbish. [...]
 
---D
+i've actually implemented that about a decade ago: i've tracked down 
+what makes dbench tick, i've implemented the kernel heuristics for it 
+to make dbench scale linearly with the number of clients - just to be 
+shot down by Linus about my utter rubbish approach ;-)
+
+> [...] If you do that you'll not get enough I/O in parallel to 
+> schedule the disk well (not that most of our I/O schedulers are 
+> doing the job well, and the vm writeback threads then mess it up and 
+> the lack of Arjans ioprio fixes then totally screw you) </rant>
+
+the best dbench results come from systems that have enough RAM to 
+cache the full working set, and a filesystem intelligent enough to not 
+insert bogus IO serialization cycles (ext3 is not such a filesystem).
+
+The moment there's real IO it becomes harder to analyze but the same 
+basic behavior remains: the more unfair the IO scheduler, the "better" 
+dbench results we get.
+
+	Ingo
