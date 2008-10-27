@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752574AbYJ0LeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbYJ0LhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752574AbYJ0LeW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 07:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYJ0LeL
+	id S1752814AbYJ0LhI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 07:37:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbYJ0Lg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 07:34:11 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50507 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751689AbYJ0LeK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 07:34:10 -0400
-Date: Mon, 27 Oct 2008 11:33:06 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jiri Kosina <jkosina@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       David Miller <davem@davemloft.net>, rjw@sisk.pl, s0mbre@tservice.net.ru,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-Message-ID: <20081027113306.5b1d5898@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081027112750.GA2771@elte.hu>
-References: <20081024.221653.23695396.davem@davemloft.net>
-	<1224914333.3822.18.camel@marge.simson.net>
-	<1224917623.4929.15.camel@marge.simson.net>
-	<20081025.002420.82739316.davem@davemloft.net>
-	<Pine.LNX.4.64.0810260055070.22126@twin.jikos.cz>
-	<1225010790.8566.22.camel@marge.simson.net>
-	<1225011648.27415.4.camel@twins>
-	<20081026021153.47878580.akpm@linux-foundation.org>
-	<alpine.LNX.1.10.0810262002450.12928@jikos.suse.cz>
-	<alpine.LNX.1.10.0810271138470.12928@jikos.suse.cz>
-	<20081027112750.GA2771@elte.hu>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Oct 2008 07:36:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54993 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751541AbYJ0Lg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 07:36:56 -0400
+Date: Mon, 27 Oct 2008 12:36:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Pavel Machek <pavel@suse.cz>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Jack Steiner <steiner@sgi.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Richard Purdie <rpurdie@rpsys.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] SGI X86 UV: Provide a System Activity Indicator
+	driver
+Message-ID: <20081027113621.GA5631@elte.hu>
+References: <4901AF28.4070606@sgi.com> <20081024120103.GD1680@elf.ucw.cz> <20081024120544.GA9812@elte.hu> <4901BF30.3090708@sgi.com> <87mygt9815.fsf@basil.nowhere.org> <490249CF.2080308@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <490249CF.2080308@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The way to get the best possible dbench numbers in CPU-bound dbench 
-> runs, you have to throw away the scheduler completely, and do this 
-> instead:
-> 
->  - first execute all requests of client 1
->  - then execute all requests of client 2
->  ....
->  - execute all requests of client N
 
-Rubbish. If you do that you'll not get enough I/O in parallel to schedule
-the disk well (not that most of our I/O schedulers are doing the job
-well, and the vm writeback threads then mess it up and the lack of Arjans
-ioprio fixes then totally screw you) </rant>
+* Mike Travis <travis@sgi.com> wrote:
 
-> the moment the clients are allowed to overlap, the moment their requests 
-> are executed more fairly, the dbench numbers drop.
+> > The idle thread always has pid 0. So if the timer sees 
+> > current->pid == 0 it interrupted idle.
 
-Fairness isn't everything. Dbench is a fairly good tool for studying some
-real world workloads. If your fairness hurts throughput that much maybe
-your scheduler algorithm is just plain *wrong* as it isn't adapting to
-workload at all well.
+that's still hacky as it hardcodes the idle == pid-0 assumption. 
+Please use the idle_cpu() function of the scheduler instead.
 
-Alan
+	Ingo
