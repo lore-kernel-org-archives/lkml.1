@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbYJ0TbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbYJ0Tbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753125AbYJ0TbI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 15:31:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYJ0Ta5
+	id S1753598AbYJ0Tbt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 15:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751674AbYJ0Tbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 15:30:57 -0400
-Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:29275 "EHLO
-	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751099AbYJ0Ta4 (ORCPT
+	Mon, 27 Oct 2008 15:31:40 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:2260 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751099AbYJ0Tbj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 15:30:56 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgUFAL2yBUlR9dge/2dsb2JhbACBdsU/g08
-Date: Mon, 27 Oct 2008 20:30:53 +0100
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Thomas Mingarelli <thomas.mingarelli@hp.com>,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH] [WATCHDOG] Fix kdump when using hpwdt
-Message-ID: <20081027193053.GA2659@infomag.infomag.iguana.be>
-References: <1225033177-5311-1-git-send-email-bwalle@suse.de>
+	Mon, 27 Oct 2008 15:31:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=d1kjaawB8oGwxnLA/cCynKsKbatTIAHVn44fkJdn7wujH1I1+zA+xA2bxH+S0NNp6x
+         c1zhkRG9US854u/wi+SIjskfnbvPqKaX+RhWEpTnqBK1wKBN/3ixd/J5Awxm243Db9AY
+         wKu82Bd8hDirJtliW2N0/JFN20GV3pafTS3qc=
+Subject: Re: [PATCH] ibmpex: trivial endian annotation in extract_data
+ helper
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: djwong@us.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081027183209.GU7771@tree.beaverton.ibm.com>
+References: <1224891898.5784.0.camel@brick>
+	 <20081027183209.GU7771@tree.beaverton.ibm.com>
+Content-Type: text/plain
+Date: Mon, 27 Oct 2008 12:26:06 -0700
+Message-Id: <1225135566.5396.1.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1225033177-5311-1-git-send-email-bwalle@suse.de>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bernard,
+On Mon, 2008-10-27 at 11:32 -0700, Darrick J. Wong wrote:
+> On Fri, Oct 24, 2008 at 04:44:58PM -0700, Harvey Harrison wrote:
+> > This helper is used in few enough locations that open-coding it
+> > at the call sites may be better than the helper.
+> 
+> I'm not sure how this comment relates to the diff.
+> 
 
-Tom will have a look at the fix but the below code is wrong:
+I was referring to the extract_data helper inline, it's only used ~5
+times and doesn't add much (IMO) over just opencoding it.
 
-> -module_param(allow_kdump, int, 0);
-> +module_param(allow_kdump, int, 1);
->  MODULE_PARM_DESC(allow_kdump, "Start a kernel dump after NMI occurs");
+Cheers,
 
-the syntax is: #define module_param(name, type, perm)
-perm sets the visibility in sysfs: 000 means it's not there,
-read bits mean it's readable, write bits mean it's writable.
-
-perm is not the default value for the integer but a file permission attribute.
-
-Kind regards,
-Wim.
+Harvey
 
