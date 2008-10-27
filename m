@@ -1,282 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753062AbYJ0IeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbYJ0Iev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753062AbYJ0IeR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 04:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYJ0IeC
+	id S1753423AbYJ0Iev (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 04:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbYJ0Iem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 04:34:02 -0400
-Received: from smtp2.ono.com ([62.42.230.20]:16478 "EHLO resmaa03.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751246AbYJ0IeA convert rfc822-to-8bit (ORCPT
+	Mon, 27 Oct 2008 04:34:42 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:54138 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752041AbYJ0Iel (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 04:34:00 -0400
-Date: Mon, 27 Oct 2008 09:33:52 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.27-git3: no SD card reader
-Message-ID: <20081027093352.55eace33@werewolf.home>
-In-Reply-To: <200810250034.59797.rjw@sisk.pl>
-References: <20081014025453.617f2ef8@werewolf.home>
-	<20081014174536.1353d17e@mjolnir.drzeus.cx>
-	<20081014232759.08f5d212@werewolf.home>
-	<200810250034.59797.rjw@sisk.pl>
-X-Mailer: Claws Mail 3.6.1cvs12 (GTK+ 2.14.4; i686-pc-linux-gnu)
-Mime-Version: 1.0
+	Mon, 27 Oct 2008 04:34:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=K1otC1gzBGJ7LHJQzMDp5y7gJChdmXhbPLAG+LrVSCFdkj5AX62BDH1K9jV+HD5zgl
+         e6vDbQ5B9PTiPdwRSqqLLEUCzCgKySsNcfF5F8YUgVLj4gl2P/4/vFM3Kwnn7qLFiZg2
+         DXuRhbRRYVbos+wyVK/gBzIk4GT/eC7PifOsc=
+Message-ID: <a8e1da0810270134i26753dd1v6e9a5d122136bbbf@mail.gmail.com>
+Date: Mon, 27 Oct 2008 16:34:40 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [BUG] hang with ath5k
+Cc: "Jiri Slaby" <jirislaby@gmail.com>, ath5k-devel@venema.h4ckr.net,
+       linux-wireless@vger.kernel.org,
+       "kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200810250040.24324.rjw@sisk.pl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a8e1da0810140142g633486br12c2799b2fa1670e@mail.gmail.com>
+	 <48F6133D.1070508@gmail.com>
+	 <a8e1da0810152334x6c596f88i1fd74548dc166f3a@mail.gmail.com>
+	 <200810250040.24324.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 25 Oct 2008 00:34:59 +0200, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Sat, Oct 25, 2008 at 6:40 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday, 16 of October 2008, Dave Young wrote:
+>> On Wed, Oct 15, 2008 at 11:58 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
+>> > On 10/14/2008 10:42 AM, Dave Young wrote:
+>> >> 1) run wpa_supplicant
+>> >> 2) ctrl + C
+>> >> 3) goto 1)
+>> >
+>> > It doesn't happen here. How many iterations in average you need to reproduce this?
+>> >
+>>
+>> About 15 times for me,
+>> BTW, wpa_gui running while testing
+>
+> Is this a regression from 2.6.26?
+>
+> Rafael
+>
 
-> On Tuesday, 14 of October 2008, J.A. Magallón wrote:
-> > On Tue, 14 Oct 2008 17:45:36 +0200, Pierre Ossman <drzeus-list@drzeus.cx> wrote:
-> > 
-> > > On Tue, 14 Oct 2008 02:54:53 +0200
-> > > "J.A. Magallón" <jamagallon@ono.com> wrote:
-> > > 
-> > > > Hi...
-> > > > 
-> > > > More problems with git3. The left SD card reader is not detected on the One.
-> > > > With a working kernel (distro 2.6.27):
-> > > > 
-> > > > Oct 14 02:44:27 one kernel: mmc0: error -84 whilst initialising SD card
-> > > > 
-> > > > Any ideas ?
-> > > > 
-> > > 
-> > > -84 is -EILSEQ, which is some kind of bit error. Since you're running a
-> > > JMicron controller, I'm guessing that something in your system isn't
-> > > handling the higher speed (we forcefully enable highspeed on the
-> > > Jmicron controll now).
-> > > 
-> > 
-> > Err, sorry if this is stupid. I can see the card reader even if I don't
-> > load the jmb38x_ms.ko module,just sdhci_pci. I understand that it is needed only if
-> > I want to read memstick type cards. Or not ?
-> > I suppose you refer to 'settings for JMicron hardware in sdhci_pci module'.
-> > 
-> > > Have you tested more than one card?
-> > > 
-> > 
-> > I have two (both unknown brands for me, but I write full names fwiw):
-> > - One "MBA Executive HiSpeed SD", 2Gb
-> > - One "takeMS SDHC card Class6",  8Gb
-> > 
-> > Both give about 10Mb/s on read with hdparm under 2.6.27.
-> > 
-> > > What machine is this? 
-> > 
-> > It's an Acer Aspire One. From what I have seen, there are two SD devices.
-> > Both are capable to read SDHC cards, I have switched cards and they work
-> > (or at the moment both are working as backwards-compatible in plain SD
-> > mode, if that even exists...).
-> > 
-> > From a half-working 2.6.27 kernel (half will be explained below):
-> > 
-> > sdhci: Secure Digital Host Controller Interface driver
-> > sdhci: Copyright(c) Pierre Ossman
-> > sdhci-pci 0000:01:00.0: SDHCI controller found [197b:2382] (rev 0)
-> > sdhci-pci 0000:01:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> > sdhci-pci 0000:01:00.0: setting latency timer to 64
-> > mmc0: SDHCI controller on PCI [0000:01:00.0] using ADMA
-> > sdhci-pci 0000:01:00.2: SDHCI controller found [197b:2381] (rev 0)
-> > sdhci-pci 0000:01:00.2: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> > sdhci-pci 0000:01:00.2: Refusing to bind to secondary interface.
-> > sdhci-pci 0000:01:00.2: PCI INT A disabled
-> > 
-> > (this is the right reader, the multi-format one)
-> > 
-> > sdhci-pci 0000:04:00.0: SDHCI controller found [197b:2382] (rev 0)
-> > sdhci-pci 0000:04:00.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
-> > sdhci-pci 0000:04:00.0: setting latency timer to 64
-> > mmc1: SDHCI controller on PCI [0000:04:00.0] using ADMA
-> > sdhci-pci 0000:04:00.2: SDHCI controller found [197b:2381] (rev 0)
-> > sdhci-pci 0000:04:00.2: PCI INT A -> GSI 19 (level, low) -> IRQ 19
-> > sdhci-pci 0000:04:00.2: Refusing to bind to secondary interface.
-> > sdhci-pci 0000:04:00.2: PCI INT A disabled
-> > 
-> > (and this is the left one, the SD-only)
-> > 
-> > ...
-> > mmc0: new SD card at address 0002
-> > ...
-> > mmc1: new SDHC card at address 0002
-> > ...
-> > mmcblk0: mmc0:0002 00000 1974272KiB
-> >  mmcblk0: p1
-> > mmcblk1: mmc1:0002       7917568KiB
-> >  mmcblk1: p1
-> > 
-> > one:~# lspci -t
-> > -[0000:00]-+-00.0
-> >            +-02.0
-> >            +-02.1
-> >            +-1b.0
-> >            +-1c.0-[0000:01]--+-00.0
-> >            |                 +-00.2
-> >            |                 +-00.3
-> >            |                 \-00.4
-> >            +-1c.1-[0000:02]----00.0
-> >            +-1c.2-[0000:03]----00.0
-> >            +-1c.3-[0000:04]--+-00.0
-> >            |                 +-00.2
-> >            |                 +-00.3
-> >            |                 \-00.4
-> >            +-1d.0
-> >            +-1d.1
-> >            +-1d.2
-> >            +-1d.3
-> >            +-1d.7
-> >            +-1e.0-[0000:05]--
-> >            +-1f.0
-> >            +-1f.2
-> >            \-1f.3
-> > 
-> > one:~# lspci
-> > 00:00.0 Host bridge: Intel Corporation Mobile 945GME Express Memory Controller Hub (rev 03)
-> > 00:02.0 VGA compatible controller: Intel Corporation Mobile 945GME Express Integrated Graphics Controller (rev 03)
-> > 00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME, 943/940GML Express Integrated Graphics Controller (rev 03)
-> > 00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller (rev 02)
-> > 00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 1 (rev 02)
-> > 00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 2 (rev 02)
-> > 00:1c.2 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 3 (rev 02)
-> > 00:1c.3 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 4 (rev 02)
-> > 00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI Controller #1 (rev 02)
-> > 00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI Controller #2 (rev 02)
-> > 00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI Controller #3 (rev 02)
-> > 00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI Controller #4 (rev 02)
-> > 00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI Controller (rev 02)
-> > 00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev e2)
-> > 00:1f.0 ISA bridge: Intel Corporation 82801GBM (ICH7-M) LPC Interface Bridge (rev 02)
-> > 00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family) SATA IDE Controller (rev 02)
-> > 00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller (rev 02)
-> > 01:00.0 System peripheral: JMicron Technologies, Inc. Device 2382
-> > 01:00.2 SD Host controller: JMicron Technologies, Inc. Device 2381
-> > 01:00.3 System peripheral: JMicron Technologies, Inc. Device 2383
-> > 01:00.4 System peripheral: JMicron Technologies, Inc. Device 2384
-> > 02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8101E/RTL8102E PCI Express Fast Ethernet controller (rev 02)
-> > 03:00.0 Ethernet controller: Atheros Communications Inc. AR242x 802.11abg Wireless PCI Express Adapter (rev 01)
-> > 04:00.0 System peripheral: JMicron Technologies, Inc. Device 2382
-> > 04:00.2 SD Host controller: JMicron Technologies, Inc. Device 2381
-> > 04:00.3 System peripheral: JMicron Technologies, Inc. Device 2383
-> > 04:00.4 System peripheral: JMicron Technologies, Inc. Device 2384
-> > 
-> > 
-> > 
-> > I call this half-working because I have to boot with a card inside a slot
-> > to have it detected. If i boot without the card-in, it even dissapears from
-> > lspci. This is just with the left SD inserted:
-> > 
-> > one:~# lspci
-> > 00:00.0 Host bridge: Intel Corporation Mobile 945GME Express Memory Controller Hub (rev 03)
-> > 00:02.0 VGA compatible controller: Intel Corporation Mobile 945GME Express Integrated Graphics Controller (rev 03)
-> > 00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME, 943/940GML Express Integrated Graphics Controller (rev 03)
-> > 00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller (rev 02)
-> > 00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 1 (rev 02)
-> > 00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 2 (rev 02)
-> > 00:1c.2 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 3 (rev 02)
-> > 00:1c.3 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 4 (rev 02)
-> > 00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI Controller #1 (rev 02)
-> > 00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI Controller #2 (rev 02)
-> > 00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI Controller #3 (rev 02)
-> > 00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI Controller #4 (rev 02)
-> > 00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI Controller (rev 02)
-> > 00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev e2)
-> > 00:1f.0 ISA bridge: Intel Corporation 82801GBM (ICH7-M) LPC Interface Bridge (rev 02)
-> > 00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family) SATA IDE Controller (rev 02)
-> > 00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller (rev 02)
-> > 02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8101E/RTL8102E PCI Express Fast Ethernet controller (rev 02)
-> > 03:00.0 Ethernet controller: Atheros Communications Inc. AR242x 802.11abg Wireless PCI Express Adapter (rev 01)
-> > 04:00.0 System peripheral: JMicron Technologies, Inc. Device 2382
-> > 04:00.2 SD Host controller: JMicron Technologies, Inc. Device 2381
-> > 04:00.3 System peripheral: JMicron Technologies, Inc. Device 2383
-> > 04:00.4 System peripheral: JMicron Technologies, Inc. Device 2384
-> > 
-> > If I insert a card on the right slot now it has no effect, it does not appear.
-> > I suppose it is PCI hot-plunggin that is not hot nor plugs anything ;).:
-> > 
-> > one:~# lspci -t
-> > -[0000:00]-+-00.0
-> >            +-02.0
-> >            +-02.1
-> >            +-1b.0
-> >            +-1c.0-[0000:01]--
-> >            +-1c.1-[0000:02]----00.0
-> >            +-1c.2-[0000:03]----00.0
-> >            +-1c.3-[0000:04]--+-00.0
-> >            |                 +-00.2
-> >            |                 +-00.3
-> >            |                 \-00.4
-> >            +-1d.0
-> >            +-1d.1
-> >            +-1d.2
-> >            +-1d.3
-> >            +-1d.7
-> >            +-1e.0-[0000:05]--
-> >            +-1f.0
-> >            +-1f.2
-> >            \-1f.3
-> > 
-> > The tree after the bridge in 00:1c.0 is gone !!.
-> > I googled about it and someone talked about pciehp_force, but last time
-> > I tried some other devices (ether, could be?) dissapeared.
-> > 
-> > And now with -git4:
-> > 
-> > sdhci: Secure Digital Host Controller Interface driver
-> > sdhci: Copyright(c) Pierre Ossman
-> > sdhci-pci 0000:01:00.0: SDHCI controller found [197b:2382] (rev 0)
-> > sdhci-pci 0000:01:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> > sdhci-pci 0000:01:00.0: setting latency timer to 64
-> > mmc0: SDHCI controller on PCI [0000:01:00.0] using ADMA
-> > sdhci-pci 0000:01:00.2: SDHCI controller found [197b:2381] (rev 0)
-> > sdhci-pci 0000:01:00.2: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> > sdhci-pci 0000:01:00.2: Refusing to bind to secondary interface.
-> > sdhci-pci 0000:01:00.2: PCI INT A disabled
-> > sdhci-pci 0000:04:00.0: SDHCI controller found [197b:2382] (rev 0)
-> > sdhci-pci 0000:04:00.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
-> > sdhci-pci 0000:04:00.0: setting latency timer to 64
-> > mmc1: SDHCI controller on PCI [0000:04:00.0] using ADMA
-> > sdhci-pci 0000:04:00.2: SDHCI controller found [197b:2381] (rev 0)
-> > sdhci-pci 0000:04:00.2: PCI INT A -> GSI 19 (level, low) -> IRQ 19
-> > sdhci-pci 0000:04:00.2: Refusing to bind to secondary interface.
-> > sdhci-pci 0000:04:00.2: PCI INT A disabled
-> > ...
-> > mmc0: error -84 whilst initialising SD card
-> > ...
-> > mmc1: error -84 whilst initialising SD card
-> > 
-> > 
-> > Mmm, looking at the logs I have seen that in 2.6.27 shpchp is loaded
-> > way before sdhci, and in -git4 it loads after it. Can this have
-> > any effect ?
-> > 
-> > > Rgds
-> > 
-> > TIA, hope all this gives some light.
-> > If you need full dmesg's, just ask.
-> 
-> Is this still a problem in mainline?
-> 
-> I understand from your postings that 2.6.27 is OK, correct?
-> 
+Test with 2.6.28-rc2,  run
+wpa_supplicant -i wlan0 -c /etc/wpa_supplicant.conf,
+kernel warning triggered:
 
-I solved this in modprobe.conf:
-
-options sdhci debug_quirks=1
-
-If I uderstood the source, that touches the controller clock on each reset for
-the operation to work.
-
-2.6.28-rc2 still doesn't see the card without that option.
-
-And there is another problem, -rc2 doesn't reboot on the One, but that's for
-another thread (don't know if it can be related).
+[ 1648.091084] ------------[ cut here ]------------
+[ 1648.091090] WARNING: at net/mac80211/rx.c:2201
+__ieee80211_rx+0x1d0/0x5f0 [mac80211]()
+[ 1648.091094] Modules linked in: rfcomm l2cap bluetooth container
+fuse ath5k mac80211 led_class psmouse serio_raw sg cfg80211 e100 mii
+intel_agp agpgart thermal button processor thermal_sys evdev
+[ 1648.091127] Pid: 0, comm: swapper Not tainted 2.6.28-rc1-smp #15
+[ 1648.091130] Call Trace:
+[ 1648.091140]  [<c01318a9>] warn_on_slowpath+0x59/0x80
+[ 1648.091148]  [<c01a15a6>] ? check_bytes_and_report+0x26/0xd0
+[ 1648.091155]  [<c03f2b06>] ? __kfree_skb+0x36/0x90
+[ 1648.091160]  [<c0157bff>] ? validate_chain+0xbf/0xea0
+[ 1648.091165]  [<c03f2b06>] ? __kfree_skb+0x36/0x90
+[ 1648.091170]  [<c0158c8a>] ? __lock_acquire+0x2aa/0x9a0
+[ 1648.091187]  [<e01b7640>] __ieee80211_rx+0x1d0/0x5f0 [mac80211]
+[ 1648.091199]  [<e017a001>] ? ath5k_hw_get_tsf64+0x51/0x90 [ath5k]
+[ 1648.091205]  [<c0476e0e>] ? _spin_lock+0x5e/0x70
+[ 1648.091215]  [<e01815f8>] ath5k_tasklet_rx+0x2f8/0x6b0 [ath5k]
+[ 1648.091221]  [<c0158c8a>] ? __lock_acquire+0x2aa/0x9a0
+[ 1648.091227]  [<c0137173>] tasklet_action+0x53/0xd0
+[ 1648.091232]  [<c01368e7>] __do_softirq+0xa7/0x170
+[ 1648.091237]  [<c0136a15>] do_softirq+0x65/0x70
+[ 1648.091242]  [<c0136eb7>] irq_exit+0x77/0x90
+[ 1648.091247]  [<c0106756>] do_IRQ+0x96/0xc0
+[ 1648.091252]  [<c0104a0c>] common_interrupt+0x28/0x30
+[ 1648.091258]  [<c015007b>] ? timer_list_show+0x14b/0xd70
+[ 1648.091263]  [<c010b0a2>] ? default_idle+0x42/0x60
+[ 1648.091267]  [<c010279e>] cpu_idle+0x6e/0xc0
+[ 1648.091272]  [<c04646f3>] rest_init+0x53/0x60
+[ 1648.091276] ---[ end trace c0bb2248162783d9 ]---
+[ 3856.835188] ------------[ cut here ]------------
 
 -- 
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2009.0 (Cooker) for i586
-Linux 2.6.25-jam18 (gcc 4.3.1 20080626 (GCC) #1 SMP
+Regards
+dave
