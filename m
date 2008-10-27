@@ -1,37 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753027AbYJ0CJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752047AbYJ0CRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753027AbYJ0CJW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 22:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYJ0CJI
+	id S1752047AbYJ0CRV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 22:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbYJ0CRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 22:09:08 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:50694 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751513AbYJ0CJH (ORCPT
+	Sun, 26 Oct 2008 22:17:12 -0400
+Received: from ms0.nttdata.co.jp ([163.135.193.231]:43252 "EHLO
+	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750790AbYJ0CRL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 22:09:07 -0400
-Message-ID: <4905229F.2090805@zytor.com>
-Date: Sun, 26 Oct 2008 19:08:31 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 26 Oct 2008 22:17:11 -0400
+Message-ID: <490524DA.1020705@nttdata.co.jp>
+Date: Mon, 27 Oct 2008 11:18:02 +0900
+From: Kentaro Takeda <takedakn@nttdata.co.jp>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.17) Gecko/20080914 Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: Harvey Harrison <harvey.harrison@gmail.com>, johannes@sipsolutions.net,
-       davem@davemloft.net, anders@anduras.de, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCHv2] printk: add the %pM, %p4, %p6 format specifiers
-References: <1224892008.3919.27.camel@johannes.berg> <49035AF0.6040700@anduras.de> <1225008096.3478.3.camel@johannes.berg> <20081026.010329.11475786.davem@davemloft.net> <1225009308.3478.22.camel@johannes.berg> <1225009822.3478.30.camel@johannes.berg> <1225047674.10060.10.camel@brick> <1225049591.3746.0.camel@johannes.berg> <1225049929.10060.11.camel@brick> <1225050015.3746.2.camel@johannes.berg> <1225060789.10060.13.camel@brick> <1225060789.10060.13.camel@brick> <1225067465.5672.1.camel@brick> <200810270221.08675.elendil@planet.nl>
-In-Reply-To: <200810270221.08675.elendil@planet.nl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: sds@tycho.nsa.gov, jmorris@namei.org, chrisw@sous-sol.org,
+       serue@us.ibm.com
+CC: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       haradats@nttdata.co.jp, akpm@linux-foundation.org
+Subject: Re: [TOMOYO #11 (linux-next) 00/11] TOMOYO Linux
+References: <20081020073423.024299308@nttdata.co.jp>
+In-Reply-To: <20081020073423.024299308@nttdata.co.jp>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Oct 2008 02:17:05.0520 (UTC) FILETIME=[1B2E7F00:01C937DA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop wrote:
->> + * - '4' For a 4-byte IPv4 address, it prints the address in the
->> + *       usual colon-separated hex notation
+Stephen, James, Chris, Serge,
+What is the status of this patchset?
 
-Since when are IPv4 addresses "usually" printed in colon-separated hex?
+I saw no objections against our patchset.
+We are waiting for your review for now.
+Is there something we can do?
 
-	-hpa
+Regards,
+
