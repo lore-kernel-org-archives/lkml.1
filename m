@@ -1,145 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbYJ0WSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbYJ0WUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754478AbYJ0WSd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 18:18:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbYJ0WSX
+	id S1753922AbYJ0WUS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 18:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbYJ0WUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 18:18:23 -0400
-Received: from aybabtu.com ([69.60.117.155]:42360 "EHLO aybabtu.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752037AbYJ0WSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 18:18:22 -0400
-X-Greylist: delayed 1994 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Oct 2008 18:18:22 EDT
-Date: Mon, 27 Oct 2008 22:44:45 +0100
-From: Robert Millan <rmh@aybabtu.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] make firmware/dsp56k/bootstrap.asm buildable on a56
-Message-ID: <20081027214445.GA20050@thorin>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ZoaI/ZTpAVc4A5k6"
-Content-Disposition: inline
-Organization: free as in freedom
-X-Message-Flag: Worried about Outlook viruses? Switch to Thunderbird! www.mozilla.com/thunderbird
-X-Debbugs-No-Ack: true
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 27 Oct 2008 18:20:06 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:36795 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751338AbYJ0WUE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 18:20:04 -0400
+Date: Tue, 28 Oct 2008 00:20:03 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: greg@kroah.com
+cc: pavel@suse.cz, linux-kernel@vger.kernel.org
+Subject: [PATCH] w35und: move supported band initialization out of wb35_probe()
+Message-ID: <Pine.LNX.4.64.0810280019330.9949@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
---ZoaI/ZTpAVc4A5k6
-Content-Type: multipart/mixed; boundary="jI8keyz6grp/JLjh"
-Content-Disposition: inline
+This patch moves the static struct ieee80211_supported_band initialization out
+of w35_probe() because it's really global read-only configuration data.
 
+Cc: Pavel Machek <pavel@suse.cz>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ drivers/staging/winbond/linux/wbusb.c |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
 
---jI8keyz6grp/JLjh
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+diff --git a/drivers/staging/winbond/linux/wbusb.c b/drivers/staging/winbond/linux/wbusb.c
+index a4403d2..582ede4 100644
+--- a/drivers/staging/winbond/linux/wbusb.c
++++ b/drivers/staging/winbond/linux/wbusb.c
+@@ -32,6 +32,13 @@ static struct ieee80211_channel wbsoft_channels[] = {
+ 	{ .center_freq = 2412},
+ };
+ 
++static struct ieee80211_supported_band wbsoft_band_2GHz = {
++	.channels	= wbsoft_channels,
++	.n_channels	= ARRAY_SIZE(wbsoft_channels),
++	.bitrates	= wbsoft_rates,
++	.n_bitrates	= ARRAY_SIZE(wbsoft_rates),
++};
++
+ int wbsoft_enabled;
+ struct ieee80211_hw *my_dev;
+ struct wb35_adapter * my_adapter;
+@@ -195,7 +202,6 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
+ 	struct usb_device *udev = interface_to_usbdev(intf);
+ 	struct wbsoft_priv *priv;
+ 	struct ieee80211_hw *dev;
+-	static struct ieee80211_supported_band band;
+ 	int err;
+ 
+ 	usb_get_dev(udev);
+@@ -256,12 +262,7 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
+ 	dev->channel_change_time = 1000;
+ 	dev->queues = 1;
+ 
+-	band.channels = wbsoft_channels;
+-	band.n_channels = ARRAY_SIZE(wbsoft_channels);
+-	band.bitrates = wbsoft_rates;
+-	band.n_bitrates = ARRAY_SIZE(wbsoft_rates);
+-
+-	dev->wiphy->bands[IEEE80211_BAND_2GHZ] = &band;
++	dev->wiphy->bands[IEEE80211_BAND_2GHZ] = &wbsoft_band_2GHz;
+ 
+ 	err = ieee80211_register_hw(dev);
+ 	if (err)
+-- 
+1.5.3.7
 
-
-[ Please CC me, I'm not subscribed ]
-
-Hi!
-
-Attached patch makes firmware/dsp56k/bootstrap.asm buildable on a56, the
-free Motorola DSP56001 assembler (http://www.zdomain.com/a56.html).
-
-Summary of changes:
-
-  - Remove '<' and '>' candy (they specify explicit addressing modes,
-    which a56 don't grok, but uses implicitly anyway).
-
-  - Replace 'move' with 'movem' when accessing program memory.
-
-  - Rename a few labels to avoid duplicates (which a56 can't handle).
-
---=20
-Robert Millan
-
-  The DRM opt-in fallacy: "Your data belongs to us. We will decide when (and
-  how) you may access your data; but nobody's threatening your freedom: we
-  still allow you to remove your data and not access it at all."
-
---jI8keyz6grp/JLjh
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="dsp56k_bootstrap.diff"
-Content-Transfer-Encoding: quoted-printable
-
-
-Signed-off-by: Robert Millan <rmh@aybabtu.com>
-
-diff --git a/firmware/dsp56k/bootstrap.asm b/firmware/dsp56k/bootstrap.asm
-index 10d8919..a411047 100644
---- a/firmware/dsp56k/bootstrap.asm
-+++ b/firmware/dsp56k/bootstrap.asm
-@@ -51,19 +51,19 @@ start   jmp     <$40
-         ; Copy DSP program control
-         move    #real,r0
-         move    #upload,r1
--        do      #upload_end-upload,<_copy
--        move    P:(r0)+,x0
--        move    x0,P:(r1)+
--_copy   movep   #>4,X:<<M_HCR
--        movep   #>$c00,X:<<M_IPR
-+        do      #upload_end-upload,_copy
-+        movem    P:(r0)+,x0
-+        movem    x0,P:(r1)+
-+_copy   movep   #4,X:<<M_HCR
-+        movep   #$c00,X:<<M_IPR
-         and     #<$fe,mr
-         jmp     upload
-=20
- real
-         org     P:$7ea9
- upload
--        movep   #>1,X:<<M_PBC
--        movep   #>0,X:<<M_BCR
-+        movep   #1,X:<<M_PBC
-+        movep   #0,X:<<M_BCR
-=20
- next    jclr    #0,X:<<M_HSR,*
-         movep   X:<<M_HRX,A
-@@ -81,18 +81,18 @@ _get_length
-         cmp     x0,A
-         jeq     load_Y
-=20
--load_P  do      y0,_load
-+load_P  do      y0,_load_P
-         jclr    #0,X:<<M_HSR,*
-         movep   X:<<M_HRX,P:(r0)+
--_load   jmp     next
--load_X  do      y0,_load
-+_load_P jmp     next
-+load_X  do      y0,_load_X
-         jclr    #0,X:<<M_HSR,*
-         movep   X:<<M_HRX,X:(r0)+
--_load   jmp     next
--load_Y  do      y0,_load
-+_load_X jmp     next
-+load_Y  do      y0,_load_Y
-         jclr    #0,X:<<M_HSR,*
-         movep   X:<<M_HRX,Y:(r0)+
--_load   jmp     next
-+_load_Y jmp     next
-=20
- upload_end
-         end
-
---jI8keyz6grp/JLjh--
-
---ZoaI/ZTpAVc4A5k6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFJBjZNC19io6rUCv8RAp3UAJ9VCYx4tHlDNZ8rwaspCLrFGZd4GgCfVvhL
-F+HpLnL15mugkd9dVw/hjdM=
-=lpUz
------END PGP SIGNATURE-----
-
---ZoaI/ZTpAVc4A5k6--
