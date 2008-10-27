@@ -1,95 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbYJ0Vit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbYJ0VjI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754560AbYJ0Vit (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 17:38:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbYJ0ViJ
+	id S1754124AbYJ0VjI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 17:39:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbYJ0ViK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 17:38:09 -0400
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:42592 "HELO
+	Mon, 27 Oct 2008 17:38:10 -0400
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:42612 "HELO
 	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752087AbYJ0ViG (ORCPT
+	by vger.kernel.org with SMTP id S1752018AbYJ0ViG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 27 Oct 2008 17:38:06 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=nXfzAgNAQrjrEFQ5xZ0HTSQRt6u9DZL5AQVGFLwIe5G9UJJxeXNfqUmpL0ygRAi1982gjVjgx9QgY00m19P2yGHy00APADbQuwZ+mdrL/PuuAorut665WAhPZKPtKwBpeWSTXCGgC1wJaEy/TDwpAlLO0LZaJrmiqiUKlHJiykg=  ;
-X-YMail-OSG: m5uqFaEVM1k_ARCxvK7iiOsyPHGyWYhwRBGGLN4XMLGXVEYrGchfqY_l3fT25JjF.UAwqLRuPgV84f0KW4xPyFA1Y6w0n6Ia_1E2TcL3EGjD0SiAxSpMdXRzNAUqPIJ2diBtw8fqyrlasO2HB3Jni.Sf
+  b=g63hx5V8DPd1hCy3wEgPXHC+hqA0Q2X5Aac6wfYdZ/NQr4NGsNifWK5yUS+fv+RBgUPVrZzaB4CsOr0PPFRAmbOdu4+jJDRm0JyKLYPWjzVprPsS8XOYa6GkkTqpo7XVEO5CTkdJAxXoxrevd2Rw3jmUfQasrHg1wUn68rvbpkE=  ;
+X-YMail-OSG: rdD2vHAVM1lxQLAXtPV7uArAbddsmIKWvujITbrO_RqVd8Sz8EiYuDtBpeSrSvJhkd5Prhr.fjww4fb6IASdJxgEGFOFmAmnXIPI7BBuv5n_WUqe3FgpsLbV46uGZNvTKH4QR9vNHOsRHL5CZn0bh.rkMOvetTkOe.4_pk4oo2fG8HRIrXL_aqFlDQl5
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: [patch 2.6.28-rc2] genirq:  record IRQ_LEVEL in irq_desc[]
-Date: Mon, 27 Oct 2008 13:55:23 -0700
+To: linux-acpi@vger.kernel.org
+Subject: [patch/RESEND 2.6.28-rc2 2/2] ACPI:  bugfix reporting of event handler status
+Date: Mon, 27 Oct 2008 14:01:02 -0700
 User-Agent: KMail/1.9.10
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Cc: lkml <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810271355.23588.david-b@pacbell.net>
+Message-Id: <200810271401.02291.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+From: Zhang Rui <rui.zhang@intel.com>
 
-When recording the irq trigger type, let's also make sure
-that IRQ_LEVEL gets set correctly.
+Introduce a new flag showing whether the event has an event handler/method.
 
+For all the GPEs and Fixed Events,
+ 1. ACPI_EVENT_FLAG_HANDLE is cleared, it's an "invalid" ACPI event.
+ 2. Both ACPI_EVENT_FLAG_HANDLE and ACPI_EVENT_FLAG_DISABLE are set,
+    it's "disabled".
+ 3. Both ACPI_EVENT_FLAG_HANDLE and ACPI_EVENT_FLAG_ENABLE are set,
+    it's "enabled".
+ 4. Both ACPI_EVENT_FLAG_HANDLE and ACPI_EVENT_FLAG_WAKE_ENABLE are set,
+    it's "wake_enabled".
+
+Among other things, this prevents incorrect reporting of ACPI events
+as being "invalid" when it's really just (temporarily) "disabled".
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 ---
-So long as IRQ_LEVEL exists and is used through enable_irq() and
-setup_irq(), I suspect it should get set correctly!  However, now
-that we record IRQ_TYPE_LEVEL_* maybe IRQ_LEVEL should vanish...
+[ attachment #7 from http://bugzilla.kernel.org/show_bug.cgi?id=11312 ]
 
- kernel/irq/chip.c   |    1 +
- kernel/irq/manage.c |   15 +++++++++------
- 2 files changed, 10 insertions(+), 6 deletions(-)
+ Documentation/ABI/testing/sysfs-firmware-acpi |   16 ++++++++--------
+ drivers/acpi/events/evxfevnt.c                |    6 ++++++
+ drivers/acpi/system.c                         |   19 +++++++------------
+ include/acpi/actypes.h                        |    1 +
+ 4 files changed, 22 insertions(+), 20 deletions(-)
 
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -124,6 +124,7 @@ int set_irq_type(unsigned int irq, unsig
- 		return -ENODEV;
- 	}
+--- a/Documentation/ABI/testing/sysfs-firmware-acpi
++++ b/Documentation/ABI/testing/sysfs-firmware-acpi
+@@ -89,7 +89,7 @@ Description:
  
-+	type &= IRQ_TYPE_SENSE_MASK;
- 	if (type == IRQ_TYPE_NONE)
- 		return 0;
+ 		error - an interrupt that can't be accounted for above.
  
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -332,16 +332,18 @@ int __irq_set_trigger(struct irq_desc *d
- 		return 0;
- 	}
+-		invalid: it's either a wakeup GPE or a GPE/Fixed Event that
++		invalid: it's either a GPE or a Fixed Event that
+ 			doesn't have an event handler.
  
--	ret = chip->set_type(irq, flags & IRQF_TRIGGER_MASK);
-+	/* caller masked out all except trigger mode flags */
-+	ret = chip->set_type(irq, flags);
+ 		disable: the GPE/Fixed Event is valid but disabled.
+@@ -117,30 +117,30 @@ Description:
+ 		and other user space applications so that the machine won't shutdown
+ 		when pressing the power button.
+ 		# cat ff_pwr_btn
+-		0
++		0	enabled
+ 		# press the power button for 3 times;
+ 		# cat ff_pwr_btn
+-		3
++		3	enabled
+ 		# echo disable > ff_pwr_btn
+ 		# cat ff_pwr_btn
+-		disable
++		3	disabled
+ 		# press the power button for 3 times;
+ 		# cat ff_pwr_btn
+-		disable
++		3	disabled
+ 		# echo enable > ff_pwr_btn
+ 		# cat ff_pwr_btn
+-		4
++		4	enabled
+ 		/*
+ 		 * this is because the status bit is set even if the enable bit is cleared,
+ 		 * and it triggers an ACPI fixed event when the enable bit is set again
+ 		 */
+ 		# press the power button for 3 times;
+ 		# cat ff_pwr_btn
+-		7
++		7	enabled
+ 		# echo disable > ff_pwr_btn
+ 		# press the power button for 3 times;
+ 		# echo clear > ff_pwr_btn	/* clear the status bit */
+ 		# echo disable > ff_pwr_btn
+ 		# cat ff_pwr_btn
+-		7
++		7	enabled
  
- 	if (ret)
- 		pr_err("setting trigger mode %d for irq %u failed (%pF)\n",
--				(int)(flags & IRQF_TRIGGER_MASK),
--				irq, chip->set_type);
-+				(int)flags, irq, chip->set_type);
- 	else {
-+		if (flags & (IRQ_TYPE_LEVEL_LOW | IRQ_TYPE_LEVEL_HIGH))
-+			flags |= IRQ_LEVEL;
- 		/* note that IRQF_TRIGGER_MASK == IRQ_TYPE_SENSE_MASK */
--		desc->status &= ~IRQ_TYPE_SENSE_MASK;
--		desc->status |= flags & IRQ_TYPE_SENSE_MASK;
-+		desc->status &= ~(IRQ_LEVEL | IRQ_TYPE_SENSE_MASK);
-+		desc->status |= flags;
- 	}
+--- a/drivers/acpi/events/evxfevnt.c
++++ b/drivers/acpi/events/evxfevnt.c
+@@ -521,6 +521,9 @@ acpi_status acpi_get_event_status(u32 ev
+ 	if (value)
+ 		*event_status |= ACPI_EVENT_FLAG_SET;
  
- 	return ret;
-@@ -421,7 +423,8 @@ __setup_irq(unsigned int irq, struct irq
++	if (acpi_gbl_fixed_event_handlers[event].handler)
++		*event_status |= ACPI_EVENT_FLAG_HANDLE;
++
+ 	return_ACPI_STATUS(status);
+ }
  
- 		/* Setup the type (level, edge polarity) if configured: */
- 		if (new->flags & IRQF_TRIGGER_MASK) {
--			ret = __irq_set_trigger(desc, irq, new->flags);
-+			ret = __irq_set_trigger(desc, irq,
-+					new->flags & IRQF_TRIGGER_MASK);
+@@ -571,6 +574,9 @@ acpi_get_gpe_status(acpi_handle gpe_devi
  
- 			if (ret) {
- 				spin_unlock_irqrestore(&desc->lock, flags);
+ 	status = acpi_hw_get_gpe_status(gpe_event_info, event_status);
+ 
++	if (gpe_event_info->flags & ACPI_GPE_DISPATCH_MASK)
++		*event_status |= ACPI_EVENT_FLAG_HANDLE;
++
+       unlock_and_exit:
+ 	if (flags & ACPI_NOT_ISR) {
+ 		(void)acpi_ut_release_mutex(ACPI_MTX_EVENTS);
+--- a/drivers/acpi/system.c
++++ b/drivers/acpi/system.c
+@@ -167,7 +167,6 @@ static int acpi_system_sysfs_init(void)
+ #define COUNT_ERROR 2	/* other */
+ #define NUM_COUNTERS_EXTRA 3
+ 
+-#define ACPI_EVENT_VALID	0x01
+ struct event_counter {
+ 	u32 count;
+ 	u32 flags;
+@@ -312,12 +311,6 @@ static int get_status(u32 index, acpi_ev
+ 	} else if (index < (num_gpes + ACPI_NUM_FIXED_EVENTS))
+ 		result = acpi_get_event_status(index - num_gpes, status);
+ 
+-	/*
+-	 * sleep/power button GPE/Fixed Event is enabled after acpi_system_init,
+-	 * check the status at runtime and mark it as valid once it's enabled
+-	 */
+-	if (!result && (*status & ACPI_EVENT_FLAG_ENABLED))
+-		all_counters[index].flags |= ACPI_EVENT_VALID;
+ end:
+ 	return result;
+ }
+@@ -346,12 +339,14 @@ static ssize_t counter_show(struct kobje
+ 	if (result)
+ 		goto end;
+ 
+-	if (!(all_counters[index].flags & ACPI_EVENT_VALID))
+-		size += sprintf(buf + size, "  invalid");
++	if (!(status & ACPI_EVENT_FLAG_HANDLE))
++		size += sprintf(buf + size, "	invalid");
+ 	else if (status & ACPI_EVENT_FLAG_ENABLED)
+-		size += sprintf(buf + size, "	enable");
++		size += sprintf(buf + size, "	enabled");
++	else if (status & ACPI_EVENT_FLAG_WAKE_ENABLED)
++		size += sprintf(buf + size, "	wake_enabled");
+ 	else
+-		size += sprintf(buf + size, "  disable");
++		size += sprintf(buf + size, "	disabled");
+ 
+ end:
+ 	size += sprintf(buf + size, "\n");
+@@ -385,7 +380,7 @@ static ssize_t counter_set(struct kobjec
+ 	if (result)
+ 		goto end;
+ 
+-	if (!(all_counters[index].flags & ACPI_EVENT_VALID)) {
++	if (!(status & ACPI_EVENT_FLAG_HANDLE)) {
+ 		printk(KERN_WARNING PREFIX
+ 			"Can not change Invalid GPE/Fixed Event status\n");
+ 		return -EINVAL;
+--- a/include/acpi/actypes.h
++++ b/include/acpi/actypes.h
+@@ -525,6 +525,7 @@ typedef u32 acpi_event_status;
+ #define ACPI_EVENT_FLAG_ENABLED         (acpi_event_status) 0x01
+ #define ACPI_EVENT_FLAG_WAKE_ENABLED    (acpi_event_status) 0x02
+ #define ACPI_EVENT_FLAG_SET             (acpi_event_status) 0x04
++#define ACPI_EVENT_FLAG_HANDLE		(acpi_event_status) 0x08
+ 
+ /*
+  * General Purpose Events (GPE)
