@@ -1,152 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751930AbYJ0O4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752209AbYJ0O6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751930AbYJ0O4a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 10:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbYJ0O4V
+	id S1752209AbYJ0O6A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 10:58:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYJ0O5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 10:56:21 -0400
-Received: from smtp.infotech.no ([82.134.31.41]:49329 "EHLO
-	elrond2.infotech.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbYJ0O4T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 10:56:19 -0400
-Message-ID: <4905D68D.7030407@interlog.com>
-Date: Mon, 27 Oct 2008 10:56:13 -0400
-From: Douglas Gilbert <dgilbert@interlog.com>
-Reply-To: dgilbert@interlog.com
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Mon, 27 Oct 2008 10:57:51 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44798 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751197AbYJ0O5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 10:57:48 -0400
+Message-ID: <4905D6DF.8050201@kernel.org>
+Date: Mon, 27 Oct 2008 23:57:35 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Luciano Rocha <luciano@eurotux.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-Subject: Re: usb hdd problems with 2.6.27.2
-References: <Pine.LNX.4.44L0.0810271007030.4059-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0810271007030.4059-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Todor Gyumyushev <todor@saturnosoft.biz>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: warning report
+References: <48F236EA.2060404@saturnosoft.biz> <20081015014112.a2c806cf.akpm@linux-foundation.org>
+In-Reply-To: <20081015014112.a2c806cf.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 27 Oct 2008 14:57:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> On Mon, 27 Oct 2008, Luciano Rocha wrote:
+Andrew Morton wrote:
+> (cc linux-ide)
 > 
->> On Sat, Oct 25, 2008 at 03:50:07PM -0400, Alan Stern wrote:
->>> On Sat, 25 Oct 2008, Rafael J. Wysocki wrote:
->>>
->>>> [Adding CCs]
->>>>
->>>> On Wednesday, 22 of October 2008, Luciano Rocha wrote:
->>>>> Hello,
->>>>>
->>>>> An external HDD, usb-encased, works fine under 2.6.26.5, but under
->>>>> 2.6.27.2 I get hundreds of errors per second, of 'No Sense [current]'.
->>> You can use usbmon to capture the details of what happens when you plug
->>> in the drive.  Instructions are in the kernel source file
->>> Documentation/usb/usbmon.txt.
->>>
->> Now in 2.6.27.4, same problem. The usb traffic is:
-> 
-> This looks exactly like the "infinite retry" problem I warned about 
-> earlier.  Here are the important parts of the log.  For people who 
-> don't know how to interpret these messages, the CDB starts in the 16th 
-> byte of the 31-byte messages.  For example, the first command here 
-> starts with 0x25 and so it is READ CAPACITY:
-> 
->> f21e7cc0 3570408174 S Bo:1:008:1 -115 31 = 55534243 06000000 08000000 80000a25 00000000 00000000 00000000 000000
->> f21e7cc0 3570408264 C Bo:1:008:1 0 31 >
->> f21e72c0 3570408280 S Bi:1:008:2 -115 8 <
->> f21e72c0 3570408389 C Bi:1:008:2 0 8 = 2e9390b0 00000200
->> f21e7cc0 3570408400 S Bi:1:008:2 -115 13 <
->> f21e7cc0 3570408513 C Bi:1:008:2 0 13 = 55534253 06000000 00000000 00
-> 
-> The response is 0x2e9390b0.  In typical broken fashion, that is 
-> undoubtedly the total number of sectors rather than the highest sector 
-> number.
+>> On Sun, 12 Oct 2008 20:42:02 +0300 Todor Gyumyushev <todor@saturnosoft.biz> wrote:
+>> [ 3724.989177] cdrom: This disc doesn't have any tracks I recognize!
+>> [ 4953.736107] ------------[ cut here ]------------
+>> [ 4953.736117] WARNING: at drivers/ata/libata-sff.c:944 
+>> ata_sff_hsm_move+0x47d/0x6a0 [libata]()
+>> [ 4953.736121] Modules linked in: i915 drm eth1394 ipt_MASQUERADE 
+>> iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack ip_tables x_tables tun 
+>> kvm acpi_cpufreq freq_table hci_usb rfcomm l2cap bluetooth vboxdrv nfsd 
+>> lockd nfs_acl auth_rpcgss sunrpc exportfs ipv6 ac battery fuse loop 
+>> snd_hda_intel snd_pcm_oss snd_mixer_oss arc4 ecb snd_pcm 
+>> crypto_blkcipher snd_timer video ath5k snd mac80211 backlight usblp 
+>> led_class soundcore rng_core tpm_infineon intel_agp iTCO_wdt 
+>> snd_page_alloc output iTCO_vendor_support i2c_i801 rtc_cmos tpm cfg80211 
+>> i2c_core button tpm_bios evdev usbhid hid ext3 jbd mbcache sg sr_mod 
+>> cdrom sd_mod crc_t10dif ohci1394 ata_piix libata scsi_mod ieee1394 dock 
+>> ehci_hcd uhci_hcd sky2 thermal processor fan thermal_sys hwmon [last 
+>> unloaded: kvm_intel]
+>> [ 4953.736215] Pid: 0, comm: swapper Not tainted 2.6.27 #1
+>> [ 4953.736218]
+>> [ 4953.736219] Call Trace:
+>> [ 4953.736223]  <IRQ>  [<ffffffff8023c9c4>] warn_on_slowpath+0x64/0xb0
+>> [ 4953.736255]  [<ffffffffa0062ac8>] scsi_dispatch_cmd+0x128/0x2d0 
+>> [scsi_mod]
+>> [ 4953.736278]  [<ffffffffa0068e85>] scsi_request_fn+0x95/0x420 [scsi_mod]
+>> [ 4953.736282]  [<ffffffff80346b25>] __blk_run_queue+0x65/0x110
+>> [ 4953.736293]  [<ffffffffa00a06c8>] ata_sff_data_xfer+0x98/0xc0 [libata]
+>> [ 4953.736297]  [<ffffffff80340000>] crypto_attr_alg_name+0x30/0x40
+>> [ 4953.736307]  [<ffffffffa009fe9d>] ata_sff_hsm_move+0x47d/0x6a0 [libata]
+>> [ 4953.736317]  [<ffffffffa0069693>] scsi_end_request+0xa3/0xb0 [scsi_mod]
+>> [ 4953.736328]  [<ffffffffa00a0413>] ata_sff_interrupt+0x1a3/0x2c0 [libata]
+>> [ 4953.736331]  [<ffffffff80283aa4>] handle_IRQ_event+0x34/0x70
+>> [ 4953.736334]  [<ffffffff802850f0>] handle_edge_irq+0xc0/0x160
+>> [ 4953.736337]  [<ffffffff8020f92c>] do_IRQ+0x7c/0x100
+>> [ 4953.736339]  [<ffffffff8020c941>] ret_from_intr+0x0/0xa
+>> [ 4953.736341]  <EOI>  [<ffffffffa000d637>] 
+>> acpi_idle_enter_simple+0x1c7/0x237 [processor]
+>> [ 4953.736352]  [<ffffffffa000d62d>] acpi_idle_enter_simple+0x1bd/0x237 
+>> [processor]
+>> [ 4953.736356]  [<ffffffff803eebf7>] cpuidle_idle_call+0xd7/0x120
+>> [ 4953.736358]  [<ffffffff8020b306>] cpu_idle+0x66/0xf0
+>> [ 4953.736360]
+>> [ 4953.736361] ---[ end trace 8d1ccc07ba5c0659 ]---
 
-Since the READ CAPACITY "off by one" error is so common,
-perhaps drivers such as usb-storage could have a hook to
-do a pseudo READ CAPACITY. Then if the capacity value
-looked odd (in both senses) the driver could do an IO to
-the suspect block and if that failed decrement the capacity
-value passed back to the mid level.
-Put another way, why don't these defective devices trip up
-another OS?
+Eh... this really shouldn't happen.  How often does the problem occur?
+Is there a way to reproduce this problem reliably?
 
-BTW a single disk in RAID 0 (seen on a HP E200 controller)
-has a shortened capacity value seen in the midlevel on the
-corresponding logical drive. That missing chunk is probably
-where the RAID controller puts its control information.
-Anyway, playing with the capacity value returned by READ
-CAPACITY certainly has a precedent.
+Thanks.
 
-> Later on the system tries to read the contents of what it thinks is the 
-> last sector:
-
-I know that happens but it seems strange that upper levels
-are reading a block that has never been written to. Read ahead?
-
-Doug Gilbert
-
-
->> f21e7cc0 3570515635 S Bo:1:008:1 -115 31 = 55534243 0c000000 00020000 80000a28 002e9390 b0000001 00000000 000000
->> f21e7cc0 3570515762 C Bo:1:008:1 0 31 >
->> f21e76c0 3570515776 S Bi:1:008:2 -115 512 <
->> f21e76c0 3570516261 C Bi:1:008:2 -32 0
->> f21e7cc0 3570516281 S Co:1:008:0 s 02 01 0000 0082 0000 0
->> f21e7cc0 3570516387 C Co:1:008:0 0 0
->> f21e7cc0 3570516399 S Bi:1:008:2 -115 13 <
->> f21e7cc0 3570516511 C Bi:1:008:2 0 13 = 55534253 0c000000 00020000 01
-> 
-> There's no data in the response, and the 01 on the line above 
-> indicates Check Condition status.
-> 
->> f21e7cc0 3570516524 S Bo:1:008:1 -115 31 = 55534243 0d000000 12000000 80000603 00000012 00000000 00000000 000000
->> f21e7cc0 3570516636 C Bo:1:008:1 0 31 >
->> f21e76c0 3570516649 S Bi:1:008:2 -115 18 <
->> f21e76c0 3570516762 C Bi:1:008:2 0 18 = 70000000 0000000a 00000000 00000000 0000
->> f21e7cc0 3570516779 S Bi:1:008:2 -115 13 <
->> f21e7cc0 3570516886 C Bi:1:008:2 0 13 = 55534253 0d000000 00000000 00
-> 
-> The automatically-generated REQUEST SENSE gets the 18-byte response you 
-> see above.  It is entirely empty (No Sense).
-> 
-> The remainder of the trace shows the same command being repeated over 
-> and over again, with the same result each time.
-> 
->> f21e7cc0 3570516936 S Bo:1:008:1 -115 31 = 55534243 0e000000 00020000 80000a28 002e9390 b0000001 00000000 000000
->> f21e7cc0 3570517012 C Bo:1:008:1 0 31 >
->> f21e76c0 3570517031 S Bi:1:008:2 -115 512 <
->> f21e76c0 3570517511 C Bi:1:008:2 -32 0
->> f21e7cc0 3570517533 S Co:1:008:0 s 02 01 0000 0082 0000 0
->> f21e7cc0 3570517637 C Co:1:008:0 0 0
->> f21e7cc0 3570517648 S Bi:1:008:2 -115 13 <
->> f21e7cc0 3570517762 C Bi:1:008:2 0 13 = 55534253 0e000000 00020000 01
->> f21e7cc0 3570517775 S Bo:1:008:1 -115 31 = 55534243 0f000000 12000000 80000603 00000012 00000000 00000000 000000
->> f21e7cc0 3570517886 C Bo:1:008:1 0 31 >
->> f21e76c0 3570517897 S Bi:1:008:2 -115 18 <
->> f21e76c0 3570518011 C Bi:1:008:2 0 18 = 70000000 0000000a 00000000 00000000 0000
->> f21e7cc0 3570518027 S Bi:1:008:2 -115 13 <
->> f21e7cc0 3570518136 C Bi:1:008:2 0 13 = 55534253 0f000000 00000000 00
-> etc...
-> 
-> There's a patch which might help resolve this problem:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=8bfa24727087d7252f9ecfb5fea2dfc92d797fbd
-> 
-> It is already present in 2.6.28-rc1, so it's worth a try.  If it does
-> fix things, let me know so I can submit it for a future 2.6.27.stable
-> release.
-> 
-> Alan Stern
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-
+-- 
+tejun
