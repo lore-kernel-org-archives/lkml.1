@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851AbYJ0Tjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbYJ0TmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753851AbYJ0Tjs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 15:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbYJ0Tjh
+	id S1753648AbYJ0TmE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 15:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYJ0Tlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 15:39:37 -0400
-Received: from cet.com.ru ([195.178.208.66]:39542 "EHLO tservice.net.ru"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751998AbYJ0Tjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 15:39:36 -0400
-Date: Mon, 27 Oct 2008 22:39:34 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jiri Kosina <jkosina@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       David Miller <davem@davemloft.net>, rjw@sisk.pl, s0mbre@tservice.net.ru,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-Message-ID: <20081027193933.GB2590@ioremap.net>
-References: <20081025.002420.82739316.davem@davemloft.net> <Pine.LNX.4.64.0810260055070.22126@twin.jikos.cz> <1225010790.8566.22.camel@marge.simson.net> <1225011648.27415.4.camel@twins> <20081026021153.47878580.akpm@linux-foundation.org> <alpine.LNX.1.10.0810262002450.12928@jikos.suse.cz> <alpine.LNX.1.10.0810271138470.12928@jikos.suse.cz> <20081027112750.GA2771@elte.hu> <20081027113306.5b1d5898@lxorguk.ukuu.org.uk> <20081027183312.GD11494@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081027183312.GD11494@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 27 Oct 2008 15:41:51 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54555
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751673AbYJ0Tlv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 15:41:51 -0400
+Date: Mon, 27 Oct 2008 12:41:26 -0700 (PDT)
+Message-Id: <20081027.124126.74749150.davem@davemloft.net>
+To: ebiederm@xmission.com
+Cc: benjamin.thery@bull.net, serue@us.ibm.com, netdev@vger.kernel.org,
+       gregkh@suse.de, viro@ftp.linux.org.uk, dlezcano@fr.ibm.com,
+       linux-kernel@vger.kernel.org, htejun@gmail.com, den@openvz.org,
+       containers@lists.linux-foundation.org
+Subject: Re: [PATCH] netns: Coexist with the sysfs limitations v2
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <m1fxmni9uv.fsf_-_@frodo.ebiederm.org>
+References: <20081022212124.GA9910@us.ibm.com>
+	<49003019.40904@bull.net>
+	<m1fxmni9uv.fsf_-_@frodo.ebiederm.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 27, 2008 at 07:33:12PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
-> the best dbench results come from systems that have enough RAM to 
-> cache the full working set, and a filesystem intelligent enough to not 
-> insert bogus IO serialization cycles (ext3 is not such a filesystem).
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 23 Oct 2008 08:56:08 -0700
 
-My test system has 8gb for 8 clients and its performance dropped by 30%.
-There is no IO load since tbech uses only network part while dbench
-itself uses only disk IO. What we see right now is that usual network
-server which handles mixed set of essentially small reads and writes
-from the socket from multiple (8) clients suddenly lost one third of
-its performance.
+> To make testing of the network namespace simpler allow
+> the network namespace code and the sysfs code to be
+> compiled and run at the same time.  To do this only
+> virtual devices are allowed in the additional network
+> namespaces and those virtual devices are not placed
+> in the kobject tree.
+> 
+> Since virtual devices don't actually do anything interesting
+> hardware wise that needs device management there should
+> be no loss in keeping them out of the kobject tree and
+> by implication sysfs.  The gain in ease of testing
+> and code coverage should be significant.
+> 
+> Changelog:
+> 
+> v2: As pointed out by Benjamin Thery it only makes sense to call
+>     device_rename in the initial network namespace for now.
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> Acked-by: Benjamin Thery <benjamin.thery@bull.net>
+> Tested-by: Serge Hallyn <serue@us.ibm.com>
+> Acked-by: Serge Hallyn <serue@us.ibm.com>
+> Acked-by: Daniel Lezcano <dlezcano@fr.ibm.com>
 
-> The moment there's real IO it becomes harder to analyze but the same 
-> basic behavior remains: the more unfair the IO scheduler, the "better" 
-> dbench results we get.
+So let's figure out what happens with this patch.
+I'm personally ok with the change, the question is when
+and where.
 
-Right now there is no disk IO at all. Only quite usual network and
-process load.
+My net-2.6 tree was closed to new features long ago, so I really
+don't want to try to merge this sucker into 2.6.28-rcX :-)  But if
+you guys think that is prudent, feel free to submit it directly to
+Linus and add my signoff:
 
--- 
-	Evgeniy Polyakov
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+otherwise if we shoot for 2.6.29 I would suggest that we wait until
+the merge window to see if the sysfs issues get sorted, and if not
+we slip this patch into to tree instead.
+
+Let me know what you guys plan to do with this.
