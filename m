@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752313AbYJ0DS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752113AbYJ0Dhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752313AbYJ0DS4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 23:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbYJ0DSs
+	id S1752113AbYJ0Dhx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 23:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbYJ0Dhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 23:18:48 -0400
-Received: from mga09.intel.com ([134.134.136.24]:62511 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751190AbYJ0DSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 23:18:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,490,1220252400"; 
-   d="scan'208";a="352557554"
-Message-ID: <49053313.9080706@intel.com>
-Date: Mon, 27 Oct 2008 11:18:43 +0800
-From: "Zhao, Yu" <yu.zhao@intel.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Yu Zhao <yu.zhao@uniscape.net>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "greg@kroah.com" <greg@kroah.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>,
-       Rakib Mullick <rakib.mullick@gmail.com>
-Subject: Re: [PATCH] pci: Fixing drivers/pci/search.c compilation warning.
-References: <b9df5fa10809280816u23ef3021k7eee287a237b72ae@mail.gmail.com> <20080928163211.GR27204@parisc-linux.org> <20081021011308.GA3889@parisc-linux.org> <490467CD.3000402@uniscape.net> <20081026183412.GX26094@parisc-linux.org>
-In-Reply-To: <20081026183412.GX26094@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 26 Oct 2008 23:37:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46747 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751321AbYJ0Dhq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 23:37:46 -0400
+Date: Sun, 26 Oct 2008 20:37:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dmitri Monakhov <dmonakhov@openvz.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] vfs: Fix possible chmod/truncate race condition.
+Message-Id: <20081026203713.c00e69db.akpm@linux-foundation.org>
+In-Reply-To: <m33aixy7ls.fsf@dmon-lap.sw.ru>
+References: <m33aixy7ls.fsf@dmon-lap.sw.ru>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Sun, Oct 26, 2008 at 08:51:25PM +0800, Yu Zhao wrote:
->> This reminds me of other problems of PCI search functions.
->>
->> The 'dev_start' is passed to bus_find_device(), and its 'knode_bus' 
->> reference count is decreased by klist_iter_init_node() in that function. 
->> The problem is the reference count may be already decrease to 0 because 
->> the PCI device 'from' is hot-plugged off (e.g., pci_remove_bus) when the 
->> search goes. A warning is fired when klist_iter_init_node() detects the 
->> reference count becomes 0.
->>
->> Some code uses pci_find_device() in a way that is not safe with the 
->> hotplug, because a device may be destroyed after bus_find_device() 
->> returns it and before it's held by pci_dev_get() in the next round. 
->> Following is an example from a random grep:
-> 
-> Yes, that's why pci_find_device() is deprecated.  But it doesn't also
-> need to be buggy ;-)
-> 
+On Wed, 15 Oct 2008 23:35:27 +0400 Dmitri Monakhov <dmonakhov@openvz.org> wrote:
 
-How about pci_get_bus_and_slot()? People would meet the problem with it 
-anyway.
+> 
+> Signed-off-by: Dmitri Monakhov <dmonakhov@openvz.org>
+> ---
+>  fs/open.c |    3 +--
+>  1 files changed, 1 insertions(+), 2 deletions(-)
+> 
+> diff --git a/fs/open.c b/fs/open.c
+> index 07da935..3423b94 100644
+> --- a/fs/open.c
+> +++ b/fs/open.c
+> @@ -214,10 +214,9 @@ int do_truncate(struct dentry *dentry, loff_t length, unsigned int time_attrs,
+>  		newattrs.ia_valid |= ATTR_FILE;
+>  	}
+>  
+> +	mutex_lock(&dentry->d_inode->i_mutex);
+>  	/* Remove suid/sgid on truncate too */
+>  	newattrs.ia_valid |= should_remove_suid(dentry);
+> -
+> -	mutex_lock(&dentry->d_inode->i_mutex);
+>  	err = notify_change(dentry, &newattrs);
+>  	mutex_unlock(&dentry->d_inode->i_mutex);
+>  	return err;
 
-Thanks,
-Yu
+OK, I give up.  What race?
