@@ -1,162 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753568AbYJ0W2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbYJ0W2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753568AbYJ0W2L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 18:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbYJ0W1y
+	id S1754681AbYJ0W2a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 18:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYJ0W1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 18:27:54 -0400
-Received: from smtp27.orange.fr ([80.12.242.94]:18113 "EHLO smtp27.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751643AbYJ0W1w convert rfc822-to-8bit (ORCPT
+	Mon, 27 Oct 2008 18:27:55 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51175 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752127AbYJ0W1y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 18:27:52 -0400
-X-ME-UUID: 20081027222749978.EECAE1C000A1@mwinf2703.orange.fr
-Message-ID: <4906405F.6080708@cosmosbay.com>
-Date: Mon, 27 Oct 2008 23:27:43 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Mon, 27 Oct 2008 18:27:54 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Mon, 27 Oct 2008 23:27:37 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch 2.6.27.y 3/6] firewire: Survive more than 256 bus resets
+To: stable@kernel.org
+cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.df6e0a4afb92ef6e@s5r6.in-berlin.de>
+Message-ID: <tkrat.6faab57f3da8f9b9@s5r6.in-berlin.de>
+References: <tkrat.df6e0a4afb92ef6e@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: benli@broadcom.com
-Cc: willy@linux.intel.com, jbarnes@virtuousgeek.org,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] PCI: Limit VPD length for Broadcom 5708S
-References: <48920413.6080508@cosmosbay.com>
-In-Reply-To: <48920413.6080508@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet a écrit :
-> While trying to upgrade kernel from 2.6.25 to 2.6.26 on a ProLiant 
-> BL460c G1,
-> I faced this problem on integrated Broadcom 5708S NIC when trying to UP 
-> them.
-> 
-> bnx2: fw sync timeout, reset code = 1030003
-> 
-> I noticed that commit 99cb233d60cbe644203f19938c729ea2bb004d70 (PCI: 
-> Limit VPD read/write lengths for Broadcom 5706, 5708, 5709 rev.A)
-> was probably a good candidate to solve the problem.
-> 
-> Apparently, it added PCI quirks for a list of Broadcom NICs, but
-> quirk_brcm_570x_limit_vpd() ignores part of them.
-> 
-> I found the following patch useful to restore correct operation on my 
-> machine.
-> 
-> Some information about this nic :
-> 
-> 03:00.0 Ethernet controller: Broadcom Corporation NetXtreme II BCM5708S 
-> Gigabit Ethernet (rev 12)
->        Subsystem: Hewlett-Packard Company NC373i Integrated 
-> Multifunction Gigabit Server Adapter
->        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- 
-> ParErr+ Stepping- SERR+ FastB2B-
->        Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-> <TAbort- <MAbort- >SERR- <PERR-
->        Latency: 64 (16000ns min), Cache Line Size 10
->        Interrupt: pin A routed to IRQ 222
->        Region 0: Memory at f6000000 (64-bit, non-prefetchable) [size=32M]
->        [virtual] Expansion ROM at d1200000 [disabled] [size=16K]
->        Capabilities: [40] PCI-X non-bridge device.
->                Command: DPERE- ERO- RBC=0 OST=4
->                Status: Bus=3 Dev=0 Func=0 64bit+ 133MHz+ SCD- USC-, 
-> DC=simple, DMMRBC=0, DMOST=4, DMCRS=2, RSCEM-
->        Capabilities: [48] Power Management version 2
->                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA 
-> PME(D0-,D1-,D2-,D3hot+,D3cold+)
->                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
->        Capabilities: [50] Vital Product Data
->        Capabilities: [58] Message Signalled Interrupts: 64bit+ Queue=0/0 
-> Enable+
->                Address: 00000000feeff00c  Data: 4179
-> 
-> after applying patch :
-> 
-> # hexdump -C 
-> "/sys/devices/pci0000:00/0000:00:1c.0/0000:02:00.0/0000:03:00.0/vpd"
-> 00000000  82 2f 00 48 50 20 4e 43  33 37 33 69 20 4d 75 6c  |./.HP 
-> NC373i Mul|
-> 00000010  74 69 66 75 6e 63 74 69  6f 6e 20 47 69 67 61 62  |tifunction 
-> Gigab|
-> 00000020  69 74 20 53 65 72 76 65  72 20 41 64 61 70 74 65  |it Server 
-> Adapte|
-> 00000030  72 00 90 4a 00 50 4e 03  4e 2f 41 45 43 03 4e 2f  
-> |r..J.PN.N/AEC.N/|
-> 00000040  41 53 4e 0a 30 31 32 33  34 35 36 37 38 39 4d 4e  
-> |ASN.0123456789MN|
-> 00000050  04 31 30 33 43 52 56 26  a2 00 00 00 00 00 00 00  
-> |.103CRV&........|
-> 00000060  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  
-> |................|
-> 00000070  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 78  
-> |...............x|
-> 00000080
-> 
-> Patch against current Linus tree, should also be sent for linux-2.6.26.2 
-> inclusion.
-> 
-> I have no idea if 5706S and 5709S also needs this truncation of VPD length
-> 
-> Thank you
-> 
-> [PATCH] PCI: Limit VPD length for Broadcom 5708S
-> 
-> BCM5708S wont work correctly unless VPD length truncated to 128
-> 
-> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-> 
-> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-> index 0fb3650..59667e5 100644
-> --- a/drivers/pci/quirks.c
-> +++ b/drivers/pci/quirks.c
-> @@ -1756,9 +1756,12 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_VIA, 
-> 0x324e, quirk_via_cx700_pci_parking_c
->  */
-> static void __devinit quirk_brcm_570x_limit_vpd(struct pci_dev *dev)
-> {
-> -    /*  Only disable the VPD capability for 5706, 5708, and 5709 rev. A */
-> +    /*
-> +     * Only disable the VPD capability for 5706, 5708, 5708S and 5709 
-> rev. A
-> +     */
->     if ((dev->device == PCI_DEVICE_ID_NX2_5706) ||
->         (dev->device == PCI_DEVICE_ID_NX2_5708) ||
-> +        (dev->device == PCI_DEVICE_ID_NX2_5708S) ||
->         ((dev->device == PCI_DEVICE_ID_NX2_5709) &&
->          (dev->revision & 0xf0) == 0x0)) {
->         if (dev->vpd)
-> 
+Date: Thu, 16 Oct 2008 15:51:59 -0400
+From: Jay Fenlason <fenlason@redhat.com>
 
-Hi all
+The "color" is used during the topology building after a bus reset,
+hovever in "struct fw_node"s it is stored in a u8, but in struct fw_card
+it is stored in an int.  When the value wraps in one struct, but not
+the other, disaster strikes.
 
-Just tried linux-2.6.28-rc2 on same platform.
+Signed-off-by: Jay Fenlason <fenlason@redhat.com>
 
-Same problem again...
+Fixes http://bugzilla.kernel.org/show_bug.cgi?id=10922 -
+machine locks up solid if a series of bus resets occurs.
 
-Broadcom NetXtreme II Gigabit Ethernet Driver bnx2 v1.8.1 (Oct 7, 2008)
-bnx2 0000:03:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-eth0: Broadcom NetXtreme II BCM5708 1000Base-SX (B2) PCI-X 64-bit 133MHz found at mem f6000000, IRQ 16, node addr 00:1e:0b:ec:d3:dc
-bnx2 0000:07:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-eth1: Broadcom NetXtreme II BCM5708 1000Base-SX (B2) PCI-X 64-bit 133MHz found at mem fa000000, IRQ 16, node addr 00:1e:0b:ec:d3:d2
-bnx2 0000:03:00.0: irq 45 for MSI/MSI-X
-bnx2: fw sync timeout, reset code = 1030003
-bnx2 0000:07:00.0: irq 45 for MSI/MSI-X
-bnx2: fw sync timeout, reset code = 1030003
-bnx2 0000:03:00.0: irq 45 for MSI/MSI-X
-bnx2: fw sync timeout, reset code = 1030006
+Same as commit 4f9740d4f5a17fa6a1b097fa3ccdfb7246660307.
 
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-transaction.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-2.6.27.4 is running fine on this machine
+Index: linux/drivers/firewire/fw-transaction.h
+===================================================================
+--- linux.orig/drivers/firewire/fw-transaction.h
++++ linux/drivers/firewire/fw-transaction.h
+@@ -248,7 +248,7 @@ struct fw_card {
+ 	struct fw_node *local_node;
+ 	struct fw_node *root_node;
+ 	struct fw_node *irm_node;
+-	int color;
++	u8 color; /* must be u8 to match the definition in struct fw_node */
+ 	int gap_count;
+ 	bool beta_repeaters_present;
+ 
 
-Any ideas ?
-
-Thank you
-
-Eric
-
-
+-- 
+Stefan Richter
+-=====-==--- =-=- ==-==
+http://arcgraph.de/sr/
 
