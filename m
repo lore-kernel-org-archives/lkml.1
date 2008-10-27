@@ -1,98 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653AbYJ0SgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752803AbYJ0SpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753653AbYJ0SgW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 14:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYJ0SgN
+	id S1752803AbYJ0SpO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 14:45:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYJ0So6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 14:36:13 -0400
-Received: from ox1.aei.mpg.de ([194.94.224.6]:54806 "EHLO ox1.aei.mpg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751727AbYJ0SgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 14:36:12 -0400
-Date: Mon, 27 Oct 2008 19:36:48 +0100
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, tomas.winkler@intel.com, kernel@nn7.de,
-       linux-wireless@vger.kernel.org
+	Mon, 27 Oct 2008 14:44:58 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:56649 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751096AbYJ0So5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 14:44:57 -0400
 Subject: Re: Suspend to RAM regression in 2.6.28-rc2 (bisected)
-Message-ID: <20081027183648.GA4165@localhost.aei.mpg.de>
-References: <20081027162054.GA4015@localhost.aei.mpg.de> <200810271839.39236.rjw@sisk.pl> <20081027175719.GA5759@localhost.aei.mpg.de> <200810271916.38079.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810271916.38079.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Soeren Sonnenburg <kernel@nn7.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Carlos R. Mafra" <crmafra2@gmail.com>,
+       linux-kernel@vger.kernel.org, tomas.winkler@intel.com,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <1225132278.3796.32.camel@johannes.berg> (sfid-20081027_193136_021274_A4C6EBE7)
+References: <20081027162054.GA4015@localhost.aei.mpg.de>
+	 <200810271832.40717.rjw@sisk.pl>  <1225130844.4466.0.camel@localhost>
+	 <1225132278.3796.32.camel@johannes.berg>
+	 (sfid-20081027_193136_021274_A4C6EBE7)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Q3YMf2nMgym+0ZgF+yhm"
+Date: Mon, 27 Oct 2008 19:44:42 +0100
+Message-Id: <1225133082.3796.35.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 27.Oct'08 at 19:16:37 +0100, Rafael J. Wysocki wrote:
-> On Monday, 27 of October 2008, Carlos R. Mafra wrote:
-> > On Mon 27.Oct'08 at 18:39:38 +0100, Rafael J. Wysocki wrote:
-> > > On Monday, 27 of October 2008, Carlos R. Mafra wrote:
-> > > > Hi,
-> > > > 
-> > > > So I managed to bisect my suspend to RAM regression in 2.6.27-rc2
-> > > > to commit 3b7ee69d0caefbdb85a606a98bff841b8c63b97e ("mac80211: disassociate 
-> > > > when moving to new BSS") by Tomas Winkler (Cc:-ed).
-> > > > 
-> > > > Unfortunately it doesn't revert cleanly so I can't double check it.
-> > > 
-> > > Why are you saying it doesn't revert cleanly?  For me it does revert without
-> > > rejects from 2.6.28-rc2.
-> > 
-> > I get this
-> > 
-> > [mafra@localhost:linux-2.6]$ git checkout v2.6.28-rc2 -b s2ram
-> > Switched to a new branch "s2ram"
-> > [mafra@localhost:linux-2.6]$ git revert 3b7ee69d
-> > warning: too many files, skipping inexact rename detection
-> > Auto-merged net/mac80211/mlme.c
-> > CONFLICT (content): Merge conflict in net/mac80211/mlme.c
-> > Automatic revert failed.  After resolving the conflicts,
-> > mark the corrected paths with 'git add <paths>' or 'git rm <paths>' and commit the result.
-> > 
-> > I don't know what is happening here :-(
-> 
-> If you have quilt installed, you can do:
-> 
-> $ git show 3b7ee69d > suspicious.patch
-> $ quilt import -R suspicious.patch
-> $ quilt push
-> 
-> (that should work without rejects) and build the kernel.
 
-I wanted to do it with git, but gave up after some time :-(
+--=-Q3YMf2nMgym+0ZgF+yhm
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-So I finally read the commit in 
-question 3b7ee69d0caefbdb85a606a98bff841b8c63b97e and applied
-the patch below, which reverts it up to the whitespace fixes.
+On Mon, 2008-10-27 at 19:31 +0100, Johannes Berg wrote:
+> On Mon, 2008-10-27 at 19:07 +0100, Soeren Sonnenburg wrote:
+>=20
+> > > Johannes, can you pls have a look?
+>=20
+> I did, and I have no idea. Makes no sense at all.
 
-And reverting it really made my brand new 2.6.28-rc2-something
-work again, regarding suspend to RAM.
+The only thing I can remotely think of is that iwlwifi doesn't like
+being called back from within the call that it did to mac80211, which
+obviously happens here. But I have no idea, the code as it stands is
+correct, just the interaction with iwlwifi's resume seems to be broken.
 
-So consider it confirmed that this commit is guilty here.
+Try this patch instead:
 
----
- net/mac80211/mlme.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+--- everything.orig/drivers/net/wireless/iwlwifi/iwl-agn.c	2008-10-27 19:44=
+:12.000000000 +0100
++++ everything/drivers/net/wireless/iwlwifi/iwl-agn.c	2008-10-27 19:44:15.0=
+00000000 +0100
+@@ -2084,7 +2084,6 @@ static void iwl_alive_start(struct iwl_p
+ 		iwl4965_error_recovery(priv);
+=20
+ 	iwl_power_update_mode(priv, 1);
+-	ieee80211_notify_mac(priv->hw, IEEE80211_NOTIFY_RE_ASSOC);
+=20
+ 	if (test_and_clear_bit(STATUS_MODE_PENDING, &priv->status))
+ 		iwl4965_set_mode(priv, priv->iw_mode);
 
-diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index 87665d7..1751ebb 100644
---- a/net/mac80211/mlme.c
-+++ b/net/mac80211/mlme.c
-@@ -2396,10 +2396,6 @@ void ieee80211_sta_req_auth(struct ieee80211_sub_if_data *sdata,
- 	    (ifsta->flags & (IEEE80211_STA_SSID_SET |
- 			     IEEE80211_STA_AUTO_SSID_SEL))) {
- 
--		if (ifsta->state == IEEE80211_STA_MLME_ASSOCIATED)
--			ieee80211_set_disassoc(sdata, ifsta, true, true,
--					       WLAN_REASON_DEAUTH_LEAVING);
--
- 		set_bit(IEEE80211_STA_REQ_AUTH, &ifsta->request);
- 		queue_work(local->hw.workqueue, &ifsta->work);
- 	}
--- 
-1.6.0.rc2
 
+johannes
+
+--=-Q3YMf2nMgym+0ZgF+yhm
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJBgwTAAoJEKVg1VMiehFY2b4QAL/H1+ky6uzZZ7mCSrVt19U8
+JomwyBUfGemGrWpUddupLGuwbwU39qMKQUopi+PWCkY7u2mH/ML15Sg6efHM+ytQ
+X6FEvbTOyDo68JeqJBQZJgnjFiefdUs0vVfso28Fr/CITVhtl/O1ix3tet5ZQDpe
+GLzOt0t++oAC+LFqX8q6b7UB8/pIpO1uYEzR8XigUnLpNI42WPze4jWSfFWB+6/c
+qKcilG5dAHmzzwv3J7Qp+5+MoqbDuGQCsa4HbpR07OF69ZGYrFhZ1DN7Ps3VkM54
+LOYrSRP/0w+9hKA7XyMXI7hDQT3BPPGYCae5sIN5lQ9zWSutv8ZHfyEcOCvKJCyu
+tHF3wrT3ArtMqPi/nVdO394HZvKjJJrMDmaN1gttyGY/IHvdGU2s26uCvtPsBygb
+AKREhODpWF0Yv9NuY5N4LdMJvA8zbfxuXf78Ae1epKCTw7up+ViHlD5erhl6kP5f
+h6WZGAWhIqcXi8k0plkvJ3SOl+bxK00gQWsPUIHY6btowK8tWRGcy/iSeSkNz3ZD
+J2zaU/Wk4AX92zgEFH8N83Rl6KE1xHCwUFc9YnYjS7CGJOcYGv9fXYJMA3Vq4CmZ
+i5uVjQDMqsH4u8ntWuPGwDbpAc1uChG3EPHNSdpJhlIA/dtuqibMjC8EwB4sBuXy
+G/5o68rFs0bWmDC1xMut
+=O046
+-----END PGP SIGNATURE-----
+
+--=-Q3YMf2nMgym+0ZgF+yhm--
 
