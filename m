@@ -1,61 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbYJ0W1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754555AbYJ0W1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754206AbYJ0W1A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 18:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYJ0W0w
+	id S1754555AbYJ0W1b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 18:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbYJ0W1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 18:26:52 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:51168 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751328AbYJ0W0w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 18:26:52 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Mon, 27 Oct 2008 23:26:35 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [patch 2.6.27.y 2/6] firewire: fix ioctl() return code
-To: stable@kernel.org
-cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.df6e0a4afb92ef6e@s5r6.in-berlin.de>
-Message-ID: <tkrat.509dbd5216c80cfd@s5r6.in-berlin.de>
-References: <tkrat.df6e0a4afb92ef6e@s5r6.in-berlin.de>
+	Mon, 27 Oct 2008 18:27:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48320 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752112AbYJ0W1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 18:27:20 -0400
+Message-ID: <49064027.9010509@redhat.com>
+Date: Mon, 27 Oct 2008 17:26:47 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+To: Theodore Tso <tytso@mit.edu>, Eric Paris <eparis@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       sandeen@redhat.com
+Subject: Re: general protection fault:  from release_blocks_on_commit
+References: <1224612181.19719.20.camel@paris-laptop> <20081027181928.GB23111@mit.edu>
+In-Reply-To: <20081027181928.GB23111@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Date: Fri, 12 Sep 2008 18:20:16 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Theodore Tso wrote:
 
-Reported by Jay Fenlason:  ioctl() did not return as intended
-  - the size of data read into ioctl_send_request,
-  - the number of datagrams enqueued by ioctl_queue_iso.
+> On Tue, Oct 21, 2008 at 02:03:01PM -0400, Eric Paris wrote:
+>   
+>> I can consistently get the below backtrace any time I try to shutdown my
+>> machine.  This machine has ext4 as it's root FS.  This is 100%
+>> reproducible.  I backed out commit
+>> 3e624fc72fba09b6f999a9fbb87b64efccd38036 and it fixed the problem.
+>>
+>> This is a regression.
+>>     
+>
+> Can you send me your .config, please?  I'm trying to duplicate it on
+> my end.  
+>
+> 						- Ted
+>   
+Ted, you probably need some slab debugging on to hit it.
 
-Same as commit 99692f71ee04c6f249d0bf6a581359f32f409a38.
+I think the problem is that jbd2_journal_commit_transaction may call
+__jbd2_journal_drop_transaction(journal, commit_transaction) if the
+checkpoint lists are NULL, and this frees the commit_transaction.
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-cdev.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+However, the call to ->j_commit_callback() tries to use it after that.
 
-Index: linux/drivers/firewire/fw-cdev.c
+I'm out of time for now to be sure this is the right fix, but something
+like this perhaps?
+
+Index: linux-2.6/fs/jbd2/commit.c
 ===================================================================
---- linux.orig/drivers/firewire/fw-cdev.c
-+++ linux/drivers/firewire/fw-cdev.c
-@@ -913,7 +913,7 @@ dispatch_ioctl(struct client *client, un
- 			return -EFAULT;
+--- linux-2.6.orig/fs/jbd2/commit.c	2008-10-27 11:24:42.000000000 -0500
++++ linux-2.6/fs/jbd2/commit.c	2008-10-27 17:19:22.771063324 -0500
+@@ -992,15 +992,15 @@ restart_loop:
+ 			commit_transaction->t_cpprev->t_cpnext =
+ 				commit_transaction;
+ 		}
++		if (journal->j_commit_callback)
++			journal->j_commit_callback(journal, commit_transaction);
++
++		trace_mark(jbd2_end_commit, "dev %s transaction %d head %d",
++			   journal->j_devname, commit_transaction->t_tid,
++			   journal->j_tail_sequence);
  	}
+ 	spin_unlock(&journal->j_list_lock);
  
--	return 0;
-+	return retval;
- }
+-	if (journal->j_commit_callback)
+-		journal->j_commit_callback(journal, commit_transaction);
+-
+-	trace_mark(jbd2_end_commit, "dev %s transaction %d head %d",
+-		   journal->j_devname, commit_transaction->t_tid,
+-		   journal->j_tail_sequence);
+ 	jbd_debug(1, "JBD: commit %d complete, head %d\n",
+ 		  journal->j_commit_sequence, journal->j_tail_sequence);
  
- static long
 
--- 
-Stefan Richter
--=====-==--- =-=- ==-==
-http://arcgraph.de/sr/
+Also, I'm not certain that it matters, but the loop in 
+release_blocks_on_commit() is kfreeing list entries w/o taking
+them off the list; I suppose maybe this is safe if the whole thing
+is getting discarded when we're done, but just to keep things sane,
+would this make sense (also, I think we need to double-check use of
+s_md_lock; it's taken when adding things to the list, but not when
+freeing/removing ... if it's needed, isn't it needed on both ends...):
+
+
+Index: linux-2.6/fs/ext4/mballoc.c
+===================================================================
+--- linux-2.6.orig/fs/ext4/mballoc.c	2008-10-27 11:24:41.000000000 -0500
++++ linux-2.6/fs/ext4/mballoc.c	2008-10-27 17:19:43.401064490 -0500
+@@ -2644,6 +2644,7 @@ static void release_blocks_on_commit(jou
+ 	struct super_block *sb = journal->j_private;
+ 	struct ext4_buddy e4b;
+ 	struct ext4_group_info *db;
++	struct ext4_sb_info *sbi = EXT4_SB(sb);
+ 	int err, count = 0, count2 = 0;
+ 	struct ext4_free_data *entry;
+ 	ext4_fsblk_t discard_block;
+@@ -2683,6 +2684,9 @@ static void release_blocks_on_commit(jou
+ 			   (unsigned long long) discard_block, entry->count);
+ 		sb_issue_discard(sb, discard_block, entry->count);
+ 
++		spin_lock(&sbi->s_md_lock);
++		list_del(&entry->list);
++		spin_unlock(&sbi->s_md_lock);
+ 		kmem_cache_free(ext4_free_ext_cachep, entry);
+ 		ext4_mb_release_desc(&e4b);
+ 	}
+
+-Eric
 
