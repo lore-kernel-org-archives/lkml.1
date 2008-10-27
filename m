@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752998AbYJ0XGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbYJ0XGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752998AbYJ0XGU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 19:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYJ0XGI
+	id S1753380AbYJ0XGx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 19:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751686AbYJ0XGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 19:06:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38970 "EHLO mx2.redhat.com"
+	Mon, 27 Oct 2008 19:06:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49124 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751153AbYJ0XGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 19:06:07 -0400
-Date: Mon, 27 Oct 2008 21:07:28 -0200
-From: Glauber Costa <glommer@redhat.com>
-To: npiggin@suse.de
-Cc: avi@redhat.com, linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       mtosatti@redhat.com
-Subject: kvm broken with new vmap
-Message-ID: <20081027230728.GA30906@poweredge.glommer>
+	id S1751527AbYJ0XGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 19:06:43 -0400
+Message-ID: <4906495B.1060506@kernel.org>
+Date: Mon, 27 Oct 2008 16:06:03 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: bob.montgomery@hp.com
+CC: Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "vojtech@suse.cz" <vojtech@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "chandru@in.ibm.com" <chandru@in.ibm.com>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Pavel Machek <pavel@ucw.cz>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] disable CPU side GART accesses
+References: <1224107317.2215.238.camel@amd.troyhebe>	 <20081015234842.GA10999@elte.hu> <1225147341.2215.401.camel@amd.troyhebe>
+In-Reply-To: <1225147341.2215.401.camel@amd.troyhebe>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Nick,
+Bob Montgomery wrote:
+> On Wed, 2008-10-15 at 23:48 +0000, Ingo Molnar wrote:
+>> (Cc:-ed the GART folks.)
+> 
+> Are there any objections to this patch?  The problem has been reproduced
+> in 2.6.18 and 2.6.27, so existing changes in the gart code have not
+> addressed it. 
 
-KVM is currently broken upstream, starting with commit
-db64fe02258f1507e13fe5212a989922323685ce (rewrite vmap layer)
+better to have someone with amd system + 8g ram + agp adapter to verify it...
 
-The symptoms are some vmallocs from kvm fail.
-cat /proc/meminfo shows this at the time of the fail:
-
-VmallocTotal:     122880 kB
-VmallocUsed:       15184 kB
-VmallocChunk:      83764 kB
-
-so there's plenty of space.
-
-The allocation that fails seem to be 512 bytes long. I'm not
-sure it always fails in there, but it seems so.
-
-
+YH
