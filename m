@@ -1,249 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbYJ0LQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817AbYJ0LU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753266AbYJ0LQr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 07:16:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbYJ0LQd
+	id S1752817AbYJ0LU5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 07:20:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYJ0LUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 07:16:33 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:43390 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752785AbYJ0LQb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 07:16:31 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: jkosina@suse.cz
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Andreas Schwab <schwab@suse.de>
-Subject: [PATCH 1/2] HID: don't oops on suspend of non-bound devices
-Date: Mon, 27 Oct 2008 12:16:15 +0100
-Message-Id: <1225106176-5496-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.0.2
+	Mon, 27 Oct 2008 07:20:49 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:35555 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751541AbYJ0LUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 07:20:49 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
+	filesystems.
+From: Nigel Cunningham <ncunningham@crca.org.au>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <E1KuQ1J-0002Vw-9Q@pomaz-ex.szeredi.hu>
+References: <1224886068.6478.21.camel@nigel-laptop>
+	 <200810262101.08822.rjw@sisk.pl>  <E1KuQ1J-0002Vw-9Q@pomaz-ex.szeredi.hu>
+Content-Type: text/plain
+Organization: Christian Reformed Churches of Australia
+Date: Mon, 27 Oct 2008 22:20:27 +1100
+Message-Id: <1225106427.26724.5.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Usbhid structure is allocated on start invoked only from probe
-of some driver. When there is no driver, the structure is null
-and causes null-dereference oopses.
+Hi Miklos.
 
-Fix it by allocating the structure on probe and disconnect of
-the device itself. Also make sure we won't race between start
-and resume or stop and suspend respectively.
+On Mon, 2008-10-27 at 12:12 +0100, Miklos Szeredi wrote:
+> On Sun, 26 Oct 2008, Rafael J. Wysocki wrote:
+> > On Saturday, 25 of October 2008, Nigel Cunningham wrote:
+> > > While working on freezing fuse filesystems, I found that if a filesystem
+> > > is frozen when we try to freeze processes, freezing can fail because
+> > > threads are waiting in vfs_check_frozen for the filesystem to be thawed.
+> > > We should thus not count such threads.
+> > > 
+> > > The check will be safe if a filesystem is thawed while we're freezing
+> > > processes because filesystem thaws are only invoked from userspace. Any
+> > > waiting processes will be woken and frozen prior to us completing the
+> > > freezing of userspace (the caller invoking the filesystem thaw will be
+> > > freezing) or - in the worst case - together with kernel threads.
+> 
+> The description is missing some details: why is the filesystem frozen
+> before suspend?  AFAICS this can happen when DM calls bdev_freeze() on
+> the device before the task freezing begins.  Is this the case?
 
-References: http://bugzilla.kernel.org/show_bug.cgi?id=11827
+It doesn't matter why a process is sitting in that wait_event call. What
+does matter is that one can be there. In the case where I saw it, I was
+working on fuse freezing. I don't remember the details, as it's a year
+since I made this patch, but I don't think I wasn't using fuse or DM.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>
-Cc: Andreas Schwab <schwab@suse.de>
----
- drivers/hid/usbhid/hid-core.c |   58 +++++++++++++++++++++++++++++------------
- drivers/hid/usbhid/usbhid.h   |    2 +
- include/linux/hid.h           |    1 +
- 3 files changed, 44 insertions(+), 17 deletions(-)
+> Also, while the patch might solve some of the symptoms of the fuse
+> vs. process freezer interaction, it will not fully fix that problem.
+> As such it's just a hack to hide the problem, making it less likely to
+> appear.
 
-diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-index d203e98..a761e08 100644
---- a/drivers/hid/usbhid/hid-core.c
-+++ b/drivers/hid/usbhid/hid-core.c
-@@ -20,6 +20,7 @@
- #include <linux/kernel.h>
- #include <linux/list.h>
- #include <linux/mm.h>
-+#include <linux/mutex.h>
- #include <linux/smp_lock.h>
- #include <linux/spinlock.h>
- #include <asm/unaligned.h>
-@@ -774,21 +775,10 @@ static int usbhid_start(struct hid_device *hid)
- 	struct usb_interface *intf = to_usb_interface(hid->dev.parent);
- 	struct usb_host_interface *interface = intf->cur_altsetting;
- 	struct usb_device *dev = interface_to_usbdev(intf);
--	struct usbhid_device *usbhid;
-+	struct usbhid_device *usbhid = hid->driver_data;
- 	unsigned int n, insize = 0;
- 	int ret;
- 
--	WARN_ON(hid->driver_data);
--
--	usbhid = kzalloc(sizeof(struct usbhid_device), GFP_KERNEL);
--	if (usbhid == NULL) {
--		ret = -ENOMEM;
--		goto err;
--	}
--
--	hid->driver_data = usbhid;
--	usbhid->hid = hid;
--
- 	usbhid->bufsize = HID_MIN_BUFFER_SIZE;
- 	hid_find_max_report(hid, HID_INPUT_REPORT, &usbhid->bufsize);
- 	hid_find_max_report(hid, HID_OUTPUT_REPORT, &usbhid->bufsize);
-@@ -802,6 +792,7 @@ static int usbhid_start(struct hid_device *hid)
- 	if (insize > HID_MAX_BUFFER_SIZE)
- 		insize = HID_MAX_BUFFER_SIZE;
- 
-+	mutex_lock(&usbhid->setup);
- 	if (hid_alloc_buffers(dev, hid)) {
- 		ret = -ENOMEM;
- 		goto fail;
-@@ -886,6 +877,9 @@ static int usbhid_start(struct hid_device *hid)
- 	usbhid_init_reports(hid);
- 	hid_dump_device(hid);
- 
-+	set_bit(HID_STARTED, &usbhid->iofl);
-+	mutex_unlock(&usbhid->setup);
-+
- 	return 0;
- 
- fail:
-@@ -893,8 +887,7 @@ fail:
- 	usb_free_urb(usbhid->urbout);
- 	usb_free_urb(usbhid->urbctrl);
- 	hid_free_buffers(dev, hid);
--	kfree(usbhid);
--err:
-+	mutex_unlock(&usbhid->setup);
- 	return ret;
- }
- 
-@@ -905,6 +898,8 @@ static void usbhid_stop(struct hid_device *hid)
- 	if (WARN_ON(!usbhid))
- 		return;
- 
-+	mutex_lock(&usbhid->setup);
-+	clear_bit(HID_STARTED, &usbhid->iofl);
- 	spin_lock_irq(&usbhid->inlock);	/* Sync with error handler */
- 	set_bit(HID_DISCONNECTED, &usbhid->iofl);
- 	spin_unlock_irq(&usbhid->inlock);
-@@ -929,8 +924,7 @@ static void usbhid_stop(struct hid_device *hid)
- 	usb_free_urb(usbhid->urbout);
- 
- 	hid_free_buffers(hid_to_usb_dev(hid), hid);
--	kfree(usbhid);
--	hid->driver_data = NULL;
-+	mutex_unlock(&usbhid->setup);
- }
- 
- static struct hid_ll_driver usb_hid_driver = {
-@@ -945,6 +939,7 @@ static struct hid_ll_driver usb_hid_driver = {
- static int hid_probe(struct usb_interface *intf, const struct usb_device_id *id)
- {
- 	struct usb_device *dev = interface_to_usbdev(intf);
-+	struct usbhid_device *usbhid;
- 	struct hid_device *hid;
- 	size_t len;
- 	int ret;
-@@ -998,14 +993,26 @@ static int hid_probe(struct usb_interface *intf, const struct usb_device_id *id)
- 	if (usb_string(dev, dev->descriptor.iSerialNumber, hid->uniq, 64) <= 0)
- 		hid->uniq[0] = 0;
- 
-+	usbhid = kzalloc(sizeof(*usbhid), GFP_KERNEL);
-+	if (usbhid == NULL) {
-+		ret = -ENOMEM;
-+		goto err;
-+	}
-+
-+	hid->driver_data = usbhid;
-+	usbhid->hid = hid;
-+	mutex_init(&usbhid->setup); /* needed on suspend/resume */
-+
- 	ret = hid_add_device(hid);
- 	if (ret) {
- 		if (ret != -ENODEV)
- 			dev_err(&intf->dev, "can't add hid device: %d\n", ret);
--		goto err;
-+		goto err_free;
- 	}
- 
- 	return 0;
-+err_free:
-+	kfree(usbhid);
- err:
- 	hid_destroy_device(hid);
- 	return ret;
-@@ -1014,11 +1021,14 @@ err:
- static void hid_disconnect(struct usb_interface *intf)
- {
- 	struct hid_device *hid = usb_get_intfdata(intf);
-+	struct usbhid_device *usbhid;
- 
- 	if (WARN_ON(!hid))
- 		return;
- 
-+	usbhid = hid->driver_data;
- 	hid_destroy_device(hid);
-+	kfree(usbhid);
- }
- 
- static int hid_suspend(struct usb_interface *intf, pm_message_t message)
-@@ -1026,11 +1036,18 @@ static int hid_suspend(struct usb_interface *intf, pm_message_t message)
- 	struct hid_device *hid = usb_get_intfdata (intf);
- 	struct usbhid_device *usbhid = hid->driver_data;
- 
-+	mutex_lock(&usbhid->setup);
-+	if (!test_bit(HID_STARTED, &usbhid->iofl)) {
-+		mutex_unlock(&usbhid->setup);
-+		return 0;
-+	}
-+
- 	spin_lock_irq(&usbhid->inlock);	/* Sync with error handler */
- 	set_bit(HID_SUSPENDED, &usbhid->iofl);
- 	spin_unlock_irq(&usbhid->inlock);
- 	del_timer(&usbhid->io_retry);
- 	usb_kill_urb(usbhid->urbin);
-+	mutex_unlock(&usbhid->setup);
- 	dev_dbg(&intf->dev, "suspend\n");
- 	return 0;
- }
-@@ -1041,9 +1058,16 @@ static int hid_resume(struct usb_interface *intf)
- 	struct usbhid_device *usbhid = hid->driver_data;
- 	int status;
- 
-+	mutex_lock(&usbhid->setup);
-+	if (!test_bit(HID_STARTED, &usbhid->iofl)) {
-+		mutex_unlock(&usbhid->setup);
-+		return 0;
-+	}
-+
- 	clear_bit(HID_SUSPENDED, &usbhid->iofl);
- 	usbhid->retry_delay = 0;
- 	status = hid_start_in(hid);
-+	mutex_unlock(&usbhid->setup);
- 	dev_dbg(&intf->dev, "resume status %d\n", status);
- 	return status;
- }
-diff --git a/drivers/hid/usbhid/usbhid.h b/drivers/hid/usbhid/usbhid.h
-index abedb13..55973ff 100644
---- a/drivers/hid/usbhid/usbhid.h
-+++ b/drivers/hid/usbhid/usbhid.h
-@@ -27,6 +27,7 @@
- #include <linux/types.h>
- #include <linux/slab.h>
- #include <linux/list.h>
-+#include <linux/mutex.h>
- #include <linux/timer.h>
- #include <linux/wait.h>
- #include <linux/workqueue.h>
-@@ -73,6 +74,7 @@ struct usbhid_device {
- 	dma_addr_t outbuf_dma;                                          /* Output buffer dma */
- 	spinlock_t outlock;                                             /* Output fifo spinlock */
- 
-+	struct mutex setup;
- 	unsigned long iofl;                                             /* I/O flags (CTRL_RUNNING, OUT_RUNNING) */
- 	struct timer_list io_retry;                                     /* Retry timer */
- 	unsigned long stop_retry;                                       /* Time to give up, in jiffies */
-diff --git a/include/linux/hid.h b/include/linux/hid.h
-index 5355ca4..e5780f8 100644
---- a/include/linux/hid.h
-+++ b/include/linux/hid.h
-@@ -410,6 +410,7 @@ struct hid_output_fifo {
- #define HID_SUSPENDED		5
- #define HID_CLEAR_HALT		6
- #define HID_DISCONNECTED	7
-+#define HID_STARTED		8
- 
- struct hid_input {
- 	struct list_head list;
--- 
-1.6.0.2
+No, it's part of the solution. I haven't posted the full fuse freezing
+patch because I thought this could be profitably merged without the rest
+of the patch.
+
+Regards,
+
+Nigel
 
