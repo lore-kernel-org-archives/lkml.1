@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754392AbYJ0UUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753418AbYJ0UYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754392AbYJ0UUW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 16:20:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYJ0UUB
+	id S1753418AbYJ0UYh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 16:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbYJ0UY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 16:20:01 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:12903 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754253AbYJ0UT6 (ORCPT
+	Mon, 27 Oct 2008 16:24:29 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:24790 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751918AbYJ0UY3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 16:19:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=PALJDTpDGErNwrAjUjPYHEFbIWZMLy4+EQm1x/CMv3i6OXQrN2wJIqRUauyiUE5BsX
-         oRnwTbq3wAwp2WQ2tuijHV4Wlkr7okexkrjPnLsXzt1G9o6aYNqoOE4iUbN54sCCk9Dw
-         2CeC/4RNTvL0uS+M362RJ8XUWzmDHph36wt3c=
-Message-ID: <8db1092f0810271319s5d15c2ffrab37a548fa388738@mail.gmail.com>
-Date: Mon, 27 Oct 2008 21:19:56 +0100
-From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Re: Linux 2.6.28-rc1] ACPI Warning (nspredef-0852)[...]
-Cc: "Robert Hancock" <hancockr@shaw.ca>,
-       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, lenb@kernel.org, fabio.comolli@gmail.com
-In-Reply-To: <8db1092f0810251151l4c7f9382r34defa6d4d6ee24c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fa.1HaqObZirROiyqr922A7hRDVc54@ifi.uio.no>
-	 <fa.Rzh43vSl9NX1QQ2nOYQSgEJcZAw@ifi.uio.no> <49035313.9080309@shaw.ca>
-	 <200810252004.01274.rjw@sisk.pl>
-	 <8db1092f0810251151l4c7f9382r34defa6d4d6ee24c@mail.gmail.com>
+	Mon, 27 Oct 2008 16:24:29 -0400
+Date: Mon, 27 Oct 2008 22:27:28 +0100
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: "Vlada Peric" <vlada.peric@gmail.com>
+Cc: linux-kernel@vger.kernel.org, krzysztof.h1@wp.pl
+Subject: Re: [PATCH] cirrusfb: remove unused variables
+Message-Id: <20081027222728.b9d55137.krzysztof.h1@poczta.fm>
+In-Reply-To: <6e4284620810270231y7d03d898p8d2d832bec42b10e@mail.gmail.com>
+References: <6e4284620810270231y7d03d898p8d2d832bec42b10e@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8BIT
+X-EMID: 4ee2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/25 Maciej Rutecki <maciej.rutecki@gmail.com>:
-> Suspend to ram, but another machine (previous PC, now laptop) and
-> another problem:
->
-> ACPI: EC: missing confirmations, switch off interrupt mode.
-> ACPI Exception (evregion-0419): AE_TIME, Returned by Handler for
-> [EmbeddedControl] [20080926]
-> ACPI Error (psparse-0524): Method parse/execution failed [\_TZ_.C31E]
-> (Node f7019858), AE_TIME
-> ACPI Error (psparse-0524): Method parse/execution failed
-> [\_TZ_.TZ3_._TMP] (Node f7019ed0), AE_TIME
->
-> It doesn't happened immediately after s2ram but is correlation between
-> s2ram and this error.
+On Mon, 27 Oct 2008 10:31:59 +0100
+"Vlada Peric" <vlada.peric@gmail.com> wrote:
 
-I was wrong; it happens not only after suspend to ram but sometimes
-after normal boot.
+> After commit a1d35a7a (cirrusfb: use modedb and add mode_option parameter),
+> these variables are no longer used, so remove them to fix compilation warning.
+> 
+> Signed-off-by: Vlada Periæ <vlada.peric@gmail.com>
+> CC: Krzysztof Helt <krzysztof.h1@wp.pl>
+> ---
 
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+>  drivers/video/cirrusfb.c |    3 +--
+>  1 files changed, 1 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
+> index 048b139..ace4001 100644
+> --- a/drivers/video/cirrusfb.c
+> +++ b/drivers/video/cirrusfb.c
+> @@ -2462,8 +2462,7 @@ static int __init cirrusfb_init(void)
+> 
+>  #ifndef MODULE
+>  static int __init cirrusfb_setup(char *options) {
+> -	char *this_opt, s[32];
+> -	int i;
+> +	char *this_opt;
+> 
+>  	DPRINTK("ENTER\n");
+> 
+> -- 
+
+----------------------------------------------------------------------
+Konkurs! Wygraj m.in. telewizor LCD!
+Sprawdz >> http://link.interia.pl/f1f52 
+
