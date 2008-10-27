@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753031AbYJ0LCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752846AbYJ0LEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753031AbYJ0LCb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 07:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbYJ0LCY
+	id S1752846AbYJ0LEM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 07:04:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYJ0LD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 07:02:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47178 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752125AbYJ0LCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 07:02:23 -0400
-Date: Mon, 27 Oct 2008 12:02:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alok Kataria <akataria@vmware.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH 0/4] V3 Hypervisor detection and tsc_reliable feature
-	definition
-Message-ID: <20081027110218.GD13641@elte.hu>
-References: <1224894087.28224.69.camel@alok-dev1>
+	Mon, 27 Oct 2008 07:03:57 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:52024 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752136AbYJ0LD4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 07:03:56 -0400
+Message-ID: <49059FED.4030202@cs.columbia.edu>
+Date: Mon, 27 Oct 2008 07:03:09 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1224894087.28224.69.camel@alok-dev1>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Peter Chubb <peterc@gelato.unsw.edu.au>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-api@vger.kernel.org, tglx@linutronix.de, dave@linux.vnet.ibm.com,
+       mingo@elte.hu, hpa@zytor.com, viro@zeniv.linux.org.uk
+Subject: Re: [RFC v7][PATCH 2/9] General infrastructure for checkpoint	restart
+References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu>	<1224481237-4892-3-git-send-email-orenl@cs.columbia.edu>	<20081021124130.a002e838.akpm@linux-foundation.org>	<20081021202410.GA10423@us.ibm.com>	<48FE82DF.6030005@cs.columbia.edu>	<20081022152804.GA23821@us.ibm.com>	<48FF4EB2.5060206@cs.columbia.edu> <87tzayh27r.wl%peter@chubb.wattle.id.au>
+In-Reply-To: <87tzayh27r.wl%peter@chubb.wattle.id.au>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alok Kataria <akataria@vmware.com> wrote:
 
-> Hi,
+Peter Chubb wrote:
+>>>>>> "Oren" == Oren Laadan <orenl@cs.columbia.edu> writes:
 > 
-> These patches define a framework for hypervisor detection and 
-> setting of hypervisor feature bits. We define a 
-> X86_FEATURE_TSC_RELIABLE bit which is a synthetic bit. This is set 
-> when running under VMware. This feature bit is used to skip TSC 
-> checks which can fail on virtualization platform due to timing 
-> differences when running on virtual cpus.
+> 
+> Oren> Nope, since we will fail to restart in many cases. We will need
+> Oren> a way to move from caller's credentials to saved credentials,
+> Oren> and even from caller's credentials to privileged credentials
+> Oren> (e.g. to reopen a file that was created by a setuid program
+> Oren> prior to dropping privileges).
+> 
+> You can't necessarily tell the difference between this and revocation
+> of privilege.  For most security models, it must be possible to change
+> the permissions on the file, and then the restart should fail.
+> 
+> In our implementation, we simply refused to checkpoint setid programs.
 
-okay, this looks a lot better structurally - the DMI angle and the 
-synthetic CPU flag, and the clocksource smarts are all a clean 
-approach. Peter, any objections?
+True. And this works very well for HPC applications.
 
-	Ingo
+However, it doesn't work so well for server applications, for instance.
+
+Also, you could use file system snapshotting to ensure that the file
+system view does not change, and still face the same issue.
+
+So I'm perfectly ok with deferring this discussion to a later time :)
+
+Oren.
+
+> --
+> Dr Peter Chubb  http://www.gelato.unsw.edu.au  peterc AT gelato.unsw.edu.au
+> http://www.ertos.nicta.com.au           ERTOS within National ICT Australia
+> 
