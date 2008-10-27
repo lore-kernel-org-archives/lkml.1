@@ -1,79 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752475AbYJ0O6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752526AbYJ0PAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752475AbYJ0O6h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 10:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbYJ0O61
+	id S1752526AbYJ0PAU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 11:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbYJ0PAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 10:58:27 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:4089 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751303AbYJ0O60 (ORCPT
+	Mon, 27 Oct 2008 11:00:06 -0400
+Received: from smtp-vbr13.xs4all.nl ([194.109.24.33]:4313 "EHLO
+	smtp-vbr13.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751119AbYJ0PAF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 10:58:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=Z41y4DLZqia+1RpOZpwIVjctJIQk3JAgiSNayMXWDbjDchovMjjclsqIZA0D9qA30E
-         4WugvdX3rt9G3qF/z3/IivukY82OqXY3pMw4zmWLOg1guIwh4eFKC/OODvtuh7A+HcPs
-         pPDWnPXg41s7N41V/joqecHeWwwu/6f4WDpEo=
-Message-ID: <4905D750.7000006@tuffmail.co.uk>
-Date: Mon, 27 Oct 2008 14:59:28 +0000
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Mon, 27 Oct 2008 11:00:05 -0400
+Date: Mon, 27 Oct 2008 16:00:02 +0100
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6.26] OOPS in __linkwatch_run_queue (unable to handle kernel
+	NULL pointer dereference at 00000235)
+Message-ID: <20081027150001.GQ8318@vanheusden.com>
 MIME-Version: 1.0
-To: dri-devel@lists.sourceforge.net
-CC: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.28-rc1: [drm:i915] *ERROR* ... Disabling tiling
-References: <4905CFC3.1060907@tuffmail.co.uk>
-In-Reply-To: <4905CFC3.1060907@tuffmail.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Reply-By: Sat Oct 25 11:44:16 CEST 2008
+X-Message-Flag: www.vanheusden.com
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Jenkins wrote:
-> What does this mean, should I do anything about it?  Is tiling nice to have?
->
-> It sounds like GEM broke something - though maybe it just added a more 
-> verbose error report.
->
-> System: EeePC 701
-> Kernel: v2.6.36-rc1-5-g23cf24c
-> Chipset: Intel mobile 915G-something
-> Regretably necessary kernel boot option: noapic
->
->
-> [    1.438441] Linux agpgart interface v0.103
-> [    1.438441] agpgart-intel 0000:00:00.0: Intel 915GM Chipset
-> [    1.438441] agpgart-intel 0000:00:00.0: detected 7932K stolen memory
-> [    1.443353] agpgart-intel 0000:00:00.0: AGP aperture is 256M @ 0xd0000000
-> [    1.443353] [drm] Initialized drm 1.1.0 20060810
-> [    1.443353] pci 0000:00:02.0: PCI INT A -> Link[LNKA] -> GSI 5 
-> (level, low) -> IRQ 5
-> [    1.443353] pci 0000:00:02.0: setting latency timer to 64
-> [    1.443353] [drm:i915_gem_detect_bit_6_swizzle] *ERROR* Couldn't read 
-> from MCHBAR.  Disabling
-> tiling.
-> [    1.443353] [drm:i915_driver_load] *ERROR* failed to enable MSI
->
->
-> I expect noapic explains the MSI failure.  I can boot without noapic if 
-> necessary for testing, but I can't run with it because I get nasty hangs 
-> & reboots.  I don't see why that merits an *ERROR*... anyway, what I'm 
-> interested in is the "Disabling tiling".
->   
+Hi,                                                                                                                                                                                                
+                                                                                                                                                                                                   
+While running my http://vanheusden.com/pyk/ script (which randomly
+inserts and removes modules) I triggered the folllowing oops in a 2.6.26
+kernel on a pre-ht pentium 4 (hp pavillion laptop type zv5231ea):
 
-Actually... MSI does seem to be working for my ethernet.
+[ 1037.480097] BUG: unable to handle kernel NULL pointer dereference at 00000235
+[ 1037.480188] IP: [<c0261078>] __linkwatch_run_queue+0x6d/0x15a
+[ 1037.480256] *pde = 00000000
+[ 1037.480315] Oops: 0000 [#1] SMP
+[ 1037.480393] Modules linked in: pcspkr(+) dm_snapshot joydev cdrom cpufreq_conservative snd_atiixp_modem(+) ohci_hcd(+) serio_raw wmi loop i2c_piix4 button ac sbp2 parport_pc lp psmouse output snd_seq_device pci_hotplug arc4 ecb crypto_blkcipher b43legacy input_polldev led_class rng_core rfkill_input rfkill cpufreq_stats ssb pcmcia firmware_class mac80211 parport cpufreq_ondemand dm_mirror i2c_core freq_table cfg80211 dm_log snd_ac97_codec ac97_bus ieee1394 scsi_mod snd_pcm snd_timer yenta_socket rsrc_nonstatic snd_page_alloc radeon drm rfcomm l2cap bluetooth ipv6 snd soundcore ati_agp agpgart evdev ext3 jbd mbcache dm_mod ide_disk 8139cp atiixp 8139too mii pcmcia_core ide_pci_generic ide_core usbcore processor thermal_sys [last unloaded: b44]
+[ 1037.482294]
+[ 1037.482328] Pid: 6, comm: events/0 Not tainted (2.6.26-1-686 #1)
+[ 1037.482365] EIP: 0060:[<c0261078>] EFLAGS: 00010246 CPU: 0
+[ 1037.482403] EIP is at __linkwatch_run_queue+0x6d/0x15a
+[ 1037.482439] EAX: f744c000 EBX: 00000001 ECX: c03632a4 EDX: 01553000
+[ 1037.482476] ESI: 00000003 EDI: 00000000 EBP: 00000001 ESP: f744df94
+[ 1037.482536]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+[ 1037.482572] Process events/0 (pid: 6, ti=f744c000 task=f743e460 task.ti=f744c000)
+[ 1037.482609] Stack: f7414600 c03632a0 c0261165 00000000 c0261182 c012edee f7414600 c012f4c9
+[ 1037.482855]        f741460c c012f57c 00000000 f743e460 c013177c f744dfc8 f744dfc8 f7414600
+[ 1037.483101]        00000000 c01316bb c0131683 00000000 c01044f3 f7441ef8 00000000 00000000
+[ 1037.483346] Call Trace:
+[ 1037.483412]  [<c0261165>] linkwatch_event+0x0/0x22
+[ 1037.483474]  [<c0261182>] linkwatch_event+0x1d/0x22
+[ 1037.483534]  [<c012edee>] run_workqueue+0x74/0xf2
+[ 1037.483596]  [<c012f4c9>] worker_thread+0x0/0xbd
+[ 1037.483656]  [<c012f57c>] worker_thread+0xb3/0xbd
+[ 1037.483718]  [<c013177c>] autoremove_wake_function+0x0/0x2d
+[ 1037.483785]  [<c01316bb>] kthread+0x38/0x5d
+[ 1037.483842]  [<c0131683>] kthread+0x0/0x5d
+[ 1037.483901]  [<c01044f3>] kernel_thread_helper+0x7/0x10
+[ 1037.483974]  =======================
+[ 1037.484007] Code: 80 05 00 8b 1d 9c b5 41 c0 c7 05 9c b5 41 c0 00 00 00 00 90 fe 05 90 b5 41 c0 fb 0f 1f 84 00 00 00 00 00 90 e9 ce 00 00 00 85 ff <8b> ab 34 02 00 00 74 17 89 d8 e8 7d fe ff ff 85 c0 75 0c 89 d8
+[ 1037.484013] EIP: [<c0261078>] __linkwatch_run_queue+0x6d/0x15a SS:ESP 0068:f744df94
+[ 1037.485642] ---[ end trace 69e935fd5d0e15c9 ]---
 
-$ grep eth /proc/interrupts
- 44:       2446   PCI-MSI-edge      eth1
 
-DRM wasn't using MSI in 2.6.27 though.  So I'm still doubtful that the 
-MSI issue is really an "*ERROR*".
+Folkert van Heusden
 
-Thanks
-Alan
+-- 
+Multi tail barnamaj mowahib li mora9abat attasjilat wa nataij awamir
+al 7asoub. damj, talwin, mora9abat attarchi7 wa ila akhirih.
+http://www.vanheusden.com/multitail/
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
