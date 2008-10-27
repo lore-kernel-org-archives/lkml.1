@@ -1,71 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbYJ0XMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbYJ0XNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753368AbYJ0XMm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 19:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYJ0XMc
+	id S1753528AbYJ0XNq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 19:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbYJ0XNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 19:12:32 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:22306 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751861AbYJ0XMb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 19:12:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=UtnEiBCpn28UrEk+f1ULTkwHJUCudvr+OAmjhXH+ExvcOmXke9Y25Lr5OPISY6xrTM
-         BFrt7LXEMV/OuInrR3jnUuHPIPBmi4O/Hg3gVDa9YS5+2BDifTZobn+8IPc220oLpjuj
-         fMzVE/0TXajhOY5MTAtPimS8jeVO1DuKwtfYQ=
-Message-ID: <1ba2fa240810271612g72bb2b08p6ebab9f6f02f5b98@mail.gmail.com>
-Date: Tue, 28 Oct 2008 01:12:30 +0200
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Suspend to RAM regression in 2.6.28-rc2 (bisected)
-Cc: "Carlos R. Mafra" <crmafra2@gmail.com>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       "Soeren Sonnenburg" <kernel@nn7.de>, linux-kernel@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <200810272350.29429.rjw@sisk.pl>
+	Mon, 27 Oct 2008 19:13:38 -0400
+Received: from ozlabs.org ([203.10.76.45]:59875 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751525AbYJ0XNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 19:13:37 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081027162054.GA4015@localhost.aei.mpg.de>
-	 <20081027222852.GA3907@localhost.aei.mpg.de>
-	 <1ba2fa240810271540t1d1ba5c9me60f86dec357f53e@mail.gmail.com>
-	 <200810272350.29429.rjw@sisk.pl>
+Message-ID: <18694.19224.210495.372922@cargo.ozlabs.ibm.com>
+Date: Tue, 28 Oct 2008 10:13:28 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH tip/tracing/markers] new probes manager
+In-Reply-To: <20081027182655.GA11494@elte.hu>
+References: <48FFE5CB.2050608@cn.fujitsu.com>
+	<20081027155832.GB17250@Krystal>
+	<20081027163046.GA20692@Krystal>
+	<20081027182655.GA11494@elte.hu>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-h
+Ingo Molnar writes:
 
-On Tue, Oct 28, 2008 at 12:50 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday, 27 of October 2008, Tomas Winkler wrote:
->> On Tue, Oct 28, 2008 at 12:28 AM, Carlos R. Mafra <crmafra2@gmail.com> wrote:
->> > On Mon 27.Oct'08 at 23:07:00 +0200, Tomas Winkler wrote:
->> >>[...]
->> >>
->> >> Can someone try this one (it might be space broken I've just pasted
->> >> that in) It's on top of 1d63e726408dfdb3e10ed8f00c383b30ebb333d3
->> >> (latest linux-2.6.git)
->> >
->> >
->> > Yes, this one also works for me (I applied it manually).
->> Good, this was actually part of some older and bigger patch I wasn't
->> aware it has this affect. It has some millage in iwl5000 branch.
->> RFKIll went through some changes in the mainline so it wasn't merged yet.
->
-> Are you going to push this patch upstream now?  It's quite important to get
-> this resume regression fixed ASAP.
+> yes, the statement that rmb() is very expensive looks dubious. It is 
+> absolutely cheap everywhere.
 
-Definitely I would post it to wireless and stable.  I would like to
-hear from Harvey, though if this is somehow related to b43 as well. I
-will it give some more testing tomorrow morning I don't have any HW
-right now and need to suspend to bed :)
+On x86, maybe.  On powerpc it's as expensive as mb().
 
-Again, sorry for troubles.
-Tomas
+Paul.
