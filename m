@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbYJ0Trx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752943AbYJ0TsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753999AbYJ0Trx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 15:47:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYJ0Trk
+	id S1752943AbYJ0TsU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 15:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbYJ0TsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 15:47:40 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:37214 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751889AbYJ0Trk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 15:47:40 -0400
-Subject: Re: [RFC PATCHv2] printk: add the %pM, %p4, %p6 format specifiers
-From: Johannes Berg <johannes@sipsolutions.net>
-To: David Miller <davem@davemloft.net>
-Cc: harvey.harrison@gmail.com, anders@anduras.de, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20081027.123805.134354592.davem@davemloft.net>
-References: <1225067465.5672.1.camel@brick>
-	 <1225090765.3746.7.camel@johannes.berg> <1225124904.5440.1.camel@brick>
-	 <20081027.123805.134354592.davem@davemloft.net>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-xvJsigOVXpAnx8KLyMip"
-Date: Mon, 27 Oct 2008 20:47:30 +0100
-Message-Id: <1225136851.3796.53.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 27 Oct 2008 15:48:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45132 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751954AbYJ0TsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 15:48:08 -0400
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, lenb@kernel.org
+Subject: Re: PATCH] ftrace: Add a C/P state tracer to help power optimization
+References: <20081006102640.481acd23@infradead.org>
+	<20081027155920.GS5704@elte.hu>
+	<20081027110522.6cb7b142@infradead.org>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Mon, 27 Oct 2008 15:47:30 -0400
+In-Reply-To: <20081027110522.6cb7b142@infradead.org> (Arjan van de Ven's message of "Mon, 27 Oct 2008 11:05:22 -0700")
+Message-ID: <y0m3aihx1kd.fsf@ton.toronto.redhat.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-xvJsigOVXpAnx8KLyMip
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Arjan van de Ven <arjan@infradead.org> writes:
 
-On Mon, 2008-10-27 at 12:38 -0700, David Miller wrote:
-> From: Harvey Harrison <harvey.harrison@gmail.com>
-> Date: Mon, 27 Oct 2008 09:28:24 -0700
->=20
-> > On Mon, 2008-10-27 at 07:59 +0100, Johannes Berg wrote:
-> >=20
-> > > Also can you keep mac/ip address patches split up so we can use my
-> > > version of the mac address patch (it's already well-tested)?
-> > >=20
-> >=20
-> > Sure.  I'll build on top.
->=20
-> So I'll wait for Harvey's "v3" of this patch, and once I have that in
-> the net-next-2.6 tree I'll start adding Johannes's conversions on top.
+> [...]
+> --- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> +++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> [...]
+> @@ -427,6 +429,8 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
+>  		}
+>  	}
+>  
+> +	trace_power_mark(&it, POWER_PSTATE, next_perf_state);
+> +
+>  	switch (data->cpu_feature) {
+>  	case SYSTEM_INTEL_MSR_CAPABLE:
+>  		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
+> [...]
 
-Ok, fine with me too. Harvey, can you sort out the ip4 issue and then
-send with %pM included?
+Is there some reason that this doesn't use tracepoints instead
+of such a single-backend hook?
 
-johannes
 
---=-xvJsigOVXpAnx8KLyMip
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJBhrOAAoJEKVg1VMiehFYrRsP/14t7fcbcpPxmZtVU9arVnaB
-+/SwQFXgo6kRuBKSP3uNirtqT0Tld2R3LlFUiTyPdwYKPc4tu+pXEbSdKP78wWur
-IlBVgw/VpOEmBaotJY04btZfxHvSBTjDuJb4DU7rCvN9VBtguR2iMdWJTvpdP+m1
-WFrBoVDMtnFq9OyazALpifnrXQk0xv/K4v+u4BHDp3gP64hmVso4yRBFjQthO6l4
-dBjGUueNk486YRtC//AbFczyXb9VWngMQPsmbhoQHNG0oPHe2IJ6R2YMKq/z2nqU
-vSFlZCfwVHVjxm75NZW7inlikuAaWzvkPFWj0zY+Oqrp6f0hmOcHdMszS2igybXo
-/HgqDuddRJKR8fogBN0n0EGHKidx3DIofeHvn3UYZvHN2tor6rJHIU8OZc0t3vMg
-Y5XQ3iXgU+0wY+7QFjctewHZtmAHRJD0a2BPfeky3OsGQPzYEE5e19OxGlYNH8wu
-KGUkONoMhsvVd9LQCObWNmbKwD2RhEPIbAkdTxid3vm49o3GTtxyzD5YL2Lq04ta
-J/HUYAf+S55GkKCx7CchHbEFpm5W0zbFPWethMHcLzW42Osa9vWaLFLyNaPJkAwW
-HCIpGqzGGCP7bpeW1VQmw8ICwwFQI2vXMCjCck/JWZH7wysD3bJwBFhubBLujh3A
-ikfb4hFcQdACxSgYlRA9
-=rxcQ
------END PGP SIGNATURE-----
-
---=-xvJsigOVXpAnx8KLyMip--
-
+- FChE
