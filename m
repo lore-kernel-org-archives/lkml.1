@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751669AbYJ0KHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbYJ0KHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751669AbYJ0KHE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 06:07:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbYJ0KGy
+	id S1752723AbYJ0KHa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 06:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbYJ0KHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 06:06:54 -0400
-Received: from nn7.de ([85.214.94.156]:35282 "EHLO nn7.de"
+	Mon, 27 Oct 2008 06:07:09 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:37522 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751665AbYJ0KGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 06:06:53 -0400
-Subject: Re: [2.6.28-rc1 regression] appletouch
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0810260244450.22126@twin.jikos.cz>
-References: <1224966797.5303.3.camel@localhost> <49038C5C.7000708@gmail.com>
-	 <Pine.LNX.4.64.0810260244450.22126@twin.jikos.cz>
-Content-Type: text/plain
+	id S1752858AbYJ0KHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 06:07:08 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Date: Mon, 27 Oct 2008 11:06:50 +0100
-Message-Id: <1225102010.5063.1.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Message-ID: <18693.37494.214451.346748@harpo.it.uu.se>
+Date: Mon, 27 Oct 2008 11:05:42 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH 2.6.28-rc2] i386: fix forbid_dac linkage error when
+	CONFIG_PCI=n
+In-Reply-To: <20081027094157.GB4278@elte.hu>
+References: <200810270817.m9R8HsJu029399@harpo.it.uu.se>
+	<20081027094157.GB4278@elte.hu>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-10-26 at 02:45 +0200, Jiri Kosina wrote:
-> On Sat, 25 Oct 2008, Jiri Slaby wrote:
-> 
-> > > I've noticed that the mouse does no longer work in X using 2.6.28-rc1 
-> > > nor does the fn-key emulation work on my macbookpro 1,1.
-> > > It perfectly works with 2.6.27.3...
-> > Please follow
-> > http://bugzilla.kernel.org/show_bug.cgi?id=11825
-> 
-> Yup. The patch fixing this issue is in the bunch for which the pull 
-> request has already been sent to Linus, but it didn't happen yet.
+Ingo Molnar writes:
+ > 
+ > * Mikael Pettersson <mikpe@it.uu.se> wrote:
+ > 
+ > > Fix 2.6.28-rc2 build failure on i386 with CONFIG_PCI=n:
+ > 
+ > > +#ifdef CONFIG_PCI
+ > >  		if (!strncmp(p, "allowdac", 8))
+ > >  			forbid_dac = 0;
+ > >  		if (!strncmp(p, "nodac", 5))
+ > > @@ -210,6 +211,7 @@ static __init int iommu_setup(char *p)
+ > >  			forbid_dac = -1;
+ > >  			return 1;
+ > >  		}
+ > > +#endif /* CONFIG_PCI */
+ > 
+ > there's a better fix for this queued up in the PCI tree, see:
+ > 
+ >  http://marc.info/?l=linux-kernel&m=122480590627590&w=2
 
-indeed w/ -rc2 the mouse works fine. Re' fn-keys the path in /sys
-changed to /sys/module/hid_apple/parameters/fnmode ...
+Got it. Thanks.
 
-Soeren
+/Mikael
