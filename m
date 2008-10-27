@@ -1,89 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752132AbYJ0FsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752535AbYJ0FwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752132AbYJ0FsU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 01:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180AbYJ0FsL
+	id S1752535AbYJ0FwT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 01:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbYJ0FwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 01:48:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39186 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751081AbYJ0FsK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 01:48:10 -0400
-Date: Sun, 26 Oct 2008 22:46:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Kees Cook <kees.cook@canonical.com>, jakub@redhat.com, arjan@infradead.org,
-       roland@redhat.com, linux-kernel@vger.kernel.org,
-       libc-alpha@sourceware.org
-Subject: Re: [PATCH v5] ELF: implement AT_RANDOM for glibc PRNG seeding
-Message-Id: <20081026224659.af213906.akpm@linux-foundation.org>
-In-Reply-To: <48FE39FA.9030601@redhat.com>
-References: <20081001222706.68E7E1544B4@magilla.localdomain>
-	<20081003001616.GN10632@outflux.net>
-	<20081003004340.GF32682@tyan-ft48-01.lab.bos.redhat.com>
-	<20081003052938.GS10632@outflux.net>
-	<20081002225718.6a0d803a@infradead.org>
-	<48E5BAC6.9070007@redhat.com>
-	<20081003145054.GU10632@outflux.net>
-	<20081003145754.GH32682@tyan-ft48-01.lab.bos.redhat.com>
-	<20081003173313.GW10632@outflux.net>
-	<48E65964.5020809@redhat.com>
-	<20081003175917.GX10632@outflux.net>
-	<20081021130111.b8d73625.akpm@linux-foundation.org>
-	<48FE39FA.9030601@redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 27 Oct 2008 01:52:12 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:55939 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750868AbYJ0FwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 01:52:11 -0400
+Message-ID: <4905567D.9080600@cn.fujitsu.com>
+Date: Mon, 27 Oct 2008 13:49:49 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: paulmck@linux.vnet.ibm.com
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rcupdate: reduce sys's overhead when rcu_barrier()s	called
+ simultaneous
+References: <49015F45.1070002@cn.fujitsu.com> <20081026215531.GA6236@linux.vnet.ibm.com>
+In-Reply-To: <20081026215531.GA6236@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Oct 2008 13:22:18 -0700 Ulrich Drepper <drepper@redhat.com> wrote:
+Paul E. McKenney wrote:
+> On Fri, Oct 24, 2008 at 01:38:13PM +0800, Lai Jiangshan wrote:
+>> rcu_barrier() queues rcu_head on all cpus, it will brings
+>> large overhead for a large system which has a lots cpu.
+>> this fix reduces sys's overhead when rcu_barrier()s called
+>> simultaneous.
+> 
+> Hello, Jiangshan,
+> 
+> If we were to have problems with many concurrent rcu_barrier()
+> calls stacking up, this patch looks like it would be a reasonable
+> was of addressing those problems.
+> 
+> But do we really have problems with this at the moment?
+> 
+> 							Thanx, Paul
 
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+Hi, Paul,
+
+	Thanks, we do not have problems with this at the moment.
+
+	I suddenly had an association of ideas to synchronize_srcu(),
+so I made use of the ideas in synchronize_srcu() and this patch was made.
+
+							Thanx, Lai.
+
+
 > 
-> Andrew Morton wrote:
-> > I read the above changeloglet and read the above-linked page and it's
-> > still 87% unclear to me what this feature does.  Something to do with
-> > stack randomisation, apparently.  I suppose I could go do further
-> > hunting, but from the quality-of-changelog POV I don't think I should
-> > need to do so.
+>> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+>> ---
+>> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+>> index ad63af8..734850b 100644
+>> --- a/kernel/rcupdate.c
+>> +++ b/kernel/rcupdate.c
+>> @@ -53,6 +53,9 @@ enum rcu_barrier {
+>>
+>>  static DEFINE_PER_CPU(struct rcu_head, rcu_barrier_head) = {NULL};
+>>  static atomic_t rcu_barrier_cpu_count;
+>> +static unsigned long rcu_barrier_completed;
+>> +static unsigned long rcu_barrier_completed_bh;
+>> +static unsigned long rcu_barrier_completed_sched;
+>>  static DEFINE_MUTEX(rcu_barrier_mutex);
+>>  static struct completion rcu_barrier_completion;
+>>
+>> @@ -60,7 +63,7 @@ static struct completion rcu_barrier_completion;
+>>   * Awaken the corresponding synchronize_rcu() instance now that a
+>>   * grace period has elapsed.
+>>   */
+>> -void wakeme_after_rcu(struct rcu_head  *head)
+>> +void wakeme_after_rcu(struct rcu_head *head)
+>>  {
+>>  	struct rcu_synchronize *rcu;
+>>
+>> @@ -113,11 +116,20 @@ static void rcu_barrier_func(void *type)
+>>   * Orchestrate the specified type of RCU barrier, waiting for all
+>>   * RCU callbacks of the specified type to complete.
+>>   */
+>> -static void _rcu_barrier(enum rcu_barrier type)
+>> +static void _rcu_barrier(enum rcu_barrier type, unsigned long *completed)
+>>  {
+>> +	unsigned long batch = ACCESS_ONCE(*completed);
+>>  	BUG_ON(in_interrupt());
+>>  	/* Take cpucontrol mutex to protect against CPU hotplug */
+>>  	mutex_lock(&rcu_barrier_mutex);
+>> +
+>> +	BUG_ON(*completed & 1);
+>> +	if ((*completed - batch) >= 2) {
+>> +		mutex_unlock(&rcu_barrier_mutex);
+>> +		return;
+>> +	}
+>> +	(*completed)++;
+>> +
+>>  	init_completion(&rcu_barrier_completion);
+>>  	/*
+>>  	 * Initialize rcu_barrier_cpu_count to 1, then invoke
+>> @@ -133,6 +145,7 @@ static void _rcu_barrier(enum rcu_barrier type)
+>>  	if (atomic_dec_and_test(&rcu_barrier_cpu_count))
+>>  		complete(&rcu_barrier_completion);
+>>  	wait_for_completion(&rcu_barrier_completion);
+>> +	(*completed)++;
+>>  	mutex_unlock(&rcu_barrier_mutex);
+>>  }
+>>
+>> @@ -141,7 +154,7 @@ static void _rcu_barrier(enum rcu_barrier type)
+>>   */
+>>  void rcu_barrier(void)
+>>  {
+>> -	_rcu_barrier(RCU_BARRIER_STD);
+>> +	_rcu_barrier(RCU_BARRIER_STD, &rcu_barrier_completed);
+>>  }
+>>  EXPORT_SYMBOL_GPL(rcu_barrier);
+>>
+>> @@ -150,7 +163,7 @@ EXPORT_SYMBOL_GPL(rcu_barrier);
+>>   */
+>>  void rcu_barrier_bh(void)
+>>  {
+>> -	_rcu_barrier(RCU_BARRIER_BH);
+>> +	_rcu_barrier(RCU_BARRIER_BH, &rcu_barrier_completed_bh);
+>>  }
+>>  EXPORT_SYMBOL_GPL(rcu_barrier_bh);
+>>
+>> @@ -159,7 +172,7 @@ EXPORT_SYMBOL_GPL(rcu_barrier_bh);
+>>   */
+>>  void rcu_barrier_sched(void)
+>>  {
+>> -	_rcu_barrier(RCU_BARRIER_SCHED);
+>> +	_rcu_barrier(RCU_BARRIER_SCHED, &rcu_barrier_completed_sched);
+>>  }
+>>  EXPORT_SYMBOL_GPL(rcu_barrier_sched);
+>>
+>>
+>>
 > 
-> Not stack randomization.  glibc needs right after startup a bit of
-> random data for internal protections (stack canary etc).  What is now in
-> upstream glibc is that we always unconditionally open /dev/urandom, read
-> some data, and use it.  For every process startup.  That's slow.
 > 
-> In addition Andi mentioned that this use of /dev/urandom might be
-> problematic.  I let him explain this.
-> 
-> The solution is to provide a limited amount of random data to the
-> starting process in the aux vector.  I suggested 16 bytes and this is
-> what the patch implements.  If we need only 16 bytes or less we use the
-> data directly.  If we need more we'll use the 16 bytes to see a PRNG.
-> This avoids the costly /dev/urandom use and it allows the kernel to use
-> the most adequate source of random data for this purpose.  It might not
-> be the same pool as that for /dev/urandom.
 > 
 
-Thanks.
-
-> > It's unclear to me that the random-number issue got sorted out?
-> 
-> I think the last patch used the normal function to get 16 random bytes,
-> equivalent to the data used for stack randomization etc.
-> 
-> If Andi has concrete proposals for a revamp of the use of entropy in the
-> kernel this can be easily done as an add-on.  This patch doesn't make
-> the situation worse, it doesn't deplete entropy more than it happens now.
-> 
-
-True.
-
-As long as glibc doesn't do the /dev/urandom read when the kenrel has
-already done that.  I assume that it will do so, until AT_RANDOM-aware
-glibc has propagated out?
 
