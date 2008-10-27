@@ -1,82 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752151AbYJ0PPC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752209AbYJ0PTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752151AbYJ0PPC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 11:15:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYJ0POx
+	id S1752209AbYJ0PTj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 11:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYJ0PTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 11:14:53 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52876 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751299AbYJ0POw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 11:14:52 -0400
-Date: Mon, 27 Oct 2008 15:14:57 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] i2o: Switch all my stuff to a single common address
-Message-ID: <20081027151457.0e8fdf4e@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-14
-Content-Transfer-Encoding: 8BIT
+	Mon, 27 Oct 2008 11:19:30 -0400
+Received: from khc.piap.pl ([195.187.100.11]:33383 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751197AbYJ0PT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 11:19:29 -0400
+To: Dmitri Monakhov <dmonakhov@openvz.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] kill suid bit only for regular files
+References: <1224424839-3892-1-git-send-email-dmonakhov@openvz.org>
+	<20081026214741.332c7656.akpm@linux-foundation.org>
+	<m363nebi2n.fsf@dmon-lap.sw.ru>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Mon, 27 Oct 2008 16:19:26 +0100
+In-Reply-To: <m363nebi2n.fsf@dmon-lap.sw.ru> (Dmitri Monakhov's message of "Mon\, 27 Oct 2008 10\:41\:52 +0300")
+Message-ID: <m3y70a3w1t.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Dmitri Monakhov <dmonakhov@openvz.org> writes:
 
-diff --git a/drivers/message/i2o/exec-osm.c b/drivers/message/i2o/exec-osm.c
-index 56faef1..06c655c 100644
---- a/drivers/message/i2o/exec-osm.c
-+++ b/drivers/message/i2o/exec-osm.c
-@@ -19,7 +19,7 @@
-  *		Auvo Häkkinen <Auvo.Hakkinen@cs.Helsinki.FI>
-  *		Deepak Saxena <deepak@plexity.net>
-  *		Boji T Kannanthanam <boji.t.kannanthanam@intel.com>
-- *		Alan Cox <alan@redhat.com>:
-+ *		Alan Cox <alan@lxorguk.ukuu.org.uk>:
-  *			Ported to Linux 2.5.
-  *		Markus Lidel <Markus.Lidel@shadowconnect.com>:
-  *			Minor fixes for 2.6.
-diff --git a/drivers/message/i2o/i2o_config.c b/drivers/message/i2o/i2o_config.c
-index a3fabdb..3f08f01 100644
---- a/drivers/message/i2o/i2o_config.c
-+++ b/drivers/message/i2o/i2o_config.c
-@@ -19,7 +19,7 @@
-  *		Changed ioctl_swdl(), implemented ioctl_swul() and ioctl_swdel()
-  *	Deepak Saxena (11/18/1999):
-  *		Added event managmenet support
-- *	Alan Cox <alan@redhat.com>:
-+ *	Alan Cox <alan@lxorguk.ukuu.org.uk>:
-  *		2.4 rewrite ported to 2.5
-  *	Markus Lidel <Markus.Lidel@shadowconnect.com>:
-  *		Added pass-thru support for Adaptec's raidutils
-diff --git a/drivers/message/i2o/iop.c b/drivers/message/i2o/iop.c
-index be2b592..9ac7cd3 100644
---- a/drivers/message/i2o/iop.c
-+++ b/drivers/message/i2o/iop.c
-@@ -19,7 +19,7 @@
-  *		Auvo Häkkinen <Auvo.Hakkinen@cs.Helsinki.FI>
-  *		Deepak Saxena <deepak@plexity.net>
-  *		Boji T Kannanthanam <boji.t.kannanthanam@intel.com>
-- *		Alan Cox <alan@redhat.com>:
-+ *		Alan Cox <alan@lxorguk.ukuu.org.uk>:
-  *			Ported to Linux 2.5.
-  *		Markus Lidel <Markus.Lidel@shadowconnect.com>:
-  *			Minor fixes for 2.6.
-diff --git a/drivers/message/i2o/pci.c b/drivers/message/i2o/pci.c
-index 610ef12..25d6f23 100644
---- a/drivers/message/i2o/pci.c
-+++ b/drivers/message/i2o/pci.c
-@@ -19,7 +19,7 @@
-  *		Auvo Häkkinen <Auvo.Hakkinen@cs.Helsinki.FI>
-  *		Deepak Saxena <deepak@plexity.net>
-  *		Boji T Kannanthanam <boji.t.kannanthanam@intel.com>
-- *		Alan Cox <alan@redhat.com>:
-+ *		Alan Cox <alan@lxorguk.ukuu.org.uk>:
-  *			Ported to Linux 2.5.
-  *		Markus Lidel <Markus.Lidel@shadowconnect.com>:
-  *			Minor fixes for 2.6.
+>> Are we sure that should_remove_suid() is not and never will used for
+>> directories?
+> This bits are meaningless for directory. Posix is quiet about this case.
+
+> Ok. Will do. My point is: it is improbable what some body(except me :) )
+> want to set S_ISUID/S_ISGID bit for non regular files. But it is 
+> technically possible and result in unexpected consequence.
+
+I don't know about the context, but SGID bits for directories are not
+magic, they mean the newly created files will inherit GID from the
+parent directory, and if the file is actually a subdirectory, it will
+also have SGID set. The same was also true WRT SUID bits on some
+systems.
+-- 
+Krzysztof Halasa
