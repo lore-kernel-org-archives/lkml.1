@@ -1,40 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752745AbYJ0Q7I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbYJ0REK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752745AbYJ0Q7I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 12:59:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYJ0Q64
+	id S1752500AbYJ0REK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 13:04:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbYJ0RD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 12:58:56 -0400
-Received: from ftp.linux-mips.org ([213.58.128.207]:45193 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750876AbYJ0Q64 (ORCPT
+	Mon, 27 Oct 2008 13:03:57 -0400
+Received: from smtp2.riverbed.com ([206.169.144.7]:21856 "EHLO
+	smtp2.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751259AbYJ0RD4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 12:58:56 -0400
-Date: Mon, 27 Oct 2008 16:58:50 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Aristeu Rozanski <aris@redhat.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0/2] IOAPIC NMI watchdog fixes
-In-Reply-To: <20081027164233.132189000@napanee.usersys.redhat.com>
-Message-ID: <alpine.LFD.1.10.0810271651520.18692@ftp.linux-mips.org>
-References: <20081027164233.132189000@napanee.usersys.redhat.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 27 Oct 2008 13:03:56 -0400
+X-Greylist: delayed 572 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Oct 2008 13:03:56 EDT
+Date: Mon, 27 Oct 2008 09:54:23 -0700
+From: Arthur Jones <ajones@riverbed.com>
+To: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+CC: sct@redhat.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: ext3: slow symlink corruption on umount...
+Message-ID: <20081027165423.GB25797@ajones-laptop.nbttech.com>
+References: <20081024183733.GA25797@ajones-laptop.nbttech.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20081024183733.GA25797@ajones-laptop.nbttech.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Oct 2008, Aristeu Rozanski wrote:
+Some additional info -- and attempting to cast a wider
+net on the CC:
 
-> These two patches make use of __acpi_nmi_disable() to make possible to:
-> - enable and disable IOAPIC NMI watchdog using procfs
-> - disable NMI generation if the NMI watchdog is not working on boot time
+I do not see the long symlink corruption with mount -o data=writeback
+and we've now seen a couple cases where the symlink corruption
+does not require a umount...
 
- Thanks, I'll see if I can find some time soon to give them a hit -- I've 
-got a serial console on my laptop now, :) so any odd boot-time tests will 
-be easier for me.  These would be best tested with Ingo's APIC tree, a 
-current snapshot of which I may not have handy.  Ping me if I don't 
-respond within a few days.
+Arthur
 
-  Maciej
+On Fri, Oct 24, 2008 at 11:37:34AM -0700, Arthur Jones wrote:
+> Hi All,  I'm seeing slow symlink corruption on ext3 on linux-2.6.27,
+> yesterday's linux-2.6 git tree and 2.6.9 RHEL4.7.  I.e. every kernel
+> I've tried I see this effect.  To reproduce this, I need:
+> 
+> * 250MB + tar file in memory (tmpfs or in the buffer cache)
+> * long symlinks in the tar file (over 60 characters)
+> * umount immediately after untarring
+> 
+> What I see is that the symlinks are corrupted, e.g.:
+> 
+> # ls -l etc/vmware-vix-disklib
+> etc/vmware-vix-disklib -> ??f
+> 
+> fsck shows:
+> 
+> Symlink /etc/vmware-vix-disklib (inode #16454) is invalid.
+> 
+> Debugfs shows:
+> 
+> debugfs:  stat <16454>
+> Inode: 16454   Type: symlink    Mode:  0777   Flags: 0x0   Generation: 1431972005
+> User:     0   Group:     0   Size: 65
+> File ACL: 0    Directory ACL: 0
+> Links: 1   Blockcount: 8
+> Fragment:  Address: 0    Number: 0    Size: 0
+> ctime: 0x4900ac69 -- Thu Oct 23 09:55:05 2008
+> atime: 0x4900ac84 -- Thu Oct 23 09:55:32 2008
+> mtime: 0x4900ac69 -- Thu Oct 23 09:55:05 2008
+> BLOCKS:
+> (0):56034
+> TOTAL: 1
+> 
+> I'm still tracking down exactly what's going on.  Anyone seen
+> anything like this before?  ext2 does not show this effect (I've
+> not tried ext4).  It happens when the backing block device is
+> a SATA drive or flash.
+> 
+> Thanks,
+> 
+> Arthur
