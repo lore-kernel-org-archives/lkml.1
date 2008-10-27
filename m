@@ -1,79 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754322AbYJ0Va7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbYJ0VdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754322AbYJ0Va7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 17:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbYJ0Vam
+	id S1753937AbYJ0VdU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 17:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYJ0VdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 17:30:42 -0400
-Received: from kroah.org ([198.145.64.141]:34020 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752284AbYJ0Val (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 17:30:41 -0400
-Date: Mon, 27 Oct 2008 14:14:52 -0700
-From: Greg KH <greg@kroah.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5] w35und: remove dead code from wbusb_f.h
-Message-ID: <20081027211452.GA19762@kroah.com>
-References: <Pine.LNX.4.64.0810221906140.1679@melkki.cs.Helsinki.FI> <20081027183707.GA13737@kroah.com> <Pine.LNX.4.64.0810272241520.7338@melkki.cs.Helsinki.FI>
+	Mon, 27 Oct 2008 17:33:07 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:25608 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752018AbYJ0VdG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 17:33:06 -0400
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
+Date: Mon, 27 Oct 2008 21:32:22 +0000
+Subject: RE: [PATCH 1/2] cciss: fix sysfs broken symlink regression
+Thread-Topic: [PATCH 1/2] cciss: fix sysfs broken symlink regression
+Thread-Index: Ack4eymB6b1uGrtbQkKYSFnVBDGgSgAAEbCw
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A77884C025E85D0@GVW0547EXC.americas.hpqcorp.net>
+References: <20081027210136.GA9438@roadking.ldev.net>
+ <20081027142954.d63b4590.akpm@linux-foundation.org>
+In-Reply-To: <20081027142954.d63b4590.akpm@linux-foundation.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0810272241520.7338@melkki.cs.Helsinki.FI>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 27, 2008 at 10:44:19PM +0200, Pekka J Enberg wrote:
-> Hi Greg,
-> 
-> On Wed, Oct 22, 2008 at 07:06:41PM +0300, Pekka J Enberg wrote:
-> > > From: Pekka Enberg <penberg@cs.helsinki.fi>
-> > > 
-> > > Remove dead code from wbusb_f.h and move the WbWLanInitialize() definition to
-> > > wblinux_f.h where it arguably belongs to. As the wbusb_f.h is now empty, we can
-> > > remove it completely.
-> > > 
-> > > Cc: Pavel Machek <pavel@suse.cz>
-> > > Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> On Mon, 27 Oct 2008, Greg KH wrote:
-> > This patch gives me a bunch of build errors as I don't think you are in
-> > sync with the other changes in these files.
-> > 
-> > Care to respin it against 2.6.28-rc2?
-> 
-> That's strange. I rebased against 2.6.28-rc2 but didn't get any conficts 
-> and everything seems to build just fine. What kind of errors are you 
-> seeing?
-> 
-> I've included the rediffed patch here in case it helps. Not sure why it 
-> would...
 
-I still get the following errors with this patch applied:
 
-  CC [M]  drivers/staging/winbond/./linux/wb35reg.o
-drivers/staging/winbond/./linux/wb35reg.c: In function ‘Wb35Reg_BurstWrite’:
-drivers/staging/winbond/./linux/wb35reg.c:29: error: implicit declaration of function ‘wb_usb_alloc_urb’
-drivers/staging/winbond/./linux/wb35reg.c:29: warning: assignment makes pointer from integer without a cast
-drivers/staging/winbond/./linux/wb35reg.c: In function ‘Wb35Reg_Write’:
-drivers/staging/winbond/./linux/wb35reg.c:178: warning: assignment makes pointer from integer without a cast
-drivers/staging/winbond/./linux/wb35reg.c: In function ‘Wb35Reg_WriteWithCallbackValue’:
-drivers/staging/winbond/./linux/wb35reg.c:238: warning: assignment makes pointer from integer without a cast
-drivers/staging/winbond/./linux/wb35reg.c: In function ‘Wb35Reg_Read’:
-drivers/staging/winbond/./linux/wb35reg.c:345: warning: assignment makes pointer from integer without a cast
-drivers/staging/winbond/./linux/wb35reg.c: In function ‘Wb35Reg_EP0VM’:
-drivers/staging/winbond/./linux/wb35reg.c:437: error: implicit declaration of function ‘wb_usb_submit_urb’
-make[2]: *** [drivers/staging/winbond/./linux/wb35reg.o] Error 1
+> -----Original Message-----
+> From: Andrew Morton [mailto:akpm@linux-foundation.org]
+> Sent: Monday, October 27, 2008 4:30 PM
+> To: Miller, Mike (OS Dev)
+> Cc: jens.axboe@oracle.com; linux-kernel@vger.kernel.org;
+> linux-scsi@vger.kernel.org
+> Subject: Re: [PATCH 1/2] cciss: fix sysfs broken symlink regression
+>
+> On Mon, 27 Oct 2008 16:01:36 -0500
+> Mike Miller <mike.miller@hp.com> wrote:
+>
+> > Patch 1 of 2
+> >
+> > Regression introduced by commit
+> 6ae5ce8e8d4de666f31286808d2285aa6a50fa40.
+> > This patch fixes a broken symlink in sysfs that was
+> introduced by the
+> > above commit also called "cciss: remove redundant code." We
+> broke it
+> > in 2.6.27-rc on or about 20080804. Some installers are
+> broken if this
+> > symlink does not exist and they may not detect the logical drives
+> > configured on the controller.
+> > It does not require being backported into 2.6.26.x or
+> earlier kernels.
+>
+> OK, thanks, I tagged it for 2.6.27.x.
+>
+> > Please consider this for inclusion.
+> >
+> > Andrew, do I need to resubmit 2 of 2? Or is that one still
+> in your queue?
+> >
+>
+> What's 2 of 2?
+>
+> cciss patches which I presently have queued are:
+>
+> cciss-fix-regression-firmware-not-displayed-in-procfs-again-an
+d-again.patch
 
-This seems to be because wb_usb_submit_urb() and alloc_urb() are in the
-drivers/staging/winbond/linux/wbusb_f.h file when it is removed.
+This is patch 2 of 2.
 
-I'll go fix this up by adding another patch removing these entries.
-Don't know how they got in here, odd.
-
-thanks,
-
-greg k-h
+> cciss-new-hardware-support.patch
+> cciss-fix-sysfs-broken-symlink-regression.patch
+>
+>
