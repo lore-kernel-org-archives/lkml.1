@@ -1,45 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbYJ0V0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbYJ0V3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752826AbYJ0V0f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 17:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbYJ0V00
+	id S1753223AbYJ0V3l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 17:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbYJ0V3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 17:26:26 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:65419 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750918AbYJ0V00 (ORCPT
+	Mon, 27 Oct 2008 17:29:33 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:47612 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751685AbYJ0V3d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 17:26:26 -0400
-Date: Mon, 27 Oct 2008 14:26:23 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@bogon.housecafe.de
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: LKML <linux-kernel@vger.kernel.org>, dwmw2@infradead.org
-Subject: Re: [software coproarchaeology] sbc8240 story
-In-Reply-To: <20081026185647.GP28946@ZenIV.linux.org.uk>
-Message-ID: <alpine.DEB.2.00.0810271422240.7569@bogon.housecafe.de>
-References: <20081026185647.GP28946@ZenIV.linux.org.uk>
-User-Agent: Alpine 2.00 (DEB 1169 2008-08-27)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Provags-ID: V01U2FsdGVkX1+uCtWIZy2h2IcurUgAHPQsOJSjAcE6vwr7CuA
- hx+cZCcbGhvREIp9d3ts201wJg45Hkq54nDUibPM6niF9ME4Qd
- lX/zU1vgY0FI1AXBMdNIA==
+	Mon, 27 Oct 2008 17:29:33 -0400
+Date: Mon, 27 Oct 2008 23:29:31 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: greg@kroah.com
+cc: pavel@suse.cz, linux-kernel@vger.kernel.org
+Subject: [PATCH] w35und: usb_put_dev() is missing from wb35_disconnect()
+Message-ID: <Pine.LNX.4.64.0810272328430.8946@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 26 Oct 2008, Al Viro wrote:
-> As an aside, this story says a lot about our build coverage.  And probably
-> quite a few sad things about development process...
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-For the record: the driver depends on MTD_JEDECPROBE && 8260, where 8260 
-is filed under "82xx-based boards" in PowerPC. I don't know if we have 
-that much compile tests for this particular arch. http://l4x.org "only" 
-lists cell_defconfig and g5_defconfig...
+The wb35_probe() function does usb_get_dev() so add a missing usb_put_dev() to
+the wb35_disconnect() function. Also fix error handling paths in wb35_probe()
+to call usb_put_dev() as well.
 
-C.
+Cc: Pavel Machek <pavel@suse.cz>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ drivers/staging/winbond/linux/wbusb.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/staging/winbond/linux/wbusb.c b/drivers/staging/winbond/linux/wbusb.c
+index 582ede4..128b70a 100644
+--- a/drivers/staging/winbond/linux/wbusb.c
++++ b/drivers/staging/winbond/linux/wbusb.c
+@@ -277,6 +277,7 @@ error_free_hw:
+ error_free_adapter:
+ 	kfree(adapter);
+ error:
++	usb_put_dev(udev);
+ 	return err;
+ }
+ 
+@@ -310,12 +311,12 @@ void packet_came(char *pRxBufferAddress, int PacketSize)
+ 
+ static void wb35_disconnect(struct usb_interface *intf)
+ {
+-	struct wb35_adapter * adapter = usb_get_intfdata(intf);
+-	usb_set_intfdata(intf, NULL);
++	struct wb35_adapter *adapter = usb_get_intfdata(intf);
+ 
+-	// Card remove
+ 	WbWlanHalt(adapter);
+ 
++	usb_set_intfdata(intf, NULL);
++	usb_put_dev(interface_to_usbdev(intf));
+ }
+ 
+ static struct usb_driver wb35_driver = {
 -- 
-BOFH excuse #167:
+1.5.3.7
 
-excessive collisions & not enough packet ambulances
