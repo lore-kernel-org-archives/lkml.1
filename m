@@ -1,111 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbYJ0Pvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752913AbYJ0PxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752596AbYJ0Pvx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 11:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbYJ0Pvq
+	id S1752913AbYJ0PxR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 11:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYJ0PxD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 11:51:46 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:31334 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751539AbYJ0Pvo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 11:51:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=f2eBBtdPccD4E3KyXcjGpIxuHJqXfTlSRHJDhVeqrH/xBk0ax4JvHtuqB7tsiCUyAr
-         JonI499dChVR0UOMZsLmcm+lROrORQhACGhuXwwXyE7M77u9L5HCLGCTXFR0F/PyFvrr
-         gLhXTW2ZomtYTGaM+few2LlleJ1XKPlzwGCL0=
-Message-ID: <c62985530810270851l11fc6f66pb4db9f1f44467c26@mail.gmail.com>
-Date: Mon, 27 Oct 2008 16:51:42 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] [RESEND v2] tracing/ftrace: Introduce the big kernel lock tracer
-Cc: "Steven Rostedt" <rostedt@goodmis.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081027154301.GM5704@elte.hu>
+	Mon, 27 Oct 2008 11:53:03 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56903 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751601AbYJ0PxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 11:53:01 -0400
+Date: Mon, 27 Oct 2008 16:52:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Rakib Mullick <rakib.mullick@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] ftrace: use a real variable for ftrace_nop in x86
+Message-ID: <20081027155244.GR5704@elte.hu>
+References: <b9df5fa10810122250j1dd9c0eaq8c708c7b8e10a249@mail.gmail.com> <20081020162756.GA31201@elte.hu> <20081022070312.GA24749@elte.hu> <b9df5fa10810240409u311bb337x1ff9815431088685@mail.gmail.com> <20081024115005.GA5214@elte.hu> <alpine.DEB.1.10.0810240910020.3882@gandalf.stny.rr.com> <alpine.DEB.1.10.0810240916350.3882@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48FF928F.1010300@gmail.com> <48FF93D1.4090008@gmail.com>
-	 <20081027154301.GM5704@elte.hu>
+In-Reply-To: <alpine.DEB.1.10.0810240916350.3882@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/27 Ingo Molnar <mingo@elte.hu>:
->
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
->
->> diff --git a/lib/kernel_lock.c b/lib/kernel_lock.c
->> index 01a3c22..45828b2 100644
->> --- a/lib/kernel_lock.c
->> +++ b/lib/kernel_lock.c
->> @@ -9,6 +9,7 @@
->>  #include <linux/module.h>
->>  #include <linux/kallsyms.h>
->>  #include <linux/semaphore.h>
->> +#include <trace/bkl.h>
->>
->>  /*
->>   * The 'big kernel lock'
->> @@ -107,6 +108,37 @@ static inline void __unlock_kernel(void)
->>       preempt_enable();
->>  }
->>
->> +#ifdef CONFIG_BKL_TRACER
->> +static void lock_kernel_trace(void)
->> +{
->> +     int cpu;
->> +     struct bkl_trace_acquire trace;
->> +
->> +     preempt_disable();
->> +     cpu = raw_smp_processor_id();
->> +     preempt_enable();
->> +
->> +     trace.acquire_req_time = cpu_clock(cpu);
->> +     __lock_kernel();
->> +     trace.acquire_time = cpu_clock(cpu);
->> +     trace_bkl_acquire(&trace);
->> +}
->> +
->> +static void unlock_kernel_trace(void)
->> +{
->> +     struct bkl_trace_release trace;
->> +     trace.release_time = cpu_clock(raw_smp_processor_id());
->> +     trace_bkl_release(&trace);
->> +     __unlock_kernel();
->> +}
->> +
->> +#else
->> +
->> +#define lock_kernel_trace() __lock_kernel()
->> +#define unlock_kernel_trace() __unlock_kernel()
->> +
->> +#endif
->
-> hm, this looks a bit ugly.
->
-> are you aware of the tip/kill-the-BKL branch? It's an old-ish but
-> otherwise sane branch that needs some refreshing (hence it's not part
-> of tip/master).
->
-> Once we have that "kill the BKL by turning it into a mutex" feature
-> alive, and have fixed the places that rely on odd properties of the
-> BKL, the BKL becomes just an ordinary mutex and we could trace its
-> latencies via the existing lockdep/lockstat callbacks.
->
-> and we could trace all the other mutexes as well.
 
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-No problem, we can forget about it. My goal was to produce some
-statistics to locate the points that
-most often hold the bkl. That would help to define some priorities on
-which bkl holding is to remove first.
+> 
+> On Fri, 24 Oct 2008, Steven Rostedt wrote:
+> 
+> > 
+> > The dynamic ftrace determines which nop is safe to use at start up.
+> > When it finds a safe nop for patching, it sets a pointer called ftrace_nop
+> > to point to the code. All call sites are then patched to this nop.
+> > 
+> > Later, when tracing is turned on, this ftrace_nop variable is again used
+> > to compare the location to make sure it is a nop before we update it to
+> > a mcount call. If this fails just once, a warning is outputed and ftrace
+> > is disabled.
+> > 
+> > Rakib Mullick noted that the code that sets up the nop is a .init section
+> > where as the nop itself is in the .text section. This is needed because
+> > the nop is used later on after boot up. The problem is that the test of the
+> > nop jumps back to the setup code and causes a "section mismatch" warning.
+> > 
+> > Rabik first recommended to convert the nop to .init.text, but as stated
+> > above, this would fail since that text is used later.
+> > 
+> > The real solution is to extend Rabik's patch, and to make the ftrace_nop
+> > into an array, and just save the code from the assembly to this array.
+> 
+> Rereading what I sent, I see I misspelled Rakib's name twice.
+> 
+> Ingo, could you fix the changelog here before commiting it.
 
-But if that would be better to rather invest the time on the
-kill-the-bkl tree (which I thought was dead), so I would be pleased to
-help.
+done - find the tip/tracing/urgent commit below. I also added an 
+Impact: line.
+
+	Ingo
+
+---------------->
+>From 8115f3f0c939c5db0fe3c6c6c58911fd3a205b1e Mon Sep 17 00:00:00 2001
+From: Steven Rostedt <rostedt@goodmis.org>
+Date: Fri, 24 Oct 2008 09:12:17 -0400
+Subject: [PATCH] ftrace: use a real variable for ftrace_nop in x86
+
+Impact: avoid section mismatch warning, clean up
+
+The dynamic ftrace determines which nop is safe to use at start up.
+When it finds a safe nop for patching, it sets a pointer called ftrace_nop
+to point to the code. All call sites are then patched to this nop.
+
+Later, when tracing is turned on, this ftrace_nop variable is again used
+to compare the location to make sure it is a nop before we update it to
+an mcount call. If this fails just once, a warning is printed and ftrace
+is disabled.
+
+Rakib Mullick noted that the code that sets up the nop is a .init section
+where as the nop itself is in the .text section. This is needed because
+the nop is used later on after boot up. The problem is that the test of the
+nop jumps back to the setup code and causes a "section mismatch" warning.
+
+Rakib first recommended to convert the nop to .init.text, but as stated
+above, this would fail since that text is used later.
+
+The real solution is to extend Rabik's patch, and to make the ftrace_nop
+into an array, and just save the code from the assembly to this array.
+
+Now the section can stay as an init section, and we have a nop to use
+later on.
+
+Reported-by: Rakib Mullick <rakib.mullick@gmail.com>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/ftrace.c |   16 +++++-----------
+ 1 files changed, 5 insertions(+), 11 deletions(-)
+
+diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+index b1e5e22..50ea0ac 100644
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -21,8 +21,7 @@
+ #include <asm/nops.h>
+ 
+ 
+-/* Long is fine, even if it is only 4 bytes ;-) */
+-static unsigned long *ftrace_nop;
++static unsigned char ftrace_nop[MCOUNT_INSN_SIZE];
+ 
+ union ftrace_code_union {
+ 	char code[MCOUNT_INSN_SIZE];
+@@ -40,7 +39,7 @@ static int ftrace_calc_offset(long ip, long addr)
+ 
+ unsigned char *ftrace_nop_replace(void)
+ {
+-	return (char *)ftrace_nop;
++	return ftrace_nop;
+ }
+ 
+ unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+@@ -125,9 +124,6 @@ int __init ftrace_dyn_arch_init(void *data)
+ 	 * TODO: check the cpuid to determine the best nop.
+ 	 */
+ 	asm volatile (
+-		"jmp ftrace_test_jmp\n"
+-		/* This code needs to stay around */
+-		".section .text, \"ax\"\n"
+ 		"ftrace_test_jmp:"
+ 		"jmp ftrace_test_p6nop\n"
+ 		"nop\n"
+@@ -138,8 +134,6 @@ int __init ftrace_dyn_arch_init(void *data)
+ 		"jmp 1f\n"
+ 		"ftrace_test_nop5:"
+ 		".byte 0x66,0x66,0x66,0x66,0x90\n"
+-		"jmp 1f\n"
+-		".previous\n"
+ 		"1:"
+ 		".section .fixup, \"ax\"\n"
+ 		"2:	movl $1, %0\n"
+@@ -154,15 +148,15 @@ int __init ftrace_dyn_arch_init(void *data)
+ 	switch (faulted) {
+ 	case 0:
+ 		pr_info("ftrace: converting mcount calls to 0f 1f 44 00 00\n");
+-		ftrace_nop = (unsigned long *)ftrace_test_p6nop;
++		memcpy(ftrace_nop, ftrace_test_p6nop, MCOUNT_INSN_SIZE);
+ 		break;
+ 	case 1:
+ 		pr_info("ftrace: converting mcount calls to 66 66 66 66 90\n");
+-		ftrace_nop = (unsigned long *)ftrace_test_nop5;
++		memcpy(ftrace_nop, ftrace_test_nop5, MCOUNT_INSN_SIZE);
+ 		break;
+ 	case 2:
+ 		pr_info("ftrace: converting mcount calls to jmp . + 5\n");
+-		ftrace_nop = (unsigned long *)ftrace_test_jmp;
++		memcpy(ftrace_nop, ftrace_test_jmp, MCOUNT_INSN_SIZE);
+ 		break;
+ 	}
+ 
