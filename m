@@ -1,84 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601AbYJ0R4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751901AbYJ0R4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752601AbYJ0R4Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 13:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbYJ0R4O
+	id S1751901AbYJ0R4y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 13:56:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYJ0R4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 13:56:14 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45914 "EHLO mx3.mail.elte.hu"
+	Mon, 27 Oct 2008 13:56:45 -0400
+Received: from ox1.aei.mpg.de ([194.94.224.6]:52595 "EHLO ox1.aei.mpg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751098AbYJ0R4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 13:56:14 -0400
-Date: Mon, 27 Oct 2008 18:55:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: keep the page count correct
-Message-ID: <20081027175547.GE3046@elte.hu>
-References: <490406FD.30604@kernel.org> <20081027165028.GB30573@linux-os.sc.intel.com>
+	id S1750936AbYJ0R4n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 13:56:43 -0400
+Date: Mon, 27 Oct 2008 18:57:19 +0100
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, tomas.winkler@intel.com, kernel@nn7.de,
+       linux-wireless@vger.kernel.org
+Subject: Re: Suspend to RAM regression in 2.6.28-rc2 (bisected)
+Message-ID: <20081027175719.GA5759@localhost.aei.mpg.de>
+References: <20081027162054.GA4015@localhost.aei.mpg.de> <200810271839.39236.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081027165028.GB30573@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+In-Reply-To: <200810271839.39236.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
-
-> On Sat, Oct 25, 2008 at 10:58:21PM -0700, Yinghai Lu wrote:
+On Mon 27.Oct'08 at 18:39:38 +0100, Rafael J. Wysocki wrote:
+> On Monday, 27 of October 2008, Carlos R. Mafra wrote:
+> > Hi,
 > > 
-> > impact: get correct page count for 2M and 1G...
+> > So I managed to bisect my suspend to RAM regression in 2.6.27-rc2
+> > to commit 3b7ee69d0caefbdb85a606a98bff841b8c63b97e ("mac80211: disassociate 
+> > when moving to new BSS") by Tomas Winkler (Cc:-ed).
 > > 
-> > found page count in /proc/meminfo is nor correct on 1G system in VirtualBox 2.0.4
-> > 
-> > # cat /proc/meminfo
-> > MemTotal:        1017508 kB
-> > MemFree:          822700 kB
-> > Buffers:            1456 kB
-> > Cached:            26632 kB
-> > SwapCached:            0 kB
-> > ...
-> > Hugepagesize:       2048 kB
-> > DirectMap4k:      4032 kB
-> > DirectMap2M:  18446744073709549568 kB
-> > 
-> > with this patch get:
-> > ...
-> > DirectMap4k:      4032 kB
-> > DirectMap2M:   1044480 kB
-> > 
-> > which is consistent to kernel_page_tables
-> > ---[ Low Kernel Mapping ]---
-> > 0xffff880000000000-0xffff880000001000           4K     RW     PCD     GLB x  pte
-> > 0xffff880000001000-0xffff88000009f000         632K     RW             GLB x  pte
-> > 0xffff88000009f000-0xffff8800000a0000           4K     RW     PCD     GLB x  pte
-> > 0xffff8800000a0000-0xffff880000200000        1408K     RW             GLB x  pte
-> > 0xffff880000200000-0xffff88003fe00000        1020M     RW         PSE GLB x  pmd
-> > 0xffff88003fe00000-0xffff88003fff0000        1984K     RW             GLB NX pte
-> > 0xffff88003fff0000-0xffff880040000000          64K                           pte
-> > 0xffff880040000000-0xffff888000000000         511G                           pud
-> > 0xffff888000000000-0xffffc20000000000       58880G                           pgd
-> > 
-> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> > Unfortunately it doesn't revert cleanly so I can't double check it.
 > 
-> Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> Why are you saying it doesn't revert cleanly?  For me it does revert without
+> rejects from 2.6.28-rc2.
 
-applied to tip/x86/urgent, thanks guys!
+I get this
 
-	Ingo
+[mafra@localhost:linux-2.6]$ git checkout v2.6.28-rc2 -b s2ram
+Switched to a new branch "s2ram"
+[mafra@localhost:linux-2.6]$ git revert 3b7ee69d
+warning: too many files, skipping inexact rename detection
+Auto-merged net/mac80211/mlme.c
+CONFLICT (content): Merge conflict in net/mac80211/mlme.c
+Automatic revert failed.  After resolving the conflicts,
+mark the corrected paths with 'git add <paths>' or 'git rm <paths>' and commit the result.
+
+I don't know what is happening here :-(
