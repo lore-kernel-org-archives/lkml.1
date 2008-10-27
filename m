@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752139AbYJ0TnL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbYJ0Tow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752139AbYJ0TnL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 15:43:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYJ0Tmz
+	id S1753925AbYJ0Tow (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 15:44:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbYJ0Ton
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 15:42:55 -0400
-Received: from ox1.aei.mpg.de ([194.94.224.6]:59044 "EHLO ox1.aei.mpg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750999AbYJ0Tmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 15:42:54 -0400
-Date: Mon, 27 Oct 2008 20:43:28 +0100
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: Re: [Bug #11851] wmifinfo dockapp takes 100% of cpu
-Message-ID: <20081027194328.GA4353@localhost.aei.mpg.de>
-References: <nw2Y6lk-0lG.A.VUB.RV5AJB@chimera> <t1C3RWL0r7M.A.ltB.aV5AJB@chimera>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <t1C3RWL0r7M.A.ltB.aV5AJB@chimera>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 27 Oct 2008 15:44:43 -0400
+Received: from mail.gmx.net ([213.165.64.20]:52682 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750999AbYJ0Tom (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 15:44:42 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18be4d2UxMbh7evOd2Fq+m4BQepBagVtrAvmDicrg
+	6ofheiQ4gLUI3J
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+From: Mike Galbraith <efault@gmx.de>
+To: Rick Jones <rick.jones2@hp.com>
+Cc: David Miller <davem@davemloft.net>, rjw@sisk.pl, mingo@elte.hu,
+       s0mbre@tservice.net.ru, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <4906140C.5010004@hp.com>
+References: <1224905848.5161.27.camel@marge.simson.net>
+	 <20081024.221653.23695396.davem@davemloft.net>
+	 <1224914333.3822.18.camel@marge.simson.net>
+	 <20081025.001940.251852864.davem@davemloft.net>
+	 <1224919985.5373.10.camel@marge.simson.net>  <4905F9BD.100@hp.com>
+	 <1225134690.4942.11.camel@marge.simson.net>  <4906140C.5010004@hp.com>
+Content-Type: text/plain
+Date: Mon, 27 Oct 2008 20:44:32 +0100
+Message-Id: <1225136672.4942.38.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.73
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 25.Oct'08 at 22:06:49 +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+On Mon, 2008-10-27 at 12:18 -0700, Rick Jones wrote:
+> >
+> > Not really, but I can't seem to give up ;-)
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.27.  Please verify if it still should be listed and let me know
-> (either way).
+> then I guess I'll close with
 > 
+> successful benchmarking,
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11851
-> Subject		: wmifinfo dockapp takes 100% of cpu
-> Submitter	: Carlos R. Mafra <crmafra2@gmail.com>
-> Date		: 2008-10-25 9:40 (1 days old)
-> References	: http://marc.info/?l=linux-kernel&m=122492763030453&w=4
-> Handled-By	: Arjan van de Ven <arjan@linux.intel.com>
-> 		  Marcin Slusarz <marcin.slusarz@gmail.com>
-> Patch		: http://marc.info/?l=linux-kernel&m=122496409612709&w=4
+> if not necessarily happy :)
 
+There ya go, happy benchmarking is when they tell you what you want to
+hear.  Successful is when you learn something.
 
-Fixed by commit 4d36a9e65d4966b433b2f3424d9457468bc80e00 
+	-Mike  (not happy, but learning)
+
