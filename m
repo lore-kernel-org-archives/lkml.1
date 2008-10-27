@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbYJ0X2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbYJ0X3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752814AbYJ0X2o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 19:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYJ0X2c
+	id S1753430AbYJ0X3A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 19:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbYJ0X2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 19:28:32 -0400
-Received: from ik-out-1112.google.com ([66.249.90.176]:48786 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751731AbYJ0X2b (ORCPT
+	Mon, 27 Oct 2008 19:28:48 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:48298 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752967AbYJ0X2q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 19:28:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Zlf/7895+eBazpdX09nRi1Oc3ZSAOGEi61WdtwM363LfZ0cKHK//Anb//MK4c5yCBR
-         JEn42UhTqtL18M2wPWQ7c7xRSjsHUVL82caqy+paZcXda19MfmwJLWBVJVRi6A4PpQkq
-         P3WJjloxe5/ptJcexZm2KoPkU+I84X6P/7IRg=
-Date: Tue, 28 Oct 2008 02:31:53 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
-       anders@anduras.de, netdev@vger.kernel.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCHv3] printk: add %pM format specifier for MAC
-	addresses
-Message-ID: <20081027233153.GA11367@x200.localdomain>
-References: <1225124904.5440.1.camel@brick> <20081027.123805.134354592.davem@davemloft.net> <1225137542.5396.10.camel@brick> <20081027.154736.178482850.davem@davemloft.net> <1225149254.6339.4.camel@brick>
+	Mon, 27 Oct 2008 19:28:46 -0400
+Date: Mon, 27 Oct 2008 19:28:43 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: general protection fault:  from release_blocks_on_commit
+Message-ID: <20081027232843.GA9797@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Eric Sandeen <sandeen@redhat.com>, Eric Paris <eparis@redhat.com>,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+References: <1224612181.19719.20.camel@paris-laptop> <20081027181928.GB23111@mit.edu> <49064027.9010509@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1225149254.6339.4.camel@brick>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49064027.9010509@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 27, 2008 at 04:14:14PM -0700, Harvey Harrison wrote:
-> On Mon, 2008-10-27 at 15:47 -0700, David Miller wrote:
-> > From: Harvey Harrison <harvey.harrison@gmail.com>
-> > Date: Mon, 27 Oct 2008 12:59:02 -0700
-> > 
-> > > Add format specifiers for printing out six colon-separated bytes:
-> > > 
-> > > MAC addresses (%pM):
-> > > xx:xx:xx:xx:xx:xx
-> > > 
-> > > %#pM is also supported and omits the colon separators.
-> > > 
-> > > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> > 
-> > Applied, thanks.
-> 
-> Did you happen to have a preference with regard to the specifier for
-> IPv6 addresses:
-> 
-> I was thinking of using %pI6 to replace NIP6() and NIP6_FMT and using
-> %#pI6 for NIP6_SEQFMT.
-> 
-> On the IPv4 side, maybe use %pI4 for network endian NIPQUAD() and NIPQUAD_FMT
-> and then %#pI4 for host-endian HIQUAD(), as displaying the IPv4 address without
-> the periods isn't useful?
+On Mon, Oct 27, 2008 at 05:26:47PM -0500, Eric Sandeen wrote:
+> Ted, you probably need some slab debugging on to hit it.
 
-%#pI4 is horrible and %p4 and %p6 were cool.
+I had slab debugging enabled, but haven't been able to replicate it
+yet.  I'll do some more work to try to replicate it.
+
+> I think the problem is that jbd2_journal_commit_transaction may call
+> __jbd2_journal_drop_transaction(journal, commit_transaction) if the
+> checkpoint lists are NULL, and this frees the commit_transaction.
+
+I think you're right.  I would probably change the patch around so
+that after calling __jbd2_jurnal_drop_transaction(), we set
+commit_transaction to NULL, and then adding an "if
+(commit_transaction)" to the lines in questions; that way we keep the
+commit callback outside of the j_list_lock() spinlock.
+
+> Also, I'm not certain that it matters, but the loop in 
+> release_blocks_on_commit() is kfreeing list entries w/o taking
+> them off the list; I suppose maybe this is safe if the whole thing
+> is getting discarded when we're done, but just to keep things sane,
+> would this make sense
+
+There are plenty of other loops in the kernel where we go through the
+linked list and free all of the items on the list that don't bother to
+call list_del().  That was one of the things I checked when I created
+the patch.
+
+> (also, I think we need to double-check use of
+> s_md_lock; it's taken when adding things to the list, but not when
+> freeing/removing ... if it's needed, isn't it needed on both ends...):
+
+No, because the linked list is hanging off the transaction structure.
+While the transaction is active, multiple CPU's can be adding elements
+to the linked list.  But once the transaction has been committed, we
+don't have to worry about any one else trying to modify the linked list.
+
+      	      	    	      	       	      - Ted
