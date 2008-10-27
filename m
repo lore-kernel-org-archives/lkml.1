@@ -1,45 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752209AbYJ0PTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751985AbYJ0PVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752209AbYJ0PTj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 11:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYJ0PTa
+	id S1751985AbYJ0PVE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 11:21:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbYJ0PUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 11:19:30 -0400
-Received: from khc.piap.pl ([195.187.100.11]:33383 "EHLO khc.piap.pl"
+	Mon, 27 Oct 2008 11:20:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60930 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751197AbYJ0PT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 11:19:29 -0400
-To: Dmitri Monakhov <dmonakhov@openvz.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] kill suid bit only for regular files
-References: <1224424839-3892-1-git-send-email-dmonakhov@openvz.org>
-	<20081026214741.332c7656.akpm@linux-foundation.org>
-	<m363nebi2n.fsf@dmon-lap.sw.ru>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Mon, 27 Oct 2008 16:19:26 +0100
-In-Reply-To: <m363nebi2n.fsf@dmon-lap.sw.ru> (Dmitri Monakhov's message of "Mon\, 27 Oct 2008 10\:41\:52 +0300")
-Message-ID: <m3y70a3w1t.fsf@maximus.localdomain>
+	id S1751539AbYJ0PUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 11:20:54 -0400
+Date: Mon, 27 Oct 2008 16:20:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86: unify appropriate bits from dumpstack_32 and
+	dumpstack_64
+Message-ID: <20081027152021.GF5704@elte.hu>
+References: <20081023144006.GA14149@hmsendeavour.rdu.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081023144006.GA14149@hmsendeavour.rdu.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitri Monakhov <dmonakhov@openvz.org> writes:
 
->> Are we sure that should_remove_suid() is not and never will used for
->> directories?
-> This bits are meaningless for directory. Posix is quiet about this case.
+* Neil Horman <nhorman@tuxdriver.com> wrote:
 
-> Ok. Will do. My point is: it is improbable what some body(except me :) )
-> want to set S_ISUID/S_ISGID bit for non regular files. But it is 
-> technically possible and result in unexpected consequence.
+> Hey all-
+> 	As promised, now that dumpstack_32 and dumpstack_64 have so 
+> many bits in common, we should merge the in-sync bits into a common 
+> file, to prevent them from diverging again.  This patch removes bits 
+> which are common between dumpstack_32.c and dumpstack_64.c and 
+> places them in a common dumpstack.c which is built for both 32 and 
+> 64 bit arches.
+> 
+> Regards
+> Neil
+> 
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> 
+> 
+>  Makefile       |    2 
+>  dumpstack.c    |  319 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  dumpstack.h    |   39 ++++++
+>  dumpstack_32.c |  294 ----------------------------------------------------
+>  dumpstack_64.c |  285 --------------------------------------------------
+>  5 files changed, 363 insertions(+), 576 deletions(-)
 
-I don't know about the context, but SGID bits for directories are not
-magic, they mean the newly created files will inherit GID from the
-parent directory, and if the file is actually a subdirectory, it will
-also have SGID set. The same was also true WRT SUID bits on some
-systems.
--- 
-Krzysztof Halasa
+applied to tip/x86/dumpstack, thanks Neil!
+
+	Ingo
