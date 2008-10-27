@@ -1,76 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbYJ0QUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbYJ0QUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752731AbYJ0QUU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 12:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbYJ0QUH
+	id S1751893AbYJ0QUj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 12:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbYJ0QUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 12:20:07 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:37804 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750795AbYJ0QUF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 12:20:05 -0400
-Date: Mon, 27 Oct 2008 12:19:23 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-Subject: Re: [GIT PULL/RESEND] kernel message catalog patches
-Message-ID: <20081027161923.GE10603@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-	linux-s390@vger.kernel.org
-References: <1224230354.4631.1.camel@localhost> <20081021092148.GB4980@osiris.boeblingen.de.ibm.com> <alpine.LFD.2.00.0810230835150.3287@nehalem.linux-foundation.org> <20081023210446.GA12003@osiris.boeblingen.de.ibm.com> <alpine.LFD.2.00.0810231433380.3287@nehalem.linux-foundation.org> <1225049195.14057.72.camel@localhost> <alpine.LFD.2.00.0810261212290.5200@nehalem.linux-foundation.org> <1225101688.15777.6.camel@localhost> <alpine.LFD.2.00.0810270750100.3386@nehalem.linux-foundation.org> <1225122726.15777.42.camel@localhost>
+	Mon, 27 Oct 2008 12:20:19 -0400
+Received: from ox1.aei.mpg.de ([194.94.224.6]:44925 "EHLO ox1.aei.mpg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752575AbYJ0QUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 12:20:18 -0400
+Date: Mon, 27 Oct 2008 17:20:54 +0100
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: tomas.winkler@intel.com, kernel@nn7.de
+Subject: Suspend to RAM regression in 2.6.28-rc2 (bisected)
+Message-ID: <20081027162054.GA4015@localhost.aei.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1225122726.15777.42.camel@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 27, 2008 at 04:52:06PM +0100, Martin Schwidefsky wrote:
-> In that case ALL printk messages would suddenly grow a hash. Which
-> precludes the use of the component name as part of the message since we
-> would need to add a component name for every single printk - that won't
-> happen.
+Hi,
 
-Just as a suggestion, what about adding the component name the same
-way we added the priority level --- i.e., by adding an optional
-prefix, say "{COMPONENT}" to the printk string, which would be before
-the urgency level marker.  If it's not present, printk can generate a
-64-bit hash; if it is present, printk can generate the component name
-followed by a 32-bit hash.
+So I managed to bisect my suspend to RAM regression in 2.6.27-rc2
+to commit 3b7ee69d0caefbdb85a606a98bff841b8c63b97e ("mac80211: disassociate 
+when moving to new BSS") by Tomas Winkler (Cc:-ed).
 
-That way we can gradually add component names in a completely
-backwards compatible way, and only to the device drivers that care or
-want it.
+Unfortunately it doesn't revert cleanly so I can't double check it.
 
-> > And as for the actual explanations: either they need to be totally outside 
-> > the kernel (in a project of their own), or they'd need to be "kernel-doc" 
-> > style things that are _in_ the source code. Not in Documentation/. Not 
-> > separate from the printk() that they are associated with.
-> 
-> The kmsg comments are already formatted in the kernel-doc style and you
-> can put the comment anywhere in the source file that contains the
-> printk. The Documentation/ is an extra path where the script looks for
-> the comments. I can easily drop that part. So yes, the concept is that
-> you can keep the message comment close to the printk.
+My laptop is a Vaio FZ240E Core2Duo@2GHz and I use the iwlagn module
+for the wireless connection.
 
-I would think keeping the kmsg comments as kernel-doc style in the
-kernel source file makes a huge amount of sense.
+The symptom is that suspending to RAM from inside X with 'echo mem >
+/sys/power/state' leaves me a black screen when resuming back.
 
-Regards,
-
-					- Ted
+I can test any patches and provide more information of my laptop too.
