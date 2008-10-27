@@ -1,98 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbYJ0MeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752698AbYJ0MjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752709AbYJ0MeE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 08:34:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYJ0Mdx
+	id S1752698AbYJ0MjY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 08:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYJ0MjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 08:33:53 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:59637 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750846AbYJ0Mdx (ORCPT
+	Mon, 27 Oct 2008 08:39:16 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:34812 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752045AbYJ0MjP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 08:33:53 -0400
-Subject: Re: [GIT PULL] s390 updates for 2.6.28-rc1
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, lethal@linux-sh.org,
-       paulus@samba.org, benh@kernel.crashing.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, Roland McGrath <roland@redhat.com>
-In-Reply-To: <20081027115146.GE5631@elte.hu>
-References: <20081024105049.GC4620@osiris.boeblingen.de.ibm.com>
-	 <20081024113724.GA21375@elte.hu> <1225045593.14057.11.camel@localhost>
-	 <20081027115146.GE5631@elte.hu>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Mon, 27 Oct 2008 13:32:29 +0100
-Message-Id: <1225110750.15777.10.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Oct 2008 08:39:15 -0400
+To: ncunningham@crca.org.au
+CC: rjw@sisk.pl, miklos@szeredi.hu, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <1225107607.26724.9.camel@nigel-laptop> (message from Nigel
+	Cunningham on Mon, 27 Oct 2008 22:40:07 +1100)
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
+	filesystems.
+References: <1224886068.6478.21.camel@nigel-laptop>
+	 <E1KuQ1J-0002Vw-9Q@pomaz-ex.szeredi.hu>
+	 <1225106427.26724.5.camel@nigel-laptop>  <200810271237.40049.rjw@sisk.pl> <1225107607.26724.9.camel@nigel-laptop>
+Message-Id: <E1KuRN4-0002gS-Hq@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 27 Oct 2008 13:38:58 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-27 at 12:51 +0100, Ingo Molnar wrote:
-> * Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
-> > On Fri, 2008-10-24 at 13:37 +0200, Ingo Molnar wrote:
-> > > * Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-> > > 
-> > > > The s390 vdso preparation patch "arch_setup_additional_pages argument" 
-> > > > touches other architectures (x86, sh and powerpc):
-> > > > 
-> > > > arch_setup_additional_pages currently gets two arguments, the binary 
-> > > > format descripton and an indication if the process uses an executable 
-> > > > stack or not. The second argument is not used by anybody, it could be 
-> > > > removed without replacement.
-> > > 
-> > > hm, this is the first time i've seen this change,
-> > 
-> > The code is relatively new and I planned it for the merge window for 
-> > 2.6.29. I still have to nag our performance team to do some tests 
-> > with it.
+On Mon, 27 Oct 2008, Nigel Cunningham wrote:
+> Hi.
 > 
-> okay, then i'm confused, the subject line says v2.6.28:
+> On Mon, 2008-10-27 at 12:37 +0100, Rafael J. Wysocki wrote:
+> > Well, I guess it's better if you post the entire thing so that we can see
+> > what the role of the $subject patch is in it, even if this patch finally gets
+> > merged separately.
 > 
->     [GIT PULL] s390 updates for 2.6.28-rc1
-> 
-> (i have still no objections to those small x86 bits.)
+> Ah.. that makes me see how vfs_check_frozen was getting triggered...
+> (fs/namei.c, below).
 
-Yeah, that was a misunderstanding between Heiko and me. I planned it for
-2.6.29 and didn't tell him about it before I left for vacation. Heiko
-just went ahead and added it the 2.6.28-rc1 pull request.
+Nigel, thanks for the patch, it makes thinks a lot clearer.
 
-> > >  #define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
-> > >  extern int arch_setup_additional_pages(struct linux_binprm *bprm,
-> > > -                                      int executable_stack);
-> > > +                                      int uses_interp);
-> > > 
-> > > why didnt you just add a new uses_interp argument?
-> > 
-> > I could have but I noticed at the same time that executable_stack is 
-> > unused. If somebody finds a need for the executable_stack argument 
-> > it can easily re-added but I can't think of a use for it. Ergo I 
-> > removed it.
-> > 
-> > > executable_stack is passed in to potentially enable architectures 
-> > > to be aware of how conservative/legacy the address-space of the 
-> > > binary is - whether to randomize the vdso, etc. exec-shield used 
-> > > to take advantage of that.
-> > 
-> > What has address space layout / randomization to do with 
-> > executable_stack? You lost me there.
-> 
-> it's just a historic/quirky connection (non-executable stack was the 
-> first and biggest step towards a more flexible address space layout) - 
-> you were correct to have it cleaned up.
+>From a quick look through the patch it seems to solve a bunch of cases
+where new fuse requests during the freezing could cause problems.  But
+it doesn't do anything with requests that are already under way when
+the freezing starts, which would still result in all the same
+problems.
 
-Ok, thanks. Less confused now. 
+Take this scenario:
 
--- 
-blue skies,
-  Martin.
+ 1) process A does rename("/mnt/fuse/a", "/mnt/fuse/b")
+ 2) request goes to process B serving the fuse filesystem
+ 3) filesystems are frozen, no new fuse requests
+ 4) processes are frozen, let's say B first, then A
+ 5) freezing A will fail, since it's still waiting for the request to finish
 
-"Reality continues to ruin my life." - Calvin.
+Several solutions have been posted, none of which really solve the problem:
 
+ a) Let's tag fuse server processes and freeze them later.  This is
+ basically impossible, because many processes could be interoperating
+ and there's no way to know which is depending on which (example:
+ sshfs uses ssh for communication, which possibly relies on openvpn
+ process for packet transmission).
 
+ b) While waiting for replies to fuse request, allow process to
+ freeze.  Does not fully solve the problem, as VFS might be holding
+ locks, and other processes waiting for those locks will not be
+ freezable.
+
+Miklos
