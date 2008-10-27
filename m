@@ -1,142 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314AbYJ0O1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752132AbYJ0O3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752314AbYJ0O1p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 10:27:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbYJ0O1Y
+	id S1752132AbYJ0O3l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 10:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbYJ0O3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 10:27:24 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56220 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751150AbYJ0O1X (ORCPT
+	Mon, 27 Oct 2008 10:29:34 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:46871 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751127AbYJ0O3d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 10:27:23 -0400
-From: Alan Cox <alan@redhat.com>
-Subject: [PATCH] nfsd: Fix vm overcommit crash
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Date: Mon, 27 Oct 2008 14:27:28 +0000
-Message-ID: <20081027142445.21908.74962.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
+	Mon, 27 Oct 2008 10:29:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:content-type
+         :content-transfer-encoding:message-id;
+        b=rq7aPhUyhsz2JUSATrLPhzPRnF8s24SYyu6TnPw/yoLomfdfSv5dda4Kai9C/5JZbU
+         TLBA/3VroAxIs5BesVict/iXBp/lSmT2c7ZfZKe4oVLd0RmmN59Q+VigS2ZnBx6LHXkZ
+         LrfK8DkobocRmwIPFHEOXrXc/6d4tgXVBqJpo=
+From: Eric Lacombe <goretux@gmail.com>
+To: Avi Kivity <avi@redhat.com>
+Subject: Re: [x86] - technical questions about HV implementation on Intel VT
+Date: Mon, 27 Oct 2008 15:29:26 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200810201927.33580.goretux@gmail.com> <48FD9B54.4040109@redhat.com>
+In-Reply-To: <48FD9B54.4040109@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200810271529.26821.goretux@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Junjiro R. Okajima reported a problem where knfsd crashes if you are using
-it to export shmemfs objects and run strict overcommit. In this situation
-the current->mm based modifier to the overcommit goes through a NULL
-pointer.
+Hi,
 
-We could simply check for NULL and skip the modifier but we've caught other
-real bugs in the past from mm being NULL here - cases where we did need a
-valid mm set up (eg the exec bug about a year ago).
+Thanks for your answer.
+I will eventually add a netconsole, but for now, I find how to bypass my 
+problem (getting debug information).
 
-To preserve the checks and get the logic we want shuffle the checking
-around and add a new helper to the vm_ security wrappers. While at it the
-checks are switched to WARN_ON - we need to know if someone gets current->mm
-wrong in the other calls but we don't need to crash.
+However I come with a new question, related to an unexpected VM-exit.
+The scenario is as follows:
+1. some setup occur
+2. vmlaunch is executed by a function F, so the guest is launched. This guest 
+(as I explained in my previous mail) executes the end of the function F.
+3. The end of F, do some "printk" then return to the module init function.
 
-Also fix a current->mm reference in nommu that should use the passed mm
+The problem is that I get a VM-exit during the step 3. In fact after the 
+first "printk", a vm-exit occurs with exit_reason=2 (triple-fault).
 
-Signed-off-by: Alan Cox <alan@redhat.com>
----
+Do you have an idea of what could be the cause of this vm-exit?
 
- include/linux/security.h |    1 +
- mm/mmap.c                |    3 ++-
- mm/nommu.c               |    3 ++-
- mm/shmem.c               |    4 ++--
- security/security.c      |    9 +++++++++
- 5 files changed, 16 insertions(+), 4 deletions(-)
+Note:
+- If I do no "printk" at the end of F, then F returns without any problems to 
+the caller, and when this caller do a "printk" the vm-exit occurs (I can see 
+the result of "printk" on the screen).
+- I also tried to insert 2 "printk" and a "panic" at the end of F. result: 
+the "panic" is never reached. (so the vm-exit occurs after the first "printk" 
+has done his job).
 
-diff --git a/include/linux/security.h b/include/linux/security.h
-index f5c4a51..a2b8430 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -1585,6 +1585,7 @@ int security_syslog(int type);
- int security_settime(struct timespec *ts, struct timezone *tz);
- int security_vm_enough_memory(long pages);
- int security_vm_enough_memory_mm(struct mm_struct *mm, long pages);
-+int security_vm_enough_memory_kern(long pages);
- int security_bprm_alloc(struct linux_binprm *bprm);
- void security_bprm_free(struct linux_binprm *bprm);
- void security_bprm_apply_creds(struct linux_binprm *bprm, int unsafe);
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 74f4d15..de14ac2 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -175,7 +175,8 @@ int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
- 
- 	/* Don't let a single process grow too big:
- 	   leave 3% of the size of this process for other processes */
--	allowed -= mm->total_vm / 32;
-+	if (mm)
-+		allowed -= mm->total_vm / 32;
- 
- 	/*
- 	 * cast `allowed' as a signed long because vm_committed_space
-diff --git a/mm/nommu.c b/mm/nommu.c
-index 2696b24..7695dc8 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -1454,7 +1454,8 @@ int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
- 
- 	/* Don't let a single process grow too big:
- 	   leave 3% of the size of this process for other processes */
--	allowed -= current->mm->total_vm / 32;
-+	if (mm)
-+		allowed -= mm->total_vm / 32;
- 
- 	/*
- 	 * cast `allowed' as a signed long because vm_committed_space
-diff --git a/mm/shmem.c b/mm/shmem.c
-index d38d7e6..1677b3e 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -162,7 +162,7 @@ static inline struct shmem_sb_info *SHMEM_SB(struct super_block *sb)
- static inline int shmem_acct_size(unsigned long flags, loff_t size)
- {
- 	return (flags & VM_ACCOUNT)?
--		security_vm_enough_memory(VM_ACCT(size)): 0;
-+		security_vm_enough_memory_kern(VM_ACCT(size)): 0;
- }
- 
- static inline void shmem_unacct_size(unsigned long flags, loff_t size)
-@@ -180,7 +180,7 @@ static inline void shmem_unacct_size(unsigned long flags, loff_t size)
- static inline int shmem_acct_block(unsigned long flags)
- {
- 	return (flags & VM_ACCOUNT)?
--		0: security_vm_enough_memory(VM_ACCT(PAGE_CACHE_SIZE));
-+		0: security_vm_enough_memory_kern(VM_ACCT(PAGE_CACHE_SIZE));
- }
- 
- static inline void shmem_unacct_blocks(unsigned long flags, long pages)
-diff --git a/security/security.c b/security/security.c
-index 255b085..c0acfa7 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -198,14 +198,23 @@ int security_settime(struct timespec *ts, struct timezone *tz)
- 
- int security_vm_enough_memory(long pages)
- {
-+	WARN_ON(current->mm == NULL);
- 	return security_ops->vm_enough_memory(current->mm, pages);
- }
- 
- int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
- {
-+	WARN_ON(mm == NULL);
- 	return security_ops->vm_enough_memory(mm, pages);
- }
- 
-+int security_vm_enough_memory_kern(long pages)
-+{
-+	/* If current->mm is a kernel thread then we will pass NULL,
-+	   for this specific case that is fine */
-+	return security_ops->vm_enough_memory(current->mm, pages);
-+}
-+
- int security_bprm_alloc(struct linux_binprm *bprm)
- {
- 	return security_ops->bprm_alloc_security(bprm);
+Thanks in advance for your answer,
+
+	Eric
+
+On Tuesday 21 October 2008 11:05:24 Avi Kivity wrote:
+> Eric Lacombe wrote:
+> > [...]
+> > So, when the host take control for the first time after the first vmexit,
+> > I would like the host to print informations and to "die correctly", so as
+> > I could read these information on the screen (ie, without being polluted
+> > with lots of debug messages that scroll on the screen).
+>
+> You should add a serial console or netconsole to your hypervisor; that
+> means implementing a serial or network card driver.
+
 
