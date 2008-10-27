@@ -1,107 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbYJ0EJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752087AbYJ0EYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752462AbYJ0EJk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 00:09:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbYJ0EJb
+	id S1752087AbYJ0EYr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 00:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750877AbYJ0EYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 00:09:31 -0400
-Received: from smtp.infotech.no ([82.134.31.41]:46890 "EHLO
-	elrond2.infotech.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750735AbYJ0EJa (ORCPT
+	Mon, 27 Oct 2008 00:24:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54303 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750728AbYJ0EYj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 00:09:30 -0400
-Message-ID: <49053EEA.2030601@interlog.com>
-Date: Mon, 27 Oct 2008 00:09:14 -0400
-From: Douglas Gilbert <dgilbert@interlog.com>
-Reply-To: dgilbert@interlog.com
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       "Lawler, Tom" <Tom.Lawler@hp.com>,
-       "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>,
-       "Jens.Axboe@oracle.com" <Jens.Axboe@oracle.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Bruce Allen <ballen@gravity.phys.uwm.edu>
-Subject: Re: [RFC PATCH] HP (Compaq) Smart Array 5xxx controller SCSI driver
-References: <20080719195150Y.fujita.tomonori@lab.ntt.co.jp> <0F5B06BAB751E047AB5C87D1F77A77884C01B0C584@GVW0547EXC.americas.hpqcorp.net>
-In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A77884C01B0C584@GVW0547EXC.americas.hpqcorp.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Mon, 27 Oct 2008 00:24:39 -0400
+Date: Sun, 26 Oct 2008 21:24:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fix comile error of hdpuftrs
+Message-Id: <20081026212401.f3a6ee4d.akpm@linux-foundation.org>
+In-Reply-To: <200810181537.13653.m.kozlowski@tuxland.pl>
+References: <200810181537.13653.m.kozlowski@tuxland.pl>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miller, Mike (OS Dev) wrote:
-> Tomo wrote:
+On Sat, 18 Oct 2008 15:37:12 +0200 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+
+> Hello,
 > 
->> My scsi driver is still in an early stage (I tried to keep
->> the changes minimum). I can detect logical units, mount a
->> file system, do lots of I/Os, however, there are lots of
->> TODOs in the management features.
->>
->> If I can get an ACK from HP about the long-term migration of
->> cciss to SCSI, I'm happy to keep working on the SCSI cciss
->> driver and maintain it until HP takes over the driver.
+> drivers/misc/hdpuftrs/hdpu_nexus.c:118: error: expected identifier or '(' before 'return'
+> drivers/misc/hdpuftrs/hdpu_nexus.c:119: error: expected identifier or '(' before '}' token
 > 
-> Just a brief update. HP has developed a scsi version of cciss. It was originally done for another environment but we have decided to use it as the base for Linux. It was authored by Tom Lawler of HP. We are currently in the process of getting the Open Source Review Board approval to release the code to the community.
+> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 > 
-> It's unclear right now as to who will be the maintainer.
+> --- a/drivers/misc/hdpuftrs/hdpu_nexus.c
+> +++ b/drivers/misc/hdpuftrs/hdpu_nexus.c
+> @@ -113,7 +113,6 @@ static int hdpu_nexus_probe(struct platform_device *pdev)
+>  	if (!hdpu_chassis_id)
+>  		printk(KERN_WARNING "sky_nexus: "
+>  		       "Unable to create proc dir entry: sky_chassis_id\n");
+> -	}
 > 
-> -- mikem
-> 
->>
->> The patch is available at:
->>
->> http://www.kernel.org/pub/linux/kernel/people/tomo/ciss/0001-a
->> dd-HP-Compaq-Smart-Array-5xxx-controller-SCSI-dri.patch
->>
->> clover:/home/fujita# insmod ciss.ko
->> clover:/home/fujita# lsscsi
->> (snip)
->> [1:0:0:0]    disk    HP       LOGICAL VOLUME   1.66  /dev/sde
->> [1:0:0:1]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdf
->> [1:0:0:2]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdg
->> [1:0:0:3]    disk    HP       LOGICAL VOLUME   1.66  /dev/sdh
->>
->> Yeah, it just works as SCSI disk, the dmesg says:
->>
->> sd 1:0:0:0: [sde] Attached SCSI disk
->> sd 1:0:0:1: [sdf] 143305920 512-byte hardware sectors (73373
->> MB) sd 1:0:0:1: [sdf] Write Protect is off sd 1:0:0:1: [sdf]
->> Mode Sense: 5b 00 00 08 sd 1:0:0:1: [sdf] Write cache:
->> disabled, read cache: enabled, doesn't support DPO or FUA
->>
->> I needed a different name and just stole 'ciss' from *BSD.
->> But any names (like hpciss) works for me.
+>  	return 0;
+>  }
 
-My interest in SAS/SATA RAID controllers (e.g. cciss and megaraid)
-is to get to the physical drives and let smartmontools query
-them. The first difficulty is addressing physical drives within
-the logical drive presented to the OS. Then there are SATA drives:
-I have yet to see a SAT implementation good enough to fetch
-useful SMART data using "pure" SCSI commands; that leaves the
-SAT ATA PASS-THROUGH commands.
+This has been broken since 2.6.26.
 
-Testing I did today on a HP E200 controller with version 1.80
-firmware and the cciss driver in lk 2.6.27 showed this command
-failed (as it has in the past):
-     smartctl -a -d cciss,0 /dev/cciss/c0d0
-when c0d0 was a SATA disk.
-
-Yes, I know the documentation says it won't work and I've been told
-not to hold my breadth.
-So if a true SCSI cciss driver might appear, could SAT with
-ATA pass-through support be added to the wish list?
-
-
-BTW We now have the equivalent working on megaraid controllers.
-Whether to let "SCSI" commands through that alter the state
-of a SATA disk is an interesting dilemma for the driver.
-WRITEs are obviously a no-no but the current megaraid/smartctl
-code ignored my attempts to do a self-test.
-
-Doug Gilbert
+Nobody noticed because there is no way of enabling CONFIG_HDPU_FEATURES
+in Kconfig.  I wonder what's up with that.
 
