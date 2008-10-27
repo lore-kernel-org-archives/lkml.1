@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbYJ0Ms6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbYJ0Mzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752809AbYJ0Ms6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 08:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbYJ0Msp
+	id S1752734AbYJ0Mzl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 08:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYJ0Mzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 08:48:45 -0400
-Received: from ti-out-0910.google.com ([209.85.142.188]:35969 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752224AbYJ0Mso (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 08:48:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=K6Rt7JtffkpxQ3ZohwPnrQQwKAt9EUxYHr01Q4X5KFFJ3JYYSAYWUKUWvRzOmrn2EL
-         wkN40rX9NMB5FofudymKbjXS5Hcu21HIGQ3KkFaNW6tPVyMkKFgh8BjpC7Ef+vDq2n/h
-         BOLQ+HM7Wm5R5me39Wbr3rJmd2wgGJs8UQSXM=
-Message-ID: <ea11fea30810270548y11453b8i10eb53caff1838e8@mail.gmail.com>
-Date: Mon, 27 Oct 2008 18:18:42 +0530
-From: "Manish Katiyar" <mkatiyar@gmail.com>
-To: kernel-janitors@vger.kernel.org, linux-netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] : Fix unused variable compilation warnings in drivers/net/wan/syncppp.c
-Cc: mkatiyar@gmail.com
+	Mon, 27 Oct 2008 08:55:33 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44294 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750846AbYJ0Mzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 08:55:33 -0400
+Date: Mon, 27 Oct 2008 13:55:12 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       Mike Travis <travis@sgi.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -tip/cpus4096-v2] cpumask: fix cpumask of
+	call_function_data
+Message-ID: <20081027125512.GD12461@elte.hu>
+References: <49015358.9050308@ct.jp.nec.com> <200810242215.19440.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200810242215.19440.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0045]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Below patch fixes the unused compilation warnings in
-drivers/net/wan/syncppp.c when CONFIG_INET is not defined.
 
-Signed-off-by: Manish Katiyar <mkatiyar@gmail.com>
----
- drivers/net/wan/syncppp.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-diff --git a/drivers/net/wan/syncppp.c b/drivers/net/wan/syncppp.c
-index 327d585..11124f3 100644
---- a/drivers/net/wan/syncppp.c
-+++ b/drivers/net/wan/syncppp.c
-@@ -756,10 +756,10 @@ static void sppp_cisco_input (struct sppp *sp,
-struct sk_buff *skb)
- 	case CISCO_ADDR_REQ:
- 		/* Stolen from net/ipv4/devinet.c -- SIOCGIFADDR ioctl */
- 		{
--		struct in_device *in_dev;
--		struct in_ifaddr *ifa;
- 		__be32 addr = 0, mask = htonl(~0U); /* FIXME: is the mask correct? */
- #ifdef CONFIG_INET
-+		struct in_device *in_dev;
-+		struct in_ifaddr *ifa;
- 		rcu_read_lock();
- 		if ((in_dev = __in_dev_get_rcu(dev)) != NULL)
- 		{
--- 
-1.5.4.3
+> On Friday 24 October 2008 15:47:20 Hiroshi Shimamoto wrote:
+> > From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> 
+> Ingo, because of these concerns I recommend you revert 
+> d4de5ac3b5e70928c86e3e5ac311f16cbf2e9ab3 (cpumask: 
+> smp_call_function_many()) for now, and apply this less contentious 
+> version.
 
+ok - applied it to tip/cpus4096-v2, thanks Rusty!
 
-Thanks -
-Manish
+If there's any chance for this in v2.6.28 then only if we disable the 
+dynamic API branch altogether [CONFIG_MAXCPUS] and keep that for 
+v2.6.29. This means we'd bring in the API changes which should have 
+trivial impact only - and none of the riskier changes.
+
+Hm?
+
+Andrew, have we missed the boat on this?
+
+	Ingo
