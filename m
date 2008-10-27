@@ -1,109 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbYJ0HcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbYJ0Hep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327AbYJ0HcX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 03:32:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbYJ0HcL
+	id S1753215AbYJ0Hep (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 03:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbYJ0Heg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 03:32:11 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:52865 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753203AbYJ0HcK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 03:32:10 -0400
-Message-Id: <20081027072836.438113395@bull.net>
-References: <20081027072826.266777838@bull.net>
-User-Agent: quilt/0.46-1
-Date: Mon, 27 Oct 2008 08:28:27 +0100
-From: Nadia.Derbey@bull.net
-To: akpm@linux-foundation.org, cboulte@gmail.com
-Cc: manfred@colorfullife.com, linux-kernel@vger.kernel.org,
-       Nadia.Derbey@bull.net
-Subject: [PATCH 1/1] (v3) SYSVIPC - Fix the ipc structures initialization
-Content-Disposition: inline; filename=ipc-fix-sysvipc_structures_initialization.patch
+	Mon, 27 Oct 2008 03:34:36 -0400
+Received: from mga09.intel.com ([134.134.136.24]:1969 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751591AbYJ0Heg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 03:34:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,491,1220252400"; 
+   d="scan'208";a="455763049"
+Message-ID: <49056EF6.3000904@intel.com>
+Date: Mon, 27 Oct 2008 15:34:14 +0800
+From: "Zhao, Yu" <yu.zhao@intel.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Yu Zhao <yu.zhao@uniscape.net>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "greg@kroah.com" <greg@kroah.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       Rakib Mullick <rakib.mullick@gmail.com>
+Subject: Re: [PATCH] pci: Fixing drivers/pci/search.c compilation warning.
+References: <b9df5fa10809280816u23ef3021k7eee287a237b72ae@mail.gmail.com> <20080928163211.GR27204@parisc-linux.org> <20081021011308.GA3889@parisc-linux.org> <490467CD.3000402@uniscape.net> <20081026183412.GX26094@parisc-linux.org> <49053313.9080706@intel.com> <20081027070745.GY26094@parisc-linux.org> <49056A2F.6030206@intel.com> <20081027072137.GZ26094@parisc-linux.org>
+In-Reply-To: <20081027072137.GZ26094@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Matthew Wilcox wrote:
+> On Mon, Oct 27, 2008 at 03:13:51PM +0800, Zhao, Yu wrote:
+>> Matthew Wilcox wrote:
+>>> On Mon, Oct 27, 2008 at 11:18:43AM +0800, Zhao, Yu wrote:
+>>>> Matthew Wilcox wrote:
+>>>>> Yes, that's why pci_find_device() is deprecated.  But it doesn't also
+>>>>> need to be buggy ;-)
+>>>> How about pci_get_bus_and_slot()? People would meet the problem with it 
+>>>> anyway.
+>>> What problem with it?  It's documented to return the device with an
+>>> increased refcount, and the implementation appears to do exactly that:
+>>>
+>> The 'dev' returned by pci_get_device() may be destroyed by PCI hotplug. 
+>> I suppose that passing this 'dev' to pci_get_device() in the next loop 
+>> would crash the system, right?
+> 
+> Erm, no, the 'dev' cannot be destroyed because the caller has a refcount
+> on it.  The physical device backing it might have gone away.  The dev
 
-This patch is a fix for Bugzilla bug
-http://bugzilla.kernel.org/show_bug.cgi?id=11796.
+Why does the caller have a reference count? I don't see we increase the 
+reference count after the 'dev' is returned by following in 
+pci_get_dev_by_id():
 
-To summarize, a simple testcase is concurrently running an infinite loop on
-msgctl(IPC_STAT) and a call to msgget():
+         dev = bus_find_device(&pci_bus_type, dev_start, (void *)id,
+                               match_pci_dev_by_id);
 
-while (1)
-   msgctl(id, IPC_STAT)    1
-                           |
-                           |
-                           |
-                           2 id = msgget(key, IPC_CREAT)
-                           |
-                           |
-                           |
-
-In the interval [1-2], the id doesn't exist yet.
-
-In that test, the problem is the following:
-When we are calling ipc_addid() from msgget() the msq structure is not
-completely initialized. So idr_get_new() is inserting a pointer into the
-idr tree, and the structure which is pointed to has, among other fields,
-its lock uninitialized.
-
-Since msgctl(IPC_STAT) is looping while (1), idr_find() returns the
-pointer as soon as it is inserted into the IDR tree. And ipc_lock()
-calls spin_lock(&mqs->lock), while we have not initialized that lock
-yet.
-
-This patch moves the spin_lock_init() before the call to ipc_addid().
-It also sets the "deleted" flag to 1 in the window between msg structure
-allocation and msg structure locking in ipc_addid().
+And this 'dev' becomes the 'from' in the next loop, but it may be 
+destroyed before the 'pci_dev_get(from)', isn't it?
 
 
-Regards,
-Nadia
-
-
-Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
-
----
- ipc/util.c |   16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.27/ipc/util.c
-===================================================================
---- linux-2.6.27.orig/ipc/util.c	2008-10-23 15:20:46.000000000 +0200
-+++ linux-2.6.27/ipc/util.c	2008-10-24 17:48:33.000000000 +0200
-@@ -266,6 +266,17 @@ int ipc_addid(struct ipc_ids* ids, struc
- 	if (ids->in_use >= size)
- 		return -ENOSPC;
- 
-+	spin_lock_init(&new->lock);
-+
-+	/*
-+	 * We have a window between the time new is inserted into the idr
-+	 * tree and the time it is actually locked.
-+	 * In order to be safe during that window set the new ipc structure
-+	 * as deleted: a concurrent ipc_lock() will see it as not present
-+	 * until the initialization phase is complete.
-+	 */
-+	new->deleted = 1;
-+
- 	err = idr_get_new(&ids->ipcs_idr, new, &id);
- 	if (err)
- 		return err;
-@@ -280,10 +291,11 @@ int ipc_addid(struct ipc_ids* ids, struc
- 		ids->seq = 0;
- 
- 	new->id = ipc_buildid(id, new->seq);
--	spin_lock_init(&new->lock);
--	new->deleted = 0;
- 	rcu_read_lock();
- 	spin_lock(&new->lock);
-+
-+	new->deleted = 0;
-+
- 	return id;
- }
- 
-
--- 
+> won't be destroyed until its reference count reaches zero, which could
+> be any time someone calls pci_dev_put() on it.  In the scenario you're
+> postulating, it would happen in pci_get_dev_by_id():
+> 
+>         if (from)
+>                 pci_dev_put(from);
+> 
+> which is the last time that 'from' is referred to in that callchain.
+> 
