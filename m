@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752927AbYJ0MCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbYJ0MGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752927AbYJ0MCT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 08:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbYJ0MCK
+	id S1752860AbYJ0MGa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 08:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbYJ0MGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 08:02:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60702 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750881AbYJ0MCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 08:02:09 -0400
-Date: Mon, 27 Oct 2008 13:02:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Paalanen <pq@iki.fi>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] trace: add the MMIO-tracer to the tracer menu
-Message-ID: <20081027120202.GF5631@elte.hu>
-References: <1224845357.4075.0.camel@twins> <20081024112535.GA19786@elte.hu> <alpine.DEB.1.10.0810240755290.25677@gandalf.stny.rr.com> <20081024200811.4609c09f@daedalus.pq.iki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081024200811.4609c09f@daedalus.pq.iki.fi>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Mon, 27 Oct 2008 08:06:18 -0400
+Received: from mail.gmx.net ([213.165.64.20]:47074 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750881AbYJ0MGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 08:06:17 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+yYxAzQhOyQ5BwbT7rAJ7fIMASPvozKp8RFLDkFR
+	vTSvhupvPToFzw
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+From: Mike Galbraith <efault@gmx.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, Jiri Kosina <jkosina@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>, rjw@sisk.pl, s0mbre@tservice.net.ru,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <20081027113306.5b1d5898@lxorguk.ukuu.org.uk>
+References: <20081024.221653.23695396.davem@davemloft.net>
+	 <1224914333.3822.18.camel@marge.simson.net>
+	 <1224917623.4929.15.camel@marge.simson.net>
+	 <20081025.002420.82739316.davem@davemloft.net>
+	 <Pine.LNX.4.64.0810260055070.22126@twin.jikos.cz>
+	 <1225010790.8566.22.camel@marge.simson.net>
+	 <1225011648.27415.4.camel@twins>
+	 <20081026021153.47878580.akpm@linux-foundation.org>
+	 <alpine.LNX.1.10.0810262002450.12928@jikos.suse.cz>
+	 <alpine.LNX.1.10.0810271138470.12928@jikos.suse.cz>
+	 <20081027112750.GA2771@elte.hu>
+	 <20081027113306.5b1d5898@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Mon, 27 Oct 2008 13:06:11 +0100
+Message-Id: <1225109171.4238.23.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.63
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Pekka Paalanen <pq@iki.fi> wrote:
-
-> > And doing this will remove the need about my question on depends 
-> > on X86.
+On Mon, 2008-10-27 at 11:33 +0000, Alan Cox wrote:
+> > The way to get the best possible dbench numbers in CPU-bound dbench 
+> > runs, you have to throw away the scheduler completely, and do this 
+> > instead:
+> > 
+> >  - first execute all requests of client 1
+> >  - then execute all requests of client 2
+> >  ....
+> >  - execute all requests of client N
 > 
-> Yes, we can remove MMIOTRACE_HOOKS and replace it with just 
-> MMIOTRACE. MMIOTRACE_HOOKS is a remnant from the time when I thought 
-> that something else could also use the kmmio facilities.
+> Rubbish. If you do that you'll not get enough I/O in parallel to schedule
+> the disk well (not that most of our I/O schedulers are doing the job
+> well, and the vm writeback threads then mess it up and the lack of Arjans
+> ioprio fixes then totally screw you) </rant>
 > 
-> Here's a compile-tested patch against current Ingo's tip/master.
+> > the moment the clients are allowed to overlap, the moment their requests 
+> > are executed more fairly, the dbench numbers drop.
 > 
-> From d4b97cd777c3382b784a9504281feccc9f2c4036 Mon Sep 17 00:00:00 2001
-> From: Pekka Paalanen <pq@iki.fi>
-> Date: Fri, 24 Oct 2008 18:59:56 +0300
-> Subject: [PATCH] mmiotrace: Remove unneeded CONFIG_MMIOTRACE_HOOKS.
-> 
-> Signed-off-by: Pekka Paalanen <pq@iki.fi>
-> ---
->  arch/x86/Kconfig.debug |    4 ----
->  arch/x86/mm/Makefile   |    3 +--
->  arch/x86/mm/fault.c    |    2 +-
->  3 files changed, 2 insertions(+), 7 deletions(-)
+> Fairness isn't everything. Dbench is a fairly good tool for studying some
+> real world workloads. If your fairness hurts throughput that much maybe
+> your scheduler algorithm is just plain *wrong* as it isn't adapting to
+> workload at all well.
 
-applied, thanks Pekka!
+Doesn't seem to be scheduler/fairness.  2.6.22.19 is O(1), and falls
+apart too, I posted the numbers and full dbench output yesterday.
 
-	Ingo
+	-Mike
+
