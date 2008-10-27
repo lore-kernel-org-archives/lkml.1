@@ -1,57 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752469AbYJ0Olc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751989AbYJ0OrK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752469AbYJ0Olc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 10:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbYJ0OlY
+	id S1751989AbYJ0OrK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 10:47:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750784AbYJ0Oq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 10:41:24 -0400
-Received: from smtp-vbr5.xs4all.nl ([194.109.24.25]:3948 "EHLO
-	smtp-vbr5.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbYJ0OlY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 10:41:24 -0400
-Date: Mon, 27 Oct 2008 15:40:32 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@localhost.localdomain
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix allmodconfig breakage
-In-Reply-To: <20081026051234.GN28946@ZenIV.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0810271539500.13549@localhost.localdomain>
-References: <20081025211107.GA20417@uranus.ravnborg.org>
- <20081026051234.GN28946@ZenIV.linux.org.uk>
+	Mon, 27 Oct 2008 10:46:56 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:16332 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750779AbYJ0Oqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 10:46:55 -0400
+From: Andrey Mirkin <major@openvz.org>
+To: devel@openvz.org
+Subject: Re: [Devel] Re: [PATCH 0/9] OpenVZ kernel based checkpointing/restart
+Date: Mon, 27 Oct 2008 18:45:35 +0400
+User-Agent: KMail/1.8.2
+Cc: Daniel Lezcano <dlezcano@fr.ibm.com>, Oren Laadan <orenl@cs.columbia.edu>,
+       Louis.Rilling@kerlabs.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>
+References: <1220439476-16465-1-git-send-email-major@openvz.org> <48FCA97C.1040108@cs.columbia.edu> <48FCB3CC.9030804@fr.ibm.com>
+In-Reply-To: <48FCB3CC.9030804@fr.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810271745.36814.major@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Monday 20 October 2008 20:37 Daniel Lezcano wrote:
+> Oren Laadan wrote:
+> > Daniel Lezcano wrote:
+> >> Louis Rilling wrote:
+> >>> On Fri, Oct 17, 2008 at 04:33:03PM -0700, Dave Hansen wrote:
+> >>>> On Wed, 2008-09-03 at 14:57 +0400, Andrey Mirkin wrote:
+> >>>>> This patchset introduces kernel based checkpointing/restart as it is
+> >>>>> implemented in OpenVZ project. This patchset has limited
+> >>>>> functionality and are able to checkpoint/restart only single process.
+> >>>>> Recently Oren Laaden sent another kernel based implementation of
+> >>>>> checkpoint/restart. The main differences between this patchset and
+> >>>>> Oren's patchset are:
+> >>>>
+> >>>> Hi Andrey,
+> >>>>
+> >>>> I'm curious what you want to happen with this patch set.  Is there
+> >>>> something specific in Oren's set that deficient which you need
+> >>>> implemented?  Are there some technical reasons you prefer this code?
+> >>>
+> >>> To be fair, and since (IIRC) the initial intent was to start with
+> >>> OpenVZ's approach, shouldn't Oren answer the same questions with
+> >>> respect to Andrey's patchset?
+> >>>
+> >>> I'm afraid that we are forgetting to take the best from both
+> >>> approaches...
+> >>
+> >> I agree with Louis.
+> >>
+> >> I played with Oren's patchset and tryed to port it on x86_64. I was able
+> >> to sys_checkpoint/sys_restart but if you remove the restoring of the
+> >> general registers, the restart still works. I am not an expert on asm,
+> >> but my hypothesis is when we call sys_checkpoint the registers are saved
+> >> on the stack by the syscall and when we restore the memory of the
+> >> process, we restore the stack and the stacked registers are restored
+> >> when exiting the sys_restart. That make me feel there is an important
+> >> gap between external checkpoint and internal checkpoint.
+> >
+> > This is a misconception: my patches are not "internal checkpoint". My
+> > patches are basically "external checkpoint" by design, which *also*
+> > accommodates self-checkpointing (aka internal). The same holds for the
+> > restart. The implementation is demonstrated with "self-checkpoint" to
+> > avoid complicating things at this early stage of proof-of-concept.
+>
+> Yep, I read your patchset :)
+>
+> I just want to clarify what we want to demonstrate with this patchset
+> for the proof-of-concept ? A self CR does not show what are the
+> complicate parts of the CR, we are just showing we can dump the memory
+> from the kernel and do setcontext/getcontext.
+>
+> We state at the container mini-summit on an approach:
+>
+>     1. Pre-dump
+>     2. Freeze the container
+>     3. Dump
+>     4. Thaw/Kill the container
+>     5. Post-dump
+>
+> We already have the freezer, and we can forget for now pre-dump and
+> post-dump.
+>
+> IMHO, for the proof-of-concept we should do a minimal CR (like you did),
+> but conforming with these 5 points, but that means we have to do an
+> external checkpoint.
+>
+> If the POC conforms with that, the patchset will be a little different
+> and that will show what are the difficult part for restarting a process,
+> especially to restart it at the frozen state :) and that will give an
+> idea from 10000 feets of the big picture.
+>
+> > For multiple processes all that is needed is a container and a loop
+> > on the checkpoint side, and a method to recreate processes on the
+> > restart side. Andrew suggests to do it in kernel space, I still have
+> > doubts.
+>
+> A question to Andrey, do you, in OpenVZ, restart "externally" or it is
+> the first process of the pid namespace which calls sys_restart and then
+>   populates the pid namespace ?
 
-On Sun, 26 Oct 2008, Al Viro wrote:
+In OpenVZ we are creating first task and namespaces from sys_restart.
 
-> 	If you use KCONFIG_ALLCONFIG (even with empty file) you get
-> broken allmodconfig/allyesconfig; CONFIG_MODULES gets turned off,
-> with obvious massive fallout.
-> 
-> 	Breakage had been introduced when conf_set_all_new_symbols()
-> got used for allmodconfig et.al.
-> 
-> 	What happens is that sym_calc_value(modules_sym) done in
-> conf_read_simple() sets SYMBOL_VALID on both modules_sym and MODULES.
-> When we get to conf_set_all_new_symbols(), we set sym->def[S_DEF_USER]
-> on everything, but it has no effect on sym->curr for the symbols that
-> already have SYMBOL_VALID - these are stuck.
-> 
-> 	Solution: use sym_clear_all_valid() in there.  Note that it
-> makes reevaluation of modules_sym redundant - sym_clear_all_valid()
-> will do that itself.
-> 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Andrey
 
-Thanks for looking into this.
-
-Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
-
-bye, Roman
+>
+> > While I held out the multi-process part of the patch so far because I
+> > was explicitly asked to do it, it seems like this would be a good time
+> > to push it out and get feedback.
+>
+> IMHO it is too soon...
+>
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
+>
+> _______________________________________________
+> Devel mailing list
+> Devel@openvz.org
+> https://openvz.org/mailman/listinfo/devel
