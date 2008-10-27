@@ -1,82 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752136AbYJ0PK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbYJ0PLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752136AbYJ0PK3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 11:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbYJ0PKW
+	id S1752826AbYJ0PLW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 11:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYJ0PLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 11:10:22 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58264 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751591AbYJ0PKU (ORCPT
+	Mon, 27 Oct 2008 11:11:14 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:19186 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751883AbYJ0PLN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 11:10:20 -0400
-Date: Mon, 27 Oct 2008 15:10:23 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Tidy up addresses in random drivers
-Message-ID: <20081027151023.1ae69b73@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 27 Oct 2008 11:11:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=dPE/TKESwlcV9fcOLL8z3Cal84hZqn2uqHyCIFQz5+ivgsLbabaM36TYbHnoqjV0LQ
+         geyLqA+5miwExyVQUoHhkd1aE1EzYAqoiEpEfygrP6q4M8UtTP4SkPGiX/RvgoCWLke/
+         2q3qjSjdcMWua2moRKycF/mNmWNdbKwWmH8W0=
+Message-ID: <4905DA48.2070409@tuffmail.co.uk>
+Date: Mon, 27 Oct 2008 15:12:08 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: dri-devel@lists.sourceforge.net
+CC: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.28-rc1: [drm:i915] *ERROR* ... Disabling tiling
+References: <4905CFC3.1060907@tuffmail.co.uk> <4905D750.7000006@tuffmail.co.uk>
+In-Reply-To: <4905D750.7000006@tuffmail.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Alan Jenkins wrote:
+> Alan Jenkins wrote:
+>> What does this mean, should I do anything about it?  Is tiling nice 
+>> to have?
+>>
+>> It sounds like GEM broke something - though maybe it just added a 
+>> more verbose error report.
+>>
+>> System: EeePC 701
+>> Kernel: v2.6.36-rc1-5-g23cf24c
+>> Chipset: Intel mobile 915G-something
+>> Regretably necessary kernel boot option: noapic
+>>
+>>
+>> [    1.438441] Linux agpgart interface v0.103
+>> [    1.438441] agpgart-intel 0000:00:00.0: Intel 915GM Chipset
+>> [    1.438441] agpgart-intel 0000:00:00.0: detected 7932K stolen memory
+>> [    1.443353] agpgart-intel 0000:00:00.0: AGP aperture is 256M @ 
+>> 0xd0000000
+>> [    1.443353] [drm] Initialized drm 1.1.0 20060810
+>> [    1.443353] pci 0000:00:02.0: PCI INT A -> Link[LNKA] -> GSI 5 
+>> (level, low) -> IRQ 5
+>> [    1.443353] pci 0000:00:02.0: setting latency timer to 64
+>> [    1.443353] [drm:i915_gem_detect_bit_6_swizzle] *ERROR* Couldn't 
+>> read from MCHBAR.  Disabling
+>> tiling.
 
-diff --git a/drivers/char/hw_random/amd-rng.c b/drivers/char/hw_random/amd-rng.c
-index c422e87..cd0ba51 100644
---- a/drivers/char/hw_random/amd-rng.c
-+++ b/drivers/char/hw_random/amd-rng.c
-@@ -11,7 +11,7 @@
-  * derived from
-  *
-  * Hardware driver for the AMD 768 Random Number Generator (RNG)
-- * (c) Copyright 2001 Red Hat Inc <alan@redhat.com>
-+ * (c) Copyright 2001 Red Hat Inc
-  *
-  * derived from
-  *
-diff --git a/drivers/char/hw_random/geode-rng.c b/drivers/char/hw_random/geode-rng.c
-index fed4ef5..64d513f 100644
---- a/drivers/char/hw_random/geode-rng.c
-+++ b/drivers/char/hw_random/geode-rng.c
-@@ -11,7 +11,7 @@
-  * derived from
-  *
-  * Hardware driver for the AMD 768 Random Number Generator (RNG)
-- * (c) Copyright 2001 Red Hat Inc <alan@redhat.com>
-+ * (c) Copyright 2001 Red Hat Inc
-  *
-  * derived from
-  *
-diff --git a/drivers/char/hw_random/intel-rng.c b/drivers/char/hw_random/intel-rng.c
-index 8a2fce0..5dcbe60 100644
---- a/drivers/char/hw_random/intel-rng.c
-+++ b/drivers/char/hw_random/intel-rng.c
-@@ -11,7 +11,7 @@
-  * derived from
-  *
-  * Hardware driver for the AMD 768 Random Number Generator (RNG)
-- * (c) Copyright 2001 Red Hat Inc <alan@redhat.com>
-+ * (c) Copyright 2001 Red Hat Inc
-  *
-  * derived from
-  *
-diff --git a/drivers/char/hw_random/via-rng.c b/drivers/char/hw_random/via-rng.c
-index 128202e..4e9573c 100644
---- a/drivers/char/hw_random/via-rng.c
-+++ b/drivers/char/hw_random/via-rng.c
-@@ -11,7 +11,7 @@
-  * derived from
-  *
-  * Hardware driver for the AMD 768 Random Number Generator (RNG)
-- * (c) Copyright 2001 Red Hat Inc <alan@redhat.com>
-+ * (c) Copyright 2001 Red Hat Inc
-  *
-  * derived from
-  *
+There's no obvious difference in Xorg.log (compared to 2.6.27).  In fact 
+it claims to have successfuly enabled tiling.
+
+(**) intel(0): Tiling enabled
+(II) intel(0): Attempting memory allocation with tiled buffers.
+(II) intel(0): Success.
+
+So these new kernel error messages seem a bit random.
+
+Thanks
+Alan
