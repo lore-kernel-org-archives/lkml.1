@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752232AbYJ0OI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751690AbYJ0ORj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752232AbYJ0OI6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 10:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYJ0OIu
+	id S1751690AbYJ0ORj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 10:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbYJ0OR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 10:08:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50275 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750744AbYJ0OIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 10:08:49 -0400
-Date: Mon, 27 Oct 2008 15:08:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Dimitri Sivanich <sivanich@sgi.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2 v3] SGI RTC: add RTC system interrupt
-Message-ID: <20081027140829.GD5704@elte.hu>
-References: <20081023163041.GA14574@sgi.com> <20081023163223.GA14815@sgi.com> <20081023163414.GB14815@sgi.com> <20081024031127.GA25165@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081024031127.GA25165@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0504]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Mon, 27 Oct 2008 10:17:27 -0400
+Received: from mail.gmx.net ([213.165.64.20]:43334 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750779AbYJ0OR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 10:17:26 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+j9KB845qj3NQwiRwUMsf8pg0ZeU8zp7M6apoyN0
+	3v6I3bNMnKqekk
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+From: Mike Galbraith <efault@gmx.de>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>, rjw@sisk.pl, s0mbre@tservice.net.ru,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <alpine.LNX.1.10.0810271441590.12928@jikos.suse.cz>
+References: <20081024.221653.23695396.davem@davemloft.net>
+	 <1224914333.3822.18.camel@marge.simson.net>
+	 <1224917623.4929.15.camel@marge.simson.net>
+	 <20081025.002420.82739316.davem@davemloft.net>
+	 <Pine.LNX.4.64.0810260055070.22126@twin.jikos.cz>
+	 <1225010790.8566.22.camel@marge.simson.net>
+	 <1225011648.27415.4.camel@twins>
+	 <20081026021153.47878580.akpm@linux-foundation.org>
+	 <alpine.LNX.1.10.0810262002450.12928@jikos.suse.cz>
+	 <alpine.LNX.1.10.0810271138470.12928@jikos.suse.cz>
+	 <20081027112750.GA2771@elte.hu>
+	 <20081027113306.5b1d5898@lxorguk.ukuu.org.uk>
+	 <1225109171.4238.23.camel@marge.simson.net>
+	 <alpine.LNX.1.10.0810271441590.12928@jikos.suse.cz>
+Content-Type: text/plain
+Date: Mon, 27 Oct 2008 15:17:16 +0100
+Message-Id: <1225117036.4973.23.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.58
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2008-10-27 at 14:42 +0100, Jiri Kosina wrote:
+> On Mon, 27 Oct 2008, Mike Galbraith wrote:
+> 
+> > > real world workloads. If your fairness hurts throughput that much maybe
+> > > your scheduler algorithm is just plain *wrong* as it isn't adapting to
+> > > workload at all well.
+> > Doesn't seem to be scheduler/fairness.  2.6.22.19 is O(1), and falls
+> > apart too, I posted the numbers and full dbench output yesterday.
+> 
+> We'll need to look into this a little bit more I think. I have sent out 
+> some numbers too, and these indicate very clearly that there is more than 
+> 50% performance drop (measured by dbench) just after the very merge of CFS 
+> in 2.6.23-rc1 merge window.
 
-* Dimitri Sivanich <sivanich@sgi.com> wrote:
+Sure.  Watching the per/sec output, every kernel I have sucks at high
+client count dbench, it's just a matter of how badly, and how long.
 
-> +void uv_rtc_timer_interrupt(struct pt_regs *regs)
-> +{
-> +	struct pt_regs *old_regs = set_irq_regs(regs);
-> +
-> +	ack_APIC_irq();
-> +
-> +	exit_idle();
-> +
-> +	irq_enter();
-> +
-> +	if (uv_rtc_interrupt_extension)
-> +		uv_rtc_interrupt_extension();
-> +
-> +	irq_exit();
-> +
-> +	set_irq_regs(old_regs);
-> +}
+BTW, the nice pretty 160 client numbers I posted yesterday for ext2
+turned out to be because somebody adds _netdev mount option when I mount
+-a in order to mount my freshly hotplugged external drive (why?  that
+ain't in my fstab).  Without that switch, ext2 output is roughly as
+raggedy as ext3, and nowhere near the up to 1.4GB/sec I can get with
+dirty_ratio=50 + ext2 + (buy none, get one free) _netdev option.  Free
+for the not asking option does nada for ext3.
 
-hm, the exit_idle() looks weird - why is it done? If we get an IRQ 
-then the CPU will exit idle state anyway.
+	-Mike
 
-	Ingo
