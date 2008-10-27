@@ -1,60 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbYJ0VkD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbYJ0VlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754491AbYJ0VkD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 17:40:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbYJ0ViQ
+	id S1754431AbYJ0VlY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 17:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbYJ0VlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 17:38:16 -0400
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:42658 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752323AbYJ0ViK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 17:38:10 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=yyYentATxZFNzUcZY8c3MVB4U9Oxkb3coKlpqTgPXVFg1fE18D377viIkRb/b3CYw4jGR1mnzre4onfPuuKieiqaJCsbLPPnu/x+cpIOLq7ZIgup7Cf8sspp4xd0rPvoIAJ0K+FLbHiy7uCInWTwzB7RyOlUvtdnmkUgu8yv0YI=  ;
-X-YMail-OSG: Rk02wecVM1lJK8xrTXQkccDX.W5Qr7JxqvW8nrr_byMcWwADZlLmU_hXGDgWSbgvjs8YJcYBMN79dNS8aR2_y4Cxhn4G_CZIGJRokOfsEu0V5EeGVOHkiXN9fphE5RAXg5I-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Subject: Re: [rtc-linux] [i2c] [PATCH] rtc-ds1307 : SMBus compatibility
-Date: Mon, 27 Oct 2008 14:29:24 -0700
-User-Agent: KMail/1.9.10
-Cc: rtc-linux@googlegroups.com, sbarre@sdelcc.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "i2c@lm-sensors.org" <i2c@lm-sensors.org>,
-       Jean Delvare <khali@linux-fr.org>,
-       Rodolfo Giometti <giometti@enneenne.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <C1C62166118DFA4A8BBA01A2411F0D170E9BE59C2F@PRI-MBX-101.dom1.vinci-energies.net> <C1C62166118DFA4A8BBA01A2411F0D170E9BEC880E@PRI-MBX-101.dom1.vinci-energies.net> <20081021202938.2eca3ac1@i1501.lan.towertech.it>
-In-Reply-To: <20081021202938.2eca3ac1@i1501.lan.towertech.it>
+	Mon, 27 Oct 2008 17:41:15 -0400
+Received: from mail.gmx.net ([213.165.64.20]:60934 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752018AbYJ0VlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 17:41:14 -0400
+X-Authenticated: #1142740
+X-Provags-ID: V01U2FsdGVkX19EC/ZrtxVE86eCwXOQLiuYEYZ6FXwvHx2wa3LA/j
+	xFBfhGFK7Qmp5d
+From: Hartmut Niemann <Hartmut.Niemann@gmx.de>
+To: Simon Horman <horms@verge.net.au>
+Subject: [PATCH] Documentation/filesystems/nfsroot.txt: CONFIG_IP_PNP must be set
+Date: Mon, 27 Oct 2008 22:41:14 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Trond.Myklebust@netapp.com
+References: <200810252347.01484.Hartmut.Niemann@gmx.de> <20081027052409.GC6818@verge.net.au>
+In-Reply-To: <20081027052409.GC6818@verge.net.au>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200810271429.25490.david-b@pacbell.net>
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810272241.14531.Hartmut.Niemann@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 21 October 2008, Alessandro Zummo wrote:
-> > I've tested it with ds1307 chip.
-> > Is somebody can test it on ds1337/ds1338 ?
-> 
->  Given the amount of changes I need some Tested-bys
->  for the patch to go thru.
+The file nfsroot.txt fails to mention, that Kernel level autoconfiguration 
+CONFIG_IP_PNP must be selected in order to be able to even see
+the option "Root file system on NFS" (CONFIG_ROOT_NFS)
 
-I tested these changes on my trusty ds1307 system using i2c-gpio
-(vs a "real SMBus controller") and it works just fine.
+I reordered the section 1 of nfsroot.txt and emphasized the dependency.
+(And I fixed some chapter numbering in section 3).
 
-Of the nine changed I/O calls, testing with the ds1307 covers
-all but the three supporting the new alarm calls.  Given that
-those alarm changes are "obvious", I actually don't have any
-qualms signing off on these changes ... though it would of
-course be good to have Rodolfo re-test his alarm code.  (It's
-freshly merged in any case, so it merits testing just in case
-a problem snuck in!)
+Signed-off-by: Hartmut Niemann <Hartmut.Niemann@gmx.de>
+---
+--- linux-2.6.27.1/Documentation/filesystems/nfsroot.txt        2008-10-16 
+01:02:53.000000000 +0200
++++ linux-2.6.27.1-HN/Documentation/filesystems/nfsroot.txt     2008-10-25 
+23:24:48.000000000 +0200
+@@ -22,15 +22,13 @@
+ 1.) Enabling nfsroot capabilities
+     -----------------------------
 
-- Dave
+-In order to use nfsroot, NFS client support needs to be selected as
+-built-in during configuration. Once this has been selected, the nfsroot
+-option will become available, which should also be selected.
+-
+-In the networking options, kernel level autoconfiguration can be selected,
+-along with the types of autoconfiguration to support. Selecting all of
+-DHCP, BOOTP and RARP is safe.
+-
+-
++In order to use nfsroot, in the networking options,  IP kernel level
++autoconfiguration must be selected, along with the types of autoconfiguration
++to support. Selecting all of DHCP, BOOTP and RARP is safe.
++
++Then NFS client support needs to be selected as built-in during
++configuration. Once this has been selected, the nfsroot option will become
++available, which must also be selected.
+
+
+ 2.) Kernel command line
+@@ -207,7 +205,7 @@
+        For more information on isolinux, including how to create bootdisks
+        for prebuilt kernels, see http://syslinux.zytor.com/
+
+-3.2) Using LILO
++3.3) Using LILO
+        When using LILO all the necessary command line parameters may be
+        specified using the 'append=' directive in the LILO configuration
+        file.
+@@ -219,11 +217,11 @@
+
+        For information on configuring LILO, please refer to its 
+documentation.
+
+-3.3) Using GRUB
++3.4) Using GRUB
+        When using GRUB, kernel parameter are simply appended after the kernel
+        specification: kernel <kernel> <parameters>
+
+-3.4) Using loadlin
++3.5) Using loadlin
+        loadlin may be used to boot Linux from a DOS command prompt without
+        requiring a local hard disk to mount as root. This has not been
+        thoroughly tested by the authors of this document, but in general
+@@ -232,7 +230,7 @@
+
+        Please refer to the loadlin documentation for further information.
+
+-3.5) Using a boot ROM
++3.6) Using a boot ROM
+        This is probably the most elegant way of booting a diskless client.
+        With a boot ROM the kernel is loaded using the TFTP protocol. The
+        authors of this document are not aware of any no commercial boot
+@@ -241,7 +239,7 @@
+        etherboot, both of which are available on sunsite.unc.edu, and both
+        of which contain everything you need to boot a diskless Linux client.
+
+-3.6) Using pxelinux
++3.7) Using pxelinux
+        Pxelinux may be used to boot linux using the PXE boot loader
+        which is present on many modern network cards.
+
