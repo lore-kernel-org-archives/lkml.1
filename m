@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752518AbYJ0QNO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbYJ0QNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752518AbYJ0QNO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 12:13:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbYJ0QM6
+	id S1752969AbYJ0QNo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 12:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbYJ0QNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 12:12:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51868 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750795AbYJ0QM5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 12:12:57 -0400
-Date: Mon, 27 Oct 2008 09:10:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-Subject: Re: [GIT PULL/RESEND] kernel message catalog patches
-In-Reply-To: <20081027160359.37db885c@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.2.00.0810270906520.3386@nehalem.linux-foundation.org>
-References: <1224168620.9617.14.camel@localhost> <1224230354.4631.1.camel@localhost> <20081021092148.GB4980@osiris.boeblingen.de.ibm.com> <alpine.LFD.2.00.0810230835150.3287@nehalem.linux-foundation.org> <20081023210446.GA12003@osiris.boeblingen.de.ibm.com>
- <alpine.LFD.2.00.0810231433380.3287@nehalem.linux-foundation.org> <1225049195.14057.72.camel@localhost> <alpine.LFD.2.00.0810261212290.5200@nehalem.linux-foundation.org> <1225101688.15777.6.camel@localhost> <alpine.LFD.2.00.0810270750100.3386@nehalem.linux-foundation.org>
- <20081027160359.37db885c@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 27 Oct 2008 12:13:35 -0400
+Received: from waste.org ([66.93.16.53]:45511 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750795AbYJ0QNe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 12:13:34 -0400
+Subject: Re: Bloatwatch 2.6.28-rc1: last_sysfs_file
+From: Matt Mackall <mpm@selenic.com>
+To: Chris Snook <csnook@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linuxfoundation.org>
+In-Reply-To: <4902F710.3020100@redhat.com>
+References: <1224881514.3248.46.camel@calx> <1224882923.3248.51.camel@calx>
+	 <4902F710.3020100@redhat.com>
+Content-Type: text/plain
+Date: Mon, 27 Oct 2008 11:11:38 -0500
+Message-Id: <1225123898.3199.20.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 27 Oct 2008, Alan Cox wrote:
->
-> > And as for the actual explanations: either they need to be totally outside 
-> > the kernel (in a project of their own), or they'd need to be "kernel-doc" 
-> > style things that are _in_ the source code. Not in Documentation/. Not 
-> > separate from the printk() that they are associated with.
+On Sat, 2008-10-25 at 06:38 -0400, Chris Snook wrote: 
+> Matt Mackall wrote:
+> > On Fri, 2008-10-24 at 15:52 -0500, Matt Mackall wrote:
+> >> 2.6.28-rc1 adds 4k for last_sysfs_file debug tracking. That's one hell
+> >> of a long sysfs path.
+> >>
+> >> http://www.selenic.com/bloatwatch/?cmd=compare;v1=2.6.27;v2=2.6.28-rc1;part=/built-in/fs/sysfs
+> > 
+> > ..especially given that printk is limited to 1k at a time.
+> > 
+> > 
+> > sysfs: shrink last_sysfs_file to a reasonable size
+> > 
+> > sysfs was reserving 4k to store filenames for debug despite printk being
+> > limited to 1k. Shrink this to something more reasonable.
+> > 
+> > Signed-off-by: Matt Mackall <mpm@selenic.com>
+> > 
+> > diff -r ac8c82ff3be7 fs/sysfs/file.c
+> > --- a/fs/sysfs/file.c	Fri Oct 24 13:13:04 2008 -0500
+> > +++ b/fs/sysfs/file.c	Fri Oct 24 16:11:53 2008 -0500
+> > @@ -25,7 +25,7 @@
+> >  #include "sysfs.h"
+> >  
+> >  /* used in crash dumps to help with debugging */
+> > -static char last_sysfs_file[PATH_MAX];
+> > +static char last_sysfs_file[200]; /* allow for disgustingly long paths */
+> >  void sysfs_printk_last_file(void)
+> >  {
+> >  	printk(KERN_EMERG "last sysfs file: %s\n", last_sysfs_file);
+> > 
+> > 
 > 
-> You really don't want 32 languages in mixed left/right rendering with
-> multiple fonts in your kernel source. At least not with most editing and
-> viewing tools....
+> Please don't use magic numbers.  Use a symbolic constant, and modify printk.c to 
+> use the same.
 
-I do agree. Another issue is that quite often the actual line to be 
-printed is likely fairly short, and often in an error path (so it's 
-indented and in an inconvenient place), but the explanation - even for a 
-_single_ language - may well be pretty involved and long.
+I'm explicitly not using a magic number because the relevant magic
+number is absurdly large. It is in fact 4 times larger than printk can
+print. And its 40 times larger than any path we are liable to encounter.
+Inventing a new use-once #define meaning "good enough for debugging
+99.99% of sysfs bugs" one line up is not an improvement here.
 
-Which is why I think for something like this, it really needs to be 
-entirely outside. Because putting it inside the kernel simply isn't going 
-to result in anything really useful. Either it can be close to the message 
-and be updated reasonably (never mind that if we really do support 
-multiple languages, that's not going to happen anyway, even if it's 
-close), or it's going to be somewhere else and not be updated when changes 
-happen - and then it migth as well be a separate project.
+And why on earth would I modify anything in printk?
 
-The 'separate project' is especially appropriate since any parsing won't 
-be done by the kernel anyway, but by some ksyslog thing.
+-- 
+Mathematics is the supreme nostalgia of our time.
 
-			Linus
