@@ -1,243 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbYJ0Uob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbYJ0Uqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754279AbYJ0Uob (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 16:44:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbYJ0UoW
+	id S1753629AbYJ0Uqr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 16:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYJ0Uqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 16:44:22 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:54650 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752047AbYJ0UoV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 16:44:21 -0400
-Date: Mon, 27 Oct 2008 22:44:19 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Greg KH <greg@kroah.com>
-cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5] w35und: remove dead code from wbusb_f.h
-In-Reply-To: <20081027183707.GA13737@kroah.com>
-Message-ID: <Pine.LNX.4.64.0810272241520.7338@melkki.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0810221906140.1679@melkki.cs.Helsinki.FI>
- <20081027183707.GA13737@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 27 Oct 2008 16:46:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60848 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751837AbYJ0Uqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 16:46:35 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+Subject: Re: Suspend to RAM regression in 2.6.28-rc2 (bisected)
+Date: Mon, 27 Oct 2008 21:51:00 +0100
+User-Agent: KMail/1.9.9
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Soeren Sonnenburg <kernel@nn7.de>, linux-kernel@vger.kernel.org,
+       tomas.winkler@intel.com, "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org
+References: <20081027162054.GA4015@localhost.aei.mpg.de> <1225134823.3796.45.camel@johannes.berg> <20081027203925.GA4416@localhost.aei.mpg.de>
+In-Reply-To: <20081027203925.GA4416@localhost.aei.mpg.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810272151.01244.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
-
-On Wed, Oct 22, 2008 at 07:06:41PM +0300, Pekka J Enberg wrote:
-> > From: Pekka Enberg <penberg@cs.helsinki.fi>
+On Monday, 27 of October 2008, Carlos R. Mafra wrote:
+> On Mon 27.Oct'08 at 20:13:43 +0100, Johannes Berg wrote:
+> > On Mon, 2008-10-27 at 20:11 +0100, Carlos R. Mafra wrote:
 > > 
-> > Remove dead code from wbusb_f.h and move the WbWLanInitialize() definition to
-> > wblinux_f.h where it arguably belongs to. As the wbusb_f.h is now empty, we can
-> > remove it completely.
+> > > > Do you get any kernel messages output? If you do, could you put messages
+> > > > into each line of ieee80211_set_disassoc to see where it hangs?
+> > > 
+> > > No messages appear, just a black screen.
+> > > 
+> > > But I can use the SysRq keys, and when I umount the
+> > > screen shows the message that umount succeed. I also tried SysRq+t but
+> > > the messages appear to fast to read.
 > > 
-> > Cc: Pavel Machek <pavel@suse.cz>
-> > Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-
-On Mon, 27 Oct 2008, Greg KH wrote:
-> This patch gives me a bunch of build errors as I don't think you are in
-> sync with the other changes in these files.
+> > Ok, but that means you _can_ get messages, it would help a lot if you
+> > could put a few printks into the set_disassoc function before/after each
+> > other function call, so we know where exactly it hangs. Pretty much all
+> > of them could possibly hang if there is some sort of locking error
+> > happening or anything relies on userspace to be running...
 > 
-> Care to respin it against 2.6.28-rc2?
+> Ok, I humbly tried to do that with the patch at the end of the email,
+> but I did not appear to hang in this function tough.
+> 
+> Somehow I could get some messages printed when it was a black screen
+> before (I think it has to do with the debug level I set with SysRq...)
+> and I could see all the printks I've put there. 
+> 
+> The good thing is that I could get the complete syslog of the boot until 
+> the it failed after suspending to RAM (in 2.6.28-rc2 with my debug patch
+> below applied). The last messages before the laptop become unresponsive
+> (except for the SysRq) were these ones:
+> 
+> Oct 27 21:03:06 localhost kernel: Registered led device: iwl-phy0:radio
+> Oct 27 21:03:06 localhost kernel: Registered led device: iwl-phy0:assoc
+> Oct 27 21:03:06 localhost kernel: Registered led device: iwl-phy0:RX
+> Oct 27 21:03:06 localhost kernel: Registered led device: iwl-phy0:TX
+> Oct 27 21:03:06 localhost kernel: before rcu_read_lock
+> Oct 27 21:03:06 localhost kernel: before netif_tx_stop_all_queues
+> Oct 27 21:03:06 localhost kernel: before netif_carrier_off
+> Oct 27 21:03:06 localhost kernel: before ieee80211_sta
+> Oct 27 21:03:06 localhost kernel: inside sef_disconnected 1
+> Oct 27 21:03:06 localhost kernel: before ieee8021_led_assoc
+> Oct 27 21:03:06 localhost kernel: before ieee8021_sta_send_apinfo
+> Oct 27 21:03:06 localhost kernel: before sta_info_unlink
+> Oct 27 21:03:06 localhost kernel: before rcu_read_unlock
+> Oct 27 21:03:06 localhost kernel: before sta_info_destroy
+> Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] Starting disk
+> Oct 27 21:03:06 localhost kernel: ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> Oct 27 21:03:06 localhost kernel: ata1.00: ACPI cmd ef/90:03:00:00:00:a0 succeeded
+> Oct 27 21:03:06 localhost kernel: ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
+> Oct 27 21:03:06 localhost kernel: ata1.00: ACPI cmd ef/90:03:00:00:00:a0 succeeded
+> Oct 27 21:03:06 localhost kernel: ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
+> Oct 27 21:03:06 localhost kernel: ata1.00: configured for UDMA/100
+> Oct 27 21:03:06 localhost kernel: ata1: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0x9 t4
+> Oct 27 21:03:06 localhost kernel: ata1: irq_stat 0x00000040, connection status changed
+> Oct 27 21:03:06 localhost kernel: ata1: hard resetting link
+> Oct 27 21:03:06 localhost kernel: ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> Oct 27 21:03:06 localhost kernel: ata1.00: ACPI cmd ef/90:03:00:00:00:a0 succeeded
+> Oct 27 21:03:06 localhost kernel: ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
+> Oct 27 21:03:06 localhost kernel: ata1.00: ACPI cmd ef/90:03:00:00:00:a0 succeeded
+> Oct 27 21:03:06 localhost kernel: ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
+> Oct 27 21:03:06 localhost kernel: ata1.00: configured for UDMA/100
+> Oct 27 21:03:06 localhost kernel: ata1: EH complete
+> Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] 488397168 512-byte hardware sectors: (250 GB/232 GiB)
+> Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] Write Protect is off
+> Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] 488397168 512-byte hardware sectors: (250 GB/232 GiB)
+> Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] Write Protect is off
+> Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> Oct 27 21:03:06 localhost kernel: Restarting tasks ... done.
+> Oct 27 21:03:07 localhost ifplugd(wlan0)[3182]: Link beat lost.
+> Oct 27 21:03:13 localhost ifplugd(wlan0)[3182]: Executing '/etc/ifplugd/ifplugd.action wlan0 down'.
+> Oct 27 21:06:20 localhost kernel: SysRq : Changing Loglevel
+> Oct 27 21:06:20 localhost kernel: Loglevel set to 4
+> Oct 27 21:06:22 localhost kernel: SysRq : Changing Loglevel
+> Oct 27 21:06:22 localhost kernel: Loglevel set to 6
+> Oct 27 21:06:32 localhost kernel: ffff80251670>] ? autoremove_wake_function+0x0/0x40
+> Oct 27 21:06:32 localhost kernel:  [<ffffffff8024e200>] ? worker_thread+0x0/0x110
+> Oct 27 21:06:32 localhost kernel:  [<ffffffff8025119d>] kthread+0x4d/0x80
+> Oct 27 21:06:32 localhost kernel:  [<ffffffff8020d1b9>] child_rip+0xa/0x11
+> 
+> and I have the complete trace also. I can try to put it somewhere in the web if it helps
+> (I already tried it, but I am new at the institute here and I could not set up my
+> webpage yet :-(
 
-That's strange. I rebased against 2.6.28-rc2 but didn't get any conficts 
-and everything seems to build just fine. What kind of errors are you 
-seeing?
+Please attach it to http://bugzilla.kernel.org/show_bug.cgi?id=11845 .
 
-I've included the rediffed patch here in case it helps. Not sure why it 
-would...
-
-		Pekka
-
->From cc8c4e3686389a46e552c016722e3983ef72ac00 Mon Sep 17 00:00:00 2001
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-Date: Wed, 22 Oct 2008 18:46:33 +0300
-Subject: [PATCH] w35und: remove dead code from wbusb_f.h
-
-Remove dead code from wbusb_f.h and move the WbWLanInitialize() definition to
-wblinux_f.h where it arguably belongs to. As the wbusb_f.h is now empty, we can
-remove it completely.
-
-Cc: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- drivers/staging/winbond/linux/wbusb.c   |   12 ------
- drivers/staging/winbond/linux/wbusb_f.h |   25 -------------
- drivers/staging/winbond/wbhal.c         |   57 ++++++++++++++-----------------
- drivers/staging/winbond/wbhal_f.h       |    2 -
- drivers/staging/winbond/wblinux_f.h     |    3 +-
- 5 files changed, 27 insertions(+), 72 deletions(-)
- delete mode 100644 drivers/staging/winbond/linux/wbusb_f.h
-
-diff --git a/drivers/staging/winbond/linux/wbusb.c b/drivers/staging/winbond/linux/wbusb.c
-index 3519e5b..a4403d2 100644
---- a/drivers/staging/winbond/linux/wbusb.c
-+++ b/drivers/staging/winbond/linux/wbusb.c
-@@ -307,18 +307,6 @@ void packet_came(char *pRxBufferAddress, int PacketSize)
- 	ieee80211_rx_irqsafe(my_dev, skb, &rx_status);
- }
- 
--unsigned char
--WbUsb_initial(phw_data_t pHwData)
--{
--	return 1;
--}
--
--
--void
--WbUsb_destroy(phw_data_t pHwData)
--{
--}
--
- static void wb35_disconnect(struct usb_interface *intf)
- {
- 	struct wb35_adapter * adapter = usb_get_intfdata(intf);
-diff --git a/drivers/staging/winbond/linux/wbusb_f.h b/drivers/staging/winbond/linux/wbusb_f.h
-deleted file mode 100644
-index a1d5946..0000000
---- a/drivers/staging/winbond/linux/wbusb_f.h
-+++ /dev/null
-@@ -1,25 +0,0 @@
--//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
--// Copyright (c) 1996-2004 Winbond Electronic Corporation
--//
--//  Module Name:
--//    wbusb_f.h
--//
--//  Abstract:
--//    Linux driver.
--//
--//  Author:
--//
--//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
--
--unsigned char WbUsb_initial(phw_data_t pHwData);
--void WbUsb_destroy(phw_data_t pHwData);
--unsigned char WbWLanInitialize(struct wb35_adapter *adapter);
--#define	WbUsb_Stop( _A )
--
--#define WbUsb_CheckForHang( _P )
--#define WbUsb_DetectStart( _P, _I )
--
--
--
--
--
-diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
-index 8da441c..356bd91 100644
---- a/drivers/staging/winbond/wbhal.c
-+++ b/drivers/staging/winbond/wbhal.c
-@@ -37,34 +37,32 @@ u8 hal_init_hardware(phw_data_t pHwData, struct wb35_adapter * adapter)
- 	pHwData->MaxReceiveLifeTime = DEFAULT_MSDU_LIFE_TIME; // Setting Rx maximum MSDU life time
- 	pHwData->FragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD; // Setting default fragment threshold
- 
--	if (WbUsb_initial(pHwData)) {
--		pHwData->InitialResource = 1;
--		if( Wb35Reg_initial(pHwData)) {
--			pHwData->InitialResource = 2;
--			if (Wb35Tx_initial(pHwData)) {
--				pHwData->InitialResource = 3;
--				if (Wb35Rx_initial(pHwData)) {
--					pHwData->InitialResource = 4;
--					OS_TIMER_INITIAL( &pHwData->LEDTimer, hal_led_control, pHwData );
--					OS_TIMER_SET( &pHwData->LEDTimer, 1000 ); // 20060623
--
--					//
--					// For restrict to vendor's hardware
--					//
--					SoftwareSet = hal_software_set( pHwData );
--
--					#ifdef Vendor2
--					// Try to make sure the EEPROM contain
--					SoftwareSet >>= 8;
--					if( SoftwareSet != 0x82 )
--						return FALSE;
--					#endif
--
--					Wb35Rx_start( pHwData );
--					Wb35Tx_EP2VM_start( pHwData );
--
--					return TRUE;
--				}
-+	pHwData->InitialResource = 1;
-+	if( Wb35Reg_initial(pHwData)) {
-+		pHwData->InitialResource = 2;
-+		if (Wb35Tx_initial(pHwData)) {
-+			pHwData->InitialResource = 3;
-+			if (Wb35Rx_initial(pHwData)) {
-+				pHwData->InitialResource = 4;
-+				OS_TIMER_INITIAL( &pHwData->LEDTimer, hal_led_control, pHwData );
-+				OS_TIMER_SET( &pHwData->LEDTimer, 1000 ); // 20060623
-+
-+				//
-+				// For restrict to vendor's hardware
-+				//
-+				SoftwareSet = hal_software_set( pHwData );
-+
-+				#ifdef Vendor2
-+				// Try to make sure the EEPROM contain
-+				SoftwareSet >>= 8;
-+				if( SoftwareSet != 0x82 )
-+					return FALSE;
-+				#endif
-+
-+				Wb35Rx_start( pHwData );
-+				Wb35Tx_EP2VM_start( pHwData );
-+
-+				return TRUE;
- 			}
- 		}
- 	}
-@@ -84,7 +82,6 @@ void hal_halt(phw_data_t pHwData, void *ppa_data)
- 			Wb35Rx_destroy( pHwData ); // Release the Rx
- 		case 2: Wb35Tx_destroy( pHwData ); // Release the Tx
- 		case 1: Wb35Reg_destroy( pHwData ); // Release the Wb35 Regisster resources
--				WbUsb_destroy( pHwData );// Release the WbUsb
- 	}
- }
- 
-@@ -330,8 +327,6 @@ void hal_stop(  phw_data_t pHwData )
- 
- 	reg->D00_DmaControl &= ~0xc0000000;//Tx Off, Rx Off
- 	Wb35Reg_Write( pHwData, 0x0400, reg->D00_DmaControl );
--
--	WbUsb_Stop( pHwData ); // 20051230 Add.4
- }
- 
- unsigned char hal_idle(phw_data_t pHwData)
-diff --git a/drivers/staging/winbond/wbhal_f.h b/drivers/staging/winbond/wbhal_f.h
-index 4ecf191..9f0436b 100644
---- a/drivers/staging/winbond/wbhal_f.h
-+++ b/drivers/staging/winbond/wbhal_f.h
-@@ -2,12 +2,10 @@
- // Device related include
- //=====================================================================
- #ifdef WB_LINUX
--	#include "linux/wbusb_f.h"
- 	#include "linux/wb35reg_f.h"
- 	#include "linux/wb35tx_f.h"
- 	#include "linux/wb35rx_f.h"
- #else
--	#include "wbusb_f.h"
- 	#include "wb35reg_f.h"
- 	#include "wb35tx_f.h"
- 	#include "wb35rx_f.h"
-diff --git a/drivers/staging/winbond/wblinux_f.h b/drivers/staging/winbond/wblinux_f.h
-index 446ace9..1d09c65 100644
---- a/drivers/staging/winbond/wblinux_f.h
-+++ b/drivers/staging/winbond/wblinux_f.h
-@@ -18,6 +18,5 @@ struct net_device_stats * wb35_netdev_stats( struct net_device *netdev );
- void WBLINUX_stop(  struct wb35_adapter *adapter );
- void WbWlanHalt(  struct wb35_adapter *adapter );
- void WBLINUX_ConnectStatus(  struct wb35_adapter *adapter,  u32 flag );
--
--
-+unsigned char WbWLanInitialize(struct wb35_adapter *adapter);
- 
--- 
-1.5.3.7
-
+Thanks,
+Rafael
