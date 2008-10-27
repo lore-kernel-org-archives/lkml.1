@@ -1,56 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbYJ0Q2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbYJ0Q33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753301AbYJ0Q2j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 12:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbYJ0Q2a
+	id S1753395AbYJ0Q33 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 12:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbYJ0Q3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 12:28:30 -0400
-Received: from el-out-1112.google.com ([209.85.162.178]:40318 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751742AbYJ0Q22 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 12:28:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=jwSOgOzegpnc5nRVYxz58XyRdzJZFMroSrpzwzs98pyrsBuLAra22jY6896MK3IjBB
-         kXBKB32Hrk1pC3l69q6I5KxeMwTpp+xWEubFOWT5obGWcc6uSDZK9gd8FyIAEmnchycl
-         SHIeGk1PbjyRIDFaHGrnC6eDmgO3kH8mHGeTg=
-Subject: Re: [RFC PATCHv2] printk: add the %pM, %p4, %p6 format specifiers
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: David Miller <davem@davemloft.net>, anders@anduras.de,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1225090765.3746.7.camel@johannes.berg>
-References: <1224892008.3919.27.camel@johannes.berg>
-	 <49035AF0.6040700@anduras.de> <1225008096.3478.3.camel@johannes.berg>
-	 <20081026.010329.11475786.davem@davemloft.net>
-	 <1225009308.3478.22.camel@johannes.berg>
-	 <1225009822.3478.30.camel@johannes.berg>  <1225047674.10060.10.camel@brick>
-	 (sfid-20081026_200122_320043_BFBB81CD)  <1225049591.3746.0.camel@johannes.berg>
-	 <1225049929.10060.11.camel@brick>
-	 (sfid-20081026_203902_019881_0F8064FC)  <1225050015.3746.2.camel@johannes.berg>
-	 <1225060789.10060.13.camel@brick>  <1225067465.5672.1.camel@brick>
-	 (sfid-20081027_013109_949949_342DF4F2)  <1225090765.3746.7.camel@johannes.berg>
-Content-Type: text/plain
-Date: Mon, 27 Oct 2008 09:28:24 -0700
-Message-Id: <1225124904.5440.1.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Oct 2008 12:29:20 -0400
+Received: from styx.suse.cz ([82.119.242.94]:40968 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751338AbYJ0Q3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 12:29:19 -0400
+Date: Mon, 27 Oct 2008 17:29:17 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] HID: usbhid, sync on deleted io_retry timer
+In-Reply-To: <1225106176-5496-2-git-send-email-jirislaby@gmail.com>
+Message-ID: <alpine.LNX.1.10.0810271729080.12928@jikos.suse.cz>
+References: <1225106176-5496-1-git-send-email-jirislaby@gmail.com> <1225106176-5496-2-git-send-email-jirislaby@gmail.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-27 at 07:59 +0100, Johannes Berg wrote:
+On Mon, 27 Oct 2008, Jiri Slaby wrote:
 
-> Also can you keep mac/ip address patches split up so we can use my
-> version of the mac address patch (it's already well-tested)?
-> 
+> When suspending, make sure that the timer is not running.
 
-Sure.  I'll build on top.
+Applied, thanks.
 
-Harvey
-
+-- 
+Jiri Kosina
+SUSE Labs
