@@ -1,63 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbYJ0Mzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbYJ0M5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752734AbYJ0Mzl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 08:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYJ0Mzd
+	id S1752827AbYJ0M5k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 08:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYJ0M5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 08:55:33 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44294 "EHLO mx2.mail.elte.hu"
+	Mon, 27 Oct 2008 08:57:32 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:47194 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750846AbYJ0Mzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 08:55:33 -0400
-Date: Mon, 27 Oct 2008 13:55:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       Mike Travis <travis@sgi.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -tip/cpus4096-v2] cpumask: fix cpumask of
-	call_function_data
-Message-ID: <20081027125512.GD12461@elte.hu>
-References: <49015358.9050308@ct.jp.nec.com> <200810242215.19440.rusty@rustcorp.com.au>
+	id S1750846AbYJ0M5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 08:57:32 -0400
+Date: Mon, 27 Oct 2008 13:56:24 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+Cc: rusty@rustcorp.com.au, linux-kernel@vger.kernel.org, jeremy@xensource.com
+Subject: Re: [PATCH 1/3] block: add queue flag for paravirt frontend drivers
+Message-ID: <20081027125624.GA22217@kernel.dk>
+References: <1219754894.7235.44.camel@sebastian.kern.oss.ntt.co.jp> <20080826143900.GM20055@kernel.dk> <1219814047.18991.52.camel@sebastian.kern.oss.ntt.co.jp> <1225100686.7370.79.camel@sebastian.kern.oss.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200810242215.19440.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0045]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1225100686.7370.79.camel@sebastian.kern.oss.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 27 2008, Fernando Luis Vázquez Cao wrote:
+> As is the case with SSD devices, we do not want to idle in AS/CFQ when
+> the block device is a paravirt front-end driver. This patch adds a flag
+> (QUEUE_FLAG_VIRT) which should be used by front-end drivers such as
+> virtio_blk and xen-blkfront to indicate a paravirtualized device.
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+All three patches look fine, although we could just reuse
+QUEUE_FLAG_NONROT directly. But I agree it makes sense to make the
+distinction, so I've just applied 1-3.
 
-> On Friday 24 October 2008 15:47:20 Hiroshi Shimamoto wrote:
-> > From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> 
-> Ingo, because of these concerns I recommend you revert 
-> d4de5ac3b5e70928c86e3e5ac311f16cbf2e9ab3 (cpumask: 
-> smp_call_function_many()) for now, and apply this less contentious 
-> version.
+-- 
+Jens Axboe
 
-ok - applied it to tip/cpus4096-v2, thanks Rusty!
-
-If there's any chance for this in v2.6.28 then only if we disable the 
-dynamic API branch altogether [CONFIG_MAXCPUS] and keep that for 
-v2.6.29. This means we'd bring in the API changes which should have 
-trivial impact only - and none of the riskier changes.
-
-Hm?
-
-Andrew, have we missed the boat on this?
-
-	Ingo
