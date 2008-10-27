@@ -1,89 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753375AbYJ0B2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752819AbYJ0Bv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753375AbYJ0B2p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 21:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750713AbYJ0B2f
+	id S1752819AbYJ0Bv5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 21:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbYJ0Bvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 21:28:35 -0400
-Received: from mailgw.cvut.cz ([147.32.3.235]:46183 "EHLO mailgw.cvut.cz"
+	Sun, 26 Oct 2008 21:51:46 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46931 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750790AbYJ0B2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 21:28:34 -0400
-Message-ID: <4905193D.90607@vc.cvut.cz>
-Date: Sun, 26 Oct 2008 18:28:29 -0700
-From: Petr Vandrovec <vandrove@vc.cvut.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.17) Gecko/20080829 Iceape/1.1.12 (Debian-1.1.12-1)
+	id S1751724AbYJ0Bvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 21:51:45 -0400
+Message-ID: <49051EA4.3040403@kernel.org>
+Date: Mon, 27 Oct 2008 10:51:32 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Elias Oltmanns <eo@nebensachen.de>, Paul Mundt <lethal@linux-sh.org>,
-       Alexander Beregalov <a.beregalov@gmail.com>, tj@kernel.org,
-       torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: 2.6.27-rc1 (2fca5c): libata: kernel cant boot
-References: <a4423d670810240004t2d7c3bdah2bea77a6a49bb7c4@mail.gmail.com> <20081024070955.GN22217@kernel.dk> <20081024071329.GO22217@kernel.dk> <20081024071608.GA3879@linux-sh.org> <20081024072428.GP22217@kernel.dk> <873aimv0v8.fsf@denkblock.local> <20081024084818.GB22217@kernel.dk> <4903004D.2050904@vc.cvut.cz> <20081025184506.GM22217@kernel.dk> <20081026173421.GN22217@kernel.dk>
-In-Reply-To: <20081026173421.GN22217@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Timeout regression introduced by	242f9dcb8ba6f68fcd217a119a7648a4f69290e9
+References: <49043C7C.8050207@kernel.org> <1225034105.3958.4.camel@localhost.localdomain>
+In-Reply-To: <1225034105.3958.4.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 27 Oct 2008 01:51:39 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Sat, Oct 25 2008, Jens Axboe wrote:
->> On Sat, Oct 25 2008, Petr Vandrovec wrote:
->>> Jens Axboe wrote:
->>>> On Fri, Oct 24 2008, Elias Oltmanns wrote:
->>>>> Jens Axboe <jens.axboe@oracle.com> wrote:
->>>>> >From e598055dde1951c47c8b3522616f6ebff0ed9847 Mon Sep 17 00:00:00 2001
->>>>>> From: Jens Axboe <jens.axboe@oracle.com>
->>>>>> Date: Fri, 24 Oct 2008 09:22:42 +0200
->>>>>> Subject: [PATCH] libata: fix bug with non-ncq devices
->>>>>>
->>>>>> The recent commit 201f1b98822078c808b5e2d379a6ddbfc0a06ee1 to enable
->>>>> Wouldn't that be commit 2fca5ccf97d2c28bcfce44f5b07d85e74e3cd18e?
->>>> Yes that is correct, the other commit is actually a private one in my
->>>> tree for other libata changes. Updated patch below, thanks for checking!
->>>>
->>> >From e598055dde1951c47c8b3522616f6ebff0ed9847 Mon Sep 17 00:00:00 2001
->>>> From: Jens Axboe <jens.axboe@oracle.com>
->>>> Date: Fri, 24 Oct 2008 09:22:42 +0200
->>>> Subject: [PATCH] libata: fix bug with non-ncq devices
->>> Hello,
->>>   this fixes my DVD, but unfortunately NCQ devices connected to PMP are 
->>> still dead - apparently as soon as mount() tries to do serious I/O on 
->>> the drive.  Backing out both post-2.6.28-rc1 fix as well as your 
->>> original change brings storage back.  I suspect that problem is that 
->>> with PMP same tag cannot be (should not be?  must not be?) used on 
->>> multiple devices behind PMP - and before your change tags were allocated 
->>> per-port, while now they are allocated per-device.
->> That would indeed break, this requires allocating the tag map in the
+James Bottomley wrote:
+> On Sun, 2008-10-26 at 18:46 +0900, Tejun Heo wrote:
+>> Hello, Jens.
+>>
+>> Commit 242f9dcb8ba6f68fcd217a119a7648a4f69290e9 introduces a strange
+>> regression for libata.  The second timeout gives puts different
+>> pointer from the issued command onto eh_cmd_q breaking libata EH
+>> command matching which triggers WARN_ON() in ata_eh_finish() and hangs
+>> command processing or causes oops later depending on circumstances.
+>>
+>> Here are logs with induced timeouts (patch attached).  In commit
+>> 242f9dcb8, the XXX messages for the second timeout shows different
+>> scsi_cmd pointers for eh_cmd_q and qc->scmd which is initialized by
+>> ata_scsi_qc_new() during command translation.
 > 
-> Totally untested, does this work?
-> 
-> diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-> index 4b95c43..0785c46 100644
-> --- a/drivers/ata/libata-scsi.c
-> +++ b/drivers/ata/libata-scsi.c
-> @@ -1107,6 +1107,10 @@ static int ata_scsi_dev_config(struct scsi_device *sdev,
->  
->  		depth = min(sdev->host->can_queue, ata_id_queue_depth(dev->id));
->  		depth = min(ATA_MAX_QUEUE - 1, depth);
-> +
-> +		if (dev->link->ap->pmp_link)
-> +			scsi_init_shared_tag_map(sdev->host, ATA_MAX_QUEUE - 1);
-> +
->  		scsi_set_tag_type(sdev, MSG_SIMPLE_TAG);
->  		scsi_activate_tcq(sdev, depth);
->  	}
+> I can't see a way we could be getting a different command passed in from
+> the actual one, since the only way to lose the command from the request
+> is to go through the command completion routines which free it (and end
+> the request).
 
-No.  It went through same story as without patch - first it declared 
-drive #2 hung, after port reset drives #0,1,2 were declared hung, after 
-second port reset drive #2 was declared dead, after third port reset 
-drive #3 was hung, after fourth reset it said that /dev/sde changed 
-capacity from 0 to 1TB, and at that point I decided that it is time to 
-hit alt-sysrq-b to prevent damage...
+I have no idea either.  It's something in the timeout logic because on
+the issue path the scmd pointer is identical but on tiemout pointer
+for another scmd is queued on eh_cmd_q, which doesn't make much sense.
 
-Also I think that this change leaks memory a bit...
-						Petr
-						Petr
+> However, since the WARN_ON is specifically comparing the command with
+> the one found by the active tag, could this actually be a problem caused
+> by block tags?  I note that libata still uses its own array of
+> outstanding tags (ap->qcmd[tag]) instead of finding them using
+> blk_queue_find_tag() (or scsi_find_tag()).
 
+Nope, the tested commits are before the block queue tag transition and
+I tested two consecutive commits.  242f9dcb^ is okay.  242f9dcb is
+not.
+
+Thanks.
+
+-- 
+tejun
