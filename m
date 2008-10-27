@@ -1,104 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbYJ0KRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752487AbYJ0KZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752702AbYJ0KRS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 06:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYJ0KRK
+	id S1752487AbYJ0KZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 06:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYJ0KZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 06:17:10 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:62895 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751518AbYJ0KRI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 06:17:08 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Am4DAM8S9kh5LE2tgWdsb2JhbACTYAEBFiKuDIFr
-X-IronPort-AV: E=Sophos;i="4.33,491,1220193000"; 
-   d="scan'208";a="219040513"
-Date: Mon, 27 Oct 2008 21:17:01 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Claudio Martins <ctpm@ist.utl.pt>, linux-kernel@vger.kernel.org
-Subject: Re: Order 0 page allocation failure under heavy I/O load
-Message-ID: <20081027101701.GD4985@disturbed>
-Mail-Followup-To: Peter Zijlstra <peterz@infradead.org>,
-	Claudio Martins <ctpm@ist.utl.pt>, linux-kernel@vger.kernel.org
-References: <20081026225723.GO18495@disturbed> <200810270547.31123.ctpm@ist.utl.pt> <20081027062216.GH11948@disturbed> <1225094696.16159.8.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1225094696.16159.8.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 27 Oct 2008 06:25:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36508 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750832AbYJ0KZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 06:25:16 -0400
+Subject: Re: [PATCH] gfs2: sparse annotation of gl->gl_spin
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1224873072.5966.7.camel@brick>
+References: <1224873072.5966.7.camel@brick>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 ITE
+Date: Mon, 27 Oct 2008 10:20:48 +0000
+Message-Id: <1225102848.25004.135.camel@quoit>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 27, 2008 at 09:04:56AM +0100, Peter Zijlstra wrote:
-> On Mon, 2008-10-27 at 17:22 +1100, Dave Chinner wrote:
-> > On Mon, Oct 27, 2008 at 06:47:31AM +0100, Claudio Martins wrote:
-> > > On Sunday 26 October 2008, Dave Chinner wrote:
-> > > 
-> > > > The host will hang for tens of seconds at a time with both CPU cores
-> > > > pegged at 100%, and eventually I get this in dmesg:
-> > > >
-> > > > [1304740.261506] linux: page allocation failure. order:0, mode:0x10000
-> > > > [1304740.261516] Pid: 10705, comm: linux Tainted: P          2.6.26-1-amd64
+Hi,
+
+Now in the -nmw GFS2 git tree. Thanks,
+
+Steve.
+
+On Fri, 2008-10-24 at 11:31 -0700, Harvey Harrison wrote:
+> fs/gfs2/glock.c:308:5: warning: context problem in 'do_promote': '_spin_unlock' expected different context
+> fs/gfs2/glock.c:308:5:    context '*gl+28': wanted >= 1, got 0
+> fs/gfs2/glock.c:529:2: warning: context problem in 'do_xmote': '_spin_unlock' expected different context
+> fs/gfs2/glock.c:529:2:    context '*gl+28': wanted >= 1, got 0
+> fs/gfs2/glock.c:925:3: warning: context problem in 'add_to_queue': '_spin_unlock' expected different context
+> fs/gfs2/glock.c:925:3:    context '*gl+28': wanted >= 1, got 0
 > 
-> > No, because I've found the XFS bug the workload was triggering so
-> > I don't need to run it anymore.
-> > 
-> > I reported the problem because it appears that we've reported an
-> > allocation failure without very much reclaim scanning (64 pages in
-> > DMA zone, 0 pages in DMA32 zone), and there is apparently pages
-> > available for allocation in the DMA zone:
-> > 
-> > 1304740.262136] Node 0 DMA: 160*4kB 82*8kB 32*16kB 11*32kB 8*64kB 4*128kB 3*256kB 0*512kB 0*1024kB 0*2048kB 1*4096kB = 8048kB
-> > 
-> > So it appears that memory reclaim has not found the free pages it
-> > apparently has available....
-> > 
-> > Fundamentally, I/O from a single CPU to a single disk on a machine
-> > with 2GB RAM should not be able to cause allocation failures at all,
-> > especially when the I/O is pure data I/O to a single file. Something
-> > in the default config is busted if I can do that, and that's why
-> > I reported the bug.
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+>  fs/gfs2/glock.c |    8 ++++++++
+>  1 files changed, 8 insertions(+), 0 deletions(-)
 > 
-> The allocation is 'mode:0x10000', which is __GFP_NOMEMALLOC. That means
-> the allocation doesn't have __GFP_WAIT, so it cannot do reclaim, it
-> doesn't have __GFP_HIGH so it can't access some emergency reserves.
+> diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
+> index c962283..27cb9cc 100644
+> --- a/fs/gfs2/glock.c
+> +++ b/fs/gfs2/glock.c
+> @@ -293,6 +293,8 @@ static void gfs2_holder_wake(struct gfs2_holder *gh)
+>   */
+>  
+>  static int do_promote(struct gfs2_glock *gl)
+> +__releases(&gl->gl_spin)
+> +__acquires(&gl->gl_spin)
+>  {
+>  	const struct gfs2_glock_operations *glops = gl->gl_ops;
+>  	struct gfs2_holder *gh, *tmp;
+> @@ -511,6 +513,8 @@ static unsigned int gfs2_lm_lock(struct gfs2_sbd *sdp, void *lock,
+>   */
+>  
+>  static void do_xmote(struct gfs2_glock *gl, struct gfs2_holder *gh, unsigned int target)
+> +__releases(&gl->gl_spin)
+> +__acquires(&gl->gl_spin)
+>  {
+>  	const struct gfs2_glock_operations *glops = gl->gl_ops;
+>  	struct gfs2_sbd *sdp = gl->gl_sbd;
+> @@ -576,6 +580,8 @@ static inline struct gfs2_holder *find_first_holder(const struct gfs2_glock *gl)
+>   */
+>  
+>  static void run_queue(struct gfs2_glock *gl, const int nonblock)
+> +__releases(&gl->gl_spin)
+> +__acquires(&gl->gl_spin)
+>  {
+>  	struct gfs2_holder *gh = NULL;
+>  
+> @@ -877,6 +883,8 @@ void gfs2_print_dbg(struct seq_file *seq, const char *fmt, ...)
+>   */
+>  
+>  static inline void add_to_queue(struct gfs2_holder *gh)
+> +__releases(&gl->gl_spin)
+> +__acquires(&gl->gl_spin)
+>  {
+>  	struct gfs2_glock *gl = gh->gh_gl;
+>  	struct gfs2_sbd *sdp = gl->gl_sbd;
 
-How did we get a gfp_mask with only __GFP_NOMEMALLOC?  A mempool
-allocation sets that and many more flags (like __GFP_NORETRY) but
-they aren't present in that mask....
-
-> The DMA stuff is special, and part of it is guarded for anything but
-> __GFP_DMA allocations.
-
-So if it wasn't a __GFP_DMA allocation - then what ran out of
-memory? There appeared to be memory availble in the DMA32 zone....
-
-> You just ran the system very low on memory, and then tried an allocation
-> that can't do anything about it.. I don't find it very surprising it
-> fails.
-
-I didn't run the system low on memory - the *kernel* did. The
-page cache is holding most of memory, and most of that is clean:
-
-Active:254755 inactive:180546 dirty:13547 writeback:20016 unstable:0
-free:3059 slab:39487 mapped:141190 pagetables:16401 bounce:0
-
-> The 'bug' if any, is having such a poor allocation within your IO path.
-> Not something to blame on the VM.
-
-The I/O path started with a page fault and a call to
-balance_dirty_pages_ratelimited_nr(). i.e. all the I/O is being done
-by the VM and the allocation failure appears to be caused by
-the VM holding all the clean free memory in the page cache where
-the I/O layers can't access it. That really does seem like a VM
-balance problem to me, not an I/O layer problem....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
