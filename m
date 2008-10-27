@@ -1,93 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbYJ0WlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752965AbYJ0WmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752766AbYJ0WlQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 18:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbYJ0Wk7
+	id S1752965AbYJ0WmW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 18:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYJ0WmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 18:40:59 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:9539 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbYJ0Wk6 (ORCPT
+	Mon, 27 Oct 2008 18:42:14 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:24234 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbYJ0WmN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 18:40:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=PPsaWeGW70SsHJN+s19KFXWtZMeRQMwdMq9eoyXgwUf4xF2D6uAAtm3ib31BR/VTq5
-         sd5k540wR0mZ9zP0BNyoSDR1Jl0u5pxpC/Nu6Q6ZMJ2GeGrCJW/jTJEpJxhGykytlvQn
-         BfcQMyTJeznn7Yl9/o8snwVlxPNkQJGKrVvAc=
-Message-ID: <1ba2fa240810271540t1d1ba5c9me60f86dec357f53e@mail.gmail.com>
-Date: Tue, 28 Oct 2008 00:40:55 +0200
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-Subject: Re: Suspend to RAM regression in 2.6.28-rc2 (bisected)
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       "Soeren Sonnenburg" <kernel@nn7.de>, linux-kernel@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <20081027222852.GA3907@localhost.aei.mpg.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 27 Oct 2008 18:42:13 -0400
+Subject: Re: [PATCH] disable CPU side GART accesses
+From: Bob Montgomery <bob.montgomery@hp.com>
+Reply-To: bob.montgomery@hp.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "vojtech@suse.cz" <vojtech@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "chandru@in.ibm.com" <chandru@in.ibm.com>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Pavel Machek <pavel@ucw.cz>,
+       Andi Kleen <ak@suse.de>
+In-Reply-To: <20081015234842.GA10999@elte.hu>
+References: <1224107317.2215.238.camel@amd.troyhebe>
+	 <20081015234842.GA10999@elte.hu>
+Content-Type: text/plain
+Organization: Contractor at HP
+Date: Mon, 27 Oct 2008 16:42:21 -0600
+Message-Id: <1225147341.2215.401.camel@amd.troyhebe>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081027162054.GA4015@localhost.aei.mpg.de>
-	 <1225134823.3796.45.camel@johannes.berg>
-	 <20081027203925.GA4416@localhost.aei.mpg.de>
-	 <200810272151.01244.rjw@sisk.pl>
-	 <1ba2fa240810271407o15f1f150t2d2793f4e5ad6e5b@mail.gmail.com>
-	 <20081027222852.GA3907@localhost.aei.mpg.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28, 2008 at 12:28 AM, Carlos R. Mafra <crmafra2@gmail.com> wrote:
-> On Mon 27.Oct'08 at 23:07:00 +0200, Tomas Winkler wrote:
->>[...]
->>
->> Can someone try this one (it might be space broken I've just pasted
->> that in) It's on top of 1d63e726408dfdb3e10ed8f00c383b30ebb333d3
->> (latest linux-2.6.git)
->
->
-> Yes, this one also works for me (I applied it manually).
-Good, this was actually part of some older and bigger patch I wasn't
-aware it has this affect. It has some millage in iwl5000 branch.
-RFKIll went through some changes in the mainline so it wasn't merged yet.
+On Wed, 2008-10-15 at 23:48 +0000, Ingo Molnar wrote:
+> (Cc:-ed the GART folks.)
 
-commit a91ad840c23a70bc0eabe239e178e0d979a6d44e
-Author: Emmanuel Grumbach <emmanuel.grumbach@intel.com>
-Date:   Mon Jun 30 17:48:26 2008 +0300
-iwlwifi: bug fixes in RF-kill flows
+Are there any objections to this patch?  The problem has been reproduced
+in 2.6.18 and 2.6.27, so existing changes in the gart code have not
+addressed it. 
 
-Tomas
->
->
->> diff --git a/drivers/net/wireless/iwlwifi/iwl-agn.c
->> b/drivers/net/wireless/iwlwifi/iwl-agn.c
->> index 24a1aeb..321dbc8 100644
->> --- a/drivers/net/wireless/iwlwifi/iwl-agn.c
->> +++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
->> @@ -2090,7 +2090,6 @@ static void iwl_alive_start(struct iwl_priv *priv)
->>                 iwl4965_error_recovery(priv);
->>
->>         iwl_power_update_mode(priv, 1);
->> -       ieee80211_notify_mac(priv->hw, IEEE80211_NOTIFY_RE_ASSOC);
->>
->>         if (test_and_clear_bit(STATUS_MODE_PENDING, &priv->status))
->>                 iwl4965_set_mode(priv, priv->iw_mode);
->> @@ -2342,6 +2341,7 @@ static void iwl_bg_alive_start(struct work_struct *data)
->>         mutex_lock(&priv->mutex);
->>         iwl_alive_start(priv);
->>         mutex_unlock(&priv->mutex);
->> +       ieee80211_notify_mac(priv->hw, IEEE80211_NOTIFY_RE_ASSOC);
->>  }
->>
->>  static void iwl4965_bg_rf_kill(struct work_struct *work)
->>
->>
->> Thanks
->> Tomas
->
+The patch disarms a landmine left behind for the kdump kernel.  You
+could leave it there and warn people not to step there, or you can
+disarm it so it isn't a danger.
+
+Thank you,
+Bob Montgomery
+    
+> 
+> * Bob Montgomery <bob.montgomery@hp.com> wrote:
+> 
+> > This patch prevents improper access of the GART aperture from kdump
+> > kernels running on AMD systems.
+> >
+> > Symptoms of the problem include hangs, spurious restarts, and MCE
+> > (Machine Check Exception) panics in some AMD Opteron systems that
+> > enable the GART IOMMU and access /proc/vmcore or /dev/oldmem from a
+> > kdump kernel.  Note that the GART IOMMU will not be enabled on systems
+> > with less than 4 GB of RAM, so symptoms will not appear.  This problem
+> > has been reproduced on Family 10H Quad-Core AMD Opteron systems.
+> >
+> > This patch changes the initialization of the GART to set the
+> > DISGARTCPU bit in the GART Aperture Control Register
+> > (AMD64_GARTAPERTURECTL). Setting the bit prevents requests from the
+> > CPUs from accessing the GART.  In other words, CPU memory accesses to
+> > the aperture address range will not cause the GART to perform an
+> > address translation. The aperture area is currently being unmapped at
+> > the kernel level with set_memory_np() in gart_iommu_init to prevent
+> > accesses from the CPU, but that kernel level unmapping is not in
+> > effect in the kexec'd kdump kernel.  By disabling the CPU-side
+> > accesses within the GART, which does persist through the kexec of the
+> > kdump kernel, the kdump kernel is prevented from interacting with the
+> > GART during accesses to the dump memory areas which include the
+> > address range of the GART aperture.  Although the patch can be applied
+> > to the kdump kernel, it is not exercised there because the kdump
+> > kernel doesn't attempt to initialize the GART, since it typically runs
+> > in less than 4 GB of memory.
+> >
+> > Signed-off-by: Bob Montgomery <bob.montgomery@hp.com>
+> >
+> >
+> > --- linux-2.6.27/include/asm-x86/gart.h       2008-10-13 16:36:34.000000000 -0600
+> > +++ linux-2.6.27-fix/include/asm-x86/gart.h   2008-10-14 10:37:32.000000000 -0600
+> > @@ -44,7 +44,8 @@ static inline void enable_gart_translati
+> >          /* Enable GART translation for this hammer. */
+> >          pci_read_config_dword(dev, AMD64_GARTAPERTURECTL, &ctl);
+> >          ctl |= GARTEN;
+> > -        ctl &= ~(DISGARTCPU | DISGARTIO);
+> > +        ctl |= DISGARTCPU;
+> > +        ctl &= ~(DISGARTIO);
+> >          pci_write_config_dword(dev, AMD64_GARTAPERTURECTL, ctl);
+> >  }
+> >
+> >
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+
