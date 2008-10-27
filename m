@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751984AbYJ0EnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601AbYJ0EsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751984AbYJ0EnR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 00:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbYJ0EnA
+	id S1752601AbYJ0EsA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 00:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbYJ0Erv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 00:43:00 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:56729 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750877AbYJ0Em6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 00:42:58 -0400
-Date: Mon, 27 Oct 2008 10:13:19 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Add hierarchical accounting to cpu accounting
-	controller
-Message-ID: <20081027044319.GA4386@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20081023054335.GC3280@in.ibm.com> <6599ad830810230849x71961a0asd7f00d3baa2f2271@mail.gmail.com> <20081024050830.GA4387@in.ibm.com> <6599ad830810241037h575ec17bgb43f750d99bd1518@mail.gmail.com> <20081025060157.GA4614@in.ibm.com> <6599ad830810250838q3f96644bm6dfee8ba9f35dfa3@mail.gmail.com> <20081027101703.e954071d.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081027101703.e954071d.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 27 Oct 2008 00:47:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33666 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750735AbYJ0Eru (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 00:47:50 -0400
+Date: Sun, 26 Oct 2008 21:47:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dmitri Monakhov <dmonakhov@openvz.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] kill suid bit only for regular files
+Message-Id: <20081026214741.332c7656.akpm@linux-foundation.org>
+In-Reply-To: <1224424839-3892-1-git-send-email-dmonakhov@openvz.org>
+References: <1224424839-3892-1-git-send-email-dmonakhov@openvz.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 27, 2008 at 10:17:03AM +0900, KAMEZAWA Hiroyuki wrote:
-> On Sat, 25 Oct 2008 08:38:52 -0700
-> "Paul Menage" <menage@google.com> wrote:
+On Sun, 19 Oct 2008 18:00:39 +0400 Dmitri Monakhov <dmonakhov@openvz.org> wrote:
+
+> We don't have to do it because it is useless for non regular files.
+
+Are we sure that should_remove_suid() is not and never will used for
+directories?
+
+> In fact block device may trigger this path without dentry->d_inode->i_mutex.
+
+What's wrong with blockdevs triggering this path?
+
+Better changelogs, please.
+
+> Signed-off-by: Dmitri Monakhov <dmonakhov@openvz.org>
+> ---
+>  mm/filemap.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> > On Fri, Oct 24, 2008 at 11:01 PM, Bharata B Rao
-> > <bharata@linux.vnet.ibm.com> wrote:
-> > >
-> > > Reported-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> > > Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> > 
-> > Reviewed-by: Paul Menage <menage@google.com>
+> diff --git a/mm/filemap.c b/mm/filemap.c
+> index a2907d5..3d5a2e7 100644
+> --- a/mm/filemap.c
+> +++ b/mm/filemap.c
+> @@ -1767,7 +1767,7 @@ int should_remove_suid(struct dentry *dentry)
+>  	if (unlikely((mode & S_ISGID) && (mode & S_IXGRP)))
+>  		kill |= ATTR_KILL_SGID;
+>  
+> -	if (unlikely(kill && !capable(CAP_FSETID)))
+> +	if (unlikely(kill && !capable(CAP_FSETID) && S_ISREG(mode)))
+>  		return kill;
+>  
+>  	return 0;
 
-Thanks Paul.
 
-> > 
-> > So in technical terms this patch looks fine now. There's still the
-> > question of whether it's OK to change the existing API, since it's
-> > been in the kernel in its currently (non-hierarchical) form for
-> > several releases now.
 
-Hmm... Can we consider this as an API change ? Currently cpuacct.usage
-readers of a parent accounting group are missing the usage contributions
-from its children groups. I would consider this patch as fixing the
-above problem by correctly reflecting the cpu usage for every accounting
-group.
-
-> > 
-> Hmm..how about having 2 params as "aggregated usage" and "private usage" ?
-> 
->  cpuacct.usage.
->  cpuacct.all_subtree_usage.
-
-Is there really a need to differentiate between aggregated and private
-usage other than to maintain the current behaviour ?
-
-Regards,
-Bharata.
