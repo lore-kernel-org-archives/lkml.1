@@ -1,65 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbYJ0JMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752576AbYJ0JTN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752777AbYJ0JMW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 05:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYJ0JMN
+	id S1752576AbYJ0JTN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 05:19:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbYJ0JS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 05:12:13 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:55798 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750965AbYJ0JMM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 05:12:12 -0400
-Subject: Re: [GIT PULL/RESEND] kernel message catalog patches
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-In-Reply-To: <alpine.LFD.2.00.0810261212290.5200@nehalem.linux-foundation.org>
-References: <1224168620.9617.14.camel@localhost>
-	 <1224230354.4631.1.camel@localhost>
-	 <20081021092148.GB4980@osiris.boeblingen.de.ibm.com>
-	 <alpine.LFD.2.00.0810230835150.3287@nehalem.linux-foundation.org>
-	 <20081023210446.GA12003@osiris.boeblingen.de.ibm.com>
-	 <alpine.LFD.2.00.0810231433380.3287@nehalem.linux-foundation.org>
-	 <1225049195.14057.72.camel@localhost>
-	 <alpine.LFD.2.00.0810261212290.5200@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Mon, 27 Oct 2008 11:01:28 +0100
-Message-Id: <1225101688.15777.6.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 27 Oct 2008 05:18:58 -0400
+Received: from gw.goop.org ([64.81.55.164]:36908 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751133AbYJ0JS5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 05:18:57 -0400
+Message-ID: <49058774.3030506@goop.org>
+Date: Mon, 27 Oct 2008 20:18:44 +1100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+MIME-Version: 1.0
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, jens.axboe@oracle.com
+Subject: Re: [PATCH 2/2] x86: replace BIO_VMERGE_BOUNDARY with BIOVEC_PHYS_MERGEABLE
+References: <4902371A.5050303@goop.org>	<20081027125139I.fujita.tomonori@lab.ntt.co.jp>	<49057A15.7030007@goop.org> <20081027173739Q.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081027173739Q.fujita.tomonori@lab.ntt.co.jp>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-10-26 at 12:12 -0700, Linus Torvalds wrote:
-> On Sun, 26 Oct 2008, Martin Schwidefsky wrote:
-> > > But if it's in-kernel, other people are then going to complain about them 
-> > > not being maintained. And quite frankly, I'm neither willing nor 
-> > > interested in hearing those complaints or making them more "valid".
-> > 
-> > The usual answer to complaints of this sort is "send a patch", isn't it?
-> 
-> Yes. And why don't you do all that, and not involve me at all, and keep 
-> all of this entirely out of the kernel?
+FUJITA Tomonori wrote:
+> I'm not familiar with what Xen does but why can't Xen just override
+> BIOVEC_PHYS_MERGEABLE?
+>
+> Why does Xen need to hook BIOVEC_PHYS_MERGEABLE to the iommu_bio_merge
+> parameter (as this patch does)? BIOVEC_PHYS_MERGEABLE and the
+> iommu_bio_merge parameter are not related at all.
+>   
 
-Ok, understood. Not that the reaction surprises me, seems like nobody
-likes documentation (including me). What I will do is to replace the
-kmsg_xxx macros with the pr_xxx macros in the device drivers patches and
-request the pull as a cleanup for 2.6.29. The out-of-tree kmsg patches
-will then play tricks with pr_xxx analog to dev_xxx. That way the patch
-should be minimal.
+No, it doesn't.  It was convenient to reuse that mechanism, but I can 
+easily re-add something else (which would be more or less identical).
 
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+    J
 
