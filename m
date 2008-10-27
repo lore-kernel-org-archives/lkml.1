@@ -1,140 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbYJ0P24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149AbYJ0P3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752980AbYJ0P24 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 11:28:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbYJ0P2r
+	id S1753149AbYJ0P3t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 11:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbYJ0P3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 11:28:47 -0400
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:52425 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751236AbYJ0P2q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 11:28:46 -0400
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4905DE3D.1010101@gmail.com>
-Date: Mon, 27 Oct 2008 15:29:01 +0000
-From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080801)
+	Mon, 27 Oct 2008 11:29:42 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:37735 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751539AbYJ0P3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 11:29:41 -0400
+Date: Mon, 27 Oct 2008 10:29:40 -0500
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2 v3] SGI RTC: add RTC system interrupt
+Message-ID: <20081027152940.GA14567@sgi.com>
+References: <20081023163041.GA14574@sgi.com> <20081023163223.GA14815@sgi.com> <20081023163414.GB14815@sgi.com> <20081024031127.GA25165@sgi.com> <20081027140829.GD5704@elte.hu>
 MIME-Version: 1.0
-To: Jonathan Cameron <jic23@cam.ac.uk>
-CC: LKML <linux-kernel@vger.kernel.org>, eric miao <eric.y.miao@gmail.com>,
-       Liam Girdwood <lg@opensource.wolfsonmicro.com>
-Subject: [PATCH] da903x regulator bug fix
-References: <4901EE0F.5000508@cam.ac.uk>
-In-Reply-To: <4901EE0F.5000508@cam.ac.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081027140829.GD5704@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changes the device registration part of the probe function to supply the
-regulator device rather than its parent (the mfd device) as this caused
-problems when the regulator core attempted to find constraints associated
-with the regulators.
+On Mon, Oct 27, 2008 at 03:08:29PM +0100, Ingo Molnar wrote:
+> 
+> * Dimitri Sivanich <sivanich@sgi.com> wrote:
+> 
+> > +void uv_rtc_timer_interrupt(struct pt_regs *regs)
+> > +{
+> > +	struct pt_regs *old_regs = set_irq_regs(regs);
+> > +
+> > +	ack_APIC_irq();
+> > +
+> > +	exit_idle();
+> > +
+> > +	irq_enter();
+> > +
+> > +	if (uv_rtc_interrupt_extension)
+> > +		uv_rtc_interrupt_extension();
+> > +
+> > +	irq_exit();
+> > +
+> > +	set_irq_regs(old_regs);
+> > +}
+> 
+> hm, the exit_idle() looks weird - why is it done? If we get an IRQ 
+> then the CPU will exit idle state anyway.
 
-Signed-of-by: Jonathan Cameron <jic23@cam.ac.uk>
+Ingo,
 
---
-This is quickest and simplest way to fix this bug. There may be better
-ways of doing it, but they all require considerably more substantial
-changes to the driver.
-
-diff --git a/drivers/regulator/da903x.c b/drivers/regulator/da903x.c
-index 3688e33..f928aa1 100644
---- a/drivers/regulator/da903x.c
-+++ b/drivers/regulator/da903x.c
-@@ -93,7 +93,7 @@ static int da903x_set_ldo_voltage(struct regulator_dev
-*rdev,
-                   int min_uV, int max_uV)
- {
-     struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
--    struct device *da9034_dev = rdev_get_dev(rdev)->parent;
-+    struct device *da9034_dev = rdev_get_dev(rdev)->parent->parent;
-     uint8_t val, mask;
- 
-     if (check_range(info, min_uV, max_uV)) {
-@@ -111,7 +111,7 @@ static int da903x_set_ldo_voltage(struct
-regulator_dev *rdev,
- static int da903x_get_voltage(struct regulator_dev *rdev)
- {
-     struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
--    struct device *da9034_dev = rdev_get_dev(rdev)->parent;
-+    struct device *da9034_dev = rdev_get_dev(rdev)->parent->parent;
-     uint8_t val, mask;
-     int ret;
- 
-@@ -128,7 +128,7 @@ static int da903x_get_voltage(struct regulator_dev
-*rdev)
- static int da903x_enable(struct regulator_dev *rdev)
- {
-     struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
--    struct device *da9034_dev = rdev_get_dev(rdev)->parent;
-+    struct device *da9034_dev = rdev_get_dev(rdev)->parent->parent;
- 
-     return da903x_set_bits(da9034_dev, info->enable_reg,
-                     1 << info->enable_bit);
-@@ -137,7 +137,7 @@ static int da903x_enable(struct regulator_dev *rdev)
- static int da903x_disable(struct regulator_dev *rdev)
- {
-     struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
--    struct device *da9034_dev = rdev_get_dev(rdev)->parent;
-+    struct device *da9034_dev = rdev_get_dev(rdev)->parent->parent;
- 
-     return da903x_clr_bits(da9034_dev, info->enable_reg,
-                     1 << info->enable_bit);
-@@ -146,7 +146,7 @@ static int da903x_disable(struct regulator_dev *rdev)
- static int da903x_is_enabled(struct regulator_dev *rdev)
- {
-     struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
--    struct device *da9034_dev = rdev_get_dev(rdev)->parent;
-+    struct device *da9034_dev = rdev_get_dev(rdev)->parent->parent;
-     uint8_t reg_val;
-     int ret;
- 
-@@ -238,7 +238,7 @@ static int da9034_set_dvc_voltage(struct
-regulator_dev *rdev,
-                   int min_uV, int max_uV)
- {
-     struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
--    struct device *da9034_dev = rdev_get_dev(rdev)->parent;
-+    struct device *da9034_dev = rdev_get_dev(rdev)->parent->parent;
-     uint8_t val, mask;
-     int ret;
- 
-@@ -264,7 +264,7 @@ static int da9034_set_ldo12_voltage(struct
-regulator_dev *rdev,
-                     int min_uV, int max_uV)
- {
-     struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
--    struct device *da9034_dev = rdev_get_dev(rdev)->parent;
-+    struct device *da9034_dev = rdev_get_dev(rdev)->parent->parent;
-     uint8_t val, mask;
- 
-     if (check_range(info, min_uV, max_uV)) {
-@@ -283,7 +283,7 @@ static int da9034_set_ldo12_voltage(struct
-regulator_dev *rdev,
- static int da9034_get_ldo12_voltage(struct regulator_dev *rdev)
- {
-     struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
--    struct device *da9034_dev = rdev_get_dev(rdev)->parent;
-+    struct device *da9034_dev = rdev_get_dev(rdev)->parent->parent;
-     uint8_t val, mask;
-     int ret;
- 
-@@ -466,7 +466,7 @@ static int __devinit da903x_regulator_probe(struct
-platform_device *pdev)
-     if (ri->desc.id == DA9030_ID_LDO1 || ri->desc.id == DA9030_ID_LDO15)
-         ri->desc.ops = &da9030_regulator_ldo1_15_ops;
- 
--    rdev = regulator_register(&ri->desc, pdev->dev.parent, ri);
-+    rdev = regulator_register(&ri->desc, &pdev->dev, ri);
-     if (IS_ERR(rdev)) {
-         dev_err(&pdev->dev, "failed to register regulator %s\n",
-                 ri->desc.name);
-
-
-
-
+I'm not quite sure what you mean here.  Are you referring to an explicit call to exit_idle() that is done somewhere else (such as do_IRQ())?
