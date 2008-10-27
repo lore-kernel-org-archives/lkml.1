@@ -1,129 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753313AbYJ0KJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbYJ0KNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753313AbYJ0KJh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 06:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbYJ0KJ3
+	id S1752590AbYJ0KNo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 06:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbYJ0KNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 06:09:29 -0400
-Received: from dakia3.marvell.com ([65.219.4.28]:43233 "EHLO
-	dakia3.marvell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751689AbYJ0KJ2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 06:09:28 -0400
-X-ASG-Debug-ID: 1225102168-33e401fc0000-xx1T2L
-X-Barracuda-URL: http://dakia3.marvell.com:80/cgi-bin/mark.cgi
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-Barracuda-BBL-IP: 10.68.76.102
-X-Barracuda-RBL-IP: 10.68.76.102
-Content-class: urn:content-classes:message
+	Mon, 27 Oct 2008 06:13:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43088 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751426AbYJ0KNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 06:13:35 -0400
+Date: Mon, 27 Oct 2008 11:13:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux1394-devel@lists.sourceforge.net, bugme-daemon@bugzilla.kernel.org,
+       linux-kernel@vger.kernel.org, Dan Dennedy <dan@dennedy.org>,
+       Johannes Weiner <hannes@saeurebad.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Bug 11824][PATCH] ieee1394: raw1394: fix possible deadlock in
+	multithreaded clients
+Message-ID: <20081027101303.GI8116@elte.hu>
+References: <bug-11824-4803@http.bugzilla.kernel.org/> <4902F41E.5070306@s5r6.in-berlin.de> <tkrat.94e673551b87c230@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_001_01C9381C.189E9596"
-X-ASG-Orig-Subj: RE: CONFIG_LEDS_DA903X=m breaks 2.6.28-rc2-git1 build on x86-64
-Subject: RE: CONFIG_LEDS_DA903X=m breaks 2.6.28-rc2-git1 build on x86-64
-Date: Mon, 27 Oct 2008 03:09:25 -0700
-Message-ID: <E913911567467945BBEB9277E27868B0013A5EEA@msiexch01.marvell.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: CONFIG_LEDS_DA903X=m breaks 2.6.28-rc2-git1 build on x86-64
-thread-index: Ack4EF032fo3oAQPRce3n00urxdr9QABbZBg
-References: <20081027094509.302401e4@hyperion.delvare>
-From: "Eric Miao" <ymiao3@marvell.com>
-To: "Jean Delvare" <khali@linux-fr.org>, "Mike Rapoport" <mike@compulab.co.il>,
-       "Richard Purdie" <rpurdie@linux.intel.com>
-Cc: "LKML" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-X-Barracuda-Connect: maili.marvell.com[10.68.76.51]
-X-Barracuda-Start-Time: 1225102168
-X-Barracuda-Virus-Scanned: by Marvell Mail Gateway at marvell.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <tkrat.94e673551b87c230@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C9381C.189E9596
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+* Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-This is strange, it compiles OK on ARM, I don't know why this
-failed on x86-64. But anyway, <linux/workqueue.h> should really
-be explicitly included here.
+> Regression in 2.6.28-rc1:  When I added the new state_mutex which
+> prevents corruption of raw1394's internal state when accessed by
+> multithreaded client applications, the following possible though
+> highly unlikely deadlock slipped in:
+> 
+> Thread A:                  Thread B:
+>  - acquire mmap_sem         - raw1394_write() or raw1394_ioctl()
+>  - raw1394_mmap()           - acquire state_mutex
+>  - acquire state_mutex      - copy_to/from_user(), possible page fault:
+>                               acquire mmap_sem
+> 
+> The simplest fix is to use mutex_trylock() instead of mutex_lock() in
+> raw1394_mmap().  This changes the behavior under contention in a way
+> which is visible to userspace clients.  However, since multithreaded
+> access was entirely buggy before state_mutex was added and libraw1394's
+> documentation advised application programmers to use a handle only in a
+> single thread, this change in behaviour should not be an issue in
+> practice at all.
+> 
+> Since we have to use mutex_trylock() in raw1394_mmap() regardless
+> whether /dev/raw1394 was opened with O_NONBLOCK or not, we now use
+> mutex_trylock() unconditionally everywhere for state_mutex, just to have
+> consistent behavior.
+> 
+> Reported-by: Johannes Weiner <hannes@saeurebad.de>
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> ---
+> 
+> Background:  That new state_mutex went only in because raw1394_ioctl()
+> already head some weak protection by the Big Kernel Lock, which I
+> removed for the general reasons pro BKL removal (get better performance
+> with local locks; make the locking clearer, easier to debug, more
+> reliable).
+> 
+>  drivers/ieee1394/raw1394.c |    9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
+> 
+> Index: linux/drivers/ieee1394/raw1394.c
+> ===================================================================
+> --- linux.orig/drivers/ieee1394/raw1394.c
+> +++ linux/drivers/ieee1394/raw1394.c
+> @@ -2268,7 +2268,8 @@ static ssize_t raw1394_write(struct file
+>  		return -EFAULT;
+>  	}
+>  
+> -	mutex_lock(&fi->state_mutex);
+> +	if (!mutex_trylock(&fi->state_mutex))
+> +		return -EAGAIN;
+>  
+>  	switch (fi->state) {
+>  	case opened:
+> @@ -2548,7 +2549,8 @@ static int raw1394_mmap(struct file *fil
+>  	struct file_info *fi = file->private_data;
+>  	int ret;
+>  
+> -	mutex_lock(&fi->state_mutex);
+> +	if (!mutex_trylock(&fi->state_mutex))
+> +		return -EAGAIN;
+>  
+>  	if (fi->iso_state == RAW1394_ISO_INACTIVE)
+>  		ret = -EINVAL;
+> @@ -2669,7 +2671,8 @@ static long raw1394_ioctl(struct file *f
+>  		break;
+>  	}
+>  
+> -	mutex_lock(&fi->state_mutex);
+> +	if (!mutex_trylock(&fi->state_mutex))
+> +		return -EAGAIN;
 
-The attached patch should fix this.
+So we can return a spurious -EAGAIN to user-space, if the state_mutex 
+is taken briefly by some other context?
 
-- eric
-
------Original Message-----
-From: Jean Delvare [mailto:khali@linux-fr.org]=20
-Sent: Monday, October 27, 2008 4:45 PM
-To: Mike Rapoport; Eric Miao; Richard Purdie
-Cc: LKML; Linus Torvalds
-Subject: CONFIG_LEDS_DA903X=3Dm breaks 2.6.28-rc2-git1 build on x86-64
-
-Hi Mike, Eric, Richard,
-
-With CONFIG_LEDS_DA903X=3Dm, kernel 2.6.28-rc2-git1 fails to build on
-x86-64 with the following error:
-
-  CC [M]  drivers/leds/leds-da903x.o
-drivers/leds/leds-da903x.c:35: error: field "work" has incomplete type
-drivers/leds/leds-da903x.c: In function "da903x_led_work":
-drivers/leds/leds-da903x.c:47: warning: type defaults to "int" in
-declaration of "__mptr"
-drivers/leds/leds-da903x.c:47: warning: initialization from incompatible
-pointer type
-drivers/leds/leds-da903x.c: In function "da903x_led_set":
-drivers/leds/leds-da903x.c:89: error: implicit declaration of function
-"schedule_work"
-drivers/leds/leds-da903x.c: In function "da903x_led_probe":
-drivers/leds/leds-da903x.c:125: error: implicit declaration of function
-"INIT_WORK"
-
-Can we PLEASE stick to the plan and ONLY have bug FIXES after rc1 (and
-even more so after rc2)?
-
-Thanks,
---=20
-Jean Delvare
-
-------_=_NextPart_001_01C9381C.189E9596
-Content-Type: application/octet-stream;
-	name="0001-leds-da903x-fix-the-building-failure-of-incomplete.patch"
-Content-Transfer-Encoding: base64
-Content-Description: 0001-leds-da903x-fix-the-building-failure-of-incomplete.patch
-Content-Disposition: attachment;
-	filename="0001-leds-da903x-fix-the-building-failure-of-incomplete.patch"
-
-RnJvbSAyZDgyMTIxYWFlY2Y3M2I2NjI4NWNjMWMwYmYyNDFjODdhZmU3MjkzIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBFcmljIE1pYW8gPGVyaWMubWlhb0BtYXJ2ZWxsLmNvbT4KRGF0
-ZTogTW9uLCAyNyBPY3QgMjAwOCAxNzo0ODo1MCArMDgwMApTdWJqZWN0OiBbUEFUQ0hdIGxlZHM6
-IGRhOTAzeDogZml4IHRoZSBidWlsZGluZyBmYWlsdXJlIG9mIGluY29tcGxldGUgdHlwZSBvZiAn
-d29yaycKCldpdGggQ09ORklHX0xFRFNfREE5MDNYPW0sIGtlcm5lbCAyLjYuMjgtcmMyLWdpdDEg
-ZmFpbHMgdG8gYnVpbGQgb24KeDg2LTY0IHdpdGggdGhlIGZvbGxvd2luZyBlcnJvcjoKCiAgQ0Mg
-W01dICBkcml2ZXJzL2xlZHMvbGVkcy1kYTkwM3gubwpkcml2ZXJzL2xlZHMvbGVkcy1kYTkwM3gu
-YzozNTogZXJyb3I6IGZpZWxkICJ3b3JrIiBoYXMgaW5jb21wbGV0ZSB0eXBlCmRyaXZlcnMvbGVk
-cy9sZWRzLWRhOTAzeC5jOiBJbiBmdW5jdGlvbiAiZGE5MDN4X2xlZF93b3JrIjoKZHJpdmVycy9s
-ZWRzL2xlZHMtZGE5MDN4LmM6NDc6IHdhcm5pbmc6IHR5cGUgZGVmYXVsdHMgdG8gImludCIgaW4g
-ZGVjbGFyYXRpb24gb2YgIl9fbXB0ciIKZHJpdmVycy9sZWRzL2xlZHMtZGE5MDN4LmM6NDc6IHdh
-cm5pbmc6IGluaXRpYWxpemF0aW9uIGZyb20gaW5jb21wYXRpYmxlIHBvaW50ZXIgdHlwZQpkcml2
-ZXJzL2xlZHMvbGVkcy1kYTkwM3guYzogSW4gZnVuY3Rpb24gImRhOTAzeF9sZWRfc2V0IjoKZHJp
-dmVycy9sZWRzL2xlZHMtZGE5MDN4LmM6ODk6IGVycm9yOiBpbXBsaWNpdCBkZWNsYXJhdGlvbiBv
-ZiBmdW5jdGlvbiAic2NoZWR1bGVfd29yayIKZHJpdmVycy9sZWRzL2xlZHMtZGE5MDN4LmM6IElu
-IGZ1bmN0aW9uICJkYTkwM3hfbGVkX3Byb2JlIjoKZHJpdmVycy9sZWRzL2xlZHMtZGE5MDN4LmM6
-MTI1OiBlcnJvcjogaW1wbGljaXQgZGVjbGFyYXRpb24gb2YgZnVuY3Rpb24gIklOSVRfV09SSyIK
-CkluY2x1ZGUgdGhlIDxsaW51eC93b3JrcXVldWUuaD4gZXhwbGljaXRseSBoZXJlIHRvIGZpeCB0
-aGUgYWJvdmUgaXNzdWUuCgpSZXBvcnRlZC1ieTogSmVhbiBEZWx2YXJlIDxraGFsaUBsaW51eC1m
-ci5vcmc+ClNpZ25lZC1vZmYtYnk6IEVyaWMgTWlhbyA8ZXJpYy5taWFvQG1hcnZlbGwuY29tPgot
-LS0KIGRyaXZlcnMvbGVkcy9sZWRzLWRhOTAzeC5jIHwgICAgMSArCiAxIGZpbGVzIGNoYW5nZWQs
-IDEgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL2xl
-ZHMvbGVkcy1kYTkwM3guYyBiL2RyaXZlcnMvbGVkcy9sZWRzLWRhOTAzeC5jCmluZGV4IGYxZmRk
-YjEuLjI3NjhjNjkgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvbGVkcy9sZWRzLWRhOTAzeC5jCisrKyBi
-L2RyaXZlcnMvbGVkcy9sZWRzLWRhOTAzeC5jCkBAIC0xNyw2ICsxNyw3IEBACiAjaW5jbHVkZSA8
-bGludXgvaW5pdC5oPgogI2luY2x1ZGUgPGxpbnV4L3BsYXRmb3JtX2RldmljZS5oPgogI2luY2x1
-ZGUgPGxpbnV4L2xlZHMuaD4KKyNpbmNsdWRlIDxsaW51eC93b3JrcXVldWUuaD4KICNpbmNsdWRl
-IDxsaW51eC9tZmQvZGE5MDN4Lmg+CiAKICNkZWZpbmUgREE5MDMwX0xFRDFfQ09OVFJPTAkweDIw
-Ci0tIAoxLjYuMC4yCgo=
-
-------_=_NextPart_001_01C9381C.189E9596--
+	Ingo
