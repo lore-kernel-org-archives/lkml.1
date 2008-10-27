@@ -1,60 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbYJ0VMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbYJ0VQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922AbYJ0VMu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 17:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbYJ0VMm
+	id S1753199AbYJ0VQR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 17:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYJ0VQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 17:12:42 -0400
-Received: from rn-out-0910.google.com ([64.233.170.185]:28645 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751648AbYJ0VMl (ORCPT
+	Mon, 27 Oct 2008 17:16:00 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:1435 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751648AbYJ0VP6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 17:12:41 -0400
+	Mon, 27 Oct 2008 17:15:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=lZ2Xrv/g3poofC1612VWhJobfmMQV05azmO+5kz4ah1CPGA9jIYgKbHpHu34BmOLdr
-         VILBTWW85QC6Mel9rU+v8OkdhslJg6pjbpq/LvL7yb9H6ViEPE1fucUm96OLMOul6ECT
-         dCf6RzTUhucjzmte/7XZLvgpxD4oZlYZ25tHU=
-Message-ID: <49062EC0.4040809@gmail.com>
-Date: Mon, 27 Oct 2008 14:12:32 -0700
-From: Rob MacKinnon <c4blem0nkey@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080904)
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=NHkwn69sIGbgAzfQXVfMBNuT1Y/sJ/Unx+U96PTWrHX64BJllUHIwbyZXYtMAbCPRm
+         C5aFoG7wzyH2Pvofk5tOM0UgGxknxz3t5Ym3ABjmySlhK8/ITheuIL6dGfit+023oS3w
+         XIbqtORAh2OPkGwlKtxCM9tMwRFh7txA/slY4=
+Message-ID: <49062F87.4060307@gmail.com>
+Date: Mon, 27 Oct 2008 14:15:51 -0700
+From: Joe Damato <ice799@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
 MIME-Version: 1.0
-To: Andreas Gruenbacher <agruen@suse.de>
-CC: Stephen Smalley <sds@tycho.nsa.gov>, rob.mackinnon@gmail.com,
-       hpa@zytor.com, hugh@veritas.com, linux-kernel@vger.kernel.org,
-       Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: tmpfs support of xattrs?
-References: <4902DD98.4090302@gmail.com> <4906211E.8030603@gmail.com> <1225139131.31818.51.camel@moss-spartans.epoch.ncsc.mil> <200810272153.56301.agruen@suse.de>
-In-Reply-To: <200810272153.56301.agruen@suse.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-x86_64@vger.kernel.org, linux-newbie@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [PATCH 00/12] x86: Cleanup idt, gdt/ldt/tss structs
+References: <1224904532-9586-1-git-send-email-ice799@gmail.com> <20081027105559.GA13895@elte.hu>
+In-Reply-To: <20081027105559.GA13895@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Gruenbacher wrote:
-> On Monday, 27 October 2008 21:25:31 Stephen Smalley wrote:
->> Looks like a bug in Smack's implementation of the inode_listsecurity
->> hook to me.  Did you mean to enable Smack in your kernel config?
-> 
-> Yes, there is at least one bug there; this kernel is broken. You may want to 
-> try booting with a kernel command line option like "security=none", which 
-> *should* turn smack off.
-> 
-> Andreas
+Ingo Molnar wrote:
+> * Joe Damato <ice799@gmail.com> wrote:
+>
+>   
+>> Hi -
+>>
+>> This is my first submission to the kernel, so (beware!) please let 
+>> me know if I can make any improvements on these patches.
+>>
+>> I attempted to clean up the x86 structs for 32bit cpus that store 
+>> IDT/LDT/GDT data by removing the fields labeled "a" and "b" in favor 
+>> of more descriptive field names. I added some macros and went 
+>> through the kernel cleaning up the various places where "a" and "b" 
+>> were used.
+>>
+>> I tried building my kernel with my .config and then also did a make 
+>> allyesconfig build to help ensure I found everything that was using 
+>> the old structure names. I also tried a few grep patterns. Hopefully 
+>> I got everyone out.
+>>     
+>
+> hm, a couple of comments.
+>   
 
-All,
+Thanks for your very useful comments and feedback. I've included a few 
+questions/comments below.
 
-Indeed the kernel cmdline option security=none did disable smack. So
-atleast that works. Thank you all for helping me track this down.  I can
-now return to updating packages (some of which have been waiting
-patiently for this to be cleared up)!  Though I will be looking forward
-to this feature working as it was intended. ;)  Let me know if there is
-a bug # assigned and I'll quietly return to lurking... ;)
+> Firstly, a patch logistical one: we moved all the x86 header files 
+> from include/asm-x86/ to arch/x86/include/asm/ in v2.6.28-rc1 - your 
+> patchset is against an older kernel. Should be easy enough to fix up.
+>   
 
--- Rob
+Ah, sorry about that. Should be easy enough to fix with git.
+
+> Secondly, i'm not that convinced about the expanded use of bitfields 
+> that your patchset implements. Their semantics are notoriously fragile 
+> so we'd rather get _away_ from them, not expand them.
+
+Out of curiosity what exactly do you mean when you say "fragile"? Sorry 
+for my ignorance here...
+
+>  _But_, this area 
+> could be cleaned up some more - just in a different way. I'd suggest 
+> you introduce field accessor inline functions to descriptors.
+>
+> I.e. instead of:
+>
+>         if (!idt_present(cpu->arch.idt[num].a, cpu->arch.idt[num].b))
+>
+> we could do a more compact form:
+>
+> 	if (!idt_present(cpu->arch.idt + num))
+>
+> and get away from the open-coded use of desc->a and desc->b fields, 
+> with proper inlined helpers.
+>   
+
+That sounds reasonable, I will play around, write a few, and probably 
+resubmit in a few days.
+
+> Small detail, the syntactic form you chose:
+>
+> +       if (!cpu->arch.idt[num].p)
+>
+> is not very readable because it's not obvious at first sight that ".p" 
+> intends to mean "present bit". If then idt[num].present would have 
+> been the better choice - but it's even better to not do bitfields at 
+> all but an idt_present(desc *) helper inline function.
+>
+>   
+
+OK, I'll try to use more descriptive names. As hpa pointed out in his 
+email, 'p' is the name of the field in the intel x86 documentation. 
+That's why I chose that, but I agree it isn't particularly clear.
+
+> Thirdly, as you can see it form my comments, this is not something 
+> that is really a best choice for a newbie, as it's a wide patchset 
+> that impacts a lot of critical code, wich has very high quality 
+> requirements.
+>
+> But if you dont mind having to go through a couple of iterations to 
+> get it right (with the inevitable feeling of ftrustration about such a 
+> difficult process) then sure, feel free to work on this!
+>   
+
+I will probably continue to play around with it and try to resubmit 
+something in a few days that incorporates your feedback. I've done some 
+x86 stuff before (never with linux, though) and I enjoy crawling though 
+the intel docs and pushing bits around =].
+
+
+Thanks again for the feedback,
+Joe
