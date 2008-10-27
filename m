@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752371AbYJ0QEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752825AbYJ0QFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752371AbYJ0QEP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 12:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbYJ0QD7
+	id S1752825AbYJ0QFb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 12:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYJ0QFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 12:03:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58526 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751407AbYJ0QD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 12:03:58 -0400
-Date: Mon, 27 Oct 2008 17:03:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>
-Cc: srostedt@redhat.com, a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] Add support for userspace stacktraces in
-	tracing/iter_ctrl
-Message-ID: <20081027160348.GT5704@elte.hu>
-References: <1223817124-27239-1-git-send-email-edwintorok@gmail.com> <1223817124-27239-3-git-send-email-edwintorok@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1223817124-27239-3-git-send-email-edwintorok@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0020]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Mon, 27 Oct 2008 12:05:24 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36858 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751548AbYJ0QFX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 12:05:23 -0400
+Date: Mon, 27 Oct 2008 16:03:59 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+Subject: Re: [GIT PULL/RESEND] kernel message catalog patches
+Message-ID: <20081027160359.37db885c@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.00.0810270750100.3386@nehalem.linux-foundation.org>
+References: <1224168620.9617.14.camel@localhost>
+	<1224230354.4631.1.camel@localhost>
+	<20081021092148.GB4980@osiris.boeblingen.de.ibm.com>
+	<alpine.LFD.2.00.0810230835150.3287@nehalem.linux-foundation.org>
+	<20081023210446.GA12003@osiris.boeblingen.de.ibm.com>
+	<alpine.LFD.2.00.0810231433380.3287@nehalem.linux-foundation.org>
+	<1225049195.14057.72.camel@localhost>
+	<alpine.LFD.2.00.0810261212290.5200@nehalem.linux-foundation.org>
+	<1225101688.15777.6.camel@localhost>
+	<alpine.LFD.2.00.0810270750100.3386@nehalem.linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> And as for the actual explanations: either they need to be totally outside 
+> the kernel (in a project of their own), or they'd need to be "kernel-doc" 
+> style things that are _in_ the source code. Not in Documentation/. Not 
+> separate from the printk() that they are associated with.
 
-* Török Edwin <edwintorok@gmail.com> wrote:
+You really don't want 32 languages in mixed left/right rendering with
+multiple fonts in your kernel source. At least not with most editing and
+viewing tools....
 
-> Usage example:
-> mount -t debugfs nodev /sys/kernel/debug
-> cd /sys/kernel/debug/tracing
-> echo userstacktrace >iter_ctrl
-> echo sched_switch >current_tracer
-> echo 1 >tracing_enabled
-> .... run application ...
-> echo 0 >tracing_enabled
-> 
-> Then read one of 'trace','latency_trace','trace_pipe'
+User space uses message catalogues and has tools for maintaining them
+which make using any other format somewhat dumb. They extract strings
+using _("hello") type wrappers to identify what are translatable strings
+so if the kernel source has _() macros all the tooling just works and can
+live outside and way from the kernel.
 
-okay, this makes quite a bit of sense - and sysprof already kind of 
-walks down into the user-space stack. (and so does oprofile, if asked)
+Just needs _() to do the right thing compiled into the kernel and a
+printk formatting to do the right thing with the result. In truth you
+don't even need a hash in printk just the ability to make it produce
+either
 
-Could you send this independently of the lock contention tracing 
-patches perhaps?
+	"Hello my name is 'fred3'"
 
-	Ingo
+and something like
+
+	"Hello my name is '%s%d'\0Fred\0\000\000\000\003"
+
+The kernel contains the English which should be a pretty passable hash.
+
+Alan
