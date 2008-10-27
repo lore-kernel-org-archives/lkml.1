@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753745AbYJ0UEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753772AbYJ0UJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753745AbYJ0UEU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 16:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYJ0UD4
+	id S1753772AbYJ0UJT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 16:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbYJ0UJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 16:03:56 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:53481 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753797AbYJ0UDz (ORCPT
+	Mon, 27 Oct 2008 16:09:05 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:47549 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752163AbYJ0UJE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 16:03:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=ISxTz01gwNbZM3pRhYaKbgRfpc5U8O5yiQeHziyc0jj/DGWKTGe8FS/MDap9hcg6zY
-         XVPpIa51ByiNTsV8YHm5ylaI1io8gHn6+E4AUgQ0x5CHa1hwQlQBLhVoIdt93ZIPz/WY
-         VbiF11FEglzahFn10IbtxY5Yzbws5NkzE6RsU=
-Message-ID: <9bd6b5360810271303teb198dejde3116f69cfffd46@mail.gmail.com>
-Date: Tue, 28 Oct 2008 04:03:52 +0800
-From: sniper <s3c24xx@gmail.com>
-To: mingo@redhat.com, peterz@infradead.org
-Subject: [PATCH] LOCKDEP: minor fix for debug_show_all_locks()
-Cc: linux-kernel@vger.kernel.org
+	Mon, 27 Oct 2008 16:09:04 -0400
+Date: Mon, 27 Oct 2008 20:09:00 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       rtc-linux@googlegroups.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [rtc-linux] [PATCH 2/2] rtc: rtc-wm8350: Add support for
+	WM8350 RTC
+Message-ID: <20081027200900.GA31757@rakim.wolfsonmicro.main>
+References: <1225121905-23782-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1225121905-23782-2-git-send-email-broonie@opensource.wolfsonmicro.com> <20081027180432.7deaee0a@i1501.lan.towertech.it> <200810271303.21634.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200810271303.21634.david-b@pacbell.net>
+X-Cookie: Slow day.  Practice crawling.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we failed to get tasklist_lock eventually (count equals 0),
-we should only print " ignoring it.\n", and not print
-" locked it.\n" needlessly.
+On Mon, Oct 27, 2008 at 01:03:21PM -0700, David Brownell wrote:
+> On Monday 27 October 2008, Alessandro Zummo wrote:
+> >  (and a detailed checklist at http://groups.google.com/group/rtc-linux/web/checklist )
 
-Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
----
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index dbda475..12bf812 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -3417,10 +3417,12 @@ retry:
- 		}
- 		printk(" ignoring it.\n");
- 		unlock = 0;
-+		goto print_locks;
- 	}
- 	if (count != 10)
- 		printk(" locked it.\n");
+> Also:  rtc_ops.ioctl() method should only handle RTC_{AIE,UIE}_{ON,OFF},
+> since the other standard ioctls have rtc_ops equivalents.
 
-+print_locks:
- 	do_each_thread(g, p) {
- 		/*
- 		 * It's not reliable to print a task's held locks
+> (This code is fine in both respects.  Though since I've received three
+> copies of the driver since it was merged to MM, maybe I missed something.)
+
+Unfortunately I added the __devexit_p() annotation in response to
+Alessandro's comments.  I'll remove it again, other than that all that's
+changed is a tweak to the module description and Andrew's change to use
+schedule_timeout_uninterruptible().
+
+How should these drivers be merged?
