@@ -1,96 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbYJ0PZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752749AbYJ0P1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752702AbYJ0PZb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 11:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYJ0PZV
+	id S1752749AbYJ0P1c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 11:27:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYJ0P1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 11:25:21 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:55571 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751416AbYJ0PZU (ORCPT
+	Mon, 27 Oct 2008 11:27:24 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:30666 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751236AbYJ0P1Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 11:25:20 -0400
-Date: Mon, 27 Oct 2008 11:25:19 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Douglas Gilbert <dgilbert@interlog.com>
-cc: Luciano Rocha <luciano@eurotux.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-Subject: Re: usb hdd problems with 2.6.27.2
-In-Reply-To: <4905D68D.7030407@interlog.com>
-Message-ID: <Pine.LNX.4.44L0.0810271117530.4059-100000@iolanthe.rowland.org>
+	Mon, 27 Oct 2008 11:27:24 -0400
+Message-ID: <4905DF57.6040902@nokia.com>
+Date: Mon, 27 Oct 2008 17:33:43 +0200
+From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Pierre Ossman <drzeus@drzeus.cx>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] mmc_block: print better data error message after
+ timeout
+References: <48F7411F.3020109@nokia.com> <20081026121155.69692474@mjolnir.drzeus.cx>
+In-Reply-To: <20081026121155.69692474@mjolnir.drzeus.cx>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Oct 2008 15:26:33.0170 (UTC) FILETIME=[64804B20:01C93848]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Oct 2008, Douglas Gilbert wrote:
-
-> > This looks exactly like the "infinite retry" problem I warned about 
-> > earlier.  Here are the important parts of the log.  For people who 
-> > don't know how to interpret these messages, the CDB starts in the 16th 
-> > byte of the 31-byte messages.  For example, the first command here 
-> > starts with 0x25 and so it is READ CAPACITY:
-> > 
-> >> f21e7cc0 3570408174 S Bo:1:008:1 -115 31 = 55534243 06000000 08000000 80000a25 00000000 00000000 00000000 000000
-> >> f21e7cc0 3570408264 C Bo:1:008:1 0 31 >
-> >> f21e72c0 3570408280 S Bi:1:008:2 -115 8 <
-> >> f21e72c0 3570408389 C Bi:1:008:2 0 8 = 2e9390b0 00000200
-> >> f21e7cc0 3570408400 S Bi:1:008:2 -115 13 <
-> >> f21e7cc0 3570408513 C Bi:1:008:2 0 13 = 55534253 06000000 00000000 00
-> > 
-> > The response is 0x2e9390b0.  In typical broken fashion, that is 
-> > undoubtedly the total number of sectors rather than the highest sector 
-> > number.
+Pierre Ossman wrote:
+> On Thu, 16 Oct 2008 16:26:55 +0300
+> Adrian Hunter <ext-adrian.hunter@nokia.com> wrote:
 > 
-> Since the READ CAPACITY "off by one" error is so common,
-> perhaps drivers such as usb-storage could have a hook to
-> do a pseudo READ CAPACITY. Then if the capacity value
-> looked odd (in both senses) the driver could do an IO to
-> the suspect block and if that failed decrement the capacity
-> value passed back to the mid level.
+>> In particular, if the card gets an ECC error it will
+>> timeout, in which case it is much more helpful to see
+>> an ECC error rather than a timeout error.
+>>
+>> Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+>> ---
 
-We thought of that years ago.  Unfortunately there is no reliable way
-of telling when a capacity value is wrong.  There definitely do exist
-disks with an odd number of sectors.
+Thank you for looking at the patch.
 
-Furthermore, doing I/O to a suspect block is not a good idea.  There
-are plenty of devices which simply crash when you try to access a
-nonexistent sector.
+> Woo. I think you're the first I've seen that has been able to trigger
+> an actual card error. :)
 
-> Put another way, why don't these defective devices trip up
-> another OS?
+Well, my impression is that they are quite easy to break
 
-I imagine they do.  However Linux has partition code that stores
-information in the last sector of a partition (EFI GUID and md, for
-example).  Other OS's apparently do not try to access the medium's last
-sector under most circumstances.
-
-> BTW a single disk in RAID 0 (seen on a HP E200 controller)
-> has a shortened capacity value seen in the midlevel on the
-> corresponding logical drive. That missing chunk is probably
-> where the RAID controller puts its control information.
-> Anyway, playing with the capacity value returned by READ
-> CAPACITY certainly has a precedent.
-
-usb-storage isn't in the business of altering the data it gets from a 
-device.  It's just a transport.  That's why the sdev->fix_capacity flag 
-exists; we tell the upper layer that the data it gets is going to be 
-wrong and let the upper layer worry about fixing things up.
-
-> > Later on the system tries to read the contents of what it thinks is the 
-> > last sector:
+> As for the patch, I like the idea but I'm not entirely satisfied with
+> the implementation.
 > 
-> I know that happens but it seems strange that upper levels
-> are reading a block that has never been written to. Read ahead?
+>> +static void print_data_error(struct mmc_blk_request *brq, struct mmc_card *card,
+>> +			     struct request *req)
+>> +{
+>> +	struct mmc_command cmd;
+>> +	char *emsg;
+>> +	u32 status;
+>> +	int status_err = 0;
+>> +
+>> +	if (brq->data.error != -ETIMEDOUT || mmc_host_is_spi(card->host))
+>> +		goto out_print;
+>> +
+> 
+> The error codes are more of a hint than anything else, so you should
+> check the status for all non-zero codes. You should also not just check
+> data.error, but all of them.
 
-No, partition scanning.  Also maybe /lib/udev/vol_id, which seems to 
-read an inordinate number of irrelevant sectors.
+OK but the error bits are cleared as soon as the status has been reported,
+which is in the command response or, in the case of timeout, the response
+to the next command.  Reading the status after that shows nothing.  The
+status would have to be fished out of brq->mrq.cmd->resp[0].
 
-Alan Stern
+ETIMEDOUT is a special case because it is not a hint for the error, it is
+rather the normal response to an error - so it seemed very misleading to me.
+
+> And why exclude spi?
+
+I don't have SPI, so I can't test it.  AFAICT timeouts are not meant to happen
+with SPI so it is a genuine error.
+
+The SPI error reporting is a little different.  The non-SPI code that I wrote
+certainly won't work for SPI.  I may look at doing something for SPI.
+
+>> +	if (brq->mrq.stop)
+>> +		/* 'Stop' response contains card status */
+>> +		status = brq->mrq.stop->resp[0];
+>> +	else {
+>> +		cmd.opcode = MMC_SEND_STATUS;
+>> +		cmd.arg = card->rca << 16;
+>> +		cmd.flags = MMC_RSP_R1 | MMC_CMD_AC;
+>> +		status_err = mmc_wait_for_cmd(card->host, &cmd, 0);
+>> +		if (status_err)
+>> +			goto out_print;
+>> +		status = cmd.resp[0];
+>> +	}
+> 
+> Errors can occur on writes as well, so I suggest accumulating the
+> status bits instead of trying to get the entire set in one go. I.e.:
+> 
+> status = 0;
+> if (mrq.stop)
+> 	status |= mrq.stop.resp[0];
+> while (card not ready)
+> 	status |= send_status();
+> 
+> IOW, you should do this in the main handler (that already has the
+> status loop for writes).
+> 
+
+The nesting may get too deep and the control paths too complicated
+if it is done in the main handler, but I will see what I can do.
+Ideally the loop needs some limit to prevent a misbehaving card
+locking up the driver.
+
+>> +
+>> +	emsg = (status & R1_CARD_ECC_FAILED) ? "ECC" : "I/O";
+>> +
+> 
+> There are also some other error codes that can be of interest.
+> "Internal controller error" for example.
+
+Do you mean CC_ERROR?  I picked out ECC errors because NAND will get
+ECC errors if the NAND page was not written cleanly (e.g. if the power
+went off during the write)  I guess a good card should recover the
+old data and never report ECC errors, but that is a separate issue.
+
+> (it's probably also better to state "Unknown" error and not "I/O" for
+> the fallback)
+
+"Unknown" is for unknown error codes, so I don't think it is appropriate.
+In this case we are simply not bothering to break down all the errors bits.
+
+>> @@ -281,10 +322,8 @@ static int mmc_blk_issue_rq(struct mmc_queue *mq, struct request *req)
+>>  			       req->rq_disk->disk_name, brq.cmd.error);
+>>  		}
+>>  
+>> -		if (brq.data.error) {
+>> -			printk(KERN_ERR "%s: error %d transferring data\n",
+>> -			       req->rq_disk->disk_name, brq.data.error);
+>> -		}
+>> +		if (brq.data.error)
+>> +			print_data_error(&brq, card, req);
+>>  
+> 
+> Please keep the old message and add this as a new extra piece of
+> information. It is helpful for debugging to see both what the driver
+> and the card reported.
+
+It already does that.
 
