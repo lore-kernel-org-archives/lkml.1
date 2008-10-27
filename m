@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752825AbYJ0K5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779AbYJ0LBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752825AbYJ0K5Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 06:57:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYJ0K5O
+	id S1752779AbYJ0LBt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 07:01:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbYJ0LBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 06:57:14 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56276 "EHLO mx3.mail.elte.hu"
+	Mon, 27 Oct 2008 07:01:41 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56431 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752083AbYJ0K5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 06:57:13 -0400
-Date: Mon, 27 Oct 2008 11:57:08 +0100
+	id S1752125AbYJ0LBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 07:01:40 -0400
+Date: Mon, 27 Oct 2008 12:01:34 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Joe Damato <ice799@gmail.com>, linux-x86_64@vger.kernel.org,
-       linux-newbie@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/12] x86: Cleanup idt, gdt/ldt/tss structs
-Message-ID: <20081027105708.GB13895@elte.hu>
-References: <1224904532-9586-1-git-send-email-ice799@gmail.com> <20081025054018.GU24654@1wt.eu>
+To: Alok Kataria <akataria@vmware.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>
+Subject: Re: [PATCH 2/4] Hypervisor detection and get tsc_freq from
+	hypervisor
+Message-ID: <20081027110134.GC13641@elte.hu>
+References: <1224894104.28224.72.camel@alok-dev1>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081025054018.GU24654@1wt.eu>
+In-Reply-To: <1224894104.28224.72.camel@alok-dev1>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,19 +40,14 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Willy Tarreau <w@1wt.eu> wrote:
+* Alok Kataria <akataria@vmware.com> wrote:
 
-> On Fri, Oct 24, 2008 at 08:15:20PM -0700, Joe Damato wrote:
-> > Hi -
-> > 
-> > This is my first submission to the kernel, so (beware!) please let me know if I can make any improvements on these patches.
-> 
-> It looks like you provide one patch per file. You should group some 
-> of them together so that each patch does a functional change and 
-> everything still builds after incrementally applying that patch. The 
-> way you have splitted them will break builds if someone tries to 
-> build after patch 1 for instance.
+> The DMI + Backdoor [...]
 
-yes, at every step the kernel is expected to build and boot fine.
+please do _NOT_ call anything like this a "backdoor", anywhere in the 
+source or the commit log. "Backdoor" is most commonly used for 
+intentional security holes, and we dont want anything like that in the 
+kernel code. What this code implements is not a backdoor, it is simply 
+a facility to discover the hypervisor environment, not a "backdoor".
 
 	Ingo
