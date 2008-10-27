@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbYJ0Vap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754322AbYJ0Va7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754046AbYJ0Vap (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 17:30:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbYJ0VaP
+	id S1754322AbYJ0Va7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 17:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbYJ0Vam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 17:30:15 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:40826 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752334AbYJ0VaM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 17:30:12 -0400
-Date: Mon, 27 Oct 2008 14:30:06 -0700
-From: Mike Anderson <andmike@linux.vnet.ibm.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Timeout regression introduced by
-	242f9dcb8ba6f68fcd217a119a7648a4f69290e9
-Message-ID: <20081027213006.GB17946@linux.vnet.ibm.com>
-References: <49043C7C.8050207@kernel.org> <1225034105.3958.4.camel@localhost.localdomain> <49051EA4.3040403@kernel.org>
+	Mon, 27 Oct 2008 17:30:42 -0400
+Received: from kroah.org ([198.145.64.141]:34020 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752284AbYJ0Val (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 17:30:41 -0400
+Date: Mon, 27 Oct 2008 14:14:52 -0700
+From: Greg KH <greg@kroah.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5] w35und: remove dead code from wbusb_f.h
+Message-ID: <20081027211452.GA19762@kroah.com>
+References: <Pine.LNX.4.64.0810221906140.1679@melkki.cs.Helsinki.FI> <20081027183707.GA13737@kroah.com> <Pine.LNX.4.64.0810272241520.7338@melkki.cs.Helsinki.FI>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <49051EA4.3040403@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0810272241520.7338@melkki.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <tj@kernel.org> wrote:
-> James Bottomley wrote:
-> > On Sun, 2008-10-26 at 18:46 +0900, Tejun Heo wrote:
-> >> Hello, Jens.
-> >>
-> >> Commit 242f9dcb8ba6f68fcd217a119a7648a4f69290e9 introduces a strange
-> >> regression for libata.  The second timeout gives puts different
-> >> pointer from the issued command onto eh_cmd_q breaking libata EH
-> >> command matching which triggers WARN_ON() in ata_eh_finish() and hangs
-> >> command processing or causes oops later depending on circumstances.
-> >>
-> >> Here are logs with induced timeouts (patch attached).  In commit
-> >> 242f9dcb8, the XXX messages for the second timeout shows different
-> >> scsi_cmd pointers for eh_cmd_q and qc->scmd which is initialized by
-> >> ata_scsi_qc_new() during command translation.
+On Mon, Oct 27, 2008 at 10:44:19PM +0200, Pekka J Enberg wrote:
+> Hi Greg,
+> 
+> On Wed, Oct 22, 2008 at 07:06:41PM +0300, Pekka J Enberg wrote:
+> > > From: Pekka Enberg <penberg@cs.helsinki.fi>
+> > > 
+> > > Remove dead code from wbusb_f.h and move the WbWLanInitialize() definition to
+> > > wblinux_f.h where it arguably belongs to. As the wbusb_f.h is now empty, we can
+> > > remove it completely.
+> > > 
+> > > Cc: Pavel Machek <pavel@suse.cz>
+> > > Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
+> On Mon, 27 Oct 2008, Greg KH wrote:
+> > This patch gives me a bunch of build errors as I don't think you are in
+> > sync with the other changes in these files.
 > > 
-> > I can't see a way we could be getting a different command passed in from
-> > the actual one, since the only way to lose the command from the request
-> > is to go through the command completion routines which free it (and end
-> > the request).
+> > Care to respin it against 2.6.28-rc2?
 > 
-> I have no idea either.  It's something in the timeout logic because on
-> the issue path the scmd pointer is identical but on tiemout pointer
-> for another scmd is queued on eh_cmd_q, which doesn't make much sense.
+> That's strange. I rebased against 2.6.28-rc2 but didn't get any conficts 
+> and everything seems to build just fine. What kind of errors are you 
+> seeing?
 > 
+> I've included the rediffed patch here in case it helps. Not sure why it 
+> would...
 
-I was trying to recreate this error using ata_ram wth v2.6.28-rc2.
-Currently I am not able to see this error on timeout recovery using this
-setup. Does IO load (or other factors) effect the error being seen?
+I still get the following errors with this patch applied:
 
--andmike
---
-Michael Anderson
-andmike@linux.vnet.ibm.com
+  CC [M]  drivers/staging/winbond/./linux/wb35reg.o
+drivers/staging/winbond/./linux/wb35reg.c: In function ‘Wb35Reg_BurstWrite’:
+drivers/staging/winbond/./linux/wb35reg.c:29: error: implicit declaration of function ‘wb_usb_alloc_urb’
+drivers/staging/winbond/./linux/wb35reg.c:29: warning: assignment makes pointer from integer without a cast
+drivers/staging/winbond/./linux/wb35reg.c: In function ‘Wb35Reg_Write’:
+drivers/staging/winbond/./linux/wb35reg.c:178: warning: assignment makes pointer from integer without a cast
+drivers/staging/winbond/./linux/wb35reg.c: In function ‘Wb35Reg_WriteWithCallbackValue’:
+drivers/staging/winbond/./linux/wb35reg.c:238: warning: assignment makes pointer from integer without a cast
+drivers/staging/winbond/./linux/wb35reg.c: In function ‘Wb35Reg_Read’:
+drivers/staging/winbond/./linux/wb35reg.c:345: warning: assignment makes pointer from integer without a cast
+drivers/staging/winbond/./linux/wb35reg.c: In function ‘Wb35Reg_EP0VM’:
+drivers/staging/winbond/./linux/wb35reg.c:437: error: implicit declaration of function ‘wb_usb_submit_urb’
+make[2]: *** [drivers/staging/winbond/./linux/wb35reg.o] Error 1
+
+This seems to be because wb_usb_submit_urb() and alloc_urb() are in the
+drivers/staging/winbond/linux/wbusb_f.h file when it is removed.
+
+I'll go fix this up by adding another patch removing these entries.
+Don't know how they got in here, odd.
+
+thanks,
+
+greg k-h
