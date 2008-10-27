@@ -1,193 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbYJ0VjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbYJ0Vjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754124AbYJ0VjI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 17:39:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbYJ0ViK
+	id S1754638AbYJ0Vjq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 17:39:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbYJ0ViO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 17:38:10 -0400
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:42612 "HELO
+	Mon, 27 Oct 2008 17:38:14 -0400
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:42647 "HELO
 	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752018AbYJ0ViG (ORCPT
+	by vger.kernel.org with SMTP id S1752561AbYJ0ViJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 17:38:06 -0400
+	Mon, 27 Oct 2008 17:38:09 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=g63hx5V8DPd1hCy3wEgPXHC+hqA0Q2X5Aac6wfYdZ/NQr4NGsNifWK5yUS+fv+RBgUPVrZzaB4CsOr0PPFRAmbOdu4+jJDRm0JyKLYPWjzVprPsS8XOYa6GkkTqpo7XVEO5CTkdJAxXoxrevd2Rw3jmUfQasrHg1wUn68rvbpkE=  ;
-X-YMail-OSG: rdD2vHAVM1lxQLAXtPV7uArAbddsmIKWvujITbrO_RqVd8Sz8EiYuDtBpeSrSvJhkd5Prhr.fjww4fb6IASdJxgEGFOFmAmnXIPI7BBuv5n_WUqe3FgpsLbV46uGZNvTKH4QR9vNHOsRHL5CZn0bh.rkMOvetTkOe.4_pk4oo2fG8HRIrXL_aqFlDQl5
+  b=VMlsSenTXsrWDNxaA7mcRegPx2tbnkx8Hnm+orO9N81cv88X5hHbu6tuSx4u2XGiyKLsnsVtPJ54y1SbzMHbfrvTk1zEkhVLUNSpjP1zx6NUWJUO6mk9Vz5fHPLkpLaZl3F66jCzAQNK1TPD08mduKyTfybTnQ0Cyvf0BUFOZ4I=  ;
+X-YMail-OSG: 2o4Z3oQVM1nnoc.Hu7zzmfBIpJh.cnywVfBkA6tH_5HYJjKoTnwYLvrrqTd0JarZdgOZD.M7zSTd4ht5rqe5h2p6_PErJf4NX6lEWx3iqL7GKiwYP9AE_Khsgmc3ssJlkhR0Vck9D0s3Gnq9EUY30QWdVjFmdB1fSUAC0H.n7wBRk2MO67mlEPXxqZAu
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: linux-acpi@vger.kernel.org
-Subject: [patch/RESEND 2.6.28-rc2 2/2] ACPI:  bugfix reporting of event handler status
-Date: Mon, 27 Oct 2008 14:01:02 -0700
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Subject: [patch 2.6.28-rc2] at91_mci: workaround lockdep
+Date: Mon, 27 Oct 2008 14:26:26 -0700
 User-Agent: KMail/1.9.10
-Cc: lkml <linux-kernel@vger.kernel.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, peterz@infradead.org,
+       Ingo Molnar <mingo@elte.hu>, Russell King <rmk@arm.linux.org.uk>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       Andrew Victor <linux@maxim.org.za>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810271401.02291.david-b@pacbell.net>
+Message-Id: <200810271426.27110.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Zhang Rui <rui.zhang@intel.com>
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-Introduce a new flag showing whether the event has an event handler/method.
+Lockdep reported a problem in the at91_mci driver ... in this case, the
+issue is with lockdep, not with the driver.  A trimmed stack dump, from
+trying to boot with root on MMC, shows:
 
-For all the GPEs and Fixed Events,
- 1. ACPI_EVENT_FLAG_HANDLE is cleared, it's an "invalid" ACPI event.
- 2. Both ACPI_EVENT_FLAG_HANDLE and ACPI_EVENT_FLAG_DISABLE are set,
-    it's "disabled".
- 3. Both ACPI_EVENT_FLAG_HANDLE and ACPI_EVENT_FLAG_ENABLE are set,
-    it's "enabled".
- 4. Both ACPI_EVENT_FLAG_HANDLE and ACPI_EVENT_FLAG_WAKE_ENABLE are set,
-    it's "wake_enabled".
+  WARNING: at kernel/lockdep.c:2195 trace_hardirqs_on_caller+0xf4/0x170()
+  Modules linked in:
+  [<c005bc98>] (trace_hardirqs_on+0x0/0x18) from [<c0213bf4>] (_spin_unlock_irq+0x2c/0x3c)
+  [<c0213bc8>] (_spin_unlock_irq+0x0/0x3c) from [<c0029a88>] (flush_dcache_page+0x114/0x144)
+  [<c0029974>] (flush_dcache_page+0x0/0x144) from [<c019b034>] (at91_mci_irq+0x150/0x414)
+  [<c019aee4>] (at91_mci_irq+0x0/0x414) from [<c0066c5c>] (handle_IRQ_event+0x2c/0x6c)
+  [<c0066c30>] (handle_IRQ_event+0x0/0x6c) from [<c0068a60>] (handle_level_irq+0x108/0x124)
+  [<c0068958>] (handle_level_irq+0x0/0x124) from [<c0022064>] (__exception_text_start+0x64/0x90)
 
-Among other things, this prevents incorrect reporting of ACPI events
-as being "invalid" when it's really just (temporarily) "disabled".
+When __flush_dcache_aliases() returns -- inlined into flush_dcache_page(),
+above -- it re-enables IRQs ... since that evidently may only be called with
+IRQs enabled.  That's OK since the (unshared) IRQ handler doesn't ask for IRQs
+to be disabled.   Except ... that lockdep went and disabled them, then went on
+to complains about the breakage *it* caused!
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Workaround: depend on LOCKDEP=n ... and for paranoia, disable IRQF_SHARED
+for this interrupt.  (At the hardware level, this is dedicated to MCI, so
+there's never a need for multiple handlers.)
+
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 ---
-[ attachment #7 from http://bugzilla.kernel.org/show_bug.cgi?id=11312 ]
+An alternate fix might be to have ARM dcache mmap locking save and restore
+the IRQ flags ... but there are several such "can't run with IRQs disabled"
+restrictions scattered through that code, with no rationales commented.  Or
+stop lockdep from mucking with IRQ flags; probably not any time soon!
 
- Documentation/ABI/testing/sysfs-firmware-acpi |   16 ++++++++--------
- drivers/acpi/events/evxfevnt.c                |    6 ++++++
- drivers/acpi/system.c                         |   19 +++++++------------
- include/acpi/actypes.h                        |    1 +
- 4 files changed, 22 insertions(+), 20 deletions(-)
+So for now, this seems to be the best "solution" available...
 
---- a/Documentation/ABI/testing/sysfs-firmware-acpi
-+++ b/Documentation/ABI/testing/sysfs-firmware-acpi
-@@ -89,7 +89,7 @@ Description:
+ drivers/mmc/host/Kconfig    |    1 +
+ drivers/mmc/host/at91_mci.c |    3 +--
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+--- a/drivers/mmc/host/Kconfig
++++ b/drivers/mmc/host/Kconfig
+@@ -99,6 +99,7 @@ config MMC_AU1X
+ config MMC_AT91
+ 	tristate "AT91 SD/MMC Card Interface support"
+ 	depends on ARCH_AT91
++	depends on LOCKDEP=n
+ 	help
+ 	  This selects the AT91 MCI controller.
  
- 		error - an interrupt that can't be accounted for above.
- 
--		invalid: it's either a wakeup GPE or a GPE/Fixed Event that
-+		invalid: it's either a GPE or a Fixed Event that
- 			doesn't have an event handler.
- 
- 		disable: the GPE/Fixed Event is valid but disabled.
-@@ -117,30 +117,30 @@ Description:
- 		and other user space applications so that the machine won't shutdown
- 		when pressing the power button.
- 		# cat ff_pwr_btn
--		0
-+		0	enabled
- 		# press the power button for 3 times;
- 		# cat ff_pwr_btn
--		3
-+		3	enabled
- 		# echo disable > ff_pwr_btn
- 		# cat ff_pwr_btn
--		disable
-+		3	disabled
- 		# press the power button for 3 times;
- 		# cat ff_pwr_btn
--		disable
-+		3	disabled
- 		# echo enable > ff_pwr_btn
- 		# cat ff_pwr_btn
--		4
-+		4	enabled
- 		/*
- 		 * this is because the status bit is set even if the enable bit is cleared,
- 		 * and it triggers an ACPI fixed event when the enable bit is set again
- 		 */
- 		# press the power button for 3 times;
- 		# cat ff_pwr_btn
--		7
-+		7	enabled
- 		# echo disable > ff_pwr_btn
- 		# press the power button for 3 times;
- 		# echo clear > ff_pwr_btn	/* clear the status bit */
- 		# echo disable > ff_pwr_btn
- 		# cat ff_pwr_btn
--		7
-+		7	enabled
- 
---- a/drivers/acpi/events/evxfevnt.c
-+++ b/drivers/acpi/events/evxfevnt.c
-@@ -521,6 +521,9 @@ acpi_status acpi_get_event_status(u32 ev
- 	if (value)
- 		*event_status |= ACPI_EVENT_FLAG_SET;
- 
-+	if (acpi_gbl_fixed_event_handlers[event].handler)
-+		*event_status |= ACPI_EVENT_FLAG_HANDLE;
-+
- 	return_ACPI_STATUS(status);
- }
- 
-@@ -571,6 +574,9 @@ acpi_get_gpe_status(acpi_handle gpe_devi
- 
- 	status = acpi_hw_get_gpe_status(gpe_event_info, event_status);
- 
-+	if (gpe_event_info->flags & ACPI_GPE_DISPATCH_MASK)
-+		*event_status |= ACPI_EVENT_FLAG_HANDLE;
-+
-       unlock_and_exit:
- 	if (flags & ACPI_NOT_ISR) {
- 		(void)acpi_ut_release_mutex(ACPI_MTX_EVENTS);
---- a/drivers/acpi/system.c
-+++ b/drivers/acpi/system.c
-@@ -167,7 +167,6 @@ static int acpi_system_sysfs_init(void)
- #define COUNT_ERROR 2	/* other */
- #define NUM_COUNTERS_EXTRA 3
- 
--#define ACPI_EVENT_VALID	0x01
- struct event_counter {
- 	u32 count;
- 	u32 flags;
-@@ -312,12 +311,6 @@ static int get_status(u32 index, acpi_ev
- 	} else if (index < (num_gpes + ACPI_NUM_FIXED_EVENTS))
- 		result = acpi_get_event_status(index - num_gpes, status);
- 
--	/*
--	 * sleep/power button GPE/Fixed Event is enabled after acpi_system_init,
--	 * check the status at runtime and mark it as valid once it's enabled
--	 */
--	if (!result && (*status & ACPI_EVENT_FLAG_ENABLED))
--		all_counters[index].flags |= ACPI_EVENT_VALID;
- end:
- 	return result;
- }
-@@ -346,12 +339,14 @@ static ssize_t counter_show(struct kobje
- 	if (result)
- 		goto end;
- 
--	if (!(all_counters[index].flags & ACPI_EVENT_VALID))
--		size += sprintf(buf + size, "  invalid");
-+	if (!(status & ACPI_EVENT_FLAG_HANDLE))
-+		size += sprintf(buf + size, "	invalid");
- 	else if (status & ACPI_EVENT_FLAG_ENABLED)
--		size += sprintf(buf + size, "	enable");
-+		size += sprintf(buf + size, "	enabled");
-+	else if (status & ACPI_EVENT_FLAG_WAKE_ENABLED)
-+		size += sprintf(buf + size, "	wake_enabled");
- 	else
--		size += sprintf(buf + size, "  disable");
-+		size += sprintf(buf + size, "	disabled");
- 
- end:
- 	size += sprintf(buf + size, "\n");
-@@ -385,7 +380,7 @@ static ssize_t counter_set(struct kobjec
- 	if (result)
- 		goto end;
- 
--	if (!(all_counters[index].flags & ACPI_EVENT_VALID)) {
-+	if (!(status & ACPI_EVENT_FLAG_HANDLE)) {
- 		printk(KERN_WARNING PREFIX
- 			"Can not change Invalid GPE/Fixed Event status\n");
- 		return -EINVAL;
---- a/include/acpi/actypes.h
-+++ b/include/acpi/actypes.h
-@@ -525,6 +525,7 @@ typedef u32 acpi_event_status;
- #define ACPI_EVENT_FLAG_ENABLED         (acpi_event_status) 0x01
- #define ACPI_EVENT_FLAG_WAKE_ENABLED    (acpi_event_status) 0x02
- #define ACPI_EVENT_FLAG_SET             (acpi_event_status) 0x04
-+#define ACPI_EVENT_FLAG_HANDLE		(acpi_event_status) 0x08
- 
- /*
-  * General Purpose Events (GPE)
+--- a/drivers/mmc/host/at91_mci.c
++++ b/drivers/mmc/host/at91_mci.c
+@@ -1081,8 +1081,7 @@ static int __init at91_mci_probe(struct 
+ 	 * Allocate the MCI interrupt
+ 	 */
+ 	host->irq = platform_get_irq(pdev, 0);
+-	ret = request_irq(host->irq, at91_mci_irq, IRQF_SHARED,
+-			mmc_hostname(mmc), host);
++	ret = request_irq(host->irq, at91_mci_irq, 0, mmc_hostname(mmc), host);
+ 	if (ret) {
+ 		dev_dbg(&pdev->dev, "request MCI interrupt failed\n");
+ 		goto fail0;
