@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752250AbYJ0VAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbYJ0VBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752250AbYJ0VAT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 17:00:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYJ0U77
+	id S1753874AbYJ0VBh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 17:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbYJ0VB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 16:59:59 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:44151 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbYJ0U76 (ORCPT
+	Mon, 27 Oct 2008 17:01:27 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:11808 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751365AbYJ0VB0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 16:59:58 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-Subject: Re: Suspend to RAM regression in 2.6.28-rc2 (bisected)
-Date: Mon, 27 Oct 2008 21:59:52 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, tomas.winkler@intel.com, kernel@nn7.de
-References: <20081027162054.GA4015@localhost.aei.mpg.de>
-In-Reply-To: <20081027162054.GA4015@localhost.aei.mpg.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Oct 2008 17:01:26 -0400
+Date: Mon, 27 Oct 2008 16:01:36 -0500
+From: Mike Miller <mike.miller@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       LKML-scsi <linux-scsi@vger.kernel.org>
+Subject: [PATCH 1/2] cciss: fix sysfs broken symlink regression
+Message-ID: <20081027210136.GA9438@roadking.ldev.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810272159.52947.borntraeger@de.ibm.com>
+User-Agent: Mutt/1.5.9i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 27. Oktober 2008 schrieb Carlos R. Mafra:
-> Hi,
-> 
-> So I managed to bisect my suspend to RAM regression in 2.6.27-rc2
-> to commit 3b7ee69d0caefbdb85a606a98bff841b8c63b97e ("mac80211: disassociate 
-> when moving to new BSS") by Tomas Winkler (Cc:-ed).
+Patch 1 of 2
 
-I was also bisecting a suspend to RAM regression in 2.6.28-rc1 but I had to 
-stop the bisect due to another problem in that bisection. I can confirm that 
-this patch was among the ~50 patches left to test.
+Regression introduced by commit 6ae5ce8e8d4de666f31286808d2285aa6a50fa40.
+This patch fixes a broken symlink in sysfs that was introduced by the above
+commit also called "cciss: remove redundant code." We broke it in 2.6.27-rc
+on or about 20080804. Some installers are broken if this symlink does not
+exist and they may not detect the logical drives configured on the
+controller.
+It does not require being backported into 2.6.26.x or earlier kernels.
 
-Christian
+Please consider this for inclusion.
+
+Andrew, do I need to resubmit 2 of 2? Or is that one still in your queue?
+
+Signed-off-by: Mike Miller <mike.miller@hp.com>
+
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index 1e1f915..0f367b1 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -1365,6 +1365,7 @@ static void cciss_add_disk(ctlr_info_t *h, struct gendisk *disk,
+ 	disk->first_minor = drv_index << NWD_SHIFT;
+ 	disk->fops = &cciss_fops;
+ 	disk->private_data = &h->drv[drv_index];
++	disk->driverfs_dev = &h->pdev->dev;
+ 
+ 	/* Set up queue information */
+ 	blk_queue_bounce_limit(disk->queue, h->pdev->dma_mask);
