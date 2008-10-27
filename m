@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752825AbYJ0QFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753191AbYJ0QGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752825AbYJ0QFb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 12:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYJ0QFY
+	id S1753191AbYJ0QGS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 12:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYJ0QGC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 12:05:24 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36858 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751548AbYJ0QFX (ORCPT
+	Mon, 27 Oct 2008 12:06:02 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:56477 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751548AbYJ0QGA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 12:05:23 -0400
-Date: Mon, 27 Oct 2008 16:03:59 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-Subject: Re: [GIT PULL/RESEND] kernel message catalog patches
-Message-ID: <20081027160359.37db885c@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.00.0810270750100.3386@nehalem.linux-foundation.org>
-References: <1224168620.9617.14.camel@localhost>
-	<1224230354.4631.1.camel@localhost>
-	<20081021092148.GB4980@osiris.boeblingen.de.ibm.com>
-	<alpine.LFD.2.00.0810230835150.3287@nehalem.linux-foundation.org>
-	<20081023210446.GA12003@osiris.boeblingen.de.ibm.com>
-	<alpine.LFD.2.00.0810231433380.3287@nehalem.linux-foundation.org>
-	<1225049195.14057.72.camel@localhost>
-	<alpine.LFD.2.00.0810261212290.5200@nehalem.linux-foundation.org>
-	<1225101688.15777.6.camel@localhost>
-	<alpine.LFD.2.00.0810270750100.3386@nehalem.linux-foundation.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Oct 2008 12:06:00 -0400
+Date: Mon, 27 Oct 2008 12:05:57 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, lenb@kernel.org
+Subject: Re: PATCH] ftrace: Add a C/P state tracer to help power
+ optimization
+In-Reply-To: <20081027155920.GS5704@elte.hu>
+Message-ID: <alpine.DEB.1.10.0810271205010.3282@gandalf.stny.rr.com>
+References: <20081006102640.481acd23@infradead.org> <20081027155920.GS5704@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And as for the actual explanations: either they need to be totally outside 
-> the kernel (in a project of their own), or they'd need to be "kernel-doc" 
-> style things that are _in_ the source code. Not in Documentation/. Not 
-> separate from the printk() that they are associated with.
 
-You really don't want 32 languages in mixed left/right rendering with
-multiple fonts in your kernel source. At least not with most editing and
-viewing tools....
+On Mon, 27 Oct 2008, Ingo Molnar wrote:
+> 
+> > +	help
+> > +	  This tracer helps developers to analyize and optimize the kernels
+> > +	  power management decisions, specifically the C-state and P-state
+> > +	  behavior.
+> 
+> s/analyize/analyse
 
-User space uses message catalogues and has tools for maintaining them
-which make using any other format somewhat dumb. They extract strings
-using _("hello") type wrappers to identify what are translatable strings
-so if the kernel source has _() macros all the tooling just works and can
-live outside and way from the kernel.
+Unless Britsh English is different, which I do not know.
 
-Just needs _() to do the right thing compiled into the kernel and a
-printk formatting to do the right thing with the result. In truth you
-don't even need a hash in printk just the ability to make it produce
-either
+s/analyse/analyze/
 
-	"Hello my name is 'fred3'"
+;-)
 
-and something like
+-- Steve
 
-	"Hello my name is '%s%d'\0Fred\0\000\000\000\003"
-
-The kernel contains the English which should be a pretty passable hash.
-
-Alan
+> s/kernels/kernel's
+> 
+> > +static struct trace_array *power_trace;
+> > +static int trace_power_enabled;
+> 
+> __read_mostly ?
+> 
+> 	Ingo
+> 
+> 
