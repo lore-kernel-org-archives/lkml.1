@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbYJ0Tfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbYJ0Thx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753391AbYJ0Tfo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 15:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbYJ0Tfg
+	id S1753483AbYJ0Thx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 15:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbYJ0Tho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 15:35:36 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38092 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751201AbYJ0Tff (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 15:35:35 -0400
-Message-ID: <49061803.4060707@garzik.org>
-Date: Mon, 27 Oct 2008 15:35:31 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Mon, 27 Oct 2008 15:37:44 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:41931 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751674AbYJ0Thn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 15:37:43 -0400
+Date: Mon, 27 Oct 2008 15:36:53 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+Subject: Re: [GIT PULL/RESEND] kernel message catalog patches
+Message-ID: <20081027193653.GC23111@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+	linux-s390@vger.kernel.org
+References: <20081021092148.GB4980@osiris.boeblingen.de.ibm.com> <alpine.LFD.2.00.0810230835150.3287@nehalem.linux-foundation.org> <20081023210446.GA12003@osiris.boeblingen.de.ibm.com> <alpine.LFD.2.00.0810231433380.3287@nehalem.linux-foundation.org> <1225049195.14057.72.camel@localhost> <alpine.LFD.2.00.0810261212290.5200@nehalem.linux-foundation.org> <1225101688.15777.6.camel@localhost> <alpine.LFD.2.00.0810270750100.3386@nehalem.linux-foundation.org> <20081027160359.37db885c@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0810270906520.3386@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-To: Harald Dunkel <harald.dunkel@t-online.de>
-CC: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.27.3, ata_piix: cannot play audio CD, "disk change detected"
-References: <490615E9.7070607@t-online.de>
-In-Reply-To: <490615E9.7070607@t-online.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0810270906520.3386@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harald Dunkel wrote:
-> Hi folks,
+On Mon, Oct 27, 2008 at 09:10:56AM -0700, Linus Torvalds wrote:
 > 
-> If I insert an audio CD in my sata drive to play it via grip, then
-> it fails. Grip does not even show the list of audio tracks, nor does
-> it play the CD. Instead there is a kernel message saying
-> 
-> [ 6730.836999] sr0: CDROM not ready yet.
-> [ 6732.838572] sr0: disc change detected.
-> [ 6783.659021] ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-> [ 6783.659034] ata4.00: cmd a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-> [ 6783.659035]          cdb 1b 00 00 00 02 00 00 00  00 00 00 00 00 00 00 00
-> [ 6783.659036]          res 40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-> [ 6783.659038] ata4.00: status: { DRDY }
-> [ 6783.659046] ata4: hard resetting link
-> [ 6784.115039] ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> [ 6785.622185] ata4.00: configured for UDMA/100
-> [ 6785.622193] ata4: EH complete
-> 
-> 
-> The same CDs work fine with an USB CD drive attached to the same
-> PC, so this might be a sata driver issue. (BTW, stopping hal doesn't
-> make a difference. Data CDs work fine.)
-> 
-> Any idea what goes wrong here? Does grip violate the SCSI protocol
-> here?  Is there something I could try to help to track this down?
+> I do agree. Another issue is that quite often the actual line to be 
+> printed is likely fairly short, and often in an error path (so it's 
+> indented and in an inconvenient place), but the explanation - even for a 
+> _single_ language - may well be pretty involved and long.
 
-hmmmm, I used to see something similar on ICH7 but it went away.
+It's likely that the explanation would need to be just outside the
+containing function, and not in-line where it might need to be deeply
+indented. 
 
-Can you try various strategies associated with interrupts (trying to 
-determine the cause of the timeouts), such as booting with "noapic", 
-"acpi=off", and/or pci=biosirq.
+And I think we do need separate out the question of multiple langauges
+from the explanation in a single canonical language (i.e., English).
+Does keeping the explanation just before the containing function mean
+that it's "so far away" that it might as well be kept completely
+outside of the kernel?  I don't think so, but it's probably not worth
+a huge amount of effort debating it; tools for keeping an external
+database in sync is a pain, but they've certainly been done before for
+related problems (especially in the case of translations, where they
+would have to be done that way anyway).
 
-	Jeff
-
+     	  	  	      	   	    - Ted
 
