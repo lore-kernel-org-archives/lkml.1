@@ -1,131 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbYJ0W37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYJ0WaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752712AbYJ0W37 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 18:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYJ0W3u
+	id S1754856AbYJ0WaZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 18:30:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYJ0WaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 18:29:50 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:51210 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751828AbYJ0W3u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 18:29:50 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Mon, 27 Oct 2008 23:29:32 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [patch 2.6.27.y 6/6] firewire: fw-sbp2: fix races
-To: stable@kernel.org
-cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.df6e0a4afb92ef6e@s5r6.in-berlin.de>
-Message-ID: <tkrat.84265bc39337ceb3@s5r6.in-berlin.de>
-References: <tkrat.df6e0a4afb92ef6e@s5r6.in-berlin.de>
+	Mon, 27 Oct 2008 18:30:07 -0400
+Received: from khc.piap.pl ([195.187.100.11]:56904 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754809AbYJ0WaC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 18:30:02 -0400
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] r8169: revert "read MAC address from EEPROM on init"
+References: <20081026160249.GA25443@electric-eye.fr.zoreil.com>
+In-Reply-To: <20081026160249.GA25443@electric-eye.fr.zoreil.com> (Francois Romieu's message of "Sun\, 26 Oct 2008 17\:02\:49 +0100")
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Mon, 27 Oct 2008 23:29:59 +0100
+Message-ID: <m3mygplli0.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Date: Fri, 24 Oct 2008 15:26:20 -0400
-From: Jay Fenlason <fenlason@redhat.com>
+[Reposting to lkml only, Gnus likes to eat quoting from email addresses
+under specific circumstances and then vger doesn't pass them through]
 
-1: There is a small race between queue_delayed_work() and its
-   corresponding kref_get().  Do the kref_get first, and _put it again
-   if the queue_delayed_work() failed, so there is no chance of the
-   kref going to zero while the work is scheduled.
-2: An SBP2_LOGOUT_REQUEST could be sent out with a login_id full of
-   garbage.  Initialize it to an invalid value so we can tell if we
-   ever got a valid login_id.
-3: The node ID and generation may have changed but the new values may
-   not yet have been recorded in lu and tgt when the final logout is
-   attempted.  Use the latest values from the device in
-   sbp2_release_target().
+Francois Romieu <romieu@fr.zoreil.com> writes:
 
-Same as commit cd1f70fdb4823c97328a1f151f328eb36fafd579.
+> -static int rtl_eeprom_read(struct pci_dev *pdev, int cap, int addr, __le32 *val)
+> -{
+> -	int ret, count = 100;
+> -	u16 status = 0;
+> -	u32 value;
+> -
+> -	ret = pci_write_config_word(pdev, cap + PCI_VPD_ADDR, addr);
+> -	if (ret < 0)
+> -		return ret;
+> -
+> -	do {
+> -		udelay(10);
+> -		ret = pci_read_config_word(pdev, cap + PCI_VPD_ADDR, &status);
+> -		if (ret < 0)
+> -			return ret;
+> -	} while (!(status & PCI_VPD_ADDR_F) && --count);
+> -
+> -	if (!(status & PCI_VPD_ADDR_F))
+> -		return -ETIMEDOUT;
+> -
+> -	ret = pci_read_config_dword(pdev, cap + PCI_VPD_DATA, &value);
+> -	if (ret < 0)
+> -		return ret;
+> -
+> -	*val = cpu_to_le32(value);
+> -
+> -	return 0;
 
-Signed-off-by: Jay Fenlason <fenlason@redhat.com>
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-sbp2.c |   36 ++++++++++++++++++++++++++----------
- 1 file changed, 26 insertions(+), 10 deletions(-)
+Ahh, just PCI VPD.
 
-Index: linux/drivers/firewire/fw-sbp2.c
-===================================================================
---- linux.orig/drivers/firewire/fw-sbp2.c
-+++ linux/drivers/firewire/fw-sbp2.c
-@@ -172,6 +172,9 @@ struct sbp2_target {
- 	int blocked;	/* ditto */
- };
- 
-+/* Impossible login_id, to detect logout attempt before successful login */
-+#define INVALID_LOGIN_ID 0x10000
-+
- /*
-  * Per section 7.4.8 of the SBP-2 spec, a mgt_ORB_timeout value can be
-  * provided in the config rom. Most devices do provide a value, which
-@@ -791,9 +794,20 @@ static void sbp2_release_target(struct k
- 			scsi_remove_device(sdev);
- 			scsi_device_put(sdev);
- 		}
--		sbp2_send_management_orb(lu, tgt->node_id, lu->generation,
--				SBP2_LOGOUT_REQUEST, lu->login_id, NULL);
--
-+		if (lu->login_id != INVALID_LOGIN_ID) {
-+			int generation, node_id;
-+			/*
-+			 * tgt->node_id may be obsolete here if we failed
-+			 * during initial login or after a bus reset where
-+			 * the topology changed.
-+			 */
-+			generation = device->generation;
-+			smp_rmb(); /* node_id vs. generation */
-+			node_id    = device->node_id;
-+			sbp2_send_management_orb(lu, node_id, generation,
-+						 SBP2_LOGOUT_REQUEST,
-+						 lu->login_id, NULL);
-+		}
- 		fw_core_remove_address_handler(&lu->address_handler);
- 		list_del(&lu->link);
- 		kfree(lu);
-@@ -808,19 +822,20 @@ static void sbp2_release_target(struct k
- 
- static struct workqueue_struct *sbp2_wq;
- 
-+static void sbp2_target_put(struct sbp2_target *tgt)
-+{
-+	kref_put(&tgt->kref, sbp2_release_target);
-+}
-+
- /*
-  * Always get the target's kref when scheduling work on one its units.
-  * Each workqueue job is responsible to call sbp2_target_put() upon return.
-  */
- static void sbp2_queue_work(struct sbp2_logical_unit *lu, unsigned long delay)
- {
--	if (queue_delayed_work(sbp2_wq, &lu->work, delay))
--		kref_get(&lu->tgt->kref);
--}
--
--static void sbp2_target_put(struct sbp2_target *tgt)
--{
--	kref_put(&tgt->kref, sbp2_release_target);
-+	kref_get(&lu->tgt->kref);
-+	if (!queue_delayed_work(sbp2_wq, &lu->work, delay))
-+		sbp2_target_put(lu->tgt);
- }
- 
- static void
-@@ -993,6 +1008,7 @@ static int sbp2_add_logical_unit(struct 
- 
- 	lu->tgt      = tgt;
- 	lu->lun      = lun_entry & 0xffff;
-+	lu->login_id = INVALID_LOGIN_ID;
- 	lu->retries  = 0;
- 	lu->has_sdev = false;
- 	lu->blocked  = false;
+IMHO the above shouldn't hurt anyone, in theory. You only write to
+VPD_ADDR, and to change actual VPD data (i.e., EEPROM), you need to
+write to VPD_DATA.
+
+Anyone should be allowed to do that even for unknown PCI devices
+without a problem.
+
+> -static void rtl_init_mac_address(struct rtl8169_private *tp,
+
+> -	if (!(cfg1  & VPD)) {
+> -		if (netif_msg_probe(tp))
+> -			dev_info(&pdev->dev, "VPD access disabled, enabling\n");
+> -		RTL_W8(Cfg9346, Cfg9346_Unlock);
+> -		RTL_W8(Config1, cfg1 | VPD);
+> -		RTL_W8(Cfg9346, Cfg9346_Lock);
+
+Now I wonder what do they say the above does exactly.
+Unfortunately the docs don't seem to be public.
+
+> -	 * MAC address is stored in EEPROM at offset 0x0e
+> -	 * Realtek says: "The VPD address does not have to be a DWORD-aligned
+> -	 * address as defined in the PCI 2.2 Specifications, but the VPD data
+> -	 * is always consecutive 4-byte data starting from the VPD address
+> -	 * specified."
+
+Nice.
+
+> -	if (netif_msg_probe(tp)) {
+> -		DECLARE_MAC_BUF(buf);
+> -
+> -		dev_info(&pdev->dev, "MAC address found in EEPROM: %s\n",
+> -			 print_mac(buf, mac));
+> -	}
+> -
+> -	if (is_valid_ether_addr(mac))
+> -		rtl_rar_set(tp, mac);
+> -}
+
+No RTL_W8(Config1, cfg1 | ~VPD) to disable (perhaps R/W) access?
+
+Though obviously first reading a good address from the EEPROM and then
+erasing first 32 bits is a different story. I wonder if changing the
+MAC address by hand works (using ifconfig, to arbitrary address).
 
 -- 
-Stefan Richter
--=====-==--- =-=- ==-==
-http://arcgraph.de/sr/
-
+Krzysztof Halasa
