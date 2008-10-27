@@ -1,617 +1,447 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754AbYJ0RkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752987AbYJ0Rl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752754AbYJ0RkU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 13:40:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbYJ0RkG
+	id S1752987AbYJ0Rl6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 13:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbYJ0Rlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 13:40:06 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:38750 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751092AbYJ0RkE (ORCPT
+	Mon, 27 Oct 2008 13:41:50 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:42057 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751368AbYJ0Rls (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 13:40:04 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>,
-       David Brownell <david-b@pacbell.net>
-Cc: rtc-linux@googlegroups.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 2/2] rtc: rtc-wm8350: Add support for WM8350 RTC
-Date: Mon, 27 Oct 2008 17:40:01 +0000
-Message-Id: <1225129201-4634-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <20081027182654.7495be2b@i1501.lan.towertech.it>
-References: <20081027182654.7495be2b@i1501.lan.towertech.it>
+	Mon, 27 Oct 2008 13:41:48 -0400
+Subject: Re: [PATCH 2/4] Hypervisor detection and get tsc_freq from
+	hypervisor
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>
+In-Reply-To: <20081027110134.GC13641@elte.hu>
+References: <1224894104.28224.72.camel@alok-dev1>
+	 <20081027110134.GC13641@elte.hu>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Mon, 27 Oct 2008 10:41:46 -0700
+Message-Id: <1225129306.28018.9.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds support for the RTC provided by the Wolfson Microelectronics
-WM8350.
+On Mon, 2008-10-27 at 04:01 -0700, Ingo Molnar wrote:
+> * Alok Kataria <akataria@vmware.com> wrote:
+> 
+> > The DMI + Backdoor [...]
+> 
+> please do _NOT_ call anything like this a "backdoor", anywhere in the
+> source or the commit log. 
 
-This driver was originally written by Graeme Gregory and Liam Girdwood,
-though it has been modified since then to update it to current mainline
-coding standards and for API completeness.
+Not a problem.
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Below is the updated patch.
+
+Thanks,
+Alok
+
+--
+
+x86: Get TSC frequency from VMware hypervisor.
+
+From: Alok N Kataria <akataria@vmware.com>
+
+v3->v2 : Abstract the hypervisor detection and feature (tsc_freq) request
+	 behind a hypervisor.c file
+v2->v1 : Add a x86_hyper_vendor field to the cpuinfo_x86 structure.
+	 This avoids multiple calls to the hypervisor detection function.
+
+This patch adds function to detect if we are running under VMware.
+The current way to check if we are on VMware is following,
+#  check if "hypervisor present bit" is set, if so read the 0x40000000
+   cpuid leaf and check for "VMwareVMware" signature.
+#  if the above fails, check the DMI vendors name for "VMware" string
+   if we find one we query the VMware hypervisor port to check if we are
+   under VMware.
+
+The DMI + "VMware hypervisor port check" is needed for older VMware products,
+which don't implement the hypervisor signature cpuid leaf.
+Also note that since we are checking for the DMI signature the hypervisor
+port should never be accessed on native hardware.
+
+This patch also adds a hypervisor_get_tsc_freq function, instead of
+calibrating the frequency which can be error prone in virtualized
+environment, we ask the hypervisor for it. We get the frequency from
+the hypervisor by accessing the hypervisor port if we are running on VMware.
+Other hypervisors too can add code to the generic routine to get frequency on
+their platform.
+
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
+Signed-off-by: Dan Hecht <dhecht@vmware.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
 ---
-This revision:
- - Marks remove() with __devexit_p()
- - Fixes grammar in MODULE_DESCRIPTION()
 
-which should address all the feedback from Alessandro.
+ arch/x86/include/asm/cpufeature.h |    2 +
+ arch/x86/include/asm/hypervisor.h |   26 +++++++++++
+ arch/x86/include/asm/processor.h  |    4 ++
+ arch/x86/include/asm/vmware.h     |   26 +++++++++++
+ arch/x86/kernel/cpu/Makefile      |    1 
+ arch/x86/kernel/cpu/common.c      |    2 +
+ arch/x86/kernel/cpu/hypervisor.c  |   48 ++++++++++++++++++++
+ arch/x86/kernel/cpu/vmware.c      |   88 +++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/setup.c           |    7 +++
+ arch/x86/kernel/tsc.c             |    9 +++-
+ 10 files changed, 212 insertions(+), 1 deletions(-)
+ create mode 100644 arch/x86/include/asm/hypervisor.h
+ create mode 100644 arch/x86/include/asm/vmware.h
+ create mode 100644 arch/x86/kernel/cpu/hypervisor.c
+ create mode 100644 arch/x86/kernel/cpu/vmware.c
 
- drivers/rtc/Kconfig            |   10 +
- drivers/rtc/Makefile           |    1 +
- drivers/rtc/rtc-wm8350.c       |  514 ++++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/wm8350/rtc.h |    2 +
- 4 files changed, 527 insertions(+), 0 deletions(-)
- create mode 100644 drivers/rtc/rtc-wm8350.c
 
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 8abbb20..7951ad2 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -468,6 +468,16 @@ config RTC_DRV_V3020
- 	  This driver can also be built as a module. If so, the module
- 	  will be called rtc-v3020.
+diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+index f73e95d..78478f2 100644
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -117,6 +117,7 @@
+ #define X86_FEATURE_XSAVE	(4*32+26) /* XSAVE/XRSTOR/XSETBV/XGETBV */
+ #define X86_FEATURE_OSXSAVE	(4*32+27) /* "" XSAVE enabled in the OS */
+ #define X86_FEATURE_AVX		(4*32+28) /* Advanced Vector Extensions */
++#define X86_FEATURE_HYPERVISOR	(4*32+31) /* Running on a hypervisor */
  
-+config RTC_DRV_WM8350
-+	tristate "Wolfson Microelectronics WM8350 RTC"
-+	depends on MFD_WM8350
-+	help
-+	  If you say yes here you will get support for the RTC subsystem
-+	  of the Wolfson Microelectronics WM8350.
-+
-+	  This driver can also be built as a module. If so, the module
-+	  will be called "rtc-wm8350".
-+
- comment "on-CPU RTC drivers"
+ /* VIA/Cyrix/Centaur-defined CPU features, CPUID level 0xC0000001, word 5 */
+ #define X86_FEATURE_XSTORE	(5*32+ 2) /* "rng" RNG present (xstore) */
+@@ -237,6 +238,7 @@ extern const char * const x86_power_flags[32];
+ #define cpu_has_xmm4_2		boot_cpu_has(X86_FEATURE_XMM4_2)
+ #define cpu_has_x2apic		boot_cpu_has(X86_FEATURE_X2APIC)
+ #define cpu_has_xsave		boot_cpu_has(X86_FEATURE_XSAVE)
++#define cpu_has_hypervisor	boot_cpu_has(X86_FEATURE_HYPERVISOR)
  
- config RTC_DRV_OMAP
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index e9e8474..7a41201 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -66,4 +66,5 @@ obj-$(CONFIG_RTC_DRV_TEST)	+= rtc-test.o
- obj-$(CONFIG_RTC_DRV_TWL4030)	+= rtc-twl4030.o
- obj-$(CONFIG_RTC_DRV_V3020)	+= rtc-v3020.o
- obj-$(CONFIG_RTC_DRV_VR41XX)	+= rtc-vr41xx.o
-+obj-$(CONFIG_RTC_DRV_WM8350)	+= rtc-wm8350.o
- obj-$(CONFIG_RTC_DRV_X1205)	+= rtc-x1205.o
-diff --git a/drivers/rtc/rtc-wm8350.c b/drivers/rtc/rtc-wm8350.c
+ #if defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_64)
+ # define cpu_has_invlpg		1
+diff --git a/arch/x86/include/asm/hypervisor.h b/arch/x86/include/asm/hypervisor.h
 new file mode 100644
-index 0000000..5c5e3aa
+index 0000000..369f5c5
 --- /dev/null
-+++ b/drivers/rtc/rtc-wm8350.c
-@@ -0,0 +1,514 @@
++++ b/arch/x86/include/asm/hypervisor.h
+@@ -0,0 +1,26 @@
 +/*
-+ *	Real Time Clock driver for Wolfson Microelectronics WM8350
++ * Copyright (C) 2008, VMware, Inc.
 + *
-+ *	Copyright (C) 2007, 2008 Wolfson Microelectronics PLC.
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
 + *
-+ *  Author: Liam Girdwood
-+ *          linux@wolfsonmicro.com
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
++ * NON INFRINGEMENT.  See the GNU General Public License for more
++ * details.
 + *
-+ *  This program is free software; you can redistribute  it and/or modify it
-+ *  under  the terms of  the GNU General  Public License as published by the
-+ *  Free Software Foundation;  either version 2 of the  License, or (at your
-+ *  option) any later version.
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
 + *
 + */
++#ifndef ASM_X86__HYPERVISOR_H
++#define ASM_X86__HYPERVISOR_H
 +
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/time.h>
-+#include <linux/rtc.h>
-+#include <linux/bcd.h>
-+#include <linux/interrupt.h>
-+#include <linux/ioctl.h>
-+#include <linux/completion.h>
-+#include <linux/mfd/wm8350/rtc.h>
-+#include <linux/mfd/wm8350/core.h>
-+#include <linux/delay.h>
-+#include <linux/platform_device.h>
++extern unsigned long get_hypervisor_tsc_freq(void);
++extern void init_hypervisor(struct cpuinfo_x86 *c);
 +
-+#define WM8350_SET_ALM_RETRIES	5
-+#define WM8350_SET_TIME_RETRIES	5
-+#define WM8350_GET_TIME_RETRIES	5
-+
-+#define to_wm8350_from_rtc_dev(d) container_of(d, struct wm8350, rtc.pdev.dev)
-+
-+/*
-+ * Read current time and date in RTC
-+ */
-+static int wm8350_rtc_readtime(struct device *dev, struct rtc_time *tm)
-+{
-+	struct wm8350 *wm8350 = dev_get_drvdata(dev);
-+	u16 time1[4], time2[4];
-+	int retries = WM8350_GET_TIME_RETRIES, ret;
-+
-+	/*
-+	 * Read the time twice and compare.
-+	 * If time1 == time2, then time is valid else retry.
-+	 */
-+	do {
-+		ret = wm8350_block_read(wm8350, WM8350_RTC_SECONDS_MINUTES,
-+					4, time1);
-+		if (ret < 0)
-+			return ret;
-+		ret = wm8350_block_read(wm8350, WM8350_RTC_SECONDS_MINUTES,
-+					4, time2);
-+		if (ret < 0)
-+			return ret;
-+
-+		if (memcmp(time1, time2, sizeof(time1)) == 0) {
-+			tm->tm_sec = time1[0] & WM8350_RTC_SECS_MASK;
-+
-+			tm->tm_min = (time1[0] & WM8350_RTC_MINS_MASK)
-+			    >> WM8350_RTC_MINS_SHIFT;
-+
-+			tm->tm_hour = time1[1] & WM8350_RTC_HRS_MASK;
-+
-+			tm->tm_wday = ((time1[1] >> WM8350_RTC_DAY_SHIFT)
-+				       & 0x7) - 1;
-+
-+			tm->tm_mon = ((time1[2] & WM8350_RTC_MTH_MASK)
-+				      >> WM8350_RTC_MTH_SHIFT) - 1;
-+
-+			tm->tm_mday = (time1[2] & WM8350_RTC_DATE_MASK);
-+
-+			tm->tm_year = ((time1[3] & WM8350_RTC_YHUNDREDS_MASK)
-+				       >> WM8350_RTC_YHUNDREDS_SHIFT) * 100;
-+			tm->tm_year += time1[3] & WM8350_RTC_YUNITS_MASK;
-+
-+			tm->tm_yday = rtc_year_days(tm->tm_mday, tm->tm_mon,
-+						    tm->tm_year);
-+			tm->tm_year -= 1900;
-+
-+			dev_dbg(dev, "Read (%d left): %04x %04x %04x %04x\n",
-+				retries,
-+				time1[0], time1[1], time1[2], time1[3]);
-+
-+			return 0;
-+		}
-+	} while (retries--);
-+
-+	dev_err(dev, "timed out reading RTC time\n");
-+	return -EIO;
-+}
-+
-+/*
-+ * Set current time and date in RTC
-+ */
-+static int wm8350_rtc_settime(struct device *dev, struct rtc_time *tm)
-+{
-+	struct wm8350 *wm8350 = dev_get_drvdata(dev);
-+	u16 time[4];
-+	u16 rtc_ctrl;
-+	int ret, retries = WM8350_SET_TIME_RETRIES;
-+
-+	time[0] = tm->tm_sec;
-+	time[0] |= tm->tm_min << WM8350_RTC_MINS_SHIFT;
-+	time[1] = tm->tm_hour;
-+	time[1] |= (tm->tm_wday + 1) << WM8350_RTC_DAY_SHIFT;
-+	time[2] = tm->tm_mday;
-+	time[2] |= (tm->tm_mon + 1) << WM8350_RTC_MTH_SHIFT;
-+	time[3] = ((tm->tm_year + 1900) / 100) << WM8350_RTC_YHUNDREDS_SHIFT;
-+	time[3] |= (tm->tm_year + 1900) % 100;
-+
-+	dev_dbg(dev, "Setting: %04x %04x %04x %04x\n",
-+		time[0], time[1], time[2], time[3]);
-+
-+	/* Set RTC_SET to stop the clock */
-+	ret = wm8350_set_bits(wm8350, WM8350_RTC_TIME_CONTROL, WM8350_RTC_SET);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* Wait until confirmation of stopping */
-+	do {
-+		rtc_ctrl = wm8350_reg_read(wm8350, WM8350_RTC_TIME_CONTROL);
-+		schedule_timeout_uninterruptible(msecs_to_jiffies(1));
-+	} while (retries-- && !(rtc_ctrl & WM8350_RTC_STS));
-+
-+	if (!retries) {
-+		dev_err(dev, "timed out on set confirmation\n");
-+		return -EIO;
-+	}
-+
-+	/* Write time to RTC */
-+	ret = wm8350_block_write(wm8350, WM8350_RTC_SECONDS_MINUTES, 4, time);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* Clear RTC_SET to start the clock */
-+	ret = wm8350_clear_bits(wm8350, WM8350_RTC_TIME_CONTROL,
-+				WM8350_RTC_SET);
-+	return ret;
-+}
-+
-+/*
-+ * Read alarm time and date in RTC
-+ */
-+static int wm8350_rtc_readalarm(struct device *dev, struct rtc_wkalrm *alrm)
-+{
-+	struct wm8350 *wm8350 = dev_get_drvdata(dev);
-+	struct rtc_time *tm = &alrm->time;
-+	u16 time[4];
-+	int ret;
-+
-+	ret = wm8350_block_read(wm8350, WM8350_ALARM_SECONDS_MINUTES, 4, time);
-+	if (ret < 0)
-+		return ret;
-+
-+	tm->tm_sec = time[0] & WM8350_RTC_ALMSECS_MASK;
-+	if (tm->tm_sec == WM8350_RTC_ALMSECS_MASK)
-+		tm->tm_sec = -1;
-+
-+	tm->tm_min = time[0] & WM8350_RTC_ALMMINS_MASK;
-+	if (tm->tm_min == WM8350_RTC_ALMMINS_MASK)
-+		tm->tm_min = -1;
-+	else
-+		tm->tm_min >>= WM8350_RTC_ALMMINS_SHIFT;
-+
-+	tm->tm_hour = time[1] & WM8350_RTC_ALMHRS_MASK;
-+	if (tm->tm_hour == WM8350_RTC_ALMHRS_MASK)
-+		tm->tm_hour = -1;
-+
-+	tm->tm_wday = ((time[1] >> WM8350_RTC_ALMDAY_SHIFT) & 0x7) - 1;
-+	if (tm->tm_wday > 7)
-+		tm->tm_wday = -1;
-+
-+	tm->tm_mon = time[2] & WM8350_RTC_ALMMTH_MASK;
-+	if (tm->tm_mon == WM8350_RTC_ALMMTH_MASK)
-+		tm->tm_mon = -1;
-+	else
-+		tm->tm_mon = (tm->tm_mon >> WM8350_RTC_ALMMTH_SHIFT) - 1;
-+
-+	tm->tm_mday = (time[2] & WM8350_RTC_ALMDATE_MASK);
-+	if (tm->tm_mday == WM8350_RTC_ALMDATE_MASK)
-+		tm->tm_mday = -1;
-+
-+	tm->tm_year = -1;
-+
-+	alrm->enabled = !(time[3] & WM8350_RTC_ALMSTS);
-+
-+	return 0;
-+}
-+
-+static int wm8350_rtc_stop_alarm(struct wm8350 *wm8350)
-+{
-+	int retries = WM8350_SET_ALM_RETRIES;
-+	u16 rtc_ctrl;
-+	int ret;
-+
-+	/* Set RTC_SET to stop the clock */
-+	ret = wm8350_set_bits(wm8350, WM8350_RTC_TIME_CONTROL,
-+			      WM8350_RTC_ALMSET);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* Wait until confirmation of stopping */
-+	do {
-+		rtc_ctrl = wm8350_reg_read(wm8350, WM8350_RTC_TIME_CONTROL);
-+		schedule_timeout_uninterruptible(msecs_to_jiffies(1));
-+	} while (retries-- && !(rtc_ctrl & WM8350_RTC_ALMSTS));
-+
-+	if (!(rtc_ctrl & WM8350_RTC_ALMSTS))
-+		return -ETIMEDOUT;
-+
-+	return 0;
-+}
-+
-+static int wm8350_rtc_start_alarm(struct wm8350 *wm8350)
-+{
-+	int ret;
-+	int retries = WM8350_SET_ALM_RETRIES;
-+	u16 rtc_ctrl;
-+
-+	ret = wm8350_clear_bits(wm8350, WM8350_RTC_TIME_CONTROL,
-+				WM8350_RTC_ALMSET);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* Wait until confirmation */
-+	do {
-+		rtc_ctrl = wm8350_reg_read(wm8350, WM8350_RTC_TIME_CONTROL);
-+		schedule_timeout_uninterruptible(msecs_to_jiffies(1));
-+	} while (retries-- && rtc_ctrl & WM8350_RTC_ALMSTS);
-+
-+	if (rtc_ctrl & WM8350_RTC_ALMSTS)
-+		return -ETIMEDOUT;
-+
-+	return 0;
-+}
-+
-+static int wm8350_rtc_setalarm(struct device *dev, struct rtc_wkalrm *alrm)
-+{
-+	struct wm8350 *wm8350 = dev_get_drvdata(dev);
-+	struct rtc_time *tm = &alrm->time;
-+	u16 time[3];
-+	int ret;
-+
-+	memset(time, 0, sizeof(time));
-+
-+	if (tm->tm_sec != -1)
-+		time[0] |= tm->tm_sec;
-+	else
-+		time[0] |= WM8350_RTC_ALMSECS_MASK;
-+
-+	if (tm->tm_min != -1)
-+		time[0] |= tm->tm_min << WM8350_RTC_ALMMINS_SHIFT;
-+	else
-+		time[0] |= WM8350_RTC_ALMMINS_MASK;
-+
-+	if (tm->tm_hour != -1)
-+		time[1] |= tm->tm_hour;
-+	else
-+		time[1] |= WM8350_RTC_ALMHRS_MASK;
-+
-+	if (tm->tm_wday != -1)
-+		time[1] |= (tm->tm_wday + 1) << WM8350_RTC_ALMDAY_SHIFT;
-+	else
-+		time[1] |= WM8350_RTC_ALMDAY_MASK;
-+
-+	if (tm->tm_mday != -1)
-+		time[2] |= tm->tm_mday;
-+	else
-+		time[2] |= WM8350_RTC_ALMDATE_MASK;
-+
-+	if (tm->tm_mon != -1)
-+		time[2] |= (tm->tm_mon + 1) << WM8350_RTC_ALMMTH_SHIFT;
-+	else
-+		time[2] |= WM8350_RTC_ALMMTH_MASK;
-+
-+	ret = wm8350_rtc_stop_alarm(wm8350);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* Write time to RTC */
-+	ret = wm8350_block_write(wm8350, WM8350_ALARM_SECONDS_MINUTES,
-+				 3, time);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (alrm->enabled)
-+		ret = wm8350_rtc_start_alarm(wm8350);
-+
-+	return ret;
-+}
-+
-+/*
-+ * Handle commands from user-space
-+ */
-+static int wm8350_rtc_ioctl(struct device *dev, unsigned int cmd,
-+			    unsigned long arg)
-+{
-+	struct wm8350 *wm8350 = dev_get_drvdata(dev);
-+
-+	switch (cmd) {
-+	case RTC_AIE_OFF:
-+		return wm8350_rtc_stop_alarm(wm8350);
-+	case RTC_AIE_ON:
-+		return wm8350_rtc_start_alarm(wm8350);
-+
-+	case RTC_UIE_OFF:
-+		wm8350_mask_irq(wm8350, WM8350_IRQ_RTC_SEC);
-+		break;
-+	case RTC_UIE_ON:
-+		wm8350_unmask_irq(wm8350, WM8350_IRQ_RTC_SEC);
-+		break;
-+
-+	default:
-+		return -ENOIOCTLCMD;
-+	}
-+
-+	return 0;
-+}
-+
-+static void wm8350_rtc_alarm_handler(struct wm8350 *wm8350, int irq,
-+				     void *data)
-+{
-+	struct rtc_device *rtc = wm8350->rtc.rtc;
-+	int ret;
-+
-+	rtc_update_irq(rtc, 1, RTC_IRQF | RTC_AF);
-+
-+	/* Make it one shot */
-+	ret = wm8350_set_bits(wm8350, WM8350_RTC_TIME_CONTROL,
-+			      WM8350_RTC_ALMSET);
-+	if (ret != 0) {
-+		dev_err(&(wm8350->rtc.pdev->dev),
-+			"Failed to disable alarm: %d\n", ret);
-+	}
-+}
-+
-+static void wm8350_rtc_update_handler(struct wm8350 *wm8350, int irq,
-+				      void *data)
-+{
-+	struct rtc_device *rtc = wm8350->rtc.rtc;
-+
-+	rtc_update_irq(rtc, 1, RTC_IRQF | RTC_UF);
-+}
-+
-+static const struct rtc_class_ops wm8350_rtc_ops = {
-+	.ioctl = wm8350_rtc_ioctl,
-+	.read_time = wm8350_rtc_readtime,
-+	.set_time = wm8350_rtc_settime,
-+	.read_alarm = wm8350_rtc_readalarm,
-+	.set_alarm = wm8350_rtc_setalarm,
-+};
-+
-+#ifdef CONFIG_PM
-+static int wm8350_rtc_suspend(struct platform_device *pdev, pm_message_t state)
-+{
-+	struct wm8350 *wm8350 = dev_get_drvdata(&pdev->dev);
-+	int ret = 0;
-+	u16 reg;
-+
-+	reg = wm8350_reg_read(wm8350, WM8350_RTC_TIME_CONTROL);
-+
-+	if (device_may_wakeup(&wm8350->rtc.pdev->dev) &&
-+	    reg & WM8350_RTC_ALMSTS) {
-+		ret = wm8350_rtc_stop_alarm(wm8350);
-+		if (ret != 0)
-+			dev_err(&pdev->dev, "Failed to stop RTC alarm: %d\n",
-+				ret);
-+	}
-+
-+	return ret;
-+}
-+
-+static int wm8350_rtc_resume(struct platform_device *pdev)
-+{
-+	struct wm8350 *wm8350 = dev_get_drvdata(&pdev->dev);
-+	int ret;
-+
-+	if (wm8350->rtc.alarm_enabled) {
-+		ret = wm8350_rtc_start_alarm(wm8350);
-+		if (ret != 0)
-+			dev_err(&pdev->dev,
-+				"Failed to restart RTC alarm: %d\n", ret);
-+	}
-+
-+	return 0;
-+}
-+
-+#else
-+#define wm8350_rtc_suspend NULL
-+#define wm8350_rtc_resume NULL
 +#endif
-+
-+static int wm8350_rtc_probe(struct platform_device *pdev)
-+{
-+	struct wm8350 *wm8350 = platform_get_drvdata(pdev);
-+	struct wm8350_rtc *wm_rtc = &wm8350->rtc;
-+	int ret = 0;
-+	u16 timectl, power5;
-+
-+	timectl = wm8350_reg_read(wm8350, WM8350_RTC_TIME_CONTROL);
-+	if (timectl & WM8350_RTC_BCD) {
-+		dev_err(&pdev->dev, "RTC BCD mode not supported\n");
-+		return -EINVAL;
-+	}
-+	if (timectl & WM8350_RTC_12HR) {
-+		dev_err(&pdev->dev, "RTC 12 hour mode not supported\n");
-+		return -EINVAL;
-+	}
-+
-+	/* enable the RTC if it's not already enabled */
-+	power5 = wm8350_reg_read(wm8350, WM8350_POWER_MGMT_5);
-+	if (!(power5 &  WM8350_RTC_TICK_ENA)) {
-+		dev_info(wm8350->dev, "Starting RTC\n");
-+
-+		wm8350_reg_unlock(wm8350);
-+
-+		ret = wm8350_set_bits(wm8350, WM8350_POWER_MGMT_5,
-+				      WM8350_RTC_TICK_ENA);
-+		if (ret < 0) {
-+			dev_err(&pdev->dev, "failed to enable RTC: %d\n", ret);
-+			return ret;
-+		}
-+
-+		wm8350_reg_lock(wm8350);
-+	}
-+
-+	if (timectl & WM8350_RTC_STS) {
-+		int retries;
-+
-+		ret = wm8350_clear_bits(wm8350, WM8350_RTC_TIME_CONTROL,
-+					WM8350_RTC_SET);
-+		if (ret < 0) {
-+			dev_err(&pdev->dev, "failed to start: %d\n", ret);
-+			return ret;
-+		}
-+
-+		retries = WM8350_SET_TIME_RETRIES;
-+		do {
-+			timectl = wm8350_reg_read(wm8350,
-+						  WM8350_RTC_TIME_CONTROL);
-+		} while (timectl & WM8350_RTC_STS && retries--);
-+
-+		if (retries == 0) {
-+			dev_err(&pdev->dev, "failed to start: timeout\n");
-+			return -ENODEV;
-+		}
-+	}
-+
-+	device_init_wakeup(&pdev->dev, 1);
-+
-+	wm_rtc->rtc = rtc_device_register("wm8350", &pdev->dev,
-+					  &wm8350_rtc_ops, THIS_MODULE);
-+	if (IS_ERR(wm_rtc->rtc)) {
-+		ret = PTR_ERR(wm_rtc->rtc);
-+		dev_err(&pdev->dev, "failed to register RTC: %d\n", ret);
-+		return ret;
-+	}
-+
-+	wm8350_mask_irq(wm8350, WM8350_IRQ_RTC_SEC);
-+	wm8350_mask_irq(wm8350, WM8350_IRQ_RTC_PER);
-+
-+	wm8350_register_irq(wm8350, WM8350_IRQ_RTC_SEC,
-+			    wm8350_rtc_update_handler, NULL);
-+
-+	wm8350_register_irq(wm8350, WM8350_IRQ_RTC_ALM,
-+			    wm8350_rtc_alarm_handler, NULL);
-+	wm8350_unmask_irq(wm8350, WM8350_IRQ_RTC_ALM);
-+
-+	return 0;
-+}
-+
-+static int __devexit wm8350_rtc_remove(struct platform_device *pdev)
-+{
-+	struct wm8350 *wm8350 = platform_get_drvdata(pdev);
-+	struct wm8350_rtc *wm_rtc = &wm8350->rtc;
-+
-+	wm8350_mask_irq(wm8350, WM8350_IRQ_RTC_SEC);
-+
-+	wm8350_free_irq(wm8350, WM8350_IRQ_RTC_SEC);
-+	wm8350_free_irq(wm8350, WM8350_IRQ_RTC_ALM);
-+
-+	rtc_device_unregister(wm_rtc->rtc);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver wm8350_rtc_driver = {
-+	.probe = wm8350_rtc_probe,
-+	.remove = __devexit_p(wm8350_rtc_remove),
-+	.suspend = wm8350_rtc_suspend,
-+	.resume = wm8350_rtc_resume,
-+	.driver = {
-+		.name = "wm8350-rtc",
-+	},
-+};
-+
-+static int __init wm8350_rtc_init(void)
-+{
-+	return platform_driver_register(&wm8350_rtc_driver);
-+}
-+module_init(wm8350_rtc_init);
-+
-+static void __exit wm8350_rtc_exit(void)
-+{
-+	platform_driver_unregister(&wm8350_rtc_driver);
-+}
-+module_exit(wm8350_rtc_exit);
-+
-+MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");
-+MODULE_DESCRIPTION("RTC driver for the WM8350");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:wm8350-rtc");
-diff --git a/include/linux/mfd/wm8350/rtc.h b/include/linux/mfd/wm8350/rtc.h
-index dfda69e..24add2b 100644
---- a/include/linux/mfd/wm8350/rtc.h
-+++ b/include/linux/mfd/wm8350/rtc.h
-@@ -261,6 +261,8 @@
- 
- struct wm8350_rtc {
- 	struct platform_device *pdev;
-+	struct rtc_device *rtc;
-+	int alarm_enabled;      /* used over suspend/resume */
- };
- 
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 5ca01e3..a570eaf 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -110,6 +110,7 @@ struct cpuinfo_x86 {
+ 	/* Index into per_cpu list: */
+ 	u16			cpu_index;
  #endif
--- 
-1.5.6.5
++	unsigned int		x86_hyper_vendor;
+ } __attribute__((__aligned__(SMP_CACHE_BYTES)));
+ 
+ #define X86_VENDOR_INTEL	0
+@@ -123,6 +124,9 @@ struct cpuinfo_x86 {
+ 
+ #define X86_VENDOR_UNKNOWN	0xff
+ 
++#define X86_HYPER_VENDOR_NONE  0
++#define X86_HYPER_VENDOR_VMWARE 1
++
+ /*
+  * capabilities of CPUs
+  */
+diff --git a/arch/x86/include/asm/vmware.h b/arch/x86/include/asm/vmware.h
+new file mode 100644
+index 0000000..02dfea5
+--- /dev/null
++++ b/arch/x86/include/asm/vmware.h
+@@ -0,0 +1,26 @@
++/*
++ * Copyright (C) 2008, VMware, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
++ * NON INFRINGEMENT.  See the GNU General Public License for more
++ * details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ */
++#ifndef ASM_X86__VMWARE_H
++#define ASM_X86__VMWARE_H
++
++extern unsigned long vmware_get_tsc_khz(void);
++extern int vmware_platform(void);
++
++#endif
+diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
+index 82ec607..a5c04e8 100644
+--- a/arch/x86/kernel/cpu/Makefile
++++ b/arch/x86/kernel/cpu/Makefile
+@@ -4,6 +4,7 @@
+ 
+ obj-y			:= intel_cacheinfo.o addon_cpuid_features.o
+ obj-y			+= proc.o capflags.o powerflags.o common.o
++obj-y			+= vmware.o hypervisor.o
+ 
+ obj-$(CONFIG_X86_32)	+= bugs.o cmpxchg.o
+ obj-$(CONFIG_X86_64)	+= bugs_64.o
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index 25581dc..c80d233 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -35,6 +35,7 @@
+ #include <asm/proto.h>
+ #include <asm/sections.h>
+ #include <asm/setup.h>
++#include <asm/hypervisor.h>
+ 
+ #include "cpu.h"
+ 
+@@ -698,6 +699,7 @@ static void __cpuinit identify_cpu(struct cpuinfo_x86 *c)
+ 	detect_ht(c);
+ #endif
+ 
++	init_hypervisor(c);
+ 	/*
+ 	 * On SMP, boot_cpu_data holds the common feature set between
+ 	 * all CPUs; so make sure that we indicate which features are
+diff --git a/arch/x86/kernel/cpu/hypervisor.c b/arch/x86/kernel/cpu/hypervisor.c
+new file mode 100644
+index 0000000..7bd5506
+--- /dev/null
++++ b/arch/x86/kernel/cpu/hypervisor.c
+@@ -0,0 +1,48 @@
++/*
++ * Common hypervisor code
++ *
++ * Copyright (C) 2008, VMware, Inc.
++ * Author : Alok N Kataria <akataria@vmware.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
++ * NON INFRINGEMENT.  See the GNU General Public License for more
++ * details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ */
++
++#include <asm/processor.h>
++#include <asm/vmware.h>
++
++static inline void __cpuinit
++detect_hypervisor_vendor(struct cpuinfo_x86 *c)
++{
++	if (vmware_platform()) {
++		c->x86_hyper_vendor = X86_HYPER_VENDOR_VMWARE;
++	} else {
++		c->x86_hyper_vendor = X86_HYPER_VENDOR_NONE;
++	}
++}
++
++unsigned long get_hypervisor_tsc_freq(void)
++{
++	if (boot_cpu_data.x86_hyper_vendor == X86_HYPER_VENDOR_VMWARE)
++		return vmware_get_tsc_khz();
++	return 0;
++}
++
++void __cpuinit init_hypervisor(struct cpuinfo_x86 *c)
++{
++	detect_hypervisor_vendor(c);
++}
++
+diff --git a/arch/x86/kernel/cpu/vmware.c b/arch/x86/kernel/cpu/vmware.c
+new file mode 100644
+index 0000000..d5d1b75
+--- /dev/null
++++ b/arch/x86/kernel/cpu/vmware.c
+@@ -0,0 +1,88 @@
++/*
++ * VMware Detection code.
++ *
++ * Copyright (C) 2008, VMware, Inc.
++ * Author : Alok N Kataria <akataria@vmware.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
++ * NON INFRINGEMENT.  See the GNU General Public License for more
++ * details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ */
++
++#include <linux/dmi.h>
++#include <asm/div64.h>
++
++#define CPUID_VMWARE_INFO_LEAF	0x40000000
++#define VMWARE_HYPERVISOR_MAGIC	0x564D5868
++#define VMWARE_HYPERVISOR_PORT	0x5658
++
++#define VMWARE_PORT_CMD_GETVERSION	10
++#define VMWARE_PORT_CMD_GETHZ		45
++
++#define VMWARE_PORT(cmd, eax, ebx, ecx, edx)				\
++	__asm__("inl (%%dx)" :						\
++			"=a"(eax), "=c"(ecx), "=d"(edx), "=b"(ebx) :	\
++			"0"(VMWARE_HYPERVISOR_MAGIC),			\
++			"1"(VMWARE_PORT_CMD_##cmd),			\
++			"2"(VMWARE_HYPERVISOR_PORT), "3"(0) :		\
++			"memory");
++
++static inline int __vmware_platform(void)
++{
++	uint32_t eax, ebx, ecx, edx;
++	VMWARE_PORT(GETVERSION, eax, ebx, ecx, edx);
++	return eax != (uint32_t)-1 && ebx == VMWARE_HYPERVISOR_MAGIC;
++}
++
++static unsigned long __vmware_get_tsc_khz(void)
++{
++        uint64_t tsc_hz;
++        uint32_t eax, ebx, ecx, edx;
++
++        VMWARE_PORT(GETHZ, eax, ebx, ecx, edx);
++
++        if (eax == (uint32_t)-1)
++                return 0;
++        tsc_hz = eax | (((uint64_t)ebx) << 32);
++        do_div(tsc_hz, 1000);
++        BUG_ON(tsc_hz >> 32);
++        return tsc_hz;
++}
++
++int vmware_platform(void)
++{
++	if (cpu_has_hypervisor) {
++		unsigned int eax, ebx, ecx, edx;
++		char hyper_vendor_id[13];
++
++		cpuid(CPUID_VMWARE_INFO_LEAF, &eax, &ebx, &ecx, &edx);
++		memcpy(hyper_vendor_id + 0, &ebx, 4);
++		memcpy(hyper_vendor_id + 4, &ecx, 4);
++		memcpy(hyper_vendor_id + 8, &edx, 4);
++		hyper_vendor_id[12] = '\0';
++		if (!strcmp(hyper_vendor_id, "VMwareVMware"))
++			return 1;
++	} else if (dmi_available && dmi_name_in_vendors("VMware") &&
++		   __vmware_platform())
++		return 1;
++
++	return 0;
++}
++
++unsigned long vmware_get_tsc_khz(void)
++{
++	BUG_ON(!vmware_platform());
++	return __vmware_get_tsc_khz();
++}
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index c35ec3f..47ba46f 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -98,6 +98,7 @@
+ 
+ #include <mach_apic.h>
+ #include <asm/paravirt.h>
++#include <asm/hypervisor.h>
+ 
+ #include <asm/percpu.h>
+ #include <asm/topology.h>
+@@ -911,6 +912,12 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	dmi_check_system(bad_bios_dmi_table);
+ 
++	/*
++	 * VMware detection requires dmi to be available, so this
++	 * needs to be done after dmi_scan_machine, for the BP.
++	 */
++	init_hypervisor(&boot_cpu_data);
++
+ #ifdef CONFIG_X86_32
+ 	probe_roms();
+ #endif
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 161bb85..189741f 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -15,6 +15,7 @@
+ #include <asm/vgtod.h>
+ #include <asm/time.h>
+ #include <asm/delay.h>
++#include <asm/hypervisor.h>
+ 
+ unsigned int cpu_khz;           /* TSC clocks / usec, not used here */
+ EXPORT_SYMBOL(cpu_khz);
+@@ -352,9 +353,15 @@ unsigned long native_calibrate_tsc(void)
+ {
+ 	u64 tsc1, tsc2, delta, ref1, ref2;
+ 	unsigned long tsc_pit_min = ULONG_MAX, tsc_ref_min = ULONG_MAX;
+-	unsigned long flags, latch, ms, fast_calibrate;
++	unsigned long flags, latch, ms, fast_calibrate, tsc_khz;
+ 	int hpet = is_hpet_enabled(), i, loopmin;
+ 
++	tsc_khz = get_hypervisor_tsc_freq();
++	if (tsc_khz) {
++		printk(KERN_INFO "TSC: Frequency read from the hypervisor\n");
++		return tsc_khz;
++	}
++
+ 	local_irq_save(flags);
+ 	fast_calibrate = quick_pit_calibrate();
+ 	local_irq_restore(flags);
+
+
+
 
