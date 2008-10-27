@@ -1,52 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752651AbYJ0LoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbYJ0Lo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752651AbYJ0LoZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 07:44:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYJ0LoO
+	id S1753643AbYJ0Lo4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 07:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbYJ0Loq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 07:44:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46100 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753425AbYJ0LoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 07:44:12 -0400
-Date: Mon, 27 Oct 2008 12:43:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Pavel Machek <pavel@suse.cz>, Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Jack Steiner <steiner@sgi.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Richard Purdie <rpurdie@rpsys.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] SGI X86 UV: Provide a System Activity Indicator
-	driver
-Message-ID: <20081027114348.GC5631@elte.hu>
-References: <4901AF28.4070606@sgi.com> <20081024120103.GD1680@elf.ucw.cz> <20081024120544.GA9812@elte.hu> <4901BF30.3090708@sgi.com>
+	Mon, 27 Oct 2008 07:44:46 -0400
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:34955 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752371AbYJ0Lop (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 07:44:45 -0400
+X-AuditID: 0ac90647-ab650ba00000286d-da-4905a9aa0b9d
+Message-ID: <4905A99F.8000605@hitachi.com>
+Date: Mon, 27 Oct 2008 20:44:31 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4901BF30.3090708@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Theodore Tso <tytso@mit.edu>, Vegard Nossum <vegard.nossum@gmail.com>,
+       Jan Kara <jack@ucw.cz>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Al Viro <viro@zeniv.linux.org.uk>, linux-ext4@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: [PATCH 1/2 take 2] ext3: fix a bug accessing freed memory in
+    ext3_abort
+References: <19f34abd0810250422t17990222x78fcf0fad2e6f04b@mail.gmail.com> 
+    <49056D29.2010700@hitachi.com> <49056FA5.7070202@hitachi.com> 
+    <20081027104325.GA13641@elte.hu>
+In-Reply-To: <20081027104325.GA13641@elte.hu>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
 
-* Mike Travis <travis@sgi.com> wrote:
+> * Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> wrote:
+> 
+>>Vegard Nossum reported a bug which accesses freed memory.  When
+>>journal has been aborted, ext4_put_super() calls ext4_abort() after
+>>freeing the journal_t object, and then ext4_abort() accesses it.
+>>This patch fix it.
+>>
+>>Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> 
+> could you please put the word "kmemcheck" into the commit log? ("found 
+> via kmemcheck" or so) We want to have an easily git-greppable track 
+> record of upstream kernel bugs that were found via kmemcheck. (and 
+> there's already a long list)
 
-> Also, this is only on a UV system, I'm not introducing any overhead 
-> for any other x86_64 systems.
+Ah, OK.  I fixed the commit log.
 
-true, but it sets a bad example that others might follow - and it's 
-not hard to fix anyway.
+Thanks,
 
-	Ingo
+
+Subject: [PATCH 1/2] ext3: fix a bug accessing freed memory in ext3_abort
+
+Vegard Nossum reported a bug which accesses freed memory (found via
+kmemcheck).  When journal has been aborted, ext3_put_super() calls
+ext3_abort() after freeing the journal_t object, and then ext3_abort()
+accesses it.  This patch fix it.
+
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Acked-by: Jan Kara <jack@suse.cz>
+---
+ fs/ext3/super.c |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.28-rc2/fs/ext3/super.c
+===================================================================
+--- linux-2.6.28-rc2.orig/fs/ext3/super.c
++++ linux-2.6.28-rc2/fs/ext3/super.c
+@@ -281,7 +281,8 @@ void ext3_abort (struct super_block * sb
+ 	EXT3_SB(sb)->s_mount_state |= EXT3_ERROR_FS;
+ 	sb->s_flags |= MS_RDONLY;
+ 	EXT3_SB(sb)->s_mount_opt |= EXT3_MOUNT_ABORT;
+-	journal_abort(EXT3_SB(sb)->s_journal, -EIO);
++	if (EXT3_SB(sb)->s_journal)
++		journal_abort(EXT3_SB(sb)->s_journal, -EIO);
+ }
+ 
+ void ext3_warning (struct super_block * sb, const char * function,
+@@ -390,11 +391,14 @@ static void ext3_put_super (struct super
+ {
+ 	struct ext3_sb_info *sbi = EXT3_SB(sb);
+ 	struct ext3_super_block *es = sbi->s_es;
+-	int i;
++	int i, err;
+ 
+ 	ext3_xattr_put_super(sb);
+-	if (journal_destroy(sbi->s_journal) < 0)
++	err = journal_destroy(sbi->s_journal);
++	sbi->s_journal = NULL;
++	if (err < 0)
+ 		ext3_abort(sb, __func__, "Couldn't clean up the journal");
++
+ 	if (!(sb->s_flags & MS_RDONLY)) {
+ 		EXT3_CLEAR_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER);
+ 		es->s_state = cpu_to_le16(sbi->s_mount_state);
+
+
