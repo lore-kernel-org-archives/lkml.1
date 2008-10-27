@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753772AbYJ0UJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbYJ0UKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753772AbYJ0UJT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 16:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbYJ0UJF
+	id S1753460AbYJ0UKF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 16:10:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYJ0UJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 16:09:05 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:47549 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752163AbYJ0UJE (ORCPT
+	Mon, 27 Oct 2008 16:09:55 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:53950 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752469AbYJ0UJy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 16:09:04 -0400
-Date: Mon, 27 Oct 2008 20:09:00 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-       rtc-linux@googlegroups.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [rtc-linux] [PATCH 2/2] rtc: rtc-wm8350: Add support for
-	WM8350 RTC
-Message-ID: <20081027200900.GA31757@rakim.wolfsonmicro.main>
-References: <1225121905-23782-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1225121905-23782-2-git-send-email-broonie@opensource.wolfsonmicro.com> <20081027180432.7deaee0a@i1501.lan.towertech.it> <200810271303.21634.david-b@pacbell.net>
+	Mon, 27 Oct 2008 16:09:54 -0400
+Date: Mon, 27 Oct 2008 16:07:36 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       linux-kernel@vger.kernel.org,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86: unify appropriate bits from dumpstack_32 and
+	dumpstack_64
+Message-ID: <20081027200736.GA3220@hmsreliant.think-freely.org>
+References: <20081023144006.GA14149@hmsendeavour.rdu.redhat.com> <1225128425.8714.1281501519@webmail.messagingengine.com> <20081027182148.GL3046@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200810271303.21634.david-b@pacbell.net>
-X-Cookie: Slow day.  Practice crawling.
+In-Reply-To: <20081027182148.GL3046@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 27, 2008 at 01:03:21PM -0700, David Brownell wrote:
-> On Monday 27 October 2008, Alessandro Zummo wrote:
-> >  (and a detailed checklist at http://groups.google.com/group/rtc-linux/web/checklist )
+On Mon, Oct 27, 2008 at 07:21:48PM +0100, Ingo Molnar wrote:
+> 
+> * Alexander van Heukelum <heukelum@fastmail.fm> wrote:
+> 
+> > On Thu, 23 Oct 2008 10:40:06 -0400, "Neil Horman"
+> > <nhorman@tuxdriver.com> said:
+> > > Hey all-
+> > > 	As promised, now that dumpstack_32 and dumpstack_64 have so many bits in
+> > > common, we should merge the in-sync bits into a common file, to prevent them
+> > > from diverging again.  This patch removes bits which are common between
+> > > dumpstack_32.c and dumpstack_64.c and places them in a common dumpstack.c
+> > > which is built for both 32 and 64 bit arches.  
+> > > 
+> > > Regards
+> > > Neil
+> > > 
+> > > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> > 
+> > A bit late, maybe, but if it matters:
+> > 
+> > Acked-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> 
+> i've updated the commit, thanks.
+> 
+> 	Ingo
+> 
 
-> Also:  rtc_ops.ioctl() method should only handle RTC_{AIE,UIE}_{ON,OFF},
-> since the other standard ioctls have rtc_ops equivalents.
+Thanks guys!
+Neil
 
-> (This code is fine in both respects.  Though since I've received three
-> copies of the driver since it was merged to MM, maybe I missed something.)
-
-Unfortunately I added the __devexit_p() annotation in response to
-Alessandro's comments.  I'll remove it again, other than that all that's
-changed is a tweak to the module description and Andrew's change to use
-schedule_timeout_uninterruptible().
-
-How should these drivers be merged?
+-- 
+/****************************************************
+ * Neil Horman <nhorman@tuxdriver.com>
+ * Software Engineer, Red Hat
+ ****************************************************/
