@@ -1,70 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752297AbYJ0G05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752374AbYJ0Gjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752297AbYJ0G05 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 02:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYJ0G0t
+	id S1752374AbYJ0Gjg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 02:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbYJ0GjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 02:26:49 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34346
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751373AbYJ0G0t (ORCPT
+	Mon, 27 Oct 2008 02:39:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59300 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751483AbYJ0GjX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 02:26:49 -0400
-Date: Sun, 26 Oct 2008 23:26:26 -0700 (PDT)
-Message-Id: <20081026.232626.97216182.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 27 Oct 2008 02:39:23 -0400
+Date: Sun, 26 Oct 2008 23:39:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Eric Piel <eric.piel@tremplin-utc.net>,
+       Yan Burman <burman.yan@gmail.com>, Pau Oliva Fora <pau@eslack.org>
+Subject: Re: [PATCH] LIS3LV02Dx Accelerometer driver
+Message-Id: <20081026233901.7087e74a.akpm@linux-foundation.org>
+In-Reply-To: <20081022154459.GA26291@elf.ucw.cz>
+References: <20081022154459.GA26291@elf.ucw.cz>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 22 Oct 2008 17:44:59 +0200 Pavel Machek <pavel@suse.cz> wrote:
 
-Several bug fixes:
+> 
+> LIS3LV02Dx Accelerometer driver
+> 
+> This adds a driver to the accelerometer sensor found in several HP
+> laptops (under the commercial names of "HP Mobile Data Protection
+> System 3D" and "HP 3D driveguard"). It tries to have more or less the
+> same interfaces as the hdaps and other accelerometer drivers: in sysfs
+> and as a joystick.
+> 
+> This driver was first written by Yan Burman. Eric Piel has updated it
+> and slimed it up (including the removal of an interface to access to
+> the free-fall feature of the sensor because it is not reliable enough
+> for now). Pavel Machek removed few more features and switched locking
+> from semaphore to mutex.
+> 
+> Several people have contributed to the database of the axes.
+> 
+> ...
+>
+> +/* joystick device poll interval in milliseconds */
+> +#define MDPS_POLL_INTERVAL 50
+>
+> ...
+>
+> +static int lis3lv02d_joystick_kthread(void *data)
+> +{
+> +	int x, y, z;
+> +
+> +	while (!kthread_should_stop()) {
+> +		lis3lv02d_get_xyz(adev.device->handle, &x, &y, &z);
+> +		input_report_abs(adev.idev, ABS_X, x - adev.xcalib);
+> +		input_report_abs(adev.idev, ABS_Y, y - adev.ycalib);
+> +		input_report_abs(adev.idev, ABS_Z, z - adev.zcalib);
+> +
+> +		input_sync(adev.idev);
+> +
+> +		try_to_freeze();
+> +		msleep_interruptible(MDPS_POLL_INTERVAL);
 
-1) Skb ->when timestamp setting for syncookies got messed up
-   by TCP option building engine changes in 2.6.27.  Fix from
-   Florian Westphal
+You'll have the powertop police on your tail.
 
-   I'll submit this thusly to -stable as well.
+Is there no alternative?
 
-2) Couple places trying to pass sk_buff to kfree() instead of
-   kfree_skb().  Fixed by Sergio Luis
+> +	}
+> +
+> +	return 0;
+> +}
 
-3) Two fixes for the new phonet protocol layer from Remi
-   Denis-Courmont
-
-Please pull, thanks a lot.
-
-The following changes since commit f8d56f1771e4867acc461146764b4feeb5245669:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://neil.brown.name/md
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Florian Westphal (1):
-      syncookies: fix inclusion of tcp options in syn-ack
-
-Remi Denis-Courmont (2):
-      Phonet: include generic link-layer header size in MAX_PHONET_HEADER
-      Phonet: do not reply to indication reset packets
-
-Sergio Luis (2):
-      btsdio: free sk_buff with kfree_skb
-      libertas: free sk_buff with kfree_skb
-
- drivers/bluetooth/btsdio.c         |    2 +-
- drivers/net/wireless/libertas/rx.c |    2 +-
- include/linux/phonet.h             |    1 +
- include/net/phonet/phonet.h        |    2 +-
- net/ipv4/tcp_output.c              |   10 +++++-----
- net/phonet/af_phonet.c             |    5 ++++-
- 6 files changed, 13 insertions(+), 9 deletions(-)
