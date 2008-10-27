@@ -1,72 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbYJ0X3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752738AbYJ0Xf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753430AbYJ0X3A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 19:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbYJ0X2s
+	id S1752738AbYJ0Xf2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 19:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbYJ0XfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 19:28:48 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:48298 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752967AbYJ0X2q (ORCPT
+	Mon, 27 Oct 2008 19:35:15 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:55064 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751328AbYJ0XfN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 19:28:46 -0400
-Date: Mon, 27 Oct 2008 19:28:43 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: general protection fault:  from release_blocks_on_commit
-Message-ID: <20081027232843.GA9797@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Eric Sandeen <sandeen@redhat.com>, Eric Paris <eparis@redhat.com>,
-	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-References: <1224612181.19719.20.camel@paris-laptop> <20081027181928.GB23111@mit.edu> <49064027.9010509@redhat.com>
+	Mon, 27 Oct 2008 19:35:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XU9soI1ivR0+qJ349f13GihIiLHRTp+aV47b4L7q4ijxvy9xw19i2dyGb+8SeAOp/O
+         Hk5VtCn08dZbGiIgGCZXybkoixxiD3SqZ96Tfc/+3qe8znLof+txdLG7slBySHJu2bo6
+         MZajs39gjGYZxwSMSpfvxfmC0P1N54XXaCUGo=
+Message-ID: <43e72e890810271635i5b6dd6e4ua06b48e624991435@mail.gmail.com>
+Date: Mon, 27 Oct 2008 16:35:11 -0700
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [otus-devel] Release of Atheros 802.11n USB Linux driver
+Cc: "otus-devel@lists.madwifi-project.org" 
+	<otus-devel@venema.h4ckr.net>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       "Luis Rodriguez" <Luis.Rodriguez@atheros.com>,
+       "Joey Krane" <linuxbsd2004@gmail.com>
+In-Reply-To: <20081023111103.GB5979@tesla>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49064027.9010509@redhat.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com>
+	 <20081022065045.GA2400@kroah.com> <20081023062655.GA8039@kroah.com>
+	 <20081023111103.GB5979@tesla>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 27, 2008 at 05:26:47PM -0500, Eric Sandeen wrote:
-> Ted, you probably need some slab debugging on to hit it.
+On Thu, Oct 23, 2008 at 4:11 AM, Luis R. Rodriguez
+<lrodriguez@atheros.com> wrote:
+> On Wed, Oct 22, 2008 at 11:26:55PM -0700, Greg KH wrote:
+>> On Tue, Oct 21, 2008 at 11:50:45PM -0700, Greg KH wrote:
+>> > On Tue, Oct 21, 2008 at 07:04:17PM -0700, Luis R. Rodriguez wrote:
+>> > > We would like to see our Atheros 802.11n USB Linux driver upstream
+>> > > however we need help with this so we are releasing our Atheros 11n USB
+>> > > Otus Linux driver under the ISC to the community. The goal is to work
+>> > > with the community to help move this forward upstream. We are hoping
+>> > > for community help and leadership on this (*cough*).
+>> >
+>> > Yeah!
+>> >
+>> > I'll grab this and put it in drivers/staging/ so it gets some users and
+>> > more developers to help out with it.
+>>
+>> Ok, it seems to need some basic work to merely build properly on
+>> "modern" kernel versions.
+>
+> Yeah, it works up to 2.6.24.
 
-I had slab debugging enabled, but haven't been able to replicate it
-yet.  I'll do some more work to try to replicate it.
+This is now fixed on the master branch, also the branch "for-upstream"
+does a lot of cleanup I thought you may like before stuffing it into
+staging like removing all KERNEL_VERSION checks, all wireless
+extensions checks, some compile warnings, removal of compat, dos2unix,
+use utf-8, etc. Unfortunately this still requires a specific version
+of wpa_supplicant but it seems it works. Not sure what bars you have
+for staging at this point.
 
-> I think the problem is that jbd2_journal_commit_transaction may call
-> __jbd2_journal_drop_transaction(journal, commit_transaction) if the
-> checkpoint lists are NULL, and this frees the commit_transaction.
+Will you take this in, and expect patches for fixing it to use
+standard wext and also report standard wireless statistic (yeap, this
+is not there yet either).
 
-I think you're right.  I would probably change the patch around so
-that after calling __jbd2_jurnal_drop_transaction(), we set
-commit_transaction to NULL, and then adding an "if
-(commit_transaction)" to the lines in questions; that way we keep the
-commit callback outside of the j_list_lock() spinlock.
+Joey is one user which reported the driver working now with the
+compile fixes for newer kernels for 2.6.28-rc2 using the specific
+version of wpa_supplicant for it.
 
-> Also, I'm not certain that it matters, but the loop in 
-> release_blocks_on_commit() is kfreeing list entries w/o taking
-> them off the list; I suppose maybe this is safe if the whole thing
-> is getting discarded when we're done, but just to keep things sane,
-> would this make sense
+Joey can you test the for-upstream branch on otus git?
 
-There are plenty of other loops in the kernel where we go through the
-linked list and free all of the items on the list that don't bother to
-call list_del().  That was one of the things I checked when I created
-the patch.
-
-> (also, I think we need to double-check use of
-> s_md_lock; it's taken when adding things to the list, but not when
-> freeing/removing ... if it's needed, isn't it needed on both ends...):
-
-No, because the linked list is hanging off the transaction structure.
-While the transaction is active, multiple CPU's can be adding elements
-to the linked list.  But once the transaction has been committed, we
-don't have to worry about any one else trying to modify the linked list.
-
-      	      	    	      	       	      - Ted
+  Luis
