@@ -1,41 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752047AbYJ0CRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752132AbYJ0Ccg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752047AbYJ0CRV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 22:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbYJ0CRM
+	id S1752132AbYJ0Ccg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 22:32:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbYJ0Cc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 22:17:12 -0400
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:43252 "EHLO
-	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbYJ0CRL (ORCPT
+	Sun, 26 Oct 2008 22:32:28 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:61011 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751314AbYJ0Cc2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 22:17:11 -0400
-Message-ID: <490524DA.1020705@nttdata.co.jp>
-Date: Mon, 27 Oct 2008 11:18:02 +0900
-From: Kentaro Takeda <takedakn@nttdata.co.jp>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.17) Gecko/20080914 Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
+	Sun, 26 Oct 2008 22:32:28 -0400
+Message-ID: <29ab51dc0810261932n7580e87aua85103f8b1dcc5a5@mail.gmail.com>
+Date: Mon, 27 Oct 2008 11:32:27 +0900
+From: "Nobuhiro Iwamatsu" <iwamatsu@nigauri.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] gdrom: Fix compile error
+Cc: "Al Viro" <viro@zeniv.linux.org.uk>, Linux-sh <linux-sh@vger.kernel.org>
 MIME-Version: 1.0
-To: sds@tycho.nsa.gov, jmorris@namei.org, chrisw@sous-sol.org,
-       serue@us.ibm.com
-CC: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       haradats@nttdata.co.jp, akpm@linux-foundation.org
-Subject: Re: [TOMOYO #11 (linux-next) 00/11] TOMOYO Linux
-References: <20081020073423.024299308@nttdata.co.jp>
-In-Reply-To: <20081020073423.024299308@nttdata.co.jp>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Oct 2008 02:17:05.0520 (UTC) FILETIME=[1B2E7F00:01C937DA]
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen, James, Chris, Serge,
-What is the status of this patchset?
+Return value and argument of block_device_operations.release of gdrom
+was changed.
+This patch fix this problem.
 
-I saw no objections against our patchset.
-We are waiting for your review for now.
-Is there something we can do?
+Signed-off-by: Nobuhiro Iwamatsu <iwamatsunigauri.org>
+---
+ drivers/cdrom/gdrom.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-Regards,
+diff --git a/drivers/cdrom/gdrom.c b/drivers/cdrom/gdrom.c
+index 9aaa86b..2eecb77 100644
+--- a/drivers/cdrom/gdrom.c
++++ b/drivers/cdrom/gdrom.c
+@@ -495,9 +495,10 @@ static int gdrom_bdops_open(struct block_device
+*bdev, fmode_t mode)
+ 	return cdrom_open(gd.cd_info, bdev, mode);
+ }
 
+-static int gdrom_bdops_release(struct block_device *bdev, fmode_t mode)
++static int gdrom_bdops_release(struct gendisk *disk, fmode_t mode)
+ {
+-	return cdrom_release(gd.cd_info, mode);
++	cdrom_release(gd.cd_info, mode);
++	return 0;
+ }
+
+ static int gdrom_bdops_mediachanged(struct gendisk *disk)
+-- 
+1.5.6.5
