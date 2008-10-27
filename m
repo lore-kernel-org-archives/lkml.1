@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817AbYJ0LU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbYJ0L2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752817AbYJ0LU5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 07:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYJ0LUt
+	id S1752621AbYJ0L2i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 07:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbYJ0L2U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 07:20:49 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:35555 "EHLO crca.org.au"
+	Mon, 27 Oct 2008 07:28:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46737 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751541AbYJ0LUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 07:20:49 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
-	filesystems.
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <E1KuQ1J-0002Vw-9Q@pomaz-ex.szeredi.hu>
-References: <1224886068.6478.21.camel@nigel-laptop>
-	 <200810262101.08822.rjw@sisk.pl>  <E1KuQ1J-0002Vw-9Q@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Mon, 27 Oct 2008 22:20:27 +1100
-Message-Id: <1225106427.26724.5.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	id S1751634AbYJ0L2T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 07:28:19 -0400
+Date: Mon, 27 Oct 2008 12:27:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       David Miller <davem@davemloft.net>, rjw@sisk.pl, s0mbre@tservice.net.ru,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+Message-ID: <20081027112750.GA2771@elte.hu>
+References: <20081024.221653.23695396.davem@davemloft.net> <1224914333.3822.18.camel@marge.simson.net> <1224917623.4929.15.camel@marge.simson.net> <20081025.002420.82739316.davem@davemloft.net> <Pine.LNX.4.64.0810260055070.22126@twin.jikos.cz> <1225010790.8566.22.camel@marge.simson.net> <1225011648.27415.4.camel@twins> <20081026021153.47878580.akpm@linux-foundation.org> <alpine.LNX.1.10.0810262002450.12928@jikos.suse.cz> <alpine.LNX.1.10.0810271138470.12928@jikos.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.1.10.0810271138470.12928@jikos.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Miklos.
 
-On Mon, 2008-10-27 at 12:12 +0100, Miklos Szeredi wrote:
-> On Sun, 26 Oct 2008, Rafael J. Wysocki wrote:
-> > On Saturday, 25 of October 2008, Nigel Cunningham wrote:
-> > > While working on freezing fuse filesystems, I found that if a filesystem
-> > > is frozen when we try to freeze processes, freezing can fail because
-> > > threads are waiting in vfs_check_frozen for the filesystem to be thawed.
-> > > We should thus not count such threads.
-> > > 
-> > > The check will be safe if a filesystem is thawed while we're freezing
-> > > processes because filesystem thaws are only invoked from userspace. Any
-> > > waiting processes will be woken and frozen prior to us completing the
-> > > freezing of userspace (the caller invoking the filesystem thaw will be
-> > > freezing) or - in the worst case - together with kernel threads.
+* Jiri Kosina <jkosina@suse.cz> wrote:
+
+> Ok, so another important datapoint:
 > 
-> The description is missing some details: why is the filesystem frozen
-> before suspend?  AFAICS this can happen when DM calls bdev_freeze() on
-> the device before the task freezing begins.  Is this the case?
+> with c1e4fe711a4 (just before CFS has been merged for 2.6.23), the dbench 
+> throughput measures
+> 
+> 	187.7 MB/s
+> 
+> in our testing conditions (default config).
+> 
+> With c31f2e8a42c4 (just after CFS has been merged for 2.6.23), the 
+> throughput measured by dbench is
+> 
+> 	82.3 MB/s
+> 
+> This is the huge drop we have been looking for. After this, the 
+> performance was still going down gradually, up to ~45 MS/ we are 
+> measuring for 2.6.27. But the biggest drop (more than 50%) points 
+> directly to CFS merge.
 
-It doesn't matter why a process is sitting in that wait_event call. What
-does matter is that one can be there. In the case where I saw it, I was
-working on fuse freezing. I don't remember the details, as it's a year
-since I made this patch, but I don't think I wasn't using fuse or DM.
+that is a well-known property of dbench: it rewards unfairness in IO, 
+memory management and scheduling.
 
-> Also, while the patch might solve some of the symptoms of the fuse
-> vs. process freezer interaction, it will not fully fix that problem.
-> As such it's just a hack to hide the problem, making it less likely to
-> appear.
+The way to get the best possible dbench numbers in CPU-bound dbench 
+runs, you have to throw away the scheduler completely, and do this 
+instead:
 
-No, it's part of the solution. I haven't posted the full fuse freezing
-patch because I thought this could be profitably merged without the rest
-of the patch.
+ - first execute all requests of client 1
+ - then execute all requests of client 2
+ ....
+ - execute all requests of client N
 
-Regards,
+the moment the clients are allowed to overlap, the moment their requests 
+are executed more fairly, the dbench numbers drop.
 
-Nigel
-
+	Ingo
