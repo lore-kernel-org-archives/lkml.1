@@ -1,121 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbYJ0Uvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbYJ0UwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753853AbYJ0Uvm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 16:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbYJ0Uvb
+	id S1754429AbYJ0UwI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 16:52:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbYJ0Uvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 16:51:31 -0400
-Received: from ox1.aei.mpg.de ([194.94.224.6]:35644 "EHLO ox1.aei.mpg.de"
+	Mon, 27 Oct 2008 16:51:53 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:59457 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752047AbYJ0Uva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 16:51:30 -0400
-Date: Mon, 27 Oct 2008 21:52:04 +0100
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Soeren Sonnenburg <kernel@nn7.de>, linux-kernel@vger.kernel.org,
-       tomas.winkler@intel.com, "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org
-Subject: Re: Suspend to RAM regression in 2.6.28-rc2 (bisected)
-Message-ID: <20081027205204.GA4566@localhost.aei.mpg.de>
-References: <20081027162054.GA4015@localhost.aei.mpg.de> <1225134823.3796.45.camel@johannes.berg> <20081027203925.GA4416@localhost.aei.mpg.de> <200810272151.01244.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810272151.01244.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	id S1752193AbYJ0Uvw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 16:51:52 -0400
+Subject: Re: [RFC v7][PATCH 2/9] General infrastructure for
+	checkpoint	restart
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, tglx@linutronix.de, viro@zeniv.linux.org.uk,
+       hpa@zytor.com, mingo@elte.hu, torvalds@linux-foundation.org,
+       Peter Chubb <peterc@gelato.unsw.edu.au>
+In-Reply-To: <4905F648.4030402@cs.columbia.edu>
+References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu>
+	 <1224481237-4892-3-git-send-email-orenl@cs.columbia.edu>
+	 <20081021124130.a002e838.akpm@linux-foundation.org>
+	 <20081021202410.GA10423@us.ibm.com>	<48FE82DF.6030005@cs.columbia.edu>
+	 <20081022152804.GA23821@us.ibm.com>	<48FF4EB2.5060206@cs.columbia.edu>
+	 <87tzayh27r.wl%peter@chubb.wattle.id.au> <49059FED.4030202@cs.columbia.edu>
+	 <1225125752.12673.79.camel@nimitz> <4905F648.4030402@cs.columbia.edu>
+Content-Type: text/plain
+Date: Mon, 27 Oct 2008 13:51:45 -0700
+Message-Id: <1225140705.5115.40.camel@enoch>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 27.Oct'08 at 21:51:00 +0100, Rafael J. Wysocki wrote:
-> On Monday, 27 of October 2008, Carlos R. Mafra wrote:
-> > On Mon 27.Oct'08 at 20:13:43 +0100, Johannes Berg wrote:
-> > > On Mon, 2008-10-27 at 20:11 +0100, Carlos R. Mafra wrote:
-> > > 
-> > > > > Do you get any kernel messages output? If you do, could you put messages
-> > > > > into each line of ieee80211_set_disassoc to see where it hangs?
-> > > > 
-> > > > No messages appear, just a black screen.
-> > > > 
-> > > > But I can use the SysRq keys, and when I umount the
-> > > > screen shows the message that umount succeed. I also tried SysRq+t but
-> > > > the messages appear to fast to read.
-> > > 
-> > > Ok, but that means you _can_ get messages, it would help a lot if you
-> > > could put a few printks into the set_disassoc function before/after each
-> > > other function call, so we know where exactly it hangs. Pretty much all
-> > > of them could possibly hang if there is some sort of locking error
-> > > happening or anything relies on userspace to be running...
+On Mon, 2008-10-27 at 13:11 -0400, Oren Laadan wrote:
+> Dave Hansen wrote:
+> > On Mon, 2008-10-27 at 07:03 -0400, Oren Laadan wrote:
+> >>> In our implementation, we simply refused to checkpoint setid
+> >> programs.
+> >>
+> >> True. And this works very well for HPC applications.
+> >>
+> >> However, it doesn't work so well for server applications, for
+> >> instance.
+> >>
+> >> Also, you could use file system snapshotting to ensure that the file
+> >> system view does not change, and still face the same issue.
+> >>
+> >> So I'm perfectly ok with deferring this discussion to a later time :)
 > > 
-> > Ok, I humbly tried to do that with the patch at the end of the email,
-> > but I did not appear to hang in this function tough.
-> > 
-> > Somehow I could get some messages printed when it was a black screen
-> > before (I think it has to do with the debug level I set with SysRq...)
-> > and I could see all the printks I've put there. 
-> > 
-> > The good thing is that I could get the complete syslog of the boot until 
-> > the it failed after suspending to RAM (in 2.6.28-rc2 with my debug patch
-> > below applied). The last messages before the laptop become unresponsive
-> > (except for the SysRq) were these ones:
-> > 
-> > Oct 27 21:03:06 localhost kernel: Registered led device: iwl-phy0:radio
-> > Oct 27 21:03:06 localhost kernel: Registered led device: iwl-phy0:assoc
-> > Oct 27 21:03:06 localhost kernel: Registered led device: iwl-phy0:RX
-> > Oct 27 21:03:06 localhost kernel: Registered led device: iwl-phy0:TX
-> > Oct 27 21:03:06 localhost kernel: before rcu_read_lock
-> > Oct 27 21:03:06 localhost kernel: before netif_tx_stop_all_queues
-> > Oct 27 21:03:06 localhost kernel: before netif_carrier_off
-> > Oct 27 21:03:06 localhost kernel: before ieee80211_sta
-> > Oct 27 21:03:06 localhost kernel: inside sef_disconnected 1
-> > Oct 27 21:03:06 localhost kernel: before ieee8021_led_assoc
-> > Oct 27 21:03:06 localhost kernel: before ieee8021_sta_send_apinfo
-> > Oct 27 21:03:06 localhost kernel: before sta_info_unlink
-> > Oct 27 21:03:06 localhost kernel: before rcu_read_unlock
-> > Oct 27 21:03:06 localhost kernel: before sta_info_destroy
-> > Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] Starting disk
-> > Oct 27 21:03:06 localhost kernel: ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> > Oct 27 21:03:06 localhost kernel: ata1.00: ACPI cmd ef/90:03:00:00:00:a0 succeeded
-> > Oct 27 21:03:06 localhost kernel: ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
-> > Oct 27 21:03:06 localhost kernel: ata1.00: ACPI cmd ef/90:03:00:00:00:a0 succeeded
-> > Oct 27 21:03:06 localhost kernel: ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
-> > Oct 27 21:03:06 localhost kernel: ata1.00: configured for UDMA/100
-> > Oct 27 21:03:06 localhost kernel: ata1: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0x9 t4
-> > Oct 27 21:03:06 localhost kernel: ata1: irq_stat 0x00000040, connection status changed
-> > Oct 27 21:03:06 localhost kernel: ata1: hard resetting link
-> > Oct 27 21:03:06 localhost kernel: ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> > Oct 27 21:03:06 localhost kernel: ata1.00: ACPI cmd ef/90:03:00:00:00:a0 succeeded
-> > Oct 27 21:03:06 localhost kernel: ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
-> > Oct 27 21:03:06 localhost kernel: ata1.00: ACPI cmd ef/90:03:00:00:00:a0 succeeded
-> > Oct 27 21:03:06 localhost kernel: ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
-> > Oct 27 21:03:06 localhost kernel: ata1.00: configured for UDMA/100
-> > Oct 27 21:03:06 localhost kernel: ata1: EH complete
-> > Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] 488397168 512-byte hardware sectors: (250 GB/232 GiB)
-> > Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] Write Protect is off
-> > Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> > Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> > Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] 488397168 512-byte hardware sectors: (250 GB/232 GiB)
-> > Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] Write Protect is off
-> > Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> > Oct 27 21:03:06 localhost kernel: sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> > Oct 27 21:03:06 localhost kernel: Restarting tasks ... done.
-> > Oct 27 21:03:07 localhost ifplugd(wlan0)[3182]: Link beat lost.
-> > Oct 27 21:03:13 localhost ifplugd(wlan0)[3182]: Executing '/etc/ifplugd/ifplugd.action wlan0 down'.
-> > Oct 27 21:06:20 localhost kernel: SysRq : Changing Loglevel
-> > Oct 27 21:06:20 localhost kernel: Loglevel set to 4
-> > Oct 27 21:06:22 localhost kernel: SysRq : Changing Loglevel
-> > Oct 27 21:06:22 localhost kernel: Loglevel set to 6
-> > Oct 27 21:06:32 localhost kernel: ffff80251670>] ? autoremove_wake_function+0x0/0x40
-> > Oct 27 21:06:32 localhost kernel:  [<ffffffff8024e200>] ? worker_thread+0x0/0x110
-> > Oct 27 21:06:32 localhost kernel:  [<ffffffff8025119d>] kthread+0x4d/0x80
-> > Oct 27 21:06:32 localhost kernel:  [<ffffffff8020d1b9>] child_rip+0xa/0x11
-> > 
-> > and I have the complete trace also. I can try to put it somewhere in the web if it helps
-> > (I already tried it, but I am new at the institute here and I could not set up my
-> > webpage yet :-(
+> > Oren, is this a good place to stick a process_deny_checkpoint()?  Both
+> > so we refuse to checkpoint, and document this as something that has to
+> > be addressed later?
 > 
-> Please attach it to http://bugzilla.kernel.org/show_bug.cgi?id=11845 .
+> why refuse to checkpoint ?
 
-Done.
+	If most setuid programs hold privileged resources for extended periods
+of time after dropping privileges then it seems like a good idea to
+refuse to checkpoint. Restart of those programs would be quite
+unreliable unless/until we find a nice solution.
+
+> if I'm root, and I want to checkpoint, and later restart, my sshd server
+> (assuming we support listening sockets) - then why not ?
+> we can just let it be, and have the restart fail (if it isn't root that
+> does the restart); perhaps add something like warn_checkpoint() (similar
+> to deny, but only warns) ?
+
+	How will folks not specializing in checkpoint/restart know when to use
+this as opposed to deny?
+
+	Instead, how about a flag to sys_checkpoint() -- DO_RISKY_CHECKPOINT --
+which checkpoints despite !may_checkpoint?
+
+Cheers,
+	-Matt Helsley
 
