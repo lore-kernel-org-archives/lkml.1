@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbYJ0HTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753038AbYJ0HWF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753087AbYJ0HTw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 03:19:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbYJ0HTp
+	id S1753038AbYJ0HWF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 03:22:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbYJ0HVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 03:19:45 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:45680 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751718AbYJ0HTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 03:19:44 -0400
-Date: Mon, 27 Oct 2008 18:19:33 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-next@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.29 stuff to linux-next now?
-Message-Id: <20081027181933.5c00374d.sfr@canb.auug.org.au>
-In-Reply-To: <s5hzlkqzfql.wl%tiwai@suse.de>
-References: <s5hzlkqzfql.wl%tiwai@suse.de>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__27_Oct_2008_18_19_33_+1100_NiDvXJOROE50fWNR"
+	Mon, 27 Oct 2008 03:21:55 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:47794 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751718AbYJ0HVy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 03:21:54 -0400
+Date: Mon, 27 Oct 2008 01:21:38 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: "Zhao, Yu" <yu.zhao@intel.com>
+Cc: Yu Zhao <yu.zhao@uniscape.net>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "greg@kroah.com" <greg@kroah.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       Rakib Mullick <rakib.mullick@gmail.com>
+Subject: Re: [PATCH] pci: Fixing drivers/pci/search.c compilation warning.
+Message-ID: <20081027072137.GZ26094@parisc-linux.org>
+References: <b9df5fa10809280816u23ef3021k7eee287a237b72ae@mail.gmail.com> <20080928163211.GR27204@parisc-linux.org> <20081021011308.GA3889@parisc-linux.org> <490467CD.3000402@uniscape.net> <20081026183412.GX26094@parisc-linux.org> <49053313.9080706@intel.com> <20081027070745.GY26094@parisc-linux.org> <49056A2F.6030206@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49056A2F.6030206@intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__27_Oct_2008_18_19_33_+1100_NiDvXJOROE50fWNR
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Oct 27, 2008 at 03:13:51PM +0800, Zhao, Yu wrote:
+> Matthew Wilcox wrote:
+> >On Mon, Oct 27, 2008 at 11:18:43AM +0800, Zhao, Yu wrote:
+> >>Matthew Wilcox wrote:
+> >>>Yes, that's why pci_find_device() is deprecated.  But it doesn't also
+> >>>need to be buggy ;-)
+> >>How about pci_get_bus_and_slot()? People would meet the problem with it 
+> >>anyway.
+> >
+> >What problem with it?  It's documented to return the device with an
+> >increased refcount, and the implementation appears to do exactly that:
+> >
+> 
+> The 'dev' returned by pci_get_device() may be destroyed by PCI hotplug. 
+> I suppose that passing this 'dev' to pci_get_device() in the next loop 
+> would crash the system, right?
 
-Hi Takashi,
+Erm, no, the 'dev' cannot be destroyed because the caller has a refcount
+on it.  The physical device backing it might have gone away.  The dev
+won't be destroyed until its reference count reaches zero, which could
+be any time someone calls pci_dev_put() on it.  In the scenario you're
+postulating, it would happen in pci_get_dev_by_id():
 
-On Mon, 27 Oct 2008 07:58:26 +0100 Takashi Iwai <tiwai@suse.de> wrote:
->
-> now 2.6.28-rc2 was out, so it's time to move 2.6.29 material into
-> linux-next branch?  Or do you prefer to settle down the thing a bit
-> more?
+        if (from)
+                pci_dev_put(from);
 
-/me Takes a deep, calming breath :-)
+which is the last time that 'from' is referred to in that callchain.
 
-I guess its time, so let it rip!
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__27_Oct_2008_18_19_33_+1100_NiDvXJOROE50fWNR
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkFa4UACgkQjjKRsyhoI8wJLQCfWnK1rwXG+CgJpVXNefRQ4i+h
-lOkAoJ1fgIZv4EUZ4j8cFrVdjqhAEq+Q
-=2Psz
------END PGP SIGNATURE-----
-
---Signature=_Mon__27_Oct_2008_18_19_33_+1100_NiDvXJOROE50fWNR--
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
