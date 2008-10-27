@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752448AbYJ0Ip2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbYJ0Iyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752448AbYJ0Ip2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 04:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYJ0IpU
+	id S1752575AbYJ0Iyo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 04:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbYJ0Iyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 04:45:20 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:13907 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751246AbYJ0IpT (ORCPT
+	Mon, 27 Oct 2008 04:54:35 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:51389 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751406AbYJ0Iyf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 04:45:19 -0400
-Date: Mon, 27 Oct 2008 09:45:09 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Mike Rapoport <mike@compulab.co.il>, Eric Miao <eric.miao@marvell.com>,
-       Richard Purdie <rpurdie@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: CONFIG_LEDS_DA903X=m breaks 2.6.28-rc2-git1 build on x86-64
-Message-ID: <20081027094509.302401e4@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Oct 2008 04:54:35 -0400
+Date: Mon, 27 Oct 2008 09:54:14 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Message-ID: <20081027085414.GH11339@tekkaman>
+References: <1224683240-15439-2-git-send-email-giometti@linux.it> <20081022174004.GB10587@kroah.com> <20081022111145.e5f3c632.akpm@linux-foundation.org> <20081022195245.GS4390@tekkaman> <20081022130150.00836eba.akpm@linux-foundation.org> <20081022204800.GT4390@tekkaman> <20081022135810.37c564f8.akpm@linux-foundation.org> <20081022210352.GA29754@kroah.com> <20081023073957.GU4390@tekkaman> <20081023153733.GA4011@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081023153733.GA4011@kroah.com>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 1/2] Add c2 port support.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mike, Eric, Richard,
+On Thu, Oct 23, 2008 at 08:37:33AM -0700, Greg KH wrote:
 
-With CONFIG_LEDS_DA903X=m, kernel 2.6.28-rc2-git1 fails to build on
-x86-64 with the following error:
+> And again, you can still use sysfs for that as well.  I was just
+> referring to the binary sysfs file that you use for the firmware
+> download, it would make more sense for you to use the standard kernel
+> firmware download interface instead of rolling your own here.
 
-  CC [M]  drivers/leds/leds-da903x.o
-drivers/leds/leds-da903x.c:35: error: field "work" has incomplete type
-drivers/leds/leds-da903x.c: In function "da903x_led_work":
-drivers/leds/leds-da903x.c:47: warning: type defaults to "int" in declaration of "__mptr"
-drivers/leds/leds-da903x.c:47: warning: initialization from incompatible pointer type
-drivers/leds/leds-da903x.c: In function "da903x_led_set":
-drivers/leds/leds-da903x.c:89: error: implicit declaration of function "schedule_work"
-drivers/leds/leds-da903x.c: In function "da903x_led_probe":
-drivers/leds/leds-da903x.c:125: error: implicit declaration of function "INIT_WORK"
+If I well understand the firmware class it works starting the firmware
+download from the kernel side, that is into the kernel we should call
+request_firmware() and then the files will
+/sys/class/firmware/xxx/{loading,data} appear.
 
-Can we PLEASE stick to the plan and ONLY have bug FIXES after rc1 (and
-even more so after rc2)?
+This solution doesn't fit C2 port needs since the firmware download is
+decided from userland erasing and then writing into the
+microcontroller on-board flash.
 
-Thanks,
+Ciao,
+
+Rodolfo
+
 -- 
-Jean Delvare
+
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming                     skype:  rodolfo.giometti
