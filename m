@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbYJ0QNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbYJ0QQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752969AbYJ0QNo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 12:13:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbYJ0QNf
+	id S1752470AbYJ0QQi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 12:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYJ0QQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 12:13:35 -0400
-Received: from waste.org ([66.93.16.53]:45511 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750795AbYJ0QNe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 12:13:34 -0400
-Subject: Re: Bloatwatch 2.6.28-rc1: last_sysfs_file
-From: Matt Mackall <mpm@selenic.com>
-To: Chris Snook <csnook@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linuxfoundation.org>
-In-Reply-To: <4902F710.3020100@redhat.com>
-References: <1224881514.3248.46.camel@calx> <1224882923.3248.51.camel@calx>
-	 <4902F710.3020100@redhat.com>
-Content-Type: text/plain
-Date: Mon, 27 Oct 2008 11:11:38 -0500
-Message-Id: <1225123898.3199.20.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Oct 2008 12:16:31 -0400
+Received: from kroah.org ([198.145.64.141]:41192 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750795AbYJ0QQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 12:16:31 -0400
+Date: Mon, 27 Oct 2008 09:14:06 -0700
+From: Greg KH <greg@kroah.com>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] Add c2 port support.
+Message-ID: <20081027161406.GA14500@kroah.com>
+References: <20081022174004.GB10587@kroah.com> <20081022111145.e5f3c632.akpm@linux-foundation.org> <20081022195245.GS4390@tekkaman> <20081022130150.00836eba.akpm@linux-foundation.org> <20081022204800.GT4390@tekkaman> <20081022135810.37c564f8.akpm@linux-foundation.org> <20081022210352.GA29754@kroah.com> <20081023073957.GU4390@tekkaman> <20081023153733.GA4011@kroah.com> <20081027085414.GH11339@tekkaman>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081027085414.GH11339@tekkaman>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-10-25 at 06:38 -0400, Chris Snook wrote: 
-> Matt Mackall wrote:
-> > On Fri, 2008-10-24 at 15:52 -0500, Matt Mackall wrote:
-> >> 2.6.28-rc1 adds 4k for last_sysfs_file debug tracking. That's one hell
-> >> of a long sysfs path.
-> >>
-> >> http://www.selenic.com/bloatwatch/?cmd=compare;v1=2.6.27;v2=2.6.28-rc1;part=/built-in/fs/sysfs
-> > 
-> > ..especially given that printk is limited to 1k at a time.
-> > 
-> > 
-> > sysfs: shrink last_sysfs_file to a reasonable size
-> > 
-> > sysfs was reserving 4k to store filenames for debug despite printk being
-> > limited to 1k. Shrink this to something more reasonable.
-> > 
-> > Signed-off-by: Matt Mackall <mpm@selenic.com>
-> > 
-> > diff -r ac8c82ff3be7 fs/sysfs/file.c
-> > --- a/fs/sysfs/file.c	Fri Oct 24 13:13:04 2008 -0500
-> > +++ b/fs/sysfs/file.c	Fri Oct 24 16:11:53 2008 -0500
-> > @@ -25,7 +25,7 @@
-> >  #include "sysfs.h"
-> >  
-> >  /* used in crash dumps to help with debugging */
-> > -static char last_sysfs_file[PATH_MAX];
-> > +static char last_sysfs_file[200]; /* allow for disgustingly long paths */
-> >  void sysfs_printk_last_file(void)
-> >  {
-> >  	printk(KERN_EMERG "last sysfs file: %s\n", last_sysfs_file);
-> > 
-> > 
+On Mon, Oct 27, 2008 at 09:54:14AM +0100, Rodolfo Giometti wrote:
+> On Thu, Oct 23, 2008 at 08:37:33AM -0700, Greg KH wrote:
 > 
-> Please don't use magic numbers.  Use a symbolic constant, and modify printk.c to 
-> use the same.
+> > And again, you can still use sysfs for that as well.  I was just
+> > referring to the binary sysfs file that you use for the firmware
+> > download, it would make more sense for you to use the standard kernel
+> > firmware download interface instead of rolling your own here.
+> 
+> If I well understand the firmware class it works starting the firmware
+> download from the kernel side, that is into the kernel we should call
+> request_firmware() and then the files will
+> /sys/class/firmware/xxx/{loading,data} appear.
 
-I'm explicitly not using a magic number because the relevant magic
-number is absurdly large. It is in fact 4 times larger than printk can
-print. And its 40 times larger than any path we are liable to encounter.
-Inventing a new use-once #define meaning "good enough for debugging
-99.99% of sysfs bugs" one line up is not an improvement here.
+Yes, that is true, but userspace doesn't have to write to those files
+until it feels like it.
 
-And why on earth would I modify anything in printk?
+> This solution doesn't fit C2 port needs since the firmware download is
+> decided from userland erasing and then writing into the
+> microcontroller on-board flash.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+That's fine, you can still use the same interface, no problems.  Just
+use the "async" version of the firmware interfae and you will be fine.
 
+thanks,
+
+greg k-h
