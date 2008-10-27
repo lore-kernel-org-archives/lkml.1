@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbYJ0UDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbYJ0UD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753576AbYJ0UDc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 16:03:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYJ0UDZ
+	id S1753859AbYJ0UD6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 16:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbYJ0UDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 16:03:25 -0400
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:39627 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752628AbYJ0UDY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 16:03:24 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=O1zIeR1xJoYcmalW9/NVsKq34F0FJuLxLAtF81mHMlriAyu8g4wqBLCIr/7u1DcnUB1Pc30eHQ5EVzgB0WBHeX4LRpYFT/dGD4WUG+x+YSuridmyw4d0GlXq7MGw1dixVCkGX7dKKEydfhlYdLVnWmdfm2S4tBRiOQ4VwFmTzDI=  ;
-X-YMail-OSG: C434A.gVM1nJz2EUe1SvdJDLxTq7pbGgslt6lfpDbrEuTQkFQoGjb06nYLc5frCq3s1B06ieVQYyskLae8V7qL8K9vVCpc1WtTVawquLWVh3H0VLV.UHnhIQuGnHMrmxBOS9tMT5qi1HD2dHbLc.Ly4B
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Subject: Re: [rtc-linux] [PATCH 2/2] rtc: rtc-wm8350: Add support for WM8350 RTC
-Date: Mon, 27 Oct 2008 13:03:21 -0700
-User-Agent: KMail/1.9.10
-Cc: rtc-linux@googlegroups.com, broonie@opensource.wolfsonmicro.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <1225121905-23782-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1225121905-23782-2-git-send-email-broonie@opensource.wolfsonmicro.com> <20081027180432.7deaee0a@i1501.lan.towertech.it>
-In-Reply-To: <20081027180432.7deaee0a@i1501.lan.towertech.it>
+	Mon, 27 Oct 2008 16:03:47 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46240 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753092AbYJ0UDr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 16:03:47 -0400
+Message-ID: <49061E86.6080408@kernel.org>
+Date: Mon, 27 Oct 2008 13:03:18 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200810271303.21634.david-b@pacbell.net>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Shaohua Li <shaohua.li@intel.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>
+Subject: [PATCH] x86: remove wrong -1 in calling init_memory_mapping
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 27 October 2008, Alessandro Zummo wrote:
->  (and a detailed checklist at http://groups.google.com/group/rtc-linux/web/checklist )
+From: Shaohua Li <shaohua.li@intel.com>
 
-The comment about probe()/__devinit and remove()/__devexit/__devexit_p
-isn't right ... when the driver uses platform_driver_probe(), the "__dev"
-variants should not be used.  (It's a Good Thing to shrink runtime code
-footprints, by using platform_driver_probe for non-hotpluggable devices.)
+impact: make memory hot plug got last page mapped.
 
-Also:  rtc_ops.ioctl() method should only handle RTC_{AIE,UIE}_{ON,OFF},
-since the other standard ioctls have rtc_ops equivalents.
+Shuahua Li found:
+Round up address to a page, otherwise the last page isn't mapped.
 
+No, I just did some experiments on a desktop for memory hotplug and this bug
+triggered a crash in my test.
+Yinghai's suggestion also fixed the bug. I just want to have safer method. Anyway, either approach is ok to me.
 
-(This code is fine in both respects.  Though since I've received three
-copies of the driver since it was merged to MM, maybe I missed something.)
+So acctually we don't need to round it.
+just remove that extra -1
 
-- Dave
+Signed-off-by: Yinghai <yinghai@kernel.org>
+
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index d59e4c9..2884b17 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -837,7 +837,7 @@ int arch_add_memory(int nid, u64 start, u64 size)
+ 	unsigned long nr_pages = size >> PAGE_SHIFT;
+ 	int ret;
+ 
+-	last_mapped_pfn = init_memory_mapping(start, start + size-1);
++	last_mapped_pfn = init_memory_mapping(start, start + size);
+ 	if (last_mapped_pfn > max_pfn_mapped)
+ 		max_pfn_mapped = last_mapped_pfn;
+ 
