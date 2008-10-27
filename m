@@ -1,73 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753454AbYJ0Sdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752129AbYJ0SeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753454AbYJ0Sdp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 14:33:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbYJ0Sde
+	id S1752129AbYJ0SeA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 14:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbYJ0Sds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 14:33:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45385 "EHLO mx2.mail.elte.hu"
+	Mon, 27 Oct 2008 14:33:48 -0400
+Received: from gate.crashing.org ([63.228.1.57]:53167 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751559AbYJ0Sde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 14:33:34 -0400
-Date: Mon, 27 Oct 2008 19:33:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jiri Kosina <jkosina@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       David Miller <davem@davemloft.net>, rjw@sisk.pl, s0mbre@tservice.net.ru,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-Message-ID: <20081027183312.GD11494@elte.hu>
-References: <1224917623.4929.15.camel@marge.simson.net> <20081025.002420.82739316.davem@davemloft.net> <Pine.LNX.4.64.0810260055070.22126@twin.jikos.cz> <1225010790.8566.22.camel@marge.simson.net> <1225011648.27415.4.camel@twins> <20081026021153.47878580.akpm@linux-foundation.org> <alpine.LNX.1.10.0810262002450.12928@jikos.suse.cz> <alpine.LNX.1.10.0810271138470.12928@jikos.suse.cz> <20081027112750.GA2771@elte.hu> <20081027113306.5b1d5898@lxorguk.ukuu.org.uk>
+	id S1753528AbYJ0Sdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 14:33:47 -0400
+Date: Mon, 27 Oct 2008 13:31:49 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@blarg.am.freescale.net
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, davem@davemloft.net,
+       tglx@linutronix.de, csnook@redhat.com
+Subject: [PATCH][for 2.6.28] powerpc/mpic: Add support for MPICs that only
+ support a single CPU destination
+Message-ID: <Pine.LNX.4.64.0810271327170.4693@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081027113306.5b1d5898@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From 20a2290553a1921a13449f9b7c597bcc76ec2c03 Mon Sep 17 00:00:00 2001
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Mon, 27 Oct 2008 09:08:11 -0500
+Subject: [PATCH] powerpc/mpic: Add support for MPICs that only support a single CPU destination
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+The Freescale implementation of MPIC only allows a single CPU destination
+for non-IPI interrupts.  We add a flag to the mpic_init to distinquish
+these variants of MPIC.  Additionally, we will flag a warning if the
+user tries to set the affinity on such an interrupts to more than one
+CPU.
 
-> > The way to get the best possible dbench numbers in CPU-bound dbench 
-> > runs, you have to throw away the scheduler completely, and do this 
-> > instead:
-> > 
-> >  - first execute all requests of client 1
-> >  - then execute all requests of client 2
-> >  ....
-> >  - execute all requests of client N
-> 
-> Rubbish. [...]
+This is to deal with the fact that the default smp affinity was
+changed by commit 18404756765c713a0be4eb1082920c04822ce588.
 
-i've actually implemented that about a decade ago: i've tracked down 
-what makes dbench tick, i've implemented the kernel heuristics for it 
-to make dbench scale linearly with the number of clients - just to be 
-shot down by Linus about my utter rubbish approach ;-)
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-> [...] If you do that you'll not get enough I/O in parallel to 
-> schedule the disk well (not that most of our I/O schedulers are 
-> doing the job well, and the vm writeback threads then mess it up and 
-> the lack of Arjans ioprio fixes then totally screw you) </rant>
+Ben, please review and see if this is an acceptable solution to the fact
+that FSL mpic's can't deal with more than one CPU destination bit being
+set.  If so please queue up and forward onto linus for 2.6.28.
 
-the best dbench results come from systems that have enough RAM to 
-cache the full working set, and a filesystem intelligent enough to not 
-insert bogus IO serialization cycles (ext3 is not such a filesystem).
+- k
 
-The moment there's real IO it becomes harder to analyze but the same 
-basic behavior remains: the more unfair the IO scheduler, the "better" 
-dbench results we get.
+ arch/powerpc/include/asm/mpic.h          |    2 ++
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c |    3 ++-
+ arch/powerpc/platforms/86xx/pic.c        |    3 ++-
+ arch/powerpc/sysdev/mpic.c               |   15 +++++++++++++++
+ 4 files changed, 21 insertions(+), 2 deletions(-)
 
-	Ingo
+diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
+index 34d9ac4..c2ccca5 100644
+--- a/arch/powerpc/include/asm/mpic.h
++++ b/arch/powerpc/include/asm/mpic.h
+@@ -355,6 +355,8 @@ struct mpic
+ #define MPIC_NO_BIAS			0x00000400
+ /* Ignore NIRQS as reported by FRR */
+ #define MPIC_BROKEN_FRR_NIRQS		0x00000800
++/* Destination only supports a single CPU at a time */
++#define MPIC_SINGLE_DEST_CPU		0x00001000
+
+ /* MPIC HW modification ID */
+ #define MPIC_REGSET_MASK		0xf0000000
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+index 483b65c..613bf8c 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+@@ -78,7 +78,8 @@ void __init mpc85xx_ds_pic_init(void)
+
+ 	mpic = mpic_alloc(np, r.start,
+ 			  MPIC_PRIMARY | MPIC_WANTS_RESET |
+-			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
++			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
++			  MPIC_SINGLE_DEST_CPU,
+ 			0, 256, " OpenPIC  ");
+ 	BUG_ON(mpic == NULL);
+ 	of_node_put(np);
+diff --git a/arch/powerpc/platforms/86xx/pic.c b/arch/powerpc/platforms/86xx/pic.c
+index 8881c5d..668275d 100644
+--- a/arch/powerpc/platforms/86xx/pic.c
++++ b/arch/powerpc/platforms/86xx/pic.c
+@@ -44,7 +44,8 @@ void __init mpc86xx_init_irq(void)
+
+ 	mpic = mpic_alloc(np, res.start,
+ 			MPIC_PRIMARY | MPIC_WANTS_RESET |
+-			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
++			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
++			MPIC_SINGLE_DEST_CPU,
+ 			0, 256, " MPIC     ");
+ 	of_node_put(np);
+ 	BUG_ON(mpic == NULL);
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 8e3478c..b91a736 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -781,6 +781,16 @@ void mpic_set_affinity(unsigned int irq, cpumask_t cpumask)
+
+ 	cpus_and(tmp, cpumask, cpu_online_map);
+
++	if ((mpic->flags & MPIC_SINGLE_DEST_CPU) && (cpus_weight(tmp) != 1)) {
++		int first_cpu = first_cpu(tmp);
++
++		printk(KERN_WARNING "mpic: attempting to set cpu affinity to "
++			"more than one cpu, setting to CPU %d\n", first_cpu);
++		cpus_clear(tmp);
++		cpu_set(first_cpu, tmp);
++		irq_desc[irq].affinity = tmp;
++	}
++
+ 	mpic_irq_write(src, MPIC_INFO(IRQ_DESTINATION),
+ 		       mpic_physmask(cpus_addr(tmp)[0]));
+ }
+@@ -920,6 +930,8 @@ static int mpic_host_map(struct irq_host *h, unsigned int virq,
+ 					 handle_percpu_irq);
+ 		return 0;
+ 	}
++	if (mpic->flags & MPIC_SINGLE_DEST_CPU)
++		irq_set_affinity(virq, irq_default_affinity);
+ #endif /* CONFIG_SMP */
+
+ 	if (hw >= mpic->irq_count)
+@@ -1037,6 +1049,9 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ #ifdef CONFIG_SMP
+ 	mpic->hc_ipi = mpic_ipi_chip;
+ 	mpic->hc_ipi.typename = name;
++
++	if (flags & MPIC_SINGLE_DEST_CPU)
++		irq_default_affinity = CPU_MASK_CPU0;
+ #endif /* CONFIG_SMP */
+
+ 	mpic->flags = flags;
+-- 
+1.5.5.1
+
