@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbYJ0WOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbYJ0WOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753872AbYJ0WOX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 18:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbYJ0WOQ
+	id S1752734AbYJ0WOt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 18:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbYJ0WOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 18:14:16 -0400
+	Mon, 27 Oct 2008 18:14:40 -0400
 Received: from courier.cs.helsinki.fi ([128.214.9.1]:50003 "EHLO
 	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751873AbYJ0WOP (ORCPT
+	with ESMTP id S1752622AbYJ0WOj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 18:14:15 -0400
-Date: Tue, 28 Oct 2008 00:14:14 +0200 (EET)
+	Mon, 27 Oct 2008 18:14:39 -0400
+Date: Tue, 28 Oct 2008 00:14:38 +0200 (EET)
 From: Pekka J Enberg <penberg@cs.helsinki.fi>
 To: greg@kroah.com
 cc: pavel@suse.cz, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] w35und: remove macro magic from MLME_GetNextPacket()
-Message-ID: <Pine.LNX.4.64.0810280013460.9821@melkki.cs.Helsinki.FI>
+Subject: [PATCH 2/2] w35und: plug memory leak in wbsoft_tx()
+Message-ID: <Pine.LNX.4.64.0810280014140.9821@melkki.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -25,49 +25,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-This removes the macro magic from MLME_GetNextPacket() to de-obfuscate the
-code.
+There's no reason to duplicate the skb in wbsoft_tx() and leak GFP_ATOMIC
+memory as the contents are copied to ->TxBuffer in MdxTx() anyway before
+MLMESendFrame() returns.
 
 Cc: Pavel Machek <pavel@suse.cz>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- drivers/staging/winbond/mlmetxrx.c |   22 ++++++++--------------
- 1 files changed, 8 insertions(+), 14 deletions(-)
+ drivers/staging/winbond/linux/wbusb.c |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/staging/winbond/mlmetxrx.c b/drivers/staging/winbond/mlmetxrx.c
-index eab562a..a071855 100644
---- a/drivers/staging/winbond/mlmetxrx.c
-+++ b/drivers/staging/winbond/mlmetxrx.c
-@@ -96,21 +96,15 @@ u8 MLMESendFrame(struct wb35_adapter * adapter, u8 *pMMPDU, u16 len, u8 DataType
- 	return true;
- }
+diff --git a/drivers/staging/winbond/linux/wbusb.c b/drivers/staging/winbond/linux/wbusb.c
+index 128b70a..8957634 100644
+--- a/drivers/staging/winbond/linux/wbusb.c
++++ b/drivers/staging/winbond/linux/wbusb.c
+@@ -114,11 +114,8 @@ static void wbsoft_configure_filter(struct ieee80211_hw *dev,
  
--void
--MLME_GetNextPacket(struct wb35_adapter * adapter, PDESCRIPTOR pDes)
-+void MLME_GetNextPacket(struct wb35_adapter *adapter, PDESCRIPTOR desc)
+ static int wbsoft_tx(struct ieee80211_hw *dev, struct sk_buff *skb)
  {
--#define DESCRIPTOR_ADD_BUFFER( _D, _A, _S ) \
--{\
--	_D->InternalUsed = _D->buffer_start_index + _D->buffer_number; \
--	_D->InternalUsed %= MAX_DESCRIPTOR_BUFFER_INDEX; \
--	_D->buffer_address[ _D->InternalUsed ] = _A; \
--	_D->buffer_size[ _D->InternalUsed ] = _S; \
--	_D->buffer_total_size += _S; \
--	_D->buffer_number++;\
--}
--
--	DESCRIPTOR_ADD_BUFFER( pDes, adapter->sMlmeFrame.pMMPDU, adapter->sMlmeFrame.len );
--	pDes->Type = adapter->sMlmeFrame.DataType;
-+	desc->InternalUsed = desc->buffer_start_index + desc->buffer_number;
-+	desc->InternalUsed %= MAX_DESCRIPTOR_BUFFER_INDEX;
-+	desc->buffer_address[desc->InternalUsed] = adapter->sMlmeFrame.pMMPDU;
-+	desc->buffer_size[desc->InternalUsed] = adapter->sMlmeFrame.len;
-+	desc->buffer_total_size += adapter->sMlmeFrame.len;
-+	desc->buffer_number++;
-+	desc->Type = adapter->sMlmeFrame.DataType;
+-	char *buffer = kmalloc(skb->len, GFP_ATOMIC);
+-	printk("Sending frame %d bytes\n", skb->len);
+-	memcpy(buffer, skb->data, skb->len);
+-	if (1 == MLMESendFrame(my_adapter, buffer, skb->len, FRAME_TYPE_802_11_MANAGEMENT))
+-		printk("frame sent ok (%d bytes)?\n", skb->len);
++	MLMESendFrame(my_adapter, skb->data, skb->len, FRAME_TYPE_802_11_MANAGEMENT);
++
+ 	return NETDEV_TX_OK;
  }
  
- void MLMEfreeMMPDUBuffer(struct wb35_adapter * adapter, s8 *pData)
 -- 
 1.5.3.7
 
