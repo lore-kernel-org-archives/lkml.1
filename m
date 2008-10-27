@@ -1,76 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752639AbYJ0XZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbYJ0X2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752639AbYJ0XZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 19:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYJ0XZM
+	id S1752814AbYJ0X2o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 19:28:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYJ0X2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 19:25:12 -0400
-Received: from mail-gx0-f18.google.com ([209.85.217.18]:63249 "EHLO
-	mail-gx0-f18.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751328AbYJ0XZK (ORCPT
+	Mon, 27 Oct 2008 19:28:32 -0400
+Received: from ik-out-1112.google.com ([66.249.90.176]:48786 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751731AbYJ0X2b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 19:25:10 -0400
+	Mon, 27 Oct 2008 19:28:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ILPjAmgR+CtQ6+7Zeoq3qIvK0DnOXcw2nVjbDFtBNlTtDi4VGcsb2tXbavVDtx3t8L
-         3mTK/Xc94q3u1Aw+1MIA8JfkBEB3xiZccsc+LXIdO2kxhx4/tWt3AWgP4rz9ZbvOtJN5
-         Zju9h/EG6UKFmZ78qBt+HaaI+KcDE8JFG22nk=
-Subject: Re: Suspend to RAM regression in 2.6.28-rc2 (bisected)
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Tomas Winkler <tomasw@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Carlos R. Mafra" <crmafra2@gmail.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Soeren Sonnenburg <kernel@nn7.de>, linux-kernel@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <1ba2fa240810271612g72bb2b08p6ebab9f6f02f5b98@mail.gmail.com>
-References: <20081027162054.GA4015@localhost.aei.mpg.de>
-	 <20081027222852.GA3907@localhost.aei.mpg.de>
-	 <1ba2fa240810271540t1d1ba5c9me60f86dec357f53e@mail.gmail.com>
-	 <200810272350.29429.rjw@sisk.pl>
-	 <1ba2fa240810271612g72bb2b08p6ebab9f6f02f5b98@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 27 Oct 2008 16:23:11 -0700
-Message-Id: <1225149791.6339.8.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Zlf/7895+eBazpdX09nRi1Oc3ZSAOGEi61WdtwM363LfZ0cKHK//Anb//MK4c5yCBR
+         JEn42UhTqtL18M2wPWQ7c7xRSjsHUVL82caqy+paZcXda19MfmwJLWBVJVRi6A4PpQkq
+         P3WJjloxe5/ptJcexZm2KoPkU+I84X6P/7IRg=
+Date: Tue, 28 Oct 2008 02:31:53 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
+       anders@anduras.de, netdev@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCHv3] printk: add %pM format specifier for MAC
+	addresses
+Message-ID: <20081027233153.GA11367@x200.localdomain>
+References: <1225124904.5440.1.camel@brick> <20081027.123805.134354592.davem@davemloft.net> <1225137542.5396.10.camel@brick> <20081027.154736.178482850.davem@davemloft.net> <1225149254.6339.4.camel@brick>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225149254.6339.4.camel@brick>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-28 at 01:12 +0200, Tomas Winkler wrote:
-> h
+On Mon, Oct 27, 2008 at 04:14:14PM -0700, Harvey Harrison wrote:
+> On Mon, 2008-10-27 at 15:47 -0700, David Miller wrote:
+> > From: Harvey Harrison <harvey.harrison@gmail.com>
+> > Date: Mon, 27 Oct 2008 12:59:02 -0700
+> > 
+> > > Add format specifiers for printing out six colon-separated bytes:
+> > > 
+> > > MAC addresses (%pM):
+> > > xx:xx:xx:xx:xx:xx
+> > > 
+> > > %#pM is also supported and omits the colon separators.
+> > > 
+> > > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> > 
+> > Applied, thanks.
 > 
-> On Tue, Oct 28, 2008 at 12:50 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Monday, 27 of October 2008, Tomas Winkler wrote:
-> >> On Tue, Oct 28, 2008 at 12:28 AM, Carlos R. Mafra <crmafra2@gmail.com> wrote:
-> >> > On Mon 27.Oct'08 at 23:07:00 +0200, Tomas Winkler wrote:
-> >> >>[...]
-> >> >>
-> >> >> Can someone try this one (it might be space broken I've just pasted
-> >> >> that in) It's on top of 1d63e726408dfdb3e10ed8f00c383b30ebb333d3
-> >> >> (latest linux-2.6.git)
-> >> >
-> >> >
-> >> > Yes, this one also works for me (I applied it manually).
-> >> Good, this was actually part of some older and bigger patch I wasn't
-> >> aware it has this affect. It has some millage in iwl5000 branch.
-> >> RFKIll went through some changes in the mainline so it wasn't merged yet.
-> >
-> > Are you going to push this patch upstream now?  It's quite important to get
-> > this resume regression fixed ASAP.
+> Did you happen to have a preference with regard to the specifier for
+> IPv6 addresses:
 > 
-> Definitely I would post it to wireless and stable.  I would like to
-> hear from Harvey, though if this is somehow related to b43 as well. I
-> will it give some more testing tomorrow morning I don't have any HW
-> right now and need to suspend to bed :)
+> I was thinking of using %pI6 to replace NIP6() and NIP6_FMT and using
+> %#pI6 for NIP6_SEQFMT.
+> 
+> On the IPv4 side, maybe use %pI4 for network endian NIPQUAD() and NIPQUAD_FMT
+> and then %#pI4 for host-endian HIQUAD(), as displaying the IPv4 address without
+> the periods isn't useful?
 
-Go ahead and send it, I retried with linus HEAD and suspend/resume is fine here,
-not sure why it was failing, although it does seem to take longer to resume that
-2.6.27, but that's purely subjective, no numbers to back that up.
-
-Harvey
-
+%#pI4 is horrible and %p4 and %p6 were cool.
