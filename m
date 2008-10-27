@@ -1,109 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752327AbYJ0SAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753191AbYJ0SCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752327AbYJ0SAs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 14:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbYJ0SAi
+	id S1753191AbYJ0SCF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 14:02:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYJ0SBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 14:00:38 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:51523 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752253AbYJ0SAi (ORCPT
+	Mon, 27 Oct 2008 14:01:48 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:39483 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750942AbYJ0SBs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 14:00:38 -0400
-Subject: Re: [PATCH] memory hotplug: fix page_zone() calculation in
-	test_pages_isolated()
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       kamezawa.hiroyu@jp.fujitsu.com, y-goto@jp.fujitsu.com
-In-Reply-To: <1225128359.12673.101.camel@nimitz>
-References: <4905F114.3030406@de.ibm.com>
-	 <1225128359.12673.101.camel@nimitz>
-Content-Type: text/plain
-Date: Mon, 27 Oct 2008 18:59:29 +0100
-Message-Id: <1225130369.20384.33.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Oct 2008 14:01:48 -0400
+Date: Mon, 27 Oct 2008 14:00:49 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       tomas.winkler@intel.com, kernel@nn7.de, linux-wireless@vger.kernel.org
+Subject: Re: Suspend to RAM regression in 2.6.28-rc2 (bisected)
+Message-ID: <20081027180049.GF20389@tuxdriver.com>
+References: <20081027162054.GA4015@localhost.aei.mpg.de> <200810271839.39236.rjw@sisk.pl> <20081027175719.GA5759@localhost.aei.mpg.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081027175719.GA5759@localhost.aei.mpg.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-27 at 10:25 -0700, Dave Hansen wrote:
-> I'm not sure I follow.  Let's look at the code, pre-patch:
+On Mon, Oct 27, 2008 at 06:57:19PM +0100, Carlos R. Mafra wrote:
+> On Mon 27.Oct'08 at 18:39:38 +0100, Rafael J. Wysocki wrote:
+> > On Monday, 27 of October 2008, Carlos R. Mafra wrote:
+> > > Hi,
+> > > 
+> > > So I managed to bisect my suspend to RAM regression in 2.6.27-rc2
+> > > to commit 3b7ee69d0caefbdb85a606a98bff841b8c63b97e ("mac80211: disassociate 
+> > > when moving to new BSS") by Tomas Winkler (Cc:-ed).
+> > > 
+> > > Unfortunately it doesn't revert cleanly so I can't double check it.
+> > 
+> > Why are you saying it doesn't revert cleanly?  For me it does revert without
+> > rejects from 2.6.28-rc2.
 > 
-> > 	for (pfn = start_pfn; pfn < end_pfn; pfn += pageblock_nr_pages) {
-> >                 page = __first_valid_page(pfn, pageblock_nr_pages);
-> >                 if (page && get_pageblock_migratetype(page) != MIGRATE_ISOLATE)
-> >                         break;
-> >         }
-> >         if (pfn < end_pfn)
-> >                 return -EBUSY;
+> I get this
 > 
-> We have two ways out of the loop:
-> 1. 'page' is valid, and not isolated, so we did a 'break'
-> 2. No page hit (1) in the range and we broke out of the loop because
->    of the for() condition: (pfn < end_pfn).  
+> [mafra@localhost:linux-2.6]$ git checkout v2.6.28-rc2 -b s2ram
+> Switched to a new branch "s2ram"
+> [mafra@localhost:linux-2.6]$ git revert 3b7ee69d
+> warning: too many files, skipping inexact rename detection
+> Auto-merged net/mac80211/mlme.c
+> CONFLICT (content): Merge conflict in net/mac80211/mlme.c
+> Automatic revert failed.  After resolving the conflicts,
+> mark the corrected paths with 'git add <paths>' or 'git rm <paths>' and commit the result.
 > 
-> So, when the condition happens that you mentioned in your changelog
-> above: "pfn then points to the first pfn after end_pfn", we jump out at
-> the 'return -EBUSY;'.  We don't ever do pfn_to_page() in that case since
-> we've returned befoer.
-> 
-> Either 'page' is valid *OR* you return -EBUSY.  I don't think you need
-> to check both.
+> I don't know what is happening here :-(
 
-We only return -EBUSY if pfn < end_pfn, but after completing the loop w/o
-a break pfn will be > end_pfn. Also, the last call to __first_valid_page()
-may return NULL w/o causing a break, so page may also be invalid after the
-loop.
+That conflict is easy to resolve.  Just delete everything between
+"<<<<" and ">>>>" (including those lines).
 
-> > Using the last valid page that was found inside the for() loop, instead
-> > of pfn_to_page(), should fix this.
-> > @@ -130,10 +130,10 @@ int test_pages_isolated(unsigned long st
-> > 		if (page && get_pageblock_migratetype(page) != MIGRATE_ISOLATE)
-> > 			break;
-> > 	}
-> > -	if (pfn < end_pfn)
-> > +	if ((pfn < end_pfn) || !page)
-> > 		return -EBUSY;
-> > 	/* Check all pages are free or Marked as ISOLATED */
-> > -	zone = page_zone(pfn_to_page(pfn));
-> > +	zone = page_zone(page);
-> 
-> I think this patch fixes the bug, but for reasons other than what you
-> said. :)
-> 
-> The trouble here is that the 'pfn' could have been in the middle of a
-> hole somewhere, which __first_valid_page() worked around.  Since you
-> saved off the result of __first_valid_page(), it ends up being OK with
-> your patch.
+Hth!
 
-I think pfn will always be > end_pfn if we complete the loop. And breaking
-out of the loop earlier will always return -EBUSY.
+John
 
-> Instead of using pfn_to_page() you could also have just called
-> __first_valid_page() again.  But, that would have duplicated a bit of
-> work, even though not much in practice because the caches are still hot.
-> 
-> Technically, you wouldn't even need to check the return from
-> __first_valid_page() since you know it has a valid result because you
-> made the exact same call a moment before.
-> 
-> Anyway, can you remove the !page check, fix up the changelog and resend?
+P.S.  I don't see any obvious reason why that should affect X on
+resume -- maybe the iwlwifi guys have some ideas.
 
-Calling __first_valid_page() again might be a good idea. Thinking about it
-now, I guess there is still a problem left with my patch, but for reasons
-other than what you said :) If the loop is completed with page == NULL,
-we will return -EBUSY with the new patch. But there may have been valid
-pages before, and only some memory hole at the end. In this case, returning
--EBUSY would probably be wrong.
-
-Kamezawa, this loop/function was added by you, what do you think?
-
---
-Thanks,
-Gerald
-
-
+John
+-- 
+John W. Linville		Linux should be at the core
+linville@tuxdriver.com			of your literate lifestyle.
