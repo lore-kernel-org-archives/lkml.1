@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752943AbYJ0TsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbYJ0Tst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752943AbYJ0TsU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 15:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbYJ0TsJ
+	id S1754194AbYJ0Tst (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 15:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbYJ0Tsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 15:48:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45132 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751954AbYJ0TsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 15:48:08 -0400
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, lenb@kernel.org
-Subject: Re: PATCH] ftrace: Add a C/P state tracer to help power optimization
-References: <20081006102640.481acd23@infradead.org>
-	<20081027155920.GS5704@elte.hu>
-	<20081027110522.6cb7b142@infradead.org>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Mon, 27 Oct 2008 15:47:30 -0400
-In-Reply-To: <20081027110522.6cb7b142@infradead.org> (Arjan van de Ven's message of "Mon, 27 Oct 2008 11:05:22 -0700")
-Message-ID: <y0m3aihx1kd.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Mon, 27 Oct 2008 15:48:40 -0400
+Received: from kroah.org ([198.145.64.141]:48670 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751289AbYJ0Tsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 15:48:39 -0400
+Date: Mon, 27 Oct 2008 11:37:08 -0700
+From: Greg KH <greg@kroah.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5] w35und: remove dead code from wbusb_f.h
+Message-ID: <20081027183707.GA13737@kroah.com>
+References: <Pine.LNX.4.64.0810221906140.1679@melkki.cs.Helsinki.FI>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0810221906140.1679@melkki.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Oct 22, 2008 at 07:06:41PM +0300, Pekka J Enberg wrote:
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
+> Remove dead code from wbusb_f.h and move the WbWLanInitialize() definition to
+> wblinux_f.h where it arguably belongs to. As the wbusb_f.h is now empty, we can
+> remove it completely.
+> 
+> Cc: Pavel Machek <pavel@suse.cz>
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Arjan van de Ven <arjan@infradead.org> writes:
+This patch gives me a bunch of build errors as I don't think you are in
+sync with the other changes in these files.
 
-> [...]
-> --- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-> +++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-> [...]
-> @@ -427,6 +429,8 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
->  		}
->  	}
->  
-> +	trace_power_mark(&it, POWER_PSTATE, next_perf_state);
-> +
->  	switch (data->cpu_feature) {
->  	case SYSTEM_INTEL_MSR_CAPABLE:
->  		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
-> [...]
+Care to respin it against 2.6.28-rc2?
 
-Is there some reason that this doesn't use tracepoints instead
-of such a single-backend hook?
+thanks,
 
-
-- FChE
+greg k-h
