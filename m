@@ -1,124 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752614AbYJ0Pzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbYJ0P6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752614AbYJ0Pzz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 11:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750918AbYJ0Pzr
+	id S1752619AbYJ0P6i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 11:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYJ0P6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 11:55:47 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:35989 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbYJ0Pzq (ORCPT
+	Mon, 27 Oct 2008 11:58:30 -0400
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:57051 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751236AbYJ0P6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 11:55:46 -0400
-Subject: Re: [GIT PULL/RESEND] kernel message catalog patches
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-In-Reply-To: <alpine.LFD.2.00.0810270750100.3386@nehalem.linux-foundation.org>
-References: <1224168620.9617.14.camel@localhost>
-	 <1224230354.4631.1.camel@localhost>
-	 <20081021092148.GB4980@osiris.boeblingen.de.ibm.com>
-	 <alpine.LFD.2.00.0810230835150.3287@nehalem.linux-foundation.org>
-	 <20081023210446.GA12003@osiris.boeblingen.de.ibm.com>
-	 <alpine.LFD.2.00.0810231433380.3287@nehalem.linux-foundation.org>
-	 <1225049195.14057.72.camel@localhost>
-	 <alpine.LFD.2.00.0810261212290.5200@nehalem.linux-foundation.org>
-	 <1225101688.15777.6.camel@localhost>
-	 <alpine.LFD.2.00.0810270750100.3386@nehalem.linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Mon, 27 Oct 2008 16:52:06 +0100
-Message-Id: <1225122726.15777.42.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 27 Oct 2008 11:58:30 -0400
+Message-ID: <4905E50C.8020803@cs.columbia.edu>
+Date: Mon, 27 Oct 2008 11:58:04 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+MIME-Version: 1.0
+To: Andrey Mirkin <major@openvz.org>
+CC: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [PATCH 10/10] Add support for multiple processes
+References: <1224285098-573-1-git-send-email-major@openvz.org>	<1224285098-573-2-git-send-email-major@openvz.org>	<1224285098-573-3-git-send-email-major@openvz.org>	<1224285098-573-4-git-send-email-major@openvz.org>	<1224285098-573-5-git-send-email-major@openvz.org>	<1224285098-573-6-git-send-email-major@openvz.org>	<1224285098-573-7-git-send-email-major@openvz.org>	<1224285098-573-8-git-send-email-major@openvz.org>	<1224285098-573-9-git-send-email-major@openvz.org>	<1224285098-573-10-git-send-email-major@openvz.org> <1224285098-573-11-git-send-email-major@openvz.org>
+In-Reply-To: <1224285098-573-11-git-send-email-major@openvz.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-27 at 08:05 -0700, Linus Torvalds wrote:
+
+
+Andrey Mirkin wrote:
+> The whole tree of processes can be checkpointed and restarted now.
+> Shared objects are not supported yet.
 > 
-> On Mon, 27 Oct 2008, Martin Schwidefsky wrote:
-> > 
-> > Ok, understood. Not that the reaction surprises me, seems like nobody
-> > likes documentation (including me).
+> Signed-off-by: Andrey Mirkin <major@openvz.org>
+> ---
+>  checkpoint/cpt_image.h   |    2 +
+>  checkpoint/cpt_process.c |   24 +++++++++++++
+>  checkpoint/rst_process.c |   85 +++++++++++++++++++++++++++-------------------
+>  3 files changed, 76 insertions(+), 35 deletions(-)
 > 
-> It's that I don't like out-of-line documentation. It's a damn pain to 
-> maintain, and it's _especially_ so when it's for small details rather than 
-> "big picture" issues.
+> diff --git a/checkpoint/cpt_image.h b/checkpoint/cpt_image.h
+> index e1fb483..f370df2 100644
+> --- a/checkpoint/cpt_image.h
+> +++ b/checkpoint/cpt_image.h
+> @@ -128,6 +128,8 @@ struct cpt_task_image {
+>  	__u64	cpt_nivcsw;
+>  	__u64	cpt_min_flt;
+>  	__u64	cpt_maj_flt;
+> +	__u32	cpt_children_num;
+> +	__u32	cpt_pad;
+>  } __attribute__ ((aligned (8)));
+>  
+>  struct cpt_mm_image {
+> diff --git a/checkpoint/cpt_process.c b/checkpoint/cpt_process.c
+> index 1f7a54b..d73ec3c 100644
+> --- a/checkpoint/cpt_process.c
+> +++ b/checkpoint/cpt_process.c
+> @@ -40,6 +40,19 @@ static unsigned int encode_task_flags(unsigned int task_flags)
+>  		
+>  }
+>  
+> +static int cpt_count_children(struct task_struct *tsk, struct cpt_context *ctx)
+> +{
+> +	int num = 0;
+> +	struct task_struct *child;
+> +
+> +	list_for_each_entry(child, &tsk->children, sibling) {
+> +		if (child->parent != tsk)
+> +			continue;
+> +		num++;
+> +	}
+> +	return num;
+> +}
+> +
 
-Yes, indeed. The farther away the documentation is from the source code
-the harder it will be to maintain. That is why I would like to see it in
-the linux source tree.
+I noticed that don't take the appropriate locks when browsing through
+tasks lists (siblings, children, global list). Although I realize that
+the container should be frozen at this time, I keep wondering if this
+is indeed always safe.
 
-> I also consider this to be _exactly_ the same issue as translating kernel 
-> messages into another language (which people have also wanted to do), 
-> except the "other language" is a S390-specific "odd-speak" rather than a 
-> real language.
+For instance, are you protected against an OOM killer that might just
+occur uninvited and kill one of those tasks ?
 
-The message tag would be the way to find the translation in some
-database from the plain english output you'll find on the screen.
+Can the administrator force an un-freeze of the container ?  Or perhaps
+some error condition if the kernel cause that ?
 
-> I have to say that I also dislike the technical implementation. I don't 
-> like having yet another printk() wrapper - your "kmsg_warn()" won't play 
-> well with people who have messages they want to print, but that use helper 
-> routines - or then you'd need to essentially change _every_ printk to a 
-> kmsg_xyz(). 
+>  int cpt_dump_task_struct(struct task_struct *tsk, struct cpt_context *ctx)
+>  {
+>  	struct cpt_task_image *t;
+> @@ -102,6 +115,7 @@ int cpt_dump_task_struct(struct task_struct *tsk, struct cpt_context *ctx)
+>  	t->cpt_egid = tsk->egid;
+>  	t->cpt_sgid = tsk->sgid;
+>  	t->cpt_fsgid = tsk->fsgid;
+> +	t->cpt_children_num = cpt_count_children(tsk, ctx);
+>  
+>  	err = ctx->write(t, sizeof(*t), ctx);
+>  
+> @@ -231,6 +245,16 @@ int cpt_dump_task(struct task_struct *tsk, struct cpt_context *ctx)
+>  		err = cpt_dump_fpustate(tsk, ctx);
+>  	if (!err)
+>  		err = cpt_dump_registers(tsk, ctx);
+> +	if (!err) {
+> +		struct task_struct *child;
+> +		list_for_each_entry(child, &tsk->children, sibling) {
+> +			if (child->parent != tsk)
+> +				continue;
+> +			err = cpt_dump_task(child, ctx);
+> +			if (err)
+> +				break;
 
-Today I've replaced kmsg_xyz() with pr_xyz(). The current code now plays
-tricks with two families of printk macros: dev_xyz() and pr_xyz().
-If you ask Greg every device driver should be using dev_xyz() for its
-printks anyway..
+Here too.
 
-> So if you want to have a hash (so that you can identify the _format_ 
-> string rather than the printed out message), I personally think you'd be 
-> better off thinking of it purely the same way as CONFIG_PRINTK_TIME, and 
-> just have a config option that disables or enables the hashing of the 
-> format string, the same way we have an option for disabling or enabling of 
-> the timestamping of the printk.
+[...]
 
-In that case ALL printk messages would suddenly grow a hash. Which
-precludes the use of the component name as part of the message since we
-would need to add a component name for every single printk - that won't
-happen.
-Without a component name we are forced to use a larger number of bits
-for the hash to avoid collisions. For 10,000 printks and a 32 bit hash
-the likelyhood of a collision is already bigger than 2%, so we'd need
-something bigger than 32 bit. With a component name in addition to the
-hash you can split the printks into groups which greatly reduces the
-danger of a collision.
-
-> I also suspect that it would be better to not _print_ it, but only put it 
-> into the dmesg logs (the same way we do with the urgency level marker).
-> 
-> IOW, I think we could put a few lines of code in "vprintk" that just 
-> hashes ove 'fmt' and then adds that to the output.
-
-A dev_xyz() message would then look like this:
-
-<level> <hash>: <driver-name> <device-name>: <the message text>
-
-The prefix is rather lengthy, no ?
-
-> And as for the actual explanations: either they need to be totally outside 
-> the kernel (in a project of their own), or they'd need to be "kernel-doc" 
-> style things that are _in_ the source code. Not in Documentation/. Not 
-> separate from the printk() that they are associated with.
-
-The kmsg comments are already formatted in the kernel-doc style and you
-can put the comment anywhere in the source file that contains the
-printk. The Documentation/ is an extra path where the script looks for
-the comments. I can easily drop that part. So yes, the concept is that
-you can keep the message comment close to the printk.
-
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Oren.
 
