@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbYJ0UKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbYJ0UK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753460AbYJ0UKF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 16:10:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYJ0UJz
+	id S1752794AbYJ0UK3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 16:10:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbYJ0UKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 16:09:55 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:53950 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752469AbYJ0UJy (ORCPT
+	Mon, 27 Oct 2008 16:10:06 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:45988 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753566AbYJ0UKE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 16:09:54 -0400
-Date: Mon, 27 Oct 2008 16:07:36 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
-       linux-kernel@vger.kernel.org,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86: unify appropriate bits from dumpstack_32 and
-	dumpstack_64
-Message-ID: <20081027200736.GA3220@hmsreliant.think-freely.org>
-References: <20081023144006.GA14149@hmsendeavour.rdu.redhat.com> <1225128425.8714.1281501519@webmail.messagingengine.com> <20081027182148.GL3046@elte.hu>
+	Mon, 27 Oct 2008 16:10:04 -0400
+Date: Mon, 27 Oct 2008 16:10:02 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Luciano Rocha <luciano@eurotux.com>
+cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>
+Subject: Re: usb hdd problems with 2.6.27.2
+In-Reply-To: <20081027165306.GA3875@bit.office.eurotux.com>
+Message-ID: <Pine.LNX.4.44L0.0810271605190.2190-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081027182148.GL3046@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 27, 2008 at 07:21:48PM +0100, Ingo Molnar wrote:
-> 
-> * Alexander van Heukelum <heukelum@fastmail.fm> wrote:
-> 
-> > On Thu, 23 Oct 2008 10:40:06 -0400, "Neil Horman"
-> > <nhorman@tuxdriver.com> said:
-> > > Hey all-
-> > > 	As promised, now that dumpstack_32 and dumpstack_64 have so many bits in
-> > > common, we should merge the in-sync bits into a common file, to prevent them
-> > > from diverging again.  This patch removes bits which are common between
-> > > dumpstack_32.c and dumpstack_64.c and places them in a common dumpstack.c
-> > > which is built for both 32 and 64 bit arches.  
-> > > 
-> > > Regards
-> > > Neil
-> > > 
-> > > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> > 
-> > A bit late, maybe, but if it matters:
-> > 
-> > Acked-by: Alexander van Heukelum <heukelum@fastmail.fm>
-> 
-> i've updated the commit, thanks.
-> 
-> 	Ingo
-> 
+On Mon, 27 Oct 2008, Luciano Rocha wrote:
 
-Thanks guys!
-Neil
+> > The patches are here:
+> > 
+> > 	http://marc.info/?l=linux-scsi&m=122443015406309&w=2
+> > 
+> > They are based on 2.6.27, not 2.6.28-rc.
+> 
+> I've tested them (on 2.6.27.4), but I still get the bug. That email mentions:
+> "Neither patch addresses the infinite-retry problem; I wanted
+> to keep the issues separate."
+> 
+> So am I missing some other patch?
+> 
+> 2.6.28-rc2 is also buggy.
 
--- 
-/****************************************************
- * Neil Horman <nhorman@tuxdriver.com>
- * Software Engineer, Red Hat
- ****************************************************/
+Okay, I tried the same sort of experiment in 2.6.27.4 and got the same
+result as you did.  I was able to fix it by applying the 8bfa24727
+commit mentioned earlier together with the patch below.
+
+Now, I'm pretty sure this is not the ideal solution.  Fixing the block 
+core would be better.  Still, it does indicate for sure that there's a 
+real problem.
+
+It's worth noting that the test added to scsi_requeue_command() 
+succeeds every time, that is, req->retries is always 0.  Clearly more 
+work is needed.
+
+Alan Stern
+
+
+
+Index: 2.6.27.4/drivers/scsi/scsi_lib.c
+===================================================================
+--- 2.6.27.4.orig/drivers/scsi/scsi_lib.c
++++ 2.6.27.4/drivers/scsi/scsi_lib.c
+@@ -611,6 +611,11 @@ static void scsi_requeue_command(struct 
+ 	struct request *req = cmd->request;
+ 	unsigned long flags;
+ 
++	if (--req->retries <= 0) {
++		blk_end_request(req, -EIO, blk_rq_bytes(req));
++		scsi_next_command(cmd);
++		return;
++	}
+ 	scsi_unprep_request(req);
+ 	spin_lock_irqsave(q->queue_lock, flags);
+ 	blk_requeue_request(q, req);
+
