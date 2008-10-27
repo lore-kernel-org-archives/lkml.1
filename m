@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYJ0Qmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbYJ0QnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbYJ0Qmn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 12:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbYJ0QmB
+	id S1754065AbYJ0QnS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 12:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbYJ0Qm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 12:42:01 -0400
-Received: from styx.suse.cz ([82.119.242.94]:41856 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752321AbYJ0Ql7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 12:41:59 -0400
-Date: Mon, 27 Oct 2008 17:41:58 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] sched: fix documentation reference for
- sched_min_granularity_ns
-Message-ID: <alpine.LNX.1.10.0810271739330.12928@jikos.suse.cz>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 27 Oct 2008 12:42:58 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:43921 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751208AbYJ0Qm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 12:42:57 -0400
+Subject: Re: [RFC v7][PATCH 2/9] General infrastructure for checkpoint
+	restart
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Peter Chubb <peterc@gelato.unsw.edu.au>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       viro@zeniv.linux.org.uk, hpa@zytor.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, tglx@linutronix.de
+In-Reply-To: <49059FED.4030202@cs.columbia.edu>
+References: <1224481237-4892-1-git-send-email-orenl@cs.columbia.edu>
+	 <1224481237-4892-3-git-send-email-orenl@cs.columbia.edu>
+	 <20081021124130.a002e838.akpm@linux-foundation.org>
+	 <20081021202410.GA10423@us.ibm.com>	<48FE82DF.6030005@cs.columbia.edu>
+	 <20081022152804.GA23821@us.ibm.com>	<48FF4EB2.5060206@cs.columbia.edu>
+	 <87tzayh27r.wl%peter@chubb.wattle.id.au> <49059FED.4030202@cs.columbia.edu>
+Content-Type: text/plain
+Date: Mon, 27 Oct 2008 09:42:32 -0700
+Message-Id: <1225125752.12673.79.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2008-10-27 at 07:03 -0400, Oren Laadan wrote:
+> > In our implementation, we simply refused to checkpoint setid
+> programs.
+> 
+> True. And this works very well for HPC applications.
+> 
+> However, it doesn't work so well for server applications, for
+> instance.
+> 
+> Also, you could use file system snapshotting to ensure that the file
+> system view does not change, and still face the same issue.
+> 
+> So I'm perfectly ok with deferring this discussion to a later time :)
 
-sched-design-CFS.txt wrongly references sched_granularity_ns sysctl,
-as its name in fact is sched_min_granularity_ns.
+Oren, is this a good place to stick a process_deny_checkpoint()?  Both
+so we refuse to checkpoint, and document this as something that has to
+be addressed later?
 
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
----
- Documentation/scheduler/sched-design-CFS.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/scheduler/sched-design-CFS.txt b/Documentation/scheduler/sched-design-CFS.txt
-index 9d8eb55..eb471c7 100644
---- a/Documentation/scheduler/sched-design-CFS.txt
-+++ b/Documentation/scheduler/sched-design-CFS.txt
-@@ -92,7 +92,7 @@ other HZ detail.  Thus the CFS scheduler has no notion of "timeslices" in the
- way the previous scheduler had, and has no heuristics whatsoever.  There is
- only one central tunable (you have to switch on CONFIG_SCHED_DEBUG):
- 
--   /proc/sys/kernel/sched_granularity_ns
-+   /proc/sys/kernel/sched_min_granularity_ns
- 
- which can be used to tune the scheduler from "desktop" (i.e., low latencies) to
- "server" (i.e., good batching) workloads.  It defaults to a setting suitable
--- 
-1.5.6
+-- Dave
 
