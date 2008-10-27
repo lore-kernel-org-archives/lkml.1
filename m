@@ -1,75 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbYJ0MGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbYJ0MeE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752860AbYJ0MGa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 08:06:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbYJ0MGS
+	id S1752709AbYJ0MeE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 08:34:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYJ0Mdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 08:06:18 -0400
-Received: from mail.gmx.net ([213.165.64.20]:47074 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750881AbYJ0MGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 08:06:17 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+yYxAzQhOyQ5BwbT7rAJ7fIMASPvozKp8RFLDkFR
-	vTSvhupvPToFzw
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-From: Mike Galbraith <efault@gmx.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Ingo Molnar <mingo@elte.hu>, Jiri Kosina <jkosina@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       David Miller <davem@davemloft.net>, rjw@sisk.pl, s0mbre@tservice.net.ru,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <20081027113306.5b1d5898@lxorguk.ukuu.org.uk>
-References: <20081024.221653.23695396.davem@davemloft.net>
-	 <1224914333.3822.18.camel@marge.simson.net>
-	 <1224917623.4929.15.camel@marge.simson.net>
-	 <20081025.002420.82739316.davem@davemloft.net>
-	 <Pine.LNX.4.64.0810260055070.22126@twin.jikos.cz>
-	 <1225010790.8566.22.camel@marge.simson.net>
-	 <1225011648.27415.4.camel@twins>
-	 <20081026021153.47878580.akpm@linux-foundation.org>
-	 <alpine.LNX.1.10.0810262002450.12928@jikos.suse.cz>
-	 <alpine.LNX.1.10.0810271138470.12928@jikos.suse.cz>
-	 <20081027112750.GA2771@elte.hu>
-	 <20081027113306.5b1d5898@lxorguk.ukuu.org.uk>
+	Mon, 27 Oct 2008 08:33:53 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:59637 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750846AbYJ0Mdx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 08:33:53 -0400
+Subject: Re: [GIT PULL] s390 updates for 2.6.28-rc1
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>, lethal@linux-sh.org,
+       paulus@samba.org, benh@kernel.crashing.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, Roland McGrath <roland@redhat.com>
+In-Reply-To: <20081027115146.GE5631@elte.hu>
+References: <20081024105049.GC4620@osiris.boeblingen.de.ibm.com>
+	 <20081024113724.GA21375@elte.hu> <1225045593.14057.11.camel@localhost>
+	 <20081027115146.GE5631@elte.hu>
 Content-Type: text/plain
-Date: Mon, 27 Oct 2008 13:06:11 +0100
-Message-Id: <1225109171.4238.23.camel@marge.simson.net>
+Organization: IBM Corporation
+Date: Mon, 27 Oct 2008 13:32:29 +0100
+Message-Id: <1225110750.15777.10.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.63
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-27 at 11:33 +0000, Alan Cox wrote:
-> > The way to get the best possible dbench numbers in CPU-bound dbench 
-> > runs, you have to throw away the scheduler completely, and do this 
-> > instead:
+On Mon, 2008-10-27 at 12:51 +0100, Ingo Molnar wrote:
+> * Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> > On Fri, 2008-10-24 at 13:37 +0200, Ingo Molnar wrote:
+> > > * Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> > > 
+> > > > The s390 vdso preparation patch "arch_setup_additional_pages argument" 
+> > > > touches other architectures (x86, sh and powerpc):
+> > > > 
+> > > > arch_setup_additional_pages currently gets two arguments, the binary 
+> > > > format descripton and an indication if the process uses an executable 
+> > > > stack or not. The second argument is not used by anybody, it could be 
+> > > > removed without replacement.
+> > > 
+> > > hm, this is the first time i've seen this change,
 > > 
-> >  - first execute all requests of client 1
-> >  - then execute all requests of client 2
-> >  ....
-> >  - execute all requests of client N
+> > The code is relatively new and I planned it for the merge window for 
+> > 2.6.29. I still have to nag our performance team to do some tests 
+> > with it.
 > 
-> Rubbish. If you do that you'll not get enough I/O in parallel to schedule
-> the disk well (not that most of our I/O schedulers are doing the job
-> well, and the vm writeback threads then mess it up and the lack of Arjans
-> ioprio fixes then totally screw you) </rant>
+> okay, then i'm confused, the subject line says v2.6.28:
 > 
-> > the moment the clients are allowed to overlap, the moment their requests 
-> > are executed more fairly, the dbench numbers drop.
+>     [GIT PULL] s390 updates for 2.6.28-rc1
 > 
-> Fairness isn't everything. Dbench is a fairly good tool for studying some
-> real world workloads. If your fairness hurts throughput that much maybe
-> your scheduler algorithm is just plain *wrong* as it isn't adapting to
-> workload at all well.
+> (i have still no objections to those small x86 bits.)
 
-Doesn't seem to be scheduler/fairness.  2.6.22.19 is O(1), and falls
-apart too, I posted the numbers and full dbench output yesterday.
+Yeah, that was a misunderstanding between Heiko and me. I planned it for
+2.6.29 and didn't tell him about it before I left for vacation. Heiko
+just went ahead and added it the 2.6.28-rc1 pull request.
 
-	-Mike
+> > >  #define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
+> > >  extern int arch_setup_additional_pages(struct linux_binprm *bprm,
+> > > -                                      int executable_stack);
+> > > +                                      int uses_interp);
+> > > 
+> > > why didnt you just add a new uses_interp argument?
+> > 
+> > I could have but I noticed at the same time that executable_stack is 
+> > unused. If somebody finds a need for the executable_stack argument 
+> > it can easily re-added but I can't think of a use for it. Ergo I 
+> > removed it.
+> > 
+> > > executable_stack is passed in to potentially enable architectures 
+> > > to be aware of how conservative/legacy the address-space of the 
+> > > binary is - whether to randomize the vdso, etc. exec-shield used 
+> > > to take advantage of that.
+> > 
+> > What has address space layout / randomization to do with 
+> > executable_stack? You lost me there.
+> 
+> it's just a historic/quirky connection (non-executable stack was the 
+> first and biggest step towards a more flexible address space layout) - 
+> you were correct to have it cleaned up.
+
+Ok, thanks. Less confused now. 
+
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
 
