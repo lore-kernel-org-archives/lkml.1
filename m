@@ -1,89 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752607AbYJ0G77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbYJ0HIM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752607AbYJ0G77 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 02:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbYJ0G7u
+	id S1752713AbYJ0HIM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 03:08:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbYJ0HIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 02:59:50 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:39265 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbYJ0G7u (ORCPT
+	Mon, 27 Oct 2008 03:08:05 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:57780 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbYJ0HIE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 02:59:50 -0400
-Subject: Re: [RFC PATCHv2] printk: add the %pM, %p4, %p6 format specifiers
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: David Miller <davem@davemloft.net>, anders@anduras.de,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1225067465.5672.1.camel@brick> (sfid-20081027_013109_949949_342DF4F2)
-References: <1224892008.3919.27.camel@johannes.berg>
-	 <49035AF0.6040700@anduras.de> <1225008096.3478.3.camel@johannes.berg>
-	 <20081026.010329.11475786.davem@davemloft.net>
-	 <1225009308.3478.22.camel@johannes.berg>
-	 <1225009822.3478.30.camel@johannes.berg>  <1225047674.10060.10.camel@brick>
-	 (sfid-20081026_200122_320043_BFBB81CD)  <1225049591.3746.0.camel@johannes.berg>
-	 <1225049929.10060.11.camel@brick>
-	 (sfid-20081026_203902_019881_0F8064FC)  <1225050015.3746.2.camel@johannes.berg>
-	 <1225060789.10060.13.camel@brick>  <1225067465.5672.1.camel@brick>
-	 (sfid-20081027_013109_949949_342DF4F2)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-0JnT+V8zZ9Q25vWHZbAQ"
-Date: Mon, 27 Oct 2008 07:59:25 +0100
-Message-Id: <1225090765.3746.7.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 27 Oct 2008 03:08:04 -0400
+Date: Mon, 27 Oct 2008 01:07:45 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: "Zhao, Yu" <yu.zhao@intel.com>
+Cc: Yu Zhao <yu.zhao@uniscape.net>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "greg@kroah.com" <greg@kroah.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       Rakib Mullick <rakib.mullick@gmail.com>
+Subject: Re: [PATCH] pci: Fixing drivers/pci/search.c compilation warning.
+Message-ID: <20081027070745.GY26094@parisc-linux.org>
+References: <b9df5fa10809280816u23ef3021k7eee287a237b72ae@mail.gmail.com> <20080928163211.GR27204@parisc-linux.org> <20081021011308.GA3889@parisc-linux.org> <490467CD.3000402@uniscape.net> <20081026183412.GX26094@parisc-linux.org> <49053313.9080706@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49053313.9080706@intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 27, 2008 at 11:18:43AM +0800, Zhao, Yu wrote:
+> Matthew Wilcox wrote:
+> >Yes, that's why pci_find_device() is deprecated.  But it doesn't also
+> >need to be buggy ;-)
+> 
+> How about pci_get_bus_and_slot()? People would meet the problem with it 
+> anyway.
 
---=-0JnT+V8zZ9Q25vWHZbAQ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+What problem with it?  It's documented to return the device with an
+increased refcount, and the implementation appears to do exactly that:
 
-On Sun, 2008-10-26 at 17:31 -0700, Harvey Harrison wrote:
-> Add format specifiers for printing out colon-separated bytes:
->=20
-> MAC addresses (%pM):
-> xx:xx:xx:xx:xx:xx
->=20
-> IPv4 addresses (%p4):
-> xx:xx:xx:xx
+struct pci_dev * pci_get_bus_and_slot(unsigned int bus, unsigned int devfn)
+{
+        struct pci_dev *dev = NULL;
 
-As hpa points out, the usual notation would be %d.%d.%d.%d :)
+        while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
+                if (pci_domain_nr(dev->bus) == 0 &&
+                   (dev->bus->number == bus && dev->devfn == devfn))
+                        return dev;
+        }
+        return NULL;
+}
 
-> %#pM, %#p4, %#p6 are also supported and print without the colon
-> separators.
+Are you saying some users of it neglect to decrement the refcount before
+disposing of the device?
 
-The # for ipv4 we might use for cpu-endian rather than network-endian
-maybe?
-
-Also can you keep mac/ip address patches split up so we can use my
-version of the mac address patch (it's already well-tested)?
-
-johannes
-
---=-0JnT+V8zZ9Q25vWHZbAQ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJBWbJAAoJEKVg1VMiehFYNuYP/0hrWNJAyccXLxOhAa7QjiBy
-dGUwn5hIDipE8s+03avJWAq2T85EOXDAgSL+vjh6z6LS+N3YqzalrP+vsmQVjDEY
-h2evusaEMJnyyPqyZxf/S7WUZ2DG5a11LkYwNJLcxUKiNLldXErwZvgzrIWwgfRV
-N6prQ2pehPFe7hoyjGnzKb/+B2z3E8Hu5NytqQCf0rDLMvm8TE2E6srqapZVk1dZ
-AkpA2QffR93nGsl9JepqUdb3f3bxJaSVF9To1aABkbXeTKO4h4WUiWoDgY1WM1H+
-Ymnw6oaB2aQOG+j7p9CCN0KSiC70UuQm3HWCIjOoIeUjxXEIxnbYIQiJYkOnntMV
-XgyxlnalRPWBOqV444rQHWb2yF3UJnCrL3RWupzoj6aT60oNj20lDKIkF8EoOgrC
-j5zrC5TkG2QQhDSbYUCJdjy96XftUQCPghcXFuq1eCSd8+4FSvS2Jz7WC0nQSvoU
-KYtCi222pB7nmXwVz965pmI4KJ7oOA8w4PDzcxClJ3JQNaGr9e+1yZCQHlqMwX4g
-LFGX3kEQ5cILa4UzcQ0iBYa6Pw4Q8KZD/hngxTqO3pFkdSokVw/UTjSnItHl7KXa
-LR4EtoQYwOm9sjgF0EUzz7b9NzC7zy60MIZ5JbJ8zTyxJ7NfO5PZA1qLjbTKsJrG
-Jr3hXYdkDH2XKtvdOPpc
-=b5el
------END PGP SIGNATURE-----
-
---=-0JnT+V8zZ9Q25vWHZbAQ--
-
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
