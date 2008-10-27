@@ -1,326 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbYJ0F2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752132AbYJ0FsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752869AbYJ0F2u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 01:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbYJ0F2m
+	id S1752132AbYJ0FsU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 01:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180AbYJ0FsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 01:28:42 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:46775 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751319AbYJ0F2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 01:28:41 -0400
-Date: Sun, 26 Oct 2008 14:59:30 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rjw@sisk.pl,
-       dipankar@in.ibm.com, tglx@linuxtronix.de, andi@firstfloor.org
-Subject: Re: [PATCH] v3 rudimentary tracing for Classic RCU
-Message-ID: <20081026215930.GC6236@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20081007071544.GC20740@one.firstfloor.org> <20081007152629.GH6384@linux.vnet.ibm.com> <20081007154939.GN20740@one.firstfloor.org> <20081007163401.GJ6384@linux.vnet.ibm.com> <20081007210947.GP20740@one.firstfloor.org> <20081007212215.GN6384@linux.vnet.ibm.com> <20081009010846.GA10188@linux.vnet.ibm.com> <20081010034421.GA12449@linux.vnet.ibm.com> <20081013230914.GA27467@linux.vnet.ibm.com> <49005C09.6010805@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49005C09.6010805@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Mon, 27 Oct 2008 01:48:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39186 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751081AbYJ0FsK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 01:48:10 -0400
+Date: Sun, 26 Oct 2008 22:46:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Kees Cook <kees.cook@canonical.com>, jakub@redhat.com, arjan@infradead.org,
+       roland@redhat.com, linux-kernel@vger.kernel.org,
+       libc-alpha@sourceware.org
+Subject: Re: [PATCH v5] ELF: implement AT_RANDOM for glibc PRNG seeding
+Message-Id: <20081026224659.af213906.akpm@linux-foundation.org>
+In-Reply-To: <48FE39FA.9030601@redhat.com>
+References: <20081001222706.68E7E1544B4@magilla.localdomain>
+	<20081003001616.GN10632@outflux.net>
+	<20081003004340.GF32682@tyan-ft48-01.lab.bos.redhat.com>
+	<20081003052938.GS10632@outflux.net>
+	<20081002225718.6a0d803a@infradead.org>
+	<48E5BAC6.9070007@redhat.com>
+	<20081003145054.GU10632@outflux.net>
+	<20081003145754.GH32682@tyan-ft48-01.lab.bos.redhat.com>
+	<20081003173313.GW10632@outflux.net>
+	<48E65964.5020809@redhat.com>
+	<20081003175917.GX10632@outflux.net>
+	<20081021130111.b8d73625.akpm@linux-foundation.org>
+	<48FE39FA.9030601@redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 23, 2008 at 07:12:09PM +0800, Lai Jiangshan wrote:
-> 
-> trivial ported it to seq_file.
-> seq_file are very good for the output buffer.
+On Tue, 21 Oct 2008 13:22:18 -0700 Ulrich Drepper <drepper@redhat.com> wrote:
 
-Thank you for putting this together!!!  Looks good at first glance --
-I will test it out.
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> Andrew Morton wrote:
+> > I read the above changeloglet and read the above-linked page and it's
+> > still 87% unclear to me what this feature does.  Something to do with
+> > stack randomisation, apparently.  I suppose I could go do further
+> > hunting, but from the quality-of-changelog POV I don't think I should
+> > need to do so.
+> 
+> Not stack randomization.  glibc needs right after startup a bit of
+> random data for internal protections (stack canary etc).  What is now in
+> upstream glibc is that we always unconditionally open /dev/urandom, read
+> some data, and use it.  For every process startup.  That's slow.
+> 
+> In addition Andi mentioned that this use of /dev/urandom might be
+> problematic.  I let him explain this.
+> 
+> The solution is to provide a limited amount of random data to the
+> starting process in the aux vector.  I suggested 16 bytes and this is
+> what the patch implements.  If we need only 16 bytes or less we use the
+> data directly.  If we need more we'll use the 16 bytes to see a PRNG.
+> This avoids the costly /dev/urandom use and it allows the kernel to use
+> the most adequate source of random data for this purpose.  It might not
+> be the same pool as that for /dev/urandom.
+> 
 
-							Thanx, Paul
+Thanks.
 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/kernel/rcuclassic_trace.c b/kernel/rcuclassic_trace.c
-> index d19780b..f19217c
-> --- a/kernel/rcuclassic_trace.c
-> +++ b/kernel/rcuclassic_trace.c
-> @@ -23,157 +23,167 @@
->   * 		Documentation/RCU
->   *
->   */
-> -#include <linux/types.h>
-> -#include <linux/kernel.h>
-> -#include <linux/init.h>
-> -#include <linux/spinlock.h>
-> -#include <linux/smp.h>
->  #include <linux/rcupdate.h>
-> -#include <linux/interrupt.h>
-> -#include <linux/sched.h>
-> -#include <asm/atomic.h>
-> -#include <linux/bitops.h>
->  #include <linux/module.h>
-> -#include <linux/completion.h>
-> -#include <linux/moduleparam.h>
-> -#include <linux/percpu.h>
-> -#include <linux/notifier.h>
-> -#include <linux/cpu.h>
-> -#include <linux/mutex.h>
->  #include <linux/debugfs.h>
-> +#include <linux/seq_file.h>
+> > It's unclear to me that the random-number issue got sorted out?
 > 
-> -static DEFINE_MUTEX(rcuclassic_trace_mutex);
-> -static char *rcuclassic_trace_buf;
-> -#define RCUCLASSIC_TRACE_BUF_SIZE (128 * num_possible_cpus() + 100)
-> +static struct rcu_data *get_rcu_data_bh(int cpu)
-> +{
-> +	return &per_cpu(rcu_bh_data, cpu);
-> +}
+> I think the last patch used the normal function to get 16 random bytes,
+> equivalent to the data used for stack randomization etc.
 > 
-> -static int print_one_rcu_data(struct rcu_data *rdp, char *buf, char *ebuf)
-> +static struct rcu_data *get_rcu_data(int cpu)
->  {
-> -	int cnt = 0;
-> +	return &per_cpu(rcu_data, cpu);
-> +}
+> If Andi has concrete proposals for a revamp of the use of entropy in the
+> kernel this can be easily done as an add-on.  This patch doesn't make
+> the situation worse, it doesn't deplete entropy more than it happens now.
 > 
-> +static int show_rcu_data(struct seq_file *m, void *v)
-> +{
-> +	struct rcu_data *rdp = v;
->  	if (!rdp->beenonline)
->  		return 0;
-> -	cnt += snprintf(&buf[cnt], ebuf - &buf[cnt],
-> -		"%3d%cqb=%ld b=%ld pq=%d qsp=%d ql=%ld bl=%ld\n",
-> -		rdp->cpu, cpu_is_offline(rdp->cpu) ? '!' : ' ',
-> -		rdp->quiescbatch, rdp->batch, rdp->passed_quiesc,
-> -		rdp->qs_pending, rdp->qlen, rdp->blimit);
-> -	return cnt;
-> +
-> +	seq_printf(m, "processor\t: %d", rdp->cpu);
-> +	if (cpu_is_offline(rdp->cpu))
-> +		seq_puts(m, "!\n");
-> +	else
-> +		seq_puts(m, "\n");
-> +	seq_printf(m, "quiescbatch\t: %ld\n", rdp->quiescbatch);
-> +	seq_printf(m, "batch\t: %ld\n", rdp->batch);
-> +	seq_printf(m, "passed_quiesc\t: %d\n", rdp->passed_quiesc);
-> +	seq_printf(m, "qs_pending\t: %d\n", rdp->qs_pending);
-> +	seq_printf(m, "qlen\t: %ld\n", rdp->qlen);
-> +	seq_printf(m, "blimit\t: %ld\n", rdp->blimit);
-> +	seq_puts(m, "\n\n");
-> +	return 0;
->  }
-> 
-> -#define PRINT_RCU_DATA(name, buf, ebuf) \
-> -	do { \
-> -		int _p_r_d_i; \
-> -		\
-> -		for_each_possible_cpu(_p_r_d_i) \
-> -			(buf) += print_one_rcu_data(&per_cpu(name, _p_r_d_i), \
-> -						    buf, ebuf); \
-> -	} while (0)
-> -
-> -static ssize_t rcudata_read(struct file *filp, char __user *buffer,
-> -				size_t count, loff_t *ppos)
-> +static void *c_start(struct seq_file *m, loff_t *pos)
->  {
-> -	ssize_t bcount;
-> -	char *buf = rcuclassic_trace_buf;
-> -	char *ebuf = &rcuclassic_trace_buf[RCUCLASSIC_TRACE_BUF_SIZE];
-> -
-> -	mutex_lock(&rcuclassic_trace_mutex);
-> -	buf += snprintf(buf, ebuf - buf, "rcu:\n");
-> -	PRINT_RCU_DATA(rcu_data, buf, ebuf);
-> -	buf += snprintf(buf, ebuf - buf, "rcu_bh:\n");
-> -	PRINT_RCU_DATA(rcu_bh_data, buf, ebuf);
-> -	bcount = simple_read_from_buffer(buffer, count, ppos,
-> -			rcuclassic_trace_buf, strlen(rcuclassic_trace_buf));
-> -	mutex_unlock(&rcuclassic_trace_mutex);
-> -	return bcount;
-> +	typedef struct rcu_data *(*get_data_func)(int);
-> +
-> +	if (*pos == 0)	/* just in case, cpu 0 is not the first */
-> +		*pos = first_cpu(cpu_possible_map);
-> +	else
-> +		*pos = next_cpu_nr(*pos - 1, cpu_possible_map);
-> +	if ((*pos) < nr_cpu_ids)
-> +		return ((get_data_func)m->private)(*pos);
-> +	return NULL;
->  }
-> 
-> -static int print_one_rcu_ctrlblk(struct rcu_ctrlblk *rcp, char *buf, char *ebuf)
-> +static void *c_next(struct seq_file *m, void *v, loff_t *pos)
->  {
-> -	int cnt = 0;
-> -
-> -	cnt += snprintf(&buf[cnt], ebuf - &buf[cnt], "cur=%ld  completed=%ld  "
-> -			"pending=%ld  s=%d\n\t",
-> -			rcp->cur, rcp->completed,
-> -			rcp->pending, rcp->signaled);
-> -	cnt += cpulist_scnprintf(&buf[cnt], ebuf - &buf[cnt], rcp->cpumask);
-> -	cnt += snprintf(&buf[cnt], ebuf - &buf[cnt], "\n");
-> -	return cnt;
-> +	(*pos)++;
-> +	return c_start(m, pos);
->  }
-> 
-> -static ssize_t rcucb_read(struct file *filp, char __user *buffer,
-> -				size_t count, loff_t *ppos)
-> +static void c_stop(struct seq_file *m, void *v)
->  {
-> -	ssize_t bcount;
-> -	char *buf = rcuclassic_trace_buf;
-> -	char *ebuf = &rcuclassic_trace_buf[RCUCLASSIC_TRACE_BUF_SIZE];
-> -
-> -	mutex_lock(&rcuclassic_trace_mutex);
-> -	buf += snprintf(buf, ebuf - buf, "rcu: ");
-> -	buf += print_one_rcu_ctrlblk(&rcu_ctrlblk, buf, ebuf);
-> -	buf += snprintf(buf, ebuf - buf, "rcu_bh: ");
-> -	buf += print_one_rcu_ctrlblk(&rcu_bh_ctrlblk, buf, ebuf);
-> -	buf += snprintf(buf, ebuf - buf, "online: ");
-> -	buf += cpulist_scnprintf(buf, ebuf - buf, cpu_online_map);
-> -	buf += snprintf(buf, ebuf - buf, "\n");
-> -	bcount = simple_read_from_buffer(buffer, count, ppos,
-> -			rcuclassic_trace_buf, strlen(rcuclassic_trace_buf));
-> -	mutex_unlock(&rcuclassic_trace_mutex);
-> -	return bcount;
->  }
-> 
-> -static struct file_operations rcudata_fops = {
-> -	.owner = THIS_MODULE,
-> -	.read = rcudata_read,
-> +const struct seq_operations rcu_data_seq_op = {
-> +	.start	= c_start,
-> +	.next	= c_next,
-> +	.stop	= c_stop,
-> +	.show	= show_rcu_data,
->  };
-> 
-> +static int rcu_data_open(struct inode *inode, struct file *file)
-> +{
-> +	int ret = seq_open(file, &rcu_data_seq_op);
-> +	if (ret)
-> +		return ret;
-> +	((struct seq_file *)file->private_data)->private = inode->i_private;
-> +	return 0;
-> +}
-> +
-> +static const struct file_operations rcu_data_fops = {
-> +	.owner		= THIS_MODULE,
-> +	.open		= rcu_data_open,
-> +	.read		= seq_read,
-> +	.llseek		= seq_lseek,
-> +	.release	= seq_release,
-> +};
-> +
-> +static void print_one_rcu_ctrlblk(struct seq_file *m, struct rcu_ctrlblk *rcp)
-> +{
-> +	seq_printf(m, "cur=%ld  completed=%ld   pending=%ld  s=%d\n\t",
-> +			rcp->cur, rcp->completed, rcp->pending, rcp->signaled);
-> +	seq_cpumask(m, &rcp->cpumask);
-> +	seq_puts(m, "\n");
-> +}
-> +
-> +static int show_rcucb(struct seq_file *m, void *unused)
-> +{
-> +	seq_puts(m, "rcu: ");
-> +	print_one_rcu_ctrlblk(m, &rcu_ctrlblk);
-> +	seq_puts(m, "rcu_bh: ");
-> +	print_one_rcu_ctrlblk(m, &rcu_bh_ctrlblk);
-> +	seq_puts(m, "online: ");
-> +	seq_cpumask(m, &cpu_online_map);
-> +	seq_puts(m, "\n");
-> +	return 0;
-> +}
-> +
-> +static int rcucb_open(struct inode *inode, struct file *file)
-> +{
-> +	return single_open(file, show_rcucb, NULL);
-> +}
-> +
->  static struct file_operations rcucb_fops = {
-> -	.owner = THIS_MODULE,
-> -	.read = rcucb_read,
-> +	.owner		= THIS_MODULE,
-> +	.open		= rcucb_open,
-> +	.read		= seq_read,
-> +	.llseek		= seq_lseek,
-> +	.release	= single_release,
->  };
-> 
-> -static struct dentry *rcudir, *datadir, *cbdir;
-> -static int rcuclassic_debugfs_init(void)
-> +static struct dentry *rcudir, *rcu_bh_data_file, *rcu_data_file, *rcucb_file;
-> +
-> +static int __init rcuclassic_trace_init(void)
->  {
->  	rcudir = debugfs_create_dir("rcu", NULL);
->  	if (!rcudir)
->  		goto out;
-> -	datadir = debugfs_create_file("rcudata", 0444, rcudir,
-> -				      NULL, &rcudata_fops);
-> -	if (!datadir)
-> -		goto free_out;
-> -	cbdir = debugfs_create_file("rcucb", 0444, rcudir, NULL, &rcucb_fops);
-> -	if (!cbdir)
-> -		goto free_out;
-> +
-> +	rcu_bh_data_file = debugfs_create_file("rcu_bh_data", 0444, rcudir,
-> +			get_rcu_data_bh, &rcu_data_fops);
-> +	if (!rcu_bh_data_file)
-> +		goto out_rcudir;
-> +
-> +	rcu_data_file = debugfs_create_file("rcu_data", 0444, rcudir,
-> +			get_rcu_data, &rcu_data_fops);
-> +	if (!rcu_data_file)
-> +		goto out_rcudata_bh_file;
-> +
-> +	rcucb_file = debugfs_create_file("rcucb", 0444, rcudir,
-> +			NULL, &rcucb_fops);
-> +	if (!rcucb_file)
-> +		goto out_rcudata_file;
->  	return 0;
-> -free_out:
-> -	if (datadir)
-> -		debugfs_remove(datadir);
-> +
-> +out_rcudata_file:
-> +	debugfs_remove(rcu_data_file);
-> +out_rcudata_bh_file:
-> +	debugfs_remove(rcu_bh_data_file);
-> +out_rcudir:
->  	debugfs_remove(rcudir);
->  out:
->  	return 1;
->  }
-> 
-> -static int __init rcuclassic_trace_init(void)
-> -{
-> -	int ret;
-> -
-> -	rcuclassic_trace_buf = kmalloc(RCUCLASSIC_TRACE_BUF_SIZE, GFP_KERNEL);
-> -	if (!rcuclassic_trace_buf)
-> -		return 1;
-> -	ret = rcuclassic_debugfs_init();
-> -	if (ret)
-> -		kfree(rcuclassic_trace_buf);
-> -	return ret;
-> -}
-> -
->  static void __exit rcuclassic_trace_cleanup(void)
->  {
-> -	debugfs_remove(datadir);
-> -	debugfs_remove(cbdir);
-> +	debugfs_remove(rcucb_file);
-> +	debugfs_remove(rcu_data_file);
-> +	debugfs_remove(rcu_bh_data_file);
->  	debugfs_remove(rcudir);
-> -	kfree(rcuclassic_trace_buf);
->  }
-> 
-> -
->  module_init(rcuclassic_trace_init);
->  module_exit(rcuclassic_trace_cleanup);
-> +
-> +MODULE_AUTHOR("Paul E. McKenney");
-> +MODULE_DESCRIPTION("Read-Copy Update tracing for classic implementation");
-> +MODULE_LICENSE("GPL");
-> 
+
+True.
+
+As long as glibc doesn't do the /dev/urandom read when the kenrel has
+already done that.  I assume that it will do so, until AT_RANDOM-aware
+glibc has propagated out?
+
