@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752113AbYJ0DPH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752313AbYJ0DS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752113AbYJ0DPH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Oct 2008 23:15:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbYJ0DO5
+	id S1752313AbYJ0DS4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Oct 2008 23:18:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbYJ0DSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Oct 2008 23:14:57 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43346 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751190AbYJ0DO4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Oct 2008 23:14:56 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use schedule_on_each_cpu()
-Cc: kosaki.motohiro@jp.fujitsu.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>, linux-mm@kvack.org,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Gautham Shenoy <ego@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Rusty Russell <rusty@rustcorp.com.au>, mpm <mpm@selenic.com>
-In-Reply-To: <1225037872.32713.22.camel@twins>
-References: <2f11576a0810260851h15cb7e1ahb454b70a2e99e1a8@mail.gmail.com> <1225037872.32713.22.camel@twins>
-Message-Id: <20081027120405.1B45.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sun, 26 Oct 2008 23:18:48 -0400
+Received: from mga09.intel.com ([134.134.136.24]:62511 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751190AbYJ0DSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Oct 2008 23:18:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,490,1220252400"; 
+   d="scan'208";a="352557554"
+Message-ID: <49053313.9080706@intel.com>
+Date: Mon, 27 Oct 2008 11:18:43 +0800
+From: "Zhao, Yu" <yu.zhao@intel.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Yu Zhao <yu.zhao@uniscape.net>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "greg@kroah.com" <greg@kroah.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       Rakib Mullick <rakib.mullick@gmail.com>
+Subject: Re: [PATCH] pci: Fixing drivers/pci/search.c compilation warning.
+References: <b9df5fa10809280816u23ef3021k7eee287a237b72ae@mail.gmail.com> <20080928163211.GR27204@parisc-linux.org> <20081021011308.GA3889@parisc-linux.org> <490467CD.3000402@uniscape.net> <20081026183412.GX26094@parisc-linux.org>
+In-Reply-To: <20081026183412.GX26094@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Mon, 27 Oct 2008 12:14:52 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Right, and would be about 4k+sizeof(task_struct), some people might be
-> bothered, but most won't care.
+Matthew Wilcox wrote:
+> On Sun, Oct 26, 2008 at 08:51:25PM +0800, Yu Zhao wrote:
+>> This reminds me of other problems of PCI search functions.
+>>
+>> The 'dev_start' is passed to bus_find_device(), and its 'knode_bus' 
+>> reference count is decreased by klist_iter_init_node() in that function. 
+>> The problem is the reference count may be already decrease to 0 because 
+>> the PCI device 'from' is hot-plugged off (e.g., pci_remove_bus) when the 
+>> search goes. A warning is fired when klist_iter_init_node() detects the 
+>> reference count becomes 0.
+>>
+>> Some code uses pci_find_device() in a way that is not safe with the 
+>> hotplug, because a device may be destroyed after bus_find_device() 
+>> returns it and before it's held by pci_dev_get() in the next round. 
+>> Following is an example from a random grep:
 > 
-> > Perhaps, I misunderstand your intension. so can you point your
-> > previous discussion url?
+> Yes, that's why pci_find_device() is deprecated.  But it doesn't also
+> need to be buggy ;-)
 > 
-> my google skillz fail me, but once in a while people complain that we
-> have too many kernel threads.
-> 
-> Anyway, if we can re-use this per-cpu workqueue for more goals, I guess
-> there is even less of an objection.
 
-In general, you are right.
-but this is special case. mmap_sem is really widely used various subsystem and drivers.
-(because page fault via copy_user introduce to depend on mmap_sem)
+How about pci_get_bus_and_slot()? People would meet the problem with it 
+anyway.
 
-Then, any work-queue reu-sing can cause similar dead-lock easily.
-
-
-So I think we have two choices (nick explained it at this thread).
-
-(1) own workqueue (the patch)
-(2) avoid lru_add_drain_all completely
-
-
-if you really strongly hate (1), we should target to (2) IMO.
-
-Thought?
-
-
-
+Thanks,
+Yu
