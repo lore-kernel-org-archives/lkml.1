@@ -1,83 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753029AbYJ1H3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753348AbYJ1HaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753029AbYJ1H3l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 03:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbYJ1H33
+	id S1753348AbYJ1HaU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 03:30:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbYJ1HaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 03:29:29 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:50792 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751690AbYJ1H32 (ORCPT
+	Tue, 28 Oct 2008 03:30:04 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:49153 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752371AbYJ1HaA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 03:29:28 -0400
-Subject: Re: [PATCH] wireless: fix regression caused by regulatory config
-	option
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl, rodriguez@atheros.com
-In-Reply-To: <20081027204249.GA1620@ucw.cz>
-References: <20081026103024.2712ddc9@infradead.org>
-	 <20081026200939.GC12648@tuxdriver.com>
-	 <20081026131818.7517c103@infradead.org>
-	 <1225052537.3746.5.camel@johannes.berg>  <20081027204249.GA1620@ucw.cz>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-htKgMXw7WhGNXENI90Xk"
-Date: Tue, 28 Oct 2008 08:29:15 +0100
-Message-Id: <1225178955.3796.60.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 28 Oct 2008 03:30:00 -0400
+Message-ID: <4906BE61.1090000@snapgear.com>
+Date: Tue, 28 Oct 2008 17:25:21 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Richard Henderson <rth@twiddle.net>, Greg Ungerer <gerg@uclinux.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] ftrace: handle archs that do not support irqs_disabled_flags
+References: <20081023213637.eff9b414.sfr@canb.auug.org.au> <20081023121145.GB27984@x200.localdomain> <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com> <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com> <49008D12.5090204@gmail.com> <Pine.LNX.4.64.0810231635440.18978@anakin> <c62985530810230757r411b4e3dj4ecec649cf8cf0b3@mail.gmail.com> <Pine.LNX.4.64.0810231727430.18978@anakin> <4900B414.7090002@gmail.com> <20081023163433.GA3160@x200.localdomain> <20081023163850.GB16591@elte.hu> <4901D8CD.7000405@gmail.com> <alpine.DEB.1.10.0810240937130.3882@gandalf.stny.rr.com> <Pine.LNX.4.64.0810251018370.15317@anakin>
+In-Reply-To: <Pine.LNX.4.64.0810251018370.15317@anakin>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Geert,
 
---=-htKgMXw7WhGNXENI90Xk
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Geert Uytterhoeven wrote:
+> On Fri, 24 Oct 2008, Steven Rostedt wrote:
+>> Some architectures do not support a way to read the irq flags that
+>> is set from "local_irq_save(flags)" to determine if interrupts were
+>> disabled or enabled. Ftrace uses this information to display to the user
+>> if the trace occurred with interrupts enabled or disabled.
+> 
+> Both alpha
+> 
+> 	#define irqs_disabled() (getipl() == IPL_MAX)
+> 
+> and m68k
+> 
+> 	static inline int irqs_disabled(void)
+> 	{
+> 		unsigned long flags;
+> 		local_save_flags(flags);
+> 		return flags & ~ALLOWINT;
+> 	}
+> 
+> do have irqs_disabled(), but they don't have irqs_disabled_flags().
+> 
+> M68knommu has both, but they don't check the same thing:
+> 
+> 	#define irqs_disabled()                 \
+> 	({                                      \
+> 		unsigned long flags;            \
+> 		local_save_flags(flags);        \
+> 		((flags & 0x0700) == 0x0700);   \
+> 	})
+> 
+> 	static inline int irqs_disabled_flags(unsigned long flags)
+> 	{
+> 		if (flags & 0x0700)
+> 			return 0;
+> 		else
+> 			return 1;
+> 	}
+> 
+> Is there a semantic difference between them (except that the latter takes the
+> flags as a parameter)?
 
-On Mon, 2008-10-27 at 21:42 +0100, Pavel Machek wrote:
+No...
 
-> > > it's not always nice, especially if you're trying to get rid of some
-> > > nasty stuff, but think of it this way: you should be able to use a
-> > > new kernel on an existing distro, at least for a reasonable type of
-> > > distro (eg something shipped in, say, the last 2 years). In this case=
-:
-> > > even Fedora 10 is not likely to work!
-> >=20
-> > Well, actually, it _ought_ to work fine, with a smaller set of channels=
-,
->=20
-> Really? It will still break if your AP uses one of those channels, right?
 
-Well yes, but the driver itself shouldn't simply fail as it did in
-Arjan's case, it should just not find the AP rather than saying "sorry,
-found error and can't continue" or something like that.
+> Or can we just extract the core logic of irqs_disabled() into
+> irqs_disabled_flags()?
 
-johannes
+Yep, could certainly do that. I'll put a patch together.
 
---=-htKgMXw7WhGNXENI90Xk
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Regards
+Greg
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
 
-iQIcBAABAgAGBQJJBr9IAAoJEKVg1VMiehFYakoP/0y7pjK40J6PJR9E189K05g4
-w0eGMSsEgJoT5uzmV9nKmOTuGkw5fEGbkmuJLDPesWMr+As+CGIJsMiUJlMxOYL5
-LiIL0PATw+Rdy6hYBv4RBCaPWmKSG+XjI4Jir4yROAzln5ON1pgCKaU+a3St7SNH
-ZWKSkyuOIydo481v2KBNDbTiPTGpeUlnjPSPlIHAtk/crCn5XP+nsk7HIvr3gzVc
-bcT9g5jTNZDaC2R1DMWVKf5Bja/gNhiSEkRytitCm5CcTJCEjBRoris7GyNW4cRT
-UGtQXaD8FwJVxoIoiPvmXCyF+/kozwRq9Y+8LM0Q6YDkvjG/LO3vWVRS8f+rTH+J
-zaIGd0x+Nc/IBLJC+akpr0SqEi95OXpQjMO728DjqYIEu+Pc9Fh01MuPI0EQSj8/
-6JAqMJLIMvpGHI3GBuO8QOPRscZpsIWhtVNeCBPDhvd22R6U/O0sfMWATeNp7CVe
-zrGrVN95FJz+6aKvou6DfQ8Q3fmIIJYzPA8iemcoUiUqXxpw6RKqq+bWKTzFiDyW
-ezOZtTZ2eQTEJeciZ/qVRiC8hkFke4FStZiIx/u1fOk96RvmWKRkhmycU3fo8t/C
-DGwIEoQp6hf3FoG83Hg6885RTLPy4lptTmAEOA74jZfho790RykMN4sSzCrhEEMk
-HPiTId4CCPneV+b9vyYz
-=IrC1
------END PGP SIGNATURE-----
 
---=-htKgMXw7WhGNXENI90Xk--
-
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+Secure Computing Corporation                PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
