@@ -1,53 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752798AbYJ1Ean@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752932AbYJ1EcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752798AbYJ1Ean (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 00:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYJ1Eae
+	id S1752932AbYJ1EcN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 00:32:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbYJ1Eb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 00:30:34 -0400
-Received: from trickle.CC.McGill.CA ([132.206.27.51]:58194 "EHLO
-	trickle.cc.mcgill.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751048AbYJ1Eae (ORCPT
+	Tue, 28 Oct 2008 00:31:56 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60606 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751048AbYJ1Eb4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 00:30:34 -0400
-Message-ID: <20081028001710.0euz5p89w08cgwgk@webmail.mcgill.ca>
-X-Priority: 3 (Normal)
-Date: Tue, 28 Oct 2008 00:17:10 -0400
-From: MICROSOFT ONLINE PROMO <microsoftpromo@promoonline.com>
-Reply-to: claim.dpt@live.com
-To: undisclosed-recipients:;
-Subject: Claim Agent: Mr. Skin Williams (Email: claim.dpt@live.com)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format="flowed"
-Content-Disposition: inline
+	Tue, 28 Oct 2008 00:31:56 -0400
+Date: Mon, 27 Oct 2008 21:32:17 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Zhu Yi <yi.zhu@intel.com>
+Cc: Mirco Tischler <mt-ml@gmx.de>, lkml <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "John W.Linville" <linville@tuxdriver.com>,
+       "Chatre, Reinette" <reinette.chatre@intel.com>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [2.6.28-rc2]: iwl4965 doesn't connect / cfg80211 failure
+Message-ID: <20081027213217.53558319@infradead.org>
+In-Reply-To: <1225157618.2917.215.camel@debian.sh.intel.com>
+References: <20081028020212.0dfcb6c9@mtlp.12.dimension>
+	<1225157618.2917.215.camel@debian.sh.intel.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.0.5-cvs)
-X-Originating-IP: 41.211.246.2
-X-PMX-Version: 5.4.2.338381, Antispam-Engine: 2.6.0.325393, Antispam-Data: 2008.9.28.155531
-X-McGill-WhereFrom: Internal
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 28 Oct 2008 09:33:37 +0800
+Zhu Yi <yi.zhu@intel.com> wrote:
 
+> On Mon, 2008-10-27 at 18:02 -0700, Mirco Tischler wrote:
+> > Hi
+> > 
+> > I have problems connecting to wlan with my iwl4965 chip and
+> > 2.6.28-rc2 (didn't test -rc1). Networkmanager just times out every
+> > time. Only after playing around with rmmod/modprobe and killswitch
+> > I am sometimes able to connect. But I cannot reproduce this
+> > reliably yet.
+> > 
+> > This is what I get in dmesg (from modprobe iwlagn to connection
+> > failure):
+> > 
+> > [ 1881.884690] iwlagn: Intel(R) Wireless WiFi Link AGN driver for
+> > Linux,1.3.27kds
+> > [ 1881.884692] iwlagn: Copyright(c) 2003-2008 Intel Corporation
+> > [ 1881.884809] iwlagn 0000:06:00.0: PCI INT A -> GSI 18 (level,
+> > low) -> IRQ 18 [ 1881.884836] iwlagn 0000:06:00.0: setting latency
+> > timer to 64 [ 1881.884952] iwlagn: Detected Intel Wireless WiFi
+> > Link 4965AGN REV=0x4 [ 1881.935149] iwlagn: Tunable channels: 13
+> > 802.11bg, 19 802.11a channels [ 1881.936327] phy4: Selected rate
+> > control algorithm 'iwl-agn-rs' [ 1885.965591] iwlagn 0000:06:00.0:
+> > PCI INT A -> GSI 18 (level, low) -> IRQ 18 [ 1885.965874] iwlagn
+> > 0000:06:00.0: irq 41 for MSI/MSI-X [ 1885.965974] iwlagn
+> > 0000:06:00.0: firmware: requesting iwlwifi-4965-2.ucode
+> > [ 1886.181600] Registered led device: iwl-phy4:radio [ 1886.181618]
+> > Registered led device: iwl-phy4:assoc [ 1886.181635] Registered led
+> > device: iwl-phy4:RX [ 1886.181654] Registered led device:
+> > iwl-phy4:TX [ 1886.213631] ADDRCONF(NETDEV_UP): wlan0: link is not
+> > ready [ 1887.572768] iwlagn: TX Power requested while scanning!
+> 
+> Looks good so far. But I failed to see what are you trying to connect?
+> Can you try "iwconfig wlan0 channnel <> essid <>"?
+> 
 
-This is to notify you that you are one of the winners of the Microsoft 
-online cash award program in West Africa on 5th July 2008. Amount Won 
-is US$3.500,000.00 (Three Million Five Hundred Thousand Unites States 
-Dollars), Note that the Microsoft Board have paid for the delivering 
-Charges and Insurance Fee of the Cheque. Winning No.: 1 8 13 22 27 38 
-41, Ref No.micro234kj20080808, Batch number: m34222, All you need to do 
-is to contact the claims agent so he could direct you on what to do 
-next.
+I had this same issue
 
-Claim Agent: Mr. Skin Williams (Email: claim.dpt@live.com)
+turning on CONFIG_WIRELESS_OLD_REGULATORY fixed it for me....
 
-For verification purpose, forward the requested details to the claims 
-agent;(1)
-Full Name,(2)Your Address,(3)Gender,(4)Your 
-Country,(5)Occupation,(6)Next Of Kin,(7)Personal Mobile Number.
-
-You have to contact Mr. Skin Williams (The Claims Agent) Immedaitely 
-One more time congratulations.
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
