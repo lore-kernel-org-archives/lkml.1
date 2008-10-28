@@ -1,31 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754241AbYJ1QJI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbYJ1QJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754241AbYJ1QJI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 12:09:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbYJ1QIk
+	id S1754493AbYJ1QJd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 12:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYJ1QIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 12:08:40 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:60980 "EHLO
+	Tue, 28 Oct 2008 12:08:41 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:60983 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752664AbYJ1QIj (ORCPT
+	with ESMTP id S1752713AbYJ1QIk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 12:08:39 -0400
+	Tue, 28 Oct 2008 12:08:40 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type;
-	b=HGVBPUf7aloqqmWRHr2LlEExdfvR5eABpsqjQEbc6tnGD3b6X76wkA9Nz2XnQZe57
-	Gp4q2wtnKV+EqQGiFmAAQ==
-Date: Tue, 28 Oct 2008 09:08:05 -0700 (PDT)
+	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
+	mime-version:content-type;
+	b=B9vKCdyHGbnXIR2NxAiFon6aT+EtbSGtLyTl8PBE6YqeebVifarp1l9m8Mt2XGy7L
+	D/88lh5J+wp1SL8R3gs1g==
+Date: Tue, 28 Oct 2008 09:08:03 -0700 (PDT)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Andrew Morton <akpm@linux-foundation.org>
 cc: Christoph Lameter <cl@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
        Peter Zijlstra <peterz@infradead.org>, Paul Menage <menage@google.com>,
        Derek Fults <dfults@sgi.com>, linux-kernel@vger.kernel.org
-Subject: [patch 2/7] pdflush: allow the passing of a nodemask parameter
-In-Reply-To: <alpine.DEB.1.10.0810280259500.15270@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.1.10.0810280301130.15270@chino.kir.corp.google.com>
-References: <alpine.DEB.1.10.0810280259500.15270@chino.kir.corp.google.com>
+Subject: [patch 1/7] cpusets: add dirty map to struct address_space
+Message-ID: <alpine.DEB.1.10.0810280259500.15270@chino.kir.corp.google.com>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -35,11 +33,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Christoph Lameter <cl@linux-foundation.org>
 
-If we want to support nodemask specific writeout, then we need a way to
-communicate the set of nodes that an operation should affect.
+In a NUMA system it is helpful to know where the dirty pages of a mapping
+are located.  That way we will be able to implement writeout for
+applications that are constrained to a portion of the memory of the
+system as required by cpusets.
 
-So add a nodemask_t parameter to the pdflush functions and also store
-the nodemask in the pdflush control structure.
+This patch implements the management of dirty node maps for an address
+space through the following functions:
+
+cpuset_clear_dirty_nodes(mapping)	Clear the map of dirty nodes
+
+cpuset_update_nodes(mapping, page)	Record a node in the dirty nodes
+					map
+
+cpuset_init_dirty_nodes(mapping)	Initialization of the map
+
+
+The dirty map may be stored either directly in the mapping (for NUMA
+systems with less then BITS_PER_LONG nodes) or separately allocated for
+systems with a large number of nodes (f.e. ia64 with 1024 nodes).
+
+Updating the dirty map may involve allocating it first for large
+configurations.  Therefore, we protect the allocation and setting of a
+node in the map through the tree_lock.  The tree_lock is already taken
+when a page is dirtied so there is no additional locking overhead if we
+insert the updating of the nodemask there.
+
+The dirty map is only cleared (or freed) when the inode is cleared.  At
+that point no pages are attached to the inode anymore and therefore it
+can be done without any locking. The dirty map therefore records all nodes
+that have been used for dirty pages by that inode until the inode is no
+longer used.
 
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 Cc: Nick Piggin <npiggin@suse.de>
@@ -48,235 +72,269 @@ Cc: Paul Menage <menage@google.com>
 Cc: Derek Fults <dfults@sgi.com>
 Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- fs/buffer.c               |    2 +-
- fs/super.c                |    4 ++--
- fs/sync.c                 |    8 ++++----
- include/linux/writeback.h |    5 +++--
- mm/page-writeback.c       |   18 +++++++++---------
- mm/pdflush.c              |   15 ++++++++++++---
- mm/vmscan.c               |    2 +-
- 7 files changed, 32 insertions(+), 22 deletions(-)
+ fs/buffer.c               |    2 +
+ fs/fs-writeback.c         |    7 ++++++
+ fs/inode.c                |    3 ++
+ include/linux/cpuset.h    |   51 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fs.h        |    7 ++++++
+ include/linux/writeback.h |    2 +
+ kernel/cpuset.c           |   53 +++++++++++++++++++++++++++++++++++++++++++++
+ mm/page-writeback.c       |    2 +
+ 8 files changed, 127 insertions(+), 0 deletions(-)
 
 diff --git a/fs/buffer.c b/fs/buffer.c
 --- a/fs/buffer.c
 +++ b/fs/buffer.c
-@@ -364,7 +364,7 @@ static void free_more_memory(void)
- 	struct zone *zone;
- 	int nid;
+@@ -41,6 +41,7 @@
+ #include <linux/bitops.h>
+ #include <linux/mpage.h>
+ #include <linux/bit_spinlock.h>
++#include <linux/cpuset.h>
  
--	wakeup_pdflush(1024);
-+	wakeup_pdflush(1024, NULL);
- 	yield();
+ static int fsync_buffers_list(spinlock_t *lock, struct list_head *list);
  
- 	for_each_online_node(nid) {
-diff --git a/fs/super.c b/fs/super.c
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -646,7 +646,7 @@ int do_remount_sb(struct super_block *sb, int flags, void *data, int force)
- 	return 0;
- }
+@@ -719,6 +720,7 @@ static int __set_page_dirty(struct page *page,
+ 		radix_tree_tag_set(&mapping->page_tree,
+ 				page_index(page), PAGECACHE_TAG_DIRTY);
+ 	}
++	cpuset_update_dirty_nodes(mapping, page);
+ 	spin_unlock_irq(&mapping->tree_lock);
+ 	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
  
--static void do_emergency_remount(unsigned long foo)
-+static void do_emergency_remount(unsigned long foo, nodemask_t *bar)
- {
- 	struct super_block *sb;
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -23,6 +23,7 @@
+ #include <linux/blkdev.h>
+ #include <linux/backing-dev.h>
+ #include <linux/buffer_head.h>
++#include <linux/cpuset.h>
+ #include "internal.h"
  
-@@ -674,7 +674,7 @@ static void do_emergency_remount(unsigned long foo)
  
- void emergency_remount(void)
- {
--	pdflush_operation(do_emergency_remount, 0);
-+	pdflush_operation(do_emergency_remount, 0, NULL);
- }
+@@ -487,6 +488,12 @@ void generic_sync_sb_inodes(struct super_block *sb,
+ 			continue;		/* blockdev has wrong queue */
+ 		}
  
- /*
-diff --git a/fs/sync.c b/fs/sync.c
---- a/fs/sync.c
-+++ b/fs/sync.c
-@@ -21,9 +21,9 @@
-  * sync everything.  Start out by waking pdflush, because that writes back
-  * all queues in parallel.
-  */
--static void do_sync(unsigned long wait)
-+static void do_sync(unsigned long wait, nodemask_t *unused)
- {
--	wakeup_pdflush(0);
-+	wakeup_pdflush(0, NULL);
- 	sync_inodes(0);		/* All mappings, inodes and their blockdevs */
- 	DQUOT_SYNC(NULL);
- 	sync_supers();		/* Write the superblocks */
-@@ -38,13 +38,13 @@ static void do_sync(unsigned long wait)
- 
- asmlinkage long sys_sync(void)
- {
--	do_sync(1);
-+	do_sync(1, NULL);
- 	return 0;
- }
- 
- void emergency_sync(void)
- {
--	pdflush_operation(do_sync, 0);
-+	pdflush_operation(do_sync, 0, NULL);
- }
++		if (!cpuset_intersects_dirty_nodes(mapping, wbc->nodes)) {
++			/* No node pages under writeback */
++			requeue_io(inode);
++			continue;
++		}
++
+ 		/* Was this inode dirtied after sync_sb_inodes was called? */
+ 		if (time_after(inode->dirtied_when, start))
+ 			break;
+diff --git a/fs/inode.c b/fs/inode.c
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -22,6 +22,7 @@
+ #include <linux/bootmem.h>
+ #include <linux/inotify.h>
+ #include <linux/mount.h>
++#include <linux/cpuset.h>
  
  /*
+  * This is needed for the following functions:
+@@ -167,6 +168,7 @@ static struct inode *alloc_inode(struct super_block *sb)
+ 		mapping->assoc_mapping = NULL;
+ 		mapping->backing_dev_info = &default_backing_dev_info;
+ 		mapping->writeback_index = 0;
++		cpuset_init_dirty_nodes(mapping);
+ 
+ 		/*
+ 		 * If the block_device provides a backing_dev_info for client
+@@ -271,6 +273,7 @@ void clear_inode(struct inode *inode)
+ 		bd_forget(inode);
+ 	if (S_ISCHR(inode->i_mode) && inode->i_cdev)
+ 		cd_forget(inode);
++	cpuset_clear_dirty_nodes(inode->i_mapping);
+ 	inode->i_state = I_CLEAR;
+ }
+ 
+diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
+--- a/include/linux/cpuset.h
++++ b/include/linux/cpuset.h
+@@ -80,6 +80,36 @@ extern int current_cpuset_is_being_rebound(void);
+ 
+ extern void rebuild_sched_domains(void);
+ 
++/*
++ * We need macros since struct address_space is not defined yet
++ */
++#if MAX_NUMNODES <= BITS_PER_LONG
++#define cpuset_init_dirty_nodes(__mapping)				\
++	(__mapping)->dirty_nodes = NODE_MASK_NONE
++
++#define cpuset_update_dirty_nodes(__mapping, __page)			\
++	node_set(page_to_nid(__page), (__mapping)->dirty_nodes);
++
++#define cpuset_clear_dirty_nodes(__mapping)				\
++	(__mapping)->dirty_nodes = NODE_MASK_NONE
++
++#define cpuset_intersects_dirty_nodes(__mapping, __nodemask_ptr)	\
++	(!(__nodemask_ptr) ||						\
++	 nodes_intersects((__mapping)->dirty_nodes, *(__nodemask_ptr)))
++
++#else
++struct address_space;
++
++#define cpuset_init_dirty_nodes(__mapping)				\
++	(__mapping)->dirty_nodes = NULL
++
++extern void cpuset_update_dirty_nodes(struct address_space *mapping,
++				      struct page *page);
++extern void cpuset_clear_dirty_nodes(struct address_space *mapping);
++extern int cpuset_intersects_dirty_nodes(struct address_space *mapping,
++					 nodemask_t *mask);
++#endif
++
+ #else /* !CONFIG_CPUSETS */
+ 
+ static inline int cpuset_init_early(void) { return 0; }
+@@ -163,6 +193,27 @@ static inline void rebuild_sched_domains(void)
+ 	partition_sched_domains(1, NULL, NULL);
+ }
+ 
++struct address_space;
++
++static inline void cpuset_init_dirty_nodes(struct address_space *mapping)
++{
++}
++
++static inline void cpuset_update_dirty_nodes(struct address_space *mapping,
++					     struct page *page)
++{
++}
++
++static inline void cpuset_clear_dirty_nodes(struct address_space *mapping)
++{
++}
++
++static inline int cpuset_intersects_dirty_nodes(struct address_space *mapping,
++						nodemask_t *mask)
++{
++	return 1;
++}
++
+ #endif /* !CONFIG_CPUSETS */
+ 
+ #endif /* _LINUX_CPUSET_H */
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -544,6 +544,13 @@ struct address_space {
+ 	spinlock_t		private_lock;	/* for use by the address_space */
+ 	struct list_head	private_list;	/* ditto */
+ 	struct address_space	*assoc_mapping;	/* ditto */
++#ifdef CONFIG_CPUSETS
++#if MAX_NUMNODES <= BITS_PER_LONG
++	nodemask_t		dirty_nodes;	/* nodes with dirty pages */
++#else
++	nodemask_t		*dirty_nodes;	/* pointer to mask, if dirty */
++#endif
++#endif
+ } __attribute__((aligned(sizeof(long))));
+ 	/*
+ 	 * On most architectures that alignment is already the case; but
 diff --git a/include/linux/writeback.h b/include/linux/writeback.h
 --- a/include/linux/writeback.h
 +++ b/include/linux/writeback.h
-@@ -102,7 +102,7 @@ static inline void inode_sync_wait(struct inode *inode)
- /*
-  * mm/page-writeback.c
-  */
--int wakeup_pdflush(long nr_pages);
-+int wakeup_pdflush(long nr_pages, nodemask_t *nodes);
- void laptop_io_completion(void);
- void laptop_sync_completion(void);
- void throttle_vm_writeout(gfp_t gfp_mask);
-@@ -143,7 +143,8 @@ balance_dirty_pages_ratelimited(struct address_space *mapping)
- typedef int (*writepage_t)(struct page *page, struct writeback_control *wbc,
- 				void *data);
+@@ -72,6 +72,8 @@ struct writeback_control {
+ 	 * so we use a single control to update them
+ 	 */
+ 	unsigned no_nrwrite_index_update:1;
++
++	nodemask_t *nodes;		/* Nodemask to writeback */
+ };
  
--int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0);
-+int pdflush_operation(void (*fn)(unsigned long, nodemask_t *nodes),
-+		      unsigned long arg0, nodemask_t *nodes);
- int generic_writepages(struct address_space *mapping,
- 		       struct writeback_control *wbc);
- int write_cache_pages(struct address_space *mapping,
+ /*
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -16,6 +16,7 @@
+  *  2006 Rework by Paul Menage to use generic cgroups
+  *  2008 Rework of the scheduler domains and CPU hotplug handling
+  *       by Max Krasnyansky
++ *  2008 Cpuset writeback by Christoph Lameter
+  *
+  *  This file is subject to the terms and conditions of the GNU General Public
+  *  License.  See the file COPYING in the main directory of the Linux
+@@ -2323,6 +2324,58 @@ int cpuset_mem_spread_node(void)
+ }
+ EXPORT_SYMBOL_GPL(cpuset_mem_spread_node);
+ 
++#if MAX_NUMNODES > BITS_PER_LONG
++/*
++ * Special functions for NUMA systems with a large number of nodes.  The
++ * nodemask is pointed to from the address_space structure.  The attachment of
++ * the dirty_nodes nodemask is protected by the tree_lock.  The nodemask is
++ * freed only when the inode is cleared (and therefore unused, thus no locking
++ * is necessary).
++ */
++void cpuset_update_dirty_nodes(struct address_space *mapping,
++			       struct page *page)
++{
++	nodemask_t *nodes = mapping->dirty_nodes;
++	int node = page_to_nid(page);
++
++	if (!nodes) {
++		nodes = kmalloc(sizeof(nodemask_t), GFP_ATOMIC);
++		if (!nodes)
++			return;
++
++		*nodes = NODE_MASK_NONE;
++		mapping->dirty_nodes = nodes;
++	}
++	node_set(node, *nodes);
++}
++
++void cpuset_clear_dirty_nodes(struct address_space *mapping)
++{
++	nodemask_t *nodes = mapping->dirty_nodes;
++
++	if (nodes) {
++		mapping->dirty_nodes = NULL;
++		kfree(nodes);
++	}
++}
++
++/*
++ * Called without tree_lock.  The nodemask is only freed when the inode is
++ * cleared and therefore this is safe.
++ */
++int cpuset_intersects_dirty_nodes(struct address_space *mapping,
++				  nodemask_t *mask)
++{
++	nodemask_t *dirty_nodes = mapping->dirty_nodes;
++
++	if (!mask)
++		return 1;
++	if (!dirty_nodes)
++		return 0;
++	return nodes_intersects(*dirty_nodes, *mask);
++}
++#endif
++
+ /**
+  * cpuset_mems_allowed_intersects - Does @tsk1's mems_allowed intersect @tsk2's?
+  * @tsk1: pointer to task_struct of some task.
 diff --git a/mm/page-writeback.c b/mm/page-writeback.c
 --- a/mm/page-writeback.c
 +++ b/mm/page-writeback.c
-@@ -106,7 +106,7 @@ EXPORT_SYMBOL(laptop_mode);
- /* End of sysctl-exported parameters */
- 
- 
--static void background_writeout(unsigned long _min_pages);
-+static void background_writeout(unsigned long _min_pages, nodemask_t *nodes);
- 
- /*
-  * Scale the writeback cache size proportional to the relative writeout speeds.
-@@ -528,7 +528,7 @@ static void balance_dirty_pages(struct address_space *mapping)
- 			(!laptop_mode && (global_page_state(NR_FILE_DIRTY)
- 					  + global_page_state(NR_UNSTABLE_NFS)
- 					  > background_thresh)))
--		pdflush_operation(background_writeout, 0);
-+		pdflush_operation(background_writeout, 0, NULL);
- }
- 
- void set_page_dirty_balance(struct page *page, int page_mkwrite)
-@@ -616,7 +616,7 @@ void throttle_vm_writeout(gfp_t gfp_mask)
-  * writeback at least _min_pages, and keep writing until the amount of dirty
-  * memory is less than the background threshold, or until we're all clean.
-  */
--static void background_writeout(unsigned long _min_pages)
-+static void background_writeout(unsigned long _min_pages, nodemask_t *unused)
- {
- 	long min_pages = _min_pages;
- 	struct writeback_control wbc = {
-@@ -658,12 +658,12 @@ static void background_writeout(unsigned long _min_pages)
-  * the whole world.  Returns 0 if a pdflush thread was dispatched.  Returns
-  * -1 if all pdflush threads were busy.
-  */
--int wakeup_pdflush(long nr_pages)
-+int wakeup_pdflush(long nr_pages, nodemask_t *nodes)
- {
- 	if (nr_pages == 0)
- 		nr_pages = global_page_state(NR_FILE_DIRTY) +
- 				global_page_state(NR_UNSTABLE_NFS);
--	return pdflush_operation(background_writeout, nr_pages);
-+	return pdflush_operation(background_writeout, nr_pages, nodes);
- }
- 
- static void wb_timer_fn(unsigned long unused);
-@@ -687,7 +687,7 @@ static DEFINE_TIMER(laptop_mode_wb_timer, laptop_timer_fn, 0, 0);
-  * older_than_this takes precedence over nr_to_write.  So we'll only write back
-  * all dirty pages if they are all attached to "old" mappings.
-  */
--static void wb_kupdate(unsigned long arg)
-+static void wb_kupdate(unsigned long arg, nodemask_t *unused)
- {
- 	unsigned long oldest_jif;
- 	unsigned long start_jif;
-@@ -746,18 +746,18 @@ int dirty_writeback_centisecs_handler(ctl_table *table, int write,
- 
- static void wb_timer_fn(unsigned long unused)
- {
--	if (pdflush_operation(wb_kupdate, 0) < 0)
-+	if (pdflush_operation(wb_kupdate, 0, NULL) < 0)
- 		mod_timer(&wb_timer, jiffies + HZ); /* delay 1 second */
- }
- 
--static void laptop_flush(unsigned long unused)
-+static void laptop_flush(unsigned long unused, nodemask_t *unused2)
- {
- 	sys_sync();
- }
- 
- static void laptop_timer_fn(unsigned long unused)
- {
--	pdflush_operation(laptop_flush, 0);
-+	pdflush_operation(laptop_flush, 0, NULL);
- }
+@@ -34,6 +34,7 @@
+ #include <linux/syscalls.h>
+ #include <linux/buffer_head.h>
+ #include <linux/pagevec.h>
++#include <linux/cpuset.h>
  
  /*
-diff --git a/mm/pdflush.c b/mm/pdflush.c
---- a/mm/pdflush.c
-+++ b/mm/pdflush.c
-@@ -83,10 +83,12 @@ static unsigned long last_empty_jifs;
-  */
- struct pdflush_work {
- 	struct task_struct *who;	/* The thread */
--	void (*fn)(unsigned long);	/* A callback function */
-+	void (*fn)(unsigned long, nodemask_t *); /* A callback function */
- 	unsigned long arg0;		/* An argument to the callback */
- 	struct list_head list;		/* On pdflush_list, when idle */
- 	unsigned long when_i_went_to_sleep;
-+	int have_nodes;			/* Nodes were specified */
-+	nodemask_t nodes;		/* Nodes to writeback */
- };
- 
- static int __pdflush(struct pdflush_work *my_work)
-@@ -124,7 +126,8 @@ static int __pdflush(struct pdflush_work *my_work)
+  * The maximum number of pages to writeout in a single bdflush/kupdate
+@@ -1104,6 +1105,7 @@ int __set_page_dirty_nobuffers(struct page *page)
+ 			radix_tree_tag_set(&mapping->page_tree,
+ 				page_index(page), PAGECACHE_TAG_DIRTY);
  		}
- 		spin_unlock_irq(&pdflush_lock);
- 
--		(*my_work->fn)(my_work->arg0);
-+		(*my_work->fn)(my_work->arg0,
-+			       my_work->have_nodes ? &my_work->nodes : NULL);
- 
- 		/*
- 		 * Thread creation: For how long have there been zero
-@@ -198,7 +201,8 @@ static int pdflush(void *dummy)
-  * Returns zero if it indeed managed to find a worker thread, and passed your
-  * payload to it.
-  */
--int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0)
-+int pdflush_operation(void (*fn)(unsigned long, nodemask_t *),
-+		      unsigned long arg0, nodemask_t *nodes)
- {
- 	unsigned long flags;
- 	int ret = 0;
-@@ -217,6 +221,11 @@ int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0)
- 			last_empty_jifs = jiffies;
- 		pdf->fn = fn;
- 		pdf->arg0 = arg0;
-+		if (nodes) {
-+			pdf->nodes = *nodes;
-+			pdf->have_nodes = 1;
-+		} else
-+			pdf->have_nodes = 0;
- 		wake_up_process(pdf->who);
- 	}
- 	spin_unlock_irqrestore(&pdflush_lock, flags);
-diff --git a/mm/vmscan.c b/mm/vmscan.c
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1400,7 +1400,7 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
- 		 */
- 		if (total_scanned > sc->swap_cluster_max +
- 					sc->swap_cluster_max / 2) {
--			wakeup_pdflush(laptop_mode ? 0 : total_scanned);
-+			wakeup_pdflush(laptop_mode ? 0 : total_scanned, NULL);
- 			sc->may_writepage = 1;
- 		}
- 
++		cpuset_update_dirty_nodes(mapping, page);
+ 		spin_unlock_irq(&mapping->tree_lock);
+ 		if (mapping->host) {
+ 			/* !PageAnon && !swapper_space */
