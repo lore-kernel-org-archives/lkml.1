@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbYJ1L03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbYJ1L3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754031AbYJ1L03 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 07:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYJ1L0W
+	id S1753767AbYJ1L3S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 07:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbYJ1L3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 07:26:22 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:48572 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752773AbYJ1L0V (ORCPT
+	Tue, 28 Oct 2008 07:29:08 -0400
+Received: from mail01.dbd-breitband.de ([89.199.255.35]:48957 "EHLO
+	mail01.dbd-breitband.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751595AbYJ1L3H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 07:26:21 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Oct 2008 07:26:20 EDT
-Message-ID: <4906F54A.7020909@aitel.hist.no>
-Date: Tue, 28 Oct 2008 12:19:38 +0100
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-Organization: HiST
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Tue, 28 Oct 2008 07:29:07 -0400
+X-Greylist: delayed 1830 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Oct 2008 07:29:07 EDT
+Subject: tg3:No interrupt was generated using MSI, switching to INTx mode.
+	Please report this failure to the PCI maintainer and include system chipset
+	information.
+From: Marc Donner <donner@dbd-breitband.de>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 28 Oct 2008 11:58:30 +0100
+Message-ID: <1225191510.26840.6.camel@localhost>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.28-rc2 i/o error on /dev/ttyUSB0
-References: <alpine.LFD.2.00.0810261221350.3386@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0810261221350.3386@nehalem.linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have gps unit connected via USB-serial (pl2303).
-This does not work with 2.6.28-rc2
+Hi @all,
 
-udev creates devices as usual, but /dev/ttyUSB0 fail.
-cat /dev/ttyUSB0 gives i/o errors, for example.
+we have installed a dual port Brodcam Gigabit Ethernet NIC, and get the
+following error in dmesg:
 
-gpsd try several times, and then fall back on opening
-in read-only mode. This works, but gpsd doesn't actually
-get any data at all from the unit.
+tg3: eth1 No interrupt was generated using MSI, switching to INTx mode.
+Please report this failure to the PCI maintainer and include system
+chipset information.
 
-The pc is a core2duo laptop, using a 64-bit smp kernel.
+Who is responsible for this error message? We are using Kernel 2.6.21.1
+and the NIC Chipset is a Broadcom BCM5715CKPBG
 
-2.6.27 is fine. I skipped 2.6.28-rc1 due to known breakage.
-I can test it if that might help.
+Regards,
 
-Helge Hafting
+Marc
+
