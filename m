@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbYJ1DcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYJ1DcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752875AbYJ1DcA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 23:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbYJ1Dbw
+	id S1753211AbYJ1DcW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 23:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYJ1Dbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 23:31:52 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:39645 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752087AbYJ1Dbv (ORCPT
+	Mon, 27 Oct 2008 23:31:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57003 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752147AbYJ1Dbw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 23:31:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=S+Y1nd+w3Nv2sWFpjAnJ/pSb6SmrLmNdWu1ajdHJAsIfCr2SS+LyV3SRW+XbfYMPlU
-         BCZ4J1xj4nl1hSg28ZVcdDYzA4ksMUpfI8ExEZ2vvQjXlPMVi7EQ43v0aKs9eq5Js59U
-         QrQ/o2K/U9nYWd1alzdnfihOTVsc9887GR4mc=
-Message-ID: <1aad82fa0810272031p3ab3bc1bn3b6295abe8b218ae@mail.gmail.com>
-Date: Mon, 27 Oct 2008 23:31:50 -0400
-From: "Mike Frysinger" <vapier@gentoo.org>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] linux/timex.h: cleanup for userspace
-Cc: "Roman Zippel" <zippel@linux-m68k.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20081027202827.30e6c038.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 27 Oct 2008 23:31:52 -0400
+Date: Mon, 27 Oct 2008 20:31:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] linux/video_{de,en}coder.h: cleanup for userspace
+Message-Id: <20081027203103.be272647.akpm@linux-foundation.org>
+In-Reply-To: <1225018064-3312-1-git-send-email-vapier@gentoo.org>
+References: <1225018064-3312-1-git-send-email-vapier@gentoo.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1225017451-19133-1-git-send-email-vapier@gentoo.org>
-	 <20081027202827.30e6c038.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 15022417f7100b2f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 27, 2008 at 11:28 PM, Andrew Morton wrote:
-> On Sun, 26 Oct 2008 06:37:31 -0400 Mike Frysinger wrote:
->> Move all the kernel-specific defines and includes into the __KERNEL__
->> section so that they don't get leaked into userspace.
->
-> checkpatch correctly instructs us to use linux/param.h, not asm/param.h.
+On Sun, 26 Oct 2008 06:47:44 -0400 Mike Frysinger <vapier@gentoo.org> wrote:
 
-i was just moving around existing code in an attempt to minimize
-possible breakage ;)
+> Make sure the linux/video_{de,en}coder.h header files include other header
+> files that they use (for types and structures).
+> 
 
-> --- a/include/linux/timex.h~linux-timexh-cleanup-for-userspace-checkpatch-fixes
-> +++ a/include/linux/timex.h
-> @@ -165,8 +165,8 @@ struct timex {
->  #ifdef __KERNEL__
->  #include <linux/compiler.h>
->  #include <linux/types.h>
-> +#include <linux/param.h>
->
-> -#include <asm/param.h>
->  #include <asm/timex.h>
->
->  /*
-> _
->
-> seems Obviously Safe to me.  Do you agree?
+checkpatch (amazing tool, and it's free!) said:
 
-Acked-by: Mike Frysinger <vapier@gentoo.org>
--mike
--mike
+ERROR: Don't use <linux/videodev.h>: see Documentation/feature-removal-schedule.txt
+#23: FILE: include/linux/video_decoder.h:5:
++#include <linux/videodev.h>
+
+so I'll drop this one.
+
+
