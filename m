@@ -1,139 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368AbYJ1XLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbYJ1XMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754368AbYJ1XLQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 19:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbYJ1XK6
+	id S1754546AbYJ1XMS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 19:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbYJ1XMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 19:10:58 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:53246 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753290AbYJ1XK5 (ORCPT
+	Tue, 28 Oct 2008 19:12:07 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:25819 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752332AbYJ1XMG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 19:10:57 -0400
-Message-ID: <49079BC8.6020106@fr.ibm.com>
-Date: Wed, 29 Oct 2008 00:10:00 +0100
-From: Daniel Lezcano <dlezcano@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Linux Containers <containers@lists.osdl.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: New version 0.4.0 of the Linux Container
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 28 Oct 2008 19:12:06 -0400
+Date: Tue, 28 Oct 2008 16:11:36 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>, lkml <linux-kernel@vger.kernel.org>
+Cc: ericvh@gmail.com, mfasheh@suse.com, dedekind@infradead.org
+Subject: Re: How do I printk <type> correctly?
+Message-Id: <20081028161136.c652b9fd.randy.dunlap@oracle.com>
+In-Reply-To: <20081023114133.GA30187@x200.localdomain>
+References: <20081023114133.GA30187@x200.localdomain>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The version 0.4.0 of the Linux Containers userspace tools has been released.
+On Thu, 23 Oct 2008 15:41:33 +0400 Alexey Dobriyan wrote:
 
-It is available at:
-
-https://sourceforge.net/projects/lxc/
-
-This version provides:
-
-  * the lxc commands can be used as a non-root user, that allows a 
-container to be ran without root privileges. This feature relies on the 
-file capabilities, without them the lxc commands should be run as the 
-root user
-
-  * the monitoring has been improved, so several readers can monitor the 
-same container state changes. The command line lxc-monitor can work with 
-regexp, so it is easy to specify several containers with a simple 
-regexp, or an extended regexp.
-
-ChangeLog between this version and the previous version:
-
-2008-10-28 23:08  dlezcano
-
-	* Makefile.am: Generate a ChangeLog, if possible, and copy it to
-	  the dist directory in order to be shipped with the release
-
-2008-10-28 23:06  dlezcano
-
-	* release.sh: Added a helper to generate the Changelog between two
-	  releases
-
-2008-10-26 23:06  dlezcano
-
-	* Makefile.am, configure.in, lxc.spec.in, src/lxc/Makefile.am,
-	  src/lxc/lxc.h: Fixed different compilation scheme by making
-	  /var/lxc directory relative to the installation prefix and by
-	  adding some extra path to search for the 'setcap' command.
-
-2008-10-25 00:08  dlezcano
-
-	* Makefile.am, configure.in: Added automatic generation of packages
-	  and repository tagging
-
-2008-10-25 00:06  dlezcano
-
-	* ChangeLog: Automatically generated now with cvs2cl command
-
-2008-10-24 23:56  dlezcano
-
-	* release.sh: Helper script to generate releases
-
-2008-10-24 23:33  dlezcano
-
-	* ChangeLog: Version lxc-0.4.0
-
-2008-10-24 22:24  dlezcano
-
-	* lxc.spec.in, src/lxc/Makefile.am: Added file capabilities to
-	  lxc-restart
-
-2008-10-24 22:14  dlezcano
-
-	* configure.in, lxc.spec.in, src/lxc/Makefile.am,
-	  src/lxc/destroy.c: Give the ability to non-root user to play with
-	  the containers. This feature relies on the file capabilities,
-	  when the lxc commands are installed, the sys/net admin
-	  capabilities are given to these files. These capabilities are not
-	  available for the application running inside the container.
-
-2008-10-24 22:11  dlezcano
-
-	* src/lxc/execute.c: Exit instead of returning in the child
-	  processes, otherwise the execution path of the child will be
-	  wrong in case of error.
-
-2008-10-23 15:09  legoater
-
-	* src/lxc/restart.c: removed opentty now useless and fixed pid of
-	  root process for restart
-
-2008-10-23 09:21  legoater
-
-	* configure.in: fix missing src/lxc/lxc-checkconfig
-
-2008-10-20 13:45  dlezcano
-
-	* src/lxc/: Makefile.am, lxc-checkconfig.in: This new command is a
-	  helper to check if the needed functionalities are compiled the
-	  kernel. It relies on /proc/config.gz, if it is not compiled, the
-	  command will simply fail.  If a feature is missing but not
-	  mandatory, "disabled" keyword will appear in yellow, if it is
-	  mandatory, it will appear in "red", otherwise the key word
-	  "enabled" will appear in green.
-
-2008-10-18 23:07  dlezcano
-
-	* src/lxc/: destroy.c, lxc.h, lxc_monitor.c, lxc_wait.c, monitor.c,
-	  monitor.h: These modifications improve the monitoring support of
-	  the container. Now several readers can attend the events from one
-	  or several containers.  The syntax of the command has been
-	  enhanced to interpret regular expressions.  If you want to
-	  monitor foo, lxc-monitor -n foo is the right command. If you want
-	  to monitor foo and bar, you should specify lxc-monitor -n
-	  "foo|bar", if you want to monitor all containers with the name
-	  beginning with 'foo', you have to specify lxc-monitor -n "foo.*".
-	  More complex regexp can be specified in accordance with the POSIX
-	  definitions, man regex (7).
-
-2008-10-15 09:30  dlezcano
-
-	* README: Updated with the cgroup section and fixed some typos
+> If variable is of Type	use	printk format specifier.
+> ---------------------------------------------------------
+> 		int			%d or %x
+> 		unsigned int		%u or %x
+> 		long			%ld ot %lx
+> 		unsigned long		%lu or %lx
+> 		long long		%lld or %llx
+> 		unsigned long long	%llu or %llx
+> 		size_t			%zu or %zx
+> 		ssize_t			%zd or %zx
+> 
+> Raw pointer value SHOULD be printed with %p.
+> 
+> u64 SHOULD be printed with %llu/%llx, (unsigned long long):
+> 
+> 	printk("%llu", (unsigned long long)u64_var);
+> 
+> s64 SHOULD be printed with %lld/%llx, (long long):
+> 
+> 	printk("%lld", (long long)s64_var);
+> 
+> If type is dependent on config option (sector_t), use format specifier
+> of biggest type and explicitly cast to it.
+> 
+> Reminder: sizeof() result is of type size_t.
+> 
+> Thank you for your cooperation.
+  and attention.
 
 
+Building for Alpha (cross-build) finds over 125 printk format warnings:
+
+net/9p/client.c:820: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'u64'
+net/9p/client.c:820: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'u64'
+net/9p/client.c:867: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'u64'
+net/9p/client.c:867: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'u64'
+net/9p/client.c:932: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'u64'
+net/9p/client.c:932: warning: format '%llx' expects type 'long long unsigned int', but argument 6 has type 'u64'
+net/9p/client.c:982: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'u64'
+net/9p/client.c:982: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'u64'
+net/9p/client.c:1025: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'u64'
+net/9p/client.c:1025: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'u64'
+net/9p/client.c:1227: warning: format '%llx' expects type 'long long unsigned int', but argument 7 has type 'u64'
+net/9p/client.c:1227: warning: format '%llx' expects type 'long long unsigned int', but argument 12 has type 'u64'
+net/9p/client.c:1227: warning: format '%llx' expects type 'long long unsigned int', but argument 8 has type 'u64'
+net/9p/client.c:1227: warning: format '%llx' expects type 'long long unsigned int', but argument 13 has type 'u64'
+net/9p/client.c:1252: warning: format '%llx' expects type 'long long unsigned int', but argument 7 has type 'u64'
+net/9p/client.c:1252: warning: format '%llx' expects type 'long long unsigned int', but argument 12 has type 'u64'
+net/9p/client.c:1252: warning: format '%llx' expects type 'long long unsigned int', but argument 8 has type 'u64'
+net/9p/client.c:1252: warning: format '%llx' expects type 'long long unsigned int', but argument 13 has type 'u64'
+
+fs/ext4/balloc.c:615: warning: format '%lld' expects type 'long long int', but argument 2 has type 's64'
+fs/ext4/inode.c:1833: warning: format '%lld' expects type 'long long int', but argument 2 has type 's64'
+fs/ext4/inode.c:1835: warning: format '%lld' expects type 'long long int', but argument 2 has type 's64'
+
+net/mac80211/rc80211_minstrel_debugfs.c:98: warning: format '%8llu' expects type 'long long unsigned int', but argument 11 has type 'u64'
+net/mac80211/rc80211_minstrel_debugfs.c:98: warning: format '%8llu' expects type 'long long unsigned int', but argument 12 has type 'u64'
+net/mac80211/rc80211_minstrel_debugfs.c:98: warning: format '%8llu' expects type 'long long unsigned int', but argument 11 has type 'u64'
+net/mac80211/rc80211_minstrel_debugfs.c:98: warning: format '%8llu' expects type 'long long unsigned int', but argument 12 has type 'u64'
+
+fs/ocfs2/xattr.c:2400: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:2400: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:2400: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:2424: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:2424: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:2424: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:2443: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:2443: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:2443: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:2779: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:2779: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:2779: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:2942: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:2942: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:2942: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3060: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3060: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:3060: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3060: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:3060: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3060: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:3189: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3189: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:3189: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3189: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:3189: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3189: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:3360: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3360: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:3360: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3360: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:3360: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3360: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:3431: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3431: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:3431: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3431: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:3431: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3431: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:3561: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3561: warning: format '%llu' expects type 'long long unsigned int', but argument 8 has type 'u64'
+fs/ocfs2/xattr.c:3561: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3561: warning: format '%llu' expects type 'long long unsigned int', but argument 8 has type 'u64'
+fs/ocfs2/xattr.c:3561: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3561: warning: format '%llu' expects type 'long long unsigned int', but argument 8 has type 'u64'
+fs/ocfs2/xattr.c:3629: warning: format '%llu' expects type 'long long unsigned int', but argument 8 has type 'u64'
+fs/ocfs2/xattr.c:3629: warning: format '%llu' expects type 'long long unsigned int', but argument 8 has type 'u64'
+fs/ocfs2/xattr.c:3629: warning: format '%llu' expects type 'long long unsigned int', but argument 8 has type 'u64'
+fs/ocfs2/xattr.c:3718: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:3718: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:3718: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+fs/ocfs2/xattr.c:3763: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3763: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+fs/ocfs2/xattr.c:3763: warning: format '%llu' expects type 'long long unsigned int', but argument 6 has type 'u64'
+
+fs/ubifs/journal.c:693: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/journal.c:1131: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/dir.c:163: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/tnc.c:2680: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/tnc.c:2700: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
+fs/ubifs/replay.c:1066: warning: format '%lu' expects type 'long unsigned int', but argument 7 has type 'ino_t'
+fs/ubifs/orphan.c:108: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/orphan.c:135: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/orphan.c:142: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/orphan.c:154: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/orphan.c:159: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/orphan.c:451: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/orphan.c:539: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/orphan.c:612: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/orphan.c:843: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/orphan.c:856: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/recovery.c:1438: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/recovery.c:1443: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/recovery.c:1475: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/recovery.c:1495: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/debug.c:105: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
+fs/ubifs/debug.c:105: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
+fs/ubifs/debug.c:110: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
+fs/ubifs/debug.c:110: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
+fs/ubifs/debug.c:114: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
+fs/ubifs/debug.c:114: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
+fs/ubifs/debug.c:118: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
+fs/ubifs/debug.c:118: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
+fs/ubifs/debug.c:1591: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/debug.c:1671: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/debug.c:1674: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
+fs/ubifs/debug.c:1680: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/debug.c:1699: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
+fs/ubifs/debug.c:1788: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
+fs/ubifs/debug.c:1821: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
+fs/ubifs/debug.c:1833: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
+fs/ubifs/debug.c:1924: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/debug.c:1932: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/debug.c:1938: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/debug.c:1945: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/debug.c:1953: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/debug.c:1960: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/debug.c:1967: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/debug.c:1973: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/debug.c:1988: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+fs/ubifs/debug.c:1991: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
+fs/ubifs/debug.c:2009: warning: format '%lu' expects type 'long unsigned int', but argument 2 has type 'ino_t'
+
+drivers/isdn/sc/shmem.c:57: warning: format '%d' expects type 'int', but argument 3 has type 'size_t'
+drivers/net/mlx4/en_rx.c:289: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'dma_addr_t'
+drivers/net/mlx4/en_netdev.c:1002: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'u64'
+
+
+---
+~Randy
