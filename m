@@ -1,502 +1,533 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbYJ1MXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbYJ1Mer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753944AbYJ1MXJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 08:23:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbYJ1MWy
+	id S1753837AbYJ1Mer (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 08:34:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbYJ1Mef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 08:22:54 -0400
-Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:34075 "EHLO
-	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751881AbYJ1MWx (ORCPT
+	Tue, 28 Oct 2008 08:34:35 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:26006 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752640AbYJ1Meb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 08:22:53 -0400
-Date: Tue, 28 Oct 2008 11:16:22 +0000
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
-To: Zhao Yakui <yakui.zhao@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Message-ID: <4FFABF28C8%linux@youmustbejoking.demon.co.uk>
-In-Reply-To: <1225186966.5189.143.camel@yakui_zhao.sh.intel.com>
-References: <alpine.LFD.2.00.0810261221350.3386@nehalem.linux-foundation.org> 
- <4FFA7B13E0%linux@youmustbejoking.demon.co.uk> 
- <1225186966.5189.143.camel@yakui_zhao.sh.intel.com>
-Mail-Followup-To: Zhao Yakui <yakui.zhao@intel.com>,
- linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
- Darren Salt <linux@youmustbejoking.demon.co.uk>
-User-Agent: Gemini/2.29m (Qt/3.3.8b) (Linux-x86_64)
-X-SDate: Tue, 5537 Sep 1993 11:16:22 +0000
+	Tue, 28 Oct 2008 08:34:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=en1uIQbXuMHQ/8Hup5pdaM3cu1eqvRLtlnEVjXqXlLPYH4K2duQSJ4/TARay9UrozV
+         xjKXGMDfO8KGZmpBTLx9QSATozmYiK8re5gfVdEUzjSY46FkM/NkW0I26RdSb57Kt/ou
+         rAdGUr6+QZlVcVBXT7R9IZFt4LrKNfAQCPnSQ=
+Message-ID: <517f3f820810280534y6d7dbce9kf026474d944e0cba@mail.gmail.com>
+Date: Tue, 28 Oct 2008 07:34:29 -0500
+From: "Michael Kerrisk" <mtk.manpages@gmail.com>
+To: "Ulrich Drepper" <drepper@redhat.com>
+Subject: Re: [PATCH] reintroduce accept4
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, linux-api@vger.kernel.org,
+       linux-man@vger.kernel.org, "Davide Libenzi" <davidel@xmailserver.org>,
+       netdev <netdev@vger.kernel.org>, "Roland McGrath" <roland@redhat.com>,
+       "Oleg Nesterov" <oleg@tv-sign.ru>, "Christoph Hellwig" <hch@lst.de>,
+       "David Miller" <davem@davemloft.net>, "Alan Cox" <alan@redhat.com>,
+       "Jakub Jelinek" <jakub@redhat.com>
+In-Reply-To: <200810261641.m9QGfotr024285@hs20-bc2-1.build.redhat.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="1007955397--20583170--1714998121"
-X-SA-Exim-Connect-IP: 192.168.0.5
-X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
-Subject: Re: [2.6.28-rc2] EeePC ACPI errors & exceptions
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on pentagram.youmustbejoking.demon.co.uk)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200810261641.m9QGfotr024285@hs20-bc2-1.build.redhat.com>
+X-Google-Sender-Auth: ffa83a37eaadedb5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message is in MIME format.
+[linux-api + many indiiduals added to CC]
 
---1007955397--20583170--1714998121
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Ulrich,
 
-I demand that Zhao Yakui may or may not have written...
+On Sun, Oct 26, 2008 at 11:41 AM, Ulrich Drepper <drepper@redhat.com> wrote:
+> This patch reintroduces accept4, replacing paccept.  It's easy to see that
+> the patch only removes code and then redirects existing code away from the
+> removed functions.  Since the paccept code sans signal handling was never
+> in question I think there is no reason to quarantine the patch first.
 
-> On Mon, 2008-10-27 at 15:52 -0700, Darren Salt wrote:
->> EeePC 901, BIOS revision 1603, current Debian lenny; running on AC.
->> I've noticed the following errors & exceptions, apparently coinciding =
-with
->> the startup of xfce4-sensors-plugin:
+When you (re)submit a patch:
 
->> ACPI: EC: missing confirmations, switch off interrupt mode.
->> ACPI Exception (evregion-0419): AE_TIME, Returned by Handler for [Embe=
-ddedControl] [20080926]
->> ACPI Error (psparse-0524): Method parse/execution failed [\_SB_.PCI0.S=
-BRG.EC0_.BST2] (Node f7030d38), AE_TIME
->> ACPI Error (psparse-0524): Method parse/execution failed [\_SB_.PCI0.C=
-BST] (Node f70336f8), AE_TIME
->> ACPI Error (psparse-0524): Method parse/execution failed [\_SB_.PCI0.B=
-AT0._BST] (Node f7031c48), AE_TIME
->> ACPI Exception (battery-0360): AE_TIME, Evaluating _BST [20080926]
+1. Please take the trouble to CC interested parties.  For example, the
+people CCed in recent threads that discussed earlier versions of the
+the patch.  This is basic LKML basic etiquette, since almost no one
+reads all LKML, or reads it hourly.  Doing this allows interested
+prties to comment on the patch, and also avoids patches hitting the
+kernel "under the radar".
 
-> Will you please try the attached patch on the 2.6.28-rc2 and see whethe=
-r
-> the issue still exists?
+2. Don't assume anyone has cached earlier discussions of the topic.
+Write a clear, complete description of the patch tht could b red by
+someone new to the topic, something like a summary of
+http://lwn.net/Articles/281965/ and http://udrepper.livejournal.com/20407.html
 
-> After the test, please attach the output of dmesg.
+3. Explain what changes have been made from earlier versions of the
+patch, and why.
+E.g., some discussion thatsummarizes this:
+http://thread.gmane.org/gmane.linux.network/106071
 
-I later noticed that ACPI functions (lid, hot keys etc.) were effectively=
+4. CC linux-api@vger.kernel.org on patches thatare API changes.  This
+requirement was added to SubmitChecklist in the last few weeks.
 
-disabled by that bug =E2=80=93 acpi_listen reported nothing at all.
+5. CC me or linux-man@vger.kernel.org, so that something makes its way
+into man-pages.
 
-With the patch, those ACPI errors are gone and the ACPI functions work ag=
-ain.
-I see no other significant differences, but output is attached regardless=
+Cheers,
 
-along with an ACPI dump. (rt2860sta is also present.)
+Michael
 
-(This leaves only the I/O resource conflict; but, unlike this, that's als=
-o
-present in 2.6.27, doesn't seem to cause any harm, and looks like it's
-specific to BIOS rev. 1603 and possibly others > 1301.)
+> I've updated the test program which now looks as follows:
+>
+> #include <fcntl.h>
+> #include <pthread.h>
+> #include <stdio.h>
+> #include <unistd.h>
+> #include <netinet/in.h>
+> #include <sys/socket.h>
+> #include <sys/syscall.h>
+>
+> #ifdef __x86_64__
+> #define __NR_accept4 288
+> #define SOCK_CLOEXEC O_CLOEXEC
+> #elif __i386__
+> #define SYS_ACCEPT4     18
+> #define USE_SOCKETCALL 1
+> #define SOCK_CLOEXEC O_CLOEXEC
+> #else
+> #error "define syscall numbers for this architecture"
+> #endif
+>
+> #define PORT 57392
+>
+> static pthread_barrier_t b;
+>
+> static void *
+> tf (void *arg)
+> {
+>  pthread_barrier_wait (&b);
+>  int s = socket (AF_INET, SOCK_STREAM, 0);
+>  struct sockaddr_in sin;
+>  sin.sin_family = AF_INET;
+>  sin.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
+>  sin.sin_port = htons (PORT);
+>  connect (s, (const struct sockaddr *) &sin, sizeof (sin));
+>  close (s);
+>  pthread_barrier_wait (&b);
+>
+>  pthread_barrier_wait (&b);
+>  s = socket (AF_INET, SOCK_STREAM, 0);
+>  sin.sin_family = AF_INET;
+>  sin.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
+>  sin.sin_port = htons (PORT + 1);
+>  connect (s, (const struct sockaddr *) &sin, sizeof (sin));
+>  close (s);
+>  return NULL;
+> }
+>
+> int
+> main (void)
+> {
+>  alarm (5);
+>
+>  int status = 0;
+>
+>  pthread_barrier_init (&b, NULL, 2);
+>
+>  pthread_t th;
+>  if (pthread_create (&th, NULL, tf, NULL) != 0)
+>    {
+>      puts ("pthread_create failed");
+>      status = 1;
+>    }
+>  else
+>    {
+>      int s = socket (AF_INET, SOCK_STREAM, 0);
+>      int fl = 1;
+>      setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &fl, sizeof (fl));
+>      struct sockaddr_in sin;
+>      sin.sin_family = AF_INET;
+>      sin.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
+>      sin.sin_port = htons (PORT);
+>      bind (s, (struct sockaddr *) &sin, sizeof (sin));
+>      listen (s, SOMAXCONN);
+>
+>      pthread_barrier_wait (&b);
+>
+>      int s2 = accept (s, NULL, 0);
+>      if (s2 < 0)
+>        {
+>          puts ("accept failed");
+>          status = 1;
+>        }
+>      else
+>        {
+>          int fl = fcntl (s2, F_GETFD);
+>          if ((fl & FD_CLOEXEC) != 0)
+>            {
+>              puts ("accept did set CLOEXEC");
+>              status = 1;
+>            }
+>
+>          close (s2);
+>        }
+>
+>      close (s);
+>
+>      pthread_barrier_wait (&b);
+>
+>      sin.sin_family = AF_INET;
+>      sin.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
+>      sin.sin_port = htons (PORT + 1);
+>      s = socket (AF_INET, SOCK_STREAM, 0);
+>      bind (s, (struct sockaddr *) &sin, sizeof (sin));
+>      listen (s, SOMAXCONN);
+>
+>      pthread_barrier_wait (&b);
+>
+> #if USE_SOCKETCALL
+>      s2 = syscall (__NR_socketcall, SYS_ACCEPT4, s, NULL, 0, SOCK_CLOEXEC);
+> #else
+>      s2 = syscall (__NR_accept4, s, NULL, 0, SOCK_CLOEXEC);
+> #endif
+>      if (s2 < 0)
+>        {
+>          puts ("accept4 failed");
+>          status = 1;
+>        }
+>      else
+>        {
+>          int fl = fcntl (s2, F_GETFD);
+>          if ((fl & FD_CLOEXEC) == 0)
+>            {
+>              puts ("accept4 did not set CLOEXEC");
+>              status = 1;
+>            }
+>
+>          close (s2);
+>        }
+>
+>      close (s);
+>    }
+>
+>  return status;
+> }
+>
+>
+>  arch/x86/include/asm/unistd_64.h |    4 -
+>  include/linux/net.h              |    6 --
+>  include/linux/syscalls.h         |    3 -
+>  kernel/sys_ni.c                  |    2
+>  net/compat.c                     |   50 ++----------------------
+>  net/socket.c                     |   80 ++++-----------------------------------
+>  6 files changed, 21 insertions(+), 124 deletions(-)
+>
+>
+> Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+>
+> diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd_64.h
+> index 834b2c1..d2e415e 100644
+> --- a/arch/x86/include/asm/unistd_64.h
+> +++ b/arch/x86/include/asm/unistd_64.h
+> @@ -639,8 +639,8 @@ __SYSCALL(__NR_fallocate, sys_fallocate)
+>  __SYSCALL(__NR_timerfd_settime, sys_timerfd_settime)
+>  #define __NR_timerfd_gettime                   287
+>  __SYSCALL(__NR_timerfd_gettime, sys_timerfd_gettime)
+> -#define __NR_paccept                           288
+> -__SYSCALL(__NR_paccept, sys_paccept)
+> +#define __NR_accept4                           288
+> +__SYSCALL(__NR_accept4, sys_accept4)
+>  #define __NR_signalfd4                         289
+>  __SYSCALL(__NR_signalfd4, sys_signalfd4)
+>  #define __NR_eventfd2                          290
+> diff --git a/include/linux/net.h b/include/linux/net.h
+> index 6dc14a2..4515efa 100644
+> --- a/include/linux/net.h
+> +++ b/include/linux/net.h
+> @@ -40,7 +40,7 @@
+>  #define SYS_GETSOCKOPT 15              /* sys_getsockopt(2)            */
+>  #define SYS_SENDMSG    16              /* sys_sendmsg(2)               */
+>  #define SYS_RECVMSG    17              /* sys_recvmsg(2)               */
+> -#define SYS_PACCEPT    18              /* sys_paccept(2)               */
+> +#define SYS_ACCEPT4    18              /* sys_accept4(2)               */
+>
+>  typedef enum {
+>        SS_FREE = 0,                    /* not allocated                */
+> @@ -100,7 +100,7 @@ enum sock_type {
+>  * remaining bits are used as flags. */
+>  #define SOCK_TYPE_MASK 0xf
+>
+> -/* Flags for socket, socketpair, paccept */
+> +/* Flags for socket, socketpair, accept4 */
+>  #define SOCK_CLOEXEC   O_CLOEXEC
+>  #ifndef SOCK_NONBLOCK
+>  #define SOCK_NONBLOCK  O_NONBLOCK
+> @@ -223,8 +223,6 @@ extern int       sock_map_fd(struct socket *sock, int flags);
+>  extern struct socket *sockfd_lookup(int fd, int *err);
+>  #define                     sockfd_put(sock) fput(sock->file)
+>  extern int          net_ratelimit(void);
+> -extern long         do_accept(int fd, struct sockaddr __user *upeer_sockaddr,
+> -                              int __user *upeer_addrlen, int flags);
+>
+>  #define net_random()           random32()
+>  #define net_srandom(seed)      srandom32((__force u32)seed)
+> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+> index d6ff145..04fb47b 100644
+> --- a/include/linux/syscalls.h
+> +++ b/include/linux/syscalls.h
+> @@ -410,8 +410,7 @@ asmlinkage long sys_getsockopt(int fd, int level, int optname,
+>  asmlinkage long sys_bind(int, struct sockaddr __user *, int);
+>  asmlinkage long sys_connect(int, struct sockaddr __user *, int);
+>  asmlinkage long sys_accept(int, struct sockaddr __user *, int __user *);
+> -asmlinkage long sys_paccept(int, struct sockaddr __user *, int __user *,
+> -                           const __user sigset_t *, size_t, int);
+> +asmlinkage long sys_accept4(int, struct sockaddr __user *, int __user *, int);
+>  asmlinkage long sys_getsockname(int, struct sockaddr __user *, int __user *);
+>  asmlinkage long sys_getpeername(int, struct sockaddr __user *, int __user *);
+>  asmlinkage long sys_send(int, void __user *, size_t, unsigned);
+> diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+> index a77b27b..e14a232 100644
+> --- a/kernel/sys_ni.c
+> +++ b/kernel/sys_ni.c
+> @@ -31,7 +31,7 @@ cond_syscall(sys_socketpair);
+>  cond_syscall(sys_bind);
+>  cond_syscall(sys_listen);
+>  cond_syscall(sys_accept);
+> -cond_syscall(sys_paccept);
+> +cond_syscall(sys_accept4);
+>  cond_syscall(sys_connect);
+>  cond_syscall(sys_getsockname);
+>  cond_syscall(sys_getpeername);
+> diff --git a/net/compat.c b/net/compat.c
+> index 67fb6a3..50ce0a9 100644
+> --- a/net/compat.c
+> +++ b/net/compat.c
+> @@ -725,7 +725,7 @@ EXPORT_SYMBOL(compat_mc_getsockopt);
+>  static unsigned char nas[19]={AL(0),AL(3),AL(3),AL(3),AL(2),AL(3),
+>                                AL(3),AL(3),AL(4),AL(4),AL(4),AL(6),
+>                                AL(6),AL(2),AL(5),AL(5),AL(3),AL(3),
+> -                               AL(6)};
+> +                               AL(4)};
+>  #undef AL
+>
+>  asmlinkage long compat_sys_sendmsg(int fd, struct compat_msghdr __user *msg, unsigned flags)
+> @@ -738,52 +738,13 @@ asmlinkage long compat_sys_recvmsg(int fd, struct compat_msghdr __user *msg, uns
+>        return sys_recvmsg(fd, (struct msghdr __user *)msg, flags | MSG_CMSG_COMPAT);
+>  }
+>
+> -asmlinkage long compat_sys_paccept(int fd, struct sockaddr __user *upeer_sockaddr,
+> -                                  int __user *upeer_addrlen,
+> -                                  const compat_sigset_t __user *sigmask,
+> -                                  compat_size_t sigsetsize, int flags)
+> -{
+> -       compat_sigset_t ss32;
+> -       sigset_t ksigmask, sigsaved;
+> -       int ret;
+> -
+> -       if (sigmask) {
+> -               if (sigsetsize != sizeof(compat_sigset_t))
+> -                       return -EINVAL;
+> -               if (copy_from_user(&ss32, sigmask, sizeof(ss32)))
+> -                       return -EFAULT;
+> -               sigset_from_compat(&ksigmask, &ss32);
+> -
+> -               sigdelsetmask(&ksigmask, sigmask(SIGKILL)|sigmask(SIGSTOP));
+> -               sigprocmask(SIG_SETMASK, &ksigmask, &sigsaved);
+> -       }
+> -
+> -       ret = do_accept(fd, upeer_sockaddr, upeer_addrlen, flags);
+> -
+> -       if (ret == -ERESTARTNOHAND) {
+> -               /*
+> -                * Don't restore the signal mask yet. Let do_signal() deliver
+> -                * the signal on the way back to userspace, before the signal
+> -                * mask is restored.
+> -                */
+> -               if (sigmask) {
+> -                       memcpy(&current->saved_sigmask, &sigsaved,
+> -                              sizeof(sigsaved));
+> -                       set_restore_sigmask();
+> -               }
+> -       } else if (sigmask)
+> -               sigprocmask(SIG_SETMASK, &sigsaved, NULL);
+> -
+> -       return ret;
+> -}
+> -
+>  asmlinkage long compat_sys_socketcall(int call, u32 __user *args)
+>  {
+>        int ret;
+>        u32 a[6];
+>        u32 a0, a1;
+>
+> -       if (call < SYS_SOCKET || call > SYS_PACCEPT)
+> +       if (call < SYS_SOCKET || call > SYS_ACCEPT4)
+>                return -EINVAL;
+>        if (copy_from_user(a, args, nas[call]))
+>                return -EFAULT;
+> @@ -804,7 +765,7 @@ asmlinkage long compat_sys_socketcall(int call, u32 __user *args)
+>                ret = sys_listen(a0, a1);
+>                break;
+>        case SYS_ACCEPT:
+> -               ret = do_accept(a0, compat_ptr(a1), compat_ptr(a[2]), 0);
+> +               ret = sys_accept4(a0, compat_ptr(a1), compat_ptr(a[2]), 0);
+>                break;
+>        case SYS_GETSOCKNAME:
+>                ret = sys_getsockname(a0, compat_ptr(a1), compat_ptr(a[2]));
+> @@ -844,9 +805,8 @@ asmlinkage long compat_sys_socketcall(int call, u32 __user *args)
+>        case SYS_RECVMSG:
+>                ret = compat_sys_recvmsg(a0, compat_ptr(a1), a[2]);
+>                break;
+> -       case SYS_PACCEPT:
+> -               ret = compat_sys_paccept(a0, compat_ptr(a1), compat_ptr(a[2]),
+> -                                        compat_ptr(a[3]), a[4], a[5]);
+> +       case SYS_ACCEPT4:
+> +               ret = sys_accept4(a0, compat_ptr(a1), compat_ptr(a[2]), a[3]);
+>                break;
+>        default:
+>                ret = -EINVAL;
+> diff --git a/net/socket.c b/net/socket.c
+> index 2b7a4b5..8e72806 100644
+> --- a/net/socket.c
+> +++ b/net/socket.c
+> @@ -1427,8 +1427,8 @@ asmlinkage long sys_listen(int fd, int backlog)
+>  *     clean when we restucture accept also.
+>  */
+>
+> -long do_accept(int fd, struct sockaddr __user *upeer_sockaddr,
+> -              int __user *upeer_addrlen, int flags)
+> +asmlinkage long sys_accept4(int fd, struct sockaddr __user *upeer_sockaddr,
+> +                           int __user *upeer_addrlen, int flags)
+>  {
+>        struct socket *sock, *newsock;
+>        struct file *newfile;
+> @@ -1511,66 +1511,10 @@ out_fd:
+>        goto out_put;
+>  }
+>
+> -#if 0
+> -#ifdef HAVE_SET_RESTORE_SIGMASK
+> -asmlinkage long sys_paccept(int fd, struct sockaddr __user *upeer_sockaddr,
+> -                           int __user *upeer_addrlen,
+> -                           const sigset_t __user *sigmask,
+> -                           size_t sigsetsize, int flags)
+> -{
+> -       sigset_t ksigmask, sigsaved;
+> -       int ret;
+> -
+> -       if (sigmask) {
+> -               /* XXX: Don't preclude handling different sized sigset_t's.  */
+> -               if (sigsetsize != sizeof(sigset_t))
+> -                       return -EINVAL;
+> -               if (copy_from_user(&ksigmask, sigmask, sizeof(ksigmask)))
+> -                       return -EFAULT;
+> -
+> -               sigdelsetmask(&ksigmask, sigmask(SIGKILL)|sigmask(SIGSTOP));
+> -               sigprocmask(SIG_SETMASK, &ksigmask, &sigsaved);
+> -        }
+> -
+> -       ret = do_accept(fd, upeer_sockaddr, upeer_addrlen, flags);
+> -
+> -       if (ret < 0 && signal_pending(current)) {
+> -               /*
+> -                * Don't restore the signal mask yet. Let do_signal() deliver
+> -                * the signal on the way back to userspace, before the signal
+> -                * mask is restored.
+> -                */
+> -               if (sigmask) {
+> -                       memcpy(&current->saved_sigmask, &sigsaved,
+> -                              sizeof(sigsaved));
+> -                       set_restore_sigmask();
+> -               }
+> -       } else if (sigmask)
+> -               sigprocmask(SIG_SETMASK, &sigsaved, NULL);
+> -
+> -       return ret;
+> -}
+> -#else
+> -asmlinkage long sys_paccept(int fd, struct sockaddr __user *upeer_sockaddr,
+> -                           int __user *upeer_addrlen,
+> -                           const sigset_t __user *sigmask,
+> -                           size_t sigsetsize, int flags)
+> -{
+> -       /* The platform does not support restoring the signal mask in the
+> -        * return path.  So we do not allow using paccept() with a signal
+> -        * mask.  */
+> -       if (sigmask)
+> -               return -EINVAL;
+> -
+> -       return do_accept(fd, upeer_sockaddr, upeer_addrlen, flags);
+> -}
+> -#endif
+> -#endif
+> -
+>  asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
+>                           int __user *upeer_addrlen)
+>  {
+> -       return do_accept(fd, upeer_sockaddr, upeer_addrlen, 0);
+> +       return sys_accept4(fd, upeer_sockaddr, upeer_addrlen, 0);
+>  }
+>
+>  /*
+> @@ -2097,7 +2041,7 @@ static const unsigned char nargs[19]={
+>        AL(0),AL(3),AL(3),AL(3),AL(2),AL(3),
+>        AL(3),AL(3),AL(4),AL(4),AL(4),AL(6),
+>        AL(6),AL(2),AL(5),AL(5),AL(3),AL(3),
+> -       AL(6)
+> +       AL(4)
+>  };
+>
+>  #undef AL
+> @@ -2116,7 +2060,7 @@ asmlinkage long sys_socketcall(int call, unsigned long __user *args)
+>        unsigned long a0, a1;
+>        int err;
+>
+> -       if (call < 1 || call > SYS_PACCEPT)
+> +       if (call < 1 || call > SYS_ACCEPT4)
+>                return -EINVAL;
+>
+>        /* copy_from_user should be SMP safe. */
+> @@ -2144,9 +2088,8 @@ asmlinkage long sys_socketcall(int call, unsigned long __user *args)
+>                err = sys_listen(a0, a1);
+>                break;
+>        case SYS_ACCEPT:
+> -               err =
+> -                   do_accept(a0, (struct sockaddr __user *)a1,
+> -                             (int __user *)a[2], 0);
+> +               err = sys_accept4(a0, (struct sockaddr __user *)a1,
+> +                                 (int __user *)a[2], 0);
+>                break;
+>        case SYS_GETSOCKNAME:
+>                err =
+> @@ -2193,12 +2136,9 @@ asmlinkage long sys_socketcall(int call, unsigned long __user *args)
+>        case SYS_RECVMSG:
+>                err = sys_recvmsg(a0, (struct msghdr __user *)a1, a[2]);
+>                break;
+> -       case SYS_PACCEPT:
+> -               err =
+> -                   sys_paccept(a0, (struct sockaddr __user *)a1,
+> -                               (int __user *)a[2],
+> -                               (const sigset_t __user *) a[3],
+> -                               a[4], a[5]);
+> +       case SYS_ACCEPT4:
+> +               err = sys_accept4(a0, (struct sockaddr __user *)a1,
+> +                                 (int __user *)a[2], a[3]);
+>                break;
+>        default:
+>                err = -EINVAL;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-[snip]
---=20
-| Darren Salt    | linux or ds at              | nr. Ashington, | Toon
-| RISC OS, Linux | youmustbejoking,demon,co,uk | Northumberland | Army
-| + Use more efficient products. Use less.          BE MORE ENERGY EFFICI=
-ENT.
 
-I have 240 airconditioning in my car; 2 windows down at 40mph.
 
---1007955397--20583170--1714998121
-Content-Type: application/x-gzip; name="eee901-1603.acpi.gz"
-Content-Disposition: attachment; filename="eee901-1603.acpi.gz"
-Content-Transfer-Encoding: base64
-
-H4sIAOkDB0kAA+18bWwc17nemd0lOTy7JJersSTrw1rLX0ri2Du7/HTdmDuzH1xzl9zsGYm0
-V9XOUnK0lBNnrmLLlgk1pJxryY6LKKKNFsVFOxS2LRCkqBv0R3+09/pHW1ygF6gToEB/tLhO
-b1GkfxoDTVu3uNfs+5yZWQ6/HMVA/pW23vO+73m/zpn3nDnnzMwy9tv/CqJg/SfBmKLVMxl9
-kkmYyWRQV5m3qkdG+9LJ4616o9V8K45KJaky1t8P1Kyf1cN12UivLkt1WbVQn8rwNSqmM/yO
-mq9XTEWt1wwRZyqV1XmqK9eJXItRSeSMKmpGlVFddip+BjK5TDyjquKsWORbat2sGAmK6xNg
-VWAxKJC5WHPNqCwIlrj0yZvP8a3mek0FrQihtwhkAXIAYy2FxajGSloL9Vq6sVAT6VpZNwCq
-BLLAstU0Uwu1/JI6W7fyabNuZAB0gCxALp0XwlDzCxaB/JKRFrVKSS1YogigA2TVWr04r1r1
-WknVRhqNykLMGULBmjrRZD3qDF2lgmiVOqbGtFMtdJA72HH4TwpGeWpTdfhPgTgdCKgL4lxj
-S1s4siBKVeYO3d2QjC6gO7whbQQKimTODDVTrQVRabvHUAwtrrxy6buvfy+dxfV1eEwKPbi7
-SmcOkzUn99SkRf2La7NB7fE9tU/1NE/tUxe2vCeiCb9mc37AfbxmWrMk0BqqrVy8+t3vffdb
-r6YD0XkraNVmoc+dPliyVnwmXVv59rdfeuWVlde+ky5eWnl15buvkHJEBnCkp1ldeeW1N4gf
-BV/2tDYfQ23EVT+41bm10mVXb3UUWzXOljKjEVnqVDodMJwVkPeO2dds94G7G2/dBtNmstRt
-1mVdGg6NxXoqFmFMmxsoExFxOrfBY8y5LrOX2Tfs60hhHvHRXItHfXSsxWPMdkdXrysrzGbO
-itRV2OZX3rQV2z364w0kiyIhj6zbQTW/GaBdFOpifs6LorlWKBoZBQNXaa7HPYIySpUVuiKH
-csSr0SNUM51M3n4m1hJGi5qSyaSKyVRqKJbY2lIYq87P5VlAKUQZLDXsUTxCpLlNRoks+LKn
-pKbZo5RQ3UOyzvCp4zt8nNhFhT2e2OnxxE6PD0nZok+dlHZme5Tvf9ijdtg56dkJfEb8CNQ8
-uiI/nErF/a5gPBng1NrRVCLoBsZTPSLK+CFP6hQ0UgGu9PgPgT/q4cdDVk/swLc9nAh7OBH2
-8BCkNA8/Ce0jAS69JYLG9rRPSm3fR0T6wxUfS43FiBff2vI7X+J+1yeABx3mEV63o4PGUk/G
-UoNSE3YlJiPnnhY8eyiihq/xHb6MkC8z7KsQ9uVdjPGwr9Ger9S2r0PbvmS7Jnb4MkO+CmFf
-+bAvQ/qaCPtK9Xwd2vaV3PY1Cl+TO3wVQr7yYV9G2JcpfU2GfR3q+Upu+xrd9pWCr6kvfb2m
-fufrNf2lr9f073q9RH50kPc/8tl/PHqd9YOkf0aAmAFSCJBigJQCpBwgs82b73wSpQVGRm3N
-VgqJ/MdcVVv5QoNpgxeMebpzdpkWbxnGPOuCVFtnKwWmHaZlkMVcjttwF8O/i+lQe6glcgXm
-pnZOxF0e2Yx1eVRtmZ6HaPPm12vmbCtwmVCkWc5JoiFGR/nw24M0MDM//5xuhew60/rn65ZQ
-qKCZW2nePFXP1LMySloVKUwboWgWWRc3FD7IY56AHgg8tFMgDoH1DyPCaJQDkVNMSwm4cJS6
-0IWERe2kgDuHgXCTd8vz50TcOvx2fbFh0E1hrV4TGQXrO6ztmusnJc14wzIFrbpIlQq1vmhY
-ChtortGaqahghcfV5vphSbEYLCvsFHwq7HhzjZaHSwrWiFgfNtef8OmzIl2uC1qmUVE9l2Yz
-MaogcobWkZVz6ebNr9F18Hoznv/Y68Sj/IGyQhqMRcqKy1wqT8eoL5s352O0DisEfR9hnvwU
-H/9qMlZW5DI5WVbW2Tpj0bJyi92iPi4r77B3JP0j9iNJf8Q+YiwNe49ZtUbvUiq+uSQfKisz
-bIYWracV6fYx6pheksXDYg6ucuQ0UyBm9NVFdi6Qi/aSJhrXHmwJK8+uK5zbbnwVy1paVfCR
-Lgu12KZ1AcK7xC5ReToiXS9QR2drns2Fp3hM2kyNRkEwAixCDkYObTtI7OtA5X2nWRIGT4v6
-XCOIUfWrhzgvK23WZl5DHjMX6j2ZRCzU3k/Zp9TFp73eqz1bNDPbI2HQk3uAp8rKMluWbfkW
-+5a0qbbK9SI/oTaKZZMStkVlxI1vdHjUWQFPe6Ro5s8x98gGqC03fvcDkjlHA1DZjNLyC9zm
-WtFcaNA0QruG/CDwUTarGRaNbAI6QBYgBzAGMA4wATAJMAUwTUCHhg4NHRo6NHRo6NDQoaFD
-Q4eGDo0sNLLQyEIjC40sNLLQyE7QwND9iE4ZFg0mAjpAFiAHMAYwDjABMEmrtnzM1zkj0AqB
-Vgi0QqAVAq0QaIVAKwRaIdAKgVYItKK5/qRvISNMWDBhwYQFExZMWDBhwcwgxglfesqqkTQB
-HSALkAMYAxgHmACYBKAV5Xqxz1ecEVAUUBRQFFAUUBRQFFAUUBRQJECB1nRo6NDQoaFDg7qb
-JgnP6kxHlAySKRk6QBYgp7KZIQasSIK1kW3JTEYhoANkAXIAYwDjABMAkwBTANMEdGjo0NCh
-oUNDh4YODR0aOjR0aOjQyEIjC40sNLLQyEIjC40sNLLQyEIjC40cNHK6QlGL7BgR2TEdIAuQ
-AxgDGAeYAJgEmAIg9ew4NMahMQ6NcWiMQ2N8XNGyNMyE4p7GcHFPYKC4h+82H6mdLZpbW44M
-o/kEKFftuH0fdHhMqiwq7td8+gt09UlPNzkzi9HcVEBgd1F9oa7wX8q9BdBCsfoC7S3mDJP2
-IhiCjwClS5KhskATSdGcyFJBlOlRSLhAKDtnLJSUOQO3jn7UElU0JaUdqxilhurEWdK+N3zn
-mg0ph8GfdnzBKFX9qhGqugszfh3UlkJqMBdSWwqrwZ9fN140lxa5+5TsijO9roAxp4OoJbaC
-1gDzOkejgbPUGHS2bPerUvHRfRTh1IGe7Sl1bS0fMxYb86S37I5Jvad6eqsdvmW/udqJsy3G
-1bbTxmTk2JiNPHWHLXeXYaG6sHjfFsakhfFdFsyGdd8WJqSFybCFCaNS0tX9Gu9g9rUB9faN
-6zZXWXu78VDLHqSWzUEtO7a/2tiB3rLSW25/tfGD1HSpph+gNnGg2phUG99PjebfA4OckEFO
-7q92YJfosif1fXtSWLkDvckgM/sEeaZI9xmptmfg4z4WEmyYVn1/QdyYtgWfLlp1Megw25X3
-a/dkT/D7HYXyB9OnnzmKTfJPknxZGk5L+WMhwyRqf99WesabN59/qFETZm89EfFW1kmVVhWt
-0fkR/n/LSpIl5RLvNDtNq+OyUmAF2neUlTqrMzZSVi6yi3Ld8RJ7SZaX2WXGBsvKVXaVseGy
-ssbWJP8H7AdySXib3Zb0e+w9Sd9hd6T9e+yetP8J+0TS5yPnI4yWmGvRtShKFqP/0mXl49jH
-MaxSvSPa3aXcCjCYjnj4R7QtmAn4v/i8x2f/nvCYj39IW6mkj38qcdpGzCewuGI/RF/wv1uu
-ZzIe+keE6u9J9O8TWnWwqkd1gOgO1vioco0YzmA9vXvluu6boL2F7pv4R4RWHSE19UyA6ECq
-qCITWOJ7ej8p17O+iZ8S6pv4J4RWHW8jkM0EiO5gW4CqLqSaN6uDs/Wi1Vt6R72L7G2f6O/j
-z6k7sABeu1Ctmw2WiP3m55/T7mddk+QsbXgirI8KuoMc1R6Vi183ueEduOIwuEiL300eoHHa
-CX5VduC7MsgYsVuvwwruEVftBDyC50W31liaykTkXe4QULqrz5DfQpJAMakWjLqVmo/FUsfU
-+GfR+GeReDoSPxOJT0XivyIYjf8q+kVV8Wj8Dfo/Ev8X0ZQaiX8ajTtRtVCoWqmHY6n+CIt/
-tpUaiNCm+UeyVONbf4kyEd/6tTY3KA+o3Wrfnbvv0y397gcd5rzz1m2E1GHKFeo6233u7oa9
-5bx1m9hktUO8dohS2PJ1u22vokHLADcAbIDFpalsZ8V9hBYLqju0cSXOImBxtbM5ImnVowc7
-bkr6HyL/nHtq2uMoI9eVju0mVmC0CKPFzeE1W3rzSK1fHqljV9koK8gwnmyuPyWpWUHzlQAg
-zFRnzVpBnaVtrjpbsDIAtACvzhVoXTEk5dkZ4i0mtbk+QaIxh/fZ9561nQ50nBWoO1cg4fAt
-mHZehlkiLt/TLl+77I6sgssjtIe7TPPVNdsdDjhdqNHOY0sbEcYLVgT2OyuMF7SRRaKjHn2F
-zxK92Cj06KqmNYRhRW50lE53W0lrwMgO5iwxSXMns5qcVc9T0jfytUX2Kh58yFMCJmFzPQm+
-Us83MmkCerq5Vlkwsgr/GQ56kxKn3blJy+uKULVEhcpBpwOWdgRHAERAGXzudGFCOyqIzz2+
-swKWrP2D5k2z/0KdllS7p+PRXSMVEyR2llouPL6MvNA9VK0W52kOMisGeECq4MiBloyeZ8nK
-6Hmm1ubztaHpjE6NLKiylWxGzZt1oRQAqmbBVMz6WVOx6tU5pZSfNxWjaqE2K5SSmKTR2m+Y
-eStJXFM1zLJQCyJfStcKVTPNZipWw3pBLYnSPAErnyxRgqRLovJikmXOCqOSXszPWaqYLWbU
-0jkhKMGm/CDihfxiVSnkDYtApUHArBGwzhEo06o4X6Ag8rUCKhoKO6I9krfm5hWHtd0j55+O
-4ri9Wim0AByqaXTa3bb2ODApc+z8UxAhuv52Dy10HIXEksV/fF4e16OWttvPL6FOXo+hvDgr
-MnqGyWuSYIqiaAnrhXpR7SaoF9OS0IkQ+XRaewBP2NTr/DBXbYdH292rdptp2rlio6xeVyTT
-9pnG8W+ebbxAO3mrlWFOB4U7vIEiUTeqguLarB0NccrgzB0JOKIg6uBUDgcck/oTnPIDIY7U
-KmoBZ7FakDLmoRBHyuRTPa18TcosJEMcKVMb6XEanp254RBHylSGAk5twZMpJ0IcL554wJkt
-1L14eE8mV5ac/GCII7UWBnoxV7wIa/0hjtc/fQEHl0jGEwtxdHAmA4ZhzUozj4cY0kqvA3E1
-wYhRAlEymbHKfIXW9wrSxOkg7d2vbyCNmXv8xxvIbN7nFTFcDXkW+NLjm4MgMHS6ijbLzZqg
-hVoidyRDN5DUhhQ6e5it2onPt7a2eqxFyfp1mHVOsv4qzLIl68/DrGXJ+pMw65JkbW39epvV
-9ll/vs266LP+ZAsLSpkrg92FxaroaHGkiQqirD2K9BzEZBb/jdm5cOHpGA6GcVCKXa2wjAY1
-cxgZq3bLnpRW7UMXDDr8LHrL/cqP/d6K+r3l9x0ZiwbGSsLIdzaPuw/e3eig7/bUOR2/S48g
-z9XuLoGyJjOZWkAdTi1AEqsgqAJXnipozU4VuOoqiLL2IEbVYGDoXDnfEouzhQ75kNlMKrUC
-VJDIKgg4acgKmmThpCErzAZVIJOpgiA0KIlVEFSB9EXHVmTHVmRYi5WyNscxHOjOQffV9pu0
-w7BX23yr7c8QbTlDqDIxeWzzmQDt33w6QAc2Hw3Q+OaDAZrYHA7QYZzwufnY6gc273vfZkxe
-xY/W27L803VblmvrvCSR2+t8USJ/Z/1G2Sv5DOsqtMT7a3WDQnWPbXRoct2TAyV9avOIo+zH
-p748Rbpl9fv71cqtTGJ20SzRjKooMdoQaLhL12uVBSXOVL7WXH9cEnTTYopVsF6IWsX5vGIR
-GrUIVZhqzVaFoj1WrZcEBYeEc5ApNp44dGiAdnhMeCPT1maHq/XFOcXN4dTm/NN9uAuEgzqb
-r5f2Yxv10tv+TQd8I29l+HqYkycpvk77u+CBgHfP8R4LgKg3WnhXhK+FifXmaU5LBIwG94w/
-RNxTGwifnX86Fg4DY0Ah8T+li356w59qDhRKFvrkHa558xncJHtLjSGVSOqtR3HbZM4+1yQH
-gS5A8+aIqNaNnu5wcn56e8hBXBtqfTMzxt6GGF/TZmNETjA3fgdTpeLwpL35NPm4cOEp3F8x
-p8h9aZgjbLfflpJ9Dh+1cYu3tXGyM8kcfzYhCcpdWkMOvm/zYYcP2/5kZGPygcZVm6eZliWt
-6ZDWAGX9yGvS8MgBKl8jFRPdcOEpjP5y0Zq3d1K+7NNMS5BskYHmKRC0RpDEIe0YETrbq8c1
-KZfz5B6QxLhHHNb6iZhkspiWxrOTXtUxSUx5xHFJTHvECUnkPeIkOj9rsLdxfanzQZk9yuxr
-fTOnM6QzWvy2TM+1t2XeriHp3DjWgNJSfXNAlt/84jTVvk4mswxDweVYOzZPx3+jSOswq7zt
-DwrPlaaRdI75HsPM8f2YE7uZDxBzkrnDMrKGX6kdan1zjPKNQrNepP8z4HGSzLNiyaqiM3OG
-7NPcFPUpYlPlovsN7SuIW3VPy8OSE+HDkozuH5Q4NlpFkvmDJDM9SXSeNnLWoInLwRkeVsja
-GNFCdR9DpcMjWCs7OChqu6m7G+0tN0Hz+wxtiVCxOeAoKLXnY2eNoqnS/h/eYSxru+PYZ75u
-81j7jTa/tNzGWWc7TFcXFnfQZsNqJxeevoCNRaZ5s9iPDuuNXO49oFVpnqim+hXIaHG5s++a
-BLUTLXLL3MQGQmDdeaJM+tetE9AebBnCYu7QKk9KFZNIqhGWCrnUkSFla4v+p7+hNOv9r0I3
-9bUhJf5nyXgnqcQ/noh3Ff4LfiLO++R+BHLVysI8k0tuplLEpdEoj/wQCKONwCKxSrrPKulg
-ZenmTzGoDgK13T67y0/hKfKI9vwIIlbpVr49Z5tiB0nXLUTjqtG2VG7o7duIVmG76ulCjITq
-sZ3dKTC2SyC2W2B8l0DfboGJXQL9uwUoxlMQeMPml9p2IDbAAkxFTwsrlYixOFvD/x9OaM8n
-cJF2d4aDfLsNabbTi7DIy2l4cQ/d/cAmI68y237NXrXjtKiUnoSl7Nah3pmSoe/qNNqeIdvf
-eL3NLy7zSxeX3YH37WWnHRja3Y3CyuFi4+0wlFsOoCcZpRn6rFGtq7RAR/B0S7mEbaj7wI8l
-zSTkERpSxE0+I295yZw3Bp7MB49Qh2hAVjKZTA4vLdRFg3UxQsOjoXmzNriw94SUeTvyk/yY
-vyMPzh57f7Q7N/vl9twt9eHlTn9rXqtm/F16rGYEqEbcrIcmiZt1Eox99Dnq8UAFKuB88rms
-8zhZ/1CvrF240KgVa7tejlC8AI0Y/4Z/IoqXktjeaIfZ9olocr9WlIZDhwzJ7UMGDUcKHnqC
-uH74aeL66JOE5jx0jATGPHSKuGNuH04NN/P97hm8X+qefh9FAocujoRw8yp4QOBo84HtCmAR
-Bq576iqE8HoqJRGieDWBZgBDIK/inVXJQSxXQeEFVkTzKoTGEIx3LFJK0PJyvaTuWjfJVyrY
-TD8bEEZmUmERYeDRpoFHmwYebRp4tGnoYwobFAaeVxp4XmngeaWB55VGdkphZow9aFTn5xRW
-Ulm8ci5jKKzQJ4wcDORgIAfNHDRzE0pzrWEaeWrtRz//PM5mmusjoBW2ljhWKjSstJYo0E2N
-7hdY52qJoiQUEMnycmjpiQZo/QvFWoXueVQIxcWiN6qa1TmDps+0dqhBKGsY1Tn+CwYuP6Ud
-WgRv0ePxU+BqhxvmnKFA2HnrNjgdhgX6yCKxI86Kz1JpgOa9NyVxyphn2sIDVJqx5iMg6Vbp
-HQrKtS0Qmkj4KVrkbbXvPXzn/TajWYNda+8v5eaxHIzgOFHWMP9g8csbTNqOchshM9ZF4R9f
-yqPM1Y5i047TXr3CY7ar2s7L8nRyQJYZ50ovDGlPOlzoI4dk+cSym1zeaZm4kWU3u+wwnwuz
-y+6w7cCq5ClscwhUxqek3rYHakRgsfkEOlPW0xRDOF0BhshJus+LXmK9Rtcdbvnxgmvfe8y+
-ZhMRoXUHRBQmidDRLHVMWwaDR5GFGHJh+xrClO1csR3Wvkdd+Nbtl9sMR8TX7NfaQSV0EVln
-xYtWy8caYSM3qHvxhMOwVwKdl+2rbWUZRkdsB/ZuX2kz2PQsqOZcqZz6RjR1aJBn+Qq/RXCE
-v4JS8XiX+Cme4f+Od/hDPOPz5vhh/mjAY7Bhpb4aQd3PeJMP8Cd3yVv8ZX6mx9NmNLlvoo04
-XcEt+8JTuC/Jh9m/VNx5LBFoV3ZE7sp4hEQtBYARWFI2+2XhjpBQJGBbilxi1/ooLzGaMH74
-CB4UoHkdRgsFyUqGWH0eazTE6vdYqRBrgGHYwnrPbny7mnkKiW2O4nGGQiYiHms4xIr2rG4+
-7HLcHL22oV+WeCTcIcxNoaU7WFoxLuV/PyH9vjrQi9raG7W1J2prT9TW3qitL47a2hu1tTdq
-a2/U1s6on8RZl+rcQnts55ZsF2PtN+y2zeS5RxsPq2156JxcOH2eaZM4EfMO8CYPd1y148ib
-EM1yDKXcxoWPMs4Sl3UVbRSHZ6q3n548jBvBwzgP8yxN9yxlpzxL2SmpUysEOtNSZwJHZZ7O
-hKcD2Unsf1BSmy7tcp71nTcCQxPSUJ7jbNKzNEWWCjHpPjMpDY5RM34VBapndtusZ+qTbF/m
-5vMxd2gDd2MGVbKlBAZkeGP3b0rGvFgNYp6SMY/jzNEL+VkKedjr+gkvblrs4AJMyAhoTeFF
-IO0YVmDnWb/jcbgo7TzT60R9zOtEfUzq4MTR03nG11ms+DpLB+ksVgKdJeg0b87+20qhmPHe
-gI2wU0y9MI+b/YDiUY1iuaSEXzKMyJcMS6pVqWVSs31qKh7jb/B/xj+N/yCaGozxR/jDPMmA
-xfESLksN93OHV/gEf4I/yLUUJbvCI/g/pfbTsFMUBcIxTrs+lhqIUQVjqlUrZGgho70LhNUr
-CxmJcbyz6qMqcXUPTRDXR5Pm7HypuWaWytkIn+Hp5vosBxGt1+pWrC4Aao1KPy34wBBgCI9B
-+4QKMQiwo/VarqjUBQEBTABjiXrtrBWBoCyERwmPYjNkeAJKE1ACAFavmQ3iERDABDBGknlI
-5iEJAEwtU0CM4NmihBI3GwSF5AvJF5JPVvA+62lqbMZ/Tbsy0CpbNXZd+mrfgN+2fR2OeOTi
-dRnapRsXL128gaZdbF9Hf/DYxRtt4MKXEttS1OKLy9fRYZBavrjcJfMt9F0b3YDOWkZH2Nr8
-4ZawalGn09SdDi7CgV7tnlcb+AFe2z2vFJsDj+gZx0bPOPCNznHQQPSPg0jQRU4bXeQgJvSS
-g45AR1FsLQcWYMmBERvQgiUHFmDJgW4b0IIBB4ow4MZXbdoH443tIiY9lLS6srGaUtA8jznh
-MWOSmfeZ+SJpt6W28LWF1G572sLXFhMeU2oLX5tKp2yVWmyFRmNGosoVQvXmzeOFxrngqo/Q
-RS+xboNqIOdVeq+8K7sqdT9hgtogYYSXMMJLGOFfOrF96YSXMCKUMMK/dGL70gkvYcSuhMHY
-amOkYGAtiwMS5iCvds8rEuYgr+2eVySM2JkwIkgYESSM2JkwIkgYsTthxM6EEUHCiJ0JI4KE
-EaGEEX7CiHDCCD9hRDhhhJ8wIpQwwk8YEU4Y4SeMCCeM8BNG7EiY7HbC5L4oYbJflDA5rXgI
-l3DE2cIELKHubGEGllB3vNnW7cMNYbO/i0vpjq6u8DS7gQoeAcQrNbhZKEzBMutb8vUZMAhn
-l53L0t5leCDdb/d01bAutV95+QBlXSrr7l8nxwPMufISdeIKKVx9iUc8PAY89lJPlxZtLzG4
-lZ4U2YZvkGvS/g40vh3S/vaB2roXZ0zGiaY3ddkDWulhZJDqd8ts2mEyEZnMQiZzDtByZwZW
-ZQCs18woiyAu+eYRnn304TWcbc8xZksrN2BQAXCTJBWRNI9IxnFixFYl468AvboY4Oa4m7ux
-gZ7ekpAx95HVD+Bw633PrYMCVZ7WmrSY98JEuu2MU//COAXiFIhTbMcpZJxiO04h4xSIU8g4
-RShOXcap9+LUZZy6F6eOKk9rTVrUvDAjzAs+LYP3mSrzJNOAq+8EORTzuoGW29vRKxR8m+YG
-mgDc5Ae0EfTM1QF3auq7NPGtqlQV26pCqhJU81ZGH+V8ICoP4H4NOgvaO5C7Azq3Tf8b0GPb
-9I9VzO+0JDoJRA+QbIDkAgTnPyffA8LMWgEP5mlMG/HXQfAp+yptFdrNQ6hv8yliLnk1A7bU
-uYqJKp/J6AHVD2rc6UDSWUGNcwWc16Rx4xHMM9xZoZlculMrhbHpOEtQOT7NAHM8RsVELs5G
-qJyakmWj8IKC9Zslvzi3GDbOt1biLPLDFb5cWRybdgBgixhXKovjOQcA5ojxNyuLE2BM5GCY
-GNeoEirj03BLjA8ri1NTDgBcOty97M72dRz+4WU/HRCBm/KIJHNwMRHOJgeKEWC5TwRZH5JD
-2iFgksNIkagvF4HJbe3RYGgHcm4xdufOqtchbNXriS3MI9auUWXhHUMaVW05qtq4ekidG3ym
-zS5vGjH3OZhBh25hYWztzElo86h9g6d7WTmArAzMtC+744h0H60B0lJ7Wv07tTYP01DyLm6M
-BWzlsvuobBNxFSYRvhXU5gL6soNcotkRhTaFu4vyXgfpMo/cm6esbB7q0A62UbQMB6Cpfw9F
-6UWrhLILoILaHg//s3lzhDYu/td9Cm1VmjcnaFs2FnzLd2LP94B7vlYcw9eKY57eRLADug+9
-CehNeHqTnl70fvQmoTfp6U15erH70ZuC3pSnN+3p9d2P3jT0pqmjauZ0L86HqKPy/bTpzgQ9
-dZI11wwSj/B/pTTXh4AqVL8YYf2/5UtO7WirLha9H2+IQgUrEZS+i97V+f25yAbX7ffnIhd0
-3e/FxUiRSs/DADzcrDyGVwqCixNhKpGGfCYKhBUqovCexOaXLA9T8ueqBbVqFmp4OmTVeES1
-zi3UaOItLMzTprFAwSjaA63KfIU55aJVgA1HQaWWaFGt4nQgoz1IRIF18Ukk7ctZgkUAYgrT
-zpgFEw/jhmx3aBWOO+wG3SpAwbmkkjiDOGQWykJxuS+EV4nw4SWFVZBNoomC8paMsS5MIlzQ
-ZUmXPTrdKgiy8eBqB792MsPcEQ9bY17QMEgNDAxGwgbR8LBBSd+PQeq+wGAsbBDdGjYo6d9m
-UHsCr5UNuqPoVvlCsPcq8Pc21bdxdfmaLzeKy8Fk3VXvJeLn+/A2ieoOo377ajFJMvve+N0N
-dK39GqA7JAk+4FEjstf5ZxQFEEnh8thdYM2bj9MEMh6MyRN7P98ex4Qxnpzn5/GJqTajtqqZ
-abbr4CuLt5t2cMb2cCb2cCb3cKb2cKa996Z6L1Fpj5F/Y7d/fZdU8+ZJIL3npAnv3eqfqHh3
-gcebazsf/NUrSzSAbZ5orj93fm+VUq808rQ0IYMETICCytJUFIGXAMoAs2pyvihfKTbOlrzv
-8Nna0evshyAVMoKXMlR829+LbMR7gut/X7wKT3zNe6dhENNEHA+rGwK/TiLy2miLLjy74UkB
-asfkA1tPb8S+rtjw0oU/7XhLNITyww4ct24C2Ndsx4Zo82YJYRi7wqDu3Y7DODAOIxSHIeMw
-QnEY9x+H4cdh7o4jGorDPDAOMxSHKeMwQ3GY9x+H6cdR2B1HLBRH4cA4CqE4CjKOQiiOwv3H
-UfDjKO6Ooy8UR/HAOIqhOIoyjmIojuL9x1H04yjtjqM/FEfpwDhKoThKMo5SKI7S/cdR8uMo
-745jIBRH+cA4yqE4yjKOciiO8v3HUfbjmN0dhxqKY/bAOGZDcczKOGZDcczefxyz//+rnv2/
-6pmP41VAtWrV6vxZ1aIVA39RtUS9xR/Sjs4Vq+cU+Snu6zbntNuN/5RjWZKhdUVddfZ50Ref
-a9punHbrW44No12A5h+W+/C2oUq+6vEnsWYhR6wL+3CpnWmRFMMG7d6RtgPr8iQEddf8zwkg
-a5MixcZeR4B49zlZeUzeNJbMeoGpS/N1SyE8X6c121LBrNOajQqLq1QIi3N1qUrMBAqLJ6kg
-ZkpdEsTUUFj8KBXEPKYuUUv4CXxzbhWZNtEw6kUFrzJaxV9Fr3bw0ZDdXKubpTKz8SE6MGWJ
-gIo3HK1iF7j2XGMxpEaLGnyx0NmlLn8KC2gEOsmd+oWd+n+5n37M149CJx3Wn1yksCOe/tbI
-F4btrKDwlLV8bHGxp3i/ge+2UNhp4T5C32GhEmuQiejvZmEV8Er7RjtsabxRrxWVqx3+A9tB
-h9ptt3+jvdVlm8fdI3fa8gs2RGuverhcZifLh+TLcDOH5M/4yNfEqiq/fXuIRRJyz7wFoJSV
-zxKfJRSV+EpCHkb9b6r+LNGjh/D7Q+x/3DrCmFePF8y2tuL+q2MRFq5JUM3QvjU7/677L5qd
-r1Xmxz3UruWXfLRTLQbcayQw4aFvkoCP3iSBCa3YJ2dSR74X5p6yHfmSGBmUHNi4CuqatOzI
-t8LIGBBUeogNkQkpMiHfEFMXFyyDqYtCAOaXDKaV+1vyV4A6+BE4wlodh93Gr8Ux5iMKbfXu
-4DsDf6PXPB3/53EHv48IOw5+IxFmHfxOImw6HdQ5EEadw1Chzfa18NNC18kOPBHe6rjyVxYd
-mPEQEpcqMAMtN/XW7lg2udPx0S4KWvpmWqn+GDreHcUP6hFHBwcvDLop/JoecXItPG/t81lj
-YI1JFp7LEjEuCRy4aNUYukHBI/h95lD8pkYntErHzzR1di2u8btKHXyx0UkefiqooBsnNqVd
-9Is2ix9Lain721/cYZ8E99gHD596dEp5U8zsl4P+n/IFdfgj/foPkM4n861aq9JaKNbASkdV
-lqyJkvW3YcNi7FFpa5D9jMpfPsT+M1M9/ZhfpqlU6d+ZgB9RUPUXL7H/FmWxJFOiNHBosPwD
-2KGK/+ONUobex4ul58H/W70YwNoRA14clW1RFa9NakRBiSf3eM1UDkmOYeljg3gBdIjVaKJ5
-FnLv9GyDtct27+8Tv3wOgGSNNnTLnm6+JvV36CaYRjthEv9sC+68Dge99hG75YwPf2Hn40v2
-qZ0NB2uHA7x57nX2x7KR7L9PMiEK1qeU8Mof1b/TeOlbzHReq38HdZnQL7pWBs8zFZIpsy8x
-ZNbPZirCSrPE2i/ffC7xLPUTeLrH+/AT4v0Z83gZU/Lq/4V4jw74ch7vo78g3h+i96kPC4l/
-2nlKUecX6iKB0afOk2AC7VfP1wtmRp4RSFT3UQqmylly9mHv4wv8wKw6W8m0OKPFHQptliaj
-gqm82+GsUTwn3sXHTZUXi86tju28Kn+lAqenM6+3CbWKtMqh9VlmdIDL0f89EOAutxaEOXqI
-Jw//w9dnEl/54/Lf+5f/wVn6g2kBm7C3rBXwE6Rm7N2XOYMWlTFamGTguFIpoIxRqVOpUpml
-MkFlTqXFcWY/y++igrMidCUaK0JdomoRFiSaIDTnTty9c2cDbiAORIewZGUhCyQHSYf330Z4
-lNjdl91DdzdWuOJwvs27sSp7mnLk+wzxg3Krfau4PJzm7XzfnTuSSMjU3JDifJDxwbur8moo
-7IZXAjbXKB0y7K3bSBuq8pEIa6ZRgUvlVnzjnzJ3PrbDuGf7KPMtR3zLEc+yGbI8ECAqWUYF
-rn735XBiZCkxdC8x9C+bGHo4MfQvlRi6nxj6/SSGflBi6NuJoW8nhr6dGPqXTAx9n8TQtxND
-7yWGDuq3JYYeToykf/mSvcTQg6sWC5A+LzF0XKrfkhj6dmKkfcvpXmL0LPMAiXuJoePqd19u
-EEtO4od78yRYO+bJf003qYfPMvY36N8f07//Rf/+64uM/T+Bx29nIlsAAA==
-
---1007955397--20583170--1714998121
-Content-Type: application/x-gzip; name="dmesg.gz"
-Content-Disposition: attachment; filename="dmesg.gz"
-Content-Transfer-Encoding: base64
-
-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
-
---1007955397--20583170--1714998121--
+-- 
+Michael Kerrisk Linux man-pages maintainer;
+http://www.kernel.org/doc/man-pages/ Found a documentation bug?
+http://www.kernel.org/doc/man-pages/reporting_bugs.html
