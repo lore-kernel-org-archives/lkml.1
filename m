@@ -1,78 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbYJ1RTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753458AbYJ1RUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753709AbYJ1RTe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 13:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbYJ1RTX
+	id S1753458AbYJ1RUo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 13:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYJ1RUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 13:19:23 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:36689 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752457AbYJ1RTW (ORCPT
+	Tue, 28 Oct 2008 13:20:36 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:28641 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751978AbYJ1RUf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 13:19:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=jCFN7jBWYuJNGUNKkdy4XgM7KE2FWVK3lds6fTk0YGbJp4/vbBNMxWpf2XGk8QutEPEjujk7zbEGhQhbYawD84XHhXv2sBh1Kanij+Tt9bXmfHXv9YiyL/mjNp5ir+B8cEhYtbnYuuUh+h77E0bhwuu37lJfeGc+ut/L/SKwOzU=  ;
-X-YMail-OSG: ZwgmKa8VM1n_L2HNUCO8m6e8lmy.UElnSlLnNNZX4tSZbMkbSgixAjMIQbWT892PA.A6LMjlCBkeM.TbxTuCVGqUV6oaBDQ_NOxmJUCXOrtwkuUwMNRsYzWEjgEoQIqiiV4kyaUgnJg1yah9D_NjT9ps
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: Re: [patch 2.6.28-rc2] atmel_serial: keep clock off when it's not needed
-Date: Tue, 28 Oct 2008 10:08:12 -0700
-User-Agent: KMail/1.9.10
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       Andrew Victor <linux@maxim.org.za>
-References: <200810271406.24110.david-b@pacbell.net> <200810280920.19864.david-b@pacbell.net> <20081028173733.7ba951de@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <20081028173733.7ba951de@hskinnemo-gx745.norway.atmel.com>
+	Tue, 28 Oct 2008 13:20:35 -0400
+Message-ID: <49074A63.1090105@colorfullife.com>
+Date: Tue, 28 Oct 2008 18:22:43 +0100
+From: Manfred Spraul <manfred@colorfullife.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Nadia.Derbey@bull.net
+CC: cboulte@gmail.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SYSVIPC - Fix the ipc structures initialization
+References: <20081028145952.620752409@bull.net> <20081028150041.857635775@bull.net>
+In-Reply-To: <20081028150041.857635775@bull.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810281008.12874.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 28 October 2008, Haavard Skinnemoen wrote:
-> David Brownell <david-b@pacbell.net> wrote:
-> > On Tuesday 28 October 2008, Haavard Skinnemoen wrote:
-> > > David Brownell <david-b@pacbell.net> wrote:
-> > > > From: David Brownell <dbrownell@users.sourceforge.net>
-> > > > 
-> > > > The atmel_serial driver is mismanaging its clock by leaving it on
-> > > > at all times ... the whole point of clock management is to leave
-> > > > it off unless it's actively needed, which conserves power!!
-> > > > 
-> > > > Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> > > 
-> > > Hmm...the only remaining clk_enable() is in atmel_serial_pm(). Is that
-> > > really enough?
-> > > 
-> > > It looks like the serial core calls ->pm() to power the port up before
-> > > doing anything that might touch the registers, but I can't see that the
-> > > console layer does the same thing...
-> > 
-> > I verified it on AT91, where the console is normally DBGU and the
-> > other USARTs do get an open().
-> > 
-> > Didn't verify on AVR32, since 2.6.28-rc can't see the root FS because
-> > of that NOR flash problem.  Though I suppose I can try it on an older
-> > kernel.
-> > 
-> > As a rule the boot loader will be using that USART, and thus will
-> > have enabled its clock.  :)
-> 
-> Hmm. But in the cases when "normally" and "as a rule" don't apply, the
-> board will lock up solid with no console output since it will wait
-> forever for the TXRDY bit to be set...
-> 
-> I'd like to know for sure that it cannot happen, please.
+Nadia.Derbey@bull.net wrote:
+> Index: linux-2.6.27/ipc/util.c
+> ===================================================================
+> --- linux-2.6.27.orig/ipc/util.c	2008-10-23 15:20:46.000000000 +0200
+> +++ linux-2.6.27/ipc/util.c	2008-10-28 16:52:17.000000000 +0100
+> @@ -266,9 +266,17 @@ int ipc_addid(struct ipc_ids* ids, struc
+>  	if (ids->in_use >= size)
+>  		return -ENOSPC;
+>  
+> +	spin_lock_init(&new->lock);
+> +	new->deleted = 0;
+>   
+Is "new->deleted = 0" still necessary?
+Acquiring the lock should be sufficient.
 
-I'd just like to know that this bug is fixed.  Do you have a
-better fix?  (And a board broken by this patch, to verify it?)
-
-- Dave
-
+--
+    Manfred
