@@ -1,73 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbYJ1N1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753948AbYJ1N3B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753902AbYJ1N1M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 09:27:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYJ1N05
+	id S1753948AbYJ1N3B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 09:29:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYJ1N2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 09:26:57 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:52550 "EHLO mx2.suse.de"
+	Tue, 28 Oct 2008 09:28:53 -0400
+Received: from mail.tnnet.fi ([217.112.240.26]:55794 "EHLO mail.tnnet.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751568AbYJ1N04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 09:26:56 -0400
-From: Thomas Renninger <trenn@suse.de>
-Organization: SUSE Linux - Novell
-To: Andrey Borzenkov <arvidjaar@mail.ru>, Len Brown <len.brown@intel.com>
-Subject: Re: ACPI video.c brightness handler conflicts with toshiba_acpi
-Date: Tue, 28 Oct 2008 14:26:52 +0100
-User-Agent: KMail/1.9.9
-Cc: toshiba_acpi@memebeam.org, linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200809061108.34877.arvidjaar@mail.ru> <200809080301.24907.trenn@suse.de> <200810271953.04764.arvidjaar@mail.ru>
-In-Reply-To: <200810271953.04764.arvidjaar@mail.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	id S1752610AbYJ1N2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 09:28:52 -0400
+X-Greylist: delayed 542 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Oct 2008 09:28:52 EDT
+Message-ID: <4907116F.EA26D98A@users.sourceforge.net>
+Date: Tue, 28 Oct 2008 15:19:43 +0200
+From: Jari Ruusu <jariruusu@users.sourceforge.net>
+To: linux-crypto@nl.linux.org
+CC: linux-kernel@vger.kernel.org
+Subject: Announce loop-AES-v3.2d file/swap crypto package
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810281426.53499.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 27 October 2008 17:52:55 Andrey Borzenkov wrote:
-> On Monday 08 September 2008, Thomas Renninger wrote:
-> > On Saturday 06 September 2008 09:19:59 am Andrey Borzenkov wrote:
-> > > On Saturday 06 September 2008, Andrey Borzenkov wrote:
-> > > > I have now two different devices that refer to the same hardware:
-> > > >
-> > > > lrwxrwxrwx 1 root root 0 2008-09-06 11:04 acpi_video0 ->
-> > > > ../../devices/virtual/backlight/acpi_video0/ lrwxrwxrwx 1 root root 0
-> > > > 2008-09-06 11:04 toshiba -> ../../devices/virtual/backlight/toshiba/
-> > > >
-> > > > Unfortunately, due to ACPI implementation the acpi_video0 one is much
-> > > > inferior (as it provides only effectively two levels instead of 8);
-> > > > and user level tools are apparently quite confused which one to
-> > > > select.
-> > > >
-> > > > Is there any mechanism that would allow tochiba_acpi to claim
-> > > > brightness for internal LCD screen that video would not attempt to
-> > > > grab it too?
-> > > >
-> > > > Of course manually disabling brightness handling in video is always
-> > > > possible,
-> > >
-> > > Actually it is not. brightness_switch_enabled only disables event
-> > > handling; it still resets actual brightness on loading and creates
-> > > sysfs files to confuse user space.
-> > >
-> > > > still is nice for this to be handled automatically.
-> >
-> > It is in latest ACPI test branch queued for 2.6.28.
->
-> It is still not in rc2; is it scheduled for 2.6.28 or delayed further?
+loop-AES changes since previous release:
+- Worked around minix mkfs regression in build-initrd.sh script. Fix from
+  Boris Wesslowski.
+- Added -f option to losetup. Patch from Max Vozeler.
+- Worked around block layer interface breakage on linux-2.6.28-rc kernels.
 
-Right, it's not there.
-Len, what happened with the:
-"Check for ACPI backlight support otherwise use vendor ACPIdrivers - version 4"
-patches?
+bzip2 compressed tarball is here:
 
-They are pretty essential for video.ko.
-Otherwise graphics devices may get double poked (through vendor_acpi.ko drivers)
-or may register for graphics cards which are not there.
+    http://loop-aes.sourceforge.net/loop-AES/loop-AES-v3.2d.tar.bz2
+    md5sum 8fc224978ee1f53c07a3771e733b777c
 
-    Thomas
+    http://loop-aes.sourceforge.net/loop-AES/loop-AES-v3.2d.tar.bz2.sign
+
+-- 
+Jari Ruusu  1024R/3A220F51 5B 4B F9 BB D3 3F 52 E9  DB 1D EB E3 24 0E A9 DD
