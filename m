@@ -1,76 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbYJ1POa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbYJ1PRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754356AbYJ1POa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 11:14:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbYJ1POU
+	id S1754127AbYJ1PRR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 11:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbYJ1PRD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 11:14:20 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:63937 "EHLO
-	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751673AbYJ1POT (ORCPT
+	Tue, 28 Oct 2008 11:17:03 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:57191 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751050AbYJ1PRB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 11:14:19 -0400
-X-BigFish: VPS3(zzzzzzz32i43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K9GFN3-03-QI2-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jouni Malinen <jkmalinen@gmail.com>, Oliver Neukum <oliver@neukum.org>,
-       Nicolas Bareil <nico@chdir.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, j@w1.fi, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH] x86, gart: fix gart detection for Fam11h CPUs
-Date: Tue, 28 Oct 2008 16:13:54 +0100
-Message-ID: <1225206834-6189-1-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.6.4
-In-Reply-To: <e785a1360810280207p1c162decs5a70b8915ea08476@mail.gmail.com>
-References: <e785a1360810280207p1c162decs5a70b8915ea08476@mail.gmail.com>
-X-OriginalArrivalTime: 28 Oct 2008 15:13:54.0135 (UTC) FILETIME=[CA7E7E70:01C9390F]
+	Tue, 28 Oct 2008 11:17:01 -0400
+Date: Tue, 28 Oct 2008 18:16:59 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Trent Piepho <tpiepho@freescale.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>,
+       Sean MacLennan <smaclennan@pikatech.com>,
+       Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [PATCH 1/4] of_gpio: Return GPIO flags from of_get_gpio()
+Message-ID: <20081028151659.GA26444@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp> <1224889741-4167-1-git-send-email-tpiepho@freescale.com> <20081028143933.GA18453@oksana.dev.rtsoft.ru> <fa686aa40810280753lc555683y5d32da678384438@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=windows-1251
+Content-Disposition: inline
+In-Reply-To: <fa686aa40810280753lc555683y5d32da678384438@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The AMD Fam11h CPUs have a K8 northbridge. This northbridge is different
-from other familys because it lacks GART support (as I just learned).
-But the kernel implicitly expects a GART if it finds an AMD northbridge.
-Fix this by removing the Fam11h northbridge id from the scan list of K8
-northbridges. This patch also changes the message in the GART driver
-about missing K8 northbridges to tell that the GART is missing which is
-the correct information in this case.
+On Tue, Oct 28, 2008 at 08:53:11AM -0600, Grant Likely wrote:
+> On Tue, Oct 28, 2008 at 8:39 AM, Anton Vorontsov
+> <avorontsov@ru.mvista.com> wrote:
+> > Can you repost a fixed version with my Ack and Cc: Andrew Morton,
+> > Benjamin Herrenschmidt?
+> >
+> > I think this change should go into the 2.6.28, so that we can
+> > write new code on top of new API. Otherwise this change will cause
+> > issues in the next merge window.
+> 
+> While I like this series, it should not be pushed for .28.  The window
+> is closed and we are in bug-fix-only mode.
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kernel/k8.c          |    1 -
- arch/x86/kernel/pci-gart_64.c |    2 +-
- 2 files changed, 1 insertions(+), 2 deletions(-)
+IIRC, we approve API changes in the early -rcs, exactly to avoid build
+break issues for the new code (though the API changes themselves are
+discouraged).
 
-diff --git a/arch/x86/kernel/k8.c b/arch/x86/kernel/k8.c
-index 304d8ba..cbc4332 100644
---- a/arch/x86/kernel/k8.c
-+++ b/arch/x86/kernel/k8.c
-@@ -18,7 +18,6 @@ static u32 *flush_words;
- struct pci_device_id k8_nb_ids[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB_MISC) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_10H_NB_MISC) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_11H_NB_MISC) },
- 	{}
- };
- EXPORT_SYMBOL(k8_nb_ids);
-diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-index e3f75bb..a42b02b 100644
---- a/arch/x86/kernel/pci-gart_64.c
-+++ b/arch/x86/kernel/pci-gart_64.c
-@@ -744,7 +744,7 @@ void __init gart_iommu_init(void)
- 	long i;
- 
- 	if (cache_k8_northbridges() < 0 || num_k8_northbridges == 0) {
--		printk(KERN_INFO "PCI-GART: No AMD northbridge found.\n");
-+		printk(KERN_INFO "PCI-GART: No AMD GART found.\n");
- 		return;
- 	}
- 
+> Focus on getting it into Ben's -next tree instead.
+
+Would Benjamin apply the USB FHCI driver then? I doubt it.
+
+So, there are options:
+
+1. Either this patch go in into the .28;
+
+2. Or this patch go in _after_ USB FHCI driver, and Trent takes care
+   to convert it to the new API. (I'm trying to push the driver since
+   2007, I think. Firstly it has GPIO framework dependency, QE GPIO,
+   QE Pinmux, FSL GTM dependency, bindings, e.t.c. And now that.
+   No, no deal. I quite tired of the dependencies for this driver.)
+
+3. Or we apply my original patch that won't break the API.
+   http://lkml.org/lkml/2008/7/25/236
+   I still like it better than Trent's patch, exactly because it
+   can't break anything.
+
+> That will deal with any merge window
+> conflicts.
+
+This won't deal with build breakage because of API changes, which
+means I can't submit FHCI driver to Greg, I have to wait for the
+API changes applied.
+
+Thanks,
+
 -- 
-1.5.6.4
-
-
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
