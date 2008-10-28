@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753178AbYJ1KCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbYJ1KEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753178AbYJ1KCX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 06:02:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbYJ1KCN
+	id S1753344AbYJ1KEb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 06:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYJ1KEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 06:02:13 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59649 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751518AbYJ1KCK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 06:02:10 -0400
-Date: Tue, 28 Oct 2008 10:02:08 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alessandro Zummo <a.zummo@towertech.it>,
-       David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       rtc-linux@googlegroups.com
-Subject: Re: [PATCH 2/2] rtc: rtc-wm8350: Add support for WM8350 RTC
-Message-ID: <20081028100207.GA7876@rakim.wolfsonmicro.main>
-References: <1225121905-23782-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1225121905-23782-2-git-send-email-broonie@opensource.wolfsonmicro.com> <20081027232212.02626142.akpm@linux-foundation.org>
+	Tue, 28 Oct 2008 06:04:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58487 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751518AbYJ1KEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 06:04:22 -0400
+Date: Tue, 28 Oct 2008 11:04:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, lenb@kernel.org
+Subject: Re: PATCH] ftrace: Add a C/P state tracer to help power
+	optimization
+Message-ID: <20081028100403.GC15734@elte.hu>
+References: <20081006102640.481acd23@infradead.org> <20081027155920.GS5704@elte.hu> <20081027110522.6cb7b142@infradead.org> <y0m3aihx1kd.fsf@ton.toronto.redhat.com> <20081027140630.521f933d@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081027232212.02626142.akpm@linux-foundation.org>
-X-Cookie: Only God can make random selections.
+In-Reply-To: <20081027140630.521f933d@infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 27, 2008 at 11:22:12PM -0700, Andrew Morton wrote:
-> On Mon, 27 Oct 2008 15:38:25 +0000 Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 
-> > This driver was originally written by Graeme Gregory and Liam Girdwood,
-> > though it has been modified since then to update it to current mainline
-> > coding standards and for API completeness.
+* Arjan van de Ven <arjan@infradead.org> wrote:
 
-> Graeme doesn't seem to get a mention anywhere in the driver?
+> On Mon, 27 Oct 2008 15:47:30 -0400
+> fche@redhat.com (Frank Ch. Eigler) wrote:
+> 
+> > 
+> > Arjan van de Ven <arjan@infradead.org> writes:
+> > 
+> > > [...]
+> > > --- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > > +++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > > [...]
+> > > @@ -427,6 +429,8 @@ static int acpi_cpufreq_target(struct
+> > > cpufreq_policy *policy, }
+> > >  	}
+> > >  
+> > > +	trace_power_mark(&it, POWER_PSTATE, next_perf_state);
+> > > +
+> > >  	switch (data->cpu_feature) {
+> > >  	case SYSTEM_INTEL_MSR_CAPABLE:
+> > >  		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
+> > > [...]
+> > 
+> > Is there some reason that this doesn't use tracepoints instead
+> > of such a single-backend hook?
+> 
+> because it's a ton simpler this way? do simple things simpe and all 
+> that....
 
-Hrm, yeah.  That should probably read Liam and Graeme rather than the
-way it is - AFAICT Graeme's work was bugfixing and updates.
+correct.
 
-> > Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> > ---
-> > Updated to use schedule_timeout_uninterruptible() as per Andrew's
-> > suggestion.
-
-> You also did this:
-
-Oops, sorry.  I had thought I'd posted a version with those changes in
-already.
+	Ingo
