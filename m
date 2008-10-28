@@ -1,66 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbYJ1BwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbYJ1Bw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752696AbYJ1BwA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 21:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYJ1Bvt
+	id S1753167AbYJ1Bw1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 21:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbYJ1BwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 21:51:49 -0400
-Received: from eagle.jhcloos.com ([207.210.242.212]:38654 "EHLO
-	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752018AbYJ1Bvs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 21:51:48 -0400
-From: James Cloos <cloos@jhcloos.com>
-To: benh@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       "David S. Miller" <davem@davemloft.net>,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: radeonfb lockup in .28-rc (bisected)
-In-Reply-To: <1225152347.8004.49.camel@pasglop> (Benjamin Herrenschmidt's
-	message of "Tue, 28 Oct 2008 11:05:47 +1100")
-References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
-	<1225152347.8004.49.camel@pasglop>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
-Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
- REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
- eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
- FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
-Copyright: Copyright 2008 James Cloos
-OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
-OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
-Date: Mon, 27 Oct 2008 21:50:57 -0400
-Message-ID: <m3prllij1j.fsf@lugabout.jhcloos.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Hashcash: 1:23:081028:benh@kernel.crashing.org::MGJmZZWb4jmnye55:0000000000000000000000000000000000000BXjK
-X-Hashcash: 1:23:081028:linux-kernel@vger.kernel.org::HnCVd4p7EZ03Y2f8:000000000000000000000000000000000Q5+H
-X-Hashcash: 1:23:081028:torvalds@linux-foundation.org::YIulgA7QWDqWCrlT:00000000000000000000000000000000Bdt4
-X-Hashcash: 1:23:081028:akpm@linux-foundation.org::1/0qutZOeEg9Kw5E:000000000000000000000000000000000000fW5G
-X-Hashcash: 1:23:081028:khc@pm.waw.pl::FkhYNeRej3qH2Dn7:0000pUAJ
-X-Hashcash: 1:23:081028:davem@davemloft.net::iu5K1w6IDOxq5RUI:0000000000000000000000000000000000000000002BM8
-X-Hashcash: 1:23:081028:linux-fbdev-devel@lists.sourceforge.net::2+xQHtL/yztvV8KW:0000000000000000000000aefA
+	Mon, 27 Oct 2008 21:52:04 -0400
+Received: from mail.windriver.com ([147.11.1.11]:48831 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752752AbYJ1BwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 21:52:01 -0400
+From: chunbo.luo@windriver.com
+To: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: chunbo.luo@windriver.com
+Subject: [PATCH] amd811e: fix dma_free_coherent warning
+Date: Tue, 28 Oct 2008 09:51:46 +0800
+Message-Id: <1225158706-5700-1-git-send-email-chunbo.luo@windriver.com>
+X-Mailer: git-send-email 1.6.0.2.532.g84ed4c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Benjamin" == Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+From: Chunbo Luo <chunbo.luo@windriver.com>
 
-Benjamin> Annoying... Either I'm doing something wrong (which is always
-Benjamin> possible) or we're hitting yet another fancy ATI bug (the M7
-Benjamin> generation is known to be pretty bad in that area).
+Acoording commit aa24886e379d2b641c5117e178b15ce1d5d366ba,
+dma_free_coherent() need irqs enabled.
 
-Yes, M7 does have its idiosyncrasies. :)
+This patch fix following warning messages:
 
-Benjamin> First, let's see if it's related to the imageblit. Can you
-Benjamin> re-apply the reverted patch and apply this little hack on top
-Benjamin> :
+WARNING: at linux/arch/x86/kernel/pci-dma.c:376 dma_free_coherent+0xaa/0xb0()
 
-I'm starting a compile now.  It'll be a couple of hours until I can
-reboot.
+Call Trace:
+ [<ffffffff8023f80f>] warn_on_slowpath+0x5f/0x90
+ [<ffffffff80496ffa>] ? __kfree_skb+0x3a/0xa0
+ [<ffffffff802a4723>] ? discard_slab+0x23/0x40
+ [<ffffffff8021274a>] dma_free_coherent+0xaa/0xb0
+ [<ffffffff8043668f>] amd8111e_close+0x10f/0x1b0
+ [<ffffffff8049f3ae>] dev_close+0x5e/0xb0
+ [<ffffffff8049efa1>] dev_change_flags+0xa1/0x1e0
+ [<ffffffff806b2171>] ic_close_devs+0x36/0x4e
+ [<ffffffff806b29ee>] ip_auto_config+0x581/0x10f3
+ [<ffffffff803a6e19>] ? kobject_add+0x69/0x90
+ [<ffffffff803a698a>] ? kobject_get+0x1a/0x30
+ [<ffffffff803a785b>] ? kobject_uevent+0xb/0x10
+ [<ffffffff803a6c62>] ? kset_register+0x52/0x60
+ [<ffffffff803a6f9b>] ? kset_create_and_add+0x6b/0xa0
+ [<ffffffff804e2e74>] ? tcp_ca_find+0x24/0x50
+ [<ffffffff806b246d>] ? ip_auto_config+0x0/0x10f3
+ [<ffffffff8020903c>] _stext+0x3c/0x150
+ [<ffffffff802772d3>] ? register_irq_proc+0xd3/0xf0
+ [<ffffffff802f0000>] ? mb_cache_create+0x80/0x1f0
+ [<ffffffff80688693>] kernel_init+0x141/0x1b8
+ [<ffffffff80688552>] ? kernel_init+0x0/0x1b8
+ [<ffffffff8020d609>] child_rip+0xa/0x11
+ [<ffffffff80688552>] ? kernel_init+0x0/0x1b8
+ [<ffffffff80688552>] ? kernel_init+0x0/0x1b8
+ [<ffffffff8020d5ff>] ? child_rip+0x0/0x11
 
--JimC
+Signed-off-by: Chunbo Luo <chunbo.luo@windriver.com>
+---
+ drivers/net/amd8111e.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/amd8111e.c b/drivers/net/amd8111e.c
+index c54967f..6dd35e3 100644
+--- a/drivers/net/amd8111e.c
++++ b/drivers/net/amd8111e.c
+@@ -644,10 +644,6 @@ This function frees the  transmiter and receiver descriptor rings.
+ */
+ static void amd8111e_free_ring(struct amd8111e_priv* lp)
+ {
+-
+-	/* Free transmit and receive skbs */
+-	amd8111e_free_skbs(lp->amd8111e_net_dev);
+-
+ 	/* Free transmit and receive descriptor rings */
+ 	if(lp->rx_ring){
+ 		pci_free_consistent(lp->pci_dev,
+@@ -1231,7 +1227,9 @@ static int amd8111e_close(struct net_device * dev)
+ 
+ 	amd8111e_disable_interrupt(lp);
+ 	amd8111e_stop_chip(lp);
+-	amd8111e_free_ring(lp);
++
++	/* Free transmit and receive skbs */
++	amd8111e_free_skbs(lp->amd8111e_net_dev);
+ 
+ 	netif_carrier_off(lp->amd8111e_net_dev);
+ 
+@@ -1241,6 +1239,7 @@ static int amd8111e_close(struct net_device * dev)
+ 
+ 	spin_unlock_irq(&lp->lock);
+ 	free_irq(dev->irq, dev);
++	amd8111e_free_ring(lp);
+ 
+ 	/* Update the statistics before closing */
+ 	amd8111e_get_stats(dev);
 -- 
-James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
+1.5.5.1
+
