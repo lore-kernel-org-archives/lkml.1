@@ -1,37 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbYJ1Our@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYJ1OxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753965AbYJ1Our (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 10:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYJ1Ouk
+	id S1754023AbYJ1OxX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 10:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYJ1OxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 10:50:40 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:48226 "EHLO smtp2.it.da.ut.ee"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752163AbYJ1Ouj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 10:50:39 -0400
-Date: Tue, 28 Oct 2008 16:50:38 +0200 (EET)
-From: Meelis Roos <mroos@linux.ee>
-To: Patrick McHardy <kaber@trash.net>
-cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.28-rc2: runaway loop modprobe char-major-5-1
-In-Reply-To: <49071A84.3080706@trash.net>
-Message-ID: <Pine.SOC.4.64.0810281648200.969@math.ut.ee>
-References: <Pine.SOC.4.64.0810281212540.21462@math.ut.ee> <49071A84.3080706@trash.net>
+	Tue, 28 Oct 2008 10:53:15 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:41663 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751771AbYJ1OxO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 10:53:14 -0400
+Message-ID: <fa686aa40810280753lc555683y5d32da678384438@mail.gmail.com>
+Date: Tue, 28 Oct 2008 08:53:11 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 1/4] of_gpio: Return GPIO flags from of_get_gpio()
+Cc: "Trent Piepho" <tpiepho@freescale.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, "Richard Purdie" <rpurdie@rpsys.net>,
+       "Sean MacLennan" <smaclennan@pikatech.com>,
+       "Wolfram Sang" <w.sang@pengutronix.de>
+In-Reply-To: <20081028143933.GA18453@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
+	 <1224889741-4167-1-git-send-email-tpiepho@freescale.com>
+	 <20081028143933.GA18453@oksana.dev.rtsoft.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm seeing the same problem on a Debian unstable system using
-> initramfs and dm-crypt, but it seems to be caused by userspace
-> changes, using an old initramfs image with just the new modules
-> added manually works fine (well, breaks elsewhere).
+On Tue, Oct 28, 2008 at 8:39 AM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> Can you repost a fixed version with my Ack and Cc: Andrew Morton,
+> Benjamin Herrenschmidt?
+>
+> I think this change should go into the 2.6.28, so that we can
+> write new code on top of new API. Otherwise this change will cause
+> issues in the next merge window.
 
-I am also using Debian unstable, up to date. Kernels are created with 
-kernel-package and use fresh initramfs. Old kernel packages with old 
-initramfs's work, haven't tried to recreate them yet, but it may well be 
-a userspace problem. Will try to find out more.
+While I like this series, it should not be pushed for .28.  The window
+is closed and we are in bug-fix-only mode.  Focus on getting it into
+Ben's -next tree instead.  That will deal with any merge window
+conflicts.  I'd be happy to pull it through my 5200 tree when you post
+the next version.
+
+g.
+
 
 -- 
-Meelis Roos (mroos@linux.ee)
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
