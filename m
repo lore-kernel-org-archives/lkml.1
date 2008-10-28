@@ -1,103 +1,292 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752878AbYJ1F21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbYJ1FbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752878AbYJ1F21 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 01:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbYJ1F2T
+	id S1753004AbYJ1FbH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 01:31:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYJ1Faw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 01:28:19 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:55595 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752124AbYJ1F2S (ORCPT
+	Tue, 28 Oct 2008 01:30:52 -0400
+Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:53750
+	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751771AbYJ1Fav (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 01:28:18 -0400
-Message-ID: <4906A370.3000502@colorfullife.com>
-Date: Tue, 28 Oct 2008 06:30:24 +0100
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 28 Oct 2008 01:30:51 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEADZABkl8qQJT/2dsb2JhbADHIoNP
+X-IronPort-AV: E=Sophos;i="4.33,496,1220198400"; 
+   d="scan'208";a="393728622"
+From: Ian Kent <raven@themaw.net>
+Subject: [PATCH 1/2] autofs4 - make autofs type usage explicit
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       autofs mailing list <autofs@linux.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Date: Tue, 28 Oct 2008 14:30:47 +0900
+Message-ID: <20081028053047.29379.19919.stgit@zeus.themaw.net>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
-       akpm@linux-foundation.org, dipankar@in.ibm.com,
-       josht@linux.vnet.ibm.com, schamp@sgi.com, niv@us.ibm.com,
-       dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
-       andi@firstfloor.org, tglx@linutronix.de
-Subject: Re: [PATCH, RFC] v7 scalable classic RCU implementation
-References: <20081012224629.GA7353@linux.vnet.ibm.com> <48F38D73.8040804@colorfullife.com> <20081015011143.GE6874@linux.vnet.ibm.com> <48F5A638.8020003@colorfullife.com> <20081015152637.GA6739@linux.vnet.ibm.com> <48FF73C7.90709@colorfullife.com> <20081022210254.GE6766@linux.vnet.ibm.com> <48FF9A0E.90205@colorfullife.com> <20081027164529.GC6783@linux.vnet.ibm.com> <49061AF0.8070106@colorfullife.com> <20081027235201.GK6783@linux.vnet.ibm.com>
-In-Reply-To: <20081027235201.GK6783@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Mon, Oct 27, 2008 at 08:48:00PM +0100, Manfred Spraul wrote:
->   
->> Paul E. McKenney wrote:
->>     
->>> Agreed.  Perhaps a good change to make while introducing stall detection
->>> to preemptable RCU -- there would then be three examples, which should
->>> allow good generalization.
->>>   
->>>       
->> Two implementations. IMHO the current rcu-classic code should be dropped 
->> immediately when you add rcu-tree:
->> rcu-classic is buggy, as far as I can see long-running interrupts on nohz 
->> cpus are not handled correctly. I don't think it makes sense to keep it in 
->> the kernel in parallel to rcu-tree.
->>
->> I would propose that rcu-tree replaces rcu-classic.
->> I'll continue to update rcu-state, I think that it will achieve lower 
->> latency than rcu-tree [average/max time between call_rcu() and destruction 
->> callback] and it doesn't have the irq disabled loop to find the missing 
->> cpus.
->> If I find decent benchmarks where I can quantify the advantages, then I'll 
->> propose to merge rcu-state as a third implementation in addition to 
->> rcu-tree and rcu-preempt.
->>
->> Paul: What do you think?
->>     
->
-> In keeping with my reputation as a "conservative programmer", I would
-> suggest that rcuclassic.c remain for a year or so.  Distros branching
-> off during this time should continue making rcuclassic.c be the default.
-> Other uses should have rcutree.c as the default.  At the end of the year,
-> we remove rcuclassic.c.
->
-> All that said, one attractive aspect of your suggestion is immediately
-> removing rcuclassic.c would eliminate the need to do further work on it.  ;-)
->
->   
-How do you intend to handle nohz cpus?
-I would create a separate patch that removes rcuclassic.c. distros that 
-want to keep rcuclassic could just revert that change.
+This patch further improves autofs mount type usage and provides
+supplementry explanation of the changes made in the previous patch
+"autofs4 - cleanup autofs mount type usage".
 
---
-    Manfred
-> Your benchmarking proposal for rcu-state makes sense to me.
->
-> One other possible place for techniques from rcu-state may be in making
-> preemptable RCU scale.  This may take some time, as other parts of
-> the RT kernel have their limitations, but sooner or later people are
-> going to expect real-time response from even the largest machines.
-> In addition, preemptable RCU has a number of shorter-term issues:
->
-> 1.	RCU-boosting mechanism.  (I need to combine the best of
-> 	Steve's and my mechanisms.  The treercu.c effort has been
-> 	sort of a warm-up exercise for RCU-boosting.)
->
-> 2.	Reducing the latency contribution of the preemptable RCU
-> 	state machine (but note that moving this state machine out
-> 	of the scheduling-clock irq handler means more stuff to boost).
->
-> 3.	Porting the simpler dynticks interface from rcutree to
-> 	preemptable RCU.
->
-> 4.	Making the preemptable RCU tracing code use seqfile.
->
-> Hmmm...  Maybe it is (past) time for me to publish an RCU to-do list?
->
-> 							Thanx, Paul
->   
+Changes introduced in "autofs4 - cleanup autofs mount type usage":
+
+- the type assigned at mount when no type is given is changed
+  from 0 to AUTOFS_TYPE_INDIRECT. This was done because 0 and
+  AUTOFS_TYPE_INDIRECT were being treated implicitly as the same
+  type.
+
+- previously, an offset mount had it's type set to
+  AUTOFS_TYPE_DIRECT|AUTOFS_TYPE_OFFSET but the mount control
+  re-implementation needs to be able distinguish all three types.
+  So this was changed to make the type setting explicit.
+
+- a type AUTOFS_TYPE_ANY was added for use by the re-implementation
+  when checking if a given path is a mountpoint. It's not really a
+  type as we use this to ask if a given path is a mountpoint in the
+  autofs_dev_ioctl_ismountpoint() function.
+
+Changes introduced in this patch:
+
+- functions to set and test the autofs mount types have been added to
+  improve readability and make the type usage explicit.
+
+- the mount type is used from user space for the mount control
+  re-implementtion so, for consistency, all the definitions have
+  been moved to the user space include file include/linux/auto_fs4.h.
+
+Signed-off-by: Ian Kent <raven@themaw.net>
+Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
+---
+
+ fs/autofs4/autofs_i.h    |    2 -
+ fs/autofs4/dev-ioctl.c   |    4 +--
+ fs/autofs4/expire.c      |    4 +--
+ fs/autofs4/inode.c       |   14 +++++-----
+ fs/autofs4/waitq.c       |    8 +++---
+ include/linux/auto_fs4.h |   62 +++++++++++++++++++++++++++++++++++++++++++---
+ 6 files changed, 73 insertions(+), 21 deletions(-)
+
+diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
+index e0f16da..a768031 100644
+--- a/fs/autofs4/autofs_i.h
++++ b/fs/autofs4/autofs_i.h
+@@ -25,8 +25,6 @@
+ #define AUTOFS_DEV_IOCTL_IOC_FIRST	(AUTOFS_DEV_IOCTL_VERSION)
+ #define AUTOFS_DEV_IOCTL_IOC_COUNT	(AUTOFS_IOC_COUNT - 11)
+ 
+-#define AUTOFS_TYPE_TRIGGER	(AUTOFS_TYPE_DIRECT|AUTOFS_TYPE_OFFSET)
+-
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+ #include <linux/time.h>
+diff --git a/fs/autofs4/dev-ioctl.c b/fs/autofs4/dev-ioctl.c
+index e32ad6a..cd8c972 100644
+--- a/fs/autofs4/dev-ioctl.c
++++ b/fs/autofs4/dev-ioctl.c
+@@ -530,7 +530,7 @@ static int autofs_dev_ioctl_expire(struct file *fp,
+ 	how = param->arg1;
+ 	mnt = fp->f_path.mnt;
+ 
+-	if (sbi->type & AUTOFS_TYPE_TRIGGER)
++	if (autofs_type_trigger(sbi->type))
+ 		dentry = autofs4_expire_direct(sbi->sb, mnt, sbi, how);
+ 	else
+ 		dentry = autofs4_expire_indirect(sbi->sb, mnt, sbi, how);
+@@ -612,7 +612,7 @@ static int autofs_dev_ioctl_ismountpoint(struct file *fp,
+ 	param->arg2 = 0;
+ 
+ 	if (!fp || param->ioctlfd == -1) {
+-		if (type == AUTOFS_TYPE_ANY) {
++		if (autofs_type_any(type)) {
+ 			struct super_block *sb;
+ 
+ 			err = path_lookup(path, LOOKUP_FOLLOW, &nd);
+diff --git a/fs/autofs4/expire.c b/fs/autofs4/expire.c
+index 4b6fb3f..e3bd507 100644
+--- a/fs/autofs4/expire.c
++++ b/fs/autofs4/expire.c
+@@ -63,7 +63,7 @@ static int autofs4_mount_busy(struct vfsmount *mnt, struct dentry *dentry)
+ 		struct autofs_sb_info *sbi = autofs4_sbi(dentry->d_sb);
+ 
+ 		/* This is an autofs submount, we can't expire it */
+-		if (sbi->type == AUTOFS_TYPE_INDIRECT)
++		if (autofs_type_indirect(sbi->type))
+ 			goto done;
+ 
+ 		/*
+@@ -490,7 +490,7 @@ int autofs4_expire_multi(struct super_block *sb, struct vfsmount *mnt,
+ 	if (arg && get_user(do_now, arg))
+ 		return -EFAULT;
+ 
+-	if (sbi->type & AUTOFS_TYPE_TRIGGER)
++	if (autofs_type_trigger(sbi->type))
+ 		dentry = autofs4_expire_direct(sb, mnt, sbi, do_now);
+ 	else
+ 		dentry = autofs4_expire_indirect(sb, mnt, sbi, do_now);
+diff --git a/fs/autofs4/inode.c b/fs/autofs4/inode.c
+index 9408507..eee5199 100644
+--- a/fs/autofs4/inode.c
++++ b/fs/autofs4/inode.c
+@@ -197,9 +197,9 @@ static int autofs4_show_options(struct seq_file *m, struct vfsmount *mnt)
+ 	seq_printf(m, ",minproto=%d", sbi->min_proto);
+ 	seq_printf(m, ",maxproto=%d", sbi->max_proto);
+ 
+-	if (sbi->type & AUTOFS_TYPE_OFFSET)
++	if (autofs_type_offset(sbi->type))
+ 		seq_printf(m, ",offset");
+-	else if (sbi->type & AUTOFS_TYPE_DIRECT)
++	else if (autofs_type_direct(sbi->type))
+ 		seq_printf(m, ",direct");
+ 	else
+ 		seq_printf(m, ",indirect");
+@@ -284,13 +284,13 @@ static int parse_options(char *options, int *pipefd, uid_t *uid, gid_t *gid,
+ 			*maxproto = option;
+ 			break;
+ 		case Opt_indirect:
+-			*type = AUTOFS_TYPE_INDIRECT;
++			set_autofs_type_indirect(type);
+ 			break;
+ 		case Opt_direct:
+-			*type = AUTOFS_TYPE_DIRECT;
++			set_autofs_type_direct(type);
+ 			break;
+ 		case Opt_offset:
+-			*type = AUTOFS_TYPE_OFFSET;
++			set_autofs_type_offset(type);
+ 			break;
+ 		default:
+ 			return 1;
+@@ -338,7 +338,7 @@ int autofs4_fill_super(struct super_block *s, void *data, int silent)
+ 	sbi->sb = s;
+ 	sbi->version = 0;
+ 	sbi->sub_version = 0;
+-	sbi->type = AUTOFS_TYPE_INDIRECT;
++	set_autofs_type_indirect(&sbi->type);
+ 	sbi->min_proto = 0;
+ 	sbi->max_proto = 0;
+ 	mutex_init(&sbi->wq_mutex);
+@@ -380,7 +380,7 @@ int autofs4_fill_super(struct super_block *s, void *data, int silent)
+ 	}
+ 
+ 	root_inode->i_fop = &autofs4_root_operations;
+-	root_inode->i_op = sbi->type & AUTOFS_TYPE_TRIGGER ?
++	root_inode->i_op = autofs_type_trigger(sbi->type) ?
+ 			&autofs4_direct_root_inode_operations :
+ 			&autofs4_indirect_root_inode_operations;
+ 
+diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
+index 4b67c2a..acf88e8 100644
+--- a/fs/autofs4/waitq.c
++++ b/fs/autofs4/waitq.c
+@@ -337,7 +337,7 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
+ 		 * is very similar for indirect mounts except only dentrys
+ 		 * in the root of the autofs file system may be negative.
+ 		 */
+-		if (sbi->type & AUTOFS_TYPE_TRIGGER)
++		if (autofs_type_trigger(sbi->type))
+ 			return -ENOENT;
+ 		else if (!IS_ROOT(dentry->d_parent))
+ 			return -ENOENT;
+@@ -348,7 +348,7 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
+ 		return -ENOMEM;
+ 
+ 	/* If this is a direct mount request create a dummy name */
+-	if (IS_ROOT(dentry) && sbi->type & AUTOFS_TYPE_TRIGGER)
++	if (IS_ROOT(dentry) && autofs_type_trigger(sbi->type))
+ 		qstr.len = sprintf(name, "%p", dentry);
+ 	else {
+ 		qstr.len = autofs4_getpath(sbi, dentry, &name);
+@@ -406,11 +406,11 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
+ 				type = autofs_ptype_expire_multi;
+ 		} else {
+ 			if (notify == NFY_MOUNT)
+-				type = (sbi->type & AUTOFS_TYPE_TRIGGER) ?
++				type = autofs_type_trigger(sbi->type) ?
+ 					autofs_ptype_missing_direct :
+ 					 autofs_ptype_missing_indirect;
+ 			else
+-				type = (sbi->type & AUTOFS_TYPE_TRIGGER) ?
++				type = autofs_type_trigger(sbi->type) ?
+ 					autofs_ptype_expire_direct :
+ 					autofs_ptype_expire_indirect;
+ 		}
+diff --git a/include/linux/auto_fs4.h b/include/linux/auto_fs4.h
+index 2253716..55fa478 100644
+--- a/include/linux/auto_fs4.h
++++ b/include/linux/auto_fs4.h
+@@ -29,10 +29,64 @@
+ #define AUTOFS_EXP_IMMEDIATE		1
+ #define AUTOFS_EXP_LEAVES		2
+ 
+-#define AUTOFS_TYPE_ANY			0x0000
+-#define AUTOFS_TYPE_INDIRECT		0x0001
+-#define AUTOFS_TYPE_DIRECT		0x0002
+-#define AUTOFS_TYPE_OFFSET		0x0004
++#define AUTOFS_TYPE_ANY			0U
++#define AUTOFS_TYPE_INDIRECT		1U
++#define AUTOFS_TYPE_DIRECT		2U
++#define AUTOFS_TYPE_OFFSET		4U
++
++static inline void set_autofs_type_indirect(unsigned int *type)
++{
++	*type = AUTOFS_TYPE_INDIRECT;
++	return;
++}
++
++static inline unsigned int autofs_type_indirect(unsigned int type)
++{
++	return (type == AUTOFS_TYPE_INDIRECT);
++}
++
++static inline void set_autofs_type_direct(unsigned int *type)
++{
++	*type = AUTOFS_TYPE_DIRECT;
++	return;
++}
++
++static inline unsigned int autofs_type_direct(unsigned int type)
++{
++	return (type == AUTOFS_TYPE_DIRECT);
++}
++
++static inline void set_autofs_type_offset(unsigned int *type)
++{
++	*type = AUTOFS_TYPE_OFFSET;
++	return;
++}
++
++static inline unsigned int autofs_type_offset(unsigned int type)
++{
++	return (type == AUTOFS_TYPE_OFFSET);
++}
++
++static inline unsigned int autofs_type_trigger(unsigned int type)
++{
++	return (type == AUTOFS_TYPE_DIRECT || type == AUTOFS_TYPE_OFFSET);
++}
++
++/*
++ * This isn't really a type as we use it to say "no type set" to
++ * indicate we want to search for "any" mount in the
++ * autofs_dev_ioctl_ismountpoint() device ioctl function.
++ */
++static inline void set_autofs_type_any(unsigned int *type)
++{
++	*type = AUTOFS_TYPE_ANY;
++	return;
++}
++
++static inline unsigned int autofs_type_any(unsigned int type)
++{
++	return (type == AUTOFS_TYPE_ANY);
++}
+ 
+ /* Daemon notification packet types */
+ enum autofs_notify {
 
