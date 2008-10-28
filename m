@@ -1,29 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbYJ1QJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754363AbYJ1QJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754493AbYJ1QJd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 12:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYJ1QIl
+	id S1754363AbYJ1QJr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 12:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbYJ1QIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 12:08:41 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:60983 "EHLO
+	Tue, 28 Oct 2008 12:08:43 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:60984 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752713AbYJ1QIk (ORCPT
+	with ESMTP id S1752896AbYJ1QIk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 28 Oct 2008 12:08:40 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
-	mime-version:content-type;
-	b=B9vKCdyHGbnXIR2NxAiFon6aT+EtbSGtLyTl8PBE6YqeebVifarp1l9m8Mt2XGy7L
-	D/88lh5J+wp1SL8R3gs1g==
-Date: Tue, 28 Oct 2008 09:08:03 -0700 (PDT)
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type;
+	b=Ou0vX9aUyeEG5+QIQf2uJdk7ldnBAVamlgCbKZxvBUcJD4grkUbeGOM+J45gufYMN
+	GqYt43OW3unwARyUZSdYg==
+Date: Tue, 28 Oct 2008 09:08:06 -0700 (PDT)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Andrew Morton <akpm@linux-foundation.org>
 cc: Christoph Lameter <cl@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
        Peter Zijlstra <peterz@infradead.org>, Paul Menage <menage@google.com>,
        Derek Fults <dfults@sgi.com>, linux-kernel@vger.kernel.org
-Subject: [patch 1/7] cpusets: add dirty map to struct address_space
-Message-ID: <alpine.DEB.1.10.0810280259500.15270@chino.kir.corp.google.com>
+Subject: [patch 3/7] mm: make page writeback obey cpuset constraints
+In-Reply-To: <alpine.DEB.1.10.0810280259500.15270@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.1.10.0810280301300.15270@chino.kir.corp.google.com>
+References: <alpine.DEB.1.10.0810280259500.15270@chino.kir.corp.google.com>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -33,37 +35,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Christoph Lameter <cl@linux-foundation.org>
 
-In a NUMA system it is helpful to know where the dirty pages of a mapping
-are located.  That way we will be able to implement writeout for
-applications that are constrained to a portion of the memory of the
-system as required by cpusets.
+Currently dirty throttling does not work properly in a cpuset.
 
-This patch implements the management of dirty node maps for an address
-space through the following functions:
+If, for example, a cpuset contains only 1/10th of available memory then
+all of the memory of a cpuset can be dirtied without any writes being
+triggered.  If all of the cpuset's memory is dirty then only 10% of total
+memory is dirty.  The background writeback threshold is usually set at
+10% and the synchrononous threshold at 40%.  So we are still below the
+global limits while the dirty ratio in the cpuset is 100%!  Writeback
+throttling and background writeout do not work at all in such scenarios.
 
-cpuset_clear_dirty_nodes(mapping)	Clear the map of dirty nodes
+This patch makes dirty writeout cpuset aware.  When determining the dirty
+limits in get_dirty_limits(), we calculate values based on the nodes that
+are reachable from the current process (that has been dirtying the page).
+Then we can trigger writeout based on the dirty ratio of the memory in
+the cpuset.
 
-cpuset_update_nodes(mapping, page)	Record a node in the dirty nodes
-					map
-
-cpuset_init_dirty_nodes(mapping)	Initialization of the map
-
-
-The dirty map may be stored either directly in the mapping (for NUMA
-systems with less then BITS_PER_LONG nodes) or separately allocated for
-systems with a large number of nodes (f.e. ia64 with 1024 nodes).
-
-Updating the dirty map may involve allocating it first for large
-configurations.  Therefore, we protect the allocation and setting of a
-node in the map through the tree_lock.  The tree_lock is already taken
-when a page is dirtied so there is no additional locking overhead if we
-insert the updating of the nodemask there.
-
-The dirty map is only cleared (or freed) when the inode is cleared.  At
-that point no pages are attached to the inode anymore and therefore it
-can be done without any locking. The dirty map therefore records all nodes
-that have been used for dirty pages by that inode until the inode is no
-longer used.
+We trigger writeout in a a cpuset specific way.  We go through the dirty
+inodes and search for inodes that have dirty pages on the nodes of the
+active cpuset.  If an inode fulfills that requirement then we begin
+writeout of the dirty pages of that inode.
 
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 Cc: Nick Piggin <npiggin@suse.de>
@@ -72,269 +63,418 @@ Cc: Paul Menage <menage@google.com>
 Cc: Derek Fults <dfults@sgi.com>
 Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- fs/buffer.c               |    2 +
- fs/fs-writeback.c         |    7 ++++++
- fs/inode.c                |    3 ++
- include/linux/cpuset.h    |   51 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/fs.h        |    7 ++++++
- include/linux/writeback.h |    2 +
- kernel/cpuset.c           |   53 +++++++++++++++++++++++++++++++++++++++++++++
- mm/page-writeback.c       |    2 +
- 8 files changed, 127 insertions(+), 0 deletions(-)
+ include/linux/cpuset.h    |   14 +++++
+ include/linux/writeback.h |   13 ++++-
+ kernel/cpuset.c           |   36 +++++++++++++
+ mm/backing-dev.c          |   12 ++---
+ mm/page-writeback.c       |  126 +++++++++++++++++++++++++-------------------
+ 5 files changed, 138 insertions(+), 63 deletions(-)
 
-diff --git a/fs/buffer.c b/fs/buffer.c
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -41,6 +41,7 @@
- #include <linux/bitops.h>
- #include <linux/mpage.h>
- #include <linux/bit_spinlock.h>
-+#include <linux/cpuset.h>
- 
- static int fsync_buffers_list(spinlock_t *lock, struct list_head *list);
- 
-@@ -719,6 +720,7 @@ static int __set_page_dirty(struct page *page,
- 		radix_tree_tag_set(&mapping->page_tree,
- 				page_index(page), PAGECACHE_TAG_DIRTY);
- 	}
-+	cpuset_update_dirty_nodes(mapping, page);
- 	spin_unlock_irq(&mapping->tree_lock);
- 	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
- 
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -23,6 +23,7 @@
- #include <linux/blkdev.h>
- #include <linux/backing-dev.h>
- #include <linux/buffer_head.h>
-+#include <linux/cpuset.h>
- #include "internal.h"
- 
- 
-@@ -487,6 +488,12 @@ void generic_sync_sb_inodes(struct super_block *sb,
- 			continue;		/* blockdev has wrong queue */
- 		}
- 
-+		if (!cpuset_intersects_dirty_nodes(mapping, wbc->nodes)) {
-+			/* No node pages under writeback */
-+			requeue_io(inode);
-+			continue;
-+		}
-+
- 		/* Was this inode dirtied after sync_sb_inodes was called? */
- 		if (time_after(inode->dirtied_when, start))
- 			break;
-diff --git a/fs/inode.c b/fs/inode.c
---- a/fs/inode.c
-+++ b/fs/inode.c
-@@ -22,6 +22,7 @@
- #include <linux/bootmem.h>
- #include <linux/inotify.h>
- #include <linux/mount.h>
-+#include <linux/cpuset.h>
- 
- /*
-  * This is needed for the following functions:
-@@ -167,6 +168,7 @@ static struct inode *alloc_inode(struct super_block *sb)
- 		mapping->assoc_mapping = NULL;
- 		mapping->backing_dev_info = &default_backing_dev_info;
- 		mapping->writeback_index = 0;
-+		cpuset_init_dirty_nodes(mapping);
- 
- 		/*
- 		 * If the block_device provides a backing_dev_info for client
-@@ -271,6 +273,7 @@ void clear_inode(struct inode *inode)
- 		bd_forget(inode);
- 	if (S_ISCHR(inode->i_mode) && inode->i_cdev)
- 		cd_forget(inode);
-+	cpuset_clear_dirty_nodes(inode->i_mapping);
- 	inode->i_state = I_CLEAR;
- }
- 
 diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
 --- a/include/linux/cpuset.h
 +++ b/include/linux/cpuset.h
-@@ -80,6 +80,36 @@ extern int current_cpuset_is_being_rebound(void);
+@@ -12,6 +12,7 @@
+ #include <linux/cpumask.h>
+ #include <linux/nodemask.h>
+ #include <linux/cgroup.h>
++#include <linux/writeback.h>
  
- extern void rebuild_sched_domains(void);
+ #ifdef CONFIG_CPUSETS
  
-+/*
-+ * We need macros since struct address_space is not defined yet
-+ */
-+#if MAX_NUMNODES <= BITS_PER_LONG
-+#define cpuset_init_dirty_nodes(__mapping)				\
-+	(__mapping)->dirty_nodes = NODE_MASK_NONE
-+
-+#define cpuset_update_dirty_nodes(__mapping, __page)			\
-+	node_set(page_to_nid(__page), (__mapping)->dirty_nodes);
-+
-+#define cpuset_clear_dirty_nodes(__mapping)				\
-+	(__mapping)->dirty_nodes = NODE_MASK_NONE
-+
-+#define cpuset_intersects_dirty_nodes(__mapping, __nodemask_ptr)	\
-+	(!(__nodemask_ptr) ||						\
-+	 nodes_intersects((__mapping)->dirty_nodes, *(__nodemask_ptr)))
-+
-+#else
-+struct address_space;
-+
-+#define cpuset_init_dirty_nodes(__mapping)				\
-+	(__mapping)->dirty_nodes = NULL
-+
-+extern void cpuset_update_dirty_nodes(struct address_space *mapping,
-+				      struct page *page);
-+extern void cpuset_clear_dirty_nodes(struct address_space *mapping);
-+extern int cpuset_intersects_dirty_nodes(struct address_space *mapping,
-+					 nodemask_t *mask);
-+#endif
+@@ -110,6 +111,11 @@ extern int cpuset_intersects_dirty_nodes(struct address_space *mapping,
+ 					 nodemask_t *mask);
+ #endif
+ 
++int cpuset_populate_dirty_limits(struct dirty_limits *dl,
++				 unsigned long *dirtyable_memory,
++				 unsigned long *nr_mapped,
++				 const nodemask_t *nodes);
 +
  #else /* !CONFIG_CPUSETS */
  
  static inline int cpuset_init_early(void) { return 0; }
-@@ -163,6 +193,27 @@ static inline void rebuild_sched_domains(void)
- 	partition_sched_domains(1, NULL, NULL);
+@@ -214,6 +220,14 @@ static inline int cpuset_intersects_dirty_nodes(struct address_space *mapping,
+ 	return 1;
  }
  
-+struct address_space;
-+
-+static inline void cpuset_init_dirty_nodes(struct address_space *mapping)
++static inline int cpuset_populate_dirty_limits(struct dirty_limits *dl,
++					       unsigned long *dirtyable_memory,
++					       unsigned long *nr_mapped,
++					       const nodemask_t *nodes)
 +{
-+}
-+
-+static inline void cpuset_update_dirty_nodes(struct address_space *mapping,
-+					     struct page *page)
-+{
-+}
-+
-+static inline void cpuset_clear_dirty_nodes(struct address_space *mapping)
-+{
-+}
-+
-+static inline int cpuset_intersects_dirty_nodes(struct address_space *mapping,
-+						nodemask_t *mask)
-+{
-+	return 1;
++	return 0;
 +}
 +
  #endif /* !CONFIG_CPUSETS */
  
  #endif /* _LINUX_CPUSET_H */
-diff --git a/include/linux/fs.h b/include/linux/fs.h
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -544,6 +544,13 @@ struct address_space {
- 	spinlock_t		private_lock;	/* for use by the address_space */
- 	struct list_head	private_list;	/* ditto */
- 	struct address_space	*assoc_mapping;	/* ditto */
-+#ifdef CONFIG_CPUSETS
-+#if MAX_NUMNODES <= BITS_PER_LONG
-+	nodemask_t		dirty_nodes;	/* nodes with dirty pages */
-+#else
-+	nodemask_t		*dirty_nodes;	/* pointer to mask, if dirty */
-+#endif
-+#endif
- } __attribute__((aligned(sizeof(long))));
- 	/*
- 	 * On most architectures that alignment is already the case; but
 diff --git a/include/linux/writeback.h b/include/linux/writeback.h
 --- a/include/linux/writeback.h
 +++ b/include/linux/writeback.h
-@@ -72,6 +72,8 @@ struct writeback_control {
- 	 * so we use a single control to update them
- 	 */
- 	unsigned no_nrwrite_index_update:1;
-+
-+	nodemask_t *nodes;		/* Nodemask to writeback */
+@@ -76,6 +76,15 @@ struct writeback_control {
+ 	nodemask_t *nodes;		/* Nodemask to writeback */
  };
  
++struct dirty_limits {
++	long thresh_background;
++	long thresh_dirty;
++	long thresh_bdi_dirty;
++	unsigned long nr_dirty;
++	unsigned long nr_unstable;
++	unsigned long nr_writeback;
++};
++
  /*
+  * fs/fs-writeback.c
+  */	
+@@ -127,8 +136,8 @@ struct file;
+ int dirty_writeback_centisecs_handler(struct ctl_table *, int, struct file *,
+ 				      void __user *, size_t *, loff_t *);
+ 
+-void get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
+-		 struct backing_dev_info *bdi);
++int get_dirty_limits(struct dirty_limits *dl, struct backing_dev_info *bdi,
++		     nodemask_t *nodes);
+ 
+ void page_writeback_init(void);
+ void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
 diff --git a/kernel/cpuset.c b/kernel/cpuset.c
 --- a/kernel/cpuset.c
 +++ b/kernel/cpuset.c
-@@ -16,6 +16,7 @@
-  *  2006 Rework by Paul Menage to use generic cgroups
-  *  2008 Rework of the scheduler domains and CPU hotplug handling
-  *       by Max Krasnyansky
-+ *  2008 Cpuset writeback by Christoph Lameter
-  *
-  *  This file is subject to the terms and conditions of the GNU General Public
-  *  License.  See the file COPYING in the main directory of the Linux
-@@ -2323,6 +2324,58 @@ int cpuset_mem_spread_node(void)
+@@ -2375,6 +2375,42 @@ int cpuset_intersects_dirty_nodes(struct address_space *mapping,
  }
- EXPORT_SYMBOL_GPL(cpuset_mem_spread_node);
+ #endif
  
-+#if MAX_NUMNODES > BITS_PER_LONG
 +/*
-+ * Special functions for NUMA systems with a large number of nodes.  The
-+ * nodemask is pointed to from the address_space structure.  The attachment of
-+ * the dirty_nodes nodemask is protected by the tree_lock.  The nodemask is
-+ * freed only when the inode is cleared (and therefore unused, thus no locking
-+ * is necessary).
++ * Calculate the limits relative to the current cpuset
++ *
++ * We do not disregard highmem because all nodes (except maybe node 0) have
++ * either all memory in HIGHMEM (32-bit) or all memory in non-HIGHMEM (64-bit).
++ * If we would disregard highmem, then cpuset throttling would not work on
++ * 32-bit.
 + */
-+void cpuset_update_dirty_nodes(struct address_space *mapping,
-+			       struct page *page)
++int cpuset_populate_dirty_limits(struct dirty_limits *dl,
++				 unsigned long *dirtyable_memory,
++				 unsigned long *nr_mapped,
++				 const nodemask_t *nodes)
 +{
-+	nodemask_t *nodes = mapping->dirty_nodes;
-+	int node = page_to_nid(page);
++	int node;
 +
-+	if (!nodes) {
-+		nodes = kmalloc(sizeof(nodemask_t), GFP_ATOMIC);
-+		if (!nodes)
-+			return;
-+
-+		*nodes = NODE_MASK_NONE;
-+		mapping->dirty_nodes = nodes;
-+	}
-+	node_set(node, *nodes);
-+}
-+
-+void cpuset_clear_dirty_nodes(struct address_space *mapping)
-+{
-+	nodemask_t *nodes = mapping->dirty_nodes;
-+
-+	if (nodes) {
-+		mapping->dirty_nodes = NULL;
-+		kfree(nodes);
-+	}
-+}
-+
-+/*
-+ * Called without tree_lock.  The nodemask is only freed when the inode is
-+ * cleared and therefore this is safe.
-+ */
-+int cpuset_intersects_dirty_nodes(struct address_space *mapping,
-+				  nodemask_t *mask)
-+{
-+	nodemask_t *dirty_nodes = mapping->dirty_nodes;
-+
-+	if (!mask)
-+		return 1;
-+	if (!dirty_nodes)
++	if (likely(!nodes || nodes_subset(node_online_map, *nodes)))
 +		return 0;
-+	return nodes_intersects(*dirty_nodes, *mask);
++	for_each_node_mask(node, *nodes) {
++		if (!node_online(node))
++			continue;
++		dl->nr_dirty += node_page_state(node, NR_FILE_DIRTY);
++		dl->nr_unstable += node_page_state(node, NR_UNSTABLE_NFS);
++		dl->nr_writeback += node_page_state(node, NR_WRITEBACK);
++		dirtyable_memory +=
++			node_page_state(node, NR_ACTIVE_ANON) +
++			node_page_state(node, NR_ACTIVE_FILE) +
++			node_page_state(node, NR_INACTIVE_ANON) +
++			node_page_state(node, NR_INACTIVE_FILE) +
++			node_page_state(node, NR_FREE_PAGES);
++		nr_mapped +=
++			node_page_state(node, NR_FILE_MAPPED) +
++			node_page_state(node, NR_ANON_PAGES);
++	}
++	return 1;
 +}
-+#endif
 +
  /**
   * cpuset_mems_allowed_intersects - Does @tsk1's mems_allowed intersect @tsk2's?
   * @tsk1: pointer to task_struct of some task.
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -24,11 +24,9 @@ static void bdi_debug_init(void)
+ static int bdi_debug_stats_show(struct seq_file *m, void *v)
+ {
+ 	struct backing_dev_info *bdi = m->private;
+-	long background_thresh;
+-	long dirty_thresh;
+-	long bdi_thresh;
++	struct dirty_limits dl;
+ 
+-	get_dirty_limits(&background_thresh, &dirty_thresh, &bdi_thresh, bdi);
++	get_dirty_limits(&dl, bdi, NULL);
+ 
+ #define K(x) ((x) << (PAGE_SHIFT - 10))
+ 	seq_printf(m,
+@@ -39,9 +37,9 @@ static int bdi_debug_stats_show(struct seq_file *m, void *v)
+ 		   "BackgroundThresh: %8lu kB\n",
+ 		   (unsigned long) K(bdi_stat(bdi, BDI_WRITEBACK)),
+ 		   (unsigned long) K(bdi_stat(bdi, BDI_RECLAIMABLE)),
+-		   K(bdi_thresh),
+-		   K(dirty_thresh),
+-		   K(background_thresh));
++		   K(dl.thresh_bdi_dirty),
++		   K(dl.thresh_dirty),
++		   K(dl.thresh_background));
+ #undef K
+ 
+ 	return 0;
 diff --git a/mm/page-writeback.c b/mm/page-writeback.c
 --- a/mm/page-writeback.c
 +++ b/mm/page-writeback.c
-@@ -34,6 +34,7 @@
- #include <linux/syscalls.h>
- #include <linux/buffer_head.h>
- #include <linux/pagevec.h>
-+#include <linux/cpuset.h>
+@@ -320,13 +320,16 @@ EXPORT_SYMBOL(bdi_set_max_ratio);
+  * clamping level.
+  */
+ 
+-static unsigned long highmem_dirtyable_memory(unsigned long total)
++static unsigned long highmem_dirtyable_memory(nodemask_t *nodes,
++					      unsigned long total)
+ {
+ #ifdef CONFIG_HIGHMEM
+ 	int node;
+ 	unsigned long x = 0;
+ 
+-	for_each_node_state(node, N_HIGH_MEMORY) {
++	if (!nodes)
++		nodes = &node_states[N_HIGH_MEMORY];
++	for_each_node_mask(node, *nodes) {
+ 		struct zone *z =
+ 			&NODE_DATA(node)->node_zones[ZONE_HIGHMEM];
+ 
+@@ -357,21 +360,37 @@ unsigned long determine_dirtyable_memory(void)
+ 	x = global_page_state(NR_FREE_PAGES) + global_lru_pages();
+ 
+ 	if (!vm_highmem_is_dirtyable)
+-		x -= highmem_dirtyable_memory(x);
++		x -= highmem_dirtyable_memory(NULL, x);
+ 
+ 	return x + 1;	/* Ensure that we never return 0 */
+ }
+ 
+-void
+-get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
+-		 struct backing_dev_info *bdi)
++int
++get_dirty_limits(struct dirty_limits *dl, struct backing_dev_info *bdi,
++		 nodemask_t *nodes)
+ {
+ 	int background_ratio;		/* Percentages */
+ 	int dirty_ratio;
+ 	long background;
+ 	long dirty;
+-	unsigned long available_memory = determine_dirtyable_memory();
++	unsigned long dirtyable_memory = 0;
++	unsigned long nr_mapped = 0;
+ 	struct task_struct *tsk;
++	int is_subset;
++
++	memset(dl, 0, sizeof(struct dirty_limits));
++	is_subset = cpuset_populate_dirty_limits(dl, &dirtyable_memory,
++						 &nr_mapped, nodes);
++	if (!is_subset) {
++		dl->nr_dirty = global_page_state(NR_FILE_DIRTY);
++		dl->nr_unstable = global_page_state(NR_UNSTABLE_NFS);
++		dl->nr_writeback = global_page_state(NR_WRITEBACK);
++		dirtyable_memory = determine_dirtyable_memory();
++		nr_mapped = global_page_state(NR_FILE_MAPPED) +
++			global_page_state(NR_ANON_PAGES);
++	} else
++		dirtyable_memory -= highmem_dirtyable_memory(nodes,
++							dirtyable_memory);
+ 
+ 	dirty_ratio = vm_dirty_ratio;
+ 	if (dirty_ratio < 5)
+@@ -381,15 +400,15 @@ get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
+ 	if (background_ratio >= dirty_ratio)
+ 		background_ratio = dirty_ratio / 2;
+ 
+-	background = (background_ratio * available_memory) / 100;
+-	dirty = (dirty_ratio * available_memory) / 100;
++	background = (background_ratio * dirtyable_memory) / 100;
++	dirty = (dirty_ratio * dirtyable_memory) / 100;
+ 	tsk = current;
+ 	if (tsk->flags & PF_LESS_THROTTLE || rt_task(tsk)) {
+ 		background += background / 4;
+ 		dirty += dirty / 4;
+ 	}
+-	*pbackground = background;
+-	*pdirty = dirty;
++	dl->thresh_background = background;
++	dl->thresh_dirty = dirty;
+ 
+ 	if (bdi) {
+ 		u64 bdi_dirty;
+@@ -407,10 +426,11 @@ get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
+ 		if (bdi_dirty > (dirty * bdi->max_ratio) / 100)
+ 			bdi_dirty = dirty * bdi->max_ratio / 100;
+ 
+-		*pbdi_dirty = bdi_dirty;
+-		clip_bdi_dirty_limit(bdi, dirty, pbdi_dirty);
+-		task_dirty_limit(current, pbdi_dirty);
++		dl->thresh_bdi_dirty = bdi_dirty;
++		clip_bdi_dirty_limit(bdi, dirty, &dl->thresh_bdi_dirty);
++		task_dirty_limit(current, &dl->thresh_bdi_dirty);
+ 	}
++	return is_subset;
+ }
  
  /*
-  * The maximum number of pages to writeout in a single bdflush/kupdate
-@@ -1104,6 +1105,7 @@ int __set_page_dirty_nobuffers(struct page *page)
- 			radix_tree_tag_set(&mapping->page_tree,
- 				page_index(page), PAGECACHE_TAG_DIRTY);
+@@ -424,9 +444,7 @@ static void balance_dirty_pages(struct address_space *mapping)
+ {
+ 	long nr_reclaimable, bdi_nr_reclaimable;
+ 	long nr_writeback, bdi_nr_writeback;
+-	long background_thresh;
+-	long dirty_thresh;
+-	long bdi_thresh;
++	struct dirty_limits dl;
+ 	unsigned long pages_written = 0;
+ 	unsigned long write_chunk = sync_writeback_pages();
+ 
+@@ -441,17 +459,16 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 			.range_cyclic	= 1,
+ 		};
+ 
+-		get_dirty_limits(&background_thresh, &dirty_thresh,
+-				&bdi_thresh, bdi);
+-
+-		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
+-					global_page_state(NR_UNSTABLE_NFS);
+-		nr_writeback = global_page_state(NR_WRITEBACK);
++		if (get_dirty_limits(&dl, bdi, &cpuset_current_mems_allowed))
++			wbc.nodes = &cpuset_current_mems_allowed;
++		nr_reclaimable = dl.nr_dirty + dl.nr_unstable;
++		nr_writeback = dl.nr_writeback;
+ 
+ 		bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
+ 		bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+ 
+-		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
++		if (bdi_nr_reclaimable + bdi_nr_writeback <=
++							dl.thresh_bdi_dirty)
+ 			break;
+ 
+ 		/*
+@@ -460,7 +477,7 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 		 * when the bdi limits are ramping up.
+ 		 */
+ 		if (nr_reclaimable + nr_writeback <
+-				(background_thresh + dirty_thresh) / 2)
++				(dl.thresh_background + dl.thresh_dirty) / 2)
+ 			break;
+ 
+ 		if (!bdi->dirty_exceeded)
+@@ -475,8 +492,12 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 		if (bdi_nr_reclaimable) {
+ 			writeback_inodes(&wbc);
+ 			pages_written += write_chunk - wbc.nr_to_write;
+-			get_dirty_limits(&background_thresh, &dirty_thresh,
+-				       &bdi_thresh, bdi);
++			get_dirty_limits(&dl, bdi,
++					 &cpuset_current_mems_allowed);
++			nr_reclaimable = dl.nr_dirty + dl.nr_unstable;
++			if (nr_reclaimable + dl.nr_writeback <=
++							dl.thresh_dirty)
++				break;
  		}
-+		cpuset_update_dirty_nodes(mapping, page);
- 		spin_unlock_irq(&mapping->tree_lock);
- 		if (mapping->host) {
- 			/* !PageAnon && !swapper_space */
+ 
+ 		/*
+@@ -489,7 +510,7 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 		 * actually dirty; with m+n sitting in the percpu
+ 		 * deltas.
+ 		 */
+-		if (bdi_thresh < 2*bdi_stat_error(bdi)) {
++		if (dl.thresh_bdi_dirty < 2*bdi_stat_error(bdi)) {
+ 			bdi_nr_reclaimable = bdi_stat_sum(bdi, BDI_RECLAIMABLE);
+ 			bdi_nr_writeback = bdi_stat_sum(bdi, BDI_WRITEBACK);
+ 		} else if (bdi_nr_reclaimable) {
+@@ -497,7 +518,8 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+ 		}
+ 
+-		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
++		if (bdi_nr_reclaimable + bdi_nr_writeback <=
++							dl.thresh_bdi_dirty)
+ 			break;
+ 		if (pages_written >= write_chunk)
+ 			break;		/* We've done our duty */
+@@ -505,8 +527,8 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 		congestion_wait(WRITE, HZ/10);
+ 	}
+ 
+-	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
+-			bdi->dirty_exceeded)
++	if (bdi->dirty_exceeded && nr_reclaimable + dl.nr_writeback <=
++							dl.thresh_dirty)
+ 		bdi->dirty_exceeded = 0;
+ 
+ 	if (writeback_in_progress(bdi))
+@@ -521,10 +543,9 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 	 * background_thresh, to keep the amount of dirty memory low.
+ 	 */
+ 	if ((laptop_mode && pages_written) ||
+-			(!laptop_mode && (global_page_state(NR_FILE_DIRTY)
+-					  + global_page_state(NR_UNSTABLE_NFS)
+-					  > background_thresh)))
+-		pdflush_operation(background_writeout, 0, NULL);
++		(!laptop_mode && (nr_reclaimable > dl.thresh_background)))
++		pdflush_operation(background_writeout, 0,
++				  &cpuset_current_mems_allowed);
+ }
+ 
+ void set_page_dirty_balance(struct page *page, int page_mkwrite)
+@@ -581,22 +602,20 @@ EXPORT_SYMBOL(balance_dirty_pages_ratelimited_nr);
+ 
+ void throttle_vm_writeout(gfp_t gfp_mask)
+ {
+-	long background_thresh;
+-	long dirty_thresh;
++	struct dirty_limits dl;
+ 
+         for ( ; ; ) {
+-		get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
++		get_dirty_limits(&dl, NULL, &node_states[N_HIGH_MEMORY]);
+ 
+-                /*
+-                 * Boost the allowable dirty threshold a bit for page
+-                 * allocators so they don't get DoS'ed by heavy writers
+-                 */
+-                dirty_thresh += dirty_thresh / 10;      /* wheeee... */
++		/*
++		 * Boost the allowable dirty threshold a bit for page
++		 * allocators so they don't get DoS'ed by heavy writers
++		 */
++		dl.thresh_dirty += dl.thresh_dirty / 10; /* wheeee... */
+ 
+-                if (global_page_state(NR_UNSTABLE_NFS) +
+-			global_page_state(NR_WRITEBACK) <= dirty_thresh)
+-                        	break;
+-                congestion_wait(WRITE, HZ/10);
++		if (dl.nr_unstable + dl.nr_writeback <= dl.thresh_dirty)
++			break;
++		congestion_wait(WRITE, HZ/10);
+ 
+ 		/*
+ 		 * The caller might hold locks which can prevent IO completion
+@@ -612,7 +631,7 @@ void throttle_vm_writeout(gfp_t gfp_mask)
+  * writeback at least _min_pages, and keep writing until the amount of dirty
+  * memory is less than the background threshold, or until we're all clean.
+  */
+-static void background_writeout(unsigned long _min_pages, nodemask_t *unused)
++static void background_writeout(unsigned long _min_pages, nodemask_t *nodes)
+ {
+ 	long min_pages = _min_pages;
+ 	struct writeback_control wbc = {
+@@ -625,13 +644,12 @@ static void background_writeout(unsigned long _min_pages, nodemask_t *unused)
+ 	};
+ 
+ 	for ( ; ; ) {
+-		long background_thresh;
+-		long dirty_thresh;
++		struct dirty_limits dl;
+ 
+-		get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
+-		if (global_page_state(NR_FILE_DIRTY) +
+-			global_page_state(NR_UNSTABLE_NFS) < background_thresh
+-				&& min_pages <= 0)
++		if (get_dirty_limits(&dl, NULL, nodes))
++			wbc.nodes = nodes;
++		if (dl.nr_dirty + dl.nr_unstable < dl.thresh_background &&
++		    min_pages <= 0)
+ 			break;
+ 		wbc.more_io = 0;
+ 		wbc.encountered_congestion = 0;
