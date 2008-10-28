@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753857AbYJ1OrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbYJ1OsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753857AbYJ1OrX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 10:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYJ1OrN
+	id S1754084AbYJ1OsS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 10:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYJ1OsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 10:47:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44056 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750764AbYJ1OrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 10:47:13 -0400
-From: Avi Kivity <avi@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] KVM fixes for 2.6.28-rc2
-Date: Tue, 28 Oct 2008 16:47:04 +0200
-Message-Id: <1225205224-1119-1-git-send-email-avi@redhat.com>
+	Tue, 28 Oct 2008 10:48:06 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56265 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752163AbYJ1OsF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 10:48:05 -0400
+Date: Tue, 28 Oct 2008 07:48:16 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Mike Snitzer <snitzer@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH][RFC] trace: profile likely and unlikely annotations
+Message-ID: <20081028074816.04193e04@infradead.org>
+In-Reply-To: <20081028143720.GD8869@mit.edu>
+References: <170fa0d20810271529g3c64ae89me29ed8b65a9c3b5e@mail.gmail.com>
+	<alpine.DEB.1.10.0810271918390.19731@gandalf.stny.rr.com>
+	<20081028001340.GB9797@mit.edu>
+	<alpine.DEB.1.10.0810272316270.802@gandalf.stny.rr.com>
+	<20081028143720.GD8869@mit.edu>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the repo and branch @
+On Tue, 28 Oct 2008 10:37:20 -0400
+Theodore Tso <tytso@mit.edu> wrote:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git kvm-updates/2.6.28
+> On Tue, Oct 28, 2008 at 12:12:48AM -0400, Steven Rostedt wrote:
+> > 
+> > Andrew Morton recently suggested having an in-kernel way to profile
+> > likely and unlikely macros. This patch achieves that goal.
+> 
+> Maybe I'm confused, but when I read through the patch, it looks like
+> that 'hit' is incremented whenever the condition is true, and 'missed'
+> is incremented whenever the condition is false, correct?
+> 
+> Is that what you intended?  So for profile_unlikely, "missed" is good,
+> and "hit" is bad, and for profile_likely, "hit" is good, and "missed"
+> is bad.  That seems horribly confusing.
+> 
+> If that wasn't what you intended, the meaning of "hit" and "missed"
+> seems to be highly confusing, either way.  Can we perhaps use some
+> other terminology?  Simply using "True" and "False" would be better,
+> since there's no possible confusion what the labels mean.
 
-To receive a bunch of kvm fixes.  Most notably, fix the paravirt mmu bug
-that prevents booting recent Linux kernels on kvm.
+or "correct" and "incorrect"
 
-Shortlog, diffstat:
 
-Avi Kivity (1):
-      KVM: Future-proof device assignment ABI
 
-Marcelo Tosatti (1):
-      KVM: MMU: sync root on paravirt TLB flush
-
-Sheng Yang (1):
-      KVM: Fix guest shared interrupt with in-kernel irqchip
-
-Xiantao Zhang (2):
-      KVM: ia64: Fix halt emulation logic
-      KVM: ia64: Makefile fix for forcing to re-generate asm-offsets.h
-
- arch/ia64/include/asm/kvm_host.h |    6 ++-
- arch/ia64/kvm/Makefile           |    8 +++-
- arch/ia64/kvm/kvm-ia64.c         |   80 +++++++++++++++++++------------------
- arch/ia64/kvm/kvm_fw.c           |    9 +++-
- arch/ia64/kvm/process.c          |    2 +-
- arch/x86/include/asm/kvm_host.h  |    3 +
- arch/x86/kvm/i8254.c             |   11 ++++-
- arch/x86/kvm/i8254.h             |    1 +
- arch/x86/kvm/mmu.c               |    1 +
- arch/x86/kvm/x86.c               |    6 ++-
- include/linux/kvm.h              |    6 +++
- include/linux/kvm_host.h         |    7 +++-
- virt/kvm/irq_comm.c              |   42 ++++++++++++++++++-
- virt/kvm/kvm_main.c              |   12 ++++--
- 14 files changed, 138 insertions(+), 56 deletions(-)
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
