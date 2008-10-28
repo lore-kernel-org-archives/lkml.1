@@ -1,86 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752146AbYJ1B0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752966AbYJ1BbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752146AbYJ1B0Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 21:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYJ1B0E
+	id S1752966AbYJ1BbK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 21:31:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYJ1Ba4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 21:26:04 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:28366 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752641AbYJ1B0B (ORCPT
+	Mon, 27 Oct 2008 21:30:56 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:45928 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751668AbYJ1Ba4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 21:26:01 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Am4DAM8S9kh5LE2tgWdsb2JhbACTYAEBFiKuDIFr
-X-IronPort-AV: E=Sophos;i="4.33,495,1220193000"; 
-   d="scan'208";a="219469203"
-Date: Tue, 28 Oct 2008 12:25:57 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] B+Tree library
-Message-ID: <20081028012557.GP18495@disturbed>
-Mail-Followup-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-	linux-kernel@vger.kernel.org
-References: <20081026124643.GA1328@logfs.org>
+	Mon, 27 Oct 2008 21:30:56 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=T5tTEIBlI0gNRKZUerEA:9 a=fezsDhuPEPdoI5ZDpYwA:7 a=M7v6c7U4bz7mbDi9LnLAr5zC5ToA:4 a=ef_bbLI2zPQA:10 a=JKVO69kjPAcA:10
+Message-ID: <49066B4D.8050109@shaw.ca>
+Date: Mon, 27 Oct 2008 19:30:53 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081026124643.GA1328@logfs.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Harald Dunkel <harald.dunkel@t-online.de>
+CC: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.27.3, ata_piix: cannot play audio CD, "disk change detected"
+References: <fa.tiFnp4ilM9dVHkjmbJfon9+fKdc@ifi.uio.no>
+In-Reply-To: <fa.tiFnp4ilM9dVHkjmbJfon9+fKdc@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 26, 2008 at 01:46:44PM +0100, Jörn Engel wrote:
-> The idea of using btrees in the kernel is not exactly new.  They have a
-> number of advantages over rbtrees and hashtables, but also a number of
-> drawbacks.  More importantly, logfs already makes use of them and -
-> since I don't want any incompatible code to get merged and suffer the
-> trouble it creates - I would like to discuss my implementation and where
-> it makes sense and where it doesn't.
+Harald Dunkel wrote:
+> Hi folks,
 > 
-> General advantages of btrees are memory density and efficient use of
-> cachelines.  Hashtables are either too small and degrade into linked
-> list performance, or they are too large and waste memory.  With changing
-> workloads, both may be true on the same system.  Rbtrees have a bad
-> fanout of less than 2 (they are not actually balanced binary trees),
-> hence reading a fairly large number of cachelines to each lookup.
+> If I insert an audio CD in my sata drive to play it via grip, then
+> it fails. Grip does not even show the list of audio tracks, nor does
+> it play the CD. Instead there is a kernel message saying
 > 
-> Main disadvantage of btrees is that they are complicated, come in a
-> gazillion subtly different variant that differ mainly in the balance
-> between read efficiency and write efficiency.  Comparing btrees against
-> anything is a bit like comparing apples and random fruits.
+> [ 6730.836999] sr0: CDROM not ready yet.
+> [ 6732.838572] sr0: disc change detected.
+> [ 6783.659021] ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+> [ 6783.659034] ata4.00: cmd a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+> [ 6783.659035]          cdb 1b 00 00 00 02 00 00 00  00 00 00 00 00 00 00 00
+> [ 6783.659036]          res 40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+> [ 6783.659038] ata4.00: status: { DRDY }
+> [ 6783.659046] ata4: hard resetting link
+> [ 6784.115039] ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> [ 6785.622185] ata4.00: configured for UDMA/100
+> [ 6785.622193] ata4: EH complete
 > 
-> This implementation is extremely simple.  It splits nodes when they
-> overflow.  It does not move elements to neighboring nodes.  It does not
-> try fancy 2:3 splits.  It does not even merge nodes when they shrink,
-> making degenerate cases possible.  And it requires callers to do
-> tree-global locking.  In effect, it will be hard to find anything less
-> sophisticated.
 > 
-> The one aspect where my implementation is actually nice is in allowing
-> variable key length.  Btree keys are interpreted as an array of unsigned
-> long.  So by passing the correct geometry to the core functions, it is
-> possible to handle 32bit, 64bit or 128bit btrees, which logfs uses.  If
-> so desired, any other weird data format can be used as well (Zach, are
-> you reading this?).
+> The same CDs work fine with an USB CD drive attached to the same
+> PC, so this might be a sata driver issue. (BTW, stopping hal doesn't
+> make a difference. Data CDs work fine.)
 > 
-> So would something like this be merged once some users are identified?
-> Would it be useful for anything but logfs?  Or am I plain nuts?
+> Any idea what goes wrong here? Does grip violate the SCSI protocol
+> here?  Is there something I could try to help to track this down?
 
-I think a btree library would be useful - there are places where
-people are using rb-trees instead of btree simply because it's
-easier to use the rbtree than it is to implement a btree library.
-I can think of several places I could use such a library for
-in-memory extent representation....
-
-That being said, I haven't had a chance to look at that code yet....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+Well, it looks like it was a START STOP UNIT command with the eject bit 
+set that timed out. Was something trying to eject the disc?
