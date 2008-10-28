@@ -1,218 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbYJ1KKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753744AbYJ1KLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753500AbYJ1KKv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 06:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbYJ1KKm
+	id S1753744AbYJ1KLd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 06:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbYJ1KLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 06:10:42 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41043 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752277AbYJ1KKl (ORCPT
+	Tue, 28 Oct 2008 06:11:24 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:10615 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752469AbYJ1KLX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 06:10:41 -0400
-Date: Tue, 28 Oct 2008 19:10:08 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "menage@google.com" <menage@google.com>,
-       "xemul@openvz.org" <xemul@openvz.org>
-Subject: [PATCH 1/4][mmotm]  cgroup: make cgroup config as submenu
-Message-Id: <20081028191008.d610de18.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081028190911.6857b0a6.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081028190911.6857b0a6.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Oct 2008 06:11:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=V/LvlBQkKrc3z49fJLxkEDmXIaLs53YBxeLvbMt8ESKWT0md+jZK3J9Vy1XrvF/g/x
+         QZd83B44BKjLaZhqOIoAO7ASDELv7KI85a9LyXE9gvhFnwWqWo4WKQ222NPzx1bMwObY
+         +NK3LOEHaE+fGLKTDr6wl5bU8b+y/fxGCQMgs=
+Date: Tue, 28 Oct 2008 10:10:59 +0000
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Jianjun Kong <jianjun@zeuux.org>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] net: Remove unused variable warning
+Message-ID: <20081028101059.GA3227@hack.voiplan.pt>
+References: <20081028083512.GD19691@ubuntu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081028083512.GD19691@ubuntu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Making CGROUP related configs to be sub-menu.
+On Tue, Oct 28, 2008 at 04:35:12PM +0800, Jianjun Kong wrote:
+>
+>net: Remove unused variable warning
+>'min_ds_timeout' and 'max_ds_timeout' are only used when CONFIG_AX25_DAMA_SLAVE is defined.
+>
+>net/ax25/sysctl_net_ax25.c:27: warning: ‘min_ds_timeout’ defined but not used
+>net/ax25/sysctl_net_ax25.c:27: warning: ‘max_ds_timeout’ defined but not used
+>
+>
+>Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
+>---
+> net/ax25/sysctl_net_ax25.c |    2 ++
+> 1 files changed, 2 insertions(+), 0 deletions(-)
+>
 
-This patch will making CGROUP related configs to be sub-menu and
-making 1st level configs of "General Setup" shorter.
 
- including following additional changes 
-  - add help comment about CGROUPS and GROUP_SCHED.
-  - moved MM_OWNER config to the bottom.
-    (for good indent in menuconfig)
+http://www.gossamer-threads.com/lists/linux/kernel/985658
 
-Changelog: v1->v2
- - applied comments and fixed text.
- - added precise "See Documentation..."
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-
- init/Kconfig |  123 ++++++++++++++++++++++++++++++++---------------------------
- 1 file changed, 67 insertions(+), 56 deletions(-)
-
-Index: mmotm-2.6.28rc2+/init/Kconfig
-===================================================================
---- mmotm-2.6.28rc2+.orig/init/Kconfig
-+++ mmotm-2.6.28rc2+/init/Kconfig
-@@ -271,59 +271,6 @@ config LOG_BUF_SHIFT
- 		     13 =>  8 KB
- 		     12 =>  4 KB
- 
--config CGROUPS
--	bool "Control Group support"
--	help
--	  This option will let you use process cgroup subsystems
--	  such as Cpusets
--
--	  Say N if unsure.
--
--config CGROUP_DEBUG
--	bool "Example debug cgroup subsystem"
--	depends on CGROUPS
--	default n
--	help
--	  This option enables a simple cgroup subsystem that
--	  exports useful debugging information about the cgroups
--	  framework
--
--	  Say N if unsure
--
--config CGROUP_NS
--        bool "Namespace cgroup subsystem"
--        depends on CGROUPS
--        help
--          Provides a simple namespace cgroup subsystem to
--          provide hierarchical naming of sets of namespaces,
--          for instance virtual servers and checkpoint/restart
--          jobs.
--
--config CGROUP_FREEZER
--        bool "control group freezer subsystem"
--        depends on CGROUPS
--        help
--          Provides a way to freeze and unfreeze all tasks in a
--	  cgroup.
--
--config CGROUP_DEVICE
--	bool "Device controller for cgroups"
--	depends on CGROUPS && EXPERIMENTAL
--	help
--	  Provides a cgroup implementing whitelists for devices which
--	  a process in the cgroup can mknod or open.
--
--config CPUSETS
--	bool "Cpuset support"
--	depends on SMP && CGROUPS
--	help
--	  This option will let you create and manage CPUSETs which
--	  allow dynamically partitioning a system into sets of CPUs and
--	  Memory Nodes and assigning tasks to run only within those sets.
--	  This is primarily useful on large SMP or NUMA systems.
--
--	  Say N if unsure.
--
- #
- # Architectures with an unreliable sched_clock() should select this:
- #
-@@ -337,6 +284,8 @@ config GROUP_SCHED
- 	help
- 	  This feature lets CPU scheduler recognize task groups and control CPU
- 	  bandwidth allocation to such task groups.
-+	  In order to create a group from arbitrary set of processes, use
-+	  CONFIG_CGROUPS. (See Control Group support.)
- 
- config FAIR_GROUP_SCHED
- 	bool "Group scheduling for SCHED_OTHER"
-@@ -379,6 +328,66 @@ config CGROUP_SCHED
- 
- endchoice
- 
-+menu "Control Group support"
-+config CGROUPS
-+	bool "Control Group support"
-+	help
-+	  This option add support for grouping sets of processes together, for
-+	  use with process control subsystems such as Cpusets, CFS, memory
-+	  controls or device isolation.
-+	  See
-+		- Documentation/cpusets.txt	(Cpusets)
-+		- Documentation/scheduler/sched-design-CFS.txt	(CFS)
-+		- Documentation/cgroups/ (features for grouping, isolation)
-+		- Documentation/controllers/ (features for resource control)
-+
-+	  Say N if unsure.
-+
-+config CGROUP_DEBUG
-+	bool "Example debug cgroup subsystem"
-+	depends on CGROUPS
-+	default n
-+	help
-+	  This option enables a simple cgroup subsystem that
-+	  exports useful debugging information about the cgroups
-+	  framework
-+
-+	  Say N if unsure
-+
-+config CGROUP_NS
-+        bool "Namespace cgroup subsystem"
-+        depends on CGROUPS
-+        help
-+          Provides a simple namespace cgroup subsystem to
-+          provide hierarchical naming of sets of namespaces,
-+          for instance virtual servers and checkpoint/restart
-+          jobs.
-+
-+config CGROUP_FREEZER
-+        bool "control group freezer subsystem"
-+        depends on CGROUPS
-+        help
-+          Provides a way to freeze and unfreeze all tasks in a
-+	  cgroup.
-+
-+config CGROUP_DEVICE
-+	bool "Device controller for cgroups"
-+	depends on CGROUPS && EXPERIMENTAL
-+	help
-+	  Provides a cgroup implementing whitelists for devices which
-+	  a process in the cgroup can mknod or open.
-+
-+config CPUSETS
-+	bool "Cpuset support"
-+	depends on SMP && CGROUPS
-+	help
-+	  This option will let you create and manage CPUSETs which
-+	  allow dynamically partitioning a system into sets of CPUs and
-+	  Memory Nodes and assigning tasks to run only within those sets.
-+	  This is primarily useful on large SMP or NUMA systems.
-+
-+	  Say N if unsure.
-+
- config CGROUP_CPUACCT
- 	bool "Simple CPU accounting cgroup subsystem"
- 	depends on CGROUPS
-@@ -393,9 +402,6 @@ config RESOURCE_COUNTERS
-           infrastructure that works with cgroups
- 	depends on CGROUPS
- 
--config MM_OWNER
--	bool
--
- config CGROUP_MEM_RES_CTLR
- 	bool "Memory Resource Controller for Control Groups"
- 	depends on CGROUPS && RESOURCE_COUNTERS
-@@ -419,6 +425,11 @@ config CGROUP_MEM_RES_CTLR
- 	  This config option also selects MM_OWNER config option, which
- 	  could in turn add some fork/exit overhead.
- 
-+config MM_OWNER
-+	bool
-+
-+endmenu
-+
- config SYSFS_DEPRECATED
- 	bool
- 
+-- 
+"Sometimes the only way to stay sane is to go a little crazy."
 
