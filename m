@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753601AbYJ1Q4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbYJ1Q5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753601AbYJ1Q4e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 12:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbYJ1Q40
+	id S1753873AbYJ1Q5w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 12:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYJ1Q5n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 12:56:26 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:57487 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751594AbYJ1Q4Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 12:56:25 -0400
-Date: Tue, 28 Oct 2008 19:56:23 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Trent Piepho <tpiepho@freescale.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Richard Purdie <rpurdie@rpsys.net>,
-       Sean MacLennan <smaclennan@pikatech.com>,
-       Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH 1/4] of_gpio: Return GPIO flags from of_get_gpio()
-Message-ID: <20081028165623.GA6686@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp> <1224889741-4167-1-git-send-email-tpiepho@freescale.com> <20081028143933.GA18453@oksana.dev.rtsoft.ru> <fa686aa40810280753lc555683y5d32da678384438@mail.gmail.com> <20081028151659.GA26444@oksana.dev.rtsoft.ru> <fa686aa40810280842t36da3998j5f7ad22acf9f582c@mail.gmail.com>
+	Tue, 28 Oct 2008 12:57:43 -0400
+Received: from ns2.suse.de ([195.135.220.15]:38405 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752229AbYJ1Q5m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 12:57:42 -0400
+Date: Tue, 28 Oct 2008 09:34:56 -0700
+From: Greg KH <gregkh@suse.de>
+To: Shawn Bohrer <shawn.bohrer@gmail.com>
+Cc: David Schleef <ds@schleef.org>,
+       Frank Mori Hess <fmhess@users.sourceforge.net>,
+       Ian Abbott <abbotti@mev.co.uk>, linux-kernel@vger.kernel.org,
+       Wolfgang Beiter <w.beiter@aon.at>,
+       Guenter Gebhardt <g.gebhardt@meilhaus.de>
+Subject: Re: staging: me4000 and relation to other data acquisition devices
+Message-ID: <20081028163456.GA4278@suse.de>
+References: <20081028154918.GA5630@mediacenter>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <fa686aa40810280842t36da3998j5f7ad22acf9f582c@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081028154918.GA5630@mediacenter>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28, 2008 at 09:42:36AM -0600, Grant Likely wrote:
-> On Tue, Oct 28, 2008 at 9:16 AM, Anton Vorontsov
-> <avorontsov@ru.mvista.com> wrote:
-> > On Tue, Oct 28, 2008 at 08:53:11AM -0600, Grant Likely wrote:
-> >> That will deal with any merge window
-> >> conflicts.
-> >
-> > This won't deal with build breakage because of API changes, which
-> > means I can't submit FHCI driver to Greg, I have to wait for the
-> > API changes applied.
+On Tue, Oct 28, 2008 at 10:49:18AM -0500, Shawn Bohrer wrote:
+> I have some questions about the user-kernel interface of the me4000
+> driver.  From my looking through the code it seems specific to the
+> me4000 hardware which does concern me since there are hundreds of
+> different data acquisition devices from many different vendors.  In my
+> opinion it would beneficial if at the very least all of these devices
+> shared a common device interface.
+
+I totally agree.
+
+The me4000's user interface is not "set in stone" and needs to be fixed
+up in order to move into the main kernel tree.
+
+> Additionally there is the out of tree Comedi project:
 > 
-> Then we coordinate with Greg and make sure the fixup gets put in place
-> before the window opens; either by bringing the patch in Ben's tree or
-> by getting Greg to pull Ben's tree into -next.  This API change should
-> not block Greg picking up the FHCI driver.  This is not an
-> insurmountable problem.
+> http://comedi.org
+> 
+> Which supports this hardware, and many more, with a generic device
+> interface.  There may be other reason not to merge Comedi (I know they
+> have a desire to maintain support of their RT support), but I can't help
+> but feel that merging the me4000 driver without thinking about the
+> hundreds of other devices out there is a mistake.
 
-Sounds complicated.
+I would love to get comedi into the kernel tree.  People have talked
+about it for years now, is it time for me to just take a snapshot and
+place it in drivers/staging/ for everyone to then work on cleaning up
+properly?
 
-Ok, but if something will go wrong with the FHCI vs. of_get_gpio()
-change, I'll just attribute the blame to you. :-))
+thanks,
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+greg k-h
