@@ -1,66 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754173AbYJ1V2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbYJ1V3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754173AbYJ1V2U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 17:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbYJ1V2F
+	id S1754350AbYJ1V3W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 17:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbYJ1V3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 17:28:05 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:46421 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750831AbYJ1V2D (ORCPT
+	Tue, 28 Oct 2008 17:29:14 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:45557 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752411AbYJ1V3N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 17:28:03 -0400
-Date: Tue, 28 Oct 2008 14:26:46 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Karel Zak <kzak@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, miklos@szeredi.hu
-Subject: Re: [PATCH v2] documentation: split and build smount.c
-Message-Id: <20081028142646.3024631b.randy.dunlap@oracle.com>
-In-Reply-To: <20080819225625.GG2846@nb.net.home>
-References: <20080817214442.ca4345ce.randy.dunlap@oracle.com>
-	<20080818050431.GA20692@infradead.org>
-	<20080818181409.f2861821.randy.dunlap@oracle.com>
-	<20080819225625.GG2846@nb.net.home>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Tue, 28 Oct 2008 17:29:13 -0400
+Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use
+	schedule_on_each_cpu()
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       kosaki.motohiro@jp.fujitsu.com, heiko.carstens@de.ibm.com,
+       npiggin@suse.de, linux-kernel@vger.kernel.org, hugh@veritas.com,
+       torvalds@linux-foundation.org, riel@redhat.com, linux-mm@kvack.org
+In-Reply-To: <20081028134536.9a7a5351.akpm@linux-foundation.org>
+References: <2f11576a0810210851g6e0d86benef5d801871886dd7@mail.gmail.com>
+	 <2f11576a0810211018g5166c1byc182f1194cfdd45d@mail.gmail.com>
+	 <20081023235425.9C40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20081027145509.ebffcf0e.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0810280914010.15939@quilx.com>
+	 <20081028134536.9a7a5351.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Tue, 28 Oct 2008 17:29:26 -0400
+Message-Id: <1225229366.6343.74.camel@lts-notebook>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008 00:56:25 +0200 Karel Zak wrote:
+On Tue, 2008-10-28 at 13:45 -0700, Andrew Morton wrote:
+> On Tue, 28 Oct 2008 09:25:31 -0500 (CDT)
+> Christoph Lameter <cl@linux-foundation.org> wrote:
+> 
+> > On Mon, 27 Oct 2008, Andrew Morton wrote:
+> > 
+> > > Can we fix that instead?
+> > 
+> > How about this fix?
+> > 
+> > 
+> > 
+> > Subject: Move migrate_prep out from under mmap_sem
+> > 
+> > Move the migrate_prep outside the mmap_sem for the following system calls
+> > 
+> > 1. sys_move_pages
+> > 2. sys_migrate_pages
+> > 3. sys_mbind()
+> > 
+> > It really does not matter when we flush the lru. The system is free to add
+> > pages onto the lru even during migration which will make the page 
+> > migration either skip the page (mbind, migrate_pages) or return a busy 
+> > state (move_pages).
+> > 
+> 
+> That looks nicer, thanks.  Hopefully it fixes the
+> lockdep-warning/deadlock...
 
-> On Mon, Aug 18, 2008 at 06:14:09PM -0700, Randy Dunlap wrote:
-> > On Mon, 18 Aug 2008 01:04:31 -0400 Christoph Hellwig wrote:
-> > 
-> > > Just remove it, and modern /bin/mount handles shared subtrees just fine
-> > 
-> > Miklos... ?
-> > 
-> > ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > 
-> > mount(8) handles shared subtrees just fine, so remove the smount
-> > program from Documentation/filesystems/sharedsubtree.txt.
-> [...]
-> > +	Note: mount(8) command now supports the --make-shared flag,
-> 
->  Right, ACK ;-)
-> 
-> >  	#mount --bind /mnt /tmp
-> 
->  BTW, people usually use a space between prompt and command, so:
-> 
->    # mount --bind /mnt /tmp
+I believe that we still  have the lru_drain_all() called from the fault
+path [with mmap_sem held] in clear_page_mlock().  We call
+clear_page_mlock() on COW of an mlocked page in a VM_LOCKED vma to
+ensure that we don't end up with an mlocked page in some other task's
+non-VM_LOCKED vma where we'd then fail to munlock it later.  During
+development testing, Rik encountered scenarios where a page would
+encounter a COW fault while it was still making its way to the LRU via
+the pagevecs.  So, he added the 'drain_all() and that seemed to avoid
+this scenario.
 
-Done for upcoming patch.  Thanks.
+Now, in the current upstream version of the unevictable mlocked pages
+patches, we just count any mlocked pages [vmstat] that make their way to
+free*page() instead of BUGging out, as we were doing earlier during
+development.  So, maybe we can drop the lru_drain_add()s in the
+unevictable mlocked pages work and live with the occasional freed
+mlocked page, or mlocked page on the active/inactive lists to be dealt
+with by vmscan.
 
----
-~Randy
+Comments?
+
+Lee
+
+> 
+> I guess we should document our newly discovered schedule_on_each_cpu()
+> problems before we forget about it and later rediscover it.
+
+
+
