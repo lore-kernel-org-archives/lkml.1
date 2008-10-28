@@ -1,112 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754409AbYJ1PR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbYJ1PTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754409AbYJ1PR7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 11:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbYJ1PRt
+	id S1754446AbYJ1PTA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 11:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYJ1PSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 11:17:49 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:55410 "EHLO e8.ny.us.ibm.com"
+	Tue, 28 Oct 2008 11:18:51 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:60886 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751566AbYJ1PRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 11:17:48 -0400
-Date: Tue, 28 Oct 2008 08:17:38 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Manfred Spraul <manfred@colorfullife.com>
-Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
-       akpm@linux-foundation.org, dipankar@in.ibm.com,
-       josht@linux.vnet.ibm.com, schamp@sgi.com, niv@us.ibm.com,
-       dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
-       andi@firstfloor.org, tglx@linutronix.de
-Subject: Re: [PATCH, RFC] v7 scalable classic RCU implementation
-Message-ID: <20081028151738.GB6779@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20081015011143.GE6874@linux.vnet.ibm.com> <48F5A638.8020003@colorfullife.com> <20081015152637.GA6739@linux.vnet.ibm.com> <48FF73C7.90709@colorfullife.com> <20081022210254.GE6766@linux.vnet.ibm.com> <48FF9A0E.90205@colorfullife.com> <20081027164529.GC6783@linux.vnet.ibm.com> <49061AF0.8070106@colorfullife.com> <20081027235201.GK6783@linux.vnet.ibm.com> <4906A370.3000502@colorfullife.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4906A370.3000502@colorfullife.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1751566AbYJ1PSu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 11:18:50 -0400
+Subject: [UDATED PATCH] Cell OProfile: Incorrect local array size in
+	activate spu profiling function
+From: Carl Love <cel@us.ibm.com>
+To: michael@ellerman.id.au, Hannsj_uhl <Hannsj_uhl@de.ibm.com>,
+       acjohnso <acjohnso@us.ibm.com>
+Cc: oprofile-list@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+       cel@linux.vnet.ibm.com, cbe-oss-dev@ozlabs.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1224909595.16090.5.camel@localhost>
+References: <1224874049.20229.5.camel@carll-linux-desktop>
+	 <1224909595.16090.5.camel@localhost>
+Content-Type: text/plain
+Date: Tue, 28 Oct 2008 08:17:59 -0700
+Message-Id: <1225207079.20229.32.camel@carll-linux-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28, 2008 at 06:30:24AM +0100, Manfred Spraul wrote:
-> Paul E. McKenney wrote:
->> On Mon, Oct 27, 2008 at 08:48:00PM +0100, Manfred Spraul wrote:
->>   
->>> Paul E. McKenney wrote:
->>>     
->>>> Agreed.  Perhaps a good change to make while introducing stall detection
->>>> to preemptable RCU -- there would then be three examples, which should
->>>> allow good generalization.
->>>>         
->>> Two implementations. IMHO the current rcu-classic code should be dropped 
->>> immediately when you add rcu-tree:
->>> rcu-classic is buggy, as far as I can see long-running interrupts on nohz 
->>> cpus are not handled correctly. I don't think it makes sense to keep it 
->>> in the kernel in parallel to rcu-tree.
->>>
->>> I would propose that rcu-tree replaces rcu-classic.
->>> I'll continue to update rcu-state, I think that it will achieve lower 
->>> latency than rcu-tree [average/max time between call_rcu() and 
->>> destruction callback] and it doesn't have the irq disabled loop to find 
->>> the missing cpus.
->>> If I find decent benchmarks where I can quantify the advantages, then 
->>> I'll propose to merge rcu-state as a third implementation in addition to 
->>> rcu-tree and rcu-preempt.
->>>
->>> Paul: What do you think?
->>
->> In keeping with my reputation as a "conservative programmer", I would
->> suggest that rcuclassic.c remain for a year or so.  Distros branching
->> off during this time should continue making rcuclassic.c be the default.
->> Other uses should have rcutree.c as the default.  At the end of the year,
->> we remove rcuclassic.c.
->>
->> All that said, one attractive aspect of your suggestion is immediately
->> removing rcuclassic.c would eliminate the need to do further work on it.  
->> ;-)
->>   
-> How do you intend to handle nohz cpus?
+Updated the patch to address comments by Michael Ellerman.  
+Specifically, changed upper limit in for loop to 
+ARRAY_SIZE() macro and added a check to make sure the 
+number of events specified by the user, which is used as
+the max for indexing various arrays, is no bigger then the
+declared size of the arrays.
 
-In which variant of RCU?  My current thought is to apply the rcutree.c
-version to rcupreempt.c.  If rcuclassic.c can be dropped, my thought
-would be to leave it alone -- it is unnecessarily awakening CPUs, but
-this is a non-fatal issue.
+The size of the pm_signal_local array should be equal to the
+number of SPUs being configured in the array.  Currently, the
+array is of size 4 (NR_PHYS_CTRS) but being indexed by a for 
+loop from 0 to 7 (NUM_SPUS_PER_NODE).  
 
-> I would create a separate patch that removes rcuclassic.c. distros that 
-> want to keep rcuclassic could just revert that change.
+Signed-off-by: Carl Love <carll@us.ibm.com>
 
-That does make a lot of sense.  At least it would make my life simple.  ;-)
 
-							Thanx, Paul
+Index: Cell_kernel_10_24_2008/arch/powerpc/oprofile/op_model_cell.c
+===================================================================
+--- Cell_kernel_10_24_2008.orig/arch/powerpc/oprofile/op_model_cell.c
++++ Cell_kernel_10_24_2008/arch/powerpc/oprofile/op_model_cell.c
+@@ -582,6 +582,13 @@ static int cell_reg_setup(struct op_coun
+ 
+ 	num_counters = num_ctrs;
+ 
++	if (unlikely(num_ctrs > NR_PHYS_CTRS)) {
++		printk(KERN_ERR
++		       "%s: Oprofile, number of specified events " \
++		       "exceeds number of physical counters\n",
++		       __func__);
++		return -EIO;
++	}
+ 	pm_regs.group_control = 0;
+ 	pm_regs.debug_bus_control = 0;
+ 
+@@ -830,13 +837,13 @@ static int calculate_lfsr(int n)
+ static int pm_rtas_activate_spu_profiling(u32 node)
+ {
+ 	int ret, i;
+-	struct pm_signal pm_signal_local[NR_PHYS_CTRS];
++	struct pm_signal pm_signal_local[NUM_SPUS_PER_NODE];
+ 
+ 	/*
+ 	 * Set up the rtas call to configure the debug bus to
+ 	 * route the SPU PCs.  Setup the pm_signal for each SPU
+ 	 */
+-	for (i = 0; i < NUM_SPUS_PER_NODE; i++) {
++	for (i = 0; i < ARRAY_SIZE(pm_signal_local); i++) {
+ 		pm_signal_local[i].cpu = node;
+ 		pm_signal_local[i].signal_group = 41;
+ 		/* spu i on word (i/2) */
 
-> --
->    Manfred
->> Your benchmarking proposal for rcu-state makes sense to me.
->>
->> One other possible place for techniques from rcu-state may be in making
->> preemptable RCU scale.  This may take some time, as other parts of
->> the RT kernel have their limitations, but sooner or later people are
->> going to expect real-time response from even the largest machines.
->> In addition, preemptable RCU has a number of shorter-term issues:
->>
->> 1.	RCU-boosting mechanism.  (I need to combine the best of
->> 	Steve's and my mechanisms.  The treercu.c effort has been
->> 	sort of a warm-up exercise for RCU-boosting.)
->>
->> 2.	Reducing the latency contribution of the preemptable RCU
->> 	state machine (but note that moving this state machine out
->> 	of the scheduling-clock irq handler means more stuff to boost).
->>
->> 3.	Porting the simpler dynticks interface from rcutree to
->> 	preemptable RCU.
->>
->> 4.	Making the preemptable RCU tracing code use seqfile.
->>
->> Hmmm...  Maybe it is (past) time for me to publish an RCU to-do list?
->>
->> 							Thanx, Paul
->>   
->
+
