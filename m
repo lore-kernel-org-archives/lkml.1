@@ -1,53 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbYJ1PWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752852AbYJ1PZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753345AbYJ1PWe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 11:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbYJ1PWW
+	id S1752852AbYJ1PZa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 11:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYJ1PZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 11:22:22 -0400
-Received: from mail.gmx.net ([213.165.64.20]:40653 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751180AbYJ1PWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 11:22:21 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/+JRsGRmD+mSV5RBBasDxa0PsdE/FRFCygobO/Yx
-	dUqSSraVX8jtZ7
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Miller <davem@davemloft.net>, zbr@ioremap.net,
-       alan@lxorguk.ukuu.org.uk, jkosina@suse.cz, akpm@linux-foundation.org,
-       a.p.zijlstra@chello.nl, rjw@sisk.pl, s0mbre@tservice.net.ru,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <1225202433.4899.11.camel@marge.simson.net>
-References: <20081027113306.5b1d5898@lxorguk.ukuu.org.uk>
-	 <20081027183312.GD11494@elte.hu> <20081027193933.GB2590@ioremap.net>
-	 <20081027.124848.163119274.davem@davemloft.net>
-	 <1225189462.4903.238.camel@marge.simson.net>
-	 <20081028103741.GA22319@elte.hu>
-	 <1225191456.4903.254.camel@marge.simson.net>
-	 <1225202433.4899.11.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Tue, 28 Oct 2008 16:22:16 +0100
-Message-Id: <1225207336.4703.0.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.73
+	Tue, 28 Oct 2008 11:25:21 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:38840 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751070AbYJ1PZU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 11:25:20 -0400
+Date: Tue, 28 Oct 2008 10:44:24 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>,
+       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] ftrace: fix current_tracer error return
+In-Reply-To: <c62985530810280202r694a23e8l5233d892b3aa4330@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0810281039130.29482@gandalf.stny.rr.com>
+References: <c62985530810271618n11a8b674w5a60deaa335fdcc2@mail.gmail.com>  <alpine.DEB.1.10.0810271935320.20039@gandalf.stny.rr.com>  <c62985530810271644y1df6a13xbcd9d89b7a17ad75@mail.gmail.com> <c62985530810280202r694a23e8l5233d892b3aa4330@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-28 at 15:00 +0100, Mike Galbraith wrote:
-> On Tue, 2008-10-28 at 11:57 +0100, Mike Galbraith wrote:
-> 
-> > I don't know where it lives.  I'm still looking, and the numbers are
-> > still playing games with my head.
-> 
-> Hm.  _Maybe_ someone needs to take a look at c7aceab.
 
-Bah, too much testing, must have done something stupid.
+The commit (in linux-tip) c2931e05ec5965597cbfb79ad332d4a29aeceb23
+ ( ftrace: return an error when setting a nonexistent tracer )
+added useful code that would error when a bad tracer was written into
+the current_tracer file.
 
-	-Mike
+But this had a bug if the amount written was more than the amount read by 
+that code. The first iteration would set the tracer correctly, but since
+it did not consume the rest of what was written (usually whitespace), the 
+userspace utility would continue to write what was not consumed. This 
+second iteration would fail to find a tracer and return -EINVAL. Funny 
+thing is that the tracer would have already been set.
+
+This patch just consumes all the data that is written to the file.
+
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/trace.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+Index: linux-tip.git/kernel/trace/trace.c
+===================================================================
+--- linux-tip.git.orig/kernel/trace/trace.c	2008-10-28 10:23:41.000000000 -0400
++++ linux-tip.git/kernel/trace/trace.c	2008-10-28 10:25:58.000000000 -0400
+@@ -2399,9 +2399,10 @@ tracing_set_trace_write(struct file *fil
+ 	int i;
+ 	size_t ret;
+ 
++	ret = cnt;
++
+ 	if (cnt > max_tracer_type_len)
+ 		cnt = max_tracer_type_len;
+-	ret = cnt;
+ 
+ 	if (copy_from_user(&buf, ubuf, cnt))
+ 		return -EFAULT;
+@@ -2434,8 +2435,8 @@ tracing_set_trace_write(struct file *fil
+  out:
+ 	mutex_unlock(&trace_types_lock);
+ 
+-	if (ret == cnt)
+-		filp->f_pos += cnt;
++	if (ret > 0)
++		filp->f_pos += ret;
+ 
+ 	return ret;
+ }
+
 
