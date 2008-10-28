@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753281AbYJ1QAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752526AbYJ1QDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753281AbYJ1QAv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 12:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbYJ1QAl
+	id S1752526AbYJ1QDY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 12:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYJ1QDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 12:00:41 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56640 "EHLO mx2.mail.elte.hu"
+	Tue, 28 Oct 2008 12:03:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54589 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752073AbYJ1QAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 12:00:40 -0400
-Date: Tue, 28 Oct 2008 17:00:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Jouni Malinen <jkmalinen@gmail.com>, Oliver Neukum <oliver@neukum.org>,
-       Nicolas Bareil <nico@chdir.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, j@w1.fi
-Subject: Re: [PATCH] x86, gart: fix gart detection for Fam11h CPUs
-Message-ID: <20081028160026.GB27531@elte.hu>
-References: <e785a1360810280207p1c162decs5a70b8915ea08476@mail.gmail.com> <1225206834-6189-1-git-send-email-joerg.roedel@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1225206834-6189-1-git-send-email-joerg.roedel@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	id S1752081AbYJ1QDN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 12:03:13 -0400
+Date: Tue, 28 Oct 2008 12:00:31 -0400 (EDT)
+Message-Id: <20081028.120031.71084925.k-ueda@ct.jp.nec.com>
+To: nikanth@gmail.com
+Cc: dm-devel@redhat.com, jens.axboe@oracle.com, agk@redhat.com,
+       James.Bottomley@hansenpartnership.com, j-nomura@ce.jp.nec.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       knikanth@suse.de, k-ueda@ct.jp.nec.com
+Subject: Re: [dm-devel] [PATCH 10/13] dm: add core functions for
+ request-based dm
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+In-Reply-To: <807b3a220810240044v1b9f12e3xc3bd5a429b9d4c5@mail.gmail.com>
+References: <20080912.103814.74754581.k-ueda@ct.jp.nec.com>
+	<20080912.104612.115643090.k-ueda@ct.jp.nec.com>
+	<807b3a220810240044v1b9f12e3xc3bd5a429b9d4c5@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Nikanth,
 
-* Joerg Roedel <joerg.roedel@amd.com> wrote:
-
-> The AMD Fam11h CPUs have a K8 northbridge. This northbridge is 
-> different from other familys because it lacks GART support (as I 
-> just learned). But the kernel implicitly expects a GART if it finds 
-> an AMD northbridge. Fix this by removing the Fam11h northbridge id 
-> from the scan list of K8 northbridges. This patch also changes the 
-> message in the GART driver about missing K8 northbridges to tell 
-> that the GART is missing which is the correct information in this 
-> case.
+On Fri, 24 Oct 2008 13:14:50 +0530, "Nikanth K" wrote:
+> On Fri, Sep 12, 2008 at 8:16 PM, Kiyoshi Ueda wrote:
+> <snip>
 > 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  arch/x86/kernel/k8.c          |    1 -
->  arch/x86/kernel/pci-gart_64.c |    2 +-
->  2 files changed, 1 insertions(+), 2 deletions(-)
+> > +static int dm_make_request(struct request_queue *q, struct bio *bio)
+> > +{
+> > +       struct mapped_device *md = (struct mapped_device *)q->queuedata;
+> > +
+> > +       if (unlikely(bio_barrier(bio))) {
+> > +               bio_endio(bio, -EOPNOTSUPP);
+> > +               return 0;
+> > +       }
+> > +
+> <snip>
+> 
+> Why not add barrier support in the beginning itself, so that targets
+> can be developed with barriers in mind? At least can we make the target
+> to return error, instead of the core?
 
-applied to tip/x86/urgent, thanks Joerg!
+Currently, there is no barrier support in dm, not only request-based.
+Barrier support is a different feature in the next step, I think.
 
-	Ingo
+As you noticed in the PATCH#11, current request-based dm has
+the limitation that multiple targets are not supported, so it may
+look barrier support in request-based dm is easy.
+But we may be able to remove the limitation in the future, so
+depending on it is not a good idea.
+
+Thanks,
+Kiyoshi Ueda
