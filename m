@@ -1,81 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752645AbYJ1C2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752705AbYJ1Cfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752645AbYJ1C2v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 22:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbYJ1C2m
+	id S1752705AbYJ1Cfp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 22:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbYJ1Cff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 22:28:42 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:58629 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751233AbYJ1C2l (ORCPT
+	Mon, 27 Oct 2008 22:35:35 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:58871 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751299AbYJ1Cfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 22:28:41 -0400
-Date: Mon, 27 Oct 2008 22:28:38 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Eric Sandeen <sandeen@redhat.com>, Eric Paris <eparis@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: [PATCH, RFC] jbd2: Call the commit callback before the transaction
-	could get dropped
-Message-ID: <20081028022838.GA8869@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Eric Sandeen <sandeen@redhat.com>, Eric Paris <eparis@redhat.com>,
-	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-References: <1224612181.19719.20.camel@paris-laptop> <20081027181928.GB23111@mit.edu> <49064027.9010509@redhat.com> <20081027232843.GA9797@mit.edu> <49065805.1080303@redhat.com> <20081028015228.GA8320@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081028015228.GA8320@mit.edu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Mon, 27 Oct 2008 22:35:34 -0400
+X-Sasl-enc: FB1K213F/Y28ASXY/TSYB+5mFJVkl0msAHfes9AzRCxo 1225161332
+Subject: Re: [RESEND PATCH] autofs4 - remove string terminator check
+From: Ian Kent <raven@themaw.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: autofs mailing list <autofs@linux.kernel.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <1225159897.2938.25.camel@zeus.themaw.net>
+References: <20081028011430.4976.320.stgit@zeus.themaw.net>
+	 <20081027185418.0bfd0fcd.akpm@linux-foundation.org>
+	 <1225159643.2938.23.camel@zeus.themaw.net>
+	 <1225159897.2938.25.camel@zeus.themaw.net>
+Content-Type: text/plain
+Date: Tue, 28 Oct 2008 11:35:27 +0900
+Message-Id: <1225161327.2938.27.camel@zeus.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is what I plan to send to Linus to fix the problem.
+On Tue, 2008-10-28 at 11:11 +0900, Ian Kent wrote:
+> On Tue, 2008-10-28 at 11:07 +0900, Ian Kent wrote:
+> > On Mon, 2008-10-27 at 18:54 -0700, Andrew Morton wrote:
+> > > On Tue, 28 Oct 2008 10:14:30 +0900 Ian Kent <raven@themaw.net> wrote:
+> > > 
+> > > > In a previous patch a comment was made that checking for the existence of
+> > > > a NULL terminator in strings copied from userspace wasn't needed as this
+> > > > is done in many places in the kernel without problem. This patch removes
+> > > > this string terminator check.
+> > > > 
+> > > 
+> > > ah, OK.  Now I'm worried.
+> > > 
+> > > > 
+> > > >  fs/autofs4/dev-ioctl.c |   20 --------------------
+> > > >  1 files changed, 0 insertions(+), 20 deletions(-)
+> > > > 
+> > > > diff --git a/fs/autofs4/dev-ioctl.c b/fs/autofs4/dev-ioctl.c
+> > > > index 625abf5..304c1ff 100644
+> > > > --- a/fs/autofs4/dev-ioctl.c
+> > > > +++ b/fs/autofs4/dev-ioctl.c
+> > > > @@ -51,18 +51,6 @@ static int check_name(const char *name)
+> > > >  }
+> > > >  
+> > > >  /*
+> > > > - * Check a string doesn't overrun the chunk of
+> > > > - * memory we copied from user land.
+> > > > - */
+> > > > -static int invalid_str(char *str, void *end)
+> > > > -{
+> > > > -	while ((void *) str <= end)
+> > > > -		if (!*str++)
+> > > > -			return 0;
+> > > > -	return -EINVAL;
+> > > > -}
+> > > > -
+> > > > -/*
+> > > >   * Check that the user compiled against correct version of autofs
+> > > >   * misc device code.
+> > > >   *
+> > > > @@ -143,14 +131,6 @@ static int validate_dev_ioctl(int cmd, struct autofs_dev_ioctl *param)
+> > > >  				    cmd);
+> > > >  			goto out;
+> > > >  		}
+> > > > -
+> > > > -		err = invalid_str(param->path,
+> > > > -				 (void *) ((size_t) param + param->size));
+> > > > -		if (err) {
+> > > > -			AUTOFS_WARN("invalid path supplied for cmd(0x%08x)",
+> > > > -				    cmd);
+> > > > -			goto out;
+> > > > -		}
+> > > >  	}
+> > > >  
+> > > >  	err = 0;
+> > > 
+> > > What will now happen if userspace passes in a non-null-terminated
+> > > string (if that's possible)?
+> > > 
+> > > Presumably that isn't possible, or it's never been tested, because
+> > > before we check for null-termination we run check_name(), which
+> > > _assumes_ null-termination!
+> 
+> Oh .. hang on, point taken.
+> 
+> > > 
+> > > The comment over validate_dev_ioctl() will need the "and is terminated"
+> > > removed after this change, yes?
+> > 
+> > Yes, but now I think I shouldn't have removed it.
+> > For my part I would have been happy to keep this and now I think I
+> > should so let's drop this patch.
 
-commit 6fecbc3c7d27800e90a5f5fbca2fb2847e2c2854
-Author: Theodore Ts'o <tytso@mit.edu>
-Date:   Mon Oct 27 22:11:39 2008 -0400
+Just to confirm.
+Please drop this patch and I'll send a patch to fix the check order.
 
-    jbd2: Call the commit callback before the transaction could get dropped
-    
-    The transaction can potentially get dropped if there are no buffers
-    that need to be written.  Make sure we call the commit callback before
-    potentially deciding to drop the transaction.  Also avoid
-    dereferencing the commit_transaction pointer in the marker for the
-    same reason.
-    
-    This patch fixes the bug reported by Eric Paris at:
-    http://bugzilla.kernel.org/show_bug.cgi?id=11838
-    
-    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+> > 
+> > Ian
+> > 
 
-diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
-index 8b119e1..ebc667b 100644
---- a/fs/jbd2/commit.c
-+++ b/fs/jbd2/commit.c
-@@ -974,6 +974,9 @@ restart_loop:
- 	journal->j_committing_transaction = NULL;
- 	spin_unlock(&journal->j_state_lock);
- 
-+	if (journal->j_commit_callback)
-+		journal->j_commit_callback(journal, commit_transaction);
-+
- 	if (commit_transaction->t_checkpoint_list == NULL &&
- 	    commit_transaction->t_checkpoint_io_list == NULL) {
- 		__jbd2_journal_drop_transaction(journal, commit_transaction);
-@@ -995,11 +998,8 @@ restart_loop:
- 	}
- 	spin_unlock(&journal->j_list_lock);
- 
--	if (journal->j_commit_callback)
--		journal->j_commit_callback(journal, commit_transaction);
--
- 	trace_mark(jbd2_end_commit, "dev %s transaction %d head %d",
--		   journal->j_devname, commit_transaction->t_tid,
-+		   journal->j_devname, journal->j_commit_sequence,
- 		   journal->j_tail_sequence);
- 	jbd_debug(1, "JBD: commit %d complete, head %d\n",
- 		  journal->j_commit_sequence, journal->j_tail_sequence);
