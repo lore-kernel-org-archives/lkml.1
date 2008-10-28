@@ -1,78 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbYJ1Bdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752615AbYJ1Brm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752999AbYJ1Bdz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 21:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbYJ1Bdq
+	id S1752615AbYJ1Brm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 21:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbYJ1Brd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 21:33:46 -0400
-Received: from mga11.intel.com ([192.55.52.93]:49530 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751939AbYJ1Bdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 21:33:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,495,1220252400"; 
-   d="scan'208";a="396599764"
-Subject: Re: [2.6.28-rc2]: iwl4965 doesn't connect / cfg80211 failure
-From: Zhu Yi <yi.zhu@intel.com>
-To: Mirco Tischler <mt-ml@gmx.de>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       "John W.Linville" <linville@tuxdriver.com>,
-       "Chatre, Reinette" <reinette.chatre@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <20081028020212.0dfcb6c9@mtlp.12.dimension>
-References: <20081028020212.0dfcb6c9@mtlp.12.dimension>
-Content-Type: text/plain
-Organization: Intel Corp.
-Date: Tue, 28 Oct 2008 09:33:37 +0800
-Message-Id: <1225157618.2917.215.camel@debian.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Oct 2008 21:47:33 -0400
+Received: from eagle.jhcloos.com ([207.210.242.212]:56799 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752027AbYJ1Brc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 21:47:32 -0400
+From: James Cloos <cloos@jhcloos.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org, khc@pm.waw.pl,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: radeonfb lockup in .28-rc (bisected)
+In-Reply-To: <20081027.170008.112856238.davem@davemloft.net> (David Miller's
+	message of "Mon, 27 Oct 2008 17:00:08 -0700 (PDT)")
+References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
+	<20081027.170008.112856238.davem@davemloft.net>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
+ REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
+ eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
+ FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
+Copyright: Copyright 2008 James Cloos
+OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+Date: Mon, 27 Oct 2008 21:46:52 -0400
+Message-ID: <m3vdvdij8c.fsf@lugabout.jhcloos.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Hashcash: 1:23:081028:davem@davemloft.net::o0bFYwEUmFIbAfhM:0000000000000000000000000000000000000000006TFe
+X-Hashcash: 1:23:081028:linux-kernel@vger.kernel.org::FPsfhrwb2iYE93n/:0000000000000000000000000000000007TnK
+X-Hashcash: 1:23:081028:benh@kernel.crashing.org::33Uwj9i+Xrc/6tTj:0000000000000000000000000000000000000Ix14
+X-Hashcash: 1:23:081028:torvalds@linux-foundation.org::9u+C/R6n8khJi5ja:000000000000000000000000000000002Gnu
+X-Hashcash: 1:23:081028:akpm@linux-foundation.org::5tvXs2/AU/T/u4Rx:000000000000000000000000000000000000H8lW
+X-Hashcash: 1:23:081028:khc@pm.waw.pl::xTSmluOZc79JAexN:0000081W
+X-Hashcash: 1:23:081028:linux-fbdev-devel@lists.sourceforge.net::u7iSokehjE7n4bvK:00000000000000000000006Oc/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-27 at 18:02 -0700, Mirco Tischler wrote:
-> Hi
-> 
-> I have problems connecting to wlan with my iwl4965 chip and 2.6.28-rc2 (didn't
-> test -rc1). Networkmanager just times out every time.
-> Only after playing around with rmmod/modprobe and killswitch I am sometimes
-> able to connect. But I cannot reproduce this reliably yet.
-> 
-> This is what I get in dmesg (from modprobe iwlagn to connection failure):
-> 
-> [ 1881.884690] iwlagn: Intel(R) Wireless WiFi Link AGN driver for
-> Linux,1.3.27kds
-> [ 1881.884692] iwlagn: Copyright(c) 2003-2008 Intel Corporation
-> [ 1881.884809] iwlagn 0000:06:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-> [ 1881.884836] iwlagn 0000:06:00.0: setting latency timer to 64
-> [ 1881.884952] iwlagn: Detected Intel Wireless WiFi Link 4965AGN REV=0x4
-> [ 1881.935149] iwlagn: Tunable channels: 13 802.11bg, 19 802.11a channels
-> [ 1881.936327] phy4: Selected rate control algorithm 'iwl-agn-rs'
-> [ 1885.965591] iwlagn 0000:06:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-> [ 1885.965874] iwlagn 0000:06:00.0: irq 41 for MSI/MSI-X
-> [ 1885.965974] iwlagn 0000:06:00.0: firmware: requesting iwlwifi-4965-2.ucode
-> [ 1886.181600] Registered led device: iwl-phy4:radio
-> [ 1886.181618] Registered led device: iwl-phy4:assoc
-> [ 1886.181635] Registered led device: iwl-phy4:RX
-> [ 1886.181654] Registered led device: iwl-phy4:TX
-> [ 1886.213631] ADDRCONF(NETDEV_UP): wlan0: link is not ready
-> [ 1887.572768] iwlagn: TX Power requested while scanning!
+>>>>> "David" == David Miller <davem@davemloft.net> writes:
 
-Looks good so far. But I failed to see what are you trying to connect?
-Can you try "iwconfig wlan0 channnel <> essid <>"?
+David> Please quote at least the headerline of the commit so that it can
+David> come into our memory quickly when reading your report.
 
-> What might be related is this early on boot:
-> 
-> [    0.163009] cfg80211: Calling CRDA to update world regulatory domain
-> [    0.163012] cfg80211: Failed calling CRDA
-> [    0.163024] cfg80211: calling CRDA failed - unable to update world
-> regulatory domain, using static definition
+Good point.
 
-Does your AP work on A band?
+David> The actual key here is that when setfont runs, the framebuffer
+David> layer sets the acceleration options for the framebuffer for the
+David> first time to their final settings.
 
-Thanks,
--yi
+Explains why it breaks.  Thanks!
 
+>> -Memory: 512232k/524200k available (4376k kernel code, 11428k reserved, 1707k data, 320k init, 0k highmem)
+>> +Memory: 512272k/524200k available (4354k kernel code, 11388k reserved, 1693k data, 316k init, 0k highmem)
+
+David> That's just all due to the text size change because of the
+David> different acceleration code.
+
+I left a bit too much unsaid there, but that was the point I was
+making.  Ie, nothing of issue.
+
+Incidently, it only took 14 hours of compiling to accomplish the
+bisect.  And that was after a s/=m$/=n/. on my .27 .config.
+
+Anyone bisecting should know that the new HID code is not bisect-safe.
+The dell, lg, bright and sony hid drivers all are auto Y if hid is Y and
+embedded is N and fail to link (when bisecting) due to missing symbols.
+
+-JimC (still waking up)
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
