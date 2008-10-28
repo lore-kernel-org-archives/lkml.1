@@ -1,214 +1,501 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753529AbYJ1KYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753808AbYJ1KZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753529AbYJ1KYl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 06:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYJ1KYa
+	id S1753808AbYJ1KZx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 06:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYJ1KZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 06:24:30 -0400
-Received: from mail.gmx.net ([213.165.64.20]:47185 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751768AbYJ1KY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 06:24:29 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/8IicJzMr8Tt71lM9Y0GPSzdP5TGVt7Hk1c3bEZq
-	GR6m1jz8CLbK9w
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-From: Mike Galbraith <efault@gmx.de>
-To: David Miller <davem@davemloft.net>
-Cc: zbr@ioremap.net, mingo@elte.hu, alan@lxorguk.ukuu.org.uk, jkosina@suse.cz,
-       akpm@linux-foundation.org, a.p.zijlstra@chello.nl, rjw@sisk.pl,
-       s0mbre@tservice.net.ru, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20081027.124848.163119274.davem@davemloft.net>
-References: <20081027113306.5b1d5898@lxorguk.ukuu.org.uk>
-	 <20081027183312.GD11494@elte.hu> <20081027193933.GB2590@ioremap.net>
-	 <20081027.124848.163119274.davem@davemloft.net>
+	Tue, 28 Oct 2008 06:25:44 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:41363 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752723AbYJ1KZm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 06:25:42 -0400
+Subject: [GIT PULL] s390 patches for 2.6.28-rc2
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
 Content-Type: text/plain
-Date: Tue, 28 Oct 2008 11:24:22 +0100
-Message-Id: <1225189462.4903.238.camel@marge.simson.net>
+Organization: IBM Corporation
+Date: Tue, 28 Oct 2008 11:24:25 +0100
+Message-Id: <1225189465.5695.1.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.49
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-27 at 12:48 -0700, David Miller wrote: 
-> From: Evgeniy Polyakov <zbr@ioremap.net>
-> Date: Mon, 27 Oct 2008 22:39:34 +0300
-> 
-> > On Mon, Oct 27, 2008 at 07:33:12PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
-> > > The moment there's real IO it becomes harder to analyze but the same 
-> > > basic behavior remains: the more unfair the IO scheduler, the "better" 
-> > > dbench results we get.
-> > 
-> > Right now there is no disk IO at all. Only quite usual network and
-> > process load.
-> 
-> I think the hope is that by saying there isn't a problem enough times,
-> it will become truth. :-)
-> 
-> More seriously, Ingo, what in the world do we need to do in order to get
-> you to start doing tbench runs and optimizing things (read as: fixing
-> the regression you added)?
-> 
-> I'm personally working on a test fibonacci heap implementation for
-> the fair sched code, and I already did all of the cost analysis all
-> the way back to the 2.6.22 pre-CFS days.
-> 
-> But I'm NOT a scheduler developer, so it isn't my responsibility to do
-> this crap for you.  You added this regression, why do I have to get my
-> hands dirty in order for there to be some hope that these regressions
-> start to get fixed?
+Hi Linus,
 
-I don't want to ruffle any feathers, but my box has comment or two..
+please pull from 'for-linus' branch of
 
-Has anyone looked at the numbers box emitted?  Some what I believe to be
-very interesting data-points may have been overlooked.
+	git://git390.osdl.marist.edu/pub/scm/linux-2.6.git for-linus
 
-Here's a piece thereof again for better of worse.  One last post won't
-burn the last electron.  If they don't agree anyone else's numbers,
-that's ok, their numbers have meaning too, and speak for themselves.
+to receive the following updates:
 
-Retest hrtick pain:
+Christian Borntraeger (2):
+      [S390] pgtables: Fix race in enable_sie vs. page table ops
+      [S390] s390: Fix build for !CONFIG_S390_GUEST + CONFIG_VIRTIO_CONSOLE
 
-2.6.26.7-up virgin no highres timers enabled
-ring-test   - 1.155 us/cycle  = 865 KHz                                 1.000
-netperf     - 130470.93 130771.00 129872.41 rr/s    avg 130371.44 rr/s  1.000 (within jitter of previous tests)
-tbench      - 355.153 357.163 356.836 MB/sec        avg 356.384 MB/sec  1.000
+Frank Munzert (2):
+      [S390] tape block: complete request with correct locking
+      [S390] tape: disable interrupts in tape_open and tape_release
 
-2.6.26.7-up virgin highres timers enabled, hrtick enabled
-ring-test   - 1.368 us/cycle  = 730 KHz                                  .843
-netperf     - 118959.08 118853.16 117761.42 rr/s    avg 118524.55 rr/s   .909
-tbench      - 340.999 338.655 340.005 MB/sec        avg 339.886 MB/sec   .953
+Heiko Carstens (3):
+      [S390] Fix sysdev class file creation.
+      [S390] Change default IPL method to IPL_VM.
+      [S390] No more 4kb stacks.
 
-OK, there's the htrick regression in all it's gory.  Ouch, that hurt.  
+Jan Glauber (2):
+      [S390] qdio: prevent double qdio shutdown in case of I/O errors
+      [S390] qdio: remove incorrect memset
 
-Remember those numbers, box muttered them again in 27 testing.  These
-previously tested kernels don't even have highres timers enabled, so
-obviously hrtick is a non-issue for them.
+Roel Kluin (1):
+      [S390] appldata: unsigned ops->size cannot be negative
 
-2.6.26.6-up + clock + buddy + weight
-ring-test   - 1.234 us/cycle  = 810 KHz                                  .947 [cmp1]
-netperf     - 128026.62 128118.48 127973.54 rr/s    avg 128039.54 rr/s   .977
-tbench      - 342.011 345.307 343.535 MB/sec        avg 343.617 MB/sec   .964
+ arch/s390/Kconfig                   |   16 +++++++---------
+ arch/s390/appldata/appldata_base.c  |    2 +-
+ arch/s390/include/asm/kvm_virtio.h  |    2 +-
+ arch/s390/include/asm/mmu.h         |    3 ++-
+ arch/s390/include/asm/mmu_context.h |   19 ++++++++++++++++---
+ arch/s390/include/asm/pgtable.h     |    8 ++++----
+ arch/s390/include/asm/thread_info.h |    5 -----
+ arch/s390/kernel/smp.c              |   24 +++++++++---------------
+ arch/s390/mm/pgtable.c              |   16 ++++++++--------
+ drivers/s390/char/tape_block.c      |    6 ++++--
+ drivers/s390/char/tape_core.c       |    8 ++++----
+ drivers/s390/cio/qdio_debug.c       |   19 ++++++-------------
+ drivers/s390/cio/qdio_main.c        |    1 -
+ 13 files changed, 62 insertions(+), 67 deletions(-)
 
-2.6.26.6-up + clock + buddy + weight + revert_to_per_rq_vruntime + buddy_overhead
-ring-test   - 1.174 us/cycle  = 851 KHz                                  .995 [cmp2]
-netperf     - 133928.03 134265.41 134297.06 rr/s    avg 134163.50 rr/s  1.024
-tbench      - 358.049 359.529 358.342 MB/sec        avg 358.640 MB/sec  1.006
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index 70b7645..8116a33 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -241,19 +241,17 @@ config PACK_STACK
+ 	  Say Y if you are unsure.
+ 
+ config SMALL_STACK
+-	bool "Use 4kb/8kb for kernel stack instead of 8kb/16kb"
+-	depends on PACK_STACK && !LOCKDEP
++	bool "Use 8kb for kernel stack instead of 16kb"
++	depends on PACK_STACK && 64BIT && !LOCKDEP
+ 	help
+ 	  If you say Y here and the compiler supports the -mkernel-backchain
+-	  option the kernel will use a smaller kernel stack size. For 31 bit
+-	  the reduced size is 4kb instead of 8kb and for 64 bit it is 8kb
+-	  instead of 16kb. This allows to run more thread on a system and
+-	  reduces the pressure on the memory management for higher order
+-	  page allocations.
++	  option the kernel will use a smaller kernel stack size. The reduced
++	  size is 8kb instead of 16kb. This allows to run more threads on a
++	  system and reduces the pressure on the memory management for higher
++	  order page allocations.
+ 
+ 	  Say N if you are unsure.
+ 
+-
+ config CHECK_STACK
+ 	bool "Detect kernel stack overflow"
+ 	help
+@@ -384,7 +382,7 @@ config IPL
+ choice
+ 	prompt "IPL method generated into head.S"
+ 	depends on IPL
+-	default IPL_TAPE
++	default IPL_VM
+ 	help
+ 	  Select "tape" if you want to IPL the image from a Tape.
+ 
+diff --git a/arch/s390/appldata/appldata_base.c b/arch/s390/appldata/appldata_base.c
+index a7f8979..a06a47c 100644
+--- a/arch/s390/appldata/appldata_base.c
++++ b/arch/s390/appldata/appldata_base.c
+@@ -424,7 +424,7 @@ out:
+  */
+ int appldata_register_ops(struct appldata_ops *ops)
+ {
+-	if ((ops->size > APPLDATA_MAX_REC_SIZE) || (ops->size < 0))
++	if (ops->size > APPLDATA_MAX_REC_SIZE)
+ 		return -EINVAL;
+ 
+ 	ops->ctl_table = kzalloc(4 * sizeof(struct ctl_table), GFP_KERNEL);
+diff --git a/arch/s390/include/asm/kvm_virtio.h b/arch/s390/include/asm/kvm_virtio.h
+index 1461002..c13568b 100644
+--- a/arch/s390/include/asm/kvm_virtio.h
++++ b/arch/s390/include/asm/kvm_virtio.h
+@@ -52,7 +52,7 @@ struct kvm_vqconfig {
+ 
+ #ifdef __KERNEL__
+ /* early virtio console setup */
+-#ifdef CONFIG_VIRTIO_CONSOLE
++#ifdef CONFIG_S390_GUEST
+ extern void s390_virtio_console_init(void);
+ #else
+ static inline void s390_virtio_console_init(void)
+diff --git a/arch/s390/include/asm/mmu.h b/arch/s390/include/asm/mmu.h
+index 5dd5e7b..d2b4ff8 100644
+--- a/arch/s390/include/asm/mmu.h
++++ b/arch/s390/include/asm/mmu.h
+@@ -7,7 +7,8 @@ typedef struct {
+ 	unsigned long asce_bits;
+ 	unsigned long asce_limit;
+ 	int noexec;
+-	int pgstes;
++	int has_pgste;	 /* The mmu context has extended page tables */
++	int alloc_pgste; /* cloned contexts will have extended page tables */
+ } mm_context_t;
+ 
+ #endif
+diff --git a/arch/s390/include/asm/mmu_context.h b/arch/s390/include/asm/mmu_context.h
+index 4c2fbf4..28ec870 100644
+--- a/arch/s390/include/asm/mmu_context.h
++++ b/arch/s390/include/asm/mmu_context.h
+@@ -20,12 +20,25 @@ static inline int init_new_context(struct task_struct *tsk,
+ #ifdef CONFIG_64BIT
+ 	mm->context.asce_bits |= _ASCE_TYPE_REGION3;
+ #endif
+-	if (current->mm->context.pgstes) {
++	if (current->mm->context.alloc_pgste) {
++		/*
++		 * alloc_pgste indicates, that any NEW context will be created
++		 * with extended page tables. The old context is unchanged. The
++		 * page table allocation and the page table operations will
++		 * look at has_pgste to distinguish normal and extended page
++		 * tables. The only way to create extended page tables is to
++		 * set alloc_pgste and then create a new context (e.g. dup_mm).
++		 * The page table allocation is called after init_new_context
++		 * and if has_pgste is set, it will create extended page
++		 * tables.
++		 */
+ 		mm->context.noexec = 0;
+-		mm->context.pgstes = 1;
++		mm->context.has_pgste = 1;
++		mm->context.alloc_pgste = 1;
+ 	} else {
+ 		mm->context.noexec = s390_noexec;
+-		mm->context.pgstes = 0;
++		mm->context.has_pgste = 0;
++		mm->context.alloc_pgste = 0;
+ 	}
+ 	mm->context.asce_limit = STACK_TOP_MAX;
+ 	crst_table_init((unsigned long *) mm->pgd, pgd_entry_type(mm));
+diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
+index 1a928f8..7fc7613 100644
+--- a/arch/s390/include/asm/pgtable.h
++++ b/arch/s390/include/asm/pgtable.h
+@@ -679,7 +679,7 @@ static inline void pmd_clear(pmd_t *pmd)
+ 
+ static inline void pte_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
+ {
+-	if (mm->context.pgstes)
++	if (mm->context.has_pgste)
+ 		ptep_rcp_copy(ptep);
+ 	pte_val(*ptep) = _PAGE_TYPE_EMPTY;
+ 	if (mm->context.noexec)
+@@ -763,7 +763,7 @@ static inline int kvm_s390_test_and_clear_page_dirty(struct mm_struct *mm,
+ 	struct page *page;
+ 	unsigned int skey;
+ 
+-	if (!mm->context.pgstes)
++	if (!mm->context.has_pgste)
+ 		return -EINVAL;
+ 	rcp_lock(ptep);
+ 	pgste = (unsigned long *) (ptep + PTRS_PER_PTE);
+@@ -794,7 +794,7 @@ static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
+ 	int young;
+ 	unsigned long *pgste;
+ 
+-	if (!vma->vm_mm->context.pgstes)
++	if (!vma->vm_mm->context.has_pgste)
+ 		return 0;
+ 	physpage = pte_val(*ptep) & PAGE_MASK;
+ 	pgste = (unsigned long *) (ptep + PTRS_PER_PTE);
+@@ -844,7 +844,7 @@ static inline void __ptep_ipte(unsigned long address, pte_t *ptep)
+ static inline void ptep_invalidate(struct mm_struct *mm,
+ 				   unsigned long address, pte_t *ptep)
+ {
+-	if (mm->context.pgstes) {
++	if (mm->context.has_pgste) {
+ 		rcp_lock(ptep);
+ 		__ptep_ipte(address, ptep);
+ 		ptep_rcp_copy(ptep);
+diff --git a/arch/s390/include/asm/thread_info.h b/arch/s390/include/asm/thread_info.h
+index de3fad6..c1eaf96 100644
+--- a/arch/s390/include/asm/thread_info.h
++++ b/arch/s390/include/asm/thread_info.h
+@@ -15,13 +15,8 @@
+  * Size of kernel stack for each process
+  */
+ #ifndef __s390x__
+-#ifndef __SMALL_STACK
+ #define THREAD_ORDER 1
+ #define ASYNC_ORDER  1
+-#else
+-#define THREAD_ORDER 0
+-#define ASYNC_ORDER  0
+-#endif
+ #else /* __s390x__ */
+ #ifndef __SMALL_STACK
+ #define THREAD_ORDER 2
+diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
+index 9e8b1f9..b559568 100644
+--- a/arch/s390/kernel/smp.c
++++ b/arch/s390/kernel/smp.c
+@@ -1119,9 +1119,7 @@ out:
+ 	return rc;
+ }
+ 
+-static ssize_t __ref rescan_store(struct sys_device *dev,
+-				  struct sysdev_attribute *attr,
+-				  const char *buf,
++static ssize_t __ref rescan_store(struct sysdev_class *class, const char *buf,
+ 				  size_t count)
+ {
+ 	int rc;
+@@ -1129,12 +1127,10 @@ static ssize_t __ref rescan_store(struct sys_device *dev,
+ 	rc = smp_rescan_cpus();
+ 	return rc ? rc : count;
+ }
+-static SYSDEV_ATTR(rescan, 0200, NULL, rescan_store);
++static SYSDEV_CLASS_ATTR(rescan, 0200, NULL, rescan_store);
+ #endif /* CONFIG_HOTPLUG_CPU */
+ 
+-static ssize_t dispatching_show(struct sys_device *dev,
+-				struct sysdev_attribute *attr,
+-				char *buf)
++static ssize_t dispatching_show(struct sysdev_class *class, char *buf)
+ {
+ 	ssize_t count;
+ 
+@@ -1144,9 +1140,8 @@ static ssize_t dispatching_show(struct sys_device *dev,
+ 	return count;
+ }
+ 
+-static ssize_t dispatching_store(struct sys_device *dev,
+-				 struct sysdev_attribute *attr,
+-				 const char *buf, size_t count)
++static ssize_t dispatching_store(struct sysdev_class *dev, const char *buf,
++				 size_t count)
+ {
+ 	int val, rc;
+ 	char delim;
+@@ -1168,7 +1163,8 @@ out:
+ 	put_online_cpus();
+ 	return rc ? rc : count;
+ }
+-static SYSDEV_ATTR(dispatching, 0644, dispatching_show, dispatching_store);
++static SYSDEV_CLASS_ATTR(dispatching, 0644, dispatching_show,
++			 dispatching_store);
+ 
+ static int __init topology_init(void)
+ {
+@@ -1178,13 +1174,11 @@ static int __init topology_init(void)
+ 	register_cpu_notifier(&smp_cpu_nb);
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-	rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
+-			       &attr_rescan.attr);
++	rc = sysdev_class_create_file(&cpu_sysdev_class, &attr_rescan);
+ 	if (rc)
+ 		return rc;
+ #endif
+-	rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
+-			       &attr_dispatching.attr);
++	rc = sysdev_class_create_file(&cpu_sysdev_class, &attr_dispatching);
+ 	if (rc)
+ 		return rc;
+ 	for_each_present_cpu(cpu) {
+diff --git a/arch/s390/mm/pgtable.c b/arch/s390/mm/pgtable.c
+index 3d98ba8..ef3635b 100644
+--- a/arch/s390/mm/pgtable.c
++++ b/arch/s390/mm/pgtable.c
+@@ -169,7 +169,7 @@ unsigned long *page_table_alloc(struct mm_struct *mm)
+ 	unsigned long *table;
+ 	unsigned long bits;
+ 
+-	bits = (mm->context.noexec || mm->context.pgstes) ? 3UL : 1UL;
++	bits = (mm->context.noexec || mm->context.has_pgste) ? 3UL : 1UL;
+ 	spin_lock(&mm->page_table_lock);
+ 	page = NULL;
+ 	if (!list_empty(&mm->context.pgtable_list)) {
+@@ -186,7 +186,7 @@ unsigned long *page_table_alloc(struct mm_struct *mm)
+ 		pgtable_page_ctor(page);
+ 		page->flags &= ~FRAG_MASK;
+ 		table = (unsigned long *) page_to_phys(page);
+-		if (mm->context.pgstes)
++		if (mm->context.has_pgste)
+ 			clear_table_pgstes(table);
+ 		else
+ 			clear_table(table, _PAGE_TYPE_EMPTY, PAGE_SIZE);
+@@ -210,7 +210,7 @@ void page_table_free(struct mm_struct *mm, unsigned long *table)
+ 	struct page *page;
+ 	unsigned long bits;
+ 
+-	bits = (mm->context.noexec || mm->context.pgstes) ? 3UL : 1UL;
++	bits = (mm->context.noexec || mm->context.has_pgste) ? 3UL : 1UL;
+ 	bits <<= (__pa(table) & (PAGE_SIZE - 1)) / 256 / sizeof(unsigned long);
+ 	page = pfn_to_page(__pa(table) >> PAGE_SHIFT);
+ 	spin_lock(&mm->page_table_lock);
+@@ -257,7 +257,7 @@ int s390_enable_sie(void)
+ 	struct mm_struct *mm, *old_mm;
+ 
+ 	/* Do we have pgstes? if yes, we are done */
+-	if (tsk->mm->context.pgstes)
++	if (tsk->mm->context.has_pgste)
+ 		return 0;
+ 
+ 	/* lets check if we are allowed to replace the mm */
+@@ -269,14 +269,14 @@ int s390_enable_sie(void)
+ 	}
+ 	task_unlock(tsk);
+ 
+-	/* we copy the mm with pgstes enabled */
+-	tsk->mm->context.pgstes = 1;
++	/* we copy the mm and let dup_mm create the page tables with_pgstes */
++	tsk->mm->context.alloc_pgste = 1;
+ 	mm = dup_mm(tsk);
+-	tsk->mm->context.pgstes = 0;
++	tsk->mm->context.alloc_pgste = 0;
+ 	if (!mm)
+ 		return -ENOMEM;
+ 
+-	/* Now lets check again if somebody attached ptrace etc */
++	/* Now lets check again if something happened */
+ 	task_lock(tsk);
+ 	if (!tsk->mm || atomic_read(&tsk->mm->mm_users) > 1 ||
+ 	    tsk->mm != tsk->active_mm || tsk->mm->ioctx_list) {
+diff --git a/drivers/s390/char/tape_block.c b/drivers/s390/char/tape_block.c
+index 023803d..ae18baf 100644
+--- a/drivers/s390/char/tape_block.c
++++ b/drivers/s390/char/tape_block.c
+@@ -76,7 +76,7 @@ tapeblock_trigger_requeue(struct tape_device *device)
+ static void
+ tapeblock_end_request(struct request *req, int error)
+ {
+-	if (__blk_end_request(req, error, blk_rq_bytes(req)))
++	if (blk_end_request(req, error, blk_rq_bytes(req)))
+ 		BUG();
+ }
+ 
+@@ -166,7 +166,7 @@ tapeblock_requeue(struct work_struct *work) {
+ 		nr_queued++;
+ 	spin_unlock(get_ccwdev_lock(device->cdev));
+ 
+-	spin_lock(&device->blk_data.request_queue_lock);
++	spin_lock_irq(&device->blk_data.request_queue_lock);
+ 	while (
+ 		!blk_queue_plugged(queue) &&
+ 		elv_next_request(queue)   &&
+@@ -176,7 +176,9 @@ tapeblock_requeue(struct work_struct *work) {
+ 		if (rq_data_dir(req) == WRITE) {
+ 			DBF_EVENT(1, "TBLOCK: Rejecting write request\n");
+ 			blkdev_dequeue_request(req);
++			spin_unlock_irq(&device->blk_data.request_queue_lock);
+ 			tapeblock_end_request(req, -EIO);
++			spin_lock_irq(&device->blk_data.request_queue_lock);
+ 			continue;
+ 		}
+ 		blkdev_dequeue_request(req);
+diff --git a/drivers/s390/char/tape_core.c b/drivers/s390/char/tape_core.c
+index d7073db..f9bb51f 100644
+--- a/drivers/s390/char/tape_core.c
++++ b/drivers/s390/char/tape_core.c
+@@ -1200,7 +1200,7 @@ tape_open(struct tape_device *device)
+ {
+ 	int rc;
+ 
+-	spin_lock(get_ccwdev_lock(device->cdev));
++	spin_lock_irq(get_ccwdev_lock(device->cdev));
+ 	if (device->tape_state == TS_NOT_OPER) {
+ 		DBF_EVENT(6, "TAPE:nodev\n");
+ 		rc = -ENODEV;
+@@ -1218,7 +1218,7 @@ tape_open(struct tape_device *device)
+ 		tape_state_set(device, TS_IN_USE);
+ 		rc = 0;
+ 	}
+-	spin_unlock(get_ccwdev_lock(device->cdev));
++	spin_unlock_irq(get_ccwdev_lock(device->cdev));
+ 	return rc;
+ }
+ 
+@@ -1228,11 +1228,11 @@ tape_open(struct tape_device *device)
+ int
+ tape_release(struct tape_device *device)
+ {
+-	spin_lock(get_ccwdev_lock(device->cdev));
++	spin_lock_irq(get_ccwdev_lock(device->cdev));
+ 	if (device->tape_state == TS_IN_USE)
+ 		tape_state_set(device, TS_UNUSED);
+ 	module_put(device->discipline->owner);
+-	spin_unlock(get_ccwdev_lock(device->cdev));
++	spin_unlock_irq(get_ccwdev_lock(device->cdev));
+ 	return 0;
+ }
+ 
+diff --git a/drivers/s390/cio/qdio_debug.c b/drivers/s390/cio/qdio_debug.c
+index b539082..f055903 100644
+--- a/drivers/s390/cio/qdio_debug.c
++++ b/drivers/s390/cio/qdio_debug.c
+@@ -20,6 +20,7 @@ static struct dentry *debugfs_root;
+ #define MAX_DEBUGFS_QUEUES	32
+ static struct dentry *debugfs_queues[MAX_DEBUGFS_QUEUES] = { NULL };
+ static DEFINE_MUTEX(debugfs_mutex);
++#define QDIO_DEBUGFS_NAME_LEN	40
+ 
+ void qdio_allocate_do_dbf(struct qdio_initialize *init_data)
+ {
+@@ -152,17 +153,6 @@ static int qstat_seq_open(struct inode *inode, struct file *filp)
+ 			   filp->f_path.dentry->d_inode->i_private);
+ }
+ 
+-static void get_queue_name(struct qdio_q *q, struct ccw_device *cdev, char *name)
+-{
+-	memset(name, 0, sizeof(name));
+-	sprintf(name, "%s", dev_name(&cdev->dev));
+-	if (q->is_input_q)
+-		sprintf(name + strlen(name), "_input");
+-	else
+-		sprintf(name + strlen(name), "_output");
+-	sprintf(name + strlen(name), "_%d", q->nr);
+-}
+-
+ static void remove_debugfs_entry(struct qdio_q *q)
+ {
+ 	int i;
+@@ -189,14 +179,17 @@ static struct file_operations debugfs_fops = {
+ static void setup_debugfs_entry(struct qdio_q *q, struct ccw_device *cdev)
+ {
+ 	int i = 0;
+-	char name[40];
++	char name[QDIO_DEBUGFS_NAME_LEN];
+ 
+ 	while (debugfs_queues[i] != NULL) {
+ 		i++;
+ 		if (i >= MAX_DEBUGFS_QUEUES)
+ 			return;
+ 	}
+-	get_queue_name(q, cdev, name);
++	snprintf(name, QDIO_DEBUGFS_NAME_LEN, "%s_%s_%d",
++		 dev_name(&cdev->dev),
++		 q->is_input_q ? "input" : "output",
++		 q->nr);
+ 	debugfs_queues[i] = debugfs_create_file(name, S_IFREG | S_IRUGO | S_IWUSR,
+ 						debugfs_root, q, &debugfs_fops);
+ }
+diff --git a/drivers/s390/cio/qdio_main.c b/drivers/s390/cio/qdio_main.c
+index a50682d..7c86591 100644
+--- a/drivers/s390/cio/qdio_main.c
++++ b/drivers/s390/cio/qdio_main.c
+@@ -1083,7 +1083,6 @@ void qdio_int_handler(struct ccw_device *cdev, unsigned long intparm,
+ 		case -EIO:
+ 			sprintf(dbf_text, "ierr%4x", irq_ptr->schid.sch_no);
+ 			QDIO_DBF_TEXT2(1, setup, dbf_text);
+-			qdio_int_error(cdev);
+ 			return;
+ 		case -ETIMEDOUT:
+ 			sprintf(dbf_text, "qtoh%4x", irq_ptr->schid.sch_no);
 
-Note that I added all .27 additional scheduler overhead to .26, and then
-removed every last bit of it, theoretically leaving nothing but improved
-clock accuracy in the wake.  The ring-test number indicates that our max
-context switch rate was thereby indeed fully recovered.  We even got a
-modest throughput improvement for our trouble.
-
-However.. 
-                                                       versus .26 counterpart
-2.6.27-up virgin
-ring-test   - 1.193 us/cycle  = 838 KHz                                 1.034 [vs cmp1]
-netperf     - 121293.48 121700.96 120716.98 rr/s    avg 121237.14 rr/s   .946
-tbench      - 340.362 339.780 341.353 MB/sec        avg 340.498 MB/sec   .990
-
-2.6.27-up + revert_to_per_rq_vruntime + buddy_overhead
-ring-test   - 1.122 us/cycle  = 891 KHz                                 1.047 [vs cmp2]
-netperf     - 119353.27 118600.98 119719.12 rr/s    avg 119224.45 rr/s   .900
-tbench      - 338.701 338.508 338.562 MB/sec        avg 338.590 MB/sec   .951
-
-..removing the overhead from .27 does not produce the anticipated result
-despite a max context switch rate markedly above that of 2.6.26.
-
-There lies an as yet unaddressed regression IMBHO.  The hrtick has been
-addressed.  It sucked at high frequency, and it's gone.  The added math
-overhead in .27 hurt some too, and is now history as well.
-
-These two regressions are nearly identical in magnitude per box.
-
-I don't know who owns that regression, neither does box or git.  I'm not
-pointing fingers in any direction.  I've walked the regression hunting
-path, and know first-hand how rocky that path is.
-
-There are other things along the regression path that are worth noting:
-
-Three of the releases I tested were tested with identical schedulers,
-cfs-v24.1, yet they produced markedly different output, output which
-regresses.  Again, I'm not pointing fingers, I'm merely illustrating how
-rocky this regression hunting path is.  In 25, the sum of all kernel
-changes dropped our max switch rate markedly, yet both tbench and
-netperf _improved_ markedly.  More rocks in the road.  etc etc etc.
-
-To really illustrate rockiness, cutting network config down from distro
-lard-ball to something leaner and meaner took SMP throughput from this
-(was only testing netperf at that time) on 19 Aug..
-
-2.6.22.19 pinned
-16384  87380  1        1       300.00   59866.40   
-16384  87380  1        1       300.01   59852.78   
-16384  87380  1        1       300.01   59618.48   
-16384  87380  1        1       300.01   59655.35   
-
-..to this on 13 Sept..
-
-2.6.22.19 (also pinned)
-Throughput 1136.02 MB/sec 4 procs
-
-16384  87380  1        1       60.01    94179.12
-16384  87380  1        1       60.01    88780.61
-16384  87380  1        1       60.01    91057.72
-16384  87380  1        1       60.01    94242.16
-
-..and to this on 15 Sept.
-
-2.6.22.19 (also pinned)
-Throughput 1250.73 MB/sec 4 procs                  1.00
-
-16384  87380  1        1       60.01    111272.55  1.00
-16384  87380  1        1       60.00    104689.58
-16384  87380  1        1       60.00    110733.05
-16384  87380  1        1       60.00    110748.88
-
-2.6.22.19-cfs-v24.1
-
-Throughput 1204.14 MB/sec 4 procs                  .962
-
-16384  87380  1        1       60.01    101799.85  .929
-16384  87380  1        1       60.01    101659.41
-16384  87380  1        1       60.01    101628.78
-16384  87380  1        1       60.01    101700.53
-
-wakeup granularity = 0 (make scheduler as preempt happy as 2.6.22 is)
-
-Throughput 1213.21 MB/sec 4 procs                  .970
-
-16384  87380  1        1       60.01    108569.27  .992
-16384  87380  1        1       60.01    108541.04
-16384  87380  1        1       60.00    108579.63
-16384  87380  1        1       60.01    108519.09
-
-Is that a rock in my let's double triple quintuple examine scheduler
-performance along the regression path or what?  Same box, same
-benchmarks and same schedulers I've been examining the whole time.
-
-.992 and .970.
-
-The list goes on and on and on, including SCHED_RR testing where I saw
-regression despite no CFS math.  My point here is that every little
-change of anything changes the picture up to and including radically.
-These configuration changes, if viewed in regression terms, are HUGE.
-Build a fully enabled netfilter into the kernel vs modular, and it
-becomes even more so. 
-
-The picture with UP config is different, but as far as box is concerned,
-while scheduler involvement is certainly interesting, there are even
-more interesting places.  Somewhere.
-
-Hopefully this post won't be viewed in the rather cynical light of your
-first quoted stanza.  Box is incapable of such, and I have no incentive
-to do such ;-)  I just run the benchmarks, collect whatever numbers box
-feels like emitting, and run around trying to find the missing bits.
-
-	-Mike
 
