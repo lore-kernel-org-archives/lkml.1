@@ -1,84 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbYJ1Q6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbYJ1REs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752860AbYJ1Q6N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 12:58:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbYJ1Q5r
+	id S1753237AbYJ1REs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 13:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbYJ1REk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 12:57:47 -0400
-Received: from kroah.org ([198.145.64.141]:39625 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752880AbYJ1Q5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 12:57:46 -0400
-Date: Tue, 28 Oct 2008 09:52:36 -0700
-From: Greg KH <greg@kroah.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Jouni Malinen <jkmalinen@gmail.com>,
-       Oliver Neukum <oliver@neukum.org>, Nicolas Bareil <nico@chdir.org>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, j@w1.fi
-Subject: Re: [PATCH] x86, gart: fix gart detection for Fam11h CPUs
-Message-ID: <20081028165236.GA4503@kroah.com>
-References: <e785a1360810280207p1c162decs5a70b8915ea08476@mail.gmail.com> <1225206834-6189-1-git-send-email-joerg.roedel@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1225206834-6189-1-git-send-email-joerg.roedel@amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 28 Oct 2008 13:04:40 -0400
+Received: from casper.infradead.org ([85.118.1.10]:35948 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751092AbYJ1REj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 13:04:39 -0400
+Subject: Re: [patch 2.6.28-rc2] at91_mci: workaround lockdep
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, lkml <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Russell King <rmk@arm.linux.org.uk>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       Andrew Victor <linux@maxim.org.za>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <200810271426.27110.david-b@pacbell.net>
+References: <200810271426.27110.david-b@pacbell.net>
+Content-Type: text/plain
+Date: Tue, 28 Oct 2008 18:04:02 +0100
+Message-Id: <1225213442.15763.20.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28, 2008 at 04:13:54PM +0100, Joerg Roedel wrote:
-> The AMD Fam11h CPUs have a K8 northbridge. This northbridge is different
-> from other familys because it lacks GART support (as I just learned).
-> But the kernel implicitly expects a GART if it finds an AMD northbridge.
-> Fix this by removing the Fam11h northbridge id from the scan list of K8
-> northbridges. This patch also changes the message in the GART driver
-> about missing K8 northbridges to tell that the GART is missing which is
-> the correct information in this case.
+On Mon, 2008-10-27 at 14:26 -0700, David Brownell wrote:
+> From: David Brownell <dbrownell@users.sourceforge.net>
 > 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-
-Looks like this needs to be added to the 2.6.27-stable tree also, right?
-
-thanks,
-
-greg k-h
-
-> ---
->  arch/x86/kernel/k8.c          |    1 -
->  arch/x86/kernel/pci-gart_64.c |    2 +-
->  2 files changed, 1 insertions(+), 2 deletions(-)
+> Lockdep reported a problem in the at91_mci driver ... in this case, the
+> issue is with lockdep, not with the driver.  A trimmed stack dump, from
+> trying to boot with root on MMC, shows:
 > 
-> diff --git a/arch/x86/kernel/k8.c b/arch/x86/kernel/k8.c
-> index 304d8ba..cbc4332 100644
-> --- a/arch/x86/kernel/k8.c
-> +++ b/arch/x86/kernel/k8.c
-> @@ -18,7 +18,6 @@ static u32 *flush_words;
->  struct pci_device_id k8_nb_ids[] = {
->  	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB_MISC) },
->  	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_10H_NB_MISC) },
-> -	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_11H_NB_MISC) },
->  	{}
->  };
->  EXPORT_SYMBOL(k8_nb_ids);
-> diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-> index e3f75bb..a42b02b 100644
-> --- a/arch/x86/kernel/pci-gart_64.c
-> +++ b/arch/x86/kernel/pci-gart_64.c
-> @@ -744,7 +744,7 @@ void __init gart_iommu_init(void)
->  	long i;
->  
->  	if (cache_k8_northbridges() < 0 || num_k8_northbridges == 0) {
-> -		printk(KERN_INFO "PCI-GART: No AMD northbridge found.\n");
-> +		printk(KERN_INFO "PCI-GART: No AMD GART found.\n");
->  		return;
->  	}
->  
-> -- 
-> 1.5.6.4
+>   WARNING: at kernel/lockdep.c:2195 trace_hardirqs_on_caller+0xf4/0x170()
+>   Modules linked in:
+>   [<c005bc98>] (trace_hardirqs_on+0x0/0x18) from [<c0213bf4>] (_spin_unlock_irq+0x2c/0x3c)
+>   [<c0213bc8>] (_spin_unlock_irq+0x0/0x3c) from [<c0029a88>] (flush_dcache_page+0x114/0x144)
+>   [<c0029974>] (flush_dcache_page+0x0/0x144) from [<c019b034>] (at91_mci_irq+0x150/0x414)
+>   [<c019aee4>] (at91_mci_irq+0x0/0x414) from [<c0066c5c>] (handle_IRQ_event+0x2c/0x6c)
+>   [<c0066c30>] (handle_IRQ_event+0x0/0x6c) from [<c0068a60>] (handle_level_irq+0x108/0x124)
+>   [<c0068958>] (handle_level_irq+0x0/0x124) from [<c0022064>] (__exception_text_start+0x64/0x90)
 > 
+> When __flush_dcache_aliases() returns -- inlined into flush_dcache_page(),
+> above -- it re-enables IRQs ... since that evidently may only be called with
+> IRQs enabled.  That's OK since the (unshared) IRQ handler doesn't ask for IRQs
+> to be disabled.   Except ... that lockdep went and disabled them, then went on
+> to complains about the breakage *it* caused!
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Workaround: depend on LOCKDEP=n ... and for paranoia, disable IRQF_SHARED
+> for this interrupt.  (At the hardware level, this is dedicated to MCI, so
+> there's never a need for multiple handlers.)
+
+In all previous such cases it was deemed the IRQ handler should deal
+with whatever it gets.
+
