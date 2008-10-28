@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYJ1PBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbYJ1PFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754209AbYJ1PBm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 11:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYJ1PBb
+	id S1754134AbYJ1PFb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 11:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbYJ1PFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 11:01:31 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47197 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752965AbYJ1PBb (ORCPT
+	Tue, 28 Oct 2008 11:05:23 -0400
+Received: from smtp-vbr2.xs4all.nl ([194.109.24.22]:3830 "EHLO
+	smtp-vbr2.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752187AbYJ1PFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 11:01:31 -0400
-Message-Id: <20081028150041.857635775@bull.net>
-References: <20081028145952.620752409@bull.net>
-User-Agent: quilt/0.46-1
-Date: Tue, 28 Oct 2008 15:59:53 +0100
-From: Nadia.Derbey@bull.net
-To: cboulte@gmail.com, manfred@colorfullife.com, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Nadia.Derbey@bull.net
-Subject: [PATCH] SYSVIPC - Fix the ipc structures initialization
-Content-Disposition: inline; filename=ipc-fix-sysvipc_structures_initialization.patch
+	Tue, 28 Oct 2008 11:05:23 -0400
+Date: Tue, 28 Oct 2008 16:05:20 +0100
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.26] OOPS in elv_next_request
+Message-ID: <20081028150518.GH11214@vanheusden.com>
+References: <20081027090426.GN8318@vanheusden.com> <a8e1da0810272211s4b145bboef26801c3af0d652@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a8e1da0810272211s4b145bboef26801c3af0d652@mail.gmail.com>
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Wed Oct 29 12:57:18 CET 2008
+X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a
+	key-signing at www.biglumber.com
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > [ 4768.720058] ---[ end trace 6a50caff78c47574 ]---
+> > [ 4769.658313] Floppy drive(s): fd0 is 1.44M
+> > [ 4789.656060] no cont in shutdown!
+> 
+> Hi, could you try the attached test patch?  sorry for using attachment
+> as there's some problem for my mail client to reply.
 
-A problem was found while reviewing the code after Bugzilla bug
-http://bugzilla.kernel.org/show_bug.cgi?id=11796.
-
-In ipc_addid(), the newly allocated ipc structure is inserted into the ipcs
-tree (i.e made visible to readers) without locking it.
-This is not correct since its initialization continues after it has been
-inserted in the tree.
-
-This patch moves the ipc structure lock initialization + locking before
-the actual insertion.
-
-Regards,
-Nadia
+Will see if I can compile it tonight. Takes a while since it is a
+celeroon @ 400MHz :-)
 
 
-Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
-
----
- ipc/util.c |   14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
-
-Index: linux-2.6.27/ipc/util.c
-===================================================================
---- linux-2.6.27.orig/ipc/util.c	2008-10-23 15:20:46.000000000 +0200
-+++ linux-2.6.27/ipc/util.c	2008-10-28 16:52:17.000000000 +0100
-@@ -266,9 +266,17 @@ int ipc_addid(struct ipc_ids* ids, struc
- 	if (ids->in_use >= size)
- 		return -ENOSPC;
- 
-+	spin_lock_init(&new->lock);
-+	new->deleted = 0;
-+	rcu_read_lock();
-+	spin_lock(&new->lock);
-+
- 	err = idr_get_new(&ids->ipcs_idr, new, &id);
--	if (err)
-+	if (err) {
-+		spin_unlock(&new->lock);
-+		rcu_read_unlock();
- 		return err;
-+	}
- 
- 	ids->in_use++;
- 
-@@ -280,10 +288,6 @@ int ipc_addid(struct ipc_ids* ids, struc
- 		ids->seq = 0;
- 
- 	new->id = ipc_buildid(id, new->seq);
--	spin_lock_init(&new->lock);
--	new->deleted = 0;
--	rcu_read_lock();
--	spin_lock(&new->lock);
- 	return id;
- }
- 
+Folkert van Heusden
 
 -- 
+www.vanheusden.com/multitail - multitail is tail on steroids. multiple
+               windows, filtering, coloring, anything you can think of
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
