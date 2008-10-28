@@ -1,113 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbYJ1O4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbYJ1O65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754069AbYJ1O4s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 10:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbYJ1O4j
+	id S1754099AbYJ1O65 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 10:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYJ1O6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 10:56:39 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:47936 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752303AbYJ1O4j (ORCPT
+	Tue, 28 Oct 2008 10:58:49 -0400
+Received: from host0.dyn.jankratochvil.net ([89.250.240.59]:35990 "EHLO
+	host0.dyn.jankratochvil.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751771AbYJ1O6s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 10:56:39 -0400
-Date: Tue, 28 Oct 2008 10:49:16 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Theodore Tso <tytso@mit.edu>
-cc: LKML <linux-kernel@vger.kernel.org>, Mike Snitzer <snitzer@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH][RFC] trace: profile likely and unlikely annotations
-In-Reply-To: <20081028143720.GD8869@mit.edu>
-Message-ID: <alpine.DEB.1.10.0810281045040.29482@gandalf.stny.rr.com>
-References: <170fa0d20810271529g3c64ae89me29ed8b65a9c3b5e@mail.gmail.com> <alpine.DEB.1.10.0810271918390.19731@gandalf.stny.rr.com> <20081028001340.GB9797@mit.edu> <alpine.DEB.1.10.0810272316270.802@gandalf.stny.rr.com> <20081028143720.GD8869@mit.edu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 28 Oct 2008 10:58:48 -0400
+Date: Tue, 28 Oct 2008 15:58:32 +0100
+From: Jan Kratochvil <jan.kratochvil@redhat.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org
+Subject: Re: inconsistent behavior with ptrace(TRACEME) and fork/exec
+Message-ID: <20081028145832.GA9211@host0.dyn.jankratochvil.net>
+References: <20081027145648.GA15791@host0.dyn.jankratochvil.net> <8bd0f97a0810271038g4f0b7326r68c7e88841d0e6f9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/mixed; boundary="0F1p//8PRICkK4MW"
+Content-Disposition: inline
+In-Reply-To: <8bd0f97a0810271038g4f0b7326r68c7e88841d0e6f9@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 28 Oct 2008, Theodore Tso wrote:
+--0F1p//8PRICkK4MW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> On Tue, Oct 28, 2008 at 12:12:48AM -0400, Steven Rostedt wrote:
-> > 
-> > Andrew Morton recently suggested having an in-kernel way to profile
-> > likely and unlikely macros. This patch achieves that goal.
+Hi,
+
+sorry I had a race with signal()/pause() in my last post, fixed here.
+
+
+On Mon, 27 Oct 2008 18:38:16 +0100, Mike Frysinger wrote:
+> On Mon, Oct 27, 2008 at 10:56, Jan Kratochvil wrote:
+> > On Wed, 19 Jul 2006 21:18:29 +0200, Mike Frysinger wrote:
+> >> my understanding is that if a parent forks and the child does
+> >> a ptrace(TRACEME) right before doing an exec(), the kernel should always
+> >> halt it and wait indefinitely for the parent to start ptracing it.
+> >
+> > Yes, just the parent must process the event (signal).  In your testcase the
+> > parent finished before the signal could be delivered.  If the tracer exits the
+> > tracee's tracing is finished and it continues freely.
 > 
-> Maybe I'm confused, but when I read through the patch, it looks like
-> that 'hit' is incremented whenever the condition is true, and 'missed'
-> is incremented whenever the condition is false, correct?
+> no signal should have been generated.  the child should have gone
+> straight to the exec and waited for the parent to process it.
 
-Correct.
+Every ptrace event generates SIGCHLD.  vfork() frees the parent at the moment
+the child calls exec() or _exit().  Here the child calls exec() which both
+frees the parent to continue the execution AND delivers SIGCHLD with the
+status WIFSTOPPED WSTOPSIG(SIGTRAP) to it.  I do not see a problem here.
 
+
+> >> unfortunately, this behavior seems to be unreliable.
+> >
+> > Fixed the races in your code and I do not see there any problem, do you?
+> > The ptrace problems/testsuite is being maintained at:
+> >  http://sourceware.org/systemtap/wiki/utrace/tests
 > 
-> Is that what you intended?  So for profile_unlikely, "missed" is good,
-> and "hit" is bad, and for profile_likely, "hit" is good, and "missed"
-> is bad.  That seems horribly confusing.
+> there is no race condition ... it's using vfork here remember ?
 
-Correct. Yeah, I figured I'd get complaints about this (hence the RFC).
-If you look at my awk example, you will also notice that I switched the
-$1 and $2 around when reading the other file.
+Yes but you said that you see the same problem even with fork():
 
-This can be confusing either way. I did this to reuse the code for both 
-outputs.
+On Wed, 19 Jul 2006 21:18:29 +0200, Mike Frysinger wrote:
+# also, while the attached test uses vfork(), same behavior can be observed
+# with fork().  
 
-> 
-> If that wasn't what you intended, the meaning of "hit" and "missed"
-> seems to be highly confusing, either way.  Can we perhaps use some
-> other terminology?  Simply using "True" and "False" would be better,
-> since there's no possible confusion what the labels mean.   
 
-So renaming 'hit' and 'miss' to 'True' and 'False' would be good enough?
-That is, it will still mean that a 'True' is bad for unlikely but good for 
-a likely?
+> it is impossible for the parent to have executed anything after the vfork()
+> before the child made it into the exec() and gone to sleep
 
-> 
-> > +#define unlikely(x) ({							\
-> > +			int ______r;					\
-> > +			static struct ftrace_likely_data ______f	\
-> > +				__attribute__((__aligned__(4)))		\
-> > +				__attribute__((section("_ftrace_unlikely"))); \
-> > +			if (unlikely_notrace(!______f.ip))		\
-> > +				______f.ip = __THIS_IP__;		\
-> > +			______r = unlikely_notrace(x);			\
-> > +			ftrace_likely_update(&______f, ______r);	\
-> > +			______r;					\
-> > +		})
-> 
-> Note that unlikely(x) calls ftrace_likely_update(), which does this:
-> 
-> > +void ftrace_likely_update(struct ftrace_likely_data *f, int val)
-> > +{
-> > +	/* FIXME: Make this atomic! */
-> > +	if (val)
-> > +		f->hit++;
-> > +	else
-> > +		f->missed++;
-> > +}
-> > +EXPORT_SYMBOL(ftrace_likely_update);
-> 
-> 
-> So that seems to mean that if unlikely(x) is false, then _____r is 0,
-> which means we increment f->missed.   Or am I missing something?
-> 
-> I would have thought that if unlikely(x) is false, that's *good*,
-> since it means the unlikely label was correct.  And normally, when
-> people think about cache hits vs cache misses, hits are good and
-> misses are bad.  Which is why I think the terminology is highly
-> confusing...
+You must not rely on the vfork() specifics as vfork() can be just fork():
+http://www.opengroup.org/onlinepubs/009695399/functions/vfork.html
+APPLICATION USAGE
 
-OK, I'm fine with changing the terminology. v2 will do:
 
-  s/hit/True/
-  s/missed/False/
+I hope there is no problem with the kernel at this moment, the attached
+testcase works even with vfork() reliably.
 
-Fine with you?
 
--- Steve
 
+Regards,
+Jan
+
+--0F1p//8PRICkK4MW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="ptrace-vfork-traceme.c"
+
+#define _GNU_SOURCE
+#include <errno.h>
+#include <signal.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/ptrace.h>
+#include <sys/wait.h>
+#include <assert.h>
+
+#define fail(msg, args...) \
+do { \
+	fprintf(stderr, "FAIL:%i: " msg "\n", __LINE__, ## args); \
+	exit(1); \
+} while (0)
+
+static volatile int caught = 0;
+
+static void child_exit(int sig)
+{
+	int status;
+#if 0 /* Correct behavior.  */
+	printf("failure, child exited with %i: %s\n", sig, strsignal(sig));
+#else
+	assert(sig == SIGCHLD);
+#endif
+	printf("wait() = %i\n", wait(&status));
+	printf("status = 0x%x\n", status);
+	printf("\tWIFEXITED = %i\n", WIFEXITED(status));
+	printf("\tWEXITSTATUS = %i\n", WEXITSTATUS(status));
+	printf("\tWIFSIGNALED = %i\n", WIFSIGNALED(status));
+	printf("\tWTERMSIG = %i (%s)\n", WTERMSIG(status), strsignal(WTERMSIG(status)));
+	/* WIFSTOPPED happens.  */
+	printf("\tWIFSTOPPED = %i\n", WIFSTOPPED(status));
+	/* SIGTRAP happens.  */
+	printf("\tWSTOPSIG = %i (%s)\n", WSTOPSIG(status), strsignal(WSTOPSIG(status)));
+#if 0 /* We can continue.  Just calling printf() from a signal handler is not
+	 correct.  */
+	exit(1);
+#else
+	caught = 1;
+#endif
+}
+
+int main(int argc, char *argv[])
+{
+	long pret;
+	pid_t pid;
+
+	/* child process ... shouldnt be executed, but just in case ... */
+	if (argc > 1 && !strcmp(argv[1], "child"))
+#if 0 /* Parent did not kill us, after its child_exit() messages we should get
+         here.  */
+		fail("kernel should have halted me...");
+#else
+		{ puts ("child exiting"); exit (0); }
+#endif
+
+	/* Setup the handler already here as after vfork() there would be
+	   a race setting it up before we get signalled.  */
+	signal(SIGCHLD, child_exit);
+
+	/* vfork() child must not call ptrace().  */
+	pid = vfork();
+	if (pid == -1)
+		fail("vfork() didnt work: %m");
+	else if (!pid) {
+		/* do the child stuff here */
+		errno = 0;
+		pret = ptrace(PTRACE_TRACEME, 0, NULL, NULL);
+		if (pret && errno)
+			fail("ptrace(PTRACE_TRACEME) = %li: %m", pret);
+
+		int eret = execlp(argv[0], argv[0], "child", NULL);
+		fail("execlp() = %i", eret);
+	}
+	/* do the parent stuff here */
+
+	/* We cannot pause() here as the signal already could occur, we would
+	   have to SIG_BLOCK SIGCHLD and sigsuspend() here.  */
+	while (!caught);
+
+	errno = 0;
+	pret = ptrace(PTRACE_PEEKUSER, pid, NULL, NULL);
+	if (pret && errno)
+		fail("ptrace(PTRACE_PEEKUSER, %i) = %li: %m", pid, pret);
+
+	puts("SUCCESS! :D");
+
+	return 0;
+}
+
+--0F1p//8PRICkK4MW--
