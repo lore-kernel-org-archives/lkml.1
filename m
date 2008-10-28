@@ -1,102 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753614AbYJ1UnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753699AbYJ1Uqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753614AbYJ1UnS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 16:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbYJ1UnH
+	id S1753699AbYJ1Uqp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 16:46:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYJ1Uqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 16:43:07 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:57290 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752978AbYJ1UnF (ORCPT
+	Tue, 28 Oct 2008 16:46:33 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:56808 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752279AbYJ1Uqb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 16:43:05 -0400
-Date: Tue, 28 Oct 2008 10:23:09 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Ftrace doesn't work anymore on latest tip
-In-Reply-To: <c62985530810280202r694a23e8l5233d892b3aa4330@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0810281015260.29482@gandalf.stny.rr.com>
-References: <c62985530810271618n11a8b674w5a60deaa335fdcc2@mail.gmail.com>  <alpine.DEB.1.10.0810271935320.20039@gandalf.stny.rr.com>  <c62985530810271644y1df6a13xbcd9d89b7a17ad75@mail.gmail.com> <c62985530810280202r694a23e8l5233d892b3aa4330@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 28 Oct 2008 16:46:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=VZJk/a5XpNgRxk+J5zV+AGjC7DD3Xg2e+b3080sQVNCKR32V4W5v6C4mUbJKImy2Nr
+         7rWoZShx7b6i8a8KOLVUwuL2MRYe545c4qgWJSaUUSZ/Vy1NV3pQa75WkpELK0dEIBp3
+         tCVWDUqe7n3nmrgyTS2//UA824Kt8c4a4yB5U=
+Message-ID: <49077A13.7020603@gmail.com>
+Date: Tue, 28 Oct 2008 23:46:11 +0300
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Darren Salt <linux@youmustbejoking.demon.co.uk>
+CC: Zhao Yakui <yakui.zhao@intel.com>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [2.6.28-rc2] EeePC ACPI errors & exceptions
+References: <alpine.LFD.2.00.0810261221350.3386@nehalem.linux-foundation.org>  <4FFA7B13E0%linux@youmustbejoking.demon.co.uk>  <1225186966.5189.143.camel@yakui_zhao.sh.intel.com> <4FFABF28C8%linux@youmustbejoking.demon.co.uk>
+In-Reply-To: <4FFABF28C8%linux@youmustbejoking.demon.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Darren,
 
-On Tue, 28 Oct 2008, Fr?d?ric Weisbecker wrote:
+Please check if the patch 
+http://marc.info/?l=linux-acpi&m=122516784917952&w=4
+helps.
 
-> 2008/10/28 Fr?d?ric Weisbecker <fweisbec@gmail.com>:
-> > 2008/10/28 Steven Rostedt <rostedt@goodmis.org>:
-> >>
-> >> On Tue, 28 Oct 2008, Fr?d?ric Weisbecker wrote:
-> >>
-> >>> Hi,
-> >>>
-> >>> I tried to launch the function tracer with the latest -tip.
-> >>> With DYNAMIC_FTRACE (I just tried one time), I set "function" to
-> >>> current_trace and it blocks during writing. I can't
-> >>> even switch to another console.
-> >>> Without DYNAMIC_FTRACE I can set the tracer to function but it doesn't
-> >>> produce any trace, even on trace or tracing_pipe.
-> >>>
-> >>> My config is in attachment.
-> >>> I will try some revert...or some other tracers.
-
-I've tried this with and without dynamic ftrace and can not reproduce.
-
-> >>>
-> >>
-> >>
-> >> You might want to update your config (make oldconfig?) The latest tip has
-> >> FUNCTION_TRACER instead of FTRACE.
-> >>
-> >> Also, the config you sent me, does not even have FTRACE on :-/
-> >>
-> >> CONFIG_HAVE_FTRACE=y
-> >> CONFIG_HAVE_DYNAMIC_FTRACE=y
-> >> CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
-> >> CONFIG_TRACER_MAX_TRACE=y
-> >> CONFIG_RING_BUFFER=y
-> >> CONFIG_TRACING=y
-> >> # CONFIG_FTRACE is not set
-> >> # CONFIG_IRQSOFF_TRACER is not set
-> >> # CONFIG_PREEMPT_TRACER is not set
-> >> # CONFIG_SYSPROF_TRACER is not set
-> >> CONFIG_SCHED_TRACER=y
-> >> CONFIG_CONTEXT_SWITCH_TRACER=y
-> >
-> > Sorry I sent a config for the mainline.
-> > This new one is the right.
-> >
-> 
-> One other point: I can't assign the sched_switch tracer.
-
-I found the cause of this. It was:
-
- c2931e05ec5965597cbfb79ad332d4a29aeceb23
-
- ftrace: return an error when setting a nonexistent tracer
-
-Because the write of sched_switch has more charachters than the max 
-(because of the whitespace at the end), then we chop what we read from 
-userspace. Since we do not cosume all what was written, the 'echo' writes 
-the rest again. But this time it's just the whitespace. This fails to 
-match, even though we did match before. And we return -EINVAL. But the 
-funny part is that you can cat the file again, you will see that it 
-succeeded!
-
-I'll write a patch to fix this.
-
--- Steve
+Thanks,
+Alex.
 
 
-> echo sched_switch > current_tracer returns -EINVAL with
-> CONFIG_DYNAMIC_FTRACE disabled (didn't tested with enabled).
-> 
-> I will check that more deeper when I'll have more time.
-> 
-> 
