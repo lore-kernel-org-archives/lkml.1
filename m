@@ -1,104 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbYJ1RbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbYJ1Rb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753280AbYJ1RbR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 13:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYJ1Ra7
+	id S1753966AbYJ1Rb3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 13:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbYJ1RbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 13:30:59 -0400
-Received: from mga11.intel.com ([192.55.52.93]:4970 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751092AbYJ1Ra6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 13:30:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,500,1220252400"; 
-   d="scan'208";a="396917322"
-Date: Tue, 28 Oct 2008 10:30:57 -0700
-From: tony.luck@intel.com
-Message-Id: <200810281730.m9SHUvD9002143@agluck-lia64.sc.intel.com>
-To: Theodore Tso <tytso@mit.edu>, Andreas Dilger <adilger@sun.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tony.luck@intel.com
-In-Reply-To: <20081028142458.GC8869@mit.edu>
-Subject: Re: [PATCH,RFC] ext3: Add support for non-native signed/unsigned htree hash algorithms
+	Tue, 28 Oct 2008 13:31:14 -0400
+Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:20256 "HELO
+	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753021AbYJ1RbN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 13:31:13 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=BDnbSSYKVp8R2YcMIAuhftcjnOwO/CzYPYaQi4Sk4jhC6SXmm/U9njHIT16YAo/U7WPrbzz1eLqi2knc1JfUwLawhqgt6VmSJUBOjgJ1HbV0TFeZM8DaOOfmX2eq0hGI7RugZglv6pYt8i7AiEmCogwPvRPVL2i8ly0eIUWRX7s=  ;
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [patch 2.6.28-rc2] at91_mci: workaround lockdep
+Date: Tue, 28 Oct 2008 10:22:42 -0700
+User-Agent: KMail/1.9.10
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, lkml <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Russell King <rmk@arm.linux.org.uk>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       Andrew Victor <linux@maxim.org.za>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <200810271426.27110.david-b@pacbell.net> <1225213442.15763.20.camel@lappy.programming.kicks-ass.net>
+In-Reply-To: <1225213442.15763.20.camel@lappy.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810281022.42803.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I've added Tony Luck to the CC list since as the Itanium maintainer,
-> he's most likely to be able to speak to both cross compilation issues
-> especially as it relates to the Intel Compiler....
+On Tuesday 28 October 2008, Peter Zijlstra wrote:
+> On Mon, 2008-10-27 at 14:26 -0700, David Brownell wrote:
+> > From: David Brownell <dbrownell@users.sourceforge.net>
+> > 
+> > Lockdep reported a problem in the at91_mci driver ... in this case, the
+> > issue is with lockdep, not with the driver. ...
+> > 
+> > When __flush_dcache_aliases() returns -- inlined into flush_dcache_page(),
+> > above -- it re-enables IRQs ... since that evidently may only be called with
+> > IRQs enabled.  That's OK since the (unshared) IRQ handler doesn't ask for IRQs
+> > to be disabled.   Except ... that lockdep went and disabled them, then went on
+> > to complains about the breakage *it* caused!
+> > 
+> > Workaround: depend on LOCKDEP=n ... 
+> 
+> In all previous such cases it was deemed the IRQ handler should deal
+> with whatever it gets.
 
-Sorry to disappoint ... but I'm not an expert on cross compilation (I
-run all my builds natively) or on the Intel compiler (I just use gcc).
+In which case I'll wait until someone changes that IRQ handler (or that
+ARM MM utility, or lockdep), and give up using AT91 platforms for sanity
+testing kernel changes; lockdep is important, when it doesn't lie.
 
-> Tony, Andrew has requested I clean up this compile-time test to
-> determine whether variables of type char are signed or unsigned:
+I do think that lockdep should warn when that it's ignoring such driver
+requests, however.  I seem to have been tripping over it a lot lately,
+and knowing that IRQ handlers were using strange modes would have saved
+a bunch of time from being wasted.
 
-> 	char c;
-> 	...
-> 	c = (char) 255;
-> 	if (((int) c) == -1) {
-> 		...
-> 	}
+Threaded IRQ handlers are going to need to rely even more on running
+with IRQs enabled ... not to mention needing to sleep.  So it's clear
+to me that there *are* lockdep issues yet to be adressed here.
 
-> ... since it results in this annoying gcc warning:
+- Dave
 
-> > fs/ext3/super.c:1750: warning: comparison is always false due to limited range of data type
-
-I don't see any code like this near line 1750 of fs/ext3/super.c so
-I guess the offending lines have been moved up or down by recent
-changes.
-
-> Two possible solutions which come to mind is to use the C preprocessor
-> macros CHAR_MIN/CHAR_MAX as defined in limits.h, or to use
-> __CHAR_UNSIGNED__ which is defined by gcc on platforms where char's
-> are unsigned (or if the gcc option --funsigned-char is given).  
-
-> I believe at this point, it's settled that either of the above
-> solutions should do the right thing for gcc, either in
-> cross-compilation environments, or natively.  (I prefer
-> __CHAR_UNSIGNED__ since it doesn't depend on the userspace header
-> files, which might be screwy on some distributions, and depending on a
-> macro set by gcc seems much more robust in cross-compilation
-> environments.)
-
-Either option seems OK to me. char is signed on Itanium, so
-the Intel compiler doesn't need to provide __CHAR_UNSIGNED__.
-
-> The question is whether this solution is likely to work on the Intel C
-> compiler.  My understanding is that a kernel compiled with gcc is
-> pathetically slow on the Itanic (not to mention taking aeons to
-> compile), and so there has always been a desire to make sure that the
-> Linux Kernel will compile on the Intel C compiler, at least for the
-> Intanium platform.  Do you know if icc will do the right thing as far
-> as defining __CHAR_UNSIGNED__ if necessary?  
-
-The Linux kernel doesn't benefit hugely from being compiled by the
-Intel compiler ... there just aren't that many loops that run
-for many iterations, no floating point code, and little else that
-can benefit.  I challenge the "aeons to compile" claim too.  Most
-of the config files I build take about 2 minutes each (and this is
-on a basic 4-socket machine ... not on a giant SGI box). Not
-great by the "5 seconds to build" that Linus mentioned at KS,
-but hardly "aeons".
-
-> I don't even know if the Itanium is one of those wierd-sh*t platforms
-> that tried to make char's unsigned, one of those really horrific
-> design decisions perpetrated by the Arm and PowerPC platforms since it
-
-"char" defaults to signed on Itanium (so in this respect at least it is
-a "sane" architecture :-)
-
-> tends to break compatibility with K&R C which doesn't even have a
-> signed keyword (and for which char's were always signed).  If it's one
-> of the sane platforms, then this might not matter so much.
-
-This is incorrect.  K&R (first edition, (c) 1978) says (p. 183):
- "6.1 Characters and integers
-	...
-  Whether or not sign-extension occurs for characters is machine
-  dependent, but it is guaranteed that a member of the standard
-  character set is non-negative.  Of the machines treated by this
-  manual, only the PDP-11 sign-extends."
-
--Tony
