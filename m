@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754289AbYJ1VaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbYJ1Vil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754289AbYJ1VaT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 17:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYJ1VaF
+	id S1753855AbYJ1Vil (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 17:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYJ1Vi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 17:30:05 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:49688 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752163AbYJ1VaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 17:30:04 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
-	filesystems.
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <E1Kuv87-00064p-Lk@pomaz-ex.szeredi.hu>
-References: <1224886068.6478.21.camel@nigel-laptop>
-	 <E1KuQ1J-0002Vw-9Q@pomaz-ex.szeredi.hu>
-	 <1225106427.26724.5.camel@nigel-laptop>  <200810271237.40049.rjw@sisk.pl>
-	 <1225107607.26724.9.camel@nigel-laptop>
-	 <E1KuRN4-0002gS-Hq@pomaz-ex.szeredi.hu>
-	 <1225141168.26724.23.camel@nigel-laptop>
-	 <E1KuZKt-0003jl-2N@pomaz-ex.szeredi.hu>
-	 <1225145607.26724.54.camel@nigel-laptop>
-	 <E1Kuv87-00064p-Lk@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Wed, 29 Oct 2008 08:29:59 +1100
-Message-Id: <1225229399.9661.13.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Oct 2008 17:38:28 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:55413 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751595AbYJ1Vi1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 17:38:27 -0400
+Date: Tue, 28 Oct 2008 15:38:05 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH] improve jbd fsync batching
+In-reply-to: <20081028201614.GA21600@unused.rdu.redhat.com>
+To: Josef Bacik <jbacik@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, rwheeler@redhat.com
+Message-id: <20081028213805.GC3184@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <20081028201614.GA21600@unused.rdu.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Oct 28, 2008  16:16 -0400, Josef Bacik wrote:
+> I also have a min() check in there to make sure we don't sleep longer than
+> a jiffie in case our storage is super slow, this was requested by Andrew.
 
-On Tue, 2008-10-28 at 21:25 +0100, Miklos Szeredi wrote:
-> > To deal with requests that are already in progress, I'd suggest three
-> > possibilities, in the order I think they should be preferred.
-> > 
-> > 1) Use wait_event_freezeable[_timeout] in fuse code. Probably preferable
-> > to #2, but I thought of it later :)
-> > 
-> > 2) Use freezer_do_not_count as part of FUSE_MIGHT_FREEZE (resetting
-> > before exiting the callers, of course). If the request doesn't complete
-> > during the freezing period, it must be because the userspace thread was
-> > already frozen. If the request does complete, we're counted again during
-> > the normal freezing of userspace that follows the freezing of
-> > filesystems.
-> > 
-> > 3) Adding a means to check whether processes being frozen are fuse
-> > requests. The code could then wait for fc->num_waiting - (say)
-> > fc->num_frozen == 0.
-> 
-> Yup, these fix the freezing of tasks which have outstanding fuse
-> requests.
-> 
-> However it does not fix the freezing of tasks which are waiting for
-> VFS locks (i.e. inode->i_mutex) held by the outstanding fuse requests.
-> This is the tricky part...
+Is there a particular reason why 1 jiffie is considered the "right amount"
+of time to sleep, given this is a kernel config parameter and has nothing
+to do with the storage?  Considering a seek time in the range of ~10ms
+this would only be right for HZ=100 and the wait would otherwise be too
+short to maximize batching within a single transaction.
 
-Convert them all to wait_event_freezeable. If you know the locks they're
-waiting on definitely aren't going to be free until post-resume and
-we're going to be trying to freeze them while they're waiting, that
-would be the right behaviour.
+> type	threads		with patch	without patch
+> sata	2		24.6		26.3
+> sata	4		49.2		48.1
+> sata	8		70.1		67.0
+> sata	16		104.0		94.1
+> sata	32		153.6		142.7
 
-Regards,
+In the previous patch where this wasn't limited it had better performance
+even for the 2 thread case.  With the current 1-jiffie wait it likely
+isn't long enough to batch every pair of operations and every other
+operation waits an extra amount before giving up too soon.  Previous patch:
 
-Nigel
+type    threads       patch     unpatched
+sata    2              34.6     26.2
+sata    4              58.0     48.0
+sata    8              75.2     70.4
+sata    16            101.1     89.6
+
+I'd recommend changing the patch to have a maximum sleep time that has a
+fixed maximum number of milliseconds (15ms should be enough for even very
+old disks).
+
+
+That said, this would be a minor enhancement and should NOT be considered
+a reason to delay this patch's inclusion into -mm or the ext4 tree.
+
+PS - it should really go into jbd2 also
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
