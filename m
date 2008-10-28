@@ -1,34 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbYJ1V3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754289AbYJ1VaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754350AbYJ1V3W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 17:29:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbYJ1V3O
+	id S1754289AbYJ1VaT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 17:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYJ1VaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 17:29:14 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:45557 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752411AbYJ1V3N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 17:29:13 -0400
-Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use
-	schedule_on_each_cpu()
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       kosaki.motohiro@jp.fujitsu.com, heiko.carstens@de.ibm.com,
-       npiggin@suse.de, linux-kernel@vger.kernel.org, hugh@veritas.com,
-       torvalds@linux-foundation.org, riel@redhat.com, linux-mm@kvack.org
-In-Reply-To: <20081028134536.9a7a5351.akpm@linux-foundation.org>
-References: <2f11576a0810210851g6e0d86benef5d801871886dd7@mail.gmail.com>
-	 <2f11576a0810211018g5166c1byc182f1194cfdd45d@mail.gmail.com>
-	 <20081023235425.9C40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20081027145509.ebffcf0e.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0810280914010.15939@quilx.com>
-	 <20081028134536.9a7a5351.akpm@linux-foundation.org>
+	Tue, 28 Oct 2008 17:30:05 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:49688 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752163AbYJ1VaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 17:30:04 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
+	filesystems.
+From: Nigel Cunningham <ncunningham@crca.org.au>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <E1Kuv87-00064p-Lk@pomaz-ex.szeredi.hu>
+References: <1224886068.6478.21.camel@nigel-laptop>
+	 <E1KuQ1J-0002Vw-9Q@pomaz-ex.szeredi.hu>
+	 <1225106427.26724.5.camel@nigel-laptop>  <200810271237.40049.rjw@sisk.pl>
+	 <1225107607.26724.9.camel@nigel-laptop>
+	 <E1KuRN4-0002gS-Hq@pomaz-ex.szeredi.hu>
+	 <1225141168.26724.23.camel@nigel-laptop>
+	 <E1KuZKt-0003jl-2N@pomaz-ex.szeredi.hu>
+	 <1225145607.26724.54.camel@nigel-laptop>
+	 <E1Kuv87-00064p-Lk@pomaz-ex.szeredi.hu>
 Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 28 Oct 2008 17:29:26 -0400
-Message-Id: <1225229366.6343.74.camel@lts-notebook>
+Organization: Christian Reformed Churches of Australia
+Date: Wed, 29 Oct 2008 08:29:59 +1100
+Message-Id: <1225229399.9661.13.camel@nigel-laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -36,60 +37,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-28 at 13:45 -0700, Andrew Morton wrote:
-> On Tue, 28 Oct 2008 09:25:31 -0500 (CDT)
-> Christoph Lameter <cl@linux-foundation.org> wrote:
+Hi.
+
+On Tue, 2008-10-28 at 21:25 +0100, Miklos Szeredi wrote:
+> > To deal with requests that are already in progress, I'd suggest three
+> > possibilities, in the order I think they should be preferred.
+> > 
+> > 1) Use wait_event_freezeable[_timeout] in fuse code. Probably preferable
+> > to #2, but I thought of it later :)
+> > 
+> > 2) Use freezer_do_not_count as part of FUSE_MIGHT_FREEZE (resetting
+> > before exiting the callers, of course). If the request doesn't complete
+> > during the freezing period, it must be because the userspace thread was
+> > already frozen. If the request does complete, we're counted again during
+> > the normal freezing of userspace that follows the freezing of
+> > filesystems.
+> > 
+> > 3) Adding a means to check whether processes being frozen are fuse
+> > requests. The code could then wait for fc->num_waiting - (say)
+> > fc->num_frozen == 0.
 > 
-> > On Mon, 27 Oct 2008, Andrew Morton wrote:
-> > 
-> > > Can we fix that instead?
-> > 
-> > How about this fix?
-> > 
-> > 
-> > 
-> > Subject: Move migrate_prep out from under mmap_sem
-> > 
-> > Move the migrate_prep outside the mmap_sem for the following system calls
-> > 
-> > 1. sys_move_pages
-> > 2. sys_migrate_pages
-> > 3. sys_mbind()
-> > 
-> > It really does not matter when we flush the lru. The system is free to add
-> > pages onto the lru even during migration which will make the page 
-> > migration either skip the page (mbind, migrate_pages) or return a busy 
-> > state (move_pages).
-> > 
+> Yup, these fix the freezing of tasks which have outstanding fuse
+> requests.
 > 
-> That looks nicer, thanks.  Hopefully it fixes the
-> lockdep-warning/deadlock...
+> However it does not fix the freezing of tasks which are waiting for
+> VFS locks (i.e. inode->i_mutex) held by the outstanding fuse requests.
+> This is the tricky part...
 
-I believe that we still  have the lru_drain_all() called from the fault
-path [with mmap_sem held] in clear_page_mlock().  We call
-clear_page_mlock() on COW of an mlocked page in a VM_LOCKED vma to
-ensure that we don't end up with an mlocked page in some other task's
-non-VM_LOCKED vma where we'd then fail to munlock it later.  During
-development testing, Rik encountered scenarios where a page would
-encounter a COW fault while it was still making its way to the LRU via
-the pagevecs.  So, he added the 'drain_all() and that seemed to avoid
-this scenario.
+Convert them all to wait_event_freezeable. If you know the locks they're
+waiting on definitely aren't going to be free until post-resume and
+we're going to be trying to freeze them while they're waiting, that
+would be the right behaviour.
 
-Now, in the current upstream version of the unevictable mlocked pages
-patches, we just count any mlocked pages [vmstat] that make their way to
-free*page() instead of BUGging out, as we were doing earlier during
-development.  So, maybe we can drop the lru_drain_add()s in the
-unevictable mlocked pages work and live with the occasional freed
-mlocked page, or mlocked page on the active/inactive lists to be dealt
-with by vmscan.
+Regards,
 
-Comments?
-
-Lee
-
-> 
-> I guess we should document our newly discovered schedule_on_each_cpu()
-> problems before we forget about it and later rediscover it.
-
-
+Nigel
 
