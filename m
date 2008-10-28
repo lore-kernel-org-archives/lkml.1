@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbYJ1J3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbYJ1Jbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbYJ1J3c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 05:29:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbYJ1J3Y
+	id S1753459AbYJ1Jbs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 05:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbYJ1Jbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 05:29:24 -0400
-Received: from qb-out-0506.google.com ([72.14.204.227]:52174 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752485AbYJ1J3X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 05:29:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=FIN1FjYFcQFnoaNGWhWa7h7OMeim8Ew15PYdXENvrA9OG+9WYI8wWmYGX3R4jI4x1I
-         YAsvU00mJq91b/OLEPOX7L6iakkVUKrd4c1irdCMZFtrX3H69hgh2Cew8NbsQv3Ovhc2
-         9/OfCoS2V3x/MsxQhC1L4IOVTaFS7R67xyPRw=
-Message-ID: <21d34cad0810280229y790ca761je9f0c8695e0b44ba@mail.gmail.com>
-Date: Tue, 28 Oct 2008 17:29:20 +0800
-From: "qinghuang feng" <qhfeng.kernel@gmail.com>
-To: mingo@redhat.com, peterz@infradead.org
-Subject: [PATCH RESEND] LOCKDEP: minor fix for debug_show_all_locks()
-Cc: linux-kernel@vger.kernel.org
+	Tue, 28 Oct 2008 05:31:40 -0400
+Received: from smtp.zeuux.org ([210.51.160.52]:53197 "EHLO z.billxu.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751917AbYJ1Jbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 05:31:39 -0400
+Date: Tue, 28 Oct 2008 16:14:57 +0800
+From: Jianjun Kong <jianjun@zeuux.org>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] net: Remove unused variable warning
+Message-ID: <20081028081457.GA19691@ubuntu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we failed to get tasklist_lock eventually (count equals 0),
-we should only print " ignoring it.\n", and not print
-" locked it.\n" needlessly.
 
-Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
+net: Remove unused variable warning
+'min_ds_timeout' and 'max_ds_timeout' are only used when CONFIG_AX25_DAMA_SLAVE is defined.
+
+net/ax25/sysctl_net_ax25.c:27: warning: ‘min_ds_timeout’ defined but not used
+net/ax25/sysctl_net_ax25.c:27: warning: ‘max_ds_timeout’ defined but not used
+
+
+Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
 ---
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index dbda475..6533fd9 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -3417,8 +3417,7 @@ retry:
- 		}
- 		printk(" ignoring it.\n");
- 		unlock = 0;
--	}
--	if (count != 10)
-+	} else if (count != 10)
- 		printk(" locked it.\n");
+ net/ax25/sysctl_net_ax25.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
- 	do_each_thread(g, p) {
+diff --git a/net/ax25/sysctl_net_ax25.c b/net/ax25/sysctl_net_ax25.c
+index f288fc4..735ceef 100644
+--- a/net/ax25/sysctl_net_ax25.c
++++ b/net/ax25/sysctl_net_ax25.c
+@@ -24,7 +24,9 @@ static int min_idle[1],			max_idle[] = {65535000};
+ static int min_n2[] = {1},		max_n2[] = {31};
+ static int min_paclen[] = {1},		max_paclen[] = {512};
+ static int min_proto[1],		max_proto[] = { AX25_PROTO_MAX };
++#ifdef CONFIG_AX25_DAMA_SLAVE
+ static int min_ds_timeout[1],		max_ds_timeout[] = {65535000};
++#endif
+ 
+ static struct ctl_table_header *ax25_table_header;
+ 
+-- 
+1.5.6.3
+
+
+
