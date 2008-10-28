@@ -1,84 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbYJ1WOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbYJ1WRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753804AbYJ1WOn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 18:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbYJ1WOe
+	id S1753825AbYJ1WRc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 18:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbYJ1WRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 18:14:34 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:27418 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752651AbYJ1WOe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 18:14:34 -0400
-Message-ID: <ac3eb2510810281514o5f438746r11000c54ced9edf9@mail.gmail.com>
-Date: Tue, 28 Oct 2008 23:14:25 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Sebastian Kuzminsky" <seb@highlab.com>
-Subject: Re: getting configuration info into a driver at load-time
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4906499C.8090308@highlab.com>
+	Tue, 28 Oct 2008 18:17:23 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39523 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752129AbYJ1WRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 18:17:23 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen filesystems.
+Date: Tue, 28 Oct 2008 23:21:58 +0100
+User-Agent: KMail/1.9.9
+Cc: ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <1224886068.6478.21.camel@nigel-laptop> <200810282300.31164.rjw@sisk.pl> <E1Kuwe3-0006Gc-LF@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1Kuwe3-0006Gc-LF@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4906499C.8090308@highlab.com>
+Message-Id: <200810282321.59041.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28, 2008 at 00:07, Sebastian Kuzminsky <seb@highlab.com> wrote:
-> Hi folks, i'm looking for a way to pass structured configuration information
-> to a device driver at load-time.
->
-> I'm working on a device driver for a family of FPGA cards for motion control
-> of industrial robots and computer-controlled machine tools.  The driver
-> loads the FPGA firmware with request_firmware() and sends it to the FPGA.
->
-> Once the FPGA is up and running, the user needs to configure the firmware
-> specifically for their machine, by telling the firmware things like "my
-> machine has two stepper motors and three servo motors, and the second servo
-> motor has an encoder with an index channel".  The details of the information
-> being relayed isnt important, the key thing is that it's like a struct
-> containing a couple of arrays of different kinds structs, something like
-> this:
->
->    struct config {
->
->        struct {
->            bool enabled;
->            bool index_enabled;
->            bool index_mask_enabled;
->        } encoder_config[];
->
->        struct {
->            bool enabled;
->        } pwmgen_config[];
->
->        struct {
->            bool enabled;
->            uint width;
->        } stepgen_config[];
->
->        char *firmware;
->
->        bool enable_raw;
->
->    } board_config;
->
->
-> Each board that the driver finds should get its own "board_config".
->
-> I thought about exposing this config structure in /sys or /proc (in a
-> per-board directory), and let the user poke in the config values after the
-> driver has loaded, but I'd really prefer to make the information available
-> at load-time.
->
-> Currently the driver has a module param array of char*, with each board's
-> configuration encoded into an ascii string which gets decoded "by hand" in
-> the driver.  Pretty grotty.
->
-> Is there some easier/cleaner way to do this?
+On Tuesday, 28 of October 2008, Miklos Szeredi wrote:
+> On Tue, 28 Oct 2008, Rafael J. Wysocki wrote:
+> > On Tuesday, 28 of October 2008, Miklos Szeredi wrote:
+> > > On Wed, 29 Oct 2008, Nigel Cunningham wrote:
+> > > > > However it does not fix the freezing of tasks which are waiting for
+> > > > > VFS locks (i.e. inode->i_mutex) held by the outstanding fuse requests.
+> > > > > This is the tricky part...
+> > > > 
+> > > > Convert them all to wait_event_freezeable.
+> > > 
+> > > You mean convert mutexes to event queues?  Not a very good idea.
+> > > 
+> > > I fear we are going down the same path as the last time.  I still
+> > > don't think rewriting the VFS is the right solution to the freezing
+> > > problem.  But hey, if you want, sumbit a patch or an RFD and lets see
+> > > what others think.
+> > 
+> > So, what solution would you prefer?
+> 
+> I would prefer a freezer-less solution.  Suspend to ram doesn't need
+> the freezer,
 
-Maybe configfs?
+Well, yes it does.  And it will in forseeable future, AFAICS.
 
-Kay
+> and with the kexec approach hibernate could be done without it also.
+
+There are problems with that too, although they aren't directly related to
+filesystems.
+
+> I don't think adding hacks to the VFS to work around the issues with
+> the freezer is the right way to solve this.  But this is just my
+> personal opinion, the VFS maintainers may think otherwise.
+
+Well, my personal opinion is that we need filesystems to support suspend,
+this way or another and the sooner it happens, the better.  Still, I'm rather
+not going to make that happen myself. :-)
+
+Apparently, Nigel is willing to work in this direction and we can use this as
+an opportunity to learn what exactly is necessary for this purpose and _then_
+decide if this is reasonable or not instead of dismissing it upfront.
+
+Thanks,
+Rafael
