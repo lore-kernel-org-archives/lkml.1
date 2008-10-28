@@ -1,72 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbYJ1Rb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYJ1Rb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753966AbYJ1Rb3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 13:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbYJ1RbO
+	id S1754121AbYJ1Rb6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 13:31:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbYJ1Rbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 13:31:14 -0400
-Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:20256 "HELO
-	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753021AbYJ1RbN (ORCPT
+	Tue, 28 Oct 2008 13:31:46 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37578 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752580AbYJ1Rbp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 13:31:13 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=BDnbSSYKVp8R2YcMIAuhftcjnOwO/CzYPYaQi4Sk4jhC6SXmm/U9njHIT16YAo/U7WPrbzz1eLqi2knc1JfUwLawhqgt6VmSJUBOjgJ1HbV0TFeZM8DaOOfmX2eq0hGI7RugZglv6pYt8i7AiEmCogwPvRPVL2i8ly0eIUWRX7s=  ;
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [patch 2.6.28-rc2] at91_mci: workaround lockdep
-Date: Tue, 28 Oct 2008 10:22:42 -0700
-User-Agent: KMail/1.9.10
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, lkml <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Russell King <rmk@arm.linux.org.uk>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       Andrew Victor <linux@maxim.org.za>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <200810271426.27110.david-b@pacbell.net> <1225213442.15763.20.camel@lappy.programming.kicks-ass.net>
-In-Reply-To: <1225213442.15763.20.camel@lappy.programming.kicks-ass.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 28 Oct 2008 13:31:45 -0400
+Subject: Re: [patch 3/7] mm: make page writeback obey cpuset constraints
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Paul Menage <menage@google.com>,
+       Derek Fults <dfults@sgi.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.1.10.0810280301300.15270@chino.kir.corp.google.com>
+References: <alpine.DEB.1.10.0810280259500.15270@chino.kir.corp.google.com>
+	 <alpine.DEB.1.10.0810280301300.15270@chino.kir.corp.google.com>
+Content-Type: text/plain
+Date: Tue, 28 Oct 2008 18:31:33 +0100
+Message-Id: <1225215093.15763.25.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810281022.42803.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 28 October 2008, Peter Zijlstra wrote:
-> On Mon, 2008-10-27 at 14:26 -0700, David Brownell wrote:
-> > From: David Brownell <dbrownell@users.sourceforge.net>
-> > 
-> > Lockdep reported a problem in the at91_mci driver ... in this case, the
-> > issue is with lockdep, not with the driver. ...
-> > 
-> > When __flush_dcache_aliases() returns -- inlined into flush_dcache_page(),
-> > above -- it re-enables IRQs ... since that evidently may only be called with
-> > IRQs enabled.  That's OK since the (unshared) IRQ handler doesn't ask for IRQs
-> > to be disabled.   Except ... that lockdep went and disabled them, then went on
-> > to complains about the breakage *it* caused!
-> > 
-> > Workaround: depend on LOCKDEP=n ... 
-> 
-> In all previous such cases it was deemed the IRQ handler should deal
-> with whatever it gets.
+On Tue, 2008-10-28 at 09:08 -0700, David Rientjes wrote:
 
-In which case I'll wait until someone changes that IRQ handler (or that
-ARM MM utility, or lockdep), and give up using AT91 platforms for sanity
-testing kernel changes; lockdep is important, when it doesn't lie.
+> +/*
+> + * Calculate the limits relative to the current cpuset
+> + *
+> + * We do not disregard highmem because all nodes (except maybe node 0) have
+> + * either all memory in HIGHMEM (32-bit) or all memory in non-HIGHMEM (64-bit).
+> + * If we would disregard highmem, then cpuset throttling would not work on
+> + * 32-bit.
+> + */
+> +int cpuset_populate_dirty_limits(struct dirty_limits *dl,
+> +				 unsigned long *dirtyable_memory,
+> +				 unsigned long *nr_mapped,
+> +				 const nodemask_t *nodes)
+> +{
+> +	int node;
+> +
+> +	if (likely(!nodes || nodes_subset(node_online_map, *nodes)))
+> +		return 0;
+> +	for_each_node_mask(node, *nodes) {
+> +		if (!node_online(node))
+> +			continue;
+> +		dl->nr_dirty += node_page_state(node, NR_FILE_DIRTY);
+> +		dl->nr_unstable += node_page_state(node, NR_UNSTABLE_NFS);
+> +		dl->nr_writeback += node_page_state(node, NR_WRITEBACK);
+> +		dirtyable_memory +=
 
-I do think that lockdep should warn when that it's ignoring such driver
-requests, however.  I seem to have been tripping over it a lot lately,
-and knowing that IRQ handlers were using strange modes would have saved
-a bunch of time from being wasted.
+*dirtyable_memory perhaps?
 
-Threaded IRQ handlers are going to need to rely even more on running
-with IRQs enabled ... not to mention needing to sleep.  So it's clear
-to me that there *are* lockdep issues yet to be adressed here.
+> +			node_page_state(node, NR_ACTIVE_ANON) +
+> +			node_page_state(node, NR_ACTIVE_FILE) +
+> +			node_page_state(node, NR_INACTIVE_ANON) +
+> +			node_page_state(node, NR_INACTIVE_FILE) +
+> +			node_page_state(node, NR_FREE_PAGES);
+> +		nr_mapped +=
 
-- Dave
+idem?
+
+> +			node_page_state(node, NR_FILE_MAPPED) +
+> +			node_page_state(node, NR_ANON_PAGES);
+> +	}
+> +	return 1;
+> +}
+
+
 
