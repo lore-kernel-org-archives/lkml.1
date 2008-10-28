@@ -1,117 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbYJ1QYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbYJ1QZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753439AbYJ1QYq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 12:24:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbYJ1QYh
+	id S1753839AbYJ1QZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 12:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbYJ1QZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 12:24:37 -0400
-Received: from mail.gmx.net ([213.165.64.20]:39757 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752496AbYJ1QYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 12:24:35 -0400
-X-Authenticated: #44953887
-X-Provags-ID: V01U2FsdGVkX1/8C9otVNj8w8nmSv+tFUUR97FkIKoOyLCkITdlZA
-	DWesdk2neGhLdk
-Date: Tue, 28 Oct 2008 17:24:18 +0100
-From: Mirco Tischler <mt-ml@gmx.de>
-To: Zhu Yi <yi.zhu@intel.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       "John W.Linville" <linville@tuxdriver.com>,
-       "Chatre, Reinette" <reinette.chatre@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [2.6.28-rc2]: iwl4965 doesn't connect / cfg80211 failure
-Message-ID: <20081028172418.3c8e91f1@mtlp.12.dimension>
-In-Reply-To: <1225171414.2917.229.camel@debian.sh.intel.com>
-References: <20081028020212.0dfcb6c9@mtlp.12.dimension>
-	<1225157618.2917.215.camel@debian.sh.intel.com>
-	<20081027213217.53558319@infradead.org>
-	<1225171414.2917.229.camel@debian.sh.intel.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/QYcKPLFonHn/Ijg6q/W=P3d";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.48
+	Tue, 28 Oct 2008 12:25:44 -0400
+Received: from mms3.broadcom.com ([216.31.210.19]:3456 "EHLO MMS3.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752859AbYJ1QZm convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 12:25:42 -0400
+X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
+Subject: Re: [PATCH] PCI: Limit VPD length for Broadcom 5708S
+From: "Benjamin Li" <benli@broadcom.com>
+To: "Eric Dumazet" <dada1@cosmosbay.com>
+cc: "willy@linux.intel.com" <willy@linux.intel.com>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "linux kernel" <linux-kernel@vger.kernel.org>,
+       "Linux Netdev List" <netdev@vger.kernel.org>,
+       "Michael Chan" <mchan@broadcom.com>
+In-Reply-To: <1225164385.3977.11.camel@localhost>
+References: <48920413.6080508@cosmosbay.com>
+ <4906405F.6080708@cosmosbay.com> <1225164385.3977.11.camel@localhost>
+Date: Tue, 28 Oct 2008 09:25:30 -0700
+Message-ID: <1225211130.3980.7.camel@dhcp-10-12-136-136.broadcom.com>
+MIME-Version: 1.0
+X-Mailer: Evolution 2.22.3.1
+X-WSS-ID: 6519E37637G3363229-01-01
+Content-Type: text/plain;
+ charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/QYcKPLFonHn/Ijg6q/W=P3d
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hi Eric,
 
-On Tue, 28 Oct 2008 13:23:34 +0800, Zhu Yi wrote:
-> On Mon, 2008-10-27 at 22:32 -0600, Arjan van de Ven wrote:
-> > I had this same issue
-> >=20
-> > turning on CONFIG_WIRELESS_OLD_REGULATORY fixed it for me....
->=20
-> Arjan,
->=20
-> This is a different bug. He has the wireless worked sometimes.
->=20
-> I think your problem relates to 5GHz channel usage. We have already a
-> patch queued to resolve the problem. We will have regulatory framework
-> reworked to better solve the problem. But I guess it will be in .29 time
-> frame.
->=20
-> Thanks,
-> -yi
-I tested Arjan's solution nevertheless and it seems to do the job. I can't =
-find
-the "TX Power requested" line anymore on dmesg output with that config opti=
-on
-enabled anymore and it connects without problems.
-This is how it looks now:
-[  777.680750] iwlagn: Intel(R) Wireless WiFi Link AGN driver for Linux,1.3=
-.27kds=20
-[  777.680753] iwlagn: Copyright(c) 2003-2008 Intel Corporation
-[  777.680878] iwlagn 0000:06:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ=
- 18
-[  777.680908] iwlagn 0000:06:00.0: setting latency timer to 64
-[  777.680977] iwlagn: Detected Intel Wireless WiFi Link 4965AGN REV=3D0x4
-[  777.731255] iwlagn: Tunable channels: 13 802.11bg, 19 802.11a channels
-[  777.732432] phy1: Selected rate control algorithm 'iwl-agn-rs'
-[  781.764539] iwlagn 0000:06:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ=
- 18
-[  781.764821] iwlagn 0000:06:00.0: irq 41 for MSI/MSI-X
-[  781.764919] iwlagn 0000:06:00.0: firmware: requesting iwlwifi-4965-2.uco=
-de
-[  781.980719] Registered led device: iwl-phy1:radio
-[  781.980764] Registered led device: iwl-phy1:assoc
-[  781.980808] Registered led device: iwl-phy1:RX
-[  781.980856] Registered led device: iwl-phy1:TX
-[  782.014001] ADDRCONF(NETDEV_UP): wlan0: link is not ready
-[  783.633713] wlan0: authenticate with AP 00:c0:a8:e5:e5:a5
-[  783.635637] wlan0: authenticated
-[  783.635644] wlan0: associate with AP 00:c0:a8:e5:e5:a5
-[  783.642770] wlan0: RX AssocResp from 00:c0:a8:e5:e5:a5 (capab=3D0x431 st=
-atus=3D0
-aid=3D1)=20
-[  783.642776] wlan0: associated [  783.669684] ADDRCONF(NETDEV_CHANGE): wl=
-an0:
-link becomes ready
+I think this is the commit that broke the Broadcom NIC VPD quirk fix.
 
-I tested it quickly and not very thoroughly on the wpa-eap encrypted networ=
-k at
-university and it showed the same behaviour: no connection without
-CONFIG_WIRELESS_OLD_REGULATORY and no problems with it enabled.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=201de56eb22f1ff3f36804bc70cbff220b50f067
 
-Thanks
-Mirco
+This is because the quirk relied on pci_vpd_pci22_init() being called
+before pci_fixup_device() is called.
 
---Sig_/QYcKPLFonHn/Ijg6q/W=P3d
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+Now pci_fixup_device() is being called before pci_vpd_pci22_init().
+Because of this reordering, dev->vpd is NULL rendering the quirk
+ineffective.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+I will work on a solution and keep you posted.
 
-iEYEARECAAYFAkkHPL4ACgkQz+diZ7c2xfjQnACeMmJUXCPSWQKkVDfR80db4Rwj
-7k4An1TJLd7OuByRyuO02uRpSkWVdDH+
-=ODct
------END PGP SIGNATURE-----
+Thanks again.
 
---Sig_/QYcKPLFonHn/Ijg6q/W=P3d--
+-Ben
+
+
+On Mon, 2008-10-27 at 20:26 -0700, Benjamin Li wrote:
+> Hi Eric,
+> 
+> It looks like the same problem again: we are reading past a valid VPD
+> address.
+> 
+> After some initial debugging, it looks like dev->vpd is NULL when the
+> Broadcom 5706C/5706S/5708C/570S/5709 quirk is called.  Because of this
+> dev->vpd->len is never set to the proper length to limit the VPD reads.
+> I will debug further to determine what has changed.
+> 
+> Thanks again for pointing out the problem.
+> 
+> -Ben
+> 
+> On Mon, 2008-10-27 at 15:27 -0700, Eric Dumazet wrote:
+> > Eric Dumazet a écrit :
+> > > While trying to upgrade kernel from 2.6.25 to 2.6.26 on a ProLiant 
+> > > BL460c G1,
+> > > I faced this problem on integrated Broadcom 5708S NIC when trying to UP 
+> > > them.
+> > > 
+> > > bnx2: fw sync timeout, reset code = 1030003
+> > > 
+> > > I noticed that commit 99cb233d60cbe644203f19938c729ea2bb004d70 (PCI: 
+> > > Limit VPD read/write lengths for Broadcom 5706, 5708, 5709 rev.A)
+> > > was probably a good candidate to solve the problem.
+> > > 
+> > > Apparently, it added PCI quirks for a list of Broadcom NICs, but
+> > > quirk_brcm_570x_limit_vpd() ignores part of them.
+> > > 
+> > > I found the following patch useful to restore correct operation on my 
+> > > machine.
+> > > 
+> > > Some information about this nic :
+> > > 
+> > > 03:00.0 Ethernet controller: Broadcom Corporation NetXtreme II BCM5708S 
+> > > Gigabit Ethernet (rev 12)
+> > >        Subsystem: Hewlett-Packard Company NC373i Integrated 
+> > > Multifunction Gigabit Server Adapter
+> > >        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- 
+> > > ParErr+ Stepping- SERR+ FastB2B-
+> > >        Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
+> > > <TAbort- <MAbort- >SERR- <PERR-
+> > >        Latency: 64 (16000ns min), Cache Line Size 10
+> > >        Interrupt: pin A routed to IRQ 222
+> > >        Region 0: Memory at f6000000 (64-bit, non-prefetchable) [size=32M]
+> > >        [virtual] Expansion ROM at d1200000 [disabled] [size=16K]
+> > >        Capabilities: [40] PCI-X non-bridge device.
+> > >                Command: DPERE- ERO- RBC=0 OST=4
+> > >                Status: Bus=3 Dev=0 Func=0 64bit+ 133MHz+ SCD- USC-, 
+> > > DC=simple, DMMRBC=0, DMOST=4, DMCRS=2, RSCEM-
+> > >        Capabilities: [48] Power Management version 2
+> > >                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA 
+> > > PME(D0-,D1-,D2-,D3hot+,D3cold+)
+> > >                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+> > >        Capabilities: [50] Vital Product Data
+> > >        Capabilities: [58] Message Signalled Interrupts: 64bit+ Queue=0/0 
+> > > Enable+
+> > >                Address: 00000000feeff00c  Data: 4179
+> > > 
+> > > after applying patch :
+> > > 
+> > > # hexdump -C 
+> > > "/sys/devices/pci0000:00/0000:00:1c.0/0000:02:00.0/0000:03:00.0/vpd"
+> > > 00000000  82 2f 00 48 50 20 4e 43  33 37 33 69 20 4d 75 6c  |./.HP 
+> > > NC373i Mul|
+> > > 00000010  74 69 66 75 6e 63 74 69  6f 6e 20 47 69 67 61 62  |tifunction 
+> > > Gigab|
+> > > 00000020  69 74 20 53 65 72 76 65  72 20 41 64 61 70 74 65  |it Server 
+> > > Adapte|
+> > > 00000030  72 00 90 4a 00 50 4e 03  4e 2f 41 45 43 03 4e 2f  
+> > > |r..J.PN.N/AEC.N/|
+> > > 00000040  41 53 4e 0a 30 31 32 33  34 35 36 37 38 39 4d 4e  
+> > > |ASN.0123456789MN|
+> > > 00000050  04 31 30 33 43 52 56 26  a2 00 00 00 00 00 00 00  
+> > > |.103CRV&........|
+> > > 00000060  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  
+> > > |................|
+> > > 00000070  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 78  
+> > > |...............x|
+> > > 00000080
+> > > 
+> > > Patch against current Linus tree, should also be sent for linux-2.6.26.2 
+> > > inclusion.
+> > > 
+> > > I have no idea if 5706S and 5709S also needs this truncation of VPD length
+> > > 
+> > > Thank you
+> > > 
+> > > [PATCH] PCI: Limit VPD length for Broadcom 5708S
+> > > 
+> > > BCM5708S wont work correctly unless VPD length truncated to 128
+> > > 
+> > > Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> > > 
+> > > diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+> > > index 0fb3650..59667e5 100644
+> > > --- a/drivers/pci/quirks.c
+> > > +++ b/drivers/pci/quirks.c
+> > > @@ -1756,9 +1756,12 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_VIA, 
+> > > 0x324e, quirk_via_cx700_pci_parking_c
+> > >  */
+> > > static void __devinit quirk_brcm_570x_limit_vpd(struct pci_dev *dev)
+> > > {
+> > > -    /*  Only disable the VPD capability for 5706, 5708, and 5709 rev. A */
+> > > +    /*
+> > > +     * Only disable the VPD capability for 5706, 5708, 5708S and 5709 
+> > > rev. A
+> > > +     */
+> > >     if ((dev->device == PCI_DEVICE_ID_NX2_5706) ||
+> > >         (dev->device == PCI_DEVICE_ID_NX2_5708) ||
+> > > +        (dev->device == PCI_DEVICE_ID_NX2_5708S) ||
+> > >         ((dev->device == PCI_DEVICE_ID_NX2_5709) &&
+> > >          (dev->revision & 0xf0) == 0x0)) {
+> > >         if (dev->vpd)
+> > > 
+> > 
+> > Hi all
+> > 
+> > Just tried linux-2.6.28-rc2 on same platform.
+> > 
+> > Same problem again...
+> > 
+> > Broadcom NetXtreme II Gigabit Ethernet Driver bnx2 v1.8.1 (Oct 7, 2008)
+> > bnx2 0000:03:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+> > eth0: Broadcom NetXtreme II BCM5708 1000Base-SX (B2) PCI-X 64-bit 133MHz found at mem f6000000, IRQ 16, node addr 00:1e:0b:ec:d3:dc
+> > bnx2 0000:07:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+> > eth1: Broadcom NetXtreme II BCM5708 1000Base-SX (B2) PCI-X 64-bit 133MHz found at mem fa000000, IRQ 16, node addr 00:1e:0b:ec:d3:d2
+> > bnx2 0000:03:00.0: irq 45 for MSI/MSI-X
+> > bnx2: fw sync timeout, reset code = 1030003
+> > bnx2 0000:07:00.0: irq 45 for MSI/MSI-X
+> > bnx2: fw sync timeout, reset code = 1030003
+> > bnx2 0000:03:00.0: irq 45 for MSI/MSI-X
+> > bnx2: fw sync timeout, reset code = 1030006
+> > 
+> > 
+> > 2.6.27.4 is running fine on this machine
+> > 
+> > Any ideas ?
+> > 
+> > Thank you
+> > 
+> > Eric
+> > 
+> > 
+> > 
+> > 
+
+
