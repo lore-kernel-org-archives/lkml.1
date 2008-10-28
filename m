@@ -1,50 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbYJ1LC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbYJ1LDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753584AbYJ1LC7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 07:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbYJ1LCs
+	id S1754006AbYJ1LDj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 07:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbYJ1LDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 07:02:48 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45418 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752693AbYJ1LCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 07:02:47 -0400
-Date: Tue, 28 Oct 2008 12:02:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: David Miller <davem@davemloft.net>, zbr@ioremap.net,
-       alan@lxorguk.ukuu.org.uk, jkosina@suse.cz, akpm@linux-foundation.org,
-       a.p.zijlstra@chello.nl, rjw@sisk.pl, s0mbre@tservice.net.ru,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-Message-ID: <20081028110229.GA29764@elte.hu>
-References: <20081027113306.5b1d5898@lxorguk.ukuu.org.uk> <20081027183312.GD11494@elte.hu> <20081027193933.GB2590@ioremap.net> <20081027.124848.163119274.davem@davemloft.net> <1225189462.4903.238.camel@marge.simson.net> <20081028103741.GA22319@elte.hu> <1225191456.4903.254.camel@marge.simson.net>
+	Tue, 28 Oct 2008 07:03:31 -0400
+Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:60123 "EHLO
+	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752719AbYJ1LDa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 07:03:30 -0400
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4906F194.30901@cam.ac.uk>
+Date: Tue, 28 Oct 2008 11:03:48 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1225191456.4903.254.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Eric Miao <eric.y.miao@gmail.com>
+CC: Jonathan Cameron <Jonathan.Cameron@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Liam Girdwood <lrg@kernel.org>
+Subject: Re: [PATCH] da903x regulator bug fix
+References: <4901EE0F.5000508@cam.ac.uk> <4905DE3D.1010101@gmail.com>	 <f17812d70810271801t47830712h431df82baee11654@mail.gmail.com> <f17812d70810271802v75b08712l4ab243802f59ecce@mail.gmail.com>
+In-Reply-To: <f17812d70810271802v75b08712l4ab243802f59ecce@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mike Galbraith <efault@gmx.de> wrote:
+Changes the device registration part of the probe function to supply the
+regulator device rather than its parent (the mfd device) as this caused
+problems when the regulator core attempted to find constraints associated
+with the regulators.
 
-> What I can say is that my box is quite certain that there are 
-> influences outside the scheduler which have more influence benchmark 
-> results than the scheduler does through the life of testing.
+Signed-of-by: Jonathan Cameron <jic23@cam.ac.uk>
 
-okay, that's an important observation.
+--
+Version 2 applying Eric Miao's suggestion about using an inline function.
+Change made in couple of additional places I'd missed the first time.
 
-	Ingo
+
+diff --git a/drivers/regulator/da903x.c b/drivers/regulator/da903x.c
+index 3688e33..773b29c 100644
+--- a/drivers/regulator/da903x.c
++++ b/drivers/regulator/da903x.c
+@@ -79,6 +79,11 @@ struct da903x_regulator_info {
+ 	int	enable_bit;
+ };
+ 
++static inline struct device *to_da903x_dev(struct regulator_dev *rdev)
++{
++	return rdev_get_dev(rdev)->parent->parent;
++}
++
+ static inline int check_range(struct da903x_regulator_info *info,
+ 				int min_uV, int max_uV)
+ {
+@@ -93,7 +98,7 @@ static int da903x_set_ldo_voltage(struct regulator_dev *rdev,
+ 				  int min_uV, int max_uV)
+ {
+ 	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da9034_dev = rdev_get_dev(rdev)->parent;
++	struct device *da9034_dev = to_da903x_dev(rdev);
+ 	uint8_t val, mask;
+ 
+ 	if (check_range(info, min_uV, max_uV)) {
+@@ -111,7 +116,7 @@ static int da903x_set_ldo_voltage(struct regulator_dev *rdev,
+ static int da903x_get_voltage(struct regulator_dev *rdev)
+ {
+ 	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da9034_dev = rdev_get_dev(rdev)->parent;
++	struct device *da9034_dev = to_da903x_dev(rdev);
+ 	uint8_t val, mask;
+ 	int ret;
+ 
+@@ -128,7 +133,7 @@ static int da903x_get_voltage(struct regulator_dev *rdev)
+ static int da903x_enable(struct regulator_dev *rdev)
+ {
+ 	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da9034_dev = rdev_get_dev(rdev)->parent;
++	struct device *da9034_dev = to_da903x_dev(rdev);
+ 
+ 	return da903x_set_bits(da9034_dev, info->enable_reg,
+ 					1 << info->enable_bit);
+@@ -137,7 +142,7 @@ static int da903x_enable(struct regulator_dev *rdev)
+ static int da903x_disable(struct regulator_dev *rdev)
+ {
+ 	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da9034_dev = rdev_get_dev(rdev)->parent;
++	struct device *da9034_dev = to_da903x_dev(rdev);
+ 
+ 	return da903x_clr_bits(da9034_dev, info->enable_reg,
+ 					1 << info->enable_bit);
+@@ -146,7 +151,7 @@ static int da903x_disable(struct regulator_dev *rdev)
+ static int da903x_is_enabled(struct regulator_dev *rdev)
+ {
+ 	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da9034_dev = rdev_get_dev(rdev)->parent;
++	struct device *da9034_dev = to_da903x_dev(rdev);
+ 	uint8_t reg_val;
+ 	int ret;
+ 
+@@ -162,7 +167,7 @@ static int da9030_set_ldo1_15_voltage(struct regulator_dev *rdev,
+ 				       int min_uV, int max_uV)
+ {
+ 	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da903x_dev = rdev_get_dev(rdev)->parent;
++	struct device *da903x_dev = to_da903x_dev(rdev);
+ 	uint8_t val, mask;
+ 	int ret;
+ 
+@@ -189,7 +194,7 @@ static int da9030_set_ldo14_voltage(struct regulator_dev *rdev,
+ 				  int min_uV, int max_uV)
+ {
+ 	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da903x_dev = rdev_get_dev(rdev)->parent;
++	struct device *da903x_dev = to_da903x_dev(rdev);
+ 	uint8_t val, mask;
+ 	int thresh;
+ 
+@@ -215,7 +220,7 @@ static int da9030_set_ldo14_voltage(struct regulator_dev *rdev,
+ static int da9030_get_ldo14_voltage(struct regulator_dev *rdev)
+ {
+ 	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da903x_dev = rdev_get_dev(rdev)->parent;
++	struct device *da903x_dev = to_da903x_dev(rdev);
+ 	uint8_t val, mask;
+ 	int ret;
+ 
+@@ -238,7 +243,7 @@ static int da9034_set_dvc_voltage(struct regulator_dev *rdev,
+ 				  int min_uV, int max_uV)
+ {
+ 	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da9034_dev = rdev_get_dev(rdev)->parent;
++	struct device *da9034_dev = to_da903x_dev(rdev);
+ 	uint8_t val, mask;
+ 	int ret;
+ 
+@@ -264,7 +269,7 @@ static int da9034_set_ldo12_voltage(struct regulator_dev *rdev,
+ 				    int min_uV, int max_uV)
+ {
+ 	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da9034_dev = rdev_get_dev(rdev)->parent;
++	struct device *da9034_dev = to_da903x_dev(rdev);
+ 	uint8_t val, mask;
+ 
+ 	if (check_range(info, min_uV, max_uV)) {
+@@ -283,7 +288,7 @@ static int da9034_set_ldo12_voltage(struct regulator_dev *rdev,
+ static int da9034_get_ldo12_voltage(struct regulator_dev *rdev)
+ {
+ 	struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
+-	struct device *da9034_dev = rdev_get_dev(rdev)->parent;
++	struct device *da9034_dev = to_da903x_dev(rdev);
+ 	uint8_t val, mask;
+ 	int ret;
+ 
+@@ -466,7 +471,7 @@ static int __devinit da903x_regulator_probe(struct platform_device *pdev)
+ 	if (ri->desc.id == DA9030_ID_LDO1 || ri->desc.id == DA9030_ID_LDO15)
+ 		ri->desc.ops = &da9030_regulator_ldo1_15_ops;
+ 
+-	rdev = regulator_register(&ri->desc, pdev->dev.parent, ri);
++	rdev = regulator_register(&ri->desc, &pdev->dev, ri);
+ 	if (IS_ERR(rdev)) {
+ 		dev_err(&pdev->dev, "failed to register regulator %s\n",
+ 				ri->desc.name);
+
+
