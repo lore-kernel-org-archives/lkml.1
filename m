@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbYJ1Fu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752577AbYJ1FwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753105AbYJ1Fu6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 01:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbYJ1Fus
+	id S1752577AbYJ1FwR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 01:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbYJ1FwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 01:50:48 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:37216 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752186AbYJ1Fus (ORCPT
+	Tue, 28 Oct 2008 01:52:04 -0400
+Received: from smtp109.prem.mail.sp1.yahoo.com ([98.136.44.54]:43226 "HELO
+	smtp109.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752228AbYJ1FwD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 01:50:48 -0400
-Date: Tue, 28 Oct 2008 01:50:45 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [patch/RESEND 2.6.28-rc2 1/2] ACPI:  fix ACPI_FADT_S4_RTC_WAKE
- comment
-In-reply-to: <200810271357.23861.david-b@pacbell.net>
-X-X-Sender: lenb@localhost.localdomain
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-acpi@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Message-id: <alpine.LFD.2.00.0810280150300.24123@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <200810271357.23861.david-b@pacbell.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 28 Oct 2008 01:52:03 -0400
+X-YMail-OSG: JjOa5PQVM1n1UnKp2xFhvjyrAbRtbYPIh4gDYTlyMEO_KFEyx.3O7lUoQ3dv03rAWP7Wax.SZWBTOXbS1YMj7qIZVsqXN8eItn3QcV2GqnNf6d5oNIX3sh9U6kAbN6sBK0AvrsyWMYTZnTU0ziG62RrFV4YXmcAInIxRuWg-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4906A871.6010501@schaufler-ca.com>
+Date: Mon, 27 Oct 2008 22:51:45 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Rob MacKinnon <c4blem0nkey@gmail.com>
+CC: Andreas Gruenbacher <agruen@suse.de>, Stephen Smalley <sds@tycho.nsa.gov>,
+       rob.mackinnon@gmail.com, hpa@zytor.com, hugh@veritas.com,
+       linux-kernel@vger.kernel.org, casey@schaufler-ca.com
+Subject: Re: tmpfs support of xattrs?
+References: <4902DD98.4090302@gmail.com> <4906211E.8030603@gmail.com> <1225139131.31818.51.camel@moss-spartans.epoch.ncsc.mil> <200810272153.56301.agruen@suse.de> <49062EC0.4040809@gmail.com>
+In-Reply-To: <49062EC0.4040809@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-forwarded to devel@lists.acpica.org
+Rob MacKinnon wrote:
+> Andreas Gruenbacher wrote:
+>   
+>> On Monday, 27 October 2008 21:25:31 Stephen Smalley wrote:
+>>     
+>>> Looks like a bug in Smack's implementation of the inode_listsecurity
+>>> hook to me.  Did you mean to enable Smack in your kernel config?
+>>>       
+>> Yes, there is at least one bug there; this kernel is broken. You may want to 
+>> try booting with a kernel command line option like "security=none", which 
+>> *should* turn smack off.
+>>
+>> Andreas
+>>     
+>
+> All,
+>
+> Indeed the kernel cmdline option security=none did disable smack. So
+> atleast that works. Thank you all for helping me track this down.  I can
+> now return to updating packages (some of which have been waiting
+> patiently for this to be cleared up)!  Though I will be looking forward
+> to this feature working as it was intended. ;)  Let me know if there is
+> a bug # assigned and I'll quietly return to lurking... ;
 
-thanks,
--len
+It looks like a trivial fix and the patch is here. I have just started
+testing it myself, but if I don't send it now it will be Wednesday before
+I do. No sign-off because I haven't verified it, but I would be delighted
+if you would pass judgement on its efficacy. Thank you.
 
-On Mon, 27 Oct 2008, David Brownell wrote:
 
-> From: David Brownell <dbrownell@users.sourceforge.net>
-> 
-> Make the comment for ACPI_FADT_S4_RTC_WAKE match the ACPI spec;
-> that bit has nothing to do with status bits.
-> 
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> ---
->  include/acpi/actbl.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- a/include/acpi/actbl.h	2008-08-19 20:25:36.000000000 -0700
-> +++ b/include/acpi/actbl.h	2008-08-19 20:26:14.000000000 -0700
-> @@ -245,7 +245,7 @@ struct acpi_table_fadt {
->  #define ACPI_FADT_POWER_BUTTON      (1<<4)	/* 04: Power button is handled as a generic feature */
->  #define ACPI_FADT_SLEEP_BUTTON      (1<<5)	/* 05: Sleep button is handled as a generic feature, or  not present */
->  #define ACPI_FADT_FIXED_RTC         (1<<6)	/* 06: RTC wakeup stat not in fixed register space */
-> -#define ACPI_FADT_S4_RTC_WAKE       (1<<7)	/* 07: RTC wakeup stat not possible from S4 */
-> +#define ACPI_FADT_S4_RTC_WAKE       (1<<7)	/* 07: RTC wakeup possible from S4 */
->  #define ACPI_FADT_32BIT_TIMER       (1<<8)	/* 08: tmr_val is 32 bits 0=24-bits */
->  #define ACPI_FADT_DOCKING_SUPPORTED (1<<9)	/* 09: Docking supported */
->  #define ACPI_FADT_RESET_REGISTER    (1<<10)	/* 10: System reset via the FADT RESET_REG supported */
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+----
+
+diff -uprN -X linux-2.6/Documentation/dontdiff linux-2.6/security/smack/smack_lsm.c linux-smack/security/smack/smack_lsm.c
+--- linux-2.6/security/smack/smack_lsm.c	2008-10-26 17:37:08.000000000 -0700
++++ linux-smack/security/smack/smack_lsm.c	2008-10-26 19:11:23.000000000 -0700
+@@ -763,13 +763,11 @@ static int smack_inode_getsecurity(const
+ static int smack_inode_listsecurity(struct inode *inode, char *buffer,
+ 				    size_t buffer_size)
+ {
+-	int len = strlen(XATTR_NAME_SMACK);
++	int len = sizeof(XATTR_NAME_SMACK);
+ 
+-	if (buffer != NULL && len <= buffer_size) {
++	if (buffer != NULL && len <= buffer_size)
+ 		memcpy(buffer, XATTR_NAME_SMACK, len);
+-		return len;
+-	}
+-	return -EINVAL;
++	return len;
+ }
+ 
+ /**
+
