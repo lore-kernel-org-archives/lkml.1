@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbYJ1RGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbYJ1RIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753996AbYJ1RGS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 13:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYJ1RGF
+	id S1753989AbYJ1RIS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 13:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbYJ1RIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 13:06:05 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39578 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752424AbYJ1RGE (ORCPT
+	Tue, 28 Oct 2008 13:08:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38843 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752229AbYJ1RIE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 13:06:04 -0400
-Date: Tue, 28 Oct 2008 17:06:05 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Helge Hafting <helge.hafting@aitel.hist.no>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.28-rc2 i/o error on /dev/ttyUSB0
-Message-ID: <20081028170605.611c7759@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.00.0810280928320.3386@nehalem.linux-foundation.org>
-References: <alpine.LFD.2.00.0810261221350.3386@nehalem.linux-foundation.org>
-	<4906F54A.7020909@aitel.hist.no>
-	<alpine.LFD.2.00.0810280928320.3386@nehalem.linux-foundation.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 28 Oct 2008 13:08:04 -0400
+Date: Tue, 28 Oct 2008 10:07:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Matthias Kaehlcke <matthias@kaehlcke.net>, kernel@wantstofly.org,
+       rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ep93xx: fix OHCI DMA mask
+Message-Id: <20081028100719.531e4c94.akpm@linux-foundation.org>
+In-Reply-To: <20081028101106.GB6099@fluff.org.uk>
+References: <20081028081950.GA2930@traven>
+	<20081028101106.GB6099@fluff.org.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,12 +28,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> squarely in the "oops, kref's are screwed up" corner, and you should talk 
-> to Alan about your particular USB dongle. I bet that bisection would just 
-> show you one of the kref commits (eg 4a90f09b "tty: usb-serial krefs" or 
-> maybe 7d7b93c14 "tty: kref the tty driver object"). 
+On Tue, 28 Oct 2008 10:11:06 +0000 Ben Dooks <ben-linux@fluff.org> wrote:
 
-Doesn't sound like krefs but does sound like the tty layer changes
-somewhere.
+> On Tue, Oct 28, 2008 at 09:19:50AM +0100, Matthias Kaehlcke wrote:
+> > ep93xx: Fix OHCI DMA mask
+> > 
+> > Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+> 
+> Did this really have to go to so many people?
 
-Helge - can you get me an strace of this
+It's better than too few!  Bugfixes are important (most important?)
+and our lossage rate on patches is scary high.
+
+In particular, please don't chase people's bugfixes off linux-kernel,
+because then I won't see them.  I'd guess that somewhere between a
+quarter and a half of the bugfixes which I scoop off the list would
+otherwise not have been applied.
+
+Spread the wealth!
