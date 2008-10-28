@@ -1,214 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbYJ1U1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754430AbYJ1U11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754084AbYJ1U1J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 16:27:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbYJ1U0w
+	id S1754430AbYJ1U11 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 16:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbYJ1U0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 16:26:52 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58647 "EHLO mx2.redhat.com"
+	Tue, 28 Oct 2008 16:26:53 -0400
+Received: from mga09.intel.com ([134.134.136.24]:10590 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752813AbYJ1U0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 16:26:50 -0400
-Date: Tue, 28 Oct 2008 16:16:15 -0400
-From: Josef Bacik <jbacik@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       rwheeler@redhat.com
-Subject: [PATCH] improve jbd fsync batching
-Message-ID: <20081028201614.GA21600@unused.rdu.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752133AbYJ1U0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 16:26:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,501,1220252400"; 
+   d="scan'208";a="456435727"
+Date: Tue, 28 Oct 2008 13:26:49 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Roland McGrath <roland@redhat.com>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       Yinghai Lu <yinghai@kernel.org>
+Subject: Re: cpu2000(both float and int) 13% regression with 2.6.28-rc1
+Message-ID: <20081028202649.GJ30573@linux-os.sc.intel.com>
+References: <1225175522.1685.57.camel@ymzhang> <20081028080327.GB15734@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081028080327.GB15734@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, Oct 28, 2008 at 01:03:27AM -0700, Ingo Molnar wrote:
+> 
+> * Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+> 
+> > Comparing with 2.6.27, cpu2000 (both float and int) has about 13% regression
+> > with 2.6.28-rc1 ﻿on my new-model x86-64 machine.
+> > 
+> > I bisected down to below patch.
+> > 
+> > commit 0afe2db21394820d32646a695eccf3fbfe6ab5c7
+> > Merge: d847059... 43603c8...
+> > Author: Ingo Molnar <mingo@elte.hu>
+> > Date:   Sat Oct 11 20:23:20 2008 +0200
+> > 
+> >     Merge branch 'x86/unify-cpu-detect' into x86-v28-for-linus-phase4-D
+> >     
+> >     Conflicts:
+> >         arch/x86/kernel/cpu/common.c
+> >         arch/x86/kernel/signal_64.c
+> >         include/asm-x86/cpufeature.h
+> > 
+> > 
+> > When I tried to revert it against 2.6.28-rc2, there are many conflictions.
 
-This is a rework of the patch I did a few months ago, taking into account some
-comments from Andrew and using the new schedule_hrtimeout function (thanks
-Arjan!).
+Ingo, I will work with Yanmin and report our findings. It is interesting to see
+double digit regression on cpu2000 benchmark. My understanding is that
+these benchmarks are not sensitive to signal handling. Also lmbench
+signal handling(lat_sig) has less than 3-4% regression, because of
+added overhead duing signal setup and restore. Context switch didn't have
+any noticeable difference, when I measure before.
 
-There is a flaw with the way jbd handles fsync batching.  If we fsync() a file
-and we were not the last person to run fsync() on this fs then we automatically
-sleep for 1 jiffie in order to wait for new writers to join into the transaction
-before forcing the commit.  The problem with this is that with really fast
-storage (ie a Clariion) the time it takes to commit a transaction to disk is way
-faster than 1 jiffie in most cases, so sleeping means waiting longer with
-nothing to do than if we just committed the transaction and kept going.  Ric
-Wheeler noticed this when using fs_mark with more than 1 thread, the throughput
-would plummet as he added more threads.
+Anyhow, while we look at this, probably this is the best point to add "noxsave"
+boot option patch, which I missed before. Ingo, Peter: Please consider this for
+2.6.28.
 
-This patch attempts to fix this problem by recording the average time in
-nanoseconds that it takes to commit a transaction to disk, and what time we
-started the transaction.  If we run an fsync() and we have been running for less
-time than it takes to commit the transaction to disk, we sleep for the delta
-amount of time and then commit to disk.  We acheive sub-jiffie sleeping using
-schedule_hrtimeout.  This means that the wait time is auto-tuned to the speed of
-the underlying disk, instead of having this static timeout.  I weighted the
-average according to somebody's comments (Andreas Dilger I think) in order to
-help normalize random outliers where we take way longer or way less time to
-commit than the average.  I also have a min() check in there to make sure we
-don't sleep longer than a jiffie in case our storage is super slow, this was
-requested by Andrew.
+thanks,
+suresh 
+---
 
-I unfortunately do not have access to a Clariion, so I had to use a ramdisk to
-represent a super fast array.  I tested with a SATA drive with barrier=1 to make
-sure there was no regression with local disks, I tested with a 4 way multipathed
-Apple Xserve RAID array and of course the ramdisk.  I ran the following command
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: x86: Introduce noxsave boot parameter
 
-fs_mark -d /mnt/ext3-test -s 4096 -n 2000 -D 64 -t $i
+Introduce "noxsave" boot parameter which will disable the cpu's xsave/xrstor
+capabilities.
 
-where $i was 2, 4, 8, 16 and 32.  I mkfs'ed the fs each time.  Here are my
-results
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
 
-type	threads		with patch	without patch
-sata	2		24.6		26.3
-sata	4		49.2		48.1
-sata	8		70.1		67.0
-sata	16		104.0		94.1
-sata	32		153.6		142.7
-
-xserve	2		246.4		222.0
-xserve	4		480.0		440.8
-xserve	8		829.5		730.8
-xserve	16		1172.7		1026.9
-xserve	32		1816.3		1650.5
-
-ramdisk	2		2538.3		1745.6
-ramdisk	4		2942.3		661.9
-ramdisk	8		2882.5		999.8
-ramdisk	16		2738.7		1801.9
-ramdisk	32		2541.9		2394.0
-
-All comments are welcome.  Thank you,
-
-Signed-off-by: Josef Bacik <jbacik@redhat.com>
-
-
-diff --git a/fs/jbd/commit.c b/fs/jbd/commit.c
-index 25719d9..3fbffb1 100644
---- a/fs/jbd/commit.c
-+++ b/fs/jbd/commit.c
-@@ -306,6 +306,8 @@ void journal_commit_transaction(journal_t *journal)
- 	int flags;
- 	int err;
- 	unsigned long blocknr;
-+	ktime_t start_time;
-+	u64 commit_time;
- 	char *tagp = NULL;
- 	journal_header_t *header;
- 	journal_block_tag_t *tag = NULL;
-@@ -418,6 +420,7 @@ void journal_commit_transaction(journal_t *journal)
- 	commit_transaction->t_state = T_FLUSH;
- 	journal->j_committing_transaction = commit_transaction;
- 	journal->j_running_transaction = NULL;
-+	start_time = ktime_get();
- 	commit_transaction->t_log_start = journal->j_head;
- 	wake_up(&journal->j_wait_transaction_locked);
- 	spin_unlock(&journal->j_state_lock);
-@@ -913,6 +916,18 @@ restart_loop:
- 	J_ASSERT(commit_transaction == journal->j_committing_transaction);
- 	journal->j_commit_sequence = commit_transaction->t_tid;
- 	journal->j_committing_transaction = NULL;
-+	commit_time = ktime_to_ns(ktime_sub(ktime_get(), start_time));
-+
-+	/*
-+	 * weight the commit time higher than the average time so we don't
-+	 * react too strongly to vast changes in commit time
-+	 */
-+	if (likely(journal->j_average_commit_time))
-+		journal->j_average_commit_time = (commit_time*3 +
-+				journal->j_average_commit_time) / 4;
-+	else
-+		journal->j_average_commit_time = commit_time;
-+
- 	spin_unlock(&journal->j_state_lock);
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 343e0f0..c60be3d 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1451,6 +1451,10 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			register save and restore. The kernel will only save
+ 			legacy floating-point registers on task switch.
  
- 	if (commit_transaction->t_checkpoint_list == NULL &&
-diff --git a/fs/jbd/transaction.c b/fs/jbd/transaction.c
-index d15cd6e..59dd181 100644
---- a/fs/jbd/transaction.c
-+++ b/fs/jbd/transaction.c
-@@ -25,6 +25,7 @@
- #include <linux/timer.h>
- #include <linux/mm.h>
- #include <linux/highmem.h>
-+#include <linux/hrtimer.h>
- 
- static void __journal_temp_unlink_buffer(struct journal_head *jh);
- 
-@@ -49,6 +50,7 @@ get_transaction(journal_t *journal, transaction_t *transaction)
- {
- 	transaction->t_journal = journal;
- 	transaction->t_state = T_RUNNING;
-+	transaction->t_start_time = ktime_get();
- 	transaction->t_tid = journal->j_transaction_sequence++;
- 	transaction->t_expires = jiffies + journal->j_commit_interval;
- 	spin_lock_init(&transaction->t_handle_lock);
-@@ -1371,7 +1373,7 @@ int journal_stop(handle_t *handle)
- {
- 	transaction_t *transaction = handle->h_transaction;
- 	journal_t *journal = transaction->t_journal;
--	int old_handle_count, err;
-+	int err;
- 	pid_t pid;
- 
- 	J_ASSERT(journal_current_handle() == handle);
-@@ -1407,11 +1409,26 @@ int journal_stop(handle_t *handle)
- 	 */
- 	pid = current->pid;
- 	if (handle->h_sync && journal->j_last_sync_writer != pid) {
-+		u64 commit_time, trans_time;
++	noxsave		[BUGS=X86] Disables x86 extended register state save
++			and restore using xsave. The kernel will fallback to
++			enabling legacy floating-point and sse state.
 +
- 		journal->j_last_sync_writer = pid;
--		do {
--			old_handle_count = transaction->t_handle_count;
--			schedule_timeout_uninterruptible(1);
--		} while (old_handle_count != transaction->t_handle_count);
-+
-+		spin_lock(&journal->j_state_lock);
-+		commit_time = journal->j_average_commit_time;
-+		spin_unlock(&journal->j_state_lock);
-+
-+		trans_time = ktime_to_ns(ktime_sub(ktime_get(),
-+						   transaction->t_start_time));
-+
-+		commit_time = min_t(u64, commit_time,
-+				    1000*jiffies_to_usecs(1));
-+
-+		if (trans_time < commit_time) {
-+			ktime_t expires = ktime_add_ns(ktime_get(),
-+						       commit_time);
-+			set_current_state(TASK_UNINTERRUPTIBLE);
-+			schedule_hrtimeout(&expires, HRTIMER_MODE_ABS);
-+		}
- 	}
+ 	noclflush	[BUGS=X86] Don't use the CLFLUSH instruction
  
- 	current->journal_info = NULL;
-diff --git a/include/linux/jbd.h b/include/linux/jbd.h
-index 346e2b8..d842230 100644
---- a/include/linux/jbd.h
-+++ b/include/linux/jbd.h
-@@ -543,6 +543,11 @@ struct transaction_s
- 	unsigned long		t_expires;
+ 	nohlt		[BUGS=ARM,SH]
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index 25581dc..bb9d547 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -93,6 +93,13 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
+ #endif
+ EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
  
- 	/*
-+	 * When this transaction started, in nanoseconds [no locking]
-+	 */
-+	ktime_t			t_start_time;
++static int __init x86_xsave_setup(char *s)
++{
++	setup_clear_cpu_cap(X86_FEATURE_XSAVE);
++	return 1;
++}
++__setup("noxsave", x86_xsave_setup);
 +
-+	/*
- 	 * How many handles used this transaction? [t_handle_lock]
- 	 */
- 	int t_handle_count;
-@@ -800,6 +805,8 @@ struct journal_s
- 
- 	pid_t			j_last_sync_writer;
- 
-+	u64			j_average_commit_time;
-+
- 	/*
- 	 * An opaque pointer to fs-private information.  ext3 puts its
- 	 * superblock pointer here
+ #ifdef CONFIG_X86_32
+ static int cachesize_override __cpuinitdata = -1;
+ static int disable_x86_serial_nr __cpuinitdata = 1;
