@@ -1,606 +1,311 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753586AbYJ1Jhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbYJ1Jot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753586AbYJ1Jhr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 05:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbYJ1Jhg
+	id S1753290AbYJ1Jot (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 05:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbYJ1Jol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 05:37:36 -0400
-Received: from mga11.intel.com ([192.55.52.93]:61233 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751935AbYJ1Jhe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 05:37:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,498,1220252400"; 
-   d="scan'208";a="632374200"
-Subject: Re: Linux 2.6.28-rc1] ACPI Warning (nspredef-0852)[...]
-From: Zhao Yakui <yakui.zhao@intel.com>
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Robert Hancock <hancockr@shaw.ca>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       "fabio.comolli@gmail.com" <fabio.comolli@gmail.com>
-In-Reply-To: <8db1092f0810271319s5d15c2ffrab37a548fa388738@mail.gmail.com>
-References: <fa.1HaqObZirROiyqr922A7hRDVc54@ifi.uio.no>
-	 <fa.Rzh43vSl9NX1QQ2nOYQSgEJcZAw@ifi.uio.no> <49035313.9080309@shaw.ca>
-	 <200810252004.01274.rjw@sisk.pl>
-	 <8db1092f0810251151l4c7f9382r34defa6d4d6ee24c@mail.gmail.com>
-	 <8db1092f0810271319s5d15c2ffrab37a548fa388738@mail.gmail.com>
-Content-Type: multipart/mixed; boundary="=-r7GZJXDegq1V2b30e7c0"
-Date: Tue, 28 Oct 2008 17:44:10 +0800
-Message-Id: <1225187050.5189.146.camel@yakui_zhao.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+	Tue, 28 Oct 2008 05:44:41 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:31098 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751099AbYJ1Joj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 05:44:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=P1xNVUO/m30jNShOzw5erck7Pa+rn1qsp0PZb57u8vSoJCh4p9pKN19WDCvwq6hZr7
+         fizk86tY0vCw/rG2Nb2uZkG64YgaMbeCLeE9TXlCccgN+CiXKWZbHOV27J6tpafAJKjc
+         uqyWTizP38oxIP3+XkE5L33QoB3ottj2mZKJw=
+Message-ID: <4f3ee3290810280244ua378523kf77cfaed8a1ebc38@mail.gmail.com>
+Date: Tue, 28 Oct 2008 10:44:37 +0100
+From: cboulte@gmail.com
+To: "Nadia Derbey" <Nadia.Derbey@bull.net>
+Subject: Re: [PATCH 1/1] (v3) SYSVIPC - Fix the ipc structures initialization
+Cc: akpm@linux-foundation.org, manfred@colorfullife.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1225122161.2595.248.camel@frecb000730.frec.bull.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081027072826.266777838@bull.net>
+	 <20081027072836.438113395@bull.net>
+	 <4f3ee3290810270332p56e1f99q24a5eea818e626ee@mail.gmail.com>
+	 <1225105450.2595.215.camel@frecb000730.frec.bull.fr>
+	 <1225122161.2595.248.camel@frecb000730.frec.bull.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 27, 2008 at 4:42 PM, Nadia Derbey <Nadia.Derbey@bull.net> wrote:
+> On Mon, 2008-10-27 at 12:04 +0100, Nadia Derbey wrote:
+>> On Mon, 2008-10-27 at 11:32 +0100, cboulte@gmail.com wrote:
+>> > On Mon, Oct 27, 2008 at 8:28 AM,  <Nadia.Derbey@bull.net> wrote:
+>> > >
+>> > > This patch is a fix for Bugzilla bug
+>> > > http://bugzilla.kernel.org/show_bug.cgi?id=11796.
+>> > >
+>> > > To summarize, a simple testcase is concurrently running an infinite loop on
+>> > > msgctl(IPC_STAT) and a call to msgget():
+>> > >
+>> > > while (1)
+>> > >   msgctl(id, IPC_STAT)    1
+>> > >                           |
+>> > >                           |
+>> > >                           |
+>> > >                           2 id = msgget(key, IPC_CREAT)
+>> > >                           |
+>> > >                           |
+>> > >                           |
+>> > >
+>> > > In the interval [1-2], the id doesn't exist yet.
+>> > >
+>> > > In that test, the problem is the following:
+>> > > When we are calling ipc_addid() from msgget() the msq structure is not
+>> > > completely initialized. So idr_get_new() is inserting a pointer into the
+>> > > idr tree, and the structure which is pointed to has, among other fields,
+>> > > its lock uninitialized.
+>> > >
+>> > > Since msgctl(IPC_STAT) is looping while (1), idr_find() returns the
+>> > > pointer as soon as it is inserted into the IDR tree. And ipc_lock()
+>> > > calls spin_lock(&mqs->lock), while we have not initialized that lock
+>> > > yet.
+>> > >
+>> > > This patch moves the spin_lock_init() before the call to ipc_addid().
+>> > > It also sets the "deleted" flag to 1 in the window between msg structure
+>> > > allocation and msg structure locking in ipc_addid().
+>> > >
+>> > >
+>> > > Regards,
+>> > > Nadia
+>> > >
+>> > >
+>> > > Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
+>> > >
+>> > > ---
+>> > >  ipc/util.c |   16 ++++++++++++++--
+>> > >  1 file changed, 14 insertions(+), 2 deletions(-)
+>> > >
+>> > > Index: linux-2.6.27/ipc/util.c
+>> > > ===================================================================
+>> > > --- linux-2.6.27.orig/ipc/util.c        2008-10-23 15:20:46.000000000 +0200
+>> > > +++ linux-2.6.27/ipc/util.c     2008-10-24 17:48:33.000000000 +0200
+>> > > @@ -266,6 +266,17 @@ int ipc_addid(struct ipc_ids* ids, struc
+>> > >        if (ids->in_use >= size)
+>> > >                return -ENOSPC;
+>> > >
+>> > > +       spin_lock_init(&new->lock);
+>> > > +
+>> > > +       /*
+>> > > +        * We have a window between the time new is inserted into the idr
+>> > > +        * tree and the time it is actually locked.
+>> > > +        * In order to be safe during that window set the new ipc structure
+>> > > +        * as deleted: a concurrent ipc_lock() will see it as not present
+>> > > +        * until the initialization phase is complete.
+>> > > +        */
+>> > > +       new->deleted = 1;
+>> > > +
+>> > >        err = idr_get_new(&ids->ipcs_idr, new, &id);
+>> > >        if (err)
+>> > >                return err;
+>> > > @@ -280,10 +291,11 @@ int ipc_addid(struct ipc_ids* ids, struc
+>> > >                ids->seq = 0;
+>> > >
+>> > >        new->id = ipc_buildid(id, new->seq);
+>> > > -       spin_lock_init(&new->lock);
+>> > > -       new->deleted = 0;
+>> > >        rcu_read_lock();
+>> > >        spin_lock(&new->lock);
+>> > > +
+>> > > +       new->deleted = 0;
+>> > > +
+>> > >        return id;
+>> > >  }
+>> > >
+>> > >
+>> > > --
+>> > >
+>> >
+>> > Still got the lock... I'm using a 4 cpus node: Intel Xeon @ 2.8GHz...
+>> > don't know if it has an impact.
+>> ???
+>> The bad new, is that it becomes unreprodicible on my side.
+>> For my part, I've got 2 2.8 GHz Xeon CPUs.
+>>
+>> Will review the code once more.
+>>
+>> Thanks!
+>> Nadia
+>>
+>> > The only way I found to have no lock, it's to spin_lock the ipc
+>> > _before_ inserting it into the idr.
+>> >
+>> > Best regards, c.
+>> >
+>
+> I agree with you that it's more logical and correct to take the lock
+> before inserting the ipc structure (i.e. making it visible to readers).
+>
+> But I wanted to understand what's wrong with
+> 1. new->lock init
+> 2. new->deleted = 1
+> 3. insert(new)
+>
+> I've been looking at the code again and again and the only thing I see
+> could have happened, is that instructions have been reordered and the
+> insertion done before the lock actually being initialized.
+> This means that a memory barrier is missing (this would explain why your
+> fix works: the spin_lock acts as a barrier).
+> But this memory barrier is supposed to be invoked by
+> rcu_assign_pointer() in idr_get_new(). So may be there's a problem with
+> the idr code.
+> Before going into a review of this code, I'd like to confirm what I'm
+> saying, doing the following (I'm sorry to ask you do it, but I can't
+> reproduce the problem in my side anymore): would you mind adding a
+> smp_wmb() just before the idr_get_new in ipc_addid() and tell me if this
+> solves the problem.
+> (BTW, I didn't ask you before, but I guess you're getting the same call
+> trace?)
+>
+> Regards,
+> Nadia
+>
+> --
+> Nadia Derbey <Nadia.Derbey@bull.net>
+>
+>
 
---=-r7GZJXDegq1V2b30e7c0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-On Mon, 2008-10-27 at 13:19 -0700, Maciej Rutecki wrote:
-> 2008/10/25 Maciej Rutecki <maciej.rutecki@gmail.com>:
-> > Suspend to ram, but another machine (previous PC, now laptop) and
-> > another problem:
-> >
-> > ACPI: EC: missing confirmations, switch off interrupt mode.
-> > ACPI Exception (evregion-0419): AE_TIME, Returned by Handler for
-> > [EmbeddedControl] [20080926]
-> > ACPI Error (psparse-0524): Method parse/execution failed [\_TZ_.C31E]
-> > (Node f7019858), AE_TIME
-> > ACPI Error (psparse-0524): Method parse/execution failed
-> > [\_TZ_.TZ3_._TMP] (Node f7019ed0), AE_TIME
-Will you please try the attached patch on the latest kernel(2.6.28-rc1)
-and see whether the issue still exists?
-
-After the test, please attach the output of dmesg.
-Thanks.
-> >
-> > It doesn't happened immediately after s2ram but is correlation between
-> > s2ram and this error.
-> 
-> I was wrong; it happens not only after suspend to ram but sometimes
-> after normal boot.
-> 
-> 
-
---=-r7GZJXDegq1V2b30e7c0
-Content-Disposition: attachment; filename=ec_all.patch
-Content-Type: text/x-patch; name=ec_all.patch; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-a. EC transaction is divided into several phases.
-        For example: EC write transaction
-        a. issue EC write command
-        b. wait until the input is empty and then write the internal address
-        c. wait until the input is empty and write the data
-        d. wait until the input is empty. If it is empty, it indicates
-        that EC transaction is finished.
-At the same time EC driver will be started in EC GEP mode. And when there is
-no EC GPE confirmation for some EC transaction on some broken laptops,the EC
-driver will be switched to polling mode. But EC GPE is still enabled.
-
-b. Some delay is added in the EC GPE handler on some broken BIOS.
-   The delay won't be added for most laptops.Only when more than five
-interrupts happen in the same jiffies and EC status are the same, OS will add
-some delay in the EC GPE handler. If the same issue still happens after adding
-delay,the delay time will be increased.But the max delay time is ten
-microseconds.
-
-Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
----
- drivers/acpi/ec.c |  333 +++++++++++++++++++++++++++++++++++++-----------------
- 1 file changed, 233 insertions(+), 100 deletions(-)
-
-Index: linux-2.6/drivers/acpi/ec.c
+I tried this patch:
+Index: bug-sysv/ipc/util.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/ec.c
-+++ linux-2.6/drivers/acpi/ec.c
-@@ -65,15 +65,25 @@ enum ec_command {
- 	ACPI_EC_BURST_DISABLE = 0x83,
- 	ACPI_EC_COMMAND_QUERY = 0x84,
- };
-+/* EC events */
-+enum ec_event {
-+	ACPI_EC_EVENT_OBF_1 = 1,	/* Output buffer full */
-+	ACPI_EC_EVENT_IBF_0,		/* Input buffer empty */
-+};
- 
- #define ACPI_EC_DELAY		500	/* Wait 500ms max. during EC ops */
- #define ACPI_EC_UDELAY_GLK	1000	/* Wait 1ms max. to get global lock */
- #define ACPI_EC_UDELAY		100	/* Wait 100us before polling EC again */
- 
-+#define EC_IRQ_NUM 		5	/* the EC interrupt storm threshold */
-+#define EC_MAX_UDELAY		10	/* the max udelay time */
-+
- #define ACPI_EC_STORM_THRESHOLD 20	/* number of false interrupts
- 					   per one transaction */
- 
- enum {
-+	EC_FLAGS_WAIT_GPE,		/* Don't check EC status
-+					 * until GPE arrives*/
- 	EC_FLAGS_QUERY_PENDING,		/* Query is pending */
- 	EC_FLAGS_GPE_MODE,		/* Expect GPE to be sent
- 					 * for status change */
-@@ -111,11 +121,21 @@ static struct acpi_ec {
- 	unsigned long data_addr;
- 	unsigned long global_lock;
- 	unsigned long flags;
-+	unsigned long pre_jiffies;
-+	/* record the jiffies when last EC interrupt happens */
- 	struct mutex lock;
- 	wait_queue_head_t wait;
- 	struct list_head list;
- 	struct transaction *curr;
- 	spinlock_t curr_lock;
-+	u8 pre_state;
-+	/* record the EC status when last EC interrrupt happens */
-+	atomic_t ec_irq_count;
-+	unsigned long udelay;
-+	/*
-+	 * this is for the input parameter of udelay in EC GPE interrupt.
-+	 * the max value is IRQ_MAX_UDELAY.(10)
-+	 */
- } *boot_ec, *first_ec;
- 
- /* 
-@@ -210,18 +230,60 @@ unlock:
- 	spin_unlock_irqrestore(&ec->curr_lock, flags);
- }
- 
--static int acpi_ec_wait(struct acpi_ec *ec)
-+static inline int acpi_ec_check_status(struct acpi_ec *ec,
-+			enum ec_event event)
- {
--	if (wait_event_timeout(ec->wait, ec_transaction_done(ec),
--			       msecs_to_jiffies(ACPI_EC_DELAY)))
-+	if (test_bit(EC_FLAGS_WAIT_GPE, &ec->flags))
- 		return 0;
--	/* missing GPEs, switch back to poll mode */
--	if (printk_ratelimit())
--		pr_info(PREFIX "missing confirmations, "
--				"switch off interrupt mode.\n");
--	set_bit(EC_FLAGS_NO_GPE, &ec->flags);
--	clear_bit(EC_FLAGS_GPE_MODE, &ec->flags);
--	return 1;
-+	if (event == ACPI_EC_EVENT_OBF_1) {
-+		if (acpi_ec_read_status(ec) & ACPI_EC_FLAG_OBF)
-+			return 1;
-+	} else if (event == ACPI_EC_EVENT_IBF_0) {
-+		if (!(acpi_ec_read_status(ec) & ACPI_EC_FLAG_IBF))
-+			return 1;
-+	}
-+
-+	return 0;
-+}
-+
-+static int acpi_ec_wait(struct acpi_ec *ec, enum ec_event event, int force_poll)
-+{
-+	if (likely(test_bit(EC_FLAGS_GPE_MODE, &ec->flags)) &&
-+	    likely(!force_poll)) {
-+		if (wait_event_timeout(ec->wait,
-+				acpi_ec_check_status(ec, event),
-+					msecs_to_jiffies(ACPI_EC_DELAY)))
-+			return 0;
-+		/* Check whether the bogus timeout happens */
-+		if (!test_bit(EC_FLAGS_WAIT_GPE, &ec->flags) &&
-+			acpi_ec_check_status(ec, event))
-+			return 0;
-+
-+		clear_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
-+		if (acpi_ec_check_status(ec, event)) {
-+			/*
-+			 * Clear GPE mode flags. When EC internal register is
-+			 * accessed, EC driver will work in polling mode.
-+			 * But GPE is still enabled.
-+			 */
-+			clear_bit(EC_FLAGS_GPE_MODE, &ec->flags);
-+			return 0;
-+		}
-+	} else {
-+		unsigned long delay = jiffies + msecs_to_jiffies(ACPI_EC_DELAY);
-+		clear_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
-+		while (time_before(jiffies, delay)) {
-+			if (acpi_ec_check_status(ec, event))
-+				return 0;
-+			msleep(1);
-+		}
-+		if (acpi_ec_check_status(ec, event))
-+			return 0;
-+	}
-+	pr_err(PREFIX "acpi_ec_wait timeout, status = 0x%2.2x, event = %s\n",
-+		acpi_ec_read_status(ec),
-+		(event == ACPI_EC_EVENT_OBF_1) ? "\"b0=1\"" : "\"b1=0\"");
-+	return -ETIME;
- }
- 
- static void acpi_ec_gpe_query(void *ec_cxt);
-@@ -248,48 +310,51 @@ static int ec_poll(struct acpi_ec *ec)
- 	}
- 	return -ETIME;
- }
--
--static int acpi_ec_transaction_unlocked(struct acpi_ec *ec,
--					struct transaction *t,
-+static int acpi_ec_transaction_unlocked(struct acpi_ec *ec, u8 command,
-+					const u8 *wdata, unsigned wdata_len,
-+					u8 *rdata, unsigned rdata_len,
- 					int force_poll)
- {
--	unsigned long tmp;
--	int ret = 0;
-+	int result = 0;
-+	set_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
- 	pr_debug(PREFIX "transaction start\n");
--	/* disable GPE during transaction if storm is detected */
--	if (test_bit(EC_FLAGS_GPE_STORM, &ec->flags)) {
--		clear_bit(EC_FLAGS_GPE_MODE, &ec->flags);
--		acpi_disable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
--	}
--	/* start transaction */
--	spin_lock_irqsave(&ec->curr_lock, tmp);
--	/* following two actions should be kept atomic */
--	t->irq_count = 0;
--	ec->curr = t;
--	acpi_ec_write_cmd(ec, ec->curr->command);
--	if (ec->curr->command == ACPI_EC_COMMAND_QUERY)
-+	acpi_ec_write_cmd(ec, command);
-+	for (; wdata_len > 0; --wdata_len) {
-+		result = acpi_ec_wait(ec, ACPI_EC_EVENT_IBF_0, force_poll);
-+		if (result) {
-+			pr_err(PREFIX
-+			       "write_cmd timeout, command = %d\n", command);
-+			goto end;
-+		}
-+		set_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
-+		acpi_ec_write_data(ec, *(wdata++));
-+	}
-+
-+	if (!rdata_len) {
-+		result = acpi_ec_wait(ec, ACPI_EC_EVENT_IBF_0, force_poll);
-+		if (result) {
-+			pr_err(PREFIX
-+			       "finish-write timeout, command = %d\n", command);
-+			goto end;
-+		}
-+	} else if (command == ACPI_EC_COMMAND_QUERY)
- 		clear_bit(EC_FLAGS_QUERY_PENDING, &ec->flags);
--	spin_unlock_irqrestore(&ec->curr_lock, tmp);
--	/* if we selected poll mode or failed in GPE-mode do a poll loop */
--	if (force_poll ||
--	    !test_bit(EC_FLAGS_GPE_MODE, &ec->flags) ||
--	    acpi_ec_wait(ec))
--		ret = ec_poll(ec);
--	pr_debug(PREFIX "transaction end\n");
--	spin_lock_irqsave(&ec->curr_lock, tmp);
--	ec->curr = NULL;
--	spin_unlock_irqrestore(&ec->curr_lock, tmp);
--	if (test_bit(EC_FLAGS_GPE_STORM, &ec->flags)) {
--		/* check if we received SCI during transaction */
--		ec_check_sci(ec, acpi_ec_read_status(ec));
--		/* it is safe to enable GPE outside of transaction */
--		acpi_enable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
--	} else if (test_bit(EC_FLAGS_GPE_MODE, &ec->flags) &&
--		   t->irq_count > ACPI_EC_STORM_THRESHOLD) {
--		pr_debug(PREFIX "GPE storm detected\n");
--		set_bit(EC_FLAGS_GPE_STORM, &ec->flags);
-+
-+	for (; rdata_len > 0; --rdata_len) {
-+		result = acpi_ec_wait(ec, ACPI_EC_EVENT_OBF_1, force_poll);
-+		if (result) {
-+			pr_err(PREFIX "read timeout, command = %d\n", command);
-+			goto end;
-+		}
-+		/* Don't expect GPE after last read */
-+		if (rdata_len > 1)
-+			set_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
-+
-+		*(rdata++) = acpi_ec_read_data(ec);
- 	}
--	return ret;
-+end:
-+	pr_debug(PREFIX "transaction end\n");
-+	return result;
- }
- 
- static int ec_check_ibf0(struct acpi_ec *ec)
-@@ -310,35 +375,47 @@ static int ec_wait_ibf0(struct acpi_ec *
- 	return -ETIME;
- }
- 
--static int acpi_ec_transaction(struct acpi_ec *ec, struct transaction *t,
-+static int acpi_ec_transaction(struct acpi_ec *ec, u8 command,
-+			       const u8 *wdata, unsigned wdata_len,
-+			       u8 *rdata, unsigned rdata_len,
- 			       int force_poll)
- {
- 	int status;
- 	u32 glk;
--	if (!ec || (!t) || (t->wlen && !t->wdata) || (t->rlen && !t->rdata))
-+
-+	if (!ec || (wdata_len && !wdata) || (rdata_len && !rdata))
- 		return -EINVAL;
--	if (t->rdata)
--		memset(t->rdata, 0, t->rlen);
-+
-+	if (rdata)
-+		memset(rdata, 0, rdata_len);
-+
- 	mutex_lock(&ec->lock);
- 	if (ec->global_lock) {
- 		status = acpi_acquire_global_lock(ACPI_EC_UDELAY_GLK, &glk);
- 		if (ACPI_FAILURE(status)) {
--			status = -ENODEV;
--			goto unlock;
-+			mutex_unlock(&ec->lock);
-+			return -ENODEV;
- 		}
- 	}
--	if (ec_wait_ibf0(ec)) {
-+
-+	status = acpi_ec_wait(ec, ACPI_EC_EVENT_IBF_0, 0);
-+	if (status) {
- 		pr_err(PREFIX "input buffer is not empty, "
- 				"aborting transaction\n");
--		status = -ETIME;
- 		goto end;
- 	}
--	status = acpi_ec_transaction_unlocked(ec, t, force_poll);
-+
-+	status = acpi_ec_transaction_unlocked(ec, command,
-+					      wdata, wdata_len,
-+					      rdata, rdata_len,
-+					      force_poll);
-+
- end:
-+
- 	if (ec->global_lock)
- 		acpi_release_global_lock(glk);
--unlock:
- 	mutex_unlock(&ec->lock);
-+
- 	return status;
- }
- 
-@@ -349,32 +426,35 @@ unlock:
- int acpi_ec_burst_enable(struct acpi_ec *ec)
- {
- 	u8 d;
--	struct transaction t = {.command = ACPI_EC_BURST_ENABLE,
--				.wdata = NULL, .rdata = &d,
--				.wlen = 0, .rlen = 1};
--
--	return acpi_ec_transaction(ec, &t, 0);
-+	/*
-+	 * When burst enable command is issused, EC will put the EC burst
-+	 * acknowledge byte (0x90) into output buffer.
-+	 * Maybe it is worth checking the returned acknowledge bytes.
-+	 */
-+	return acpi_ec_transaction(ec, ACPI_EC_BURST_ENABLE, NULL, 0, &d, 1, 0);
- }
- 
- int acpi_ec_burst_disable(struct acpi_ec *ec)
- {
--	struct transaction t = {.command = ACPI_EC_BURST_DISABLE,
--				.wdata = NULL, .rdata = NULL,
--				.wlen = 0, .rlen = 0};
-+	u8 d = acpi_ec_read_status(ec);
-+	if (d & ACPI_EC_FLAG_BURST) {
-+		/*
-+		 * Only when EC is in burst mode, it is necessary to disable.
-+		 */
-+		return acpi_ec_transaction(ec, ACPI_EC_BURST_DISABLE, NULL,
-+						0, NULL, 0, 0);
-+	}
-+	return 0;
- 
--	return (acpi_ec_read_status(ec) & ACPI_EC_FLAG_BURST) ?
--				acpi_ec_transaction(ec, &t, 0) : 0;
- }
- 
- static int acpi_ec_read(struct acpi_ec *ec, u8 address, u8 * data)
- {
- 	int result;
- 	u8 d;
--	struct transaction t = {.command = ACPI_EC_COMMAND_READ,
--				.wdata = &address, .rdata = &d,
--				.wlen = 1, .rlen = 1};
- 
--	result = acpi_ec_transaction(ec, &t, 0);
-+	result = acpi_ec_transaction(ec, ACPI_EC_COMMAND_READ,
-+				     &address, 1, &d, 1, 0);
- 	*data = d;
- 	return result;
- }
-@@ -382,11 +462,8 @@ static int acpi_ec_read(struct acpi_ec *
- static int acpi_ec_write(struct acpi_ec *ec, u8 address, u8 data)
- {
- 	u8 wdata[2] = { address, data };
--	struct transaction t = {.command = ACPI_EC_COMMAND_WRITE,
--				.wdata = wdata, .rdata = NULL,
--				.wlen = 2, .rlen = 0};
--
--	return acpi_ec_transaction(ec, &t, 0);
-+	return acpi_ec_transaction(ec, ACPI_EC_COMMAND_WRITE,
-+				   wdata, 2, NULL, 0, 0);
- }
- 
- /*
-@@ -448,13 +525,12 @@ int ec_transaction(u8 command,
- 		   u8 * rdata, unsigned rdata_len,
- 		   int force_poll)
- {
--	struct transaction t = {.command = command,
--				.wdata = wdata, .rdata = rdata,
--				.wlen = wdata_len, .rlen = rdata_len};
- 	if (!first_ec)
- 		return -ENODEV;
- 
--	return acpi_ec_transaction(first_ec, &t, force_poll);
-+	return acpi_ec_transaction(first_ec, command, wdata,
-+				   wdata_len, rdata, rdata_len,
-+				   force_poll);
- }
- 
- EXPORT_SYMBOL(ec_transaction);
-@@ -463,9 +539,7 @@ static int acpi_ec_query(struct acpi_ec 
- {
- 	int result;
- 	u8 d;
--	struct transaction t = {.command = ACPI_EC_COMMAND_QUERY,
--				.wdata = NULL, .rdata = &d,
--				.wlen = 0, .rlen = 1};
-+
- 	if (!ec || !data)
- 		return -EINVAL;
- 
-@@ -475,7 +549,8 @@ static int acpi_ec_query(struct acpi_ec 
- 	 * bit to be cleared (and thus clearing the interrupt source).
- 	 */
- 
--	result = acpi_ec_transaction(ec, &t, 0);
-+	result = acpi_ec_transaction(ec, ACPI_EC_COMMAND_QUERY,
-+						NULL, 0, &d, 1, 0);
- 	if (result)
- 		return result;
- 
-@@ -549,29 +624,77 @@ static void acpi_ec_gpe_query(void *ec_c
- 	}
- 	mutex_unlock(&ec->lock);
- }
-+/*******************************************************************************
-+*
-+* FUNCTION:	acpi_ec_gpe_delay
-+*
-+* PARAMETERS:	struct acpi_ec *ec, the EC device
-+		u8 state  - the EC status when EC GPE interrupt happens
-+
-+* RETURN:	No
-+*
-+* DESCRIPTION: detect whether there exists EC GPE interrupt storm. If yes, it
-+		will try to add some delay to reduce the number of EC GPE
-+		interrupts.
-+******************************************************************************/
-+static void acpi_ec_gpe_delay(struct acpi_ec *ec, u8 state)
-+{
-+	static int warn_done;
-+	if ((jiffies == ec->pre_jiffies) && (state == ec->pre_state)) {
-+		atomic_inc(&ec->ec_irq_count);
-+		if (atomic_read(&ec->ec_irq_count) > EC_IRQ_NUM) {
-+			/*
-+			 * If the ec_irq_count is above EC_IRQ_NUM, it will
-+			 * be regarded as EC GPE interrupt storm. We will
-+			 * try to add some udelay in acpi_ec_gpe_delay.
-+			 */
-+			atomic_set(&ec->ec_irq_count, 0);
-+			if (ec->udelay > EC_MAX_UDELAY) {
-+				if (!warn_done) {
-+					printk(KERN_WARNING "EC GPE interrupt"
-+					" storm. And it is hardware issue\n");
-+					warn_done++;
-+				}
-+			} else {
-+				/*
-+				 * the input parameter of udelay will be
-+				 * increased.
-+				 */
-+				ec->udelay = ec->udelay + 1;
-+			}
-+		}
-+	} else {
-+		ec->pre_jiffies = jiffies;
-+		ec->pre_state = state;
-+		atomic_set(&ec->ec_irq_count, 0);
-+	}
-+	if (ec->udelay)
-+		udelay(ec->udelay);
-+}
- 
- static u32 acpi_ec_gpe_handler(void *data)
- {
- 	struct acpi_ec *ec = data;
--	u8 status;
-+	u8 status ;
-+	acpi_status ec_status = AE_OK;
- 
- 	pr_debug(PREFIX "~~~> interrupt\n");
- 	status = acpi_ec_read_status(ec);
- 
--	gpe_transaction(ec, status);
--	if (ec_transaction_done(ec) && (status & ACPI_EC_FLAG_IBF) == 0)
-+	clear_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
-+	if (test_bit(EC_FLAGS_GPE_MODE, &ec->flags))
- 		wake_up(&ec->wait);
- 
--	ec_check_sci(ec, status);
--	if (!test_bit(EC_FLAGS_GPE_MODE, &ec->flags) &&
--	    !test_bit(EC_FLAGS_NO_GPE, &ec->flags)) {
--		/* this is non-query, must be confirmation */
--		if (printk_ratelimit())
--			pr_info(PREFIX "non-query interrupt received,"
--				" switching to interrupt mode\n");
--		set_bit(EC_FLAGS_GPE_MODE, &ec->flags);
-+	if (status & ACPI_EC_FLAG_SCI) {
-+		if (!test_and_set_bit(EC_FLAGS_QUERY_PENDING, &ec->flags)) {
-+			ec_status = acpi_os_execute(OSL_EC_BURST_HANDLER,
-+				acpi_ec_gpe_query, ec);
-+		}
- 	}
--	return ACPI_INTERRUPT_HANDLED;
-+	acpi_ec_gpe_delay(ec, status);
-+
-+	return ACPI_SUCCESS(ec_status) ?
-+			ACPI_INTERRUPT_HANDLED : ACPI_INTERRUPT_NOT_HANDLED;
- }
- 
- /* --------------------------------------------------------------------------
-@@ -712,10 +835,22 @@ static struct acpi_ec *make_acpi_ec(void
- 	if (!ec)
- 		return NULL;
- 	ec->flags = 1 << EC_FLAGS_QUERY_PENDING;
-+	/*
-+	 * Start GPE mode.
-+	 * When EC driver is started, it will work in GPE mode.
-+	 * It means that the EC GPE interrupt is expected when EC status is
-+	 * changed.
-+	 * Of course if there is no EC GPE interrupt in some EC transaction,
-+	 * it will be cleared and EC will work in polling mode when EC
-+	 * internal register is accessed.
-+	 */
-+	set_bit(EC_FLAGS_GPE_MODE, &ec->flags);
- 	mutex_init(&ec->lock);
- 	init_waitqueue_head(&ec->wait);
- 	INIT_LIST_HEAD(&ec->list);
- 	spin_lock_init(&ec->curr_lock);
-+	ec->pre_jiffies = jiffies;
-+	atomic_set(&ec->ec_irq_count, 0);
- 	return ec;
- }
- 
-@@ -1004,8 +1139,6 @@ int __init acpi_ec_ecdt_probe(void)
- static int acpi_ec_suspend(struct acpi_device *device, pm_message_t state)
- {
- 	struct acpi_ec *ec = acpi_driver_data(device);
--	/* Stop using GPE */
--	set_bit(EC_FLAGS_NO_GPE, &ec->flags);
- 	clear_bit(EC_FLAGS_GPE_MODE, &ec->flags);
- 	acpi_disable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
- 	return 0;
-@@ -1014,9 +1147,9 @@ static int acpi_ec_suspend(struct acpi_d
- static int acpi_ec_resume(struct acpi_device *device)
- {
- 	struct acpi_ec *ec = acpi_driver_data(device);
--	/* Enable use of GPE back */
--	clear_bit(EC_FLAGS_NO_GPE, &ec->flags);
- 	acpi_enable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
-+	/* Enable use of GPE back */
-+	set_bit(EC_FLAGS_GPE_MODE, &ec->flags);
- 	return 0;
- }
- 
+--- bug-sysv.orig/ipc/util.c    2008-10-27 09:21:44.000000000 +0100
++++ bug-sysv/ipc/util.c 2008-10-27 19:04:33.000000000 +0100
+@@ -266,6 +266,19 @@ int ipc_addid(struct ipc_ids* ids, struc
+        if (ids->in_use >= size)
+                return -ENOSPC;
 
---=-r7GZJXDegq1V2b30e7c0--
++       spin_lock_init(&new->lock);
++
++       /*
++        * We have a window between the time new is inserted into the idr
++        * tree and the time it is actually locked.
++        * In order to be safe during that window set the new ipc structure
++        * as deleted: a concurrent ipc_lock() will see it as not present
++        * until the initialization phase is complete.
++        */
++       new->deleted = 1;
++
++       smp_wmb();
++
+        err = idr_get_new(&ids->ipcs_idr, new, &id);
+        if (err)
+                return err;
+@@ -280,10 +293,11 @@ int ipc_addid(struct ipc_ids* ids, struc
+                ids->seq = 0;
 
+        new->id = ipc_buildid(id, new->seq);
+-       spin_lock_init(&new->lock);
+-       new->deleted = 0;
+        rcu_read_lock();
+        spin_lock(&new->lock);
++
++       new->deleted = 0;
++
+        return id;
+ }
+
+And got the lock (the node is still usuable but I guess it's because
+only 1 cpu out of 4 is locked):
+
+[  400.393024] INFO: trying to register non-static key.
+[  400.397005] the code is fine but needs lockdep annotation.
+[  400.397005] turning off the locking correctness validator.
+[  400.397005] Pid: 4207, comm: sysv_test2 Not tainted 2.6.27-ipc_lock #1
+[  400.397005]
+[  400.397005] Call Trace:
+[  400.397005]  [<ffffffff80257055>] static_obj+0x60/0x77
+[  400.397005]  [<ffffffff8025af59>] __lock_acquire+0x1c8/0x779
+[  400.397005]  [<ffffffff8025b59f>] lock_acquire+0x95/0xc2
+[  400.397005]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
+[  400.397005]  [<ffffffff8045117d>] _spin_lock+0x2d/0x5a
+[  400.397005]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
+[  400.397005]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
+[  400.397005]  [<ffffffff802feaa5>] ipc_lock+0x0/0x99
+[  400.397005]  [<ffffffff802feb46>] ipc_lock_check+0x8/0x53
+[  400.397005]  [<ffffffff803002c3>] sys_msgctl+0x188/0x461
+[  400.397005]  [<ffffffff80259ac7>] trace_hardirqs_on_caller+0x100/0x12a
+[  400.397005]  [<ffffffff80450d49>] trace_hardirqs_on_thunk+0x3a/0x3f
+[  400.397005]  [<ffffffff80259ac7>] trace_hardirqs_on_caller+0x100/0x12a
+[  400.397005]  [<ffffffff80212e09>] sched_clock+0x5/0x7
+[  400.397005]  [<ffffffff80450d49>] trace_hardirqs_on_thunk+0x3a/0x3f
+[  400.397005]  [<ffffffff80213021>] native_sched_clock+0x8c/0xa5
+[  400.397005]  [<ffffffff80212e09>] sched_clock+0x5/0x7
+[  400.397005]  [<ffffffff8020bf7a>] system_call_fastpath+0x16/0x1b
+[  400.397005]
+[  464.933003] BUG: soft lockup - CPU#2 stuck for 61s! [sysv_test2:4207]
+[  464.933006] Modules linked in: ipv6 nfs lockd nfs_acl sunrpc button
+battery ac loop dm_mod md_mod usbkbd usbhid hid ff_memless mptctl
+evdev tg3 libphy iTCO_wdt e752x_edac edac_core uhci_hcd rng_core
+shpchp i2c_i801 pci_hotplug i2c_core ehci_hcd reiserfs edd fan thermal
+processor thermal_sys mptspi mptscsih sg mptbase scsi_transport_spi
+sr_mod cdrom ata_piix libata dock sd_mod scsi_mod [last unloaded:
+freq_table]
+[  464.933006] irq event stamp: 2136363
+[  464.933006] hardirqs last  enabled at (2136363):
+[<ffffffff80450d49>] trace_hardirqs_on_thunk+0x3a/0x3f
+[  464.933006] hardirqs last disabled at (2136361):
+[<ffffffff8023ea01>] __do_softirq+0xa3/0xf7
+[  464.933006] softirqs last  enabled at (2136362):
+[<ffffffff8020d9bc>] call_softirq+0x1c/0x28
+[  464.933006] softirqs last disabled at (2136357):
+[<ffffffff8020d9bc>] call_softirq+0x1c/0x28
+[  464.933006] CPU 2:
+[  464.933006] Modules linked in: ipv6 nfs lockd nfs_acl sunrpc button
+battery ac loop dm_mod md_mod usbkbd usbhid hid ff_memless mptctl
+evdev tg3 libphy iTCO_wdt e752x_edac edac_core uhci_hcd rng_core
+shpchp i2c_i801 pci_hotplug i2c_core ehci_hcd reiserfs edd fan thermal
+processor thermal_sys mptspi mptscsih sg mptbase scsi_transport_spi
+sr_mod cdrom ata_piix libata dock sd_mod scsi_mod [last unloaded:
+freq_table]
+[  464.933006] Pid: 4207, comm: sysv_test2 Not tainted 2.6.27-ipc_lock #1
+[  464.933006] RIP: 0010:[<ffffffff8033dc6b>]  [<ffffffff8033dc6b>]
+_raw_spin_lock+0x98/0x100
+[  464.933006] RSP: 0018:ffff880145473e48  EFLAGS: 00000206
+[  464.933006] RAX: 00000000000000cb RBX: 000000001830d3f9 RCX:
+00000000ffffffff[  464.933006] RDX: 0000018500000000 RSI:
+ffffffff8053d176 RDI: 0000000000000001[  464.933006] RBP:
+0000000000000000 R08: 0000000000000002 R09: 0000000000000000[
+464.933006] R10: 0000000000000000 R11: ffffffff8033a6fe R12:
+0000000000000000[  464.933006] R13: ffffffff8033a6fe R14:
+ffffffff8020c7ee R15: 0000000000000002[  464.933006] FS:
+00007f40899b86d0(0000) GS:ffff88014707f508(0000)
+knlGS:0000000000000000
+[  464.933006] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+[  464.933006] CR2: 00007f408974aae0 CR3: 0000000143003000 CR4:
+00000000000006e0[  464.933006] DR0: 0000000000000000 DR1:
+0000000000000000 DR2: 0000000000000000[  464.933006] DR3:
+0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400[
+464.933006]
+[  464.933006] Call Trace:
+[  464.933006]  [<ffffffff8033dc6b>] _raw_spin_lock+0x98/0x100
+[  464.933006]  [<ffffffff8045119e>] _spin_lock+0x4e/0x5a
+[  464.933006]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
+[  464.933006]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
+[  464.933006]  [<ffffffff802feaa5>] ipc_lock+0x0/0x99
+[  464.933006]  [<ffffffff802feb46>] ipc_lock_check+0x8/0x53
+[  464.933006]  [<ffffffff803002c3>] sys_msgctl+0x188/0x461
+[  464.933006]  [<ffffffff80259ac7>] trace_hardirqs_on_caller+0x100/0x12a
+[  464.933006]  [<ffffffff80450d49>] trace_hardirqs_on_thunk+0x3a/0x3f
+[  464.933006]  [<ffffffff80259ac7>] trace_hardirqs_on_caller+0x100/0x12a
+[  464.933006]  [<ffffffff80212e09>] sched_clock+0x5/0x7
+[  464.933006]  [<ffffffff80450d49>] trace_hardirqs_on_thunk+0x3a/0x3f
+[  464.933006]  [<ffffffff80213021>] native_sched_clock+0x8c/0xa5
+[  464.933006]  [<ffffffff80212e09>] sched_clock+0x5/0x7
+[  464.933006]  [<ffffffff8020bf7a>] system_call_fastpath+0x16/0x1b
+[  464.933006]
+
+I checked it with two different distributions: Debian Lenny and Sles 10 SP 1.
+
+Regards, c.
