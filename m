@@ -1,49 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbYJ1CHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752508AbYJ1CHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753155AbYJ1CHX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 22:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbYJ1CHK
+	id S1752508AbYJ1CHp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 22:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbYJ1CHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 22:07:10 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33902 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752113AbYJ1CHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 22:07:09 -0400
-Message-ID: <490673AB.2090502@kernel.org>
-Date: Tue, 28 Oct 2008 11:06:35 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-CC: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [PATCH 2.6.28-rc2] sata_promise: proper hardreset
-References: <200810270049.m9R0ngI8027933@harpo.it.uu.se>
-In-Reply-To: <200810270049.m9R0ngI8027933@harpo.it.uu.se>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 27 Oct 2008 22:07:31 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:49588 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752199AbYJ1CHa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 22:07:30 -0400
+X-Sasl-enc: qq2mxJq5P0mBxEx2pOpJ2iAq8JcV5H4i+82KqXoj468y 1225159648
+Subject: Re: [RESEND PATCH] autofs4 - remove string terminator check
+From: Ian Kent <raven@themaw.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: autofs mailing list <autofs@linux.kernel.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <20081027185418.0bfd0fcd.akpm@linux-foundation.org>
+References: <20081028011430.4976.320.stgit@zeus.themaw.net>
+	 <20081027185418.0bfd0fcd.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 28 Oct 2008 11:07:23 +0900
+Message-Id: <1225159643.2938.23.camel@zeus.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 28 Oct 2008 02:06:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Mikael.
+On Mon, 2008-10-27 at 18:54 -0700, Andrew Morton wrote:
+> On Tue, 28 Oct 2008 10:14:30 +0900 Ian Kent <raven@themaw.net> wrote:
+> 
+> > In a previous patch a comment was made that checking for the existence of
+> > a NULL terminator in strings copied from userspace wasn't needed as this
+> > is done in many places in the kernel without problem. This patch removes
+> > this string terminator check.
+> > 
+> 
+> ah, OK.  Now I'm worried.
+> 
+> > 
+> >  fs/autofs4/dev-ioctl.c |   20 --------------------
+> >  1 files changed, 0 insertions(+), 20 deletions(-)
+> > 
+> > diff --git a/fs/autofs4/dev-ioctl.c b/fs/autofs4/dev-ioctl.c
+> > index 625abf5..304c1ff 100644
+> > --- a/fs/autofs4/dev-ioctl.c
+> > +++ b/fs/autofs4/dev-ioctl.c
+> > @@ -51,18 +51,6 @@ static int check_name(const char *name)
+> >  }
+> >  
+> >  /*
+> > - * Check a string doesn't overrun the chunk of
+> > - * memory we copied from user land.
+> > - */
+> > -static int invalid_str(char *str, void *end)
+> > -{
+> > -	while ((void *) str <= end)
+> > -		if (!*str++)
+> > -			return 0;
+> > -	return -EINVAL;
+> > -}
+> > -
+> > -/*
+> >   * Check that the user compiled against correct version of autofs
+> >   * misc device code.
+> >   *
+> > @@ -143,14 +131,6 @@ static int validate_dev_ioctl(int cmd, struct autofs_dev_ioctl *param)
+> >  				    cmd);
+> >  			goto out;
+> >  		}
+> > -
+> > -		err = invalid_str(param->path,
+> > -				 (void *) ((size_t) param + param->size));
+> > -		if (err) {
+> > -			AUTOFS_WARN("invalid path supplied for cmd(0x%08x)",
+> > -				    cmd);
+> > -			goto out;
+> > -		}
+> >  	}
+> >  
+> >  	err = 0;
+> 
+> What will now happen if userspace passes in a non-null-terminated
+> string (if that's possible)?
+> 
+> Presumably that isn't possible, or it's never been tested, because
+> before we check for null-termination we run check_name(), which
+> _assumes_ null-termination!
+> 
+> The comment over validate_dev_ioctl() will need the "and is terminated"
+> removed after this change, yes?
 
-Mikael Pettersson wrote:
-> +static int pdc_pata_hardreset(struct ata_link *link, unsigned int *class,
-> +			      unsigned long deadline)
-> +{
-> +	pdc_reset_port(link->ap);
-> +	return 0;
-> +}
+Yes, but now I think I shouldn't have removed it.
+For my part I would have been happy to keep this and now I think I
+should so let's drop this patch.
 
-You either need to return -EAGAIN here to ask for follow-up SRST or
-override softreset.  I think pdc_reset_port() doesn't actually reset the
-ATA channel, right?  In that case, the latter would be the correct thing
-to do.
+Ian
 
-Thanks.
 
--- 
-tejun
