@@ -1,87 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbYJ1Oc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbYJ1OfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754319AbYJ1Oc5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 10:32:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbYJ1Oc1
+	id S1754171AbYJ1OfK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 10:35:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYJ1Oe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 10:32:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42549 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753990AbYJ1Oc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 10:32:26 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] KEYS: Make request key instantiate the per-user keyrings
-To: torvalds@osdl.org
-Cc: akpm@linux-foundation.org, pterjan@mandriva.com, stable@kernel.org,
-       jlayton@redhat.com, linux-kernel@vger.kernel.org, stable@kernel.org,
-       David Howells <dhowells@redhat.com>
-Date: Tue, 28 Oct 2008 14:32:16 +0000
-Message-ID: <20081028143216.15044.50942.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Tue, 28 Oct 2008 10:34:57 -0400
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:60284 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751343AbYJ1Oe5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 10:34:57 -0400
+Date: Tue, 28 Oct 2008 09:25:31 -0500 (CDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       heiko.carstens@de.ibm.com, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, hugh@veritas.com,
+       torvalds@linux-foundation.org, riel@redhat.com, lee.schermerhorn@hp.com,
+       linux-mm@kvack.org
+Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use schedule_on_each_cpu()
+In-Reply-To: <20081027145509.ebffcf0e.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0810280914010.15939@quilx.com>
+References: <2f11576a0810210851g6e0d86benef5d801871886dd7@mail.gmail.com>
+ <2f11576a0810211018g5166c1byc182f1194cfdd45d@mail.gmail.com>
+ <20081023235425.9C40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+ <20081027145509.ebffcf0e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Spam-Score: -2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make request_key() instantiate the per-user keyrings so that it doesn't oops
-if it needs to get hold of the user session keyring because there isn't a
-session keyring in place.
+On Mon, 27 Oct 2008, Andrew Morton wrote:
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-Tested-by: Steve French <smfrench@gmail.com>
-Tested-by: Rutger Nijlunsing <rutger.nijlunsing@gmail.com>
----
+> Can we fix that instead?
 
- security/keys/internal.h     |    1 +
- security/keys/process_keys.c |    2 +-
- security/keys/request_key.c  |    4 ++++
- 3 files changed, 6 insertions(+), 1 deletions(-)
+How about this fix?
 
 
-diff --git a/security/keys/internal.h b/security/keys/internal.h
-index b39f5c2..239098f 100644
---- a/security/keys/internal.h
-+++ b/security/keys/internal.h
-@@ -107,6 +107,7 @@ extern key_ref_t search_process_keyrings(struct key_type *type,
- 
- extern struct key *find_keyring_by_name(const char *name, bool skip_perm_check);
- 
-+extern int install_user_keyrings(struct task_struct *tsk);
- extern int install_thread_keyring(struct task_struct *tsk);
- extern int install_process_keyring(struct task_struct *tsk);
- 
-diff --git a/security/keys/process_keys.c b/security/keys/process_keys.c
-index 5be6d01..45b240a 100644
---- a/security/keys/process_keys.c
-+++ b/security/keys/process_keys.c
-@@ -40,7 +40,7 @@ struct key_user root_key_user = {
- /*
-  * install user and user session keyrings for a particular UID
-  */
--static int install_user_keyrings(struct task_struct *tsk)
-+int install_user_keyrings(struct task_struct *tsk)
- {
- 	struct user_struct *user = tsk->user;
- 	struct key *uid_keyring, *session_keyring;
-diff --git a/security/keys/request_key.c b/security/keys/request_key.c
-index ba32ca6..abea08f 100644
---- a/security/keys/request_key.c
-+++ b/security/keys/request_key.c
-@@ -74,6 +74,10 @@ static int call_sbin_request_key(struct key_construction *cons,
- 
- 	kenter("{%d},{%d},%s", key->serial, authkey->serial, op);
- 
-+	ret = install_user_keyrings(tsk);
-+	if (ret < 0)
-+		goto error_alloc;
+
+Subject: Move migrate_prep out from under mmap_sem
+
+Move the migrate_prep outside the mmap_sem for the following system calls
+
+1. sys_move_pages
+2. sys_migrate_pages
+3. sys_mbind()
+
+It really does not matter when we flush the lru. The system is free to add
+pages onto the lru even during migration which will make the page 
+migration either skip the page (mbind, migrate_pages) or return a busy 
+state (move_pages).
+
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+
+Index: linux-2.6/mm/mempolicy.c
+===================================================================
+--- linux-2.6.orig/mm/mempolicy.c	2008-10-28 09:16:18.475514878 -0500
++++ linux-2.6/mm/mempolicy.c	2008-10-28 09:22:46.486773874 -0500
+@@ -489,12 +489,6 @@
+  	int err;
+  	struct vm_area_struct *first, *vma, *prev;
+
+-	if (flags & (MPOL_MF_MOVE | MPOL_MF_MOVE_ALL)) {
+-
+-		err = migrate_prep();
+-		if (err)
+-			return ERR_PTR(err);
+-	}
+
+  	first = find_vma(mm, start);
+  	if (!first)
+@@ -809,9 +803,13 @@
+  	const nodemask_t *from_nodes, const nodemask_t *to_nodes, int flags)
+  {
+  	int busy = 0;
+-	int err = 0;
++	int err;
+  	nodemask_t tmp;
+
++	err = migrate_prep();
++	if (err)
++		return err;
 +
- 	/* allocate a new session keyring */
- 	sprintf(desc, "_req.%u", key->serial);
- 
+  	down_read(&mm->mmap_sem);
 
+  	err = migrate_vmas(mm, from_nodes, to_nodes, flags);
+@@ -974,6 +972,12 @@
+  		 start, start + len, mode, mode_flags,
+  		 nmask ? nodes_addr(*nmask)[0] : -1);
+
++	if (flags & (MPOL_MF_MOVE | MPOL_MF_MOVE_ALL)) {
++
++		err = migrate_prep();
++		if (err)
++			return err;
++	}
+  	down_write(&mm->mmap_sem);
+  	vma = check_range(mm, start, end, nmask,
+  			  flags | MPOL_MF_INVERT, &pagelist);
+Index: linux-2.6/mm/migrate.c
+===================================================================
+--- linux-2.6.orig/mm/migrate.c	2008-10-28 09:15:46.578013464 -0500
++++ linux-2.6/mm/migrate.c	2008-10-28 09:16:14.038014180 -0500
+@@ -841,12 +841,12 @@
+  	struct page_to_node *pp;
+  	LIST_HEAD(pagelist);
+
++	migrate_prep();
+  	down_read(&mm->mmap_sem);
+
+  	/*
+  	 * Build a list of pages to migrate
+  	 */
+-	migrate_prep();
+  	for (pp = pm; pp->node != MAX_NUMNODES; pp++) {
+  		struct vm_area_struct *vma;
+  		struct page *page;
