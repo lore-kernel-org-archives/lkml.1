@@ -1,152 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYJ1Rm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753707AbYJ1Rpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbYJ1Rm6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 13:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYJ1Rmq
+	id S1753707AbYJ1Rpn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 13:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbYJ1Rpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 13:42:46 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:51509 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752478AbYJ1Rmp (ORCPT
+	Tue, 28 Oct 2008 13:45:35 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:57639 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752699AbYJ1Rpe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 13:42:45 -0400
-Date: Tue, 28 Oct 2008 18:42:36 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-cc: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       tim.bird@am.sony.com
-Subject: Re: Subject: [PATCH 02/16] Squashfs: directory lookup operations
-In-Reply-To: <E1KqrTW-0001xG-Cl@dylan>
-Message-ID: <Pine.LNX.4.64.0810281835150.23080@vixen.sonytel.be>
-References: <E1KqrTW-0001xG-Cl@dylan>
+	Tue, 28 Oct 2008 13:45:34 -0400
+Date: Tue, 28 Oct 2008 20:45:32 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>,
+       David Brownell <david-b@pacbell.net>
+Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, i2c@lm-sensors.org,
+       David Miller <davem@davemloft.net>
+Subject: [PATCH 0/6 RFC] OF-glue devices for I2C/SPI   (was: Re: [PATCH
+	4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
+Message-ID: <20081028174532.GA23834@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru> <20081022014243.GA19362@oksana.dev.rtsoft.ru> <1224642497.7654.319.camel@pasglop> <200810212122.49121.david-b@pacbell.net> <20081022103641.GB24757@oksana.dev.rtsoft.ru> <20081022104606.GA510@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-2120149839-1225215365=:23080"
-Content-ID: <Pine.LNX.4.64.0810281836180.23080@vixen.sonytel.be>
+Content-Type: text/plain; charset=windows-1251
+Content-Disposition: inline
+In-Reply-To: <20081022104606.GA510@oksana.dev.rtsoft.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wed, Oct 22, 2008 at 02:46:06PM +0400, Anton Vorontsov wrote:
+[...]
+> > > Like what I suggested:  "chip-aware OF glue drivers".  The relevant
+> > > bus code being the "of_platform_bus_type" infrastructure.
+> > > 
+> > > Example:  instead of Anton's patch #6 modifying the existing pca953x
+> > > driver, an of_pca953x driver that knows how to poke around in the OF
+> > > device attributes to (a) create the pca953x_platform_data, (b) call
+> > > i2c_register_board_info() to make that available later, and then
+> > > finally (c) vanish, since it's not needed any longer.
+> > 
+> > Heh. You tell me my first approach:
+> > 
+> > http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056730.html (mmc_spi)
+> > 
+> > The OF people didn't like the patch which was used to support this
+> > approach:
+> > http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056728.html
+> 
+> Though, I think I'll able to persuade Grant that two registration paths
+> are inevitable (i.e. for simple devices we should use
+> drivers/of/of_{i2c,spi}.c and for complex cases we'll have to have
+> another method of registration).
 
----584349381-2120149839-1225215365=:23080
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0810281836181.23080@vixen.sonytel.be>
+Ok, here it is.
 
-On Fri, 17 Oct 2008, Phillip Lougher wrote:
-> --- /dev/null
-> +++ b/fs/squashfs/namei.c
+I don't like this approach because:
 
-> +static int get_dir_index_using_name(struct super_block *s,
-> +			long long *next_block, unsigned int *next_offset,
-> +			long long index_start, unsigned int index_offset,
-> +			int i_count, const char *name, int len)
-> +{
-> +	struct squashfs_sb_info *msblk = s->s_fs_info;
-> +	int i, size, length = 0;
-> +	struct squashfs_dir_index *index;
-> +	char *str;
-> +
-> +	TRACE("Entered get_dir_index_using_name, i_count %d\n", i_count);
-> +
-> +	str = kmalloc(sizeof(*index) + (SQUASHFS_NAME_LEN + 1) * 2, GFP_KERNEL);
-> +	if (str == NULL) {
-> +		ERROR("Failed to allocate squashfs_dir_index\n");
-> +		goto out;
-> +	}
-> +
-> +	index = (struct squashfs_dir_index *) (str + SQUASHFS_NAME_LEN + 1);
+1. It feels like an overhead to create an of_device for each i2c
+   device that needs platform data.
 
-As str has been returned by kmalloc(), and SQUASHFS_NAME_LEN is equal to 256,
-`str + SQUASHFS_NAME_LEN + 1` is an odd address.
+2. We have to do ugly of_should_create_pdev() in the i2c code,
+   and duplicate lists of supported devices.
 
-> +	strncpy(str, name, len);
-> +	str[len] = '\0';
-> +
-> +	for (i = 0; i < i_count; i++) {
-> +		squashfs_read_metadata(s, index, index_start, index_offset,
-> +					sizeof(*index), &index_start,
-> +					&index_offset);
-> +
-> +		size = le32_to_cpu(index->size) + 1;
-                                   ^^^^^^^^^^^
-> +
-> +		squashfs_read_metadata(s, index->name, index_start,
-> +					index_offset, size, &index_start,
-> +					&index_offset);
-> +
-> +		index->name[size] = '\0';
-> +
-> +		if (strcmp(index->name, str) > 0)
-> +			break;
-> +
-> +		length = le32_to_cpu(index->index);
-				     ^^^^^^^^^^^
-> +		*next_block = le32_to_cpu(index->start_block) +
-					  ^^^^^^^^^^^^^^^^^^
-> +					msblk->directory_table_start;
-> +	}
+Could anybody convince me that this isn't a big deal? ;-)
 
-Hence accessing multi-byte fields in struct squashfs_dir_index causes unaligned
-accesses, which are emulated on some architectures (e.g. on MIPS).
+Otherwise I'll stick with this approach:
+http://lkml.org/lkml/2008/10/22/471
 
-Use get_unaligned_le32() for unaligned accesses.
+Thanks,
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
-Actual patch is against current squashfs4.
-
- fs/squashfs/namei.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
---- a/fs/squashfs/namei.c
-+++ b/fs/squashfs/namei.c
-@@ -59,6 +59,8 @@
- #include <linux/dcache.h>
- #include <linux/zlib.h>
- 
-+#include <asm/unaligned.h>
-+
- #include "squashfs_fs.h"
- #include "squashfs_fs_sb.h"
- #include "squashfs_fs_i.h"
-@@ -101,7 +103,7 @@ static int get_dir_index_using_name(stru
- 			break;
- 
- 
--		size = le32_to_cpu(index->size) + 1;
-+		size = get_unaligned_le32(&index->size) + 1;
- 
- 		err = squashfs_read_metadata(sb, index->name, &index_start,
- 					&index_offset, size);
-@@ -113,8 +115,8 @@ static int get_dir_index_using_name(stru
- 		if (strcmp(index->name, str) > 0)
- 			break;
- 
--		length = le32_to_cpu(index->index);
--		*next_block = le32_to_cpu(index->start_block) +
-+		length = get_unaligned_le32(&index->index);
-+		*next_block = get_unaligned_le32(&index->start_block) +
- 					msblk->directory_table;
- 	}
- 
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-2120149839-1225215365=:23080--
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
