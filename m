@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbYJ1Qhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbYJ1Qis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753139AbYJ1Qhh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 12:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYJ1Qh3
+	id S1753409AbYJ1Qis (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 12:38:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYJ1Qik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 12:37:29 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:57103 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751954AbYJ1Qh2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 12:37:28 -0400
-Date: Tue, 28 Oct 2008 17:37:33 +0100
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       Andrew Victor <linux@maxim.org.za>
-Subject: Re: [patch 2.6.28-rc2] atmel_serial: keep clock off when it's not
- needed
-Message-ID: <20081028173733.7ba951de@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <200810280920.19864.david-b@pacbell.net>
-References: <200810271406.24110.david-b@pacbell.net>
-	<20081028124526.6b9ccdf5@hskinnemo-gx745.norway.atmel.com>
-	<200810280920.19864.david-b@pacbell.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 28 Oct 2008 16:37:15.0492 (UTC) FILETIME=[6F890240:01C9391B]
+	Tue, 28 Oct 2008 12:38:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50472 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751954AbYJ1Qij (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 12:38:39 -0400
+Date: Tue, 28 Oct 2008 09:37:55 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Helge Hafting <helge.hafting@aitel.hist.no>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.28-rc2 i/o error on /dev/ttyUSB0
+In-Reply-To: <4906F54A.7020909@aitel.hist.no>
+Message-ID: <alpine.LFD.2.00.0810280928320.3386@nehalem.linux-foundation.org>
+References: <alpine.LFD.2.00.0810261221350.3386@nehalem.linux-foundation.org> <4906F54A.7020909@aitel.hist.no>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Brownell <david-b@pacbell.net> wrote:
-> On Tuesday 28 October 2008, Haavard Skinnemoen wrote:
-> > David Brownell <david-b@pacbell.net> wrote:
-> > > From: David Brownell <dbrownell@users.sourceforge.net>
-> > > 
-> > > The atmel_serial driver is mismanaging its clock by leaving it on
-> > > at all times ... the whole point of clock management is to leave
-> > > it off unless it's actively needed, which conserves power!!
-> > > 
-> > > Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> > 
-> > Hmm...the only remaining clk_enable() is in atmel_serial_pm(). Is that
-> > really enough?
-> > 
-> > It looks like the serial core calls ->pm() to power the port up before
-> > doing anything that might touch the registers, but I can't see that the
-> > console layer does the same thing...
-> 
-> I verified it on AT91, where the console is normally DBGU and the
-> other USARTs do get an open().
-> 
-> Didn't verify on AVR32, since 2.6.28-rc can't see the root FS because
-> of that NOR flash problem.  Though I suppose I can try it on an older
-> kernel.
-> 
-> As a rule the boot loader will be using that USART, and thus will
-> have enabled its clock.  :)
 
-Hmm. But in the cases when "normally" and "as a rule" don't apply, the
-board will lock up solid with no console output since it will wait
-forever for the TXRDY bit to be set...
 
-I'd like to know for sure that it cannot happen, please.
+On Tue, 28 Oct 2008, Helge Hafting wrote:
+>
+> I have gps unit connected via USB-serial (pl2303).
+> This does not work with 2.6.28-rc2
+> 
+> 2.6.27 is fine. I skipped 2.6.28-rc1 due to known breakage.
+> I can test it if that might help.
 
-Haavard
+Don't bother with -rc1, but bisecting it may be relevant. You might of 
+course hit the breakage, but it's fairly unlikely.
+
+That said, the whole "error on USB serial device" sounds like it's 
+squarely in the "oops, kref's are screwed up" corner, and you should talk 
+to Alan about your particular USB dongle. I bet that bisection would just 
+show you one of the kref commits (eg 4a90f09b "tty: usb-serial krefs" or 
+maybe 7d7b93c14 "tty: kref the tty driver object"). 
+
+Alan, pls help.
+
+		Linus
