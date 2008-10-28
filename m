@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753037AbYJ1J56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753178AbYJ1KCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753037AbYJ1J56 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 05:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbYJ1J5s
+	id S1753178AbYJ1KCX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 06:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbYJ1KCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 05:57:48 -0400
-Received: from hera.cwi.nl ([192.16.191.8]:43670 "EHLO hera.cwi.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751518AbYJ1J5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 05:57:47 -0400
-X-Greylist: delayed 2444 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Oct 2008 05:57:47 EDT
-Date: Tue, 28 Oct 2008 10:11:48 +0100
-From: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
-To: mtk.manpages@gmail.com
-Cc: Daniel Gollub <dgollub@suse.de>, linux-kernel@vger.kernel.org,
-       linux-api@vger.kernel.org, linux-man@vger.kernel.org,
-       ltp-list@lists.sourceforge.net, "A.E. Brouwer" <aeb@win.tue.nl>
-Subject: Re: [patch 0/3] [RFC] kernel/glibc mismatch of "readlink" syscall?
-Message-ID: <20081027204509.GA27111@ub>
-References: <20081023145054.998439866@marvin.suse.de> <cfd18e0f0810241553x77194611o11655a89871dc210@mail.gmail.com>
+	Tue, 28 Oct 2008 06:02:13 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59649 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751518AbYJ1KCK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 06:02:10 -0400
+Date: Tue, 28 Oct 2008 10:02:08 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alessandro Zummo <a.zummo@towertech.it>,
+       David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
+       rtc-linux@googlegroups.com
+Subject: Re: [PATCH 2/2] rtc: rtc-wm8350: Add support for WM8350 RTC
+Message-ID: <20081028100207.GA7876@rakim.wolfsonmicro.main>
+References: <1225121905-23782-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1225121905-23782-2-git-send-email-broonie@opensource.wolfsonmicro.com> <20081027232212.02626142.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <cfd18e0f0810241553x77194611o11655a89871dc210@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20081027232212.02626142.akpm@linux-foundation.org>
+X-Cookie: Only God can make random selections.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 24, 2008 at 05:53:25PM -0500, Michael Kerrisk wrote:
+On Mon, Oct 27, 2008 at 11:22:12PM -0700, Andrew Morton wrote:
+> On Mon, 27 Oct 2008 15:38:25 +0000 Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 
-> Hi Daniel,
-> 
-> On Thu, Oct 23, 2008 at 9:50 AM, Daniel Gollub <dgollub@suse.de> wrote:
->>
->> found something which looks for me like a kernel/glibc syscall mismatch.
->>
->> The standard and the manpages and glibc have
->> ssize_t readlink(..., size_t bufsize);
->>
->> But the kernel has
->>
->> linux-2.6/include/linux/syscalls.h:
->> asmlinkage long sys_readlink(..., int bufsiz);
->>
->> All readlink prototypes, expect the one in the kernel, have an unsigned
->> buffer size.
-> 
-> I agree; the inconsistency is strange.
+> > This driver was originally written by Graeme Gregory and Liam Girdwood,
+> > though it has been modified since then to update it to current mainline
+> > coding standards and for API completeness.
 
-Hmm. I am inclined not to agree. There is no reason to expect
-any particular relation between the kernel prototype of sys_foo
-(if such a function exists)
-and the user space prototype of the foo() C-library function.
+> Graeme doesn't seem to get a mention anywhere in the driver?
 
-The POSIX standard, man-pages, libc include files document the
-userspace / libc interface, not the system call interface.
-The system call interface is mostly undocumented.
+Hrm, yeah.  That should probably read Liam and Graeme rather than the
+way it is - AFAICT Graeme's work was bugfixing and updates.
 
-The kernel prototype is chosen for kernel-internal or historical reasons.
+> > Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> > ---
+> > Updated to use schedule_timeout_uninterruptible() as per Andrew's
+> > suggestion.
 
-Andries
+> You also did this:
 
-
-sys_ppc32.c:
-/* Note: it is necessary to treat bufsiz as an unsigned int ... */
-asmlinkage long compat_sys_readlink(..., u32 bufsiz)
-
+Oops, sorry.  I had thought I'd posted a version with those changes in
+already.
