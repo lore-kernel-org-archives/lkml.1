@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbYJ1Vn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbYJ1VoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754600AbYJ1Vn4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 17:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbYJ1Vni
+	id S1754676AbYJ1VoU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 17:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbYJ1Vnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 17:43:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50804 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753738AbYJ1Vng (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 17:43:36 -0400
-Date: Tue, 28 Oct 2008 14:44:01 -0700
-From: Arjan van de Ven <arjan@infradead.org>
+	Tue, 28 Oct 2008 17:43:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59648 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754628AbYJ1Vns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 17:43:48 -0400
+Date: Tue, 28 Oct 2008 17:33:10 -0400
+From: Josef Bacik <jbacik@redhat.com>
 To: Andreas Dilger <adilger@sun.com>
 Cc: Josef Bacik <jbacik@redhat.com>, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
        rwheeler@redhat.com
 Subject: Re: [PATCH] improve jbd fsync batching
-Message-ID: <20081028144401.07b7546d@infradead.org>
+Message-ID: <20081028213310.GC21600@unused.rdu.redhat.com>
+References: <20081028201614.GA21600@unused.rdu.redhat.com> <20081028213805.GC3184@webber.adilger.int>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <20081028213805.GC3184@webber.adilger.int>
-References: <20081028201614.GA21600@unused.rdu.redhat.com>
-	<20081028213805.GC3184@webber.adilger.int>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Oct 2008 15:38:05 -0600
-Andreas Dilger <adilger@sun.com> wrote:
-
+On Tue, Oct 28, 2008 at 03:38:05PM -0600, Andreas Dilger wrote:
 > On Oct 28, 2008  16:16 -0400, Josef Bacik wrote:
-> > I also have a min() check in there to make sure we don't sleep
-> > longer than a jiffie in case our storage is super slow, this was
-> > requested by Andrew.
+> > I also have a min() check in there to make sure we don't sleep longer than
+> > a jiffie in case our storage is super slow, this was requested by Andrew.
 > 
-> Is there a particular reason why 1 jiffie is considered the "right
-> amount" of time to sleep, given this is a kernel config parameter and
-> has nothing to do with the storage?  Considering a seek time in the
-> range of ~10ms this would only be right for HZ=100 and the wait would
+> Is there a particular reason why 1 jiffie is considered the "right amount"
+> of time to sleep, given this is a kernel config parameter and has nothing
+> to do with the storage?  Considering a seek time in the range of ~10ms
+> this would only be right for HZ=100 and the wait would otherwise be too
+> short to maximize batching within a single transaction.
+>
 
-well... my disk does a 50 usec seek time or so.. so I don't mind ;-)
+I wouldn't say "right amount", more of "traditional amount".  If you have super
+slow storage this patch will not result in you waiting any longer than you did
+originally, which I think is what the concern was, that we not wait a super long
+time just because the disk is slow.
+ 
+> > type	threads		with patch	without patch
+> > sata	2		24.6		26.3
+> > sata	4		49.2		48.1
+> > sata	8		70.1		67.0
+> > sata	16		104.0		94.1
+> > sata	32		153.6		142.7
+> 
+> In the previous patch where this wasn't limited it had better performance
+> even for the 2 thread case.  With the current 1-jiffie wait it likely
+> isn't long enough to batch every pair of operations and every other
+> operation waits an extra amount before giving up too soon.  Previous patch:
+> 
+> type    threads       patch     unpatched
+> sata    2              34.6     26.2
+> sata    4              58.0     48.0
+> sata    8              75.2     70.4
+> sata    16            101.1     89.6
+> 
+> I'd recommend changing the patch to have a maximum sleep time that has a
+> fixed maximum number of milliseconds (15ms should be enough for even very
+> old disks).
+> 
 
-in fact it sounds awefully long to me.
+This stat gathering process has been very unscientific :), I just ran once and
+took that number.  Sometimes the patched version would come out on top,
+sometimes it wouldn't.  If I were to do this the way my stat teacher taught me
+I'm sure the patched/unpatched versions would come out to be relatively the same
+in the 2 thread case.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> 
+> That said, this would be a minor enhancement and should NOT be considered
+> a reason to delay this patch's inclusion into -mm or the ext4 tree.
+> 
+> PS - it should really go into jbd2 also
+>
+
+Yes I will be doing a jbd2 version of this patch provided there are no issues
+with this patch.  Thanks much for the comments,
+
+Josef 
