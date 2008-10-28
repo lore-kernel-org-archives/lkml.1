@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbYJ1N6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbYJ1N7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754065AbYJ1N6y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 09:58:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbYJ1N6l
+	id S1753891AbYJ1N7X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 09:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYJ1N66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 09:58:41 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:37941 "EHLO pasmtpB.tele.dk"
+	Tue, 28 Oct 2008 09:58:58 -0400
+Received: from gate.crashing.org ([63.228.1.57]:42078 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753495AbYJ1N6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 09:58:40 -0400
-Date: Tue, 28 Oct 2008 14:57:31 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Zeno Davatz <zdavatz@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [sda] write cache: enabled, read cache:enabled: doesn't support DPO or FUA, sda:
-Message-ID: <20081028135730.GM22217@kernel.dk>
-References: <40a4ed590810280648u2fc01a6dybfe3d5f49aa29f94@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <40a4ed590810280648u2fc01a6dybfe3d5f49aa29f94@mail.gmail.com>
+	id S1752772AbYJ1N66 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 09:58:58 -0400
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       akpm@linux-foundation.org
+Message-Id: <FF9EE100-B6AD-40DC-8F88-8F1C4245D8CE@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
+In-Reply-To: <20081013040703.GA11059@ime.usp.br>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH] powerpc: compile kernel for linkstations optimized for size
+Date: Tue, 28 Oct 2008 08:58:42 -0500
+References: <20081013040703.GA11059@ime.usp.br>
+X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28 2008, Zeno Davatz wrote:
-> Dear List
-> 
-> After my latest git pull from
-> 
-> url = git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-> 
-> I done
-> 
-> make silentoldconfig
-> make modules_install
-> 
-> copied the bzImage to /boot and ran lilo.
-> 
-> When I want to boot into 2.6.28-rc2 I get:
-> 
-> [sda] write cache: enabled, read cache:enabled: doesn't support DPO or FUA, sda:
-> 
-> Also see my screenshot:
-> 
-> http://farm4.static.flickr.com/3213/2980651545_de81680bf9_o.jpg
 
-How recent is that pull? This looks like something fixed in-between -rc1
-and -rc2. So I'd double check that you are after or on -rc2 and that you
-are booting the right kernel.
+On Oct 12, 2008, at 11:07 PM, Rogério Brito wrote:
 
--- 
-Jens Axboe
+> From: Rogério Brito <rbrito@ime.usp.br>
+>
+> Since Linkstations and Kuroboxes often have *very* little memory (as
+> they are embedded systems), it is desirable to get their kernels
+> compiled optimized for size.
+>
+> Signed-off-by: Rogério Brito <rbrito@ime.usp.br>
+>
+> ---
 
+applied to merge.
+
+- k
