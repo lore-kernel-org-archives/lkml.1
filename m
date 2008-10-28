@@ -1,81 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754284AbYJ1SIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbYJ1SKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754284AbYJ1SIg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 14:08:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbYJ1SI0
+	id S1754161AbYJ1SKo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 14:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYJ1SKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 14:08:26 -0400
-Received: from mail.suse.de ([195.135.220.2]:35020 "EHLO mx1.suse.de"
+	Tue, 28 Oct 2008 14:10:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57507 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752764AbYJ1SIZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 14:08:25 -0400
-From: Thomas Renninger <trenn@suse.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, andi@firstfloor.org
-Subject: Re: ACPI video.c brightness handler conflicts with toshiba_acpi
-Date: Tue, 28 Oct 2008 19:08:33 +0100
-User-Agent: KMail/1.9.10
-Cc: Andrey Borzenkov <arvidjaar@mail.ru>, Len Brown <len.brown@intel.com>,
-       toshiba_acpi@memebeam.org, linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200809061108.34877.arvidjaar@mail.ru> <200810281426.53499.trenn@suse.de> <200810281615.19894.rjw@sisk.pl>
-In-Reply-To: <200810281615.19894.rjw@sisk.pl>
+	id S1752823AbYJ1SKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 14:10:35 -0400
+Date: Tue, 28 Oct 2008 19:10:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: fix init_memory_mapping for [dc000000 - e0000000)
+Message-ID: <20081028181004.GA11275@elte.hu>
+References: <490406FD.30604@kernel.org> <20081027165028.GB30573@linux-os.sc.intel.com> <20081027175547.GE3046@elte.hu> <49067058.7010106@kernel.org> <20081028092737.GT15734@elte.hu> <20081028174813.GB7357@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810281908.34957.trenn@suse.de>
+In-Reply-To: <20081028174813.GB7357@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 28 October 2008 04:15:19 pm Rafael J. Wysocki wrote:
-> On Tuesday, 28 of October 2008, Thomas Renninger wrote:
-> > On Monday 27 October 2008 17:52:55 Andrey Borzenkov wrote:
-> > > On Monday 08 September 2008, Thomas Renninger wrote:
-> > > > On Saturday 06 September 2008 09:19:59 am Andrey Borzenkov wrote:
-> > > > > On Saturday 06 September 2008, Andrey Borzenkov wrote:
-> > > > > > I have now two different devices that refer to the same hardware:
-> > > > > >
-> > > > > > lrwxrwxrwx 1 root root 0 2008-09-06 11:04 acpi_video0 ->
-> > > > > > ../../devices/virtual/backlight/acpi_video0/ lrwxrwxrwx 1 root
-> > > > > > root 0 2008-09-06 11:04 toshiba ->
-> > > > > > ../../devices/virtual/backlight/toshiba/
-> > > > > >
-> > > > > > Unfortunately, due to ACPI implementation the acpi_video0 one is
-> > > > > > much inferior (as it provides only effectively two levels instead
-> > > > > > of 8); and user level tools are apparently quite confused which
-> > > > > > one to select.
-> > > > > >
-> > > > > > Is there any mechanism that would allow tochiba_acpi to claim
-> > > > > > brightness for internal LCD screen that video would not attempt
-> > > > > > to grab it too?
-> > > > > >
-> > > > > > Of course manually disabling brightness handling in video is
-> > > > > > always possible,
-> > > > >
-> > > > > Actually it is not. brightness_switch_enabled only disables event
-> > > > > handling; it still resets actual brightness on loading and creates
-> > > > > sysfs files to confuse user space.
-> > > > >
-> > > > > > still is nice for this to be handled automatically.
-> > > >
-> > > > It is in latest ACPI test branch queued for 2.6.28.
-> > >
-> > > It is still not in rc2; is it scheduled for 2.6.28 or delayed further?
-> >
-> > Right, it's not there.
-> > Len, what happened with the:
-> > "Check for ACPI backlight support otherwise use vendor ACPIdrivers -
-> > version 4" patches?
-> >
-> > They are pretty essential for video.ko.
-> > Otherwise graphics devices may get double poked (through vendor_acpi.ko
-> > drivers) or may register for graphics cards which are not there.
->
-> Do you have a pointer to those patches?
 
-I remember they were in Andi's ACPI test branch already.
-Andi/Len do you have an idea what happened to them?
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-   Thomas
+> [Ingo Molnar - Tue, Oct 28, 2008 at 10:27:37AM +0100]
+> | 
+> | * Yinghai Lu <yinghai@kernel.org> wrote:
+> | 
+> | > Impact: fix range calculation
+> | 
+> | applied to tip/x86/urgent, thanks Yinghai!
+> | 
+> | i changed the impact line to:
+> | 
+> | Impact: change over-mapping to precise mapping, fix /proc/meminfo output
+> | 
+> | 	Ingo
+> | 
+> 
+> When we started to use Impact: line? I mean -- now we have
+> to use it? Just noticed this word in patches a day or maybe
+> several day ago -- so it seem to be quite freshy :)
+
+We've been experimenting with the impact-line for a couple of 
+weeks/months, just to see how it works out in practice.
+
+The first impact-line ever was added by hpa in mid-summer:
+
+| commit 908ec7afacfdc83dc10938ed1d3c38b3526034ec
+| Author: H. Peter Anvin <hpa@zytor.com>
+| Date:   Mon Jun 30 14:42:18 2008 -0700
+|
+|    x86: remove arbitrary ELF section limit in i386 relocatable kernel
+|    
+|    Impact: build failure in maximal configurations
+
+The concept seems to be quite good in general:
+
+ - increases the readability of the changlogs
+
+ - makes it easier to judge the backporting needs of a commit, even 
+   if a commit has not been marked as Cc: <stable@kernel.org> straight 
+   away.
+
+ - makes it easier to notice bugs in a commit: when a commit marked as 
+   "Impact: cleanup" causes some behavioral change it's clear that 
+   it's buggy.
+
+It basically acts as a second-level subject line.
+
+So, given these many advantages, we now try to extend the use of 
+impact-lines to all the tip/*/urgent branches.
+
+It's not a must-have item for patch submissions, just a nice-to-have 
+property. (we'll add the impact-line when it's missing)
+
+	Ingo
