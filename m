@@ -1,78 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753420AbYJ1SOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbYJ1SPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753420AbYJ1SOa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 14:14:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbYJ1SOL
+	id S1754499AbYJ1SPV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 14:15:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbYJ1SPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 14:14:11 -0400
-Received: from hobbit.corpit.ru ([81.13.33.150]:22211 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753963AbYJ1SOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 14:14:09 -0400
-Message-ID: <4907566D.9040003@msgid.tls.msk.ru>
-Date: Tue, 28 Oct 2008 21:14:05 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Tue, 28 Oct 2008 14:15:05 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:1193 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752229AbYJ1SPD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 14:15:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=bEeYATVto1GCljjd8MsZgQJYaIG+CZLC9cVJn39bFgAbu5bLaxk1uHKiDuNDRpxY7E
+         MJgH7tp7w3sK5a0CiAUl0PQFkxL4ogfrB1amVaaB/IpVqRWo4se39ABK8ACrACNnqrqc
+         7W+Uu5hXAZ52y7cTNo2j4KorblOvLbmHwT7YI=
+Message-ID: <c62985530810281115n5e40539ek1a486a0b909e339c@mail.gmail.com>
+Date: Tue, 28 Oct 2008 19:15:01 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH] ftrace: fix current_tracer error return
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0810281140420.30971@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-CC: Phillip Lougher <phillip@lougher.demon.co.uk>, akpm@linux-foundation.org,
-       linux-embedded@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tim.bird@am.sony.com
-Subject: Re: Subject: [PATCH 02/16] Squashfs: directory lookup operations
-References: <E1KqrTW-0001xG-Cl@dylan> <Pine.LNX.4.64.0810281835150.23080@vixen.sonytel.be>
-In-Reply-To: <Pine.LNX.4.64.0810281835150.23080@vixen.sonytel.be>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <c62985530810271618n11a8b674w5a60deaa335fdcc2@mail.gmail.com>
+	 <alpine.DEB.1.10.0810271935320.20039@gandalf.stny.rr.com>
+	 <c62985530810271644y1df6a13xbcd9d89b7a17ad75@mail.gmail.com>
+	 <c62985530810280202r694a23e8l5233d892b3aa4330@mail.gmail.com>
+	 <alpine.DEB.1.10.0810281039130.29482@gandalf.stny.rr.com>
+	 <c62985530810280835k66d3ab87qd1783a0135228174@mail.gmail.com>
+	 <alpine.DEB.1.10.0810281140420.30971@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> On Fri, 17 Oct 2008, Phillip Lougher wrote:
->> --- /dev/null
->> +++ b/fs/squashfs/namei.c
-> 
->> +static int get_dir_index_using_name(struct super_block *s,
->> +			long long *next_block, unsigned int *next_offset,
->> +			long long index_start, unsigned int index_offset,
->> +			int i_count, const char *name, int len)
->> +{
->> +	struct squashfs_sb_info *msblk = s->s_fs_info;
->> +	int i, size, length = 0;
->> +	struct squashfs_dir_index *index;
->> +	char *str;
->> +
->> +	TRACE("Entered get_dir_index_using_name, i_count %d\n", i_count);
->> +
->> +	str = kmalloc(sizeof(*index) + (SQUASHFS_NAME_LEN + 1) * 2, GFP_KERNEL);
->> +	if (str == NULL) {
->> +		ERROR("Failed to allocate squashfs_dir_index\n");
->> +		goto out;
->> +	}
->> +
->> +	index = (struct squashfs_dir_index *) (str + SQUASHFS_NAME_LEN + 1);
-> 
-> As str has been returned by kmalloc(), and SQUASHFS_NAME_LEN is equal to 256,
-> `str + SQUASHFS_NAME_LEN + 1` is an odd address.
-> 
-[..]
->> +		size = le32_to_cpu(index->size) + 1;
->                                    ^^^^^^^^^^^
-[.]
-> Hence accessing multi-byte fields in struct squashfs_dir_index causes unaligned
-> accesses, which are emulated on some architectures (e.g. on MIPS).
-> 
-> Use get_unaligned_le32() for unaligned accesses.
+2008/10/28 Steven Rostedt <rostedt@goodmis.org>:
+>
+> On Tue, 28 Oct 2008, Fr?d?ric Weisbecker wrote:
+>>
+>> An that corrects the bug when I failed to assign the sched_switch tracer.
+>> Thanks Steven!
+>>
+>> Tested-by: Frederic Weisbecker <fweisbec@gmail.com>
+>
+> Do you still have issues with the function tracer in the latest linux-tip?
+> If so, can you rebuild it from scratch, send me the config again, and
+> explain in detail what the issue is.
+>
+> Thanks,
 
-How about aligning it properly in the first place instead?
-Three ways:
+I think I've caught it. See the patch I just Cc'ed you:
+ftrace: perform an initialization for ftrace to enable it
 
-   1) reordering index and str here, so that index comes first,
-      str next.
-
-   2) using another constant instead of +1
-
-   3) using separate allocations for separate objects.
-
-/mjt
+Thanks!
