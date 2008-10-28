@@ -1,114 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754166AbYJ1Spz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbYJ1SqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754166AbYJ1Spz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 14:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbYJ1Spo
+	id S1754592AbYJ1SqT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 14:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbYJ1Spr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 14:45:44 -0400
-Received: from mga14.intel.com ([143.182.124.37]:39258 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751201AbYJ1Spn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 14:45:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,500,1220252400"; 
-   d="scan'208";a="66543380"
-Date: Tue, 28 Oct 2008 11:45:42 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-Subject: Re: x86info results ioremap.c:226 __ioremap_caller+0xf2/0x2d6() WARNINGs
-Message-ID: <20081028184542.GI30573@linux-os.sc.intel.com>
-References: <20081021083615.GA4658@basil.nowhere.org> <20081023205629.GD18919@linux-os.sc.intel.com>
+	Tue, 28 Oct 2008 14:45:47 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52521
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752949AbYJ1Spq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 14:45:46 -0400
+Date: Tue, 28 Oct 2008 11:45:24 -0700 (PDT)
+Message-Id: <20081028.114524.89018707.davem@davemloft.net>
+To: jianjun@zeuux.org
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] net: Remove unused variable warning
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081028081457.GA19691@ubuntu>
+References: <20081028081457.GA19691@ubuntu>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081023205629.GD18919@linux-os.sc.intel.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m9SIkedq016830
 
-On Thu, Oct 23, 2008 at 01:56:29PM -0700, Siddha, Suresh B wrote:
-> From: Suresh Siddha <suresh.b.siddha@intel.com>
-> Subject: fix x86info ioremap sanity check warnings
+From: Jianjun Kong <jianjun@zeuux.org>
+Date: Tue, 28 Oct 2008 16:14:57 +0800
+
+Please send networking patches at least CC:'d to
+netdev@vger.kernel.org so that it gets archived properly in patchwork:
+
+	http://patchwork.ozlabs.org/project/netdev/list/
+
+and thus doesn't get lost.
+
+> net: Remove unused variable warning
+> 'min_ds_timeout' and 'max_ds_timeout' are only used when CONFIG_AX25_DAMA_SLAVE is defined.
 > 
-> Andi Kleen reported:
-> > When running x86info on a 2.6.27-git8 system I get
-> >
-> > resource map sanity check conflict: 0x9e000 0x9efff 0x10000 0x9e7ff System RAM
-> > ------------[ cut here ]------------
-> > WARNING: at /home/lsrc/linux/arch/x86/mm/ioremap.c:226 __ioremap_caller+0xf2/0x2d6()
-> > ...
+> net/ax25/sysctl_net_ax25.c:27: warning: â€˜min_ds_timeoutâ€™ defined but not used
+> net/ax25/sysctl_net_ax25.c:27: warning: â€˜max_ds_timeoutâ€™ defined but not used
 > 
-> Some of the pages below the 1MB ISA addresses will be shared typically by both
-> BIOS and system usable RAM. For example:
-> 	BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
-> 	BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
 > 
-> x86info reads the low physical address using /dev/mem, which internally
-> uses ioremap() for accessing non RAM pages. ioremap() of such low
-> pages conflicts with multiple resource entities leading to the
-> above warning.
+> Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
+> ---
+>  net/ax25/sysctl_net_ax25.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
 > 
-> Fix the warning by skipping the map conflict checks for low addresses
-> below 1MB. No PCI BAR's reside in this region anyway.
-
-More cleaner patch(which fixes the issue in a generic fashion) for this
-is appended. Ingo, please consider this for inclusion instead.
-
-thanks,
-suresh
----
-
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: fix x86info ioremap sanity check warnings
-
-Andi Kleen reported:
-> When running x86info on a 2.6.27-git8 system I get
->
-> resource map sanity check conflict: 0x9e000 0x9efff 0x10000 0x9e7ff System RAM
-> ------------[ cut here ]------------
-> WARNING: at /home/lsrc/linux/arch/x86/mm/ioremap.c:226 __ioremap_caller+0xf2/0x2d6()
-> ...
-
-Some of the pages below the 1MB ISA addresses will be shared typically by both
-BIOS and system usable RAM. For example:
-	BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
-	BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
-
-x86info reads the low physical address using /dev/mem, which internally
-uses ioremap() for accessing non RAM pages. ioremap() of such low
-pages conflicts with multiple resource entities leading to the
-above warning.
-
-Change the iomem_map_sanity_check() to allow mapping a page spanning multiple
-resource entities (minimum granularity that one can map is a page anyhow).
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
-
-diff --git a/kernel/resource.c b/kernel/resource.c
-index 4089d12..bee50d7 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -17,6 +17,7 @@
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
- #include <linux/device.h>
-+#include <linux/pfn.h>
- #include <asm/io.h>
- 
- 
-@@ -849,7 +850,8 @@ int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
- 			continue;
- 		if (p->end < addr)
- 			continue;
--		if (p->start <= addr && (p->end >= addr + size - 1))
-+		if (PFN_DOWN(p->start) <= PFN_DOWN(addr) &&
-+		    PFN_DOWN(p->end) >= PFN_DOWN(addr + size - 1))
- 			continue;
- 		printk(KERN_WARNING "resource map sanity check conflict: "
- 		       "0x%llx 0x%llx 0x%llx 0x%llx %s\n",
+> diff --git a/net/ax25/sysctl_net_ax25.c b/net/ax25/sysctl_net_ax25.c
+> index f288fc4..735ceef 100644
+> --- a/net/ax25/sysctl_net_ax25.c
+> +++ b/net/ax25/sysctl_net_ax25.c
+> @@ -24,7 +24,9 @@ static int min_idle[1],			max_idle[] = {65535000};
+>  static int min_n2[] = {1},		max_n2[] = {31};
+>  static int min_paclen[] = {1},		max_paclen[] = {512};
+>  static int min_proto[1],		max_proto[] = { AX25_PROTO_MAX };
+> +#ifdef CONFIG_AX25_DAMA_SLAVE
+>  static int min_ds_timeout[1],		max_ds_timeout[] = {65535000};
+> +#endif
+>  
+>  static struct ctl_table_header *ax25_table_header;
+>  
+> -- 
+> 1.5.6.3
+> 
+> 
+> 
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
