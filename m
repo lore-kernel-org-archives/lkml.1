@@ -1,121 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbYJ1Rw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbYJ1RyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754094AbYJ1Rw5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 13:52:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYJ1Rwt
+	id S1753164AbYJ1RyJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 13:54:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYJ1Rxz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 13:52:49 -0400
-Received: from smtp2.sensus.se ([193.13.139.17]:57971 "EHLO smtp2.sensus.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752745AbYJ1Rws (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 13:52:48 -0400
-X-Greylist: delayed 2882 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Oct 2008 13:52:47 EDT
-Date: Tue, 28 Oct 2008 18:01:05 +0100
-From: Oskar Liljeblad <oskar@osk.mine.nu>
-To: linux-kernel@vger.kernel.org
-Subject: sata errors with Seagate 1.5TB on AMD 780G/SB700 motherboard
-Message-ID: <20081028170105.GA21933@osk.mine.nu>
+	Tue, 28 Oct 2008 13:53:55 -0400
+Received: from po-out-1718.google.com ([72.14.252.155]:30545 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752308AbYJ1Rxy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 13:53:54 -0400
+Message-ID: <fa686aa40810281053u4673dd60sc4e33a1f90f65981@mail.gmail.com>
+Date: Tue, 28 Oct 2008 11:53:54 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 0/6 RFC] OF-glue devices for I2C/SPI (was: Re: [PATCH 4/7] gpiolib: implement dev_gpiochip_{add,remove} calls
+Cc: "David Brownell" <david-b@pacbell.net>, benh@kernel.crashing.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       i2c@lm-sensors.org, "David Miller" <davem@davemloft.net>
+In-Reply-To: <20081028174532.GA23834@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -96.0 (---------------------------------------------------)
-X-Spam-Report: Spam detection software, running on the system "smtp2.sensus.se", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	the administrator of that system for details.
-	Content preview:  Can anyone make any sense of these SATA errors? They're
-	killing my md RAID5 (at least the second error did). Hard drives
-	(ata1/sda, ata2/sdb, ata3/sdc): Seagate ST31500341AS 1.5TB SATA
-	Motherboard: Asus M3A78-EH with AMD 780G/SB700 chipset SATA driver: ahci
-	00:11.0 SATA controller: ATI Technologies Inc SB700/SB800 SATA
-	Controller [AHCI mode] [...] 
-	Content analysis details:   (-96.0 points, 5.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	-100 USER_IN_WHITELIST      From: address is in the user's white-list
-	2.0 RCVD_IN_SORBS_DUL      RBL: SORBS: sent directly from dynamic IP address
-	[81.236.171.23 listed in dnsbl.sorbs.net]
-	2.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+References: <20081016171222.GA24812@oksana.dev.rtsoft.ru>
+	 <20081022014243.GA19362@oksana.dev.rtsoft.ru>
+	 <1224642497.7654.319.camel@pasglop>
+	 <200810212122.49121.david-b@pacbell.net>
+	 <20081022103641.GB24757@oksana.dev.rtsoft.ru>
+	 <20081022104606.GA510@oksana.dev.rtsoft.ru>
+	 <20081028174532.GA23834@oksana.dev.rtsoft.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Can anyone make any sense of these SATA errors? They're killing my md RAID5
-(at least the second error did).
+On Tue, Oct 28, 2008 at 11:45 AM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Wed, Oct 22, 2008 at 02:46:06PM +0400, Anton Vorontsov wrote:
+> [...]
+>> > > Like what I suggested:  "chip-aware OF glue drivers".  The relevant
+>> > > bus code being the "of_platform_bus_type" infrastructure.
+>> > >
+>> > > Example:  instead of Anton's patch #6 modifying the existing pca953x
+>> > > driver, an of_pca953x driver that knows how to poke around in the OF
+>> > > device attributes to (a) create the pca953x_platform_data, (b) call
+>> > > i2c_register_board_info() to make that available later, and then
+>> > > finally (c) vanish, since it's not needed any longer.
+>> >
+>> > Heh. You tell me my first approach:
+>> >
+>> > http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056730.html (mmc_spi)
+>> >
+>> > The OF people didn't like the patch which was used to support this
+>> > approach:
+>> > http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056728.html
+>>
+>> Though, I think I'll able to persuade Grant that two registration paths
+>> are inevitable (i.e. for simple devices we should use
+>> drivers/of/of_{i2c,spi}.c and for complex cases we'll have to have
+>> another method of registration).
+>
+> Ok, here it is.
+>
+> I don't like this approach because:
+>
+> 1. It feels like an overhead to create an of_device for each i2c
+>   device that needs platform data.
+>
+> 2. We have to do ugly of_should_create_pdev() in the i2c code,
+>   and duplicate lists of supported devices.
+>
+> Could anybody convince me that this isn't a big deal? ;-)
 
-Hard drives (ata1/sda, ata2/sdb, ata3/sdc): Seagate ST31500341AS 1.5TB SATA
-Motherboard: Asus M3A78-EH with AMD 780G/SB700 chipset
-SATA driver: ahci
-00:11.0 SATA controller: ATI Technologies Inc SB700/SB800 SATA Controller [AHCI mode]
+I really don't like this approach either.  I think it is a big deal.
+It greatly increases the complexity of the probe path for the device.
+Adapting the OF data to pdata is entirely driver specific and it
+doesn't make sense to break it out into a separate of_device or use
+the board_info mechanism to disassociate the adapter code from the
+driver.  Each instance of adapter code will never be associated with a
+different driver and I think it is entirely reasonable to have a
+driver specific hook in the drivers probe path to build pdata from the
+device tree.
 
-Smart reports no errors on the drives, short & long tests have been run as
-well. The system is brand new.
+>
+> Otherwise I'll stick with this approach:
+> http://lkml.org/lkml/2008/10/22/471
 
-I've read some reports about SATA 3.0 Gbps vs 1.5 Gbps problems and I'm
-considering limiting the drives to 1.5 Gbps using jumpers. Would that be a
-good idea?
+I like this approach.
 
-19:24:26 ata2: exception Emask 0x50 SAct 0x0 SErr 0x90a02 action 0xe frozen
-19:24:26 ata2: irq_stat 0x00400000, PHY RDY changed
-19:24:26 ata2: SError: { RecovComm Persist HostInt PHYRdyChg 10B8B }
-19:24:26 ata2: hard resetting link
-19:24:27 ata2: SATA link down (SStatus 0 SControl 300)
-19:24:30 ata2: hard resetting link
-19:24:35 ata2: link is slow to respond, please be patient (ready=0)
-19:24:38 ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-19:24:38 ata2.00: configured for UDMA/133
-19:24:38 ata2: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0x9 t4
-19:24:38 ata2: irq_stat 0x00000040, connection status changed
-19:24:38 ata2.00: configured for UDMA/133
-19:24:38 ata2: EH complete
+g.
 
-And then the day after:
-
-09:07:49 ata3.00: exception Emask 0x40 SAct 0x0 SErr 0x800 action 0x6 frozen
-09:07:49 ata3: SError: { HostInt }
-09:07:49 ata3.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-09:07:49          res 40/00:00:00:00:00/00:00:00:00:00/a0 Emask 0x44 (timeout)
-09:07:49 ata3.00: status: { DRDY }
-09:07:49 ata3: hard resetting link
-09:07:49 ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-09:07:49 ata3.00: configured for UDMA/133
-09:07:49 ata3: EH complete
-09:07:49 sd 2:0:0:0: [sdc] 2930277168 512-byte hardware sectors (1500302 MB)
-09:07:49 sd 2:0:0:0: [sdc] Write Protect is off
-09:07:49 sd 2:0:0:0: [sdc] Mode Sense: 00 3a 00 00
-09:07:49 sd 2:0:0:0: [sdc] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-09:07:49 end_request: I/O error, dev sdc, sector 8
-09:07:49 md: super_written gets error=-5, uptodate=0
-09:07:49 raid5: Disk failure on sdc, disabling device.
-09:07:49 raid5: Operation continuing on 1 devices.
-
-For reference:
-
-ata1: SATA max UDMA/133 abar m1024@0xf8fff800 port 0xf8fff900 irq 22
-ata2: SATA max UDMA/133 abar m1024@0xf8fff800 port 0xf8fff980 irq 22
-ata3: SATA max UDMA/133 abar m1024@0xf8fff800 port 0xf8fffa00 irq 22
-ata4: SATA max UDMA/133 abar m1024@0xf8fff800 port 0xf8fffa80 irq 22
-ata5: SATA max UDMA/133 abar m1024@0xf8fff800 port 0xf8fffb00 irq 22
-ata6: SATA max UDMA/133 abar m1024@0xf8fff800 port 0xf8fffb80 irq 22
-ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata1.00: HPA detected: current 2930277168, native 18446744072344861488
-ata1.00: ATA-8: ST31500341AS, SD17, max UDMA/133
-ata1.00: 2930277168 sectors, multi 16: LBA48 NCQ (depth 31/32)
-ata1.00: configured for UDMA/133
-ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata2.00: HPA detected: current 2930277168, native 18446744072344861488
-ata2.00: ATA-8: ST31500341AS, SD17, max UDMA/133
-ata2.00: 2930277168 sectors, multi 16: LBA48 NCQ (depth 31/32)
-ata2.00: configured for UDMA/133
-ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata3.00: HPA detected: current 2930277168, native 18446744072344861488
-ata3.00: ATA-8: ST31500341AS, SD17, max UDMA/133
-ata3.00: 2930277168 sectors, multi 16: LBA48 NCQ (depth 31/32)
-ata3.00: configured for UDMA/133
-
-Regards,
-
-Oskar
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
