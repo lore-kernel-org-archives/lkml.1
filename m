@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753116AbYJ1VnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbYJ1Vnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753116AbYJ1VnK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 17:43:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYJ1Vmq
+	id S1754182AbYJ1Vnc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 17:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbYJ1VnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 17:42:46 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50795 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753380AbYJ1Vmo (ORCPT
+	Tue, 28 Oct 2008 17:43:09 -0400
+Received: from smtp3.Stanford.EDU ([171.67.20.26]:38849 "EHLO
+	smtp3.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753116AbYJ1VnH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 17:42:44 -0400
-Date: Tue, 28 Oct 2008 14:42:55 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Avi Kivity <avi@redhat.com>, Glauber Costa <glommer@redhat.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       aliguori@codemonkey.ws, npiggin@suse.de,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] regression: vmalloc easily fail.
-Message-ID: <20081028144255.05712d70@infradead.org>
-In-Reply-To: <ada7i7so1o7.fsf@cisco.com>
-References: <1225234513-3996-1-git-send-email-glommer@redhat.com>
-	<49077E1A.5080105@redhat.com>
-	<ada7i7so1o7.fsf@cisco.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+	Tue, 28 Oct 2008 17:43:07 -0400
+Subject: Re: [alsa-devel] 2.6.26.[6|7] vs. rt11 vs. alsa (usb) midi
+From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>,
+       Fernando Pablo Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+In-Reply-To: <s5hljwazc9i.wl%tiwai@suse.de>
+References: <1224989187.3706.7.camel@localhost.localdomain>
+	 <s5hljwazc9i.wl%tiwai@suse.de>
+Content-Type: text/plain
+Date: Tue, 28 Oct 2008 14:35:55 -0700
+Message-Id: <1225229755.3750.1.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Oct 2008 14:22:16 -0700
-Roland Dreier <rdreier@cisco.com> wrote:
+On Mon, 2008-10-27 at 09:13 +0100, Takashi Iwai wrote:
+> At Sat, 25 Oct 2008 19:46:27 -0700,
+> Fernando Lopez-Lezcano wrote:
+> > 
+> > Hi... anyone out there also having problem with this combination?
+> >    2.6.26.7 or 2.6.26.6 with 2.6.26.6-rt11 and alsa MIDI
+> > It looks to me like alsa midi is broken. 
+> > 
+> > Probably an interaction with the realtime kernel patch. A Fedora kernel
+> > based on 2.6.26.6 (2.6.26.6-49 on fc8) works fine, a very similarly
+> > patched kernel that includes the realtime patch does not. The
+> > configurations for both are almost the same (today I tried to change
+> > some of the most obvious differences and rebuild, with the same
+> > result). 
+> > 
+> > No problems with 2.6.24.7-rt21. 
+> > 
+> > Test: boot, login, plugin an external usb keyboard (Yamaha P250), it is
+> > recognized, use qjackctl alsa patchbay to connect it to kmidimon,
+> > kmidimon sees only _one_ midi message and that's it. Kmidimon can't be
+> > killed after that. 
+> 
+> What about other MIDI devices on other bus, e.g. an MPU401 on a PCI
+> soundcard or so?  There is a possibility of breakage in the USB driver
+> side, too.
 
->  > I'm guessing that the missing comment explains that this is
->  > intentional, to trap buffer overflows?
-> 
-> Actually, speaking of comments, it's interesting that
-> __get_vm_area_node() -- which is called from vmalloc() -- does:
-> 
-> 	/*
-> 	 * We always allocate a guard page.
-> 	 */
-> 	size += PAGE_SIZE;
-> 
-> 	va = alloc_vmap_area(size, align, start, end, node, gfp_mask);
-> 
-> and alloc_vmap_area() adds another PAGE_SIZE, as the original email
-> pointed out:
-> 
-> 		while (addr + size >= first->va_start && addr + size
-> <= vend) { addr = ALIGN(first->va_end + PAGE_SIZE, align);
-> 
-> I wonder if the double padding is causing a problem when things get
-> too fragmented?
+I just tested an RME PCMCIA card + Multiface interface and it shows the
+same problem. No MIDI messages get through (but the LED in the Multiface
+blinks). Same hardware booted into 2.6.24.7-rt21 works fine. 
 
-I suspect it's a case of off-by-one... ALIGN() might round down, and
-the "+ (PAGE_SIZE-1)" was there to make it round up.
-Except for that missing -1 ...
+-- Fernando
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+
