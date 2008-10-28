@@ -1,88 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbYJ1SiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbYJ1SlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753537AbYJ1SiQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 14:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbYJ1Sh6
+	id S1753859AbYJ1SlR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 14:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbYJ1SlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 14:37:58 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:56151 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752651AbYJ1Sh5 (ORCPT
+	Tue, 28 Oct 2008 14:41:06 -0400
+Received: from gv-out-0910.google.com ([216.239.58.185]:36174 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751495AbYJ1SlD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 14:37:57 -0400
-Subject: Re: [2.6.28-rc2]: iwl4965 doesn't connect / cfg80211 failure
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Mirco Tischler <mt-ml@gmx.de>
-Cc: Zhu Yi <yi.zhu@intel.com>, Arjan van de Ven <arjan@infradead.org>,
+	Tue, 28 Oct 2008 14:41:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=UYvV//zPh7N2cXBycR119zwnU7B7ysj6+7TEwwG+veK4KkjkwMfmTBWuMDEFSxU0YI
+         AvPMXWDiwBGsJMCb93hXyWWaP8LjhecARtQ0zf48nf2P4VuV8s29hhe/lTQEGlpnI+5x
+         uNft4Fc9+QNrLIbQsynBKRyfnCs6RJ/DPsVXE=
+Message-ID: <cd73a99e0810281141ief64433u85a55d045346d3fd@mail.gmail.com>
+Date: Tue, 28 Oct 2008 20:41:00 +0200
+From: "Andrew Victor" <avictor.za@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [patch 2.6.28-rc2] atmel_serial: keep clock off when it's not needed
+Cc: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>,
        lkml <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       "John W.Linville" <linville@tuxdriver.com>,
-       "Chatre, Reinette" <reinette.chatre@intel.com>
-In-Reply-To: <20081028172418.3c8e91f1@mtlp.12.dimension> (sfid-20081028_172505_344390_B01D226B)
-References: <20081028020212.0dfcb6c9@mtlp.12.dimension>
-	 <1225157618.2917.215.camel@debian.sh.intel.com>
-	 <20081027213217.53558319@infradead.org>
-	 <1225171414.2917.229.camel@debian.sh.intel.com>
-	 <20081028172418.3c8e91f1@mtlp.12.dimension>
-	 (sfid-20081028_172505_344390_B01D226B)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-aUi0c4MsSnVdpn0b7GFr"
-Date: Tue, 28 Oct 2008 19:36:34 +0100
-Message-Id: <1225218994.3598.41.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "Nicolas Ferre" <nicolas.ferre@rfo.atmel.com>
+In-Reply-To: <200810280920.19864.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200810271406.24110.david-b@pacbell.net>
+	 <20081028124526.6b9ccdf5@hskinnemo-gx745.norway.atmel.com>
+	 <200810280920.19864.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+hi David,
 
---=-aUi0c4MsSnVdpn0b7GFr
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> I verified it on AT91, where the console is normally DBGU and the
+> other USARTs do get an open().
 
-On Tue, 2008-10-28 at 17:24 +0100, Mirco Tischler wrote:
+The DBGU is part of the system peripherals, which are clocked from MCK
+and which is always enabled.
+Therefore I don't think this is a valid test-case.
 
-> > This is a different bug. He has the wireless worked sometimes.
-> >=20
-> > I think your problem relates to 5GHz channel usage. We have already a
-> > patch queued to resolve the problem. We will have regulatory framework
-> > reworked to better solve the problem. But I guess it will be in .29 tim=
-e
-> > frame.
-> >=20
-> > Thanks,
-> > -yi
-> I tested Arjan's solution nevertheless and it seems to do the job. I can'=
-t find
-> the "TX Power requested" line anymore on dmesg output with that config op=
-tion
-> enabled anymore and it connects without problems.
 
-Can we have a dmesg output with the "TX power requested" line posted
-here?
-
-johannes
-
---=-aUi0c4MsSnVdpn0b7GFr
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJB1uvAAoJEKVg1VMiehFY6ZwP/RHbu4/+BODKzryx9FYmvcW8
-5Mo/3uFmFYbcvRJ1nr+GVnTcK93dGkJSnFh3lx6e6blcZvJEij3YHcetZmByM4+p
-tbVX4KyqmxTmYB0h0gWX5uWp834tT9M1eOJgrVEHH00OM+zo8Cco43VqrAoipTN2
-Nw1VYljVWOwUSiSAExCyocxAVACE78tAlVqG1B6i+gPxyGKX9ckgmjuNypkFUHH5
-nMPAHREznHwdhFoG2tRKxpmAGL19vjhJx2iulLlooX1IJ25CwrL1ajvgW+TCbY7y
-yb4xF7cki8MdeQSIjKFPfFiR0UEwzFESpZk6qunTyVLHML08ZLto2SZrkOy2eXop
-u4xKXq3dbypHneUHcASJ7ohX7DcL+X+I1StXHaawYfQTncyuEjDTSSLd9cEgTDiy
-7SEiUxIskwmTu8fxuIKUePrttFP+1bTuHsXba+K20uJ0IEufMLRd3W0bT1l+i5IW
-du9wmM4bsyYt+ac8sABpvQ26DO+NdlhqXReeMV+dCDvkBOw7IAHKoSeFXpGwSglf
-JQgI/Ht6PrcwhdpTK1FVQ+qcZegD3kcDRHP1pxePDq/AgO9as3jLxJqUzE4Rey7d
-uuSRXMH1vTg17/ueg8fRxloRAg6bMnQupTS7xrGdKZA0wgNJckcc/yRVw5/dw+SE
-BUt/D+jnaj6DCjIA5D1U
-=CMEv
------END PGP SIGNATURE-----
-
---=-aUi0c4MsSnVdpn0b7GFr--
-
+Regards,
+  Andrew Victor
