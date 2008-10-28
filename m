@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752769AbYJ1AdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752928AbYJ1Akm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752769AbYJ1AdJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 20:33:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYJ1Ac4
+	id S1752928AbYJ1Akm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 20:40:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751674AbYJ1Akb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 20:32:56 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39774 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751912AbYJ1Acz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 20:32:55 -0400
-Date: Tue, 28 Oct 2008 09:32:24 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       y-goto@jp.fujitsu.com
-Subject: Re: [PATCH] memory hotplug: fix page_zone() calculation in
- test_pages_isolated()
-Message-Id: <20081028093224.a0de9f64.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1225130369.20384.33.camel@localhost.localdomain>
-References: <4905F114.3030406@de.ibm.com>
-	<1225128359.12673.101.camel@nimitz>
-	<1225130369.20384.33.camel@localhost.localdomain>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Oct 2008 20:40:31 -0400
+Received: from kroah.org ([198.145.64.141]:36211 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751246AbYJ1Aka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 20:40:30 -0400
+Date: Mon, 27 Oct 2008 17:27:18 -0700
+From: Greg KH <greg@kroah.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Subject: Re: [PATCH] at76_usb: update drivers/staging/at76_usb w/ mac80211
+	port
+Message-ID: <20081028002718.GA2992@kroah.com>
+References: <1224877739-1586-1-git-send-email-linville@tuxdriver.com> <20081027185634.GA21649@kroah.com> <20081027211553.GH20389@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081027211553.GH20389@tuxdriver.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Oct 2008 18:59:29 +0100
-Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
-> Instead of using pfn_to_page() you could also have just called
-> > __first_valid_page() again.  But, that would have duplicated a bit of
-> > work, even though not much in practice because the caches are still hot.
+On Mon, Oct 27, 2008 at 05:15:53PM -0400, John W. Linville wrote:
+> On Mon, Oct 27, 2008 at 11:56:34AM -0700, Greg KH wrote:
+> > On Fri, Oct 24, 2008 at 03:48:59PM -0400, John W. Linville wrote:
+> > > This updates drivers/staging/at76_usb to correspond with the latest
+> > > version previously available in wireless-testing.
+> > > 
+> > > Signed-off-by: John W. Linville <linville@tuxdriver.com>
 > > 
-> > Technically, you wouldn't even need to check the return from
-> > __first_valid_page() since you know it has a valid result because you
-> > made the exact same call a moment before.
+> > I've applied this, but it does add the following warnings, which I don't
+> > think you want to have:
+> > 	drivers/staging/at76_usb/at76_usb.c:885: warning: ‘at76_set_associd’ defined but not used
+> > 	drivers/staging/at76_usb/at76_usb.c:903: warning: ‘at76_set_listen_interval’ defined but not used
+> > 	drivers/staging/at76_usb/at76_usb.c:989: warning: ‘at76_add_mac_address’ defined but not used
 > > 
-> > Anyway, can you remove the !page check, fix up the changelog and resend?
+> > 
+> > I'll remove these unused functions now from the in-kernel version.
 > 
-> Calling __first_valid_page() again might be a good idea. Thinking about it
-> now, I guess there is still a problem left with my patch, but for reasons
-> other than what you said :) If the loop is completed with page == NULL,
-> we will return -EBUSY with the new patch. But there may have been valid
-> pages before, and only some memory hole at the end. In this case, returning
-> -EBUSY would probably be wrong.
+> Those were still there because Kalle had said he intended to use them.
+> I see no need to carry them since you have them in git anyway.
+
+Heh, fine, they are now gone, we can't add patches that add warnings :)
+
+> > Is there any way to do development on this in the staging version now,
+> > instead of the wireless-testing tree?
 > 
-> Kamezawa, this loop/function was added by you, what do you think?
-> 
+> Fine with me, although I do have at least one patch for it that
+> relates to a pending API change -- I just figured I'd wait for the
+> round-trip of the patch above and then carry just that patch in my
+> tree along with the mac80211 API changes that prompted it.  Any other
+> development makes sense to go to your tree.
 
-I think there is a bug, as you wrote.
-But
- - "pfn" and "end_pfn" (and pfn in the middle of them) can be in different zone on strange machine.
+How about just sending that patch in when the api change goes in.  I
+have no problem with other people sending in patches through their trees
+that touch the staging directory for stuff like this, as it makes your
+life much easier.
 
-Now: test_pages_isolated() is called in following sequence.
-  
-  check_page_isolated()
-     walk_memory_resource()			# read resource range and get start/end of pfn
-         -> chcek_page_isolated_cb()
-		-> test_page_isolated().
+thanks,
 
-I think all pages within [start, end) passed to test_pages_isolated() should be in the same zone.
-
-please change this to
-  check_page_isolated()
-     walk_memory_resource()
-         -> check_page_isolated_cb()
-                 -> walk_page_range_in_same_zone()  # get page range in the same zone.
-                        -> test_page_isolated().
-
-Could you try ?
-
-Thanks,
--Kame
- 
-
+greg k-h
