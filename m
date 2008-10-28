@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753799AbYJ1U66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753699AbYJ1VD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753799AbYJ1U66 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 16:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbYJ1U6t
+	id S1753699AbYJ1VD3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 17:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYJ1VDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 16:58:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47650 "EHLO mx2.redhat.com"
+	Tue, 28 Oct 2008 17:03:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49617 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753210AbYJ1U6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 16:58:48 -0400
-From: Glauber Costa <glommer@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, avi@redhat.com, aliguori@codemonkey.ws,
+	id S1752558AbYJ1VDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 17:03:19 -0400
+Message-ID: <49077E1A.5080105@redhat.com>
+Date: Tue, 28 Oct 2008 23:03:22 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Glauber Costa <glommer@redhat.com>
+CC: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, aliguori@codemonkey.ws,
        npiggin@suse.de, Jeremy Fitzhardinge <jeremy@goop.org>,
        Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] regression: vmalloc easily fail.
-Date: Tue, 28 Oct 2008 20:55:13 -0200
-Message-Id: <1225234513-3996-1-git-send-email-glommer@redhat.com>
+Subject: Re: [PATCH] regression: vmalloc easily fail.
+References: <1225234513-3996-1-git-send-email-glommer@redhat.com>
+In-Reply-To: <1225234513-3996-1-git-send-email-glommer@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit db64fe02258f1507e13fe5212a989922323685ce broke
-KVM (the symptom) for me. The cause is that vmalloc
-allocations fail, despite of the fact that /proc/meminfo
-shows plenty of vmalloc space available.
+Glauber Costa wrote:
+> Commit db64fe02258f1507e13fe5212a989922323685ce broke
+> KVM (the symptom) for me. The cause is that vmalloc
+> allocations fail, despite of the fact that /proc/meminfo
+> shows plenty of vmalloc space available.
+>
+> After some investigation, it seems to me that the current
+> way to compute the next addr in the rb-tree transversal
+> leaves a spare page between each allocation. After a few
+> allocations, regardless of their size, we run out of vmalloc
+> space.
+>
+>  
+>  		while (addr + size >= first->va_start && addr + size <= vend) {
+> -			addr = ALIGN(first->va_end + PAGE_SIZE, align);
+> +			addr = ALIGN(first->va_end, align);
+>  
+>  			n = rb_next(&first->rb_node);
+>  			if (n)
+>   
 
-After some investigation, it seems to me that the current
-way to compute the next addr in the rb-tree transversal
-leaves a spare page between each allocation. After a few
-allocations, regardless of their size, we run out of vmalloc
-space.
+I'm guessing that the missing comment explains that this is intentional, 
+to trap buffer overflows?
 
-Signed-off-by: Glauber Costa <glommer@redhat.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
----
- mm/vmalloc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+(okay that was a cheap shot.  I don't comment nearly enough either)
 
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index 0365369..a33b0d1 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -363,7 +363,7 @@ retry:
- 		}
- 
- 		while (addr + size >= first->va_start && addr + size <= vend) {
--			addr = ALIGN(first->va_end + PAGE_SIZE, align);
-+			addr = ALIGN(first->va_end, align);
- 
- 			n = rb_next(&first->rb_node);
- 			if (n)
+Even if you leave a page between allocations, I don't see how you can 
+fail a one page allocation, unless you've allocated at least N/2 pages 
+(where N is the size of the vmalloc space in pages).
+
 -- 
-1.5.6.5
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
