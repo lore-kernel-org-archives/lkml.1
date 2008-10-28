@@ -1,76 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbYJ1Vil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbYJ1Vmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753855AbYJ1Vil (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 17:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYJ1Vi2
+	id S1753941AbYJ1Vmu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 17:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYJ1Vmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 17:38:28 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:55413 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751595AbYJ1Vi1 (ORCPT
+	Tue, 28 Oct 2008 17:42:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34648 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751595AbYJ1Vmk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 17:38:27 -0400
-Date: Tue, 28 Oct 2008 15:38:05 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [PATCH] improve jbd fsync batching
-In-reply-to: <20081028201614.GA21600@unused.rdu.redhat.com>
-To: Josef Bacik <jbacik@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, rwheeler@redhat.com
-Message-id: <20081028213805.GC3184@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <20081028201614.GA21600@unused.rdu.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 28 Oct 2008 17:42:40 -0400
+Date: Tue, 28 Oct 2008 14:42:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Rientjes <rientjes@google.com>
+Cc: menage@google.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch] oom: print triggering task's cpuset and mems allowed
+Message-Id: <20081028144234.35924bad.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0810280222090.31219@chino.kir.corp.google.com>
+References: <alpine.DEB.1.10.0810241704380.15988@chino.kir.corp.google.com>
+	<alpine.DEB.1.10.0810241714290.16902@chino.kir.corp.google.com>
+	<20081027174136.c97687c7.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0810280222090.31219@chino.kir.corp.google.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct 28, 2008  16:16 -0400, Josef Bacik wrote:
-> I also have a min() check in there to make sure we don't sleep longer than
-> a jiffie in case our storage is super slow, this was requested by Andrew.
+On Tue, 28 Oct 2008 09:08:15 -0700 (PDT)
+David Rientjes <rientjes@google.com> wrote:
 
-Is there a particular reason why 1 jiffie is considered the "right amount"
-of time to sleep, given this is a kernel config parameter and has nothing
-to do with the storage?  Considering a seek time in the range of ~10ms
-this would only be right for HZ=100 and the wait would otherwise be too
-short to maximize batching within a single transaction.
+> +#define CPUSET_NAME_LEN		(128)
+> +#define	CPUSET_NODELIST_LEN	(256)
+> +static char cpuset_name[CPUSET_NAME_LEN];
+> +static char cpuset_nodelist[CPUSET_NODELIST_LEN];
+>
+> ...
+>
+> +	snprintf(cpuset_name, CPUSET_NAME_LEN,
+> +		 dentry ? (const char *)dentry->d_name.name : "/");
 
-> type	threads		with patch	without patch
-> sata	2		24.6		26.3
-> sata	4		49.2		48.1
-> sata	8		70.1		67.0
-> sata	16		104.0		94.1
-> sata	32		153.6		142.7
+nit: this requires that the reviewer (and the maintainer) ensure that
+CPUSET_NAME_LEN=sizeof(cpuset_name).  This must be done manually and
+introduces risk.
 
-In the previous patch where this wasn't limited it had better performance
-even for the 2 thread case.  With the current 1-jiffie wait it likely
-isn't long enough to batch every pair of operations and every other
-operation waits an extra amount before giving up too soon.  Previous patch:
-
-type    threads       patch     unpatched
-sata    2              34.6     26.2
-sata    4              58.0     48.0
-sata    8              75.2     70.4
-sata    16            101.1     89.6
-
-I'd recommend changing the patch to have a maximum sleep time that has a
-fixed maximum number of milliseconds (15ms should be enough for even very
-old disks).
+Better would be:
 
 
-That said, this would be a minor enhancement and should NOT be considered
-a reason to delay this patch's inclusion into -mm or the ext4 tree.
+static char cpuset_name[128];
 
-PS - it should really go into jbd2 also
+...
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+	snprintf(cpuset_name, sizeof(cpuset_name), ...);
 
