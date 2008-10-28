@@ -1,46 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbYJ1TPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbYJ1TP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754206AbYJ1TPm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 15:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbYJ1TPd
+	id S1754695AbYJ1TP6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 15:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754502AbYJ1TPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 15:15:33 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58920 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751800AbYJ1TPd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 15:15:33 -0400
-Date: Tue, 28 Oct 2008 15:15:31 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-api@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH] cleanup paccept
-Message-ID: <20081028191531.GA1007@infradead.org>
-References: <200810281909.m9SJ9pdj003624@hs20-bc2-1.build.redhat.com>
+	Tue, 28 Oct 2008 15:15:45 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:38224 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754213AbYJ1TPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 15:15:44 -0400
+X-Greylist: delayed 3600 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Oct 2008 15:15:43 EDT
+Message-ID: <490756B9.7000902@gandalf.sssup.it>
+Date: Tue, 28 Oct 2008 19:15:21 +0100
+From: michael <trimarchi@gandalf.sssup.it>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810281909.m9SJ9pdj003624@hs20-bc2-1.build.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: lethal@linux-sh.org
+CC: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Michael Trimarchi <trimarchimichael@yahoo.it>
+Subject: [RFC PATCH] Correct the interrupt handler in sh4 serial device.
+Content-Type: multipart/mixed;
+ boundary="------------090401000701050501070805"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28, 2008 at 03:09:51PM -0400, Ulrich Drepper wrote:
-> This patch doesn't change *any* functionality from what is currently
-> in the upstream kernel.  There is no reason to start arguing again and
-> for me to explain everything the way I did it months ago.  This is just
-> a *cleanup patch*, nothing else.  If you want to know why this cleanup
-> is needed read the discussions of
+This is a multi-part message in MIME format.
+--------------090401000701050501070805
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Umm, it does enabled functionality that wasn't enabled before.  And that
-functionality includes a syscall.  So any chance you could write a
-proper changelog that describes what you actually do instead of lots of
-ranting and references to old posts?
 
-And no "[PATCH] cleanup paccept" isn't really a good subject for adding
-a new syscalls either.
 
+
+--------------090401000701050501070805
+Content-Type: text/x-patch;
+ name="correct-interrupt-handler-sh4-serial.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="correct-interrupt-handler-sh4-serial.patch"
+
+Correct the interrupt handler in sh4 serial device,
+return the correct value and check for what is anabled
+ in the SCSCR register. The sh7722 is broken just sending
+a break using minicom. I'm not sure for the value of
+SCI_CTRL_FLAGS_REIE in all architecture.
+
+Signed-off-by: Michael Trimarchi <trimarchimichael@yahoo.it>
+
+---
+ drivers/serial/sh-sci.c |   23 ++++++++++++-----------
+ drivers/serial/sh-sci.h |    1 +
+ 2 files changed, 13 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/serial/sh-sci.c b/drivers/serial/sh-sci.c
+index f0658d2..b67f219 100644
+--- a/drivers/serial/sh-sci.c
++++ b/drivers/serial/sh-sci.c
+@@ -810,26 +810,27 @@ static irqreturn_t sci_br_interrupt(int irq, void *ptr)
+ 
+ static irqreturn_t sci_mpxed_interrupt(int irq, void *ptr)
+ {
+-        unsigned short ssr_status, scr_status;
+-        struct uart_port *port = ptr;
++	unsigned short ssr_status, scr_status;
++	struct uart_port *port = ptr;
++	irqreturn_t ret = IRQ_NONE;
+ 
+         ssr_status = sci_in(port,SCxSR);
+         scr_status = sci_in(port,SCSCR);
+ 
+ 	/* Tx Interrupt */
+-        if ((ssr_status & 0x0020) && (scr_status & 0x0080))
+-                sci_tx_interrupt(irq, ptr);
++	if ((ssr_status & 0x0020) && (scr_status & SCI_CTRL_FLAGS_TIE))
++		ret = sci_tx_interrupt(irq, ptr);
+ 	/* Rx Interrupt */
+-        if ((ssr_status & 0x0002) && (scr_status & 0x0040))
+-                sci_rx_interrupt(irq, ptr);
++	if ((ssr_status & 0x0002) && (scr_status & SCI_CTRL_FLAGS_RIE))
++		ret = sci_rx_interrupt(irq, ptr);
+ 	/* Error Interrupt */
+-        if ((ssr_status & 0x0080) && (scr_status & 0x0400))
+-                sci_er_interrupt(irq, ptr);
++	if ((ssr_status & 0x0080) && (scr_status & SCI_CTRL_FLAGS_REIE))
++		ret = sci_er_interrupt(irq, ptr);
+ 	/* Break Interrupt */
+-        if ((ssr_status & 0x0010) && (scr_status & 0x0200))
+-                sci_br_interrupt(irq, ptr);
++	if ((ssr_status & 0x0010) && (scr_status & SCI_CTRL_FLAGS_REIE))
++		ret = sci_br_interrupt(irq, ptr);
+ 
+-	return IRQ_HANDLED;
++	return ret;
+ }
+ 
+ #if defined(CONFIG_CPU_FREQ) && defined(CONFIG_HAVE_CLK)
+diff --git a/drivers/serial/sh-sci.h b/drivers/serial/sh-sci.h
+index 7cd28b2..bce713f 100644
+--- a/drivers/serial/sh-sci.h
++++ b/drivers/serial/sh-sci.h
+@@ -186,6 +186,7 @@
+ #if defined(CONFIG_CPU_SUBTYPE_SH7750)  || \
+     defined(CONFIG_CPU_SUBTYPE_SH7091)  || \
+     defined(CONFIG_CPU_SUBTYPE_SH7750R) || \
++    defined(CONFIG_CPU_SUBTYPE_SH7722)  || \
+     defined(CONFIG_CPU_SUBTYPE_SH7750S) || \
+     defined(CONFIG_CPU_SUBTYPE_SH7751)  || \
+     defined(CONFIG_CPU_SUBTYPE_SH7751R) || \
+-- 
+1.5.6.5
+
+
+
+--------------090401000701050501070805--
