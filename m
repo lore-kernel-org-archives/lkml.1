@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbYJ1V5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbYJ1WC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754313AbYJ1V5K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 17:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbYJ1V4y
+	id S1753991AbYJ1WC4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 18:02:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbYJ1WCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 17:56:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56072 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752969AbYJ1V4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 17:56:53 -0400
-Message-ID: <49078A97.8020003@redhat.com>
-Date: Tue, 28 Oct 2008 17:56:39 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Andreas Dilger <adilger@sun.com>, Josef Bacik <jbacik@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] improve jbd fsync batching
-References: <20081028201614.GA21600@unused.rdu.redhat.com>	<20081028213805.GC3184@webber.adilger.int> <20081028144401.07b7546d@infradead.org>
-In-Reply-To: <20081028144401.07b7546d@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Oct 2008 18:02:48 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:47630 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753314AbYJ1WCs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 18:02:48 -0400
+To: rjw@sisk.pl
+CC: miklos@szeredi.hu, ncunningham@crca.org.au,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-reply-to: <200810282300.31164.rjw@sisk.pl>
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen filesystems.
+References: <1224886068.6478.21.camel@nigel-laptop> <1225229399.9661.13.camel@nigel-laptop> <E1KuwTn-0006EQ-8J@pomaz-ex.szeredi.hu> <200810282300.31164.rjw@sisk.pl>
+Message-Id: <E1Kuwe3-0006Gc-LF@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 28 Oct 2008 23:02:35 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Tue, 28 Oct 2008 15:38:05 -0600
-> Andreas Dilger <adilger@sun.com> wrote:
->
->   
->> On Oct 28, 2008  16:16 -0400, Josef Bacik wrote:
->>     
->>> I also have a min() check in there to make sure we don't sleep
->>> longer than a jiffie in case our storage is super slow, this was
->>> requested by Andrew.
->>>       
->> Is there a particular reason why 1 jiffie is considered the "right
->> amount" of time to sleep, given this is a kernel config parameter and
->> has nothing to do with the storage?  Considering a seek time in the
->> range of ~10ms this would only be right for HZ=100 and the wait would
->>     
->
-> well... my disk does a 50 usec seek time or so.. so I don't mind ;-)
->
-> in fact it sounds awefully long to me.
->   
+On Tue, 28 Oct 2008, Rafael J. Wysocki wrote:
+> On Tuesday, 28 of October 2008, Miklos Szeredi wrote:
+> > On Wed, 29 Oct 2008, Nigel Cunningham wrote:
+> > > > However it does not fix the freezing of tasks which are waiting for
+> > > > VFS locks (i.e. inode->i_mutex) held by the outstanding fuse requests.
+> > > > This is the tricky part...
+> > > 
+> > > Convert them all to wait_event_freezeable.
+> > 
+> > You mean convert mutexes to event queues?  Not a very good idea.
+> > 
+> > I fear we are going down the same path as the last time.  I still
+> > don't think rewriting the VFS is the right solution to the freezing
+> > problem.  But hey, if you want, sumbit a patch or an RFD and lets see
+> > what others think.
+> 
+> So, what solution would you prefer?
 
-For small writes as well as reads?
+I would prefer a freezer-less solution.  Suspend to ram doesn't need
+the freezer, and with the kexec approach hibernate could be done
+without it also.
 
-If so, it would be great to test Josef's patch against your shiny new 
-SSD  :-)
+I don't think adding hacks to the VFS to work around the issues with
+the freezer is the right way to solve this.  But this is just my
+personal opinion, the VFS maintainers may think otherwise.
 
-ric
-
+Miklos
