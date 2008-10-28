@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbYJ1Taz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbYJ1Ti5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754913AbYJ1Taz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 15:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbYJ1Tao
+	id S1752892AbYJ1Ti5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 15:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbYJ1Tiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 15:30:44 -0400
-Received: from jester.euphonynet.be ([212.87.96.13]:55046 "EHLO
-	mailpush2.euphonynet.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754692AbYJ1Tam (ORCPT
+	Tue, 28 Oct 2008 15:38:46 -0400
+Received: from mail-relay-04.mailcluster.net ([77.221.130.216]:45095 "EHLO
+	mail-relay-02.mailcluster.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751896AbYJ1Tip (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 15:30:42 -0400
-X-Greylist: delayed 1527 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Oct 2008 15:30:42 EDT
-From: Bart Van Assche <bart.vanassche@gmail.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Subject: [PATCH] C99 initializers for DEFINE_RATELIMIT_STATE()
-Date: Tue, 28 Oct 2008 20:04:42 +0100
-User-Agent: KMail/1.10.0 (KDE/4.0.4; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+	Tue, 28 Oct 2008 15:38:45 -0400
+Message-ID: <49076A36.5040802@vlnb.net>
+Date: Tue, 28 Oct 2008 22:38:30 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: WARNING: at fs/buffer.c:1186 mark_buffer_dirty+0x51/0x66()
+References: <4901F375.3020202@vlnb.net> <200810282342.05172.nickpiggin@yahoo.com.au>
+In-Reply-To: <200810282342.05172.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810282004.43047.bart.vanassche@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A few months ago (July 25, 2008) the printk ratelimiting code has been
-rewritten. This patch added a.o. the new macro DEFINE_RATELIMIT_STATE(). The
-patch below converts the initializers in that macro to C99 style.
+Nick Piggin wrote:
+> On Saturday 25 October 2008 03:10, Vladislav Bolkhovitin wrote:
+>> Hi,
+>>
+>> During recent debugging session of my SCSI target SCST
+>> (http://scst.sf.net) I noticed many
+>>
+>> WARNING: at fs/buffer.c:1186 mark_buffer_dirty+0x51/0x66()
+>>
+>> messages in kernel log on the initiator. I attached the full log of
+>> several of them.
+>>
+>> My target was buggy and I was working on fixing it, but I suppose Linux
+>> should handle such failures more gracefully. In all the cases the target
+>> had one type of failure: it "ate" a SCSI command and never returned
+>> result of it.
+> 
+> Right. This is one of the warnings I see in my fault-injection testing.
+> It is fixed by my patch to clean up and improve the page and buffer
+> error handling in the vm/fs.
 
-For more information about the printk ratelimiting rewrite, see also commit
-717115e1a5856b57af0f71e1df7149108294fc10
-(http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=commit;h=717115e1a5856b57af0f71e1df7149108294fc10).
-
-Signed-off-by: Bart Van Assche <bart.vanassche@gmail.com>
-
-diff --git a/include/linux/ratelimit.h b/include/linux/ratelimit.h
-index 18a5b9b..61cc908 100644
---- a/include/linux/ratelimit.h
-+++ b/include/linux/ratelimit.h
-@@ -13,8 +13,9 @@ struct ratelimit_state {
- 	unsigned long begin;
- };
- 
--#define DEFINE_RATELIMIT_STATE(name, interval, burst)		\
--		struct ratelimit_state name = {interval, burst,}
-+#define DEFINE_RATELIMIT_STATE(name, interval_value, burst_value)	\
-+	struct ratelimit_state name =					\
-+		{ .interval = (interval_value), .burst = (burst_value) }
- 
- extern int __ratelimit(struct ratelimit_state *rs);
- 
+Can you specify which patch you referring? Is it in 2.6.27?
