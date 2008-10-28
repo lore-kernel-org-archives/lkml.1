@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbYJ1Urz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYJ1Utm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753989AbYJ1Urz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 16:47:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbYJ1Urr
+	id S1754033AbYJ1Utm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 16:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbYJ1Utd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 16:47:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57038 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753126AbYJ1Urq (ORCPT
+	Tue, 28 Oct 2008 16:49:33 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:49031 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752687AbYJ1Utc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 16:47:46 -0400
-Date: Tue, 28 Oct 2008 13:45:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: kosaki.motohiro@jp.fujitsu.com, heiko.carstens@de.ibm.com, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, hugh@veritas.com,
-       torvalds@linux-foundation.org, riel@redhat.com, lee.schermerhorn@hp.com,
-       linux-mm@kvack.org
-Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use
- schedule_on_each_cpu()
-Message-Id: <20081028134536.9a7a5351.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0810280914010.15939@quilx.com>
-References: <2f11576a0810210851g6e0d86benef5d801871886dd7@mail.gmail.com>
-	<2f11576a0810211018g5166c1byc182f1194cfdd45d@mail.gmail.com>
-	<20081023235425.9C40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20081027145509.ebffcf0e.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0810280914010.15939@quilx.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Oct 2008 16:49:32 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type;
+	b=v+tmZnb9vQkRuYspu8FZ23fbP8wed+GgpMLkBE/Dw+0X18UKbTx2H8xbRmAsWEZlo
+	wBKiwFjxfZPJcyb339n9w==
+Date: Tue, 28 Oct 2008 13:48:53 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Paul Menage <menage@google.com>,
+       Derek Fults <dfults@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/7] cpusets: add dirty map to struct address_space
+In-Reply-To: <1225215459.15763.33.camel@lappy.programming.kicks-ass.net>
+Message-ID: <alpine.DEB.1.10.0810281337530.6470@chino.kir.corp.google.com>
+References: <alpine.DEB.1.10.0810280259500.15270@chino.kir.corp.google.com> <1225215459.15763.33.camel@lappy.programming.kicks-ass.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Oct 2008 09:25:31 -0500 (CDT)
-Christoph Lameter <cl@linux-foundation.org> wrote:
+On Tue, 28 Oct 2008, Peter Zijlstra wrote:
 
-> On Mon, 27 Oct 2008, Andrew Morton wrote:
+> > This patch implements the management of dirty node maps for an address
+> > space through the following functions:
+> > 
+> > cpuset_clear_dirty_nodes(mapping)	Clear the map of dirty nodes
+> > 
+> > cpuset_update_nodes(mapping, page)	Record a node in the dirty nodes
+> > 					map
+> > 
+> > cpuset_init_dirty_nodes(mapping)	Initialization of the map
+> > 
+> > 
+> > The dirty map may be stored either directly in the mapping (for NUMA
+> > systems with less then BITS_PER_LONG nodes) or separately allocated for
+> > systems with a large number of nodes (f.e. ia64 with 1024 nodes).
+> > 
+> > Updating the dirty map may involve allocating it first for large
+> > configurations.  Therefore, we protect the allocation and setting of a
+> > node in the map through the tree_lock.  The tree_lock is already taken
+> > when a page is dirtied so there is no additional locking overhead if we
+> > insert the updating of the nodemask there.
 > 
-> > Can we fix that instead?
-> 
-> How about this fix?
-> 
-> 
-> 
-> Subject: Move migrate_prep out from under mmap_sem
-> 
-> Move the migrate_prep outside the mmap_sem for the following system calls
-> 
-> 1. sys_move_pages
-> 2. sys_migrate_pages
-> 3. sys_mbind()
-> 
-> It really does not matter when we flush the lru. The system is free to add
-> pages onto the lru even during migration which will make the page 
-> migration either skip the page (mbind, migrate_pages) or return a busy 
-> state (move_pages).
+> I find this usage of tree lock most bothersome, as my concurrent
+> pagecache patches take the lock out. In which case this _does_ cause
+> extra locking overhead.
 > 
 
-That looks nicer, thanks.  Hopefully it fixes the
-lockdep-warning/deadlock...
+Yeah, if we don't serialize with tree_lock then we'll need to protect the 
+attachment of mapping->dirty_nodes with a new spinlock in struct 
+address_space (and only for configs where MAX_NUMNODES > BITS_PER_LONG). 
+That locking overhead is negligible when mapping->dirty_nodes is non-NULL 
+since there's no requirement to protect the setting of the node in the 
+nodemask.
 
-I guess we should document our newly discovered schedule_on_each_cpu()
-problems before we forget about it and later rediscover it.
-
+Are your concurrent pagecache patches in the latest mmotm?  If so, I can 
+rebase this entire patchset off that.
