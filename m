@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYJ1XRx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbYJ1XTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbYJ1XRx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 19:17:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYJ1XRp
+	id S1754084AbYJ1XTs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 19:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbYJ1XTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 19:17:45 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:50555 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751548AbYJ1XRo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 19:17:44 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for
-	frozen	filesystems.
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <E1Kuxk4-0006NT-Ie@pomaz-ex.szeredi.hu>
-References: <1224886068.6478.21.camel@nigel-laptop>
-	 <E1KuQ1J-0002Vw-9Q@pomaz-ex.szeredi.hu>
-	 <1225106427.26724.5.camel@nigel-laptop> <200810271237.40049.rjw@sisk.pl>
-	 <1225107607.26724.9.camel@nigel-laptop>
-	 <E1KuRN4-0002gS-Hq@pomaz-ex.szeredi.hu>
-	 <1225141168.26724.23.camel@nigel-laptop>
-	 <E1KuZKt-0003jl-2N@pomaz-ex.szeredi.hu>
-	 <1225145607.26724.54.camel@nigel-laptop>
-	 <E1Kuv87-00064p-Lk@pomaz-ex.szeredi.hu>
-	 <1225235054.9661.37.camel@nigel-laptop>
-	 <E1Kuxk4-0006NT-Ie@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Wed, 29 Oct 2008 10:17:40 +1100
-Message-Id: <1225235860.9661.42.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 28 Oct 2008 19:19:41 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:12278 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751299AbYJ1XTk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 19:19:40 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=WTOa2hn3inJh-SO4IyYA:9 a=9BgfCkS8-6OSSSbJ1rMxJ8tWvH0A:4 a=D5YFuimtoV8A:10 a=k-0ameDuTccA:10
+Message-ID: <49079E09.20703@shaw.ca>
+Date: Tue, 28 Oct 2008 17:19:37 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Oskar Liljeblad <oskar@osk.mine.nu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: sata errors with Seagate 1.5TB on AMD 780G/SB700 motherboard
+References: <fa.01zEaARwrup2dCOTuHTYxzuS9BI@ifi.uio.no>
+In-Reply-To: <fa.01zEaARwrup2dCOTuHTYxzuS9BI@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Wed, 2008-10-29 at 00:12 +0100, Miklos Szeredi wrote:
-> On Wed, 29 Oct 2008, Nigel Cunningham wrote:
-> > > However it does not fix the freezing of tasks which are waiting for
-> > > VFS locks (i.e. inode->i_mutex) held by the outstanding fuse requests.
-> > > This is the tricky part...
-> > 
-> > Okay. Looking back on our conversation brought me back to this message,
-> > which I think needs another reply.
-> > 
-> > If we take the strategy of holding new requests and allowing existing
-> > ones to complete, then am I right in thinking that we only need to worry
-> > about where inode->i_mutex is taken in fs/fuse/file.c (I don't see it
-> > taken in other fs/fuse/*.c files).
+Oskar Liljeblad wrote:
+> Can anyone make any sense of these SATA errors? They're killing my md RAID5
+> (at least the second error did).
 > 
-> Nope, i_mutex is usually taken by the VFS not the filesystem.  That
-> means that the filesystem is called with the mutex already held.  Try
-> "grep i_mutex fs/*.c".  There's also sb->s_vfs_rename_mutex, for all
-> the gory details see Documentation/filesystems/Locking.
+> Hard drives (ata1/sda, ata2/sdb, ata3/sdc): Seagate ST31500341AS 1.5TB SATA
+> Motherboard: Asus M3A78-EH with AMD 780G/SB700 chipset
+> SATA driver: ahci
+> 00:11.0 SATA controller: ATI Technologies Inc SB700/SB800 SATA Controller [AHCI mode]
 > 
-> So it's not just having to fix fuse, it's having to "fix" the VFS as
-> well.
+> Smart reports no errors on the drives, short & long tests have been run as
+> well. The system is brand new.
+> 
+> I've read some reports about SATA 3.0 Gbps vs 1.5 Gbps problems and I'm
+> considering limiting the drives to 1.5 Gbps using jumpers. Would that be a
+> good idea?
+> 
+> 19:24:26 ata2: exception Emask 0x50 SAct 0x0 SErr 0x90a02 action 0xe frozen
+> 19:24:26 ata2: irq_stat 0x00400000, PHY RDY changed
+> 19:24:26 ata2: SError: { RecovComm Persist HostInt PHYRdyChg 10B8B }
 
-Remember, though, that we're only freezing fuse at the moment, and
-strictly one filesystem at a time. We can thus happily wait for the
-i_mutex taken by some other process to be released.
+RecovComm: Communications between device and host temporarily lost, but 
+regained
+Persist: Persistent communication or data integrity error
+HostInt: Host bus adapter internal error
+PHYRdyChg: PhyRdy signal changed state
+10B8B: 10b to 8b decoding error occurred
 
-Regards,
+Sounds like the drive and the controller are unhappy with each other, or 
+there's some kind of communications or hardware problem. Not likely a 
+kernel issue.
 
-Nigel
-
+It's unclear if limiting to 1.5 Gbps would help, you could try it and see..
