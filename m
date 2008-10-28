@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752909AbYJ1PzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026AbYJ1P7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752909AbYJ1PzN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 11:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbYJ1Py7
+	id S1753026AbYJ1P7J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 11:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbYJ1P64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 11:54:59 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:60413 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751981AbYJ1Py7 (ORCPT
+	Tue, 28 Oct 2008 11:58:56 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:41455 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752081AbYJ1P64 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 11:54:59 -0400
-Date: Tue, 28 Oct 2008 09:54:58 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: torvalds@osdl.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: On spreading atomic_t initialization
-Message-ID: <20081028155457.GC12792@parisc-linux.org>
-References: <20081028152943.GA20989@x200.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081028152943.GA20989@x200.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 28 Oct 2008 11:58:56 -0400
+Date: Tue, 28 Oct 2008 13:59:33 -0200
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: tiwai@suse.de
+Cc: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
+Subject: snd-hda-intel prevents machine to power off
+Message-ID: <20081028135933.36778d60@doriath.conectiva>
+Organization: Mandriva
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.4; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28, 2008 at 06:29:43PM +0300, Alexey Dobriyan wrote:
-> I wrote stupid runtime checker to look for atomic_t uninitialized usage
-> and the amount of screaming in logs is surprisingly very big.
-> 
-> So the question: is there really really an arch for which setting atomic_t
-> by hand (kzalloc) is not equivalent to atomic_set()?
 
-No.  atomic_t is 32-bit, and requires all 32 bits to be usable by the
-callers.  It's kind of like NULL might not theoretically be represented
-by a bit-pattern of all zeroes.  In practise, it always is.  I don't
-see the value in your checker, sorry.
+ Hi Takashi,
+
+ If I have some process with the sound device opened in my eeepc
+(say KDE's kmix) and try to power off the machine, for example with:
+
+# echo o > /proc/sysrq-trigger
+
+ The machine will not power off.
+
+ But it does work if I remove the snd-hda-intel module before issuing
+the echo above.
+
+ This problem seems to be pretty popular among distros, I could find
+it reported for Mandriva, Ubuntu and Fedora.
+
+ Its workaround is also documented in a few wikis: people are doing
+a 'rmmod snd-hda-intel' in the last halt stage (ie, halt script
+in etc).
+
+ I have tested with 2.6.27.4 and latest 2.7.28-rc2.
+
+ How I can I help you to debug this?
+
+ Thanks.
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Luiz Fernando N. Capitulino
