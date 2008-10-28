@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754347AbYJ1XHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbYJ1XKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754347AbYJ1XHc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 19:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbYJ1XHK
+	id S1754194AbYJ1XKE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 19:10:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbYJ1XJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 19:07:10 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:42660 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753320AbYJ1XHJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 19:07:09 -0400
-Message-ID: <ac3eb2510810281607o19266977l4c77d3d3ab4bb849@mail.gmail.com>
-Date: Wed, 29 Oct 2008 00:07:07 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Folkert van Heusden" <folkert@vanheusden.com>
-Subject: Re: [2.6.26] kobject_add_internal failed for 2:0 with -EEXIST / unable to handle kernel NULL pointer dereference in sysfs_create_link
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081028151157.GI11214@vanheusden.com>
+	Tue, 28 Oct 2008 19:09:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39670 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752393AbYJ1XJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 19:09:49 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mike Miller <mike.miller@hp.com>
+Subject: Re: [PATCH 1/2] cciss: fix sysfs broken symlink regression
+Date: Wed, 29 Oct 2008 00:14:23 +0100
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
+       "LKML-scsi" <linux-scsi@vger.kernel.org>
+References: <20081027210136.GA9438@roadking.ldev.net>
+In-Reply-To: <20081027210136.GA9438@roadking.ldev.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20081028151157.GI11214@vanheusden.com>
+Message-Id: <200810290014.24221.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28, 2008 at 16:11, Folkert van Heusden
-<folkert@vanheusden.com> wrote:
-> While running my http://vanheusden.com/pyk/ script (which randomly
-> inserts and removes modules) I triggered the folllowing oops in a 2.6.26
-> kernel on an IBM xSeries 260. This oops (in fact no oops at all) did not
-> get triggered in a 2.6.18 kernel on that system.
->
-> [   42.507375] FDC 0 is a National Semiconductor PC87306
-> [   42.509057] kobject_add_internal failed for 2:0 with -EEXIST, don't try to register things with the same name in the same directory.
-> [   42.509291] Pid: 5301, comm: modprobe Not tainted 2.6.26-1-amd64 #1
-> [   42.509431]
-> [   42.509433] Call Trace:
-> [   42.509685]  [<ffffffff8031b031>] kobject_add_internal+0x13f/0x17e
-> [   42.509823]  [<ffffffff8031b46e>] kobject_add+0x74/0x7c
-> [   42.509969]  [<ffffffff802e2470>] sysfs_addrm_finish+0x19/0x1ea
-> [   42.510141]  [<ffffffff802e21b4>] sysfs_find_dirent+0x1b/0x2f
-> [   42.510331]  [<ffffffff802e2741>] create_dir+0x5a/0x87
-> [   42.510466]  [<ffffffff8031ae88>] kobject_get+0x12/0x17
-> [   42.510614]  [<ffffffff80382771>] get_device+0x17/0x20
-> [   42.510754]  [<ffffffff80382d81>] device_add+0x9b/0x53f
-> [   42.510915]  [<ffffffff8031acf2>] kobject_init+0x41/0x69
-> [   42.511374]  [<ffffffff803832d1>] device_create_vargs+0x9a/0xc6
-> [   42.511519]  [<ffffffff8027d23b>] bdi_register+0x57/0xb4
+On Monday, 27 of October 2008, Mike Miller wrote:
+> Patch 1 of 2
+> 
+> Regression introduced by commit 6ae5ce8e8d4de666f31286808d2285aa6a50fa40.
+> This patch fixes a broken symlink in sysfs that was introduced by the above
+> commit also called "cciss: remove redundant code." We broke it in 2.6.27-rc
+> on or about 20080804. Some installers are broken if this symlink does not
+> exist and they may not detect the logical drives configured on the
+> controller.
+> It does not require being backported into 2.6.26.x or earlier kernels.
+> 
+> Please consider this for inclusion.
+> 
+> Andrew, do I need to resubmit 2 of 2? Or is that one still in your queue?
+> 
+> Signed-off-by: Mike Miller <mike.miller@hp.com>
+> 
+> diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+> index 1e1f915..0f367b1 100644
+> --- a/drivers/block/cciss.c
+> +++ b/drivers/block/cciss.c
+> @@ -1365,6 +1365,7 @@ static void cciss_add_disk(ctlr_info_t *h, struct gendisk *disk,
+>  	disk->first_minor = drv_index << NWD_SHIFT;
+>  	disk->fops = &cciss_fops;
+>  	disk->private_data = &h->drv[drv_index];
+> +	disk->driverfs_dev = &h->pdev->dev;
+>  
+>  	/* Set up queue information */
+>  	blk_queue_bounce_limit(disk->queue, h->pdev->dma_mask);
+> --
 
-Looks like bdi sees two devices with the same devnum, or didn't
-cleanup an old entry.
+Is this a patch for bug #11404 or for another regression?
 
-What does: ls -l "/sys/class/bdi/" print?
-
-How many floppies (or emulated floppies) does this system have?
-
-Kay
+Rafael
