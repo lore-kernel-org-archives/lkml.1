@@ -1,76 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbYJ1NBI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbYJ1NUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753542AbYJ1NBI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 09:01:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbYJ1NAz
+	id S1753869AbYJ1NUj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 09:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbYJ1NUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 09:00:55 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:43040 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751917AbYJ1NAy (ORCPT
+	Tue, 28 Oct 2008 09:20:31 -0400
+Received: from smtp-vbr2.xs4all.nl ([194.109.24.22]:4576 "EHLO
+	smtp-vbr2.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752616AbYJ1NUa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 09:00:54 -0400
-Subject: Re: [PATCH] memory hotplug: fix page_zone() calculation in
-	test_pages_isolated()
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       y-goto@jp.fujitsu.com
-In-Reply-To: <20081028093224.a0de9f64.kamezawa.hiroyu@jp.fujitsu.com>
-References: <4905F114.3030406@de.ibm.com>
-	 <1225128359.12673.101.camel@nimitz>
-	 <1225130369.20384.33.camel@localhost.localdomain>
-	 <20081028093224.a0de9f64.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 28 Oct 2008 09:20:30 -0400
+Subject: Re: Order 0 page allocation failure under heavy I/O load
+From: Miquel van Smoorenburg <mikevs@xs4all.net>
+To: Dave Chinner <david@fromorbit.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20081026225723.GO18495@disturbed>
+References: <20081026225723.GO18495@disturbed>
 Content-Type: text/plain
-Date: Tue, 28 Oct 2008 14:00:01 +0100
-Message-Id: <1225198802.10037.7.camel@localhost.localdomain>
+Date: Tue, 28 Oct 2008 17:20:00 +0400
+Message-Id: <1225200000.6482.4.camel@mikevs-laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-28 at 09:32 +0900, KAMEZAWA Hiroyuki wrote:
-> But
->  - "pfn" and "end_pfn" (and pfn in the middle of them) can be in different zone on strange machine.
+On Mon, 2008-10-27 at 09:57 +1100, Dave Chinner wrote:
+> I've been running a workload in a UML recently to reproduce a
+> problem, and I've been seeing all sorts of latency problems on
+> the host. The hosts is running a standard debian kernel:
 > 
-> Now: test_pages_isolated() is called in following sequence.
->   
->   check_page_isolated()
->      walk_memory_resource()			# read resource range and get start/end of pfn
->          -> chcek_page_isolated_cb()
-> 		-> test_page_isolated().
+> $ uname -a
+> Linux disturbed 2.6.26-1-amd64 #1 SMP Wed Sep 10 15:31:12 UTC 2008 x86_64 GNU/Linux
 > 
-> I think all pages within [start, end) passed to test_pages_isolated() should be in the same zone.
+> Basically, the workload running in the UML is:
 > 
-> please change this to
->   check_page_isolated()
->      walk_memory_resource()
->          -> check_page_isolated_cb()
->                  -> walk_page_range_in_same_zone()  # get page range in the same zone.
->                         -> test_page_isolated().
+> # fsstress -p 1024 -n 100000 -d /mnt/xfs2/fsstress.dir
 > 
-> Could you try ?
+> Which runs 1024 fsstress processes inside the indicated directory.
+> Being UML, that translates to 1024 processes on the host doing I/O
+> to a single file in an XFS filesystem. The problem is that this
+> load appears to be triggering OOM on the host. The host filesystem
+> is XFS on a 2 disk MD raid0 stripe.
+> 
+> The host will hang for tens of seconds at a time with both CPU cores
+> pegged at 100%, and eventually I get this in dmesg:
+> 
+> [1304740.261506] linux: page allocation failure. order:0, mode:0x10000
+> [1304740.261516] Pid: 10705, comm: linux Tainted: P          2.6.26-1-amd64 #1
+> [1304740.261520]
+> [1304740.261520] Call Trace:
+> [1304740.261557]  [<ffffffff802768db>] __alloc_pages_internal+0x3ab/0x3c4
+> [1304740.261574]  [<ffffffff80295248>] kmem_getpages+0x96/0x15f
 
-There is already a "same zone" check at the beginning of offline_pages():
+I saw the same thing, on i386 though. Never saw it on x86_64. For i386
+it helped to recompile with the 2G/2G split set. But it appears that my
+problem has been solved in 2.6.26.6 by the commit below. Perhaps your
+hitting something similar. Your kernel version looks like a debian
+version number, and if 2.6.26.6 fixes your problem, please file a debian
+bug report so that lenny won't get released with this bug ....
 
->	if (!test_pages_in_a_zone(start_pfn, end_pfn))
->		return -EINVAL;
+commit 6b546b3dbbc51800bdbd075da923288c6a4fe5af
+Author: Mel Gorman <mel@csn.ul.ie>
+Date:   Sat Sep 13 22:05:39 2008 +0000
 
-So we should be safe here, the only problem that I see is that my
-zone->lock patch in test_pages_isolated() is broken. As explained,
-the pfn used in my page_zone(pfn_to_page(pfn)) is >= end_pfn.
-
-I'll send a new patch to fix this, using __first_valid_page() again,
-as described in my reply to Daves mail. The only other solution that
-I see would be to remember the first/last !NULL page that was found
-inside the for() loop. Not sure which is better, but I think I like
-the first one more. Any other ideas?
-
-Thanks,
-Gerald
-
+    mm: mark the correct zone as full when scanning zonelists
+    
+    commit 5bead2a0680687b9576d57c177988e8aa082b922 upstream
+    
+    The iterator for_each_zone_zonelist() uses a struct zoneref *z cursor when
+    scanning zonelists to keep track of where in the zonelist it is.  The
+    zoneref that is returned corresponds to the the next zone that is to be
+    scanned, not the current one.  It was intended to be treated as an opaque
+    list.
+    
+    When the page allocator is scanning a zonelist, it marks elements in the
+    zonelist corresponding to zones that are temporarily full.  As the
+    zonelist is being updated, it uses the cursor here;
+    
+      if (NUMA_BUILD)
+            zlc_mark_zone_full(zonelist, z);
+    
+    This is intended to prevent rescanning in the near future but the zoneref
+    cursor does not correspond to the zone that has been found to be full.
+    This is an easy misunderstanding to make so this patch corrects the
+    problem by changing zoneref cursor to be the current zone being scanned
+    instead of the next one.
+    
+Mike.
 
