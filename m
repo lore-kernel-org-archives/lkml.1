@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbYJ1Vmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753116AbYJ1VnK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753941AbYJ1Vmu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 17:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYJ1Vmk
+	id S1753116AbYJ1VnK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 17:43:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYJ1Vmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 17:42:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34648 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751595AbYJ1Vmk (ORCPT
+	Tue, 28 Oct 2008 17:42:46 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50795 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753380AbYJ1Vmo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 17:42:40 -0400
-Date: Tue, 28 Oct 2008 14:42:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Rientjes <rientjes@google.com>
-Cc: menage@google.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch] oom: print triggering task's cpuset and mems allowed
-Message-Id: <20081028144234.35924bad.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0810280222090.31219@chino.kir.corp.google.com>
-References: <alpine.DEB.1.10.0810241704380.15988@chino.kir.corp.google.com>
-	<alpine.DEB.1.10.0810241714290.16902@chino.kir.corp.google.com>
-	<20081027174136.c97687c7.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0810280222090.31219@chino.kir.corp.google.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 28 Oct 2008 17:42:44 -0400
+Date: Tue, 28 Oct 2008 14:42:55 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Avi Kivity <avi@redhat.com>, Glauber Costa <glommer@redhat.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       aliguori@codemonkey.ws, npiggin@suse.de,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH] regression: vmalloc easily fail.
+Message-ID: <20081028144255.05712d70@infradead.org>
+In-Reply-To: <ada7i7so1o7.fsf@cisco.com>
+References: <1225234513-3996-1-git-send-email-glommer@redhat.com>
+	<49077E1A.5080105@redhat.com>
+	<ada7i7so1o7.fsf@cisco.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Oct 2008 09:08:15 -0700 (PDT)
-David Rientjes <rientjes@google.com> wrote:
+On Tue, 28 Oct 2008 14:22:16 -0700
+Roland Dreier <rdreier@cisco.com> wrote:
 
-> +#define CPUSET_NAME_LEN		(128)
-> +#define	CPUSET_NODELIST_LEN	(256)
-> +static char cpuset_name[CPUSET_NAME_LEN];
-> +static char cpuset_nodelist[CPUSET_NODELIST_LEN];
->
-> ...
->
-> +	snprintf(cpuset_name, CPUSET_NAME_LEN,
-> +		 dentry ? (const char *)dentry->d_name.name : "/");
+>  > I'm guessing that the missing comment explains that this is
+>  > intentional, to trap buffer overflows?
+> 
+> Actually, speaking of comments, it's interesting that
+> __get_vm_area_node() -- which is called from vmalloc() -- does:
+> 
+> 	/*
+> 	 * We always allocate a guard page.
+> 	 */
+> 	size += PAGE_SIZE;
+> 
+> 	va = alloc_vmap_area(size, align, start, end, node, gfp_mask);
+> 
+> and alloc_vmap_area() adds another PAGE_SIZE, as the original email
+> pointed out:
+> 
+> 		while (addr + size >= first->va_start && addr + size
+> <= vend) { addr = ALIGN(first->va_end + PAGE_SIZE, align);
+> 
+> I wonder if the double padding is causing a problem when things get
+> too fragmented?
 
-nit: this requires that the reviewer (and the maintainer) ensure that
-CPUSET_NAME_LEN=sizeof(cpuset_name).  This must be done manually and
-introduces risk.
+I suspect it's a case of off-by-one... ALIGN() might round down, and
+the "+ (PAGE_SIZE-1)" was there to make it round up.
+Except for that missing -1 ...
 
-Better would be:
-
-
-static char cpuset_name[128];
-
-...
-
-	snprintf(cpuset_name, sizeof(cpuset_name), ...);
-
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
