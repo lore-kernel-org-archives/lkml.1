@@ -1,91 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753609AbYJ1OT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbYJ1OXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753609AbYJ1OT1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 10:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbYJ1OTT
+	id S1753283AbYJ1OXy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 10:23:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYJ1OXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 10:19:19 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:14244 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751267AbYJ1OTS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 10:19:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=DdyFuMkhw0UYKFr2HoriTxQoo9lWHa5g3WQri8TwIP1EK/gCPm4nXx3u82jbwsZomj
-         Wcyf1zHlZ6TYMFCEBxLwfag+XgY+ZIiqrBP+BEVQBiepObwY/A27m7gNNcG5/quqq88N
-         IAH4XPBYtPNnPkN2QMpC53Sq5zgwls+X28x6U=
-Message-ID: <40a4ed590810280719u718c01e4j73d14d958ccf55c1@mail.gmail.com>
-Date: Tue, 28 Oct 2008 15:19:12 +0100
-From: "Zeno Davatz" <zdavatz@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [sda] write cache: enabled, read cache:enabled: doesn't support DPO or FUA, sda:
-In-Reply-To: <20081028140449.GN22217@kernel.dk>
+	Tue, 28 Oct 2008 10:23:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46592 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751372AbYJ1OXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 10:23:42 -0400
+Message-ID: <4906D793.8020109@redhat.com>
+Date: Tue, 28 Oct 2008 10:12:51 +0100
+From: Ivan Vecera <ivecera@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Simon Arlott <simon@fire.lp0.eu>
+CC: Krzysztof Halasa <khc@pm.waw.pl>, Jiri Slaby <jirislaby@gmail.com>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, Edward Hsu <edward_hsu@realtek.com.tw>
+Subject: Re: r8169 MAC addresses broken
+References: <490380C8.6070003@simon.arlott.org.uk>	<4903947A.3060206@gmail.com>	<20081025223443.GA30913@electric-eye.fr.zoreil.com>	<490448B0.8050307@gmail.com> <m33aijzfga.fsf@maximus.localdomain> <49061B7E.6050409@simon.arlott.org.uk>
+In-Reply-To: <49061B7E.6050409@simon.arlott.org.uk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <40a4ed590810280648u2fc01a6dybfe3d5f49aa29f94@mail.gmail.com>
-	 <20081028135730.GM22217@kernel.dk>
-	 <40a4ed590810280703q665ed37du3f8c25df0855dc5d@mail.gmail.com>
-	 <20081028140449.GN22217@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28, 2008 at 3:04 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
->
-> (don't top post)
->
->> On Tue, Oct 28, 2008 at 2:57 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
->> > On Tue, Oct 28 2008, Zeno Davatz wrote:
->> >> Dear List
->> >>
->> >> After my latest git pull from
->> >>
->> >> url = git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
->> >>
->> >> I done
->> >>
->> >> make silentoldconfig
->> >> make modules_install
->> >>
->> >> copied the bzImage to /boot and ran lilo.
->> >>
->> >> When I want to boot into 2.6.28-rc2 I get:
->> >>
->> >> [sda] write cache: enabled, read cache:enabled: doesn't support DPO or FUA, sda:
->> >>
->> >> Also see my screenshot:
->> >>
->> >> http://farm4.static.flickr.com/3213/2980651545_de81680bf9_o.jpg
->> >
->> > How recent is that pull? This looks like something fixed in-between -rc1
->> > and -rc2. So I'd double check that you are after or on -rc2 and that you
->> > are booting the right kernel.
+Simon Arlott napsal(a):
+> On 26/10/08 12:52, Krzysztof Halasa wrote:
+>> Jiri Slaby <jirislaby@gmail.com> writes:
 >>
->> That Pull is from right after Linus released 2.6.28-rc2. I always pull
->> after Linus releases an rc and notifys everyone through the list.
->>
->> I will pull again right now and try again.
->
-> Please do, and if it still breaks then use netconsole or a serial
-> console to capture all boot messages!
+>>> However I may have a hw failure or some bug overwrote my eeprom, I see this
+>>> in current mmotm:
+>>> r8169 0000:06:00.0: PCI INT A disabled
+>>> r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+>>> r8169 0000:06:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+>>> r8169 0000:06:00.0: setting latency timer to 64
+>>> r8169: mac_version = 0x0c
+>>> r8169 0000:06:00.0: irq 43 for MSI/MSI-X
+>>> r8169: MAC address found in EEPROM: 00:00:00:00:00:00
+>>> eth0: RTL8168b/8111b at 0xffffc200042b0000, 00:00:00:00:00:00, XID 38000000
+>> I think we need drivers or maybe some tool to save contents of those
+>> little EEPROM / flash NVM configuration chips before it's too late.
+>> First the ICH* e1000e corruption and now GbE RTL.
+> 
+> With the reverted patch my MAC addresses are still broken:
+Try full power-off (disconnect power supply/remove battery).
 
-Ok, this worked, thanks! I am now on 2.6.28-rc2-00095-g49fdf67.
+> 
+> [    1.527660] r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+> [    1.533421] r8169 0000:00:09.0: PCI INT A -> Link[LNKC] -> GSI 10 (level, low) -> IRQ 10
+> [    1.541743] r8169 0000:00:09.0: PCI: Disallowing DAC for device
+> [    1.547799] r8169 0000:00:09.0: no PCI Express capability
+> [    1.554519] eth0: RTL8169sc/8110sc at 0xbf6f8000, 00:00:00:00:25:c2, XID 18000000 IRQ 10
+> 
+> [    1.563480] r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+> [    1.570525] ACPI: PCI Interrupt Link [LNKD] enabled at IRQ 11
+> [    1.576363] r8169 0000:00:0b.0: PCI INT A -> Link[LNKD] -> GSI 11 (level, low) -> IRQ 11
+> [    1.584597] r8169 0000:00:0b.0: PCI: Disallowing DAC for device
+> [    1.590651] r8169 0000:00:0b.0: no PCI Express capability
+> [    1.596659] eth1: RTL8169sc/8110sc at 0xbf6fc000, 00:00:00:00:25:c3, XID 18000000 IRQ 11
+> 
 
-The only thing remaining is that my time is now
-
-04:17
-
-instead of
-
-16:17
-
-Any hints on that?
-
-Best
-Zeno
