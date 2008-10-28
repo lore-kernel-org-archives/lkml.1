@@ -1,92 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbYJ1AAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbYJ1AF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327AbYJ1AAk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 20:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYJ1AAc
+	id S1752809AbYJ1AF1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 20:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbYJ1AFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 20:00:32 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49641
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751652AbYJ1AAb (ORCPT
+	Mon, 27 Oct 2008 20:05:12 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:5558 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751369AbYJ1AFK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 20:00:31 -0400
-Date: Mon, 27 Oct 2008 17:00:08 -0700 (PDT)
-Message-Id: <20081027.170008.112856238.davem@davemloft.net>
-To: cloos@jhcloos.com
-Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org, khc@pm.waw.pl,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: radeonfb lockup in .28-rc (bisected)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
-References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Oct 2008 20:05:10 -0400
+From: David Daney <ddaney@caviumnetworks.com>
+To: linux-mips@linux-mips.org
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       akpm@linux-foundation.org, David Daney <ddaney@caviumnetworks.com>
+Subject: [PATCH 33/36] Allow port type to specify bugs that are not probed for.
+Date: Mon, 27 Oct 2008 17:04:10 -0700
+Message-Id: <1225152251-3367-4-git-send-email-ddaney@caviumnetworks.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1225152251-3367-3-git-send-email-ddaney@caviumnetworks.com>
+References: <490655B6.4030406@caviumnetworks.com>
+ <1225152251-3367-1-git-send-email-ddaney@caviumnetworks.com>
+ <1225152251-3367-2-git-send-email-ddaney@caviumnetworks.com>
+ <1225152251-3367-3-git-send-email-ddaney@caviumnetworks.com>
+X-OriginalArrivalTime: 28 Oct 2008 00:04:16.0084 (UTC) FILETIME=[B770D140:01C93890]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: James Cloos <cloos@jhcloos.com>
-Date: Mon, 27 Oct 2008 19:45:58 -0400
+Add a bugs field to the serial8250_config and propagate it to the
+port's bugs field when the port is registered and configured.
 
-> Commit b1ee26bab1 breaks radeonfb on my inspiron 8100 (P3-M with a
-> Mobility M7 LW [7500] (1002:4c57 1028:00e6)).
+Signed-off-by: David Daney <ddaney@caviumnetworks.com>
+---
+ drivers/serial/8250.c |    2 ++
+ drivers/serial/8250.h |    1 +
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
-Please quote at least the headerline of the commit so that it can
-come into our memory quickly when reading your report.
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index 9d16abb..474ab89 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -1212,6 +1212,7 @@ static void autoconfig(struct uart_8250_port *up, unsigned int probeflags)
+ 	up->port.fifosize = uart_config[up->port.type].fifo_size;
+ 	up->capabilities = uart_config[up->port.type].flags;
+ 	up->tx_loadsz = uart_config[up->port.type].tx_loadsz;
++	up->bugs |= uart_config[up->port.type].bugs;
+ 
+ 	if (up->port.type == PORT_UNKNOWN)
+ 		goto out;
+@@ -3062,6 +3063,7 @@ int serial8250_register_port(struct uart_port *port)
+ 			uart->port.fifosize = uart_config[port->type].fifo_size;
+ 			uart->capabilities = uart_config[port->type].flags;
+ 			uart->tx_loadsz = uart_config[port->type].tx_loadsz;
++			uart->bugs = uart_config[port->type].bugs;
+ 		}
+ 
+ 		set_io_fns_from_upio(&uart->port);
+diff --git a/drivers/serial/8250.h b/drivers/serial/8250.h
+index 5202603..c9b3002 100644
+--- a/drivers/serial/8250.h
++++ b/drivers/serial/8250.h
+@@ -34,6 +34,7 @@ struct serial8250_config {
+ 	const char	*name;
+ 	unsigned short	fifo_size;
+ 	unsigned short	tx_loadsz;
++	unsigned short	bugs;
+ 	unsigned char	fcr;
+ 	unsigned int	flags;
+ };
+-- 
+1.5.6.5
 
-Here it is for the others:
-
-commit b1ee26bab14886350ba12a5c10cbc0696ac679bf
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Wed Oct 15 22:03:46 2008 -0700
-
-    radeonfb: accelerate imageblit and other improvements
-    
-    Implement support for HW color expansion of 1bpp images, along with some
-    improvements to the FIFO handling and other accel operations.
-    
-    The offset fixup code is now unnecessary as the fbcon core will call our
-    set_par upon switch back from KD_GRAPHICS before anything else happens.  I
-    removed it as it would slow down accel operations.
-    
-    The fifo wait has been improved to avoid hitting the HW register as often,
-    and the various accel ops are now performing better caching of register
-    values.
-    
-    Overall, this improve accel performances.  The imageblit acceleration does
-    result in a small overall regression in performances on some machines (on
-    the order of 5% on some x86), probably becaus the SW path provides a
-    better bus utilisation, but I decided to ingnore that as the performances
-    is still very good, and on the other hand, some machines such as some
-    sparc64 get a 3 fold performance improvement.
-    
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Acked-by: David S. Miller <davem@davemloft.net>
-    Cc: Krzysztof Halasa <khc@pm.waw.pl>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-> The boot is OK until init(8) starts; after init outputs its version info
-> it calls rc(8), which starts by setting the fb font.  At that point any
-> kernel with b1ee26bab1 locks hard.  The cursor stops flashing, magic
-> sysrq stops working and the fan starts up after a few seconds.  (I can't
-> tell whether it is the CPU or the GPU that heats up.)
-> 
-> If it is relevant, I use a 10x20 font, so the font change means the
-> console converts from 200x75, 8x16 to 160x60, 10x20.
-
-The actual key here is that when setfont runs, the framebuffer layer sets
-the acceleration options for the framebuffer for the first time to their
-final settings.
-
-> The differences between rc2 and rc2+revert are limited
-> to some changes in the size of the kernel:
-> 
-> -Memory: 512232k/524200k available (4376k kernel code, 11428k reserved, 1707k data, 320k init, 0k highmem)
-> +Memory: 512272k/524200k available (4354k kernel code, 11388k reserved, 1693k data, 316k init, 0k highmem)
-
-That's just all due to the text size change because of the different
-acceleration code.
