@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754561AbYJ1Tak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbYJ1Taz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754561AbYJ1Tak (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 15:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbYJ1Taa
+	id S1754913AbYJ1Taz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 15:30:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbYJ1Tao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 15:30:30 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43225 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752058AbYJ1Taa (ORCPT
+	Tue, 28 Oct 2008 15:30:44 -0400
+Received: from jester.euphonynet.be ([212.87.96.13]:55046 "EHLO
+	mailpush2.euphonynet.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754692AbYJ1Tam (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 15:30:30 -0400
-Date: Tue, 28 Oct 2008 20:32:04 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] w35und: plug memory leak in wbsoft_tx()
-Message-ID: <20081028193204.GI16452@elf.ucw.cz>
-References: <Pine.LNX.4.64.0810280014140.9821@melkki.cs.Helsinki.FI>
+	Tue, 28 Oct 2008 15:30:42 -0400
+X-Greylist: delayed 1527 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Oct 2008 15:30:42 EDT
+From: Bart Van Assche <bart.vanassche@gmail.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Subject: [PATCH] C99 initializers for DEFINE_RATELIMIT_STATE()
+Date: Tue, 28 Oct 2008 20:04:42 +0100
+User-Agent: KMail/1.10.0 (KDE/4.0.4; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0810280014140.9821@melkki.cs.Helsinki.FI>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200810282004.43047.bart.vanassche@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-10-28 00:14:38, Pekka J Enberg wrote:
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> There's no reason to duplicate the skb in wbsoft_tx() and leak GFP_ATOMIC
-> memory as the contents are copied to ->TxBuffer in MdxTx() anyway before
-> MLMESendFrame() returns.
+A few months ago (July 25, 2008) the printk ratelimiting code has been
+rewritten. This patch added a.o. the new macro DEFINE_RATELIMIT_STATE(). The
+patch below converts the initializers in that macro to C99 style.
 
-Acked-by: Pavel Machek <pavel@suse.cz>
+For more information about the printk ratelimiting rewrite, see also commit
+717115e1a5856b57af0f71e1df7149108294fc10
+(http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=commit;h=717115e1a5856b57af0f71e1df7149108294fc10).
 
-...but I guess I should test the this after it hits the mainline...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Signed-off-by: Bart Van Assche <bart.vanassche@gmail.com>
+
+diff --git a/include/linux/ratelimit.h b/include/linux/ratelimit.h
+index 18a5b9b..61cc908 100644
+--- a/include/linux/ratelimit.h
++++ b/include/linux/ratelimit.h
+@@ -13,8 +13,9 @@ struct ratelimit_state {
+ 	unsigned long begin;
+ };
+ 
+-#define DEFINE_RATELIMIT_STATE(name, interval, burst)		\
+-		struct ratelimit_state name = {interval, burst,}
++#define DEFINE_RATELIMIT_STATE(name, interval_value, burst_value)	\
++	struct ratelimit_state name =					\
++		{ .interval = (interval_value), .burst = (burst_value) }
+ 
+ extern int __ratelimit(struct ratelimit_state *rs);
+ 
