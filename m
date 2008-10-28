@@ -1,196 +1,302 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208AbYJ1Ri0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbYJ1Rkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754208AbYJ1Ri0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 13:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbYJ1RiO
+	id S1753510AbYJ1Rkt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 13:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbYJ1Rkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 13:38:14 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:33821 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752949AbYJ1RiM (ORCPT
+	Tue, 28 Oct 2008 13:40:40 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:46252 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751041AbYJ1Rkj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 13:38:12 -0400
-Date: Tue, 28 Oct 2008 13:38:11 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Luciano Rocha <luciano@eurotux.com>
-cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-Subject: Re: usb hdd problems with 2.6.27.2
-In-Reply-To: <20081028163722.GA4374@bit.office.eurotux.com>
-Message-ID: <Pine.LNX.4.44L0.0810281331260.2190-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 28 Oct 2008 13:40:39 -0400
+From: "Theodore Ts'o" <tytso@mit.edu>
+To: Ext4 Developers List <linux-ext4@vger.kernel.org>
+Cc: "Theodore Ts'o" <tytso@mit.edu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH V2 1/2] ext3: Add support for non-native signed/unsigned htree hash algorithms
+Date: Tue, 28 Oct 2008 13:40:15 -0400
+Message-Id: <1225215616-6069-1-git-send-email-tytso@mit.edu>
+X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Oct 2008, Luciano Rocha wrote:
+The original ext3 hash algorithms assumed that variables of type char
+were signed, as God and K&R intended.  Unfortunately, this assumption
+is not true on some architectures.  Userspace support for marking
+filesystems with non-native signed/unsigned chars was added two years
+ago, but the kernel-side support was never added (until now).
 
-> > 
-> > Okay, I tried the same sort of experiment in 2.6.27.4 and got the same
-> > result as you did.  I was able to fix it by applying the 8bfa24727
-> > commit mentioned earlier together with the patch below.
-> 
-> I tried it, but I get some I/O errors with it.
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Cc: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+---
+ fs/ext3/hash.c             |   77 ++++++++++++++++++++++++++++++++++++++------
+ fs/ext3/namei.c            |    7 ++++
+ fs/ext3/super.c            |   12 +++++++
+ include/linux/ext3_fs.h    |   28 +++++++++++++++-
+ include/linux/ext3_fs_sb.h |    1 +
+ 5 files changed, 114 insertions(+), 11 deletions(-)
 
-That's to be expected.  These patches aren't supposed to prevent I/O 
-errors, they are merely supposed to prevent the errors from continuing 
-indefinitely.
-
-> With 8bfa24727 and this patch, I get:
-> 
-> [   94.289819] usb 1-2.1.1: new high speed USB device using ehci_hcd and address 8
-> [   94.493891] usb 1-2.1.1: configuration #1 chosen from 1 choice
-> [   94.537884] usbcore: registered new interface driver libusual
-> [   94.611888] Initializing USB Mass Storage driver...
-> [   94.612704] scsi2 : SCSI emulation for USB Mass Storage devices
-> [   94.619835] usbcore: registered new interface driver usb-storage
-> [   94.619891] USB Mass Storage support registered.
-> [   94.622190] usb-storage: device found at 8
-> [   94.622232] usb-storage: waiting for device to settle before scanning
-> [   99.622933] scsi 2:0:0:0: Direct-Access     SAMSUNG  HD400LD          WQ10 PQ: 0 ANSI: 0
-> [   99.627569] usb-storage: device scan complete
-> [   99.657746] Driver 'sd' needs updating - please use bus_type methods
-> [   99.661428] sd 2:0:0:0: [sda] 781422769 512-byte hardware sectors (400088 MB)
-> [   99.662551] sd 2:0:0:0: [sda] Write Protect is off
-> [   99.662662] sd 2:0:0:0: [sda] Mode Sense: 03 00 00 00
-> [   99.662702] sd 2:0:0:0: [sda] Assuming drive cache: write through
-> [   99.666582] sd 2:0:0:0: [sda] 781422769 512-byte hardware sectors (400088 MB)
-> [   99.672877] sd 2:0:0:0: [sda] Write Protect is off
-> [   99.672884] sd 2:0:0:0: [sda] Mode Sense: 03 00 00 00
-> [   99.672886] sd 2:0:0:0: [sda] Assuming drive cache: write through
-> [   99.672890]  sda: sda1
-> [   99.683592] sd 2:0:0:0: [sda] Attached SCSI disk
-> [   99.704160] sd 2:0:0:0: Attached scsi generic sg0 type 0
-> [   99.808029] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
-> [   99.808040] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
-> [   99.808051] end_request: I/O error, dev sda, sector 781422768
-> [   99.808056] Buffer I/O error on device sda, logical block 781422768
-> [   99.837771] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
-> [   99.837780] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
-> [   99.837790] end_request: I/O error, dev sda, sector 781422768
-> [   99.837794] Buffer I/O error on device sda, logical block 781422768
-> [   99.838775] end_request: I/O error, dev sda, sector 781422761
-> [   99.838781] Buffer I/O error on device sda, logical block 781422761
-> [   99.838784] Buffer I/O error on device sda, logical block 781422762
-> [   99.838786] Buffer I/O error on device sda, logical block 781422763
-> [   99.838789] Buffer I/O error on device sda, logical block 781422764
-> [   99.838791] Buffer I/O error on device sda, logical block 781422765
-> [   99.838793] Buffer I/O error on device sda, logical block 781422766
-> [   99.838796] Buffer I/O error on device sda, logical block 781422767
-> [   99.839525] end_request: I/O error, dev sda, sector 781422762
-> [   99.839530] Buffer I/O error on device sda, logical block 781422762
-> [   99.847527] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
-> [   99.847539] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
-> [   99.847554] end_request: I/O error, dev sda, sector 781422768
-> [   99.864923] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
-> [   99.864942] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
-> [   99.864967] end_request: I/O error, dev sda, sector 781422768
-> [   99.883038] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
-> [   99.883047] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
-> [   99.883058] end_request: I/O error, dev sda, sector 781422768
-> [   99.884239] end_request: I/O error, dev sda, sector 781422763
-> [   99.901645] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
-> [   99.901655] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
-> [   99.901665] end_request: I/O error, dev sda, sector 781422768
-> [   99.925027] sd 2:0:0:0: [sda] Sense Key : No Sense [current] 
-> [   99.925036] sd 2:0:0:0: [sda] Add. Sense: No additional sense information
-> [   99.925046] end_request: I/O error, dev sda, sector 781422768
-> [  119.957384] kjournald starting.  Commit interval 5 seconds
-> [  119.962246] EXT3 FS on dm-5, internal journal
-> [  119.962267] EXT3-fs: mounted filesystem with ordered data mode.
-
-And the errors did stop, so the patch did what it was supposed to do.
-
-> Oddly enough, with the other patch you sent me fixing the reported
-> number of sectors (*), on top of this one, I also get I/O errors:
-> 
-> 
-> [  127.047323] usb 1-2.1.1: new high speed USB device using ehci_hcd and address 13
-> [  127.240694] usb 1-2.1.1: configuration #1 chosen from 1 choice
-> [  127.241178] scsi3 : SCSI emulation for USB Mass Storage devices
-> [  127.241752] usb-storage: device found at 13
-> [  127.241924] usb-storage: waiting for device to settle before scanning
-> [  132.242710] scsi 3:0:0:0: Direct-Access     SAMSUNG  HD400LD          WQ10 PQ: 0 ANSI: 0
-> [  132.244195] sd 3:0:0:0: [sda] 781422768 512-byte hardware sectors (400088 MB)
-> [  132.245070] sd 3:0:0:0: [sda] Write Protect is off
-> [  132.245162] sd 3:0:0:0: [sda] Mode Sense: 03 00 00 00
-> [  132.245190] sd 3:0:0:0: [sda] Assuming drive cache: write through
-> [  132.245929] sd 3:0:0:0: [sda] 781422768 512-byte hardware sectors (400088 MB)
-> [  132.246686] sd 3:0:0:0: [sda] Write Protect is off
-> [  132.246691] sd 3:0:0:0: [sda] Mode Sense: 03 00 00 00
-> [  132.246693] sd 3:0:0:0: [sda] Assuming drive cache: write through
-> [  132.246696]  sda: sda1
-> [  132.272924] sd 3:0:0:0: [sda] Attached SCSI disk
-> [  132.273058] sd 3:0:0:0: Attached scsi generic sg0 type 0
-> [  132.273297] usb-storage: device scan complete
-> [  132.325802] end_request: I/O error, dev sda, sector 781422761
-> [  132.325815] __ratelimit: 6 callbacks suppressed
-> [  132.325818] Buffer I/O error on device sda, logical block 97677845
-> [  132.327676] end_request: I/O error, dev sda, sector 781422761
-> [  132.327689] Buffer I/O error on device sda, logical block 97677845
-> [  132.328302] end_request: I/O error, dev sda, sector 781422761
-> [  132.328314] Buffer I/O error on device sda, logical block 97677845
-> [  132.328926] end_request: I/O error, dev sda, sector 781422761
-> [  132.328938] Buffer I/O error on device sda, logical block 97677845
-> [  132.329551] end_request: I/O error, dev sda, sector 781422761
-> [  132.329557] Buffer I/O error on device sda, logical block 97677845
-> [  132.330176] end_request: I/O error, dev sda, sector 781422761
-> [  132.330188] Buffer I/O error on device sda, logical block 97677845
-> [  132.330800] end_request: I/O error, dev sda, sector 781422761
-> [  132.330807] Buffer I/O error on device sda, logical block 97677845
-> [  132.345053] end_request: I/O error, dev sda, sector 781422761
-> [  132.345065] Buffer I/O error on device sda, logical block 97677845
-> [  132.345926] end_request: I/O error, dev sda, sector 781422761
-> [  132.345938] Buffer I/O error on device sda, logical block 97677845
-> [  136.743629] kjournald starting.  Commit interval 5 seconds
-> [  136.744951] EXT3 FS on dm-5, internal journal
-> [  136.745039] EXT3-fs: mounted filesystem with ordered data mode.
-
-That's a little strange, but not unheard of.
-
-> Without this patch, but still with the (*) one, everything seems fine:
-> 
-> [   90.680299] usb 1-2.1.1: new high speed USB device using ehci_hcd and address 8
-> [   90.873674] usb 1-2.1.1: configuration #1 chosen from 1 choice
-> [   91.493054] usbcore: registered new interface driver libusual
-> [   91.582207] Initializing USB Mass Storage driver...
-> [   91.582696] scsi2 : SCSI emulation for USB Mass Storage devices
-> [   91.584473] usbcore: registered new interface driver usb-storage
-> [   91.584582] USB Mass Storage support registered.
-> [   91.585032] usb-storage: device found at 8
-> [   91.585039] usb-storage: waiting for device to settle before scanning
-> [   96.584772] scsi 2:0:0:0: Direct-Access     SAMSUNG  HD400LD          WQ10 PQ: 0 ANSI: 0
-> [   96.585058] usb-storage: device scan complete
-> [   96.623106] Driver 'sd' needs updating - please use bus_type methods
-> [   96.624120] sd 2:0:0:0: [sda] 781422768 512-byte hardware sectors (400088 MB)
-> [   96.624869] sd 2:0:0:0: [sda] Write Protect is off
-> [   96.624876] sd 2:0:0:0: [sda] Mode Sense: 03 00 00 00
-> [   96.624880] sd 2:0:0:0: [sda] Assuming drive cache: write through
-> [   96.625615] sd 2:0:0:0: [sda] 781422768 512-byte hardware sectors (400088 MB)
-> [   96.626365] sd 2:0:0:0: [sda] Write Protect is off
-> [   96.626371] sd 2:0:0:0: [sda] Mode Sense: 03 00 00 00
-> [   96.626375] sd 2:0:0:0: [sda] Assuming drive cache: write through
-> [   96.626379]  sda: sda1
-> [   96.638218] sd 2:0:0:0: [sda] Attached SCSI disk
-> [   96.662312] sd 2:0:0:0: Attached scsi generic sg0 type 0
-> [  107.078870] kjournald starting.  Commit interval 5 seconds
-> [  107.080071] EXT3 FS on dm-5, internal journal
-> [  107.080082] EXT3-fs: mounted filesystem with ordered data mode.
-
-Now that is truly bizarre.  It means that the drive responded 
-differently even though it received the same sequence of commands as 
-before.
-
-> Do you wish me to test anything else?
-
-Yes.  Please post a usbmon trace for each of the last two tests.  That 
-is, with the unusual_devs update only, and with the unusual_devs update 
-plus the invoke_transport update and the scsi_requeue_command update.
-
-Alan Stern
+diff --git a/fs/ext3/hash.c b/fs/ext3/hash.c
+index c30e149..7d215b4 100644
+--- a/fs/ext3/hash.c
++++ b/fs/ext3/hash.c
+@@ -35,23 +35,71 @@ static void TEA_transform(__u32 buf[4], __u32 const in[])
+ 
+ 
+ /* The old legacy hash */
+-static __u32 dx_hack_hash (const char *name, int len)
++static __u32 dx_hack_hash_unsigned(const char *name, int len)
+ {
+-	__u32 hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
++	__u32 hash, hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
++	const unsigned char *ucp = (const unsigned char *) name;
++
++	while (len--) {
++		hash = hash1 + (hash0 ^ (((int) *ucp++) * 7152373));
++
++		if (hash & 0x80000000)
++			hash -= 0x7fffffff;
++		hash1 = hash0;
++		hash0 = hash;
++	}
++	return hash0 << 1;
++}
++
++static __u32 dx_hack_hash_signed(const char *name, int len)
++{
++	__u32 hash, hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
++	const signed char *scp = (const signed char *) name;
++
+ 	while (len--) {
+-		__u32 hash = hash1 + (hash0 ^ (*name++ * 7152373));
++		hash = hash1 + (hash0 ^ (((int) *scp++) * 7152373));
+ 
+-		if (hash & 0x80000000) hash -= 0x7fffffff;
++		if (hash & 0x80000000)
++			hash -= 0x7fffffff;
+ 		hash1 = hash0;
+ 		hash0 = hash;
+ 	}
+-	return (hash0 << 1);
++	return hash0 << 1;
+ }
+ 
+-static void str2hashbuf(const char *msg, int len, __u32 *buf, int num)
++static void str2hashbuf_signed(const char *msg, int len, __u32 *buf, int num)
+ {
+ 	__u32	pad, val;
+ 	int	i;
++	const signed char *scp = (const signed char *) msg;
++
++	pad = (__u32)len | ((__u32)len << 8);
++	pad |= pad << 16;
++
++	val = pad;
++	if (len > num*4)
++		len = num * 4;
++	for (i = 0; i < len; i++) {
++		if ((i % 4) == 0)
++			val = pad;
++		val = ((int) scp[i]) + (val << 8);
++		if ((i % 4) == 3) {
++			*buf++ = val;
++			val = pad;
++			num--;
++		}
++	}
++	if (--num >= 0)
++		*buf++ = val;
++	while (--num >= 0)
++		*buf++ = pad;
++}
++
++static void str2hashbuf_unsigned(const char *msg, int len, __u32 *buf, int num)
++{
++	__u32	pad, val;
++	int	i;
++	const unsigned char *ucp = (const unsigned char *) msg;
+ 
+ 	pad = (__u32)len | ((__u32)len << 8);
+ 	pad |= pad << 16;
+@@ -62,7 +110,7 @@ static void str2hashbuf(const char *msg, int len, __u32 *buf, int num)
+ 	for (i=0; i < len; i++) {
+ 		if ((i % 4) == 0)
+ 			val = pad;
+-		val = msg[i] + (val << 8);
++		val = ((int) ucp[i]) + (val << 8);
+ 		if ((i % 4) == 3) {
+ 			*buf++ = val;
+ 			val = pad;
+@@ -95,6 +143,8 @@ int ext3fs_dirhash(const char *name, int len, struct dx_hash_info *hinfo)
+ 	const char	*p;
+ 	int		i;
+ 	__u32		in[8], buf[4];
++	void		(*str2hashbuf)(const char *, int, __u32 *, int) =
++				str2hashbuf_signed;
+ 
+ 	/* Initialize the default seed for the hash checksum functions */
+ 	buf[0] = 0x67452301;
+@@ -113,13 +163,18 @@ int ext3fs_dirhash(const char *name, int len, struct dx_hash_info *hinfo)
+ 	}
+ 
+ 	switch (hinfo->hash_version) {
++	case DX_HASH_LEGACY_UNSIGNED:
++		hash = dx_hack_hash_unsigned(name, len);
++		break;
+ 	case DX_HASH_LEGACY:
+-		hash = dx_hack_hash(name, len);
++		hash = dx_hack_hash_signed(name, len);
+ 		break;
++	case DX_HASH_HALF_MD4_UNSIGNED:
++		str2hashbuf = str2hashbuf_unsigned;
+ 	case DX_HASH_HALF_MD4:
+ 		p = name;
+ 		while (len > 0) {
+-			str2hashbuf(p, len, in, 8);
++			(*str2hashbuf)(p, len, in, 8);
+ 			half_md4_transform(buf, in);
+ 			len -= 32;
+ 			p += 32;
+@@ -127,10 +182,12 @@ int ext3fs_dirhash(const char *name, int len, struct dx_hash_info *hinfo)
+ 		minor_hash = buf[2];
+ 		hash = buf[1];
+ 		break;
++	case DX_HASH_TEA_UNSIGNED:
++		str2hashbuf = str2hashbuf_unsigned;
+ 	case DX_HASH_TEA:
+ 		p = name;
+ 		while (len > 0) {
+-			str2hashbuf(p, len, in, 4);
++			(*str2hashbuf)(p, len, in, 4);
+ 			TEA_transform(buf, in);
+ 			len -= 16;
+ 			p += 16;
+diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
+index 3e5edc9..4fb0493 100644
+--- a/fs/ext3/namei.c
++++ b/fs/ext3/namei.c
+@@ -368,6 +368,8 @@ dx_probe(struct qstr *entry, struct inode *dir,
+ 		goto fail;
+ 	}
+ 	hinfo->hash_version = root->info.hash_version;
++	if (hinfo->hash_version <= DX_HASH_TEA)
++		hinfo->hash_version += EXT3_SB(dir->i_sb)->s_hash_unsigned;
+ 	hinfo->seed = EXT3_SB(dir->i_sb)->s_hash_seed;
+ 	if (entry)
+ 		ext3fs_dirhash(entry->name, entry->len, hinfo);
+@@ -636,6 +638,9 @@ int ext3_htree_fill_tree(struct file *dir_file, __u32 start_hash,
+ 	dir = dir_file->f_path.dentry->d_inode;
+ 	if (!(EXT3_I(dir)->i_flags & EXT3_INDEX_FL)) {
+ 		hinfo.hash_version = EXT3_SB(dir->i_sb)->s_def_hash_version;
++		if (hinfo.hash_version <= DX_HASH_TEA)
++			hinfo.hash_version +=
++				EXT3_SB(dir->i_sb)->s_hash_unsigned;
+ 		hinfo.seed = EXT3_SB(dir->i_sb)->s_hash_seed;
+ 		count = htree_dirblock_to_tree(dir_file, dir, 0, &hinfo,
+ 					       start_hash, start_minor_hash);
+@@ -1398,6 +1403,8 @@ static int make_indexed_dir(handle_t *handle, struct dentry *dentry,
+ 
+ 	/* Initialize as for dx_probe */
+ 	hinfo.hash_version = root->info.hash_version;
++	if (hinfo.hash_version <= DX_HASH_TEA)
++		hinfo.hash_version += EXT3_SB(dir->i_sb)->s_hash_unsigned;
+ 	hinfo.seed = EXT3_SB(dir->i_sb)->s_hash_seed;
+ 	ext3fs_dirhash(name, namelen, &hinfo);
+ 	frame = frames;
+diff --git a/fs/ext3/super.c b/fs/ext3/super.c
+index e5717a4..f175396 100644
+--- a/fs/ext3/super.c
++++ b/fs/ext3/super.c
+@@ -1744,6 +1744,18 @@ static int ext3_fill_super (struct super_block *sb, void *data, int silent)
+ 	for (i=0; i < 4; i++)
+ 		sbi->s_hash_seed[i] = le32_to_cpu(es->s_hash_seed[i]);
+ 	sbi->s_def_hash_version = es->s_def_hash_version;
++	i = le32_to_cpu(es->s_flags);
++	if (i & EXT2_FLAGS_UNSIGNED_HASH)
++		sbi->s_hash_unsigned = 3;
++	else if ((i & EXT2_FLAGS_SIGNED_HASH) == 0) {
++#ifdef __CHAR_UNSIGNED__
++		es->s_flags |= cpu_to_le32(EXT2_FLAGS_UNSIGNED_HASH);
++		sbi->s_hash_unsigned = 3;
++#else
++		es->s_flags |= cpu_to_le32(EXT2_FLAGS_SIGNED_HASH);
++#endif
++		sb->s_dirt = 1;
++	}
+ 
+ 	if (sbi->s_blocks_per_group > blocksize * 8) {
+ 		printk (KERN_ERR
+diff --git a/include/linux/ext3_fs.h b/include/linux/ext3_fs.h
+index d14f029..9004794 100644
+--- a/include/linux/ext3_fs.h
++++ b/include/linux/ext3_fs.h
+@@ -354,6 +354,13 @@ struct ext3_inode {
+ #define	EXT3_ORPHAN_FS			0x0004	/* Orphans being recovered */
+ 
+ /*
++ * Misc. filesystem flags
++ */
++#define EXT2_FLAGS_SIGNED_HASH		0x0001  /* Signed dirhash in use */
++#define EXT2_FLAGS_UNSIGNED_HASH	0x0002  /* Unsigned dirhash in use */
++#define EXT2_FLAGS_TEST_FILESYS		0x0004	/* to test development code */
++
++/*
+  * Mount flags
+  */
+ #define EXT3_MOUNT_CHECK		0x00001	/* Do mount-time checks */
+@@ -489,7 +496,23 @@ struct ext3_super_block {
+ 	__u16	s_reserved_word_pad;
+ 	__le32	s_default_mount_opts;
+ 	__le32	s_first_meta_bg;	/* First metablock block group */
+-	__u32	s_reserved[190];	/* Padding to the end of the block */
++	__le32	s_mkfs_time;		/* When the filesystem was created */
++	__le32	s_jnl_blocks[17];	/* Backup of the journal inode */
++	/* 64bit support valid if EXT4_FEATURE_COMPAT_64BIT */
++/*150*/	__le32	s_blocks_count_hi;	/* Blocks count */
++	__le32	s_r_blocks_count_hi;	/* Reserved blocks count */
++	__le32	s_free_blocks_count_hi;	/* Free blocks count */
++	__le16	s_min_extra_isize;	/* All inodes have at least # bytes */
++	__le16	s_want_extra_isize; 	/* New inodes should reserve # bytes */
++	__le32	s_flags;		/* Miscellaneous flags */
++	__le16  s_raid_stride;		/* RAID stride */
++	__le16  s_mmp_interval;         /* # seconds to wait in MMP checking */
++	__le64  s_mmp_block;            /* Block for multi-mount protection */
++	__le32  s_raid_stripe_width;    /* blocks on all data disks (N*stride)*/
++	__u8	s_log_groups_per_flex;  /* FLEX_BG group size */
++	__u8	s_reserved_char_pad2;
++	__le16  s_reserved_pad;
++	__u32   s_reserved[162];        /* Padding to the end of the block */
+ };
+ 
+ #ifdef __KERNEL__
+@@ -694,6 +717,9 @@ static inline __le16 ext3_rec_len_to_disk(unsigned len)
+ #define DX_HASH_LEGACY		0
+ #define DX_HASH_HALF_MD4	1
+ #define DX_HASH_TEA		2
++#define DX_HASH_LEGACY_UNSIGNED	3
++#define DX_HASH_HALF_MD4_UNSIGNED	4
++#define DX_HASH_TEA_UNSIGNED		5
+ 
+ #ifdef __KERNEL__
+ 
+diff --git a/include/linux/ext3_fs_sb.h b/include/linux/ext3_fs_sb.h
+index b65f028..50dc80a 100644
+--- a/include/linux/ext3_fs_sb.h
++++ b/include/linux/ext3_fs_sb.h
+@@ -57,6 +57,7 @@ struct ext3_sb_info {
+ 	u32 s_next_generation;
+ 	u32 s_hash_seed[4];
+ 	int s_def_hash_version;
++	int s_hash_unsigned;	/* 3 if hash should be signed, 0 if not */
+ 	struct percpu_counter s_freeblocks_counter;
+ 	struct percpu_counter s_freeinodes_counter;
+ 	struct percpu_counter s_dirs_counter;
+-- 
+1.5.6.1.205.ge2c7.dirty
 
