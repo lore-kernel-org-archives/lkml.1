@@ -1,85 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752577AbYJ1FwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbYJ1FzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752577AbYJ1FwR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 01:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbYJ1FwE
+	id S1753004AbYJ1FzS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 01:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbYJ1FzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 01:52:04 -0400
-Received: from smtp109.prem.mail.sp1.yahoo.com ([98.136.44.54]:43226 "HELO
-	smtp109.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752228AbYJ1FwD (ORCPT
+	Tue, 28 Oct 2008 01:55:04 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:27472 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752228AbYJ1FzB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 01:52:03 -0400
-X-YMail-OSG: JjOa5PQVM1n1UnKp2xFhvjyrAbRtbYPIh4gDYTlyMEO_KFEyx.3O7lUoQ3dv03rAWP7Wax.SZWBTOXbS1YMj7qIZVsqXN8eItn3QcV2GqnNf6d5oNIX3sh9U6kAbN6sBK0AvrsyWMYTZnTU0ziG62RrFV4YXmcAInIxRuWg-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4906A871.6010501@schaufler-ca.com>
-Date: Mon, 27 Oct 2008 22:51:45 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Tue, 28 Oct 2008 01:55:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=oitOhhcGsPFDUWMI+n38PbautL2lB48Xdohy0/tOIa72fFpYp5/f1gT6Ts6ZW6iBiS
+         Z0OYkQJtJpCR0yyGnxPUVkzQilq3TQo5/hmFuEk09iJoZfEXZ7racN//9T08MmbHNskj
+         j9BOG5NOBidBeAbOrVvJuuvcghMSfPwhpts0U=
+Message-ID: <2411f6b20810272254u4c13efb7w1cf8fb68145fcb14@mail.gmail.com>
+Date: Tue, 28 Oct 2008 11:24:59 +0530
+From: "Joey Krane" <linuxbsd2004@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [otus-devel] Release of Atheros 802.11n USB Linux driver
+Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       "otus-devel@lists.madwifi-project.org" 
+	<otus-devel@venema.h4ckr.net>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       "Luis Rodriguez" <Luis.Rodriguez@atheros.com>
+In-Reply-To: <20081028002919.GB2992@kroah.com>
 MIME-Version: 1.0
-To: Rob MacKinnon <c4blem0nkey@gmail.com>
-CC: Andreas Gruenbacher <agruen@suse.de>, Stephen Smalley <sds@tycho.nsa.gov>,
-       rob.mackinnon@gmail.com, hpa@zytor.com, hugh@veritas.com,
-       linux-kernel@vger.kernel.org, casey@schaufler-ca.com
-Subject: Re: tmpfs support of xattrs?
-References: <4902DD98.4090302@gmail.com> <4906211E.8030603@gmail.com> <1225139131.31818.51.camel@moss-spartans.epoch.ncsc.mil> <200810272153.56301.agruen@suse.de> <49062EC0.4040809@gmail.com>
-In-Reply-To: <49062EC0.4040809@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com>
+	 <20081022065045.GA2400@kroah.com> <20081023062655.GA8039@kroah.com>
+	 <20081023111103.GB5979@tesla>
+	 <43e72e890810271635i5b6dd6e4ua06b48e624991435@mail.gmail.com>
+	 <20081028002919.GB2992@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob MacKinnon wrote:
-> Andreas Gruenbacher wrote:
->   
->> On Monday, 27 October 2008 21:25:31 Stephen Smalley wrote:
->>     
->>> Looks like a bug in Smack's implementation of the inode_listsecurity
->>> hook to me.  Did you mean to enable Smack in your kernel config?
->>>       
->> Yes, there is at least one bug there; this kernel is broken. You may want to 
->> try booting with a kernel command line option like "security=none", which 
->> *should* turn smack off.
+On Tue, Oct 28, 2008 at 5:59 AM, Greg KH <greg@kroah.com> wrote:
+> On Mon, Oct 27, 2008 at 04:35:11PM -0700, Luis R. Rodriguez wrote:
+>> On Thu, Oct 23, 2008 at 4:11 AM, Luis R. Rodriguez
+>> <lrodriguez@atheros.com> wrote:
+>> > On Wed, Oct 22, 2008 at 11:26:55PM -0700, Greg KH wrote:
+>> >> On Tue, Oct 21, 2008 at 11:50:45PM -0700, Greg KH wrote:
+>> >> > On Tue, Oct 21, 2008 at 07:04:17PM -0700, Luis R. Rodriguez wrote:
+>> >> > > We would like to see our Atheros 802.11n USB Linux driver upstream
+>> >> > > however we need help with this so we are releasing our Atheros 11n USB
+>> >> > > Otus Linux driver under the ISC to the community. The goal is to work
+>> >> > > with the community to help move this forward upstream. We are hoping
+>> >> > > for community help and leadership on this (*cough*).
+>> >> >
+>> >> > Yeah!
+>> >> >
+>> >> > I'll grab this and put it in drivers/staging/ so it gets some users and
+>> >> > more developers to help out with it.
+>> >>
+>> >> Ok, it seems to need some basic work to merely build properly on
+>> >> "modern" kernel versions.
+>> >
+>> > Yeah, it works up to 2.6.24.
 >>
->> Andreas
->>     
+>> This is now fixed on the master branch, also the branch "for-upstream"
+>> does a lot of cleanup I thought you may like before stuffing it into
+>> staging like removing all KERNEL_VERSION checks, all wireless
+>> extensions checks, some compile warnings, removal of compat, dos2unix,
+>> use utf-8, etc. Unfortunately this still requires a specific version
+>> of wpa_supplicant but it seems it works. Not sure what bars you have
+>> for staging at this point.
 >
-> All,
+> Pretty much the only "bar" is "it compiles" :)
 >
-> Indeed the kernel cmdline option security=none did disable smack. So
-> atleast that works. Thank you all for helping me track this down.  I can
-> now return to updating packages (some of which have been waiting
-> patiently for this to be cleared up)!  Though I will be looking forward
-> to this feature working as it was intended. ;)  Let me know if there is
-> a bug # assigned and I'll quietly return to lurking... ;
+>> Will you take this in, and expect patches for fixing it to use
+>> standard wext and also report standard wireless statistic (yeap, this
+>> is not there yet either).
+>
+> Yes, I can do that.
+>
+>> Joey is one user which reported the driver working now with the
+>> compile fixes for newer kernels for 2.6.28-rc2 using the specific
+>> version of wpa_supplicant for it.
+>>
+>> Joey can you test the for-upstream branch on otus git?
+>
+> If someone can tell me what device this is for, I can try to go buy it
+> so that I can verify changes I make don't drasticly break things.
+>
 
-It looks like a trivial fix and the patch is here. I have just started
-testing it myself, but if I don't send it now it will be Wednesday before
-I do. No sign-off because I haven't verified it, but I would be delighted
-if you would pass judgement on its efficacy. Thank you.
+I've tested the TL-WN821N (it's the cheapest N USB I think) with a
+generic 802.11g router (WPA enabled) on 2.6.24.7, 2.6.27.4 and
+2.6.28-rc2.
 
+http://www.newegg.com/Product/Product.aspx?Item=N82E16833704032
 
-----
+I'll test the for-upstream branch soon.
 
-diff -uprN -X linux-2.6/Documentation/dontdiff linux-2.6/security/smack/smack_lsm.c linux-smack/security/smack/smack_lsm.c
---- linux-2.6/security/smack/smack_lsm.c	2008-10-26 17:37:08.000000000 -0700
-+++ linux-smack/security/smack/smack_lsm.c	2008-10-26 19:11:23.000000000 -0700
-@@ -763,13 +763,11 @@ static int smack_inode_getsecurity(const
- static int smack_inode_listsecurity(struct inode *inode, char *buffer,
- 				    size_t buffer_size)
- {
--	int len = strlen(XATTR_NAME_SMACK);
-+	int len = sizeof(XATTR_NAME_SMACK);
- 
--	if (buffer != NULL && len <= buffer_size) {
-+	if (buffer != NULL && len <= buffer_size)
- 		memcpy(buffer, XATTR_NAME_SMACK, len);
--		return len;
--	}
--	return -EINVAL;
-+	return len;
- }
- 
- /**
-
+Joey
