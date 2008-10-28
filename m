@@ -1,46 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbYJ1Uhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753614AbYJ1UnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753801AbYJ1Uhu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 16:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753037AbYJ1Uhj
+	id S1753614AbYJ1UnS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 16:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbYJ1UnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 16:37:39 -0400
-Received: from khc.piap.pl ([195.187.100.11]:50041 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752723AbYJ1Uhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 16:37:38 -0400
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Francois Romieu <romieu@fr.zoreil.com>, Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Edward Hsu <edward_hsu@realtek.com.tw>,
-       Ivan Vecera <ivecera@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: r8169 MAC addresses broken
-References: <490380C8.6070003@simon.arlott.org.uk>
-	<4903947A.3060206@gmail.com>
-	<20081025223443.GA30913@electric-eye.fr.zoreil.com>
-	<4904A7C5.7090801@gmail.com>
-	<20081026174654.GB24790@electric-eye.fr.zoreil.com>
-	<4906E4BE.9050304@gmail.com> <m3mygozvd4.fsf@maximus.localdomain>
-	<490718C7.3010501@gmail.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 28 Oct 2008 21:37:36 +0100
-In-Reply-To: <490718C7.3010501@gmail.com> (Jiri Slaby's message of "Tue\, 28 Oct 2008 14\:51\:03 +0100")
-Message-ID: <m3mygoxxpr.fsf@maximus.localdomain>
+	Tue, 28 Oct 2008 16:43:07 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:57290 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752978AbYJ1UnF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 16:43:05 -0400
+Date: Tue, 28 Oct 2008 10:23:09 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Ftrace doesn't work anymore on latest tip
+In-Reply-To: <c62985530810280202r694a23e8l5233d892b3aa4330@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0810281015260.29482@gandalf.stny.rr.com>
+References: <c62985530810271618n11a8b674w5a60deaa335fdcc2@mail.gmail.com>  <alpine.DEB.1.10.0810271935320.20039@gandalf.stny.rr.com>  <c62985530810271644y1df6a13xbcd9d89b7a17ad75@mail.gmail.com> <c62985530810280202r694a23e8l5233d892b3aa4330@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby <jirislaby@gmail.com> writes:
 
-> No, it helped after reverting that patch. I think we don't want defunct 2.6.28
-> with these nics.
+On Tue, 28 Oct 2008, Fr?d?ric Weisbecker wrote:
 
-No doubt.
+> 2008/10/28 Fr?d?ric Weisbecker <fweisbec@gmail.com>:
+> > 2008/10/28 Steven Rostedt <rostedt@goodmis.org>:
+> >>
+> >> On Tue, 28 Oct 2008, Fr?d?ric Weisbecker wrote:
+> >>
+> >>> Hi,
+> >>>
+> >>> I tried to launch the function tracer with the latest -tip.
+> >>> With DYNAMIC_FTRACE (I just tried one time), I set "function" to
+> >>> current_trace and it blocks during writing. I can't
+> >>> even switch to another console.
+> >>> Without DYNAMIC_FTRACE I can set the tracer to function but it doesn't
+> >>> produce any trace, even on trace or tracing_pipe.
+> >>>
+> >>> My config is in attachment.
+> >>> I will try some revert...or some other tracers.
 
-Just to be sure, with the patch back, is the MAC read as zero again?
-I'll check it too, have 8111.
--- 
-Krzysztof Halasa
+I've tried this with and without dynamic ftrace and can not reproduce.
+
+> >>>
+> >>
+> >>
+> >> You might want to update your config (make oldconfig?) The latest tip has
+> >> FUNCTION_TRACER instead of FTRACE.
+> >>
+> >> Also, the config you sent me, does not even have FTRACE on :-/
+> >>
+> >> CONFIG_HAVE_FTRACE=y
+> >> CONFIG_HAVE_DYNAMIC_FTRACE=y
+> >> CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
+> >> CONFIG_TRACER_MAX_TRACE=y
+> >> CONFIG_RING_BUFFER=y
+> >> CONFIG_TRACING=y
+> >> # CONFIG_FTRACE is not set
+> >> # CONFIG_IRQSOFF_TRACER is not set
+> >> # CONFIG_PREEMPT_TRACER is not set
+> >> # CONFIG_SYSPROF_TRACER is not set
+> >> CONFIG_SCHED_TRACER=y
+> >> CONFIG_CONTEXT_SWITCH_TRACER=y
+> >
+> > Sorry I sent a config for the mainline.
+> > This new one is the right.
+> >
+> 
+> One other point: I can't assign the sched_switch tracer.
+
+I found the cause of this. It was:
+
+ c2931e05ec5965597cbfb79ad332d4a29aeceb23
+
+ ftrace: return an error when setting a nonexistent tracer
+
+Because the write of sched_switch has more charachters than the max 
+(because of the whitespace at the end), then we chop what we read from 
+userspace. Since we do not cosume all what was written, the 'echo' writes 
+the rest again. But this time it's just the whitespace. This fails to 
+match, even though we did match before. And we return -EINVAL. But the 
+funny part is that you can cat the file again, you will see that it 
+succeeded!
+
+I'll write a patch to fix this.
+
+-- Steve
+
+
+> echo sched_switch > current_tracer returns -EINVAL with
+> CONFIG_DYNAMIC_FTRACE disabled (didn't tested with enabled).
+> 
+> I will check that more deeper when I'll have more time.
+> 
+> 
