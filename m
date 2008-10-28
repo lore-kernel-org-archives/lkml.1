@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753578AbYJ1VXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbYJ1V0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753578AbYJ1VXI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 17:23:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbYJ1VWt
+	id S1754094AbYJ1V0z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 17:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbYJ1V0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 17:22:49 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:55244 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754208AbYJ1VWr (ORCPT
+	Tue, 28 Oct 2008 17:26:48 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:45603 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753035AbYJ1V0r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 17:22:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=OzmLCIt5ezthC8tEzv69GleZ7Gz9uPnYONeO2vRAN9X7RLDEGseibjm/0ulvZVd84h
-         MSZzWc60Tru92nzNem/8GoEEB+WoU/R2diH59tOd0eTNbH9X03gP7gbC1QLk5PA7sVTC
-         I0eaGDdA1xxZsFQgKiO8rs6hDW/adIElnwUfg=
-Message-ID: <21a166410810281422r6638568au68af4e1367a04b87@mail.gmail.com>
-Date: Tue, 28 Oct 2008 19:22:45 -0200
-From: "Matias Zabaljauregui" <zabaljauregui@gmail.com>
-To: "Glauber Costa" <glommer@redhat.com>
-Subject: Re: [PATCH] regression: vmalloc easily fail.
-Cc: "Avi Kivity" <avi@redhat.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, aliguori@codemonkey.ws, npiggin@suse.de,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Krzysztof Helt" <krzysztof.h1@poczta.fm>
-In-Reply-To: <20081028210947.GA4269@poweredge.glommer>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 28 Oct 2008 17:26:47 -0400
+Date: Tue, 28 Oct 2008 14:26:02 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Karel Zak <kzak@redhat.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       sfr@canb.auug.org.au
+Subject: Re: [PATCH 2/2] documentation: split and build dnotify_test program
+Message-Id: <20081028142602.c09213e7.randy.dunlap@oracle.com>
+In-Reply-To: <20080819230454.GH2846@nb.net.home>
+References: <20080817214456.e8c765fa.randy.dunlap@oracle.com>
+	<20080819230454.GH2846@nb.net.home>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1225234513-3996-1-git-send-email-glommer@redhat.com>
-	 <49077E1A.5080105@redhat.com>
-	 <20081028210947.GA4269@poweredge.glommer>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello,
+On Wed, 20 Aug 2008 01:04:54 +0200 Karel Zak wrote:
 
->> I'm guessing that the missing comment explains that this is intentional,
->> to trap buffer overflows?
+> On Sun, Aug 17, 2008 at 09:44:56PM -0700, Randy Dunlap wrote:
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > Make dnotify_test.c source file and add it to Makefile so that
+> > bitrot can be prevented.
+> > 
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > cc: Stephen Rothwell <sfr@canb.auug.org.au>
+> > ---
+> >  Documentation/filesystems/00-INDEX       |    2 +
+> >  Documentation/filesystems/Makefile       |    2 -
+> >  Documentation/filesystems/dnotify.txt    |   36 -------------------------------
+> 
+>  $ grep -c inotify Documentation/filesystems/dnotify.txt
+>  0
+> 
+>  It would be nice to add a note that dnotify has been obsoleted by
+>  inotify (>= 2.6.13).
 
-yes, IIRC the pages between vmalloc areas are there for safety reasons.
-(like the interval inserted before the first area, defined by VMALLOC_OFFSET)
+Done for upcoming patch, but using "replaced by".
 
-regards
-Matias
+---
+~Randy
