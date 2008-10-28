@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752741AbYJ1CQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752789AbYJ1CUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752741AbYJ1CQV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 22:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYJ1CQL
+	id S1752789AbYJ1CUN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 22:20:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYJ1CT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 22:16:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47601 "EHLO mx2.redhat.com"
+	Mon, 27 Oct 2008 22:19:58 -0400
+Received: from mga01.intel.com ([192.55.52.88]:3842 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751668AbYJ1CQK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 22:16:10 -0400
-Message-ID: <490675C4.3040208@redhat.com>
-Date: Mon, 27 Oct 2008 21:15:32 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
-MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
-       Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: general protection fault:  from release_blocks_on_commit
-References: <1224612181.19719.20.camel@paris-laptop> <20081027181928.GB23111@mit.edu> <49064027.9010509@redhat.com> <20081027232843.GA9797@mit.edu> <49065805.1080303@redhat.com> <20081028015228.GA8320@mit.edu>
-In-Reply-To: <20081028015228.GA8320@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1752140AbYJ1CT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 22:19:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,495,1220252400"; 
+   d="scan'208";a="632239098"
+Subject: Re: [2.6.28-rc2]: iwl4965 doesn't connect / cfg80211 failure
+From: Zhu Yi <yi.zhu@intel.com>
+To: Mirco Tischler <mt-ml@gmx.de>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "John W.Linville" <linville@tuxdriver.com>,
+       "Chatre, Reinette" <reinette.chatre@intel.com>,
+       Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <20081028025947.6c9c3274@mtlp.12.dimension>
+References: <20081028020212.0dfcb6c9@mtlp.12.dimension>
+	 <1225157618.2917.215.camel@debian.sh.intel.com>
+	 <20081028025947.6c9c3274@mtlp.12.dimension>
+Content-Type: text/plain
+Organization: Intel Corp.
+Date: Tue, 28 Oct 2008 10:19:50 +0800
+Message-Id: <1225160390.2917.221.camel@debian.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
+On Mon, 2008-10-27 at 18:59 -0700, Mirco Tischler wrote:
+> > Looks good so far. But I failed to see what are you trying to
+> connect?
+> > Can you try "iwconfig wlan0 channnel <> essid <>"?
+> Sorry. I should have supplied that information on the first try. The
+> network is
+> a standard WPA-protected G-band network at 2.437Ghz (channel 6).
+> That command seems to help a bit. At least I was able to connect more
+> often after executing it.
 
-> I looked at this some more, and at least in theory it could happen
-> that we could not have any buffers that need to be checkpointed (so
-> t_checkpoint_list and t_checkpoint_io_list are NULL), but there are
-> still blocks to be released (or some other users of the jbd2 layer
-> still wants to have the callback be called).  So I'm currently testing
-> this patch (see below).
-> 
-> 							- Ted
+You don't need this command if wpa_supplicant works correctly. Is it a
+hidden SSID AP?
 
-Looks reasonable to me from a correctness perspective, anyway, as long
-as holding the j_list_lock over that callback is ok.
-
-It does fix the oops-on-reboot that I could reproduce.
-
--Eric
-
-
-> diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
-> index 8b119e1..ebc667b 100644
-> --- a/fs/jbd2/commit.c
-> +++ b/fs/jbd2/commit.c
-> @@ -974,6 +974,9 @@ restart_loop:
->  	journal->j_committing_transaction = NULL;
->  	spin_unlock(&journal->j_state_lock);
->  
-> +	if (journal->j_commit_callback)
-> +		journal->j_commit_callback(journal, commit_transaction);
-> +
->  	if (commit_transaction->t_checkpoint_list == NULL &&
->  	    commit_transaction->t_checkpoint_io_list == NULL) {
->  		__jbd2_journal_drop_transaction(journal, commit_transaction);
-> @@ -995,11 +998,8 @@ restart_loop:
->  	}
->  	spin_unlock(&journal->j_list_lock);
->  
-> -	if (journal->j_commit_callback)
-> -		journal->j_commit_callback(journal, commit_transaction);
-> -
->  	trace_mark(jbd2_end_commit, "dev %s transaction %d head %d",
-> -		   journal->j_devname, commit_transaction->t_tid,
-> +		   journal->j_devname, journal->j_commit_sequence,
->  		   journal->j_tail_sequence);
->  	jbd_debug(1, "JBD: commit %d complete, head %d\n",
->  		  journal->j_commit_sequence, journal->j_tail_sequence);
+Thanks,
+-yi
 
