@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbYJ1Vzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbYJ1V5K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754432AbYJ1Vzz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 17:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbYJ1Vzr
+	id S1754313AbYJ1V5K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 17:57:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbYJ1V4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 17:55:47 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39444 "EHLO ogre.sisk.pl"
+	Tue, 28 Oct 2008 17:56:54 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56072 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752857AbYJ1Vzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 17:55:46 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen filesystems.
-Date: Tue, 28 Oct 2008 23:00:30 +0100
-User-Agent: KMail/1.9.9
-Cc: ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <1224886068.6478.21.camel@nigel-laptop> <1225229399.9661.13.camel@nigel-laptop> <E1KuwTn-0006EQ-8J@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1KuwTn-0006EQ-8J@pomaz-ex.szeredi.hu>
+	id S1752969AbYJ1V4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 17:56:53 -0400
+Message-ID: <49078A97.8020003@redhat.com>
+Date: Tue, 28 Oct 2008 17:56:39 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Andreas Dilger <adilger@sun.com>, Josef Bacik <jbacik@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] improve jbd fsync batching
+References: <20081028201614.GA21600@unused.rdu.redhat.com>	<20081028213805.GC3184@webber.adilger.int> <20081028144401.07b7546d@infradead.org>
+In-Reply-To: <20081028144401.07b7546d@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810282300.31164.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 28 of October 2008, Miklos Szeredi wrote:
-> On Wed, 29 Oct 2008, Nigel Cunningham wrote:
-> > > However it does not fix the freezing of tasks which are waiting for
-> > > VFS locks (i.e. inode->i_mutex) held by the outstanding fuse requests.
-> > > This is the tricky part...
-> > 
-> > Convert them all to wait_event_freezeable.
-> 
-> You mean convert mutexes to event queues?  Not a very good idea.
-> 
-> I fear we are going down the same path as the last time.  I still
-> don't think rewriting the VFS is the right solution to the freezing
-> problem.  But hey, if you want, sumbit a patch or an RFD and lets see
-> what others think.
+Arjan van de Ven wrote:
+> On Tue, 28 Oct 2008 15:38:05 -0600
+> Andreas Dilger <adilger@sun.com> wrote:
+>
+>   
+>> On Oct 28, 2008  16:16 -0400, Josef Bacik wrote:
+>>     
+>>> I also have a min() check in there to make sure we don't sleep
+>>> longer than a jiffie in case our storage is super slow, this was
+>>> requested by Andrew.
+>>>       
+>> Is there a particular reason why 1 jiffie is considered the "right
+>> amount" of time to sleep, given this is a kernel config parameter and
+>> has nothing to do with the storage?  Considering a seek time in the
+>> range of ~10ms this would only be right for HZ=100 and the wait would
+>>     
+>
+> well... my disk does a 50 usec seek time or so.. so I don't mind ;-)
+>
+> in fact it sounds awefully long to me.
+>   
 
-So, what solution would you prefer?
+For small writes as well as reads?
 
-Rafael
+If so, it would be great to test Josef's patch against your shiny new 
+SSD  :-)
+
+ric
+
