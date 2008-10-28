@@ -1,210 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbYJ1MJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYJ1MKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922AbYJ1MJp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 08:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbYJ1MJh
+	id S1754189AbYJ1MKA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 08:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbYJ1MJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 08:09:37 -0400
-Received: from ozlabs.org ([203.10.76.45]:55782 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752640AbYJ1MJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 08:09:36 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PULL] lguest and virtio_net fixes
-Date: Tue, 28 Oct 2008 23:09:40 +1100
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, lguest <lguest@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 28 Oct 2008 08:09:45 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:63219 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753922AbYJ1MJo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 08:09:44 -0400
+Date: Tue, 28 Oct 2008 21:07:31 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "menage@google.com" <menage@google.com>,
+       "xemul@openvz.org" <xemul@openvz.org>
+Subject: Re: [PATCH 3/4][mmotm] memcg: fix gfp_mask of callers of charge
+Message-Id: <20081028210731.4453bbc0.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20081028191449.22a79033.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081028190911.6857b0a6.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081028191449.22a79033.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810282309.40202.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 49fdf6785fd660e18a1eb4588928f47e9fa29a9a:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.dk/linux-2.6-block
+On Tue, 28 Oct 2008 19:14:49 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> fix misuse of gfp_kernel.
+> 
+> Now, most of callers of mem_cgroup_charge_xxx functions uses GFP_KERNEL.
+> 
+> I think that this is from the fact that page_cgroup *was* dynamically allocated.
+> 
+> But now, we allocate all page_cgroup at boot. And mem_cgroup_try_to_free_pages()
+> reclaim memory from GFP_HIGHUSER_MOVABLE + specified GFP_RECLAIM_MASK.
+>   * This is because we just want to reduce memory usage.
+>     "Where we should reclaim from ?" is not a problem in memcg.
+> 
+> This patch modifies gfp masks to be GFP_HIGUSER_MOVABLE if possible.
+> Note: This patch is not for fixing behavior but for showing sane information
+>       in source code.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> 
+>  mm/memcontrol.c |    8 +++++---
+>  mm/memory.c     |    9 +++++----
+>  mm/shmem.c      |    6 +++---
+>  mm/swapfile.c   |    2 +-
+>  4 files changed, 14 insertions(+), 11 deletions(-)
+> 
+> Index: mmotm-2.6.28rc2+/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.28rc2+.orig/mm/memcontrol.c
+> +++ mmotm-2.6.28rc2+/mm/memcontrol.c
+> @@ -808,8 +808,9 @@ int mem_cgroup_prepare_migration(struct 
+>  	}
+>  	unlock_page_cgroup(pc);
+>  	if (mem) {
+> -		ret = mem_cgroup_charge_common(newpage, NULL, GFP_KERNEL,
+> -			ctype, mem);
+> +		ret = mem_cgroup_charge_common(newpage, NULL,
+> +					GFP_HIGHUSER_MOVABLE,
+> +					ctype, mem);
+>  		css_put(&mem->css);
+>  	}
+>  	return ret;
+> @@ -888,7 +889,8 @@ int mem_cgroup_resize_limit(struct mem_c
+>  			ret = -EBUSY;
+>  			break;
+>  		}
+> -		progress = try_to_free_mem_cgroup_pages(memcg, GFP_KERNEL);
+> +		progress = try_to_free_mem_cgroup_pages(memcg,
+> +				GFP_HIGHUSER_MOVABLE);
+>  		if (!progress)
+>  			retry_count--;
+>  	}
+> Index: mmotm-2.6.28rc2+/mm/memory.c
+> ===================================================================
+> --- mmotm-2.6.28rc2+.orig/mm/memory.c
+> +++ mmotm-2.6.28rc2+/mm/memory.c
+> @@ -1889,7 +1889,7 @@ gotten:
+>  	cow_user_page(new_page, old_page, address, vma);
+>  	__SetPageUptodate(new_page);
+>  
+> -	if (mem_cgroup_newpage_charge(new_page, mm, GFP_KERNEL))
+> +	if (mem_cgroup_newpage_charge(new_page, mm, GFP_HIGHUSER_MOVABLE))
+>  		goto oom_free_new;
+>  
+>  	/*
+> @@ -2324,7 +2324,7 @@ static int do_swap_page(struct mm_struct
+>  	lock_page(page);
+>  	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
+>  
+> -	if (mem_cgroup_try_charge(mm, GFP_KERNEL, &ptr) == -ENOMEM) {
+> +	if (mem_cgroup_try_charge(mm, GFP_HIGHUSER_MOVABLE, &ptr) == -ENOMEM) {
+>  		ret = VM_FAULT_OOM;
+>  		unlock_page(page);
+>  		goto out;
+> @@ -2405,7 +2405,7 @@ static int do_anonymous_page(struct mm_s
+>  		goto oom;
+>  	__SetPageUptodate(page);
+>  
+> -	if (mem_cgroup_newpage_charge(page, mm, GFP_KERNEL))
+> +	if (mem_cgroup_newpage_charge(page, mm, GFP_HIGHUSER_MOVABLE))
+>  		goto oom_free_page;
+>  
+>  	entry = mk_pte(page, vma->vm_page_prot);
+> @@ -2498,7 +2498,8 @@ static int __do_fault(struct mm_struct *
+>  				ret = VM_FAULT_OOM;
+>  				goto out;
+>  			}
+> -			if (mem_cgroup_newpage_charge(page, mm, GFP_KERNEL)) {
+> +			if (mem_cgroup_newpage_charge(page,
+> +						mm, GFP_HIGHUSER_MOVABLE)) {
+>  				ret = VM_FAULT_OOM;
+>  				page_cache_release(page);
+>  				goto out;
+> Index: mmotm-2.6.28rc2+/mm/swapfile.c
+> ===================================================================
+> --- mmotm-2.6.28rc2+.orig/mm/swapfile.c
+> +++ mmotm-2.6.28rc2+/mm/swapfile.c
+> @@ -535,7 +535,7 @@ static int unuse_pte(struct vm_area_stru
+>  	pte_t *pte;
+>  	int ret = 1;
+>  
+> -	if (mem_cgroup_try_charge(vma->vm_mm, GFP_KERNEL, &ptr))
+> +	if (mem_cgroup_try_charge(vma->vm_mm, GFP_HIGHUSER_MOVABLE, &ptr))
+>  		ret = -ENOMEM;
+>  
+>  	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
+> Index: mmotm-2.6.28rc2+/mm/shmem.c
+> ===================================================================
+> --- mmotm-2.6.28rc2+.orig/mm/shmem.c
+> +++ mmotm-2.6.28rc2+/mm/shmem.c
+> @@ -920,8 +920,8 @@ found:
+>  	error = 1;
+>  	if (!inode)
+>  		goto out;
+> -	/* Precharge page using GFP_KERNEL while we can wait */
+> -	error = mem_cgroup_cache_charge(page, current->mm, GFP_KERNEL);
+> +	/* Charge page using GFP_HIGHUSER_MOVABLE while we can wait */
+> +	error = mem_cgroup_cache_charge(page, current->mm, GFP_HIGHUSER_MOVABLE);
+This line exceeds 80 characters.
 
-are available in the git repository at:
+Looks good to me except for that.
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus.git master
+	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-Mark McLoughlin (2):
-      virtio_net: Recycle some more rx buffer pages
-      virtio_net: hook up the set-tso ethtool op
 
-Rusty Russell (3):
-      lguest: fix example launcher compile after moved asm-x86 dir.
-      lguest: fix early_ioremap.
-      lguest: fix irq vectors.
-
- Documentation/lguest/Makefile |    2 +-
- Documentation/lguest/lguest.c |    2 +-
- arch/x86/lguest/boot.c        |   32 ++++++++++++++++++++------------
- drivers/net/virtio_net.c      |   22 ++++++++++++++--------
- 4 files changed, 36 insertions(+), 22 deletions(-)
-
-diff --git a/Documentation/lguest/Makefile b/Documentation/lguest/Makefile
-index bac037e..725eef8 100644
---- a/Documentation/lguest/Makefile
-+++ b/Documentation/lguest/Makefile
-@@ -1,5 +1,5 @@
- # This creates the demonstration utility "lguest" which runs a Linux guest.
--CFLAGS:=-Wall -Wmissing-declarations -Wmissing-prototypes -O3 -I../../include
-+CFLAGS:=-Wall -Wmissing-declarations -Wmissing-prototypes -O3 -I../../include -I../../arch/x86/include
- LDLIBS:=-lz
- 
- all: lguest
-diff --git a/Documentation/lguest/lguest.c b/Documentation/lguest/lguest.c
-index 7228369..6ac5230 100644
---- a/Documentation/lguest/lguest.c
-+++ b/Documentation/lguest/lguest.c
-@@ -44,7 +44,7 @@
- #include "linux/virtio_console.h"
- #include "linux/virtio_rng.h"
- #include "linux/virtio_ring.h"
--#include "asm-x86/bootparam.h"
-+#include "asm/bootparam.h"
- /*L:110 We can ignore the 39 include files we need for this program, but I do
-  * want to draw attention to the use of kernel-style types.
-  *
-diff --git a/arch/x86/lguest/boot.c b/arch/x86/lguest/boot.c
-index 48ee4f9..a5d8e1a 100644
---- a/arch/x86/lguest/boot.c
-+++ b/arch/x86/lguest/boot.c
-@@ -367,10 +367,9 @@ static void lguest_cpuid(unsigned int *ax, unsigned int *bx,
-  * lazily after a task switch, and Linux uses that gratefully, but wouldn't a
-  * name like "FPUTRAP bit" be a little less cryptic?
-  *
-- * We store cr0 (and cr3) locally, because the Host never changes it.  The
-- * Guest sometimes wants to read it and we'd prefer not to bother the Host
-- * unnecessarily. */
--static unsigned long current_cr0, current_cr3;
-+ * We store cr0 locally because the Host never changes it.  The Guest sometimes
-+ * wants to read it and we'd prefer not to bother the Host unnecessarily. */
-+static unsigned long current_cr0;
- static void lguest_write_cr0(unsigned long val)
- {
- 	lazy_hcall(LHCALL_TS, val & X86_CR0_TS, 0, 0);
-@@ -399,17 +398,23 @@ static unsigned long lguest_read_cr2(void)
- 	return lguest_data.cr2;
- }
- 
-+/* See lguest_set_pte() below. */
-+static bool cr3_changed = false;
-+
- /* cr3 is the current toplevel pagetable page: the principle is the same as
-- * cr0.  Keep a local copy, and tell the Host when it changes. */
-+ * cr0.  Keep a local copy, and tell the Host when it changes.  The only
-+ * difference is that our local copy is in lguest_data because the Host needs
-+ * to set it upon our initial hypercall. */
- static void lguest_write_cr3(unsigned long cr3)
- {
-+	lguest_data.pgdir = cr3;
- 	lazy_hcall(LHCALL_NEW_PGTABLE, cr3, 0, 0);
--	current_cr3 = cr3;
-+	cr3_changed = true;
- }
- 
- static unsigned long lguest_read_cr3(void)
- {
--	return current_cr3;
-+	return lguest_data.pgdir;
- }
- 
- /* cr4 is used to enable and disable PGE, but we don't care. */
-@@ -498,13 +503,13 @@ static void lguest_set_pmd(pmd_t *pmdp, pmd_t pmdval)
-  * to forget all of them.  Fortunately, this is very rare.
-  *
-  * ... except in early boot when the kernel sets up the initial pagetables,
-- * which makes booting astonishingly slow.  So we don't even tell the Host
-- * anything changed until we've done the first page table switch. */
-+ * which makes booting astonishingly slow: 1.83 seconds!  So we don't even tell
-+ * the Host anything changed until we've done the first page table switch,
-+ * which brings boot back to 0.25 seconds. */
- static void lguest_set_pte(pte_t *ptep, pte_t pteval)
- {
- 	*ptep = pteval;
--	/* Don't bother with hypercall before initial setup. */
--	if (current_cr3)
-+	if (cr3_changed)
- 		lazy_hcall(LHCALL_FLUSH_TLB, 1, 0, 0);
- }
- 
-@@ -521,7 +526,7 @@ static void lguest_set_pte(pte_t *ptep, pte_t pteval)
- static void lguest_flush_tlb_single(unsigned long addr)
- {
- 	/* Simply set it to zero: if it was not, it will fault back in. */
--	lazy_hcall(LHCALL_SET_PTE, current_cr3, addr, 0);
-+	lazy_hcall(LHCALL_SET_PTE, lguest_data.pgdir, addr, 0);
- }
- 
- /* This is what happens after the Guest has removed a large number of entries.
-@@ -581,6 +586,9 @@ static void __init lguest_init_IRQ(void)
- 
- 	for (i = 0; i < LGUEST_IRQS; i++) {
- 		int vector = FIRST_EXTERNAL_VECTOR + i;
-+		/* Some systems map "vectors" to interrupts weirdly.  Lguest has
-+		 * a straightforward 1 to 1 mapping, so force that here. */
-+		__get_cpu_var(vector_irq)[vector] = i;
- 		if (vector != SYSCALL_VECTOR) {
- 			set_intr_gate(vector, interrupt[vector]);
- 			set_irq_chip_and_handler_name(i, &lguest_irq_controller,
-diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index 0196a0d..3c726f1 100644
---- a/drivers/net/virtio_net.c
-+++ b/drivers/net/virtio_net.c
-@@ -82,6 +82,16 @@ static void give_a_page(struct virtnet_info *vi, struct page *page)
- 	vi->pages = page;
- }
- 
-+static void trim_pages(struct virtnet_info *vi, struct sk_buff *skb)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++)
-+		give_a_page(vi, skb_shinfo(skb)->frags[i].page);
-+	skb_shinfo(skb)->nr_frags = 0;
-+	skb->data_len = 0;
-+}
-+
- static struct page *get_a_page(struct virtnet_info *vi, gfp_t gfp_mask)
- {
- 	struct page *p = vi->pages;
-@@ -121,14 +131,8 @@ static void receive_skb(struct net_device *dev, struct sk_buff *skb,
- 	}
- 	len -= sizeof(struct virtio_net_hdr);
- 
--	if (len <= MAX_PACKET_LEN) {
--		unsigned int i;
--
--		for (i = 0; i < skb_shinfo(skb)->nr_frags; i++)
--			give_a_page(dev->priv, skb_shinfo(skb)->frags[i].page);
--		skb->data_len = 0;
--		skb_shinfo(skb)->nr_frags = 0;
--	}
-+	if (len <= MAX_PACKET_LEN)
-+		trim_pages(dev->priv, skb);
- 
- 	err = pskb_trim(skb, len);
- 	if (err) {
-@@ -232,6 +236,7 @@ static void try_fill_recv(struct virtnet_info *vi)
- 		err = vi->rvq->vq_ops->add_buf(vi->rvq, sg, 0, num, skb);
- 		if (err) {
- 			skb_unlink(skb, &vi->recv);
-+			trim_pages(vi, skb);
- 			kfree_skb(skb);
- 			break;
- 		}
-@@ -478,6 +483,7 @@ static int virtnet_set_tx_csum(struct net_device *dev, u32 data)
- static struct ethtool_ops virtnet_ethtool_ops = {
- 	.set_tx_csum = virtnet_set_tx_csum,
- 	.set_sg = ethtool_op_set_sg,
-+	.set_tso = ethtool_op_set_tso,
- };
- 
- static int virtnet_probe(struct virtio_device *vdev)
+>  	if (error)
+>  		goto out;
+>  	error = radix_tree_preload(GFP_KERNEL);
+> @@ -1371,7 +1371,7 @@ repeat:
+>  
+>  			/* Precharge page while we can wait, compensate after */
+>  			error = mem_cgroup_cache_charge(filepage, current->mm,
+> -							gfp & ~__GFP_HIGHMEM);
+> +					GFP_HIGHUSER_MOVABLE);
+>  			if (error) {
+>  				page_cache_release(filepage);
+>  				shmem_unacct_blocks(info->flags, 1);
+> 
