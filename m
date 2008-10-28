@@ -1,252 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753360AbYJ1Ges@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194AbYJ1GlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753360AbYJ1Ges (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 02:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbYJ1Geh
+	id S1753194AbYJ1GlJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 02:41:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbYJ1Gkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 02:34:37 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:46198 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752513AbYJ1Geg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 02:34:36 -0400
-X-Greylist: delayed 777 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Oct 2008 02:34:35 EDT
-Message-ID: <4906AF5F.9040704@cosmosbay.com>
-Date: Tue, 28 Oct 2008 07:21:19 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Benjamin Li <benli@broadcom.com>
-CC: "willy@linux.intel.com" <willy@linux.intel.com>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Michael Chan <mchan@broadcom.com>, yu.zhao@intel.com
-Subject: Re: [PATCH] PCI: Limit VPD length for Broadcom 5708S
-References: <48920413.6080508@cosmosbay.com> <4906405F.6080708@cosmosbay.com> <1225164385.3977.11.camel@localhost>
-In-Reply-To: <1225164385.3977.11.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 28 Oct 2008 07:21:23 +0100 (CET)
+	Tue, 28 Oct 2008 02:40:55 -0400
+Received: from mga01.intel.com ([192.55.52.88]:12301 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752516AbYJ1Gky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 02:40:54 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,497,1220252400"; 
+   d="scan'208";a="632329116"
+Subject: Re: [2.6.28-rc2] EeePC ACPI errors & exceptions
+From: Zhao Yakui <yakui.zhao@intel.com>
+To: Darren Salt <linux@youmustbejoking.demon.co.uk>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+In-Reply-To: <4FFA7B13E0%linux@youmustbejoking.demon.co.uk>
+References: <alpine.LFD.2.00.0810261221350.3386@nehalem.linux-foundation.org>
+	 <4FFA7B13E0%linux@youmustbejoking.demon.co.uk>
+Content-Type: text/plain
+Date: Tue, 28 Oct 2008 14:47:29 +0800
+Message-Id: <1225176449.5189.133.camel@yakui_zhao.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Li a écrit :
-> Hi Eric,
+On Mon, 2008-10-27 at 15:52 -0700, Darren Salt wrote: 
+> EeePC 901, BIOS revision 1603, current Debian lenny; running on AC.
 > 
-> It looks like the same problem again: we are reading past a valid VPD
-> address.
+> I've noticed the following errors & exceptions, apparently coinciding with
+> the startup of xfce4-sensors-plugin:
+Will you please confirm whether the same issue exists on the previous
+kernel? For example: 2.6.27 or 2.6.27-rc6
+
+After the following commit is merged, it seems that on the EEEPC laptop
+the EC will switch off EC GPE interrupt mode when there is no EC GPE
+interrupt confirm for some EC transactions. Then AE_TIME is returned by
+the function of ec_poll, which causes that the _BST object of battery
+can't be evaluated.
+   >commit 7c6db4e050601f359081fde418ca6dc4fc2d0011
+   >Author: Alexey Starikovskiy <astarikovskiy@suse.de>
+   >Date:   Thu Sep 25 21:00:31 2008 +0400
+     >ACPI: EC: do transaction from interrupt context
+
+When there is no EC GPE interrupt confirm in some EC transaction, the
+EC will switch off the EC GPE interrupt mode in the function of
+acpi_ec_wait. 
+
+But why is AE_TIME returned by the function of ec_poll?
+>static int ec_poll(struct acpi_ec *ec)
+{
+        unsigned long delay = jiffies + msecs_to_jiffies(ACPI_EC_DELAY);
+        msleep(1);
+// Maybe the current jiffies is already after the predefined jiffies
+after msleep(1). In such case the ETIME will be returned. Of course the
+EC transaction can't be finished. If so, IMO this is not reasonable as
+this is caused by that OS has no opportunity to issue the following EC
+command sequence.
+        while (time_before(jiffies, delay)) {
+                gpe_transaction(ec, acpi_ec_read_status(ec));
+                msleep(1);
+                if (ec_transaction_done(ec))
+                        return 0;
+//Maybe there exists the following cases. EC transaction is not finished
+after msleep(1),but the current jiffies is already after predefined
+jiffies. So ETIME is returned. In such case, IMO this is also not
+reasonable.
+        }
+        return -ETIME;
+}
+     At the same time msleep is realized by schedule_timeout. On linux
+although one process is waked up by some events, it won't be scheduled
+immediately. So maybe the current jiffies is already after the
+predefined timeout jiffies  after msleep(1).
+
+     Now some people suggest that msleep is replaced by udelay. Although
+the above two cases can be avoided by that msleep is replaced by udelay,
+maybe the above two cases still exist if the preempt schedule happens at
+the corresponding place.
+    At the same time when msleep is replaced by udelay, CPU will do
+nothing but loop while executing udelay. If the 100 EC transactions are
+done in one second, the CPU will do nothing in about 100*2*100
+microseconds. IMO this is not reasonable. 
+
+    IMO the better solution is that the EC transaction is divided into
+the different phases. (Not do the EC transaction in one loop).
+    For example:
+    The EC read transaction can be done in the following sequence:
+    a. Issue read command 
+    b. wait until the EC input buffer is empty and then write the EC
+internal read address
+    c. wait until the EC output buffer is ready and read the data from
+EC the Data port. Of course it indicates that EC read transaction is
+finished.
+    
+    The EC  write transaction can be done in the following sequence:
+    a. issue the write command
+    b. wait until the EC input buffer is empty and write the EC internal
+write address
+    c. wait until the EC input buffer is empty and write the data to the
+EC Data port
+    d. wait until the EC input buffer is empty. After it becomes empty,
+it indicates that the EC write transaction is finished.
+
+Welcome the comments.
+   Thanks.
+    
+    
+> ACPI: EC: missing confirmations, switch off interrupt mode.
+> ACPI Exception (evregion-0419): AE_TIME, Returned by Handler for [EmbeddedControl] [20080926]
+> ACPI Error (psparse-0524): Method parse/execution failed [\_SB_.PCI0.SBRG.EC0_.BST2] (Node f7030d38), AE_TIME
+> ACPI Error (psparse-0524): Method parse/execution failed [\_SB_.PCI0.CBST] (Node f70336f8), AE_TIME
+> ACPI Error (psparse-0524): Method parse/execution failed [\_SB_.PCI0.BAT0._BST] (Node f7031c48), AE_TIME
+> ACPI Exception (battery-0360): AE_TIME, Evaluating _BST [20080926]
 > 
-> After some initial debugging, it looks like dev->vpd is NULL when the
-> Broadcom 5706C/5706S/5708C/570S/5709 quirk is called.  Because of this
-> dev->vpd->len is never set to the proper length to limit the VPD reads.
-> I will debug further to determine what has changed.
+> Also, this (which, unlike the above, is also present with 2.6.27.*):
 > 
-> Thanks again for pointing out the problem.
+> ACPI: I/O resource 0000:00:1f.3 [0x400-0x41f] conflicts with ACPI region SMRG [0x400-0x40f]
+> ACPI: Device needs an ACPI driver
 > 
-
-I did a git bisect this morning :
-
-$ git bisect good
-201de56eb22f1ff3f36804bc70cbff220b50f067 is first bad commit
-commit 201de56eb22f1ff3f36804bc70cbff220b50f067
-Author: Zhao, Yu <yu.zhao@intel.com>
-Date:   Mon Oct 13 19:49:55 2008 +0800
-
-    PCI: centralize the capabilities code in probe.c
-
-    This patch centralizes the initialization and release functions of
-    various PCI capabilities in probe.c, which makes the introduction
-    of new capability support functions cleaner in the future.
-
-    Signed-off-by: Yu Zhao <yu.zhao@intel.com>
-    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-
-:040000 040000 2491e9db72bd403b118fd05030af759e5299cae9 8ffd2fc80eff495e4fd4b46ed97d10cb7bf92f3b M      drivers
-
-$ git bisect log
-git bisect start
-# good: [3fa8749e584b55f1180411ab1b51117190bac1e5] Linux 2.6.27
-git bisect good 3fa8749e584b55f1180411ab1b51117190bac1e5
-# good: [3fa8749e584b55f1180411ab1b51117190bac1e5] Linux 2.6.27
-git bisect good 3fa8749e584b55f1180411ab1b51117190bac1e5
-# good: [3fa8749e584b55f1180411ab1b51117190bac1e5] Linux 2.6.27
-git bisect good 3fa8749e584b55f1180411ab1b51117190bac1e5
-# bad: [8b5f12d04b2e93842f3dda01f029842047bf3f81] syncookies: fix inclusion of tcp options in syn-ack
-git bisect bad 8b5f12d04b2e93842f3dda01f029842047bf3f81
-# bad: [8b5f12d04b2e93842f3dda01f029842047bf3f81] syncookies: fix inclusion of tcp options in syn-ack
-git bisect bad 8b5f12d04b2e93842f3dda01f029842047bf3f81
-# good: [cf2fa66055d718ae13e62451bb546505f63906a2] Merge branch 'for_linus' of git://git.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6
-git bisect good cf2fa66055d718ae13e62451bb546505f63906a2
-# good: [01e8ef11bc1a74e65678ed55795f59266d4add01] x86: sysfs: kill owner field from attribute
-git bisect good 01e8ef11bc1a74e65678ed55795f59266d4add01
-# bad: [9779a8325a9bbf4ccd3853e0e4064984cf9da9c9] Merge branch 'for-upstream' of git://git.kernel.org/pub/scm/linux/kernel/git/dvrabel/uwb
-git bisect bad 9779a8325a9bbf4ccd3853e0e4064984cf9da9c9
-# good: [7110879cf2afbfb7af79675f5ff109e63d631c25] Merge branch 'core-fixes-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-git bisect good 7110879cf2afbfb7af79675f5ff109e63d631c25
-# good: [92b29b86fe2e183d44eb467e5e74a5f718ef2e43] Merge branch 'tracing-v28-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-git bisect good 92b29b86fe2e183d44eb467e5e74a5f718ef2e43
-# bad: [72441bdc76f7f71d7b75cdaa48f26dbb1f3d932e] Merge branch 'release' of git://git.kernel.org/pub/scm/linux/kernel/git/aegl/linux-2.6
-git bisect bad 72441bdc76f7f71d7b75cdaa48f26dbb1f3d932e
-# bad: [e3d2f927f788adcdabc42f8a1616f6cc56c53bbe] Merge git://git.kernel.org/pub/scm/linux/kernel/git/kyle/parisc-2.6
-git bisect bad e3d2f927f788adcdabc42f8a1616f6cc56c53bbe
-# bad: [201de56eb22f1ff3f36804bc70cbff220b50f067] PCI: centralize the capabilities code in probe.c
-git bisect bad 201de56eb22f1ff3f36804bc70cbff220b50f067
-# good: [7f2feec140f1f1e4f701e013a2bf8284a9ec2a3c] PCI: pciehp: replace printk with dev_printk
-git bisect good 7f2feec140f1f1e4f701e013a2bf8284a9ec2a3c
-# good: [c8761fe80ed052634153438405c9048611ae7ae1] PCI: fix hotplug get_##name return value problem
-git bisect good c8761fe80ed052634153438405c9048611ae7ae1
-# good: [022edd86d7c864bc8fadc3c8ac4e6a464472ab05] PCI: use resource_size() everywhere.
-git bisect good 022edd86d7c864bc8fadc3c8ac4e6a464472ab05
-# good: [e354597cce8d219d135d65e585dc4f30323486b9] PCI: fix 64-vbit prefetchable memory resource BARs
-git bisect good e354597cce8d219d135d65e585dc4f30323486b9
-# good: [280c73d3691fb182fa55b0160737c2c0feb79471] PCI: centralize the capabilities code in pci-sysfs.c
-git bisect good 280c73d3691fb182fa55b0160737c2c0feb79471
-
-
-
-> -Ben
+> Full dmesg & config are attached.
 > 
-> On Mon, 2008-10-27 at 15:27 -0700, Eric Dumazet wrote:
->> Eric Dumazet a écrit :
->>> While trying to upgrade kernel from 2.6.25 to 2.6.26 on a ProLiant 
->>> BL460c G1,
->>> I faced this problem on integrated Broadcom 5708S NIC when trying to UP 
->>> them.
->>>
->>> bnx2: fw sync timeout, reset code = 1030003
->>>
->>> I noticed that commit 99cb233d60cbe644203f19938c729ea2bb004d70 (PCI: 
->>> Limit VPD read/write lengths for Broadcom 5706, 5708, 5709 rev.A)
->>> was probably a good candidate to solve the problem.
->>>
->>> Apparently, it added PCI quirks for a list of Broadcom NICs, but
->>> quirk_brcm_570x_limit_vpd() ignores part of them.
->>>
->>> I found the following patch useful to restore correct operation on my 
->>> machine.
->>>
->>> Some information about this nic :
->>>
->>> 03:00.0 Ethernet controller: Broadcom Corporation NetXtreme II BCM5708S 
->>> Gigabit Ethernet (rev 12)
->>>        Subsystem: Hewlett-Packard Company NC373i Integrated 
->>> Multifunction Gigabit Server Adapter
->>>        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- 
->>> ParErr+ Stepping- SERR+ FastB2B-
->>>        Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
->>> <TAbort- <MAbort- >SERR- <PERR-
->>>        Latency: 64 (16000ns min), Cache Line Size 10
->>>        Interrupt: pin A routed to IRQ 222
->>>        Region 0: Memory at f6000000 (64-bit, non-prefetchable) [size=32M]
->>>        [virtual] Expansion ROM at d1200000 [disabled] [size=16K]
->>>        Capabilities: [40] PCI-X non-bridge device.
->>>                Command: DPERE- ERO- RBC=0 OST=4
->>>                Status: Bus=3 Dev=0 Func=0 64bit+ 133MHz+ SCD- USC-, 
->>> DC=simple, DMMRBC=0, DMOST=4, DMCRS=2, RSCEM-
->>>        Capabilities: [48] Power Management version 2
->>>                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA 
->>> PME(D0-,D1-,D2-,D3hot+,D3cold+)
->>>                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
->>>        Capabilities: [50] Vital Product Data
->>>        Capabilities: [58] Message Signalled Interrupts: 64bit+ Queue=0/0 
->>> Enable+
->>>                Address: 00000000feeff00c  Data: 4179
->>>
->>> after applying patch :
->>>
->>> # hexdump -C 
->>> "/sys/devices/pci0000:00/0000:00:1c.0/0000:02:00.0/0000:03:00.0/vpd"
->>> 00000000  82 2f 00 48 50 20 4e 43  33 37 33 69 20 4d 75 6c  |./.HP 
->>> NC373i Mul|
->>> 00000010  74 69 66 75 6e 63 74 69  6f 6e 20 47 69 67 61 62  |tifunction 
->>> Gigab|
->>> 00000020  69 74 20 53 65 72 76 65  72 20 41 64 61 70 74 65  |it Server 
->>> Adapte|
->>> 00000030  72 00 90 4a 00 50 4e 03  4e 2f 41 45 43 03 4e 2f  
->>> |r..J.PN.N/AEC.N/|
->>> 00000040  41 53 4e 0a 30 31 32 33  34 35 36 37 38 39 4d 4e  
->>> |ASN.0123456789MN|
->>> 00000050  04 31 30 33 43 52 56 26  a2 00 00 00 00 00 00 00  
->>> |.103CRV&........|
->>> 00000060  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  
->>> |................|
->>> 00000070  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 78  
->>> |...............x|
->>> 00000080
->>>
->>> Patch against current Linus tree, should also be sent for linux-2.6.26.2 
->>> inclusion.
->>>
->>> I have no idea if 5706S and 5709S also needs this truncation of VPD length
->>>
->>> Thank you
->>>
->>> [PATCH] PCI: Limit VPD length for Broadcom 5708S
->>>
->>> BCM5708S wont work correctly unless VPD length truncated to 128
->>>
->>> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
->>>
->>> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
->>> index 0fb3650..59667e5 100644
->>> --- a/drivers/pci/quirks.c
->>> +++ b/drivers/pci/quirks.c
->>> @@ -1756,9 +1756,12 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_VIA, 
->>> 0x324e, quirk_via_cx700_pci_parking_c
->>>  */
->>> static void __devinit quirk_brcm_570x_limit_vpd(struct pci_dev *dev)
->>> {
->>> -    /*  Only disable the VPD capability for 5706, 5708, and 5709 rev. A */
->>> +    /*
->>> +     * Only disable the VPD capability for 5706, 5708, 5708S and 5709 
->>> rev. A
->>> +     */
->>>     if ((dev->device == PCI_DEVICE_ID_NX2_5706) ||
->>>         (dev->device == PCI_DEVICE_ID_NX2_5708) ||
->>> +        (dev->device == PCI_DEVICE_ID_NX2_5708S) ||
->>>         ((dev->device == PCI_DEVICE_ID_NX2_5709) &&
->>>          (dev->revision & 0xf0) == 0x0)) {
->>>         if (dev->vpd)
->>>
->> Hi all
->>
->> Just tried linux-2.6.28-rc2 on same platform.
->>
->> Same problem again...
->>
->> Broadcom NetXtreme II Gigabit Ethernet Driver bnx2 v1.8.1 (Oct 7, 2008)
->> bnx2 0000:03:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
->> eth0: Broadcom NetXtreme II BCM5708 1000Base-SX (B2) PCI-X 64-bit 133MHz found at mem f6000000, IRQ 16, node addr 00:1e:0b:ec:d3:dc
->> bnx2 0000:07:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
->> eth1: Broadcom NetXtreme II BCM5708 1000Base-SX (B2) PCI-X 64-bit 133MHz found at mem fa000000, IRQ 16, node addr 00:1e:0b:ec:d3:d2
->> bnx2 0000:03:00.0: irq 45 for MSI/MSI-X
->> bnx2: fw sync timeout, reset code = 1030003
->> bnx2 0000:07:00.0: irq 45 for MSI/MSI-X
->> bnx2: fw sync timeout, reset code = 1030003
->> bnx2 0000:03:00.0: irq 45 for MSI/MSI-X
->> bnx2: fw sync timeout, reset code = 1030006
->>
->>
->> 2.6.27.4 is running fine on this machine
->>
->> Any ideas ?
->>
->> Thank you
->>
->> Eric
->>
->>
->>
->>
+> (The Elantech touchpad patch from http://arjan.opmeer.net/elantech/ is
+> applied to this kernel.)
 > 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
-
 
