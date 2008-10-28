@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbYJ1XGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754347AbYJ1XHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754116AbYJ1XGw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 19:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbYJ1XGo
+	id S1754347AbYJ1XHc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 19:07:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbYJ1XHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 19:06:44 -0400
-Received: from sh.osrg.net ([192.16.179.4]:38372 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753215AbYJ1XGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 19:06:43 -0400
-Date: Wed, 29 Oct 2008 08:06:09 +0900
-To: jens.axboe@oracle.com
-Cc: jeremy@goop.org, fujita.tomonori@lab.ntt.co.jp,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH 2/2] x86: replace BIO_VMERGE_BOUNDARY with
- BIOVEC_PHYS_MERGEABLE
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081027115659.GZ22217@kernel.dk>
-References: <20081027094111.GU22217@kernel.dk>
-	<4905A961.9000603@goop.org>
-	<20081027115659.GZ22217@kernel.dk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 28 Oct 2008 19:07:10 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:42660 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753320AbYJ1XHJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 19:07:09 -0400
+Message-ID: <ac3eb2510810281607o19266977l4c77d3d3ab4bb849@mail.gmail.com>
+Date: Wed, 29 Oct 2008 00:07:07 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Folkert van Heusden" <folkert@vanheusden.com>
+Subject: Re: [2.6.26] kobject_add_internal failed for 2:0 with -EEXIST / unable to handle kernel NULL pointer dereference in sysfs_create_link
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20081028151157.GI11214@vanheusden.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20081029080603J.fujita.tomonori@lab.ntt.co.jp>
+Content-Disposition: inline
+References: <20081028151157.GI11214@vanheusden.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Oct 2008 12:57:00 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
+On Tue, Oct 28, 2008 at 16:11, Folkert van Heusden
+<folkert@vanheusden.com> wrote:
+> While running my http://vanheusden.com/pyk/ script (which randomly
+> inserts and removes modules) I triggered the folllowing oops in a 2.6.26
+> kernel on an IBM xSeries 260. This oops (in fact no oops at all) did not
+> get triggered in a 2.6.18 kernel on that system.
+>
+> [   42.507375] FDC 0 is a National Semiconductor PC87306
+> [   42.509057] kobject_add_internal failed for 2:0 with -EEXIST, don't try to register things with the same name in the same directory.
+> [   42.509291] Pid: 5301, comm: modprobe Not tainted 2.6.26-1-amd64 #1
+> [   42.509431]
+> [   42.509433] Call Trace:
+> [   42.509685]  [<ffffffff8031b031>] kobject_add_internal+0x13f/0x17e
+> [   42.509823]  [<ffffffff8031b46e>] kobject_add+0x74/0x7c
+> [   42.509969]  [<ffffffff802e2470>] sysfs_addrm_finish+0x19/0x1ea
+> [   42.510141]  [<ffffffff802e21b4>] sysfs_find_dirent+0x1b/0x2f
+> [   42.510331]  [<ffffffff802e2741>] create_dir+0x5a/0x87
+> [   42.510466]  [<ffffffff8031ae88>] kobject_get+0x12/0x17
+> [   42.510614]  [<ffffffff80382771>] get_device+0x17/0x20
+> [   42.510754]  [<ffffffff80382d81>] device_add+0x9b/0x53f
+> [   42.510915]  [<ffffffff8031acf2>] kobject_init+0x41/0x69
+> [   42.511374]  [<ffffffff803832d1>] device_create_vargs+0x9a/0xc6
+> [   42.511519]  [<ffffffff8027d23b>] bdi_register+0x57/0xb4
 
-> On Mon, Oct 27 2008, Jeremy Fitzhardinge wrote:
-> > Jens Axboe wrote:
-> > >Pretty much baffles me as well, xen should just need to do
-> > >
-> > >#define BIOVEC_PHYS_MERGEABLE(vec1, vec2)       0
-> > >  
-> > 
-> > It needs to be a runtime switch, since we only want to do this when 
-> > actually running under Xen.  Also, its possible that the two pages might 
-> > actually be physically contiguous, so they could be merged anyway.
-> 
-> Alright, then add a xen_biovec_phys_mergeable(vec1, vec2) in the xen
-> code that actually checks this for real. You can add your switch there
-> as well. Then put the BIOVEC_PHYS_MERGEABLE() in the xen arch includes,
-> done.
-> 
-> What Tomo is saying is that this has nothing to do with virtual merging,
-> and he's right.
+Looks like bdi sees two devices with the same devnum, or didn't
+cleanup an old entry.
 
-Yeah, overriding BIOVEC_PHYS_MERGEABLE perfectly works for Xen. And it
-is not related with BIO_VMERGE_BOUNDARY at all.
+What does: ls -l "/sys/class/bdi/" print?
 
-Ingo, please put this patch into your tree:
+How many floppies (or emulated floppies) does this system have?
 
-http://marc.info/?l=linux-kernel&m=122482703716620&w=2
-
-
-Thanks,
+Kay
