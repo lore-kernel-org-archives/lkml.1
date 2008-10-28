@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbYJ1R7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550AbYJ1SBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754422AbYJ1R7X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 13:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbYJ1R7J
+	id S1754550AbYJ1SBB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 14:01:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYJ1SAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 13:59:09 -0400
-Received: from mail-gx0-f18.google.com ([209.85.217.18]:53700 "EHLO
-	mail-gx0-f18.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752759AbYJ1R7I (ORCPT
+	Tue, 28 Oct 2008 14:00:47 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48365
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752312AbYJ1SAq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 13:59:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=vGmLMf714RIRMzUugAEZz4utqqR+fka69GYthgyvPaEu6X+JR2Eafx54SEIkbtFKsG
-         4gNvS/fKDhYUIHZixfMluG1Pk4CBzP0kN9E0ZvxOXZ4D/1gr4MbGD0+c7bIBTj8cvXl4
-         xZYEoKnsnr+P34pF0Bk1+d4vBGhF2qznPrOjI=
-Message-ID: <72dbd3150810281059u478b3a77g1d5a52efbb5bea67@mail.gmail.com>
-Date: Tue, 28 Oct 2008 10:59:06 -0700
-From: "David Rees" <drees76@gmail.com>
-To: "Oskar Liljeblad" <oskar@osk.mine.nu>
-Subject: Re: sata errors with Seagate 1.5TB on AMD 780G/SB700 motherboard
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081028170105.GA21933@osk.mine.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 28 Oct 2008 14:00:46 -0400
+Date: Tue, 28 Oct 2008 11:00:24 -0700 (PDT)
+Message-Id: <20081028.110024.197492570.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-10-27
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081027220049.GI20389@tuxdriver.com>
+References: <20081027220049.GI20389@tuxdriver.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081028170105.GA21933@osk.mine.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28, 2008 at 10:01 AM, Oskar Liljeblad <oskar@osk.mine.nu> wrote:
-> Can anyone make any sense of these SATA errors? They're killing my md RAID5
-> (at least the second error did).
->
-> Hard drives (ata1/sda, ata2/sdb, ata3/sdc): Seagate ST31500341AS 1.5TB SATA
-> Motherboard: Asus M3A78-EH with AMD 780G/SB700 chipset
-> SATA driver: ahci
-> 00:11.0 SATA controller: ATI Technologies Inc SB700/SB800 SATA Controller [AHCI mode]
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Mon, 27 Oct 2008 18:00:49 -0400
 
-Seems to be a known issue with the 1.5TB drives and Linux (and Mac users, too)
+> Another round of fixes intended for 2.6.28 (got it right this time!)...
+> 
+> "p54: fix misbehavings when firmware can't be found" is a little big,
+> but it fixes a double free of an IRQ (bug 11782). "ath5k: Reset key
+> cache on interface up, thus fixing resume" is a little sizable too, but
+> it moves some code intelligently to fix a regression we introduce on
+> resume.  The other stuff is cleanups and a kernel-doc fix, as well as an
+> initialization fix for rfkill.
+> 
+> Please let me know if there are problems!
 
-http://forums.seagate.com/stx/board/message?board.id=ata_drives&thread.id=2390
-http://ubuntuforums.org/showthread.php?t=933053
-
--Dave
+Looks good, pulled, thanks a lot John.
