@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbYJ1WDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYJ1WDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754545AbYJ1WDd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 18:03:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbYJ1WDX
+	id S1754733AbYJ1WDq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 18:03:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbYJ1WDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 18:03:23 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:40294 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753084AbYJ1WDW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 18:03:22 -0400
-X-IronPort-AV: E=Sophos;i="4.33,501,1220227200"; 
-   d="scan'208";a="184346028"
-From: Roland Dreier <rdreier@cisco.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Avi Kivity <avi@redhat.com>, Glauber Costa <glommer@redhat.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       aliguori@codemonkey.ws, npiggin@suse.de,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] regression: vmalloc easily fail.
-References: <1225234513-3996-1-git-send-email-glommer@redhat.com>
-	<49077E1A.5080105@redhat.com> <ada7i7so1o7.fsf@cisco.com>
-	<20081028144255.05712d70@infradead.org>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 28 Oct 2008 15:03:20 -0700
-In-Reply-To: <20081028144255.05712d70@infradead.org> (Arjan van de Ven's
-	message of "Tue, 28 Oct 2008 14:42:55 -0700")
-Message-ID: <adad4hkml7b.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Oct 2008 22:03:20.0590 (UTC) FILETIME=[FD3E0AE0:01C93948]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Tue, 28 Oct 2008 18:03:30 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:33578 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754267AbYJ1WD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 18:03:29 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
+	filesystems.
+From: Nigel Cunningham <ncunningham@crca.org.au>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <E1KuwTn-0006EQ-8J@pomaz-ex.szeredi.hu>
+References: <1224886068.6478.21.camel@nigel-laptop>
+	 <E1KuQ1J-0002Vw-9Q@pomaz-ex.szeredi.hu>
+	 <1225106427.26724.5.camel@nigel-laptop>  <200810271237.40049.rjw@sisk.pl>
+	 <1225107607.26724.9.camel@nigel-laptop>
+	 <E1KuRN4-0002gS-Hq@pomaz-ex.szeredi.hu>
+	 <1225141168.26724.23.camel@nigel-laptop>
+	 <E1KuZKt-0003jl-2N@pomaz-ex.szeredi.hu>
+	 <1225145607.26724.54.camel@nigel-laptop>
+	 <E1Kuv87-00064p-Lk@pomaz-ex.szeredi.hu>
+	 <1225229399.9661.13.camel@nigel-laptop>
+	 <E1KuwTn-0006EQ-8J@pomaz-ex.szeredi.hu>
+Content-Type: text/plain
+Organization: Christian Reformed Churches of Australia
+Date: Wed, 29 Oct 2008 09:03:25 +1100
+Message-Id: <1225231405.9661.18.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > I suspect it's a case of off-by-one... ALIGN() might round down, and
- > the "+ (PAGE_SIZE-1)" was there to make it round up.
- > Except for that missing -1 ...
+Hi.
 
-ALIGN() has always rounded up, at least back to 2.4.
+On Tue, 2008-10-28 at 22:51 +0100, Miklos Szeredi wrote:
+> On Wed, 29 Oct 2008, Nigel Cunningham wrote:
+> > > However it does not fix the freezing of tasks which are waiting for
+> > > VFS locks (i.e. inode->i_mutex) held by the outstanding fuse requests.
+> > > This is the tricky part...
+> > 
+> > Convert them all to wait_event_freezeable.
+> 
+> You mean convert mutexes to event queues?  Not a very good idea.
+
+No, I don't. Sorry. I was thinking you were referring to the wait_event
+calls in the fuse request code. My bad.
+
+Perhaps it's best to go back to my original position: hold new requests
+and allow existing ones to complete. I'll look again at previous
+messages to see why you thought that was problematic.
+
+Regards,
+
+Nigel
+
