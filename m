@@ -1,56 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbYJ1XzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754143AbYJ1X6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754675AbYJ1XzR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 19:55:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYJ1XzE
+	id S1754143AbYJ1X6m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 19:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYJ1X6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 19:55:04 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39846 "EHLO ogre.sisk.pl"
+	Tue, 28 Oct 2008 19:58:33 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:52780 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752642AbYJ1XzC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 19:55:02 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	id S1751771AbYJ1X6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 19:58:33 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for
+	frozen	filesystems.
+From: Nigel Cunningham <ncunningham@crca.org.au>
 To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen filesystems.
-Date: Wed, 29 Oct 2008 00:59:37 +0100
-User-Agent: KMail/1.9.9
-Cc: ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <1224886068.6478.21.camel@nigel-laptop> <200810282321.59041.rjw@sisk.pl> <E1Kuxsg-0006PR-Tr@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1Kuxsg-0006PR-Tr@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <E1KuyKw-0006UP-EK@pomaz-ex.szeredi.hu>
+References: <1224886068.6478.21.camel@nigel-laptop>
+	 <E1KuQ1J-0002Vw-9Q@pomaz-ex.szeredi.hu>
+	 <1225106427.26724.5.camel@nigel-laptop> <200810271237.40049.rjw@sisk.pl>
+	 <1225107607.26724.9.camel@nigel-laptop>
+	 <E1KuRN4-0002gS-Hq@pomaz-ex.szeredi.hu>
+	 <1225141168.26724.23.camel@nigel-laptop>
+	 <E1KuZKt-0003jl-2N@pomaz-ex.szeredi.hu>
+	 <1225145607.26724.54.camel@nigel-laptop>
+	 <E1Kuv87-00064p-Lk@pomaz-ex.szeredi.hu>
+	 <1225235054.9661.37.camel@nigel-laptop>
+	 <E1Kuxk4-0006NT-Ie@pomaz-ex.szeredi.hu>
+	 <1225235860.9661.42.camel@nigel-laptop>
+	 <E1KuxvH-0006Q0-Dy@pomaz-ex.szeredi.hu>
+	 <1225237298.9661.55.camel@nigel-laptop>
+	 <E1KuyFq-0006Sc-PC@pomaz-ex.szeredi.hu>
+	 <E1KuyKw-0006UP-EK@pomaz-ex.szeredi.hu>
+Content-Type: text/plain
+Organization: Christian Reformed Churches of Australia
+Date: Wed, 29 Oct 2008 10:58:29 +1100
+Message-Id: <1225238309.9661.65.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810290059.38411.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 29 of October 2008, Miklos Szeredi wrote:
-> On Tue, 28 Oct 2008, Rafael J. Wysocki wrote:
-> > On Tuesday, 28 of October 2008, Miklos Szeredi wrote:
-> > > I would prefer a freezer-less solution.  Suspend to ram doesn't need
-> > > the freezer,
+Hi.
+
+On Wed, 2008-10-29 at 00:50 +0100, Miklos Szeredi wrote:
+> On Wed, 29 Oct 2008, Miklos Szeredi wrote:
+> > On Wed, 29 Oct 2008, Nigel Cunningham wrote:
+> > > Hi.
+> > > 
+> > > On Wed, 2008-10-29 at 00:24 +0100, Miklos Szeredi wrote:
+> > > > On Wed, 29 Oct 2008, Nigel Cunningham wrote:
+> > > > > Remember, though, that we're only freezing fuse at the moment, and
+> > > > > strictly one filesystem at a time. We can thus happily wait for the
+> > > > > i_mutex taken by some other process to be released.
+> > > > 
+> > > > Not going to work: you need to wait for all requests to be finished,
+> > > > but those might depend on some other fuse filesystem which has already
+> > > > been frozen.
+> > > 
+> > > Okay. In that case, am I right in thinking that the request waiting on
+> > > the frozen filesystem will be stuck in request_wait_answer,
 > > 
-> > Well, yes it does.  And it will in forseeable future, AFAICS.
+> > Yes.
+> > 
+> > > and the
+> > > userspace process that was trying to satisfy the request will be stuck
+> > > in the FUSE_MIGHT_FREEZE call that was invoked for the frozen
+> > > filesystem?
 > 
-> Umm, OK.  Last I remember everybody agreed that there's absolutely no
-> reason why processes need to be frozen, and the only important thing
-> is that drivers are not twiddling the hardware during suspend, and
-> this can usually easily be solved on the subsystem level.
+> Sorry, I misunderstood this.  Yes you're right, in the case of one
+> fuse filesystem relying on another to complete the request the already
+> frozen one will be stuck in FUSE_MIGHT_FREEZE().
+> 
+> How does that help?
 
-Well, this turned out not to be the case in the meantime.
+Well, my next question was going to be: can we find a way to know that
+the userspace process we're waiting on was frozen? If we can know that,
+then perhaps we can apply that knowledge in this thread to avoid a
+freezing failure.
 
-In fact to handle that without the freezer we'd have to synchronize every
-driver's suspend/resume callbacks with every possible way in which
-applications can access the device for regular I/O (for example for PCI devices
-this means any I/O other than configuration space accesses).
+Regards,
 
-While this is possible in theory, I don't see this happening any time soon,
-especially that we're going to keep the bar for accepting new drivers
-relatively low.
+Nigel
 
-Thanks,
-Rafael
