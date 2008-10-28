@@ -1,163 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbYJ1Kk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbYJ1KmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753830AbYJ1Kk2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 06:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbYJ1KkU
+	id S1753705AbYJ1KmS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 06:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYJ1KmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 06:40:20 -0400
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:58321 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752439AbYJ1KkT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 06:40:19 -0400
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4906EC24.30201@cam.ac.uk>
-Date: Tue, 28 Oct 2008 10:40:36 +0000
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080801)
-MIME-Version: 1.0
-To: Eric Miao <eric.y.miao@gmail.com>
-CC: Jonathan Cameron <Jonathan.Cameron@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Liam Girdwood <lrg@kernel.org>
-Subject: Re: [PATCH] da903x regulator bug fix
-References: <4901EE0F.5000508@cam.ac.uk> <4905DE3D.1010101@gmail.com>	 <f17812d70810271801t47830712h431df82baee11654@mail.gmail.com> <f17812d70810271802v75b08712l4ab243802f59ecce@mail.gmail.com>
-In-Reply-To: <f17812d70810271802v75b08712l4ab243802f59ecce@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
+	Tue, 28 Oct 2008 06:42:08 -0400
+Received: from ryu.zarb.org ([212.85.158.22]:60935 "EHLO ryu.zarb.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752640AbYJ1KmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 06:42:06 -0400
+Subject: pm_op(): pci_pm_restore+0x0/0x70 returns -16
+From: Pascal Terjan <pterjan@mandriva.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: Mandriva
+Date: Tue, 28 Oct 2008 11:41:59 +0100
+Message-Id: <1225190519.8039.14.camel@plop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.0-2mdv2009.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good idea, patch to follow.
+Since I updated my laptop (Thikpad T40) to 2.6.27-rc5 and all new
+kernels until 2.6.27.3 (was using 2.6.25 before), I get this at resume
+time after hibernation :
 
-Jonathan
-> (Resend with corrected e-mail address of Liam)
-> 
-> I'd suggest making this a static inline function then,
-> e.g. to_da903x_dev(rdev), which will help both
-> readability and future modifications.
-> 
->> On Mon, Oct 27, 2008 at 11:29 PM, Jonathan Cameron
->> <Jonathan.Cameron@gmail.com> wrote:
->>> Changes the device registration part of the probe function to supply the
->>> regulator device rather than its parent (the mfd device) as this caused
->>> problems when the regulator core attempted to find constraints associated
->>> with the regulators.
->>>
->>> Signed-of-by: Jonathan Cameron <jic23@cam.ac.uk>
->>>
->>> --
->>> This is quickest and simplest way to fix this bug. There may be better
->>> ways of doing it, but they all require considerably more substantial
->>> changes to the driver.
->>>
->>> diff --git a/drivers/regulator/da903x.c b/drivers/regulator/da903x.c
->>> index 3688e33..f928aa1 100644
->>> --- a/drivers/regulator/da903x.c
->>> +++ b/drivers/regulator/da903x.c
->>> @@ -93,7 +93,7 @@ static int da903x_set_ldo_voltage(struct regulator_dev
->>> *rdev,
->>>                   int min_uV, int max_uV)
->>>  {
->>>     struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
->>> -    struct device *da9034_dev = rdev_get_dev(rdev)->parent;
->>> +    struct device *da9034_dev = rdev_get_dev(rdev)->parent->parent;
->>>     uint8_t val, mask;
->>>
->>>     if (check_range(info, min_uV, max_uV)) {
->>> @@ -111,7 +111,7 @@ static int da903x_set_ldo_voltage(struct
->>> regulator_dev *rdev,
->>>  static int da903x_get_voltage(struct regulator_dev *rdev)
->>>  {
->>>     struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
->>> -    struct device *da9034_dev = rdev_get_dev(rdev)->parent;
->>> +    struct device *da9034_dev = rdev_get_dev(rdev)->parent->parent;
->>>     uint8_t val, mask;
->>>     int ret;
->>>
->>> @@ -128,7 +128,7 @@ static int da903x_get_voltage(struct regulator_dev
->>> *rdev)
->>>  static int da903x_enable(struct regulator_dev *rdev)
->>>  {
->>>     struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
->>> -    struct device *da9034_dev = rdev_get_dev(rdev)->parent;
->>> +    struct device *da9034_dev = rdev_get_dev(rdev)->parent->parent;
->>>
->>>     return da903x_set_bits(da9034_dev, info->enable_reg,
->>>                     1 << info->enable_bit);
->>> @@ -137,7 +137,7 @@ static int da903x_enable(struct regulator_dev *rdev)
->>>  static int da903x_disable(struct regulator_dev *rdev)
->>>  {
->>>     struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
->>> -    struct device *da9034_dev = rdev_get_dev(rdev)->parent;
->>> +    struct device *da9034_dev = rdev_get_dev(rdev)->parent->parent;
->>>
->>>     return da903x_clr_bits(da9034_dev, info->enable_reg,
->>>                     1 << info->enable_bit);
->>> @@ -146,7 +146,7 @@ static int da903x_disable(struct regulator_dev *rdev)
->>>  static int da903x_is_enabled(struct regulator_dev *rdev)
->>>  {
->>>     struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
->>> -    struct device *da9034_dev = rdev_get_dev(rdev)->parent;
->>> +    struct device *da9034_dev = rdev_get_dev(rdev)->parent->parent;
->>>     uint8_t reg_val;
->>>     int ret;
->>>
->>> @@ -238,7 +238,7 @@ static int da9034_set_dvc_voltage(struct
->>> regulator_dev *rdev,
->>>                   int min_uV, int max_uV)
->>>  {
->>>     struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
->>> -    struct device *da9034_dev = rdev_get_dev(rdev)->parent;
->>> +    struct device *da9034_dev = rdev_get_dev(rdev)->parent->parent;
->>>     uint8_t val, mask;
->>>     int ret;
->>>
->>> @@ -264,7 +264,7 @@ static int da9034_set_ldo12_voltage(struct
->>> regulator_dev *rdev,
->>>                     int min_uV, int max_uV)
->>>  {
->>>     struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
->>> -    struct device *da9034_dev = rdev_get_dev(rdev)->parent;
->>> +    struct device *da9034_dev = rdev_get_dev(rdev)->parent->parent;
->>>     uint8_t val, mask;
->>>
->>>     if (check_range(info, min_uV, max_uV)) {
->>> @@ -283,7 +283,7 @@ static int da9034_set_ldo12_voltage(struct
->>> regulator_dev *rdev,
->>>  static int da9034_get_ldo12_voltage(struct regulator_dev *rdev)
->>>  {
->>>     struct da903x_regulator_info *info = rdev_get_drvdata(rdev);
->>> -    struct device *da9034_dev = rdev_get_dev(rdev)->parent;
->>> +    struct device *da9034_dev = rdev_get_dev(rdev)->parent->parent;
->>>     uint8_t val, mask;
->>>     int ret;
->>>
->>> @@ -466,7 +466,7 @@ static int __devinit da903x_regulator_probe(struct
->>> platform_device *pdev)
->>>     if (ri->desc.id == DA9030_ID_LDO1 || ri->desc.id == DA9030_ID_LDO15)
->>>         ri->desc.ops = &da9030_regulator_ldo1_15_ops;
->>>
->>> -    rdev = regulator_register(&ri->desc, pdev->dev.parent, ri);
->>> +    rdev = regulator_register(&ri->desc, &pdev->dev, ri);
->>>     if (IS_ERR(rdev)) {
->>>         dev_err(&pdev->dev, "failed to register regulator %s\n",
->>>                 ri->desc.name);
->>>
->>>
->>>
->>>
->>>
->>
->>
->> --
->> Cheers
->> - eric
->>
-> 
-> 
-> 
+Oct 28 10:39:18 plop kernel: pm_op(): pci_pm_restore+0x0/0x70 returns
+-16
+Oct 28 10:39:19 plop kernel: PM: Device 0000:00:00.0 failed to restore:
+error -16
+
+This may or may not be related to resume issues I often get.
+
+Sometimes it still work fine, sometimes it panics but I can't get any
+log, sometimes I get back to X but without USB mouse, without keyboard
+and ssh not responding (sysrq still work).
+
+ 00:00.0 Host bridge: Intel Corporation 82855PM Processor to I/O
+Controller (rev 03)
+	Subsystem: IBM Thinkpad T40 series
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR+ FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort-
+<MAbort+ >SERR- <PERR- INTx-
+	Latency: 0
+	Region 0: Memory at d0000000 (32-bit, prefetchable) [size=256M]
+	Capabilities: [e4] Vendor Specific Information <?>
+	Capabilities: [a0] AGP version 2.0
+		Status: RQ=32 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 64bit-
+FW+ AGP3- Rate=x1,x2,x4
+		Command: RQ=1 ArqSz=0 Cal=0 SBA+ AGP+ GART64- 64bit- FW- Rate=x4
+	Kernel driver in use: agpgart-intel
+	Kernel modules: intel-agp
+
+
+Here is the warn level log of the resume :
+
+Oct 28 10:39:16 plop kernel: Syncing filesystems ... done.
+Oct 28 10:39:18 plop kernel: Freezing user space processes ... (elapsed
+0.06 seconds) done.
+Oct 28 10:39:18 plop kernel: Freezing remaining freezable tasks ...
+(elapsed 0.00 seconds) done.
+Oct 28 10:39:18 plop kernel: Suspending console(s) (use
+no_console_suspend to debug)
+Oct 28 10:39:18 plop kernel: Disabling non-boot CPUs ...
+Oct 28 10:39:21 plop kernel: Restarting tasks ... done.
+Oct 28 10:45:26 plop kernel: Emergency Sync complete
+
+Here is the info level :
+
+Oct 28 10:39:18 plop kernel: PM: Shrinking memory... done (92359 pages
+freed)
+Oct 28 10:39:18 plop kernel: PM: Freed 369436 kbytes in 12.51 seconds
+(29.53 MB/s)
+Oct 28 10:39:18 plop kernel: sd 0:0:0:0: [sda] Synchronizing SCSI cache
+Oct 28 10:39:18 plop kernel: nsc-ircc 00:0b: disabled
+Oct 28 10:39:18 plop kernel: parport_pc 00:0a: disabled
+Oct 28 10:39:18 plop kernel: serial 00:09: disabled
+Oct 28 10:39:18 plop kernel: eth4: Going into suspend...
+Oct 28 10:39:18 plop kernel: ipw2200 0000:02:02.0: PCI INT A disabled
+Oct 28 10:39:18 plop kernel: ACPI handle has no context!
+Oct 28 10:39:18 plop kernel: Intel ICH Modem 0000:00:1f.6: PCI INT B
+disabled
+Oct 28 10:39:18 plop kernel: Intel ICH 0000:00:1f.5: PCI INT B disabled
+Oct 28 10:39:18 plop kernel: ata_piix 0000:00:1f.1: PCI INT A disabled
+Oct 28 10:39:18 plop kernel: ehci_hcd 0000:00:1d.7: PCI INT D disabled
+Oct 28 10:39:18 plop kernel: uhci_hcd 0000:00:1d.2: PCI INT C disabled
+Oct 28 10:39:18 plop kernel: uhci_hcd 0000:00:1d.1: PCI INT B disabled
+Oct 28 10:39:18 plop kernel: uhci_hcd 0000:00:1d.0: PCI INT A disabled
+Oct 28 10:39:18 plop kernel: ACPI: Preparing to enter system sleep state
+S4
+Oct 28 10:39:18 plop kernel: Extended CMOS year: 2000
+Oct 28 10:39:18 plop kernel: PM: Creating hibernation image: 
+Oct 28 10:39:18 plop kernel: PM: Need to copy 91604 pages
+Oct 28 10:39:18 plop kernel: Intel machine check architecture supported.
+Oct 28 10:39:18 plop kernel: Intel machine check reporting enabled on
+CPU#0.
+Oct 28 10:39:18 plop kernel: Extended CMOS year: 2000
+Oct 28 10:39:18 plop kernel: ACPI: Waking up from system sleep state S4
+Oct 28 10:39:18 plop kernel: ACPI: EC: non-query interrupt received,
+switching to interrupt mode
+Oct 28 10:39:21 plop kernel: uhci_hcd 0000:00:1d.0: power state changed
+by ACPI to D0
+Oct 28 10:39:21 plop kernel: uhci_hcd 0000:00:1d.0: PCI INT A ->
+Link[LNKA] -> GSI 11 (level, low) -> IRQ 11
+Oct 28 10:39:21 plop kernel: uhci_hcd 0000:00:1d.0: setting latency
+timer to 64
+Oct 28 10:39:21 plop kernel: uhci_hcd 0000:00:1d.1: power state changed
+by ACPI to D0
+Oct 28 10:39:21 plop kernel: uhci_hcd 0000:00:1d.1: PCI INT B ->
+Link[LNKD] -> GSI 11 (level, low) -> IRQ 11
+Oct 28 10:39:21 plop kernel: uhci_hcd 0000:00:1d.1: setting latency
+timer to 64
+Oct 28 10:39:21 plop kernel: uhci_hcd 0000:00:1d.2: PCI INT C ->
+Link[LNKC] -> GSI 11 (level, low) -> IRQ 11
+Oct 28 10:39:21 plop kernel: uhci_hcd 0000:00:1d.2: setting latency
+timer to 64
+Oct 28 10:39:21 plop kernel: ehci_hcd 0000:00:1d.7: power state changed
+by ACPI to D0
+Oct 28 10:39:21 plop kernel: ehci_hcd 0000:00:1d.7: PCI INT D ->
+Link[LNKH] -> GSI 11 (level, low) -> IRQ 11
+Oct 28 10:39:21 plop kernel: ehci_hcd 0000:00:1d.7: setting latency
+timer to 64
+Oct 28 10:39:21 plop kernel: pci 0000:00:1e.0: restoring config space at
+offset 0x6 (was 0x40080200, writing 0x40100200)
+Oct 28 10:39:21 plop kernel: pci 0000:00:1e.0: setting latency timer to
+64
+Oct 28 10:39:21 plop kernel: ata_piix 0000:00:1f.1: restoring config
+space at offset 0x1 (was 0x2800003, writing 0x2800007)
+Oct 28 10:39:21 plop kernel: ata_piix 0000:00:1f.1: PCI INT A ->
+Link[LNKC] -> GSI 11 (level, low) -> IRQ 11
+Oct 28 10:39:21 plop kernel: ata_piix 0000:00:1f.1: setting latency
+timer to 64
+Oct 28 10:39:21 plop kernel: Intel ICH 0000:00:1f.5: restoring config
+space at offset 0x1 (was 0x2900007, writing 0x2900003)
+Oct 28 10:39:21 plop kernel: Intel ICH 0000:00:1f.5: PCI INT B ->
+Link[LNKB] -> GSI 11 (level, low) -> IRQ 11
+Oct 28 10:39:21 plop kernel: Intel ICH 0000:00:1f.5: setting latency
+timer to 64
+Oct 28 10:39:21 plop kernel: ata2.00: ACPI cmd ef/03:42:00:00:00:a0
+filtered out
+Oct 28 10:39:21 plop kernel: ata2.00: ACPI cmd ef/03:0c:00:00:00:a0
+filtered out
+Oct 28 10:39:21 plop kernel: ata1.00: ACPI cmd ef/02:00:00:00:00:a0
+succeeded
+Oct 28 10:39:21 plop kernel: ata1.00: ACPI cmd f5/00:00:00:00:00:a0
+filtered out
+Oct 28 10:39:21 plop kernel: ata1.00: ACPI cmd ef/03:45:00:00:00:a0
+filtered out
+Oct 28 10:39:21 plop kernel: ata1.00: ACPI cmd ef/03:0c:00:00:00:a0
+filtered out
+Oct 28 10:39:21 plop kernel: ata2.00: ACPI cmd e3/00:1f:00:00:00:a0
+succeeded
+Oct 28 10:39:21 plop kernel: ata2.00: ACPI cmd e3/00:02:00:00:00:a0
+succeeded
+Oct 28 10:39:21 plop kernel: ata1.00: configured for UDMA/100
+Oct 28 10:39:21 plop kernel: ata2.00: configured for UDMA/33
+Oct 28 10:39:21 plop kernel: ata1.00: configured for UDMA/100
+Oct 28 10:39:21 plop kernel: ata1: EH complete
+Oct 28 10:39:21 plop kernel: sd 0:0:0:0: [sda] 156301488 512-byte
+hardware sectors (80026 MB)
+Oct 28 10:39:21 plop kernel: sd 0:0:0:0: [sda] Write Protect is off
+Oct 28 10:39:21 plop kernel: sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+Oct 28 10:39:21 plop kernel: sd 0:0:0:0: [sda] Write cache: enabled,
+read cache: enabled, doesn't support DPO or FUA
+Oct 28 10:39:21 plop kernel: sd 0:0:0:0: [sda] 156301488 512-byte
+hardware sectors (80026 MB)
+Oct 28 10:39:21 plop kernel: sd 0:0:0:0: [sda] Write Protect is off
+Oct 28 10:39:21 plop kernel: sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+Oct 28 10:39:21 plop kernel: sd 0:0:0:0: [sda] Write cache: enabled,
+read cache: enabled, doesn't support DPO or FUA
+Oct 28 10:39:21 plop kernel: Intel ICH Modem 0000:00:1f.6: PCI INT B ->
+Link[LNKB] -> GSI 11 (level, low) -> IRQ 11
+Oct 28 10:39:21 plop kernel: Intel ICH Modem 0000:00:1f.6: setting
+latency timer to 64
+Oct 28 10:39:21 plop kernel: pci 0000:01:00.0: power state changed by
+ACPI to D0
+Oct 28 10:39:21 plop kernel: pci 0000:01:00.0: PCI INT A -> Link[LNKA]
+-> GSI 11 (level, low) -> IRQ 11
+Oct 28 10:39:21 plop kernel: yenta_cardbus 0000:02:00.0: restoring
+config space at offset 0xf (was 0x3c0010b, writing 0x5c0010b)
+Oct 28 10:39:21 plop kernel: yenta_cardbus 0000:02:00.0: restoring
+config space at offset 0x3 (was 0x824008, writing 0x82a820)
+Oct 28 10:39:21 plop kernel: yenta_cardbus 0000:02:00.0: restoring
+config space at offset 0x1 (was 0x2100107, writing 0x2100007)
+Oct 28 10:39:21 plop kernel: yenta_cardbus 0000:02:00.1: restoring
+config space at offset 0xf (was 0x3c0020b, writing 0x5c0020b)
+Oct 28 10:39:21 plop kernel: yenta_cardbus 0000:02:00.1: restoring
+config space at offset 0x3 (was 0x824008, writing 0x82a820)
+Oct 28 10:39:21 plop kernel: yenta_cardbus 0000:02:00.1: restoring
+config space at offset 0x1 (was 0x2100107, writing 0x2100007)
+Oct 28 10:39:21 plop kernel: eth4: Coming out of suspend...
+Oct 28 10:39:21 plop kernel: ipw2200 0000:02:02.0: PCI INT A ->
+Link[LNKC] -> GSI 11 (level, low) -> IRQ 11
+Oct 28 10:39:21 plop kernel: serial 00:09: activated
+Oct 28 10:39:21 plop kernel: parport_pc 00:0a: activated
+Oct 28 10:39:21 plop kernel: nsc-ircc 00:0b: activated
+Oct 28 10:39:21 plop kernel: sd 0:0:0:0: [sda] Starting disk
+Oct 28 10:39:21 plop kernel: usb 3-2: reset low speed USB device using
+uhci_hcd and address 3
+Oct 28 10:39:21 plop kernel: usb 3-2: device firmware changed
+Oct 28 10:39:21 plop kernel: usb 3-2: USB disconnect, address 3
+Oct 28 10:39:22 plop kernel: agpgart-intel 0000:00:00.0: AGP 2.0 bridge
+Oct 28 10:39:22 plop kernel: agpgart-intel 0000:00:00.0: putting AGP V2
+device into 4x mode
+Oct 28 10:39:22 plop kernel: pci 0000:01:00.0: putting AGP V2 device
+into 4x mode
+Oct 28 10:39:22 plop kernel: [drm] Loading R100 Microcode
+Oct 28 10:45:26 plop kernel: SysRq : Emergency Sync
+Oct 28 10:45:29 plop kernel: SysRq : Keyboard mode set to system default
+
 
