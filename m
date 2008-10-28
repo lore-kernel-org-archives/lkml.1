@@ -1,80 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbYJ1AHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbYJ1AJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754031AbYJ1AHa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 20:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbYJ1AGT
+	id S1753456AbYJ1AJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 20:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbYJ1AJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 20:06:19 -0400
-Received: from gate.crashing.org ([63.228.1.57]:55914 "EHLO gate.crashing.org"
+	Mon, 27 Oct 2008 20:09:18 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49709 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751935AbYJ1AGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 20:06:18 -0400
-Subject: Re: radeonfb lockup in .28-rc (bisected)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: James Cloos <cloos@jhcloos.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       "David S. Miller" <davem@davemloft.net>,
-       linux-fbdev-devel@lists.sourceforge.net
-In-Reply-To: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
-References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
-Content-Type: text/plain
-Date: Tue, 28 Oct 2008 11:05:47 +1100
-Message-Id: <1225152347.8004.49.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1751659AbYJ1AJR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 20:09:17 -0400
+Message-ID: <49065805.1080303@redhat.com>
+Date: Mon, 27 Oct 2008 19:08:37 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: general protection fault:  from release_blocks_on_commit
+References: <1224612181.19719.20.camel@paris-laptop> <20081027181928.GB23111@mit.edu> <49064027.9010509@redhat.com> <20081027232843.GA9797@mit.edu>
+In-Reply-To: <20081027232843.GA9797@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-27 at 19:45 -0400, James Cloos wrote:
-> Commit b1ee26bab1 breaks radeonfb on my inspiron 8100 (P3-M with a
-> Mobility M7 LW [7500] (1002:4c57 1028:00e6)).
+Theodore Tso wrote:
+> On Mon, Oct 27, 2008 at 05:26:47PM -0500, Eric Sandeen wrote:
+>> Ted, you probably need some slab debugging on to hit it.
 > 
-> The boot is OK until init(8) starts; after init outputs its version info
-> it calls rc(8), which starts by setting the fb font.  At that point any
-> kernel with b1ee26bab1 locks hard.  The cursor stops flashing, magic
-> sysrq stops working and the fan starts up after a few seconds.  (I can't
-> tell whether it is the CPU or the GPU that heats up.)
+> I had slab debugging enabled, but haven't been able to replicate it
+> yet.  I'll do some more work to try to replicate it.
 > 
-> If it is relevant, I use a 10x20 font, so the font change means the
-> console converts from 200x75, 8x16 to 160x60, 10x20.
+>> I think the problem is that jbd2_journal_commit_transaction may call
+>> __jbd2_journal_drop_transaction(journal, commit_transaction) if the
+>> checkpoint lists are NULL, and this frees the commit_transaction.
+> 
+> I think you're right.  I would probably change the patch around so
+> that after calling __jbd2_jurnal_drop_transaction(), we set
+> commit_transaction to NULL, and then adding an "if
+> (commit_transaction)" to the lines in questions; that way we keep the
+> commit callback outside of the j_list_lock() spinlock.
 
-Annoying... Either I'm doing something wrong (which is always possible)
-or we're hitting yet another fancy ATI bug (the M7 generation is known
-to be pretty bad in that area).
+Ok, I thought about that; sounds good.  will resend.
 
-First, let's see if it's related to the imageblit. Can you re-apply the
-reverted patch and apply this little hack on top :
+>> Also, I'm not certain that it matters, but the loop in 
+>> release_blocks_on_commit() is kfreeing list entries w/o taking
+>> them off the list; I suppose maybe this is safe if the whole thing
+>> is getting discarded when we're done, but just to keep things sane,
+>> would this make sense
+> 
+> There are plenty of other loops in the kernel where we go through the
+> linked list and free all of the items on the list that don't bother to
+> call list_del().  That was one of the things I checked when I created
+> the patch.
 
-Index: linux-work/drivers/video/aty/radeon_accel.c
-===================================================================
---- linux-work.orig/drivers/video/aty/radeon_accel.c	2008-10-28 11:01:49.000000000 +1100
-+++ linux-work/drivers/video/aty/radeon_accel.c	2008-10-28 11:01:57.000000000 +1100
-@@ -252,6 +252,7 @@ void radeonfb_imageblit(struct fb_info *
- 	if (!image->width || !image->height)
- 		return;
- 
-+#if 0
- 	/* We only do 1 bpp color expansion for now */
- 	if (info->flags & FBINFO_HWACCEL_DISABLED || image->depth != 1)
- 		goto fallback;
-@@ -275,6 +276,7 @@ void radeonfb_imageblit(struct fb_info *
- 	return;
- 
-  fallback:
-+#endif
- 	radeon_engine_idle(rinfo);
- 
- 	cfb_imageblit(info, image);
+Ok.
 
-And let me know if that makes it not lockup.
+>> (also, I think we need to double-check use of
+>> s_md_lock; it's taken when adding things to the list, but not when
+>> freeing/removing ... if it's needed, isn't it needed on both ends...):
+> 
+> No, because the linked list is hanging off the transaction structure.
+> While the transaction is active, multiple CPU's can be adding elements
+> to the linked list.  But once the transaction has been committed, we
+> don't have to worry about any one else trying to modify the linked list.
+> 
+>       	      	    	      	       	      - Ted
 
-Cheers,
-Ben.
+ok, just double checking.
 
-
+Thanks,
+-Eric
