@@ -1,134 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbYJ1AGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753538AbYJ1AG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753577AbYJ1AGn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 20:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYJ1AFT
+	id S1753538AbYJ1AG6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 20:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbYJ1AFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 20:05:19 -0400
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:5585 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751992AbYJ1AFM (ORCPT
+	Mon, 27 Oct 2008 20:05:43 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:20049 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752047AbYJ1AFm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 20:05:12 -0400
-From: David Daney <ddaney@caviumnetworks.com>
-To: linux-mips@linux-mips.org
-Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       akpm@linux-foundation.org, David Daney <ddaney@caviumnetworks.com>,
-       Tomaso Paoletti <tpaoletti@caviumnetworks.com>,
-       Paul Gortmaker <Paul.Gortmaker@windriver.com>
-Subject: [PATCH 34/36] 8250 serial driver changes for Cavium OCTEON.
-Date: Mon, 27 Oct 2008 17:04:11 -0700
-Message-Id: <1225152251-3367-5-git-send-email-ddaney@caviumnetworks.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1225152251-3367-4-git-send-email-ddaney@caviumnetworks.com>
-References: <490655B6.4030406@caviumnetworks.com>
- <1225152251-3367-1-git-send-email-ddaney@caviumnetworks.com>
- <1225152251-3367-2-git-send-email-ddaney@caviumnetworks.com>
- <1225152251-3367-3-git-send-email-ddaney@caviumnetworks.com>
- <1225152251-3367-4-git-send-email-ddaney@caviumnetworks.com>
-X-OriginalArrivalTime: 28 Oct 2008 00:04:16.0069 (UTC) FILETIME=[B76E8750:01C93890]
+	Mon, 27 Oct 2008 20:05:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=hyGPmUkB/75eyC6AIoh7h5XzyANsU8Nwk94BFrhOHjLuKZd4Z7ugB4DYgAQtTC6yGI
+         cVyO57uf56xRq0biJGoHFxmKJCJU/bl4W2eAZG1gw7FzKjXI0Cv0pEjC1g6x//cIoa0s
+         TzSN/JxoUKt2/Gz1mybphMuD+0qzwhqXJ0XPA=
+Subject: Re: [RFC PATCHv3] printk: add %pM format specifier for MAC
+ addresses
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: johannes@sipsolutions.net, anders@anduras.de, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20081027.165556.30975206.davem@davemloft.net>
+References: <1225137542.5396.10.camel@brick>
+	 <20081027.154736.178482850.davem@davemloft.net>
+	 <1225149254.6339.4.camel@brick>
+	 <20081027.165556.30975206.davem@davemloft.net>
+Content-Type: text/plain
+Date: Mon, 27 Oct 2008 17:05:39 -0700
+Message-Id: <1225152339.5526.1.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cavium UART implementation won't work with the standard 8250 driver
-as-is.  Define a new uart_config (PORT_OCTEON) and use it to enable
-special handling required by the OCTEON's serial port.
+On Mon, 2008-10-27 at 16:55 -0700, David Miller wrote:
+> From: Harvey Harrison <harvey.harrison@gmail.com>
+> Date: Mon, 27 Oct 2008 16:14:14 -0700
+> 
+> > Did you happen to have a preference with regard to the specifier for
+> > IPv6 addresses:
+> > 
+> > I was thinking of using %pI6 to replace NIP6() and NIP6_FMT and using
+> > %#pI6 for NIP6_SEQFMT.
+> > 
+> > On the IPv4 side, maybe use %pI4 for network endian NIPQUAD() and NIPQUAD_FMT
+> > and then %#pI4 for host-endian HIQUAD(), as displaying the IPv4 address without
+> > the periods isn't useful?
+> > 
+> > What do you think of that?
+> 
+> I'm ok with the '#' modifier but remind me again what's wrong with
+> using plain %p4 and %p6?
 
-Signed-off-by: Tomaso Paoletti <tpaoletti@caviumnetworks.com>
-Signed-off-by: Paul Gortmaker <Paul.Gortmaker@windriver.com>
-Signed-off-by: David Daney <ddaney@caviumnetworks.com>
----
- drivers/serial/8250.c       |   16 +++++++++++++++-
- drivers/serial/8250.h       |    2 ++
- include/linux/serial_core.h |    3 ++-
- include/linux/serial_reg.h  |    6 ++++++
- 4 files changed, 25 insertions(+), 2 deletions(-)
+Nothing at all, just wanted to know what color bikeshed you wanted.
 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 474ab89..f274e94 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -279,6 +279,14 @@ static const struct serial8250_config uart_config[] = {
- 		.fcr		= UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_10,
- 		.flags		= UART_CAP_FIFO,
- 	},
-+	[PORT_OCTEON] = {
-+		.name		= "OCTEON",
-+		.fifo_size	= 64,
-+		.tx_loadsz	= 64,
-+		.bugs		= UART_BUG_TIMEOUT | UART_BUG_OCTEON_IIR,
-+		.fcr		= UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_10,
-+		.flags		= UART_CAP_FIFO,
-+	},
- };
- 
- #if defined (CONFIG_SERIAL_8250_AU1X00)
-@@ -1554,6 +1562,12 @@ static irqreturn_t serial8250_interrupt(int irq, void *dev_id)
- 		up = list_entry(l, struct uart_8250_port, list);
- 
- 		iir = serial_in(up, UART_IIR);
-+		if ((up->bugs & UART_BUG_OCTEON_IIR) && (iir & 0xf) == 7) {
-+			/* Busy interrupt */
-+			serial_in(up, UART_OCTEON_USR);
-+			iir = serial_in(up, UART_IIR);
-+		}
-+
- 		if (!(iir & UART_IIR_NO_INT)) {
- 			serial8250_handle_port(up);
- 
-@@ -1714,7 +1728,7 @@ static void serial8250_timeout(unsigned long data)
- 	unsigned int iir;
- 
- 	iir = serial_in(up, UART_IIR);
--	if (!(iir & UART_IIR_NO_INT))
-+	if (!(iir & UART_IIR_NO_INT) || (up->bugs & UART_BUG_TIMEOUT))
- 		serial8250_handle_port(up);
- 	mod_timer(&up->timer, jiffies + poll_timeout(up->port.timeout));
- }
-diff --git a/drivers/serial/8250.h b/drivers/serial/8250.h
-index c9b3002..56b3cb7 100644
---- a/drivers/serial/8250.h
-+++ b/drivers/serial/8250.h
-@@ -49,6 +49,8 @@ struct serial8250_config {
- #define UART_BUG_TXEN	(1 << 1)	/* UART has buggy TX IIR status */
- #define UART_BUG_NOMSR	(1 << 2)	/* UART has buggy MSR status bits (Au1x00) */
- #define UART_BUG_THRE	(1 << 3)	/* UART has buggy THRE reassertion */
-+#define UART_BUG_TIMEOUT (1 << 4)	/* UART should always handle timeout */
-+#define UART_BUG_OCTEON_IIR (1 << 5)	/* UART OCTEON IIR workaround */
- 
- #define PROBE_RSA	(1 << 0)
- #define PROBE_ANY	(~0)
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 54e0dce..c6c7faa 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -40,7 +40,8 @@
- #define PORT_NS16550A	14
- #define PORT_XSCALE	15
- #define PORT_RM9000	16	/* PMC-Sierra RM9xxx internal UART */
--#define PORT_MAX_8250	16	/* max port ID */
-+#define PORT_OCTEON	17	/* Cavium OCTEON internal UART */
-+#define PORT_MAX_8250	17	/* max port ID */
- 
- /*
-  * ARM specific type numbers.  These are not currently guaranteed
-diff --git a/include/linux/serial_reg.h b/include/linux/serial_reg.h
-index 96c0d93..a96bd50 100644
---- a/include/linux/serial_reg.h
-+++ b/include/linux/serial_reg.h
-@@ -324,5 +324,11 @@
- #define UART_OMAP_SYSC		0x15	/* System configuration register */
- #define UART_OMAP_SYSS		0x16	/* System status register */
- 
-+/*
-+ * Extra serial register definitions for the internal UARTs in Cavium
-+ * Networks OCTEON processors.
-+ */
-+#define UART_OCTEON_USR		0x27	/* UART Status Register */
-+
- #endif /* _LINUX_SERIAL_REG_H */
- 
--- 
-1.5.6.5
+I'll go with %p4 %p6.
+
+Harvey
 
