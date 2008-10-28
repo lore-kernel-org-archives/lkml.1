@@ -1,153 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbYJ1JJO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbYJ1JMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753323AbYJ1JJO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 05:09:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYJ1JJA
+	id S1753250AbYJ1JMW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 05:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYJ1JMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 05:09:00 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57341 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751517AbYJ1JI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 05:08:59 -0400
-Date: Tue, 28 Oct 2008 10:08:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linus <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: trace: fix printk warning for u64
-Message-ID: <20081028090846.GR15734@elte.hu>
-References: <20081027174328.084649ab.sfr@canb.auug.org.au> <20081027095248.GA6969@elte.hu> <20081028001254.7cb224e9.sfr@canb.auug.org.au> <20081027220655.1d188e1d.akpm@linux-foundation.org>
+	Tue, 28 Oct 2008 05:12:14 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:46442 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751495AbYJ1JMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 05:12:12 -0400
+Date: Tue, 28 Oct 2008 18:11:36 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-kernel@vger.kernel.org,
+       Linux-sh <linux-sh@vger.kernel.org>
+Subject: Re: [PATCH] gdrom: Fix compile error
+Message-ID: <20081028091136.GB24850@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Al Viro <viro@ZenIV.linux.org.uk>,
+	Nobuhiro Iwamatsu <iwamatsu@nigauri.org>,
+	linux-kernel@vger.kernel.org, Linux-sh <linux-sh@vger.kernel.org>
+References: <29ab51dc0810261932n7580e87aua85103f8b1dcc5a5@mail.gmail.com> <20081027040814.GQ28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081027220655.1d188e1d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+In-Reply-To: <20081027040814.GQ28946@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Tue, 28 Oct 2008 00:12:54 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+On Mon, Oct 27, 2008 at 04:08:15AM +0000, Al Viro wrote:
+> On Mon, Oct 27, 2008 at 11:32:27AM +0900, Nobuhiro Iwamatsu wrote:
+> > Return value and argument of block_device_operations.release of gdrom
+> > was changed.
+> > This patch fix this problem.
 > 
-> > Hi Ingo,
-> > 
-> > On Mon, 27 Oct 2008 10:52:48 +0100 Ingo Molnar <mingo@elte.hu> wrote:
-> > >
-> > > (btw., did the "unify u64 definitions across all platforms" project 
-> > > get anywhere?)
-> > 
-> > I think (from a comment from DaveM) that it led into a real mess.
+> Serves me right for snide comments about the benefits of compile-testing ;-)
+> ACKed-by: Al Viro <viro@zeniv.linux.org.uk>
 > 
-> The problem is the large amount of arch-specific code which is 
-> printing u64's with %lu because it "knows" that u64 is implemented 
-> as ulong. They all need to be switched to %ll.
+Thanks, applied.
+
+> FWIW, sh/sh64 is the only cross-toolchain needed for the kernel I hadn't
+> managed to build - 4.3.0 gcc manages to trigger internal error in sh64 as(1)
+> (2.18.50.0.6) and AFAICS the same should happen with any binutils up to
+> -HEAD (the minimal testcase is
+>         .text
+> .LFB2:
+>         .section        .eh_frame,"a",@progbits
+>         .quad   .LFB2-.
+> and sh64 gcc4.3 routinely produces such things in its output).  gcc trunk
+> seems to have arseloads of changes in gcc/config/sh and I hadn't got around
+> to attempting a backport ;-/
 > 
-> A better strategy to get all this done would be to convert the 
-> offending architectures to `long long' individually.  Then when 
-> that's all done, unifying the typedef is a trivial step.
+The sh64 gcc is very volatile, finding a combination that works reliably
+tends to take a fair bit of effort and random guesswork. The most recent
+working one that has been tested is a combination of GCC 4.1.2 and
+binutils 2.17. Gentoo's crossdev is capable of building this combination
+out of the box.
 
-so here's the patch below which achieves just that. 64-bit platforms 
-using the old int-l64.h header will get build warnings which they can 
-fix gradually.
+> Are there any public sh/sh64 toolchains based on not too heavily hacked
+> gcc/binutils, ideally for more or less recent variants of both?
 
-There's no runtime failures expected, nor any non-warning build 
-failures, correct? So lets just do this, hm?
+I've placed a couple of binary toolchains on userweb:
 
-	Ingo
+	http://userweb.kernel.org/~lethal/toolchains/
 
----
- include/asm-generic/int-l64.h |   63 +---------------------------------------
- 1 files changed, 2 insertions(+), 61 deletions(-)
-
-diff --git a/include/asm-generic/int-l64.h b/include/asm-generic/int-l64.h
-index 2af9b75..a152df9 100644
---- a/include/asm-generic/int-l64.h
-+++ b/include/asm-generic/int-l64.h
-@@ -1,71 +1,12 @@
- /*
-  * asm-generic/int-l64.h
-  *
-- * Integer declarations for architectures which use "long"
-- * for 64-bit types.
-+ * migration helper, will go away soon.
-  */
- 
- #ifndef _ASM_GENERIC_INT_L64_H
- #define _ASM_GENERIC_INT_L64_H
- 
--#ifndef __ASSEMBLY__
--/*
-- * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
-- * header files exported to user space
-- */
--
--typedef __signed__ char __s8;
--typedef unsigned char __u8;
--
--typedef __signed__ short __s16;
--typedef unsigned short __u16;
--
--typedef __signed__ int __s32;
--typedef unsigned int __u32;
--
--typedef __signed__ long __s64;
--typedef unsigned long __u64;
--
--#endif /* __ASSEMBLY__ */
--
--#ifdef __KERNEL__
--
--#ifndef __ASSEMBLY__
--
--typedef signed char s8;
--typedef unsigned char u8;
--
--typedef signed short s16;
--typedef unsigned short u16;
--
--typedef signed int s32;
--typedef unsigned int u32;
--
--typedef signed long s64;
--typedef unsigned long u64;
--
--#define S8_C(x)  x
--#define U8_C(x)  x ## U
--#define S16_C(x) x
--#define U16_C(x) x ## U
--#define S32_C(x) x
--#define U32_C(x) x ## U
--#define S64_C(x) x ## L
--#define U64_C(x) x ## UL
--
--#else /* __ASSEMBLY__ */
--
--#define S8_C(x)  x
--#define U8_C(x)  x
--#define S16_C(x) x
--#define U16_C(x) x
--#define S32_C(x) x
--#define U32_C(x) x
--#define S64_C(x) x
--#define U64_C(x) x
--
--#endif /* __ASSEMBLY__ */
--
--#endif /* __KERNEL__ */
-+#include <asm-generic/int-ll64.h>
- 
- #endif /* _ASM_GENERIC_INT_L64_H */
+http://userweb.kernel.org/~lethal/toolchains/gnush4_linux_v0801-test-1-1.i386.tar.gz
+in particular is what is most widely used for sh at present, and is a gcc
+4.2.1 and binutils 2.17.50 combination. There are not too many deviations
+from mainline there however, so most recent combinations should be
+buildable. I don't believe anyone has looked at gcc 4.3.0 yet though.
