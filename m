@@ -1,93 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbYJ1XE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbYJ1XGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754049AbYJ1XE2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 19:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbYJ1XET
+	id S1754116AbYJ1XGw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 19:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbYJ1XGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 19:04:19 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:49890 "EHLO crca.org.au"
+	Tue, 28 Oct 2008 19:06:44 -0400
+Received: from sh.osrg.net ([192.16.179.4]:38372 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753215AbYJ1XES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 19:04:18 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for
-	frozen	filesystems.
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <E1Kuv87-00064p-Lk@pomaz-ex.szeredi.hu>
-References: <1224886068.6478.21.camel@nigel-laptop>
-	 <E1KuQ1J-0002Vw-9Q@pomaz-ex.szeredi.hu>
-	 <1225106427.26724.5.camel@nigel-laptop> <200810271237.40049.rjw@sisk.pl>
-	 <1225107607.26724.9.camel@nigel-laptop>
-	 <E1KuRN4-0002gS-Hq@pomaz-ex.szeredi.hu>
-	 <1225141168.26724.23.camel@nigel-laptop>
-	 <E1KuZKt-0003jl-2N@pomaz-ex.szeredi.hu>
-	 <1225145607.26724.54.camel@nigel-laptop>
-	 <E1Kuv87-00064p-Lk@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Wed, 29 Oct 2008 10:04:14 +1100
-Message-Id: <1225235054.9661.37.camel@nigel-laptop>
+	id S1753215AbYJ1XGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 19:06:43 -0400
+Date: Wed, 29 Oct 2008 08:06:09 +0900
+To: jens.axboe@oracle.com
+Cc: jeremy@goop.org, fujita.tomonori@lab.ntt.co.jp,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH 2/2] x86: replace BIO_VMERGE_BOUNDARY with
+ BIOVEC_PHYS_MERGEABLE
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081027115659.GZ22217@kernel.dk>
+References: <20081027094111.GU22217@kernel.dk>
+	<4905A961.9000603@goop.org>
+	<20081027115659.GZ22217@kernel.dk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20081029080603J.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi again.
+On Mon, 27 Oct 2008 12:57:00 +0100
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-On Tue, 2008-10-28 at 21:25 +0100, Miklos Szeredi wrote:
-> On Tue, 28 Oct 2008, Nigel Cunningham wrote:
-> > The answer is to freeze the fuse filesystems first, stopping new
-> > requests (freezing the processes making them) before they are passed on
-> > to userspace and allowing existing requests to complete or freeze. Once
-> > that is done, the userspace fuse processes will be idle, at least as far
-> > as fuse activity is concerned. After fuse activity is stopped, userspace
-> > can be frozen without worrying about what processes are fuse and what
-> > aren't. This is what my patch implements so far.
-> 
-> OK.
-> 
-> > To deal with requests that are already in progress, I'd suggest three
-> > possibilities, in the order I think they should be preferred.
+> On Mon, Oct 27 2008, Jeremy Fitzhardinge wrote:
+> > Jens Axboe wrote:
+> > >Pretty much baffles me as well, xen should just need to do
+> > >
+> > >#define BIOVEC_PHYS_MERGEABLE(vec1, vec2)       0
+> > >  
 > > 
-> > 1) Use wait_event_freezeable[_timeout] in fuse code. Probably preferable
-> > to #2, but I thought of it later :)
-> > 
-> > 2) Use freezer_do_not_count as part of FUSE_MIGHT_FREEZE (resetting
-> > before exiting the callers, of course). If the request doesn't complete
-> > during the freezing period, it must be because the userspace thread was
-> > already frozen. If the request does complete, we're counted again during
-> > the normal freezing of userspace that follows the freezing of
-> > filesystems.
-> > 
-> > 3) Adding a means to check whether processes being frozen are fuse
-> > requests. The code could then wait for fc->num_waiting - (say)
-> > fc->num_frozen == 0.
+> > It needs to be a runtime switch, since we only want to do this when 
+> > actually running under Xen.  Also, its possible that the two pages might 
+> > actually be physically contiguous, so they could be merged anyway.
 > 
-> Yup, these fix the freezing of tasks which have outstanding fuse
-> requests.
+> Alright, then add a xen_biovec_phys_mergeable(vec1, vec2) in the xen
+> code that actually checks this for real. You can add your switch there
+> as well. Then put the BIOVEC_PHYS_MERGEABLE() in the xen arch includes,
+> done.
 > 
-> However it does not fix the freezing of tasks which are waiting for
-> VFS locks (i.e. inode->i_mutex) held by the outstanding fuse requests.
-> This is the tricky part...
+> What Tomo is saying is that this has nothing to do with virtual merging,
+> and he's right.
 
-Okay. Looking back on our conversation brought me back to this message,
-which I think needs another reply.
+Yeah, overriding BIOVEC_PHYS_MERGEABLE perfectly works for Xen. And it
+is not related with BIO_VMERGE_BOUNDARY at all.
 
-If we take the strategy of holding new requests and allowing existing
-ones to complete, then am I right in thinking that we only need to worry
-about where inode->i_mutex is taken in fs/fuse/file.c (I don't see it
-taken in other fs/fuse/*.c files).
+Ingo, please put this patch into your tree:
 
-If that's correct, dealing with that issue looks relatively straight
-forward: we need some more FUSE_MIGHT_FREEZE calls for those functions,
-and something done to the vfs_check_frozen call - I'm a bit confused by
-that - inode->i_sb will refer to the fuse filesystem, won't it?
+http://marc.info/?l=linux-kernel&m=122482703716620&w=2
 
-Regards,
 
-Nigel
-
+Thanks,
