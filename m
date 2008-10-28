@@ -1,59 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752966AbYJ1BbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbYJ1Bdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752966AbYJ1BbK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Oct 2008 21:31:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYJ1Ba4
+	id S1752999AbYJ1Bdz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Oct 2008 21:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbYJ1Bdq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Oct 2008 21:30:56 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:45928 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751668AbYJ1Ba4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Oct 2008 21:30:56 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=T5tTEIBlI0gNRKZUerEA:9 a=fezsDhuPEPdoI5ZDpYwA:7 a=M7v6c7U4bz7mbDi9LnLAr5zC5ToA:4 a=ef_bbLI2zPQA:10 a=JKVO69kjPAcA:10
-Message-ID: <49066B4D.8050109@shaw.ca>
-Date: Mon, 27 Oct 2008 19:30:53 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Harald Dunkel <harald.dunkel@t-online.de>
-CC: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.27.3, ata_piix: cannot play audio CD, "disk change detected"
-References: <fa.tiFnp4ilM9dVHkjmbJfon9+fKdc@ifi.uio.no>
-In-Reply-To: <fa.tiFnp4ilM9dVHkjmbJfon9+fKdc@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 27 Oct 2008 21:33:46 -0400
+Received: from mga11.intel.com ([192.55.52.93]:49530 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751939AbYJ1Bdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Oct 2008 21:33:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,495,1220252400"; 
+   d="scan'208";a="396599764"
+Subject: Re: [2.6.28-rc2]: iwl4965 doesn't connect / cfg80211 failure
+From: Zhu Yi <yi.zhu@intel.com>
+To: Mirco Tischler <mt-ml@gmx.de>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "John W.Linville" <linville@tuxdriver.com>,
+       "Chatre, Reinette" <reinette.chatre@intel.com>,
+       Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <20081028020212.0dfcb6c9@mtlp.12.dimension>
+References: <20081028020212.0dfcb6c9@mtlp.12.dimension>
+Content-Type: text/plain
+Organization: Intel Corp.
+Date: Tue, 28 Oct 2008 09:33:37 +0800
+Message-Id: <1225157618.2917.215.camel@debian.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harald Dunkel wrote:
-> Hi folks,
+On Mon, 2008-10-27 at 18:02 -0700, Mirco Tischler wrote:
+> Hi
 > 
-> If I insert an audio CD in my sata drive to play it via grip, then
-> it fails. Grip does not even show the list of audio tracks, nor does
-> it play the CD. Instead there is a kernel message saying
+> I have problems connecting to wlan with my iwl4965 chip and 2.6.28-rc2 (didn't
+> test -rc1). Networkmanager just times out every time.
+> Only after playing around with rmmod/modprobe and killswitch I am sometimes
+> able to connect. But I cannot reproduce this reliably yet.
 > 
-> [ 6730.836999] sr0: CDROM not ready yet.
-> [ 6732.838572] sr0: disc change detected.
-> [ 6783.659021] ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-> [ 6783.659034] ata4.00: cmd a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-> [ 6783.659035]          cdb 1b 00 00 00 02 00 00 00  00 00 00 00 00 00 00 00
-> [ 6783.659036]          res 40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-> [ 6783.659038] ata4.00: status: { DRDY }
-> [ 6783.659046] ata4: hard resetting link
-> [ 6784.115039] ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> [ 6785.622185] ata4.00: configured for UDMA/100
-> [ 6785.622193] ata4: EH complete
+> This is what I get in dmesg (from modprobe iwlagn to connection failure):
 > 
-> 
-> The same CDs work fine with an USB CD drive attached to the same
-> PC, so this might be a sata driver issue. (BTW, stopping hal doesn't
-> make a difference. Data CDs work fine.)
-> 
-> Any idea what goes wrong here? Does grip violate the SCSI protocol
-> here?  Is there something I could try to help to track this down?
+> [ 1881.884690] iwlagn: Intel(R) Wireless WiFi Link AGN driver for
+> Linux,1.3.27kds
+> [ 1881.884692] iwlagn: Copyright(c) 2003-2008 Intel Corporation
+> [ 1881.884809] iwlagn 0000:06:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+> [ 1881.884836] iwlagn 0000:06:00.0: setting latency timer to 64
+> [ 1881.884952] iwlagn: Detected Intel Wireless WiFi Link 4965AGN REV=0x4
+> [ 1881.935149] iwlagn: Tunable channels: 13 802.11bg, 19 802.11a channels
+> [ 1881.936327] phy4: Selected rate control algorithm 'iwl-agn-rs'
+> [ 1885.965591] iwlagn 0000:06:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+> [ 1885.965874] iwlagn 0000:06:00.0: irq 41 for MSI/MSI-X
+> [ 1885.965974] iwlagn 0000:06:00.0: firmware: requesting iwlwifi-4965-2.ucode
+> [ 1886.181600] Registered led device: iwl-phy4:radio
+> [ 1886.181618] Registered led device: iwl-phy4:assoc
+> [ 1886.181635] Registered led device: iwl-phy4:RX
+> [ 1886.181654] Registered led device: iwl-phy4:TX
+> [ 1886.213631] ADDRCONF(NETDEV_UP): wlan0: link is not ready
+> [ 1887.572768] iwlagn: TX Power requested while scanning!
 
-Well, it looks like it was a START STOP UNIT command with the eject bit 
-set that timed out. Was something trying to eject the disc?
+Looks good so far. But I failed to see what are you trying to connect?
+Can you try "iwconfig wlan0 channnel <> essid <>"?
+
+> What might be related is this early on boot:
+> 
+> [    0.163009] cfg80211: Calling CRDA to update world regulatory domain
+> [    0.163012] cfg80211: Failed calling CRDA
+> [    0.163024] cfg80211: calling CRDA failed - unable to update world
+> regulatory domain, using static definition
+
+Does your AP work on A band?
+
+Thanks,
+-yi
+
