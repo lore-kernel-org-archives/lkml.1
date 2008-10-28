@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbYJ1S5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365AbYJ1TCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753537AbYJ1S5N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 14:57:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYJ1S46
+	id S1753365AbYJ1TCo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 15:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYJ1TCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 14:56:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54872 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751341AbYJ1S46 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 14:56:58 -0400
-Date: Tue, 28 Oct 2008 19:56:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-Subject: Re: x86info results ioremap.c:226 __ioremap_caller+0xf2/0x2d6()
-	WARNINGs
-Message-ID: <20081028185643.GA27626@elte.hu>
-References: <20081021083615.GA4658@basil.nowhere.org> <20081023205629.GD18919@linux-os.sc.intel.com> <20081028184542.GI30573@linux-os.sc.intel.com>
+	Tue, 28 Oct 2008 15:02:36 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:7208 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbYJ1TCf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 15:02:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=rZr3xhfyaIjeSe8OrooS+7w/+xqVYxsmuU3Lnd/2kWFjyA5Grtn0yTvQfSOXcbF4Gf
+         x4GpYRPmVQQy28ajCFvb7WCHqhor1nkdWQraEptVNIVkxQNmt9KXKle16DwQqanhkx54
+         QX8vCDzvAV7ynEID2UUYAHg8yZ5rDeOSGPKxY=
+Date: Tue, 28 Oct 2008 22:02:26 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] slub - fix get_object_page comment
+Message-ID: <20081028190226.GE7357@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081028184542.GI30573@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Use 'slab page' instead of 'slab object'.
+---
 
-* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+Not a big deal but anyway :)
 
-> > Fix the warning by skipping the map conflict checks for low 
-> > addresses below 1MB. No PCI BAR's reside in this region anyway.
-> 
-> More cleaner patch(which fixes the issue in a generic fashion) for 
-> this is appended. Ingo, please consider this for inclusion instead.
-
-applied to tip/core/urgent, thanks Suresh!
-
-	Ingo
+Index: linux-2.6.git/mm/slub.c
+===================================================================
+--- linux-2.6.git.orig/mm/slub.c	2008-10-27 21:35:50.000000000 +0300
++++ linux-2.6.git/mm/slub.c	2008-10-28 21:57:51.000000000 +0300
+@@ -1748,7 +1748,7 @@ void kmem_cache_free(struct kmem_cache *
+ }
+ EXPORT_SYMBOL(kmem_cache_free);
+ 
+-/* Figure out on which slab object the object resides */
++/* Figure out on which slab page the object resides */
+ static struct page *get_object_page(const void *x)
+ {
+ 	struct page *page = virt_to_head_page(x);
