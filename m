@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbYJ1NYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbYJ1N1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753715AbYJ1NYV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 09:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbYJ1NYL
+	id S1753902AbYJ1N1M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 09:27:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYJ1N05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 09:24:11 -0400
-Received: from mail.gmx.net ([213.165.64.20]:45029 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752163AbYJ1NYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 09:24:09 -0400
-X-Authenticated: #3800222
-X-Provags-ID: V01U2FsdGVkX1+znQMymCCz/ReiBTTtmiHfKJBjxqd1pM2VfvWDo5
-	v+pmF/rGvdHJPr
-Message-ID: <49071272.8050700@gmx.de>
-Date: Tue, 28 Oct 2008 14:24:02 +0100
-From: Joerg Albert <jal2@gmx.de>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 28 Oct 2008 09:26:57 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52550 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751568AbYJ1N04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 09:26:56 -0400
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Linux - Novell
+To: Andrey Borzenkov <arvidjaar@mail.ru>, Len Brown <len.brown@intel.com>
+Subject: Re: ACPI video.c brightness handler conflicts with toshiba_acpi
+Date: Tue, 28 Oct 2008 14:26:52 +0100
+User-Agent: KMail/1.9.9
+Cc: toshiba_acpi@memebeam.org, linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200809061108.34877.arvidjaar@mail.ru> <200809080301.24907.trenn@suse.de> <200810271953.04764.arvidjaar@mail.ru>
+In-Reply-To: <200810271953.04764.arvidjaar@mail.ru>
 MIME-Version: 1.0
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>, Greg KH <greg@kroah.com>
-CC: "otus-devel@lists.madwifi-project.org" 
-	<otus-devel@venema.h4ckr.net>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [otus-devel] Release of Atheros 802.11n USB Linux driver
-References: <43e72e890810211904x7bd243dem68dfcfe7a795ec6f@mail.gmail.com>	<20081022065045.GA2400@kroah.com> <20081023062655.GA8039@kroah.com>	<20081023111103.GB5979@tesla> <43e72e890810271635i5b6dd6e4ua06b48e624991435@mail.gmail.com>
-In-Reply-To: <43e72e890810271635i5b6dd6e4ua06b48e624991435@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+Content-Disposition: inline
+Message-Id: <200810281426.53499.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/28/2008 12:35 AM, Luis R. Rodriguez wrote:
+On Monday 27 October 2008 17:52:55 Andrey Borzenkov wrote:
+> On Monday 08 September 2008, Thomas Renninger wrote:
+> > On Saturday 06 September 2008 09:19:59 am Andrey Borzenkov wrote:
+> > > On Saturday 06 September 2008, Andrey Borzenkov wrote:
+> > > > I have now two different devices that refer to the same hardware:
+> > > >
+> > > > lrwxrwxrwx 1 root root 0 2008-09-06 11:04 acpi_video0 ->
+> > > > ../../devices/virtual/backlight/acpi_video0/ lrwxrwxrwx 1 root root 0
+> > > > 2008-09-06 11:04 toshiba -> ../../devices/virtual/backlight/toshiba/
+> > > >
+> > > > Unfortunately, due to ACPI implementation the acpi_video0 one is much
+> > > > inferior (as it provides only effectively two levels instead of 8);
+> > > > and user level tools are apparently quite confused which one to
+> > > > select.
+> > > >
+> > > > Is there any mechanism that would allow tochiba_acpi to claim
+> > > > brightness for internal LCD screen that video would not attempt to
+> > > > grab it too?
+> > > >
+> > > > Of course manually disabling brightness handling in video is always
+> > > > possible,
+> > >
+> > > Actually it is not. brightness_switch_enabled only disables event
+> > > handling; it still resets actual brightness on loading and creates
+> > > sysfs files to confuse user space.
+> > >
+> > > > still is nice for this to be handled automatically.
+> >
+> > It is in latest ACPI test branch queued for 2.6.28.
+>
+> It is still not in rc2; is it scheduled for 2.6.28 or delayed further?
 
-> This is now fixed on the master branch, also the branch "for-upstream"
-> does a lot of cleanup I thought you may like before stuffing it into
-> staging like removing all KERNEL_VERSION checks, all wireless
-> extensions checks, some compile warnings, removal of compat, dos2unix,
-> use utf-8, etc. Unfortunately this still requires a specific version
-> of wpa_supplicant but it seems it works. Not sure what bars you have
-> for staging at this point.
+Right, it's not there.
+Len, what happened with the:
+"Check for ACPI backlight support otherwise use vendor ACPIdrivers - version 4"
+patches?
 
-I was a bit disappointed to find binary-only firmware inside the 
-driver (HalPlus/OTUS_FB50/{hpfwbu,hpfwuinit}.c which is downloaded 
-into the device during startup (initially thought this to be a 
-complete OpenSource driver :-(
+They are pretty essential for video.ko.
+Otherwise graphics devices may get double poked (through vendor_acpi.ko drivers)
+or may register for graphics cards which are not there.
 
-Unless the attitude towards binary chunks inside the Linux kernel 
-have changed, I guess these should be moved into userspace using the 
-firmware_class driver to access it.
-
-/Joerg
+    Thomas
