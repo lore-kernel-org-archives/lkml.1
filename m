@@ -1,109 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbYJ1FLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752781AbYJ1FTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752812AbYJ1FLm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 01:11:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbYJ1FLc
+	id S1752781AbYJ1FTh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 01:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbYJ1FT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 01:11:32 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:6939 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752110AbYJ1FLb (ORCPT
+	Tue, 28 Oct 2008 01:19:28 -0400
+Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:22524 "HELO
+	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751771AbYJ1FT1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 01:11:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=f4ZOq2X9Z2hJuzpKy5lngwa2sFyLnVHwrT7hy/ds1h4ssIVHjA+bwj+YrmBzg8BJQT
-         fAqKFvcNvZ6t9UMnmxkd6kp3lWHBkkKe+DL1fjoBZbDoS3Aj2Bbzg6p/EjKgHAakh8vi
-         GtQQh01VLmvaczG5A92uUWY5y/BryOIU63smY=
-Message-ID: <a8e1da0810272211s4b145bboef26801c3af0d652@mail.gmail.com>
-Date: Tue, 28 Oct 2008 13:11:30 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Folkert van Heusden" <folkert@vanheusden.com>
-Subject: Re: [2.6.26] OOPS in elv_next_request
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081027090426.GN8318@vanheusden.com>
+	Tue, 28 Oct 2008 01:19:27 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=2baVEiwUQVTGFXlkn0GG89XV22RlURf1kHaFZB1wJo5X+7ONjw0XqkFvnH87M8v2BeMWPU/IgRs9ENpbseTWWIoV3Swst2aEPcF/lvyKRFYs13lDTAx952rbO6t0cO2c38E8SsUiPcanYYG96vjfMEol8r4OEMEKjv79P9dsxWM=  ;
+X-YMail-OSG: rXEPJjAVM1kSFmvWM6jYx8SRpMieFFXpvabioHrrzywwHkmFKSPXE6vnO4SnFkA_91uWfIjldlW_9o1gF0UIkPboKuURKfAFSwhEntcl2gp8DtSaz.Mh1okiQbZlMeToG.XROKFp1.fjuOLxe.uukuVjAugRkDPgD5rVaAmCCZS2sg8_3jRkBFXlv8Vh
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: vm_unmap_aliases and Xen
+Date: Tue, 28 Oct 2008 16:19:10 +1100
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+References: <49010D41.1080305@goop.org>
+In-Reply-To: <49010D41.1080305@goop.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_38935_17913.1225170690934"
-References: <20081027090426.GN8318@vanheusden.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810281619.10388.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_38935_17913.1225170690934
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On Mon, Oct 27, 2008 at 5:04 PM, Folkert van Heusden
-<folkert@vanheusden.com> wrote:
-> Hi,
+On Friday 24 October 2008 10:48, Jeremy Fitzhardinge wrote:
+> I've been having a few problems with Xen, I suspect as a result of the
+> lazy unmapping in vmalloc.c.
 >
-> While running my http://vanheusden.com/pyk/ script (which randomly
-> inserts and removes modules) I triggered the folllowing oops in a 2.6.26
-> kernel on a Celeron 400 (Mendocino):
+> One immediate one is that vm_unmap_aliases() will oops if you call it
+> before vmalloc_init() is called, which can happen in the Xen case.  RFC
+> patch below.
+
+Sure, we could do that. If you add an unlikely, and a __read_mostly,
+I'd ack it. Thanks for picking this up.
+
+
+> But the bigger problem I'm seeing is that despite calling
+> vm_unmap_aliases() at the pertinent places, I'm still seeing errors
+> resulting from stray aliases.  Is it possible that vm_unmap_aliases()
+> could be missing some, or not completely synchronous?
+
+It's possible, but of course that would not be by design ;)
+
+I've had another look over it, and nothing obvious comes to
+mind.
+
+Actually, there may be a slight problem with the per-cpu KVA
+flushing (it doesn't clear the dirty map after flushing, so
+it would be possible to see the warning in vunmap_pte_range
+trigger, I'll have to fix that). But I can't see your problem
+yet.
+
+It would be nice to narrow it down... Could you replace
+lazy_max_pages call with 0, then change the 3rd and 4th
+parameters of __purge_vmap_area_lazy in purge_vmap_area_lazy
+with 1 and 1 rather than 0 and 0?
+
+
+> Subject: vmap: cope with vm_unmap_aliases before vmalloc_init()
 >
-> [ 4768.664021] Floppy drive(s): fd0 is 1.44M
-> [ 4768.682751] FDC 0 is a post-1991 82077
-> [ 4768.717031] work still pending
-> [ 4768.718486] BUG: unable to handle kernel NULL pointer dereference at 00000010
-> [ 4768.718711] IP: [<c01d073f>] elv_next_request+0x17e/0x18e
-> [ 4768.718898] *pde = 00000000
-> [ 4768.719035] Oops: 0000 [#1] SMP
-> [ 4768.719210] Modules linked in: floppy(-) pcspkr gspca shpchp cdrom battery ata_generic libata pci_hotplug gameport snd_rawmidi parport hwmon_vid scsi_mod videodev v4l1_compat dock ipv6 loop snd_seq_device snd_timer snd soundcore via_agp agpgart evdev ext3 jbd mbcache ide_disk via82cxxx ide_pci_generic ide_core 8139too usbcore 8139cp mii processor thermal_sys [last unloaded: floppy]
-> [ 4768.720058]
-> [ 4768.720058] Pid: 6, comm: events/0 Not tainted (2.6.26-1-686 #1)
-> [ 4768.720058] EIP: 0060:[<c01d073f>] EFLAGS: 00010046 CPU: 0
-> [ 4768.720058] EIP is at elv_next_request+0x17e/0x18e
-> [ 4768.720058] EAX: c872c078 EBX: c940a820 ECX: 00000000 EDX: 00000000
-> [ 4768.720058] ESI: c872c078 EDI: ca964f48 EBP: 00000000 ESP: c943ff50
-> [ 4768.720058]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> [ 4768.720058] Process events/0 (pid: 6, ti=c943e000 task=c942a460 task.ti=c943e000)
-> [ 4768.720058] Stack: c940a820 c940a820 ca96b494 ca964f48 ca964f91 c58ce5c0 c942a460 c02b7ec7
-> [ 4768.720058]        c9443500 4bcc15bb 00000456 c942a5ec c1148fa0 00000000 c940a820 ca96b494
-> [ 4768.720058]        000018e7 00000000 c940a820 ca96b494 ca964f48 00000000 c012edee c940a820
-> [ 4768.720058] Call Trace:
-> [ 4768.720058]  [<ca964f48>] redo_fd_request+0x0/0xc5d [floppy]
-> [ 4768.720058]  [<ca964f91>] redo_fd_request+0x49/0xc5d [floppy]
-> [ 4768.720058]  [<c02b7ec7>] schedule+0x63d/0x66f
-> [ 4768.720058]  [<ca964f48>] redo_fd_request+0x0/0xc5d [floppy]
-> [ 4768.720058]  [<c012edee>] run_workqueue+0x74/0xf2
-> [ 4768.720058]  [<c012f4c9>] worker_thread+0x0/0xbd
-> [ 4768.720058]  [<c012f57c>] worker_thread+0xb3/0xbd
-> [ 4768.720058]  [<c013177c>] autoremove_wake_function+0x0/0x2d
-> [ 4768.720058]  [<c01316bb>] kthread+0x38/0x5d
-> [ 4768.720058]  [<c0131683>] kthread+0x0/0x5d
-> [ 4768.720058]  [<c01044f3>] kernel_thread_helper+0x7/0x10
-> [ 4768.720058]  =======================
-> [ 4768.720058] Code: 06 89 e2 89 04 24 89 f0 e8 a9 37 00 00 85 c0 74 0d 8b 1c 24 85 db 0f 85 9e fe ff ff eb 16 39 36 75 dd 8b 46 0c 31 d2 8b 08 89 f0 <ff> 51 10 85 c0 75 ec 31 db 5f 89 d8 5b 5e 5f c3 55 89 cd 57 89
-> [ 4768.720058] EIP: [<c01d073f>] elv_next_request+0x17e/0x18e SS:ESP 0068:c943ff50
-> [ 4768.720058] ---[ end trace 6a50caff78c47574 ]---
-> [ 4769.658313] Floppy drive(s): fd0 is 1.44M
-> [ 4789.656060] no cont in shutdown!
+> Xen can end up calling vm_unmap_aliases() before vmalloc_init() has
+> been called.  In this case its safe to make it a simple no-op.
 >
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> diff -r 42c8b29f7ccf mm/vmalloc.c
+> --- a/mm/vmalloc.c	Wed Oct 22 12:43:39 2008 -0700
+> +++ b/mm/vmalloc.c	Wed Oct 22 21:39:00 2008 -0700
+> @@ -591,6 +591,8 @@
 >
-
-Hi, could you try the attached test patch?  sorry for using attachment
-as there's some problem for my mail client to reply.
-
--- 
-Regards
-dave
-
-------=_Part_38935_17913.1225170690934
-Content-Type: application/octet-stream;
- name=floppy_flush_workqueue_before_release.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fmu2yikq0
-Content-Disposition: attachment;
- filename=floppy_flush_workqueue_before_release.patch
-
-LS0tIGxpbnV4LTIuNi4yNy5vcmlnL2RyaXZlcnMvYmxvY2svZmxvcHB5LmMJMjAwOC0xMC0xMCAw
-NjoxMzo1My4wMDAwMDAwMDAgKzA4MDAKKysrIGxpbnV4LTIuNi4yNy9kcml2ZXJzL2Jsb2NrL2Zs
-b3BweS5jCTIwMDgtMTAtMjggMTM6MDU6NDUuMDAwMDAwMDAwICswODAwCkBAIC00NTU3LDYgKzQ1
-NTcsNyBAQAogCWRlbF90aW1lcl9zeW5jKCZmZF90aW1lcik7CiAJYmxrX2NsZWFudXBfcXVldWUo
-ZmxvcHB5X3F1ZXVlKTsKIAorCWZsdXNoX3NjaGVkdWxlZF93b3JrKCk7CiAJaWYgKHVzYWdlX2Nv
-dW50KQogCQlmbG9wcHlfcmVsZWFzZV9pcnFfYW5kX2RtYSgpOwogCg==
-------=_Part_38935_17913.1225170690934--
+>  #define VMAP_BLOCK_SIZE		(VMAP_BBMAP_BITS * PAGE_SIZE)
+>
+> +static bool vmap_initialized = false;
+> +
+>  struct vmap_block_queue {
+>  	spinlock_t lock;
+>  	struct list_head free;
+> @@ -827,6 +829,9 @@
+>  	int cpu;
+>  	int flush = 0;
+>
+> +	if (!vmap_initialized)
+> +		return;
+> +
+>  	for_each_possible_cpu(cpu) {
+>  		struct vmap_block_queue *vbq = &per_cpu(vmap_block_queue, cpu);
+>  		struct vmap_block *vb;
+> @@ -940,6 +945,8 @@
+>  		INIT_LIST_HEAD(&vbq->dirty);
+>  		vbq->nr_dirty = 0;
+>  	}
+> +
+> +	vmap_initialized = true;
+>  }
+>
+>  void unmap_kernel_range(unsigned long addr, unsigned long size)
