@@ -1,91 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753746AbYJ1Tk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751201AbYJ1Tkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753746AbYJ1Tk3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 15:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYJ1TkU
+	id S1751201AbYJ1Tkq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 15:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbYJ1Tkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 15:40:20 -0400
-Received: from mga09.intel.com ([134.134.136.24]:29168 "EHLO mga09.intel.com"
+	Tue, 28 Oct 2008 15:40:36 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43046 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751527AbYJ1TkT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 15:40:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,500,1220252400"; 
-   d="scan'208";a="456423673"
-From: "Moore, Robert" <robert.moore@intel.com>
-To: Fabio Comolli <fabio.comolli@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ACPI mailing list <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Date: Tue, 28 Oct 2008 12:40:16 -0700
-Subject: RE: ACPI warning in 2.6.28-rc1
-Thread-Topic: ACPI warning in 2.6.28-rc1
-Thread-Index: Ack2iAuIzxLZ2KK6TbWl6QmAYbX9qACrLyjw
-Message-ID: <4911F71203A09E4D9981D27F9D8308580ADBF12C@orsmsx503.amr.corp.intel.com>
-References: <b637ec0b0810241509j43a6bfc9q506dc16a612e7f06@mail.gmail.com>
-	 <4911F71203A09E4D9981D27F9D8308580AA800C4@orsmsx503.amr.corp.intel.com>
- <b637ec0b0810250257oc9718f0yb6fc9fc2b53e80fc@mail.gmail.com>
-In-Reply-To: <b637ec0b0810250257oc9718f0yb6fc9fc2b53e80fc@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1751883AbYJ1Tkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 15:40:35 -0400
+Message-ID: <49076A6B.4020904@kernel.org>
+Date: Tue, 28 Oct 2008 12:39:23 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: fix init_memory_mapping for [dc000000 - e0000000) -
+ v2
+References: <490406FD.30604@kernel.org> <20081027165028.GB30573@linux-os.sc.intel.com> <20081027175547.GE3046@elte.hu> <49067058.7010106@kernel.org> <20081028092737.GT15734@elte.hu> <20081028093930.GA9699@elte.hu> <20081028094758.GA11958@elte.hu> <4906E048.6060006@kernel.org> <20081028095244.GY15734@elte.hu>
+In-Reply-To: <20081028095244.GY15734@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks.
 
-The Linux battery driver can in fact handle the buffer where there should be a string, so this warning can be ignored.
+Impact: change over-mapping to precise mapping, fix /proc/meminfo output
 
-The acpidump is very helpful for characterizing the problem, and we are investigating the proper course of action.
+v2: fix less 1G ram system handling
 
-Bob
+when gart aperture is 0xdc000000 - 0xe0000000
+it return 0xc0000000 - 0xe0000000
 
+that is not right.
 
->-----Original Message-----
->From: Fabio Comolli [mailto:fabio.comolli@gmail.com]
->Sent: Saturday, October 25, 2008 2:57 AM
->To: Moore, Robert
->Cc: Linux Kernel Mailing List; ACPI mailing list; Len Brown
->Subject: Re: ACPI warning in 2.6.28-rc1
->
->Here you are.
->Regards,
->Fabio
->
->
->
->On Sat, Oct 25, 2008 at 12:34 AM, Moore, Robert <robert.moore@intel.com>
->wrote:
->> Please send the acpidump for the machine so we can look at the method.
->> Thanks,
->> Bob
->>
->>
->>>-----Original Message-----
->>>From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
->>>owner@vger.kernel.org] On Behalf Of Fabio Comolli
->>>Sent: Friday, October 24, 2008 3:09 PM
->>>To: Linux Kernel Mailing List
->>>Cc: ACPI mailing list; Len Brown
->>>Subject: ACPI warning in 2.6.28-rc1
->>>
->>>Hi all.
->>>As the subject says:
->>>
->>>ACPI Warning (nspredef-0858): \_SB_.PCI0.LPCB.EC0_.BAT0._BIF: Return
->>>Package type mismatch at index 11 - found Buffer, expected String
->>>[20080926]
->>>
->>>No functional problems so far.
->>>--
->>>To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
->>>the body of a message to majordomo@vger.kernel.org
->>>More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
+this patch fix that will get exact mapping
+
+on 256g sytem with that aperture after patch
+LBSuse:~ # cat /proc/meminfo
+MemTotal:       264742432 kB
+MemFree:        263920628 kB
+Buffers:            1416 kB
+Cached:            24468 kB
+...
+DirectMap4k:      5760 kB
+DirectMap2M:   3205120 kB
+DirectMap1G:  265289728 kB
+
+it is consistent to
+LBSuse:~ # cat /sys/kernel/debug/kernel_page_tables
+..
+---[ Low Kernel Mapping ]---
+0xffff880000000000-0xffff880000200000           2M     RW             GLB x  pte
+0xffff880000200000-0xffff880040000000        1022M     RW         PSE GLB x  pmd
+0xffff880040000000-0xffff8800c0000000           2G     RW         PSE GLB NX pud
+0xffff8800c0000000-0xffff8800d7e00000         382M     RW         PSE GLB NX pmd
+0xffff8800d7e00000-0xffff8800d7fa0000        1664K     RW             GLB NX pte
+0xffff8800d7fa0000-0xffff8800d8000000         384K                           pte
+0xffff8800d8000000-0xffff8800dc000000          64M                           pmd
+0xffff8800dc000000-0xffff8800e0000000          64M     RW         PSE GLB NX pmd
+0xffff8800e0000000-0xffff880100000000         512M                           pmd
+0xffff880100000000-0xffff880800000000          28G     RW         PSE GLB NX pud
+0xffff880800000000-0xffff880824600000         582M     RW         PSE GLB NX pmd
+0xffff880824600000-0xffff8808247f0000        1984K     RW             GLB NX pte
+0xffff8808247f0000-0xffff880824800000          64K     RW     PCD     GLB NX pte
+0xffff880824800000-0xffff880840000000         440M     RW         PSE GLB NX pmd
+0xffff880840000000-0xffff884000000000         223G     RW         PSE GLB NX pud
+0xffff884000000000-0xffff884028000000         640M     RW         PSE GLB NX pmd
+0xffff884028000000-0xffff884040000000         384M                           pmd
+0xffff884040000000-0xffff888000000000         255G                           pud
+0xffff888000000000-0xffffc20000000000       58880G                           pgd 
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/mm/init_64.c |   50 +++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 33 insertions(+), 17 deletions(-)
+
+Index: linux-2.6/arch/x86/mm/init_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/init_64.c
++++ linux-2.6/arch/x86/mm/init_64.c
+@@ -671,12 +671,13 @@ unsigned long __init_refok init_memory_m
+ 	unsigned long last_map_addr = 0;
+ 	unsigned long page_size_mask = 0;
+ 	unsigned long start_pfn, end_pfn;
++	unsigned long pos;
+ 
+ 	struct map_range mr[NR_RANGE_MR];
+ 	int nr_range, i;
+ 	int use_pse, use_gbpages;
+ 
+-	printk(KERN_INFO "init_memory_mapping\n");
++	printk(KERN_INFO "init_memory_mapping: %016lx-%016lx\n", start, end);
+ 
+ 	/*
+ 	 * Find space for the kernel direct mapping tables.
+@@ -710,35 +711,50 @@ unsigned long __init_refok init_memory_m
+ 
+ 	/* head if not big page alignment ?*/
+ 	start_pfn = start >> PAGE_SHIFT;
+-	end_pfn = ((start + (PMD_SIZE - 1)) >> PMD_SHIFT)
++	pos = start_pfn << PAGE_SHIFT;
++	end_pfn = ((pos + (PMD_SIZE - 1)) >> PMD_SHIFT)
+ 			<< (PMD_SHIFT - PAGE_SHIFT);
+-	nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, 0);
++	if (start_pfn < end_pfn) {
++		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, 0);
++		pos = end_pfn << PAGE_SHIFT;
++	}
+ 
+ 	/* big page (2M) range*/
+-	start_pfn = ((start + (PMD_SIZE - 1))>>PMD_SHIFT)
++	start_pfn = ((pos + (PMD_SIZE - 1))>>PMD_SHIFT)
+ 			 << (PMD_SHIFT - PAGE_SHIFT);
+-	end_pfn = ((start + (PUD_SIZE - 1))>>PUD_SHIFT)
++	end_pfn = ((pos + (PUD_SIZE - 1))>>PUD_SHIFT)
+ 			 << (PUD_SHIFT - PAGE_SHIFT);
+-	if (end_pfn > ((end>>PUD_SHIFT)<<(PUD_SHIFT - PAGE_SHIFT)))
+-		end_pfn = ((end>>PUD_SHIFT)<<(PUD_SHIFT - PAGE_SHIFT));
+-	nr_range = save_mr(mr, nr_range, start_pfn, end_pfn,
+-			page_size_mask & (1<<PG_LEVEL_2M));
++	if (end_pfn > ((end>>PMD_SHIFT)<<(PMD_SHIFT - PAGE_SHIFT)))
++		end_pfn = ((end>>PMD_SHIFT)<<(PMD_SHIFT - PAGE_SHIFT));
++	if (start_pfn < end_pfn) {
++		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn,
++				page_size_mask & (1<<PG_LEVEL_2M));
++		pos = end_pfn << PAGE_SHIFT;
++	}
+ 
+ 	/* big page (1G) range */
+-	start_pfn = end_pfn;
+-	end_pfn = (end>>PUD_SHIFT) << (PUD_SHIFT - PAGE_SHIFT);
+-	nr_range = save_mr(mr, nr_range, start_pfn, end_pfn,
++	start_pfn = ((pos + (PUD_SIZE - 1))>>PUD_SHIFT)
++			 << (PUD_SHIFT - PAGE_SHIFT);
++	end_pfn = (end >> PUD_SHIFT) << (PUD_SHIFT - PAGE_SHIFT);
++	if (start_pfn < end_pfn) {
++		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn,
+ 				page_size_mask &
+ 				 ((1<<PG_LEVEL_2M)|(1<<PG_LEVEL_1G)));
++		pos = end_pfn << PAGE_SHIFT;
++	}
+ 
+ 	/* tail is not big page (1G) alignment */
+-	start_pfn = end_pfn;
+-	end_pfn = (end>>PMD_SHIFT) << (PMD_SHIFT - PAGE_SHIFT);
+-	nr_range = save_mr(mr, nr_range, start_pfn, end_pfn,
+-			page_size_mask & (1<<PG_LEVEL_2M));
++	start_pfn = ((pos + (PMD_SIZE - 1))>>PMD_SHIFT)
++			 << (PMD_SHIFT - PAGE_SHIFT);
++	end_pfn = (end >> PMD_SHIFT) << (PMD_SHIFT - PAGE_SHIFT);
++	if (start_pfn < end_pfn) {
++		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn,
++				page_size_mask & (1<<PG_LEVEL_2M));
++		pos = end_pfn << PAGE_SHIFT;
++	}
+ 
+ 	/* tail is not big page (2M) alignment */
+-	start_pfn = end_pfn;
++	start_pfn = pos>>PAGE_SHIFT;
+ 	end_pfn = end>>PAGE_SHIFT;
+ 	nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, 0);
+ 
+
