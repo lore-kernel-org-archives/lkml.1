@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753523AbYJ1Kis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753751AbYJ1Kja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753523AbYJ1Kis (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 06:38:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYJ1Kih
+	id S1753751AbYJ1Kja (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 06:39:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYJ1KjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 06:38:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47233 "EHLO mx2.mail.elte.hu"
+	Tue, 28 Oct 2008 06:39:22 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47478 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752035AbYJ1Kig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 06:38:36 -0400
-Date: Tue, 28 Oct 2008 11:37:41 +0100
+	id S1752630AbYJ1KjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 06:39:22 -0400
+Date: Tue, 28 Oct 2008 11:39:02 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: David Miller <davem@davemloft.net>, zbr@ioremap.net,
-       alan@lxorguk.ukuu.org.uk, jkosina@suse.cz, akpm@linux-foundation.org,
-       a.p.zijlstra@chello.nl, rjw@sisk.pl, s0mbre@tservice.net.ru,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-Message-ID: <20081028103741.GA22319@elte.hu>
-References: <20081027113306.5b1d5898@lxorguk.ukuu.org.uk> <20081027183312.GD11494@elte.hu> <20081027193933.GB2590@ioremap.net> <20081027.124848.163119274.davem@davemloft.net> <1225189462.4903.238.camel@marge.simson.net>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, svens@stackframe.org,
+       joerg.roedel@amd.com, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: swiotlb_alloc_coherent: allocated memory is out of range for
+	device
+Message-ID: <20081028103902.GB22319@elte.hu>
+References: <s5hmygwn89z.wl%tiwai@suse.de> <20081022221321J.fujita.tomonori@lab.ntt.co.jp> <s5hfxmon4aj.wl%tiwai@suse.de> <20081023113618T.fujita.tomonori@lab.ntt.co.jp> <s5h63nj51j2.wl%tiwai@suse.de> <s5hfxmnjzg5.wl%tiwai@suse.de> <20081023101557.GA30302@elte.hu> <s5hk5btm2g2.wl%tiwai@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1225189462.4903.238.camel@marge.simson.net>
+In-Reply-To: <s5hk5btm2g2.wl%tiwai@suse.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,44 +39,40 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mike Galbraith <efault@gmx.de> wrote:
+* Takashi Iwai <tiwai@suse.de> wrote:
 
-> ..removing the overhead from .27 does not produce the anticipated 
-> result despite a max context switch rate markedly above that of 
-> 2.6.26.
+> At Thu, 23 Oct 2008 12:15:57 +0200,
+> Ingo Molnar wrote:
+> > 
+> > 
+> > * Takashi Iwai <tiwai@suse.de> wrote:
+> > 
+> > > At Thu, 23 Oct 2008 07:22:09 +0200,
+> > > I wrote:
+> > > > 
+> > > > > The current dma_alloc_coherent (asm-x86/dma-mapping.h) handles the gfp
+> > > > > flags in the exact same way as the old dma_alloc_coherent
+> > > > > (pci-dma.c). Neither sets GFP_DMA even if coherent_dma_mask is
+> > > > > 24bits. The old code is fine because of the GFP_DMA retry
+> > > > > mechanism. But if coherent_dma_mask is 24bits, there is no point to go
+> > > > > into the GFP_DMA retry mechanism. We should use GFP_DMA in the first
+> > > > > place.
+> > > > > 
+> > > > > How about the following patch?
+> > > > 
+> > > > I'll give it a try later (the machine is in my office).
+> > > 
+> > > The patch seems working fine.  Thanks!
+> > > 
+> > > Tested-by: Takashi Iwai <tiwai@suse.de>
+> > 
+> > thanks guys - i've queued it up in tip/core/urgent and will send a pull 
+> > request to Linus later today.
 > 
-> There lies an as yet unaddressed regression IMBHO.  The hrtick has 
-> been addressed.  It sucked at high frequency, and it's gone.  The 
-> added math overhead in .27 hurt some too, and is now history as 
-> well.
+> Ingo, what is the status about these patches?
+> They don't appear in rc2.
 
-thanks Mike for the _extensive_ testing and bug hunting session you've 
-done in the past couple of weeks! All the relevant fixlets you found 
-are now queued up properly in sched/urgent, correct?
-
-What's your gut feeling, is that remaining small regression scheduler 
-or networking related?
-
-i'm cutting the ball in half and i'm passing over one half of it to 
-the networking folks, because your numbers show _huge_ sensitivity in 
-this workload, depending on networking settings:
-
-> To really illustrate rockiness, cutting network config down from distro
-> lard-ball to something leaner and meaner took SMP throughput from this
-> (was only testing netperf at that time) on 19 Aug..
-> 
-> 2.6.22.19 pinned
-> 16384  87380  1        1       300.00   59866.40   
-
-> 2.6.22.19 (also pinned)
-> 16384  87380  1        1       60.01    94179.12
-
-> 2.6.22.19 (also pinned)
-> 16384  87380  1        1       60.01    111272.55  1.00
-
-any scheduler micro-overhead detail is going to be a drop in the 
-ocean, compared to such huge variations. We could change the scheduler 
-to the old O(N) design of the 2.2 kernel and the impact of that would 
-be a blip on the radar, compared to the overhead shown above.
+Will send it today-ish. -rc2 was strictly for brown paperbag bugs 
+crashing more than half of all testsystems.
 
 	Ingo
