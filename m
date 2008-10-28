@@ -1,40 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbYJ1TQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbYJ1TRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754806AbYJ1TQj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 15:16:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbYJ1TQW
+	id S1754009AbYJ1TRU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 15:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbYJ1TRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 15:16:22 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34449 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754707AbYJ1TQV (ORCPT
+	Tue, 28 Oct 2008 15:17:07 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:34173 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752601AbYJ1TRG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 15:16:21 -0400
-Date: Tue, 28 Oct 2008 20:17:56 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] w35und: OS_MEMORY_ALLOC wrapper removal
-Message-ID: <20081028191756.GD16452@elf.ucw.cz>
-References: <Pine.LNX.4.64.0810272246400.7561@melkki.cs.Helsinki.FI>
+	Tue, 28 Oct 2008 15:17:06 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type;
+	b=u9z2GaziTnjK2DiuChtEtmASL1/tPx8RjUq/8AvwPRFAReMBMVv/V/b2M5fZjeRdZ
+	lOQQv9zIV90mgIC02p2eQ==
+Date: Tue, 28 Oct 2008 12:16:50 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Paul Menage <menage@google.com>,
+       Derek Fults <dfults@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/7] mm: make page writeback obey cpuset constraints
+In-Reply-To: <1225215093.15763.25.camel@lappy.programming.kicks-ass.net>
+Message-ID: <alpine.DEB.1.10.0810281216280.30390@chino.kir.corp.google.com>
+References: <alpine.DEB.1.10.0810280259500.15270@chino.kir.corp.google.com>  <alpine.DEB.1.10.0810280301300.15270@chino.kir.corp.google.com> <1225215093.15763.25.camel@lappy.programming.kicks-ass.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0810272246400.7561@melkki.cs.Helsinki.FI>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2008-10-27 22:47:12, Pekka J Enberg wrote:
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
+On Tue, 28 Oct 2008, Peter Zijlstra wrote:
+
+> > +int cpuset_populate_dirty_limits(struct dirty_limits *dl,
+> > +				 unsigned long *dirtyable_memory,
+> > +				 unsigned long *nr_mapped,
+> > +				 const nodemask_t *nodes)
+> > +{
+> > +	int node;
+> > +
+> > +	if (likely(!nodes || nodes_subset(node_online_map, *nodes)))
+> > +		return 0;
+> > +	for_each_node_mask(node, *nodes) {
+> > +		if (!node_online(node))
+> > +			continue;
+> > +		dl->nr_dirty += node_page_state(node, NR_FILE_DIRTY);
+> > +		dl->nr_unstable += node_page_state(node, NR_UNSTABLE_NFS);
+> > +		dl->nr_writeback += node_page_state(node, NR_WRITEBACK);
+> > +		dirtyable_memory +=
 > 
-> This patch removes the rather scary OS_MEMORY_ALLOC macro.
+> *dirtyable_memory perhaps?
 > 
 
-Acked-by: Pavel Machek <pavel@suse.cz>
+Indeed, fixed.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> > +			node_page_state(node, NR_ACTIVE_ANON) +
+> > +			node_page_state(node, NR_ACTIVE_FILE) +
+> > +			node_page_state(node, NR_INACTIVE_ANON) +
+> > +			node_page_state(node, NR_INACTIVE_FILE) +
+> > +			node_page_state(node, NR_FREE_PAGES);
+> > +		nr_mapped +=
+> 
+> idem?
+> 
+
+Likewise.
