@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754083AbYJ1OaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYJ1Oc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754083AbYJ1OaA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 10:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYJ1O3v
+	id S1754023AbYJ1Oc3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 10:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbYJ1OcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 10:29:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33769 "EHLO mx2.redhat.com"
+	Tue, 28 Oct 2008 10:32:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42536 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752557AbYJ1O3u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 10:29:50 -0400
-Subject: Re: [PATCH, RFC] jbd2: Call the commit callback before the
- transaction could get dropped
-From: Eric Paris <eparis@redhat.com>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-In-Reply-To: <49067BE0.8090904@redhat.com>
-References: <1224612181.19719.20.camel@paris-laptop>
-	 <20081027181928.GB23111@mit.edu> <49064027.9010509@redhat.com>
-	 <20081027232843.GA9797@mit.edu> <49065805.1080303@redhat.com>
-	 <20081028015228.GA8320@mit.edu> <20081028022838.GA8869@mit.edu>
-	 <49067BE0.8090904@redhat.com>
-Content-Type: text/plain
-Date: Tue, 28 Oct 2008 09:46:05 -0400
-Message-Id: <1225201565.7743.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1752734AbYJ1OcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 10:32:16 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Ian Kent <raven@themaw.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       autofs mailing list <autofs@linux.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] autofs4 - fix string validation check order
+References: <20081028053047.29379.19919.stgit@zeus.themaw.net>
+	<20081028053053.29379.15598.stgit@zeus.themaw.net>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Tue, 28 Oct 2008 09:25:37 -0400
+In-Reply-To: <20081028053053.29379.15598.stgit@zeus.themaw.net> (Ian Kent's
+	message of "Tue, 28 Oct 2008 14:30:53 +0900")
+Message-ID: <x49prlk6ecu.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-27 at 21:41 -0500, Eric Sandeen wrote:
-> Theodore Tso wrote:
-> > This is what I plan to send to Linus to fix the problem.
-> > 
-> > commit 6fecbc3c7d27800e90a5f5fbca2fb2847e2c2854
-> > Author: Theodore Ts'o <tytso@mit.edu>
-> > Date:   Mon Oct 27 22:11:39 2008 -0400
-> > 
-> >     jbd2: Call the commit callback before the transaction could get dropped
-> >     
-> >     The transaction can potentially get dropped if there are no buffers
-> >     that need to be written.  Make sure we call the commit callback before
-> >     potentially deciding to drop the transaction.  Also avoid
-> >     dereferencing the commit_transaction pointer in the marker for the
-> >     same reason.
-> >     
-> >     This patch fixes the bug reported by Eric Paris at:
-> >     http://bugzilla.kernel.org/show_bug.cgi?id=11838
-> >     
-> >     Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-> 
-> Acked-by: Eric Sandeen <sandeen@redhat.com>
+Ian Kent <raven@themaw.net> writes:
 
-Tested-by: Eric Paris <eparis@redhat.com>
-
+> In function validate_dev_ioctl() we check that the string we've
+> been sent is a valid path. The function that does this check
+> assumes the string is NULL terminated but our NULL termination
+> check isn't done until after this call. This patch changes the
+> order of the check.
+>
+> Signed-off-by: Ian Kent <raven@themaw.net>
+Acked-by: Jeff Moyer <jmoyer@redhat.com>
