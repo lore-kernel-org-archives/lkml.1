@@ -1,69 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149AbYJ2HgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753310AbYJ2HhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753149AbYJ2HgX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 03:36:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbYJ2HgP
+	id S1753310AbYJ2HhV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 03:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbYJ2HhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 03:36:15 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:46451 "EHLO smtps.tip.net.au"
+	Wed, 29 Oct 2008 03:37:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60095 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751701AbYJ2HgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 03:36:14 -0400
-Date: Wed, 29 Oct 2008 18:36:00 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: David Howells <dhowells@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       lkml <linux-kernel@vger.kernel.org>, jmorris@us.ibm.com
-Subject: Re: [PATCH] User namespaces: set of cleanups (v2)
-Message-Id: <20081029183600.a17df43b.sfr@canb.auug.org.au>
-In-Reply-To: <20081028162159.GA15342@us.ibm.com>
-References: <20081024174838.GA24466@us.ibm.com>
-	<20081025130531.ca063206.sfr@canb.auug.org.au>
-	<20081028162159.GA15342@us.ibm.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__29_Oct_2008_18_36_00_+1100_htOLP4/jf7YcXgvT"
+	id S1751701AbYJ2HhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 03:37:07 -0400
+Date: Wed, 29 Oct 2008 08:36:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Glauber Costa <gcosta@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: Fix CONFIG_PCI=n compile failure
+Message-ID: <20081029073629.GB17992@elte.hu>
+References: <1225228943.3251.17.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225228943.3251.17.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__29_Oct_2008_18_36_00_+1100_htOLP4/jf7YcXgvT
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Serge,
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-On Tue, 28 Oct 2008 11:21:59 -0500 "Serge E. Hallyn" <serue@us.ibm.com> wro=
-te:
->
-> The tree is up at:
->=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/sergeh/userns-2.6#next
+> This:
+> 
+> commit fae9a0d8ca68a14da8d2351ad3e0bf42f3b29899
+> Author: Glauber Costa <gcosta@redhat.com>
+> Date:   Tue Apr 8 13:20:56 2008 -0300
+> 
+>     x86: merge iommu initialization parameters
+> 
+> Moved the forbid_dac parameter into pci-dma.c but forgot that it's a 
+> PCI only symbol thus causing a compile failure if CONFIG_PCI=N.  Fix 
+> by surrounding the set clause in iommu_setup with #ifdef CONFIG_PCI
 
-I have added this today.
+uhm, that's wrong James, the above commit you refer to is half a year 
+old and has been released in v2.6.26 and v2.6.27 ;-)
 
-> with just two patches on top of David's creds-v4.
+The patch that broke the !CONFIG_PCI build in this cycle is this one:
 
-This will be OK as long as David does not rebase his tree ...
+| From 5b6985ce8ec7127b4d60ad450b64ca8b82748a3b Mon Sep 17 00:00:00 2001
+| From: Fenghua Yu <fenghua.yu@intel.com>
+| Date: Thu, 16 Oct 2008 18:02:32 -0700
+| Subject: [PATCH] intel-iommu: IA64 support
+|
+| The current Intel IOMMU code assumes that both host page size and 
+| Intel IOMMU page size are 4KiB. The first patch supports variable 
+| page size. This provides support for IA64 which has multiple page 
+| sizes.
+|
+| This patch also adds some other code hooks for IA64 platform 
+| including DMAR_OPERATION_TIMEOUT definition.
+|
+| [dwmw2: some cleanup]
+| Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+| Signed-off-by: Tony Luck <tony.luck@intel.com>
+| Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Wed__29_Oct_2008_18_36_00_+1100_htOLP4/jf7YcXgvT
-Content-Type: application/pgp-signature
+> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+> 
+> ---
+> 
+> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+> index 1972266..47c5a7a 100644
+> --- a/arch/x86/kernel/pci-dma.c
+> +++ b/arch/x86/kernel/pci-dma.c
+> @@ -202,6 +202,7 @@ static __init int iommu_setup(char *p)
+>  			iommu_merge = 0;
+>  		if (!strncmp(p, "forcesac", 8))
+>  			iommu_sac_force = 1;
+> +#ifdef CONFIG_PCI
+>  		if (!strncmp(p, "allowdac", 8))
+>  			forbid_dac = 0;
+>  		if (!strncmp(p, "nodac", 5))
+> @@ -210,6 +211,7 @@ static __init int iommu_setup(char *p)
+>  			forbid_dac = -1;
+>  			return 1;
+>  		}
+> +#endif
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+that's the wrong fix, the right fix from Fenghua Yu (from about a week 
+ago) is at:
 
-iEYEARECAAYFAkkIEmAACgkQjjKRsyhoI8xqKACcDGSEdk/3wafso4xutidhfqjF
-VqoAnRVtvQIUGyPiyAA3v+EXPCQc1RHB
-=oBND
------END PGP SIGNATURE-----
+  http://marc.info/?l=linux-kernel&m=122480590627590&w=2
 
---Signature=_Wed__29_Oct_2008_18_36_00_+1100_htOLP4/jf7YcXgvT--
+and it is in the PCI tree already.
+
+	Ingo
