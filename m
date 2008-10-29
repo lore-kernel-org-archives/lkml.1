@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbYJ2Bwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbYJ2BxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755004AbYJ2Bwh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 21:52:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbYJ2BuU
+	id S1755226AbYJ2BxU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 21:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbYJ2BuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 21:50:20 -0400
-Received: from anchor-post-32.mail.demon.net ([194.217.242.90]:2350 "EHLO
+	Tue, 28 Oct 2008 21:50:25 -0400
+Received: from anchor-post-32.mail.demon.net ([194.217.242.90]:2356 "EHLO
 	anchor-post-32.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752311AbYJ2BuB (ORCPT
+	by vger.kernel.org with ESMTP id S1753182AbYJ2BuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 21:50:01 -0400
+	Tue, 28 Oct 2008 21:50:05 -0400
 To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        tim.bird@am.sony.com
-Subject: [PATCH V2 02/16] Squashfs: directory lookup operations
-Message-Id: <E1Kv0C3-0006Ge-Ks@dylan>
+Subject: [PATCH V2 10/16] Squashfs: cache operations
+Message-Id: <E1Kv0C4-0006HO-BC@dylan>
 From: Phillip Lougher <phillip@lougher.demon.co.uk>
-Date: Wed, 29 Oct 2008 01:49:55 +0000
+Date: Wed, 29 Oct 2008 01:49:56 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -24,15 +24,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
 ---
- fs/squashfs/namei.c |  242 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 242 insertions(+), 0 deletions(-)
+ fs/squashfs/cache.c |  315 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 315 insertions(+), 0 deletions(-)
 
-diff --git a/fs/squashfs/namei.c b/fs/squashfs/namei.c
+diff --git a/fs/squashfs/cache.c b/fs/squashfs/cache.c
 new file mode 100644
-index 0000000..db03ffe
+index 0000000..d121f31
 --- /dev/null
-+++ b/fs/squashfs/namei.c
-@@ -0,0 +1,242 @@
++++ b/fs/squashfs/cache.c
+@@ -0,0 +1,315 @@
 +/*
 + * Squashfs - a compressed read only filesystem for Linux
 + *
@@ -53,45 +53,25 @@ index 0000000..db03ffe
 + * along with this program; if not, write to the Free Software
 + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 + *
-+ * namei.c
++ * cache.c
 + */
 +
 +/*
-+ * This file implements code to do filename lookup in directories.
++ * Blocks in Squashfs are compressed.  To avoid repeatedly decompressing
++ * recently accessed data Squashfs uses two small metadata and fragment caches.
 + *
-+ * Like inodes, directories are packed into compressed metadata blocks, stored
-+ * in a directory table.  Directories are accessed using the start address of
-+ * the metablock containing the directory and the offset into the
-+ * decompressed block (<block, offset>).
-+ *
-+ * Directories are organised in a slightly complex way, and are not simply
-+ * a list of file names.  The organisation takes advantage of the
-+ * fact that (in most cases) the inodes of the files will be in the same
-+ * compressed metadata block, and therefore, can share the start block.
-+ * Directories are therefore organised in a two level list, a directory
-+ * header containing the shared start block value, and a sequence of directory
-+ * entries, each of which share the shared start block.  A new directory header
-+ * is written once/if the inode start block changes.  The directory
-+ * header/directory entry list is repeated as many times as necessary.
-+ *
-+ * Directories are sorted, and can contain a directory index to speed up
-+ * file lookup.  Directory indexes store one entry per metablock, each entry
-+ * storing the index/filename mapping to the first directory header
-+ * in each metadata block.  Directories are sorted in alphabetical order,
-+ * and at lookup the index is scanned linearly looking for the first filename
-+ * alphabetically larger than the filename being looked up.  At this point the
-+ * location of the metadata block the filename is in has been found.
-+ * The general idea of the index is ensure only one metadata block needs to be
-+ * decompressed to do a lookup irrespective of the length of the directory.
-+ * This scheme has the advantage that it doesn't require extra memory overhead
-+ * and doesn't require much extra storage on disk.
++ * This file implements a generic cache implementation used for both caches,
++ * plus functions layered ontop of the generic cache implementation to
++ * access the metadata and fragment caches.
 + */
 +
 +#include <linux/fs.h>
 +#include <linux/vfs.h>
 +#include <linux/slab.h>
-+#include <linux/string.h>
-+#include <linux/dcache.h>
++#include <linux/vmalloc.h>
++#include <linux/sched.h>
++#include <linux/spinlock.h>
++#include <linux/wait.h>
 +#include <linux/zlib.h>
 +
 +#include "squashfs_fs.h"
@@ -100,181 +80,274 @@ index 0000000..db03ffe
 +#include "squashfs.h"
 +
 +/*
-+ * Lookup name in the directory index, returning the location of the metadata
-+ * block containing it, and the directory index this represents.
-+ *
-+ * If we get an error reading the index then return the part of the index
-+ * (if any) we have managed to read - the index isn't essential, just
-+ * quicker.
++ * Look-up block in cache, and increment usage count.  If not in cache, read
++ * and decompress it from disk.
 + */
-+static int get_dir_index_using_name(struct super_block *sb,
-+			long long *next_block, int *next_offset,
-+			long long index_start, int index_offset,
-+			int i_count, const char *name, int len)
++struct squashfs_cache_entry *squashfs_cache_get(struct super_block *sb,
++	struct squashfs_cache *cache, long long block, int length)
 +{
-+	struct squashfs_sb_info *msblk = sb->s_fs_info;
-+	int i, size, length = 0, err;
-+	struct squashfs_dir_index *index;
-+	char *str;
++	int i, n;
++	struct squashfs_cache_entry *entry;
 +
-+	TRACE("Entered get_dir_index_using_name, i_count %d\n", i_count);
++	spin_lock(&cache->lock);
 +
-+	index = kmalloc(sizeof(*index) + SQUASHFS_NAME_LEN * 2 + 2, GFP_KERNEL);
-+	if (index == NULL) {
-+		ERROR("Failed to allocate squashfs_dir_index\n");
++	while (1) {
++		for (i = 0; i < cache->entries; i++)
++			if (cache->entry[i].block == block)
++				break;
++
++		if (i == cache->entries) {
++			/*
++			 * Block not in cache, if all cache entries are locked
++			 * go to sleep waiting for one to become available.
++			 */
++			if (cache->unused == 0) {
++				cache->waiting++;
++				spin_unlock(&cache->lock);
++				wait_event(cache->wait_queue, cache->unused);
++				spin_lock(&cache->lock);
++				cache->waiting--;
++				continue;
++			}
++
++			/*
++			 * At least one unlocked cache entry.  A simple
++			 * round-robin strategy is used to choose the entry to
++			 * be evicted from the cache.
++			 */
++			i = cache->next_blk;
++			for (n = 0; n < cache->entries; n++) {
++				if (cache->entry[i].locked == 0)
++					break;
++				i = (i + 1) % cache->entries;
++			}
++
++			cache->next_blk = (i + 1) % cache->entries;
++			entry = &cache->entry[i];
++
++			/*
++			 * Initialise choosen cache entry, and fill it in from
++			 * disk.
++			 */
++			cache->unused--;
++			entry->block = block;
++			entry->locked = 1;
++			entry->pending = 1;
++			entry->waiting = 0;
++			entry->error = 0;
++			spin_unlock(&cache->lock);
++
++			entry->length = squashfs_read_data(sb, entry->data,
++				block, length, &entry->next_index,
++				cache->block_size);
++
++			spin_lock(&cache->lock);
++
++			if (entry->length < 0)
++				entry->error = entry->length;
++
++			entry->pending = 0;
++			spin_unlock(&cache->lock);
++
++			/*
++			 * While filling this entry one or more other processes
++			 * have looked it up in the cache, and have slept
++			 * waiting for it to become available.
++			 */
++			if (entry->waiting)
++				wake_up_all(&entry->wait_queue);
++			goto out;
++		}
++
++		/*
++		 * Block already in cache.  Increment lock so it doesn't
++		 * get reused until we're finished with it, if it was
++		 * previously unlocked there's one less cache entry available
++		 * for reuse.
++		 */
++		entry = &cache->entry[i];
++		if (entry->locked == 0)
++			cache->unused--;
++		entry->locked++;
++
++		/*
++		 * If the entry is currently being filled in by another process
++		 * go to sleep waiting for it to become available.
++		 */
++		if (entry->pending) {
++			entry->waiting++;
++			spin_unlock(&cache->lock);
++			wait_event(entry->wait_queue, !entry->pending);
++			goto out;
++		}
++
++		spin_unlock(&cache->lock);
 +		goto out;
 +	}
 +
-+	str = &index->name[SQUASHFS_NAME_LEN + 1];
-+	strncpy(str, name, len);
-+	str[len] = '\0';
-+
-+	for (i = 0; i < i_count; i++) {
-+		err = squashfs_read_metadata(sb, index, &index_start,
-+					&index_offset, sizeof(*index));
-+		if (err < 0)
-+			break;
-+
-+
-+		size = le32_to_cpu(index->size) + 1;
-+
-+		err = squashfs_read_metadata(sb, index->name, &index_start,
-+					&index_offset, size);
-+		if (err < 0)
-+			break;
-+
-+		index->name[size] = '\0';
-+
-+		if (strcmp(index->name, str) > 0)
-+			break;
-+
-+		length = le32_to_cpu(index->index);
-+		*next_block = le32_to_cpu(index->start_block) +
-+					msblk->directory_table;
-+	}
-+
-+	*next_offset = (length + *next_offset) % SQUASHFS_METADATA_SIZE;
-+	kfree(index);
-+
 +out:
-+	/*
-+	 * Return index (f_pos) of the looked up metadata block.  Translate
-+	 * from internal f_pos to external f_pos which is offset by 3 because
-+	 * we invent "." and ".." entries which are not actually stored in the
-+	 * directory.
-+	 */
-+	return length + 3;
++	TRACE("Got %s %d, start block %lld, locked %d, error %d\n", cache->name,
++		i, entry->block, entry->locked, entry->error);
++
++	if (entry->error)
++		ERROR("Unable to read %s cache entry [%llx]\n", cache->name,
++							block);
++	return entry;
 +}
 +
 +
-+static struct dentry *squashfs_lookup(struct inode *dir, struct dentry *dentry,
-+				 struct nameidata *nd)
++/*
++ * Release block, once usage count is zero it can be reused.
++ */
++void squashfs_cache_put(struct squashfs_cache *cache,
++				struct squashfs_cache_entry *entry)
 +{
-+	const unsigned char *name = dentry->d_name.name;
-+	int len = dentry->d_name.len;
-+	struct inode *inode = NULL;
-+	struct squashfs_sb_info *msblk = dir->i_sb->s_fs_info;
-+	struct squashfs_dir_header dirh;
-+	struct squashfs_dir_entry *dire;
-+	long long block = SQUASHFS_I(dir)->start + msblk->directory_table;
-+	int offset = SQUASHFS_I(dir)->offset;
-+	int err, length = 0, dir_count, size;
-+
-+	TRACE("Entered squashfs_lookup [%llx:%x]\n", block, offset);
-+
-+	dire = kmalloc(sizeof(*dire) + SQUASHFS_NAME_LEN + 1, GFP_KERNEL);
-+	if (dire == NULL) {
-+		ERROR("Failed to allocate squashfs_dir_entry\n");
-+		return ERR_PTR(-ENOMEM);
-+	}
-+
-+	if (len > SQUASHFS_NAME_LEN) {
-+		err = -ENAMETOOLONG;
-+		goto failed;
-+	}
-+
-+	length = get_dir_index_using_name(dir->i_sb, &block, &offset,
-+				SQUASHFS_I(dir)->dir_idx_start,
-+				SQUASHFS_I(dir)->dir_idx_offset,
-+				SQUASHFS_I(dir)->dir_idx_cnt, name, len);
-+
-+	while (length < i_size_read(dir)) {
++	spin_lock(&cache->lock);
++	entry->locked--;
++	if (entry->locked == 0) {
++		cache->unused++;
++		spin_unlock(&cache->lock);
 +		/*
-+		 * Read directory header.
++		 * If there's any processes waiting for a block to become
++		 * available, wake one up.
 +		 */
-+		err = squashfs_read_metadata(dir->i_sb, &dirh, &block,
-+				&offset, sizeof(dirh));
-+		if (err < 0)
-+			goto read_failure;
++		if (cache->waiting)
++			wake_up(&cache->wait_queue);
++	} else {
++		spin_unlock(&cache->lock);
++	}
++}
 +
-+		length += sizeof(dirh);
 +
-+		dir_count = le32_to_cpu(dirh.count) + 1;
-+		while (dir_count--) {
-+			/*
-+			 * Read directory entry.
-+			 */
-+			err = squashfs_read_metadata(dir->i_sb, dire, &block,
-+					&offset, sizeof(*dire));
-+			if (err < 0)
-+				goto read_failure;
++void squashfs_cache_delete(struct squashfs_cache *cache)
++{
++	int i;
 +
-+			size = le16_to_cpu(dire->size) + 1;
++	if (cache == NULL)
++		return;
 +
-+			err = squashfs_read_metadata(dir->i_sb, dire->name,
-+					&block, &offset, size);
-+			if (err < 0)
-+				goto read_failure;
++	for (i = 0; i < cache->entries; i++)
++		if (cache->entry[i].data) {
++			if (cache->use_vmalloc)
++				vfree(cache->entry[i].data);
++			else
++				kfree(cache->entry[i].data);
++		}
 +
-+			length += sizeof(*dire) + size;
++	kfree(cache);
++}
 +
-+			if (name[0] < dire->name[0])
-+				goto exit_lookup;
 +
-+			if (len == size && !strncmp(name, dire->name, len)) {
-+				unsigned int blk, off, ino_num;
-+				long long ino;
-+				blk = le32_to_cpu(dirh.start_block);
-+				off = le16_to_cpu(dire->offset);
-+				ino_num = le32_to_cpu(dirh.inode_number) +
-+					(short) le16_to_cpu(dire->inode_number);
-+				ino = SQUASHFS_MKINODE(blk, off);
++struct squashfs_cache *squashfs_cache_init(char *name, int entries,
++	int block_size, int use_vmalloc)
++{
++	int i;
++	struct squashfs_cache *cache = kzalloc(sizeof(*cache) + entries *
++			sizeof(*(cache->entry)), GFP_KERNEL);
 +
-+				TRACE("calling squashfs_iget for directory "
-+					"entry %s, inode  %x:%x, %d\n", name,
-+					blk, off, ino_num);
++	if (cache == NULL) {
++		ERROR("Failed to allocate %s cache\n", name);
++		return NULL;
++	}
 +
-+				inode = squashfs_iget(dir->i_sb, ino, ino_num);
-+				if (IS_ERR(inode)) {
-+					err = PTR_ERR(inode);
-+					goto failed;
-+				}
++	cache->next_blk = 0;
++	cache->unused = entries;
++	cache->entries = entries;
++	cache->block_size = block_size;
++	cache->use_vmalloc = use_vmalloc;
++	cache->name = name;
++	cache->waiting = 0;
++	spin_lock_init(&cache->lock);
++	init_waitqueue_head(&cache->wait_queue);
 +
-+				goto exit_lookup;
-+			}
++	for (i = 0; i < entries; i++) {
++		init_waitqueue_head(&cache->entry[i].wait_queue);
++		cache->entry[i].block = SQUASHFS_INVALID_BLK;
++		cache->entry[i].data = use_vmalloc ? vmalloc(block_size) :
++				kmalloc(block_size, GFP_KERNEL);
++		if (cache->entry[i].data == NULL) {
++			ERROR("Failed to allocate %s cache entry\n", name);
++			goto cleanup;
 +		}
 +	}
 +
-+exit_lookup:
-+	kfree(dire);
-+	if (inode)
-+		return d_splice_alias(inode, dentry);
-+	d_add(dentry, inode);
-+	return ERR_PTR(0);
++	return cache;
 +
-+read_failure:
-+	ERROR("Unable to read directory block [%llx:%x]\n",
-+		SQUASHFS_I(dir)->start + msblk->directory_table,
-+		SQUASHFS_I(dir)->offset);
-+failed:
-+	kfree(dire);
-+	return ERR_PTR(err);
++cleanup:
++	squashfs_cache_delete(cache);
++	return NULL;
 +}
 +
 +
-+const struct inode_operations squashfs_dir_inode_ops = {
-+	.lookup = squashfs_lookup
-+};
++/*
++ * Read length bytes from metadata position <block, offset> (block is the
++ * start of the compressed block on disk, and offset is the offset into
++ * the block once decompressed).  Data is packed into consecutive blocks,
++ * and length bytes may require reading more than one block.
++ */
++int squashfs_read_metadata(struct super_block *sb, void *buffer,
++		long long *block, int *offset, int length)
++{
++	struct squashfs_sb_info *msblk = sb->s_fs_info;
++	int bytes, return_length = length;
++	struct squashfs_cache_entry *entry;
++
++	TRACE("Entered squashfs_read_metadata [%llx:%x]\n", *block, *offset);
++
++	while (1) {
++		entry = squashfs_cache_get(sb, msblk->block_cache, *block, 0);
++		bytes = entry->length - *offset;
++
++		if (entry->error) {
++			return_length = entry->error;
++			goto finish;
++		} else if (bytes < 1) {
++			return_length = -EIO;
++			goto finish;
++		} else if (bytes >= length) {
++			if (buffer)
++				memcpy(buffer, entry->data + *offset, length);
++			if (entry->length - *offset == length) {
++				*block = entry->next_index;
++				*offset = 0;
++			} else {
++				*offset += length;
++			}
++			goto finish;
++		} else {
++			if (buffer) {
++				memcpy(buffer, entry->data + *offset, bytes);
++				buffer += bytes;
++			}
++			*block = entry->next_index;
++			squashfs_cache_put(msblk->block_cache, entry);
++			length -= bytes;
++			*offset = 0;
++		}
++	}
++
++finish:
++	squashfs_cache_put(msblk->block_cache, entry);
++	return return_length;
++}
++
++
++struct squashfs_cache_entry *get_cached_fragment(struct super_block *sb,
++				long long start_block, int length)
++{
++	struct squashfs_sb_info *msblk = sb->s_fs_info;
++
++	return squashfs_cache_get(sb, msblk->fragment_cache, start_block,
++		length);
++}
++
++
++void release_cached_fragment(struct squashfs_sb_info *msblk,
++				struct squashfs_cache_entry *fragment)
++{
++	squashfs_cache_put(msblk->fragment_cache, fragment);
++}
++
 -- 
 1.5.2.5
 
