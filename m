@@ -1,88 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbYJ2Q1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbYJ2Q2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754628AbYJ2Q1t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 12:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYJ2Q1k
+	id S1754736AbYJ2Q2p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 12:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbYJ2Q2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 12:27:40 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47632 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752110AbYJ2Q1k convert rfc822-to-8bit (ORCPT
+	Wed, 29 Oct 2008 12:28:37 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:52622 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752644AbYJ2Q2g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 12:27:40 -0400
-Date: Wed, 29 Oct 2008 09:27:56 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: torvalds@linux-foundation.org
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: [PATCH] corruption checker: print the DMI board name on corruption
-Message-ID: <20081029092756.1e441b80@infradead.org>
-In-Reply-To: <20081029091703.47628e54@infradead.org>
-References: <20081029091703.47628e54@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 29 Oct 2008 12:28:36 -0400
+Date: Wed, 29 Oct 2008 11:28:17 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, morgan@kernel.org, arjan@infradead.org
+Subject: Re: [PATCH] Capabilities: BUG when an invalid capability is
+	requested
+Message-ID: <20081029162817.GB14705@us.ibm.com>
+References: <1225294932.23736.28.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225294932.23736.28.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Quoting Eric Paris (eparis@redhat.com):
+> If an invalid (large) capability is requested the capabilities system
+> may panic as it is dereferencing an array of fixed (short) length.  Its
+> possible (and actually often happens) that the capability system
+> accidentally stumbled into a valid memory region but it also regularly
+> happens that it hits invalid memory and BUGs.  If such an operation does
+> get past cap_capable then the selinux system is sure to have problems as
+> it already does a (simple) validity check and BUG.  This is known to
+> happen by the broken and buggy firegl driver.
+> 
+> This patch cleanly checks all capable calls and BUG if a call is for an
+> invalid capability.  This will likely break the firegl driver for some
+> situations, but it is the right thing to do.  Garbage into a security
+> system gets you killed/bugged
+> 
+> Signed-off-by: Eric Paris <eparis@redhat.com>
 
-would you consider merging this patch for 2.6.28 still?
-Without this patch, kerneloops.org only gets to see THAT corruption
-happens, but doesn't have information about what kind of system the
-corruption is happening on.. (which is the useful part to make a
-DMI blacklist).
+I really don't like this, but I'm not sure we really have a choice.
 
-So far we have 1 such report in kerneloops.org but it's useless... no
-system information.
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
+I suppose we can think later about whether it's worthwhile (a) having a
+separate capable() function exported, keeping one without the check for
+compiled-in use only, and/or (b) changing the cap_valid() definition to
+be "(((unsigned int)cap) <= CAP_LAST_CAP)" which seems to work and shave
+one whopping instruction.  I suspect the answer will be no to both.
 
+Thanks, Eric.
 
->From c66993517ac861964d6968d3672f88b3b69e29ce Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Wed, 29 Oct 2008 09:24:44 -0700
-Subject: [PATCH] corruption checker: print the DMI board name on corruption
+-serge
 
-when the memory corruptor checker hits (as it has done now based on
-kerneloops.org data), it would be extremely useful to know the DMI board
-name so we can add a blacklist for such a machine... without having to ask
-the user for lots of extra info.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- arch/x86/kernel/setup.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 0fa6790..d57fee2 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -697,6 +697,7 @@ void check_for_bios_corruption(void)
- {
- 	int i;
- 	int corruption = 0;
-+	const char *board;
- 
- 	if (!memory_corruption_check)
- 		return;
-@@ -715,7 +716,11 @@ void check_for_bios_corruption(void)
- 		}
- 	}
- 
--	WARN(corruption, KERN_ERR "Memory corruption detected in low memory\n");
-+	board = dmi_get_system_info(DMI_PRODUCT_NAME);
-+	if (!board)
-+		board = "";
-+	WARN_ONCE(corruption, KERN_ERR "Memory corruption detected in low memory\nBoard name: %s\n",
-+		board);
- }
- 
- static void periodic_check_for_corruption(unsigned long data)
--- 
-1.5.5.1
-
+> 
+> ---
+> 
+>  kernel/capability.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/capability.c b/kernel/capability.c
+> index 33e51e7..50d9d99 100644
+> --- a/kernel/capability.c
+> +++ b/kernel/capability.c
+> @@ -498,6 +498,11 @@ asmlinkage long sys_capset(cap_user_header_t header, const cap_user_data_t data)
+>   */
+>  int capable(int cap)
+>  {
+> +	if (unlikely(!cap_valid(cap))) {
+> +		printk(KERN_CRIT "capable() called with invalid cap=%u\n", cap);
+> +		BUG();
+> +	}
+> +
+>  	if (has_capability(current, cap)) {
+>  		current->flags |= PF_SUPERPRIV;
+>  		return 1;
+> 
