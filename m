@@ -1,90 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbYJ2Tyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbYJ2T52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754835AbYJ2Tyb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 15:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbYJ2TyV
+	id S1754092AbYJ2T52 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 15:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbYJ2T5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 15:54:21 -0400
-Received: from smtp1.riverbed.com ([206.169.144.12]:56469 "EHLO
-	smtp1.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752687AbYJ2TyU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 15:54:20 -0400
-Date: Wed, 29 Oct 2008 12:54:03 -0700
-From: Arthur Jones <ajones@riverbed.com>
-To: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-CC: sct@redhat.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: ext3: slow symlink corruption on umount...
-Message-ID: <20081029195403.GA8333@ajones-laptop.nbttech.com>
-References: <20081024183733.GA25797@ajones-laptop.nbttech.com> <20081027165423.GB25797@ajones-laptop.nbttech.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20081027165423.GB25797@ajones-laptop.nbttech.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 29 Oct 2008 15:57:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38150 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752146AbYJ2T5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 15:57:18 -0400
+Subject: Re: [PATCH -v1 2/3] vm: use new has_capability_noaudit
+From: Eric Paris <eparis@redhat.com>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, jmorris@nameil.org,
+       serue@us.ibm.com, morgan@kernel.org, casey@schaufler-ca.com,
+       esandeen@redhat.com
+In-Reply-To: <1225307723.6588.119.camel@moss-spartans.epoch.ncsc.mil>
+References: <20081029190652.31292.5901.stgit@paris.rdu.redhat.com>
+	 <20081029190658.31292.10620.stgit@paris.rdu.redhat.com>
+	 <1225307723.6588.119.camel@moss-spartans.epoch.ncsc.mil>
+Content-Type: text/plain
+Date: Wed, 29 Oct 2008 15:57:07 -0400
+Message-Id: <1225310227.23736.31.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This one's turning out to be a slippery fish.
-I have found that the corruption appears to
-be due to ->writepage() not getting called at all
-for any of the long symlinks...
-
-Ring any bells anyone?  Any ideas where to look
-or what to test?  This is my first foray into
-ext3 and I could definitely use some expert advice...
-
-Arthur
-
-On Mon, Oct 27, 2008 at 09:54:23AM -0700, Arthur Jones wrote:
-> Some additional info -- and attempting to cast a wider
-> net on the CC:
+On Wed, 2008-10-29 at 15:15 -0400, Stephen Smalley wrote:
+> On Wed, 2008-10-29 at 15:06 -0400, Eric Paris wrote:
+> > The oomkiller calculations make decisions based on capabilities.  Since
+> > these are not security decisions and LSMs should not record if they fall
+> > the request they should use the new has_capability_noaudit() interface so
+> > the denials will not be recorded.
+> > 
+> > Signed-off-by: Eric Paris <eparis@redhat.com>
+> > ---
+> > 
+> >  fs/proc/base.c |    2 +-
+> >  mm/oom_kill.c  |    6 +++---
+> >  2 files changed, 4 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/fs/proc/base.c b/fs/proc/base.c
+> > index 486cf3f..ef83e81 100644
+> > --- a/fs/proc/base.c
+> > +++ b/fs/proc/base.c
+> > @@ -1020,7 +1020,7 @@ static ssize_t oom_adjust_write(struct file *file, const char __user *buf,
+> >  	task = get_proc_task(file->f_path.dentry->d_inode);
+> >  	if (!task)
+> >  		return -ESRCH;
+> > -	if (oom_adjust < task->oomkilladj && !capable(CAP_SYS_RESOURCE)) {
+> > +	if (oom_adjust < task->oomkilladj && !has_capability_noaudit(current, CAP_SYS_RESOURCE)) {
 > 
-> I do not see the long symlink corruption with mount -o data=writeback
-> and we've now seen a couple cases where the symlink corruption
-> does not require a umount...
-> 
-> Arthur
-> 
-> On Fri, Oct 24, 2008 at 11:37:34AM -0700, Arthur Jones wrote:
-> > Hi All,  I'm seeing slow symlink corruption on ext3 on linux-2.6.27,
-> > yesterday's linux-2.6 git tree and 2.6.9 RHEL4.7.  I.e. every kernel
-> > I've tried I see this effect.  To reproduce this, I need:
-> > 
-> > * 250MB + tar file in memory (tmpfs or in the buffer cache)
-> > * long symlinks in the tar file (over 60 characters)
-> > * umount immediately after untarring
-> > 
-> > What I see is that the symlinks are corrupted, e.g.:
-> > 
-> > # ls -l etc/vmware-vix-disklib
-> > etc/vmware-vix-disklib -> ??f
-> > 
-> > fsck shows:
-> > 
-> > Symlink /etc/vmware-vix-disklib (inode #16454) is invalid.
-> > 
-> > Debugfs shows:
-> > 
-> > debugfs:  stat <16454>
-> > Inode: 16454   Type: symlink    Mode:  0777   Flags: 0x0   Generation: 1431972005
-> > User:     0   Group:     0   Size: 65
-> > File ACL: 0    Directory ACL: 0
-> > Links: 1   Blockcount: 8
-> > Fragment:  Address: 0    Number: 0    Size: 0
-> > ctime: 0x4900ac69 -- Thu Oct 23 09:55:05 2008
-> > atime: 0x4900ac84 -- Thu Oct 23 09:55:32 2008
-> > mtime: 0x4900ac69 -- Thu Oct 23 09:55:05 2008
-> > BLOCKS:
-> > (0):56034
-> > TOTAL: 1
-> > 
-> > I'm still tracking down exactly what's going on.  Anyone seen
-> > anything like this before?  ext2 does not show this effect (I've
-> > not tried ext4).  It happens when the backing block device is
-> > a SATA drive or flash.
-> > 
-> > Thanks,
-> > 
-> > Arthur
+> This one looks like an actual permission check to see whether the
+> current task is authorized to modify this value (by writing to some proc
+> node).  Which should be audited.  Unlike the others, where they are
+> checking whether some other task has a capability in order to help
+> decide priorities for the OOM killer.
+
+Will be fixed in -v2
+
