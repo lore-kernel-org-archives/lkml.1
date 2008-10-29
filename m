@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbYJ2Bww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbYJ2Bwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755161AbYJ2Bww (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 21:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbYJ2BuX
+	id S1755004AbYJ2Bwh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 21:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbYJ2BuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 21:50:23 -0400
-Received: from anchor-post-32.mail.demon.net ([194.217.242.90]:2353 "EHLO
+	Tue, 28 Oct 2008 21:50:20 -0400
+Received: from anchor-post-32.mail.demon.net ([194.217.242.90]:2350 "EHLO
 	anchor-post-32.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753050AbYJ2BuE (ORCPT
+	by vger.kernel.org with ESMTP id S1752311AbYJ2BuB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 21:50:04 -0400
+	Tue, 28 Oct 2008 21:50:01 -0400
 To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        tim.bird@am.sony.com
-Subject: [PATCH V2 11/16] Squashfs: block operations
-Message-Id: <E1Kv0C4-0006HV-DN@dylan>
+Subject: [PATCH V2 02/16] Squashfs: directory lookup operations
+Message-Id: <E1Kv0C3-0006Ge-Ks@dylan>
 From: Phillip Lougher <phillip@lougher.demon.co.uk>
-Date: Wed, 29 Oct 2008 01:49:56 +0000
+Date: Wed, 29 Oct 2008 01:49:55 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -24,15 +24,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
 ---
- fs/squashfs/block.c |  256 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 256 insertions(+), 0 deletions(-)
+ fs/squashfs/namei.c |  242 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 242 insertions(+), 0 deletions(-)
 
-diff --git a/fs/squashfs/block.c b/fs/squashfs/block.c
+diff --git a/fs/squashfs/namei.c b/fs/squashfs/namei.c
 new file mode 100644
-index 0000000..da5f88b
+index 0000000..db03ffe
 --- /dev/null
-+++ b/fs/squashfs/block.c
-@@ -0,0 +1,256 @@
++++ b/fs/squashfs/namei.c
+@@ -0,0 +1,242 @@
 +/*
 + * Squashfs - a compressed read only filesystem for Linux
 + *
@@ -53,20 +53,45 @@ index 0000000..da5f88b
 + * along with this program; if not, write to the Free Software
 + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 + *
-+ * block.c
++ * namei.c
 + */
 +
 +/*
-+ * This file implements the low-level routines to read and decompress
-+ * datablocks and metadata blocks.
++ * This file implements code to do filename lookup in directories.
++ *
++ * Like inodes, directories are packed into compressed metadata blocks, stored
++ * in a directory table.  Directories are accessed using the start address of
++ * the metablock containing the directory and the offset into the
++ * decompressed block (<block, offset>).
++ *
++ * Directories are organised in a slightly complex way, and are not simply
++ * a list of file names.  The organisation takes advantage of the
++ * fact that (in most cases) the inodes of the files will be in the same
++ * compressed metadata block, and therefore, can share the start block.
++ * Directories are therefore organised in a two level list, a directory
++ * header containing the shared start block value, and a sequence of directory
++ * entries, each of which share the shared start block.  A new directory header
++ * is written once/if the inode start block changes.  The directory
++ * header/directory entry list is repeated as many times as necessary.
++ *
++ * Directories are sorted, and can contain a directory index to speed up
++ * file lookup.  Directory indexes store one entry per metablock, each entry
++ * storing the index/filename mapping to the first directory header
++ * in each metadata block.  Directories are sorted in alphabetical order,
++ * and at lookup the index is scanned linearly looking for the first filename
++ * alphabetically larger than the filename being looked up.  At this point the
++ * location of the metadata block the filename is in has been found.
++ * The general idea of the index is ensure only one metadata block needs to be
++ * decompressed to do a lookup irrespective of the length of the directory.
++ * This scheme has the advantage that it doesn't require extra memory overhead
++ * and doesn't require much extra storage on disk.
 + */
 +
 +#include <linux/fs.h>
 +#include <linux/vfs.h>
 +#include <linux/slab.h>
-+#include <linux/mutex.h>
 +#include <linux/string.h>
-+#include <linux/buffer_head.h>
++#include <linux/dcache.h>
 +#include <linux/zlib.h>
 +
 +#include "squashfs_fs.h"
@@ -75,220 +100,181 @@ index 0000000..da5f88b
 +#include "squashfs.h"
 +
 +/*
-+ * Read the metadata block length, this is stored in the first two
-+ * bytes of the metadata block.
++ * Lookup name in the directory index, returning the location of the metadata
++ * block containing it, and the directory index this represents.
++ *
++ * If we get an error reading the index then return the part of the index
++ * (if any) we have managed to read - the index isn't essential, just
++ * quicker.
 + */
-+static struct buffer_head *get_block_length(struct super_block *sb,
-+			long long *cur_index, int *offset, int *length)
++static int get_dir_index_using_name(struct super_block *sb,
++			long long *next_block, int *next_offset,
++			long long index_start, int index_offset,
++			int i_count, const char *name, int len)
 +{
 +	struct squashfs_sb_info *msblk = sb->s_fs_info;
-+	struct buffer_head *bh;
++	int i, size, length = 0, err;
++	struct squashfs_dir_index *index;
++	char *str;
 +
-+	bh = sb_bread(sb, *cur_index);
-+	if (bh == NULL)
-+		return NULL;
++	TRACE("Entered get_dir_index_using_name, i_count %d\n", i_count);
 +
-+	if (msblk->devblksize - *offset == 1) {
-+		*length = (unsigned char) bh->b_data[*offset];
-+		brelse(bh);
-+		bh = sb_bread(sb, ++(*cur_index));
-+		if (bh == NULL)
-+			return NULL;
-+		*length |= (unsigned char) bh->b_data[0] << 8;
-+		*offset = 1;
-+	} else {
-+		*length = (unsigned char) bh->b_data[*offset] |
-+			(unsigned char) bh->b_data[*offset + 1] << 8;
-+		*offset += 2;
++	index = kmalloc(sizeof(*index) + SQUASHFS_NAME_LEN * 2 + 2, GFP_KERNEL);
++	if (index == NULL) {
++		ERROR("Failed to allocate squashfs_dir_index\n");
++		goto out;
 +	}
 +
-+	return bh;
++	str = &index->name[SQUASHFS_NAME_LEN + 1];
++	strncpy(str, name, len);
++	str[len] = '\0';
++
++	for (i = 0; i < i_count; i++) {
++		err = squashfs_read_metadata(sb, index, &index_start,
++					&index_offset, sizeof(*index));
++		if (err < 0)
++			break;
++
++
++		size = le32_to_cpu(index->size) + 1;
++
++		err = squashfs_read_metadata(sb, index->name, &index_start,
++					&index_offset, size);
++		if (err < 0)
++			break;
++
++		index->name[size] = '\0';
++
++		if (strcmp(index->name, str) > 0)
++			break;
++
++		length = le32_to_cpu(index->index);
++		*next_block = le32_to_cpu(index->start_block) +
++					msblk->directory_table;
++	}
++
++	*next_offset = (length + *next_offset) % SQUASHFS_METADATA_SIZE;
++	kfree(index);
++
++out:
++	/*
++	 * Return index (f_pos) of the looked up metadata block.  Translate
++	 * from internal f_pos to external f_pos which is offset by 3 because
++	 * we invent "." and ".." entries which are not actually stored in the
++	 * directory.
++	 */
++	return length + 3;
 +}
 +
 +
-+/*
-+ * Read and decompress a metadata block or datablock.  Length is non-zero
-+ * if a datablock is being read (the size is stored elsewhere in the
-+ * filesystem), otherwise the length is obtained from the first two bytes of
-+ * the metadata block.  A bit in the length field indicates if the block
-+ * is stored uncompressed in the filesystem (usually because compression
-+ * generated a larger block - this does occasionally happen with zlib).
-+ */
-+int squashfs_read_data(struct super_block *sb, void *buffer,
-+			long long index, int length, long long *next_index,
-+			int srclength)
++static struct dentry *squashfs_lookup(struct inode *dir, struct dentry *dentry,
++				 struct nameidata *nd)
 +{
-+	struct squashfs_sb_info *msblk = sb->s_fs_info;
-+	struct buffer_head **bh;
-+	int offset = index & ((1 << msblk->devblksize_log2) - 1);
-+	long long cur_index = index >> msblk->devblksize_log2;
-+	int avail, bytes, compressed, b = 0, k = 0;
-+	int c_byte = length;
++	const unsigned char *name = dentry->d_name.name;
++	int len = dentry->d_name.len;
++	struct inode *inode = NULL;
++	struct squashfs_sb_info *msblk = dir->i_sb->s_fs_info;
++	struct squashfs_dir_header dirh;
++	struct squashfs_dir_entry *dire;
++	long long block = SQUASHFS_I(dir)->start + msblk->directory_table;
++	int offset = SQUASHFS_I(dir)->offset;
++	int err, length = 0, dir_count, size;
 +
-+	bh = kcalloc((msblk->block_size >> msblk->devblksize_log2) + 1,
-+				sizeof(*bh), GFP_KERNEL);
-+	if (bh == NULL)
-+		return -ENOMEM;
++	TRACE("Entered squashfs_lookup [%llx:%x]\n", block, offset);
 +
-+	if (c_byte) {
-+		/*
-+		 * Datablock.
-+		 */
-+		bytes = -offset;
-+		compressed = SQUASHFS_COMPRESSED_BLOCK(c_byte);
-+		c_byte = SQUASHFS_COMPRESSED_SIZE_BLOCK(c_byte);
-+
-+		TRACE("Block @ 0x%llx, %scompressed size %d, src size %d\n",
-+			index, compressed ? "" : "un", c_byte, srclength);
-+
-+		if (c_byte < 0 || c_byte > srclength || index < 0 ||
-+				(index + c_byte) > msblk->bytes_used)
-+			goto read_failure;
-+
-+		for (b = 0; bytes < c_byte; b++, cur_index++) {
-+			bh[b] = sb_getblk(sb, cur_index);
-+			if (bh[b] == NULL)
-+				goto block_release;
-+			bytes += msblk->devblksize;
-+		}
-+		ll_rw_block(READ, b, bh);
-+	} else {
-+		/*
-+		 * Metadata block.
-+		 */
-+		if (index < 0 || (index + 2) > msblk->bytes_used)
-+			goto read_failure;
-+
-+		bh[0] = get_block_length(sb, &cur_index, &offset, &c_byte);
-+		if (bh[0] == NULL)
-+			goto read_failure;
-+		b = 1;
-+
-+		bytes = msblk->devblksize - offset;
-+		compressed = SQUASHFS_COMPRESSED(c_byte);
-+		c_byte = SQUASHFS_COMPRESSED_SIZE(c_byte);
-+
-+		TRACE("Block @ 0x%llx, %scompressed size %d\n", index,
-+				compressed ? "" : "un", c_byte);
-+
-+		if (c_byte < 0 || c_byte > srclength ||
-+					(index + c_byte) > msblk->bytes_used)
-+			goto block_release;
-+
-+		for (; bytes < c_byte; b++) {
-+			bh[b] = sb_getblk(sb, ++cur_index);
-+			if (bh[b] == NULL)
-+				goto block_release;
-+			bytes += msblk->devblksize;
-+		}
-+		ll_rw_block(READ, b - 1, bh + 1);
++	dire = kmalloc(sizeof(*dire) + SQUASHFS_NAME_LEN + 1, GFP_KERNEL);
++	if (dire == NULL) {
++		ERROR("Failed to allocate squashfs_dir_entry\n");
++		return ERR_PTR(-ENOMEM);
 +	}
 +
-+	if (compressed) {
-+		int zlib_err = 0;
++	if (len > SQUASHFS_NAME_LEN) {
++		err = -ENAMETOOLONG;
++		goto failed;
++	}
 +
++	length = get_dir_index_using_name(dir->i_sb, &block, &offset,
++				SQUASHFS_I(dir)->dir_idx_start,
++				SQUASHFS_I(dir)->dir_idx_offset,
++				SQUASHFS_I(dir)->dir_idx_cnt, name, len);
++
++	while (length < i_size_read(dir)) {
 +		/*
-+		 * Uncompress block.
++		 * Read directory header.
 +		 */
++		err = squashfs_read_metadata(dir->i_sb, &dirh, &block,
++				&offset, sizeof(dirh));
++		if (err < 0)
++			goto read_failure;
 +
-+		mutex_lock(&msblk->read_data_mutex);
++		length += sizeof(dirh);
 +
-+		msblk->stream.next_out = buffer;
-+		msblk->stream.avail_out = srclength;
++		dir_count = le32_to_cpu(dirh.count) + 1;
++		while (dir_count--) {
++			/*
++			 * Read directory entry.
++			 */
++			err = squashfs_read_metadata(dir->i_sb, dire, &block,
++					&offset, sizeof(*dire));
++			if (err < 0)
++				goto read_failure;
 +
-+		for (bytes = 0; k < b; k++) {
-+			avail = min(c_byte - bytes, msblk->devblksize - offset);
++			size = le16_to_cpu(dire->size) + 1;
 +
-+			wait_on_buffer(bh[k]);
-+			if (!buffer_uptodate(bh[k]))
-+				goto release_mutex;
++			err = squashfs_read_metadata(dir->i_sb, dire->name,
++					&block, &offset, size);
++			if (err < 0)
++				goto read_failure;
 +
-+			msblk->stream.next_in = bh[k]->b_data + offset;
-+			msblk->stream.avail_in = avail;
++			length += sizeof(*dire) + size;
 +
-+			if (k == 0) {
-+				zlib_err = zlib_inflateInit(&msblk->stream);
-+				if (zlib_err != Z_OK) {
-+					ERROR("zlib_inflateInit returned"
-+						" unexpected result 0x%x,"
-+						" srclength %d\n", zlib_err,
-+						srclength);
-+					goto release_mutex;
++			if (name[0] < dire->name[0])
++				goto exit_lookup;
++
++			if (len == size && !strncmp(name, dire->name, len)) {
++				unsigned int blk, off, ino_num;
++				long long ino;
++				blk = le32_to_cpu(dirh.start_block);
++				off = le16_to_cpu(dire->offset);
++				ino_num = le32_to_cpu(dirh.inode_number) +
++					(short) le16_to_cpu(dire->inode_number);
++				ino = SQUASHFS_MKINODE(blk, off);
++
++				TRACE("calling squashfs_iget for directory "
++					"entry %s, inode  %x:%x, %d\n", name,
++					blk, off, ino_num);
++
++				inode = squashfs_iget(dir->i_sb, ino, ino_num);
++				if (IS_ERR(inode)) {
++					err = PTR_ERR(inode);
++					goto failed;
 +				}
 +
-+				if (avail == 0) {
-+					offset = 0;
-+					brelse(bh[k]);
-+					continue;
-+				}
++				goto exit_lookup;
 +			}
-+
-+			zlib_err = zlib_inflate(&msblk->stream, Z_NO_FLUSH);
-+			if (zlib_err != Z_OK && zlib_err != Z_STREAM_END) {
-+				ERROR("zlib_inflate returned unexpected result"
-+					" 0x%x, srclength %d, avail_in %d,"
-+					" avail_out %d\n", zlib_err, srclength,
-+					msblk->stream.avail_in,
-+					msblk->stream.avail_out);
-+				goto release_mutex;
-+			}
-+
-+			bytes += avail;
-+			offset = 0;
-+			brelse(bh[k]);
-+		}
-+
-+		if (zlib_err != Z_STREAM_END)
-+			goto release_mutex;
-+
-+		zlib_err = zlib_inflateEnd(&msblk->stream);
-+		if (zlib_err != Z_OK) {
-+			ERROR("zlib_inflateEnd returned unexpected result 0x%x,"
-+				" srclength %d\n", zlib_err, srclength);
-+			goto release_mutex;
-+		}
-+		bytes = msblk->stream.total_out;
-+		mutex_unlock(&msblk->read_data_mutex);
-+	} else {
-+		/*
-+		 * Block is uncompressed.
-+		 */
-+		int i;
-+
-+		for (i = 0; i < b; i++) {
-+			wait_on_buffer(bh[i]);
-+			if (!buffer_uptodate(bh[i]))
-+				goto block_release;
-+		}
-+
-+		for (bytes = 0; k < b; k++) {
-+			avail = min(c_byte - bytes, msblk->devblksize - offset);
-+
-+			memcpy(buffer + bytes, bh[k]->b_data + offset, avail);
-+			bytes += avail;
-+			offset = 0;
-+			brelse(bh[k]);
 +		}
 +	}
 +
-+	if (next_index)
-+		*next_index = index + c_byte + (length ? 0 : 2);
-+
-+	kfree(bh);
-+	return bytes;
-+
-+release_mutex:
-+	mutex_unlock(&msblk->read_data_mutex);
-+
-+block_release:
-+	for (; k < b; k++)
-+		brelse(bh[k]);
++exit_lookup:
++	kfree(dire);
++	if (inode)
++		return d_splice_alias(inode, dentry);
++	d_add(dentry, inode);
++	return ERR_PTR(0);
 +
 +read_failure:
-+	ERROR("sb_bread failed reading block 0x%llx\n", cur_index);
-+	kfree(bh);
-+	return -EIO;
++	ERROR("Unable to read directory block [%llx:%x]\n",
++		SQUASHFS_I(dir)->start + msblk->directory_table,
++		SQUASHFS_I(dir)->offset);
++failed:
++	kfree(dire);
++	return ERR_PTR(err);
 +}
++
++
++const struct inode_operations squashfs_dir_inode_ops = {
++	.lookup = squashfs_lookup
++};
 -- 
 1.5.2.5
 
