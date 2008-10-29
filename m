@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbYJ2Vhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbYJ2VjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755400AbYJ2Vhe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 17:37:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYJ2VhV
+	id S1755477AbYJ2VjV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 17:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbYJ2VjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 17:37:21 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46915 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753656AbYJ2VhU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 17:37:20 -0400
-Date: Wed, 29 Oct 2008 22:38:53 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/6] w35und: remove unused link status code
-Message-ID: <20081029213853.GG1976@elf.ucw.cz>
-References: <Pine.LNX.4.64.0810292011500.16596@melkki.cs.Helsinki.FI>
-MIME-Version: 1.0
+	Wed, 29 Oct 2008 17:39:08 -0400
+Received: from mx1.suse.de ([195.135.220.2]:45054 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752250AbYJ2VjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 17:39:04 -0400
+Date: Wed, 29 Oct 2008 14:39:02 -0700
+From: Mark Fasheh <mfasheh@suse.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-wireless@vger.kernel.org, Joel Becker <Joel.Becker@oracle.com>
+Subject: Re: linux-next: Tree for October 28
+Message-ID: <20081029213902.GF15154@wotan.suse.de>
+Reply-To: Mark Fasheh <mfasheh@suse.com>
+References: <20081028183055.fbcf5420.sfr@canb.auug.org.au> <20081028220741.f5d331ba.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0810292011500.16596@melkki.cs.Helsinki.FI>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081028220741.f5d331ba.akpm@linux-foundation.org>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-10-29 20:12:08, Pekka J Enberg wrote:
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
+On Tue, Oct 28, 2008 at 10:07:41PM -0700, Andrew Morton wrote:
+> plus of course enough compile warnings to start a small war.   ocfs2 is
+> prominent.
 > 
-> The WBLINUX_ConnectStatus() and related code is not used anywhere so remove
-> them from the driver.
-> 
+> fs/ocfs2/xattr.c: In function `ocfs2_xattr_index_block_find':
+> fs/ocfs2/xattr.c:2338: warning: long long unsigned int format, u64 arg (arg 7)
+> fs/ocfs2/xattr.c:2338: warning: long long unsigned int format, u64 arg (arg 7)
+> fs/ocfs2/xattr.c:2338: warning: long long unsigned int format, u64 arg (arg 7)
 
-Acked-by: Pavel Machek <pavel@suse.cz>
+Thanks for pointing these out Andrew. They slipped by me. I'll get them
+fixed up before the conflict escalates  ;)
+	--Mark
 
-...and thanks a lot for all the cleanups!
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--
+Mark Fasheh
