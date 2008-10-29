@@ -1,135 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbYJ2OA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYJ2OCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbYJ2OA1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 10:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYJ2N7u
+	id S1754023AbYJ2OCA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 10:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYJ2OBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 09:59:50 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:34830 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752955AbYJ2N7s (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 09:59:48 -0400
-Date: Wed, 29 Oct 2008 14:59:46 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Jared Hulbert <jaredeh@gmail.com>
-cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@AM.SONY.COM,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 06/10] AXFS: axfs_super.c
-In-Reply-To: <48AD0101.4020505@gmail.com>
-Message-ID: <Pine.LNX.4.64.0810291456320.17174@vixen.sonytel.be>
-References: <48AD0101.4020505@gmail.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1773774162-1225288786=:17174"
+	Wed, 29 Oct 2008 10:01:52 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:36897 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752702AbYJ2OBv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 10:01:51 -0400
+Subject: Re: [PATCH] x86: Fix CONFIG_PCI=n compile failure
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Glauber Costa <gcosta@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20081029073629.GB17992@elte.hu>
+References: <1225228943.3251.17.camel@localhost.localdomain>
+	 <20081029073629.GB17992@elte.hu>
+Content-Type: text/plain
+Date: Wed, 29 Oct 2008 09:01:46 -0500
+Message-Id: <1225288906.3257.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wed, 2008-10-29 at 08:36 +0100, Ingo Molnar wrote:
+> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> 
+> > This:
+> > 
+> > commit fae9a0d8ca68a14da8d2351ad3e0bf42f3b29899
+> > Author: Glauber Costa <gcosta@redhat.com>
+> > Date:   Tue Apr 8 13:20:56 2008 -0300
+> > 
+> >     x86: merge iommu initialization parameters
+> > 
+> > Moved the forbid_dac parameter into pci-dma.c but forgot that it's a 
+> > PCI only symbol thus causing a compile failure if CONFIG_PCI=N.  Fix 
+> > by surrounding the set clause in iommu_setup with #ifdef CONFIG_PCI
+> 
+> uhm, that's wrong James, the above commit you refer to is half a year 
+> old and has been released in v2.6.26 and v2.6.27 ;-)
+> 
+> The patch that broke the !CONFIG_PCI build in this cycle is this one:
+> 
+> | From 5b6985ce8ec7127b4d60ad450b64ca8b82748a3b Mon Sep 17 00:00:00 2001
+> | From: Fenghua Yu <fenghua.yu@intel.com>
+> | Date: Thu, 16 Oct 2008 18:02:32 -0700
+> | Subject: [PATCH] intel-iommu: IA64 support
+> |
+> | The current Intel IOMMU code assumes that both host page size and 
+> | Intel IOMMU page size are 4KiB. The first patch supports variable 
+> | page size. This provides support for IA64 which has multiple page 
+> | sizes.
+> |
+> | This patch also adds some other code hooks for IA64 platform 
+> | including DMAR_OPERATION_TIMEOUT definition.
+> |
+> | [dwmw2: some cleanup]
+> | Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+> | Signed-off-by: Tony Luck <tony.luck@intel.com>
+> | Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
 
----584349381-1773774162-1225288786=:17174
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Hmm, well, the triage could be wrong ... however the prior patch seemed
+to move forbid_dac out from under the PCI defines.
 
-On Wed, 20 Aug 2008, Jared Hulbert wrote:
-> --- /dev/null
-> +++ b/fs/axfs/axfs_super.c
+> > Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+> > 
+> > ---
+> > 
+> > diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+> > index 1972266..47c5a7a 100644
+> > --- a/arch/x86/kernel/pci-dma.c
+> > +++ b/arch/x86/kernel/pci-dma.c
+> > @@ -202,6 +202,7 @@ static __init int iommu_setup(char *p)
+> >  			iommu_merge = 0;
+> >  		if (!strncmp(p, "forcesac", 8))
+> >  			iommu_sac_force = 1;
+> > +#ifdef CONFIG_PCI
+> >  		if (!strncmp(p, "allowdac", 8))
+> >  			forbid_dac = 0;
+> >  		if (!strncmp(p, "nodac", 5))
+> > @@ -210,6 +211,7 @@ static __init int iommu_setup(char *p)
+> >  			forbid_dac = -1;
+> >  			return 1;
+> >  		}
+> > +#endif
+> 
+> that's the wrong fix, the right fix from Fenghua Yu (from about a week 
+> ago) is at:
+> 
+>   http://marc.info/?l=linux-kernel&m=122480590627590&w=2
+> 
+> and it is in the PCI tree already.
 
-> +static int axfs_fill_region_data(struct super_block *sb,
-> +				 struct axfs_region_desc *region, int force)
-> +{
-> +	struct axfs_super *sbi = AXFS_SB(sb);
-> +	unsigned long addr;
-> +	void *buff = NULL;
-> +	void *vaddr;
-> +	int err = -ENOMEM;
-> +	u64 size = region->size;
-> +	u64 fsoffset = region->fsoffset;
-> +	u64 end = fsoffset + size;
-> +	u64 c_size = region->compressed_size;
-> +
-> +	if (size == 0)
-> +		return 0;
-> +
-> +	if (AXFS_IS_REGION_INCORE(region))
-> +		goto incore;
-> +
-> +	if (AXFS_IS_REGION_COMPRESSED(region))
-> +		goto incore;
-> +
-> +	if (AXFS_IS_REGION_XIP(sbi, region)) {
-> +		if ((end > sbi->mmap_size) && (force))
-> +			goto incore;
-> +		addr = sbi->virt_start_addr;
-> +		addr += (unsigned long)fsoffset;
-> +		region->virt_addr = (void *)addr;
-> +		return 0;
-> +	}
-> +
-> +	if (force)
-> +		goto incore;
-> +
-> +	region->virt_addr = NULL;
-> +	return 0;
-> +
-> +incore:
-> +	region->virt_addr = vmalloc(size);
-> +	if (!region->virt_addr)
-> +		goto out;
-> +	vaddr = region->virt_addr;
-> +
-> +	if (AXFS_IS_REGION_COMPRESSED(region)) {
-> +		buff = vmalloc(c_size);
-> +		if (!buff)
-> +			goto out;
-> +		axfs_copy_metadata(sb, buff, fsoffset, c_size);
-> +		err = axfs_uncompress_block(vaddr, size, buff, c_size);
-                ^^^
-axfs_uncompress_block() doesn't return an error code, so `err' is a bit of a
-misnomer.
+This is obviously some strange definition of the word "right" of which I
+was previously unaware.  That patch moves forbid_dac plus a load of
+quirk processing (also for a PCI bus) out from under CONFIG_PCI only ...
+which will fix the compile error, sure.
 
-> +		if (!err)
-                    ^^^^
-Instead, it returns zero for error, hence this check is correct...
+However, if you'd be so kind, please explain how a DAC (meaning Dual
+Addressing Cycle on the PCI bus) is useful (or even can be effected)
+without a PCI bus?
 
-> +			goto out;
-> +		vfree(buff);
-> +	} else {
-> +		axfs_copy_metadata(sb, vaddr, fsoffset, size);
-> +	}
-> +
-> +	return 0;
-> +
-> +out:
-> +	if (buff)
-> +		vfree(buff);
-> +	if (region->virt_addr)
-> +		vfree(region->virt_addr);
-> +	return err;
-               ^^^
-... but it will also return zero here, which is not correct.
+All its really doing is contaminating pci-dma.c with clutter that only
+needs to be there because someone can't get the separation right.
 
-Probably it's better to let axfs_uncompress_block() return an (negative) error
-code (e.g. -EINVAL or -EIO) in case of failure, which you can just let
-propagate.
+James
 
-With kind regards,
 
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-1773774162-1225288786=:17174--
