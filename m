@@ -1,109 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753501AbYJ2JGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbYJ2JLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753501AbYJ2JGY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 05:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYJ2JGQ
+	id S1753506AbYJ2JLU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 05:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYJ2JLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 05:06:16 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57187 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752384AbYJ2JGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 05:06:16 -0400
-Message-ID: <490826DA.2060802@cn.fujitsu.com>
-Date: Wed, 29 Oct 2008 17:03:22 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 29 Oct 2008 05:11:12 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:24610 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752943AbYJ2JLK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 05:11:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=AdQ2nI8qGd0Vn5ce5Gp7nGyqFEJDWLUOL1VZZ4pyWv3Y7+PR1xTGzRfzYr7BPhoP8l
+         oQKjYh8+YAtaZZswT7fOMDJXLStudgMitoNSr5Y2hgSRutCmz2gGt+UBTt/hkFCc/Bn2
+         gXIwU2d12Xjqtg4gDFm2J7XAdxSJdJROKtgKA=
+Message-ID: <4f3ee3290810290211y75a2d0eaoe666496e25496260@mail.gmail.com>
+Date: Wed, 29 Oct 2008 10:11:06 +0100
+From: cboulte@gmail.com
+To: Nadia.Derbey@bull.net
+Subject: Re: [PATCH] SYSVIPC - Fix the ipc structures initialization
+Cc: manfred@colorfullife.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081028150041.857635775@bull.net>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sched: cleanup for alloc_rt/fair_sched_group()
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081028145952.620752409@bull.net>
+	 <20081028150041.857635775@bull.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove checking parent == NULL. It won't be NULLL, because we dynamically
-create sub task_group only, and sub task_group always has its parent.
-(root task_group is statically defined)
+On Tue, Oct 28, 2008 at 3:59 PM,  <Nadia.Derbey@bull.net> wrote:
+>
+> A problem was found while reviewing the code after Bugzilla bug
+> http://bugzilla.kernel.org/show_bug.cgi?id=11796.
+>
+> In ipc_addid(), the newly allocated ipc structure is inserted into the ipcs
+> tree (i.e made visible to readers) without locking it.
+> This is not correct since its initialization continues after it has been
+> inserted in the tree.
+>
+> This patch moves the ipc structure lock initialization + locking before
+> the actual insertion.
+>
+> Regards,
+> Nadia
+>
+>
+> Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
+>
+> ---
+>  ipc/util.c |   14 +++++++++-----
+>  1 file changed, 9 insertions(+), 5 deletions(-)
+>
+> Index: linux-2.6.27/ipc/util.c
+> ===================================================================
+> --- linux-2.6.27.orig/ipc/util.c        2008-10-23 15:20:46.000000000 +0200
+> +++ linux-2.6.27/ipc/util.c     2008-10-28 16:52:17.000000000 +0100
+> @@ -266,9 +266,17 @@ int ipc_addid(struct ipc_ids* ids, struc
+>        if (ids->in_use >= size)
+>                return -ENOSPC;
+>
+> +       spin_lock_init(&new->lock);
+> +       new->deleted = 0;
+> +       rcu_read_lock();
+> +       spin_lock(&new->lock);
+> +
+>        err = idr_get_new(&ids->ipcs_idr, new, &id);
+> -       if (err)
+> +       if (err) {
+> +               spin_unlock(&new->lock);
+> +               rcu_read_unlock();
+>                return err;
+> +       }
+>
+>        ids->in_use++;
+>
+> @@ -280,10 +288,6 @@ int ipc_addid(struct ipc_ids* ids, struc
+>                ids->seq = 0;
+>
+>        new->id = ipc_buildid(id, new->seq);
+> -       spin_lock_init(&new->lock);
+> -       new->deleted = 0;
+> -       rcu_read_lock();
+> -       spin_lock(&new->lock);
+>        return id;
+>  }
+>
+>
+> --
+>
 
-Also replace kmalloc_node(GFP_ZERO) with kzalloc_node().
+Sorry but the bug is still present. It takes longer to show up...
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/sched.c |   26 ++++++++++++--------------
- 1 files changed, 12 insertions(+), 14 deletions(-)
+[ 4028.704877] INFO: trying to register non-static key.
+[ 4028.708007] the code is fine but needs lockdep annotation.
+[ 4028.708007] turning off the locking correctness validator.
+[ 4028.708007] Pid: 8051, comm: sysv_test2 Not tainted 2.6.27-ipc_lock #2
+[ 4028.708007]
+[ 4028.708007] Call Trace:
+[ 4028.708007]  [<ffffffff80257055>] static_obj+0x60/0x77
+[ 4028.708007]  [<ffffffff8025af59>] __lock_acquire+0x1c8/0x779
+[ 4028.708007]  [<ffffffff8025b4ac>] __lock_acquire+0x71b/0x779
+[ 4028.708007]  [<ffffffff8025b59f>] lock_acquire+0x95/0xc2
+[ 4028.708007]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
+[ 4028.708007]  [<ffffffff8045119d>] _spin_lock+0x2d/0x5a
+[ 4028.708007]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
+[ 4028.708007]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
+[ 4028.708007]  [<ffffffff802feaa5>] ipc_lock+0x0/0x99
+[ 4028.708007]  [<ffffffff803002e3>] sys_msgctl+0x188/0x461
+[ 4028.708007]  [<ffffffff802feb46>] ipc_lock_check+0x8/0x53
+[ 4028.708007]  [<ffffffff803002e3>] sys_msgctl+0x188/0x461
+[ 4028.708007]  [<ffffffff8044ef84>] thread_return+0x3e/0xa8
+[ 4028.708007]  [<ffffffff80450d69>] trace_hardirqs_on_thunk+0x3a/0x3f
+[ 4028.708007]  [<ffffffff80259ac7>] trace_hardirqs_on_caller+0x100/0x12a
+[ 4028.708007]  [<ffffffff80212e09>] sched_clock+0x5/0x7
+[ 4028.708007]  [<ffffffff80450d69>] trace_hardirqs_on_thunk+0x3a/0x3f
+[ 4028.708007]  [<ffffffff80213021>] native_sched_clock+0x8c/0xa5
+[ 4028.708007]  [<ffffffff80212e09>] sched_clock+0x5/0x7
+[ 4028.708007]  [<ffffffff8020bf7a>] system_call_fastpath+0x16/0x1b
+[ 4028.708007]
+[ 4094.180003] BUG: soft lockup - CPU#0 stuck for 61s! [sysv_test2:8051]
+[ 4094.180007] Modules linked in: ipv6 nfs lockd nfs_acl sunrpc button
+battery ac loop dm_mod md_mod usbkbd usbhid hid ff_memless mptctl
+evdev tg3 iTCO_wdt libphy shpchp i2c_i801 i2c_core ehci_hcd
+pci_hotplug rng_core uhci_hcd e752x_edac edac_core reiserfs edd fan
+thermal processor thermal_sys mptspi mptscsih sg mptbase sr_mod cdrom
+scsi_transport_spi ata_piix libata dock sd_mod scsi_mod [last
+unloaded: freq_table]
+[ 4094.180007] irq event stamp: 2118797
+[ 4094.180007] hardirqs last  enabled at (2118797):
+[<ffffffff80450d69>] trace_hardirqs_on_thunk+0x3a/0x3f
+[ 4094.180007] hardirqs last disabled at (2118796):
+[<ffffffff80450da8>] trace_hardirqs_off_thunk+0x3a/0x3c
+[ 4094.180007] softirqs last  enabled at (2117034):
+[<ffffffff8020d9bc>] call_softirq+0x1c/0x28
+[ 4094.180007] softirqs last disabled at (2117029):
+[<ffffffff8020d9bc>] call_softirq+0x1c/0x28
+[ 4094.180007] CPU 0:
+[ 4094.180007] Modules linked in: ipv6 nfs lockd nfs_acl sunrpc button
+battery ac loop dm_mod md_mod usbkbd usbhid hid ff_memless mptctl
+evdev tg3 iTCO_wdt libphy shpchp i2c_i801 i2c_core ehci_hcd
+pci_hotplug rng_core uhci_hcd e752x_edac edac_core reiserfs edd fan
+thermal processor thermal_sys mptspi mptscsih sg mptbase sr_mod cdrom
+scsi_transport_spi ata_piix libata dock sd_mod scsi_mod [last
+unloaded: freq_table]
+[ 4094.180007] Pid: 8051, comm: sysv_test2 Not tainted 2.6.27-ipc_lock #2
+[ 4094.180007] RIP: 0010:[<ffffffff80213541>]  [<ffffffff80213541>]
+native_read_tsc+0x8/0x18
+[ 4094.180007] RSP: 0018:ffff88014580fe20  EFLAGS: 00000206
+[ 4094.180007] RAX: 00000000f432530c RBX: fffffffff4325241 RCX:
+00000000ffffffff[ 4094.180007] RDX: 0000000000000ac2 RSI:
+ffffffff8053d176 RDI: 0000000000000001[ 4094.180007] RBP:
+0000000000000000 R08: 0000000000000002 R09: 0000000000000000[
+4094.180007] R10: 0000000000000000 R11: ffffffff8033a71e R12:
+ffff88002f1861a0[ 4094.180007] R13: ffff8800ae95f000 R14:
+ffff88014580e000 R15: ffffffff80827890[ 4094.180007] FS:
+00007fa497b416d0(0000) GS:ffffffff80622a80(0000)
+knlGS:0000000000000000
+[ 4094.180007] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+[ 4094.180007] CR2: 00007fa4978d3ae0 CR3: 000000013f980000 CR4:
+00000000000006e0[ 4094.180007] DR0: 0000000000000000 DR1:
+0000000000000000 DR2: 0000000000000000[ 4094.180007] DR3:
+0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400[
+4094.180007]
+[ 4094.180007] Call Trace:
+[ 4094.180007]  [<ffffffff8033a73c>] delay_tsc+0x1e/0x45
+[ 4094.180007]  [<ffffffff8033dc8b>] _raw_spin_lock+0x98/0x100
+[ 4094.180007]  [<ffffffff804511be>] _spin_lock+0x4e/0x5a
+[ 4094.180007]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
+[ 4094.180007]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
+[ 4094.180007]  [<ffffffff802feaa5>] ipc_lock+0x0/0x99
+[ 4094.180007]  [<ffffffff803002e3>] sys_msgctl+0x188/0x461
+[ 4094.180007]  [<ffffffff802feb46>] ipc_lock_check+0x8/0x53
+[ 4094.180007]  [<ffffffff803002e3>] sys_msgctl+0x188/0x461
+[ 4094.180007]  [<ffffffff8044ef84>] thread_return+0x3e/0xa8
+[ 4094.180007]  [<ffffffff80450d69>] trace_hardirqs_on_thunk+0x3a/0x3f
+[ 4094.180007]  [<ffffffff80259ac7>] trace_hardirqs_on_caller+0x100/0x12a
+[ 4094.180007]  [<ffffffff80212e09>] sched_clock+0x5/0x7
+[ 4094.180007]  [<ffffffff80450d69>] trace_hardirqs_on_thunk+0x3a/0x3f
+[ 4094.180007]  [<ffffffff80213021>] native_sched_clock+0x8c/0xa5
+[ 4094.180007]  [<ffffffff80212e09>] sched_clock+0x5/0x7
+[ 4094.180007]  [<ffffffff8020bf7a>] system_call_fastpath+0x16/0x1b
+[ 4094.180007]
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index e8819bc..7dd6c86 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -8472,7 +8472,7 @@ static
- int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
- {
- 	struct cfs_rq *cfs_rq;
--	struct sched_entity *se, *parent_se;
-+	struct sched_entity *se;
- 	struct rq *rq;
- 	int i;
- 
-@@ -8488,18 +8488,17 @@ int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
- 	for_each_possible_cpu(i) {
- 		rq = cpu_rq(i);
- 
--		cfs_rq = kmalloc_node(sizeof(struct cfs_rq),
--				GFP_KERNEL|__GFP_ZERO, cpu_to_node(i));
-+		cfs_rq = kzalloc_node(sizeof(struct cfs_rq),
-+				      GFP_KERNEL, cpu_to_node(i));
- 		if (!cfs_rq)
- 			goto err;
- 
--		se = kmalloc_node(sizeof(struct sched_entity),
--				GFP_KERNEL|__GFP_ZERO, cpu_to_node(i));
-+		se = kzalloc_node(sizeof(struct sched_entity),
-+				  GFP_KERNEL, cpu_to_node(i));
- 		if (!se)
- 			goto err;
- 
--		parent_se = parent ? parent->se[i] : NULL;
--		init_tg_cfs_entry(tg, cfs_rq, se, i, 0, parent_se);
-+		init_tg_cfs_entry(tg, cfs_rq, se, i, 0, parent->se[i]);
- 	}
- 
- 	return 1;
-@@ -8560,7 +8559,7 @@ static
- int alloc_rt_sched_group(struct task_group *tg, struct task_group *parent)
- {
- 	struct rt_rq *rt_rq;
--	struct sched_rt_entity *rt_se, *parent_se;
-+	struct sched_rt_entity *rt_se;
- 	struct rq *rq;
- 	int i;
- 
-@@ -8577,18 +8576,17 @@ int alloc_rt_sched_group(struct task_group *tg, struct task_group *parent)
- 	for_each_possible_cpu(i) {
- 		rq = cpu_rq(i);
- 
--		rt_rq = kmalloc_node(sizeof(struct rt_rq),
--				GFP_KERNEL|__GFP_ZERO, cpu_to_node(i));
-+		rt_rq = kzalloc_node(sizeof(struct rt_rq),
-+				     GFP_KERNEL, cpu_to_node(i));
- 		if (!rt_rq)
- 			goto err;
- 
--		rt_se = kmalloc_node(sizeof(struct sched_rt_entity),
--				GFP_KERNEL|__GFP_ZERO, cpu_to_node(i));
-+		rt_se = kzalloc_node(sizeof(struct sched_rt_entity),
-+				     GFP_KERNEL, cpu_to_node(i));
- 		if (!rt_se)
- 			goto err;
- 
--		parent_se = parent ? parent->rt_se[i] : NULL;
--		init_tg_rt_entry(tg, rt_rq, rt_se, i, 0, parent_se);
-+		init_tg_rt_entry(tg, rt_rq, rt_se, i, 0, parent->rt_se[i]);
- 	}
- 
- 	return 1;
--- 
-1.5.4.rc3
+I don't understand what's going on... I hope I'm not the only one who
+still get it because I doubt about this bug.
 
+c.
