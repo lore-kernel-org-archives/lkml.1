@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbYJ2Xma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbYJ2Xn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755902AbYJ2Xma (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 19:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbYJ2XmW
+	id S1756141AbYJ2Xn2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 19:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbYJ2XnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 19:42:22 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:5968 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751964AbYJ2XmW (ORCPT
+	Wed, 29 Oct 2008 19:43:20 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:33234 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752464AbYJ2XnT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 19:42:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=eb/Kb5zaNaeqTRcLTFT/a66iAT76oy7SQVNrqy7OPBdPdXTnjCNAzoGV9rhLhCHFL+
-         CN/RuR57Uz6WxqRtwfvvQR2zVuL++yBB0sHmXUSxupX/6KB+Kg+CNvRmeeCY5oeQNIbH
-         9O00ssb0wVbzam8p6+IDpdKAL0rD4T5ojBoIA=
-Message-ID: <f7848160810291642y5263635ao6ce5ed4f11152b31@mail.gmail.com>
-Date: Wed, 29 Oct 2008 19:42:21 -0400
-From: "Parag Warudkar" <parag.lkml@gmail.com>
-To: "Avi Kivity" <avi@redhat.com>
-Subject: Re: 2.6.28-rc2 : KVM FAIL
-Cc: "Avi Kivity" <avi@qumranet.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <49080347.70503@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f7848160810271515v65007926g8537c43c67f1bd72@mail.gmail.com>
-	 <49080347.70503@redhat.com>
+	Wed, 29 Oct 2008 19:43:19 -0400
+To: stern@rowland.harvard.edu
+CC: miklos@szeredi.hu, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org
+In-reply-to: <Pine.LNX.4.44L0.0810291627040.3986-100000@iolanthe.rowland.org>
+	(message from Alan Stern on Wed, 29 Oct 2008 16:37:30 -0400 (EDT))
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
+ filesystems.
+References: <Pine.LNX.4.44L0.0810291627040.3986-100000@iolanthe.rowland.org>
+Message-Id: <E1KvKgv-0000bf-RS@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 30 Oct 2008 00:43:09 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 2:31 AM, Avi Kivity <avi@redhat.com> wrote:
-> Parag Warudkar wrote:
->>
->> With today's git host kernel I can no longer boot my Ubuntu virtual
->> machine - udevd, modprobe etc. just die with glibc detecting realloc()
->> errors (invalid next size) and I am dropped to initramfs prompt.
->>
->> Going back to the distro kernel 2.6.26 makes the same VM work again.
->>
->
-> Please pull again and retry.
->
+On Wed, 29 Oct 2008, Alan Stern wrote:
+> I discussed this last summer with Rafael.  It's a lot harder than it 
+> looks, for all sorts of reasons.  For example, what about user tasks 
+> that have access to memory-mapped I/O regions?
 
-Worked fine - thanks.
+What about them?  Freezing doesn't seem to help with that.
 
-Parag
+> > c) is slightly tricky, but could be done for example by setting a flag
+> > on open: FMODE_NO_SUSPEND_DISABLE (better name required), saying that
+> > implementation is responsible for getting the suspend disable magic
+> > right.
+> > 
+> > For starters this flag could be set for all non-device opens (maybe all
+> > non-char-dev opens?), solving the fuse vs. freezer issues without any
+> > complicated trickery.
+> 
+> I don't know.  There are other interfaces too, like sysfs attributes, 
+> that would have to be handled specially.  On the whole, the freezer 
+> seems much, much simpler.
+
+OK, then non-device files on "regular" filesystems.
+
+> Regarding fuse, something like Nigel's scheme for preventing new 
+> requests and then waiting for old requests to complete might work out.  
+> Especially if you combine it with a strategy for making the freezer 
+> back and retry after a delay when something goes wrong.
+
+I don't think it will work out, because to be able to do this some
+ordering between freezing the filesystems must be done.  But this is
+basically impossible, for all the same reasons it's impossible to
+order the freezing of userspace tasks.
+
+Also this is not just a fuse issue: we have userspace network devices,
+we have userspace USB drivers, etc, affected by this problem.
+
+If there _is_ a solution with the freezer that does solve all of this,
+I haven't yet heard it.  But yeah, in the end the simpler solution
+should win.
+
+Miklos
