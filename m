@@ -1,355 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754179AbYJ2BQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbYJ2BRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754179AbYJ2BQr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 21:16:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbYJ2BQi
+	id S1754567AbYJ2BRW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 21:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbYJ2BRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 21:16:38 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:35382 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751096AbYJ2BQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 21:16:37 -0400
-Date: Tue, 28 Oct 2008 18:16:33 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rjw@sisk.pl,
-       dipankar@in.ibm.com, tglx@linuxtronix.de, andi@firstfloor.org
-Subject: Re: [PATCH] v3 rudimentary tracing for Classic RCU
-Message-ID: <20081029011633.GA21940@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20081007163401.GJ6384@linux.vnet.ibm.com> <20081007210947.GP20740@one.firstfloor.org> <20081007212215.GN6384@linux.vnet.ibm.com> <20081009010846.GA10188@linux.vnet.ibm.com> <20081010034421.GA12449@linux.vnet.ibm.com> <20081013230914.GA27467@linux.vnet.ibm.com> <49005C09.6010805@cn.fujitsu.com> <20081026215930.GC6236@linux.vnet.ibm.com> <20081027215029.GA31664@linux.vnet.ibm.com> <20081027235748.GA3647@linux.vnet.ibm.com>
+	Tue, 28 Oct 2008 21:17:13 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:50510 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752704AbYJ2BRL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 21:17:11 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=ox3G2v4KUVc9KgKLHGD+nhTZLYPL+poCqPifC0/GzzRl6bUwzHROtjt8MIZSpFvft
+	wKXQkI4NX4/PRw8lwa/9g==
+Message-ID: <2846be6b0810281817x70ea8d4ev378f4893aaf1f61e@mail.gmail.com>
+Date: Tue, 28 Oct 2008 18:17:05 -0700
+From: "Naveen Gupta" <ngupta@google.com>
+To: "Aaron Carroll" <aaronc@gelato.unsw.edu.au>
+Subject: Re: [PATCH] Priorities in Anticipatory I/O scheduler
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       akpm@linux-foundation.org, s-uchida@ap.jp.nec.com, david@fromorbit.com
+In-Reply-To: <4907AEE7.5030508@gelato.unsw.edu.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081027235748.GA3647@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <20081027190131.070061000@elf.corp.google.com>
+	 <20081027190139.838646000@elf.corp.google.com>
+	 <20081028002024.GM4985@disturbed>
+	 <2846be6b0810281014q495cef22mae344423ed59c71a@mail.gmail.com>
+	 <20081028214443.GX4985@disturbed>
+	 <2846be6b0810281548oc81fbe4td2e1a5e2fba18745@mail.gmail.com>
+	 <20081028233101.GD17077@disturbed>
+	 <2846be6b0810281704r5092c415n3fea9c849c6086ca@mail.gmail.com>
+	 <4907AEE7.5030508@gelato.unsw.edu.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 27, 2008 at 04:57:48PM -0700, Paul E. McKenney wrote:
-> On Mon, Oct 27, 2008 at 02:50:29PM -0700, Paul E. McKenney wrote:
-> > On Sun, Oct 26, 2008 at 02:59:30PM -0700, Paul E. McKenney wrote:
-> > > On Thu, Oct 23, 2008 at 07:12:09PM +0800, Lai Jiangshan wrote:
-> > > > 
-> > > > trivial ported it to seq_file.
-> > > > seq_file are very good for the output buffer.
-> > > 
-> > > Thank you for putting this together!!!  Looks good at first glance --
-> > > I will test it out.
-> > 
-> > So it does seem to operate correctly.  I combined it with my patch and
-> > applied against 2.6.27 for ease of testing.
-> > 
-> > One question -- why the multi-line format?  This would be a bit
-> > awkward on a 128-CPU system, let alone on a 4,096-CPU system.
-> > Or am I missing some trick here?
-> 
-> To clarify, by "missing some trick", I am wondering if there is some
-> command that works in blocks of lines.  After all, /proc/cpuinfo
-> produces the same sort of output that your patch does.  ;-)
+2008/10/28 Aaron Carroll <aaronc@gelato.unsw.edu.au>:
+> Naveen Gupta wrote:
+>> 2008/10/28 Dave Chinner <david@fromorbit.com>:
+>>> On Tue, Oct 28, 2008 at 03:48:44PM -0700, Naveen Gupta wrote:
+>>>> I/O from RT class in CFQ can still see a bubble with this new latency
+>>>> class. An easy way to check this would be to submit ios at multiple
+>>>> levels both in CFQ and AS and check max latency of the highest levels.
+>>>> I will let Jens or Satoshi comment on exact algorithm for RT class.
+>>> You're missing my point entirely.
+>>>
+>>> You're defining a new class that has the exact same meaning as
+>>> the current RT class definition, then mapping the BE class over
+>>> the top of that, hence changing what that means for everyone.
+>>>
+>>> The fact that the *implementation* of AS and CFQ is different is
+>>> irrelevant; if you use the RT class then on CFQ you get the current
+>>> RT behaviour, if you use the RT class on AS you should get your new
+>>> priority dispatch mechanism. We don't need a new API just because
+>>> the implementations are different.
+>>>
+>>
+>> There is nothing "real-time" about the current RT class anyways. It is
+>
+> Yes, this is stupid.  IMO the real time class should be strict priorities
+> within the class, and within the same priority level, round robin.  As it
+> stands, RT seems to be just like a second BE class.
+>
+>> basically these small *implementation* differences that defines these
+>> classes in current scheme of things, precise definitions of which
+>> would be very hard to find if one started looking around.
+>>
+>> The current implementation of AS is basically a flat structure with
+>> multiple priority levels. Initially I planned them to be different
+>> levels of best-effort class, which is exactly what we are doing
+>> "best-effort" from the scheduler/software point of view. So, the
+>> question is what you do with other classes for which you don't have a
+>> significantly different behavior: to keep things simple you map them
+>> to existing flat structure. And, I mapped RT (all levels to BE 0),
+>> idle (all levels to BE 7).
+>
+> Even compared to CFQs broken RT handling, this is wrong, because now
+> any old BE0 process is equal in priority to any RT process.
+>
+>> This leaves these RT and IDLE classes open for future implementations,
+>> where one could use hardware priorities (may be in NCQ) to implement
+>> RT class or other improvisations in software other than schedulers to
+>> map to RT class.
+>>
+>> Now the initial feedback was since this *implementation* is different
+>> from anything we have in CFQ which is our current *standard* way of
+>> thinking and comparing (that is the only thing that exists) why not
+>> make them into a new class :). And somehow map others so that they
+>> make some sense till we get something for those classes as well.
+>>
+>>>>>> So, in some sense it kind of implements absolute priority and
+>>>>>> is best used for jobs which are latency sensitive.  Since the
+>>>>>> priorities can be and are mapped internally in anticipatory
+>>>>>> scheduler, BEST_EFFORT class is mapped one-one with the LATENCY
+>>>>>> class.
+>>>>> So you map the BE class to something with the same semantics as
+>>>>> the RT class? What mapping do you do when an application uses
+>>>>> the RT class?
+>>>>>
+>>>> Yes I could have used RT class but it was used in CFQ to implement
+>>>> it's time-sliced based highest priority class.  If an application
+>>>> uses RT class, AS maps all levels of RT class to BE class level 0
+>>>> (i.e. to the highest priority available)
+>>> Which means you are throwing away all the RT priority levels and
+>>> so an application using the RT class would be subtly broken on AS....
+>>>
+>>
+>> As I said earlier the organization of the AS levels is flat, so we
+>> could use any class (RT, BE, LATENCY) and fold the remaining ones. The
+>> other way which you would probably like is to increase number of
+>> levels and map different classes so that they are not folded.
+>
+> As I said in my reply to the initial posting of this, I think there are
+> only two sensible ways of handling this:
+>
+>  1) Maintain the full number of I/O priorities (1 IDLE, 8 BE, 8 RT);
 
-Ported to 2.6.27 to ease testing, and fixed up the formatting a bit.
-I remember quickly scanning through one-line-per-CPU data to find
-problems with rcutree.c, but the expanded names are quite nice -- I
-had to brutally abbreviate to fit each CPU on a single line.
-And I agree that seqfile does work nicely for this.
+But then we are assuming that we are providing different quality of
+service according to classes.
 
-I am strongly tempted to suggest CSV format output with headers to
-allow the data to be pulled into gnumeric or oocalc -- this would
-make handling large numbers of CPUs much easier.  (Quickly donning
-the asbestos suit with titanium pinstripes...)
+>  2) Collapse the levels and only deal with the classes;
 
-							Thanx, Paul
+I am not sure if this is meaningful. When all we have is different
+levels of BE, it wouldn't make sense to call them different classes.
+>
+> Any other mapping seems arbitrary and likely to confuse.
+>
+>>>>>> A filesystem can use best-effort class using similar interface
+>>>>>> as for cfq.
+>>>>> The folk using the RT priority classes greatly objected to using
+>>>>> the RT class for journal I/O precisely because it would then
+>>>>> preempt their application's RT I/O and introduce unpredictable
+>>>>> latencies.
+>>>>>
+>>>>> Journal I/O will typically use the highest priority BE class so
+>>>>> that it is promoted above BE I/O but does not preempt RT I/O.
+>>>>> With your mapping of BE classes to this new "absolute priority
+>>>>> latency" class, this configuration will give journal I/O the
+>>>>> highest priority in the scheduler. This will cause preemption of
+>>>>> your latency sensitive I/O and so those latencies you are trying
+>>>>> to avoid won't go away....
+>>>>>
+>>>> I see your problem, we could make the LATENCY class different from
+>>>> and above BE class (instead of one-one mapping).
+>>> Like the RT class is currently defined to be? ;)
+>>>
+>>
+>> I agree with you and we could use RT (though you and I know that
+>> basically it is best effort). LATENCY was invented due to a previous
+>> suggestion.
+>
+> Maybe what you want to do is make RT really real-time, and then use this
+> latency class to differentiate latency-sensitive BE traffic from regular
+> BE traffic.  Not necessarily ``higher'' priority, just a different kind of
+> best-effort.  One way of implementing this in CFQ might be to have smaller
+> but more frequent dispatches.
+>
+>
+> Also from the original posting, I think the weights are still broken
+> (especially in the context of RT) but I won't repeat that here.
 
+Sorry I am out of context. I can look at them later.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-
- include/linux/rcuclassic.h |    4 
- kernel/Kconfig.preempt     |    1 
- kernel/Makefile            |    2 
- kernel/rcuclassic.c        |    5 -
- kernel/rcuclassic_trace.c  |  198 +++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 207 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/rcuclassic.h b/include/linux/rcuclassic.h
-index 4ab8436..735f35a 100644
---- a/include/linux/rcuclassic.h
-+++ b/include/linux/rcuclassic.h
-@@ -54,6 +54,9 @@ struct rcu_ctrlblk {
- 				 /* for current batch to proceed.        */
- } ____cacheline_internodealigned_in_smp;
- 
-+extern struct rcu_ctrlblk rcu_ctrlblk;
-+extern struct rcu_ctrlblk rcu_bh_ctrlblk;
-+
- /* Is batch a before batch b ? */
- static inline int rcu_batch_before(long a, long b)
- {
-@@ -76,6 +79,7 @@ struct rcu_data {
- 	long		quiescbatch;     /* Batch # for grace period */
- 	int		passed_quiesc;	 /* User-mode/idle loop etc. */
- 	int		qs_pending;	 /* core waits for quiesc state */
-+	bool		beenonline;	 /* CPU online at least once */
- 
- 	/* 2) batch handling */
- 	long  	       	batch;           /* Batch # for current RCU batch */
-diff --git a/kernel/Kconfig.preempt b/kernel/Kconfig.preempt
-index 9fdba03..ba32338 100644
---- a/kernel/Kconfig.preempt
-+++ b/kernel/Kconfig.preempt
-@@ -68,7 +68,6 @@ config PREEMPT_RCU
- 
- config RCU_TRACE
- 	bool "Enable tracing for RCU - currently stats in debugfs"
--	depends on PREEMPT_RCU
- 	select DEBUG_FS
- 	default y
- 	help
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 4e1d7df..e0bfce7 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -77,6 +77,8 @@ obj-$(CONFIG_CLASSIC_RCU) += rcuclassic.o
- obj-$(CONFIG_PREEMPT_RCU) += rcupreempt.o
- ifeq ($(CONFIG_PREEMPT_RCU),y)
- obj-$(CONFIG_RCU_TRACE) += rcupreempt_trace.o
-+else
-+obj-$(CONFIG_RCU_TRACE) += rcuclassic_trace.o
- endif
- obj-$(CONFIG_RELAY) += relay.o
- obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
-diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
-index aad93cd..06472fc 100644
---- a/kernel/rcuclassic.c
-+++ b/kernel/rcuclassic.c
-@@ -57,13 +57,13 @@ EXPORT_SYMBOL_GPL(rcu_lock_map);
- 
- 
- /* Definition for rcupdate control block. */
--static struct rcu_ctrlblk rcu_ctrlblk = {
-+struct rcu_ctrlblk rcu_ctrlblk = {
- 	.cur = -300,
- 	.completed = -300,
- 	.lock = __SPIN_LOCK_UNLOCKED(&rcu_ctrlblk.lock),
- 	.cpumask = CPU_MASK_NONE,
- };
--static struct rcu_ctrlblk rcu_bh_ctrlblk = {
-+struct rcu_ctrlblk rcu_bh_ctrlblk = {
- 	.cur = -300,
- 	.completed = -300,
- 	.lock = __SPIN_LOCK_UNLOCKED(&rcu_bh_ctrlblk.lock),
-@@ -564,6 +564,7 @@ static void rcu_init_percpu_data(int cpu, struct rcu_ctrlblk *rcp,
- 	rdp->donetail = &rdp->donelist;
- 	rdp->quiescbatch = rcp->completed;
- 	rdp->qs_pending = 0;
-+	rdp->beenonline = 1;
- 	rdp->cpu = cpu;
- 	rdp->blimit = blimit;
- }
-diff --git a/kernel/rcuclassic_trace.c b/kernel/rcuclassic_trace.c
-new file mode 100644
-index 0000000..b719048
---- /dev/null
-+++ b/kernel/rcuclassic_trace.c
-@@ -0,0 +1,198 @@
-+/*
-+ * Read-Copy Update tracing for classic implementation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright IBM Corporation, 2008
-+ *
-+ * Updated to use seqfile by Lai Jiangshan.
-+ *
-+ * Papers:  http://www.rdrop.com/users/paulmck/RCU
-+ *
-+ * For detailed explanation of Read-Copy Update mechanism see -
-+ * 		Documentation/RCU
-+ *
-+ */
-+#include <linux/rcupdate.h>
-+#include <linux/module.h>
-+#include <linux/debugfs.h>
-+#include <linux/seq_file.h>
-+
-+/* Print out rcu_data structures using seqfile facility. */
-+
-+static struct rcu_data *get_rcu_data_bh(int cpu)
-+{
-+	return &per_cpu(rcu_bh_data, cpu);
-+}
-+
-+static struct rcu_data *get_rcu_data(int cpu)
-+{
-+	return &per_cpu(rcu_data, cpu);
-+}
-+
-+static int show_rcu_data(struct seq_file *m, void *v)
-+{
-+	struct rcu_data *rdp = v;
-+
-+	if (!rdp->beenonline)
-+		return 0;
-+
-+	seq_printf(m, "processor\t: %d", rdp->cpu);
-+	if (cpu_is_offline(rdp->cpu))
-+		seq_puts(m, "!\n");
-+	else
-+		seq_puts(m, "\n");
-+	seq_printf(m, "quiescbatch\t: %ld\n", rdp->quiescbatch);
-+	seq_printf(m, "batch\t\t: %ld\n", rdp->batch);
-+	seq_printf(m, "passed_quiesc\t: %d\n", rdp->passed_quiesc);
-+	seq_printf(m, "qs_pending\t: %d\n", rdp->qs_pending);
-+	seq_printf(m, "qlen\t\t: %ld\n", rdp->qlen);
-+	seq_printf(m, "blimit\t\t: %ld\n", rdp->blimit);
-+	seq_puts(m, "\n");
-+	return 0;
-+}
-+
-+static void *c_start(struct seq_file *m, loff_t *pos)
-+{
-+	typedef struct rcu_data *(*get_data_func)(int);
-+
-+	if (*pos == 0)  /* just in case, cpu 0 is not the first */
-+		*pos = first_cpu(cpu_possible_map);
-+	else
-+		*pos = next_cpu_nr(*pos - 1, cpu_possible_map);
-+	if ((*pos) < nr_cpu_ids)
-+		return ((get_data_func)m->private)(*pos);
-+	return NULL;
-+}
-+
-+static void *c_next(struct seq_file *m, void *v, loff_t *pos)
-+{
-+	(*pos)++;
-+	return c_start(m, pos);
-+}
-+
-+static void c_stop(struct seq_file *m, void *v)
-+{
-+}
-+
-+const struct seq_operations rcu_data_seq_op = {
-+	.start	= c_start,
-+	.next	= c_next,
-+	.stop	= c_stop,
-+	.show	= show_rcu_data,
-+};
-+
-+static int rcu_data_open(struct inode *inode, struct file *file)
-+{
-+	int ret = seq_open(file, &rcu_data_seq_op);
-+
-+	if (ret)
-+		return ret;
-+	((struct seq_file *)file->private_data)->private = inode->i_private;
-+	return 0;
-+}
-+
-+static const struct file_operations rcu_data_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= rcu_data_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= seq_release,
-+};
-+
-+/* Print out rcu_ctrlblk structures using seqfile facility. */
-+
-+static void print_one_rcu_ctrlblk(struct seq_file *m, struct rcu_ctrlblk *rcp)
-+{
-+	seq_printf(m, "cur=%ld  completed=%ld   next_pending=%d  s=%d\n\t",
-+		   rcp->cur, rcp->completed, rcp->next_pending, rcp->signaled);
-+	seq_cpumask(m, &rcp->cpumask);
-+	seq_puts(m, "\n");
-+}
-+
-+static int show_rcucb(struct seq_file *m, void *unused)
-+{
-+	seq_puts(m, "rcu: ");
-+	print_one_rcu_ctrlblk(m, &rcu_ctrlblk);
-+	seq_puts(m, "rcu_bh: ");
-+	print_one_rcu_ctrlblk(m, &rcu_bh_ctrlblk);
-+	seq_puts(m, "online: ");
-+	seq_cpumask(m, &cpu_online_map);
-+	seq_puts(m, "\n");
-+	return 0;
-+}
-+
-+static int rcucb_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, show_rcucb, NULL);
-+}
-+
-+static struct file_operations rcucb_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= rcucb_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static struct dentry *rcudir, *rcu_bh_data_file, *rcu_data_file, *rcucb_file;
-+
-+static int __init rcuclassic_trace_init(void)
-+{
-+	rcudir = debugfs_create_dir("rcu", NULL);
-+	if (!rcudir)
-+		goto out;
-+
-+	rcu_bh_data_file = debugfs_create_file("rcu_bh_data", 0444, rcudir,
-+					       get_rcu_data_bh, &rcu_data_fops);
-+	if (!rcu_bh_data_file)
-+		goto out_rcudir;
-+
-+	rcu_data_file = debugfs_create_file("rcu_data", 0444, rcudir,
-+					    get_rcu_data, &rcu_data_fops);
-+	if (!rcu_data_file)
-+		goto out_rcudata_bh_file;
-+
-+	rcucb_file = debugfs_create_file("rcucb", 0444, rcudir,
-+					 NULL, &rcucb_fops);
-+	if (!rcucb_file)
-+		goto out_rcudata_file;
-+	return 0;
-+
-+out_rcudata_file:
-+	debugfs_remove(rcu_data_file);
-+out_rcudata_bh_file:
-+	debugfs_remove(rcu_bh_data_file);
-+out_rcudir:
-+	debugfs_remove(rcudir);
-+out:
-+	return 1;
-+}
-+
-+static void __exit rcuclassic_trace_cleanup(void)
-+{
-+	debugfs_remove(rcucb_file);
-+	debugfs_remove(rcu_data_file);
-+	debugfs_remove(rcu_bh_data_file);
-+	debugfs_remove(rcudir);
-+}
-+
-+module_init(rcuclassic_trace_init);
-+module_exit(rcuclassic_trace_cleanup);
-+
-+MODULE_AUTHOR("Paul E. McKenney");
-+MODULE_DESCRIPTION("Read-Copy Update tracing for classic implementation");
-+MODULE_LICENSE("GPL");
-+
+>
+>
+>    -- Aaron
+>
+>
