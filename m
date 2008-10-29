@@ -1,98 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754635AbYJ2UuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbYJ2UwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754635AbYJ2UuW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 16:50:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbYJ2UuF
+	id S1754768AbYJ2UwT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 16:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbYJ2UwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 16:50:05 -0400
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:45213 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753165AbYJ2UuE (ORCPT
+	Wed, 29 Oct 2008 16:52:08 -0400
+Received: from ti-out-0910.google.com ([209.85.142.191]:55798 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752763AbYJ2UwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 16:50:04 -0400
-Date: Wed, 29 Oct 2008 13:50:02 -0700
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC v2] net: add PCINet driver
-Message-ID: <20081029205002.GI12879@ovro.caltech.edu>
-Mail-Followup-To: Stephen Hemminger <shemminger@vyatta.com>,
-	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
-References: <20081029202027.GH12879@ovro.caltech.edu> <20081029132506.55b93555@extreme>
+	Wed, 29 Oct 2008 16:52:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=SiiL62wkqVexy4nbNsiPouGNgCR8hVTxiFembqawex6VZjyfIXVcP3x96KC/8oHT9/
+         W7a1ZwOPbCHZFDVsQWD/FdGhg8NmcOGkT0mdkYRKSw0whulQ0sU/u9uaw96RyMMAE1SU
+         P9F5uzXB72UDhzMlRPsy4Omy9vxq3XAIhVlfg=
+Message-ID: <7a9b5c320810291352k5db86a4eg4e03fb09317de459@mail.gmail.com>
+Date: Thu, 30 Oct 2008 09:52:04 +1300
+From: "Phillip O'Donnell" <phillip.odonnell@gmail.com>
+To: "Ric Wheeler" <rwheeler@redhat.com>
+Subject: Re: sata errors with Seagate 1.5TB on AMD 780G/SB700 motherboard
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Oskar Liljeblad" <oskar@osk.mine.nu>,
+       "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+In-Reply-To: <4908C62E.5070307@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081029132506.55b93555@extreme>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Wed, 29 Oct 2008 13:50:03 -0700 (PDT)
+References: <fa.01zEaARwrup2dCOTuHTYxzuS9BI@ifi.uio.no>
+	 <49079E09.20703@shaw.ca> <20081029185856.GA8152@osk.mine.nu>
+	 <20081029201724.0a7d736e@lxorguk.ukuu.org.uk>
+	 <4908C62E.5070307@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 01:25:06PM -0700, Stephen Hemminger wrote:
-> On Wed, 29 Oct 2008 13:20:27 -0700
-> Ira Snyder <iws@ovro.caltech.edu> wrote:
+Hi Ric,
 
-Big snip...
+Not too sure about that - I run with XFS, which announces that it
+disables the barriers on my devices (I use LVM on top of them) but
+still get the same issue... Unless I've misunderstood your comment?
 
-> > diff --git a/drivers/net/pcinet.h b/drivers/net/pcinet.h
-> > new file mode 100644
-> > index 0000000..66d2cba
-> > --- /dev/null
-> > +++ b/drivers/net/pcinet.h
-> > @@ -0,0 +1,75 @@
-> > +/*
-> > + * Shared Definitions for the PCINet / PCISerial drivers
-> > + *
-> > + * Copyright (c) 2008 Ira W. Snyder <iws@ovro.caltech.edu>
-> > + *
-> > + * Heavily inspired by the drivers/net/fs_enet driver
-> > + *
-> > + * This file is licensed under the terms of the GNU General Public License
-> > + * version 2. This program is licensed "as is" without any warranty of any
-> > + * kind, whether express or implied.
-> > + */
-> > +
-> > +#ifndef PCINET_H
-> > +#define PCINET_H
-> > +
-> > +#include <linux/kernel.h>
-> > +#include <linux/if_ether.h>
-> > +
-> > +/* Ring and Frame size -- these must match between the drivers */
-> > +#define PH_RING_SIZE	(64)
-> > +#define PH_MAX_FRSIZE	(64 * 1024)
-> > +#define PH_MAX_MTU	(PH_MAX_FRSIZE - ETH_HLEN)
-> > +
-> > +struct circ_buf_desc {
-> > +	__le32 sc;
-> > +	__le32 len;
-> > +	__le32 addr;
-> > +} __attribute__((__packed__));
-> > +typedef struct circ_buf_desc cbd_t;
-> 
-> Don't use typedef. See chapter 5 of Documentation/CodingStyle
-> 
+Cheers,
+Phillip
 
-I know about this. I was following the example set forth in
-drivers/net/fs_enet. I tried to make this driver somewhat similar to
-that driver, but I'm not against changing this to a struct everywhere.
-
-> Do you really need packed here, sometime gcc generates much worse code
-> on needlessly packed structures?
-
-I'm pretty sure I do. I share this structure between both devices over
-the PCI bus. This is where the physical addresses of the skb's go so
-that the DMA controller can transfer them.
-
-As an example, let's say I have a machine that places 32bit values on
-64bit boundaries. AFAIK, the Freescale places 32bit values on 32bit
-boundaries. Now the two of them disagree about where the fields of the
-buffer descriptor are.
-
-Of course, I may be wrong. :) Comments?
-
-Thanks for the review,
-Ira
+> I suspect that the drive is simply choking on the barrier related cache
+> flushing that we do - that seemed to be the MacOS error as well. The windows
+> comment suggested that windows had an hba/driver bug (most likely unrelated
+> to this).
+>
+> If you want to avoid the issue until they fix the drive, you could run fast
+> and dangerous (mount without barriers on) or slow and safe (disable the
+> write cache).
