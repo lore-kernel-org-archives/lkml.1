@@ -1,484 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbYJ2Qic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbYJ2QkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754855AbYJ2Qic (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 12:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbYJ2QiW
+	id S1754855AbYJ2QkW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 12:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYJ2QkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 12:38:22 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:48445 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753208AbYJ2QiU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 12:38:20 -0400
-Date: Wed, 29 Oct 2008 12:38:18 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Arjan van de Ven <arjan@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Mike Snitzer <snitzer@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: [PATCH 2/2 v2][RFC] ftrace: unlikely annotation tracer
-In-Reply-To: <alpine.DEB.1.10.0810291233580.13214@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0810291235570.13214@gandalf.stny.rr.com>
-References: <170fa0d20810271529g3c64ae89me29ed8b65a9c3b5e@mail.gmail.com> <alpine.DEB.1.10.0810271918390.19731@gandalf.stny.rr.com> <20081028001340.GB9797@mit.edu> <alpine.DEB.1.10.0810272316270.802@gandalf.stny.rr.com> <20081028143720.GD8869@mit.edu>
- <20081028074816.04193e04@infradead.org> <alpine.DEB.1.10.0810281050440.29482@gandalf.stny.rr.com> <alpine.DEB.1.10.0810291233580.13214@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 29 Oct 2008 12:40:09 -0400
+Received: from the.earth.li ([217.147.81.2]:58110 "EHLO the.earth.li"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753952AbYJ2QkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 12:40:08 -0400
+Date: Wed, 29 Oct 2008 16:40:06 +0000
+From: Jonathan McDowell <noodles@earth.li>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: 2.6.28-rc2 / hso driver oops
+Message-ID: <20081029164006.GH3162@earth.li>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi.
 
-This patch adds a way to record the instances of the likely and unlikely
-condition annotations.
+Tried out 2.6.28-rc2 today on my EEE 901 and my Option Icon 225 and got
+the following oops:
 
-When "unlikely" is set in /debugfs/tracing/iter_ctrl the unlikely conditions
-will be added to any of the ftrace tracers.
+hso: drivers/net/usb/hso.c: 1.2 Option Wireless
+usbcore: registered new interface driver hso
+usb 2-2: new full speed USB device using uhci_hcd and address 3
+usb 2-2: configuration #1 chosen from 1 choice
+hso0: Disabled Privacy Extensions
+BUG: unable to handle kernel NULL pointer dereference at 000000d0
+IP: [<c03589b9>] dev_driver_string+0x1/0x2a
+*pde = 00000000 
+Oops: 0000 [#1] PREEMPT SMP 
+last sysfs file: /sys/devices/pci0000:00/0000:00:1d.0/usb2/idVendor
+Modules linked in: hso usb_storage rfcomm l2cap rt2860sta evdev
 
-For example:
+Pid: 230, comm: khubd Not tainted (2.6.28-rc2 #2) 901
+EIP: 0060:[<c03589b9>] EFLAGS: 00010246 CPU: 0
+EIP is at dev_driver_string+0x1/0x2a
+EAX: 00000000 EBX: f2c88480 ECX: f7159cb0 EDX: 00000001
+ESI: f2fdee40 EDI: f68bd200 EBP: f7159cf8 ESP: f7159cd0
+DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+Process khubd (pid: 230, ti=f7158000 task=f70b02b0 task.ti=f7158000)
+Stack:
+f7159cf8 f81b8265 f2c88480 f6ab8440 00000003 00000003 00000000 00000112
+00000000 f81b90c8 f7159d48 f81b840d c029f782 f68bd200 fffffffe f6b143a8
+f7159d20 f7159d2c 00000000 f6b143a8 f81b90c8 f7159d38 f7159d40 c038886b
+Call Trace:
+[<f81b8265>] ? hso_create_net_device+0x305/0x32d [hso]
+[<f81b840d>] ? hso_probe+0x180/0x56c [hso]
+[<c029f782>] ? __sysfs_add_one+0x14/0x85
+[<c038886b>] ? usb_autopm_do_device+0xb1/0xb9
+[<c0388d77>] ? usb_probe_interface+0xe9/0x11c
+[<c035b10a>] ? driver_probe_device+0xa0/0x136
+[<c035b213>] ? __device_attach+0x8/0xa
+[<c035a8fe>] ? bus_for_each_drv+0x3d/0x67
+[<c035b284>] ? device_attach+0x50/0x64
+[<c035b20b>] ? __device_attach+0x0/0xa
+[<c035a77e>] ? bus_attach_device+0x21/0x48
+[<c03598e6>] ? device_add+0x307/0x456
+[<c03880b2>] ? usb_set_configuration+0x400/0x449
+[<c038e44b>] ? generic_probe+0x44/0x7d
+[<c038828e>] ? usb_probe_device+0x32/0x38
+[<c035b10a>] ? driver_probe_device+0xa0/0x136
+[<c035b213>] ? __device_attach+0x8/0xa
+[<c035a8fe>] ? bus_for_each_drv+0x3d/0x67
+[<c035b284>] ? device_attach+0x50/0x64
+[<c035b20b>] ? __device_attach+0x0/0xa
+[<c035a77e>] ? bus_attach_device+0x21/0x48
+[<c03598e6>] ? device_add+0x307/0x456
+[<c03831d1>] ? usb_new_device+0x4d/0x8e
+[<c038433c>] ? hub_thread+0x94d/0xdcb
+[<c021f6b7>] ? default_wake_function+0xb/0xd
+[<c0234b83>] ? autoremove_wake_function+0x0/0x33
+[<c03839ef>] ? hub_thread+0x0/0xdcb
+[<c02348f9>] ? kthread+0x3b/0x61
+[<c02348be>] ? kthread+0x0/0x61
+[<c0203c1b>] ? kernel_thread_helper+0x7/0x10
+Code: 32 fe ff ff b9 81 00 00 00 b8 03 00 00 00 f3 a5 c7 83 b8 13 00 00 03 00 00 00 59 5e 89 83 8c 0b 00 00 8d 65 f4 5b 5e 5f 5d c3 55 <8b> 90 d0 00 00 00 89 e5 85 d2 75 19 8b 90 cc 00 00 00 85 d2 75 
+EIP: [<c03589b9>] dev_driver_string+0x1/0x2a SS:ESP 0068:f7159cd0
+---[ end trace fe2452bf3bd83a7f ]---
 
-      irqbalance-2662  [002] 41127.102858: [correct] debug_mutex_free_waiter        51
-          <idle>-0     [001] 41127.102858: [correct] add_preempt_count              4307
-      irqbalance-2662  [002] 41127.102859: [INCORRECT] debug_smp_processor_id         15
-          <idle>-0     [001] 41127.102860: [correct] add_preempt_count              4316
-      irqbalance-2662  [002] 41127.102861: [correct] slab_alloc                     1608
+Stock 2.6.28-rc2 + ec_all.patch from lkml + rt2860sta driver (though I
+can't see how either of these are implicated I can try without if
+necessary).
 
-Which shows the normal tracer heading, as well as whether the condition was
-correct "[correct]" or was mistaken "[INCORRECT]", followed by the 
-function and line number.
+It looks like there are only a couple of changes since 2.6.27 to this
+driver so I can try reverting both of them, but neither looks especially
+likely? (8ef5ba63b94b04b182ac4a6009dbbf1406beb3c5 &
+e57b641dfafc10ce23d26cf271fd2638589fdb3f)
 
+J.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/Makefile               |    5 +
- kernel/trace/Kconfig          |   22 +++++++
- kernel/trace/Makefile         |    5 +
- kernel/trace/ring_buffer.c    |   11 +++
- kernel/trace/trace.c          |   37 +++++++++++
- kernel/trace/trace.h          |   43 +++++++++++++
- kernel/trace/trace_unlikely.c |  130 ++++++++++++++++++++++++++++++++++++++++++
- 7 files changed, 253 insertions(+)
-
-Index: linux-tip.git/kernel/trace/Kconfig
-===================================================================
---- linux-tip.git.orig/kernel/trace/Kconfig	2008-10-29 12:32:30.000000000 -0400
-+++ linux-tip.git/kernel/trace/Kconfig	2008-10-29 12:32:35.000000000 -0400
-@@ -154,6 +154,28 @@ config TRACE_UNLIKELY_PROFILE
- 
- 	  Say N if unsure.
- 
-+config TRACING_UNLIKELY
-+	bool
-+	help
-+	  Selected by tracers that will trace the likely and unlikely
-+	  conditions. This prevents the tracers themselves from being
-+	  profiled. Profiling the tracing infrastructure can only happen
-+	  when the likelys and unlikelys are not being traced.
-+
-+config UNLIKELY_TRACER
-+	bool "Trace likely/unlikely instances"
-+	depends on TRACE_UNLIKELY_PROFILE
-+	select TRACING_UNLIKELY
-+	help
-+	  This is traces the events of likely and unlikely condition
-+	  calls in the kernel.  The difference between this and the
-+	  "Trace likely/unlikely profiler" is that this is not a
-+	  histogram of the callers, but actually places the calling
-+	  events into a running buffer to see when and where the
-+	  events happened, as well as their results.
-+
-+	  Say N if unsure.
-+
- config STACK_TRACER
- 	bool "Trace max stack"
- 	depends on HAVE_FUNCTION_TRACER
-Index: linux-tip.git/kernel/Makefile
-===================================================================
---- linux-tip.git.orig/kernel/Makefile	2008-10-29 12:32:30.000000000 -0400
-+++ linux-tip.git/kernel/Makefile	2008-10-29 12:32:35.000000000 -0400
-@@ -24,6 +24,11 @@ CFLAGS_REMOVE_sched_clock.o = -pg
- CFLAGS_REMOVE_sched.o = -mno-spe -pg
- endif
- 
-+ifdef CONFIG_TRACING_UNLIKELY
-+# Do not profile tracepoint if we are tracing the unlikely conditions
-+CFLAGS_tracepoint.o += '-Dunlikely(x)=unlikely_notrace(x)'
-+endif
-+
- obj-$(CONFIG_FREEZER) += freezer.o
- obj-$(CONFIG_PROFILING) += profile.o
- obj-$(CONFIG_SYSCTL_SYSCALL_CHECK) += sysctl_check.o
-Index: linux-tip.git/kernel/trace/Makefile
-===================================================================
---- linux-tip.git.orig/kernel/trace/Makefile	2008-10-29 12:32:30.000000000 -0400
-+++ linux-tip.git/kernel/trace/Makefile	2008-10-29 12:32:35.000000000 -0400
-@@ -10,6 +10,11 @@ CFLAGS_trace_selftest_dynamic.o = -pg
- obj-y += trace_selftest_dynamic.o
- endif
- 
-+ifdef CONFIG_TRACING_UNLIKELY
-+KBUILD_CFLAGS += '-Dlikely(x)=likely_notrace(x)'
-+KBUILD_CFLAGS += '-Dunlikely(x)=unlikely_notrace(x)'
-+endif
-+
- obj-$(CONFIG_FUNCTION_TRACER) += libftrace.o
- obj-$(CONFIG_RING_BUFFER) += ring_buffer.o
- 
-Index: linux-tip.git/kernel/trace/trace_unlikely.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/trace_unlikely.c	2008-10-29 12:32:30.000000000 -0400
-+++ linux-tip.git/kernel/trace/trace_unlikely.c	2008-10-29 12:32:35.000000000 -0400
-@@ -15,8 +15,138 @@
- #include <asm/local.h>
- #include "trace.h"
- 
-+#ifdef CONFIG_UNLIKELY_TRACER
-+
-+static int unlikely_tracing_enabled __read_mostly;
-+static DEFINE_MUTEX(unlikely_tracing_mutex);
-+static DEFINE_PER_CPU(atomic_t, unlikely_trace_disabled);
-+static struct trace_array *unlikely_tracer;
-+
-+void trace_unlikely_stop(void)
-+{
-+	/* preemption should be disabled */
-+	int cpu = smp_processor_id();
-+
-+	atomic_inc(&per_cpu(unlikely_trace_disabled, cpu));
-+}
-+
-+void trace_unlikely_start(void)
-+{
-+	/* preemption should be disabled */
-+	int cpu = smp_processor_id();
-+
-+	atomic_dec(&per_cpu(unlikely_trace_disabled, cpu));
-+}
-+
-+static void
-+probe_likely_condition(struct ftrace_likely_data *f, int val, int expect)
-+{
-+	struct trace_array *tr = unlikely_tracer;
-+	struct ring_buffer_event *event;
-+	struct trace_unlikely *entry;
-+	unsigned long flags, irq_flags;
-+	int cpu, resched, pc;
-+
-+	if (unlikely(!tr))
-+		return;
-+
-+	pc = preempt_count();
-+	/* Can be called within schedule */
-+	resched = need_resched();
-+	preempt_disable_notrace();
-+	cpu = raw_smp_processor_id();
-+	if (atomic_inc_return(&per_cpu(unlikely_trace_disabled, cpu)) != 1)
-+		goto out;
-+
-+	event = ring_buffer_lock_reserve(tr->buffer, sizeof(*entry),
-+					 &irq_flags);
-+	if (!event)
-+		goto out;
-+
-+	local_save_flags(flags);
-+	entry	= ring_buffer_event_data(event);
-+	tracing_generic_entry_update(&entry->ent, flags, pc);
-+	entry->ent.type		= TRACE_UNLIKELY;
-+
-+	/*
-+	 * I would love to save just the ftrace_likely_data pointer, but
-+	 * this code can also be used by modules. Ugly things can happen
-+	 * if the module is unloaded, and then we go and read the
-+	 * pointer.  This is slower, but much safer.
-+	 */
-+
-+	strncpy(entry->func, f->func, TRACE_FUNC_SIZE);
-+	strncpy(entry->file, f->file, TRACE_FILE_SIZE);
-+	entry->func[TRACE_FUNC_SIZE] = 0;
-+	entry->file[TRACE_FILE_SIZE] = 0;
-+	entry->line = f->line;
-+	entry->correct = val == expect;
-+
-+	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
-+
-+ out:
-+	atomic_dec(&per_cpu(unlikely_trace_disabled, cpu));
-+	if (resched)
-+		preempt_enable_no_resched_notrace();
-+	else
-+		preempt_enable_notrace();
-+}
-+
-+static inline
-+void trace_likely_condition(struct ftrace_likely_data *f, int val, int expect)
-+{
-+	if (!unlikely_tracing_enabled)
-+		return;
-+
-+	probe_likely_condition(f, val, expect);
-+}
-+
-+int enable_unlikely_tracing(struct trace_array *tr)
-+{
-+	int ret = 0;
-+
-+	mutex_lock(&unlikely_tracing_mutex);
-+	unlikely_tracer = tr;
-+	/*
-+	 * Must be seen before enabling. The reader is a condition
-+	 * where we do not need a matching rmb()
-+	 */
-+	smp_wmb();
-+	unlikely_tracing_enabled++;
-+	mutex_unlock(&unlikely_tracing_mutex);
-+
-+	return ret;
-+}
-+
-+void disable_unlikely_tracing(void)
-+{
-+	mutex_lock(&unlikely_tracing_mutex);
-+
-+	if (!unlikely_tracing_enabled)
-+		goto out_unlock;
-+
-+	unlikely_tracing_enabled--;
-+
-+ out_unlock:
-+	mutex_unlock(&unlikely_tracing_mutex);
-+}
-+#else
-+static inline
-+void trace_likely_condition(struct ftrace_likely_data *f, int val, int expect)
-+{
-+}
-+#endif /* CONFIG_UNLIKELY_TRACER */
-+
- void ftrace_likely_update(struct ftrace_likely_data *f, int val, int expect)
- {
-+	/*
-+	 * I would love to have a trace point here instead, but the
-+	 * trace point code is so inundated with unlikely and likely
-+	 * conditions that the recursive nightmare that exists is too
-+	 * much to try to get working. At least for now.
-+	 */
-+	trace_likely_condition(f, val, expect);
-+
- 	/* FIXME: Make this atomic! */
- 	if (val == expect)
- 		f->correct++;
-Index: linux-tip.git/kernel/trace/trace.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/trace.c	2008-10-29 12:32:30.000000000 -0400
-+++ linux-tip.git/kernel/trace/trace.c	2008-10-29 12:32:35.000000000 -0400
-@@ -235,6 +235,9 @@ static const char *trace_options[] = {
- 	"stacktrace",
- 	"sched-tree",
- 	"ftrace_printk",
-+#ifdef CONFIG_UNLIKELY_TRACER
-+	"unlikely",
-+#endif
- 	NULL
- };
- 
-@@ -1457,6 +1460,17 @@ print_lat_fmt(struct trace_iterator *ite
- 			trace_seq_print_cont(s, iter);
- 		break;
- 	}
-+	case TRACE_UNLIKELY: {
-+		struct trace_unlikely *field;
-+
-+		trace_assign_type(field, entry);
-+
-+		trace_seq_printf(s, "[%s] %-30.30s %d\n",
-+				 field->correct ? "correct" : "INCORRECT",
-+				 field->func,
-+				 field->line);
-+		break;
-+	}
- 	default:
- 		trace_seq_printf(s, "Unknown type %d\n", entry->type);
- 	}
-@@ -1593,6 +1607,17 @@ static enum print_line_t print_trace_fmt
- 			trace_seq_print_cont(s, iter);
- 		break;
- 	}
-+	case TRACE_UNLIKELY: {
-+		struct trace_unlikely *field;
-+
-+		trace_assign_type(field, entry);
-+
-+		trace_seq_printf(s, "[%s] %-30.30s %d\n",
-+				 field->correct ? "correct" : "INCORRECT",
-+				 field->func,
-+				 field->line);
-+		break;
-+	}
- 	}
- 	return TRACE_TYPE_HANDLED;
- }
-@@ -1675,6 +1700,10 @@ static enum print_line_t print_raw_fmt(s
- 			trace_seq_print_cont(s, iter);
- 		break;
- 	}
-+	case TRACE_UNLIKELY: {
-+		/* IGNORE */
-+		break;
-+	};
- 	}
- 	return TRACE_TYPE_HANDLED;
- }
-@@ -2362,8 +2391,14 @@ tracing_ctrl_write(struct file *filp, co
- 
- 		tr->ctrl = val;
- 
-+		if (!val)
-+			trace_unlikely_disable();
-+
- 		if (current_trace && current_trace->ctrl_update)
- 			current_trace->ctrl_update(tr);
-+
-+		if (val)
-+			trace_unlikely_enable(tr);
- 	}
- 	mutex_unlock(&trace_types_lock);
- 
-@@ -2425,6 +2460,7 @@ tracing_set_trace_write(struct file *fil
- 	if (t == current_trace)
- 		goto out;
- 
-+	trace_unlikely_disable();
- 	if (current_trace && current_trace->reset)
- 		current_trace->reset(tr);
- 
-@@ -2432,6 +2468,7 @@ tracing_set_trace_write(struct file *fil
- 	if (t->init)
- 		t->init(tr);
- 
-+	trace_unlikely_enable(tr);
-  out:
- 	mutex_unlock(&trace_types_lock);
- 
-Index: linux-tip.git/kernel/trace/trace.h
-===================================================================
---- linux-tip.git.orig/kernel/trace/trace.h	2008-10-29 12:32:30.000000000 -0400
-+++ linux-tip.git/kernel/trace/trace.h	2008-10-29 12:32:35.000000000 -0400
-@@ -21,6 +21,7 @@ enum trace_type {
- 	TRACE_SPECIAL,
- 	TRACE_MMIO_RW,
- 	TRACE_MMIO_MAP,
-+	TRACE_UNLIKELY,
- 	TRACE_BOOT,
- 
- 	__TRACE_LAST_TYPE
-@@ -117,6 +118,16 @@ struct trace_boot {
- 	struct boot_trace	initcall;
- };
- 
-+#define TRACE_FUNC_SIZE 30
-+#define TRACE_FILE_SIZE 20
-+struct trace_unlikely {
-+	struct trace_entry	ent;
-+	unsigned	        line;
-+	char			func[TRACE_FUNC_SIZE+1];
-+	char			file[TRACE_FILE_SIZE+1];
-+	char			correct;
-+};
-+
- /*
-  * trace_flag_type is an enumeration that holds different
-  * states when a trace occurs. These are:
-@@ -217,6 +228,7 @@ extern void __ftrace_bad_type(void);
- 		IF_ASSIGN(var, ent, struct trace_mmiotrace_map,		\
- 			  TRACE_MMIO_MAP);				\
- 		IF_ASSIGN(var, ent, struct trace_boot, TRACE_BOOT);	\
-+		IF_ASSIGN(var, ent, struct trace_unlikely, TRACE_UNLIKELY); \
- 		__ftrace_bad_type();					\
- 	} while (0)
- 
-@@ -413,8 +425,39 @@ enum trace_iterator_flags {
- 	TRACE_ITER_STACKTRACE		= 0x100,
- 	TRACE_ITER_SCHED_TREE		= 0x200,
- 	TRACE_ITER_PRINTK		= 0x400,
-+#ifdef CONFIG_UNLIKELY_TRACER
-+	TRACE_ITER_UNLIKELY		= 0x800,
-+#endif
- };
- 
- extern struct tracer nop_trace;
- 
-+#ifdef CONFIG_UNLIKELY_TRACER
-+extern int enable_unlikely_tracing(struct trace_array *tr);
-+extern void disable_unlikely_tracing(void);
-+static inline int trace_unlikely_enable(struct trace_array *tr)
-+{
-+	if (trace_flags & TRACE_ITER_UNLIKELY)
-+		return enable_unlikely_tracing(tr);
-+	return 0;
-+}
-+static inline void trace_unlikely_disable(void)
-+{
-+	/* due to races, always disable */
-+	disable_unlikely_tracing();
-+}
-+extern void trace_unlikely_stop(void);
-+extern void trace_unlikely_start(void);
-+#else
-+static inline int trace_unlikely_enable(struct trace_array *tr)
-+{
-+	return 0;
-+}
-+static inline void trace_unlikely_disable(void)
-+{
-+}
-+static inline void trace_unlikely_stop(void) { }
-+static inline void trace_unlikely_start(void) { }
-+#endif /* CONFIG_UNLIKELY_TRACER */
-+
- #endif /* _LINUX_KERNEL_TRACE_H */
-Index: linux-tip.git/kernel/trace/ring_buffer.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/ring_buffer.c	2008-10-29 12:32:30.000000000 -0400
-+++ linux-tip.git/kernel/trace/ring_buffer.c	2008-10-29 12:32:35.000000000 -0400
-@@ -16,6 +16,8 @@
- #include <linux/list.h>
- #include <linux/fs.h>
- 
-+#include "trace.h"
-+
- /* Up this if you want to test the TIME_EXTENTS and normalization */
- #define DEBUG_SHIFT 0
- 
-@@ -1139,7 +1141,14 @@ ring_buffer_lock_reserve(struct ring_buf
- 	if (length > BUF_PAGE_SIZE)
- 		goto out;
- 
-+	/*
-+	 * Ugly, but the unlikely tracing will enter back into
-+	 * the ring buffer code. Namely through the timestamp, causing
-+	 * a triggering of the "again" loop, that will be infinite.
-+	 */
-+	trace_unlikely_stop();
- 	event = rb_reserve_next_event(cpu_buffer, RINGBUF_TYPE_DATA, length);
-+	trace_unlikely_start();
- 	if (!event)
- 		goto out;
- 
-@@ -1251,8 +1260,10 @@ int ring_buffer_write(struct ring_buffer
- 		goto out;
- 
- 	event_length = rb_calculate_event_length(length);
-+	trace_unlikely_stop();
- 	event = rb_reserve_next_event(cpu_buffer,
- 				      RINGBUF_TYPE_DATA, event_length);
-+	trace_unlikely_start();
- 	if (!event)
- 		goto out;
- 
-
-
+-- 
+Revd. Jonathan McDowell, ULC | Shall I call the United Nations?
