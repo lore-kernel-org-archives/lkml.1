@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753066AbYJ2Ihl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbYJ2Imq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753066AbYJ2Ihl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 04:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbYJ2Ihd
+	id S1753456AbYJ2Imq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 04:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYJ2Imi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 04:37:33 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41405 "EHLO mx3.mail.elte.hu"
+	Wed, 29 Oct 2008 04:42:38 -0400
+Received: from mga09.intel.com ([134.134.136.24]:30345 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752707AbYJ2Ihc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 04:37:32 -0400
-Date: Wed, 29 Oct 2008 09:37:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: jens.axboe@oracle.com, jeremy@goop.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] x86: replace BIO_VMERGE_BOUNDARY with
-	BIOVEC_PHYS_MERGEABLE
-Message-ID: <20081029083713.GE6364@elte.hu>
-References: <20081027094111.GU22217@kernel.dk> <4905A961.9000603@goop.org> <20081027115659.GZ22217@kernel.dk> <20081029080603J.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081029080603J.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	id S1752656AbYJ2Imh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 04:42:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,505,1220252400"; 
+   d="asc'?scan'208";a="353470117"
+Subject: Re: [PATH -mm -v2] Fix a race condtion of oops_in_progress
+From: Huang Ying <ying.huang@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081029083434.GC6364@elte.hu>
+References: <1225268796.24095.48.camel@yhuang-dev.sh.intel.com>
+	 <20081029083434.GC6364@elte.hu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-lXr6ZGOsQRQydq2zETKM"
+Date: Wed, 29 Oct 2008 16:42:16 +0800
+Message-Id: <1225269736.24095.50.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+--=-lXr6ZGOsQRQydq2zETKM
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> On Mon, 27 Oct 2008 12:57:00 +0100
-> Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Mon, Oct 27 2008, Jeremy Fitzhardinge wrote:
-> > > Jens Axboe wrote:
-> > > >Pretty much baffles me as well, xen should just need to do
-> > > >
-> > > >#define BIOVEC_PHYS_MERGEABLE(vec1, vec2)       0
-> > > >  
-> > > 
-> > > It needs to be a runtime switch, since we only want to do this when 
-> > > actually running under Xen.  Also, its possible that the two pages might 
-> > > actually be physically contiguous, so they could be merged anyway.
-> > 
-> > Alright, then add a xen_biovec_phys_mergeable(vec1, vec2) in the xen
-> > code that actually checks this for real. You can add your switch there
-> > as well. Then put the BIOVEC_PHYS_MERGEABLE() in the xen arch includes,
-> > done.
-> > 
-> > What Tomo is saying is that this has nothing to do with virtual merging,
-> > and he's right.
-> 
-> Yeah, overriding BIOVEC_PHYS_MERGEABLE perfectly works for Xen. And it
-> is not related with BIO_VMERGE_BOUNDARY at all.
-> 
-> Ingo, please put this patch into your tree:
-> 
-> http://marc.info/?l=linux-kernel&m=122482703716620&w=2
+On Wed, 2008-10-29 at 02:34 -0600, Ingo Molnar wrote:
+> * Huang Ying <ying.huang@intel.com> wrote:
+>=20
+> > Fix a race condition accessing oops_in_progress.  Which may be=20
+> > changed on multiple CPU simultaneously, but it is changed via=20
+> > non-atomic operation ++/--.  This patch changes the definition of=20
+> > oops_in_process from int to atomic_t, and accessing method to atomic=20
+> > operations.
+> >=20
+> >=20
+> > ChangeLog
+> >=20
+> > v2:
+> >=20
+> > - Includes fixes from Andrew Moton.
+> >=20
+> > - Re-based on Matthew Wilcox's new atomic_t patch.
+>=20
+> hm, there are a couple of places now that do atomic_set(,1) - they=20
+> should be atomic_inc(), correct?
 
-does it have any dependency on:
+I just translate "oops_in_progress =3D 1" to
+"atomic_set(&oops_in_progress, 1)". I think this is the safest method to
+do the translation.
 
-  Subject: [PATCH 1/2] bio: define __BIOVEC_PHYS_MERGEABLE
+Best Regards,
+Huang Ying=20
 
-?
 
-	Ingo
+--=-lXr6ZGOsQRQydq2zETKM
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkkIIeMACgkQKhFGF+eHlpgiOQCgk/jvUlfyqnrFa80XGtGVcXFG
+s+0An1Rfwfa72d5Yfr2xTecB+/FHUOP7
+=liIB
+-----END PGP SIGNATURE-----
+
+--=-lXr6ZGOsQRQydq2zETKM--
+
