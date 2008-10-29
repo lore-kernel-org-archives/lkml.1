@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbYJ2Pkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbYJ2PnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633AbYJ2Pkb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 11:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbYJ2PkU
+	id S1754490AbYJ2PnG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 11:43:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYJ2Pmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 11:40:20 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:45447 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752896AbYJ2PkT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 11:40:19 -0400
-Date: Wed, 29 Oct 2008 11:40:14 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Mike Snitzer <snitzer@gmail.com>, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Kirill Korotaev <dev@openvz.org>
-Subject: Re: potential regression in ext[34] call to __page_symlink()?
-Message-ID: <20081029154014.GA23643@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Nick Piggin <npiggin@suse.de>, Mike Snitzer <snitzer@gmail.com>,
-	linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Kirill Korotaev <dev@openvz.org>
-References: <170fa0d20810281711s2a508ed2o1af0db30733e8d2d@mail.gmail.com> <20081029024048.GB3766@mit.edu> <20081029032557.GA17624@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081029032557.GA17624@wotan.suse.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Wed, 29 Oct 2008 11:42:54 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52031 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752668AbYJ2Pmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 11:42:54 -0400
+Subject: [PATCH] Capabilities: BUG when an invalid capability is requested
+From: Eric Paris <eparis@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: morgan@kernel.org, serue@us.ibm.com, arjan@infradead.org
+Content-Type: text/plain
+Date: Wed, 29 Oct 2008 11:42:12 -0400
+Message-Id: <1225294932.23736.28.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 04:25:57AM +0100, Nick Piggin wrote:
-> 
-> I was leaning towards adding a new AOP_FLAG_ there, usable just by
-> filesystem code, and just to tell any helper code to clear __GFP_FS.
-> That way callers won't get confused into thinking they can do
-> GFP_ATOMIC writes from interrupt context or something ;) (which,
-> trust me, somebody will attempt to do if it looks remotely feasible!)
+If an invalid (large) capability is requested the capabilities system
+may panic as it is dereferencing an array of fixed (short) length.  Its
+possible (and actually often happens) that the capability system
+accidentally stumbled into a valid memory region but it also regularly
+happens that it hits invalid memory and BUGs.  If such an operation does
+get past cap_capable then the selinux system is sure to have problems as
+it already does a (simple) validity check and BUG.  This is known to
+happen by the broken and buggy firegl driver.
 
-Good point!!
+This patch cleanly checks all capable calls and BUG if a call is for an
+invalid capability.  This will likely break the firegl driver for some
+situations, but it is the right thing to do.  Garbage into a security
+system gets you killed/bugged
 
-						- Ted
+Signed-off-by: Eric Paris <eparis@redhat.com>
+
+---
+
+ kernel/capability.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/capability.c b/kernel/capability.c
+index 33e51e7..50d9d99 100644
+--- a/kernel/capability.c
++++ b/kernel/capability.c
+@@ -498,6 +498,11 @@ asmlinkage long sys_capset(cap_user_header_t header, const cap_user_data_t data)
+  */
+ int capable(int cap)
+ {
++	if (unlikely(!cap_valid(cap))) {
++		printk(KERN_CRIT "capable() called with invalid cap=%u\n", cap);
++		BUG();
++	}
++
+ 	if (has_capability(current, cap)) {
+ 		current->flags |= PF_SUPERPRIV;
+ 		return 1;
+
 
