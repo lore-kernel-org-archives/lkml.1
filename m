@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbYJ2Wz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757506AbYJ2W4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757883AbYJ2Wz7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 18:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756258AbYJ2Wpq
+	id S1757506AbYJ2W4v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 18:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbYJ2WqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 18:45:46 -0400
-Received: from kroah.org ([198.145.64.141]:56256 "EHLO coco.kroah.org"
+	Wed, 29 Oct 2008 18:46:23 -0400
+Received: from kroah.org ([198.145.64.141]:56264 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754709AbYJ2Wph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 18:45:37 -0400
+	id S1755797AbYJ2WqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 18:46:04 -0400
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
-Cc: Solomon Peachy <pizza@shaftnet.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 33/49] Staging: wlan-ng: Eliminate usage of procfs.
-Date: Wed, 29 Oct 2008 15:40:00 -0700
-Message-Id: <1225320016-21803-33-git-send-email-greg@kroah.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [PATCH 35/49] Staging: at76_usb: remove compiler warnings
+Date: Wed, 29 Oct 2008 15:40:02 -0700
+Message-Id: <1225320016-21803-35-git-send-email-greg@kroah.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081029223832.GC21657@kroah.com>
 References: <20081029223832.GC21657@kroah.com>
@@ -22,317 +23,88 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Solomon Peachy <pizza@shaftnet.org>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-These files are not needed to work properly, and don't belong in procfs
+3 functions are now not used, remove them.
 
-Signed-off-by: Solomon Peachy <pizza@shaftnet.org>
+Cc: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/wlan-ng/p80211netdev.c |  126 --------------------------------
- drivers/staging/wlan-ng/p80211netdev.h |   10 ---
- drivers/staging/wlan-ng/prism2sta.c    |   67 -----------------
- 3 files changed, 0 insertions(+), 203 deletions(-)
+ drivers/staging/at76_usb/at76_usb.c |   54 -----------------------------------
+ 1 files changed, 0 insertions(+), 54 deletions(-)
 
-diff --git a/drivers/staging/wlan-ng/p80211netdev.c b/drivers/staging/wlan-ng/p80211netdev.c
-index 9d64e0b..d229780 100644
---- a/drivers/staging/wlan-ng/p80211netdev.c
-+++ b/drivers/staging/wlan-ng/p80211netdev.c
-@@ -112,10 +112,6 @@
- 
- #define __NO_VERSION__		/* prevent the static definition */
- 
--#ifdef CONFIG_PROC_FS
--static struct proc_dir_entry	*proc_p80211;
--#endif
--
- /*================================================================*/
- /* Local Function Declarations */
- 
-@@ -134,16 +130,6 @@ static int p80211knetdev_set_mac_address(netdevice_t *dev, void *addr);
- static void p80211knetdev_tx_timeout(netdevice_t *netdev);
- static int p80211_rx_typedrop( wlandevice_t *wlandev, UINT16 fc);
- 
--#ifdef CONFIG_PROC_FS
--static int
--p80211netdev_proc_read(
--	char	*page,
--	char	**start,
--	off_t	offset,
--	int	count,
--	int	*eof,
--	void	*data);
--#endif
- 
- /*================================================================*/
- /* Function Definitions */
-@@ -164,14 +150,6 @@ void p80211netdev_startup(void)
- {
- 	DBFENTER;
- 
--#ifdef CONFIG_PROC_FS
--	if (init_net.proc_net != NULL) {
--		proc_p80211 = create_proc_entry(
--				"p80211",
--				(S_IFDIR|S_IRUGO|S_IXUGO),
--				init_net.proc_net);
--	}
--#endif
- 	DBFEXIT;
- 	return;
- }
-@@ -192,11 +170,6 @@ void
- p80211netdev_shutdown(void)
- {
- 	DBFENTER;
--#ifdef CONFIG_PROC_FS
--	if (proc_p80211 != NULL) {
--		remove_proc_entry("p80211", init_net.proc_net);
--	}
--#endif
- 	DBFEXIT;
+diff --git a/drivers/staging/at76_usb/at76_usb.c b/drivers/staging/at76_usb/at76_usb.c
+index 4f7ea6f..b8a056d 100644
+--- a/drivers/staging/at76_usb/at76_usb.c
++++ b/drivers/staging/at76_usb/at76_usb.c
+@@ -880,43 +880,6 @@ static int at76_set_pm_mode(struct at76_priv *priv)
+ 	return ret;
  }
  
-@@ -997,23 +970,6 @@ int register_wlandev(wlandevice_t *wlandev)
- 
- 	strcpy(wlandev->name, dev->name);
- 
--#ifdef CONFIG_PROC_FS
--	if (proc_p80211) {
--		wlandev->procdir = proc_mkdir(wlandev->name, proc_p80211);
--		if ( wlandev->procdir )
--			wlandev->procwlandev =
--				create_proc_read_entry("wlandev", 0,
--						       wlandev->procdir,
--						       p80211netdev_proc_read,
--						       wlandev);
--		if (wlandev->nsd_proc_read)
--			create_proc_read_entry("nsd", 0,
--					       wlandev->procdir,
--					       wlandev->nsd_proc_read,
--					       wlandev);
--	}
--#endif
--
- 	DBFEXIT;
- 	return 0;
- }
-@@ -1042,18 +998,6 @@ int unregister_wlandev(wlandevice_t *wlandev)
- 
- 	DBFENTER;
- 
--#ifdef CONFIG_PROC_FS
--	if ( wlandev->procwlandev ) {
--		remove_proc_entry("wlandev", wlandev->procdir);
--	}
--	if ( wlandev->nsd_proc_read ) {
--		remove_proc_entry("nsd", wlandev->procdir);
--	}
--	if (wlandev->procdir) {
--		remove_proc_entry(wlandev->name, proc_p80211);
--	}
--#endif
--
- 	unregister_netdev(wlandev->netdev);
- 
- 	/* Now to clean out the rx queue */
-@@ -1065,76 +1009,6 @@ int unregister_wlandev(wlandevice_t *wlandev)
- 	return 0;
- }
- 
--#ifdef CONFIG_PROC_FS
--/*----------------------------------------------------------------
--* proc_read
--*
--* Read function for /proc/net/p80211/<device>/wlandev
--*
--* Arguments:
--*	buf
--*	start
--*	offset
--*	count
--*	eof
--*	data
--* Returns:
--*	zero on success, non-zero otherwise.
--* Call Context:
--*	Can be either interrupt or not.
------------------------------------------------------------------*/
--static int
--p80211netdev_proc_read(
--	char	*page,
--	char	**start,
--	off_t	offset,
--	int	count,
--	int	*eof,
--	void	*data)
+-/* Set the association id for power save mode */
+-static int at76_set_associd(struct at76_priv *priv, u16 id)
 -{
--	char	 *p = page;
--	wlandevice_t *wlandev = (wlandevice_t *) data;
+-	int ret = 0;
 -
--	DBFENTER;
--	if (offset != 0) {
--		*eof = 1;
--		goto exit;
--	}
+-	priv->mib_buf.type = MIB_MAC_MGMT;
+-	priv->mib_buf.size = 2;
+-	priv->mib_buf.index = offsetof(struct mib_mac_mgmt, station_id);
+-	priv->mib_buf.data.word = cpu_to_le16(id);
 -
--	p += sprintf(p, "p80211 version: %s\n\n",
--		     WLAN_RELEASE);
--	p += sprintf(p, "name       : %s\n", wlandev->name);
--	p += sprintf(p, "nsd name   : %s\n", wlandev->nsdname);
--	p += sprintf(p, "address    : %02x:%02x:%02x:%02x:%02x:%02x\n",
--		     wlandev->netdev->dev_addr[0], wlandev->netdev->dev_addr[1], wlandev->netdev->dev_addr[2],
--		     wlandev->netdev->dev_addr[3], wlandev->netdev->dev_addr[4], wlandev->netdev->dev_addr[5]);
--	p += sprintf(p, "nsd caps   : %s%s%s%s%s%s%s%s%s%s\n",
--		     (wlandev->nsdcaps & P80211_NSDCAP_HARDWAREWEP) ? "wep_hw " : "",
--		     (wlandev->nsdcaps & P80211_NSDCAP_TIEDWEP) ? "wep_tied " : "",
--		     (wlandev->nsdcaps & P80211_NSDCAP_NOHOSTWEP) ? "wep_hw_only " : "",
--		     (wlandev->nsdcaps & P80211_NSDCAP_PBCC) ? "pbcc " : "",
--		     (wlandev->nsdcaps & P80211_NSDCAP_SHORT_PREAMBLE) ? "short_preamble " : "",
--		     (wlandev->nsdcaps & P80211_NSDCAP_AGILITY) ? "agility " : "",
--		     (wlandev->nsdcaps & P80211_NSDCAP_AP_RETRANSMIT) ? "ap_retransmit " : "",
--		     (wlandev->nsdcaps & P80211_NSDCAP_HWFRAGMENT) ? "hw_frag " : "",
--		     (wlandev->nsdcaps & P80211_NSDCAP_AUTOJOIN) ? "autojoin " : "",
--		     (wlandev->nsdcaps & P80211_NSDCAP_NOSCAN) ? "" : "scan ");
+-	ret = at76_set_mib(priv, &priv->mib_buf);
+-	if (ret < 0)
+-		printk(KERN_ERR "%s: set_mib (associd) failed: %d\n",
+-		       wiphy_name(priv->hw->wiphy), ret);
 -
--
--	p += sprintf(p, "bssid      : %02x:%02x:%02x:%02x:%02x:%02x\n",
--		     wlandev->bssid[0], wlandev->bssid[1], wlandev->bssid[2],
--		     wlandev->bssid[3], wlandev->bssid[4], wlandev->bssid[5]);
--
--	p += sprintf(p, "Enabled    : %s%s\n",
--		     (wlandev->shortpreamble) ? "short_preamble " : "",
--		     (wlandev->hostwep & HOSTWEP_PRIVACYINVOKED) ? "privacy" : "");
--
--
-- exit:
--	DBFEXIT;
--	return (p - page);
+-	return ret;
 -}
--#endif
- 
- /*----------------------------------------------------------------
- * p80211netdev_hwremoved
-diff --git a/drivers/staging/wlan-ng/p80211netdev.h b/drivers/staging/wlan-ng/p80211netdev.h
-index ddfcc98..62fc2cb 100644
---- a/drivers/staging/wlan-ng/p80211netdev.h
-+++ b/drivers/staging/wlan-ng/p80211netdev.h
-@@ -203,10 +203,6 @@ typedef struct wlandevice
- 					      netdevice_t *dev);
- 	void		(*tx_timeout)(struct wlandevice *wlandev);
- 
--#ifdef CONFIG_PROC_FS
--	int             (*nsd_proc_read)(char *page, char **start, off_t offset, int count, int	*eof, void *data);
--#endif
 -
- 	/* 802.11 State */
- 	UINT8		bssid[WLAN_BSSID_LEN];
- 	p80211pstr32_t	ssid;
-@@ -228,12 +224,6 @@ typedef struct wlandevice
- 	netdevice_t		*netdev;	/* ptr to linux netdevice */
- 	struct net_device_stats linux_stats;
- 
--#ifdef CONFIG_PROC_FS
--	/* Procfs support */
--	struct proc_dir_entry	*procdir;
--	struct proc_dir_entry	*procwlandev;
--#endif
+-/* Set the listen interval for power save mode */
+-static int at76_set_listen_interval(struct at76_priv *priv, u16 interval)
+-{
+-	int ret = 0;
 -
- 	/* Rx bottom half */
- 	struct tasklet_struct	rx_bh;
- 
-diff --git a/drivers/staging/wlan-ng/prism2sta.c b/drivers/staging/wlan-ng/prism2sta.c
-index 05c0480..bc48014 100644
---- a/drivers/staging/wlan-ng/prism2sta.c
-+++ b/drivers/staging/wlan-ng/prism2sta.c
-@@ -164,17 +164,6 @@ static void	prism2sta_inf_authreq_defer(
- static void	prism2sta_inf_psusercnt(
- 			wlandevice_t *wlandev, hfa384x_InfFrame_t *inf);
- 
--#ifdef CONFIG_PROC_FS
--static int
--prism2sta_proc_read(
--	char	*page,
--	char	**start,
--	off_t	offset,
--	int	count,
--	int	*eof,
--	void	*data);
--#endif
+-	priv->mib_buf.type = MIB_MAC;
+-	priv->mib_buf.size = 2;
+-	priv->mib_buf.index = offsetof(struct mib_mac, listen_interval);
+-	priv->mib_buf.data.word = cpu_to_le16(interval);
 -
- /*================================================================*/
- /* Function Definitions */
- 
-@@ -2177,9 +2166,6 @@ static wlandevice_t *create_wlan(void)
- 	wlandev->open = prism2sta_open;
- 	wlandev->close = prism2sta_close;
- 	wlandev->reset = prism2sta_reset;
--#ifdef CONFIG_PROC_FS
--	wlandev->nsd_proc_read = prism2sta_proc_read;
--#endif
- 	wlandev->txframe = prism2sta_txframe;
- 	wlandev->mlmerequest = prism2sta_mlmerequest;
- 	wlandev->set_multicast_list = prism2sta_setmulticast;
-@@ -2194,59 +2180,6 @@ static wlandevice_t *create_wlan(void)
- 	return wlandev;
+-	ret = at76_set_mib(priv, &priv->mib_buf);
+-	if (ret < 0)
+-		printk(KERN_ERR
+-		       "%s: set_mib (listen_interval) failed: %d\n",
+-		       wiphy_name(priv->hw->wiphy), ret);
+-
+-	return ret;
+-}
+-
+ static int at76_set_preamble(struct at76_priv *priv, u8 type)
+ {
+ 	int ret = 0;
+@@ -985,23 +948,6 @@ static int at76_set_autorate_fallback(struct at76_priv *priv, int onoff)
+ 	return ret;
  }
  
--#ifdef CONFIG_PROC_FS
--static int
--prism2sta_proc_read(
--	char	*page,
--	char	**start,
--	off_t	offset,
--	int	count,
--	int	*eof,
--	void	*data)
+-static int at76_add_mac_address(struct at76_priv *priv, void *addr)
 -{
--	char	 *p = page;
--	wlandevice_t *wlandev = (wlandevice_t *) data;
--	hfa384x_t *hw = (hfa384x_t *) wlandev->priv;
+-	int ret = 0;
 -
--	UINT16 hwtype = 0;
+-	priv->mib_buf.type = MIB_MAC_ADDR;
+-	priv->mib_buf.size = ETH_ALEN;
+-	priv->mib_buf.index = offsetof(struct mib_mac_addr, mac_addr);
+-	memcpy(priv->mib_buf.data.addr, addr, ETH_ALEN);
 -
--	DBFENTER;
--	if (offset != 0) {
--		*eof = 1;
--		goto exit;
--	}
+-	ret = at76_set_mib(priv, &priv->mib_buf);
+-	if (ret < 0)
+-		printk(KERN_ERR "%s: set_mib (MAC_ADDR, mac_addr) failed: %d\n",
+-		       wiphy_name(priv->hw->wiphy), ret);
 -
--	// XXX 0x0001 for prism2.5/3, 0x0000 for prism2.
--	hwtype = BIT0;
--
--	p += sprintf(p, "# %s version %s\n\n",
--		     dev_info,
--		     WLAN_RELEASE);
--
--	p += sprintf(p, "# nic h/w: id=0x%02x %d.%d.%d\n",
--		     hw->ident_nic.id, hw->ident_nic.major,
--		     hw->ident_nic.minor, hw->ident_nic.variant);
--
--	p += sprintf(p, "# pri f/w: id=0x%02x %d.%d.%d\n",
--		     hw->ident_pri_fw.id, hw->ident_pri_fw.major,
--		     hw->ident_pri_fw.minor, hw->ident_pri_fw.variant);
--
--	if (hw->ident_sta_fw.id == 0x1f) {
--		p += sprintf(p, "# sta f/w: id=0x%02x %d.%d.%d\n",
--			     hw->ident_sta_fw.id, hw->ident_sta_fw.major,
--			     hw->ident_sta_fw.minor, hw->ident_sta_fw.variant);
--	} else {
--		p += sprintf(p, "# ap f/w: id=0x%02x %d.%d.%d\n",
--			     hw->ident_sta_fw.id, hw->ident_sta_fw.major,
--			     hw->ident_sta_fw.minor, hw->ident_sta_fw.variant);
--	}
--
-- exit:
--	DBFEXIT;
--	return (p - page);
+-	return ret;
 -}
--#endif
 -
- void prism2sta_commsqual_defer(struct work_struct *data)
+ static int at76_set_tkip_bssid(struct at76_priv *priv, const void *addr)
  {
- 	hfa384x_t		*hw = container_of(data, struct hfa384x, commsqual_bh);
+ 	int ret = 0;
 -- 
 1.6.0.2
 
