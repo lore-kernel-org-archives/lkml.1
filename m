@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbYJ2UdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbYJ2Uh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754751AbYJ2UdA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 16:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751070AbYJ2Ucw
+	id S1754233AbYJ2Uh2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 16:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbYJ2UhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 16:32:52 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:41660 "EHLO smtp5.pp.htv.fi"
+	Wed, 29 Oct 2008 16:37:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42716 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750732AbYJ2Ucv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 16:32:51 -0400
-Date: Wed, 29 Oct 2008 22:31:33 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 01/11] ftrace: handle generic arch calls
-Message-ID: <20081029203133.GC1816@cs181140183.pp.htv.fi>
-References: <20081022184313.179487464@goodmis.org> <20081022185135.618026303@goodmis.org> <alpine.DEB.1.10.0810271337370.8006@gandalf.stny.rr.com> <20081029190045.GC22105@uranus.ravnborg.org> <alpine.DEB.1.10.0810291517220.13214@gandalf.stny.rr.com> <20081029194956.GA22606@uranus.ravnborg.org> <20081029201646.GA1816@cs181140183.pp.htv.fi> <alpine.DEB.1.10.0810291622050.18694@gandalf.stny.rr.com>
+	id S1751870AbYJ2UhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 16:37:12 -0400
+Message-ID: <4908C951.2000309@redhat.com>
+Date: Wed, 29 Oct 2008 15:36:33 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810291622050.18694@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Arthur Jones <ajones@riverbed.com>
+CC: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>, sct@redhat.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: ext3: slow symlink corruption on umount...
+References: <20081024183733.GA25797@ajones-laptop.nbttech.com> <20081027165423.GB25797@ajones-laptop.nbttech.com> <20081029195403.GA8333@ajones-laptop.nbttech.com>
+In-Reply-To: <20081029195403.GA8333@ajones-laptop.nbttech.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 04:23:34PM -0400, Steven Rostedt wrote:
+Arthur Jones wrote:
+> This one's turning out to be a slippery fish.
+> I have found that the corruption appears to
+> be due to ->writepage() not getting called at all
+> for any of the long symlinks...
 > 
-> On Wed, 29 Oct 2008, Adrian Bunk wrote:
-> > > > 
-> > > > Since x86 is the ambiguous case, I made it the one that would be converted 
-> > > > to i386 or x86_64 since those could be passed in directly.
-> > > The trick is usually to replace use of ARCH with SRCARCH.
-> > 
-> > That won't help - what he wants to know is whether he's on 32bit or
-> > on 64bit.
+> Ring any bells anyone?  Any ideas where to look
+> or what to test?  This is my first foray into
+> ext3 and I could definitely use some expert advice...
 > 
-> I will still get the "bits" parameter.
+> Arthur
 
-Ah, I didn't get this bit from your email.
 
-> The issue that we are talking about 
-> here is that I have this ugly if statement that deals with the fact that 
-> we can get "x86", "x86_64" or "i386" passed in as the ARCH. I'm guessing 
-> if we switch ARCH to SRCARCH then we can just test against x86 and bits?
+Sorry for the silence, this is a nice bug you've found :)
 
-Yes.
+I can reproduce this at least, with this script:
 
-And as a bonus you will automatically get the correct output when you'll 
-add support for UML.
+#!/bin/bash
 
-> -- Steve
+umount /mnt/test2
+mount /dev/sdb4 /mnt/test2
+rm -f /mnt/test2/*
+dd if=/dev/zero of=/mnt/test2/bigfile bs=1M count=512
+touch
+/mnt/test2/thisisveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylongfilename
+ln -s
+/mnt/test2/thisisveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylongfilename
+/mnt/test2/link
+umount /mnt/test2
+mount /dev/sdb4 /mnt/test2
+ls /mnt/test2/
+umount /mnt/test2
 
-cu
-Adrian
+I'll look into it ...
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+-Eric
