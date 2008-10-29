@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbYJ2Nhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbYJ2Nr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754188AbYJ2Nhh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 09:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbYJ2Nh0
+	id S1754204AbYJ2Nr1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 09:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbYJ2NrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 09:37:26 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:44327 "EHLO pasmtpA.tele.dk"
+	Wed, 29 Oct 2008 09:47:11 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:43445 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753194AbYJ2NhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 09:37:25 -0400
-Date: Wed, 29 Oct 2008 14:26:55 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: Mike Anderson <andmike@linux.vnet.ibm.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Timeout regression introduced by	242f9dcb8ba6f68fcd217a119a7648a4f69290e9
-Message-ID: <20081029132654.GE31673@kernel.dk>
-References: <49043C7C.8050207@kernel.org> <1225034105.3958.4.camel@localhost.localdomain> <49051EA4.3040403@kernel.org> <20081027213006.GB17946@linux.vnet.ibm.com> <490666D6.8090603@kernel.org>
+	id S1753928AbYJ2NrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 09:47:10 -0400
+Date: Wed, 29 Oct 2008 15:45:53 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: =?utf-8?B?UmHDumw=?= Porcel <armin76@gentoo.org>,
+       linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, klausman@gentoo.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, rth@twiddle.net
+Subject: Re: [ALPHA] 2.6.28-rc fails to compile
+Message-ID: <20081029134553.GA9108@cs181140183.pp.htv.fi>
+References: <49083361.5060907@gentoo.org> <20081029100356.GA28224@cs181140183.pp.htv.fi> <20081029062741.7400e330@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <490666D6.8090603@kernel.org>
+In-Reply-To: <20081029062741.7400e330@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28 2008, Tejun Heo wrote:
-> Mike Anderson wrote:
-> > Tejun Heo <tj@kernel.org> wrote:
-> >> James Bottomley wrote:
-> >>> On Sun, 2008-10-26 at 18:46 +0900, Tejun Heo wrote:
-> >>>> Hello, Jens.
-> >>>>
-> >>>> Commit 242f9dcb8ba6f68fcd217a119a7648a4f69290e9 introduces a strange
-> >>>> regression for libata.  The second timeout gives puts different
-> >>>> pointer from the issued command onto eh_cmd_q breaking libata EH
-> >>>> command matching which triggers WARN_ON() in ata_eh_finish() and hangs
-> >>>> command processing or causes oops later depending on circumstances.
-> >>>>
-> >>>> Here are logs with induced timeouts (patch attached).  In commit
-> >>>> 242f9dcb8, the XXX messages for the second timeout shows different
-> >>>> scsi_cmd pointers for eh_cmd_q and qc->scmd which is initialized by
-> >>>> ata_scsi_qc_new() during command translation.
-> >>> I can't see a way we could be getting a different command passed in from
-> >>> the actual one, since the only way to lose the command from the request
-> >>> is to go through the command completion routines which free it (and end
-> >>> the request).
-> >> I have no idea either.  It's something in the timeout logic because on
-> >> the issue path the scmd pointer is identical but on tiemout pointer
-> >> for another scmd is queued on eh_cmd_q, which doesn't make much sense.
-> >>
-> > 
-> > I was trying to recreate this error using ata_ram wth v2.6.28-rc2.
-> > Currently I am not able to see this error on timeout recovery using this
-> > setup. Does IO load (or other factors) effect the error being seen?
+On Wed, Oct 29, 2008 at 06:27:41AM -0700, Arjan van de Ven wrote:
 > 
-> Not at all.  That's the only write command I issued.
+> Andrew has a patch for this in his tree for a while... I was assuming
+> he'd do a patchdump to Linus late in -rc1 but it seems not to have
+> happened..
 
-It's all extremely puzzling. Any chance I could talk you into stuffing
-some debug printks in there to see what the hell is going on?
+The basic problem for the Alpha build errors are circular #include's 
+(that are anyway a pretty bad thing), and I'm currently attacking
+that problem (it seems to be surprisingly easy).
+
+That's IMHO better than the patch in -mm that uninlines 
+pci_ioremap_bar().
+
+cu
+Adrian
 
 -- 
-Jens Axboe
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
