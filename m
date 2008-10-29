@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757000AbYJ2Wsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbYJ2Wsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757000AbYJ2Wsy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 18:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919AbYJ2Wo2
+	id S1756900AbYJ2Wsg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 18:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755838AbYJ2Wo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 18:44:28 -0400
-Received: from kroah.org ([198.145.64.141]:43770 "EHLO coco.kroah.org"
+	Wed, 29 Oct 2008 18:44:27 -0400
+Received: from kroah.org ([198.145.64.141]:43767 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755842AbYJ2WoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 18:44:20 -0400
+	id S1756031AbYJ2WoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 18:44:18 -0400
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 15/49] w35und: remove dead code from wbusb_f.h
-Date: Wed, 29 Oct 2008 15:39:42 -0700
-Message-Id: <1225320016-21803-15-git-send-email-greg@kroah.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Pavel Machek <pavel@suse.cz>
+Subject: [PATCH 14/49] Staging: w35und: remove usb_alloc_urb wrapper function
+Date: Wed, 29 Oct 2008 15:39:41 -0700
+Message-Id: <1225320016-21803-14-git-send-email-greg@kroah.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081029223832.GC21657@kroah.com>
 References: <20081029223832.GC21657@kroah.com>
@@ -22,184 +23,109 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-Remove dead code from wbusb_f.h and move the WbWLanInitialize() definition to
-wblinux_f.h where it arguably belongs to. As the wbusb_f.h is now empty, we can
-remove it completely.
+No need for a simple wrapper here.
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Acked-by: Pavel Machek <pavel@suse.cz>
+
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Pavel Machek <pavel@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/winbond/linux/wbusb.c   |   12 ------
- drivers/staging/winbond/linux/wbusb_f.h |   20 -----------
- drivers/staging/winbond/wbhal.c         |   57 ++++++++++++++-----------------
- drivers/staging/winbond/wbhal_f.h       |    2 -
- drivers/staging/winbond/wblinux_f.h     |    3 +-
- 5 files changed, 27 insertions(+), 67 deletions(-)
- delete mode 100644 drivers/staging/winbond/linux/wbusb_f.h
+ drivers/staging/winbond/linux/wb35reg.c |    8 ++++----
+ drivers/staging/winbond/linux/wb35rx.c  |    2 +-
+ drivers/staging/winbond/linux/wb35tx.c  |    4 ++--
+ drivers/staging/winbond/linux/wbusb_f.h |    7 -------
+ 4 files changed, 7 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/staging/winbond/linux/wbusb.c b/drivers/staging/winbond/linux/wbusb.c
-index c1c2642..eb11503 100644
---- a/drivers/staging/winbond/linux/wbusb.c
-+++ b/drivers/staging/winbond/linux/wbusb.c
-@@ -306,18 +306,6 @@ void packet_came(char *pRxBufferAddress, int PacketSize)
- 	ieee80211_rx_irqsafe(my_dev, skb, &rx_status);
+diff --git a/drivers/staging/winbond/linux/wb35reg.c b/drivers/staging/winbond/linux/wb35reg.c
+index c2864b1..191322d 100644
+--- a/drivers/staging/winbond/linux/wb35reg.c
++++ b/drivers/staging/winbond/linux/wb35reg.c
+@@ -26,7 +26,7 @@ Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 N
+ 	// Trying to use burst write function if use new hardware
+ 	UrbSize = sizeof(struct wb35_reg_queue) + DataSize + sizeof(struct usb_ctrlrequest);
+ 	OS_MEMORY_ALLOC( (void* *)&reg_queue, UrbSize );
+-	urb = wb_usb_alloc_urb(0);
++	urb = usb_alloc_urb(0, GFP_ATOMIC);
+ 	if( urb && reg_queue ) {
+ 		reg_queue->DIRECT = 2;// burst write register
+ 		reg_queue->INDEX = RegisterNo;
+@@ -175,7 +175,7 @@ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+ 	// update the register by send urb request------------------------------------
+ 	UrbSize = sizeof(struct wb35_reg_queue) + sizeof(struct usb_ctrlrequest);
+ 	OS_MEMORY_ALLOC( (void* *)&reg_queue, UrbSize );
+-	urb = wb_usb_alloc_urb(0);
++	urb = usb_alloc_urb(0, GFP_ATOMIC);
+ 	if (urb && reg_queue) {
+ 		reg_queue->DIRECT = 1;// burst write register
+ 		reg_queue->INDEX = RegisterNo;
+@@ -235,7 +235,7 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
+ 	// update the register by send urb request------------------------------------
+ 	UrbSize = sizeof(struct wb35_reg_queue) + sizeof(struct usb_ctrlrequest);
+ 	OS_MEMORY_ALLOC((void* *) &reg_queue, UrbSize );
+-	urb = wb_usb_alloc_urb(0);
++	urb = usb_alloc_urb(0, GFP_ATOMIC);
+ 	if (urb && reg_queue) {
+ 		reg_queue->DIRECT = 1;// burst write register
+ 		reg_queue->INDEX = RegisterNo;
+@@ -342,7 +342,7 @@ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
+ 	// update the variable by send Urb to read register ------------------------------------
+ 	UrbSize = sizeof(struct wb35_reg_queue) + sizeof(struct usb_ctrlrequest);
+ 	OS_MEMORY_ALLOC( (void* *)&reg_queue, UrbSize );
+-	urb = wb_usb_alloc_urb(0);
++	urb = usb_alloc_urb(0, GFP_ATOMIC);
+ 	if( urb && reg_queue )
+ 	{
+ 		reg_queue->DIRECT = 0;// read register
+diff --git a/drivers/staging/winbond/linux/wb35rx.c b/drivers/staging/winbond/linux/wb35rx.c
+index e565746..1326996 100644
+--- a/drivers/staging/winbond/linux/wb35rx.c
++++ b/drivers/staging/winbond/linux/wb35rx.c
+@@ -168,7 +168,7 @@ unsigned char Wb35Rx_initial(phw_data_t pHwData)
+ 	// Initial the Buffer Queue
+ 	Wb35Rx_reset_descriptor( pHwData );
+ 
+-	pWb35Rx->RxUrb = wb_usb_alloc_urb(0);
++	pWb35Rx->RxUrb = usb_alloc_urb(0, GFP_ATOMIC);
+ 	return (!!pWb35Rx->RxUrb);
  }
  
--unsigned char
--WbUsb_initial(phw_data_t pHwData)
--{
--	return 1;
--}
--
--
--void
--WbUsb_destroy(phw_data_t pHwData)
--{
--}
--
- static void wb35_disconnect(struct usb_interface *intf)
+diff --git a/drivers/staging/winbond/linux/wb35tx.c b/drivers/staging/winbond/linux/wb35tx.c
+index c54ef30..9c928ee 100644
+--- a/drivers/staging/winbond/linux/wb35tx.c
++++ b/drivers/staging/winbond/linux/wb35tx.c
+@@ -134,11 +134,11 @@ unsigned char Wb35Tx_initial(phw_data_t pHwData)
  {
- 	struct wb35_adapter * adapter = usb_get_intfdata(intf);
+ 	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
+ 
+-	pWb35Tx->Tx4Urb = wb_usb_alloc_urb(0);
++	pWb35Tx->Tx4Urb = usb_alloc_urb(0, GFP_ATOMIC);
+ 	if (!pWb35Tx->Tx4Urb)
+ 		return FALSE;
+ 
+-	pWb35Tx->Tx2Urb = wb_usb_alloc_urb(0);
++	pWb35Tx->Tx2Urb = usb_alloc_urb(0, GFP_ATOMIC);
+ 	if (!pWb35Tx->Tx2Urb)
+ 	{
+ 		usb_free_urb( pWb35Tx->Tx4Urb );
 diff --git a/drivers/staging/winbond/linux/wbusb_f.h b/drivers/staging/winbond/linux/wbusb_f.h
-deleted file mode 100644
-index dd633ba..0000000
+index db47e1d..dd633ba 100644
 --- a/drivers/staging/winbond/linux/wbusb_f.h
-+++ /dev/null
-@@ -1,20 +0,0 @@
--//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
--// Copyright (c) 1996-2004 Winbond Electronic Corporation
--//
--//  Module Name:
--//    wbusb_f.h
--//
--//  Abstract:
--//    Linux driver.
--//
--//  Author:
--//
--//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
--
--unsigned char WbUsb_initial(phw_data_t pHwData);
--void WbUsb_destroy(phw_data_t pHwData);
--unsigned char WbWLanInitialize(struct wb35_adapter *adapter);
--#define	WbUsb_Stop( _A )
--
--#define WbUsb_CheckForHang( _P )
--#define WbUsb_DetectStart( _P, _I )
-diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
-index 3049ab6..c8da1a3 100644
---- a/drivers/staging/winbond/wbhal.c
-+++ b/drivers/staging/winbond/wbhal.c
-@@ -37,34 +37,32 @@ u8 hal_init_hardware(phw_data_t pHwData, struct wb35_adapter * adapter)
- 	pHwData->MaxReceiveLifeTime = DEFAULT_MSDU_LIFE_TIME; // Setting Rx maximum MSDU life time
- 	pHwData->FragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD; // Setting default fragment threshold
++++ b/drivers/staging/winbond/linux/wbusb_f.h
+@@ -16,12 +16,5 @@ void WbUsb_destroy(phw_data_t pHwData);
+ unsigned char WbWLanInitialize(struct wb35_adapter *adapter);
+ #define	WbUsb_Stop( _A )
  
--	if (WbUsb_initial(pHwData)) {
--		pHwData->InitialResource = 1;
--		if( Wb35Reg_initial(pHwData)) {
--			pHwData->InitialResource = 2;
--			if (Wb35Tx_initial(pHwData)) {
--				pHwData->InitialResource = 3;
--				if (Wb35Rx_initial(pHwData)) {
--					pHwData->InitialResource = 4;
--					OS_TIMER_INITIAL( &pHwData->LEDTimer, hal_led_control, pHwData );
--					OS_TIMER_SET( &pHwData->LEDTimer, 1000 ); // 20060623
+-#define wb_usb_alloc_urb(_A) usb_alloc_urb(_A, GFP_ATOMIC)
 -
--					//
--					// For restrict to vendor's hardware
--					//
--					SoftwareSet = hal_software_set( pHwData );
--
--					#ifdef Vendor2
--					// Try to make sure the EEPROM contain
--					SoftwareSet >>= 8;
--					if( SoftwareSet != 0x82 )
--						return FALSE;
--					#endif
--
--					Wb35Rx_start( pHwData );
--					Wb35Tx_EP2VM_start( pHwData );
--
--					return TRUE;
--				}
-+	pHwData->InitialResource = 1;
-+	if( Wb35Reg_initial(pHwData)) {
-+		pHwData->InitialResource = 2;
-+		if (Wb35Tx_initial(pHwData)) {
-+			pHwData->InitialResource = 3;
-+			if (Wb35Rx_initial(pHwData)) {
-+				pHwData->InitialResource = 4;
-+				OS_TIMER_INITIAL( &pHwData->LEDTimer, hal_led_control, pHwData );
-+				OS_TIMER_SET( &pHwData->LEDTimer, 1000 ); // 20060623
-+
-+				//
-+				// For restrict to vendor's hardware
-+				//
-+				SoftwareSet = hal_software_set( pHwData );
-+
-+				#ifdef Vendor2
-+				// Try to make sure the EEPROM contain
-+				SoftwareSet >>= 8;
-+				if( SoftwareSet != 0x82 )
-+					return FALSE;
-+				#endif
-+
-+				Wb35Rx_start( pHwData );
-+				Wb35Tx_EP2VM_start( pHwData );
-+
-+				return TRUE;
- 			}
- 		}
- 	}
-@@ -84,7 +82,6 @@ void hal_halt(phw_data_t pHwData, void *ppa_data)
- 			Wb35Rx_destroy( pHwData ); // Release the Rx
- 		case 2: Wb35Tx_destroy( pHwData ); // Release the Tx
- 		case 1: Wb35Reg_destroy( pHwData ); // Release the Wb35 Regisster resources
--				WbUsb_destroy( pHwData );// Release the WbUsb
- 	}
- }
- 
-@@ -330,8 +327,6 @@ void hal_stop(  phw_data_t pHwData )
- 
- 	reg->D00_DmaControl &= ~0xc0000000;//Tx Off, Rx Off
- 	Wb35Reg_Write( pHwData, 0x0400, reg->D00_DmaControl );
--
--	WbUsb_Stop( pHwData ); // 20051230 Add.4
- }
- 
- unsigned char hal_idle(phw_data_t pHwData)
-diff --git a/drivers/staging/winbond/wbhal_f.h b/drivers/staging/winbond/wbhal_f.h
-index 56cd310..239c301 100644
---- a/drivers/staging/winbond/wbhal_f.h
-+++ b/drivers/staging/winbond/wbhal_f.h
-@@ -2,12 +2,10 @@
- // Device related include
- //=====================================================================
- #ifdef WB_LINUX
--	#include "linux/wbusb_f.h"
- 	#include "linux/wb35reg_f.h"
- 	#include "linux/wb35tx_f.h"
- 	#include "linux/wb35rx_f.h"
- #else
--	#include "wbusb_f.h"
- 	#include "wb35reg_f.h"
- 	#include "wb35tx_f.h"
- 	#include "wb35rx_f.h"
-diff --git a/drivers/staging/winbond/wblinux_f.h b/drivers/staging/winbond/wblinux_f.h
-index 446ace9..1d09c65 100644
---- a/drivers/staging/winbond/wblinux_f.h
-+++ b/drivers/staging/winbond/wblinux_f.h
-@@ -18,6 +18,5 @@ struct net_device_stats * wb35_netdev_stats( struct net_device *netdev );
- void WBLINUX_stop(  struct wb35_adapter *adapter );
- void WbWlanHalt(  struct wb35_adapter *adapter );
- void WBLINUX_ConnectStatus(  struct wb35_adapter *adapter,  u32 flag );
+ #define WbUsb_CheckForHang( _P )
+ #define WbUsb_DetectStart( _P, _I )
 -
 -
-+unsigned char WbWLanInitialize(struct wb35_adapter *adapter);
- 
+-
+-
+-
 -- 
 1.6.0.2
 
