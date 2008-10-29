@@ -1,127 +1,355 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbYJ2BOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754179AbYJ2BQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753996AbYJ2BOP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 21:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbYJ2BN7
+	id S1754179AbYJ2BQr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 21:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbYJ2BQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 21:13:59 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:9347 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751096AbYJ2BN7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 21:13:59 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type;
-	b=ttb0fW7DfwJLDQmH6e/XQYk18T/P55L0P4vqntDeokcHqmqre671mkM4Pfk2HOA2I
-	crG7kJkbMNxNOegc7qEeg==
-Date: Tue, 28 Oct 2008 18:13:38 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Paul Menage <menage@google.com>,
-       Derek Fults <dfults@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/7] cpusets: add dirty map to struct address_space
-In-Reply-To: <alpine.DEB.1.10.0810281337530.6470@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.1.10.0810281722290.23743@chino.kir.corp.google.com>
-References: <alpine.DEB.1.10.0810280259500.15270@chino.kir.corp.google.com> <1225215459.15763.33.camel@lappy.programming.kicks-ass.net> <alpine.DEB.1.10.0810281337530.6470@chino.kir.corp.google.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 28 Oct 2008 21:16:38 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:35382 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751096AbYJ2BQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 21:16:37 -0400
+Date: Tue, 28 Oct 2008 18:16:33 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rjw@sisk.pl,
+       dipankar@in.ibm.com, tglx@linuxtronix.de, andi@firstfloor.org
+Subject: Re: [PATCH] v3 rudimentary tracing for Classic RCU
+Message-ID: <20081029011633.GA21940@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20081007163401.GJ6384@linux.vnet.ibm.com> <20081007210947.GP20740@one.firstfloor.org> <20081007212215.GN6384@linux.vnet.ibm.com> <20081009010846.GA10188@linux.vnet.ibm.com> <20081010034421.GA12449@linux.vnet.ibm.com> <20081013230914.GA27467@linux.vnet.ibm.com> <49005C09.6010805@cn.fujitsu.com> <20081026215930.GC6236@linux.vnet.ibm.com> <20081027215029.GA31664@linux.vnet.ibm.com> <20081027235748.GA3647@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081027235748.GA3647@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Oct 2008, David Rientjes wrote:
-
-> Yeah, if we don't serialize with tree_lock then we'll need to protect the 
-> attachment of mapping->dirty_nodes with a new spinlock in struct 
-> address_space (and only for configs where MAX_NUMNODES > BITS_PER_LONG). 
-> That locking overhead is negligible when mapping->dirty_nodes is non-NULL 
-> since there's no requirement to protect the setting of the node in the 
-> nodemask.
+On Mon, Oct 27, 2008 at 04:57:48PM -0700, Paul E. McKenney wrote:
+> On Mon, Oct 27, 2008 at 02:50:29PM -0700, Paul E. McKenney wrote:
+> > On Sun, Oct 26, 2008 at 02:59:30PM -0700, Paul E. McKenney wrote:
+> > > On Thu, Oct 23, 2008 at 07:12:09PM +0800, Lai Jiangshan wrote:
+> > > > 
+> > > > trivial ported it to seq_file.
+> > > > seq_file are very good for the output buffer.
+> > > 
+> > > Thank you for putting this together!!!  Looks good at first glance --
+> > > I will test it out.
+> > 
+> > So it does seem to operate correctly.  I combined it with my patch and
+> > applied against 2.6.27 for ease of testing.
+> > 
+> > One question -- why the multi-line format?  This would be a bit
+> > awkward on a 128-CPU system, let alone on a 4,096-CPU system.
+> > Or am I missing some trick here?
 > 
-> Are your concurrent pagecache patches in the latest mmotm?  If so, I can 
-> rebase this entire patchset off that.
+> To clarify, by "missing some trick", I am wondering if there is some
+> command that works in blocks of lines.  After all, /proc/cpuinfo
+> produces the same sort of output that your patch does.  ;-)
 
-We're still taking mapping->tree_lock in both __set_page_dirty() and 
-__set_page_dirty_nobuffers() in today's mmotm.
+Ported to 2.6.27 to ease testing, and fixed up the formatting a bit.
+I remember quickly scanning through one-line-per-CPU data to find
+problems with rcutree.c, but the expanded names are quite nice -- I
+had to brutally abbreviate to fit each CPU on a single line.
+And I agree that seqfile does work nicely for this.
 
-When tree_lock is removed with your patchset, we can add a spinlock to 
-protect mapping->dirty_nodes when MAX_NUMNODES > BITS_PER_LONG.
+I am strongly tempted to suggest CSV format output with headers to
+allow the data to be pulled into gnumeric or oocalc -- this would
+make handling large numbers of CPUs much easier.  (Quickly donning
+the asbestos suit with titanium pinstripes...)
 
-Would you like to fold this patch into your series (which assumes we're 
-not taking mapping->tree_lock in either of the two callers above)?
+							Thanx, Paul
+
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
-diff --git a/fs/inode.c b/fs/inode.c
---- a/fs/inode.c
-+++ b/fs/inode.c
-@@ -223,6 +223,9 @@ void inode_init_once(struct inode *inode)
- 	INIT_LIST_HEAD(&inode->inotify_watches);
- 	mutex_init(&inode->inotify_mutex);
- #endif
-+#if MAX_NUMNODES > BITS_PER_LONG
-+	spin_lock_init(&inode->i_data.dirty_nodes_lock);
-+#endif
+
+ include/linux/rcuclassic.h |    4 
+ kernel/Kconfig.preempt     |    1 
+ kernel/Makefile            |    2 
+ kernel/rcuclassic.c        |    5 -
+ kernel/rcuclassic_trace.c  |  198 +++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 207 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/rcuclassic.h b/include/linux/rcuclassic.h
+index 4ab8436..735f35a 100644
+--- a/include/linux/rcuclassic.h
++++ b/include/linux/rcuclassic.h
+@@ -54,6 +54,9 @@ struct rcu_ctrlblk {
+ 				 /* for current batch to proceed.        */
+ } ____cacheline_internodealigned_in_smp;
+ 
++extern struct rcu_ctrlblk rcu_ctrlblk;
++extern struct rcu_ctrlblk rcu_bh_ctrlblk;
++
+ /* Is batch a before batch b ? */
+ static inline int rcu_batch_before(long a, long b)
+ {
+@@ -76,6 +79,7 @@ struct rcu_data {
+ 	long		quiescbatch;     /* Batch # for grace period */
+ 	int		passed_quiesc;	 /* User-mode/idle loop etc. */
+ 	int		qs_pending;	 /* core waits for quiesc state */
++	bool		beenonline;	 /* CPU online at least once */
+ 
+ 	/* 2) batch handling */
+ 	long  	       	batch;           /* Batch # for current RCU batch */
+diff --git a/kernel/Kconfig.preempt b/kernel/Kconfig.preempt
+index 9fdba03..ba32338 100644
+--- a/kernel/Kconfig.preempt
++++ b/kernel/Kconfig.preempt
+@@ -68,7 +68,6 @@ config PREEMPT_RCU
+ 
+ config RCU_TRACE
+ 	bool "Enable tracing for RCU - currently stats in debugfs"
+-	depends on PREEMPT_RCU
+ 	select DEBUG_FS
+ 	default y
+ 	help
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 4e1d7df..e0bfce7 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -77,6 +77,8 @@ obj-$(CONFIG_CLASSIC_RCU) += rcuclassic.o
+ obj-$(CONFIG_PREEMPT_RCU) += rcupreempt.o
+ ifeq ($(CONFIG_PREEMPT_RCU),y)
+ obj-$(CONFIG_RCU_TRACE) += rcupreempt_trace.o
++else
++obj-$(CONFIG_RCU_TRACE) += rcuclassic_trace.o
+ endif
+ obj-$(CONFIG_RELAY) += relay.o
+ obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
+diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
+index aad93cd..06472fc 100644
+--- a/kernel/rcuclassic.c
++++ b/kernel/rcuclassic.c
+@@ -57,13 +57,13 @@ EXPORT_SYMBOL_GPL(rcu_lock_map);
+ 
+ 
+ /* Definition for rcupdate control block. */
+-static struct rcu_ctrlblk rcu_ctrlblk = {
++struct rcu_ctrlblk rcu_ctrlblk = {
+ 	.cur = -300,
+ 	.completed = -300,
+ 	.lock = __SPIN_LOCK_UNLOCKED(&rcu_ctrlblk.lock),
+ 	.cpumask = CPU_MASK_NONE,
+ };
+-static struct rcu_ctrlblk rcu_bh_ctrlblk = {
++struct rcu_ctrlblk rcu_bh_ctrlblk = {
+ 	.cur = -300,
+ 	.completed = -300,
+ 	.lock = __SPIN_LOCK_UNLOCKED(&rcu_bh_ctrlblk.lock),
+@@ -564,6 +564,7 @@ static void rcu_init_percpu_data(int cpu, struct rcu_ctrlblk *rcp,
+ 	rdp->donetail = &rdp->donelist;
+ 	rdp->quiescbatch = rcp->completed;
+ 	rdp->qs_pending = 0;
++	rdp->beenonline = 1;
+ 	rdp->cpu = cpu;
+ 	rdp->blimit = blimit;
  }
- 
- EXPORT_SYMBOL(inode_init_once);
-diff --git a/include/linux/fs.h b/include/linux/fs.h
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -554,6 +554,7 @@ struct address_space {
- 	nodemask_t		dirty_nodes;	/* nodes with dirty pages */
- #else
- 	nodemask_t		*dirty_nodes;	/* pointer to mask, if dirty */
-+	spinlock_t		dirty_nodes_lock; /* protects the above */
- #endif
- #endif
- } __attribute__((aligned(sizeof(long))));
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -2413,10 +2413,7 @@ EXPORT_SYMBOL_GPL(cpuset_mem_spread_node);
- #if MAX_NUMNODES > BITS_PER_LONG
- /*
-  * Special functions for NUMA systems with a large number of nodes.  The
-- * nodemask is pointed to from the address_space structure.  The attachment of
-- * the dirty_nodes nodemask is protected by the tree_lock.  The nodemask is
-- * freed only when the inode is cleared (and therefore unused, thus no locking
-- * is necessary).
-+ * nodemask is pointed to from the address_space structure.
-  */
- void cpuset_update_dirty_nodes(struct address_space *mapping,
- 			       struct page *page)
-@@ -2424,14 +2421,18 @@ void cpuset_update_dirty_nodes(struct address_space *mapping,
- 	nodemask_t *nodes = mapping->dirty_nodes;
- 	int node = page_to_nid(page);
- 
-+	spin_lock_irq(&mapping->dirty_nodes_lock);
- 	if (!nodes) {
- 		nodes = kmalloc(sizeof(nodemask_t), GFP_ATOMIC);
--		if (!nodes)
-+		if (!nodes) {
-+			spin_unlock_irq(&mapping->dirty_nodes_lock);
- 			return;
-+		}
- 
- 		*nodes = NODE_MASK_NONE;
- 		mapping->dirty_nodes = nodes;
- 	}
-+	spin_unlock_irq(&mapping->dirty_nodes_lock);
- 	node_set(node, *nodes);
- }
- 
-@@ -2446,8 +2447,8 @@ void cpuset_clear_dirty_nodes(struct address_space *mapping)
- }
- 
- /*
-- * Called without tree_lock.  The nodemask is only freed when the inode is
-- * cleared and therefore this is safe.
-+ * The nodemask is only freed when the inode is cleared and therefore this
-+ * requires no locking.
-  */
- int cpuset_intersects_dirty_nodes(struct address_space *mapping,
- 				  nodemask_t *mask)
+diff --git a/kernel/rcuclassic_trace.c b/kernel/rcuclassic_trace.c
+new file mode 100644
+index 0000000..b719048
+--- /dev/null
++++ b/kernel/rcuclassic_trace.c
+@@ -0,0 +1,198 @@
++/*
++ * Read-Copy Update tracing for classic implementation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * Copyright IBM Corporation, 2008
++ *
++ * Updated to use seqfile by Lai Jiangshan.
++ *
++ * Papers:  http://www.rdrop.com/users/paulmck/RCU
++ *
++ * For detailed explanation of Read-Copy Update mechanism see -
++ * 		Documentation/RCU
++ *
++ */
++#include <linux/rcupdate.h>
++#include <linux/module.h>
++#include <linux/debugfs.h>
++#include <linux/seq_file.h>
++
++/* Print out rcu_data structures using seqfile facility. */
++
++static struct rcu_data *get_rcu_data_bh(int cpu)
++{
++	return &per_cpu(rcu_bh_data, cpu);
++}
++
++static struct rcu_data *get_rcu_data(int cpu)
++{
++	return &per_cpu(rcu_data, cpu);
++}
++
++static int show_rcu_data(struct seq_file *m, void *v)
++{
++	struct rcu_data *rdp = v;
++
++	if (!rdp->beenonline)
++		return 0;
++
++	seq_printf(m, "processor\t: %d", rdp->cpu);
++	if (cpu_is_offline(rdp->cpu))
++		seq_puts(m, "!\n");
++	else
++		seq_puts(m, "\n");
++	seq_printf(m, "quiescbatch\t: %ld\n", rdp->quiescbatch);
++	seq_printf(m, "batch\t\t: %ld\n", rdp->batch);
++	seq_printf(m, "passed_quiesc\t: %d\n", rdp->passed_quiesc);
++	seq_printf(m, "qs_pending\t: %d\n", rdp->qs_pending);
++	seq_printf(m, "qlen\t\t: %ld\n", rdp->qlen);
++	seq_printf(m, "blimit\t\t: %ld\n", rdp->blimit);
++	seq_puts(m, "\n");
++	return 0;
++}
++
++static void *c_start(struct seq_file *m, loff_t *pos)
++{
++	typedef struct rcu_data *(*get_data_func)(int);
++
++	if (*pos == 0)  /* just in case, cpu 0 is not the first */
++		*pos = first_cpu(cpu_possible_map);
++	else
++		*pos = next_cpu_nr(*pos - 1, cpu_possible_map);
++	if ((*pos) < nr_cpu_ids)
++		return ((get_data_func)m->private)(*pos);
++	return NULL;
++}
++
++static void *c_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	(*pos)++;
++	return c_start(m, pos);
++}
++
++static void c_stop(struct seq_file *m, void *v)
++{
++}
++
++const struct seq_operations rcu_data_seq_op = {
++	.start	= c_start,
++	.next	= c_next,
++	.stop	= c_stop,
++	.show	= show_rcu_data,
++};
++
++static int rcu_data_open(struct inode *inode, struct file *file)
++{
++	int ret = seq_open(file, &rcu_data_seq_op);
++
++	if (ret)
++		return ret;
++	((struct seq_file *)file->private_data)->private = inode->i_private;
++	return 0;
++}
++
++static const struct file_operations rcu_data_fops = {
++	.owner		= THIS_MODULE,
++	.open		= rcu_data_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= seq_release,
++};
++
++/* Print out rcu_ctrlblk structures using seqfile facility. */
++
++static void print_one_rcu_ctrlblk(struct seq_file *m, struct rcu_ctrlblk *rcp)
++{
++	seq_printf(m, "cur=%ld  completed=%ld   next_pending=%d  s=%d\n\t",
++		   rcp->cur, rcp->completed, rcp->next_pending, rcp->signaled);
++	seq_cpumask(m, &rcp->cpumask);
++	seq_puts(m, "\n");
++}
++
++static int show_rcucb(struct seq_file *m, void *unused)
++{
++	seq_puts(m, "rcu: ");
++	print_one_rcu_ctrlblk(m, &rcu_ctrlblk);
++	seq_puts(m, "rcu_bh: ");
++	print_one_rcu_ctrlblk(m, &rcu_bh_ctrlblk);
++	seq_puts(m, "online: ");
++	seq_cpumask(m, &cpu_online_map);
++	seq_puts(m, "\n");
++	return 0;
++}
++
++static int rcucb_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, show_rcucb, NULL);
++}
++
++static struct file_operations rcucb_fops = {
++	.owner		= THIS_MODULE,
++	.open		= rcucb_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static struct dentry *rcudir, *rcu_bh_data_file, *rcu_data_file, *rcucb_file;
++
++static int __init rcuclassic_trace_init(void)
++{
++	rcudir = debugfs_create_dir("rcu", NULL);
++	if (!rcudir)
++		goto out;
++
++	rcu_bh_data_file = debugfs_create_file("rcu_bh_data", 0444, rcudir,
++					       get_rcu_data_bh, &rcu_data_fops);
++	if (!rcu_bh_data_file)
++		goto out_rcudir;
++
++	rcu_data_file = debugfs_create_file("rcu_data", 0444, rcudir,
++					    get_rcu_data, &rcu_data_fops);
++	if (!rcu_data_file)
++		goto out_rcudata_bh_file;
++
++	rcucb_file = debugfs_create_file("rcucb", 0444, rcudir,
++					 NULL, &rcucb_fops);
++	if (!rcucb_file)
++		goto out_rcudata_file;
++	return 0;
++
++out_rcudata_file:
++	debugfs_remove(rcu_data_file);
++out_rcudata_bh_file:
++	debugfs_remove(rcu_bh_data_file);
++out_rcudir:
++	debugfs_remove(rcudir);
++out:
++	return 1;
++}
++
++static void __exit rcuclassic_trace_cleanup(void)
++{
++	debugfs_remove(rcucb_file);
++	debugfs_remove(rcu_data_file);
++	debugfs_remove(rcu_bh_data_file);
++	debugfs_remove(rcudir);
++}
++
++module_init(rcuclassic_trace_init);
++module_exit(rcuclassic_trace_cleanup);
++
++MODULE_AUTHOR("Paul E. McKenney");
++MODULE_DESCRIPTION("Read-Copy Update tracing for classic implementation");
++MODULE_LICENSE("GPL");
++
