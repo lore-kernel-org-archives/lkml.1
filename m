@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957AbYJ2XhE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbYJ2Xkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755957AbYJ2XhE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 19:37:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbYJ2Xgx
+	id S1755860AbYJ2Xkw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 19:40:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbYJ2Xkl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 19:36:53 -0400
-Received: from kroah.org ([198.145.64.141]:43757 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752617AbYJ2Xgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 19:36:52 -0400
-Date: Wed, 29 Oct 2008 16:12:40 -0700
-From: Greg KH <greg@kroah.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Jouni Malinen <jkmalinen@gmail.com>,
-       Oliver Neukum <oliver@neukum.org>, Nicolas Bareil <nico@chdir.org>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, j@w1.fi
-Subject: Re: [PATCH] x86, gart: fix gart detection for Fam11h CPUs
-Message-ID: <20081029231240.GA22325@kroah.com>
-References: <e785a1360810280207p1c162decs5a70b8915ea08476@mail.gmail.com> <1225206834-6189-1-git-send-email-joerg.roedel@amd.com> <20081028165236.GA4503@kroah.com> <20081029095525.GA6345@amd.com>
+	Wed, 29 Oct 2008 19:40:41 -0400
+Received: from nebensachen.de ([195.34.83.29]:50571 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751981AbYJ2Xkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 19:40:40 -0400
+X-Hashcash: 1:20:081029:linville@tuxdriver.com::FHWZdvQORflurFly:0000000000000000000000000000000000000003FW4
+X-Hashcash: 1:20:081029:davem@davemloft.net::rjOzxm4OnJsOXc51:0000000000000000000000000000000000000000000pUw
+X-Hashcash: 1:20:081029:linux-wireless@vger.kernel.org::v9m2Op4d/pr+YoYp:0000000000000000000000000000000AIHI
+X-Hashcash: 1:20:081029:netdev@vger.kernel.org::QwshER+gRnTHYC6T:00000000000000000000000000000000000000051fd
+X-Hashcash: 1:20:081029:linux-kernel@vger.kernel.org::hhDfxI0yD86II/JN:0000000000000000000000000000000001HwB
+From: Elias Oltmanns <eo@nebensachen.de>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-10-29
+References: <20081029231855.GD3485@tuxdriver.com>
+Date: Thu, 30 Oct 2008 00:40:09 +0100
+In-Reply-To: <20081029231855.GD3485@tuxdriver.com> (John W. Linville's message
+	of "Wed, 29 Oct 2008 19:18:55 -0400")
+Message-ID: <87iqrb2co6.fsf@denkblock.local>
+User-Agent: Gnus/5.110011 (No Gnus v0.11)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081029095525.GA6345@amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 10:55:25AM +0100, Joerg Roedel wrote:
-> On Tue, Oct 28, 2008 at 09:52:36AM -0700, Greg KH wrote:
-> > On Tue, Oct 28, 2008 at 04:13:54PM +0100, Joerg Roedel wrote:
-> > > The AMD Fam11h CPUs have a K8 northbridge. This northbridge is different
-> > > from other familys because it lacks GART support (as I just learned).
-> > > But the kernel implicitly expects a GART if it finds an AMD northbridge.
-> > > Fix this by removing the Fam11h northbridge id from the scan list of K8
-> > > northbridges. This patch also changes the message in the GART driver
-> > > about missing K8 northbridges to tell that the GART is missing which is
-> > > the correct information in this case.
-> > > 
-> > > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > 
-> > Looks like this needs to be added to the 2.6.27-stable tree also, right?
-> 
-> No, this patch not. The PCI id was added during the .28 merge window.
+"John W. Linville" <linville-2XuSBdqkA4R54TAoqtyWWQ@public.gmane.org> wrote:
+> Dave,
+>
+> Another quick round of fixes intended for 2.6.28...
+>
+> This includes fixes for bugs 11749 and 11845, fixes a reset-related
+> regression in ath5k, fixes a Kconfig-related error for rt2x00, and
+> fixes some sparse warnings and a possible buffer overrun in libertas.
+> Also, it corrects a spelling error and marks Bob Copeland as an
+> ath5k maintainer.
+>
+> Please let me know if there are problems!
+>
+> Thanks,
+>
+> John
+>
+> ---
+>
+> Individual patches are available here:
+>
+> 	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
+>
+> ---
+>
+> The following changes since commit 882716604ecf388b2ff09bc76eb2a752aa9cc76b:
+[...]
+> Elias Oltmanns (1):
+>       ath5k: Fix reset sequence for AR5212 in general and RF5111 in particular
 
-Ah, you are right, sorry about that, was looking at the wrong tree here.
+Pity, I just posted a *nicer* version of that patch for 2.6.28-rc2.
+Well, it doesn't really matter all that much, I suppose.
 
-greg k-h
+Regards,
+
+Elias
