@@ -1,58 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbYJ2UwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755082AbYJ2Uwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754768AbYJ2UwT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 16:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbYJ2UwI
+	id S1755082AbYJ2Uwk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 16:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbYJ2Uw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 16:52:08 -0400
-Received: from ti-out-0910.google.com ([209.85.142.191]:55798 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752763AbYJ2UwH (ORCPT
+	Wed, 29 Oct 2008 16:52:28 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:27248 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753165AbYJ2Uw1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 16:52:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=SiiL62wkqVexy4nbNsiPouGNgCR8hVTxiFembqawex6VZjyfIXVcP3x96KC/8oHT9/
-         W7a1ZwOPbCHZFDVsQWD/FdGhg8NmcOGkT0mdkYRKSw0whulQ0sU/u9uaw96RyMMAE1SU
-         P9F5uzXB72UDhzMlRPsy4Omy9vxq3XAIhVlfg=
-Message-ID: <7a9b5c320810291352k5db86a4eg4e03fb09317de459@mail.gmail.com>
-Date: Thu, 30 Oct 2008 09:52:04 +1300
-From: "Phillip O'Donnell" <phillip.odonnell@gmail.com>
-To: "Ric Wheeler" <rwheeler@redhat.com>
-Subject: Re: sata errors with Seagate 1.5TB on AMD 780G/SB700 motherboard
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Oskar Liljeblad" <oskar@osk.mine.nu>,
-       "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-In-Reply-To: <4908C62E.5070307@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fa.01zEaARwrup2dCOTuHTYxzuS9BI@ifi.uio.no>
-	 <49079E09.20703@shaw.ca> <20081029185856.GA8152@osk.mine.nu>
-	 <20081029201724.0a7d736e@lxorguk.ukuu.org.uk>
-	 <4908C62E.5070307@redhat.com>
+	Wed, 29 Oct 2008 16:52:27 -0400
+Subject: Re: [PATCH] disable CPU side GART accesses
+From: Bob Montgomery <bob.montgomery@hp.com>
+Reply-To: bob.montgomery@hp.com
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "vojtech@suse.cz" <vojtech@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "chandru@in.ibm.com" <chandru@in.ibm.com>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Pavel Machek <pavel@ucw.cz>,
+       Andi Kleen <ak@linux.intel.com>, Dave Jones <davej@redhat.com>
+In-Reply-To: <4906495B.1060506@kernel.org>
+References: <1224107317.2215.238.camel@amd.troyhebe>
+	 <20081015234842.GA10999@elte.hu> <1225147341.2215.401.camel@amd.troyhebe>
+	 <4906495B.1060506@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Organization: Contractor at HP
+Date: Wed, 29 Oct 2008 14:52:44 -0600
+Message-Id: <1225313564.3428.14.camel@amd.troyhebe>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ric,
+On Mon, 2008-10-27 at 23:06 +0000, Yinghai Lu wrote:
+> Bob Montgomery wrote:
+> > On Wed, 2008-10-15 at 23:48 +0000, Ingo Molnar wrote:
+> >> (Cc:-ed the GART folks.)
+> >
+> > Are there any objections to this patch?  The problem has been reproduced
+> > in 2.6.18 and 2.6.27, so existing changes in the gart code have not
+> > addressed it.
+> 
+> better to have someone with amd system + 8g ram + agp adapter to verify it...
+> 
+> YH
 
-Not too sure about that - I run with XFS, which announces that it
-disables the barriers on my devices (I use LVM on top of them) but
-still get the same issue... Unless I've misunderstood your comment?
+Good idea.
 
-Cheers,
-Phillip
+I don't think HP made a system with opteron and agp, so I haven't found
+a system here to test.  But I did see that there have been non-HP
+motherboards from several years ago that advertised opteron with agp.
+Anyone running that type of system?
 
-> I suspect that the drive is simply choking on the barrier related cache
-> flushing that we do - that seemed to be the MacOS error as well. The windows
-> comment suggested that windows had an hba/driver bug (most likely unrelated
-> to this).
->
-> If you want to avoid the issue until they fix the drive, you could run fast
-> and dangerous (mount without barriers on) or slow and safe (disable the
-> write cache).
+The other question is whether AGP graphics on linux for amd64 ever
+expected host translation to work, since setting DisGartCpu is turning
+off host translation.   
+
+I saw this in the AGP 3.0 spec (hopeful, but inconclusive):
+
+"8. The Core-logic is not required by the AGP specification to translate
+   accesses directed to the AGP aperture by a host processor –
+   termed host translation. Portable AGP3.0 software should not rely
+   upon the existence of host translation."
+
+Any advice from graphics experts?
+
+Bob Montgomery
+
+
+
+
+
+
+
