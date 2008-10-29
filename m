@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbYJ2XXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755748AbYJ2X2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756024AbYJ2XXV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 19:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755879AbYJ2XW7
+	id S1755748AbYJ2X2k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 19:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYJ2X2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 19:22:59 -0400
-Received: from casper.infradead.org ([85.118.1.10]:46702 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755871AbYJ2XW6 (ORCPT
+	Wed, 29 Oct 2008 19:28:32 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:8768 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752041AbYJ2X2c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 19:22:58 -0400
-Date: Wed, 29 Oct 2008 16:23:24 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       me@bobcopeland.com
-Subject: Re: pull request: wireless-2.6 2008-10-29
-Message-ID: <20081029162324.28f5864d@infradead.org>
-In-Reply-To: <20081029231855.GD3485@tuxdriver.com>
-References: <20081029231855.GD3485@tuxdriver.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 29 Oct 2008 19:28:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:cc:subject:references:from:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type:sender;
+        b=eJjI3aqU3qWOc5TQowkfpqqOYFmmZzzAKc912YIeh2vUdoH8PL/kmiVv4t8rbAomrY
+         vpJcC6BV4VJrVRZEmYOqFpUtBK8H8oXZQ5dCkUDpS7FSQYNV9gSjlSmYtYqXmUapAWPy
+         +2bsOFhS+ouR5LVpxQxz13TP+XnvrQ8kZJjos=
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.28-rc2: (mtd)block/partitions BUG with kobject reference count
+References: <87ej1z4ep8.fsf@macbook.be.48ers.dk>
+	<200810300027.19116.rjw@sisk.pl>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Thu, 30 Oct 2008 00:28:27 +0100
+In-Reply-To: <200810300027.19116.rjw@sisk.pl> (Rafael J. Wysocki's message of "Thu\, 30 Oct 2008 00\:27\:18 +0100")
+Message-ID: <87abcnj810.fsf@macbook.be.48ers.dk>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Oct 2008 19:18:55 -0400
-"John W. Linville" <linville@tuxdriver.com> wrote:
+>>>>> "Rafael" == Rafael J Wysocki <rjw@sisk.pl> writes:
 
-> Dave,
-> 
-> Another quick round of fixes intended for 2.6.28...
-> 
-> This includes fixes for bugs 11749 and 11845, fixes a reset-related
-> regression in ath5k, fixes a Kconfig-related error for rt2x00, and
-> fixes some sparse warnings and a possible buffer overrun in libertas.
-> Also, it corrects a spelling error and marks Bob Copeland as an
-> ath5k maintainer.
+ Rafael> On Wednesday, 29 of October 2008, Peter Korsgaard wrote:
+ >> Hi,
+ >> 
+ >> I'm seing what looks like a kobject reference count issue with
+ >> mtdblock_ro + mtd_dataflash + mtd partitions and repeated unbind/bind.
+ >> I'm on 2.6.28-rc2, but I can reproduce the problem on 2.6.27 as well.
 
-speaking of ath5k:
+ Rafael> Is it reproducible with 2.6.26 too?
 
-http://www.kerneloops.org/version.php?start=1835008&end=1867775&version=28-rc
+Sorry, I haven't backported my platform support code to such "old"
+kernel. I can do it though, if you think it will help pinpoint the
+issue.
 
-it seems to have added a few WARN_ON()s which now end up at the top of
-the list .. are these known or should I spend some time writing reports
-for netdev ?
+-- 
+Bye, Peter Korsgaard
