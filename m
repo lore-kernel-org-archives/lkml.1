@@ -1,88 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbYJ2GR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbYJ2GSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752836AbYJ2GR5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 02:17:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYJ2GRr
+	id S1753164AbYJ2GSh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 02:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbYJ2GS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 02:17:47 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:32216 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751588AbYJ2GRq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 02:17:46 -0400
-Subject: Re: How do I printk <type> correctly?
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       ericvh@gmail.com, mfasheh@suse.com
-In-Reply-To: <20081028161136.c652b9fd.randy.dunlap@oracle.com>
-References: <20081023114133.GA30187@x200.localdomain>
-	 <20081028161136.c652b9fd.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 29 Oct 2008 08:15:57 +0200
-Message-Id: <1225260957.4350.7.camel@sauron>
+	Wed, 29 Oct 2008 02:18:27 -0400
+Received: from mga09.intel.com ([134.134.136.24]:20926 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751588AbYJ2GS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 02:18:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,505,1220252400"; 
+   d="scan'208";a="353444546"
+Subject: Re: [2.6.28-rc2]: iwl4965 doesn't connect / cfg80211 failure
+From: Zhu Yi <yi.zhu@intel.com>
+To: Mirco Tischler <mt-ml@gmx.de>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "John W.Linville" <linville@tuxdriver.com>,
+       "Chatre, Reinette" <reinette.chatre@intel.com>,
+       Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <20081028172418.3c8e91f1@mtlp.12.dimension>
+References: <20081028020212.0dfcb6c9@mtlp.12.dimension>
+	 <1225157618.2917.215.camel@debian.sh.intel.com>
+	 <20081027213217.53558319@infradead.org>
+	 <1225171414.2917.229.camel@debian.sh.intel.com>
+	 <20081028172418.3c8e91f1@mtlp.12.dimension>
+Content-Type: multipart/mixed; boundary="=-blndQUlLRpFDXlDE6HV9"
+Organization: Intel Corp.
+Date: Wed, 29 Oct 2008 14:18:04 +0800
+Message-Id: <1225261084.2917.254.camel@debian.sh.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 29 Oct 2008 06:17:27.0115 (UTC) FILETIME=[03F2C1B0:01C9398E]
-X-Nokia-AV: Clean
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-28 at 16:11 -0700, Randy Dunlap wrote:
-> fs/ubifs/journal.c:693: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/journal.c:1131: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/dir.c:163: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/tnc.c:2680: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/tnc.c:2700: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
-> fs/ubifs/replay.c:1066: warning: format '%lu' expects type 'long unsigned int', but argument 7 has type 'ino_t'
-> fs/ubifs/orphan.c:108: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/orphan.c:135: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/orphan.c:142: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/orphan.c:154: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/orphan.c:159: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/orphan.c:451: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/orphan.c:539: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/orphan.c:612: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/orphan.c:843: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/orphan.c:856: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/recovery.c:1438: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/recovery.c:1443: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/recovery.c:1475: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/recovery.c:1495: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/debug.c:105: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
-> fs/ubifs/debug.c:105: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
-> fs/ubifs/debug.c:110: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
-> fs/ubifs/debug.c:110: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
-> fs/ubifs/debug.c:114: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
-> fs/ubifs/debug.c:114: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
-> fs/ubifs/debug.c:118: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
-> fs/ubifs/debug.c:118: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
-> fs/ubifs/debug.c:1591: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/debug.c:1671: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/debug.c:1674: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
-> fs/ubifs/debug.c:1680: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/debug.c:1699: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
-> fs/ubifs/debug.c:1788: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
-> fs/ubifs/debug.c:1821: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
-> fs/ubifs/debug.c:1833: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
-> fs/ubifs/debug.c:1924: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/debug.c:1932: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/debug.c:1938: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/debug.c:1945: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/debug.c:1953: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/debug.c:1960: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/debug.c:1967: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/debug.c:1973: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/debug.c:1988: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
-> fs/ubifs/debug.c:1991: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
-> fs/ubifs/debug.c:2009: warning: format '%lu' expects type 'long unsigned int', but argument 2 has type 'ino_t'
 
-I'll look at these and fix, thank you!
+--=-blndQUlLRpFDXlDE6HV9
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
+On Wed, 2008-10-29 at 00:24 +0800, Mirco Tischler wrote:
+> 
+> I tested it quickly and not very thoroughly on the wpa-eap encrypted
+> network at
+> university and it showed the same behaviour: no connection without
+> CONFIG_WIRELESS_OLD_REGULATORY and no problems with it enabled.
+
+Interesting. The only difference between without and with
+CONFIG_WIRELESS_OLD_REGULATORY is the txpower is lower and you can only
+do passive scan. Can you try attached patch?
+
+Thanks,
+-yi
+
+--=-blndQUlLRpFDXlDE6HV9
+Content-Disposition: attachment; filename=iwlwifi-oldreg-debug.patch
+Content-Type: text/x-patch; name=iwlwifi-oldreg-debug.patch; charset=GB2312
+Content-Transfer-Encoding: 7bit
+
+diff --git a/drivers/net/wireless/iwlwifi/iwl-4965.c b/drivers/net/wireless/iwlwifi/iwl-4965.c
+index 0953a9c..8123156 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-4965.c
++++ b/drivers/net/wireless/iwlwifi/iwl-4965.c
+@@ -1523,6 +1523,7 @@ static int iwl4965_send_tx_power(struct iwl_priv *priv)
+ 		 * the stack trace to find out who is calling this during
+ 		 * a scan. */
+ 		IWL_WARNING("TX Power requested while scanning!\n");
++		dump_stack();
+ 		return -EAGAIN;
+ 	}
+ 
+diff --git a/net/wireless/reg.c b/net/wireless/reg.c
+index 5dab72d..7ffa736 100644
+--- a/net/wireless/reg.c
++++ b/net/wireless/reg.c
+@@ -71,9 +71,7 @@ static const struct ieee80211_regdomain world_regdom = {
+ 	.n_reg_rules = 1,
+ 	.alpha2 =  "00",
+ 	.reg_rules = {
+-		REG_RULE(2412-10, 2462+10, 40, 6, 20,
+-			NL80211_RRF_PASSIVE_SCAN |
+-			NL80211_RRF_NO_IBSS),
++		REG_RULE(2412-10, 2462+10, 40, 6, 27, 0),
+ 	}
+ };
+ 
+
+--=-blndQUlLRpFDXlDE6HV9--
 
