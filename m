@@ -1,84 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbYJ2ULT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbYJ2URc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754548AbYJ2ULT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 16:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbYJ2ULF
+	id S1754541AbYJ2URc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 16:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbYJ2URY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 16:11:05 -0400
-Received: from www.tglx.de ([62.245.132.106]:56027 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753358AbYJ2ULE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 16:11:04 -0400
-Date: Wed, 29 Oct 2008 21:10:54 +0100
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Manuel Traut <manut@linutronix.de>
-Cc: hjk@linutronix.de, b.spranger@linutronix.de, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: UIO: don't check irq_enabled flag in uio_cif irq handler
-Message-ID: <20081029201054.GB2951@local>
-References: <20081028224137.GA25357@www.tglx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081028224137.GA25357@www.tglx.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 29 Oct 2008 16:17:24 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44973 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753431AbYJ2URX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 16:17:23 -0400
+Date: Wed, 29 Oct 2008 20:17:24 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Oskar Liljeblad <oskar@osk.mine.nu>
+Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+Subject: Re: sata errors with Seagate 1.5TB on AMD 780G/SB700 motherboard
+Message-ID: <20081029201724.0a7d736e@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081029185856.GA8152@osk.mine.nu>
+References: <fa.01zEaARwrup2dCOTuHTYxzuS9BI@ifi.uio.no>
+	<49079E09.20703@shaw.ca>
+	<20081029185856.GA8152@osk.mine.nu>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28, 2008 at 11:41:37PM +0100, Manuel Traut wrote:
-> Below patch ignores INT1_ENABLED flag in the uio_cif irq handler.
-> 
-> On a Hilscher DeviceNet Slave card, the INT_ENABLE flag is (probably) reseted 
-> by the firmware.
+O> Anyway Seagate (inofficially) claims it's a driver issue in Linux - from
+> http://forums.seagate.com/stx/board/message?board.id=ata_drives&thread.id=2390&view=by_date_ascending&page=6
 
-If this is actually the case, then this definetly a firmware bug. If
-firmware clears the interrupt enable bit, you have no chance of knowing
-if the irq was enabled or not. As a consequence, you cannot find out
-whether your card caused the interrupt or not.
-A hardware with such a behaviour is simply not a decent PCI card, which
-should support shared interrupts.
+Well then perhaps they would care to share the information with us 8)
 
-Send a bug report to the firmware author.
+The HPA size reporting one is certinly Linux, the flush cache one I don't
+think is. The fact Mac people report it and Seagate suggest workarounds
+of the form of "don't use 33% of the disk" don't inspire confidence.
 
-> Without this patch, every interrupt produced by this card is
-> dropped.
+>   "We already know about the Linux issue, it is indeed a kernel error
+>   causing the problem as it was explained to me by one of our developers."
 
-Yes, probably you'll need that patch if you want to make a card with
-such broken behaviour work. But _with_ this patch, you'll run into
-problems if you have two such PCI cards that share the same interrupt.
+Well if they'd care to explain it to linux-ide perhaps we can find a work
+around. I would be cautious about disabling the write caching as it will
+harm both performance and probably drive lifetime.
 
-I consider this a workaround that might be OK for your usecase, but it's
-not something that should go to mainline.
-
-So, NAK to this.
-
-Thanks,
-Hans
-
-> 
-> This patch is tested and works with a DeviceNet Slave and a Profibus Slave card.
-> 
-> Signed-off-by: Manuel Traut <manut@linutronix.de>
-> 
-> --- linux-git/drivers/uio/uio_cif.c	2008-10-28 23:42:18.000000000 +0100
-> +++ uio/drivers/uio/uio_cif.c	2008-10-28 23:41:43.000000000 +0100
-> @@ -18,7 +18,6 @@
->  #define PLX9030_INTCSR		0x4C
->  #define INTSCR_INT1_ENABLE	0x01
->  #define INTSCR_INT1_STATUS	0x04
-> -#define INT1_ENABLED_AND_ACTIVE	(INTSCR_INT1_ENABLE | INTSCR_INT1_STATUS)
->  
->  #define PCI_SUBVENDOR_ID_PEP	0x1518
->  #define CIF_SUBDEVICE_PROFIBUS	0x430
-> @@ -30,8 +29,8 @@
->  	void __iomem *plx_intscr = dev_info->mem[0].internal_addr
->  					+ PLX9030_INTCSR;
->  
-> -	if ((ioread8(plx_intscr) & INT1_ENABLED_AND_ACTIVE)
-> -	    != INT1_ENABLED_AND_ACTIVE)
-> +	if ((ioread8(plx_intscr) & INT1_STATUS)
-> +	    != INT1_STATUS)
->  		return IRQ_NONE;
->  
->  	/* Disable interrupt */
+Alan
