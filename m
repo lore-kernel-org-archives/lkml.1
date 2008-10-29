@@ -1,96 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753718AbYJ2VHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbYJ2VKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753718AbYJ2VHf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 17:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbYJ2VHQ
+	id S1755250AbYJ2VKT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 17:10:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYJ2VKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 17:07:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45435 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755251AbYJ2VHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 17:07:15 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen filesystems.
-Date: Wed, 29 Oct 2008 22:11:48 +0100
-User-Agent: KMail/1.9.9
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org
-References: <Pine.LNX.4.44L0.0810291627040.3986-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0810291627040.3986-100000@iolanthe.rowland.org>
+	Wed, 29 Oct 2008 17:10:04 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:57925 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752481AbYJ2VKB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 17:10:01 -0400
+Date: Wed, 29 Oct 2008 17:09:49 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Arthur Jones <ajones@riverbed.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       sct@redhat.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: ext3: slow symlink corruption on umount...
+Message-ID: <20081029210949.GA27274@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Eric Sandeen <sandeen@redhat.com>,
+	Arthur Jones <ajones@riverbed.com>,
+	"linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+	sct@redhat.com, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
+References: <20081024183733.GA25797@ajones-laptop.nbttech.com> <20081027165423.GB25797@ajones-laptop.nbttech.com> <20081029195403.GA8333@ajones-laptop.nbttech.com> <4908C951.2000309@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810292211.49021.rjw@sisk.pl>
+In-Reply-To: <4908C951.2000309@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 29 of October 2008, Alan Stern wrote:
-> On Wed, 29 Oct 2008, Miklos Szeredi wrote:
+On Wed, Oct 29, 2008 at 03:36:33PM -0500, Eric Sandeen wrote:
 > 
-> > On Wed, 29 Oct 2008, Alan Stern wrote:
-> > > On Wed, 29 Oct 2008, Miklos Szeredi wrote:
-> > > 
-> > > > Actually I was thinking of an rw-semaphore, not a mutex.  But yeah
-> > > > that still has scalability problems.  But it could be done with custom
-> > > > locking primitives, optimized for this case:
-> > > > 
-> > > >    suspend_disable();
-> > > >    /* driver stuff */
-> > > >    suspend_enable();
-> > > 
-> > > Yes, it could be done.  And the overhead could be minimized by using
-> > > per-CPU variables.  It would still be an awful lot of work, and easy to
-> > > get wrong.
-> > 
-> > OK, getting back to this, as it seems to be the only way that we agree
-> > is doable.
-> > 
-> > How about this,
-> > 
-> >  a) identify syscalls that may make drivers do I/O:
-> > 
-> >  - read
-> >  - write
-> >  - ioctl
-> >  ???
-> > 
-> >  b) add the suspend_disable/enable() primitives to these syscalls
-> > 
-> >  c) push primitives inside the implementation
+> Sorry for the silence, this is a nice bug you've found :)
 > 
-> I discussed this last summer with Rafael.  It's a lot harder than it 
-> looks, for all sorts of reasons.  For example, what about user tasks 
-> that have access to memory-mapped I/O regions?
-> 
-> > c) is slightly tricky, but could be done for example by setting a flag
-> > on open: FMODE_NO_SUSPEND_DISABLE (better name required), saying that
-> > implementation is responsible for getting the suspend disable magic
-> > right.
-> > 
-> > For starters this flag could be set for all non-device opens (maybe all
-> > non-char-dev opens?), solving the fuse vs. freezer issues without any
-> > complicated trickery.
-> 
-> I don't know.  There are other interfaces too, like sysfs attributes, 
-> that would have to be handled specially.  On the whole, the freezer 
-> seems much, much simpler.
-> 
-> Regarding fuse, something like Nigel's scheme for preventing new 
-> requests and then waiting for old requests to complete might work out.  
-> Especially if you combine it with a strategy for making the freezer 
-> back and retry after a delay when something goes wrong.
+> I'll look into it ...
 
-Yeah.
+You may want to take a quick look at this thread:
 
-The current design of the freezer is rather simplistic and I'm not really sure
-it's the best one possible.  Perhaps we can redesign the freezer to work
-differently and handle the cases like fuse.
+    http://lkml.org/lkml/2008/10/28/413
 
-I didn't have the time to think about that yet, though.
-
-Thanks,
-Rafael
+					- Ted
