@@ -1,48 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752924AbYJ2HLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbYJ2HRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752924AbYJ2HLy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 03:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbYJ2HLq
+	id S1753105AbYJ2HRa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 03:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYJ2HRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 03:11:46 -0400
-Received: from molly.corsac.net ([81.57.48.219]:37050 "EHLO molly.corsac.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752020AbYJ2HLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 03:11:46 -0400
-X-Greylist: delayed 1034 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Oct 2008 03:11:45 EDT
-Date: Wed, 29 Oct 2008 08:11:43 +0100
-From: Yves-Alexis Perez <corsac@debian.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       "Carlos R. Mafra" <crmafra2@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Long delays and keystrokes required - related to disk
-	encryption?
-Message-ID: <20081029071143.GA15736@corsac.net>
-References: <200810281744.52587.elendil@planet.nl> <200810290153.23514.elendil@planet.nl> <4907D957.6040206@linux.intel.com> <20081029065428.GA15581@corsac.net>
+	Wed, 29 Oct 2008 03:17:21 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:1164 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752020AbYJ2HRU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 03:17:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=LikYLJ5FzAWKlwuuKPGF0x7wkW8ntvi4aLvtN+qWQxseY6ZhRan0n1cTRiAbvHuY8+
+         wjaS0S40rJcxYpFVNDrQOSbPAr3S3ecNWPy9wiSjTEXFfzQHLkE5w30KZuRLcXRihkyB
+         5lQ+t/SkY/IOFtkDl12qsAx9ZEeIhf+SVYAJE=
+Message-ID: <2f11576a0810290017g310e4469gd27aa857866849bd@mail.gmail.com>
+Date: Wed, 29 Oct 2008 16:17:19 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>
+Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use schedule_on_each_cpu()
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Christoph Lameter" <cl@linux-foundation.org>,
+       heiko.carstens@de.ibm.com, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, hugh@veritas.com,
+       torvalds@linux-foundation.org, riel@redhat.com, linux-mm@kvack.org
+In-Reply-To: <1225229366.6343.74.camel@lts-notebook>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081029065428.GA15581@corsac.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <2f11576a0810210851g6e0d86benef5d801871886dd7@mail.gmail.com>
+	 <2f11576a0810211018g5166c1byc182f1194cfdd45d@mail.gmail.com>
+	 <20081023235425.9C40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20081027145509.ebffcf0e.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0810280914010.15939@quilx.com>
+	 <20081028134536.9a7a5351.akpm@linux-foundation.org>
+	 <1225229366.6343.74.camel@lts-notebook>
+X-Google-Sender-Auth: 0d1696d124dc47ec
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 07:54:28AM +0100, Yves-Alexis Perez wrote:
-> On Tue, Oct 28, 2008 at 08:32:39PM -0700, Arjan van de Ven wrote:
-> > ok one easy thing to try, in the peek function (that this patch touches),
-> > just stick a "return" as first statement in.
-> > If that "fixes" it, we have a real issue with hrtimers, if not then something else is going on..
-> 
-> At first sight, it fixes it, yes. Tried on a recent git pull. I'll try
-> to rebuild it without the fix to see if the problem reappears or if it
-> was a side-effect from other change.
+> I believe that we still  have the lru_drain_all() called from the fault
+> path [with mmap_sem held] in clear_page_mlock().  We call
+> clear_page_mlock() on COW of an mlocked page in a VM_LOCKED vma to
+> ensure that we don't end up with an mlocked page in some other task's
+> non-VM_LOCKED vma where we'd then fail to munlock it later.  During
+> development testing, Rik encountered scenarios where a page would
+> encounter a COW fault while it was still making its way to the LRU via
+> the pagevecs.  So, he added the 'drain_all() and that seemed to avoid
+> this scenario.
 
-Confirmed, removing the “return;” shows the problem back. So I guess we
-have a real issue with hrtimers :/
+Agreed.
 
-Cheers,
--- 
-Yves-Alexis
+
+> Now, in the current upstream version of the unevictable mlocked pages
+> patches, we just count any mlocked pages [vmstat] that make their way to
+> free*page() instead of BUGging out, as we were doing earlier during
+> development.  So, maybe we can drop the lru_drain_add()s in the
+> unevictable mlocked pages work and live with the occasional freed
+> mlocked page, or mlocked page on the active/inactive lists to be dealt
+> with by vmscan.
+
+hm, okey.
+maybe, I was wrong.
+
+I'll make "dropping lru_add_drain_all()" patch soon.
+I expect I need few days.
+  make the patch:                  1 day
+  confirm by stress workload:  2-3 days
+
+because rik's original problem only happend on heavy wokload, I think.
