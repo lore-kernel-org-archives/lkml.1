@@ -1,223 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbYJ2TTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbYJ2TYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754879AbYJ2TTt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 15:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbYJ2TTk
+	id S1754685AbYJ2TYa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 15:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbYJ2TYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 15:19:40 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50696 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753821AbYJ2TTj convert rfc822-to-8bit (ORCPT
+	Wed, 29 Oct 2008 15:24:22 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:63731 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752687AbYJ2TYV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 15:19:39 -0400
-Date: Wed, 29 Oct 2008 12:20:02 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: =?UTF-8?B?QW3DqXJpY28=?= Wang <xiyou.wangcong@gmail.com>
-Cc: rdunlap@xenotime.net, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scripts: improve the decodecode script
-Message-ID: <20081029122002.0df199fb@infradead.org>
-In-Reply-To: <20081029172226.GD18050@hack.voiplan.pt>
-References: <20081029100045.04b208f7@infradead.org>
-	<20081029172226.GD18050@hack.voiplan.pt>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 29 Oct 2008 15:24:21 -0400
+Date: Wed, 29 Oct 2008 15:24:19 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>, Adrian Bunk <bunk@kernel.org>
+Subject: Re: [PATCH 01/11] ftrace: handle generic arch calls
+In-Reply-To: <20081029190045.GC22105@uranus.ravnborg.org>
+Message-ID: <alpine.DEB.1.10.0810291517220.13214@gandalf.stny.rr.com>
+References: <20081022184313.179487464@goodmis.org> <20081022185135.618026303@goodmis.org> <alpine.DEB.1.10.0810271337370.8006@gandalf.stny.rr.com> <20081029190045.GC22105@uranus.ravnborg.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Oct 2008 17:22:26 +0000
-Américo Wang <xiyou.wangcong@gmail.com> wrote:
 
-> On Wed, Oct 29, 2008 at 10:00:45AM -0700, Arjan van de Ven wrote:
-> >From 80bf813c2bdc3538d823bb59c2611b40673e395a Mon Sep 17 00:00:00
-> >2001 From: Arjan van de Ven <arjan@linux.intel.com>
-> >Date: Wed, 29 Oct 2008 09:57:07 -0700
-> >Subject: [PATCH] scripts: improve the decodecode script
-> >
-> >kerneloops.org has been using an improved "decodecode" script,
-> >specifically it has a special marker that shows which line
-> >in the assembly the oops happened at, like this:
-> >
-> >  20:	83 e0 03             	and    $0x3,%eax
-> >  23:	09 d8                	or     %ebx,%eax
-> >  25:	85 db                	test   %ebx,%ebx
-> >  27:	89 02                	mov    %eax,(%edx)
-> >  29:	74 0f                	je     0x3a
-> >  2b:*	3b 73 04             	cmp    0x4(%ebx),%esi
-> > <-- trapping instruction 2e:	75 05
-> > jne    0x35 30:	89 53 04             	mov
-> > %edx,0x4(%ebx) 33:	eb 07                	jmp    0x3c
-> >  35:	89 53 08             	mov    %edx,0x8(%ebx)
-> >
-> >this patch updates the kernel copy to also have this functionality.
-> >
-> >Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> >---
-> > scripts/decodecode |   32 ++++++++++++++++++++++----------
-> > 1 files changed, 22 insertions(+), 10 deletions(-)
-> >
-> >diff --git a/scripts/decodecode b/scripts/decodecode
-> >index 235d393..dd9bf17 100755
-> >--- a/scripts/decodecode
-> >+++ b/scripts/decodecode
-> >@@ -7,7 +7,7 @@
-> > # AFLAGS=--32 decodecode < 386.oops
+On Wed, 29 Oct 2008, Sam Ravnborg wrote:
+> >  
+> > +if ($arch eq "x86") {
+> > +    if ($bits == 64) {
+> > +	$arch = "x86_64";
+> > +    } else {
+> > +	$arch = "i386";
+> > +    }
+> > +}
+> > +
+> >  if ($arch eq "x86_64") {
+> >      $section_regex = "Disassembly of section";
+> >      $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
 > > 
-> > cleanup() {
-> >-	rm -f $T $T.s $T.o
-> >+	rm -f $T $T.s $T.o $T.oo $T.aa  $T.aaa
-> > 	exit 1
-> > }
-> > 
-> >@@ -44,21 +44,33 @@ if [ $marker -eq 0 ]; then
-> > 	marker=`expr index "$code" "\("`
-> > fi
-> > 
-> >+touch $T.oo
-> > if [ $marker -ne 0 ]; then
-> >-	beforemark=`echo "$code" | cut -c-$((${marker} - 1))`
-> >+	echo All code >> $T.oo
-> >+	echo ======== >> $T.oo
-> >+	beforemark=`echo "$code"`
-> > 	echo -n "	.byte 0x" > $T.s
-> >-	echo $beforemark | sed -e 's/ /,0x/g' >> $T.s
-> >-	as $AFLAGS -o $T.o $T.s
-> >-	objdump -S $T.o
-> >-	rm $T.o $T.s
-> >+	echo $beforemark | sed -e 's/ /,0x/g' | sed -e 's/<//g' |
-> >sed -e 's/>//g' >> $T.s
-> >+	as $AFLAGS -o $T.o $T.s &> /dev/null
-> >+	objdump -S $T.o | grep -v "/tmp" | grep -v "Disassembly" |
-> >grep -v "\.text" | grep -v "^$" &> $T.ooo
-> >+	cat $T.ooo >> $T.oo
-> >+	rm -f $T.o $T.s  $T.ooo
-> > 
-> > # and fix code at-and-after marker
-> > 	code=`echo "$code" | cut -c$((${marker} + 1))-`
-> > fi
-> >-
-> >+echo Code starting with the faulting instruction  > $T.aa
-> >+echo =========================================== >> $T.aa
-> > code=`echo $code | sed -e 's/ [<(]/ /;s/[>)] / /;s/ /,0x/g'`
-> > echo -n "	.byte 0x" > $T.s
-> > echo $code >> $T.s
-> >-as $AFLAGS -o $T.o $T.s
-> >-objdump -S $T.o
-> >-rm $T $T.s $T.o
-> >+as $AFLAGS -o $T.o $T.s &> /dev/null
-> >+objdump -S $T.o | grep -v "Disassembly" | grep -v "/tmp" | grep -v
-> >"\.text" | grep -v "^$" &> $T.aaa +cat $T.aaa >> $T.aa
-> >+
-> >+faultline=`cat $T.aaa | head -1 | cut -d":" -f2`
-> >+
-> >+cat $T.oo | sed -e "s/\($faultline\)/\*\1     <-- trapping
-> >instruction/g" +echo
-> >+cat $T.aa
-> >+rm -f $T.o $T.s $T $T.oo $T.aa  $T.aaa[5~
 > 
-> what is $T.aaa[5~ ?  :-)
+> This looks strange to my eyes.
+> Why not do the more obvious:
+> if ($arch eq "x86" && $bits == 64) {
 > 
-> And why not call cleanup() here?
+> The change above is like trying to stick to the old i386/x86_64
+> notation.
 
-good point
+Trying to fix it tells me my answer to why I did it his way ;-)
 
-update below
+I have queued patches that will support other archs so x86 is not the
+only arch that can be used here. But x86 is special, it seems to be the 
+only arch (that I know of, correct me if I'm wrong) that can compile with
+multiple archs defined: make ARCH=x86_64, make ARCH=i386, or
+make ARCH=x86. All are legit.
 
+Now how do we handle this. I've been fine for all my testing to do just 
+x86_64 and i386 because a normal make of x86 will use automatically set
+ARCH to i386 or x86_64 depending on the build.
 
->From 232b53efebc0bdba0be17dd0a695494faf3fdb60 Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Wed, 29 Oct 2008 09:57:07 -0700
-Subject: [PATCH] scripts: improve the decodecode script
+But then Adrian Bunk pointed out that "make ARCH=x86" fails. Now I need to 
+add a case for x86, but still allow for x86_64 or i386 being passed in.
 
-kerneloops.org has been using an improved "decodecode" script,
-specifically it has a special marker that shows which line
-in the assembly the oops happened at, like this:
+Since x86 is the ambiguous case, I made it the one that would be converted 
+to i386 or x86_64 since those could be passed in directly.
 
-  20:	83 e0 03             	and    $0x3,%eax
-  23:	09 d8                	or     %ebx,%eax
-  25:	85 db                	test   %ebx,%ebx
-  27:	89 02                	mov    %eax,(%edx)
-  29:	74 0f                	je     0x3a
-  2b:*	3b 73 04             	cmp    0x4(%ebx),%esi     <-- trapping instruction
-  2e:	75 05                	jne    0x35
-  30:	89 53 04             	mov    %edx,0x4(%ebx)
-  33:	eb 07                	jmp    0x3c
-  35:	89 53 08             	mov    %edx,0x8(%ebx)
+Seems that the best approach is still what is there :-/
 
-this patch updates the kernel copy to also have this functionality.
+-- Steve
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- scripts/decodecode |   32 ++++++++++++++++++++++----------
- 1 files changed, 22 insertions(+), 10 deletions(-)
-
-diff --git a/scripts/decodecode b/scripts/decodecode
-index 235d393..4b00647 100755
---- a/scripts/decodecode
-+++ b/scripts/decodecode
-@@ -7,7 +7,7 @@
- # AFLAGS=--32 decodecode < 386.oops
- 
- cleanup() {
--	rm -f $T $T.s $T.o
-+	rm -f $T $T.s $T.o $T.oo $T.aa  $T.aaa
- 	exit 1
- }
- 
-@@ -44,21 +44,33 @@ if [ $marker -eq 0 ]; then
- 	marker=`expr index "$code" "\("`
- fi
- 
-+touch $T.oo
- if [ $marker -ne 0 ]; then
--	beforemark=`echo "$code" | cut -c-$((${marker} - 1))`
-+	echo All code >> $T.oo
-+	echo ======== >> $T.oo
-+	beforemark=`echo "$code"`
- 	echo -n "	.byte 0x" > $T.s
--	echo $beforemark | sed -e 's/ /,0x/g' >> $T.s
--	as $AFLAGS -o $T.o $T.s
--	objdump -S $T.o
--	rm $T.o $T.s
-+	echo $beforemark | sed -e 's/ /,0x/g' | sed -e 's/<//g' | sed -e 's/>//g' >> $T.s
-+	as $AFLAGS -o $T.o $T.s &> /dev/null
-+	objdump -S $T.o | grep -v "/tmp" | grep -v "Disassembly" | grep -v "\.text" | grep -v "^$" &> $T.ooo
-+	cat $T.ooo >> $T.oo
-+	rm -f $T.o $T.s  $T.ooo
- 
- # and fix code at-and-after marker
- 	code=`echo "$code" | cut -c$((${marker} + 1))-`
- fi
--
-+echo Code starting with the faulting instruction  > $T.aa
-+echo =========================================== >> $T.aa
- code=`echo $code | sed -e 's/ [<(]/ /;s/[>)] / /;s/ /,0x/g'`
- echo -n "	.byte 0x" > $T.s
- echo $code >> $T.s
--as $AFLAGS -o $T.o $T.s
--objdump -S $T.o
--rm $T $T.s $T.o
-+as $AFLAGS -o $T.o $T.s &> /dev/null
-+objdump -S $T.o | grep -v "Disassembly" | grep -v "/tmp" | grep -v "\.text" | grep -v "^$" &> $T.aaa
-+cat $T.aaa >> $T.aa
-+
-+faultline=`cat $T.aaa | head -1 | cut -d":" -f2`
-+
-+cat $T.oo | sed -e "s/\($faultline\)/\*\1     <-- trapping instruction/g"
-+echo
-+cat $T.aa
-+cleanup
--- 
-1.5.5.1
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
