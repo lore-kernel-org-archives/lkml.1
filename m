@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbYJ2Wrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbYJ2WsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755607AbYJ2Wrf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 18:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756038AbYJ2WoX
+	id S1755566AbYJ2WsL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 18:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbYJ2Wo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 18:44:23 -0400
-Received: from kroah.org ([198.145.64.141]:43755 "EHLO coco.kroah.org"
+	Wed, 29 Oct 2008 18:44:26 -0400
+Received: from kroah.org ([198.145.64.141]:43764 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756025AbYJ2WoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 18:44:14 -0400
+	id S1755971AbYJ2WoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 18:44:17 -0400
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 11/49] Staging: w35und: merge wblinux struct to adapter
-Date: Wed, 29 Oct 2008 15:39:38 -0700
-Message-Id: <1225320016-21803-11-git-send-email-greg@kroah.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Pavel Machek <pavel@suse.cz>
+Subject: [PATCH 13/49] Staging: w35und: remove usb_submit_urb wrapper function
+Date: Wed, 29 Oct 2008 15:39:40 -0700
+Message-Id: <1225320016-21803-13-git-send-email-greg@kroah.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081029223832.GC21657@kroah.com>
 References: <20081029223832.GC21657@kroah.com>
@@ -22,290 +23,80 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-Zaps another compatability layer from the driver code.
+No need for a simple wrapper here.
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Acked-by: Pavel Machek <pavel@suse.cz>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Pavel Machek <pavel@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/winbond/adapter.h      |   60 ++++++++++++++++++++++++-------
- drivers/staging/winbond/linux/sysdef.h |    1 -
- drivers/staging/winbond/linux/wbusb.c  |    5 ---
- drivers/staging/winbond/wblinux.c      |   37 ++++++++------------
- drivers/staging/winbond/wblinux_s.h    |   45 ------------------------
- 5 files changed, 61 insertions(+), 87 deletions(-)
- delete mode 100644 drivers/staging/winbond/wblinux_s.h
+ drivers/staging/winbond/linux/wb35reg.c |    2 +-
+ drivers/staging/winbond/linux/wb35rx.c  |    2 +-
+ drivers/staging/winbond/linux/wb35tx.c  |    4 ++--
+ drivers/staging/winbond/linux/wbusb_f.h |    1 -
+ 4 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/staging/winbond/adapter.h b/drivers/staging/winbond/adapter.h
-index 8925dad..fc4205d 100644
---- a/drivers/staging/winbond/adapter.h
-+++ b/drivers/staging/winbond/adapter.h
-@@ -1,23 +1,55 @@
--//
--// ADAPTER.H -
--// Windows NDIS global variable 'adapter' typedef
--//
-+#define OS_MEMORY_ALLOC( _V, _S )	WBLINUX_MemoryAlloc( _V, _S )
-+#define OS_LINK_STATUS			(adapter->LinkStatus == OS_CONNECTED)
-+#define OS_SET_SHUTDOWN( _A )		_A->shutdown=1
-+#define OS_SET_RESUME( _A )		_A->shutdown=0
-+#define OS_CONNECT_STATUS_INDICATE( _A, _F )		WBLINUX_ConnectStatus( _A, _F )
-+#define OS_DISCONNECTED	0
-+#define OS_CONNECTED	1
-+#define OS_STOP( _A )	WBLINUX_stop( _A )
-+
-+#define OS_CURRENT_RX_BYTE( _A )		_A->RxByteCount
-+#define OS_CURRENT_TX_BYTE( _A )		_A->TxByteCount
-+#define OS_EVENT_INDICATE( _A, _B, _F )
-+#define OS_PMKID_STATUS_EVENT( _A )
-+#define OS_RECEIVE_PACKET_INDICATE( _A, _D )		WBLinux_ReceivePacket( _A, _D )
-+#define OS_RECEIVE_802_1X_PACKET_INDICATE( _A, _D )	EAP_ReceivePacket( _A, _D )
-+#define OS_GET_PACKET( _A, _D )				WBLINUX_GetNextPacket( _A, _D )
-+#define OS_GET_PACKET_COMPLETE( _A, _D )	WBLINUX_GetNextPacketCompleted( _A, _D )
-+#define OS_SEND_RESULT( _A, _ID, _R )
-+
-+#define WBLINUX_PACKET_ARRAY_SIZE	(ETHERNET_TX_DESCRIPTORS*4)
-+
- #define MAX_ANSI_STRING		40
+diff --git a/drivers/staging/winbond/linux/wb35reg.c b/drivers/staging/winbond/linux/wb35reg.c
+index 041be81..c2864b1 100644
+--- a/drivers/staging/winbond/linux/wb35reg.c
++++ b/drivers/staging/winbond/linux/wb35reg.c
+@@ -434,7 +434,7 @@ Wb35Reg_EP0VM(phw_data_t pHwData )
  
- struct wb35_adapter {
--	u32 adapterIndex; // 20060703.4 Add for using padapterContext global adapter point
-+	u32 adapterIndex;	// 20060703.4 Add for using padapterContext global adapter point
-+
-+	WB_LOCALDESCRIPT sLocalPara;	// Myself connected parameters
-+	PWB_BSSDESCRIPTION asBSSDescriptElement;
-+
-+	MLME_FRAME sMlmeFrame;	// connect to peerSTA parameters
-+
-+	MTO_PARAMETERS sMtoPara;	// MTO_struct ...
-+	hw_data_t sHwData;	//For HAL
-+	MDS Mds;
-+
-+	spinlock_t AtomicSpinLock;
-+	spinlock_t SpinLock;
-+	u32 shutdown;
+ 	reg->EP0vm_state = VM_RUNNING;
  
--	WB_LOCALDESCRIPT	sLocalPara;		// Myself connected parameters
--	PWB_BSSDESCRIPTION	asBSSDescriptElement;
-+	OS_ATOMIC ThreadCount;
+-	ret = wb_usb_submit_urb( urb );
++	ret = usb_submit_urb(urb, GFP_ATOMIC);
  
--	MLME_FRAME		sMlmeFrame;		// connect to peerSTA parameters
-+	u32 LinkStatus;		// OS_DISCONNECTED or OS_CONNECTED
+ 	if (ret < 0) {
+ #ifdef _PE_REG_DUMP_
+diff --git a/drivers/staging/winbond/linux/wb35rx.c b/drivers/staging/winbond/linux/wb35rx.c
+index ae91b62..e565746 100644
+--- a/drivers/staging/winbond/linux/wb35rx.c
++++ b/drivers/staging/winbond/linux/wb35rx.c
+@@ -70,7 +70,7 @@ void Wb35Rx(  phw_data_t pHwData )
  
--	MTO_PARAMETERS		sMtoPara; // MTO_struct ...
--	hw_data_t			sHwData; //For HAL
--	MDS					Mds;
-+	u32 RxByteCount;
-+	u32 TxByteCount;
+ 	pWb35Rx->EP3vm_state = VM_RUNNING;
  
--	WBLINUX		WbLinux;
--        struct iw_statistics iw_stats;
-+	struct sk_buff *skb_array[WBLINUX_PACKET_ARRAY_SIZE];
-+	struct sk_buff *packet_return;
-+	s32 skb_SetIndex;
-+	s32 skb_GetIndex;
-+	s32 netif_state_stop;	// 1: stop  0: normal
-+	struct iw_statistics iw_stats;
+-	retv = wb_usb_submit_urb(urb);
++	retv = usb_submit_urb(urb, GFP_ATOMIC);
  
--	u8	LinkName[MAX_ANSI_STRING];
-+	u8 LinkName[MAX_ANSI_STRING];
- };
-diff --git a/drivers/staging/winbond/linux/sysdef.h b/drivers/staging/winbond/linux/sysdef.h
-index d46d63e..4b35a97 100644
---- a/drivers/staging/winbond/linux/sysdef.h
-+++ b/drivers/staging/winbond/linux/sysdef.h
-@@ -53,7 +53,6 @@
- #include "../sme_api.h"
- #include "../gl_80211.h"
- #include "../mto.h"
--#include "../wblinux_s.h"
- #include "../wbhal_s.h"
+ 	if (retv != 0) {
+ 		printk("Rx URB sending error\n");
+diff --git a/drivers/staging/winbond/linux/wb35tx.c b/drivers/staging/winbond/linux/wb35tx.c
+index 3c40e31..c54ef30 100644
+--- a/drivers/staging/winbond/linux/wb35tx.c
++++ b/drivers/staging/winbond/linux/wb35tx.c
+@@ -65,7 +65,7 @@ void Wb35Tx(phw_data_t pHwData)
+ 			  Wb35Tx_complete, pHwData);
  
+ 	pWb35Tx->EP4vm_state = VM_RUNNING;
+-	retv = wb_usb_submit_urb( pUrb );
++	retv = usb_submit_urb(pUrb, GFP_ATOMIC);
+ 	if (retv<0) {
+ 		printk("EP4 Tx Irp sending error\n");
+ 		goto cleanup;
+@@ -240,7 +240,7 @@ void Wb35Tx_EP2VM(phw_data_t pHwData)
+ 			  pltmp, MAX_INTERRUPT_LENGTH, Wb35Tx_EP2VM_complete, pHwData, 32);
  
-diff --git a/drivers/staging/winbond/linux/wbusb.c b/drivers/staging/winbond/linux/wbusb.c
-index 1e43232..5f09fd4 100644
---- a/drivers/staging/winbond/linux/wbusb.c
-+++ b/drivers/staging/winbond/linux/wbusb.c
-@@ -188,7 +188,6 @@ struct wbsoft_priv {
- static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
- {
- 	struct wb35_adapter *adapter;
--	PWBLINUX	pWbLinux;
- 	PWBUSB		pWbUsb;
-         struct usb_host_interface *interface;
- 	struct usb_endpoint_descriptor *endpoint;
-@@ -214,7 +213,6 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
- 	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
+ 	pWb35Tx->EP2vm_state = VM_RUNNING;
+-	retv = wb_usb_submit_urb( pUrb );
++	retv = usb_submit_urb(pUrb, GFP_ATOMIC);
  
- 	my_adapter = adapter;
--	pWbLinux = &adapter->WbLinux;
- 	pWbUsb = &adapter->sHwData.WbUsb;
- 	pWbUsb->udev = udev;
+ 	if (retv < 0) {
+ 		#ifdef _PE_TX_DUMP_
+diff --git a/drivers/staging/winbond/linux/wbusb_f.h b/drivers/staging/winbond/linux/wbusb_f.h
+index 5a811f6..db47e1d 100644
+--- a/drivers/staging/winbond/linux/wbusb_f.h
++++ b/drivers/staging/winbond/linux/wbusb_f.h
+@@ -16,7 +16,6 @@ void WbUsb_destroy(phw_data_t pHwData);
+ unsigned char WbWLanInitialize(struct wb35_adapter *adapter);
+ #define	WbUsb_Stop( _A )
  
-@@ -334,12 +332,9 @@ WbUsb_destroy(phw_data_t pHwData)
+-#define wb_usb_submit_urb(_A) usb_submit_urb(_A, GFP_ATOMIC)
+ #define wb_usb_alloc_urb(_A) usb_alloc_urb(_A, GFP_ATOMIC)
  
- static void wb35_disconnect(struct usb_interface *intf)
- {
--	PWBLINUX pWbLinux;
- 	struct wb35_adapter * adapter = usb_get_intfdata(intf);
- 	usb_set_intfdata(intf, NULL);
- 
--        pWbLinux = &adapter->WbLinux;
--
- 	// Card remove
- 	WbWlanHalt(adapter);
- 
-diff --git a/drivers/staging/winbond/wblinux.c b/drivers/staging/winbond/wblinux.c
-index 6259dd0..89f9f7c 100644
---- a/drivers/staging/winbond/wblinux.c
-+++ b/drivers/staging/winbond/wblinux.c
-@@ -23,36 +23,32 @@ WBLINUX_MemoryAlloc(void* *VirtualAddress, u32 Length)
- s32
- EncapAtomicInc(struct wb35_adapter * adapter, void* pAtomic)
- {
--	PWBLINUX pWbLinux = &adapter->WbLinux;
- 	u32	ltmp;
- 	u32 *	pltmp = (u32 *)pAtomic;
--	spin_lock_irq( &pWbLinux->AtomicSpinLock );
-+	spin_lock_irq( &adapter->AtomicSpinLock );
- 	(*pltmp)++;
- 	ltmp = (*pltmp);
--	spin_unlock_irq( &pWbLinux->AtomicSpinLock );
-+	spin_unlock_irq( &adapter->AtomicSpinLock );
- 	return ltmp;
- }
- 
- s32
- EncapAtomicDec(struct wb35_adapter * adapter, void* pAtomic)
- {
--	PWBLINUX pWbLinux = &adapter->WbLinux;
- 	u32	ltmp;
- 	u32 *	pltmp = (u32 *)pAtomic;
--	spin_lock_irq( &pWbLinux->AtomicSpinLock );
-+	spin_lock_irq( &adapter->AtomicSpinLock );
- 	(*pltmp)--;
- 	ltmp = (*pltmp);
--	spin_unlock_irq( &pWbLinux->AtomicSpinLock );
-+	spin_unlock_irq( &adapter->AtomicSpinLock );
- 	return ltmp;
- }
- 
- unsigned char
- WBLINUX_Initial(struct wb35_adapter * adapter)
- {
--	PWBLINUX pWbLinux = &adapter->WbLinux;
--
--	spin_lock_init( &pWbLinux->SpinLock );
--	spin_lock_init( &pWbLinux->AtomicSpinLock );
-+	spin_lock_init( &adapter->SpinLock );
-+	spin_lock_init( &adapter->AtomicSpinLock );
- 	return TRUE;
- }
- 
-@@ -87,24 +83,23 @@ WBLINUX_Destroy(struct wb35_adapter * adapter)
- void
- WBLINUX_stop(  struct wb35_adapter * adapter )
- {
--	PWBLINUX	pWbLinux = &adapter->WbLinux;
- 	struct sk_buff *pSkb;
- 
--	if (OS_ATOMIC_INC( adapter, &pWbLinux->ThreadCount ) == 1) {
-+	if (OS_ATOMIC_INC( adapter, &adapter->ThreadCount ) == 1) {
- 		// Shutdown module immediately
--		pWbLinux->shutdown = 1;
-+		adapter->shutdown = 1;
- 
--		while (pWbLinux->skb_array[ pWbLinux->skb_GetIndex ]) {
-+		while (adapter->skb_array[ adapter->skb_GetIndex ]) {
- 			// Trying to free the un-sending packet
--			pSkb = pWbLinux->skb_array[ pWbLinux->skb_GetIndex ];
--			pWbLinux->skb_array[ pWbLinux->skb_GetIndex ] = NULL;
-+			pSkb = adapter->skb_array[ adapter->skb_GetIndex ];
-+			adapter->skb_array[ adapter->skb_GetIndex ] = NULL;
- 			if( in_irq() )
- 				dev_kfree_skb_irq( pSkb );
- 			else
- 				dev_kfree_skb( pSkb );
- 
--			pWbLinux->skb_GetIndex++;
--			pWbLinux->skb_GetIndex %= WBLINUX_PACKET_ARRAY_SIZE;
-+			adapter->skb_GetIndex++;
-+			adapter->skb_GetIndex %= WBLINUX_PACKET_ARRAY_SIZE;
- 		}
- 
- #ifdef _PE_STATE_DUMP_
-@@ -112,7 +107,7 @@ WBLINUX_stop(  struct wb35_adapter * adapter )
- #endif
- 	}
- 
--	OS_ATOMIC_DEC(adapter, &pWbLinux->ThreadCount);
-+	OS_ATOMIC_DEC(adapter, &adapter->ThreadCount);
- }
- 
- void
-@@ -268,8 +263,6 @@ error:
- 
- void WBLINUX_ConnectStatus(struct wb35_adapter * adapter, u32 flag)
- {
--	PWBLINUX	pWbLinux = &adapter->WbLinux;
--
--	pWbLinux->LinkStatus = flag; // OS_DISCONNECTED	or  OS_CONNECTED
-+	adapter->LinkStatus = flag; // OS_DISCONNECTED	or  OS_CONNECTED
- }
- 
-diff --git a/drivers/staging/winbond/wblinux_s.h b/drivers/staging/winbond/wblinux_s.h
-deleted file mode 100644
-index 619843f..0000000
---- a/drivers/staging/winbond/wblinux_s.h
-+++ /dev/null
-@@ -1,45 +0,0 @@
--//============================================================
--// wblinux_s.h
--//
--#define OS_MEMORY_ALLOC( _V, _S )	WBLINUX_MemoryAlloc( _V, _S )
--#define OS_LINK_STATUS			(adapter->WbLinux.LinkStatus == OS_CONNECTED)
--#define OS_SET_SHUTDOWN( _A )		_A->WbLinux.shutdown=1
--#define OS_SET_RESUME( _A )		_A->WbLinux.shutdown=0
--#define OS_CONNECT_STATUS_INDICATE( _A, _F )		WBLINUX_ConnectStatus( _A, _F )
--#define OS_DISCONNECTED	0
--#define OS_CONNECTED	1
--#define OS_STOP( _A )	WBLINUX_stop( _A )
--
--#define OS_CURRENT_RX_BYTE( _A )		_A->WbLinux.RxByteCount
--#define OS_CURRENT_TX_BYTE( _A )		_A->WbLinux.TxByteCount
--#define OS_EVENT_INDICATE( _A, _B, _F )
--#define OS_PMKID_STATUS_EVENT( _A )
--#define OS_RECEIVE_PACKET_INDICATE( _A, _D )		WBLinux_ReceivePacket( _A, _D )
--#define OS_RECEIVE_802_1X_PACKET_INDICATE( _A, _D )	EAP_ReceivePacket( _A, _D )
--#define OS_GET_PACKET( _A, _D )				WBLINUX_GetNextPacket( _A, _D )
--#define OS_GET_PACKET_COMPLETE( _A, _D )	WBLINUX_GetNextPacketCompleted( _A, _D )
--#define OS_SEND_RESULT( _A, _ID, _R )
--
--#define WBLINUX_PACKET_ARRAY_SIZE	(ETHERNET_TX_DESCRIPTORS*4)
--
--typedef struct _WBLINUX
--{
--	spinlock_t	AtomicSpinLock;
--	spinlock_t	SpinLock;
--	u32	shutdown;
--
--	OS_ATOMIC	ThreadCount;
--
--	u32	LinkStatus;		// OS_DISCONNECTED or OS_CONNECTED
--
--	u32	RxByteCount;
--	u32	TxByteCount;
--
--	struct sk_buff *skb_array[ WBLINUX_PACKET_ARRAY_SIZE ];
--	struct sk_buff *packet_return;
--	s32	skb_SetIndex;
--	s32	skb_GetIndex;
--	s32	netif_state_stop; // 1: stop  0: normal
--} WBLINUX, *PWBLINUX;
--
--
+ #define WbUsb_CheckForHang( _P )
 -- 
 1.6.0.2
 
