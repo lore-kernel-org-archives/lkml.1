@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbYJ2W7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbYJ2W7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755328AbYJ2W7y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 18:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbYJ2Wqc
+	id S1758789AbYJ2W7d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 18:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755720AbYJ2Wqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 18:46:32 -0400
-Received: from kroah.org ([198.145.64.141]:56282 "EHLO coco.kroah.org"
+	Wed, 29 Oct 2008 18:46:31 -0400
+Received: from kroah.org ([198.145.64.141]:56285 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756065AbYJ2WqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756482AbYJ2WqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 29 Oct 2008 18:46:15 -0400
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
 Cc: "vijaykumar@bravegnu.org" <vijaykumar@bravegnu.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 44/49] Staging: poch: Fine grained locking
-Date: Wed, 29 Oct 2008 15:40:11 -0700
-Message-Id: <1225320016-21803-44-git-send-email-greg@kroah.com>
+Subject: [PATCH 42/49] Staging: poch: Rx control register init
+Date: Wed, 29 Oct 2008 15:40:09 -0700
+Message-Id: <1225320016-21803-42-git-send-email-greg@kroah.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081029223832.GC21657@kroah.com>
 References: <20081029223832.GC21657@kroah.com>
@@ -25,51 +25,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: vijaykumar@bravegnu.org <vijaykumar@bravegnu.org>
 
-Lock only the portion of code that does register access.
+Added Rx control register definition. Flush Rx FIFO on init, and set
+continuous DMA mode.
 
 Signed-off-by: Vijay Kumar <vijaykumar@bravegnu.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/poch/poch.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/staging/poch/poch.c |   13 ++++++++++---
+ 1 files changed, 10 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/staging/poch/poch.c b/drivers/staging/poch/poch.c
-index 3ecbd7c..1f14792 100644
+index b54760f..0a3eca1 100644
 --- a/drivers/staging/poch/poch.c
 +++ b/drivers/staging/poch/poch.c
-@@ -485,27 +485,30 @@ static void channel_dma_init(struct channel_info *channel)
- 	/* The DMA address page register is shared between the RX and
- 	 * TX channels, so acquire lock.
- 	 */
--	spin_lock(channel->iomem_lock);
- 	for (i = 0; i < channel->group_count; i++) {
- 		page = i / 32;
- 		group_in_page = i % 32;
+@@ -126,9 +126,11 @@
+ #define FPGA_INT_TX_ACQ_DONE		(0x1 << 1)
+ #define FPGA_INT_RX_ACQ_DONE		(0x1)
  
- 		group_reg = group_regs_base + (group_in_page * 4);
+-#define FPGA_RX_ADC_CTL_REG		0x214
+-#define FPGA_RX_ADC_CTL_CONT_CAP	(0x0)
+-#define FPGA_RX_ADC_CTL_SNAP_CAP	(0x1)
++#define FPGA_RX_CTL_REG			0x214
++#define FPGA_RX_CTL_FIFO_FLUSH      	(0x1 << 9)
++#define FPGA_RX_CTL_SYNTH_DATA		(0x1 << 8)
++#define FPGA_RX_CTL_CONT_CAP		(0x0 << 1)
++#define FPGA_RX_CTL_SNAP_CAP		(0x1 << 1)
  
-+		spin_lock(channel->iomem_lock);
- 		iowrite32(page, fpga + FPGA_DMA_ADR_PAGE_REG);
- 		iowrite32(channel->groups[i].dma_addr, fpga + group_reg);
-+		spin_unlock(channel->iomem_lock);
+ #define FPGA_RX_ARM_REG			0x21C
+ 
+@@ -819,6 +821,11 @@ static int poch_open(struct inode *inode, struct file *filp)
+ 		iowrite32(FPGA_TX_CTL_FIFO_FLUSH
+ 			  | FPGA_TX_CTL_OUTPUT_CARDBUS,
+ 			  fpga + FPGA_TX_CTL_REG);
++	} else {
++		/* Flush RX FIFO and output data to cardbus. */
++		iowrite32(FPGA_RX_CTL_CONT_CAP
++			  | FPGA_RX_CTL_FIFO_FLUSH,
++			  fpga + FPGA_RX_CTL_REG);
  	}
-+
- 	for (i = 0; i < channel->group_count; i++) {
- 		page = i / 32;
- 		group_in_page = i % 32;
  
- 		group_reg = group_regs_base + (group_in_page * 4);
- 
-+		spin_lock(channel->iomem_lock);
- 		iowrite32(page, fpga + FPGA_DMA_ADR_PAGE_REG);
- 		printk(KERN_INFO PFX "%ld: read dma_addr: 0x%x\n", i,
- 		       ioread32(fpga + group_reg));
-+		spin_unlock(channel->iomem_lock);
- 	}
--	spin_unlock(channel->iomem_lock);
- 
- }
- 
+ 	atomic_inc(&channel->inited);
 -- 
 1.6.0.2
 
