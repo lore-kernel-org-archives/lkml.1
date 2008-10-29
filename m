@@ -1,120 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752424AbYJ2EG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752460AbYJ2Eat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752424AbYJ2EG0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 00:06:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756AbYJ2EGR
+	id S1752460AbYJ2Eat (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 00:30:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbYJ2Eal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 00:06:17 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:20863 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750720AbYJ2EGR (ORCPT
+	Wed, 29 Oct 2008 00:30:41 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:20880 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750831AbYJ2Eak (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 00:06:17 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Am4DAM8S9kh5LE2tgWdsb2JhbACTYAEBFiKuDIFr
-X-IronPort-AV: E=Sophos;i="4.33,504,1220193000"; 
-   d="scan'208";a="220417857"
-Date: Wed, 29 Oct 2008 15:05:38 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Naveen Gupta <ngupta@google.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       akpm@linux-foundation.org, s-uchida@ap.jp.nec.com
-Subject: Re: [PATCH] Priorities in Anticipatory I/O scheduler
-Message-ID: <20081029040538.GE17077@disturbed>
-Mail-Followup-To: Naveen Gupta <ngupta@google.com>,
-	linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-	akpm@linux-foundation.org, s-uchida@ap.jp.nec.com
-References: <20081027190131.070061000@elf.corp.google.com> <20081027190139.838646000@elf.corp.google.com> <20081028002024.GM4985@disturbed> <2846be6b0810281014q495cef22mae344423ed59c71a@mail.gmail.com> <20081028214443.GX4985@disturbed> <2846be6b0810281548oc81fbe4td2e1a5e2fba18745@mail.gmail.com> <20081028233101.GD17077@disturbed> <2846be6b0810281704r5092c415n3fea9c849c6086ca@mail.gmail.com>
+	Wed, 29 Oct 2008 00:30:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:content-type
+         :content-transfer-encoding:from;
+        b=wcP+RqNJth2WjTcdY4Zqrm5L8KGjUeQ0PWpGcTtnTyB4lMr5cozeecq2wKPQoJ012+
+         7NaDHeNgqNWJf43Dgd/fathG6CrKf9ubWo7EtxrwkvGOS1g7r+KTb2Mbxo8P0iSeyQxr
+         Vy8+pjs15Wuxl+zdmfM4wQn/zQ9u0aBQCjg0s=
+Message-ID: <4907E6B9.8080700@gmail.com>
+Date: Tue, 28 Oct 2008 23:29:45 -0500
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2846be6b0810281704r5092c415n3fea9c849c6086ca@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: lkml <linux-kernel@vger.kernel.org>
+CC: Oleg Nesterov <oleg@tv-sign.ru>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Bert Wesarg <bert.wesarg@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Strange stop-signal behavior in multithreaded program with defunct
+ main
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28, 2008 at 05:04:53PM -0700, Naveen Gupta wrote:
-> 2008/10/28 Dave Chinner <david@fromorbit.com>:
-> > On Tue, Oct 28, 2008 at 03:48:44PM -0700, Naveen Gupta wrote:
-> >> 2008/10/28 Dave Chinner <david@fromorbit.com>:
-> >> > On Tue, Oct 28, 2008 at 10:14:20AM -0700, Naveen Gupta wrote:
-> >> >> The anticipatory scheduler chooses it's next i/o to be of highest
-> >> >> available priority level.
-> >> >
-> >> > That sounds exactly like what the current RT class is supposed to
-> >> > be used for - defining the absolute priority of dispatch. How
-> >> > is this latency class different to the current RT class semantics
-> >> > that are defined for CFQ?
-> >> >
-> >>
-> >> I/O from RT class in CFQ can still see a bubble with this new latency
-> >> class. An easy way to check this would be to submit ios at multiple
-> >> levels both in CFQ and AS and check max latency of the highest levels.
-> >> I will let Jens or Satoshi comment on exact algorithm for RT class.
-> >
-> > You're missing my point entirely.
-> >
-> > You're defining a new class that has the exact same meaning as
-> > the current RT class definition, then mapping the BE class over
-> > the top of that, hence changing what that means for everyone.
-> >
-> > The fact that the *implementation* of AS and CFQ is different is
-> > irrelevant; if you use the RT class then on CFQ you get the current
-> > RT behaviour, if you use the RT class on AS you should get your new
-> > priority dispatch mechanism. We don't need a new API just because
-> > the implementations are different.
-> >
-> 
-> There is nothing "real-time" about the current RT class anyways.
+Bert Wesarg described a scenario that I quickly replicated on
+2.6.28-rc2 (and 2.6.25 -- it's not a regression in 2.6.28-rc)
+using the program below: if we have a multithreaded process
+with a defunct main thread running on a tty, and that
+process is sent a stop signal (either ^Z (SIGTSTP) or a stop
+signal sent from another terminal using kill(1)), then:
 
-That's an implementation problem, not an API definition problem.
+a) the terminal is locked up; and
 
-> It is
-> basically these small *implementation* differences that defines these
-> classes in current scheme of things, precise definitions of which
-> would be very hard to find if one started looking around.
+b) the program is unresponsive to any other signal, except SIGKILL
+or SIGCONT.
 
-Please, disconnect what you think about implementation and ask
-yourself what makes sense from an API if you were trying to use this
-stuff.
+An example run:
+$ ./pthreads_zombie_main 1      # Creates one thread besides main
+0:  0
+0:  1
+0:  2
+^Z
 
-I want to be able to use this stuff to optimise filesystem I/O,
-but if the priority class I need to use is dependent on the elevator the
-*user selects* and can change dynamically, then I simply cannot
-make that optimisation.
+At this point, no shell prompt appears, and typing ^C (or ^\) has no
+effect.  The process can be killed (and the terminal restored) by sending
+SIGKILL from another terminal.  (If one instead types ^C at the terminal,
+and then sends SIGCONT from another terminal, then the terminal is restored
+and the program can be seen (via $?) to have terminated because of
+SIGINT.)
 
-> Now the initial feedback was since this *implementation* is different
-> from anything we have in CFQ which is our current *standard* way of
-> thinking and comparing (that is the only thing that exists) why not
-> make them into a new class :).
-
-Because it make it impossible to optimise application code as the
-class that needs to be used is entirely dependent on the
-configuration of the machine that it is running on. Application
-writers are not going to probe the I/O scheduler the block device
-is using to determine if they should be using RT or LATENCY class
-prioritisation. From a user POV they do *exactly the same thing*,
-so they should use the same behavioural classes defined by the API.
-
-> >> I see your problem, we could make the LATENCY class different from
-> >> and above BE class (instead of one-one mapping).
-> >
-> > Like the RT class is currently defined to be? ;)
-> 
-> I agree with you and we could use RT (though you and I know that
-> basically it is best effort). LATENCY was invented due to a previous
-> suggestion.
-
-As someone who is actually trying to use this stuff, I'm saying that
-the LATENCY suggestion was a *bad idea* because of the complexity it
-introduces when trying to optimise performance by applying I/O
-priorities to different I/O types. I want *one* API that is
-implemented by all schedulers, not an API per scheduler.....
+I'm (wildly) guessing that there is some problem in the terminal driver's
+understanding of the state and identify of the foreground job, but am not
+sure how to analyze this further.  (I couldn't find a bug report or LKML
+thread that seemed to describe exactly this problem.)  Ideas?
 
 Cheers,
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+Michael
+
+/* pthreads_zombie_main.c */
+
+#include <pthread.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <assert.h>
+
+#define errExitEN(en, msg)      { errno = en; perror(msg); \
+                                   exit(EXIT_FAILURE); }
+
+static void *
+thread_start(void *arg)
+{
+     int tnum = (int) arg;
+     int j;
+
+     for (j = 0; ; j++) {
+         sleep(3);
+         printf("%d:  %d\n", tnum, j);
+     }
+}
+
+int
+main(int argc, char *argv[])
+{
+     int s, tnum;
+     pthread_t thr;
+
+     if (argc != 2) {
+         fprintf(stderr, "Usage: %s <num-threads>\n", argv[0]);
+         exit(EXIT_SUCCESS);
+     }
+
+     for (tnum = 0; tnum < atoi(argv[1]); tnum++) {
+         s = pthread_create(&thr, NULL, &thread_start, (void *) tnum);
+         if (s != 0)
+             errExitEN(s, "pthread_create");
+     }
+
+     pthread_exit(NULL);
+}
+
+
