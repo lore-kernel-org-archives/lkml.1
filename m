@@ -1,119 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753667AbYJ2JEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753501AbYJ2JGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753667AbYJ2JEn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 05:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbYJ2JEW
+	id S1753501AbYJ2JGY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 05:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYJ2JGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 05:04:22 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:42836 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752831AbYJ2JEV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 05:04:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=rdsQbR3Xnem2VuOUq2voTrt68w4folTsgYOzQPYjqzckAn00cSnDLN7ce9s1xzhPOF
-         QflSpGF0If+pLK+byJBG/ub0fw/6EoHGAg3crlCBeD0R7yocJ9YweVWw1YN1EdlKOdoa
-         oSmJOGco00MVqYo1BA0FBtmoT0QvI5YL8Hdts=
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: cbou@mail.ru, Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>,
-       Marek Vasut <marek.vasut@gmail.com>
-Subject: [PATCH] power_supply: change the way how wm97xx-bat driver is registered
-Date: Wed, 29 Oct 2008 12:04:10 +0300
-Message-Id: <1225271050-21171-2-git-send-email-dbaryshkov@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1225271050-21171-1-git-send-email-dbaryshkov@gmail.com>
-References: <1225271050-21171-1-git-send-email-dbaryshkov@gmail.com>
+	Wed, 29 Oct 2008 05:06:16 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57187 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752384AbYJ2JGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 05:06:16 -0400
+Message-ID: <490826DA.2060802@cn.fujitsu.com>
+Date: Wed, 29 Oct 2008 17:03:22 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sched: cleanup for alloc_rt/fair_sched_group()
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do register the driver from wm97xx_bat_set_pdata instead of module init.
-This has several positive outcome points:
-1) This driver for wm97xx-battery is now registered on demand, thus allowing
-  other driver (e.g. tosa-battery) to claim the battery.
-2) After dropping __init from wm97xx_bat_set_pdata(), the wm97xx_bat driver
-  can be correctly built as a module. Then one can request it and set the
-  battery data.
+Remove checking parent == NULL. It won't be NULLL, because we dynamically
+create sub task_group only, and sub task_group always has its parent.
+(root task_group is statically defined)
 
-Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: Marek Vasut <marek.vasut@gmail.com>
+Also replace kmalloc_node(GFP_ZERO) with kzalloc_node().
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- drivers/power/Kconfig          |    4 ++--
- drivers/power/wm97xx_battery.c |   12 +++++-------
- include/linux/wm97xx_batt.h    |    7 +++++--
- 3 files changed, 12 insertions(+), 11 deletions(-)
+ kernel/sched.c |   26 ++++++++++++--------------
+ 1 files changed, 12 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 8e0c2b4..053f20b 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -57,8 +57,8 @@ config BATTERY_TOSA
- 	  SL-6000 (tosa) models.
- 
- config BATTERY_WM97XX
--	bool "WM97xx generic battery driver"
--	depends on TOUCHSCREEN_WM97XX=y
-+	tristate "WM97xx generic battery driver"
-+	depends on TOUCHSCREEN_WM97XX
- 	help
- 	  Say Y to enable support for battery measured by WM97xx aux port.
- 
-diff --git a/drivers/power/wm97xx_battery.c b/drivers/power/wm97xx_battery.c
-index 8bde921..94727dc 100644
---- a/drivers/power/wm97xx_battery.c
-+++ b/drivers/power/wm97xx_battery.c
-@@ -248,23 +248,21 @@ static struct platform_driver wm97xx_bat_driver = {
- 	.resume		= wm97xx_bat_resume,
- };
- 
--static int __init wm97xx_bat_init(void)
--{
--	return platform_driver_register(&wm97xx_bat_driver);
--}
--
- static void __exit wm97xx_bat_exit(void)
+diff --git a/kernel/sched.c b/kernel/sched.c
+index e8819bc..7dd6c86 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -8472,7 +8472,7 @@ static
+ int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
  {
- 	platform_driver_unregister(&wm97xx_bat_driver);
- }
+ 	struct cfs_rq *cfs_rq;
+-	struct sched_entity *se, *parent_se;
++	struct sched_entity *se;
+ 	struct rq *rq;
+ 	int i;
  
--void __init wm97xx_bat_set_pdata(struct wm97xx_batt_info *data)
-+int wm97xx_bat_set_pdata(struct wm97xx_batt_info *data)
+@@ -8488,18 +8488,17 @@ int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
+ 	for_each_possible_cpu(i) {
+ 		rq = cpu_rq(i);
+ 
+-		cfs_rq = kmalloc_node(sizeof(struct cfs_rq),
+-				GFP_KERNEL|__GFP_ZERO, cpu_to_node(i));
++		cfs_rq = kzalloc_node(sizeof(struct cfs_rq),
++				      GFP_KERNEL, cpu_to_node(i));
+ 		if (!cfs_rq)
+ 			goto err;
+ 
+-		se = kmalloc_node(sizeof(struct sched_entity),
+-				GFP_KERNEL|__GFP_ZERO, cpu_to_node(i));
++		se = kzalloc_node(sizeof(struct sched_entity),
++				  GFP_KERNEL, cpu_to_node(i));
+ 		if (!se)
+ 			goto err;
+ 
+-		parent_se = parent ? parent->se[i] : NULL;
+-		init_tg_cfs_entry(tg, cfs_rq, se, i, 0, parent_se);
++		init_tg_cfs_entry(tg, cfs_rq, se, i, 0, parent->se[i]);
+ 	}
+ 
+ 	return 1;
+@@ -8560,7 +8559,7 @@ static
+ int alloc_rt_sched_group(struct task_group *tg, struct task_group *parent)
  {
-+	if (pdata)
-+		return -EEXIST;
-+
- 	pdata = data;
-+	return platform_driver_register(&wm97xx_bat_driver);
- }
- EXPORT_SYMBOL_GPL(wm97xx_bat_set_pdata);
+ 	struct rt_rq *rt_rq;
+-	struct sched_rt_entity *rt_se, *parent_se;
++	struct sched_rt_entity *rt_se;
+ 	struct rq *rq;
+ 	int i;
  
--module_init(wm97xx_bat_init);
- module_exit(wm97xx_bat_exit);
+@@ -8577,18 +8576,17 @@ int alloc_rt_sched_group(struct task_group *tg, struct task_group *parent)
+ 	for_each_possible_cpu(i) {
+ 		rq = cpu_rq(i);
  
- MODULE_LICENSE("GPL");
-diff --git a/include/linux/wm97xx_batt.h b/include/linux/wm97xx_batt.h
-index 9681d1a..3e42526 100644
---- a/include/linux/wm97xx_batt.h
-+++ b/include/linux/wm97xx_batt.h
-@@ -18,9 +18,12 @@ struct wm97xx_batt_info {
- };
+-		rt_rq = kmalloc_node(sizeof(struct rt_rq),
+-				GFP_KERNEL|__GFP_ZERO, cpu_to_node(i));
++		rt_rq = kzalloc_node(sizeof(struct rt_rq),
++				     GFP_KERNEL, cpu_to_node(i));
+ 		if (!rt_rq)
+ 			goto err;
  
- #ifdef CONFIG_BATTERY_WM97XX
--void __init wm97xx_bat_set_pdata(struct wm97xx_batt_info *data);
-+int wm97xx_bat_set_pdata(struct wm97xx_batt_info *data);
- #else
--static inline void wm97xx_bat_set_pdata(struct wm97xx_batt_info *data) {}
-+static inline int wm97xx_bat_set_pdata(struct wm97xx_batt_info *data)
-+{
-+	return -ENODEV;
-+}
- #endif
+-		rt_se = kmalloc_node(sizeof(struct sched_rt_entity),
+-				GFP_KERNEL|__GFP_ZERO, cpu_to_node(i));
++		rt_se = kzalloc_node(sizeof(struct sched_rt_entity),
++				     GFP_KERNEL, cpu_to_node(i));
+ 		if (!rt_se)
+ 			goto err;
  
- #endif
+-		parent_se = parent ? parent->rt_se[i] : NULL;
+-		init_tg_rt_entry(tg, rt_rq, rt_se, i, 0, parent_se);
++		init_tg_rt_entry(tg, rt_rq, rt_se, i, 0, parent->rt_se[i]);
+ 	}
+ 
+ 	return 1;
 -- 
-1.5.6.5
+1.5.4.rc3
 
