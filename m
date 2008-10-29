@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbYJ2Bv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbYJ2Bvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754736AbYJ2Bv7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 21:51:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbYJ2BuQ
+	id S1754589AbYJ2Bvj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 21:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbYJ2BuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 21:50:16 -0400
-Received: from anchor-post-31.mail.demon.net ([194.217.242.89]:1323 "EHLO
+	Tue, 28 Oct 2008 21:50:03 -0400
+Received: from anchor-post-31.mail.demon.net ([194.217.242.89]:1319 "EHLO
 	anchor-post-31.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752234AbYJ2BuA (ORCPT
+	by vger.kernel.org with ESMTP id S1752124AbYJ2Bt6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 21:50:00 -0400
+	Tue, 28 Oct 2008 21:49:58 -0400
 To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        tim.bird@am.sony.com
-Subject: [PATCH V2 14/16] Squashfs: Kconfig entry
-Message-Id: <E1Kv0C4-0006Hm-Jz@dylan>
+Subject: [PATCH V2 15/16] Squashfs: initrd support
+Message-Id: <E1Kv0C4-0006Hs-M3@dylan>
 From: Phillip Lougher <phillip@lougher.demon.co.uk>
 Date: Wed, 29 Oct 2008 01:49:56 +0000
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,72 +24,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
 ---
- fs/Kconfig |   52 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 52 insertions(+), 0 deletions(-)
+ init/do_mounts_rd.c |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index 522469a..1d7a5f9 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -931,6 +931,58 @@ config CRAMFS
+diff --git a/init/do_mounts_rd.c b/init/do_mounts_rd.c
+index a7c748f..0f0f0cf 100644
+--- a/init/do_mounts_rd.c
++++ b/init/do_mounts_rd.c
+@@ -9,6 +9,7 @@
+ #include <linux/string.h>
  
- 	  If unsure, say N.
+ #include "do_mounts.h"
++#include "../fs/squashfs/squashfs_fs.h"
  
-+config SQUASHFS
-+	tristate "SquashFS 4.0 - Squashed file system support"
-+	depends on BLOCK
-+	select ZLIB_INFLATE
-+	help
-+	  Saying Y here includes support for SquashFS 4.0 (a Compressed
-+	  Read-Only File System).  Squashfs is a highly compressed read-only
-+	  filesystem for Linux.  It uses zlib compression to compress both
-+	  files, inodes and directories.  Inodes in the system are very small
-+	  and all blocks are packed to minimise data overhead. Block sizes
-+	  greater than 4K are supported up to a maximum of 1 Mbytes (default
-+	  block size 128K).  SquashFS 4.0 supports 64 bit filesystems and files
-+	  (larger than 4GB), full uid/gid information, hard links and
-+	  timestamps.  
+ int __initdata rd_prompt = 1;/* 1 = prompt for RAM disk, 0 = don't prompt */
+ 
+@@ -41,6 +42,7 @@ static int __init crd_load(int in_fd, int out_fd);
+  * 	ext2
+  *	romfs
+  *	cramfs
++ *	squashfs
+  * 	gzip
+  */
+ static int __init 
+@@ -51,6 +53,7 @@ identify_ramdisk_image(int fd, int start_block)
+ 	struct ext2_super_block *ext2sb;
+ 	struct romfs_super_block *romfsb;
+ 	struct cramfs_super *cramfsb;
++	struct squashfs_super_block *squashfsb;
+ 	int nblocks = -1;
+ 	unsigned char *buf;
+ 
+@@ -62,6 +65,7 @@ identify_ramdisk_image(int fd, int start_block)
+ 	ext2sb = (struct ext2_super_block *) buf;
+ 	romfsb = (struct romfs_super_block *) buf;
+ 	cramfsb = (struct cramfs_super *) buf;
++	squashfsb = (struct squashfs_super_block *) buf;
+ 	memset(buf, 0xe5, size);
+ 
+ 	/*
+@@ -99,6 +103,16 @@ identify_ramdisk_image(int fd, int start_block)
+ 		goto done;
+ 	}
+ 
++	/* squashfs is at block zero too */
++	if (le32_to_cpu(squashfsb->s_magic) == SQUASHFS_MAGIC) {
++		printk(KERN_NOTICE
++		       "RAMDISK: squashfs filesystem found at block %d\n",
++		       start_block);
++		nblocks = (le64_to_cpu(squashfsb->bytes_used) + BLOCK_SIZE - 1)
++			 >> BLOCK_SIZE_BITS;
++		goto done;
++	}
 +
-+	  Squashfs is intended for general read-only filesystem use, for
-+	  archival use (i.e. in cases where a .tar.gz file may be used), and in
-+	  embedded systems where low overhead is needed.  Further information
-+	  and tools are available from http://squashfs.sourceforge.net.
-+
-+	  If you want to compile this as a module ( = code which can be
-+	  inserted in and removed from the running kernel whenever you want),
-+	  say M here and read <file:Documentation/modules.txt>.  The module
-+	  will be called squashfs.  Note that the root file system (the one
-+	  containing the directory /) cannot be compiled as a module.
-+
-+	  If unsure, say N.
-+
-+config SQUASHFS_EMBEDDED
-+
-+	bool "Additional option for memory-constrained systems" 
-+	depends on SQUASHFS
-+	default n
-+	help
-+	  Saying Y here allows you to specify cache size.
-+
-+	  If unsure, say N.
-+
-+config SQUASHFS_FRAGMENT_CACHE_SIZE
-+	int "Number of fragments cached" if SQUASHFS_EMBEDDED
-+	depends on SQUASHFS
-+	default "3"
-+	help
-+	  By default SquashFS caches the last 3 fragments read from
-+	  the filesystem.  Increasing this amount may mean SquashFS
-+	  has to re-read fragments less often from disk, at the expense
-+	  of extra system memory.  Decreasing this amount will mean
-+	  SquashFS uses less memory at the expense of extra reads from disk.
-+
-+	  Note there must be at least one cached fragment.  Anything
-+	  much more than three will probably not make much difference.
-+
- config VXFS_FS
- 	tristate "FreeVxFS file system support (VERITAS VxFS(TM) compatible)"
- 	depends on BLOCK
+ 	/*
+ 	 * Read block 1 to test for minix and ext2 superblock
+ 	 */
 -- 
 1.5.2.5
 
