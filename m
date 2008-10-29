@@ -1,57 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753399AbYJ2JVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753262AbYJ2JZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753399AbYJ2JVU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 05:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYJ2JVM
+	id S1753262AbYJ2JZU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 05:25:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbYJ2JZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 05:21:12 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:53701 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752621AbYJ2JVL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 05:21:11 -0400
-Date: Wed, 29 Oct 2008 10:18:57 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org
-Subject: Re: ftrace: fix depends
-Message-ID: <20081029091857.GA4414@osiris.boeblingen.de.ibm.com>
-References: <200810281802.m9SI2fYX030138@hera.kernel.org>
+	Wed, 29 Oct 2008 05:25:08 -0400
+Received: from gw.goop.org ([64.81.55.164]:49812 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752814AbYJ2JZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 05:25:07 -0400
+Message-ID: <49082BBC.60302@goop.org>
+Date: Wed, 29 Oct 2008 20:24:12 +1100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200810281802.m9SI2fYX030138@hera.kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] x86: replace BIO_VMERGE_BOUNDARY with	BIOVEC_PHYS_MERGEABLE
+References: <20081027094111.GU22217@kernel.dk> <4905A961.9000603@goop.org> <20081027115659.GZ22217@kernel.dk> <20081029080603J.fujita.tomonori@lab.ntt.co.jp> <20081029083713.GE6364@elte.hu>
+In-Reply-To: <20081029083713.GE6364@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28, 2008 at 06:02:41PM +0000, Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=c2db8054c1eaf99983d8deee347876b01c26c2cf
-> Commit:     c2db8054c1eaf99983d8deee347876b01c26c2cf
-> Parent:     bd95b88d9e51fcbf392a7e90338a8fcc3499cbd6
-> Author:     Steven Rostedt <rostedt@goodmis.org>
-> AuthorDate: Mon Oct 6 19:06:11 2008 -0400
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Mon Oct 20 18:27:02 2008 +0200
-> 
->     ftrace: fix depends
->     
->     A lot of tracers have HAVE_FTRACE as a dependent config where it
->     really should not. The HAVE_FTRACE is a misnomer (soon to be fixed)
->     and describes if the architecture has the function tracer (mcount)
->     implemented. The ftrace infrastructure is implemented in all archs.
->     
->     Signed-off-by: Steven Rostedt <srostedt@redhat.com>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Ingo Molnar wrote:
+> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+>
+>   
+>> On Mon, 27 Oct 2008 12:57:00 +0100
+>> Jens Axboe <jens.axboe@oracle.com> wrote:
+>>
+>>     
+>>> On Mon, Oct 27 2008, Jeremy Fitzhardinge wrote:
+>>>       
+>>>> Jens Axboe wrote:
+>>>>         
+>>>>> Pretty much baffles me as well, xen should just need to do
+>>>>>
+>>>>> #define BIOVEC_PHYS_MERGEABLE(vec1, vec2)       0
+>>>>>  
+>>>>>           
+>>>> It needs to be a runtime switch, since we only want to do this when 
+>>>> actually running under Xen.  Also, its possible that the two pages might 
+>>>> actually be physically contiguous, so they could be merged anyway.
+>>>>         
+>>> Alright, then add a xen_biovec_phys_mergeable(vec1, vec2) in the xen
+>>> code that actually checks this for real. You can add your switch there
+>>> as well. Then put the BIOVEC_PHYS_MERGEABLE() in the xen arch includes,
+>>> done.
+>>>
+>>> What Tomo is saying is that this has nothing to do with virtual merging,
+>>> and he's right.
+>>>       
+>> Yeah, overriding BIOVEC_PHYS_MERGEABLE perfectly works for Xen. And it
+>> is not related with BIO_VMERGE_BOUNDARY at all.
+>>
+>> Ingo, please put this patch into your tree:
+>>
+>> http://marc.info/?l=linux-kernel&m=122482703716620&w=2
+>>     
+>
+> does it have any dependency on:
+>
+>   Subject: [PATCH 1/2] bio: define __BIOVEC_PHYS_MERGEABLE
+>   
 
-Hmm... this is not very true. I count three architectures which have this
-implemented plus arm with a 'depends on' plus sh with the broken HAVE_FTRACE
-instead of HAVE_FUNCTION_TRACER.
+No, they're independent.  Defining __BIOVEC_PHYS_MERGEABLE will be 
+useful for the Xen changes I need to make in the wake of Tomo's patch.
 
-All other architectures will see something like this:
-
-kernel/built-in.o: In function `tracer_alloc_buffers':
-trace.c:(.init.text+0x42c2): undefined reference to `nop_trace'
-trace.c:(.init.text+0x42ec): undefined reference to `nop_trace'
-make: *** [.tmp_vmlinux1] Error 1
+    J
