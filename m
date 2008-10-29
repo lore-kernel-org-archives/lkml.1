@@ -1,61 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbYJ2J2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbYJ2J36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753272AbYJ2J2y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 05:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbYJ2J2q
+	id S1753409AbYJ2J36 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 05:29:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYJ2J3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 05:28:46 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:46695 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751450AbYJ2J2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 05:28:46 -0400
-Date: Wed, 29 Oct 2008 10:27:34 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: jeremy@goop.org, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH 2/2] x86: replace BIO_VMERGE_BOUNDARY with BIOVEC_PHYS_MERGEABLE
-Message-ID: <20081029092733.GS22217@kernel.dk>
-References: <20081027094111.GU22217@kernel.dk> <4905A961.9000603@goop.org> <20081027115659.GZ22217@kernel.dk> <20081029080603J.fujita.tomonori@lab.ntt.co.jp>
+	Wed, 29 Oct 2008 05:29:49 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:62690 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450AbYJ2J3s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 05:29:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=prCewmWIREG33egtanm7BJs7uGi6ALqvk5GyWX8QQAqgMIxNchNmxGxkj+CtfxmysB
+         P+FXfW2nXs9eBg6YEsqV2qKzEf3DhwW3dCa0FIjjYIJ/3rRsSLp/9nV+GGFG7zD7WeAw
+         xJuLhPs8CPvfVLii+KXizzxJNY8rixQ5+eXic=
+Message-ID: <49082D09.8060102@gmail.com>
+Date: Wed, 29 Oct 2008 12:29:45 +0300
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081029080603J.fujita.tomonori@lab.ntt.co.jp>
+To: Zhao Yakui <yakui.zhao@intel.com>
+CC: Darren Salt <linux@youmustbejoking.demon.co.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Subject: Re: [2.6.28-rc2] EeePC ACPI errors & exceptions
+References: <alpine.LFD.2.00.0810261221350.3386@nehalem.linux-foundation.org>	 <4FFA7B13E0%linux@youmustbejoking.demon.co.uk>	 <1225186966.5189.143.camel@yakui_zhao.sh.intel.com>	 <4FFABF28C8%linux@youmustbejoking.demon.co.uk> <49077A13.7020603@gmail.com> <1225265974.5189.189.camel@yakui_zhao.sh.intel.com>
+In-Reply-To: <1225265974.5189.189.camel@yakui_zhao.sh.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29 2008, FUJITA Tomonori wrote:
-> On Mon, 27 Oct 2008 12:57:00 +0100
-> Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Mon, Oct 27 2008, Jeremy Fitzhardinge wrote:
-> > > Jens Axboe wrote:
-> > > >Pretty much baffles me as well, xen should just need to do
-> > > >
-> > > >#define BIOVEC_PHYS_MERGEABLE(vec1, vec2)       0
-> > > >  
-> > > 
-> > > It needs to be a runtime switch, since we only want to do this when 
-> > > actually running under Xen.  Also, its possible that the two pages might 
-> > > actually be physically contiguous, so they could be merged anyway.
-> > 
-> > Alright, then add a xen_biovec_phys_mergeable(vec1, vec2) in the xen
-> > code that actually checks this for real. You can add your switch there
-> > as well. Then put the BIOVEC_PHYS_MERGEABLE() in the xen arch includes,
-> > done.
-> > 
-> > What Tomo is saying is that this has nothing to do with virtual merging,
-> > and he's right.
-> 
-> Yeah, overriding BIOVEC_PHYS_MERGEABLE perfectly works for Xen. And it
-> is not related with BIO_VMERGE_BOUNDARY at all.
-> 
-> Ingo, please put this patch into your tree:
-> 
-> http://marc.info/?l=linux-kernel&m=122482703716620&w=2
+Not a problem, just find the root cause. Or shut up.
 
-You can add my Signed-off-by: as well.
 
--- 
-Jens Axboe
+Zhao Yakui wrote:
+> On Tue, 2008-10-28 at 13:46 -0700, Alexey Starikovskiy wrote:
+>   
+>> Hi Darren,
+>>
+>> Please check if the patch 
+>> http://marc.info/?l=linux-acpi&m=122516784917952&w=4
+>> helps.
+>>     
+> In the attached patch the msleep is replaced by udelay gain. 
+>    In the following commit the udelay is replaced by msleep. 
+>    >commit 1b7fc5aae8867046f8d3d45808309d5b7f2e036a
+>    >Author: Alexey Starikovskiy <astarikovskiy@suse.de>
+>    >Date:   Fri Jun 6 11:49:33 2008 -0400
+>      >ACPI: EC: Use msleep instead of udelay while waiting for event
+>    
+>    After the problem happens again, the udelay is restored again before
+> getting the root cause. 
+>    Maybe we should find the root cause of the problem and change the
+> working flowchart about the EC driver. It is inappropriate that we make
+> some changes and it is reverted again when the problem happens.
+>    
+>    At the same time after mlseep is replaced by the udelay, the CPU will
+> do thing but loop while doing EC transaction on some laptops (In the
+> function of ec_poll). If 100 EC transactions are done, the CPU will do
+> nothing but loop at least for 100*2*100 microseconds. In such case maybe
+> the performance will be affected.
+>
+>   After the following commit is merged, the EC transaction will be
+> executed in EC GPE interrupt context on most laptops.Maybe it is easier.
+> But for the some laptops it can't be done in EC GPE interrupt context.
+> So it falls back to the EC polling mode. (This is realized by the
+> function of ec_poll).
+>     >commit 7c6db4e050601f359081fde418ca6dc4fc2d0011
+>     >Author: Alexey Starikovskiy <astarikovskiy@suse.de>
+>     >Date:   Thu Sep 25 21:00:31 2008 +0400
+>        >ACPI: EC: do transaction from interrupt context
+>    
+>    Why is AE_TIME sometimes returned by the function of ec_poll?
+>   
+>> static int ec_poll(struct acpi_ec *ec)
+>>     
+> {
+>         unsigned long delay = jiffies + msecs_to_jiffies(ACPI_EC_DELAY);
+>         msleep(1);
+> // Maybe the current jiffies is already after the predefined jiffies
+> after msleep(1). In such case the ETIME will be returned. Of course the
+> EC transaction can't be finished. If so, IMO this is not reasonable as
+> this is caused by that OS has no opportunity to issue the following EC
+> command sequence.
+>         while (time_before(jiffies, delay)) {
+>                 gpe_transaction(ec, acpi_ec_read_status(ec));
+>                 msleep(1);
+>                 if (ec_transaction_done(ec))
+>                         return 0;
+> //Maybe there exists the following cases. EC transaction is not finished
+> after msleep(1),but the current jiffies is already after predefined
+> jiffies. So ETIME is returned. In such case, IMO this is also not
+> reasonable.
+>         }
+>         return -ETIME;
+> }
+>      At the same time msleep is realized by schedule_timeout. On linux
+> although one process is waked up by some events, it won't be scheduled
+> immediately. So maybe the current jiffies is already after the
+> predefined timeout jiffies  after msleep(1). 
+>     Although the possibility of this issue can be reduced by that msleep
+> is replaced by udelay,maybe the issue still exists if the preempt
+> schedule happens at the corresponding place.
+>
+>     In the above case the ETIME will be returned by ec_poll. But the
+> reason is not that EC controller can't update its status in time.
+> Instead it is caused by that host has no opportunity to issue the
+> sequence operation in the current work flowchart. In current EC work
+> flowchart the EC transaction is done in a big loop. 
+>     
+>     Maybe the better solution is that the EC transaction is explicitly
+> divided into several different phases. 
+>
+>     Maybe my analysis is not correct. If so, please correct me. 
+> Welcome the comments.
+>
+>     thanks.
+>     
+>     
+>      
+>   
+>> Thanks,
+>> Alex.
+>>
+>>
+>>     
+>
+>   
 
