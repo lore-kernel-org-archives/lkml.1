@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754284AbYJ2B4D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755748AbYJ2Bzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754284AbYJ2B4D (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 21:56:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbYJ2Bu4
+	id S1755748AbYJ2Bzq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 21:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbYJ2Buw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 21:50:56 -0400
-Received: from anchor-post-32.mail.demon.net ([194.217.242.90]:2364 "EHLO
+	Tue, 28 Oct 2008 21:50:52 -0400
+Received: from anchor-post-32.mail.demon.net ([194.217.242.90]:2368 "EHLO
 	anchor-post-32.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753411AbYJ2BuG (ORCPT
+	by vger.kernel.org with ESMTP id S1753454AbYJ2BuH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 21:50:06 -0400
+	Tue, 28 Oct 2008 21:50:07 -0400
 To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        tim.bird@am.sony.com
-Subject: [PATCH V2 06/16] Squashfs: super block operations
-Message-Id: <E1Kv0C3-0006H0-Vw@dylan>
+Subject: [PATCH V2 03/16] Squashfs: directory readdir operations
+Message-Id: <E1Kv0C3-0006Gj-NZ@dylan>
 From: Phillip Lougher <phillip@lougher.demon.co.uk>
 Date: Wed, 29 Oct 2008 01:49:55 +0000
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,15 +24,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
 ---
- fs/squashfs/super.c |  442 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 442 insertions(+), 0 deletions(-)
+ fs/squashfs/dir.c |  236 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 236 insertions(+), 0 deletions(-)
 
-diff --git a/fs/squashfs/super.c b/fs/squashfs/super.c
+diff --git a/fs/squashfs/dir.c b/fs/squashfs/dir.c
 new file mode 100644
-index 0000000..65a5fbd
+index 0000000..f5564e5
 --- /dev/null
-+++ b/fs/squashfs/super.c
-@@ -0,0 +1,442 @@
++++ b/fs/squashfs/dir.c
+@@ -0,0 +1,236 @@
 +/*
 + * Squashfs - a compressed read only filesystem for Linux
 + *
@@ -53,23 +53,18 @@ index 0000000..65a5fbd
 + * along with this program; if not, write to the Free Software
 + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 + *
-+ * super.c
++ * dir.c
 + */
 +
 +/*
-+ * This file implements code to read the superblock, read and initialise
-+ * in-memory structures at mount time, and all the VFS glue code to register
-+ * the filesystem.
++ * This file implements code to read directories from disk.
++ *
++ * See namei.c for a description of directory organisation on disk.
 + */
 +
 +#include <linux/fs.h>
 +#include <linux/vfs.h>
 +#include <linux/slab.h>
-+#include <linux/vmalloc.h>
-+#include <linux/mutex.h>
-+#include <linux/pagemap.h>
-+#include <linux/init.h>
-+#include <linux/module.h>
 +#include <linux/zlib.h>
 +
 +#include "squashfs_fs.h"
@@ -77,404 +72,203 @@ index 0000000..65a5fbd
 +#include "squashfs_fs_i.h"
 +#include "squashfs.h"
 +
-+static struct file_system_type squashfs_fs_type;
-+static struct super_operations squashfs_super_ops;
-+
-+static int supported_squashfs_filesystem(short major, short minor, short comp)
-+{
-+	if (major < SQUASHFS_MAJOR) {
-+		ERROR("Major/Minor mismatch, older Squashfs %d.%d "
-+			"filesystems are unsupported\n", major, minor);
-+		return -EINVAL;
-+	} else if (major > SQUASHFS_MAJOR || minor > SQUASHFS_MINOR) {
-+		ERROR("Major/Minor mismatch, trying to mount newer "
-+			"%d.%d filesystem\n", major, minor);
-+		ERROR("Please update your kernel\n");
-+		return -EINVAL;
-+	}
-+
-+	if (comp != ZLIB_COMPRESSION)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+
-+static int squashfs_fill_super(struct super_block *sb, void *data, int silent)
-+{
-+	struct squashfs_sb_info *msblk;
-+	struct squashfs_super_block *sblk = NULL;
-+	char b[BDEVNAME_SIZE];
-+	struct inode *root;
-+	long long root_inode;
-+	unsigned short flags;
-+	unsigned int fragments;
-+	long long lookup_table_start;
-+	int err;
-+
-+	TRACE("Entered squashfs_fill_superblock\n");
-+
-+	sb->s_fs_info = kzalloc(sizeof(*msblk), GFP_KERNEL);
-+	if (sb->s_fs_info == NULL) {
-+		ERROR("Failed to allocate squashfs_sb_info\n");
-+		return -ENOMEM;
-+	}
-+	msblk = sb->s_fs_info;
-+
-+	msblk->stream.workspace = vmalloc(zlib_inflate_workspacesize());
-+	if (msblk->stream.workspace == NULL) {
-+		ERROR("Failed to allocate zlib workspace\n");
-+		goto failure;
-+	}
-+
-+	sblk = kzalloc(sizeof(*sblk), GFP_KERNEL);
-+	if (sblk == NULL) {
-+		ERROR("Failed to allocate squashfs_super_block\n");
-+		goto failure;
-+	}
-+
-+	msblk->devblksize = sb_min_blocksize(sb, BLOCK_SIZE);
-+	msblk->devblksize_log2 = ffz(~msblk->devblksize);
-+
-+	mutex_init(&msblk->read_data_mutex);
-+	mutex_init(&msblk->read_page_mutex);
-+	mutex_init(&msblk->meta_index_mutex);
-+
-+	/*
-+	 * msblk->bytes_used is checked in squashfs_read_data to ensure reads
-+	 * are not beyond filesystem end.  But as we're using squashfs_read_data
-+	 * here to read the superblock (including the value of
-+	 * bytes_used) we need to set it to an initial sensible dummy value
-+	 */
-+	msblk->bytes_used = sizeof(*sblk);
-+	err = squashfs_read_data(sb, sblk, SQUASHFS_START, sizeof(*sblk) |
-+			SQUASHFS_COMPRESSED_BIT_BLOCK, NULL, sizeof(*sblk));
-+
-+	if (err < 0) {
-+		ERROR("unable to read squashfs_super_block\n");
-+		goto failed_mount;
-+	}
-+
-+	/* Check it is a SQUASHFS superblock */
-+	sb->s_magic = le32_to_cpu(sblk->s_magic);
-+	if (sb->s_magic != SQUASHFS_MAGIC) {
-+		if (!silent)
-+			ERROR("Can't find a SQUASHFS superblock on %s\n",
-+						bdevname(sb->s_bdev, b));
-+		err = -EINVAL;
-+		goto failed_mount;
-+	}
-+
-+	/* Check the MAJOR & MINOR versions and compression type */
-+	err = supported_squashfs_filesystem(le16_to_cpu(sblk->s_major),
-+			le16_to_cpu(sblk->s_minor),
-+			le16_to_cpu(sblk->compression));
-+	if (err < 0)
-+		goto failed_mount;
-+
-+	err = -EINVAL;
-+
-+	/*
-+	 * Check if there's xattrs in the filesystem.  These are not
-+	 * supported in this version, so warn that they will be ignored.
-+	 */
-+	if (le64_to_cpu(sblk->xattr_table_start) != SQUASHFS_INVALID_BLK)
-+		ERROR("Xattrs in filesystem, these will be ignored\n");
-+
-+	/* Check the filesystem does not extend beyond the end of the
-+	   block device */
-+	msblk->bytes_used = le64_to_cpu(sblk->bytes_used);
-+	if (msblk->bytes_used < 0 || msblk->bytes_used >
-+			i_size_read(sb->s_bdev->bd_inode))
-+		goto failed_mount;
-+
-+	/* Check block size for sanity */
-+	msblk->block_size = le32_to_cpu(sblk->block_size);
-+	if (msblk->block_size > SQUASHFS_FILE_SIZE)
-+		goto failed_mount;
-+
-+	msblk->block_log = le16_to_cpu(sblk->block_log);
-+	if (msblk->block_log > SQUASHFS_FILE_LOG)
-+		goto failed_mount;
-+
-+	/* Check the root inode for sanity */
-+	root_inode = le64_to_cpu(sblk->root_inode);
-+	if (SQUASHFS_INODE_OFFSET(root_inode) > SQUASHFS_METADATA_SIZE)
-+		goto failed_mount;
-+
-+	msblk->inode_table = le64_to_cpu(sblk->inode_table_start);
-+	msblk->directory_table = le64_to_cpu(sblk->directory_table_start);
-+	msblk->inodes = le32_to_cpu(sblk->inodes);
-+	flags = le16_to_cpu(sblk->flags);
-+
-+	TRACE("Found valid superblock on %s\n", bdevname(sb->s_bdev, b));
-+	TRACE("Inodes are %scompressed\n", SQUASHFS_UNCOMPRESSED_INODES(flags)
-+				? "un" : "");
-+	TRACE("Data is %scompressed\n", SQUASHFS_UNCOMPRESSED_DATA(flags)
-+				? "un" : "");
-+	TRACE("Filesystem size %lld bytes\n", msblk->bytes_used);
-+	TRACE("Block size %d\n", msblk->block_size);
-+	TRACE("Number of inodes %d\n", msblk->inodes);
-+	TRACE("Number of fragments %d\n", le32_to_cpu(sblk->fragments));
-+	TRACE("Number of ids %d\n", le16_to_cpu(sblk->no_ids));
-+	TRACE("sblk->inode_table_start %llx\n", msblk->inode_table);
-+	TRACE("sblk->directory_table_start %llx\n", msblk->directory_table);
-+	TRACE("sblk->fragment_table_start %llx\n",
-+		(unsigned long long) le64_to_cpu(sblk->fragment_table_start));
-+	TRACE("sblk->id_table_start %llx\n",
-+		(unsigned long long) le64_to_cpu(sblk->id_table_start));
-+
-+	sb->s_maxbytes = MAX_LFS_FILESIZE;
-+	sb->s_flags |= MS_RDONLY;
-+	sb->s_op = &squashfs_super_ops;
-+
-+	err = -ENOMEM;
-+
-+	msblk->block_cache = squashfs_cache_init("metadata",
-+			SQUASHFS_CACHED_BLKS, SQUASHFS_METADATA_SIZE, 0);
-+	if (msblk->block_cache == NULL)
-+		goto failed_mount;
-+
-+	/* Allocate read_page block */
-+	msblk->read_page = vmalloc(msblk->block_size);
-+	if (msblk->read_page == NULL) {
-+		ERROR("Failed to allocate read_page block\n");
-+		goto failed_mount;
-+	}
-+
-+	/* Allocate and read id index table */
-+	msblk->id_table = read_id_index_table(sb,
-+		le64_to_cpu(sblk->id_table_start), le16_to_cpu(sblk->no_ids));
-+	if (IS_ERR(msblk->id_table)) {
-+		err = PTR_ERR(msblk->id_table);
-+		msblk->id_table = NULL;
-+		goto failed_mount;
-+	}
-+
-+	fragments = le32_to_cpu(sblk->fragments);
-+	if (fragments == 0)
-+		goto allocate_lookup_table;
-+
-+	msblk->fragment_cache = squashfs_cache_init("fragment",
-+		SQUASHFS_CACHED_FRAGMENTS, msblk->block_size, 1);
-+	if (msblk->fragment_cache == NULL) {
-+		err = -ENOMEM;
-+		goto failed_mount;
-+	}
-+
-+	/* Allocate and read fragment index table */
-+	msblk->fragment_index = read_fragment_index_table(sb,
-+		le64_to_cpu(sblk->fragment_table_start), fragments);
-+	if (IS_ERR(msblk->fragment_index)) {
-+		err = PTR_ERR(msblk->fragment_index);
-+		msblk->fragment_index = NULL;
-+		goto failed_mount;
-+	}
-+
-+allocate_lookup_table:
-+	lookup_table_start = le64_to_cpu(sblk->lookup_table_start);
-+	if (lookup_table_start == SQUASHFS_INVALID_BLK)
-+		goto allocate_root;
-+
-+	/* Allocate and read inode lookup table */
-+	msblk->inode_lookup_table = read_inode_lookup_table(sb,
-+		lookup_table_start, msblk->inodes);
-+	if (IS_ERR(msblk->inode_lookup_table)) {
-+		err = PTR_ERR(msblk->inode_lookup_table);
-+		msblk->inode_lookup_table = NULL;
-+		goto failed_mount;
-+	}
-+
-+	sb->s_export_op = &squashfs_export_ops;
-+
-+allocate_root:
-+	root = new_inode(sb);
-+	if (!root) {
-+		err = -ENOMEM;
-+		goto failed_mount;
-+	}
-+
-+	err = squashfs_read_inode(root, root_inode);
-+	if (err) {
-+		iget_failed(root);
-+		goto failed_mount;
-+	}
-+	insert_inode_hash(root);
-+
-+	sb->s_root = d_alloc_root(root);
-+	if (sb->s_root == NULL) {
-+		ERROR("Root inode create failed\n");
-+		err = -ENOMEM;
-+		iput(root);
-+		goto failed_mount;
-+	}
-+
-+	TRACE("Leaving squashfs_fill_super\n");
-+	kfree(sblk);
-+	return 0;
-+
-+failed_mount:
-+	squashfs_cache_delete(msblk->block_cache);
-+	squashfs_cache_delete(msblk->fragment_cache);
-+	kfree(msblk->inode_lookup_table);
-+	kfree(msblk->fragment_index);
-+	kfree(msblk->id_table);
-+	vfree(msblk->read_page);
-+	vfree(msblk->stream.workspace);
-+	kfree(sb->s_fs_info);
-+	sb->s_fs_info = NULL;
-+	kfree(sblk);
-+	return err;
-+
-+failure:
-+	vfree(msblk->stream.workspace);
-+	kfree(sb->s_fs_info);
-+	sb->s_fs_info = NULL;
-+	return -ENOMEM;
-+}
-+
-+
-+static int squashfs_statfs(struct dentry *dentry, struct kstatfs *buf)
-+{
-+	struct squashfs_sb_info *msblk = dentry->d_sb->s_fs_info;
-+
-+	TRACE("Entered squashfs_statfs\n");
-+
-+	buf->f_type = SQUASHFS_MAGIC;
-+	buf->f_bsize = msblk->block_size;
-+	buf->f_blocks = ((msblk->bytes_used - 1) >> msblk->block_log) + 1;
-+	buf->f_bfree = buf->f_bavail = 0;
-+	buf->f_files = msblk->inodes;
-+	buf->f_ffree = 0;
-+	buf->f_namelen = SQUASHFS_NAME_LEN;
-+
-+	return 0;
-+}
-+
-+
-+static int squashfs_remount(struct super_block *sb, int *flags, char *data)
-+{
-+	*flags |= MS_RDONLY;
-+	return 0;
-+}
-+
-+
-+static void squashfs_put_super(struct super_block *sb)
-+{
-+	if (sb->s_fs_info) {
-+		struct squashfs_sb_info *sbi = sb->s_fs_info;
-+		squashfs_cache_delete(sbi->block_cache);
-+		squashfs_cache_delete(sbi->fragment_cache);
-+		vfree(sbi->read_page);
-+		kfree(sbi->id_table);
-+		kfree(sbi->fragment_index);
-+		kfree(sbi->meta_index);
-+		vfree(sbi->stream.workspace);
-+		kfree(sb->s_fs_info);
-+		sb->s_fs_info = NULL;
-+	}
-+}
-+
-+
-+static int squashfs_get_sb(struct file_system_type *fs_type, int flags,
-+				const char *dev_name, void *data,
-+				struct vfsmount *mnt)
-+{
-+	return get_sb_bdev(fs_type, flags, dev_name, data, squashfs_fill_super,
-+				mnt);
-+}
-+
-+
-+static struct kmem_cache *squashfs_inode_cachep;
-+
-+
-+static void init_once(void *foo)
-+{
-+	struct squashfs_inode_info *ei = foo;
-+
-+	inode_init_once(&ei->vfs_inode);
-+}
-+
-+
-+static int __init init_inodecache(void)
-+{
-+	squashfs_inode_cachep = kmem_cache_create("squashfs_inode_cache",
-+		sizeof(struct squashfs_inode_info), 0,
-+		SLAB_HWCACHE_ALIGN|SLAB_RECLAIM_ACCOUNT, init_once);
-+
-+	return squashfs_inode_cachep ? 0 : -ENOMEM;
-+}
-+
-+
-+static void destroy_inodecache(void)
-+{
-+	kmem_cache_destroy(squashfs_inode_cachep);
-+}
-+
-+
-+static int __init init_squashfs_fs(void)
-+{
-+	int err = init_inodecache();
-+
-+	if (err)
-+		return err;
-+
-+	err = register_filesystem(&squashfs_fs_type);
-+	if (err) {
-+		destroy_inodecache();
-+		return err;
-+	}
-+
-+	printk(KERN_INFO "squashfs: version 4.0 (2008/10/28) "
-+		"Phillip Lougher\n");
-+
-+	return 0;
-+}
-+
-+
-+static void __exit exit_squashfs_fs(void)
-+{
-+	unregister_filesystem(&squashfs_fs_type);
-+	destroy_inodecache();
-+}
-+
-+
-+static struct inode *squashfs_alloc_inode(struct super_block *sb)
-+{
-+	struct squashfs_inode_info *ei =
-+		kmem_cache_alloc(squashfs_inode_cachep, GFP_KERNEL);
-+
-+	return ei ? &ei->vfs_inode : NULL;
-+}
-+
-+
-+static void squashfs_destroy_inode(struct inode *inode)
-+{
-+	kmem_cache_free(squashfs_inode_cachep, SQUASHFS_I(inode));
-+}
-+
-+
-+static struct file_system_type squashfs_fs_type = {
-+	.owner = THIS_MODULE,
-+	.name = "squashfs",
-+	.get_sb = squashfs_get_sb,
-+	.kill_sb = kill_block_super,
-+	.fs_flags = FS_REQUIRES_DEV
++static const unsigned char squashfs_filetype_table[] = {
++	DT_UNKNOWN, DT_DIR, DT_REG, DT_LNK, DT_BLK, DT_CHR, DT_FIFO, DT_SOCK
 +};
 +
-+static struct super_operations squashfs_super_ops = {
-+	.alloc_inode = squashfs_alloc_inode,
-+	.destroy_inode = squashfs_destroy_inode,
-+	.statfs = squashfs_statfs,
-+	.put_super = squashfs_put_super,
-+	.remount_fs = squashfs_remount
-+};
++/*
++ * Lookup offset (f_pos) in the directory index, returning the
++ * metadata block containing it.
++ *
++ * If we get an error reading the index then return the part of the index
++ * (if any) we have managed to read - the index isn't essential, just
++ * quicker.
++ */
++static int get_dir_index_using_offset(struct super_block *sb,
++	long long *next_block, int *next_offset,
++	long long index_start, int index_offset, int i_count,
++	long long f_pos)
++{
++	struct squashfs_sb_info *msblk = sb->s_fs_info;
++	int err, i, index, length = 0;
++	struct squashfs_dir_index dir_index;
 +
-+module_init(init_squashfs_fs);
-+module_exit(exit_squashfs_fs);
-+MODULE_DESCRIPTION("squashfs 4.0, a compressed read-only filesystem");
-+MODULE_AUTHOR("Phillip Lougher <phillip@lougher.demon.co.uk>");
-+MODULE_LICENSE("GPL");
++	TRACE("Entered get_dir_index_using_offset, i_count %d, f_pos %lld\n",
++					i_count, f_pos);
++
++	/*
++	 * Translate from external f_pos to the internal f_pos.  This
++	 * is offset by 3 because we invent "." and ".." entries which are
++	 * not actually stored in the directory.
++	 */
++	if (f_pos < 3)
++		return f_pos;
++	f_pos -= 3;
++
++	for (i = 0; i < i_count; i++) {
++		err = squashfs_read_metadata(sb, &dir_index, &index_start,
++				&index_offset, sizeof(dir_index));
++		if (err < 0)
++			break;
++
++		index = le32_to_cpu(dir_index.index);
++		if (index > f_pos)
++			/*
++			 * Found the index we're looking for.
++			 */
++			break;
++
++		err = squashfs_read_metadata(sb, NULL, &index_start,
++				&index_offset, le32_to_cpu(dir_index.size) + 1);
++		if (err < 0)
++			break;
++
++		length = index;
++		*next_block = le32_to_cpu(dir_index.start_block) +
++					msblk->directory_table;
++	}
++
++	*next_offset = (length + *next_offset) % SQUASHFS_METADATA_SIZE;
++
++	/*
++	 * Translate back from internal f_pos to external f_pos.
++	 */
++	return length + 3;
++}
++
++
++static int squashfs_readdir(struct file *file, void *dirent, filldir_t filldir)
++{
++	struct inode *inode = file->f_dentry->d_inode;
++	struct squashfs_sb_info *msblk = inode->i_sb->s_fs_info;
++	long long block = SQUASHFS_I(inode)->start + msblk->directory_table;
++	int offset = SQUASHFS_I(inode)->offset, length = 0, dir_count, size,
++				type, err;
++	unsigned int inode_number;
++	struct squashfs_dir_header dirh;
++	struct squashfs_dir_entry *dire;
++
++	TRACE("Entered squashfs_readdir [%llx:%x]\n", block, offset);
++
++	dire = kmalloc(sizeof(*dire) + SQUASHFS_NAME_LEN + 1, GFP_KERNEL);
++	if (dire == NULL) {
++		ERROR("Failed to allocate squashfs_dir_entry\n");
++		goto finish;
++	}
++
++	/*
++	 * Return "." and  ".." entries as the first two filenames in the
++	 * directory.  To maximise compression these two entries are not
++	 * stored in the directory, and so we invent them here.
++	 *
++	 * It also means that the external f_pos is offset by 3 from the
++	 * on-disk directory f_pos.
++	 */
++	while (file->f_pos < 3) {
++		char *name;
++		int i_ino;
++
++		if (file->f_pos == 0) {
++			name = ".";
++			size = 1;
++			i_ino = inode->i_ino;
++		} else {
++			name = "..";
++			size = 2;
++			i_ino = SQUASHFS_I(inode)->parent;
++		}
++
++		TRACE("Calling filldir(%p, %s, %d, %lld, %d, %d)\n",
++				dirent, name, size, file->f_pos, i_ino,
++				squashfs_filetype_table[1]);
++
++		if (filldir(dirent, name, size, file->f_pos, i_ino,
++				squashfs_filetype_table[1]) < 0) {
++				TRACE("Filldir returned less than 0\n");
++			goto finish;
++		}
++
++		file->f_pos += size;
++	}
++
++	length = get_dir_index_using_offset(inode->i_sb, &block, &offset,
++				SQUASHFS_I(inode)->dir_idx_start,
++				SQUASHFS_I(inode)->dir_idx_offset,
++				SQUASHFS_I(inode)->dir_idx_cnt,
++				file->f_pos);
++
++	while (length < i_size_read(inode)) {
++		/*
++		 * Read directory header
++		 */
++		err = squashfs_read_metadata(inode->i_sb, &dirh, &block,
++					&offset, sizeof(dirh));
++		if (err < 0)
++			goto failed_read;
++
++		length += sizeof(dirh);
++
++		dir_count = le32_to_cpu(dirh.count) + 1;
++		while (dir_count--) {
++			/*
++			 * Read directory entry.
++			 */
++			err = squashfs_read_metadata(inode->i_sb, dire, &block,
++					&offset, sizeof(*dire));
++			if (err < 0)
++				goto failed_read;
++
++			size = le16_to_cpu(dire->size) + 1;
++
++			err = squashfs_read_metadata(inode->i_sb, dire->name,
++					&block, &offset, size);
++			if (err < 0)
++				goto failed_read;
++
++			length += sizeof(*dire) + size;
++
++			if (file->f_pos >= length)
++				continue;
++
++			dire->name[size] = '\0';
++			inode_number = le32_to_cpu(dirh.inode_number) +
++				((short) le16_to_cpu(dire->inode_number));
++			type = le16_to_cpu(dire->type);
++
++			TRACE("Calling filldir(%p, %s, %d, %lld, %x:%x, %d, %d)"
++					"\n", dirent, dire->name, size,
++					file->f_pos,
++					le32_to_cpu(dirh.start_block),
++					le16_to_cpu(dire->offset),
++					inode_number,
++					squashfs_filetype_table[type]);
++
++			if (filldir(dirent, dire->name, size, file->f_pos,
++					inode_number,
++					squashfs_filetype_table[type]) < 0) {
++				TRACE("Filldir returned less than 0\n");
++				goto finish;
++			}
++
++			file->f_pos = length;
++		}
++	}
++
++finish:
++	kfree(dire);
++	return 0;
++
++failed_read:
++	ERROR("Unable to read directory block [%llx:%x]\n", block, offset);
++	kfree(dire);
++	return 0;
++}
++
++
++const struct file_operations squashfs_dir_ops = {
++	.read = generic_read_dir,
++	.readdir = squashfs_readdir
++};
 -- 
 1.5.2.5
 
