@@ -1,85 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754337AbYJ2QQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbYJ2QRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754337AbYJ2QQn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 12:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbYJ2QQe
+	id S1754667AbYJ2QRn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 12:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbYJ2QRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 12:16:34 -0400
-Received: from casper.infradead.org ([85.118.1.10]:40662 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753270AbYJ2QQe convert rfc822-to-8bit (ORCPT
+	Wed, 29 Oct 2008 12:17:32 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:60334 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753007AbYJ2QRb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 12:16:34 -0400
-Date: Wed, 29 Oct 2008 09:17:03 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] corruption checker: print the DMI board name
-Message-ID: <20081029091703.47628e54@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 29 Oct 2008 12:17:31 -0400
+Date: Wed, 29 Oct 2008 12:17:30 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: rjw@sisk.pl, <linux-kernel@vger.kernel.org>, <ncunningham@crca.org.au>,
+       <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
+ filesystems.
+In-Reply-To: <E1KvDJp-00088f-2b@pomaz-ex.szeredi.hu>
+Message-ID: <Pine.LNX.4.44L0.0810291204380.2180-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 29 Oct 2008, Miklos Szeredi wrote:
 
->From 4f829eef5a31b68a0cbaf83a75ac8b0a1ed05afb Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Wed, 29 Oct 2008 09:13:23 -0700
-Subject: [PATCH] corruption checker: print the DMI board name
+> On Wed, 29 Oct 2008, Alan Stern wrote:
+> > On Wed, 29 Oct 2008, Miklos Szeredi wrote:
+> > > I did a random sampling of ->suspend() callbacks, and they don't seem
+> > > to be taking mutexes.  Does that happen at all?
+> > 
+> > It does, particularly among drivers that do runtime PM, which is 
+> > becoming more and more important.
+> > 
+> > Besides, suspend has to synchronize with I/O somehow.  Right now that 
+> > is handled by making suspend wait until no tasks are doing I/O (because 
+> > they are all frozen).
+> 
+> What about async I/O?
 
-when the memory corruptor checker hits (as it has done now based on kerneloops.org data),
-it would be extremely useful to know the DMI board name so we can add a blacklist for
-such a machine... without having to ask the user for lots of extra info.
+I don't know.  Maybe it slipped through the cracks.  It wouldn't be 
+surprising to find that async I/O can get messed up during a suspend.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- arch/x86/kernel/check.c |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+> >  If you allow tasks to be frozen at more or less 
+> > arbitrary times, while holding arbitrary locks, then you may end up 
+> > freezing a task that's in the middle of I/O.  That should certainly 
+> > block the suspend (not to mention messing up the I/O operation).
+> 
+> What is the middle of I/O?  Depending the type of I/O it could be
+> messed up regardless of whether tasks happen to be in userspace or not
+> (e.g. printing).
 
-diff --git a/arch/x86/kernel/check.c b/arch/x86/kernel/check.c
-index 2ac0ab7..f952182 100644
---- a/arch/x86/kernel/check.c
-+++ b/arch/x86/kernel/check.c
-@@ -2,6 +2,7 @@
- #include <linux/sched.h>
- #include <linux/kthread.h>
- #include <linux/workqueue.h>
-+#include <linux/dmi.h>
- #include <asm/e820.h>
- #include <asm/proto.h>
- 
-@@ -113,6 +114,7 @@ void check_for_bios_corruption(void)
- {
- 	int i;
- 	int corruption = 0;
-+	const char *board;
- 
- 	if (!memory_corruption_check)
- 		return;
-@@ -131,7 +133,11 @@ void check_for_bios_corruption(void)
- 		}
- 	}
- 
--	WARN_ONCE(corruption, KERN_ERR "Memory corruption detected in low memory\n");
-+	board = dmi_get_system_info(DMI_PRODUCT_NAME);
-+	if (!board)
-+		board = "";
-+	WARN_ONCE(corruption, KERN_ERR "Memory corruption detected in low memory\nBoard name: %s\n",
-+		board);
- }
- 
- static void check_corruption(struct work_struct *dummy);
--- 
-1.5.5.1
+I'll wriggle out of this by saying that "in the middle of I/O" means
+the task has gotten a device into a state from which it can't
+successfully be suspended.  An example would be if the system had sent
+the device part of a command.  Even if you did manage to suspend the
+device and resume it later, you wouldn't expect it to work right when
+it received the second half of the command.
 
+In general, drivers don't leave devices in this kind of intermediate
+state for long.  A driver might sleep at such times, but it wouldn't 
+return to userspace.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> And some types of I/O are already mostly decoupled from userspace
+> (file I/O, networking), so the userspace freezing shoudln't make any
+> difference.
+
+True.  We're mostly talking about character device I/O.  There are a 
+lot of character device drivers in the kernel.  :-)
+
+> > > Did anybody ever try modifying the freezer for suspend (not
+> > > hibernate), so that it allows tasks not in running state to freeze?
+> > > If not, I think that's an experiment worth doing.
+> > 
+> > What happens if the reason the task isn't running is because it's 
+> > waiting for I/O to complete?  I just don't think this can be made to 
+> > work.
+> 
+> Don't know.  I've never written a driver, and I'm not familiar with
+> runtime PM, etc.  So I can't come up with a detailed design for
+> solving the freezer issues there.
+> 
+> But I do think that the solution does not lie in "fixing" the VFS.
+
+I tend to agree.  The problems posed by fuse are very difficult.  It is 
+not at all obvious how to attack them.
+
+Alan Stern
+
