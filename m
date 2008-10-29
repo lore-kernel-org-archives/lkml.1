@@ -1,242 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbYJ2Mka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbYJ2Msk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753598AbYJ2Mka (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 08:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbYJ2MkT
+	id S1753920AbYJ2Msk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 08:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbYJ2Msb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 08:40:19 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:44058 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752224AbYJ2MkR (ORCPT
+	Wed, 29 Oct 2008 08:48:31 -0400
+Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:35909 "EHLO
+	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752895AbYJ2Msa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 08:40:17 -0400
-Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use
-	schedule_on_each_cpu()
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>, heiko.carstens@de.ibm.com,
-       npiggin@suse.de, linux-kernel@vger.kernel.org, hugh@veritas.com,
-       torvalds@linux-foundation.org, riel@redhat.com, linux-mm@kvack.org
-In-Reply-To: <2f11576a0810290017g310e4469gd27aa857866849bd@mail.gmail.com>
-References: <2f11576a0810210851g6e0d86benef5d801871886dd7@mail.gmail.com>
-	 <2f11576a0810211018g5166c1byc182f1194cfdd45d@mail.gmail.com>
-	 <20081023235425.9C40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20081027145509.ebffcf0e.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0810280914010.15939@quilx.com>
-	 <20081028134536.9a7a5351.akpm@linux-foundation.org>
-	 <1225229366.6343.74.camel@lts-notebook>
-	 <2f11576a0810290017g310e4469gd27aa857866849bd@mail.gmail.com>
-Content-Type: multipart/mixed; boundary="=-1BA4qEJtvsphARYKZVsK"
-Date: Wed, 29 Oct 2008 08:40:14 -0400
-Message-Id: <1225284014.8257.36.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 29 Oct 2008 08:48:30 -0400
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <49085BA9.8050306@cam.ac.uk>
+Date: Wed, 29 Oct 2008 12:48:41 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080801)
+MIME-Version: 1.0
+To: Mark Brown <broonie@sirena.org.uk>
+CC: Jonathan Cameron <Jonathan.Cameron@gmail.com>,
+       Liam Girdwood <lrg@kernel.org>, felipe.balbi@nokia.com,
+       eric miao <eric.y.miao@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Regulator RFC] da903x: Where should usb charge pump support
+ go?
+References: <4906F500.7080100@cam.ac.uk> <20081028112341.GF27144@gandalf.research.nokia.com> <1225195382.28382.168.camel@dell-desktop.example.com> <4908547C.4090907@gmail.com> <20081029122705.GA14648@sirena.org.uk>
+In-Reply-To: <20081029122705.GA14648@sirena.org.uk>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-1BA4qEJtvsphARYKZVsK
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-On Wed, 2008-10-29 at 16:17 +0900, KOSAKI Motohiro wrote:
-> > I believe that we still  have the lru_drain_all() called from the fault
-> > path [with mmap_sem held] in clear_page_mlock().  We call
-> > clear_page_mlock() on COW of an mlocked page in a VM_LOCKED vma to
-> > ensure that we don't end up with an mlocked page in some other task's
-> > non-VM_LOCKED vma where we'd then fail to munlock it later.  During
-> > development testing, Rik encountered scenarios where a page would
-> > encounter a COW fault while it was still making its way to the LRU via
-> > the pagevecs.  So, he added the 'drain_all() and that seemed to avoid
-> > this scenario.
+Mark Brown wrote:
+> On Wed, Oct 29, 2008 at 12:18:04PM +0000, Jonathan Cameron wrote:
 > 
-> Agreed.
+>> ADC
+>>     Used partly for internal monitoring functionality, partly for
+>>     auxiliary inputs.  The question on this is whether to implement
+>>     it as a hwmon driver (somewhat unusual form, but sort of fits)
+>>     or whether some of this is needed for feedback to the battery
+>>     charger code etc.
 > 
-> 
-> > Now, in the current upstream version of the unevictable mlocked pages
-> > patches, we just count any mlocked pages [vmstat] that make their way to
-> > free*page() instead of BUGging out, as we were doing earlier during
-> > development.  So, maybe we can drop the lru_drain_add()s in the
-> > unevictable mlocked pages work and live with the occasional freed
-> > mlocked page, or mlocked page on the active/inactive lists to be dealt
-> > with by vmscan.
-> 
-> hm, okey.
-> maybe, I was wrong.
-> 
-> I'll make "dropping lru_add_drain_all()" patch soon.
-> I expect I need few days.
->   make the patch:                  1 day
->   confirm by stress workload:  2-3 days
-> 
-> because rik's original problem only happend on heavy wokload, I think.
+> For WM8350 this is implemented as a device-specific function in the
+> driver core which is then used by other drivers to export the
+> information to relevant subsystems.
+Seems a sensible option.  Can always put a hwmon driver on top of that
+if people want the nice userspace interfaces etc.
+ 
+> There was some work on a generic ADC framework that might be a better
+> fit for the auxiliary inputs but I'm not sure where that's going ATM or
+> if it's really appropriate.
+That's probably me anyway (industrialio), it's stalled whilst I switch
+my test platform to this driver and isn't really suitable for this 
+(unless someone wants to abuse the auxiliary adc inputs for general
+purpose stuff).
 
-Indeed.  It was an ad hoc test program [2 versions attached] written
-specifically to beat on COW of shared pages mlocked by parent then COWed
-by parent or child and unmapped explicitly or via exit.  We were trying
-to find all the ways the we could end up freeing mlocked pages--and
-there were several.  Most of these turned out to be genuine
-coding/design defects [as difficult as that may be to believe :-)], so
-tracking them down was worthwhile.  And, I think that, in general,
-clearing a page's mlocked state and rescuing from the unevictable lru
-list on COW--to prevent the mlocked page from ending up mapped into some
-task's non-VM_LOCKED vma--is a good thing to strive for.  
+It's focus (principally) is on fast capture from sensors by triggering events
+(periodic timers / gpio / non periodic triggering schedules - haven't done
+that one yet) rather than internal monitoring.  Other such as input / hwmon
+may be built on top of the underlying core, but that's not done yet.
 
-Now, looking at the current code [28-rc1] in [__]clear_page_mlock():
-We've already cleared the PG_mlocked flag, we've decremented the mlocked
-pages stats, and we're just trying to rescue the page from the
-unevictable list to the in/active list.  If we fail to isolate the page,
-then either some other task has it isolated and will return it to an
-appropriate lru or it resides in a pagevec heading for an in/active lru
-list.  We don't use pagevec for unevictable list.  Any other cases?  If
-not, then we can probably dispense with the "try harder" logic--the
-lru_add_drain()--in __clear_page_mlock().
+As a quick and dirty progress report, the device handling side of things
+is in place and working well. Current work is on generalizing the triggering
+framework and working out how to handle the connectivity issues cleanly.
+I did promise to post a release at the end of last week but have dropped
+back a chunk as some 'minor' changes proved rather complex to do.
 
-Do you agree?  Or have I missed something?
+Jonathan
 
-Lee   
 
---=-1BA4qEJtvsphARYKZVsK
-Content-Disposition: attachment; filename=rvr-mlock-oops.c
-Content-Type: text/x-csrc; name=rvr-mlock-oops.c; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-/*
- * In the split VM code in 2.6.25-rc3-mm1 and later, we see PG_mlock
- * pages freed from the exit/exit_mmap path.  This test case creates
- * a process, forks it, mlocks, touches some memory and exits, to
- * try and trigger the bug - Rik van Riel, Mar 2008
- */
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-
-#define NUMFORKS 1000
-#define MEMSIZE 1024*1024
-
-void child(void)
-{
-	char * mem;
-	int err;
-	int i;
-
-	err = mlockall(MCL_CURRENT|MCL_FUTURE);
-	if (err < 0) {
-		printf("child mlock failed\n");
-		exit(1);
-	}
-
-	mem = malloc(MEMSIZE);
-	if (!mem) {
-		printf("child could not allocate memory\n");
-		exit(2);
-	}
-
-	/* Touch the memory so the kernel allocates actual pages. */
-	for (i = 0; i < MEMSIZE; i++)
-		mem[i] = i;
-
-	/* Avoids the oops?  Nope ... :( */
-	munlockall();
-
-	/* This is where we can trigger the oops. */
-	exit(0);
-}
-
-int main(int argc, char *argv)
-{
-	int i;
-	int status;
-
-	for (i = 0; i < NUMFORKS ; i++) {
-		pid_t pid = fork();
-
-		if (!pid)	
-			child(); /* does not return */
-		else if (pid > 0)
-			wait(&status);
-		else {
-			printf("fork failed\n");
-			exit(1);
-		}
-	}
-}
-
---=-1BA4qEJtvsphARYKZVsK
-Content-Disposition: attachment; filename=rvr-mlock-oops2.c
-Content-Type: text/x-csrc; name=rvr-mlock-oops2.c; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-/*
- * In the split VM code in 2.6.25-rc3-mm1 and later, we see PG_mlock
- * pages freed from the exit/exit_mmap path.  This test case creates
- * a process, forks it, mlocks, touches some memory and exits, to
- * try and trigger the bug - Rik van Riel, Mar 2008
- */
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-
-#define NUMFORKS 1
-#define MEMSIZE 1024*1024
-
-void child(void)
-{
-	char * mem;
-	int i;
-
-	mem = malloc(MEMSIZE);
-	if (!mem) {
-		printf("child could not allocate memory\n");
-		exit(2);
-	}
-
-	/* Touch the memory so the kernel allocates actual pages. */
-	for (i = 0; i < MEMSIZE; i++)
-		mem[i] = i;
-
-	/* This is where we can trigger the oops. */
-	exit(0);
-}
-
-int main(int argc, char *argv)
-{
-	int i;
-	int status;
-	pid_t pid;
-	int err;
-
-	err = mlockall(MCL_CURRENT|MCL_FUTURE);
-	if (err < 0) {
-		printf("parent mlock failed\n");
-		exit(1);
-	}
-
-	pid = getpid();
-
-	printf("parent pid = %d\n", pid);
-
-	for (i = 0; i < NUMFORKS ; i++) {
-		pid = fork();
-
-		if (!pid)	
-			child(); /* does not return */
-		else if (pid > 0)
-			wait(&status);
-		else {
-			printf("fork failed\n");
-			exit(1);
-		}
-	}
-}
-
---=-1BA4qEJtvsphARYKZVsK--
+ 
 
