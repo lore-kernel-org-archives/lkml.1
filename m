@@ -1,85 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbYJ2Uhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754967AbYJ2Ui2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755038AbYJ2Uhn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 16:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbYJ2Uhc
+	id S1754967AbYJ2Ui2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 16:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbYJ2UiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 16:37:32 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:57322 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754535AbYJ2Uhb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 16:37:31 -0400
-Date: Wed, 29 Oct 2008 16:37:30 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: rjw@sisk.pl, <linux-kernel@vger.kernel.org>, <ncunningham@crca.org.au>,
-       <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
- filesystems.
-In-Reply-To: <E1KvDcp-0008B7-SR@pomaz-ex.szeredi.hu>
-Message-ID: <Pine.LNX.4.44L0.0810291627040.3986-100000@iolanthe.rowland.org>
+	Wed, 29 Oct 2008 16:38:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42753 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752652AbYJ2UiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 16:38:18 -0400
+Date: Wed, 29 Oct 2008 16:39:19 -0400
+From: Aristeu Rozanski <aris@redhat.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/2] NMI watchdog: add support to enable and disable
+	IOAPIC NMI
+Message-ID: <20081029203918.GN771@redhat.com>
+References: <20081027164233.132189000@napanee.usersys.redhat.com> <20081027164234.679734000@napanee.usersys.redhat.com> <20081029090532.cc9536d9.randy.dunlap@oracle.com> <alpine.LFD.1.10.0810291941510.13373@ftp.linux-mips.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0810291941510.13373@ftp.linux-mips.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Oct 2008, Miklos Szeredi wrote:
-
-> On Wed, 29 Oct 2008, Alan Stern wrote:
-> > On Wed, 29 Oct 2008, Miklos Szeredi wrote:
+> > > This patch adds support to enable/disable IOAPIC NMI watchdog in runtime via
+> > > procfs.
 > > 
-> > > Actually I was thinking of an rw-semaphore, not a mutex.  But yeah
-> > > that still has scalability problems.  But it could be done with custom
-> > > locking primitives, optimized for this case:
-> > > 
-> > >    suspend_disable();
-> > >    /* driver stuff */
-> > >    suspend_enable();
-> > 
-> > Yes, it could be done.  And the overhead could be minimized by using
-> > per-CPU variables.  It would still be an awful lot of work, and easy to
-> > get wrong.
+> > Some info on how to use this, what to write(?) to what file(?) in procfs
+> > would be Very Good to have.
 > 
-> OK, getting back to this, as it seems to be the only way that we agree
-> is doable.
-> 
-> How about this,
-> 
->  a) identify syscalls that may make drivers do I/O:
-> 
->  - read
->  - write
->  - ioctl
->  ???
-> 
->  b) add the suspend_disable/enable() primitives to these syscalls
-> 
->  c) push primitives inside the implementation
+>  I gather this is an extension to the existing interface already covering 
+> the local APIC NMI watchdog, which surely ;) must have been documented at 
+> the time it was added.  If it wasn't, then we cannot require it now as a 
+> prerequisite to accept this patch, although such documentation would be 
+> desirable as a separate submission.
+What about (if OK, I'll resubmit in a different thread with proper format):
 
-I discussed this last summer with Rafael.  It's a lot harder than it 
-looks, for all sorts of reasons.  For example, what about user tasks 
-that have access to memory-mapped I/O regions?
+---
+ Documentation/nmi_watchdog.txt |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-> c) is slightly tricky, but could be done for example by setting a flag
-> on open: FMODE_NO_SUSPEND_DISABLE (better name required), saying that
-> implementation is responsible for getting the suspend disable magic
-> right.
-> 
-> For starters this flag could be set for all non-device opens (maybe all
-> non-char-dev opens?), solving the fuse vs. freezer issues without any
-> complicated trickery.
-
-I don't know.  There are other interfaces too, like sysfs attributes, 
-that would have to be handled specially.  On the whole, the freezer 
-seems much, much simpler.
-
-Regarding fuse, something like Nigel's scheme for preventing new 
-requests and then waiting for old requests to complete might work out.  
-Especially if you combine it with a strategy for making the freezer 
-back and retry after a delay when something goes wrong.
-
-Alan Stern
-
+--- linus-2.6.orig/Documentation/nmi_watchdog.txt	2008-10-24 11:41:30.000000000 -0400
++++ linus-2.6/Documentation/nmi_watchdog.txt	2008-10-29 16:38:12.000000000 -0400
+@@ -69,6 +69,11 @@ to the overall system performance.
+ On x86 nmi_watchdog is disabled by default so you have to enable it with
+ a boot time parameter.
+ 
++It's possible to disable the NMI watchdog in run-time by writing "0" to
++/proc/sys/kernel/nmi_watchdog. Writing "1" to the same file will re-enable
++the NMI watchdog. Notice that you still need to use "nmi_watchdog=" parameter
++in boot time.
++
+ NOTE: In kernels prior to 2.4.2-ac18 the NMI-oopser is enabled unconditionally
+ on x86 SMP boxes.
+ 
