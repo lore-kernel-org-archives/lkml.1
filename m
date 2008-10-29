@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbYJ2Byn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbYJ2BzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755045AbYJ2Byn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 21:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbYJ2Bul
+	id S1755553AbYJ2BzA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 21:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbYJ2Bup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 21:50:41 -0400
-Received: from anchor-post-31.mail.demon.net ([194.217.242.89]:1350 "EHLO
-	anchor-post-31.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753331AbYJ2BuF (ORCPT
+	Tue, 28 Oct 2008 21:50:45 -0400
+Received: from anchor-post-32.mail.demon.net ([194.217.242.90]:2359 "EHLO
+	anchor-post-32.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753305AbYJ2BuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 28 Oct 2008 21:50:05 -0400
 To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        tim.bird@am.sony.com
-Subject: [PATCH V2 08/16] Squashfs: fragment block operations
-Message-Id: <E1Kv0C4-0006HC-4s@dylan>
+Subject: [PATCH V2 07/16] Squashfs: export operations
+Message-Id: <E1Kv0C4-0006H6-2E@dylan>
 From: Phillip Lougher <phillip@lougher.demon.co.uk>
 Date: Wed, 29 Oct 2008 01:49:56 +0000
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,15 +24,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
 ---
- fs/squashfs/fragment.c |   91 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 91 insertions(+), 0 deletions(-)
+ fs/squashfs/export.c |  152 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 152 insertions(+), 0 deletions(-)
 
-diff --git a/fs/squashfs/fragment.c b/fs/squashfs/fragment.c
+diff --git a/fs/squashfs/export.c b/fs/squashfs/export.c
 new file mode 100644
-index 0000000..2ba8b3f
+index 0000000..6ba8724
 --- /dev/null
-+++ b/fs/squashfs/fragment.c
-@@ -0,0 +1,91 @@
++++ b/fs/squashfs/export.c
+@@ -0,0 +1,152 @@
 +/*
 + * Squashfs - a compressed read only filesystem for Linux
 + *
@@ -53,24 +53,27 @@ index 0000000..2ba8b3f
 + * along with this program; if not, write to the Free Software
 + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 + *
-+ * fragment.c
++ * export.c
 + */
 +
 +/*
-+ * This file implements code to handle compressed fragments (tail-end packed
-+ * datablocks).
++ * This file implements code to make Squashfs filesystems exportable (NFS etc.)
 + *
-+ * Regular files contain a fragment index which is mapped to a fragment
-+ * location on disk and compressed size using a fragment lookup table.
-+ * Like everything in Squashfs this fragment lookup table is itself stored
-+ * compressed into metadata blocks.  A second index table is used to locate
-+ * these.  This second index table for speed of access (and because it
-+ * is small) is read at mount time and cached in memory.
++ * The export code uses an inode lookup table to map inode numbers passed in
++ * filehandles to an inode location on disk.  This table is stored compressed
++ * into metadata blocks.  A second index table is used to locate these.  This
++ * second index table for speed of access (and because it is small) is read at
++ * mount time and cached in memory.
++ *
++ * The inode lookup table is used only by the export code, inode disk
++ * locations are directly encoded in directories, enabling direct access
++ * without an intermediate lookup for all operations except the export ops.
 + */
 +
 +#include <linux/fs.h>
 +#include <linux/vfs.h>
-+#include <linux/slab.h>
++#include <linux/dcache.h>
++#include <linux/exportfs.h>
 +#include <linux/zlib.h>
 +
 +#include "squashfs_fs.h"
@@ -78,52 +81,110 @@ index 0000000..2ba8b3f
 +#include "squashfs_fs_i.h"
 +#include "squashfs.h"
 +
-+int get_fragment_location(struct super_block *sb, unsigned int fragment,
-+				long long *fragment_block)
++/*
++ * Look-up inode number (ino) in table, returning the inode location.
++ */
++static long long squashfs_inode_lookup(struct super_block *sb, int ino_num)
 +{
 +	struct squashfs_sb_info *msblk = sb->s_fs_info;
-+	int block = SQUASHFS_FRAGMENT_INDEX(fragment);
-+	int offset = SQUASHFS_FRAGMENT_INDEX_OFFSET(fragment);
-+	long long start_block = le64_to_cpu(msblk->fragment_index[block]);
-+	struct squashfs_fragment_entry fragment_entry;
-+	int size;
++	int blk = SQUASHFS_LOOKUP_BLOCK(ino_num - 1);
++	int offset = SQUASHFS_LOOKUP_BLOCK_OFFSET(ino_num - 1);
++	long long start = le64_to_cpu(msblk->inode_lookup_table[blk]);
++	__le64 ino;
++	int err;
 +
-+	size = squashfs_read_metadata(sb, &fragment_entry, &start_block,
-+					&offset, sizeof(fragment_entry));
-+	if (size < 0)
-+		return size;
++	TRACE("Entered squashfs_inode_lookup, inode_number = %d\n", ino_num);
 +
-+	*fragment_block = le64_to_cpu(fragment_entry.start_block);
-+	size = le32_to_cpu(fragment_entry.size);
++	err = squashfs_read_metadata(sb, &ino, &start, &offset, sizeof(ino));
++	if (err < 0)
++		return err;
 +
-+	return size;
++	TRACE("squashfs_inode_lookup, inode = 0x%llx\n",
++		(unsigned long long) le64_to_cpu(ino));
++
++	return le64_to_cpu(ino);
 +}
 +
 +
-+__le64 *read_fragment_index_table(struct super_block *sb,
-+	long long fragment_table_start, unsigned int fragments)
++static struct dentry *squashfs_export_iget(struct super_block *sb,
++	unsigned int ino_num)
 +{
-+	unsigned int length = SQUASHFS_FRAGMENT_INDEX_BYTES(fragments);
-+	__le64 *fragment_index;
++	long long ino;
++	struct dentry *dentry = ERR_PTR(-ENOENT);
++
++	TRACE("Entered squashfs_export_iget\n");
++
++	ino = squashfs_inode_lookup(sb, ino_num);
++	if (ino >= 0)
++		dentry = d_obtain_alias(squashfs_iget(sb, ino, ino_num));
++
++	return dentry;
++}
++
++
++static struct dentry *squashfs_fh_to_dentry(struct super_block *sb,
++		struct fid *fid, int fh_len, int fh_type)
++{
++	if ((fh_type != FILEID_INO32_GEN && fh_type != FILEID_INO32_GEN_PARENT)
++			|| fh_len < 2)
++		return NULL;
++
++	return squashfs_export_iget(sb, fid->i32.ino);
++}
++
++
++static struct dentry *squashfs_fh_to_parent(struct super_block *sb,
++		struct fid *fid, int fh_len, int fh_type)
++{
++	if (fh_type != FILEID_INO32_GEN_PARENT || fh_len < 4)
++		return NULL;
++
++	return squashfs_export_iget(sb, fid->i32.parent_ino);
++}
++
++
++static struct dentry *squashfs_get_parent(struct dentry *child)
++{
++	struct inode *inode = child->d_inode;
++	unsigned int parent_ino = SQUASHFS_I(inode)->parent;
++
++	return squashfs_export_iget(inode->i_sb, parent_ino);
++}
++
++
++__le64 *read_inode_lookup_table(struct super_block *sb,
++		long long lookup_table_start, unsigned int inodes)
++{
++	unsigned int length = SQUASHFS_LOOKUP_BLOCK_BYTES(inodes);
++	__le64 *inode_lookup_table;
 +	int err;
 +
-+	/* Allocate fragment index table */
-+	fragment_index = kmalloc(length, GFP_KERNEL);
-+	if (fragment_index == NULL) {
-+		ERROR("Failed to allocate fragment index table\n");
++	TRACE("In read_inode_lookup_table, length %d\n", length);
++
++	/* Allocate inode lookup table */
++	inode_lookup_table = kmalloc(length, GFP_KERNEL);
++	if (inode_lookup_table == NULL) {
++		ERROR("Failed to allocate inode lookup table\n");
 +		return ERR_PTR(-ENOMEM);
 +	}
 +
-+	err = squashfs_read_data(sb, fragment_index, fragment_table_start,
++	err = squashfs_read_data(sb, inode_lookup_table, lookup_table_start,
 +			length | SQUASHFS_COMPRESSED_BIT_BLOCK, NULL, length);
 +	if (err < 0) {
-+		ERROR("unable to read fragment index table\n");
-+		kfree(fragment_index);
++		ERROR("unable to read inode lookup table\n");
++		kfree(inode_lookup_table);
 +		return ERR_PTR(err);
 +	}
 +
-+	return fragment_index;
++	return inode_lookup_table;
 +}
++
++
++const struct export_operations squashfs_export_ops = {
++	.fh_to_dentry = squashfs_fh_to_dentry,
++	.fh_to_parent = squashfs_fh_to_parent,
++	.get_parent = squashfs_get_parent
++};
 -- 
 1.5.2.5
 
