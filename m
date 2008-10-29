@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbYJ2Q2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbYJ2Q3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754736AbYJ2Q2p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 12:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbYJ2Q2h
+	id S1754785AbYJ2Q3e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 12:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbYJ2Q3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 12:28:37 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:52622 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752644AbYJ2Q2g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 12:28:36 -0400
-Date: Wed, 29 Oct 2008 11:28:17 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, morgan@kernel.org, arjan@infradead.org
-Subject: Re: [PATCH] Capabilities: BUG when an invalid capability is
-	requested
-Message-ID: <20081029162817.GB14705@us.ibm.com>
-References: <1225294932.23736.28.camel@localhost.localdomain>
+	Wed, 29 Oct 2008 12:29:25 -0400
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:43349 "EHLO sabe.cs.wisc.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752644AbYJ2Q3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 12:29:25 -0400
+X-Greylist: delayed 2696 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Oct 2008 12:29:25 EDT
+Message-ID: <490884CC.9060106@cs.wisc.edu>
+Date: Wed, 29 Oct 2008 10:44:12 -0500
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1225294932.23736.28.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: open-iscsi@googlegroups.com,
+       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] scsi: fix uninitialized variable in iscsi
+References: <20081029170359.70682e02.sfr@canb.auug.org.au>
+In-Reply-To: <20081029170359.70682e02.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric Paris (eparis@redhat.com):
-> If an invalid (large) capability is requested the capabilities system
-> may panic as it is dereferencing an array of fixed (short) length.  Its
-> possible (and actually often happens) that the capability system
-> accidentally stumbled into a valid memory region but it also regularly
-> happens that it hits invalid memory and BUGs.  If such an operation does
-> get past cap_capable then the selinux system is sure to have problems as
-> it already does a (simple) validity check and BUG.  This is known to
-> happen by the broken and buggy firegl driver.
+Stephen Rothwell wrote:
+> [Resend to get through vger's filters, sorry]
 > 
-> This patch cleanly checks all capable calls and BUG if a call is for an
-> invalid capability.  This will likely break the firegl driver for some
-> situations, but it is the right thing to do.  Garbage into a security
-> system gets you killed/bugged
+> drivers/scsi/scsi_transport_iscsi.c: In function 'iscsi_add_session':
+> drivers/scsi/scsi_transport_iscsi.c:704: warning: 'err' may be used uninitialized in this function
 > 
-> Signed-off-by: Eric Paris <eparis@redhat.com>
-
-I really don't like this, but I'm not sure we really have a choice.
-
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-
-I suppose we can think later about whether it's worthwhile (a) having a
-separate capable() function exported, keeping one without the check for
-compiled-in use only, and/or (b) changing the cap_valid() definition to
-be "(((unsigned int)cap) <= CAP_LAST_CAP)" which seems to work and shave
-one whopping instruction.  I suspect the answer will be no to both.
-
-Thanks, Eric.
-
--serge
-
+> Indeed the error path can be taken without err being set.
 > 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 > ---
+>  drivers/scsi/scsi_transport_iscsi.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
 > 
->  kernel/capability.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
+> I don't know if ENOMEM is the proper error code to return.
 > 
-> diff --git a/kernel/capability.c b/kernel/capability.c
-> index 33e51e7..50d9d99 100644
-> --- a/kernel/capability.c
-> +++ b/kernel/capability.c
-> @@ -498,6 +498,11 @@ asmlinkage long sys_capset(cap_user_header_t header, const cap_user_data_t data)
->   */
->  int capable(int cap)
->  {
-> +	if (unlikely(!cap_valid(cap))) {
-> +		printk(KERN_CRIT "capable() called with invalid cap=%u\n", cap);
-> +		BUG();
-> +	}
-> +
->  	if (has_capability(current, cap)) {
->  		current->flags |= PF_SUPERPRIV;
->  		return 1;
-> 
+> diff --git a/drivers/scsi/scsi_transport_iscsi.c b/drivers/scsi/scsi_transport_iscsi.c
+> index 4a803eb..99855db 100644
+> --- a/drivers/scsi/scsi_transport_iscsi.c
+> +++ b/drivers/scsi/scsi_transport_iscsi.c
+> @@ -719,6 +719,7 @@ int iscsi_add_session(struct iscsi_cls_session *session, unsigned int target_id)
+>  						 "Too many iscsi targets. Max "
+>  						 "number of targets is %d.\n",
+>  						 ISCSI_MAX_TARGET - 1);
+> +			err = -ENOMEM;
+>  			goto release_host;
+>  		}
+>  	}
+
+Thanks for the patch.
+
+I have a patch for this from Benny Halevy already.
