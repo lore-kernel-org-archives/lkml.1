@@ -1,80 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754679AbYJ2Txf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbYJ2Tyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754679AbYJ2Txf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 15:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbYJ2Tx1
+	id S1754835AbYJ2Tyb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 15:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbYJ2TyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 15:53:27 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:40052 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752687AbYJ2Tx0 (ORCPT
+	Wed, 29 Oct 2008 15:54:21 -0400
+Received: from smtp1.riverbed.com ([206.169.144.12]:56469 "EHLO
+	smtp1.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752687AbYJ2TyU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 15:53:26 -0400
-Date: Wed, 29 Oct 2008 20:49:56 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>, Adrian Bunk <bunk@kernel.org>
-Subject: Re: [PATCH 01/11] ftrace: handle generic arch calls
-Message-ID: <20081029194956.GA22606@uranus.ravnborg.org>
-References: <20081022184313.179487464@goodmis.org> <20081022185135.618026303@goodmis.org> <alpine.DEB.1.10.0810271337370.8006@gandalf.stny.rr.com> <20081029190045.GC22105@uranus.ravnborg.org> <alpine.DEB.1.10.0810291517220.13214@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 29 Oct 2008 15:54:20 -0400
+Date: Wed, 29 Oct 2008 12:54:03 -0700
+From: Arthur Jones <ajones@riverbed.com>
+To: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+CC: sct@redhat.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: ext3: slow symlink corruption on umount...
+Message-ID: <20081029195403.GA8333@ajones-laptop.nbttech.com>
+References: <20081024183733.GA25797@ajones-laptop.nbttech.com> <20081027165423.GB25797@ajones-laptop.nbttech.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810291517220.13214@gandalf.stny.rr.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20081027165423.GB25797@ajones-laptop.nbttech.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 03:24:19PM -0400, Steven Rostedt wrote:
-> 
-> On Wed, 29 Oct 2008, Sam Ravnborg wrote:
-> > >  
-> > > +if ($arch eq "x86") {
-> > > +    if ($bits == 64) {
-> > > +	$arch = "x86_64";
-> > > +    } else {
-> > > +	$arch = "i386";
-> > > +    }
-> > > +}
-> > > +
-> > >  if ($arch eq "x86_64") {
-> > >      $section_regex = "Disassembly of section";
-> > >      $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
-> > > 
-> > 
-> > This looks strange to my eyes.
-> > Why not do the more obvious:
-> > if ($arch eq "x86" && $bits == 64) {
-> > 
-> > The change above is like trying to stick to the old i386/x86_64
-> > notation.
-> 
-> Trying to fix it tells me my answer to why I did it his way ;-)
-> 
-> I have queued patches that will support other archs so x86 is not the
-> only arch that can be used here. But x86 is special, it seems to be the 
-> only arch (that I know of, correct me if I'm wrong) that can compile with
-> multiple archs defined: make ARCH=x86_64, make ARCH=i386, or
-> make ARCH=x86. All are legit.
-> 
-> Now how do we handle this. I've been fine for all my testing to do just 
-> x86_64 and i386 because a normal make of x86 will use automatically set
-> ARCH to i386 or x86_64 depending on the build.
-> 
-> But then Adrian Bunk pointed out that "make ARCH=x86" fails. Now I need to 
-> add a case for x86, but still allow for x86_64 or i386 being passed in.
-> 
-> Since x86 is the ambiguous case, I made it the one that would be converted 
-> to i386 or x86_64 since those could be passed in directly.
-The trick is usually to replace use of ARCH with SRCARCH.
+This one's turning out to be a slippery fish.
+I have found that the corruption appears to
+be due to ->writepage() not getting called at all
+for any of the long symlinks...
 
-	Sam
+Ring any bells anyone?  Any ideas where to look
+or what to test?  This is my first foray into
+ext3 and I could definitely use some expert advice...
+
+Arthur
+
+On Mon, Oct 27, 2008 at 09:54:23AM -0700, Arthur Jones wrote:
+> Some additional info -- and attempting to cast a wider
+> net on the CC:
+> 
+> I do not see the long symlink corruption with mount -o data=writeback
+> and we've now seen a couple cases where the symlink corruption
+> does not require a umount...
+> 
+> Arthur
+> 
+> On Fri, Oct 24, 2008 at 11:37:34AM -0700, Arthur Jones wrote:
+> > Hi All,  I'm seeing slow symlink corruption on ext3 on linux-2.6.27,
+> > yesterday's linux-2.6 git tree and 2.6.9 RHEL4.7.  I.e. every kernel
+> > I've tried I see this effect.  To reproduce this, I need:
+> > 
+> > * 250MB + tar file in memory (tmpfs or in the buffer cache)
+> > * long symlinks in the tar file (over 60 characters)
+> > * umount immediately after untarring
+> > 
+> > What I see is that the symlinks are corrupted, e.g.:
+> > 
+> > # ls -l etc/vmware-vix-disklib
+> > etc/vmware-vix-disklib -> ??f
+> > 
+> > fsck shows:
+> > 
+> > Symlink /etc/vmware-vix-disklib (inode #16454) is invalid.
+> > 
+> > Debugfs shows:
+> > 
+> > debugfs:  stat <16454>
+> > Inode: 16454   Type: symlink    Mode:  0777   Flags: 0x0   Generation: 1431972005
+> > User:     0   Group:     0   Size: 65
+> > File ACL: 0    Directory ACL: 0
+> > Links: 1   Blockcount: 8
+> > Fragment:  Address: 0    Number: 0    Size: 0
+> > ctime: 0x4900ac69 -- Thu Oct 23 09:55:05 2008
+> > atime: 0x4900ac84 -- Thu Oct 23 09:55:32 2008
+> > mtime: 0x4900ac69 -- Thu Oct 23 09:55:05 2008
+> > BLOCKS:
+> > (0):56034
+> > TOTAL: 1
+> > 
+> > I'm still tracking down exactly what's going on.  Anyone seen
+> > anything like this before?  ext2 does not show this effect (I've
+> > not tried ext4).  It happens when the backing block device is
+> > a SATA drive or flash.
+> > 
+> > Thanks,
+> > 
+> > Arthur
