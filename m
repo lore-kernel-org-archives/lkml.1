@@ -1,85 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbYJ2POE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbYJ2PQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752980AbYJ2POE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 11:14:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYJ2PNw
+	id S1754156AbYJ2PQR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 11:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYJ2PQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 11:13:52 -0400
-Received: from casper.infradead.org ([85.118.1.10]:52574 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752607AbYJ2PNv (ORCPT
+	Wed, 29 Oct 2008 11:16:00 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:50281 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752416AbYJ2PQA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 11:13:51 -0400
-Date: Wed, 29 Oct 2008 08:13:47 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
+	Wed, 29 Oct 2008 11:16:00 -0400
+Date: Wed, 29 Oct 2008 11:15:57 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Glauber Costa <gcosta@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: Fix CONFIG_PCI=n compile failure
-Message-ID: <20081029081347.63048b8d@infradead.org>
-In-Reply-To: <1225289883.3257.9.camel@localhost.localdomain>
-References: <1225228943.3251.17.camel@localhost.localdomain>
-	<20081029073629.GB17992@elte.hu>
-	<1225288906.3257.4.camel@localhost.localdomain>
-	<20081029070824.10c19a57@infradead.org>
-	<1225289883.3257.9.camel@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+       Steven Noonan <steven@uplinklabs.net>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [PATCH] ftrace: fix trace_nop config select
+In-Reply-To: <20081029091857.GA4414@osiris.boeblingen.de.ibm.com>
+Message-ID: <alpine.DEB.1.10.0810291113500.2865@gandalf.stny.rr.com>
+References: <200810281802.m9SI2fYX030138@hera.kernel.org> <20081029091857.GA4414@osiris.boeblingen.de.ibm.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Oct 2008 09:18:03 -0500
-James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-> On Wed, 2008-10-29 at 07:08 -0700, Arjan van de Ven wrote:
-> > On Wed, 29 Oct 2008 09:01:46 -0500
-> > James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > 
-> > > This is obviously some strange definition of the word "right" of
-> > > which I was previously unaware.  That patch moves forbid_dac plus
-> > > a load of quirk processing (also for a PCI bus) out from under
-> > > CONFIG_PCI only ... which will fix the compile error, sure.
-> > > 
-> > > However, if you'd be so kind, please explain how a DAC (meaning
-> > > Dual Addressing Cycle on the PCI bus) is useful (or even can be
-> > > effected) without a PCI bus?
-> > > 
-> > > All its really doing is contaminating pci-dma.c with clutter that
-> > > only needs to be there because someone can't get the separation
-> > > right.o
-> > >
-> > 
-> > why do you even want that file for CONFIG_PCI=n ??
-> 
-> Um, my fault from long ago.  It's contaminated with the dma_ API
-> pieces that are bus generic.
-> 
-> The correct solution, I think, is to split it out into a bus generic
-> piece and a PCI specific piece.  
+The trace_nop is the tracer that is defined when no tracer is set in
+the ftrace infrastructure.
 
-agreed
+The trace_nop was mistakenly selected by HAVE_FTRACE due to the confusion
+between ftrace infrastructure and the ftrace function tracer (which has
+been solved by renaming the function tracer).
 
-> I think all the intel/amd IOMMU stuff
-> should be in the PCI specific piece ... although I know there's a
-> theoretical case where the AMD iommu can be ht bus only with no PCI
-> bus, I don't think anyone's built such a beast, in which case it's
-> safe to condition iommu presence on CONFIG_PCI?
+This patch changes the select to the approriate TRACING.
 
-I would think that's not relevant; AMD seems to have PCI in it's cpu
-package already, never mind what it is connected to.
+This patch should fix compile errors on architectures that do not define
+the FUNCTION_TRACER.
 
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-tip.git/kernel/trace/Kconfig
+===================================================================
+--- linux-tip.git.orig/kernel/trace/Kconfig	2008-10-29 10:37:49.000000000 -0400
++++ linux-tip.git/kernel/trace/Kconfig	2008-10-29 11:07:20.000000000 -0400
+@@ -8,7 +8,6 @@ config NOP_TRACER
+ 
+ config HAVE_FUNCTION_TRACER
+ 	bool
+-	select NOP_TRACER
+ 
+ config HAVE_DYNAMIC_FTRACE
+ 	bool
+@@ -28,6 +27,7 @@ config TRACING
+ 	select RING_BUFFER
+ 	select STACKTRACE
+ 	select TRACEPOINTS
++	select NOP_TRACER
+ 
+ menu "Tracers"
+ 
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
