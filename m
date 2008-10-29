@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbYJ2Vp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbYJ2Vpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755470AbYJ2Vp3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 17:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbYJ2VpP
+	id S1755775AbYJ2Vpm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 17:45:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbYJ2VpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 17:45:15 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:51452 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753681AbYJ2VpO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 17:45:14 -0400
-Date: Wed, 29 Oct 2008 17:45:11 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: gshan <gshan@alcatel-lucent.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: pls help me: ext3 filesystem reported errors while deleting
-	files
-Message-ID: <20081029214511.GB27274@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	gshan <gshan@alcatel-lucent.com>, linux-kernel@vger.kernel.org
-References: <48FD3986.6040909@alcatel-lucent.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48FD3986.6040909@alcatel-lucent.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Wed, 29 Oct 2008 17:45:21 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:60222 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754971AbYJ2VpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 17:45:20 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
+	filesystems.
+From: Nigel Cunningham <ncunningham@crca.org.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Miklos Szeredi <miklos@szeredi.hu>
+In-Reply-To: <200810292211.49021.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0810291627040.3986-100000@iolanthe.rowland.org>
+	 <200810292211.49021.rjw@sisk.pl>
+Content-Type: text/plain
+Organization: Christian Reformed Churches of Australia
+Date: Thu, 30 Oct 2008 08:45:15 +1100
+Message-Id: <1225316715.18786.1.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 21, 2008 at 10:08:06AM +0800, gshan wrote:
-> After I uncompressed a big tar file (about 600MB) that has been mounted  
-> through NFS to local
-> hard disk, I tried to delete all of files from the tar file, but ext3  
-> filesystem reported huge errors
-> as follows. Note that I'm using IDE driver instead of ATA driver for  
-> hard disk.
->
-> SP(27-A) $ rm -fr *
-> EXT3-fs error (device hdc5): ext3_free_blocks_sb: bit already cleared  
-> for block 538640
-> EXT3-fs error (device hdc5): ext3_free_blocks_sb: bit already cleared  
-> for block 538648
+Hi.
 
-Can you replicate the problem?  I would suggest fixing the filesystem
-corruptions using e2fsck, and then seeing if you can replicate the
-problem.
+On Wed, 2008-10-29 at 22:11 +0100, Rafael J. Wysocki wrote:
+> The current design of the freezer is rather simplistic and I'm not really sure
+> it's the best one possible.  Perhaps we can redesign the freezer to work
+> differently and handle the cases like fuse.
 
-Note that this sort of problem can be caused by hardware problems or
-device driver issues.
+Why redo what I've already done? In the full patch, you have the basis
+of what you're talking about. I haven't seen a failure to freeze fuse or
+anything else in a year of use.
 
-						- Ted
+Nigel
+
