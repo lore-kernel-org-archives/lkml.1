@@ -1,81 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbYJ2XRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755647AbYJ2XUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbYJ2XRS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 19:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbYJ2XRE
+	id S1755647AbYJ2XUH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 19:20:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbYJ2XTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 19:17:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57924 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752081AbYJ2XRD (ORCPT
+	Wed, 29 Oct 2008 19:19:51 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:53885 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750810AbYJ2XTt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 19:17:03 -0400
-Date: Wed, 29 Oct 2008 16:16:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Zan Lynx <zlynx@acm.org>
-Cc: linux-kernel@vger.kernel.org, jack@suse.cz
-Subject: Re: 2.6.28-rc2-mm1: Build failure on fs/quota.o
-Message-Id: <20081029161626.1fa5acb0.akpm@linux-foundation.org>
-In-Reply-To: <4908EA82.8090308@acm.org>
-References: <20081028233836.8b1ff9ae.akpm@linux-foundation.org>
-	<4908EA82.8090308@acm.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Oct 2008 19:19:49 -0400
+Date: Wed, 29 Oct 2008 19:18:55 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: pull request: wireless-2.6 2008-10-29
+Message-ID: <20081029231855.GD3485@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Oct 2008 16:58:10 -0600
-Zan Lynx <zlynx@acm.org> wrote:
+Dave,
 
-> Andrew Morton wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.28-rc2/2.6.28-rc2-mm1/
-> > 
-> > - Various architectures don't compile very well.  ia64, alpha, s390,
-> >   arm.  ftrace seems to be a particular culprit.
-> > 
-> > - But it seems to work OK on the six machines I ran it on.
-> > 
-> 
-> Here is the error:
-> 
->   CC      fs/quota.o
-> fs/quota.c: In function ___generic_quotactl_valid___:
-> fs/quota.c:76: error: implicit declaration of function ___sb_has_quota_active___
-> make[1]: *** [fs/quota.o] Error 1
-> make: *** [fs] Error 2
+Another quick round of fixes intended for 2.6.28...
 
-Thanks.
+This includes fixes for bugs 11749 and 11845, fixes a reset-related
+regression in ath5k, fixes a Kconfig-related error for rt2x00, and
+fixes some sparse warnings and a possible buffer overrun in libertas.
+Also, it corrects a spelling error and marks Bob Copeland as an
+ath5k maintainer.
 
-From: Andrew Morton <akpm@linux-foundation.org>
+Please let me know if there are problems!
 
-fs/quota.c: In function `generic_quotactl_valid':
-fs/quota.c:76: error: implicit declaration of function `sb_has_quota_active'
+Thanks,
 
-Cc: Jan Kara <jack@suse.cz>
-Reported-by: Zan Lynx <zlynx@acm.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+John
+
 ---
 
- include/linux/quotaops.h |    5 +++++
- 1 file changed, 5 insertions(+)
+Individual patches are available here:
 
-diff -puN include/linux/quotaops.h~quota-permit-separately-enabling-quota-accounting-and-enforcing-limits-fix include/linux/quotaops.h
---- a/include/linux/quotaops.h~quota-permit-separately-enabling-quota-accounting-and-enforcing-limits-fix
-+++ a/include/linux/quotaops.h
-@@ -257,6 +257,11 @@ static inline int sb_any_quota_loaded(st
- 	return 0;
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
+
+---
+
+The following changes since commit 882716604ecf388b2ff09bc76eb2a752aa9cc76b:
+  Jesse Brandeburg (1):
+        pktgen: fix multiple queue warning
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+
+Bob Copeland (3):
+      ath5k: correct misspelling in debug help
+      ath5k: honor FIF_BCN_PRBRESP_PROMISC in STA mode
+      ath5k: add self to MAINTAINERS
+
+Elias Oltmanns (1):
+      ath5k: Fix reset sequence for AR5212 in general and RF5111 in particular
+
+Holger Schurig (1):
+      libertas: remove two libertas sparse warning
+
+Ivo van Doorn (1):
+      rt2x00: Fix build error when mac80211=M rt2x00=Y
+
+Johannes Berg (1):
+      libertas: fix buffer overrun
+
+Tomas Winkler (1):
+      iwlwifi: fix suspend to RAM in iwlwifi
+
+ MAINTAINERS                            |    2 ++
+ drivers/net/wireless/ath5k/base.c      |    4 +---
+ drivers/net/wireless/ath5k/debug.c     |    2 +-
+ drivers/net/wireless/ath5k/initvals.c  |    2 ++
+ drivers/net/wireless/ath5k/reset.c     |   22 +++++++---------------
+ drivers/net/wireless/iwlwifi/iwl-agn.c |    2 +-
+ drivers/net/wireless/libertas/cmd.c    |    4 ++--
+ drivers/net/wireless/libertas/scan.c   |    4 ++--
+ drivers/net/wireless/rt2x00/Kconfig    |    2 +-
+ 9 files changed, 19 insertions(+), 25 deletions(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 16202c8..185b84a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -738,6 +738,8 @@ P:	Nick Kossifidis
+ M:	mickflemm@gmail.com
+ P:	Luis R. Rodriguez
+ M:	mcgrof@gmail.com
++P:	Bob Copeland
++M:	me@bobcopeland.com
+ L:	linux-wireless@vger.kernel.org
+ L:	ath5k-devel@lists.ath5k.org
+ S:	Maintained
+diff --git a/drivers/net/wireless/ath5k/base.c b/drivers/net/wireless/ath5k/base.c
+index cfd4d05..9e47d72 100644
+--- a/drivers/net/wireless/ath5k/base.c
++++ b/drivers/net/wireless/ath5k/base.c
+@@ -2942,10 +2942,8 @@ static void ath5k_configure_filter(struct ieee80211_hw *hw,
+ 		sc->opmode != NL80211_IFTYPE_MESH_POINT &&
+ 		test_bit(ATH_STAT_PROMISC, sc->status))
+ 		rfilt |= AR5K_RX_FILTER_PROM;
+-	if (sc->opmode == NL80211_IFTYPE_STATION ||
+-		sc->opmode == NL80211_IFTYPE_ADHOC) {
++	if (sc->opmode == NL80211_IFTYPE_ADHOC)
+ 		rfilt |= AR5K_RX_FILTER_BEACON;
+-	}
+ 
+ 	/* Set filters */
+ 	ath5k_hw_set_rx_filter(ah,rfilt);
+diff --git a/drivers/net/wireless/ath5k/debug.c b/drivers/net/wireless/ath5k/debug.c
+index 8f92d67..19980cb 100644
+--- a/drivers/net/wireless/ath5k/debug.c
++++ b/drivers/net/wireless/ath5k/debug.c
+@@ -339,7 +339,7 @@ static struct {
+ 	{ ATH5K_DEBUG_BEACON,	"beacon",	"beacon handling" },
+ 	{ ATH5K_DEBUG_CALIBRATE, "calib",	"periodic calibration" },
+ 	{ ATH5K_DEBUG_TXPOWER,	"txpower",	"transmit power setting" },
+-	{ ATH5K_DEBUG_LED,	"led",		"LED mamagement" },
++	{ ATH5K_DEBUG_LED,	"led",		"LED management" },
+ 	{ ATH5K_DEBUG_DUMP_RX,	"dumprx",	"print received skb content" },
+ 	{ ATH5K_DEBUG_DUMP_TX,	"dumptx",	"print transmit skb content" },
+ 	{ ATH5K_DEBUG_DUMPBANDS, "dumpbands",	"dump bands" },
+diff --git a/drivers/net/wireless/ath5k/initvals.c b/drivers/net/wireless/ath5k/initvals.c
+index ea2e1a2..ceaa6c4 100644
+--- a/drivers/net/wireless/ath5k/initvals.c
++++ b/drivers/net/wireless/ath5k/initvals.c
+@@ -806,6 +806,8 @@ static const struct ath5k_ini_mode ar5212_rf5111_ini_mode_end[] = {
+ 		{ 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 } },
+ 	{ AR5K_PHY(642),
+ 		{ 0xd03e6788, 0xd03e6788, 0xd03e6788, 0xd03e6788, 0xd03e6788 } },
++	{ 0xa228,
++		{ 0x000001b5, 0x000001b5, 0x000001b5, 0x000001b5, 0x000001b5 } },
+ 	{ 0xa23c,
+ 		{ 0x13c889af, 0x13c889af, 0x13c889af, 0x13c889af, 0x13c889af } },
+ };
+diff --git a/drivers/net/wireless/ath5k/reset.c b/drivers/net/wireless/ath5k/reset.c
+index 8f18868..1b6d45b 100644
+--- a/drivers/net/wireless/ath5k/reset.c
++++ b/drivers/net/wireless/ath5k/reset.c
+@@ -537,9 +537,10 @@ int ath5k_hw_reset(struct ath5k_hw *ah, enum nl80211_iftype op_mode,
+ 		mdelay(1);
+ 
+ 		/*
+-		 * Write some more initial register settings
++		 * Write some more initial register settings for revised chips
+ 		 */
+-		if (ah->ah_version == AR5K_AR5212) {
++		if (ah->ah_version == AR5K_AR5212 &&
++		    ah->ah_phy_revision > 0x41) {
+ 			ath5k_hw_reg_write(ah, 0x0002a002, 0x982c);
+ 
+ 			if (channel->hw_value == CHANNEL_G)
+@@ -558,19 +559,10 @@ int ath5k_hw_reset(struct ath5k_hw *ah, enum nl80211_iftype op_mode,
+ 			else
+ 				ath5k_hw_reg_write(ah, 0x00000000, 0x994c);
+ 
+-			/* Some bits are disabled here, we know nothing about
+-			 * register 0xa228 yet, most of the times this ends up
+-			 * with a value 0x9b5 -haven't seen any dump with
+-			 * a different value- */
+-			/* Got this from decompiling binary HAL */
+-			data = ath5k_hw_reg_read(ah, 0xa228);
+-			data &= 0xfffffdff;
+-			ath5k_hw_reg_write(ah, data, 0xa228);
+-
+-			data = ath5k_hw_reg_read(ah, 0xa228);
+-			data &= 0xfffe03ff;
+-			ath5k_hw_reg_write(ah, data, 0xa228);
+-			data = 0;
++			/* Got this from legacy-hal */
++			AR5K_REG_DISABLE_BITS(ah, 0xa228, 0x200);
++
++			AR5K_REG_MASKED_BITS(ah, 0xa228, 0x800, 0xfffe03ff);
+ 
+ 			/* Just write 0x9b5 ? */
+ 			/* ath5k_hw_reg_write(ah, 0x000009b5, 0xa228); */
+diff --git a/drivers/net/wireless/iwlwifi/iwl-agn.c b/drivers/net/wireless/iwlwifi/iwl-agn.c
+index 24a1aeb..321dbc8 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-agn.c
++++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
+@@ -2090,7 +2090,6 @@ static void iwl_alive_start(struct iwl_priv *priv)
+ 		iwl4965_error_recovery(priv);
+ 
+ 	iwl_power_update_mode(priv, 1);
+-	ieee80211_notify_mac(priv->hw, IEEE80211_NOTIFY_RE_ASSOC);
+ 
+ 	if (test_and_clear_bit(STATUS_MODE_PENDING, &priv->status))
+ 		iwl4965_set_mode(priv, priv->iw_mode);
+@@ -2342,6 +2341,7 @@ static void iwl_bg_alive_start(struct work_struct *data)
+ 	mutex_lock(&priv->mutex);
+ 	iwl_alive_start(priv);
+ 	mutex_unlock(&priv->mutex);
++	ieee80211_notify_mac(priv->hw, IEEE80211_NOTIFY_RE_ASSOC);
  }
  
-+static inline int sb_has_quota_active(struct super_block *sb, int type)
-+{
-+	return 0;
-+}
-+
- static inline int sb_any_quota_active(struct super_block *sb)
- {
- 	return 0;
-_
-
+ static void iwl4965_bg_rf_kill(struct work_struct *work)
+diff --git a/drivers/net/wireless/libertas/cmd.c b/drivers/net/wireless/libertas/cmd.c
+index 297696d..8265c7d 100644
+--- a/drivers/net/wireless/libertas/cmd.c
++++ b/drivers/net/wireless/libertas/cmd.c
+@@ -605,9 +605,9 @@ int lbs_get_tx_power(struct lbs_private *priv, s16 *curlevel, s16 *minlevel,
+ 	if (ret == 0) {
+ 		*curlevel = le16_to_cpu(cmd.curlevel);
+ 		if (minlevel)
+-			*minlevel = le16_to_cpu(cmd.minlevel);
++			*minlevel = cmd.minlevel;
+ 		if (maxlevel)
+-			*maxlevel = le16_to_cpu(cmd.maxlevel);
++			*maxlevel = cmd.maxlevel;
+ 	}
+ 
+ 	lbs_deb_leave(LBS_DEB_CMD);
+diff --git a/drivers/net/wireless/libertas/scan.c b/drivers/net/wireless/libertas/scan.c
+index 8f66903..22c4c61 100644
+--- a/drivers/net/wireless/libertas/scan.c
++++ b/drivers/net/wireless/libertas/scan.c
+@@ -598,8 +598,8 @@ static int lbs_process_bss(struct bss_descriptor *bss,
+ 
+ 		switch (elem->id) {
+ 		case MFIE_TYPE_SSID:
+-			bss->ssid_len = elem->len;
+-			memcpy(bss->ssid, elem->data, elem->len);
++			bss->ssid_len = min_t(int, 32, elem->len);
++			memcpy(bss->ssid, elem->data, bss->ssid_len);
+ 			lbs_deb_scan("got SSID IE: '%s', len %u\n",
+ 			             escape_essid(bss->ssid, bss->ssid_len),
+ 			             bss->ssid_len);
+diff --git a/drivers/net/wireless/rt2x00/Kconfig b/drivers/net/wireless/rt2x00/Kconfig
+index f839ce0..95511ac 100644
+--- a/drivers/net/wireless/rt2x00/Kconfig
++++ b/drivers/net/wireless/rt2x00/Kconfig
+@@ -1,5 +1,5 @@
+ menuconfig RT2X00
+-	bool "Ralink driver support"
++	tristate "Ralink driver support"
+ 	depends on MAC80211 && WLAN_80211 && EXPERIMENTAL
+ 	---help---
+ 	  This will enable the experimental support for the Ralink drivers,
+-- 
+John W. Linville		Linux should be at the core
+linville@tuxdriver.com			of your literate lifestyle.
