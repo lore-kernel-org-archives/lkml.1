@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbYJ2ByF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbYJ2Byn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754799AbYJ2ByF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 21:54:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbYJ2Bue
+	id S1755045AbYJ2Byn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 21:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbYJ2Bul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 21:50:34 -0400
-Received: from anchor-post-31.mail.demon.net ([194.217.242.89]:1341 "EHLO
+	Tue, 28 Oct 2008 21:50:41 -0400
+Received: from anchor-post-31.mail.demon.net ([194.217.242.89]:1350 "EHLO
 	anchor-post-31.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753241AbYJ2BuF (ORCPT
+	by vger.kernel.org with ESMTP id S1753331AbYJ2BuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 28 Oct 2008 21:50:05 -0400
 To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        tim.bird@am.sony.com
-Subject: [PATCH V2 09/16] Squashfs: uid/gid lookup operations
-Message-Id: <E1Kv0C4-0006HI-7O@dylan>
+Subject: [PATCH V2 08/16] Squashfs: fragment block operations
+Message-Id: <E1Kv0C4-0006HC-4s@dylan>
 From: Phillip Lougher <phillip@lougher.demon.co.uk>
 Date: Wed, 29 Oct 2008 01:49:56 +0000
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,15 +24,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
 ---
- fs/squashfs/id.c |   89 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 89 insertions(+), 0 deletions(-)
+ fs/squashfs/fragment.c |   91 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 91 insertions(+), 0 deletions(-)
 
-diff --git a/fs/squashfs/id.c b/fs/squashfs/id.c
+diff --git a/fs/squashfs/fragment.c b/fs/squashfs/fragment.c
 new file mode 100644
-index 0000000..720973f
+index 0000000..2ba8b3f
 --- /dev/null
-+++ b/fs/squashfs/id.c
-@@ -0,0 +1,89 @@
++++ b/fs/squashfs/fragment.c
+@@ -0,0 +1,91 @@
 +/*
 + * Squashfs - a compressed read only filesystem for Linux
 + *
@@ -53,16 +53,18 @@ index 0000000..720973f
 + * along with this program; if not, write to the Free Software
 + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 + *
-+ * id.c
++ * fragment.c
 + */
 +
 +/*
-+ * This file implements code to handle uids and gids.
++ * This file implements code to handle compressed fragments (tail-end packed
++ * datablocks).
 + *
-+ * For space efficiency regular files store uid and gid indexes, which are
-+ * converted to 32-bit uids/gids using an id look up table.  This table is
-+ * stored compressed into metadata blocks.  A second index table is used to
-+ * locate these.  This second index table for speed of access (and because it
++ * Regular files contain a fragment index which is mapped to a fragment
++ * location on disk and compressed size using a fragment lookup table.
++ * Like everything in Squashfs this fragment lookup table is itself stored
++ * compressed into metadata blocks.  A second index table is used to locate
++ * these.  This second index table for speed of access (and because it
 + * is small) is read at mount time and cached in memory.
 + */
 +
@@ -76,51 +78,51 @@ index 0000000..720973f
 +#include "squashfs_fs_i.h"
 +#include "squashfs.h"
 +
-+int squashfs_get_id(struct super_block *sb, unsigned int index,
-+					unsigned int *id)
++int get_fragment_location(struct super_block *sb, unsigned int fragment,
++				long long *fragment_block)
 +{
 +	struct squashfs_sb_info *msblk = sb->s_fs_info;
-+	int block = SQUASHFS_ID_BLOCK(index);
-+	int offset = SQUASHFS_ID_BLOCK_OFFSET(index);
-+	long long start_block = le64_to_cpu(msblk->id_table[block]);
-+	__le32 disk_id;
-+	int err;
++	int block = SQUASHFS_FRAGMENT_INDEX(fragment);
++	int offset = SQUASHFS_FRAGMENT_INDEX_OFFSET(fragment);
++	long long start_block = le64_to_cpu(msblk->fragment_index[block]);
++	struct squashfs_fragment_entry fragment_entry;
++	int size;
 +
-+	err = squashfs_read_metadata(sb, &disk_id, &start_block, &offset,
-+							sizeof(disk_id));
-+	if (err < 0)
-+		return err;
++	size = squashfs_read_metadata(sb, &fragment_entry, &start_block,
++					&offset, sizeof(fragment_entry));
++	if (size < 0)
++		return size;
 +
-+	*id = le32_to_cpu(disk_id);
-+	return 0;
++	*fragment_block = le64_to_cpu(fragment_entry.start_block);
++	size = le32_to_cpu(fragment_entry.size);
++
++	return size;
 +}
 +
 +
-+__le64 *read_id_index_table(struct super_block *sb, long long id_table_start,
-+						unsigned short no_ids)
++__le64 *read_fragment_index_table(struct super_block *sb,
++	long long fragment_table_start, unsigned int fragments)
 +{
-+	unsigned int length = SQUASHFS_ID_BLOCK_BYTES(no_ids);
-+	__le64 *id_table;
++	unsigned int length = SQUASHFS_FRAGMENT_INDEX_BYTES(fragments);
++	__le64 *fragment_index;
 +	int err;
 +
-+	TRACE("In read_id_index_table, length %d\n", length);
-+
-+	/* Allocate id index table */
-+	id_table = kmalloc(length, GFP_KERNEL);
-+	if (id_table == NULL) {
-+		ERROR("Failed to allocate id index table\n");
++	/* Allocate fragment index table */
++	fragment_index = kmalloc(length, GFP_KERNEL);
++	if (fragment_index == NULL) {
++		ERROR("Failed to allocate fragment index table\n");
 +		return ERR_PTR(-ENOMEM);
 +	}
 +
-+	err = squashfs_read_data(sb, id_table, id_table_start, length |
-+			SQUASHFS_COMPRESSED_BIT_BLOCK, NULL, length);
++	err = squashfs_read_data(sb, fragment_index, fragment_table_start,
++			length | SQUASHFS_COMPRESSED_BIT_BLOCK, NULL, length);
 +	if (err < 0) {
-+		ERROR("unable to read id index table\n");
-+		kfree(id_table);
++		ERROR("unable to read fragment index table\n");
++		kfree(fragment_index);
 +		return ERR_PTR(err);
 +	}
 +
-+	return id_table;
++	return fragment_index;
 +}
 -- 
 1.5.2.5
