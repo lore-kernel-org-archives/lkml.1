@@ -1,49 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbYJ2X4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbYJ2X53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755941AbYJ2X4Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 19:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYJ2X4R
+	id S1756076AbYJ2X53 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 19:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbYJ2X5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 19:56:17 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:50904 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752392AbYJ2X4R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 19:56:17 -0400
-Date: Wed, 29 Oct 2008 23:56:00 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, ncunningham@crca.org.au,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen filesystems.
-Message-ID: <20081029235600.GA5993@srcf.ucam.org>
-References: <E1KvDcp-0008B7-SR@pomaz-ex.szeredi.hu> <Pine.LNX.4.44L0.0810291627040.3986-100000@iolanthe.rowland.org>
+	Wed, 29 Oct 2008 19:57:20 -0400
+Received: from kroah.org ([198.145.64.141]:41062 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753676AbYJ2X5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 19:57:19 -0400
+Date: Wed, 29 Oct 2008 16:53:24 -0700
+From: Greg KH <greg@kroah.com>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next: left over things in linux-next after 2.6.28-c1
+Message-ID: <20081029235324.GB23101@kroah.com>
+References: <20081026005009.50dbbb33.sfr@canb.auug.org.au> <20081025143715.GB30900@uranus.ravnborg.org> <20081025211651.GA32027@kroah.com> <20081025215245.GA27572@uranus.ravnborg.org> <20081025221015.GA32568@kroah.com> <20081028053435.GA3473@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0810291627040.3986-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20081028053435.GA3473@in.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 04:37:30PM -0400, Alan Stern wrote:
+On Tue, Oct 28, 2008 at 11:04:35AM +0530, Ananth N Mavinakayanahalli wrote:
+> > Ok, that's great, but the current tree is just the in-kernel tests so
+> > far, right?
+> 
+> Right
 
-> I discussed this last summer with Rafael.  It's a lot harder than it 
-> looks, for all sorts of reasons.  For example, what about user tasks 
-> that have access to memory-mapped I/O regions?
+Ok, that makes more sense why it isn't going anywhere.
 
-The only interesting cases of this I know of are X (which ought to stop 
-doing so in the near future) and certain sound operations (which are 
-going via a well-defined API anyway and need to handle devices going 
-away at random, so not a problem). There may be some other niche cases, 
-but really - if you're mmapping hardware then it's generally because you 
-haven't written a proper kernel driver. Do that instead. Runtime power 
-management's already going to make you wildly unhappy.
+> > > Having a set of tests to run when introducing a new syscall
+> > > would make it much easier for an arch maintainer to verify
+> > > that the implemented syscall works as expected.
+> > > 
+> > > And forcing the developer to use the interface from user-space
+> > > will hopefully catch a few issues earlier.
+> > 
+> > I totally agree that this is a good thing to have.
+> > 
+> > But I don't necessarily think that moving the in-kernel tests to this
+> > directory makes that much sense here, wouldn't the in-kernel tests work
+> > out better living next to the code they are testing, like they are right
+> > now?   Or do you and others think that moving them would help things
+> > out?
+> 
+> I guess at the time, the consensus was to collate all such tests (except
+> the arch specific ones) to under tests/. But yes, there isn't too much
+> difference in it living next to the actual code itself. The other neat
+> thing this would do is to have one config sub-menu for all the in-kernel
+> tests, which can still be done with a new Kconfig in lib/ or something.
+> 
+> > And are there any proposed userspace tests in this tree right now?
+> 
+> No, it is currently limited to kernel code.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Ok, I really don't care about moving files around.
+
+What I do care about is the goal of having userspace tests, or tests
+that people can run to test out the kernel in some kind of way, like
+mentioned earlier in this thread.
+
+If someone wants to start collecting them, I'll glady host that tree and
+work to push that to mainline.
+
+thanks,
+
+greg k-h
