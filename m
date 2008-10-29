@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753661AbYJ2J4N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbYJ2J5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753661AbYJ2J4N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 05:56:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbYJ2Jz5
+	id S1753792AbYJ2J5J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 05:57:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbYJ2J4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 05:55:57 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:5062 "EHLO
-	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751461AbYJ2Jz4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 05:55:56 -0400
-X-BigFish: VPS-29(zz1432R98dR1805M936fOzzzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K9HVKE-03-H0M-01
-Date: Wed, 29 Oct 2008 10:55:25 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Greg KH <greg@kroah.com>
-CC: Ingo Molnar <mingo@elte.hu>, Jouni Malinen <jkmalinen@gmail.com>,
-       Oliver Neukum <oliver@neukum.org>, Nicolas Bareil <nico@chdir.org>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, j@w1.fi
-Subject: Re: [PATCH] x86, gart: fix gart detection for Fam11h CPUs
-Message-ID: <20081029095525.GA6345@amd.com>
-References: <e785a1360810280207p1c162decs5a70b8915ea08476@mail.gmail.com> <1225206834-6189-1-git-send-email-joerg.roedel@amd.com> <20081028165236.GA4503@kroah.com>
+	Wed, 29 Oct 2008 05:56:55 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:59867 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752136AbYJ2J4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 05:56:54 -0400
+Message-ID: <49083361.5060907@gentoo.org>
+Date: Wed, 29 Oct 2008 10:56:49 +0100
+From: =?ISO-8859-1?Q?Ra=FAl_Porcel?= <armin76@gentoo.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20081028165236.GA4503@kroah.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 29 Oct 2008 09:55:25.0937 (UTC) FILETIME=[77889E10:01C939AC]
+To: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+CC: klausman@gentoo.org
+Subject: [ALPHA] 2.6.28-rc fails to compile
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28, 2008 at 09:52:36AM -0700, Greg KH wrote:
-> On Tue, Oct 28, 2008 at 04:13:54PM +0100, Joerg Roedel wrote:
-> > The AMD Fam11h CPUs have a K8 northbridge. This northbridge is different
-> > from other familys because it lacks GART support (as I just learned).
-> > But the kernel implicitly expects a GART if it finds an AMD northbridge.
-> > Fix this by removing the Fam11h northbridge id from the scan list of K8
-> > northbridges. This patch also changes the message in the GART driver
-> > about missing K8 northbridges to tell that the GART is missing which is
-> > the correct information in this case.
-> > 
-> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> 
-> Looks like this needs to be added to the 2.6.27-stable tree also, right?
+Hi,
 
-No, this patch not. The PCI id was added during the .28 merge window.
+I guess the git bisect says everything, but if you need more info,
+please say so.
 
-Joerg
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  HOSTCC  scripts/basic/fixdep
+  HOSTCC  scripts/basic/docproc
+  HOSTCC  scripts/basic/hash
+  CC      kernel/bounds.s
+  GEN     include/linux/bounds.h
+  CC      arch/alpha/kernel/asm-offsets.s
+In file included from
+/usr/src/linux-2.6.28-rc2/arch/alpha/include/asm/core_tsun
+ami.h:5,
+                 from
+/usr/src/linux-2.6.28-rc2/arch/alpha/include/asm/io.h:232,
+                 from arch/alpha/kernel/asm-offsets.c:12:
+include/linux/pci.h: In function 'pci_ioremap_bar':
+include/linux/pci.h:1148: error: implicit declaration of function
+'ioremap_nocac
+he'
+include/linux/pci.h:1149: warning: return makes pointer from integer
+without a c
+ast
+In file included from arch/alpha/kernel/asm-offsets.c:12:
+/usr/src/linux-2.6.28-rc2/arch/alpha/include/asm/io.h: At top level:
+/usr/src/linux-2.6.28-rc2/arch/alpha/include/asm/io.h:300: error:
+conflicting ty
+pes for 'ioremap_nocache'
+include/linux/pci.h:1148: error: previous implicit declaration of
+'ioremap_nocac
+he' was here
+make[1]: *** [arch/alpha/kernel/asm-offsets.s] Error 1
+make: *** [prepare0] Error 2
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
+-------------------------
+
+aa42d7c6138afdc54f74e971456a0fbfec16b77b is first bad commit
+commit aa42d7c6138afdc54f74e971456a0fbfec16b77b
+Author: Arjan van de Ven <arjan@infradead.org>
+Date:   Sun Sep 28 16:36:11 2008 -0700
+
+    PCI: introduce an pci_ioremap(pdev, barnr) function
