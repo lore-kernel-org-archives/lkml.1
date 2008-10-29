@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbYJ2Qkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbYJ2QnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755026AbYJ2Qkq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 12:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYJ2Qkg
+	id S1754855AbYJ2QnU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 12:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753998AbYJ2QnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 12:40:36 -0400
-Received: from casper.infradead.org ([85.118.1.10]:32991 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754103AbYJ2Qkg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 12:40:36 -0400
-Date: Wed, 29 Oct 2008 09:40:58 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Theodore Tso <tytso@mit.edu>,
-       Mike Snitzer <snitzer@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH 1/2 v2][RFC] trace: profile likely and unlikely
- annotations
-Message-ID: <20081029094058.50bdaa4b@infradead.org>
-In-Reply-To: <alpine.DEB.1.10.0810291233580.13214@gandalf.stny.rr.com>
-References: <170fa0d20810271529g3c64ae89me29ed8b65a9c3b5e@mail.gmail.com>
-	<alpine.DEB.1.10.0810271918390.19731@gandalf.stny.rr.com>
-	<20081028001340.GB9797@mit.edu>
-	<alpine.DEB.1.10.0810272316270.802@gandalf.stny.rr.com>
-	<20081028143720.GD8869@mit.edu>
-	<20081028074816.04193e04@infradead.org>
-	<alpine.DEB.1.10.0810281050440.29482@gandalf.stny.rr.com>
-	<alpine.DEB.1.10.0810291233580.13214@gandalf.stny.rr.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 29 Oct 2008 12:43:11 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40204 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753415AbYJ2QnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 12:43:10 -0400
+Date: Wed, 29 Oct 2008 17:42:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>, torvalds@osdl.org,
+       viro@zeniv.linux.org.uk, acme@ghostprotocols.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] headers: move release_kernel_lock(),
+	reacquire_kernel_lock() to sched.c
+Message-ID: <20081029164255.GA17213@elte.hu>
+References: <20081029044351.GA2304@x200.localdomain> <20081029044447.GB2304@x200.localdomain> <20081029061827.GA7936@elte.hu> <20081029100437.GA30492@infradead.org> <20081029131402.GA2642@x200.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081029131402.GA2642@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Oct 2008 12:35:44 -0400 (EDT)
-Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> 
-> Andrew Morton recently suggested having an in-kernel way to profile
-> likely and unlikely macros. This patch achieves that goal.
-> 
-> When configured, every(*) likely and unlikely macro gets a counter
-> attached to it. When the condition is hit, the hit and misses of that
-> condition are recorded. These numbers can later be retrieved by:
-> 
->   /debugfs/tracing/profile_likely    - All likely markers
->   /debugfs/tracing/profile_unlikely  - All unlikely markers.
-> 
+* Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-I like the general approach
-it'd be very convenient if the debugfs files also had a
-percentage-incorrect (or percentage-correct, either way) listed,
-so that we humans can focus straight on which ones are outliers rather
-than having to do math in our heads first...
+> On Wed, Oct 29, 2008 at 06:04:37AM -0400, Christoph Hellwig wrote:
+> > On Wed, Oct 29, 2008 at 07:18:27AM +0100, Ingo Molnar wrote:
+> > > please dont move #ifdefs and interfaces into a .c file - if then move 
+> > > it into another header file.
+> > 
+> > Sorry, but that makes no sense at all.  This stuff is implementation
+> > private to sched.c, and adding some header for it is just braindead.
+> 
+> Well, yes, that was the logic behind move -- keep it private to scheduler.
 
+i have no objections at all against the whole sched.h cleanup 
+(reducing header file dependencies is a much needed activity). But 
+please keep it in a header file - i.e. put it into 
+kernel/sched_internals.h. (like we do it for 
+kernel/lockdep_internals.h)
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+that could then probably be merged with kernel/sched_stats.h as well. 
+(which too is an #ifdef laden interface piece of code we have moved 
+into a header)
+
+Thanks,
+
+	Ingo
