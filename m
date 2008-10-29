@@ -1,100 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbYJ2QkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbYJ2Qkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754855AbYJ2QkW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 12:40:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYJ2QkJ
+	id S1755026AbYJ2Qkq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 12:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYJ2Qkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 12:40:09 -0400
-Received: from the.earth.li ([217.147.81.2]:58110 "EHLO the.earth.li"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753952AbYJ2QkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 12:40:08 -0400
-Date: Wed, 29 Oct 2008 16:40:06 +0000
-From: Jonathan McDowell <noodles@earth.li>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: 2.6.28-rc2 / hso driver oops
-Message-ID: <20081029164006.GH3162@earth.li>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 29 Oct 2008 12:40:36 -0400
+Received: from casper.infradead.org ([85.118.1.10]:32991 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754103AbYJ2Qkg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 12:40:36 -0400
+Date: Wed, 29 Oct 2008 09:40:58 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Theodore Tso <tytso@mit.edu>,
+       Mike Snitzer <snitzer@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH 1/2 v2][RFC] trace: profile likely and unlikely
+ annotations
+Message-ID: <20081029094058.50bdaa4b@infradead.org>
+In-Reply-To: <alpine.DEB.1.10.0810291233580.13214@gandalf.stny.rr.com>
+References: <170fa0d20810271529g3c64ae89me29ed8b65a9c3b5e@mail.gmail.com>
+	<alpine.DEB.1.10.0810271918390.19731@gandalf.stny.rr.com>
+	<20081028001340.GB9797@mit.edu>
+	<alpine.DEB.1.10.0810272316270.802@gandalf.stny.rr.com>
+	<20081028143720.GD8869@mit.edu>
+	<20081028074816.04193e04@infradead.org>
+	<alpine.DEB.1.10.0810281050440.29482@gandalf.stny.rr.com>
+	<alpine.DEB.1.10.0810291233580.13214@gandalf.stny.rr.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Wed, 29 Oct 2008 12:35:44 -0400 (EDT)
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Tried out 2.6.28-rc2 today on my EEE 901 and my Option Icon 225 and got
-the following oops:
+> 
+> Andrew Morton recently suggested having an in-kernel way to profile
+> likely and unlikely macros. This patch achieves that goal.
+> 
+> When configured, every(*) likely and unlikely macro gets a counter
+> attached to it. When the condition is hit, the hit and misses of that
+> condition are recorded. These numbers can later be retrieved by:
+> 
+>   /debugfs/tracing/profile_likely    - All likely markers
+>   /debugfs/tracing/profile_unlikely  - All unlikely markers.
+> 
 
-hso: drivers/net/usb/hso.c: 1.2 Option Wireless
-usbcore: registered new interface driver hso
-usb 2-2: new full speed USB device using uhci_hcd and address 3
-usb 2-2: configuration #1 chosen from 1 choice
-hso0: Disabled Privacy Extensions
-BUG: unable to handle kernel NULL pointer dereference at 000000d0
-IP: [<c03589b9>] dev_driver_string+0x1/0x2a
-*pde = 00000000 
-Oops: 0000 [#1] PREEMPT SMP 
-last sysfs file: /sys/devices/pci0000:00/0000:00:1d.0/usb2/idVendor
-Modules linked in: hso usb_storage rfcomm l2cap rt2860sta evdev
+I like the general approach
+it'd be very convenient if the debugfs files also had a
+percentage-incorrect (or percentage-correct, either way) listed,
+so that we humans can focus straight on which ones are outliers rather
+than having to do math in our heads first...
 
-Pid: 230, comm: khubd Not tainted (2.6.28-rc2 #2) 901
-EIP: 0060:[<c03589b9>] EFLAGS: 00010246 CPU: 0
-EIP is at dev_driver_string+0x1/0x2a
-EAX: 00000000 EBX: f2c88480 ECX: f7159cb0 EDX: 00000001
-ESI: f2fdee40 EDI: f68bd200 EBP: f7159cf8 ESP: f7159cd0
-DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-Process khubd (pid: 230, ti=f7158000 task=f70b02b0 task.ti=f7158000)
-Stack:
-f7159cf8 f81b8265 f2c88480 f6ab8440 00000003 00000003 00000000 00000112
-00000000 f81b90c8 f7159d48 f81b840d c029f782 f68bd200 fffffffe f6b143a8
-f7159d20 f7159d2c 00000000 f6b143a8 f81b90c8 f7159d38 f7159d40 c038886b
-Call Trace:
-[<f81b8265>] ? hso_create_net_device+0x305/0x32d [hso]
-[<f81b840d>] ? hso_probe+0x180/0x56c [hso]
-[<c029f782>] ? __sysfs_add_one+0x14/0x85
-[<c038886b>] ? usb_autopm_do_device+0xb1/0xb9
-[<c0388d77>] ? usb_probe_interface+0xe9/0x11c
-[<c035b10a>] ? driver_probe_device+0xa0/0x136
-[<c035b213>] ? __device_attach+0x8/0xa
-[<c035a8fe>] ? bus_for_each_drv+0x3d/0x67
-[<c035b284>] ? device_attach+0x50/0x64
-[<c035b20b>] ? __device_attach+0x0/0xa
-[<c035a77e>] ? bus_attach_device+0x21/0x48
-[<c03598e6>] ? device_add+0x307/0x456
-[<c03880b2>] ? usb_set_configuration+0x400/0x449
-[<c038e44b>] ? generic_probe+0x44/0x7d
-[<c038828e>] ? usb_probe_device+0x32/0x38
-[<c035b10a>] ? driver_probe_device+0xa0/0x136
-[<c035b213>] ? __device_attach+0x8/0xa
-[<c035a8fe>] ? bus_for_each_drv+0x3d/0x67
-[<c035b284>] ? device_attach+0x50/0x64
-[<c035b20b>] ? __device_attach+0x0/0xa
-[<c035a77e>] ? bus_attach_device+0x21/0x48
-[<c03598e6>] ? device_add+0x307/0x456
-[<c03831d1>] ? usb_new_device+0x4d/0x8e
-[<c038433c>] ? hub_thread+0x94d/0xdcb
-[<c021f6b7>] ? default_wake_function+0xb/0xd
-[<c0234b83>] ? autoremove_wake_function+0x0/0x33
-[<c03839ef>] ? hub_thread+0x0/0xdcb
-[<c02348f9>] ? kthread+0x3b/0x61
-[<c02348be>] ? kthread+0x0/0x61
-[<c0203c1b>] ? kernel_thread_helper+0x7/0x10
-Code: 32 fe ff ff b9 81 00 00 00 b8 03 00 00 00 f3 a5 c7 83 b8 13 00 00 03 00 00 00 59 5e 89 83 8c 0b 00 00 8d 65 f4 5b 5e 5f 5d c3 55 <8b> 90 d0 00 00 00 89 e5 85 d2 75 19 8b 90 cc 00 00 00 85 d2 75 
-EIP: [<c03589b9>] dev_driver_string+0x1/0x2a SS:ESP 0068:f7159cd0
----[ end trace fe2452bf3bd83a7f ]---
-
-Stock 2.6.28-rc2 + ec_all.patch from lkml + rt2860sta driver (though I
-can't see how either of these are implicated I can try without if
-necessary).
-
-It looks like there are only a couple of changes since 2.6.27 to this
-driver so I can try reverting both of them, but neither looks especially
-likely? (8ef5ba63b94b04b182ac4a6009dbbf1406beb3c5 &
-e57b641dfafc10ce23d26cf271fd2638589fdb3f)
-
-J.
 
 -- 
-Revd. Jonathan McDowell, ULC | Shall I call the United Nations?
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
