@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757048AbYJ2Ww6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757475AbYJ2Wx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757048AbYJ2Ww6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 18:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755640AbYJ2Wp3
+	id S1757475AbYJ2Wx3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 18:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756251AbYJ2Wpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 18:45:29 -0400
-Received: from kroah.org ([198.145.64.141]:43807 "EHLO coco.kroah.org"
+	Wed, 29 Oct 2008 18:45:31 -0400
+Received: from kroah.org ([198.145.64.141]:56233 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755602AbYJ2WpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 18:45:10 -0400
+	id S1756172AbYJ2WpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 18:45:14 -0400
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
 Cc: Solomon Peachy <pizza@shaftnet.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 26/49] Staging: wlan-ng: Eliminate more <2.6 kernel support.
-Date: Wed, 29 Oct 2008 15:39:53 -0700
-Message-Id: <1225320016-21803-26-git-send-email-greg@kroah.com>
+Subject: [PATCH 27/49] Staging: wlan-ng: Eliminate all backwards-compatibility for <2.6.13 kernels.
+Date: Wed, 29 Oct 2008 15:39:54 -0700
+Message-Id: <1225320016-21803-27-git-send-email-greg@kroah.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081029223832.GC21657@kroah.com>
 References: <20081029223832.GC21657@kroah.com>
@@ -27,442 +27,581 @@ From: Solomon Peachy <pizza@shaftnet.org>
 Signed-off-by: Solomon Peachy <pizza@shaftnet.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/wlan-ng/hfa384x_usb.c  |   86 +----------------------------
- drivers/staging/wlan-ng/p80211mod.c    |   13 ----
- drivers/staging/wlan-ng/p80211netdev.c |   95 --------------------------------
- drivers/staging/wlan-ng/p80211netdev.h |   25 --------
- drivers/staging/wlan-ng/prism2sta.c    |   10 ---
- drivers/staging/wlan-ng/wlan_compat.h  |    4 -
- 6 files changed, 1 insertions(+), 232 deletions(-)
+ drivers/staging/wlan-ng/hfa384x_usb.c  |   35 -----
+ drivers/staging/wlan-ng/p80211mod.c    |    5 -
+ drivers/staging/wlan-ng/p80211netdev.c |   16 +---
+ drivers/staging/wlan-ng/p80211netdev.h |    4 -
+ drivers/staging/wlan-ng/p80211wext.c   |  214 +-------------------------------
+ drivers/staging/wlan-ng/wlan_compat.h  |   27 +----
+ 6 files changed, 5 insertions(+), 296 deletions(-)
 
 diff --git a/drivers/staging/wlan-ng/hfa384x_usb.c b/drivers/staging/wlan-ng/hfa384x_usb.c
-index 376ba58..2cd376e 100644
+index 2cd376e..0670068 100644
 --- a/drivers/staging/wlan-ng/hfa384x_usb.c
 +++ b/drivers/staging/wlan-ng/hfa384x_usb.c
-@@ -171,23 +171,7 @@ out:
- }
- #endif
+@@ -136,41 +136,6 @@
  
--#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,69)
--static void
--usb_init_urb(struct urb *urb)
+ #include "wlan_compat.h"
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,10)
+-static int
+-wait_for_completion_interruptible(struct completion *x)
 -{
--	memset(urb, 0, sizeof(*urb));
--#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0) /* tune me! */
--	urb->count = (atomic_t)ATOMIC_INIT(1);
--#endif
--	spin_lock_init(&urb->lock);
+-  int ret = 0;
+-
+-  might_sleep();
+-
+-  spin_lock_irq(&x->wait.lock);
+-  if (!x->done) {
+-    DECLARE_WAITQUEUE(wait, current);
+-
+-    wait.flags |= WQ_FLAG_EXCLUSIVE;
+-    __add_wait_queue_tail(&x->wait, &wait);
+-    do {
+-      if (signal_pending(current)) {
+-        ret = -ERESTARTSYS;
+-        __remove_wait_queue(&x->wait, &wait);
+-        goto out;
+-      }
+-      __set_current_state(TASK_INTERRUPTIBLE);
+-      spin_unlock_irq(&x->wait.lock);
+-      schedule();
+-      spin_lock_irq(&x->wait.lock);
+-    } while (!x->done);
+-    __remove_wait_queue(&x->wait, &wait);
+-  }
+-  x->done--;
+-out:
+-  spin_unlock_irq(&x->wait.lock);
+-
+-  return ret;
 -}
 -#endif
 -
--#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0) /* tune me! */
--#  define SUBMIT_URB(u,f)  usb_submit_urb(u,f)
--#else
--#  define SUBMIT_URB(u,f)  usb_submit_urb(u)
--#endif
-+#define SUBMIT_URB(u,f)  usb_submit_urb(u,f)
+ #define SUBMIT_URB(u,f)  usb_submit_urb(u,f)
  
  /*================================================================*/
- /* Project Includes */
-@@ -1594,78 +1578,10 @@ hfa384x_copy_to_aux(
- ----------------------------------------------------------------*/
- int hfa384x_corereset(hfa384x_t *hw, int holdtime, int settletime, int genesis)
- {
--#if 0
--#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0))
--	struct usb_device	*parent = hw->usb->parent;
--	int			i;
--	int			port = -1;
--#endif
--#endif
- 	int 			result = 0;
- 
--
--#define P2_USB_RT_PORT		(USB_TYPE_CLASS | USB_RECIP_OTHER)
--#define P2_USB_FEAT_RESET	4
--#define P2_USB_FEAT_C_RESET	20
--
- 	DBFENTER;
- 
--#if 0
--#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0))
--	/* Find the hub port */
--	for ( i = 0; i < parent->maxchild; i++) {
--		if (parent->children[i] == hw->usb) {
--			port = i;
--			break;
--		}
--	}
--	if (port < 0) return -ENOENT;
--
--	/* Set and clear the reset */
--	usb_control_msg(parent, usb_sndctrlpipe(parent, 0),
--		USB_REQ_SET_FEATURE, P2_USB_RT_PORT, P2_USB_FEAT_RESET,
--		port+1, NULL, 0, 1*HZ);
--	wait_ms(holdtime);
--	usb_control_msg(parent, usb_sndctrlpipe(parent, 0),
--		USB_REQ_CLEAR_FEATURE, P2_USB_RT_PORT, P2_USB_FEAT_C_RESET,
--		port+1, NULL, 0, 1*HZ);
--	wait_ms(settletime);
--
--	/* Set the device address */
--	result=usb_set_address(hw->usb);
--	if (result < 0) {
--		WLAN_LOG_ERROR("reset_usbdev: Dev not accepting address, "
--			"result=%d\n", result);
--		clear_bit(hw->usb->devnum, &hw->usb->bus->devmap.devicemap);
--		hw->usb->devnum = -1;
--		goto done;
--	}
--	/* Let the address settle */
--	wait_ms(20);
--
--	/* Assume we're reusing the original descriptor data */
--
--	/* Set the configuration. */
--	WLAN_LOG_DEBUG(3, "Setting Configuration %d\n",
--		hw->usb->config[0].bConfigurationValue);
--	result=usb_set_configuration(hw->usb, hw->usb->config[0].bConfigurationValue);
--	if ( result ) {
--		WLAN_LOG_ERROR("usb_set_configuration() failed, result=%d.\n",
--				result);
--		goto done;
--	}
--	/* Let the configuration settle */
--	wait_ms(20);
--
-- done:
--#else
--	result=usb_reset_device(hw->usb);
--	if(result<0) {
--		WLAN_LOG_ERROR("usb_reset_device() failed, result=%d.\n",result);
--	}
--#endif
--#endif
--
- 	result=usb_reset_device(hw->usb);
- 	if(result<0) {
- 		WLAN_LOG_ERROR("usb_reset_device() failed, result=%d.\n",result);
 diff --git a/drivers/staging/wlan-ng/p80211mod.c b/drivers/staging/wlan-ng/p80211mod.c
-index 605c11b..d1add78 100644
+index d1add78..7a3834e 100644
 --- a/drivers/staging/wlan-ng/p80211mod.c
 +++ b/drivers/staging/wlan-ng/p80211mod.c
-@@ -60,9 +60,7 @@
- #include <linux/version.h>
+@@ -97,9 +97,6 @@
+ /*================================================================*/
+ /* Local Static Definitions */
  
- #include <linux/module.h>
--#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,25))
- #include <linux/moduleparam.h>
--#endif
- 
- #include <linux/kernel.h>
- #include <linux/sched.h>
-@@ -154,14 +152,7 @@ int init_module(void)
- {
-         DBFENTER;
- 
--#if 0
--        printk(KERN_NOTICE "%s (%s) Loaded\n", version, WLAN_BUILD_DATE);
--#endif
+-static char *version = "p80211.o: " WLAN_RELEASE;
 -
- 	p80211netdev_startup();
--#ifdef CONFIG_HOTPLUG
--	p80211_run_sbin_hotplug(NULL, WLAN_HOTPLUG_STARTUP);
+-
+ /*----------------------------------------------------------------*/
+ /* --Module Parameters */
+ 
+@@ -108,10 +105,8 @@ module_param(wlan_watchdog, int, 0644);
+ MODULE_PARM_DESC(wlan_watchdog, "transmit timeout in milliseconds");
+ 
+ int wlan_wext_write = 1;
+-#if WIRELESS_EXT > 12
+ module_param(wlan_wext_write, int, 0644);
+ MODULE_PARM_DESC(wlan_wext_write, "enable write wireless extensions");
 -#endif
  
-         DBFEXIT;
-         return 0;
-@@ -191,11 +182,7 @@ void cleanup_module(void)
- {
-         DBFENTER;
- 
--#ifdef CONFIG_HOTPLUG
--	p80211_run_sbin_hotplug(NULL, WLAN_HOTPLUG_SHUTDOWN);
--#endif
- 	p80211netdev_shutdown();
--        printk(KERN_NOTICE "%s Unloaded\n", version);
- 
-         DBFEXIT;
-         return;
+ #ifdef WLAN_INCLUDE_DEBUG
+ int wlan_debug=0;
 diff --git a/drivers/staging/wlan-ng/p80211netdev.c b/drivers/staging/wlan-ng/p80211netdev.c
-index 11f84a8..2b3abba 100644
+index 2b3abba..40d0b78 100644
 --- a/drivers/staging/wlan-ng/p80211netdev.c
 +++ b/drivers/staging/wlan-ng/p80211netdev.c
-@@ -285,9 +285,6 @@ static int p80211knetdev_open( netdevice_t *netdev )
- 	if ( wlandev->open != NULL) {
- 		result = wlandev->open(wlandev);
- 		if ( result == 0 ) {
--#if ( LINUX_VERSION_CODE < KERNEL_VERSION(2,3,43) )
--			netdev->interrupt = 0;
+@@ -79,9 +79,7 @@
+ #include <linux/ethtool.h>
+ #endif
+ 
+-#if WIRELESS_EXT > 12
+ #include <net/iw_handler.h>
 -#endif
- 			p80211netdev_start_queue(wlandev);
- 			wlandev->state = WLAN_DEVICE_OPEN;
- 		}
-@@ -478,15 +475,6 @@ static int p80211knetdev_hard_start_xmit( struct sk_buff *skb, netdevice_t *netd
- 	memset(&p80211_hdr, 0, sizeof(p80211_hdr_t));
- 	memset(&p80211_wep, 0, sizeof(p80211_metawep_t));
+ #include <net/net_namespace.h>
  
--#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,3,38) )
--	if ( test_and_set_bit(0, (void*)&(netdev->tbusy)) != 0 ) {
--		/* We've been called w/ tbusy set, has the tx */
--		/* path stalled?   */
--		WLAN_LOG_DEBUG(1, "called when tbusy set\n");
--		result = 1;
--		goto failed;
+ /*================================================================*/
+@@ -684,16 +682,6 @@ static int p80211knetdev_do_ioctl(netdevice_t *dev, struct ifreq *ifr, int cmd)
+ 
+ 	WLAN_LOG_DEBUG(2, "rx'd ioctl, cmd=%d, len=%d\n", cmd, req->len);
+ 
+-#if WIRELESS_EXT < 13
+-	/* Is this a wireless extensions ioctl? */
+-	if ((cmd >= SIOCIWFIRST) && (cmd <= SIOCIWLAST)) {
+-		if ((result = p80211wext_support_ioctl(dev, ifr, cmd))
+-		    != (-EOPNOTSUPP)) {
+-			goto bail;
+-		}
 -	}
--#else
- 	if ( netif_queue_stopped(netdev) ) {
- 		WLAN_LOG_DEBUG(1, "called when queue stopped.\n");
- 		result = 1;
-@@ -495,12 +483,6 @@ static int p80211knetdev_hard_start_xmit( struct sk_buff *skb, netdevice_t *netd
- 
- 	netif_stop_queue(netdev);
- 
--	/* No timeout handling here, 2.3.38+ kernels call the
--	 * timeout function directly.
--	 * TODO: Add timeout handling.
--	*/
 -#endif
 -
- 	/* Check to see that a valid mode is set */
- 	switch( wlandev->macmode ) {
- 	case WLAN_MACMODE_IBSS_STA:
-@@ -792,15 +774,9 @@ static int p80211knetdev_set_mac_address(netdevice_t *dev, void *addr)
+ #ifdef SIOCETHTOOL
+ 	if (cmd == SIOCETHTOOL) {
+ 		result = p80211netdev_ethtool(wlandev, (void __user *) ifr->ifr_data);
+@@ -907,13 +895,11 @@ int wlan_setup(wlandevice_t *wlandev)
+ 		dev->stop =		p80211knetdev_stop;
  
- 	DBFENTER;
- 	/* If we're running, we don't allow MAC address changes */
--#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,3,38) )
--	if ( dev->start) {
--		return -EBUSY;
--	}
--#else
- 	if (netif_running(dev)) {
- 		return -EBUSY;
- 	}
+ #ifdef CONFIG_NET_WIRELESS
+-#if ((WIRELESS_EXT < 17) && (WIRELESS_EXT < 21))
++#if (WIRELESS_EXT < 21)
+ 		dev->get_wireless_stats = p80211wext_get_wireless_stats;
+ #endif
+-#if WIRELESS_EXT > 12
+ 		dev->wireless_handlers = &p80211wext_handler_def;
+ #endif
 -#endif
  
- 	/* Set up some convenience pointers. */
- 	mibattr = &dot11req.mibattribute;
-@@ -939,12 +915,7 @@ int wlan_setup(wlandevice_t *wlandev)
- #endif
- #endif
- 
--#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,3,38) )
--		dev->tbusy = 1;
--		dev->start = 0;
--#else
  		netif_stop_queue(dev);
--#endif
  #ifdef HAVE_CHANGE_MTU
- 		dev->change_mtu = wlan_change_mtu;
- #endif
-@@ -1039,11 +1010,7 @@ int register_wlandev(wlandevice_t *wlandev)
- 		return -EIO;
- 	}
- 
--#if ( LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0) )
--	dev->name = wlandev->name;
--#else
- 	strcpy(wlandev->name, dev->name);
--#endif
- 
- #ifdef CONFIG_PROC_FS
- 	if (proc_p80211) {
-@@ -1062,10 +1029,6 @@ int register_wlandev(wlandevice_t *wlandev)
- 	}
- #endif
- 
--#ifdef CONFIG_HOTPLUG
--	p80211_run_sbin_hotplug(wlandev, WLAN_HOTPLUG_REGISTER);
+diff --git a/drivers/staging/wlan-ng/p80211netdev.h b/drivers/staging/wlan-ng/p80211netdev.h
+index 12b8730..ddfcc98 100644
+--- a/drivers/staging/wlan-ng/p80211netdev.h
++++ b/drivers/staging/wlan-ng/p80211netdev.h
+@@ -153,12 +153,8 @@ typedef struct p80211_frmrx_t
+ struct iw_statistics* p80211wext_get_wireless_stats(netdevice_t *dev);
+ /* wireless extensions' ioctls */
+ int p80211wext_support_ioctl(netdevice_t *dev, struct ifreq *ifr, int cmd);
+-#if WIRELESS_EXT > 12
+ extern struct iw_handler_def p80211wext_handler_def;
 -#endif
 -
+ int p80211wext_event_associated(struct wlandevice *wlandev, int assoc);
+-
+ #endif /* wireless extensions */
+ 
+ /* WEP stuff */
+diff --git a/drivers/staging/wlan-ng/p80211wext.c b/drivers/staging/wlan-ng/p80211wext.c
+index c42cd7f..c1ab0f8 100644
+--- a/drivers/staging/wlan-ng/p80211wext.c
++++ b/drivers/staging/wlan-ng/p80211wext.c
+@@ -47,9 +47,7 @@
+ #include <linux/netdevice.h>
+ #include <linux/etherdevice.h>
+ #include <linux/wireless.h>
+-#if WIRELESS_EXT > 12
+ #include <net/iw_handler.h>
+-#endif
+ #include <linux/if_arp.h>
+ #include <asm/bitops.h>
+ #include <asm/uaccess.h>
+@@ -245,20 +243,14 @@ struct iw_statistics* p80211wext_get_wireless_stats (netdevice_t *dev)
+ 	wstats->qual.level = quality.level.data;  /* instant signal level */
+ 	wstats->qual.noise = quality.noise.data;  /* instant noise level */
+ 
+-#if WIRELESS_EXT > 18
+ 	wstats->qual.updated = IW_QUAL_ALL_UPDATED | IW_QUAL_DBM;
+-#else
+-	wstats->qual.updated = 7;
+-#endif
+ 	wstats->discard.code = wlandev->rx.decrypt_err;
+ 	wstats->discard.nwid = 0;
+ 	wstats->discard.misc = 0;
+ 
+-#if WIRELESS_EXT > 11
+ 	wstats->discard.fragment = 0;  // incomplete fragments
+ 	wstats->discard.retries = 0;   // tx retries.
+ 	wstats->miss.beacon = 0;
+-#endif
+ 
+ 	DBFEXIT;
+ 
+@@ -374,8 +366,6 @@ static int p80211wext_siwfreq(netdevice_t *dev,
+ 	return err;
+ }
+ 
+-#if WIRELESS_EXT > 8
+-
+ static int p80211wext_giwmode(netdevice_t *dev,
+ 			      struct iw_request_info *info,
+ 			      __u32 *mode, char *extra)
+@@ -479,12 +469,9 @@ static int p80211wext_giwrange(netdevice_t *dev,
+ 	data->length = sizeof(*range);
+ 	memset(range,0,sizeof(*range));
+ 
+-#if WIRELESS_EXT > 9
+ 	range->txpower_capa = IW_TXPOW_DBM;
+ 	// XXX what about min/max_pmp, min/max_pmt, etc.
+-#endif
+ 
+-#if WIRELESS_EXT > 10
+ 	range->we_version_compiled = WIRELESS_EXT;
+ 	range->we_version_source = 13;
+ 
+@@ -492,16 +479,13 @@ static int p80211wext_giwrange(netdevice_t *dev,
+ 	range->retry_flags = IW_RETRY_LIMIT;
+ 	range->min_retry = 0;
+ 	range->max_retry = 255;
+-#endif /* WIRELESS_EXT > 10 */
+ 
+-#if WIRELESS_EXT > 16
+         range->event_capa[0] = (IW_EVENT_CAPA_K_0 |  //mode/freq/ssid
+                                 IW_EVENT_CAPA_MASK(SIOCGIWAP) |
+                                 IW_EVENT_CAPA_MASK(SIOCGIWSCAN));
+         range->event_capa[1] = IW_EVENT_CAPA_K_1;  //encode
+         range->event_capa[4] = (IW_EVENT_CAPA_MASK(IWEVQUAL) |
+                                 IW_EVENT_CAPA_MASK(IWEVCUSTOM) );
+-#endif
+ 
+ 	range->num_channels = NUM_CHANNELS;
+ 
+@@ -543,7 +527,6 @@ static int p80211wext_giwrange(netdevice_t *dev,
  	DBFEXIT;
  	return 0;
  }
-@@ -1094,10 +1057,6 @@ int unregister_wlandev(wlandevice_t *wlandev)
- 
- 	DBFENTER;
- 
--#ifdef CONFIG_HOTPLUG
--	p80211_run_sbin_hotplug(wlandev, WLAN_HOTPLUG_REMOVE);
 -#endif
--
- #ifdef CONFIG_PROC_FS
- 	if ( wlandev->procwlandev ) {
- 		remove_proc_entry("wlandev", wlandev->procdir);
-@@ -1416,61 +1375,11 @@ static int p80211_rx_typedrop( wlandevice_t *wlandev, UINT16 fc)
- 	return drop;
+ 
+ static int p80211wext_giwap(netdevice_t *dev,
+ 			    struct iw_request_info *info,
+@@ -561,7 +544,6 @@ static int p80211wext_giwap(netdevice_t *dev,
+ 	return 0;
  }
  
--#ifdef CONFIG_HOTPLUG
--/* Notify userspace when a netdevice event occurs,
-- * by running '/sbin/hotplug net' with certain
-- * environment variables set.
-- */
--int p80211_run_sbin_hotplug(wlandevice_t *wlandev, char *action)
--{
--        char *argv[3], *envp[7], ifname[12 + IFNAMSIZ], action_str[32];
--	char nsdname[32], wlan_wext[32];
--        int i;
+-#if WIRELESS_EXT > 8
+ static int p80211wext_giwencode(netdevice_t *dev,
+ 				struct iw_request_info *info,
+ 				struct iw_point *erq, char *key)
+@@ -1031,10 +1013,6 @@ static int p80211wext_siwfrag(netdevice_t *dev,
+ 	return err;
+ }
+ 
+-#endif  /* WIRELESS_EXT > 8 */
 -
--	if (wlandev) {
--		sprintf(ifname, "INTERFACE=%s", wlandev->name);
--		sprintf(nsdname, "NSDNAME=%s", wlandev->nsdname);
--	} else {
--		sprintf(ifname, "INTERFACE=null");
--		sprintf(nsdname, "NSDNAME=null");
+-#if WIRELESS_EXT > 10
+-
+ #ifndef IW_RETRY_LONG
+ #define IW_RETRY_LONG IW_RETRY_MAX
+ #endif
+@@ -1191,9 +1169,6 @@ static int p80211wext_siwretry(netdevice_t *dev,
+ 
+ }
+ 
+-#endif /* WIRELESS_EXT > 10 */
+-
+-#if WIRELESS_EXT > 9
+ static int p80211wext_siwtxpow(netdevice_t *dev,
+                                struct iw_request_info *info,
+                                struct iw_param *rrq, char *extra)
+@@ -1275,7 +1250,6 @@ static int p80211wext_giwtxpow(netdevice_t *dev,
+ 	DBFEXIT;
+ 	return err;
+ }
+-#endif /* WIRELESS_EXT > 9 */
+ 
+ static int p80211wext_siwspy(netdevice_t *dev,
+ 			     struct iw_request_info *info,
+@@ -1373,7 +1347,6 @@ static int prism2_result2err (int prism2_result)
+ 	return err;
+ }
+ 
+-#if WIRELESS_EXT > 13
+ static int p80211wext_siwscan(netdevice_t *dev,
+ 			     struct iw_request_info *info,
+ 			     struct iw_point *srq, char *extra)
+@@ -1540,12 +1513,10 @@ static int p80211wext_giwscan(netdevice_t *dev,
+ 	DBFEXIT;
+ 	return err;
+ }
+-#endif
+ 
+ /*****************************************************/
+ //extra wireless extensions stuff to support NetworkManager (I hope)
+ 
+-#if WIRELESS_EXT > 17
+ /* SIOCSIWENCODEEXT */
+ static int p80211wext_set_encodeext(struct net_device *dev,
+ 				struct iw_request_info *info,
+@@ -1763,26 +1734,6 @@ static int p80211_wext_get_iwauth (struct net_device *dev,
+   return result;
+ }
+ 
+-
+-#endif
+-
+-
+-
+-
+-
+-
+-/*****************************************************/
+-
+-
+-
+-
+-
+-/*
+-typedef int (*iw_handler)(netdevice_t *dev, struct iw_request_info *info,
+-                          union iwreq_data *wrqu, char *extra);
+-*/
+-
+-#if WIRELESS_EXT > 12
+ static iw_handler p80211wext_handlers[] =  {
+ 	(iw_handler) p80211wext_siwcommit,		/* SIOCSIWCOMMIT */
+ 	(iw_handler) p80211wext_giwname,		/* SIOCGIWNAME */
+@@ -1808,13 +1759,10 @@ static iw_handler p80211wext_handlers[] =  {
+ 	(iw_handler) p80211wext_giwap,         		/* SIOCGIWAP */
+ 	(iw_handler) NULL,				/* -- hole -- */
+ 	(iw_handler) NULL,                  		/* SIOCGIWAPLIST */
+-#if WIRELESS_EXT > 13
+-	(iw_handler) p80211wext_siwscan,			/* SIOCSIWSCAN */
+-	(iw_handler) p80211wext_giwscan,			/* SIOCGIWSCAN */
+-#else /* WIRELESS_EXT > 13 */
++	(iw_handler) p80211wext_siwscan,		/* SIOCSIWSCAN */
++	(iw_handler) p80211wext_giwscan,		/* SIOCGIWSCAN */
+ 	(iw_handler) NULL,	/* null */		/* SIOCSIWSCAN */
+ 	(iw_handler) NULL,	/* null */		/* SIOCGIWSCAN */
+-#endif /* WIRELESS_EXT > 13 */
+ 	(iw_handler) p80211wext_siwessid,  		/* SIOCSIWESSID */
+ 	(iw_handler) p80211wext_giwessid,      		/* SIOCGIWESSID */
+ 	(iw_handler) NULL,                 		/* SIOCSIWNICKN */
+@@ -1835,9 +1783,7 @@ static iw_handler p80211wext_handlers[] =  {
+ 	(iw_handler) p80211wext_giwencode,  		/* SIOCGIWENCODE */
+ 	(iw_handler) NULL,                 		/* SIOCSIWPOWER */
+ 	(iw_handler) NULL,                  		/* SIOCGIWPOWER */
+-#if WIRELESS_EXT > 17
+ /* WPA operations */
+-
+ 	(iw_handler) NULL,				/* -- hole -- */
+ 	(iw_handler) NULL,				/* -- hole -- */
+ 	(iw_handler) NULL, /* SIOCSIWGENIE	set generic IE */
+@@ -1848,7 +1794,6 @@ static iw_handler p80211wext_handlers[] =  {
+ 	(iw_handler) p80211wext_set_encodeext, /* SIOCSIWENCODEEXT  set encoding token & mode */
+ 	(iw_handler) p80211wext_get_encodeext, /* SIOCGIWENCODEEXT  get encoding token & mode */
+ 	(iw_handler) NULL, /* SIOCSIWPMKSA	PMKSA cache operation */
+-#endif
+ };
+ 
+ struct iw_handler_def p80211wext_handler_def = {
+@@ -1858,168 +1803,15 @@ struct iw_handler_def p80211wext_handler_def = {
+         .standard = p80211wext_handlers,
+ 	.private = NULL,
+ 	.private_args = NULL,
+-#if WIRELESS_EXT > 16
+ 	.get_wireless_stats = p80211wext_get_wireless_stats
+-#endif
+ };
+ 
+-#endif
+-
+-/* wireless extensions' ioctls */
+-int p80211wext_support_ioctl(netdevice_t *dev, struct ifreq *ifr, int cmd)
+-{
+-	wlandevice_t *wlandev = (wlandevice_t*)dev->priv;
+-
+-#if WIRELESS_EXT < 13
+-	struct iwreq *iwr = (struct iwreq*)ifr;
+-#endif
+-
+-	p80211item_uint32_t             mibitem;
+-	int err = 0;
+-
+-	DBFENTER;
+-
+-	mibitem.status = P80211ENUM_msgitem_status_data_ok;
+-
+-	if ( wlandev->msdstate != WLAN_MSD_RUNNING ) {
+-		err = -ENODEV;
+-		goto exit;
 -	}
 -
--	sprintf(wlan_wext, "WLAN_WEXT=%s", wlan_wext_write ? "y" : "");
--        sprintf(action_str, "ACTION=%s", action);
+-	WLAN_LOG_DEBUG(1, "Received wireless extension ioctl #%d.\n", cmd);
 -
--        i = 0;
--        argv[i++] = hotplug_path;
--        argv[i++] = "wlan";
--        argv[i] = NULL;
+-	switch (cmd) {
+-#if WIRELESS_EXT < 13
+-	case SIOCSIWNAME:  /* unused  */
+-		err = (-EOPNOTSUPP);
+-		break;
+-	case SIOCGIWNAME: /* get name == wireless protocol */
+-                err = p80211wext_giwname(dev, NULL, (char *) &iwr->u, NULL);
+-		break;
+-	case SIOCSIWNWID:
+-	case SIOCGIWNWID:
+-		err = (-EOPNOTSUPP);
+-		break;
+-	case SIOCSIWFREQ: /* set channel */
+-                err = p80211wext_siwfreq(dev, NULL, &(iwr->u.freq), NULL);
+-		break;
+-	case SIOCGIWFREQ: /* get channel */
+-                err = p80211wext_giwfreq(dev, NULL, &(iwr->u.freq), NULL);
+-		break;
+-	case SIOCSIWRANGE:
+-	case SIOCSIWPRIV:
+-	case SIOCSIWAP: /* set access point MAC addresses (BSSID) */
+-		err = (-EOPNOTSUPP);
+-		break;
 -
--        i = 0;
--        /* minimal command environment */
--        envp [i++] = "HOME=/";
--        envp [i++] = "PATH=/sbin:/bin:/usr/sbin:/usr/bin";
--        envp [i++] = ifname;
--        envp [i++] = action_str;
--        envp [i++] = nsdname;
--        envp [i++] = wlan_wext;
--        envp [i] = NULL;
+-	case SIOCGIWAP:	/* get access point MAC addresses (BSSID) */
+-                err = p80211wext_giwap(dev, NULL, &(iwr->u.ap_addr), NULL);
+-		break;
 -
--#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,5,62))
--        return call_usermodehelper(argv [0], argv, envp);
--#else
--        return call_usermodehelper(argv [0], argv, envp, 0);
--#endif
+-#if WIRELESS_EXT > 8
+-	case SIOCSIWMODE: /* set operation mode */
+-	case SIOCSIWESSID: /* set SSID (network name) */
+-	case SIOCSIWRATE: /* set default bit rate (bps) */
+-		err = (-EOPNOTSUPP);
+-		break;
+-
+-	case SIOCGIWMODE: /* get operation mode */
+-		err = p80211wext_giwmode(dev, NULL, &iwr->u.mode, NULL);
+-
+-		break;
+-	case SIOCGIWNICKN: /* get node name/nickname */
+-	case SIOCGIWESSID: /* get SSID */
+-		if(iwr->u.essid.pointer) {
+-                        char ssid[IW_ESSID_MAX_SIZE+1];
+-			memset(ssid, 0, sizeof(ssid));
+-
+-			err = p80211wext_giwessid(dev, NULL, &iwr->u.essid, ssid);
+-			if(copy_to_user(iwr->u.essid.pointer, ssid, sizeof(ssid)))
+-				err = (-EFAULT);
+-		}
+-		break;
+-	case SIOCGIWRATE:
+-                err = p80211wext_giwrate(dev, NULL, &iwr->u.bitrate, NULL);
+-		break;
+-	case SIOCGIWRTS:
+-		err = p80211wext_giwrts(dev, NULL, &iwr->u.rts, NULL);
+-		break;
+-	case SIOCGIWFRAG:
+-		err = p80211wext_giwfrag(dev, NULL, &iwr->u.rts, NULL);
+-		break;
+-	case SIOCGIWENCODE:
+-		if (!capable(CAP_NET_ADMIN))
+-			err = -EPERM;
+-		else if (iwr->u.encoding.pointer) {
+-			char keybuf[MAX_KEYLEN];
+-			err = p80211wext_giwencode(dev, NULL,
+-						     &iwr->u.encoding, keybuf);
+-			if (copy_to_user(iwr->u.encoding.pointer, keybuf,
+-					 iwr->u.encoding.length))
+-				err = -EFAULT;
+-		}
+-		break;
+-	case SIOCGIWAPLIST:
+-	case SIOCSIWRTS:
+-	case SIOCSIWFRAG:
+-	case SIOCSIWSENS:
+-	case SIOCGIWSENS:
+-	case SIOCSIWNICKN: /* set node name/nickname */
+-	case SIOCSIWENCODE: /* set encoding token & mode */
+-	case SIOCSIWSPY:
+-	case SIOCGIWSPY:
+-	case SIOCSIWPOWER:
+-	case SIOCGIWPOWER:
+-	case SIOCGIWPRIV:
+-		err = (-EOPNOTSUPP);
+-		break;
+-	case SIOCGIWRANGE:
+-		if(iwr->u.data.pointer != NULL) {
+-                        struct iw_range range;
+-                        err = p80211wext_giwrange(dev, NULL, &iwr->u.data,
+-						  (char *) &range);
+-			/* Push that up to the caller */
+-			if (copy_to_user(iwr->u.data.pointer, &range, sizeof(range)))
+-				err = -EFAULT;
+-		}
+-		break;
+-#endif /* WIRELESS_EXT > 8 */
+-#if WIRELESS_EXT > 9
+-	case SIOCSIWTXPOW:
+-		err = (-EOPNOTSUPP);
+-		break;
+-	case SIOCGIWTXPOW:
+-		err = p80211wext_giwtxpow(dev, NULL, &iwr->u.txpower, NULL);
+-		break;
+-#endif /* WIRELESS_EXT > 9 */
+-#if WIRELESS_EXT > 10
+-	case SIOCSIWRETRY:
+-		err = (-EOPNOTSUPP);
+-		break;
+-	case SIOCGIWRETRY:
+-		err = p80211wext_giwretry(dev, NULL, &iwr->u.retry, NULL);
+-		break;
+-#endif /* WIRELESS_EXT > 10 */
+-
+-#endif /* WIRELESS_EXT <= 12 */
+-
+-	default:
+-		err = (-EOPNOTSUPP);
+-		break;
+-	}
+-
+- exit:
+-	DBFEXIT;
+-	return (err);
 -}
 -
--#endif
--
- 
- void    p80211_suspend(wlandevice_t *wlandev)
+ int p80211wext_event_associated(wlandevice_t *wlandev, int assoc)
  {
- 	DBFENTER;
+         union iwreq_data data;
  
--#ifdef CONFIG_HOTPLUG
--	p80211_run_sbin_hotplug(wlandev, WLAN_HOTPLUG_SUSPEND);
+         DBFENTER;
+ 
+-#if WIRELESS_EXT > 13
+         /* Send the association state first */
+         data.ap_addr.sa_family = ARPHRD_ETHER;
+         if (assoc) {
+@@ -2034,7 +1826,7 @@ int p80211wext_event_associated(wlandevice_t *wlandev, int assoc)
+         if (!assoc) goto done;
+ 
+         // XXX send association data, like IEs, etc etc.
 -#endif
--
- 	DBFEXIT;
- }
- 
-@@ -1478,10 +1387,6 @@ void    p80211_resume(wlandevice_t *wlandev)
- {
- 	DBFENTER;
- 
--#ifdef CONFIG_HOTPLUG
--	p80211_run_sbin_hotplug(wlandev, WLAN_HOTPLUG_RESUME);
--#endif
--
- 	DBFEXIT;
- }
- 
-diff --git a/drivers/staging/wlan-ng/p80211netdev.h b/drivers/staging/wlan-ng/p80211netdev.h
-index 9b2e0cd..12b8730 100644
---- a/drivers/staging/wlan-ng/p80211netdev.h
-+++ b/drivers/staging/wlan-ng/p80211netdev.h
-@@ -289,12 +289,7 @@ p80211netdev_stop_queue(wlandevice_t *wlandev)
- {
- 	if ( !wlandev ) return;
- 	if ( !wlandev->netdev ) return;
--#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,3,38) )
--	wlandev->netdev->tbusy = 1;
--	wlandev->netdev->start = 0;
--#else
- 	netif_stop_queue(wlandev->netdev);
--#endif
- }
- 
- static inline void
-@@ -302,12 +297,7 @@ p80211netdev_start_queue(wlandevice_t *wlandev)
- {
- 	if ( !wlandev ) return;
- 	if ( !wlandev->netdev ) return;
--#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,3,38) )
--	wlandev->netdev->tbusy = 0;
--	wlandev->netdev->start = 1;
--#else
- 	netif_start_queue(wlandev->netdev);
--#endif
- }
- 
- static inline void
-@@ -315,22 +305,7 @@ p80211netdev_wake_queue(wlandevice_t *wlandev)
- {
- 	if ( !wlandev ) return;
- 	if ( !wlandev->netdev ) return;
--#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,3,38) )
--	wlandev->netdev->tbusy = 0;
--	mark_bh(NET_BH);
--#else
- 	netif_wake_queue(wlandev->netdev);
--#endif
- }
- 
--#ifdef CONFIG_HOTPLUG
--#define WLAN_HOTPLUG_REGISTER "register"
--#define WLAN_HOTPLUG_REMOVE   "remove"
--#define WLAN_HOTPLUG_STARTUP  "startup"
--#define WLAN_HOTPLUG_SHUTDOWN "shutdown"
--#define WLAN_HOTPLUG_SUSPEND "suspend"
--#define WLAN_HOTPLUG_RESUME "resume"
--int p80211_run_sbin_hotplug(wlandevice_t *wlandev, char *action);
--#endif
--
- #endif
-diff --git a/drivers/staging/wlan-ng/prism2sta.c b/drivers/staging/wlan-ng/prism2sta.c
-index 397143e..819dadd 100644
---- a/drivers/staging/wlan-ng/prism2sta.c
-+++ b/drivers/staging/wlan-ng/prism2sta.c
-@@ -56,14 +56,9 @@
- 
- #include "version.h"
- 
--
- #include <linux/version.h>
--
- #include <linux/module.h>
--#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,25))
- #include <linux/moduleparam.h>
--#endif
--
- #include <linux/kernel.h>
- #include <linux/sched.h>
- #include <linux/types.h>
-@@ -71,12 +66,7 @@
- #include <linux/slab.h>
- #include <linux/wireless.h>
- #include <linux/netdevice.h>
--
--#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0))
--#include <linux/tqueue.h>
--#else
- #include <linux/workqueue.h>
--#endif
- 
- #include <asm/io.h>
- #include <linux/delay.h>
++
+  done:
+         DBFEXIT;
+         return 0;
 diff --git a/drivers/staging/wlan-ng/wlan_compat.h b/drivers/staging/wlan-ng/wlan_compat.h
-index 772d1a3..610078d 100644
+index 610078d..3127754 100644
 --- a/drivers/staging/wlan-ng/wlan_compat.h
 +++ b/drivers/staging/wlan-ng/wlan_compat.h
-@@ -267,10 +267,6 @@ typedef struct net_device netdevice_t;
- typedef u32 pm_message_t;
+@@ -134,11 +134,7 @@ typedef int64_t		INT64;
+ #define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
  #endif
  
--#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,9))
--#define hotplug_path  "/etc/hotplug/wlan.agent"
+-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,8))
+-#  include <linux/hardirq.h>
+-#else
+-#  include <asm/hardirq.h>
+-#endif
++#include <linux/hardirq.h>
+ 
+ #define WLAN_LOG_ERROR(x,args...) printk(KERN_ERR "%s: " x , __func__ , ##args);
+ 
+@@ -186,10 +182,6 @@ typedef int64_t		INT64;
+ #define PT_REGS
+ #endif
+ 
+-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,7))
+-#  define del_singleshot_timer_sync(a)  del_timer_sync(a)
 -#endif
 -
- #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,9))
- #define eth_hdr(x)           (x)->mac.ethernet
+ #define CONFIG_NETLINK		1
+ 
+ #ifndef wait_event_interruptible_timeout
+@@ -251,25 +243,8 @@ typedef struct net_device netdevice_t;
+ #define in_atomic()  0
  #endif
+ 
+-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,13))
+ #define URB_ASYNC_UNLINK 0
+-#endif
+-
+-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,7))
+-#define URB_ASYNC_UNLINK  USB_ASYNC_UNLINK
+-#define usb_fill_bulk_urb  FILL_BULK_URB
+-#define usb_kill_urb  usb_unlink_urb
+-#else
+ #define USB_QUEUE_BULK 0
+-#endif
+-
+-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,11))
+-typedef u32 pm_message_t;
+-#endif
+-
+-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,9))
+-#define eth_hdr(x)           (x)->mac.ethernet
+-#endif
+ 
+ #ifndef might_sleep
+ #define might_sleep(a)   do { } while (0)
 -- 
 1.6.0.2
 
