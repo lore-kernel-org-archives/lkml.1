@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753104AbYJ2Hpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbYJ2Htj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753104AbYJ2Hpj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 03:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbYJ2Hpa
+	id S1753118AbYJ2Htj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 03:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYJ2Hta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 03:45:30 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:45913 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752018AbYJ2Hpa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 03:45:30 -0400
-Subject: [PATCH -mm] spi: fix compile error
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
+	Wed, 29 Oct 2008 03:49:30 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42568 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752020AbYJ2Hta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 03:49:30 -0400
+Date: Wed, 29 Oct 2008 08:49:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net
-In-Reply-To: <20081028233836.8b1ff9ae.akpm@linux-foundation.org>
-References: <20081028233836.8b1ff9ae.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Organization: NTT Open Source Software Center
-Date: Wed, 29 Oct 2008 16:45:28 +0900
-Message-Id: <1225266328.5858.17.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: Tree for October 28
+Message-ID: <20081029074913.GD17992@elte.hu>
+References: <20081028183055.fbcf5420.sfr@canb.auug.org.au> <20081028160045.2a890509.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081028160045.2a890509.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix compile error below:
 
-     LD      drivers/spi/built-in.o
-     CC [M]  drivers/spi/spi_gpio.o
-   In file included from drivers/spi/spi_gpio.c:26:
-   include/linux/spi/spi_bitbang.h:23: error: field ‘work’ has incomplete type
-   make[2]: *** [drivers/spi/spi_gpio.o] Error 1
-   make[1]: *** [drivers/spi] Error 2
-   make: *** [drivers] Error 2
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
+> On Tue, 28 Oct 2008 18:30:55 +1100
+> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> 
+> > I have created today's linux-next tree at
+> > git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+> 
+> x86_64 allnoconfig:
+> 
+> arch/x86/kernel/genx2apic_uv_x.c: In function 'uv_rtc_init':
+> arch/x86/kernel/genx2apic_uv_x.c:355: error: implicit declaration of function 'uv_bios_freq_base'
+> arch/x86/kernel/genx2apic_uv_x.c: In function 'uv_system_init':
+> arch/x86/kernel/genx2apic_uv_x.c:438: error: implicit declaration of function 'uv_bios_init'
+> arch/x86/kernel/genx2apic_uv_x.c:439: error: implicit declaration of function 'uv_bios_get_sn_info'
+> arch/x86/kernel/genx2apic_uv_x.c:439: error: 'uv_type' undeclared (first use in this function)
+> arch/x86/kernel/genx2apic_uv_x.c:439: error: (Each undeclared identifier is reported only once
+> arch/x86/kernel/genx2apic_uv_x.c:439: error: for each function it appears in.)
+> arch/x86/kernel/genx2apic_uv_x.c:439: error: 'sn_partition_id' undeclared (first use in this function)
+> arch/x86/kernel/genx2apic_uv_x.c:440: error: 'uv_coherency_id' undeclared (first use in this function)
+> arch/x86/kernel/genx2apic_uv_x.c:440: error: 'uv_region_size' undeclared (first use in this function)
+> make[1]: *** [arch/x86/kernel/genx2apic_uv_x.o] Error 1
+> make: *** [arch/x86/kernel/genx2apic_uv_x.o] Error 2
+> 
+> 
+> Guys, allnoconfig breakage is very common.  It's easy to configure and
+> is very quick to test.  Please use it.
 
-diff -urNp linux-2.6.28-rc2-mm1-orig/include/linux/spi/spi_bitbang.h linux-2.6.28-rc2-mm1/include/linux/spi/spi_bitbang.h
---- linux-2.6.28-rc2-mm1-orig/include/linux/spi/spi_bitbang.h	2008-10-10 07:13:53.000000000 +0900
-+++ linux-2.6.28-rc2-mm1/include/linux/spi/spi_bitbang.h	2008-10-29 16:25:31.000000000 +0900
-@@ -18,6 +18,9 @@
-  *	duplex (MicroWire) controllers.  Provide chipslect() and txrx_bufs(),
-  *	and custom setup()/cleanup() methods.
-  */
-+
-+#include <linux/workqueue.h>
-+
- struct spi_bitbang {
- 	struct workqueue_struct	*workqueue;
- 	struct work_struct	work;
+i test allnoconfig multiple times a day.
 
+By the looks of it i suspect Git left around some stale file which 
+fooled my testing? Checking now.
 
+	Ingo
