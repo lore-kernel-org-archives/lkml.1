@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbYJ2SK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbYJ2SLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754621AbYJ2SK6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 14:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbYJ2SKu
+	id S1754925AbYJ2SLe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 14:11:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbYJ2SLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 14:10:50 -0400
+	Wed, 29 Oct 2008 14:11:24 -0400
 Received: from courier.cs.helsinki.fi ([128.214.9.1]:44704 "EHLO
 	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752310AbYJ2SKt (ORCPT
+	with ESMTP id S1754024AbYJ2SLW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 14:10:49 -0400
-Date: Wed, 29 Oct 2008 20:10:10 +0200 (EET)
+	Wed, 29 Oct 2008 14:11:22 -0400
+Date: Wed, 29 Oct 2008 20:10:32 +0200 (EET)
 From: Pekka J Enberg <penberg@cs.helsinki.fi>
 To: Greg Kroah-Hartman <greg@kroah.com>
 cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/6] w35und: remove timer wrappers
-Message-ID: <Pine.LNX.4.64.0810292009370.16596@melkki.cs.Helsinki.FI>
+Subject: [PATCH 2/6] w35und: remove atomic op wrappers
+Message-ID: <Pine.LNX.4.64.0810292010110.16596@melkki.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -25,826 +25,396 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-This patch removes the OS_TIMER and related wrappers from driver code. The
-patch also changes the code to use msecs_to_jiffies() for setting up
-timer->expires.
+Use the kernel provided atomic op functions and remove the OS_ATOMIC and
+related wrapper macros.
 
 Cc: Pavel Machek <pavel@suse.cz>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- drivers/staging/winbond/bssdscpt.h     |    2 +-
- drivers/staging/winbond/linux/common.h |   19 -
- drivers/staging/winbond/mds_f.h        |    6 -
- drivers/staging/winbond/mds_s.h        |    3 +-
- drivers/staging/winbond/rxisr.c        |   29 +-
- drivers/staging/winbond/scan_s.h       |    3 +-
- drivers/staging/winbond/sme_s.h        |    3 +-
- drivers/staging/winbond/wbhal.c        |  586 ++++++++++++++++----------------
- drivers/staging/winbond/wbhal_f.h      |    2 -
- drivers/staging/winbond/wbhal_s.h      |    2 +-
- 10 files changed, 312 insertions(+), 343 deletions(-)
+ drivers/staging/winbond/adapter.h         |    3 +--
+ drivers/staging/winbond/linux/common.h    |    8 --------
+ drivers/staging/winbond/linux/wb35reg.c   |    8 ++++----
+ drivers/staging/winbond/linux/wb35reg_s.h |    2 +-
+ drivers/staging/winbond/linux/wb35rx.c    |    9 ++++-----
+ drivers/staging/winbond/linux/wb35rx_s.h  |    2 +-
+ drivers/staging/winbond/linux/wb35tx.c    |   16 ++++++++--------
+ drivers/staging/winbond/linux/wb35tx_s.h  |    4 ++--
+ drivers/staging/winbond/mds.c             |    6 +++---
+ drivers/staging/winbond/mds_s.h           |    4 ++--
+ drivers/staging/winbond/wbhal.c           |    2 +-
+ drivers/staging/winbond/wbhal_s.h         |    2 +-
+ drivers/staging/winbond/wblinux.c         |   29 ++---------------------------
+ drivers/staging/winbond/wblinux_f.h       |    2 --
+ 14 files changed, 30 insertions(+), 67 deletions(-)
 
-diff --git a/drivers/staging/winbond/bssdscpt.h b/drivers/staging/winbond/bssdscpt.h
-index 6f557cb..90b5682 100644
---- a/drivers/staging/winbond/bssdscpt.h
-+++ b/drivers/staging/winbond/bssdscpt.h
-@@ -79,7 +79,7 @@ typedef struct BSSDescriptionElement
- 	u16		wIndex;			// THIS BSS element entry index
+diff --git a/drivers/staging/winbond/adapter.h b/drivers/staging/winbond/adapter.h
+index e102dcb..bc09e41 100644
+--- a/drivers/staging/winbond/adapter.h
++++ b/drivers/staging/winbond/adapter.h
+@@ -32,11 +32,10 @@ struct wb35_adapter {
+ 	hw_data_t sHwData;	//For HAL
+ 	MDS Mds;
  
- 	void*	psadapter;		// pointer to THIS adapter
--	OS_TIMER	nTimer;  // MLME timer
-+	struct timer_list timer;  // MLME timer
+-	spinlock_t AtomicSpinLock;
+ 	spinlock_t SpinLock;
+ 	u32 shutdown;
  
-     // Authentication
-     u16		wAuthAlgo;      // peer MAC MLME use Auth algorithm, default OPEN_AUTH
+-	OS_ATOMIC ThreadCount;
++	atomic_t ThreadCount;
+ 
+ 	u32 LinkStatus;		// OS_DISCONNECTED or OS_CONNECTED
+ 
 diff --git a/drivers/staging/winbond/linux/common.h b/drivers/staging/winbond/linux/common.h
-index 42c23a8..521b68a 100644
+index 521b68a..925e1b6 100644
 --- a/drivers/staging/winbond/linux/common.h
 +++ b/drivers/staging/winbond/linux/common.h
-@@ -84,24 +84,5 @@
+@@ -73,14 +73,6 @@
+ #define OS_EVENT_INDICATE( _A, _B, _F )
+ #define OS_PMKID_STATUS_EVENT( _A )
+ 
+-
+-/* Uff, no, longs are not atomic on all architectures Linux
+- * supports. This should really use atomic_t */
+-
+-#define OS_ATOMIC			u32
+-#define OS_ATOMIC_READ( _A, _V )	_V
+-#define OS_ATOMIC_INC( _A, _V )		EncapAtomicInc( _A, (void*)_V )
+-#define OS_ATOMIC_DEC( _A, _V )		EncapAtomicDec( _A, (void*)_V )
  #define OS_MEMORY_CLEAR( _A, _S )	memset( (u8 *)_A,0,_S)
  #define OS_MEMORY_COMPARE( _A, _B, _S )	(memcmp(_A,_B,_S)? 0 : 1) // Definition is reverse with Ndis 1: the same 0: different
  
--#define OS_TIMER	struct timer_list
--#define OS_TIMER_INITIAL( _T, _F, _P )			\
--{							\
--	init_timer( _T );				\
--	(_T)->function = (void *)_F##_1a;		\
--	(_T)->data = (unsigned long)_P;			\
--}
--
--// _S : Millisecond
--// 20060420 At least 1 large than jiffies
--#define OS_TIMER_SET( _T, _S )					\
--{								\
--	(_T)->expires = jiffies + ((_S*HZ+999)/1000);\
--	add_timer( _T );					\
--}
--#define OS_TIMER_CANCEL( _T, _B )		del_timer_sync( _T )
--#define OS_TIMER_GET_SYS_TIME( _T )		(*_T=jiffies)
--
--
- #endif // COMMON_DEF
+diff --git a/drivers/staging/winbond/linux/wb35reg.c b/drivers/staging/winbond/linux/wb35reg.c
+index e9b1386..cc856a8 100644
+--- a/drivers/staging/winbond/linux/wb35reg.c
++++ b/drivers/staging/winbond/linux/wb35reg.c
+@@ -386,11 +386,11 @@ Wb35Reg_EP0VM_start(  phw_data_t pHwData )
+ {
+ 	struct wb35_reg *reg = &pHwData->reg;
  
-diff --git a/drivers/staging/winbond/mds_f.h b/drivers/staging/winbond/mds_f.h
-index 0733b9f..4258b32 100644
---- a/drivers/staging/winbond/mds_f.h
-+++ b/drivers/staging/winbond/mds_f.h
-@@ -12,13 +12,7 @@ extern void DataDmp(u8 *pdata, u32 len, u32 offset);
+-	if (OS_ATOMIC_INC( pHwData->adapter, &reg->RegFireCount) == 1) {
++	if (atomic_inc_return(&reg->RegFireCount) == 1) {
+ 		reg->EP0vm_state = VM_RUNNING;
+ 		Wb35Reg_EP0VM(pHwData);
+ 	} else
+-		OS_ATOMIC_DEC( pHwData->adapter, &reg->RegFireCount );
++		atomic_dec(&reg->RegFireCount);
+ }
  
- void vRxTimerInit(struct wb35_adapter *adapter);
- void vRxTimerStart(struct wb35_adapter *adapter, int timeout_value);
--void RxTimerHandler_1a( struct wb35_adapter *adapter);
- void vRxTimerStop(struct wb35_adapter *adapter);
--void RxTimerHandler( void*			SystemSpecific1,
--					   struct wb35_adapter * 	adapter,
--					   void*			SystemSpecific2,
--					   void*			SystemSpecific3);
+ void
+@@ -447,7 +447,7 @@ Wb35Reg_EP0VM(phw_data_t pHwData )
+ 
+  cleanup:
+ 	reg->EP0vm_state = VM_STOP;
+-	OS_ATOMIC_DEC( pHwData->adapter, &reg->RegFireCount );
++	atomic_dec(&reg->RegFireCount);
+ }
+ 
+ 
+@@ -465,7 +465,7 @@ Wb35Reg_EP0VM_complete(struct urb *urb)
+ 
+ 	if (pHwData->SurpriseRemove) { // Let WbWlanHalt to handle surprise remove
+ 		reg->EP0vm_state = VM_STOP;
+-		OS_ATOMIC_DEC( pHwData->adapter, &reg->RegFireCount );
++		atomic_dec(&reg->RegFireCount);
+ 	} else {
+ 		// Complete to send, remove the URB from the first
+ 		spin_lock_irq( &reg->EP0VM_spin_lock );
+diff --git a/drivers/staging/winbond/linux/wb35reg_s.h b/drivers/staging/winbond/linux/wb35reg_s.h
+index c77306c..2f665d1 100644
+--- a/drivers/staging/winbond/linux/wb35reg_s.h
++++ b/drivers/staging/winbond/linux/wb35reg_s.h
+@@ -142,7 +142,7 @@ struct wb35_reg {
+ 	u32	        EP0VM_status;//$$
+ 	struct wb35_reg_queue *reg_first;
+ 	struct wb35_reg_queue *reg_last;
+-	OS_ATOMIC       RegFireCount;
++	atomic_t       RegFireCount;
+ 
+ 	// Hardware status
+ 	u8	EP0vm_state;
+diff --git a/drivers/staging/winbond/linux/wb35rx.c b/drivers/staging/winbond/linux/wb35rx.c
+index e492fa5..f690298 100644
+--- a/drivers/staging/winbond/linux/wb35rx.c
++++ b/drivers/staging/winbond/linux/wb35rx.c
+@@ -10,17 +10,16 @@
+ //============================================================================
+ #include "sysdef.h"
+ 
 -
+ void Wb35Rx_start(phw_data_t pHwData)
+ {
+ 	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
  
- // For Asynchronous indicating. The routine collocates with USB.
- void Mds_MsduProcess(  struct wb35_adapter *adapter,  PRXLAYER1 pRxLayer1,  u8 SlotIndex);
+ 	// Allow only one thread to run into the Wb35Rx() function
+-	if (OS_ATOMIC_INC(pHwData->adapter, &pWb35Rx->RxFireCounter) == 1) {
++	if (atomic_inc_return(&pWb35Rx->RxFireCounter) == 1) {
+ 		pWb35Rx->EP3vm_state = VM_RUNNING;
+ 		Wb35Rx(pHwData);
+ 	} else
+-		OS_ATOMIC_DEC(pHwData->adapter, &pWb35Rx->RxFireCounter);
++		atomic_dec(&pWb35Rx->RxFireCounter);
+ }
+ 
+ // This function cannot reentrain
+@@ -82,7 +81,7 @@ void Wb35Rx(  phw_data_t pHwData )
+ error:
+ 	// VM stop
+ 	pWb35Rx->EP3vm_state = VM_STOP;
+-	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Rx->RxFireCounter );
++	atomic_dec(&pWb35Rx->RxFireCounter);
+ }
+ 
+ void Wb35Rx_Complete(struct urb *urb)
+@@ -157,7 +156,7 @@ void Wb35Rx_Complete(struct urb *urb)
+ 
+ error:
+ 	pWb35Rx->RxOwner[ RxBufferId ] = 1; // Set the owner to hardware
+-	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Rx->RxFireCounter );
++	atomic_dec(&pWb35Rx->RxFireCounter);
+ 	pWb35Rx->EP3vm_state = VM_STOP;
+ }
+ 
+diff --git a/drivers/staging/winbond/linux/wb35rx_s.h b/drivers/staging/winbond/linux/wb35rx_s.h
+index b90c269..f18350b 100644
+--- a/drivers/staging/winbond/linux/wb35rx_s.h
++++ b/drivers/staging/winbond/linux/wb35rx_s.h
+@@ -18,7 +18,7 @@
+ typedef struct _WB35RX
+ {
+ 	u32			ByteReceived;// For calculating throughput of BulkIn
+-	OS_ATOMIC		RxFireCounter;// Does Wb35Rx module fire?
++	atomic_t		RxFireCounter;// Does Wb35Rx module fire?
+ 
+ 	u8	RxBuffer[ MAX_USB_RX_BUFFER_NUMBER ][ ((MAX_USB_RX_BUFFER+3) & ~0x03 ) ];
+ 	u16	RxBufferSize[ ((MAX_USB_RX_BUFFER_NUMBER+1) & ~0x01) ];
+diff --git a/drivers/staging/winbond/linux/wb35tx.c b/drivers/staging/winbond/linux/wb35tx.c
+index 020c52d..a58a193 100644
+--- a/drivers/staging/winbond/linux/wb35tx.c
++++ b/drivers/staging/winbond/linux/wb35tx.c
+@@ -25,11 +25,11 @@ void Wb35Tx_start(phw_data_t pHwData)
+ 	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
+ 
+ 	// Allow only one thread to run into function
+-	if (OS_ATOMIC_INC(pHwData->adapter, &pWb35Tx->TxFireCounter) == 1) {
++	if (atomic_inc_return(&pWb35Tx->TxFireCounter) == 1) {
+ 		pWb35Tx->EP4vm_state = VM_RUNNING;
+ 		Wb35Tx(pHwData);
+ 	} else
+-		OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxFireCounter );
++		atomic_dec(&pWb35Tx->TxFireCounter);
+ }
+ 
+ 
+@@ -81,7 +81,7 @@ void Wb35Tx(phw_data_t pHwData)
+ 
+  cleanup:
+ 	pWb35Tx->EP4vm_state = VM_STOP;
+-	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxFireCounter );
++	atomic_dec(&pWb35Tx->TxFireCounter);
+ }
+ 
+ 
+@@ -118,7 +118,7 @@ void Wb35Tx_complete(struct urb * pUrb)
+ 	return;
+ 
+ error:
+-	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxFireCounter );
++	atomic_dec(&pWb35Tx->TxFireCounter);
+ 	pWb35Tx->EP4vm_state = VM_STOP;
+ }
+ 
+@@ -211,12 +211,12 @@ void Wb35Tx_EP2VM_start(phw_data_t pHwData)
+ 	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
+ 
+ 	// Allow only one thread to run into function
+-	if (OS_ATOMIC_INC( pHwData->adapter, &pWb35Tx->TxResultCount ) == 1) {
++	if (atomic_inc_return(&pWb35Tx->TxResultCount) == 1) {
+ 		pWb35Tx->EP2vm_state = VM_RUNNING;
+ 		Wb35Tx_EP2VM( pHwData );
+ 	}
+ 	else
+-		OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxResultCount );
++		atomic_dec(&pWb35Tx->TxResultCount);
+ }
+ 
+ 
+@@ -252,7 +252,7 @@ void Wb35Tx_EP2VM(phw_data_t pHwData)
+ 	return;
+ error:
+ 	pWb35Tx->EP2vm_state = VM_STOP;
+-	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxResultCount );
++	atomic_dec(&pWb35Tx->TxResultCount);
+ }
+ 
+ 
+@@ -301,7 +301,7 @@ void Wb35Tx_EP2VM_complete(struct urb * pUrb)
+ 
+ 	return;
+ error:
+-	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxResultCount );
++	atomic_dec(&pWb35Tx->TxResultCount);
+ 	pWb35Tx->EP2vm_state = VM_STOP;
+ }
+ 
+diff --git a/drivers/staging/winbond/linux/wb35tx_s.h b/drivers/staging/winbond/linux/wb35tx_s.h
+index ac43257..8cb449f 100644
+--- a/drivers/staging/winbond/linux/wb35tx_s.h
++++ b/drivers/staging/winbond/linux/wb35tx_s.h
+@@ -21,8 +21,8 @@ typedef struct _WB35TX
+ 	// For Interrupt pipe
+ 	u8	EP2_buf[MAX_INTERRUPT_LENGTH];
+ 
+-	OS_ATOMIC	TxResultCount;// For thread control of EP2 931130.4.m
+-	OS_ATOMIC	TxFireCounter;// For thread control of EP4 931130.4.n
++	atomic_t	TxResultCount;// For thread control of EP2 931130.4.m
++	atomic_t	TxFireCounter;// For thread control of EP4 931130.4.n
+ 	u32			ByteTransfer;
+ 
+ 	u32	    TxSendIndex;// The next index of Mds array to be sent
+diff --git a/drivers/staging/winbond/mds.c b/drivers/staging/winbond/mds.c
+index 8d3c8ad..20008e3 100644
+--- a/drivers/staging/winbond/mds.c
++++ b/drivers/staging/winbond/mds.c
+@@ -6,7 +6,7 @@ Mds_reset_descriptor(struct wb35_adapter * adapter)
+ 	PMDS pMds = &adapter->Mds;
+ 
+ 	pMds->TxPause = 0;
+-	pMds->TxThreadCount = 0;
++	atomic_set(&pMds->TxThreadCount, 0);
+ 	pMds->TxFillIndex = 0;
+ 	pMds->TxDesIndex = 0;
+ 	pMds->ScanTxPause = 0;
+@@ -52,7 +52,7 @@ Mds_Tx(struct wb35_adapter * adapter)
+ 		return;
+ 
+ 	//Only one thread can be run here
+-	if (!OS_ATOMIC_INC( adapter, &pMds->TxThreadCount) == 1)
++	if (!atomic_inc_return(&pMds->TxThreadCount) == 1)
+ 		goto cleanup;
+ 
+ 	// Start to fill the data
+@@ -172,7 +172,7 @@ Mds_Tx(struct wb35_adapter * adapter)
+ 		Wb35Tx_start(pHwData);
+ 
+  cleanup:
+-	OS_ATOMIC_DEC( adapter, &pMds->TxThreadCount );
++	atomic_dec(&pMds->TxThreadCount);
+ }
+ 
+ void
 diff --git a/drivers/staging/winbond/mds_s.h b/drivers/staging/winbond/mds_s.h
-index 283945c..ac1875f 100644
+index ac1875f..e1d373e 100644
 --- a/drivers/staging/winbond/mds_s.h
 +++ b/drivers/staging/winbond/mds_s.h
-@@ -133,8 +133,7 @@ typedef struct _MDS
- 	u8		boCounterMeasureBlock;
- 	u8		reserved_4[2];
+@@ -96,9 +96,9 @@ typedef struct _MDS
+ 	u8	ScanTxPause;	//data Tx pause because the scanning is progressing, but probe request Tx won't.
+ 	u8	TxPause;//For pause the Mds_Tx modult
  
--	//NDIS_MINIPORT_TIMER	nTimer;
--	OS_TIMER	nTimer;
-+	struct timer_list timer;
+-	OS_ATOMIC	TxThreadCount;//For thread counting 931130.4.v
++	atomic_t	TxThreadCount;//For thread counting 931130.4.v
+ //950301 delete due to HW
+-//	OS_ATOMIC	TxConcurrentCount;//931130.4.w
++//	atomic_t	TxConcurrentCount;//931130.4.w
  
- 	u32	TxTsc; // 20060214
- 	u32	TxTsc_2; // 20060214
-diff --git a/drivers/staging/winbond/rxisr.c b/drivers/staging/winbond/rxisr.c
-index 6678660..de49a49 100644
---- a/drivers/staging/winbond/rxisr.c
-+++ b/drivers/staging/winbond/rxisr.c
-@@ -1,30 +1,27 @@
- #include "os_common.h"
+ 	u16	TxResult[ ((MAX_USB_TX_DESCRIPTOR + 1) & ~0x01) ];//Collect the sending result of Mpdu
  
--void vRxTimerInit(struct wb35_adapter * adapter)
-+static void RxTimerHandler(unsigned long data)
- {
--	OS_TIMER_INITIAL(&(adapter->Mds.nTimer), (void*) RxTimerHandler, (void*) adapter);
-+	WARN_ON(1);
- }
- 
--void vRxTimerStart(struct wb35_adapter * adapter, int timeout_value)
-+void vRxTimerInit(struct wb35_adapter *adapter)
- {
--	if (timeout_value<MIN_TIMEOUT_VAL)
--		timeout_value=MIN_TIMEOUT_VAL;
--
--	OS_TIMER_SET( &(adapter->Mds.nTimer), timeout_value );
-+	init_timer(&adapter->Mds.timer);
-+	adapter->Mds.timer.function = RxTimerHandler;
-+	adapter->Mds.timer.data = (unsigned long) adapter;
- }
- 
--void vRxTimerStop(struct wb35_adapter * adapter)
-+void vRxTimerStart(struct wb35_adapter *adapter, int timeout_value)
- {
--	OS_TIMER_CANCEL( &(adapter->Mds.nTimer), 0 );
--}
-+	if (timeout_value < MIN_TIMEOUT_VAL)
-+		timeout_value = MIN_TIMEOUT_VAL;
- 
--void RxTimerHandler_1a( struct wb35_adapter * adapter)
--{
--	RxTimerHandler(NULL, adapter, NULL, NULL);
-+	adapter->Mds.timer.expires = jiffies + msecs_to_jiffies(timeout_value);
-+	add_timer(&adapter->Mds.timer);
- }
- 
--void RxTimerHandler(void* SystemSpecific1, struct wb35_adapter * adapter,
--		    void* SystemSpecific2, void* SystemSpecific3)
-+void vRxTimerStop(struct wb35_adapter *adapter)
- {
--	WARN_ON(1);
-+	del_timer_sync(&adapter->Mds.timer);
- }
-diff --git a/drivers/staging/winbond/scan_s.h b/drivers/staging/winbond/scan_s.h
-index a7489cb..a952396 100644
---- a/drivers/staging/winbond/scan_s.h
-+++ b/drivers/staging/winbond/scan_s.h
-@@ -62,8 +62,7 @@ typedef struct _SCAN_PARAMETERS
- 	u8				boCCAbusy;					// Wb: HWMAC CCA busy status
- 	u8				reserved_2;
- 
--	//NDIS_MINIPORT_TIMER	nTimer;
--	OS_TIMER			nTimer;
-+	struct timer_list timer;
- 
- 	u32				ScanTimeStamp;			//Increase 1 per background scan(1 minute)
- 	u32				BssTimeStamp;			//Increase 1 per connect status check
-diff --git a/drivers/staging/winbond/sme_s.h b/drivers/staging/winbond/sme_s.h
-index de4efa1..33f5d2a 100644
---- a/drivers/staging/winbond/sme_s.h
-+++ b/drivers/staging/winbond/sme_s.h
-@@ -106,8 +106,7 @@ typedef struct _SME_PARAMETERS
- 	u8				bDesiredPowerSave;
- 
- 	// SME timer and timeout value
--	//NDIS_MINIPORT_TIMER	nTimer;
--	OS_TIMER			nTimer;
-+	struct timer_list timer;
- 
- 	u8				boInTimerHandler;
- 	u8 				boAuthRetryActive;
 diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
-index 69dcedf..3edcc47 100644
+index 3edcc47..100a407 100644
 --- a/drivers/staging/winbond/wbhal.c
 +++ b/drivers/staging/winbond/wbhal.c
-@@ -28,6 +28,292 @@ void hal_get_permanent_address( phw_data_t pHwData, u8 *pethernet_address )
- 	memcpy( pethernet_address, pHwData->PermanentMacAddress, 6 );
- }
- 
-+static void hal_led_control(unsigned long data)
-+{
-+	phw_data_t pHwData = (phw_data_t) data;
-+	struct wb35_adapter *	adapter = pHwData->adapter;
-+	struct wb35_reg *reg = &pHwData->reg;
-+	u32	LEDSet = (pHwData->SoftwareSet & HAL_LED_SET_MASK) >> HAL_LED_SET_SHIFT;
-+	u8	LEDgray[20] = { 0,3,4,6,8,10,11,12,13,14,15,14,13,12,11,10,8,6,4,2 };
-+	u8	LEDgray2[30] = { 7,8,9,10,11,12,13,14,15,0,0,0,0,0,0,0,0,0,0,0,0,0,15,14,13,12,11,10,9,8 };
-+	u32	TimeInterval = 500, ltmp, ltmp2;
-+        ltmp=0;
-+
-+	if( pHwData->SurpriseRemove ) return;
-+
-+	if( pHwData->LED_control ) {
-+		ltmp2 = pHwData->LED_control & 0xff;
-+		if( ltmp2 == 5 ) // 5 is WPS mode
-+		{
-+			TimeInterval = 100;
-+			ltmp2 = (pHwData->LED_control>>8) & 0xff;
-+			switch( ltmp2 )
-+			{
-+				case 1: // [0.2 On][0.1 Off]...
-+					pHwData->LED_Blinking %= 3;
-+					ltmp = 0x1010; // Led 1 & 0 Green and Red
-+					if( pHwData->LED_Blinking == 2 ) // Turn off
-+						ltmp = 0;
-+					break;
-+				case 2: // [0.1 On][0.1 Off]...
-+					pHwData->LED_Blinking %= 2;
-+					ltmp = 0x0010; // Led 0 red color
-+					if( pHwData->LED_Blinking ) // Turn off
-+						ltmp = 0;
-+					break;
-+				case 3: // [0.1 On][0.1 Off][0.1 On][0.1 Off][0.1 On][0.1 Off][0.1 On][0.1 Off][0.1 On][0.1 Off][0.5 Off]...
-+					pHwData->LED_Blinking %= 15;
-+					ltmp = 0x0010; // Led 0 red color
-+					if( (pHwData->LED_Blinking >= 9) || (pHwData->LED_Blinking%2) ) // Turn off 0.6 sec
-+						ltmp = 0;
-+					break;
-+				case 4: // [300 On][ off ]
-+					ltmp = 0x1000; // Led 1 Green color
-+					if( pHwData->LED_Blinking >= 3000 )
-+						ltmp = 0; // led maybe on after 300sec * 32bit counter overlap.
-+					break;
-+			}
-+			pHwData->LED_Blinking++;
-+
-+			reg->U1BC_LEDConfigure = ltmp;
-+			if( LEDSet != 7 ) // Only 111 mode has 2 LEDs on PCB.
-+			{
-+				reg->U1BC_LEDConfigure |= (ltmp &0xff)<<8; // Copy LED result to each LED control register
-+				reg->U1BC_LEDConfigure |= (ltmp &0xff00)>>8;
-+			}
-+			Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
-+		}
-+	}
-+	else if( pHwData->CurrentRadioSw || pHwData->CurrentRadioHw ) // If radio off
-+	{
-+		if( reg->U1BC_LEDConfigure & 0x1010 )
-+		{
-+			reg->U1BC_LEDConfigure &= ~0x1010;
-+			Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
-+		}
-+	}
-+	else
-+	{
-+		switch( LEDSet )
-+		{
-+			case 4: // [100] Only 1 Led be placed on PCB and use pin 21 of IC. Use LED_0 for showing
-+				if( !pHwData->LED_LinkOn ) // Blink only if not Link On
-+				{
-+					// Blinking if scanning is on progress
-+					if( pHwData->LED_Scanning )
-+					{
-+						if( pHwData->LED_Blinking == 0 )
-+						{
-+							reg->U1BC_LEDConfigure |= 0x10;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 On
-+							pHwData->LED_Blinking = 1;
-+							TimeInterval = 300;
-+						}
-+						else
-+						{
-+							reg->U1BC_LEDConfigure &= ~0x10;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
-+							pHwData->LED_Blinking = 0;
-+							TimeInterval = 300;
-+						}
-+					}
-+					else
-+					{
-+						//Turn Off LED_0
-+						if( reg->U1BC_LEDConfigure & 0x10 )
-+						{
-+							reg->U1BC_LEDConfigure &= ~0x10;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
-+						}
-+					}
-+				}
-+				else
-+				{
-+					// Turn On LED_0
-+					if( (reg->U1BC_LEDConfigure & 0x10) == 0 )
-+					{
-+						reg->U1BC_LEDConfigure |= 0x10;
-+						Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
-+					}
-+				}
-+				break;
-+
-+			case 6: // [110] Only 1 Led be placed on PCB and use pin 21 of IC. Use LED_0 for showing
-+				if( !pHwData->LED_LinkOn ) // Blink only if not Link On
-+				{
-+					// Blinking if scanning is on progress
-+					if( pHwData->LED_Scanning )
-+					{
-+						if( pHwData->LED_Blinking == 0 )
-+						{
-+							reg->U1BC_LEDConfigure &= ~0xf;
-+							reg->U1BC_LEDConfigure |= 0x10;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 On
-+							pHwData->LED_Blinking = 1;
-+							TimeInterval = 300;
-+						}
-+						else
-+						{
-+							reg->U1BC_LEDConfigure &= ~0x1f;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
-+							pHwData->LED_Blinking = 0;
-+							TimeInterval = 300;
-+						}
-+					}
-+					else
-+					{
-+						// 20060901 Gray blinking if in disconnect state and not scanning
-+						ltmp = reg->U1BC_LEDConfigure;
-+						reg->U1BC_LEDConfigure &= ~0x1f;
-+						if( LEDgray2[(pHwData->LED_Blinking%30)] )
-+						{
-+							reg->U1BC_LEDConfigure |= 0x10;
-+							reg->U1BC_LEDConfigure |= LEDgray2[ (pHwData->LED_Blinking%30) ];
-+						}
-+						pHwData->LED_Blinking++;
-+						if( reg->U1BC_LEDConfigure != ltmp )
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
-+						TimeInterval = 100;
-+					}
-+				}
-+				else
-+				{
-+					// Turn On LED_0
-+					if( (reg->U1BC_LEDConfigure & 0x10) == 0 )
-+					{
-+						reg->U1BC_LEDConfigure |= 0x10;
-+						Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
-+					}
-+				}
-+				break;
-+
-+			case 5: // [101] Only 1 Led be placed on PCB and use LED_1 for showing
-+				if( !pHwData->LED_LinkOn ) // Blink only if not Link On
-+				{
-+					// Blinking if scanning is on progress
-+					if( pHwData->LED_Scanning )
-+					{
-+						if( pHwData->LED_Blinking == 0 )
-+						{
-+							reg->U1BC_LEDConfigure |= 0x1000;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_1 On
-+							pHwData->LED_Blinking = 1;
-+							TimeInterval = 300;
-+						}
-+						else
-+						{
-+							reg->U1BC_LEDConfigure &= ~0x1000;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_1 Off
-+							pHwData->LED_Blinking = 0;
-+							TimeInterval = 300;
-+						}
-+					}
-+					else
-+					{
-+						//Turn Off LED_1
-+						if( reg->U1BC_LEDConfigure & 0x1000 )
-+						{
-+							reg->U1BC_LEDConfigure &= ~0x1000;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_1 Off
-+						}
-+					}
-+				}
-+				else
-+				{
-+					// Is transmitting/receiving ??
-+					if( (OS_CURRENT_RX_BYTE( adapter ) != pHwData->RxByteCountLast ) ||
-+						(OS_CURRENT_TX_BYTE( adapter ) != pHwData->TxByteCountLast ) )
-+					{
-+						if( (reg->U1BC_LEDConfigure & 0x3000) != 0x3000 )
-+						{
-+							reg->U1BC_LEDConfigure |= 0x3000;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_1 On
-+						}
-+
-+						// Update variable
-+						pHwData->RxByteCountLast = OS_CURRENT_RX_BYTE( adapter );
-+						pHwData->TxByteCountLast = OS_CURRENT_TX_BYTE( adapter );
-+						TimeInterval = 200;
-+					}
-+					else
-+					{
-+						// Turn On LED_1 and blinking if transmitting/receiving
-+						 if( (reg->U1BC_LEDConfigure & 0x3000) != 0x1000 )
-+						 {
-+							 reg->U1BC_LEDConfigure &= ~0x3000;
-+							 reg->U1BC_LEDConfigure |= 0x1000;
-+							 Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_1 On
-+						 }
-+					}
-+				}
-+				break;
-+
-+			default: // Default setting. 2 LED be placed on PCB. LED_0: Link On LED_1 Active
-+				if( (reg->U1BC_LEDConfigure & 0x3000) != 0x3000 )
-+				{
-+					reg->U1BC_LEDConfigure |= 0x3000;// LED_1 is always on and event enable
-+					Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
-+				}
-+
-+				if( pHwData->LED_Blinking )
-+				{
-+					// Gray blinking
-+					reg->U1BC_LEDConfigure &= ~0x0f;
-+					reg->U1BC_LEDConfigure |= 0x10;
-+					reg->U1BC_LEDConfigure |= LEDgray[ (pHwData->LED_Blinking-1)%20 ];
-+					Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
-+
-+					pHwData->LED_Blinking += 2;
-+					if( pHwData->LED_Blinking < 40 )
-+						TimeInterval = 100;
-+					else
-+					{
-+						pHwData->LED_Blinking = 0; // Stop blinking
-+						reg->U1BC_LEDConfigure &= ~0x0f;
-+						Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
-+					}
-+					break;
-+				}
-+
-+				if( pHwData->LED_LinkOn )
-+				{
-+					if( !(reg->U1BC_LEDConfigure & 0x10) ) // Check the LED_0
-+					{
-+						//Try to turn ON LED_0 after gray blinking
-+						reg->U1BC_LEDConfigure |= 0x10;
-+						pHwData->LED_Blinking = 1; //Start blinking
-+						TimeInterval = 50;
-+					}
-+				}
-+				else
-+				{
-+					if( reg->U1BC_LEDConfigure & 0x10 ) // Check the LED_0
-+					{
-+						reg->U1BC_LEDConfigure &= ~0x10;
-+						Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
-+					}
-+				}
-+				break;
-+		}
-+
-+		//20060828.1 Active send null packet to avoid AP disconnect
-+		if( pHwData->LED_LinkOn )
-+		{
-+			pHwData->NullPacketCount += TimeInterval;
-+			if( pHwData->NullPacketCount >= DEFAULT_NULL_PACKET_COUNT )
-+			{
-+				pHwData->NullPacketCount = 0;
-+			}
-+		}
-+	}
-+
-+	pHwData->time_count += TimeInterval;
-+	Wb35Tx_CurrentTime( pHwData, pHwData->time_count ); // 20060928 add
-+	pHwData->LEDTimer.expires = jiffies + msecs_to_jiffies(TimeInterval);
-+	add_timer(&pHwData->LEDTimer);
-+}
-+
-+
- u8 hal_init_hardware(phw_data_t pHwData, struct wb35_adapter * adapter)
+@@ -843,7 +843,7 @@ void hal_system_power_change(phw_data_t pHwData, u32 PowerState)
+ void hal_surprise_remove(  phw_data_t pHwData )
  {
- 	u16 SoftwareSet;
-@@ -44,8 +330,11 @@ u8 hal_init_hardware(phw_data_t pHwData, struct wb35_adapter * adapter)
- 			pHwData->InitialResource = 3;
- 			if (Wb35Rx_initial(pHwData)) {
- 				pHwData->InitialResource = 4;
--				OS_TIMER_INITIAL( &pHwData->LEDTimer, hal_led_control, pHwData );
--				OS_TIMER_SET( &pHwData->LEDTimer, 1000 ); // 20060623
-+				init_timer(&pHwData->LEDTimer);
-+				pHwData->LEDTimer.function = hal_led_control;
-+				pHwData->LEDTimer.data = (unsigned long) pHwData;
-+				pHwData->LEDTimer.expires = jiffies + msecs_to_jiffies(1000);
-+				add_timer(&pHwData->LEDTimer);
+ 	struct wb35_adapter * adapter = pHwData->adapter;
+-	if (OS_ATOMIC_INC( adapter, &pHwData->SurpriseRemoveCount ) == 1) {
++	if (atomic_inc_return( &pHwData->SurpriseRemoveCount ) == 1) {
+ 		#ifdef _PE_STATE_DUMP_
+ 		WBDEBUG(("Calling hal_surprise_remove\n"));
+ 		#endif
+diff --git a/drivers/staging/winbond/wbhal_s.h b/drivers/staging/winbond/wbhal_s.h
+index 2d3adfc..4eeb089 100644
+--- a/drivers/staging/winbond/wbhal_s.h
++++ b/drivers/staging/winbond/wbhal_s.h
+@@ -570,7 +570,7 @@ typedef struct _HW_DATA_T
+ 	u32		RxByteCountLast;
+ 	u32		TxByteCountLast;
  
- 				//
- 				// For restrict to vendor's hardware
-@@ -77,7 +366,7 @@ void hal_halt(phw_data_t pHwData, void *ppa_data)
- 	switch( pHwData->InitialResource )
- 	{
- 		case 4:
--		case 3: OS_TIMER_CANCEL( &pHwData->LEDTimer, &cancel );
-+		case 3: del_timer_sync(&pHwData->LEDTimer);
- 			msleep(100); // Wait for Timer DPC exit 940623.2
- 			Wb35Rx_destroy( pHwData ); // Release the Rx
- 		case 2: Wb35Tx_destroy( pHwData ); // Release the Tx
-@@ -431,294 +720,6 @@ s32 hal_get_rssi_bss(  phw_data_t pHwData,  u16 idx,  u8 Count )
- }
+-	s32		SurpriseRemoveCount;
++	atomic_t	SurpriseRemoveCount;
  
- //---------------------------------------------------------------------------
--void hal_led_control_1a(  phw_data_t pHwData )
+ 	// For global timer
+ 	u32		time_count;//TICK_TIME_100ms 1 = 100ms
+diff --git a/drivers/staging/winbond/wblinux.c b/drivers/staging/winbond/wblinux.c
+index ca507e7..665d8e0 100644
+--- a/drivers/staging/winbond/wblinux.c
++++ b/drivers/staging/winbond/wblinux.c
+@@ -10,35 +10,10 @@
+ //============================================================================
+ #include "os_common.h"
+ 
+-s32
+-EncapAtomicInc(struct wb35_adapter * adapter, void* pAtomic)
 -{
--	hal_led_control( NULL, pHwData, NULL, NULL );
+-	u32	ltmp;
+-	u32 *	pltmp = (u32 *)pAtomic;
+-	spin_lock_irq( &adapter->AtomicSpinLock );
+-	(*pltmp)++;
+-	ltmp = (*pltmp);
+-	spin_unlock_irq( &adapter->AtomicSpinLock );
+-	return ltmp;
 -}
 -
--void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
+-s32
+-EncapAtomicDec(struct wb35_adapter * adapter, void* pAtomic)
 -{
--	struct wb35_adapter *	adapter = pHwData->adapter;
--	struct wb35_reg *reg = &pHwData->reg;
--	u32	LEDSet = (pHwData->SoftwareSet & HAL_LED_SET_MASK) >> HAL_LED_SET_SHIFT;
--	u8	LEDgray[20] = { 0,3,4,6,8,10,11,12,13,14,15,14,13,12,11,10,8,6,4,2 };
--	u8	LEDgray2[30] = { 7,8,9,10,11,12,13,14,15,0,0,0,0,0,0,0,0,0,0,0,0,0,15,14,13,12,11,10,9,8 };
--	u32	TimeInterval = 500, ltmp, ltmp2;
--        ltmp=0;
--
--	if( pHwData->SurpriseRemove ) return;
--
--	if( pHwData->LED_control ) {
--		ltmp2 = pHwData->LED_control & 0xff;
--		if( ltmp2 == 5 ) // 5 is WPS mode
--		{
--			TimeInterval = 100;
--			ltmp2 = (pHwData->LED_control>>8) & 0xff;
--			switch( ltmp2 )
--			{
--				case 1: // [0.2 On][0.1 Off]...
--					pHwData->LED_Blinking %= 3;
--					ltmp = 0x1010; // Led 1 & 0 Green and Red
--					if( pHwData->LED_Blinking == 2 ) // Turn off
--						ltmp = 0;
--					break;
--				case 2: // [0.1 On][0.1 Off]...
--					pHwData->LED_Blinking %= 2;
--					ltmp = 0x0010; // Led 0 red color
--					if( pHwData->LED_Blinking ) // Turn off
--						ltmp = 0;
--					break;
--				case 3: // [0.1 On][0.1 Off][0.1 On][0.1 Off][0.1 On][0.1 Off][0.1 On][0.1 Off][0.1 On][0.1 Off][0.5 Off]...
--					pHwData->LED_Blinking %= 15;
--					ltmp = 0x0010; // Led 0 red color
--					if( (pHwData->LED_Blinking >= 9) || (pHwData->LED_Blinking%2) ) // Turn off 0.6 sec
--						ltmp = 0;
--					break;
--				case 4: // [300 On][ off ]
--					ltmp = 0x1000; // Led 1 Green color
--					if( pHwData->LED_Blinking >= 3000 )
--						ltmp = 0; // led maybe on after 300sec * 32bit counter overlap.
--					break;
--			}
--			pHwData->LED_Blinking++;
--
--			reg->U1BC_LEDConfigure = ltmp;
--			if( LEDSet != 7 ) // Only 111 mode has 2 LEDs on PCB.
--			{
--				reg->U1BC_LEDConfigure |= (ltmp &0xff)<<8; // Copy LED result to each LED control register
--				reg->U1BC_LEDConfigure |= (ltmp &0xff00)>>8;
--			}
--			Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
--		}
--	}
--	else if( pHwData->CurrentRadioSw || pHwData->CurrentRadioHw ) // If radio off
--	{
--		if( reg->U1BC_LEDConfigure & 0x1010 )
--		{
--			reg->U1BC_LEDConfigure &= ~0x1010;
--			Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
--		}
--	}
--	else
--	{
--		switch( LEDSet )
--		{
--			case 4: // [100] Only 1 Led be placed on PCB and use pin 21 of IC. Use LED_0 for showing
--				if( !pHwData->LED_LinkOn ) // Blink only if not Link On
--				{
--					// Blinking if scanning is on progress
--					if( pHwData->LED_Scanning )
--					{
--						if( pHwData->LED_Blinking == 0 )
--						{
--							reg->U1BC_LEDConfigure |= 0x10;
--							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 On
--							pHwData->LED_Blinking = 1;
--							TimeInterval = 300;
--						}
--						else
--						{
--							reg->U1BC_LEDConfigure &= ~0x10;
--							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
--							pHwData->LED_Blinking = 0;
--							TimeInterval = 300;
--						}
--					}
--					else
--					{
--						//Turn Off LED_0
--						if( reg->U1BC_LEDConfigure & 0x10 )
--						{
--							reg->U1BC_LEDConfigure &= ~0x10;
--							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
--						}
--					}
--				}
--				else
--				{
--					// Turn On LED_0
--					if( (reg->U1BC_LEDConfigure & 0x10) == 0 )
--					{
--						reg->U1BC_LEDConfigure |= 0x10;
--						Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
--					}
--				}
--				break;
--
--			case 6: // [110] Only 1 Led be placed on PCB and use pin 21 of IC. Use LED_0 for showing
--				if( !pHwData->LED_LinkOn ) // Blink only if not Link On
--				{
--					// Blinking if scanning is on progress
--					if( pHwData->LED_Scanning )
--					{
--						if( pHwData->LED_Blinking == 0 )
--						{
--							reg->U1BC_LEDConfigure &= ~0xf;
--							reg->U1BC_LEDConfigure |= 0x10;
--							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 On
--							pHwData->LED_Blinking = 1;
--							TimeInterval = 300;
--						}
--						else
--						{
--							reg->U1BC_LEDConfigure &= ~0x1f;
--							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
--							pHwData->LED_Blinking = 0;
--							TimeInterval = 300;
--						}
--					}
--					else
--					{
--						// 20060901 Gray blinking if in disconnect state and not scanning
--						ltmp = reg->U1BC_LEDConfigure;
--						reg->U1BC_LEDConfigure &= ~0x1f;
--						if( LEDgray2[(pHwData->LED_Blinking%30)] )
--						{
--							reg->U1BC_LEDConfigure |= 0x10;
--							reg->U1BC_LEDConfigure |= LEDgray2[ (pHwData->LED_Blinking%30) ];
--						}
--						pHwData->LED_Blinking++;
--						if( reg->U1BC_LEDConfigure != ltmp )
--							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
--						TimeInterval = 100;
--					}
--				}
--				else
--				{
--					// Turn On LED_0
--					if( (reg->U1BC_LEDConfigure & 0x10) == 0 )
--					{
--						reg->U1BC_LEDConfigure |= 0x10;
--						Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
--					}
--				}
--				break;
--
--			case 5: // [101] Only 1 Led be placed on PCB and use LED_1 for showing
--				if( !pHwData->LED_LinkOn ) // Blink only if not Link On
--				{
--					// Blinking if scanning is on progress
--					if( pHwData->LED_Scanning )
--					{
--						if( pHwData->LED_Blinking == 0 )
--						{
--							reg->U1BC_LEDConfigure |= 0x1000;
--							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_1 On
--							pHwData->LED_Blinking = 1;
--							TimeInterval = 300;
--						}
--						else
--						{
--							reg->U1BC_LEDConfigure &= ~0x1000;
--							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_1 Off
--							pHwData->LED_Blinking = 0;
--							TimeInterval = 300;
--						}
--					}
--					else
--					{
--						//Turn Off LED_1
--						if( reg->U1BC_LEDConfigure & 0x1000 )
--						{
--							reg->U1BC_LEDConfigure &= ~0x1000;
--							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_1 Off
--						}
--					}
--				}
--				else
--				{
--					// Is transmitting/receiving ??
--					if( (OS_CURRENT_RX_BYTE( adapter ) != pHwData->RxByteCountLast ) ||
--						(OS_CURRENT_TX_BYTE( adapter ) != pHwData->TxByteCountLast ) )
--					{
--						if( (reg->U1BC_LEDConfigure & 0x3000) != 0x3000 )
--						{
--							reg->U1BC_LEDConfigure |= 0x3000;
--							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_1 On
--						}
--
--						// Update variable
--						pHwData->RxByteCountLast = OS_CURRENT_RX_BYTE( adapter );
--						pHwData->TxByteCountLast = OS_CURRENT_TX_BYTE( adapter );
--						TimeInterval = 200;
--					}
--					else
--					{
--						// Turn On LED_1 and blinking if transmitting/receiving
--						 if( (reg->U1BC_LEDConfigure & 0x3000) != 0x1000 )
--						 {
--							 reg->U1BC_LEDConfigure &= ~0x3000;
--							 reg->U1BC_LEDConfigure |= 0x1000;
--							 Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_1 On
--						 }
--					}
--				}
--				break;
--
--			default: // Default setting. 2 LED be placed on PCB. LED_0: Link On LED_1 Active
--				if( (reg->U1BC_LEDConfigure & 0x3000) != 0x3000 )
--				{
--					reg->U1BC_LEDConfigure |= 0x3000;// LED_1 is always on and event enable
--					Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
--				}
--
--				if( pHwData->LED_Blinking )
--				{
--					// Gray blinking
--					reg->U1BC_LEDConfigure &= ~0x0f;
--					reg->U1BC_LEDConfigure |= 0x10;
--					reg->U1BC_LEDConfigure |= LEDgray[ (pHwData->LED_Blinking-1)%20 ];
--					Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
--
--					pHwData->LED_Blinking += 2;
--					if( pHwData->LED_Blinking < 40 )
--						TimeInterval = 100;
--					else
--					{
--						pHwData->LED_Blinking = 0; // Stop blinking
--						reg->U1BC_LEDConfigure &= ~0x0f;
--						Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
--					}
--					break;
--				}
--
--				if( pHwData->LED_LinkOn )
--				{
--					if( !(reg->U1BC_LEDConfigure & 0x10) ) // Check the LED_0
--					{
--						//Try to turn ON LED_0 after gray blinking
--						reg->U1BC_LEDConfigure |= 0x10;
--						pHwData->LED_Blinking = 1; //Start blinking
--						TimeInterval = 50;
--					}
--				}
--				else
--				{
--					if( reg->U1BC_LEDConfigure & 0x10 ) // Check the LED_0
--					{
--						reg->U1BC_LEDConfigure &= ~0x10;
--						Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
--					}
--				}
--				break;
--		}
--
--		//20060828.1 Active send null packet to avoid AP disconnect
--		if( pHwData->LED_LinkOn )
--		{
--			pHwData->NullPacketCount += TimeInterval;
--			if( pHwData->NullPacketCount >= DEFAULT_NULL_PACKET_COUNT )
--			{
--				pHwData->NullPacketCount = 0;
--			}
--		}
--	}
--
--	pHwData->time_count += TimeInterval;
--	Wb35Tx_CurrentTime( pHwData, pHwData->time_count ); // 20060928 add
--	OS_TIMER_SET( &pHwData->LEDTimer, TimeInterval ); // 20060623.1
+-	u32	ltmp;
+-	u32 *	pltmp = (u32 *)pAtomic;
+-	spin_lock_irq( &adapter->AtomicSpinLock );
+-	(*pltmp)--;
+-	ltmp = (*pltmp);
+-	spin_unlock_irq( &adapter->AtomicSpinLock );
+-	return ltmp;
 -}
 -
- 
- void hal_set_phy_type(  phw_data_t pHwData,  u8 PhyType )
+ unsigned char
+ WBLINUX_Initial(struct wb35_adapter * adapter)
  {
-@@ -867,7 +868,8 @@ unsigned char hal_set_LED(phw_data_t pHwData, u32 Mode) // 20061108 for WPS led
- {
- 	pHwData->LED_Blinking = 0;
- 	pHwData->LED_control = Mode;
--	OS_TIMER_SET( &pHwData->LEDTimer, 10 ); // 20060623
-+	pHwData->LEDTimer.expires = jiffies + msecs_to_jiffies(10);
-+	add_timer(&pHwData->LEDTimer);
+ 	spin_lock_init( &adapter->SpinLock );
+-	spin_lock_init( &adapter->AtomicSpinLock );
  	return true;
  }
  
-diff --git a/drivers/staging/winbond/wbhal_f.h b/drivers/staging/winbond/wbhal_f.h
-index 239c301..7e6ebf2 100644
---- a/drivers/staging/winbond/wbhal_f.h
-+++ b/drivers/staging/winbond/wbhal_f.h
-@@ -68,8 +68,6 @@ s32 hal_get_rssi(  phw_data_t pHwData,  u32 *HalRssiArry,  u8 Count );
- s32 hal_get_rssi_bss(  phw_data_t pHwData,  u16 idx,  u8 Count );
- void hal_set_connect_info(  phw_data_t pHwData,  unsigned char boConnect );
- u8 hal_get_est_sq3(  phw_data_t pHwData,  u8 Count );
--void hal_led_control_1a(  phw_data_t pHwData );
--void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 );
- void hal_set_rf_power(  phw_data_t pHwData,  u8 PowerIndex ); // 20060621 Modify
- void hal_reset_counter(  phw_data_t pHwData );
- void hal_set_radio_mode(  phw_data_t pHwData,  unsigned char boValue);
-diff --git a/drivers/staging/winbond/wbhal_s.h b/drivers/staging/winbond/wbhal_s.h
-index 47f99e1..2d3adfc 100644
---- a/drivers/staging/winbond/wbhal_s.h
-+++ b/drivers/staging/winbond/wbhal_s.h
-@@ -510,7 +510,7 @@ typedef struct _HW_DATA_T
- 	WB35TX		Wb35Tx; // Need Wb35Tx.h
- 	WB35RX		Wb35Rx; // Need Wb35Rx.h
+@@ -75,7 +50,7 @@ WBLINUX_stop(  struct wb35_adapter * adapter )
+ {
+ 	struct sk_buff *pSkb;
  
--	OS_TIMER	LEDTimer;// For LED
-+	struct timer_list	LEDTimer;// For LED
+-	if (OS_ATOMIC_INC( adapter, &adapter->ThreadCount ) == 1) {
++	if (atomic_inc_return(&adapter->ThreadCount) == 1) {
+ 		// Shutdown module immediately
+ 		adapter->shutdown = 1;
  
- 	u32		LEDpoint;// For LED
+@@ -97,7 +72,7 @@ WBLINUX_stop(  struct wb35_adapter * adapter )
+ #endif
+ 	}
  
+-	OS_ATOMIC_DEC( adapter, &adapter->ThreadCount );
++	atomic_dec(&adapter->ThreadCount);
+ }
+ 
+ void
+diff --git a/drivers/staging/winbond/wblinux_f.h b/drivers/staging/winbond/wblinux_f.h
+index f19c0ee..d763820 100644
+--- a/drivers/staging/winbond/wblinux_f.h
++++ b/drivers/staging/winbond/wblinux_f.h
+@@ -3,8 +3,6 @@
+ //
+ // wblinux_f.h
+ //
+-s32 EncapAtomicInc(  struct wb35_adapter *adapter,  void* pAtomic );
+-s32 EncapAtomicDec(  struct wb35_adapter *adapter,  void* pAtomic );
+ void WBLinux_ReceivePacket(  struct wb35_adapter *adapter,  PRXLAYER1 pRxLayer1 );
+ unsigned char WBLINUX_Initial(  struct wb35_adapter *adapter );
+ int wb35_start_xmit(struct sk_buff *skb, struct net_device *netdev );
 -- 
 1.5.3.7
 
