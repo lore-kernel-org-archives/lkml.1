@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbYJ2NLJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbYJ2NLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991AbYJ2NLJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 09:11:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbYJ2NK4
+	id S1754344AbYJ2NLe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 09:11:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYJ2NLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 09:10:56 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:13458 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753041AbYJ2NKz (ORCPT
+	Wed, 29 Oct 2008 09:11:03 -0400
+Received: from hpsmtp-eml19.KPNXCHANGE.COM ([213.75.38.84]:32997 "EHLO
+	hpsmtp-eml19.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753822AbYJ2NLB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 09:10:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ewx3UG12fwE8rdSr0Cc4XHKdm6Y6KkljpHrQ6QV3gQ0kDMhXIpuoQbxeNX/lABOcnj
-         icH6DODoC5W8fHdzcrNeuBEF29W560gsPAvARYvL7xJAIJjMozBOhKfUTW53OtPZFpiQ
-         u1lfXr/IH47Alu7s+NOlgQgC4c3cqWjkGGxl0=
-Date: Wed, 29 Oct 2008 16:14:02 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, torvalds@osdl.org, viro@zeniv.linux.org.uk,
-       acme@ghostprotocols.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] headers: move release_kernel_lock(),
-	reacquire_kernel_lock() to sched.c
-Message-ID: <20081029131402.GA2642@x200.localdomain>
-References: <20081029044351.GA2304@x200.localdomain> <20081029044447.GB2304@x200.localdomain> <20081029061827.GA7936@elte.hu> <20081029100437.GA30492@infradead.org>
+	Wed, 29 Oct 2008 09:11:01 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+Subject: Re: [patch] ACPI toshiba: only register rfkill if bt is enabled
+Date: Wed, 29 Oct 2008 14:10:57 +0100
+User-Agent: KMail/1.9.9
+Cc: arvidjaar@mail.ru, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       philipl@overt.org
+References: <20081029081934.GB26314@gambetta>
+In-reply-To: <20081029081934.GB26314@gambetta>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081029100437.GA30492@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200810291410.58310.elendil@planet.nl>
+X-OriginalArrivalTime: 29 Oct 2008 13:10:58.0819 (UTC) FILETIME=[C8E05530:01C939C7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 06:04:37AM -0400, Christoph Hellwig wrote:
-> On Wed, Oct 29, 2008 at 07:18:27AM +0100, Ingo Molnar wrote:
-> > please dont move #ifdefs and interfaces into a .c file - if then move 
-> > it into another header file.
+Frederik Deweerdt wrote:
+> It looks like a part of the rfkill initialization was done whenever
+> BT was on or not. The following patch checks for BT presence before
+> registering the rfkill to the input layer. Does it solve the problem for
+> you?
 > 
-> Sorry, but that makes no sense at all.  This stuff is implementation
-> private to sched.c, and adding some header for it is just braindead.
+> Regards,
+> Frederik
+> 
+> Register toshiba RFKill Switch only if bluetooth is enabled
+> 
+> Part of the rfkill initialization was done whenever BT was on or not.
+> The following patch checks for BT presence before registering the rfkill
+> to the input layer. Some minor cleanups (> 80 char lines) were also
+> added in the process.
 
-Well, yes, that was the logic behind move -- keep it private to scheduler.
+I just saw the same issue on my Toshiba Satellite A40 with Atheros pcmcia 
+card. The patch solves the kernel BUG for me when applied on top of 
+current git.
+
+Cheers,
+FJP
