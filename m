@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbYJ2SwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbYJ2Sxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754422AbYJ2SwY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 14:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbYJ2SwI
+	id S1754567AbYJ2Sxn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 14:53:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbYJ2Sxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 14:52:08 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:40871 "EHLO
+	Wed, 29 Oct 2008 14:53:36 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:41493 "EHLO
 	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754301AbYJ2SwF (ORCPT
+	with ESMTP id S1753325AbYJ2Sxf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 14:52:05 -0400
-Date: Wed, 29 Oct 2008 19:53:13 +0100
+	Wed, 29 Oct 2008 14:53:35 -0400
+Date: Wed, 29 Oct 2008 19:54:48 +0100
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Jesper Nilsson <Jesper.Nilsson@axis.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Mikael Starvik <mikael.starvik@axis.com>
-Subject: Re: [PATCH] [CRIS] Move header files from include to arch/cris/include.
-Message-ID: <20081029185313.GA22105@uranus.ravnborg.org>
-References: <20081021164211.GG24715@axis.com> <20081029173420.GM4608@axis.com>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kbuild: include localarch for simple cross overrides
+Message-ID: <20081029185448.GB22105@uranus.ravnborg.org>
+References: <1225304495-28079-1-git-send-email-vapier@gentoo.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081029173420.GM4608@axis.com>
+In-Reply-To: <1225304495-28079-1-git-send-email-vapier@gentoo.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 06:34:20PM +0100, Jesper Nilsson wrote:
-> On Tue, Oct 21, 2008 at 06:42:11PM +0200, Jesper Nilsson wrote:
-> > Hi,
-> > 
-> > I'm looking for some feedback on the changes in the branch include_move
-> > at the git-tree:
-> > 
-> >         git://repo.or.cz/cris-mirror.git include_move
-> > 
-> > I've performed the move of the CRIS headers using the ARM and Blackfin
-> > ports as a pattern.
-> > 
-> > That means that the machine dependent header files are moved to
-> > arch/cris/mach-{fs,a3}/include, while the common and architecture
-> > dependent files are moved to arch/cris/include.
-> > 
-> > It is mainly this I'd like some input on, since most other ports
-> > that have moved their header files have put all headers in arch/*/include.
+On Wed, Oct 29, 2008 at 02:21:35PM -0400, Mike Frysinger wrote:
+> For people banging on kernel trees which are dedicated to a specific arch,
+> it'd be nice to allow the repo itself to declare the default ARCH (and
+> CROSS_COMPILE) easily.  Just like the "localversion-*" files, people can
+> just do:
+> echo 'ARCH ?= blackfin' > localarch
+> and the tree will default to 'blackfin' all the time rather than whatever
+> the build machine happens to be.
 > 
-> After some soul-searching I've changed this, and moved all header
-> files into arch/cris/include. The most telling argument was that
-> the CRIS port wouldn't have anything other than include files in
-> the arch/cris/mach-* directories.
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> ---
+>  Makefile |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
 > 
-> If that changes some time in the future, it is a simple operation
-> moving the machine dependent header files there.
-> 
-> Since the complete patch is too large to post, I'm not including
-> the diff of the files moved, only the files changed.
+> diff --git a/Makefile b/Makefile
+> index a7f2068..7fa1f81 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -180,6 +180,7 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
+>  # make ARCH=ia64
+>  # Another way is to have ARCH set in the environment.
+>  # The default ARCH is the host where make is executed.
+> +-include localarch
+>  
+>  # CROSS_COMPILE specify the prefix used for all executables used
+>  # during compilation. Only gcc and related bin-utils executables
 
-Hi Jesper.
+Last time I did something similar it broke a few archs.
+But then it was automatically done where this approach is mnually.
 
-I have looked at the diffstat and the patches and this is a
-great improvement in readability of the cris stuff.
-
-It would be good to get this in mainline as fast as possible.
-Can I ask you to prepare to git trees to pull from and ask
-Linus to pull it.
-First tree should be the header move only and if you can
-convince him it would be great to take the next two patches
-so add them to another tree.
-
-You can add an:
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-
-on all three patches.
+I will apply this to kbuild-next but it will most likely change
+sometime in the future.
 
 	Sam
