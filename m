@@ -1,135 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbYJ2J36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbYJ2JdM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753409AbYJ2J36 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 05:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYJ2J3t
+	id S1753208AbYJ2JdM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 05:33:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbYJ2Jcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 05:29:49 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:62690 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751450AbYJ2J3s (ORCPT
+	Wed, 29 Oct 2008 05:32:55 -0400
+Received: from lazybastard.de ([212.112.238.170]:41113 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752633AbYJ2Jcx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 05:29:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=prCewmWIREG33egtanm7BJs7uGi6ALqvk5GyWX8QQAqgMIxNchNmxGxkj+CtfxmysB
-         P+FXfW2nXs9eBg6YEsqV2qKzEf3DhwW3dCa0FIjjYIJ/3rRsSLp/9nV+GGFG7zD7WeAw
-         xJuLhPs8CPvfVLii+KXizzxJNY8rixQ5+eXic=
-Message-ID: <49082D09.8060102@gmail.com>
-Date: Wed, 29 Oct 2008 12:29:45 +0300
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Wed, 29 Oct 2008 05:32:53 -0400
+Date: Wed, 29 Oct 2008 10:32:18 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tim.bird@am.sony.com
+Subject: Re: [PATCH V2 10/16] Squashfs: cache operations
+Message-ID: <20081029093218.GA26456@logfs.org>
+References: <E1Kv0C4-0006HO-BC@dylan>
 MIME-Version: 1.0
-To: Zhao Yakui <yakui.zhao@intel.com>
-CC: Darren Salt <linux@youmustbejoking.demon.co.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Subject: Re: [2.6.28-rc2] EeePC ACPI errors & exceptions
-References: <alpine.LFD.2.00.0810261221350.3386@nehalem.linux-foundation.org>	 <4FFA7B13E0%linux@youmustbejoking.demon.co.uk>	 <1225186966.5189.143.camel@yakui_zhao.sh.intel.com>	 <4FFABF28C8%linux@youmustbejoking.demon.co.uk> <49077A13.7020603@gmail.com> <1225265974.5189.189.camel@yakui_zhao.sh.intel.com>
-In-Reply-To: <1225265974.5189.189.camel@yakui_zhao.sh.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <E1Kv0C4-0006HO-BC@dylan>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not a problem, just find the root cause. Or shut up.
+On Wed, 29 October 2008 01:49:56 +0000, Phillip Lougher wrote:
+> +/*
+> + * Blocks in Squashfs are compressed.  To avoid repeatedly decompressing
+> + * recently accessed data Squashfs uses two small metadata and fragment caches.
+> + *
+> + * This file implements a generic cache implementation used for both caches,
+> + * plus functions layered ontop of the generic cache implementation to
+> + * access the metadata and fragment caches.
+> + */
 
+I tend to agree with Andrew that a lot of this should be done by the
+page cache instead.  One of the problems seems to be that your blocksize
+can exceed page size and there really isn't any infrastructure to deal
+with such cases yet.  Bufferheads deal with blocks smaller than a page,
+not the other way around.
 
-Zhao Yakui wrote:
-> On Tue, 2008-10-28 at 13:46 -0700, Alexey Starikovskiy wrote:
->   
->> Hi Darren,
->>
->> Please check if the patch 
->> http://marc.info/?l=linux-acpi&m=122516784917952&w=4
->> helps.
->>     
-> In the attached patch the msleep is replaced by udelay gain. 
->    In the following commit the udelay is replaced by msleep. 
->    >commit 1b7fc5aae8867046f8d3d45808309d5b7f2e036a
->    >Author: Alexey Starikovskiy <astarikovskiy@suse.de>
->    >Date:   Fri Jun 6 11:49:33 2008 -0400
->      >ACPI: EC: Use msleep instead of udelay while waiting for event
->    
->    After the problem happens again, the udelay is restored again before
-> getting the root cause. 
->    Maybe we should find the root cause of the problem and change the
-> working flowchart about the EC driver. It is inappropriate that we make
-> some changes and it is reverted again when the problem happens.
->    
->    At the same time after mlseep is replaced by the udelay, the CPU will
-> do thing but loop while doing EC transaction on some laptops (In the
-> function of ec_poll). If 100 EC transactions are done, the CPU will do
-> nothing but loop at least for 100*2*100 microseconds. In such case maybe
-> the performance will be affected.
->
->   After the following commit is merged, the EC transaction will be
-> executed in EC GPE interrupt context on most laptops.Maybe it is easier.
-> But for the some laptops it can't be done in EC GPE interrupt context.
-> So it falls back to the EC polling mode. (This is realized by the
-> function of ec_poll).
->     >commit 7c6db4e050601f359081fde418ca6dc4fc2d0011
->     >Author: Alexey Starikovskiy <astarikovskiy@suse.de>
->     >Date:   Thu Sep 25 21:00:31 2008 +0400
->        >ACPI: EC: do transaction from interrupt context
->    
->    Why is AE_TIME sometimes returned by the function of ec_poll?
->   
->> static int ec_poll(struct acpi_ec *ec)
->>     
-> {
->         unsigned long delay = jiffies + msecs_to_jiffies(ACPI_EC_DELAY);
->         msleep(1);
-> // Maybe the current jiffies is already after the predefined jiffies
-> after msleep(1). In such case the ETIME will be returned. Of course the
-> EC transaction can't be finished. If so, IMO this is not reasonable as
-> this is caused by that OS has no opportunity to issue the following EC
-> command sequence.
->         while (time_before(jiffies, delay)) {
->                 gpe_transaction(ec, acpi_ec_read_status(ec));
->                 msleep(1);
->                 if (ec_transaction_done(ec))
->                         return 0;
-> //Maybe there exists the following cases. EC transaction is not finished
-> after msleep(1),but the current jiffies is already after predefined
-> jiffies. So ETIME is returned. In such case, IMO this is also not
-> reasonable.
->         }
->         return -ETIME;
-> }
->      At the same time msleep is realized by schedule_timeout. On linux
-> although one process is waked up by some events, it won't be scheduled
-> immediately. So maybe the current jiffies is already after the
-> predefined timeout jiffies  after msleep(1). 
->     Although the possibility of this issue can be reduced by that msleep
-> is replaced by udelay,maybe the issue still exists if the preempt
-> schedule happens at the corresponding place.
->
->     In the above case the ETIME will be returned by ec_poll. But the
-> reason is not that EC controller can't update its status in time.
-> Instead it is caused by that host has no opportunity to issue the
-> sequence operation in the current work flowchart. In current EC work
-> flowchart the EC transaction is done in a big loop. 
->     
->     Maybe the better solution is that the EC transaction is explicitly
-> divided into several different phases. 
->
->     Maybe my analysis is not correct. If so, please correct me. 
-> Welcome the comments.
->
->     thanks.
->     
->     
->      
->   
->> Thanks,
->> Alex.
->>
->>
->>     
->
->   
+Another is that address spaces are limited ot 16TB on 32bit
+architectures.  I guess that should be good enough for a while.  I've
+heard some rumors that btrfs actually uses multiple address spaces to
+handle this problem, so a good strategy may be to sit back, wait and
+simply copy what btrfs does once the issue becomes pressing.
 
+To deal with large blocks, you most likely want to keep you struct
+squashfs_cache_entry around and have page->private point to it.  But be
+warned, as the whole page->private business is - shall we say - fragile.
+You need to supply a number of methods to make things work.  And if you
+fail to set any one of them, core code will assume a default, which is
+to call into the bufferhead code.  And the backtrace you will receive
+some time later has little or no indication that you actually only
+missed one method.  I've been meaning to clean this up, but never found
+the courage to actually do it.
+
+> +/*
+> + * Look-up block in cache, and increment usage count.  If not in cache, read
+> + * and decompress it from disk.
+> + */
+> +struct squashfs_cache_entry *squashfs_cache_get(struct super_block *sb,
+> +	struct squashfs_cache *cache, long long block, int length)
+
+I personally prefer u64 instead of long long.  It is a device address
+for a 64bit filesystem after all.  Same for next_index.
+
+> +		if (i == cache->entries) {
+> +			/*
+> +			 * Block not in cache, if all cache entries are locked
+> +			 * go to sleep waiting for one to become available.
+> +			 */
+> +			if (cache->unused == 0) {
+> +				cache->waiting++;
+> +				spin_unlock(&cache->lock);
+> +				wait_event(cache->wait_queue, cache->unused);
+> +				spin_lock(&cache->lock);
+> +				cache->waiting--;
+
+Maybe rename to no_waiters?  "waiting" looks more like a boolean.
+
+> +			entry->length = squashfs_read_data(sb, entry->data,
+> +				block, length, &entry->next_index,
+> +				cache->block_size);
+> +
+> +			spin_lock(&cache->lock);
+> +
+> +			if (entry->length < 0)
+> +				entry->error = entry->length;
+
+entry->error is of type char.  We actually have errno's defined up to
+131, so if by whatever freak chance the error is -ENOTRECOVERABLE, this
+will convert it to a positive number.  I wouldn't want to debug that.
+
+> +void squashfs_cache_put(struct squashfs_cache *cache,
+> +				struct squashfs_cache_entry *entry)
+> +{
+> +	spin_lock(&cache->lock);
+> +	entry->locked--;
+> +	if (entry->locked == 0) {
+
+You might want to rename this to "refcount", just to make the name match
+the behaviour.
+
+Jörn
+
+-- 
+Measure. Don't tune for speed until you've measured, and even then
+don't unless one part of the code overwhelms the rest.
+-- Rob Pike
