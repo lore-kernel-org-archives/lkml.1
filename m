@@ -1,94 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754166AbYJ2PHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753566AbYJ2PLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754166AbYJ2PHn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 11:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYJ2PHe
+	id S1753566AbYJ2PLg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 11:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbYJ2PL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 11:07:34 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:41153 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751935AbYJ2PHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 11:07:34 -0400
-Subject: Re: [UPDATED PATCH VER2] Cell OProfile: Incorrect local array size
-	in activate spu profiling function
-From: Carl Love <cel@us.ibm.com>
-To: michael@ellerman.id.au
-Cc: Hannsj_uhl <Hannsj_uhl@de.ibm.com>, acjohnso <acjohnso@us.ibm.com>,
-       oprofile-list@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
-       cel@linux.vnet.ibm.com, cbe-oss-dev@ozlabs.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1225241514.7799.2.camel@localhost>
-References: <1224874049.20229.5.camel@carll-linux-desktop>
-	 <1224909595.16090.5.camel@localhost>
-	 <1225207079.20229.32.camel@carll-linux-desktop>
-	 <1225241514.7799.2.camel@localhost>
-Content-Type: text/plain
-Date: Wed, 29 Oct 2008 08:06:45 -0700
-Message-Id: <1225292805.20229.52.camel@carll-linux-desktop>
+	Wed, 29 Oct 2008 11:11:27 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:60543 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752491AbYJ2PL0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 11:11:26 -0400
+Date: Wed, 29 Oct 2008 13:12:07 -0200
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
+       herton@mandriva.com.br
+Subject: Re: snd-hda-intel prevents machine to power off
+Message-ID: <20081029131207.01666623@doriath.conectiva>
+In-Reply-To: <s5hwsfrltnb.wl%tiwai@suse.de>
+References: <20081028135933.36778d60@doriath.conectiva>
+	<s5hskqgbt4h.wl%tiwai@suse.de>
+	<20081028141916.610a2847@doriath.conectiva>
+	<s5hod14br3h.wl%tiwai@suse.de>
+	<20081028164433.2b2c6db4@doriath.conectiva>
+	<s5hzlkoh6uu.wl%tiwai@suse.de>
+	<s5hwsfrltnb.wl%tiwai@suse.de>
+Organization: Mandriva
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.4; i586-mandriva-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Updated the patch to address comments by Michael Ellerman.  
-Specifically, changed upper limit in for loop to 
-ARRAY_SIZE() macro and added a check to make sure the 
-number of events specified by the user, which is used as
-the max for indexing various arrays, is no bigger then the
-declared size of the arrays.
+Em Wed, 29 Oct 2008 08:58:32 +0100
+Takashi Iwai <tiwai@suse.de> escreveu:
 
-The size of the pm_signal_local array should be equal to the
-number of SPUs being configured in the array.  Currently, the
-array is of size 4 (NR_PHYS_CTRS) but being indexed by a for 
-loop from 0 to 7 (NUM_SPUS_PER_NODE).  
+| At Tue, 28 Oct 2008 20:12:09 +0100,
+| I wrote:
+| > 
+| > At Tue, 28 Oct 2008 16:44:33 -0200,
+| > Luiz Fernando N. Capitulino wrote:
+| > > 
+| > > Em Tue, 28 Oct 2008 17:51:30 +0100
+| > > Takashi Iwai <tiwai@suse.de> escreveu:
+| > > 
+| > > | At Tue, 28 Oct 2008 14:19:16 -0200,
+| > > | Luiz Fernando N. Capitulino wrote:
+| > > | > 
+| > > | > Em Tue, 28 Oct 2008 17:07:42 +0100
+| > > | > Takashi Iwai <tiwai@suse.de> escreveu:
+| > > | > 
+| > > | > | >  Hi Takashi,
+| > > | > | > 
+| > > | > | >  If I have some process with the sound device opened in my eeepc
+| > > | > | > (say KDE's kmix) and try to power off the machine, for example with:
+| > > | > | > 
+| > > | > | > # echo o > /proc/sysrq-trigger
+| > > | > | > 
+| > > | > | >  The machine will not power off.
+| > > | > | 
+| > > | > | At which point does it stop?
+| > > | > | What shows alt-sysrq-t (or w) output?
+| > > | > 
+| > > | >  I'm wondering how to get that kind of output because everything
+| > > | > is disabled at that point (display inclusive).
+| > > | 
+| > > | OK, then it's hard to see.
+| > > | A good news is that it goes at least fairly end point, thus likely no
+| > > | hanging task, etc.
+| > > | 
+| > > | 
+| > > | > | >  But it does work if I remove the snd-hda-intel module before issuing
+| > > | > | > the echo above.
+| > > | > | > 
+| > > | > | >  This problem seems to be pretty popular among distros, I could find
+| > > | > | > it reported for Mandriva, Ubuntu and Fedora.
+| > > | > | 
+| > > | > | Hmm, I haven't heard of unfixed issues.
+| > > | > 
+| > > | >  Well, these are the tickets I've found:
+| > > | > 
+| > > | > https://bugzilla.redhat.com/show_bug.cgi?id=444115
+| > > | > https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.22/+bug/126140
+| > > | > https://qa.mandriva.com/show_bug.cgi?id=44752
+| > > | 
+| > > | Looking through the comments that the power-saving helps, the problem
+| > > | may disappear even without disabling the pci device.  The power-saving
+| > > | doesn't involve with pci_disable_device() or changing the power-state
+| > > | of the controler.  So, at least, the problem is either in the codec
+| > > | or the controller setup.
+| > > | 
+| > > | Suppose you already use the power-saving and it solves the shutdown
+| > > | problem, could you set power_save_controller=0 option for
+| > > | snd-hda-intel, and check whether the shutdown still works or not?
+| > > | If the shutdown doesn't work with this option, it means that
+| > > | azx_stop_chip() is what would be needed.
+| > > 
+| > >  Yes, power_save_controller=0 doesn't work while the power-saving
+| > > one works.
+| > 
+| > OK, then could you check which call in azx_stop_chip() is critical?
+| > You can comment out each and check the difference.
+| > 
+| > >  Where should I put a call to azx_stop_ship()? I'm not an alsa
+| > > hacker. :)
+| > 
+| > This is the problem.  If it's a fast call like azx_int_clear() or
+| > azx_int_enable(), it can be relatively easily done at each time.
+| > But, it's like freeing memories, it shouldn't be done at each
+| > operation.
+| 
+| On the second thought, we may just use a reboot notifier as a
+| workaround for this kind of problem.
+| Below is a quick fix.  Could you give it a try?
 
-Signed-off-by: Carl Love <carll@us.ibm.com>
+ Yeah, it fixes the problem for me.
 
+| Anyway, could you create a kernel bugzilla entry?  This will help
+| to keep records in a commit changelog greatly, why this ugly hack is
+| needed.
+| You can list the relevant URLs there as references, too.
 
-Index: Cell_kernel_10_24_2008/arch/powerpc/oprofile/op_model_cell.c
-===================================================================
---- Cell_kernel_10_24_2008.orig/arch/powerpc/oprofile/op_model_cell.c
-+++ Cell_kernel_10_24_2008/arch/powerpc/oprofile/op_model_cell.c
-@@ -582,6 +582,13 @@ static int cell_reg_setup(struct op_coun
- 
- 	num_counters = num_ctrs;
- 
-+	if (unlikely(num_ctrs > NR_PHYS_CTRS)) {
-+		printk(KERN_ERR
-+		       "%s: Oprofile, number of specified events " \
-+		       "exceeds number of physical counters\n",
-+		       __func__);
-+		return -EIO;
-+	}
- 	pm_regs.group_control = 0;
- 	pm_regs.debug_bus_control = 0;
- 
-@@ -830,13 +837,13 @@ static int calculate_lfsr(int n)
- static int pm_rtas_activate_spu_profiling(u32 node)
- {
- 	int ret, i;
--	struct pm_signal pm_signal_local[NR_PHYS_CTRS];
-+	struct pm_signal pm_signal_local[NUM_SPUS_PER_NODE];
- 
- 	/*
- 	 * Set up the rtas call to configure the debug bus to
- 	 * route the SPU PCs.  Setup the pm_signal for each SPU
- 	 */
--	for (i = 0; i < NUM_SPUS_PER_NODE; i++) {
-+	for (i = 0; i < ARRAY_SIZE(pm_signal_local); i++) {
- 		pm_signal_local[i].cpu = node;
- 		pm_signal_local[i].signal_group = 41;
- 		/* spu i on word (i/2) */
-@@ -848,7 +855,7 @@ static int pm_rtas_activate_spu_profilin
- 
- 	ret = rtas_ibm_cbe_perftools(SUBFUNC_ACTIVATE,
- 				     PASSTHRU_ENABLE, pm_signal_local,
--				     (NUM_SPUS_PER_NODE
-+				     (ARRAY_SIZE(pm_signal_local)
- 				      * sizeof(struct pm_signal)));
- 
- 	if (unlikely(ret)) {
+ Here you are:
 
+http://bugzilla.kernel.org/show_bug.cgi?id=11889
 
+ Takashi, Thank you very much for your help.
+
+-- 
+Luiz Fernando N. Capitulino
