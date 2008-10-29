@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754120AbYJ2PtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbYJ2PvM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754120AbYJ2PtT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 11:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYJ2PtK
+	id S1754081AbYJ2PvM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 11:51:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYJ2Pu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 11:49:10 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50556 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751668AbYJ2PtJ (ORCPT
+	Wed, 29 Oct 2008 11:50:58 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:41100 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752225AbYJ2Pu6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 11:49:09 -0400
-Date: Wed, 29 Oct 2008 08:49:32 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, morgan@kernel.org, serue@us.ibm.com
-Subject: Re: [PATCH] Capabilities: BUG when an invalid capability is
- requested
-Message-ID: <20081029084932.77de26fd@infradead.org>
-In-Reply-To: <1225294932.23736.28.camel@localhost.localdomain>
-References: <1225294932.23736.28.camel@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 29 Oct 2008 11:50:58 -0400
+To: stern@rowland.harvard.edu
+CC: miklos@szeredi.hu, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org
+In-reply-to: <Pine.LNX.4.44L0.0810291122220.2189-100000@iolanthe.rowland.org>
+	(message from Alan Stern on Wed, 29 Oct 2008 11:28:34 -0400 (EDT))
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
+ filesystems.
+References: <Pine.LNX.4.44L0.0810291122220.2189-100000@iolanthe.rowland.org>
+Message-Id: <E1KvDJp-00088f-2b@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 29 Oct 2008 16:50:49 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Oct 2008 11:42:12 -0400
-Eric Paris <eparis@redhat.com> wrote:
+On Wed, 29 Oct 2008, Alan Stern wrote:
+> On Wed, 29 Oct 2008, Miklos Szeredi wrote:
+> > I did a random sampling of ->suspend() callbacks, and they don't seem
+> > to be taking mutexes.  Does that happen at all?
+> 
+> It does, particularly among drivers that do runtime PM, which is 
+> becoming more and more important.
+> 
+> Besides, suspend has to synchronize with I/O somehow.  Right now that 
+> is handled by making suspend wait until no tasks are doing I/O (because 
+> they are all frozen).
 
-> If an invalid (large) capability is requested the capabilities system
-> may panic as it is dereferencing an array of fixed (short) length.
-> Its possible (and actually often happens) that the capability system
-> accidentally stumbled into a valid memory region but it also regularly
-> happens that it hits invalid memory and BUGs.  If such an operation
-> does get past cap_capable then the selinux system is sure to have
-> problems as it already does a (simple) validity check and BUG.  This
-> is known to happen by the broken and buggy firegl driver.
-> 
-> This patch cleanly checks all capable calls and BUG if a call is for
-> an invalid capability.  This will likely break the firegl driver for
-> some situations, but it is the right thing to do.  Garbage into a
-> security system gets you killed/bugged
-> 
-> Signed-off-by: Eric Paris <eparis@redhat.com>
-> 
+What about async I/O?
 
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+>  If you allow tasks to be frozen at more or less 
+> arbitrary times, while holding arbitrary locks, then you may end up 
+> freezing a task that's in the middle of I/O.  That should certainly 
+> block the suspend (not to mention messing up the I/O operation).
+
+What is the middle of I/O?  Depending the type of I/O it could be
+messed up regardless of whether tasks happen to be in userspace or not
+(e.g. printing).
+
+And some types of I/O are already mostly decoupled from userspace
+(file I/O, networking), so the userspace freezing shoudln't make any
+difference.
+
+> > Did anybody ever try modifying the freezer for suspend (not
+> > hibernate), so that it allows tasks not in running state to freeze?
+> > If not, I think that's an experiment worth doing.
+> 
+> What happens if the reason the task isn't running is because it's 
+> waiting for I/O to complete?  I just don't think this can be made to 
+> work.
+
+Don't know.  I've never written a driver, and I'm not familiar with
+runtime PM, etc.  So I can't come up with a detailed design for
+solving the freezer issues there.
+
+But I do think that the solution does not lie in "fixing" the VFS.
+
+Miklos
