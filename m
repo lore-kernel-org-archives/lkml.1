@@ -1,57 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbYJ2HUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752876AbYJ2HdM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753425AbYJ2HUl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 03:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbYJ2HU2
+	id S1752876AbYJ2HdM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 03:33:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbYJ2Hcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 03:20:28 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:45969 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753218AbYJ2HU0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 03:20:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=QX9BTfWN54xCvyomSzLtxsP1XF+Hg/KRnzZNjIi8oq403azPsQrUNwRIUgpLFQcUz/
-         JIYEiCeiLwaSCHr8pZmMWikl2Xdj6HSJJ9r5MNNWtK+mmOEpomm5lMidMgdgGiG9YTW2
-         6k0C15w9bmR/ahkWlwkOmfYfn5ylwQCU0Zzog=
-Message-ID: <2f11576a0810290020i362441edkb494b10c10b17401@mail.gmail.com>
-Date: Wed, 29 Oct 2008 16:20:24 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use schedule_on_each_cpu()
-Cc: "Christoph Lameter" <cl@linux-foundation.org>, heiko.carstens@de.ibm.com,
-       npiggin@suse.de, linux-kernel@vger.kernel.org, hugh@veritas.com,
-       torvalds@linux-foundation.org, riel@redhat.com, lee.schermerhorn@hp.com,
-       linux-mm@kvack.org
-In-Reply-To: <20081028134536.9a7a5351.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 29 Oct 2008 03:32:55 -0400
+Received: from mga11.intel.com ([192.55.52.93]:62217 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751701AbYJ2Hcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 03:32:54 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,505,1220252400"; 
+   d="scan'208";a="632827918"
+Subject: Re: [2.6.28-rc2] EeePC ACPI errors & exceptions
+From: Zhao Yakui <yakui.zhao@intel.com>
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Cc: Darren Salt <linux@youmustbejoking.demon.co.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+In-Reply-To: <49077A13.7020603@gmail.com>
+References: <alpine.LFD.2.00.0810261221350.3386@nehalem.linux-foundation.org>
+	 <4FFA7B13E0%linux@youmustbejoking.demon.co.uk>
+	 <1225186966.5189.143.camel@yakui_zhao.sh.intel.com>
+	 <4FFABF28C8%linux@youmustbejoking.demon.co.uk> <49077A13.7020603@gmail.com>
+Content-Type: text/plain
+Date: Wed, 29 Oct 2008 15:39:34 +0800
+Message-Id: <1225265974.5189.189.camel@yakui_zhao.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <2f11576a0810210851g6e0d86benef5d801871886dd7@mail.gmail.com>
-	 <2f11576a0810211018g5166c1byc182f1194cfdd45d@mail.gmail.com>
-	 <20081023235425.9C40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20081027145509.ebffcf0e.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0810280914010.15939@quilx.com>
-	 <20081028134536.9a7a5351.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 56d6212f3da5d745
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I guess we should document our newly discovered schedule_on_each_cpu()
-> problems before we forget about it and later rediscover it.
+On Tue, 2008-10-28 at 13:46 -0700, Alexey Starikovskiy wrote:
+> Hi Darren,
+> 
+> Please check if the patch 
+> http://marc.info/?l=linux-acpi&m=122516784917952&w=4
+> helps.
+In the attached patch the msleep is replaced by udelay gain. 
+   In the following commit the udelay is replaced by msleep. 
+   >commit 1b7fc5aae8867046f8d3d45808309d5b7f2e036a
+   >Author: Alexey Starikovskiy <astarikovskiy@suse.de>
+   >Date:   Fri Jun 6 11:49:33 2008 -0400
+     >ACPI: EC: Use msleep instead of udelay while waiting for event
+   
+   After the problem happens again, the udelay is restored again before
+getting the root cause. 
+   Maybe we should find the root cause of the problem and change the
+working flowchart about the EC driver. It is inappropriate that we make
+some changes and it is reverted again when the problem happens.
+   
+   At the same time after mlseep is replaced by the udelay, the CPU will
+do thing but loop while doing EC transaction on some laptops (In the
+function of ec_poll). If 100 EC transactions are done, the CPU will do
+nothing but loop at least for 100*2*100 microseconds. In such case maybe
+the performance will be affected.
 
-Now, schedule_on_each_cpu() is only used by lru_add_drain_all().
-and smp_call_function() is better way for cross call.
+  After the following commit is merged, the EC transaction will be
+executed in EC GPE interrupt context on most laptops.Maybe it is easier.
+But for the some laptops it can't be done in EC GPE interrupt context.
+So it falls back to the EC polling mode. (This is realized by the
+function of ec_poll).
+    >commit 7c6db4e050601f359081fde418ca6dc4fc2d0011
+    >Author: Alexey Starikovskiy <astarikovskiy@suse.de>
+    >Date:   Thu Sep 25 21:00:31 2008 +0400
+       >ACPI: EC: do transaction from interrupt context
+   
+   Why is AE_TIME sometimes returned by the function of ec_poll?
+>static int ec_poll(struct acpi_ec *ec)
+{
+        unsigned long delay = jiffies + msecs_to_jiffies(ACPI_EC_DELAY);
+        msleep(1);
+// Maybe the current jiffies is already after the predefined jiffies
+after msleep(1). In such case the ETIME will be returned. Of course the
+EC transaction can't be finished. If so, IMO this is not reasonable as
+this is caused by that OS has no opportunity to issue the following EC
+command sequence.
+        while (time_before(jiffies, delay)) {
+                gpe_transaction(ec, acpi_ec_read_status(ec));
+                msleep(1);
+                if (ec_transaction_done(ec))
+                        return 0;
+//Maybe there exists the following cases. EC transaction is not finished
+after msleep(1),but the current jiffies is already after predefined
+jiffies. So ETIME is returned. In such case, IMO this is also not
+reasonable.
+        }
+        return -ETIME;
+}
+     At the same time msleep is realized by schedule_timeout. On linux
+although one process is waked up by some events, it won't be scheduled
+immediately. So maybe the current jiffies is already after the
+predefined timeout jiffies  after msleep(1). 
+    Although the possibility of this issue can be reduced by that msleep
+is replaced by udelay,maybe the issue still exists if the preempt
+schedule happens at the corresponding place.
 
-So I propose
-   1. lru_add_drain_all() use smp_call_function()
-   2. remove schedule_on_each_cpu()
+    In the above case the ETIME will be returned by ec_poll. But the
+reason is not that EC controller can't update its status in time.
+Instead it is caused by that host has no opportunity to issue the
+sequence operation in the current work flowchart. In current EC work
+flowchart the EC transaction is done in a big loop. 
+    
+    Maybe the better solution is that the EC transaction is explicitly
+divided into several different phases. 
 
+    Maybe my analysis is not correct. If so, please correct me. 
+Welcome the comments.
 
-Thought?
+    thanks.
+    
+    
+     
+> Thanks,
+> Alex.
+> 
+> 
+
