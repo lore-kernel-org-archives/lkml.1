@@ -1,145 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbYJ2L4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753696AbYJ2MB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753891AbYJ2L4A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 07:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbYJ2Lzv
+	id S1753696AbYJ2MB6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 08:01:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbYJ2MBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 07:55:51 -0400
-Received: from sh.osrg.net ([192.16.179.4]:58847 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752019AbYJ2Lzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 07:55:50 -0400
-Date: Wed, 29 Oct 2008 20:55:16 +0900
-To: jens.axboe@oracle.com
-Cc: mingo@elte.hu, jeremy@goop.org, fujita.tomonori@lab.ntt.co.jp,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] x86: replace BIO_VMERGE_BOUNDARY with
- BIOVEC_PHYS_MERGEABLE
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081029113434.GA31673@kernel.dk>
-References: <20081029112745.GT22217@kernel.dk>
-	<20081029113016.GA3751@elte.hu>
-	<20081029113434.GA31673@kernel.dk>
+	Wed, 29 Oct 2008 08:01:47 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:59367 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752302AbYJ2MBp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 08:01:45 -0400
+Subject: Re: linux-next: Tree for October 28
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-wireless@vger.kernel.org, Mark Fasheh <mfasheh@suse.com>,
+       Joel Becker <Joel.Becker@oracle.com>
+In-Reply-To: <20081028220741.f5d331ba.akpm@linux-foundation.org> (sfid-20081029_060823_839692_3F85A756)
+References: <20081028183055.fbcf5420.sfr@canb.auug.org.au>
+	 <20081028220741.f5d331ba.akpm@linux-foundation.org>
+	 (sfid-20081029_060823_839692_3F85A756)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-e088Dj2w9G7nGlmS0qHw"
+Date: Wed, 29 Oct 2008 13:01:21 +0100
+Message-Id: <1225281681.5439.7.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081029205501W.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Oct 2008 12:34:34 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> On Wed, Oct 29 2008, Ingo Molnar wrote:
-> > 
-> > * Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > On Wed, Oct 29 2008, Ingo Molnar wrote:
-> > > > 
-> > > > * Ingo Molnar <mingo@elte.hu> wrote:
-> > > > 
-> > > > > 
-> > > > > * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> > > > > 
-> > > > > >> does it have any dependency on:
-> > > > > >>
-> > > > > >>   Subject: [PATCH 1/2] bio: define __BIOVEC_PHYS_MERGEABLE
-> > > > > >
-> > > > > > No, they're independent.  Defining __BIOVEC_PHYS_MERGEABLE will be 
-> > > > > > useful for the Xen changes I need to make in the wake of Tomo's 
-> > > > > > patch.
-> > > > > 
-> > > > > ok - applied to tip/x86/xen, thanks Jeremy! (also added Jens's 
-> > > > > Acked-by)
-> > > > 
-> > > > build failure, zapped it:
-> > > > 
-> > > > fs/bio.c: In function '__bio_add_page':
-> > > > fs/bio.c:443: error: implicit declaration of function '__BIOVEC_PHYS_MERGEABLE'
-> > > 
-> > > What patch(es) did you apply?
-> > 
-> > the one i replied to (2/2), and which one Jeremy said was independent 
-> > of 1/2. Not so much it appears.
-> 
-> OK, those two are definitely connected, since the first one defines
-> __BIOVEC_PHYS_MERGEABLE :-)
+--=-e088Dj2w9G7nGlmS0qHw
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-And [2/2] is wrong (that's what Jens and I explained to
-Jeremy). Please don't apply it.
+On Tue, 2008-10-28 at 22:07 -0700, Andrew Morton wrote:
 
+> and wireless needs some Kconfig help.  Please don't just break other
+> architecture's build like this.
+>=20
+> drivers/staging/wlan-ng/wlan_compat.h:136:3: #error "No CPU identified!"
+> drivers/staging/wlan-ng/wlan_compat.h:695:6: warning: "WLAN_CPU_FAMILY" i=
+s not defined
+> drivers/staging/wlan-ng/wlan_compat.h:699:6: warning: "WLAN_CPU_FAMILY" i=
+s not defined
 
-> The one I acked was in the mail I replied to, Tomos patch.
+This isn't wireless, it's staging. Talk to Greg, not to linux-wireless.
 
-For your convenience, here's a repost (with Jens' ack).
+johannes
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] x86: remove dead BIO_VMERGE_BOUNDARY definition
+--=-e088Dj2w9G7nGlmS0qHw
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-The block layer dropped the virtual merge feature
-(b8b3e16cfe6435d961f6aaebcfd52a1ff2a988c5). BIO_VMERGE_BOUNDARY
-definition is meaningless now.
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
----
- arch/x86/include/asm/io.h    |    2 --
- arch/x86/include/asm/io_64.h |    2 --
- arch/x86/kernel/pci-dma.c    |    6 ------
- 3 files changed, 0 insertions(+), 10 deletions(-)
+iQIcBAABAgAGBQJJCFCNAAoJEKVg1VMiehFYFIkP/0YGJO/fu/libSPrwysAyYt6
+O7RS96vjcjqEdde7OzwLQuJar75KdTe2XWg2CVv/SgNlFZRwGVKwqcZ1Yc08b7EW
+SNatkJdsZ08tkmdRIzb2UZ+91efB8+Id+vOV/H4pRxLghznB7QII7z94QwUq9JAi
+XkPGMvMNXq5jjv8dZNZNtFXTTyVnPNuLQLcMZli6GWVBUHEpguJxz7N+oLDU/wz1
+rs7HQOQ3bWv2NxgRUKJZUaF6NWzWpCy3pqazxDmR1yTq9kewrjGB/akDYzJjt9p/
+fTXl5AVYVLhrppxL4aQhWZYdMYYOagxM3/m5QTf63ivllBa+R4wsse4UPU+qdVlN
+o7sIZZhV0AaMDQOx6SzNgxj0Yh1ruSrWlH1DBHbVzHaAsT7IvgEe9zAOrcPNmitS
+9AJQtqhM17gfxXuaFFtO9Q3+WJ5Bz4njwh7RfxQsNgulp95T7DsQtIfPghe7vBmG
+l4VaQZbVw4d9n+6akB0sdz0bS4YOZWRI5TAZMCbrNyQV1mUJEuIvd+b3k6ANo+i6
+3K2FJk3VF8+yb6gC5PkfliRgc45Q5g4qLjqy36vJAi5/8cKPEQn3Ke1BDxUpUhF9
+sl7m7hfU3P+WXMxrqwQMkJ2Qx4BVHNnvzWhM3PnNltnx2aZGcPtRZpuecrCa0Ytx
+olvxtw+c2oLCtwOv3EVh
+=JjNC
+-----END PGP SIGNATURE-----
 
-diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
-index 5618a10..2f13dbe 100644
---- a/arch/x86/include/asm/io.h
-+++ b/arch/x86/include/asm/io.h
-@@ -59,8 +59,6 @@ build_mmio_write(__writeq, "q", unsigned long, "r", )
- #define writeq writeq
- #endif
- 
--extern int iommu_bio_merge;
--
- #ifdef CONFIG_X86_32
- # include "io_32.h"
- #else
-diff --git a/arch/x86/include/asm/io_64.h b/arch/x86/include/asm/io_64.h
-index fea325a..563c162 100644
---- a/arch/x86/include/asm/io_64.h
-+++ b/arch/x86/include/asm/io_64.h
-@@ -232,8 +232,6 @@ void memset_io(volatile void __iomem *a, int b, size_t c);
- 
- #define flush_write_buffers()
- 
--#define BIO_VMERGE_BOUNDARY iommu_bio_merge
--
- /*
-  * Convert a virtual cached pointer to an uncached pointer
-  */
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index 1972266..d851667 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -28,11 +28,6 @@ int no_iommu __read_mostly;
- /* Set this to 1 if there is a HW IOMMU in the system */
- int iommu_detected __read_mostly = 0;
- 
--/* This tells the BIO block layer to assume merging. Default to off
--   because we cannot guarantee merging later. */
--int iommu_bio_merge __read_mostly = 0;
--EXPORT_SYMBOL(iommu_bio_merge);
--
- dma_addr_t bad_dma_address __read_mostly = 0;
- EXPORT_SYMBOL(bad_dma_address);
- 
-@@ -186,7 +181,6 @@ static __init int iommu_setup(char *p)
- 		}
- 
- 		if (!strncmp(p, "biomerge", 8)) {
--			iommu_bio_merge = 4096;
- 			iommu_merge = 1;
- 			force_iommu = 1;
- 		}
--- 
-1.5.5.GIT
+--=-e088Dj2w9G7nGlmS0qHw--
 
