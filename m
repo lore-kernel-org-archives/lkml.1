@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbYJ2RFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbYJ2RF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512AbYJ2RFW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 13:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYJ2RFJ
+	id S1754725AbYJ2RF6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 13:05:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbYJ2RFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 13:05:09 -0400
-Received: from mx27.mail.ru ([194.67.23.23]:61376 "EHLO mx27.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751771AbYJ2RFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 13:05:08 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: Philip Langdale <philipl@overt.org>
-Subject: Re: [patch] ACPI toshiba: only register rfkill if bt is enabled
-Date: Wed, 29 Oct 2008 20:05:01 +0300
-User-Agent: KMail/1.9.10
-Cc: Frederik Deweerdt <frederik.deweerdt@xprog.eu>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <20081029081934.GB26314@gambetta> <4908817B.1080205@overt.org>
-In-Reply-To: <4908817B.1080205@overt.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1652098.0biz9UilGm";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200810292005.03114.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: OK
+	Wed, 29 Oct 2008 13:05:48 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42810 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752083AbYJ2RFr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 13:05:47 -0400
+Date: Wed, 29 Oct 2008 18:13:46 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Andrey Borzenkov <arvidjaar@mail.ru>, Len Brown <len.brown@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, toshiba_acpi@memebeam.org,
+       linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       andi@firstfloor.org, preining@logic.at
+Subject: Re: ACPI video.c brightness handler conflicts with toshiba_acpi
+Message-ID: <20081029171346.GC7734@one.firstfloor.org>
+References: <200809061108.34877.arvidjaar@mail.ru> <200810281615.19894.rjw@sisk.pl> <200810281922.20490.arvidjaar@mail.ru> <200810291654.56710.trenn@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810291654.56710.trenn@suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1652098.0biz9UilGm
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Wed, Oct 29, 2008 at 04:54:54PM +0100, Thomas Renninger wrote:
+> > So far I am running with these commits from
+> > git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-acpi-2.6:
+> This tree does not exist anymore...
 
-On Wednesday 29 October 2008, Philip Langdale wrote:
-> Acked-by: Philip Langdale <philipl@overt.org>
->=20
+It is now linux-acpi-summer2008-2.6
+I renamed to avoid confusion with Len's tree.
+But Len should have taken all the patches in there.
 
-Tested-by: Andrey Borzenkov <arvidjaar@mail.ru>
-
---nextPart1652098.0biz9UilGm
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkkIl74ACgkQR6LMutpd94yQbgCgjQwHt/zmOBXgz978EXh62zTc
-6ucAnjsM5RJjgrldDmH0N/djtDRH0jcM
-=bBve
------END PGP SIGNATURE-----
-
---nextPart1652098.0biz9UilGm--
+-Andi
