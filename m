@@ -1,81 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbYJ2TYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbYJ2Ta1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754685AbYJ2TYa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 15:24:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbYJ2TYW
+	id S1754618AbYJ2Ta1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 15:30:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbYJ2TaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 15:24:22 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:63731 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752687AbYJ2TYV (ORCPT
+	Wed, 29 Oct 2008 15:30:14 -0400
+Received: from Ext-cn0ut-7.online-age.net ([63.210.253.237]:23391 "EHLO
+	ext-cn0ut-7.online-age.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753662AbYJ2TaN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 15:24:21 -0400
-Date: Wed, 29 Oct 2008 15:24:19 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>, Adrian Bunk <bunk@kernel.org>
-Subject: Re: [PATCH 01/11] ftrace: handle generic arch calls
-In-Reply-To: <20081029190045.GC22105@uranus.ravnborg.org>
-Message-ID: <alpine.DEB.1.10.0810291517220.13214@gandalf.stny.rr.com>
-References: <20081022184313.179487464@goodmis.org> <20081022185135.618026303@goodmis.org> <alpine.DEB.1.10.0810271337370.8006@gandalf.stny.rr.com> <20081029190045.GC22105@uranus.ravnborg.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 29 Oct 2008 15:30:13 -0400
+X-Greylist: delayed 558 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Oct 2008 15:30:13 EDT
+Date: Wed, 29 Oct 2008 20:20:45 +0100
+From: Karl Kiniger <karl.kiniger@med.ge.com>
+To: linux-kernel@vger.kernel.org
+Subject: reiserfs_warning() spamming the syslog
+Message-ID: <20081029192045.GA4481@kipc2.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-GEHealthcare-MailScanner: Found to be clean
+X-GEHealthcare-MailScanner-From: karl.kiniger@med.ge.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-On Wed, 29 Oct 2008, Sam Ravnborg wrote:
-> >  
-> > +if ($arch eq "x86") {
-> > +    if ($bits == 64) {
-> > +	$arch = "x86_64";
-> > +    } else {
-> > +	$arch = "i386";
-> > +    }
-> > +}
-> > +
-> >  if ($arch eq "x86_64") {
-> >      $section_regex = "Disassembly of section";
-> >      $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
-> > 
-> 
-> This looks strange to my eyes.
-> Why not do the more obvious:
-> if ($arch eq "x86" && $bits == 64) {
-> 
-> The change above is like trying to stick to the old i386/x86_64
-> notation.
+after two external USB drives got disconnected by powering off 
+a third USB drive  I got several thousand lines of spam in the log:
 
-Trying to fix it tells me my answer to why I did it his way ;-)
+Oct 29 19:02:15 kipc2 kernel: ReiserFS: sdf1: warning: zam-7001: io error in reiserfs_find_entry
 
-I have queued patches that will support other archs so x86 is not the
-only arch that can be used here. But x86 is special, it seems to be the 
-only arch (that I know of, correct me if I'm wrong) that can compile with
-multiple archs defined: make ARCH=x86_64, make ARCH=i386, or
-make ARCH=x86. All are legit.
+(current Fedora 9 kernel, i686)
 
-Now how do we handle this. I've been fine for all my testing to do just 
-x86_64 and i386 because a normal make of x86 will use automatically set
-ARCH to i386 or x86_64 depending on the build.
+rate limiting those would be nice.
 
-But then Adrian Bunk pointed out that "make ARCH=x86" fails. Now I need to 
-add a case for x86, but still allow for x86_64 or i386 being passed in.
-
-Since x86 is the ambiguous case, I made it the one that would be converted 
-to i386 or x86_64 since those could be passed in directly.
-
-Seems that the best approach is still what is there :-/
-
--- Steve
-
+Greetings,
+Karl
+-- 
+D.I. Karl Kiniger     mailto:karl.kiniger@med.ge.com
+Tel: (++43) 7682-3800-710  Voip(GE): 1662 710
+Fax: (++43) 7682-3800-47 C: +43 6991 3800 710
+-
+GE Medical Systems Kretztechnik GmbH & Co OHG - Tiefenbach 15 – A-4871 Zipf
+Landesgericht Wels FN 222387s – UID (VAT-ID): ATU54086108 - DVR: 2111103 – ARA: 12816
+Persönlich haftende Gesellschafterin: GE Medical Systems Kretztechnik GmbH
+Tiefenbach 15 – A-4871 Zipf  - Landesgericht Wels FN 218689b
