@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbYJ3OtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbYJ3OwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756053AbYJ3OtQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 10:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbYJ3OtA
+	id S1756079AbYJ3OwB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 10:52:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755341AbYJ3Ovw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 10:49:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59803 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754692AbYJ3Os7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 10:48:59 -0400
-Date: Thu, 30 Oct 2008 12:47:54 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][v3] blktrace: conversion to tracepoints 2.6.27.4
-	backport
-Message-ID: <20081030144754.GD25056@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20081029120556.GD28123@ghostprotocols.net> <20081029131855.GC31673@kernel.dk> <20081029194323.GA25056@ghostprotocols.net> <20081030144437.GA13812@Krystal>
+	Thu, 30 Oct 2008 10:51:52 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56433 "EHLO UNKNOWN"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755015AbYJ3Ovw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 10:51:52 -0400
+Date: Wed, 29 Oct 2008 15:00:56 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Antonino Daplas <adaplas@gmail.com>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH RESEND] vgacon: remember scrollback buffer on console
+	switch
+Message-ID: <20081029140056.GA1469@ucw.cz>
+References: <20081025195814.GD10932@joi> <20081025134615.36f7285f.akpm@linux-foundation.org> <20081025224247.GA25497@joi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081030144437.GA13812@Krystal>
-X-Url: http://oops.ghostprotocols.net:81/blog
+In-Reply-To: <20081025224247.GA25497@joi>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, Oct 30, 2008 at 10:44:37AM -0400, Mathieu Desnoyers escreveu:
-> Hi Arnaldo,
+Hi!
+
+> > If so, it would be much much better to make this feature switchable at
+> > runtime (module parameter/boot option or a /proc or /sys knob).
 > 
-> I've backported it to 2.6.27.4 so I can merge it in my current -lttng
-> tree.  (I'll move to 2.6.28-rc soon though). I send it here for future
-> reference.
+> /sys knob seems to be the most flexible option.
+> 
+> /sys/class/vtconsole/vtconX/persistent_history? 0/1
 
-Cool, Jens already has it on:
+0/number-of-lines-to-remember?
+								Pavel
 
-http://git.kernel.org/?p=linux/kernel/git/axboe/linux-2.6-block.git;a=shortlog;h=for-2.6.29
-
-And also on the branches "for-akpm" and "for-next".
-
-- Arnaldo
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
