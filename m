@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbYJ2Wrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbYJ2WtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756277AbYJ2Wrt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 18:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756041AbYJ2WoZ
+	id S1754494AbYJ2WtT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 18:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756053AbYJ2Woa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 18:44:25 -0400
-Received: from kroah.org ([198.145.64.141]:43760 "EHLO coco.kroah.org"
+	Wed, 29 Oct 2008 18:44:30 -0400
+Received: from kroah.org ([198.145.64.141]:43774 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755652AbYJ2WoQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 18:44:16 -0400
+	id S1755769AbYJ2WoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 18:44:24 -0400
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 12/49] Staging: w35und: wb35_probe() cleanup
-Date: Wed, 29 Oct 2008 15:39:39 -0700
-Message-Id: <1225320016-21803-12-git-send-email-greg@kroah.com>
+Subject: [PATCH 16/49] Staging: w35und: remove true/false boolean macros
+Date: Wed, 29 Oct 2008 15:39:43 -0700
+Message-Id: <1225320016-21803-16-git-send-email-greg@kroah.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081029223832.GC21657@kroah.com>
 References: <20081029223832.GC21657@kroah.com>
@@ -24,161 +24,740 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Fix error handling in wb35_probe() function and clean it up a bit.
+Use the kernel built-in true and false boolean values instead of duplicating
+them in the driver code.
 
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 Acked-by: Pavel Machek <pavel@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/winbond/linux/wbusb.c |  102 ++++++++++++++------------------
- 1 files changed, 45 insertions(+), 57 deletions(-)
+ drivers/staging/winbond/linux/common.h    |   17 -------
+ drivers/staging/winbond/linux/wb35reg.c   |   70 ++++++++++++++--------------
+ drivers/staging/winbond/linux/wb35rx.c    |    2 +-
+ drivers/staging/winbond/linux/wb35tx.c    |   14 +++---
+ drivers/staging/winbond/mds.c             |   31 ++++++-------
+ drivers/staging/winbond/mlmetxrx.c        |   16 +++---
+ drivers/staging/winbond/mto.c             |   12 +++---
+ drivers/staging/winbond/phy_calibration.c |    6 +-
+ drivers/staging/winbond/wbhal.c           |   14 +++---
+ drivers/staging/winbond/wblinux.c         |   20 ++++----
+ 10 files changed, 92 insertions(+), 110 deletions(-)
 
-diff --git a/drivers/staging/winbond/linux/wbusb.c b/drivers/staging/winbond/linux/wbusb.c
-index 5f09fd4..c1c2642 100644
---- a/drivers/staging/winbond/linux/wbusb.c
-+++ b/drivers/staging/winbond/linux/wbusb.c
-@@ -191,26 +191,33 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
- 	PWBUSB		pWbUsb;
-         struct usb_host_interface *interface;
- 	struct usb_endpoint_descriptor *endpoint;
--	int	ret = -1;
- 	u32	ltmp;
- 	struct usb_device *udev = interface_to_usbdev(intf);
-+	struct wbsoft_priv *priv;
-+	struct ieee80211_hw *dev;
-+	static struct ieee80211_supported_band band;
-+	int err;
+diff --git a/drivers/staging/winbond/linux/common.h b/drivers/staging/winbond/linux/common.h
+index 64bd1c7..42c23a8 100644
+--- a/drivers/staging/winbond/linux/common.h
++++ b/drivers/staging/winbond/linux/common.h
+@@ -45,23 +45,6 @@
+ #define	FAILURE     0
  
- 	usb_get_dev(udev);
  
--	printk("[w35und]wb35_probe ->\n");
--
- 	// 20060630.2 Check the device if it already be opened
--	ret = usb_control_msg(udev, usb_rcvctrlpipe( udev, 0 ),
-+	err = usb_control_msg(udev, usb_rcvctrlpipe( udev, 0 ),
- 			      0x01, USB_TYPE_VENDOR|USB_RECIP_DEVICE|USB_DIR_IN,
- 			      0x0, 0x400, &ltmp, 4, HZ*100 );
--	if (ret < 0)
-+	if (err)
- 		goto error;
- 
- 	ltmp = cpu_to_le32(ltmp);
--	if (ltmp)  // Is already initialized?
-+	if (ltmp) {  // Is already initialized?
-+		err = -EBUSY;
- 		goto error;
-+	}
- 
- 	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
-+	if (!adapter) {
-+		err = -ENOMEM;
-+		goto error;
-+	}
- 
- 	my_adapter = adapter;
- 	pWbUsb = &adapter->sHwData.WbUsb;
-@@ -225,69 +232,50 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
- 	}
- 
- 	if (!WbWLanInitialize(adapter)) {
--		printk("[w35und]WbWLanInitialize fail\n");
--		goto error;
-+		err = -EINVAL;
-+		goto error_free_adapter;
- 	}
- 
--	{
--		struct wbsoft_priv *priv;
--		struct ieee80211_hw *dev;
--		static struct ieee80211_supported_band band;
--		int res;
--
--		dev = ieee80211_alloc_hw(sizeof(*priv), &wbsoft_ops);
--
--		if (!dev) {
--			printk("w35und: ieee80211 alloc failed\n" );
--			BUG();
--		}
--
--		my_dev = dev;
--
--		SET_IEEE80211_DEV(dev, &udev->dev);
--		{
--			phw_data_t pHwData = &adapter->sHwData;
--			unsigned char		dev_addr[MAX_ADDR_LEN];
--			hal_get_permanent_address(pHwData, dev_addr);
--			SET_IEEE80211_PERM_ADDR(dev, dev_addr);
--		}
--
--
--		dev->extra_tx_headroom = 12;	/* FIXME */
--		dev->flags = 0;
-+	dev = ieee80211_alloc_hw(sizeof(*priv), &wbsoft_ops);
-+	if (!dev)
-+		goto error_free_adapter;
- 
--		dev->channel_change_time = 1000;
--//		dev->max_rssi = 100;
-+	my_dev = dev;
- 
--		dev->queues = 1;
-+	SET_IEEE80211_DEV(dev, &udev->dev);
-+	{
-+		phw_data_t pHwData = &adapter->sHwData;
-+		unsigned char dev_addr[MAX_ADDR_LEN];
-+		hal_get_permanent_address(pHwData, dev_addr);
-+		SET_IEEE80211_PERM_ADDR(dev, dev_addr);
-+	}
- 
--		band.channels = wbsoft_channels;
--		band.n_channels = ARRAY_SIZE(wbsoft_channels);
--		band.bitrates = wbsoft_rates;
--		band.n_bitrates = ARRAY_SIZE(wbsoft_rates);
-+	dev->extra_tx_headroom = 12;	/* FIXME */
-+	dev->flags = 0;
- 
--		dev->wiphy->bands[IEEE80211_BAND_2GHZ] = &band;
--#if 0
--		wbsoft_modes[0].num_channels = 1;
--		wbsoft_modes[0].channels = wbsoft_channels;
--		wbsoft_modes[0].mode = MODE_IEEE80211B;
--		wbsoft_modes[0].num_rates = ARRAY_SIZE(wbsoft_rates);
--		wbsoft_modes[0].rates = wbsoft_rates;
-+	dev->channel_change_time = 1000;
-+	dev->queues = 1;
- 
--		res = ieee80211_register_hwmode(dev, &wbsoft_modes[0]);
--		BUG_ON(res);
+-#ifndef true
+-#define true        1
 -#endif
-+	band.channels = wbsoft_channels;
-+	band.n_channels = ARRAY_SIZE(wbsoft_channels);
-+	band.bitrates = wbsoft_rates;
-+	band.n_bitrates = ARRAY_SIZE(wbsoft_rates);
+-
+-#ifndef false
+-#define false       0
+-#endif
+-
+-// PD43 20021108
+-#ifndef TRUE
+-#define TRUE        1
+-#endif
+-
+-#ifndef FALSE
+-#define FALSE       0
+-#endif
+-
+ #define STATUS_MEDIA_CONNECT 1
+ #define STATUS_MEDIA_DISCONNECT 0
  
--		res = ieee80211_register_hw(dev);
--		BUG_ON(res);
--	}
-+	dev->wiphy->bands[IEEE80211_BAND_2GHZ] = &band;
-+	err = ieee80211_register_hw(dev);
-+	if (err)
-+		goto error_free_hw;
+diff --git a/drivers/staging/winbond/linux/wb35reg.c b/drivers/staging/winbond/linux/wb35reg.c
+index 191322d..47b5a7d 100644
+--- a/drivers/staging/winbond/linux/wb35reg.c
++++ b/drivers/staging/winbond/linux/wb35reg.c
+@@ -2,8 +2,8 @@
  
--	usb_set_intfdata( intf, adapter );
-+	usb_set_intfdata(intf, adapter);
+ extern void phy_calibration_winbond(hw_data_t *phw_data, u32 frequency);
  
--	printk("[w35und] _probe OK\n");
- 	return 0;
-+
-+error_free_hw:
-+	ieee80211_free_hw(dev);
-+error_free_adapter:
-+	kfree(adapter);
- error:
--	return -ENOMEM;
-+	return err;
+-// TRUE  : read command process successfully
+-// FALSE : register not support
++// true  : read command process successfully
++// false : register not support
+ // RegisterNo : start base
+ // pRegisterData : data point
+ // NumberOfData : number of register data
+@@ -21,7 +21,7 @@ Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 N
+ 
+ 	// Module shutdown
+ 	if (pHwData->SurpriseRemove)
+-		return FALSE;
++		return false;
+ 
+ 	// Trying to use burst write function if use new hardware
+ 	UrbSize = sizeof(struct wb35_reg_queue) + DataSize + sizeof(struct usb_ctrlrequest);
+@@ -58,15 +58,15 @@ Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 N
+ 		// Start EP0VM
+ 		Wb35Reg_EP0VM_start(pHwData);
+ 
+-		return TRUE;
++		return true;
+ 	} else {
+ 		if (urb)
+ 			usb_free_urb(urb);
+ 		if (reg_queue)
+ 			kfree(reg_queue);
+-		return FALSE;
++		return false;
+ 	}
+-   return FALSE;
++   return false;
  }
  
- void packet_came(char *pRxBufferAddress, int PacketSize)
+ void
+@@ -112,8 +112,8 @@ Wb35Reg_Update(phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue)
+ 	}
+ }
+ 
+-// TRUE  : read command process successfully
+-// FALSE : register not support
++// true  : read command process successfully
++// false : register not support
+ unsigned char
+ Wb35Reg_WriteSync(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+ {
+@@ -122,7 +122,7 @@ Wb35Reg_WriteSync(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+ 
+ 	// Module shutdown
+ 	if (pHwData->SurpriseRemove)
+-		return FALSE;
++		return false;
+ 
+ 	RegisterValue = cpu_to_le32(RegisterValue);
+ 
+@@ -150,14 +150,14 @@ Wb35Reg_WriteSync(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+ 		#endif
+ 
+ 		pHwData->SurpriseRemove = 1; // 20060704.2
+-		return FALSE;
++		return false;
+ 	}
+ 
+-	return TRUE;
++	return true;
+ }
+ 
+-// TRUE  : read command process successfully
+-// FALSE : register not support
++// true  : read command process successfully
++// false : register not support
+ unsigned char
+ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+ {
+@@ -170,7 +170,7 @@ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+ 
+ 	// Module shutdown
+ 	if (pHwData->SurpriseRemove)
+-		return FALSE;
++		return false;
+ 
+ 	// update the register by send urb request------------------------------------
+ 	UrbSize = sizeof(struct wb35_reg_queue) + sizeof(struct usb_ctrlrequest);
+@@ -180,7 +180,7 @@ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+ 		reg_queue->DIRECT = 1;// burst write register
+ 		reg_queue->INDEX = RegisterNo;
+ 		reg_queue->VALUE = cpu_to_le32(RegisterValue);
+-		reg_queue->RESERVED_VALID = FALSE;
++		reg_queue->RESERVED_VALID = false;
+ 		dr = (struct usb_ctrlrequest *)((u8 *)reg_queue + sizeof(struct wb35_reg_queue));
+ 		dr->bRequestType = USB_TYPE_VENDOR|USB_DIR_OUT |USB_RECIP_DEVICE;
+ 		dr->bRequest = 0x03; // USB or vendor-defined request code, burst mode
+@@ -205,19 +205,19 @@ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+ 		// Start EP0VM
+ 		Wb35Reg_EP0VM_start(pHwData);
+ 
+-		return TRUE;
++		return true;
+ 	} else {
+ 		if (urb)
+ 			usb_free_urb(urb);
+ 		kfree(reg_queue);
+-		return FALSE;
++		return false;
+ 	}
+ }
+ 
+ //This command will be executed with a user defined value. When it completes,
+ //this value is useful. For example, hal_set_current_channel will use it.
+-// TRUE  : read command process successfully
+-// FALSE : register not support
++// true  : read command process successfully
++// false : register not support
+ unsigned char
+ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 RegisterValue,
+ 				s8 *pValue, s8 Len)
+@@ -230,7 +230,7 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
+ 
+ 	// Module shutdown
+ 	if (pHwData->SurpriseRemove)
+-		return FALSE;
++		return false;
+ 
+ 	// update the register by send urb request------------------------------------
+ 	UrbSize = sizeof(struct wb35_reg_queue) + sizeof(struct usb_ctrlrequest);
+@@ -242,7 +242,7 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
+ 		reg_queue->VALUE = cpu_to_le32(RegisterValue);
+ 		//NOTE : Users must guarantee the size of value will not exceed the buffer size.
+ 		memcpy(reg_queue->RESERVED, pValue, Len);
+-		reg_queue->RESERVED_VALID = TRUE;
++		reg_queue->RESERVED_VALID = true;
+ 		dr = (struct usb_ctrlrequest *)((u8 *)reg_queue + sizeof(struct wb35_reg_queue));
+ 		dr->bRequestType = USB_TYPE_VENDOR|USB_DIR_OUT |USB_RECIP_DEVICE;
+ 		dr->bRequest = 0x03; // USB or vendor-defined request code, burst mode
+@@ -265,17 +265,17 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
+ 
+ 		// Start EP0VM
+ 		Wb35Reg_EP0VM_start(pHwData);
+-		return TRUE;
++		return true;
+ 	} else {
+ 		if (urb)
+ 			usb_free_urb(urb);
+ 		kfree(reg_queue);
+-		return FALSE;
++		return false;
+ 	}
+ }
+ 
+-// TRUE  : read command process successfully
+-// FALSE : register not support
++// true  : read command process successfully
++// false : register not support
+ // pRegisterValue : It must be a resident buffer due to asynchronous read register.
+ unsigned char
+ Wb35Reg_ReadSync(  phw_data_t pHwData,  u16 RegisterNo,   u32 * pRegisterValue )
+@@ -286,7 +286,7 @@ Wb35Reg_ReadSync(  phw_data_t pHwData,  u16 RegisterNo,   u32 * pRegisterValue )
+ 
+ 	// Module shutdown
+ 	if (pHwData->SurpriseRemove)
+-		return FALSE;
++		return false;
+ 
+ 	// Read the register by send usb message------------------------------------
+ 
+@@ -317,14 +317,14 @@ Wb35Reg_ReadSync(  phw_data_t pHwData,  u16 RegisterNo,   u32 * pRegisterValue )
+ 		#endif
+ 
+ 		pHwData->SurpriseRemove = 1; // 20060704.2
+-		return FALSE;
++		return false;
+ 	}
+ 
+-	return TRUE;
++	return true;
+ }
+ 
+-// TRUE  : read command process successfully
+-// FALSE : register not support
++// true  : read command process successfully
++// false : register not support
+ // pRegisterValue : It must be a resident buffer due to asynchronous read register.
+ unsigned char
+ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
+@@ -337,7 +337,7 @@ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
+ 
+ 	// Module shutdown
+ 	if (pHwData->SurpriseRemove)
+-		return FALSE;
++		return false;
+ 
+ 	// update the variable by send Urb to read register ------------------------------------
+ 	UrbSize = sizeof(struct wb35_reg_queue) + sizeof(struct usb_ctrlrequest);
+@@ -371,12 +371,12 @@ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
+ 		// Start EP0VM
+ 		Wb35Reg_EP0VM_start( pHwData );
+ 
+-		return TRUE;
++		return true;
+ 	} else {
+ 		if (urb)
+ 			usb_free_urb( urb );
+ 		kfree(reg_queue);
+-		return FALSE;
++		return false;
+ 	}
+ }
+ 
+@@ -629,9 +629,9 @@ unsigned char Wb35Reg_initial(phw_data_t pHwData)
+ 	Dxx_initial(pHwData);
+ 
+ 	if (pHwData->SurpriseRemove)
+-		return FALSE;
++		return false;
+ 	else
+-		return TRUE; // Initial fail
++		return true; // Initial fail
+ }
+ 
+ //===================================================================================
+diff --git a/drivers/staging/winbond/linux/wb35rx.c b/drivers/staging/winbond/linux/wb35rx.c
+index 1326996..9593a60 100644
+--- a/drivers/staging/winbond/linux/wb35rx.c
++++ b/drivers/staging/winbond/linux/wb35rx.c
+@@ -326,7 +326,7 @@ u16 Wb35Rx_indicate(phw_data_t pHwData)
+ 
+ 		// Reclaim resource
+ 		pWb35Rx->RxOwner[ RxBufferId ] = 1;
+-	} while(TRUE);
++	} while (true);
+ 
+ 	return stmp2;
+ }
+diff --git a/drivers/staging/winbond/linux/wb35tx.c b/drivers/staging/winbond/linux/wb35tx.c
+index 9c928ee..020c52d 100644
+--- a/drivers/staging/winbond/linux/wb35tx.c
++++ b/drivers/staging/winbond/linux/wb35tx.c
+@@ -17,7 +17,7 @@ Wb35Tx_get_tx_buffer(phw_data_t pHwData, u8 **pBuffer)
+ 	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
+ 
+ 	*pBuffer = pWb35Tx->TxBuffer[0];
+-	return TRUE;
++	return true;
+ }
+ 
+ void Wb35Tx_start(phw_data_t pHwData)
+@@ -136,16 +136,16 @@ unsigned char Wb35Tx_initial(phw_data_t pHwData)
+ 
+ 	pWb35Tx->Tx4Urb = usb_alloc_urb(0, GFP_ATOMIC);
+ 	if (!pWb35Tx->Tx4Urb)
+-		return FALSE;
++		return false;
+ 
+ 	pWb35Tx->Tx2Urb = usb_alloc_urb(0, GFP_ATOMIC);
+ 	if (!pWb35Tx->Tx2Urb)
+ 	{
+ 		usb_free_urb( pWb35Tx->Tx4Urb );
+-		return FALSE;
++		return false;
+ 	}
+ 
+-	return TRUE;
++	return true;
+ }
+ 
+ //======================================================
+@@ -193,12 +193,12 @@ void Wb35Tx_destroy(phw_data_t pHwData)
+ void Wb35Tx_CurrentTime(phw_data_t pHwData, u32 TimeCount)
+ {
+ 	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
+-	unsigned char Trigger = FALSE;
++	unsigned char Trigger = false;
+ 
+ 	if (pWb35Tx->TxTimer > TimeCount)
+-		Trigger = TRUE;
++		Trigger = true;
+ 	else if (TimeCount > (pWb35Tx->TxTimer+500))
+-		Trigger = TRUE;
++		Trigger = true;
+ 
+ 	if (Trigger) {
+ 		pWb35Tx->TxTimer = TimeCount;
+diff --git a/drivers/staging/winbond/mds.c b/drivers/staging/winbond/mds.c
+index 78e33d0..8d3c8ad 100644
+--- a/drivers/staging/winbond/mds.c
++++ b/drivers/staging/winbond/mds.c
+@@ -18,7 +18,7 @@ Mds_initial(struct wb35_adapter * adapter)
+ {
+ 	PMDS pMds = &adapter->Mds;
+ 
+-	pMds->TxPause = FALSE;
++	pMds->TxPause = false;
+ 	pMds->TxRTSThreshold = DEFAULT_RTSThreshold;
+ 	pMds->TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
+ 
+@@ -43,7 +43,7 @@ Mds_Tx(struct wb35_adapter * adapter)
+ 	u8		*XmitBufAddress;
+ 	u16		XmitBufSize, PacketSize, stmp, CurrentSize, FragmentThreshold;
+ 	u8		FillIndex, TxDesIndex, FragmentCount, FillCount;
+-	unsigned char	BufferFilled = FALSE, MICAdd = 0;
++	unsigned char	BufferFilled = false, MICAdd = 0;
+ 
+ 
+ 	if (pMds->TxPause)
+@@ -87,7 +87,7 @@ Mds_Tx(struct wb35_adapter * adapter)
+ 			//
+ 			// Start transmitting
+ 			//
+-			BufferFilled = TRUE;
++			BufferFilled = true;
+ 
+ 			/* Leaves first u8 intact */
+ 			memset((u8 *)pTxDes + 1, 0, sizeof(DESCRIPTOR) - 1);
+@@ -130,10 +130,10 @@ Mds_Tx(struct wb35_adapter * adapter)
+ #ifdef _IBSS_BEACON_SEQ_STICK_
+ 			if ((XmitBufAddress[ DOT_11_DA_OFFSET+8 ] & 0xfc) != MAC_SUBTYPE_MNGMNT_PROBE_REQUEST) // +8 for USB hdr
+ #endif
+-				pMds->TxToggle = TRUE;
++				pMds->TxToggle = true;
+ 
+ 			// Get packet to transmit completed, 1:TESTSTA 2:MLME 3: Ndis data
+-			MLME_SendComplete(adapter, 0, TRUE);
++			MLME_SendComplete(adapter, 0, true);
+ 
+ 			// Software TSC count 20060214
+ 			pMds->TxTsc++;
+@@ -141,7 +141,7 @@ Mds_Tx(struct wb35_adapter * adapter)
+ 				pMds->TxTsc_2++;
+ 
+ 			FillCount++; // 20060928
+-		} while (HAL_USB_MODE_BURST(pHwData)); // End of multiple MSDU copy loop. FALSE = single TRUE = multiple sending
++		} while (HAL_USB_MODE_BURST(pHwData)); // End of multiple MSDU copy loop. false = single true = multiple sending
+ 
+ 		// Move to the next one, if necessary
+ 		if (BufferFilled) {
+@@ -156,14 +156,14 @@ Mds_Tx(struct wb35_adapter * adapter)
+ 
+ 			pMds->TxFillIndex++;
+ 			pMds->TxFillIndex %= MAX_USB_TX_BUFFER_NUMBER;
+-			BufferFilled = FALSE;
++			BufferFilled = false;
+ 		} else
+ 			break;
+ 
+ 		if (!PacketSize) // No more pk for transmitting
+ 			break;
+ 
+-	} while(TRUE);
++	} while(true);
+ 
+ 	//
+ 	// Start to send by lower module
+@@ -181,7 +181,7 @@ Mds_SendComplete(struct wb35_adapter * adapter, PT02_DESCRIPTOR pT02)
+ 	PMDS	pMds = &adapter->Mds;
+ 	phw_data_t	pHwData = &adapter->sHwData;
+ 	u8	PacketId = (u8)pT02->T02_Tx_PktID;
+-	unsigned char	SendOK = TRUE;
++	unsigned char	SendOK = true;
+ 	u8	RetryCount, TxRate;
+ 
+ 	if (pT02->T02_IgnoreResult) // Don't care the result
+@@ -192,7 +192,7 @@ Mds_SendComplete(struct wb35_adapter * adapter, PT02_DESCRIPTOR pT02)
+ 		TxRate = pMds->TxRate[ PacketId ][ 0 ];
+ 		RetryCount = (u8)pT02->T02_MPDU_Cnt;
+ 		if (pT02->value & FLAG_ERROR_TX_MASK) {
+-			SendOK = FALSE;
++			SendOK = false;
+ 
+ 			if (pT02->T02_transmit_abort || pT02->T02_out_of_MaxTxMSDULiftTime) {
+ 				//retry error
+@@ -435,11 +435,10 @@ Mds_DurationSet(  struct wb35_adapter * adapter,  PDESCRIPTOR pDes,  u8 *buffer
+ 	PT01_DESCRIPTOR	pT01;
+ 	u16	Duration, NextBodyLen, OffsetSize;
+ 	u8	Rate, i;
+-	unsigned char	CTS_on = FALSE, RTS_on = FALSE;
++	unsigned char	CTS_on = false, RTS_on = false;
+ 	PT00_DESCRIPTOR pNextT00;
+ 	u16 BodyLen = 0;
+-	unsigned char boGroupAddr = FALSE;
+-
++	unsigned char boGroupAddr = false;
+ 
+ 	OffsetSize = pDes->FragmentThreshold + 32 + 3;
+ 	OffsetSize &= ~0x03;
+@@ -452,7 +451,7 @@ Mds_DurationSet(  struct wb35_adapter * adapter,  PDESCRIPTOR pDes,  u8 *buffer
+ 	pNextT00 = (PT00_DESCRIPTOR)(buffer+OffsetSize);
+ 
+ 	if( buffer[ DOT_11_DA_OFFSET+8 ] & 0x1 ) // +8 for USB hdr
+-		boGroupAddr = TRUE;
++		boGroupAddr = true;
+ 
+ 	//========================================
+ 	// Set RTS/CTS mechanism
+@@ -467,13 +466,13 @@ Mds_DurationSet(  struct wb35_adapter * adapter,  PDESCRIPTOR pDes,  u8 *buffer
+ 		BodyLen += 4;	//CRC
+ 
+ 		if( BodyLen >= CURRENT_RTS_THRESHOLD )
+-			RTS_on = TRUE; // Using RTS
++			RTS_on = true; // Using RTS
+ 		else
+ 		{
+ 			if( pT01->T01_modulation_type ) // Is using OFDM
+ 			{
+ 				if( CURRENT_PROTECT_MECHANISM ) // Is using protect
+-					CTS_on = TRUE; // Using CTS
++					CTS_on = true; // Using CTS
+ 			}
+ 		}
+ 	}
+diff --git a/drivers/staging/winbond/mlmetxrx.c b/drivers/staging/winbond/mlmetxrx.c
+index 341e4b2..eab562a 100644
+--- a/drivers/staging/winbond/mlmetxrx.c
++++ b/drivers/staging/winbond/mlmetxrx.c
+@@ -23,16 +23,16 @@ void MLMEResetTxRx(struct wb35_adapter * adapter)
+ 
+ 	// Reset the interface between MDS and MLME
+ 	for (i = 0; i < MAX_NUM_TX_MMPDU; i++)
+-		adapter->sMlmeFrame.TxMMPDUInUse[i] = FALSE;
++		adapter->sMlmeFrame.TxMMPDUInUse[i] = false;
+ 	for (i = 0; i < MAX_NUM_RX_MMPDU; i++)
+-		adapter->sMlmeFrame.SaveRxBufSlotInUse[i] = FALSE;
++		adapter->sMlmeFrame.SaveRxBufSlotInUse[i] = false;
+ 
+ 	adapter->sMlmeFrame.wNumRxMMPDUInMLME   = 0;
+ 	adapter->sMlmeFrame.wNumRxMMPDUDiscarded = 0;
+ 	adapter->sMlmeFrame.wNumRxMMPDU          = 0;
+ 	adapter->sMlmeFrame.wNumTxMMPDUDiscarded = 0;
+ 	adapter->sMlmeFrame.wNumTxMMPDU          = 0;
+-	adapter->sLocalPara.boCCAbusy    = FALSE;
++	adapter->sLocalPara.boCCAbusy    = false;
+ 	adapter->sLocalPara.iPowerSaveMode     = PWR_ACTIVE;     // Power active
+ }
+ 
+@@ -59,13 +59,13 @@ u8 *MLMEGetMMPDUBuffer(struct wb35_adapter * adapter)
+ 	u8 *returnVal;
+ 
+ 	for (i = 0; i< MAX_NUM_TX_MMPDU; i++) {
+-		if (adapter->sMlmeFrame.TxMMPDUInUse[i] == FALSE)
++		if (adapter->sMlmeFrame.TxMMPDUInUse[i] == false)
+ 			break;
+ 	}
+ 	if (i >= MAX_NUM_TX_MMPDU) return NULL;
+ 
+ 	returnVal = (u8 *)&(adapter->sMlmeFrame.TxMMPDU[i]);
+-	adapter->sMlmeFrame.TxMMPDUInUse[i] = TRUE;
++	adapter->sMlmeFrame.TxMMPDUInUse[i] = true;
+ 
+ 	return returnVal;
+ }
+@@ -77,7 +77,7 @@ u8 MLMESendFrame(struct wb35_adapter * adapter, u8 *pMMPDU, u16 len, u8 DataType
+ {
+ 	if (adapter->sMlmeFrame.IsInUsed != PACKET_FREE_TO_USE) {
+ 		adapter->sMlmeFrame.wNumTxMMPDUDiscarded++;
+-		return FALSE;
++		return false;
+ 	}
+ 	adapter->sMlmeFrame.IsInUsed = PACKET_COME_FROM_MLME;
+ 
+@@ -93,7 +93,7 @@ u8 MLMESendFrame(struct wb35_adapter * adapter, u8 *pMMPDU, u16 len, u8 DataType
+ 
+ 	// Transmit NDIS packet
+ 	Mds_Tx(adapter);
+-	return TRUE;
++	return true;
+ }
+ 
+ void
+@@ -123,7 +123,7 @@ void MLMEfreeMMPDUBuffer(struct wb35_adapter * adapter, s8 *pData)
+ 			break;
+ 	}
+ 	if (adapter->sMlmeFrame.TxMMPDUInUse[i])
+-		adapter->sMlmeFrame.TxMMPDUInUse[i] = FALSE;
++		adapter->sMlmeFrame.TxMMPDUInUse[i] = false;
+ 	else  {
+ 		// Something wrong
+ 		// PD43 Add debug code here???
+diff --git a/drivers/staging/winbond/mto.c b/drivers/staging/winbond/mto.c
+index 70d2a50..f53db93 100644
+--- a/drivers/staging/winbond/mto.c
++++ b/drivers/staging/winbond/mto.c
+@@ -208,7 +208,7 @@ static int TotalTxPktRetry = 0;
+ static int TxPktPerAnt[3] = {0,0,0};
+ static int RXRSSIANT[3] ={-70,-70,-70};
+ static int TxPktRetryPerAnt[3] = {0,0,0};
+-//static int TxDominateFlag=FALSE;
++//static int TxDominateFlag=false;
+ static u8 old_antenna[4]={1 ,0 ,1 ,0};
+ static int retryrate_rec[MTO_MAX_DATA_RATE_LEVELS];//this record the retry rate at different data rate
+ 
+@@ -236,7 +236,7 @@ static RSSI2RATE RSSI2RateTbl[RSSI2RATE_SIZE] =
+ static u8 untogglecount;
+ static u8 last_rate_ant; //this is used for antenna backoff-hh
+ 
+-u8	boSparseTxTraffic = FALSE;
++u8	boSparseTxTraffic = false;
+ 
+ void MTO_Init(MTO_FUNC_INPUT);
+ void AntennaToggleInitiator(MTO_FUNC_INPUT);
+@@ -569,9 +569,9 @@ unsigned char TxDominate(int index)
+ 	tmp = TxPktPerAnt[index] + DTO_Rx_Info[0][index];
+ 
+ 	if(Divide(TxPktPerAnt[index]*100, tmp) > 40)
+-		return TRUE;
++		return true;
+ 	else
+-		return FALSE;
++		return false;
+ }
+ 
+ unsigned char CmpTxRetryRate(int index1, int index2)
+@@ -584,9 +584,9 @@ unsigned char CmpTxRetryRate(int index1, int index2)
+ 	#endif
+ 
+ 	if(tx_retry_rate1 > tx_retry_rate2)
+-		return TRUE;
++		return true;
+ 	else
+-		return FALSE;
++		return false;
+ }
+ 
+ void GetFreshAntennaData(MTO_FUNC_INPUT)
+diff --git a/drivers/staging/winbond/phy_calibration.c b/drivers/staging/winbond/phy_calibration.c
+index e83c2f2..b77c843 100644
+--- a/drivers/staging/winbond/phy_calibration.c
++++ b/drivers/staging/winbond/phy_calibration.c
+@@ -1682,7 +1682,7 @@ unsigned char adjust_TXVGA_for_iq_mag(hw_data_t *phw_data)
+ 		msleep(30); // 20060612.1.a
+ 
+ 		if( !hw_get_dxx_reg(phw_data, REG_MODE_CTRL, &reg_mode_ctrl) ) // 20060718.1 modify
+-			return FALSE;
++			return false;
+ 
+ 		PHY_DEBUG(("[CAL]    MODE_CTRL (read) = 0x%08X\n", reg_mode_ctrl));
+ 
+@@ -1727,9 +1727,9 @@ unsigned char adjust_TXVGA_for_iq_mag(hw_data_t *phw_data)
+ 	}
+ 
+ 	if( iq_mag_0_tx>=700 && iq_mag_0_tx<=1750 )
+-		return TRUE;
++		return true;
+ 	else
+-		return FALSE;
++		return false;
+ }
+ 
+ 
+diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
+index c8da1a3..69dcedf 100644
+--- a/drivers/staging/winbond/wbhal.c
++++ b/drivers/staging/winbond/wbhal.c
+@@ -56,19 +56,19 @@ u8 hal_init_hardware(phw_data_t pHwData, struct wb35_adapter * adapter)
+ 				// Try to make sure the EEPROM contain
+ 				SoftwareSet >>= 8;
+ 				if( SoftwareSet != 0x82 )
+-					return FALSE;
++					return false;
+ 				#endif
+ 
+ 				Wb35Rx_start( pHwData );
+ 				Wb35Tx_EP2VM_start( pHwData );
+ 
+-				return TRUE;
++				return true;
+ 			}
+ 		}
+ 	}
+ 
+ 	pHwData->SurpriseRemove = 1;
+-	return FALSE;
++	return false;
+ }
+ 
+ 
+@@ -312,7 +312,7 @@ u8 hal_get_accept_beacon(  phw_data_t pHwData )
+ unsigned char hal_reset_hardware( phw_data_t pHwData, void* ppa )
+ {
+ 	// Not implement yet
+-	return TRUE;
++	return true;
+ }
+ 
+ void hal_stop(  phw_data_t pHwData )
+@@ -335,9 +335,9 @@ unsigned char hal_idle(phw_data_t pHwData)
+ 	PWBUSB	pWbUsb = &pHwData->WbUsb;
+ 
+ 	if( !pHwData->SurpriseRemove && ( pWbUsb->DetectCount || reg->EP0vm_state!=VM_STOP ) )
+-		return FALSE;
++		return false;
+ 
+-	return TRUE;
++	return true;
+ }
+ //---------------------------------------------------------------------------------------------------
+ void hal_set_cwmin(  phw_data_t pHwData,  u8	cwin_min )
+@@ -868,6 +868,6 @@ unsigned char hal_set_LED(phw_data_t pHwData, u32 Mode) // 20061108 for WPS led
+ 	pHwData->LED_Blinking = 0;
+ 	pHwData->LED_control = Mode;
+ 	OS_TIMER_SET( &pHwData->LEDTimer, 10 ); // 20060623
+-	return TRUE;
++	return true;
+ }
+ 
+diff --git a/drivers/staging/winbond/wblinux.c b/drivers/staging/winbond/wblinux.c
+index 89f9f7c..460f42a 100644
+--- a/drivers/staging/winbond/wblinux.c
++++ b/drivers/staging/winbond/wblinux.c
+@@ -49,7 +49,7 @@ WBLINUX_Initial(struct wb35_adapter * adapter)
+ {
+ 	spin_lock_init( &adapter->SpinLock );
+ 	spin_lock_init( &adapter->AtomicSpinLock );
+-	return TRUE;
++	return true;
+ }
+ 
+ void
+@@ -114,7 +114,7 @@ void
+ WbWlanHalt(struct wb35_adapter *adapter)
+ {
+ 	//---------------------
+-	adapter->sLocalPara.ShutDowned = TRUE;
++	adapter->sLocalPara.ShutDowned = true;
+ 
+ 	Mds_Destroy(adapter);
+ 
+@@ -153,7 +153,7 @@ WbWLanInitialize(struct wb35_adapter *adapter)
+ 	hal_set_phy_type( &adapter->sHwData, RF_WB_242_1 );
+ 	adapter->sLocalPara.MTUsize = MAX_ETHERNET_PACKET_SIZE;
+ 	psLOCAL->bPreambleMode = AUTO_MODE;
+-	adapter->sLocalPara.RadioOffStatus.boSwRadioOff = FALSE;
++	adapter->sLocalPara.RadioOffStatus.boSwRadioOff = false;
+ 	pHwData = &adapter->sHwData;
+ 	hal_set_phy_type( pHwData, RF_DECIDE_BY_INF );
+ 
+@@ -168,11 +168,11 @@ WbWLanInitialize(struct wb35_adapter *adapter)
+ 	}
+ 
+ 	// Initial Software variable
+-	adapter->sLocalPara.ShutDowned = FALSE;
++	adapter->sLocalPara.ShutDowned = false;
+ 
+ 	//added by ws for wep key error detection
+-	adapter->sLocalPara.bWepKeyError= FALSE;
+-	adapter->sLocalPara.bToSelfPacketReceived = FALSE;
++	adapter->sLocalPara.bWepKeyError= false;
++	adapter->sLocalPara.bToSelfPacketReceived = false;
+ 	adapter->sLocalPara.WepKeyDetectTimerCount= 2 * 100; /// 2 seconds
+ 
+ 	// Initial USB hal
+@@ -192,9 +192,9 @@ WbWLanInitialize(struct wb35_adapter *adapter)
+ 	}
+ 
+ 	// Get Software setting flag from hal
+-	adapter->sLocalPara.boAntennaDiversity = FALSE;
++	adapter->sLocalPara.boAntennaDiversity = false;
+ 	if (hal_software_set(pHwData) & 0x00000001)
+-		adapter->sLocalPara.boAntennaDiversity = TRUE;
++		adapter->sLocalPara.boAntennaDiversity = true;
+ 
+ 	//
+ 	// For TS module
+@@ -245,7 +245,7 @@ WbWLanInitialize(struct wb35_adapter *adapter)
+ 	hal_driver_init_OK(pHwData) = 1; // Notify hal that the driver is ready now.
+ 	//set a tx power for reference.....
+ //	sme_set_tx_power_level(adapter, 12);	FIXME?
+-	return TRUE;
++	return true;
+ 
+ error:
+ 	switch (InitStep) {
+@@ -258,7 +258,7 @@ error:
+ 	case 0: break;
+ 	}
+ 
+-	return FALSE;
++	return false;
+ }
+ 
+ void WBLINUX_ConnectStatus(struct wb35_adapter * adapter, u32 flag)
 -- 
 1.6.0.2
 
