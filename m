@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbYJ2D0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752772AbYJ2Dcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753235AbYJ2D0U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 23:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYJ2D0C
+	id S1752772AbYJ2Dcw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 23:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbYJ2Dcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 23:26:02 -0400
-Received: from ns.suse.de ([195.135.220.2]:38487 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751092AbYJ2D0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 23:26:00 -0400
-Date: Wed, 29 Oct 2008 04:25:57 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Theodore Tso <tytso@mit.edu>, Mike Snitzer <snitzer@gmail.com>,
-       linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Kirill Korotaev <dev@openvz.org>
-Subject: Re: potential regression in ext[34] call to __page_symlink()?
-Message-ID: <20081029032557.GA17624@wotan.suse.de>
-References: <170fa0d20810281711s2a508ed2o1af0db30733e8d2d@mail.gmail.com> <20081029024048.GB3766@mit.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081029024048.GB3766@mit.edu>
-User-Agent: Mutt/1.5.9i
+	Tue, 28 Oct 2008 23:32:43 -0400
+Received: from mga10.intel.com ([192.55.52.92]:61165 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750831AbYJ2Dcm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Oct 2008 23:32:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,504,1220252400"; 
+   d="scan'208";a="632759939"
+Message-ID: <4907D957.6040206@linux.intel.com>
+Date: Tue, 28 Oct 2008 20:32:39 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Frans Pop <elendil@planet.nl>
+CC: linux-kernel@vger.kernel.org, Yves-Alexis Perez <corsac@debian.org>,
+       "Carlos R. Mafra" <crmafra2@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Long delays and keystrokes required - related to disk encryption?
+References: <200810281744.52587.elendil@planet.nl> <200810290153.23514.elendil@planet.nl>
+In-Reply-To: <200810290153.23514.elendil@planet.nl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28, 2008 at 10:40:48PM -0400, Theodore Tso wrote:
-> On Tue, Oct 28, 2008 at 08:11:48PM -0400, Mike Snitzer wrote:
-> > The gfp_mask that is passed to __page_symlink() is being completely
-> > dropped on the floor.  Historically this mask was at least used by
-> > ext3 and ext4 to avoid recursing back into the FS from within a
-> > journal transaction; Kirill fixed that issue with this commit:
-> > 0adb25d2e71ab047423d6fc63d5d184590d0a66f
-> > 
-> > I'm quite naive when it comes to Nick's relatively new (>= 2.6.24) AOP
-> > pagecache_write_{begin,end} code that motivated __page_symlink to
-> > change with this commit:
-> > afddba49d18f346e5cc2938b6ed7c512db18ca68
-> > 
-> > Nick's change clearly did away with using the explicitly passed
-> > gfp_mask in __page_symlink().
-> > So at a minimum it would seem __page_symlink() now has an unused
-> > parameter that should be removed.
-> > 
-> > But a more serious concern would be: have ext[34]_symlink() regressed
-> > to being susceptible to the bug that Kirill fixed some time ago?
+Frans Pop wrote:
+> On Tuesday 28 October 2008, Frans Pop wrote:
+>> I'm seeing some very strange behavior with 2.6.28-rc2-95-g49fdf67 on my
+>> HP 2510p notebook.
+>>
+>> During the boot there are several places where I need to hit a key for
+>> the boot to continue. There are also some very long delays before the
+>> next syslog message is displayed.
+>> The boot does continue and regularly hitting a key helps (but does not
+>> get rid of all delays), but it is a huge regression from 2.6.27.
+>>
+>> The delays seem to continue until file systems get mounted.
+>>
+>> As the delays start at the point my system asks for the passphrase to
+>> unlock (LUKS) encrypted disks, I suspect it has to do with that.
+>> Especially since hitting a key seems to "trigger" new disk activity.
+>>
+>> However, the delays happen _again_ during shutdown, which makes it
+>> extra strange that the system does behave normally when logged in.
+>>
+>> During the first boot wireless networking failed. During the second
+>> boot, wireless networking did come up (without any relevant changes).
+>> This gave an interesting extra data point: with wireless the delays on
+>> shutdown started later: after iwlagn gets disabled.
 > 
-> Yeah, I think this would be a potential problem for ext3/4.  Looks
-> like pagemap_write_begin() should take a gfp_mask argument, and then
-> pass it down through to __grab_cache_page(), which should then call
-> __page_cache_alloc() instead of _page_cache_alloc().  Then
-> __page_symlink() can actually pass in its gfp_mask to
-> pagemap_write_begin().
+> I've bisected it to:
+> commit dc4304f7deee29fcdf6a2b62f7146ea7f505fd42
+> Author: Arjan van de Ven <arjan@linux.intel.com>
+> Date:   Mon Oct 13 10:32:15 2008 -0400
+>     rangetimers: fix the bug reported by Ingo for real
 > 
-> Nick, do you agree?
+> The bisection was one of those annoying ones where you switch branches
+> often and get a load of config changes. This means that I'm not 100% sure
+> about it, especially as the behavior changed for the last few "bad"s:
+> instead of endlessly repeated delays there would be only a few of them
+> immediately after entering the LUKS passphrase.
 
-I agree it is a problem. It's a bit hard to pass down a gfp_mask
-(because the caller would normally expect _all_ operations in the
-called code to obey the mask, basically impossible to do for
-GFP_NOFS because by definition we're calling into ->write_begin).
-
-I was leaning towards adding a new AOP_FLAG_ there, usable just by
-filesystem code, and just to tell any helper code to clear __GFP_FS.
-That way callers won't get confused into thinking they can do
-GFP_ATOMIC writes from interrupt context or something ;) (which,
-trust me, somebody will attempt to do if it looks remotely feasible!)
+ok one easy thing to try, in the peek function (that this patch touches),
+just stick a "return" as first statement in.
+If that "fixes" it, we have a real issue with hrtimers, if not then something else is going on..
 
