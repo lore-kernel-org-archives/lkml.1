@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbYJ2Wqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254AbYJ2WrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756126AbYJ2Wqt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 18:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755782AbYJ2WoM
+	id S1756254AbYJ2WrT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 18:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755834AbYJ2WoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 18:44:12 -0400
-Received: from kroah.org ([198.145.64.141]:43750 "EHLO coco.kroah.org"
+	Wed, 29 Oct 2008 18:44:20 -0400
+Received: from kroah.org ([198.145.64.141]:43754 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754685AbYJ2WoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 18:44:03 -0400
+	id S1755822AbYJ2WoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 18:44:12 -0400
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 09/49] Staging: w35und: wb35reg struct typedef removal
-Date: Wed, 29 Oct 2008 15:39:36 -0700
-Message-Id: <1225320016-21803-9-git-send-email-greg@kroah.com>
+Subject: [PATCH 10/49] Staging: w35und: padapter struct typedef removal
+Date: Wed, 29 Oct 2008 15:39:37 -0700
+Message-Id: <1225320016-21803-10-git-send-email-greg@kroah.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081029223832.GC21657@kroah.com>
 References: <20081029223832.GC21657@kroah.com>
@@ -24,1962 +24,1700 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-This patch removes the WB35REG struct typedefs and fixes up variable names that
-use the type.
+Remove the PADAPTER typedef and its strange variants. Also fix up variable
+names that use the type while we're at it.
 
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 Acked-by: Pavel Machek <pavel@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/winbond/linux/wb35reg.c   |  264 ++++++++++++++--------------
- drivers/staging/winbond/linux/wb35reg_s.h |    5 +-
- drivers/staging/winbond/reg.c             |  282 ++++++++++++++--------------
- drivers/staging/winbond/wbhal.c           |  260 +++++++++++++-------------
- drivers/staging/winbond/wbhal_f.h         |    2 +-
- drivers/staging/winbond/wbhal_s.h         |    2 +-
- 6 files changed, 407 insertions(+), 408 deletions(-)
+ drivers/staging/winbond/adapter.h       |   10 ++--
+ drivers/staging/winbond/bss_f.h         |   68 +++++++++++-----------
+ drivers/staging/winbond/bssdscpt.h      |    8 +-
+ drivers/staging/winbond/ds_tkip.h       |    4 +-
+ drivers/staging/winbond/linux/wb35reg.c |    8 +-
+ drivers/staging/winbond/linux/wb35rx.c  |    8 +-
+ drivers/staging/winbond/linux/wb35tx.c  |   30 +++++-----
+ drivers/staging/winbond/linux/wbusb.c   |   24 ++++----
+ drivers/staging/winbond/linux/wbusb_f.h |    2 +-
+ drivers/staging/winbond/localpara.h     |    2 +-
+ drivers/staging/winbond/mds.c           |   64 ++++++++++----------
+ drivers/staging/winbond/mds_f.h         |   40 ++++++------
+ drivers/staging/winbond/mds_s.h         |   20 +++---
+ drivers/staging/winbond/mlme_mib.h      |   20 +++---
+ drivers/staging/winbond/mlmetxrx.c      |   72 +++++++++++-----------
+ drivers/staging/winbond/mlmetxrx_f.h    |   20 +++---
+ drivers/staging/winbond/mto.c           |    8 +-
+ drivers/staging/winbond/mto.h           |   22 ++++----
+ drivers/staging/winbond/mto_f.h         |    6 +-
+ drivers/staging/winbond/rxisr.c         |   18 +++---
+ drivers/staging/winbond/scan_s.h        |   12 ++--
+ drivers/staging/winbond/sme_s.h         |    4 +-
+ drivers/staging/winbond/wbhal.c         |   24 ++++----
+ drivers/staging/winbond/wbhal_f.h       |    6 +-
+ drivers/staging/winbond/wbhal_s.h       |    6 +-
+ drivers/staging/winbond/wblinux.c       |  100 +++++++++++++++---------------
+ drivers/staging/winbond/wblinux_f.h     |   22 ++++----
+ drivers/staging/winbond/wblinux_s.h     |    2 +-
+ 28 files changed, 315 insertions(+), 315 deletions(-)
 
+diff --git a/drivers/staging/winbond/adapter.h b/drivers/staging/winbond/adapter.h
+index 609701d..8925dad 100644
+--- a/drivers/staging/winbond/adapter.h
++++ b/drivers/staging/winbond/adapter.h
+@@ -1,11 +1,11 @@
+ //
+ // ADAPTER.H -
+-// Windows NDIS global variable 'Adapter' typedef
++// Windows NDIS global variable 'adapter' typedef
+ //
+ #define MAX_ANSI_STRING		40
+-typedef struct WB32_ADAPTER
+-{
+-	u32 AdapterIndex; // 20060703.4 Add for using pAdapterContext global Adapter point
++
++struct wb35_adapter {
++	u32 adapterIndex; // 20060703.4 Add for using padapterContext global adapter point
+ 
+ 	WB_LOCALDESCRIPT	sLocalPara;		// Myself connected parameters
+ 	PWB_BSSDESCRIPTION	asBSSDescriptElement;
+@@ -20,4 +20,4 @@ typedef struct WB32_ADAPTER
+         struct iw_statistics iw_stats;
+ 
+ 	u8	LinkName[MAX_ANSI_STRING];
+-} WB32_ADAPTER, ADAPTER, *PWB32_ADAPTER, *PADAPTER;
++};
+diff --git a/drivers/staging/winbond/bss_f.h b/drivers/staging/winbond/bss_f.h
+index 0131831..a7ef3de 100644
+--- a/drivers/staging/winbond/bss_f.h
++++ b/drivers/staging/winbond/bss_f.h
+@@ -2,54 +2,54 @@
+ // BSS descriptor DataBase management global function
+ //
+ 
+-void vBSSdescriptionInit(PWB32_ADAPTER Adapter);
+-void vBSSfoundList(PWB32_ADAPTER Adapter);
+-u8 boChanFilter(PWB32_ADAPTER Adapter, u8 ChanNo);
+-u16 wBSSallocateEntry(PWB32_ADAPTER Adapter);
+-u16 wBSSGetEntry(PWB32_ADAPTER Adapter);
+-void vSimpleHouseKeeping(PWB32_ADAPTER Adapter);
+-u16 wBSShouseKeeping(PWB32_ADAPTER Adapter);
+-void ClearBSSdescpt(PWB32_ADAPTER Adapter, u16 i);
+-u16 wBSSfindBssID(PWB32_ADAPTER Adapter, u8 *pbBssid);
+-u16 wBSSfindDedicateCandidate(PWB32_ADAPTER Adapter, struct SSID_Element *psSsid, u8 *pbBssid);
+-u16 wBSSfindMACaddr(PWB32_ADAPTER Adapter, u8 *pbMacAddr);
+-u16 wBSSsearchMACaddr(PWB32_ADAPTER Adapter, u8 *pbMacAddr, u8 band);
+-u16 wBSSaddScanData(PWB32_ADAPTER, u16, psRXDATA);
+-u16 wBSSUpdateScanData(PWB32_ADAPTER Adapter, u16 wBssIdx, psRXDATA psRcvData);
+-u16 wBSScreateIBSSdata(PWB32_ADAPTER Adapter, PWB_BSSDESCRIPTION psDesData);
+-void DesiredRate2BSSdescriptor(PWB32_ADAPTER Adapter, PWB_BSSDESCRIPTION psDesData,
++void vBSSdescriptionInit(struct wb35_adapter * adapter);
++void vBSSfoundList(struct wb35_adapter * adapter);
++u8 boChanFilter(struct wb35_adapter * adapter, u8 ChanNo);
++u16 wBSSallocateEntry(struct wb35_adapter * adapter);
++u16 wBSSGetEntry(struct wb35_adapter * adapter);
++void vSimpleHouseKeeping(struct wb35_adapter * adapter);
++u16 wBSShouseKeeping(struct wb35_adapter * adapter);
++void ClearBSSdescpt(struct wb35_adapter * adapter, u16 i);
++u16 wBSSfindBssID(struct wb35_adapter * adapter, u8 *pbBssid);
++u16 wBSSfindDedicateCandidate(struct wb35_adapter * adapter, struct SSID_Element *psSsid, u8 *pbBssid);
++u16 wBSSfindMACaddr(struct wb35_adapter * adapter, u8 *pbMacAddr);
++u16 wBSSsearchMACaddr(struct wb35_adapter * adapter, u8 *pbMacAddr, u8 band);
++u16 wBSSaddScanData(struct wb35_adapter *, u16, psRXDATA);
++u16 wBSSUpdateScanData(struct wb35_adapter * adapter, u16 wBssIdx, psRXDATA psRcvData);
++u16 wBSScreateIBSSdata(struct wb35_adapter * adapter, PWB_BSSDESCRIPTION psDesData);
++void DesiredRate2BSSdescriptor(struct wb35_adapter * adapter, PWB_BSSDESCRIPTION psDesData,
+ 							 u8 *pBasicRateSet, u8 BasicRateCount,
+ 							 u8 *pOperationRateSet, u8 OperationRateCount);
+-void DesiredRate2InfoElement(PWB32_ADAPTER Adapter, u8	*addr, u16 *iFildOffset,
++void DesiredRate2InfoElement(struct wb35_adapter * adapter, u8	*addr, u16 *iFildOffset,
+ 							 u8 *pBasicRateSet, u8 BasicRateCount,
+ 							 u8 *pOperationRateSet, u8 OperationRateCount);
+-void BSSAddIBSSdata(PWB32_ADAPTER Adapter, PWB_BSSDESCRIPTION psDesData);
++void BSSAddIBSSdata(struct wb35_adapter * adapter, PWB_BSSDESCRIPTION psDesData);
+ unsigned char boCmpMacAddr( u8 *, u8 *);
+ unsigned char boCmpSSID(struct SSID_Element *psSSID1, struct SSID_Element *psSSID2);
+-u16 wBSSfindSSID(PWB32_ADAPTER Adapter, struct SSID_Element *psSsid);
+-u16 wRoamingQuery(PWB32_ADAPTER Adapter);
+-void vRateToBitmap(PWB32_ADAPTER Adapter, u16 index);
+-u8 bRateToBitmapIndex(PWB32_ADAPTER Adapter, u8 bRate);
++u16 wBSSfindSSID(struct wb35_adapter * adapter, struct SSID_Element *psSsid);
++u16 wRoamingQuery(struct wb35_adapter * adapter);
++void vRateToBitmap(struct wb35_adapter * adapter, u16 index);
++u8 bRateToBitmapIndex(struct wb35_adapter * adapter, u8 bRate);
+ u8 bBitmapToRate(u8 i);
+-unsigned char boIsERPsta(PWB32_ADAPTER Adapter, u16 i);
+-unsigned char boCheckConnect(PWB32_ADAPTER Adapter);
+-unsigned char boCheckSignal(PWB32_ADAPTER Adapter);
+-void AddIBSSIe(PWB32_ADAPTER Adapter,PWB_BSSDESCRIPTION psDesData );//added by ws for WPA_None06/01/04
+-void BssScanUpToDate(PWB32_ADAPTER Adapter);
+-void BssUpToDate(PWB32_ADAPTER Adapter);
++unsigned char boIsERPsta(struct wb35_adapter * adapter, u16 i);
++unsigned char boCheckConnect(struct wb35_adapter * adapter);
++unsigned char boCheckSignal(struct wb35_adapter * adapter);
++void AddIBSSIe(struct wb35_adapter * adapter,PWB_BSSDESCRIPTION psDesData );//added by ws for WPA_None06/01/04
++void BssScanUpToDate(struct wb35_adapter * adapter);
++void BssUpToDate(struct wb35_adapter * adapter);
+ void RateSort(u8 *RateArray, u8 num, u8 mode);
+-void RateReSortForSRate(PWB32_ADAPTER Adapter, u8 *RateArray, u8 num);
+-void Assemble_IE(PWB32_ADAPTER Adapter, u16 wBssIdx);
+-void SetMaxTxRate(PWB32_ADAPTER Adapter);
++void RateReSortForSRate(struct wb35_adapter * adapter, u8 *RateArray, u8 num);
++void Assemble_IE(struct wb35_adapter * adapter, u16 wBssIdx);
++void SetMaxTxRate(struct wb35_adapter * adapter);
+ 
+-void CreateWpaIE(PWB32_ADAPTER Adapter, u16* iFildOffset, u8 *msg, struct  Management_Frame* msgHeader,
++void CreateWpaIE(struct wb35_adapter * adapter, u16* iFildOffset, u8 *msg, struct  Management_Frame* msgHeader,
+ 				 struct Association_Request_Frame_Body* msgBody, u16 iMSindex); //added by WS 05/14/05
+ 
+ #ifdef _WPA2_
+-void CreateRsnIE(PWB32_ADAPTER Adapter, u16* iFildOffset, u8 *msg, struct  Management_Frame* msgHeader,
++void CreateRsnIE(struct wb35_adapter * adapter, u16* iFildOffset, u8 *msg, struct  Management_Frame* msgHeader,
+ 				 struct Association_Request_Frame_Body* msgBody, u16 iMSindex);//added by WS 05/14/05
+ 
+-u16 SearchPmkid(PWB32_ADAPTER Adapter, struct  Management_Frame* msgHeader,
++u16 SearchPmkid(struct wb35_adapter * adapter, struct  Management_Frame* msgHeader,
+ 				   struct PMKID_Information_Element * AssoReq_PMKID );
+ #endif
+ 
+diff --git a/drivers/staging/winbond/bssdscpt.h b/drivers/staging/winbond/bssdscpt.h
+index 97150a2..6f557cb 100644
+--- a/drivers/staging/winbond/bssdscpt.h
++++ b/drivers/staging/winbond/bssdscpt.h
+@@ -78,7 +78,7 @@ typedef struct BSSDescriptionElement
+     u16		wState;			// the current state of the system
+ 	u16		wIndex;			// THIS BSS element entry index
+ 
+-	void*	psAdapter;		// pointer to THIS Adapter
++	void*	psadapter;		// pointer to THIS adapter
+ 	OS_TIMER	nTimer;  // MLME timer
+ 
+     // Authentication
+@@ -148,9 +148,9 @@ typedef struct BSSDescriptionElement
+ 
+ } WB_BSSDESCRIPTION, *PWB_BSSDESCRIPTION;
+ 
+-#define wBSSConnectedSTA(Adapter)             \
+-    ((u16)(Adapter)->sLocalPara.wConnectedSTAindex)
++#define wBSSConnectedSTA(adapter)             \
++    ((u16)(adapter)->sLocalPara.wConnectedSTAindex)
+ 
+-#define psBSS(i)			(&(Adapter->asBSSDescriptElement[(i)]))
++#define psBSS(i)			(&(adapter->asBSSDescriptElement[(i)]))
+ 
+ 
+diff --git a/drivers/staging/winbond/ds_tkip.h b/drivers/staging/winbond/ds_tkip.h
+index 6841d66..6cfe3de 100644
+--- a/drivers/staging/winbond/ds_tkip.h
++++ b/drivers/staging/winbond/ds_tkip.h
+@@ -26,8 +26,8 @@ typedef struct tkip
+ } tkip_t;
+ 
+ //void _append_data( u8 *pData, u16 size, tkip_t *p );
+-void Mds_MicGet(  void* Adapter,  void* pRxLayer1,  u8 *pKey,  u8 *pMic );
+-void Mds_MicFill(  void* Adapter,  void* pDes,  u8 *XmitBufAddress );
++void Mds_MicGet(  void* adapter,  void* pRxLayer1,  u8 *pKey,  u8 *pMic );
++void Mds_MicFill(  void* adapter,  void* pDes,  u8 *XmitBufAddress );
+ 
+ 
+ 
 diff --git a/drivers/staging/winbond/linux/wb35reg.c b/drivers/staging/winbond/linux/wb35reg.c
-index 9ff086e..102de31 100644
+index 102de31..041be81 100644
 --- a/drivers/staging/winbond/linux/wb35reg.c
 +++ b/drivers/staging/winbond/linux/wb35reg.c
-@@ -12,7 +12,7 @@ extern void phy_calibration_winbond(hw_data_t *phw_data, u32 frequency);
- unsigned char
- Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 NumberOfData, u8 Flag)
+@@ -386,11 +386,11 @@ Wb35Reg_EP0VM_start(  phw_data_t pHwData )
  {
--	PWB35REG pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	struct urb	*urb = NULL;
- 	struct wb35_reg_queue *reg_queue = NULL;
- 	u16		UrbSize;
-@@ -46,14 +46,14 @@ Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 N
- 		reg_queue->pUsbReq = dr;
- 		reg_queue->urb = urb;
+ 	struct wb35_reg *reg = &pHwData->reg;
  
--		spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
--		if (pWb35Reg->reg_first == NULL)
--			pWb35Reg->reg_first = reg_queue;
-+		spin_lock_irq( &reg->EP0VM_spin_lock );
-+		if (reg->reg_first == NULL)
-+			reg->reg_first = reg_queue;
- 		else
--			pWb35Reg->reg_last->Next = reg_queue;
--		pWb35Reg->reg_last = reg_queue;
-+			reg->reg_last->Next = reg_queue;
-+		reg->reg_last = reg_queue;
- 
--		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
-+		spin_unlock_irq( &reg->EP0VM_spin_lock );
- 
- 		// Start EP0VM
- 		Wb35Reg_EP0VM_start(pHwData);
-@@ -72,43 +72,43 @@ Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 N
- void
- Wb35Reg_Update(phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue)
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	switch (RegisterNo) {
--	case 0x3b0: pWb35Reg->U1B0 = RegisterValue; break;
--	case 0x3bc: pWb35Reg->U1BC_LEDConfigure = RegisterValue; break;
--	case 0x400: pWb35Reg->D00_DmaControl = RegisterValue; break;
--	case 0x800: pWb35Reg->M00_MacControl = RegisterValue; break;
--	case 0x804: pWb35Reg->M04_MulticastAddress1 = RegisterValue; break;
--	case 0x808: pWb35Reg->M08_MulticastAddress2 = RegisterValue; break;
--	case 0x824: pWb35Reg->M24_MacControl = RegisterValue; break;
--	case 0x828: pWb35Reg->M28_MacControl = RegisterValue; break;
--	case 0x82c: pWb35Reg->M2C_MacControl = RegisterValue; break;
--	case 0x838: pWb35Reg->M38_MacControl = RegisterValue; break;
--	case 0x840: pWb35Reg->M40_MacControl = RegisterValue; break;
--	case 0x844: pWb35Reg->M44_MacControl = RegisterValue; break;
--	case 0x848: pWb35Reg->M48_MacControl = RegisterValue; break;
--	case 0x84c: pWb35Reg->M4C_MacStatus = RegisterValue; break;
--	case 0x860: pWb35Reg->M60_MacControl = RegisterValue; break;
--	case 0x868: pWb35Reg->M68_MacControl = RegisterValue; break;
--	case 0x870: pWb35Reg->M70_MacControl = RegisterValue; break;
--	case 0x874: pWb35Reg->M74_MacControl = RegisterValue; break;
--	case 0x878: pWb35Reg->M78_ERPInformation = RegisterValue; break;
--	case 0x87C: pWb35Reg->M7C_MacControl = RegisterValue; break;
--	case 0x880: pWb35Reg->M80_MacControl = RegisterValue; break;
--	case 0x884: pWb35Reg->M84_MacControl = RegisterValue; break;
--	case 0x888: pWb35Reg->M88_MacControl = RegisterValue; break;
--	case 0x898: pWb35Reg->M98_MacControl = RegisterValue; break;
--	case 0x100c: pWb35Reg->BB0C = RegisterValue; break;
--	case 0x102c: pWb35Reg->BB2C = RegisterValue; break;
--	case 0x1030: pWb35Reg->BB30 = RegisterValue; break;
--	case 0x103c: pWb35Reg->BB3C = RegisterValue; break;
--	case 0x1048: pWb35Reg->BB48 = RegisterValue; break;
--	case 0x104c: pWb35Reg->BB4C = RegisterValue; break;
--	case 0x1050: pWb35Reg->BB50 = RegisterValue; break;
--	case 0x1054: pWb35Reg->BB54 = RegisterValue; break;
--	case 0x1058: pWb35Reg->BB58 = RegisterValue; break;
--	case 0x105c: pWb35Reg->BB5C = RegisterValue; break;
--	case 0x1060: pWb35Reg->BB60 = RegisterValue; break;
-+	case 0x3b0: reg->U1B0 = RegisterValue; break;
-+	case 0x3bc: reg->U1BC_LEDConfigure = RegisterValue; break;
-+	case 0x400: reg->D00_DmaControl = RegisterValue; break;
-+	case 0x800: reg->M00_MacControl = RegisterValue; break;
-+	case 0x804: reg->M04_MulticastAddress1 = RegisterValue; break;
-+	case 0x808: reg->M08_MulticastAddress2 = RegisterValue; break;
-+	case 0x824: reg->M24_MacControl = RegisterValue; break;
-+	case 0x828: reg->M28_MacControl = RegisterValue; break;
-+	case 0x82c: reg->M2C_MacControl = RegisterValue; break;
-+	case 0x838: reg->M38_MacControl = RegisterValue; break;
-+	case 0x840: reg->M40_MacControl = RegisterValue; break;
-+	case 0x844: reg->M44_MacControl = RegisterValue; break;
-+	case 0x848: reg->M48_MacControl = RegisterValue; break;
-+	case 0x84c: reg->M4C_MacStatus = RegisterValue; break;
-+	case 0x860: reg->M60_MacControl = RegisterValue; break;
-+	case 0x868: reg->M68_MacControl = RegisterValue; break;
-+	case 0x870: reg->M70_MacControl = RegisterValue; break;
-+	case 0x874: reg->M74_MacControl = RegisterValue; break;
-+	case 0x878: reg->M78_ERPInformation = RegisterValue; break;
-+	case 0x87C: reg->M7C_MacControl = RegisterValue; break;
-+	case 0x880: reg->M80_MacControl = RegisterValue; break;
-+	case 0x884: reg->M84_MacControl = RegisterValue; break;
-+	case 0x888: reg->M88_MacControl = RegisterValue; break;
-+	case 0x898: reg->M98_MacControl = RegisterValue; break;
-+	case 0x100c: reg->BB0C = RegisterValue; break;
-+	case 0x102c: reg->BB2C = RegisterValue; break;
-+	case 0x1030: reg->BB30 = RegisterValue; break;
-+	case 0x103c: reg->BB3C = RegisterValue; break;
-+	case 0x1048: reg->BB48 = RegisterValue; break;
-+	case 0x104c: reg->BB4C = RegisterValue; break;
-+	case 0x1050: reg->BB50 = RegisterValue; break;
-+	case 0x1054: reg->BB54 = RegisterValue; break;
-+	case 0x1058: reg->BB58 = RegisterValue; break;
-+	case 0x105c: reg->BB5C = RegisterValue; break;
-+	case 0x1060: reg->BB60 = RegisterValue; break;
- 	}
- }
- 
-@@ -117,7 +117,7 @@ Wb35Reg_Update(phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue)
- unsigned char
- Wb35Reg_WriteSync(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
- {
--	PWB35REG pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	int ret = -1;
- 
- 	// Module shutdown
-@@ -127,20 +127,20 @@ Wb35Reg_WriteSync(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
- 	RegisterValue = cpu_to_le32(RegisterValue);
- 
- 	// update the register by send usb message------------------------------------
--	pWb35Reg->SyncIoPause = 1;
-+	reg->SyncIoPause = 1;
- 
- 	// 20060717.5 Wait until EP0VM stop
--	while (pWb35Reg->EP0vm_state != VM_STOP)
-+	while (reg->EP0vm_state != VM_STOP)
- 		msleep(10);
- 
- 	// Sync IoCallDriver
--	pWb35Reg->EP0vm_state = VM_RUNNING;
-+	reg->EP0vm_state = VM_RUNNING;
- 	ret = usb_control_msg( pHwData->WbUsb.udev,
- 			       usb_sndctrlpipe( pHwData->WbUsb.udev, 0 ),
- 			       0x03, USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_DIR_OUT,
- 			       0x0,RegisterNo, &RegisterValue, 4, HZ*100 );
--	pWb35Reg->EP0vm_state = VM_STOP;
--	pWb35Reg->SyncIoPause = 0;
-+	reg->EP0vm_state = VM_STOP;
-+	reg->SyncIoPause = 0;
- 
- 	Wb35Reg_EP0VM_start(pHwData);
- 
-@@ -161,7 +161,7 @@ Wb35Reg_WriteSync(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
- unsigned char
- Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	struct usb_ctrlrequest *dr;
- 	struct urb	*urb = NULL;
- 	struct wb35_reg_queue *reg_queue = NULL;
-@@ -193,14 +193,14 @@ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
- 		reg_queue->pUsbReq = dr;
- 		reg_queue->urb = urb;
- 
--		spin_lock_irq(&pWb35Reg->EP0VM_spin_lock );
--		if (pWb35Reg->reg_first == NULL)
--			pWb35Reg->reg_first = reg_queue;
-+		spin_lock_irq(&reg->EP0VM_spin_lock );
-+		if (reg->reg_first == NULL)
-+			reg->reg_first = reg_queue;
- 		else
--			pWb35Reg->reg_last->Next = reg_queue;
--		pWb35Reg->reg_last = reg_queue;
-+			reg->reg_last->Next = reg_queue;
-+		reg->reg_last = reg_queue;
- 
--		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
-+		spin_unlock_irq( &reg->EP0VM_spin_lock );
- 
- 		// Start EP0VM
- 		Wb35Reg_EP0VM_start(pHwData);
-@@ -222,7 +222,7 @@ unsigned char
- Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 RegisterValue,
- 				s8 *pValue, s8 Len)
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	struct usb_ctrlrequest *dr;
- 	struct urb	*urb = NULL;
- 	struct wb35_reg_queue *reg_queue = NULL;
-@@ -254,14 +254,14 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
- 		reg_queue->Next = NULL;
- 		reg_queue->pUsbReq = dr;
- 		reg_queue->urb = urb;
--		spin_lock_irq (&pWb35Reg->EP0VM_spin_lock );
--		if( pWb35Reg->reg_first == NULL )
--			pWb35Reg->reg_first = reg_queue;
-+		spin_lock_irq (&reg->EP0VM_spin_lock );
-+		if( reg->reg_first == NULL )
-+			reg->reg_first = reg_queue;
- 		else
--			pWb35Reg->reg_last->Next = reg_queue;
--		pWb35Reg->reg_last = reg_queue;
-+			reg->reg_last->Next = reg_queue;
-+		reg->reg_last = reg_queue;
- 
--		spin_unlock_irq ( &pWb35Reg->EP0VM_spin_lock );
-+		spin_unlock_irq ( &reg->EP0VM_spin_lock );
- 
- 		// Start EP0VM
- 		Wb35Reg_EP0VM_start(pHwData);
-@@ -280,7 +280,7 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
- unsigned char
- Wb35Reg_ReadSync(  phw_data_t pHwData,  u16 RegisterNo,   u32 * pRegisterValue )
- {
--	PWB35REG pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	u32 *	pltmp = pRegisterValue;
- 	int ret = -1;
- 
-@@ -290,13 +290,13 @@ Wb35Reg_ReadSync(  phw_data_t pHwData,  u16 RegisterNo,   u32 * pRegisterValue )
- 
- 	// Read the register by send usb message------------------------------------
- 
--	pWb35Reg->SyncIoPause = 1;
-+	reg->SyncIoPause = 1;
- 
- 	// 20060717.5 Wait until EP0VM stop
--	while (pWb35Reg->EP0vm_state != VM_STOP)
-+	while (reg->EP0vm_state != VM_STOP)
- 		msleep(10);
- 
--	pWb35Reg->EP0vm_state = VM_RUNNING;
-+	reg->EP0vm_state = VM_RUNNING;
- 	ret = usb_control_msg( pHwData->WbUsb.udev,
- 			       usb_rcvctrlpipe(pHwData->WbUsb.udev, 0),
- 			       0x01, USB_TYPE_VENDOR|USB_RECIP_DEVICE|USB_DIR_IN,
-@@ -304,10 +304,10 @@ Wb35Reg_ReadSync(  phw_data_t pHwData,  u16 RegisterNo,   u32 * pRegisterValue )
- 
- 	*pRegisterValue = cpu_to_le32(*pltmp);
- 
--	pWb35Reg->EP0vm_state = VM_STOP;
-+	reg->EP0vm_state = VM_STOP;
- 
- 	Wb35Reg_Update( pHwData, RegisterNo, *pRegisterValue );
--	pWb35Reg->SyncIoPause = 0;
-+	reg->SyncIoPause = 0;
- 
- 	Wb35Reg_EP0VM_start( pHwData );
- 
-@@ -329,7 +329,7 @@ Wb35Reg_ReadSync(  phw_data_t pHwData,  u16 RegisterNo,   u32 * pRegisterValue )
- unsigned char
- Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	struct usb_ctrlrequest * dr;
- 	struct urb	*urb;
- 	struct wb35_reg_queue *reg_queue;
-@@ -359,14 +359,14 @@ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
- 		reg_queue->Next = NULL;
- 		reg_queue->pUsbReq = dr;
- 		reg_queue->urb = urb;
--		spin_lock_irq ( &pWb35Reg->EP0VM_spin_lock );
--		if( pWb35Reg->reg_first == NULL )
--			pWb35Reg->reg_first = reg_queue;
-+		spin_lock_irq ( &reg->EP0VM_spin_lock );
-+		if( reg->reg_first == NULL )
-+			reg->reg_first = reg_queue;
- 		else
--			pWb35Reg->reg_last->Next = reg_queue;
--		pWb35Reg->reg_last = reg_queue;
-+			reg->reg_last->Next = reg_queue;
-+		reg->reg_last = reg_queue;
- 
--		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
-+		spin_unlock_irq( &reg->EP0VM_spin_lock );
- 
- 		// Start EP0VM
- 		Wb35Reg_EP0VM_start( pHwData );
-@@ -384,19 +384,19 @@ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
- void
- Wb35Reg_EP0VM_start(  phw_data_t pHwData )
- {
--	PWB35REG pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 
--	if (OS_ATOMIC_INC( pHwData->Adapter, &pWb35Reg->RegFireCount) == 1) {
--		pWb35Reg->EP0vm_state = VM_RUNNING;
-+	if (OS_ATOMIC_INC( pHwData->Adapter, &reg->RegFireCount) == 1) {
-+		reg->EP0vm_state = VM_RUNNING;
+-	if (OS_ATOMIC_INC( pHwData->Adapter, &reg->RegFireCount) == 1) {
++	if (OS_ATOMIC_INC( pHwData->adapter, &reg->RegFireCount) == 1) {
+ 		reg->EP0vm_state = VM_RUNNING;
  		Wb35Reg_EP0VM(pHwData);
  	} else
--		OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Reg->RegFireCount );
-+		OS_ATOMIC_DEC( pHwData->Adapter, &reg->RegFireCount );
+-		OS_ATOMIC_DEC( pHwData->Adapter, &reg->RegFireCount );
++		OS_ATOMIC_DEC( pHwData->adapter, &reg->RegFireCount );
  }
  
  void
- Wb35Reg_EP0VM(phw_data_t pHwData )
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	struct urb	*urb;
- 	struct usb_ctrlrequest *dr;
- 	u32 *		pBuffer;
-@@ -404,16 +404,16 @@ Wb35Reg_EP0VM(phw_data_t pHwData )
- 	struct wb35_reg_queue *reg_queue;
- 
- 
--	if (pWb35Reg->SyncIoPause)
-+	if (reg->SyncIoPause)
- 		goto cleanup;
- 
- 	if (pHwData->SurpriseRemove)
- 		goto cleanup;
- 
- 	// Get the register data and send to USB through Irp
--	spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
--	reg_queue = pWb35Reg->reg_first;
--	spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
-+	spin_lock_irq( &reg->EP0VM_spin_lock );
-+	reg_queue = reg->reg_first;
-+	spin_unlock_irq( &reg->EP0VM_spin_lock );
- 
- 	if (!reg_queue)
- 		goto cleanup;
-@@ -432,7 +432,7 @@ Wb35Reg_EP0VM(phw_data_t pHwData )
- 			      (u8 *)dr,pBuffer,cpu_to_le16(dr->wLength),
- 			      Wb35Reg_EP0VM_complete, (void*)pHwData);
- 
--	pWb35Reg->EP0vm_state = VM_RUNNING;
-+	reg->EP0vm_state = VM_RUNNING;
- 
- 	ret = wb_usb_submit_urb( urb );
- 
-@@ -446,8 +446,8 @@ Wb35Reg_EP0VM(phw_data_t pHwData )
- 	return;
+@@ -447,7 +447,7 @@ Wb35Reg_EP0VM(phw_data_t pHwData )
  
   cleanup:
--	pWb35Reg->EP0vm_state = VM_STOP;
--	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Reg->RegFireCount );
-+	reg->EP0vm_state = VM_STOP;
-+	OS_ATOMIC_DEC( pHwData->Adapter, &reg->RegFireCount );
+ 	reg->EP0vm_state = VM_STOP;
+-	OS_ATOMIC_DEC( pHwData->Adapter, &reg->RegFireCount );
++	OS_ATOMIC_DEC( pHwData->adapter, &reg->RegFireCount );
  }
  
  
-@@ -455,32 +455,32 @@ void
- Wb35Reg_EP0VM_complete(struct urb *urb)
- {
- 	phw_data_t  pHwData = (phw_data_t)urb->context;
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	struct wb35_reg_queue *reg_queue;
- 
- 
- 	// Variable setting
--	pWb35Reg->EP0vm_state = VM_COMPLETED;
--	pWb35Reg->EP0VM_status = urb->status;
-+	reg->EP0vm_state = VM_COMPLETED;
-+	reg->EP0VM_status = urb->status;
+@@ -465,7 +465,7 @@ Wb35Reg_EP0VM_complete(struct urb *urb)
  
  	if (pHwData->SurpriseRemove) { // Let WbWlanHalt to handle surprise remove
--		pWb35Reg->EP0vm_state = VM_STOP;
--		OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Reg->RegFireCount );
-+		reg->EP0vm_state = VM_STOP;
-+		OS_ATOMIC_DEC( pHwData->Adapter, &reg->RegFireCount );
+ 		reg->EP0vm_state = VM_STOP;
+-		OS_ATOMIC_DEC( pHwData->Adapter, &reg->RegFireCount );
++		OS_ATOMIC_DEC( pHwData->adapter, &reg->RegFireCount );
  	} else {
  		// Complete to send, remove the URB from the first
--		spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
--		reg_queue = pWb35Reg->reg_first;
--		if (reg_queue == pWb35Reg->reg_last)
--			pWb35Reg->reg_last = NULL;
--		pWb35Reg->reg_first = pWb35Reg->reg_first->Next;
--		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
--
--		if (pWb35Reg->EP0VM_status) {
-+		spin_lock_irq( &reg->EP0VM_spin_lock );
-+		reg_queue = reg->reg_first;
-+		if (reg_queue == reg->reg_last)
-+			reg->reg_last = NULL;
-+		reg->reg_first = reg->reg_first->Next;
-+		spin_unlock_irq( &reg->EP0VM_spin_lock );
-+
-+		if (reg->EP0VM_status) {
- #ifdef _PE_REG_DUMP_
- 			WBDEBUG(("EP0 IoCompleteRoutine return error\n"));
--			DebugUsbdStatusInformation( pWb35Reg->EP0VM_status );
-+			DebugUsbdStatusInformation( reg->EP0VM_status );
- #endif
--			pWb35Reg->EP0vm_state = VM_STOP;
-+			reg->EP0vm_state = VM_STOP;
- 			pHwData->SurpriseRemove = 1;
- 		} else {
- 			// Success. Update the result
-@@ -499,7 +499,7 @@ Wb35Reg_EP0VM_complete(struct urb *urb)
- void
- Wb35Reg_destroy(phw_data_t pHwData)
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	struct urb	*urb;
- 	struct wb35_reg_queue *reg_queue;
+ 		spin_lock_irq( &reg->EP0VM_spin_lock );
+diff --git a/drivers/staging/winbond/linux/wb35rx.c b/drivers/staging/winbond/linux/wb35rx.c
+index 24ef23e..ae91b62 100644
+--- a/drivers/staging/winbond/linux/wb35rx.c
++++ b/drivers/staging/winbond/linux/wb35rx.c
+@@ -16,11 +16,11 @@ void Wb35Rx_start(phw_data_t pHwData)
+ 	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
  
-@@ -509,19 +509,19 @@ Wb35Reg_destroy(phw_data_t pHwData)
- 	// Wait for Reg operation completed
- 	do {
- 		msleep(10);	// Delay for waiting function enter 940623.1.a
--	} while (pWb35Reg->EP0vm_state != VM_STOP);
-+	} while (reg->EP0vm_state != VM_STOP);
- 	msleep(10);	// Delay for waiting function enter 940623.1.b
- 
- 	// Release all the data in RegQueue
--	spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
--	reg_queue = pWb35Reg->reg_first;
-+	spin_lock_irq(&reg->EP0VM_spin_lock);
-+	reg_queue = reg->reg_first;
- 	while (reg_queue) {
--		if (reg_queue == pWb35Reg->reg_last)
--			pWb35Reg->reg_last = NULL;
--		pWb35Reg->reg_first = pWb35Reg->reg_first->Next;
-+		if (reg_queue == reg->reg_last)
-+			reg->reg_last = NULL;
-+		reg->reg_first = reg->reg_first->Next;
- 
- 		urb = reg_queue->urb;
--		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
-+		spin_unlock_irq(&reg->EP0VM_spin_lock);
- 		if (urb) {
- 			usb_free_urb(urb);
- 			kfree(reg_queue);
-@@ -530,11 +530,11 @@ Wb35Reg_destroy(phw_data_t pHwData)
- 			WBDEBUG(("EP0 queue release error\n"));
- 			#endif
- 		}
--		spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
-+		spin_lock_irq( &reg->EP0VM_spin_lock );
- 
--		reg_queue = pWb35Reg->reg_first;
-+		reg_queue = reg->reg_first;
- 	}
--	spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
-+	spin_unlock_irq( &reg->EP0VM_spin_lock );
+ 	// Allow only one thread to run into the Wb35Rx() function
+-	if (OS_ATOMIC_INC(pHwData->Adapter, &pWb35Rx->RxFireCounter) == 1) {
++	if (OS_ATOMIC_INC(pHwData->adapter, &pWb35Rx->RxFireCounter) == 1) {
+ 		pWb35Rx->EP3vm_state = VM_RUNNING;
+ 		Wb35Rx(pHwData);
+ 	} else
+-		OS_ATOMIC_DEC(pHwData->Adapter, &pWb35Rx->RxFireCounter);
++		OS_ATOMIC_DEC(pHwData->adapter, &pWb35Rx->RxFireCounter);
  }
  
- //====================================================================================
-@@ -542,35 +542,35 @@ Wb35Reg_destroy(phw_data_t pHwData)
- //====================================================================================
- unsigned char Wb35Reg_initial(phw_data_t pHwData)
- {
--	PWB35REG pWb35Reg=&pHwData->Wb35Reg;
-+	struct wb35_reg *reg=&pHwData->reg;
- 	u32 ltmp;
- 	u32 SoftwareSet, VCO_trim, TxVga, Region_ScanInterval;
- 
- 	// Spin lock is acquired for read and write IRP command
--	spin_lock_init( &pWb35Reg->EP0VM_spin_lock );
-+	spin_lock_init( &reg->EP0VM_spin_lock );
- 
- 	// Getting RF module type from EEPROM ------------------------------------
- 	Wb35Reg_WriteSync( pHwData, 0x03b4, 0x080d0000 ); // Start EEPROM access + Read + address(0x0d)
- 	Wb35Reg_ReadSync( pHwData, 0x03b4, &ltmp );
- 
- 	//Update RF module type and determine the PHY type by inf or EEPROM
--	pWb35Reg->EEPROMPhyType = (u8)( ltmp & 0xff );
-+	reg->EEPROMPhyType = (u8)( ltmp & 0xff );
- 	// 0 V MAX2825, 1 V MAX2827, 2 V MAX2828, 3 V MAX2829
- 	// 16V AL2230, 17 - AL7230, 18 - AL2230S
- 	// 32 Reserved
- 	// 33 - W89RF242(TxVGA 0~19), 34 - W89RF242(TxVGA 0~34)
--	if (pWb35Reg->EEPROMPhyType != RF_DECIDE_BY_INF) {
--		if( (pWb35Reg->EEPROMPhyType == RF_MAXIM_2825)	||
--			(pWb35Reg->EEPROMPhyType == RF_MAXIM_2827)	||
--			(pWb35Reg->EEPROMPhyType == RF_MAXIM_2828)	||
--			(pWb35Reg->EEPROMPhyType == RF_MAXIM_2829)	||
--			(pWb35Reg->EEPROMPhyType == RF_MAXIM_V1)	||
--			(pWb35Reg->EEPROMPhyType == RF_AIROHA_2230)	||
--			(pWb35Reg->EEPROMPhyType == RF_AIROHA_2230S)    ||
--			(pWb35Reg->EEPROMPhyType == RF_AIROHA_7230)	||
--			(pWb35Reg->EEPROMPhyType == RF_WB_242)		||
--			(pWb35Reg->EEPROMPhyType == RF_WB_242_1))
--			pHwData->phy_type = pWb35Reg->EEPROMPhyType;
-+	if (reg->EEPROMPhyType != RF_DECIDE_BY_INF) {
-+		if( (reg->EEPROMPhyType == RF_MAXIM_2825)	||
-+			(reg->EEPROMPhyType == RF_MAXIM_2827)	||
-+			(reg->EEPROMPhyType == RF_MAXIM_2828)	||
-+			(reg->EEPROMPhyType == RF_MAXIM_2829)	||
-+			(reg->EEPROMPhyType == RF_MAXIM_V1)	||
-+			(reg->EEPROMPhyType == RF_AIROHA_2230)	||
-+			(reg->EEPROMPhyType == RF_AIROHA_2230S)    ||
-+			(reg->EEPROMPhyType == RF_AIROHA_7230)	||
-+			(reg->EEPROMPhyType == RF_WB_242)		||
-+			(reg->EEPROMPhyType == RF_WB_242_1))
-+			pHwData->phy_type = reg->EEPROMPhyType;
- 	}
- 
- 	// Power On procedure running. The relative parameter will be set according to phy_type
-@@ -606,9 +606,9 @@ unsigned char Wb35Reg_initial(phw_data_t pHwData)
- 	if (pHwData->VCO_trim == 0xff)
- 		pHwData->VCO_trim = 0x28;
- 
--	pWb35Reg->EEPROMRegion = (u8)(Region_ScanInterval>>8); // 20060720
--	if( pWb35Reg->EEPROMRegion<1 || pWb35Reg->EEPROMRegion>6 )
--		pWb35Reg->EEPROMRegion = REGION_AUTO;
-+	reg->EEPROMRegion = (u8)(Region_ScanInterval>>8); // 20060720
-+	if( reg->EEPROMRegion<1 || reg->EEPROMRegion>6 )
-+		reg->EEPROMRegion = REGION_AUTO;
- 
- 	//For Get Tx VGA from EEPROM 20060315.5 move here
- 	GetTxVgaFromEEPROM( pHwData );
-diff --git a/drivers/staging/winbond/linux/wb35reg_s.h b/drivers/staging/winbond/linux/wb35reg_s.h
-index 54b0340..c77306c 100644
---- a/drivers/staging/winbond/linux/wb35reg_s.h
-+++ b/drivers/staging/winbond/linux/wb35reg_s.h
-@@ -85,8 +85,7 @@ struct wb35_reg_queue {
- // Internal variable for module
- //====================================
- #define MAX_SQ3_FILTER_SIZE		5
--typedef struct _WB35REG
--{
-+struct wb35_reg {
- 	//============================
- 	// Register Bank backup
- 	//============================
-@@ -161,6 +160,6 @@ typedef struct _WB35REG
- 	u32	SQ3_filter[MAX_SQ3_FILTER_SIZE];
- 	u32	SQ3_index;
- 
--} WB35REG, *PWB35REG;
-+};
- 
- 
-diff --git a/drivers/staging/winbond/reg.c b/drivers/staging/winbond/reg.c
-index 0d505ac..9e1c1ef 100644
---- a/drivers/staging/winbond/reg.c
-+++ b/drivers/staging/winbond/reg.c
-@@ -1191,10 +1191,10 @@ RFSynthesizer_initial(phw_data_t pHwData)
- 			ltmp = (1 << 31) | (0 << 30) | (20 << 24) | BitReverse( (0x0F<<20) | 0xF01A0, 20);
- 			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
- 
--			ltmp = pHwData->Wb35Reg.BB5C & 0xfffff000;
-+			ltmp = pHwData->reg.BB5C & 0xfffff000;
- 			Wb35Reg_WriteSync( pHwData, 0x105c, ltmp );
--			pHwData->Wb35Reg.BB50 |= 0x13;//(MASK_IQCAL_MODE|MASK_CALIB_START);//20060315.1 modify
--        	Wb35Reg_WriteSync( pHwData, 0x1050, pHwData->Wb35Reg.BB50);
-+			pHwData->reg.BB50 |= 0x13;//(MASK_IQCAL_MODE|MASK_CALIB_START);//20060315.1 modify
-+	        	Wb35Reg_WriteSync(pHwData, 0x1050, pHwData->reg.BB50);
- 			msleep(5);
- 
- 			//phy_set_rf_data(phw_data, 0x0F, (0x0F<<20) | 0xF01B0); //Activate Filter Cal.
-@@ -1212,9 +1212,9 @@ RFSynthesizer_initial(phw_data_t pHwData)
- 			Wb35Reg_WriteSync( pHwData, 0x0864, ltmp );
- 
- //			//Force TXI(Q)P(N) to normal control
--			Wb35Reg_WriteSync( pHwData, 0x105c, pHwData->Wb35Reg.BB5C );
--			pHwData->Wb35Reg.BB50 &= ~0x13;//(MASK_IQCAL_MODE|MASK_CALIB_START);
--        	Wb35Reg_WriteSync( pHwData, 0x1050, pHwData->Wb35Reg.BB50);
-+			Wb35Reg_WriteSync( pHwData, 0x105c, pHwData->reg.BB5C );
-+			pHwData->reg.BB50 &= ~0x13;//(MASK_IQCAL_MODE|MASK_CALIB_START);
-+        	Wb35Reg_WriteSync( pHwData, 0x1050, pHwData->reg.BB50);
- 			break;
- 
- 		case RF_AIROHA_7230:
-@@ -1280,11 +1280,11 @@ RFSynthesizer_initial(phw_data_t pHwData)
- 			//
- 			// ; Version 1.3B revision items: for FA5976A , October 3, 2005 by HTHo
- 			//
--			ltmp = pHwData->Wb35Reg.BB5C & 0xfffff000;
-+			ltmp = pHwData->reg.BB5C & 0xfffff000;
- 			Wb35Reg_WriteSync( pHwData, 0x105c, ltmp );
- 			Wb35Reg_WriteSync( pHwData, 0x1058, 0 );
--			pHwData->Wb35Reg.BB50 |= 0x3;//(MASK_IQCAL_MODE|MASK_CALIB_START);//20060630
--	      	Wb35Reg_WriteSync( pHwData, 0x1050, pHwData->Wb35Reg.BB50);
-+			pHwData->reg.BB50 |= 0x3;//(MASK_IQCAL_MODE|MASK_CALIB_START);//20060630
-+		      	Wb35Reg_WriteSync(pHwData, 0x1050, pHwData->reg.BB50);
- 
- 			//----- Calibration (1). VCO frequency calibration
- 			//Calibration (1a.0). Synthesizer reset (HTHo corrected 2005/05/10)
-@@ -1405,9 +1405,9 @@ RFSynthesizer_initial(phw_data_t pHwData)
- 			msleep(5); // Sleep 5 ms
- 
- //			//write back
--//			Wb35Reg_WriteSync( pHwData, 0x105c, pHwData->Wb35Reg.BB5C );
--//			pHwData->Wb35Reg.BB50 &= ~0x13;//(MASK_IQCAL_MODE|MASK_CALIB_START); // 20060315.1 fix
--//      	Wb35Reg_WriteSync( pHwData, 0x1050, pHwData->Wb35Reg.BB50);
-+//			Wb35Reg_WriteSync(pHwData, 0x105c, pHwData->reg.BB5C);
-+//			pHwData->reg.BB50 &= ~0x13;//(MASK_IQCAL_MODE|MASK_CALIB_START); // 20060315.1 fix
-+//		      	Wb35Reg_WriteSync(pHwData, 0x1050, pHwData->reg.BB50);
- //			msleep(1); // Sleep 1 ms
- 			break;
- 	}
-@@ -1415,14 +1415,14 @@ RFSynthesizer_initial(phw_data_t pHwData)
- 
- void BBProcessor_AL7230_2400(  phw_data_t pHwData)
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	u32	pltmp[12];
- 
- 	pltmp[0] = 0x16A8337A; // 0x16a5215f; // 0x1000 AGC_Ctrl1
- 	pltmp[1] = 0x9AFF9AA6; // 0x9aff9ca6; // 0x1004 AGC_Ctrl2
- 	pltmp[2] = 0x55D00A04; // 0x55d00a04; // 0x1008 AGC_Ctrl3
- 	pltmp[3] = 0xFFF72031; // 0xFfFf2138; // 0x100c AGC_Ctrl4
--	pWb35Reg->BB0C = 0xFFF72031;
-+	reg->BB0C = 0xFFF72031;
- 	pltmp[4] = 0x0FacDCC5; // 0x1010 AGC_Ctrl5 // 20050927 0x0FacDCB7
- 	pltmp[5] = 0x00CAA333; // 0x00eaa333; // 0x1014 AGC_Ctrl6
- 	pltmp[6] = 0xF2211111; // 0x11111111; // 0x1018 AGC_Ctrl7
-@@ -1431,25 +1431,25 @@ void BBProcessor_AL7230_2400(  phw_data_t pHwData)
- 	pltmp[9] = 0xA8002A79; // 0xa9002A79; // 0x1024 AGC_Ctrl10
- 	pltmp[10] = 0x40000528; // 20050927 0x40000228
- 	pltmp[11] = 0x232D7F30; // 0x23457f30;// 0x102c A_ACQ_Ctrl
--	pWb35Reg->BB2C = 0x232D7F30;
-+	reg->BB2C = 0x232D7F30;
- 	Wb35Reg_BurstWrite( pHwData, 0x1000, pltmp, 12, AUTO_INCREMENT );
- 
- 	pltmp[0] = 0x00002c54; // 0x1030 B_ACQ_Ctrl
--	pWb35Reg->BB30 = 0x00002c54;
-+	reg->BB30 = 0x00002c54;
- 	pltmp[1] = 0x00C0D6C5; // 0x1034 A_TXRX_Ctrl
- 	pltmp[2] = 0x5B2C8769; // 0x1038 B_TXRX_Ctrl
- 	pltmp[3] = 0x00000000; // 0x103c 11a TX LS filter
--	pWb35Reg->BB3C = 0x00000000;
-+	reg->BB3C = 0x00000000;
- 	pltmp[4] = 0x00003F29; // 0x1040 11a TX LS filter
- 	pltmp[5] = 0x0EFEFBFE; // 0x1044 11a TX LS filter
- 	pltmp[6] = 0x00332C1B; // 0x00453B24; // 0x1048 11b TX RC filter
- 	pltmp[7] = 0x0A00FEFF; // 0x0E00FEFF; // 0x104c 11b TX RC filter
- 	pltmp[8] = 0x2B106208; // 0x1050 MODE_Ctrl
--	pWb35Reg->BB50 = 0x2B106208;
-+	reg->BB50 = 0x2B106208;
- 	pltmp[9] = 0; // 0x1054
--	pWb35Reg->BB54 = 0x00000000;
-+	reg->BB54 = 0x00000000;
- 	pltmp[10] = 0x52524242; // 0x64645252; // 0x1058 IQ_Alpha
--	pWb35Reg->BB58 = 0x52524242;
-+	reg->BB58 = 0x52524242;
- 	pltmp[11] = 0xAA0AC000; // 0x105c DC_Cancel
- 	Wb35Reg_BurstWrite( pHwData, 0x1030, pltmp, 12, AUTO_INCREMENT );
- 
-@@ -1457,14 +1457,14 @@ void BBProcessor_AL7230_2400(  phw_data_t pHwData)
- 
- void BBProcessor_AL7230_5000(  phw_data_t pHwData)
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	u32	pltmp[12];
- 
- 	pltmp[0] = 0x16AA6678; // 0x1000 AGC_Ctrl1
- 	pltmp[1] = 0x9AFFA0B2; // 0x1004 AGC_Ctrl2
- 	pltmp[2] = 0x55D00A04; // 0x1008 AGC_Ctrl3
- 	pltmp[3] = 0xEFFF233E; // 0x100c AGC_Ctrl4
--	pWb35Reg->BB0C = 0xEFFF233E;
-+	reg->BB0C = 0xEFFF233E;
- 	pltmp[4] = 0x0FacDCC5; // 0x1010 AGC_Ctrl5 // 20050927 0x0FacDCB7
- 	pltmp[5] = 0x00CAA333; // 0x1014 AGC_Ctrl6
- 	pltmp[6] = 0xF2432111; // 0x1018 AGC_Ctrl7
-@@ -1473,24 +1473,24 @@ void BBProcessor_AL7230_5000(  phw_data_t pHwData)
- 	pltmp[9] = 0x00002A79; // 0x1024 AGC_Ctrl10
- 	pltmp[10] = 0x40000528; // 20050927 0x40000228
- 	pltmp[11] = 0x232FDF30;// 0x102c A_ACQ_Ctrl
--	pWb35Reg->BB2C = 0x232FDF30;
-+	reg->BB2C = 0x232FDF30;
- 	Wb35Reg_BurstWrite( pHwData, 0x1000, pltmp, 12, AUTO_INCREMENT );
- 
- 	pltmp[0] = 0x80002C7C; // 0x1030 B_ACQ_Ctrl
- 	pltmp[1] = 0x00C0D6C5; // 0x1034 A_TXRX_Ctrl
- 	pltmp[2] = 0x5B2C8769; // 0x1038 B_TXRX_Ctrl
- 	pltmp[3] = 0x00000000; // 0x103c 11a TX LS filter
--	pWb35Reg->BB3C = 0x00000000;
-+	reg->BB3C = 0x00000000;
- 	pltmp[4] = 0x00003F29; // 0x1040 11a TX LS filter
- 	pltmp[5] = 0x0EFEFBFE; // 0x1044 11a TX LS filter
- 	pltmp[6] = 0x00332C1B; // 0x1048 11b TX RC filter
- 	pltmp[7] = 0x0A00FEFF; // 0x104c 11b TX RC filter
- 	pltmp[8] = 0x2B107208; // 0x1050 MODE_Ctrl
--	pWb35Reg->BB50 = 0x2B107208;
-+	reg->BB50 = 0x2B107208;
- 	pltmp[9] = 0; // 0x1054
--	pWb35Reg->BB54 = 0x00000000;
-+	reg->BB54 = 0x00000000;
- 	pltmp[10] = 0x52524242; // 0x1058 IQ_Alpha
--	pWb35Reg->BB58 = 0x52524242;
-+	reg->BB58 = 0x52524242;
- 	pltmp[11] = 0xAA0AC000; // 0x105c DC_Cancel
- 	Wb35Reg_BurstWrite( pHwData, 0x1030, pltmp, 12, AUTO_INCREMENT );
- 
-@@ -1511,7 +1511,7 @@ void BBProcessor_AL7230_5000(  phw_data_t pHwData)
- void
- BBProcessor_initial(  phw_data_t pHwData )
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	u32	i, pltmp[12];
- 
-     switch( pHwData->phy_type )
-@@ -1522,7 +1522,7 @@ BBProcessor_initial(  phw_data_t pHwData )
- 			pltmp[1] = 0x9AFFAEA4; // 0x1004 AGC_Ctrl2
- 			pltmp[2] = 0x55D00A04; // 0x1008 AGC_Ctrl3
- 			pltmp[3] = 0xEFFF1A34; // 0x100c AGC_Ctrl4
--			pWb35Reg->BB0C = 0xEFFF1A34;
-+			reg->BB0C = 0xEFFF1A34;
- 			pltmp[4] = 0x0FABE0B7; // 0x1010 AGC_Ctrl5
- 			pltmp[5] = 0x00CAA332; // 0x1014 AGC_Ctrl6
- 			pltmp[6] = 0xF6632111; // 0x1018 AGC_Ctrl7
-@@ -1531,25 +1531,25 @@ BBProcessor_initial(  phw_data_t pHwData )
- 			pltmp[9] = 0x00002A79; // 0x1024 AGC_Ctrl10
- 			pltmp[10] = (pHwData->phy_type==3) ? 0x40000a28 : 0x40000228; // 0x1028 MAXIM_331(b31=0) + WBRF_V1(b11=1) : MAXIM_331(b31=0) + WBRF_V2(b11=0)
- 			pltmp[11] = 0x232FDF30; // 0x102c A_ACQ_Ctrl
--			pWb35Reg->BB2C = 0x232FDF30; //Modify for 33's 1.0.95.xxx version, antenna 1
-+			reg->BB2C = 0x232FDF30; //Modify for 33's 1.0.95.xxx version, antenna 1
- 			Wb35Reg_BurstWrite( pHwData, 0x1000, pltmp, 12, AUTO_INCREMENT );
- 
- 			pltmp[0] = 0x00002C54; // 0x1030 B_ACQ_Ctrl
--			pWb35Reg->BB30 = 0x00002C54;
-+			reg->BB30 = 0x00002C54;
- 			pltmp[1] = 0x00C0D6C5; // 0x1034 A_TXRX_Ctrl
- 			pltmp[2] = 0x5B6C8769; // 0x1038 B_TXRX_Ctrl
- 			pltmp[3] = 0x00000000; // 0x103c 11a TX LS filter
--			pWb35Reg->BB3C = 0x00000000;
-+			reg->BB3C = 0x00000000;
- 			pltmp[4] = 0x00003F29; // 0x1040 11a TX LS filter
- 			pltmp[5] = 0x0EFEFBFE; // 0x1044 11a TX LS filter
- 			pltmp[6] = 0x00453B24; // 0x1048 11b TX RC filter
- 			pltmp[7] = 0x0E00FEFF; // 0x104c 11b TX RC filter
- 			pltmp[8] = 0x27106208; // 0x1050 MODE_Ctrl
--			pWb35Reg->BB50 = 0x27106208;
-+			reg->BB50 = 0x27106208;
- 			pltmp[9] = 0; // 0x1054
--			pWb35Reg->BB54 = 0x00000000;
-+			reg->BB54 = 0x00000000;
- 			pltmp[10] = 0x64646464; // 0x1058 IQ_Alpha
--			pWb35Reg->BB58 = 0x64646464;
-+			reg->BB58 = 0x64646464;
- 			pltmp[11] = 0xAA0AC000; // 0x105c DC_Cancel
- 			Wb35Reg_BurstWrite( pHwData, 0x1030, pltmp, 12, AUTO_INCREMENT );
- 
-@@ -1568,7 +1568,7 @@ BBProcessor_initial(  phw_data_t pHwData )
- 			pltmp[1] = 0x9affaea4; // 0x1004 AGC_Ctrl2
- 			pltmp[2] = 0x55d00a04; // 0x1008 AGC_Ctrl3
- 			pltmp[3] = 0xefff1a34; // 0x100c AGC_Ctrl4
--			pWb35Reg->BB0C = 0xefff1a34;
-+			reg->BB0C = 0xefff1a34;
- 			pltmp[4] = 0x0fabe0b7; // 0x1010 AGC_Ctrl5
- 			pltmp[5] = 0x00caa332; // 0x1014 AGC_Ctrl6
- 			pltmp[6] = 0xf6632111; // 0x1018 AGC_Ctrl7
-@@ -1577,25 +1577,25 @@ BBProcessor_initial(  phw_data_t pHwData )
- 			pltmp[9] = 0x00002A79; // 0x1024 AGC_Ctrl10
- 			pltmp[10] = 0x40000528; // 0x40000128; Modify for 33's 1.0.95
- 			pltmp[11] = 0x232fdf30; // 0x102c A_ACQ_Ctrl
--			pWb35Reg->BB2C = 0x232fdf30; //Modify for 33's 1.0.95.xxx version, antenna 1
-+			reg->BB2C = 0x232fdf30; //Modify for 33's 1.0.95.xxx version, antenna 1
- 			Wb35Reg_BurstWrite( pHwData, 0x1000, pltmp, 12, AUTO_INCREMENT );
- 
- 			pltmp[0] = 0x00002C54; // 0x1030 B_ACQ_Ctrl
--			pWb35Reg->BB30 = 0x00002C54;
-+			reg->BB30 = 0x00002C54;
- 			pltmp[1] = 0x00C0D6C5; // 0x1034 A_TXRX_Ctrl
- 			pltmp[2] = 0x5B6C8769; // 0x1038 B_TXRX_Ctrl
- 			pltmp[3] = 0x00000000; // 0x103c 11a TX LS filter
--			pWb35Reg->BB3C = 0x00000000;
-+			reg->BB3C = 0x00000000;
- 			pltmp[4] = 0x00003F29; // 0x1040 11a TX LS filter
- 			pltmp[5] = 0x0EFEFBFE; // 0x1044 11a TX LS filter
- 			pltmp[6] = 0x00453B24; // 0x1048 11b TX RC filter
- 			pltmp[7] = 0x0D00FDFF; // 0x104c 11b TX RC filter
- 			pltmp[8] = 0x27106208; // 0x1050 MODE_Ctrl
--			pWb35Reg->BB50 = 0x27106208;
-+			reg->BB50 = 0x27106208;
- 			pltmp[9] = 0; // 0x1054
--			pWb35Reg->BB54 = 0x00000000;
-+			reg->BB54 = 0x00000000;
- 			pltmp[10] = 0x64646464; // 0x1058 IQ_Alpha
--			pWb35Reg->BB58 = 0x64646464;
-+			reg->BB58 = 0x64646464;
- 			pltmp[11] = 0xAA28C000; // 0x105c DC_Cancel
- 			Wb35Reg_BurstWrite( pHwData, 0x1030, pltmp, 12, AUTO_INCREMENT );
- 
-@@ -1608,7 +1608,7 @@ BBProcessor_initial(  phw_data_t pHwData )
- 			pltmp[1] = 0x9affaea4; // 0x1004 AGC_Ctrl2
- 			pltmp[2] = 0x55d00a04; // 0x1008 AGC_Ctrl3
- 			pltmp[3] = 0xf4ff1632; // 0xefff1a34; // 0x100c AGC_Ctrl4 Modify for 33's 1.0.95
--			pWb35Reg->BB0C = 0xf4ff1632; // 0xefff1a34; Modify for 33's 1.0.95
-+			reg->BB0C = 0xf4ff1632; // 0xefff1a34; Modify for 33's 1.0.95
- 			pltmp[4] = 0x0fabe0b7; // 0x1010 AGC_Ctrl5
- 			pltmp[5] = 0x00caa332; // 0x1014 AGC_Ctrl6
- 			pltmp[6] = 0xf8632112; // 0xf6632111; // 0x1018 AGC_Ctrl7 Modify for 33's 1.0.95
-@@ -1617,25 +1617,25 @@ BBProcessor_initial(  phw_data_t pHwData )
- 			pltmp[9] = 0x00002A79; // 0x1024 AGC_Ctrl10
- 			pltmp[10] = 0x40000528; // 0x40000128; modify for 33's 1.0.95
- 			pltmp[11] = 0x232fdf30; // 0x102c A_ACQ_Ctrl
--			pWb35Reg->BB2C = 0x232fdf30; //Modify for 33's 1.0.95.xxx version, antenna 1
-+			reg->BB2C = 0x232fdf30; //Modify for 33's 1.0.95.xxx version, antenna 1
- 			Wb35Reg_BurstWrite( pHwData, 0x1000, pltmp, 12, AUTO_INCREMENT );
- 
- 			pltmp[0] = 0x00002C54; // 0x1030 B_ACQ_Ctrl
--			pWb35Reg->BB30 = 0x00002C54;
-+			reg->BB30 = 0x00002C54;
- 			pltmp[1] = 0x00C0D6C5; // 0x1034 A_TXRX_Ctrl
- 			pltmp[2] = 0x5b2c8769; // 0x5B6C8769; // 0x1038 B_TXRX_Ctrl Modify for 33's 1.0.95
- 			pltmp[3] = 0x00000000; // 0x103c 11a TX LS filter
--			pWb35Reg->BB3C = 0x00000000;
-+			reg->BB3C = 0x00000000;
- 			pltmp[4] = 0x00003F29; // 0x1040 11a TX LS filter
- 			pltmp[5] = 0x0EFEFBFE; // 0x1044 11a TX LS filter
- 			pltmp[6] = 0x002c2617; // 0x00453B24; // 0x1048 11b TX RC filter Modify for 33's 1.0.95
- 			pltmp[7] = 0x0800feff; // 0x0D00FDFF; // 0x104c 11b TX RC filter Modify for 33's 1.0.95
- 			pltmp[8] = 0x27106208; // 0x1050 MODE_Ctrl
--			pWb35Reg->BB50 = 0x27106208;
-+			reg->BB50 = 0x27106208;
- 			pltmp[9] = 0; // 0x1054
--			pWb35Reg->BB54 = 0x00000000;
-+			reg->BB54 = 0x00000000;
- 			pltmp[10] = 0x64644a4a; // 0x64646464; // 0x1058 IQ_Alpha Modify for 33's 1.0.95
--			pWb35Reg->BB58 = 0x64646464;
-+			reg->BB58 = 0x64646464;
- 			pltmp[11] = 0xAA28C000; // 0x105c DC_Cancel
- 			Wb35Reg_BurstWrite( pHwData, 0x1030, pltmp, 12, AUTO_INCREMENT );
- 
-@@ -1648,7 +1648,7 @@ BBProcessor_initial(  phw_data_t pHwData )
- 			pltmp[1] = 0x9affafb2; // 0x1004 AGC_Ctrl2
- 			pltmp[2] = 0x55d00a04; // 0x1008 AGC_Ctrl3
- 			pltmp[3] = 0xFFFd203c; // 0xFFFb203a; // 0x100c AGC_Ctrl4 Modify for 33's 1.0.95.xxx version
--			pWb35Reg->BB0C = 0xFFFd203c;
-+			reg->BB0C = 0xFFFd203c;
- 			pltmp[4] = 0X0FBFDCc5; // 0X0FBFDCA0; // 0x1010 AGC_Ctrl5 //0x0FB2E0B7 Modify for 33's 1.0.95.xxx version
- 			pltmp[5] = 0x00caa332; // 0x00caa333; // 0x1014 AGC_Ctrl6 Modify for 33's 1.0.95.xxx version
- 			pltmp[6] = 0XF6632111; // 0XF1632112; // 0x1018 AGC_Ctrl7		//0xf6632112 Modify for 33's 1.0.95.xxx version
-@@ -1657,27 +1657,27 @@ BBProcessor_initial(  phw_data_t pHwData )
- 			pltmp[9] = 0x00002A79; // 0x1024 AGC_Ctrl10
- 			pltmp[10] = 0X40000528;							//0x40000228
- 			pltmp[11] = 0x232dfF30; // 0x232A9F30; // 0x102c A_ACQ_Ctrl	//0x232a9730
--			pWb35Reg->BB2C = 0x232dfF30; //Modify for 33's 1.0.95.xxx version, antenna 1
-+			reg->BB2C = 0x232dfF30; //Modify for 33's 1.0.95.xxx version, antenna 1
- 			Wb35Reg_BurstWrite( pHwData, 0x1000, pltmp, 12, AUTO_INCREMENT );
- 
- 			pltmp[0] = 0x00002C54; // 0x1030 B_ACQ_Ctrl
--			pWb35Reg->BB30 = 0x00002C54;
-+			reg->BB30 = 0x00002C54;
- 			pltmp[1] = 0x00C0D6C5; // 0x1034 A_TXRX_Ctrl
- 			pltmp[2] = 0x5B2C8769; // 0x1038 B_TXRX_Ctrl	//0x5B6C8769
- 			pltmp[3] = 0x00000000; // 0x103c 11a TX LS filter
--			pWb35Reg->BB3C = 0x00000000;
-+			reg->BB3C = 0x00000000;
- 			pltmp[4] = 0x00003F29; // 0x1040 11a TX LS filter
- 			pltmp[5] = 0x0EFEFBFE; // 0x1044 11a TX LS filter
- 			pltmp[6] = BB48_DEFAULT_AL2230_11G; // 0x1048 11b TX RC filter 20060613.2
--			pWb35Reg->BB48 = BB48_DEFAULT_AL2230_11G; // 20051221 ch14 20060613.2
-+			reg->BB48 = BB48_DEFAULT_AL2230_11G; // 20051221 ch14 20060613.2
- 			pltmp[7] = BB4C_DEFAULT_AL2230_11G; // 0x104c 11b TX RC filter 20060613.2
--			pWb35Reg->BB4C = BB4C_DEFAULT_AL2230_11G; // 20060613.1 20060613.2
-+			reg->BB4C = BB4C_DEFAULT_AL2230_11G; // 20060613.1 20060613.2
- 			pltmp[8] = 0x27106200; // 0x1050 MODE_Ctrl
--			pWb35Reg->BB50 = 0x27106200;
-+			reg->BB50 = 0x27106200;
- 			pltmp[9] = 0; // 0x1054
--			pWb35Reg->BB54 = 0x00000000;
-+			reg->BB54 = 0x00000000;
- 			pltmp[10] = 0x52524242; // 0x1058 IQ_Alpha
--			pWb35Reg->BB58 = 0x52524242;
-+			reg->BB58 = 0x52524242;
- 			pltmp[11] = 0xAA0AC000; // 0x105c DC_Cancel
- 			Wb35Reg_BurstWrite( pHwData, 0x1030, pltmp, 12, AUTO_INCREMENT );
- 
-@@ -1690,7 +1690,7 @@ BBProcessor_initial(  phw_data_t pHwData )
- 			pltmp[1] = 0x9affafb2; // 0x1004 AGC_Ctrl2
- 			pltmp[2] = 0x55d00a04; // 0x1008 AGC_Ctrl3
- 			pltmp[3] = 0xFFFd203c; // 0xFFFb203a; // 0x100c AGC_Ctrl4 Modify for 33's 1.0.95.xxx version
--			pWb35Reg->BB0C = 0xFFFd203c;
-+			reg->BB0C = 0xFFFd203c;
- 			pltmp[4] = 0X0FBFDCc5; // 0X0FBFDCA0; // 0x1010 AGC_Ctrl5 //0x0FB2E0B7 Modify for 33's 1.0.95.xxx version
- 			pltmp[5] = 0x00caa332; // 0x00caa333; // 0x1014 AGC_Ctrl6 Modify for 33's 1.0.95.xxx version
- 			pltmp[6] = 0XF6632111; // 0XF1632112; // 0x1018 AGC_Ctrl7		//0xf6632112 Modify for 33's 1.0.95.xxx version
-@@ -1699,27 +1699,27 @@ BBProcessor_initial(  phw_data_t pHwData )
- 			pltmp[9] = 0x00002A79; // 0x1024 AGC_Ctrl10
- 			pltmp[10] = 0X40000528;							//0x40000228
- 			pltmp[11] = 0x232dfF30; // 0x232A9F30; // 0x102c A_ACQ_Ctrl	//0x232a9730
--			pWb35Reg->BB2C = 0x232dfF30; //Modify for 33's 1.0.95.xxx version, antenna 1
-+			reg->BB2C = 0x232dfF30; //Modify for 33's 1.0.95.xxx version, antenna 1
- 			Wb35Reg_BurstWrite( pHwData, 0x1000, pltmp, 12, AUTO_INCREMENT );
- 
- 			pltmp[0] = 0x00002C54; // 0x1030 B_ACQ_Ctrl
--			pWb35Reg->BB30 = 0x00002C54;
-+			reg->BB30 = 0x00002C54;
- 			pltmp[1] = 0x00C0D6C5; // 0x1034 A_TXRX_Ctrl
- 			pltmp[2] = 0x5B2C8769; // 0x1038 B_TXRX_Ctrl	//0x5B6C8769
- 			pltmp[3] = 0x00000000; // 0x103c 11a TX LS filter
--			pWb35Reg->BB3C = 0x00000000;
-+			reg->BB3C = 0x00000000;
- 			pltmp[4] = 0x00003F29; // 0x1040 11a TX LS filter
- 			pltmp[5] = 0x0EFEFBFE; // 0x1044 11a TX LS filter
- 			pltmp[6] = BB48_DEFAULT_AL2230_11G; // 0x1048 11b TX RC filter 20060613.2
--			pWb35Reg->BB48 = BB48_DEFAULT_AL2230_11G; // 20051221 ch14 20060613.2
-+			reg->BB48 = BB48_DEFAULT_AL2230_11G; // 20051221 ch14 20060613.2
- 			pltmp[7] = BB4C_DEFAULT_AL2230_11G; // 0x104c 11b TX RC filter 20060613.2
--			pWb35Reg->BB4C = BB4C_DEFAULT_AL2230_11G; // 20060613.1
-+			reg->BB4C = BB4C_DEFAULT_AL2230_11G; // 20060613.1
- 			pltmp[8] = 0x27106200; // 0x1050 MODE_Ctrl
--			pWb35Reg->BB50 = 0x27106200;
-+			reg->BB50 = 0x27106200;
- 			pltmp[9] = 0; // 0x1054
--			pWb35Reg->BB54 = 0x00000000;
-+			reg->BB54 = 0x00000000;
- 			pltmp[10] = 0x52523232; // 20060419 0x52524242; // 0x1058 IQ_Alpha
--			pWb35Reg->BB58 = 0x52523232; // 20060419 0x52524242;
-+			reg->BB58 = 0x52523232; // 20060419 0x52524242;
- 			pltmp[11] = 0xAA0AC000; // 0x105c DC_Cancel
- 			Wb35Reg_BurstWrite( pHwData, 0x1030, pltmp, 12, AUTO_INCREMENT );
- 
-@@ -1732,7 +1732,7 @@ BBProcessor_initial(  phw_data_t pHwData )
- 			pltmp[1] = 0x9affafb2; // 0x1004 AGC_Ctrl2
- 			pltmp[2] = 0x55d00a04; // 0x1008 AGC_Ctrl3
- 			pltmp[3] = 0xFFFb203a; // 0x100c AGC_Ctrl4
--			pWb35Reg->BB0c = 0xFFFb203a;
-+			reg->BB0c = 0xFFFb203a;
- 			pltmp[4] = 0x0FBFDCB7; // 0x1010 AGC_Ctrl5
- 			pltmp[5] = 0x00caa333; // 0x1014 AGC_Ctrl6
- 			pltmp[6] = 0xf6632112; // 0x1018 AGC_Ctrl7
-@@ -1741,25 +1741,25 @@ BBProcessor_initial(  phw_data_t pHwData )
- 			pltmp[9] = 0x00002A79; // 0x1024 AGC_Ctrl10
- 			pltmp[10] = 0x40000228;
- 			pltmp[11] = 0x232A9F30;// 0x102c A_ACQ_Ctrl
--			pWb35Reg->BB2c = 0x232A9F30;
-+			reg->BB2c = 0x232A9F30;
- 			Wb35Reg_BurstWrite( pHwData, 0x1000, pltmp, 12, AUTO_INCREMENT );
- 
- 			pltmp[0] = 0x00002C54; // 0x1030 B_ACQ_Ctrl
--			pWb35Reg->BB30 = 0x00002C54;
-+			reg->BB30 = 0x00002C54;
- 			pltmp[1] = 0x00C0D6C5; // 0x1034 A_TXRX_Ctrl
- 			pltmp[2] = 0x5B2C8769; // 0x1038 B_TXRX_Ctrl
- 			pltmp[3] = 0x00000000; // 0x103c 11a TX LS filter
--			pWb35Reg->BB3c = 0x00000000;
-+			reg->BB3c = 0x00000000;
- 			pltmp[4] = 0x00003F29; // 0x1040 11a TX LS filter
- 			pltmp[5] = 0x0EFEFBFE; // 0x1044 11a TX LS filter
- 			pltmp[6] = 0x00453B24; // 0x1048 11b TX RC filter
- 			pltmp[7] = 0x0E00FEFF; // 0x104c 11b TX RC filter
- 			pltmp[8] = 0x27106200; // 0x1050 MODE_Ctrl
--			pWb35Reg->BB50 = 0x27106200;
-+			reg->BB50 = 0x27106200;
- 			pltmp[9] = 0; // 0x1054
--			pWb35Reg->BB54 = 0x00000000;
-+			reg->BB54 = 0x00000000;
- 			pltmp[10] = 0x64645252; // 0x1058 IQ_Alpha
--			pWb35Reg->BB58 = 0x64645252;
-+			reg->BB58 = 0x64645252;
- 			pltmp[11] = 0xAA0AC000; // 0x105c DC_Cancel
- 			Wb35Reg_BurstWrite( pHwData, 0x1030, pltmp, 12, AUTO_INCREMENT );
- */
-@@ -1775,7 +1775,7 @@ BBProcessor_initial(  phw_data_t pHwData )
- 			pltmp[1] = 0x9AFF9ABA; // 0x1004 AGC_Ctrl2
- 			pltmp[2] = 0x55D00A04; // 0x1008 AGC_Ctrl3
- 			pltmp[3] = 0xEEE91C32; // 0x100c AGC_Ctrl4
--			pWb35Reg->BB0C = 0xEEE91C32;
-+			reg->BB0C = 0xEEE91C32;
- 			pltmp[4] = 0x0FACDCC5; // 0x1010 AGC_Ctrl5
- 			pltmp[5] = 0x000AA344; // 0x1014 AGC_Ctrl6
- 			pltmp[6] = 0x22222221; // 0x1018 AGC_Ctrl7
-@@ -1784,27 +1784,27 @@ BBProcessor_initial(  phw_data_t pHwData )
- 			pltmp[9] = 0xA9002A79; // 0x1024 AGC_Ctrl10
- 			pltmp[10] = 0x40000528; // 0x1028
- 			pltmp[11] = 0x23457F30; // 0x102c A_ACQ_Ctrl
--			pWb35Reg->BB2C = 0x23457F30;
-+			reg->BB2C = 0x23457F30;
- 			Wb35Reg_BurstWrite( pHwData, 0x1000, pltmp, 12, AUTO_INCREMENT );
- 
- 			pltmp[0] = 0x00002C54; // 0x1030 B_ACQ_Ctrl
--			pWb35Reg->BB30 = 0x00002C54;
-+			reg->BB30 = 0x00002C54;
- 			pltmp[1] = 0x00C0D6C5; // 0x1034 A_TXRX_Ctrl
- 			pltmp[2] = 0x5B2C8769; // 0x1038 B_TXRX_Ctrl
- 			pltmp[3] = pHwData->BB3c_cal; // 0x103c 11a TX LS filter
--			pWb35Reg->BB3C = pHwData->BB3c_cal;
-+			reg->BB3C = pHwData->BB3c_cal;
- 			pltmp[4] = 0x00003F29; // 0x1040 11a TX LS filter
- 			pltmp[5] = 0x0EFEFBFE; // 0x1044 11a TX LS filter
- 			pltmp[6] = BB48_DEFAULT_WB242_11G; // 0x1048 11b TX RC filter 20060613.2
--			pWb35Reg->BB48 = BB48_DEFAULT_WB242_11G; // 20060613.1 20060613.2
-+			reg->BB48 = BB48_DEFAULT_WB242_11G; // 20060613.1 20060613.2
- 			pltmp[7] = BB4C_DEFAULT_WB242_11G; // 0x104c 11b TX RC filter 20060613.2
--			pWb35Reg->BB4C = BB4C_DEFAULT_WB242_11G; // 20060613.1 20060613.2
-+			reg->BB4C = BB4C_DEFAULT_WB242_11G; // 20060613.1 20060613.2
- 			pltmp[8] = 0x27106208; // 0x1050 MODE_Ctrl
--			pWb35Reg->BB50 = 0x27106208;
-+			reg->BB50 = 0x27106208;
- 			pltmp[9] = pHwData->BB54_cal; // 0x1054
--			pWb35Reg->BB54 = pHwData->BB54_cal;
-+			reg->BB54 = pHwData->BB54_cal;
- 			pltmp[10] = 0x52523131; // 0x1058 IQ_Alpha
--			pWb35Reg->BB58 = 0x52523131;
-+			reg->BB58 = 0x52523131;
- 			pltmp[11] = 0xAA0AC000; // 20060825 0xAA2AC000; // 0x105c DC_Cancel
- 			Wb35Reg_BurstWrite( pHwData, 0x1030, pltmp, 12, AUTO_INCREMENT );
- 
-@@ -1813,14 +1813,14 @@ BBProcessor_initial(  phw_data_t pHwData )
-     }
- 
- 	// Fill the LNA table
--	pWb35Reg->LNAValue[0] = (u8)(pWb35Reg->BB0C & 0xff);
--	pWb35Reg->LNAValue[1] = 0;
--	pWb35Reg->LNAValue[2] = (u8)((pWb35Reg->BB0C & 0xff00)>>8);
--	pWb35Reg->LNAValue[3] = 0;
-+	reg->LNAValue[0] = (u8)(reg->BB0C & 0xff);
-+	reg->LNAValue[1] = 0;
-+	reg->LNAValue[2] = (u8)((reg->BB0C & 0xff00)>>8);
-+	reg->LNAValue[3] = 0;
- 
- 	// Fill SQ3 table
- 	for( i=0; i<MAX_SQ3_FILTER_SIZE; i++ )
--		pWb35Reg->SQ3_filter[i] = 0x2f; // half of Bit 0 ~ 6
-+		reg->SQ3_filter[i] = 0x2f; // half of Bit 0 ~ 6
+ // This function cannot reentrain
+@@ -81,7 +81,7 @@ void Wb35Rx(  phw_data_t pHwData )
+ error:
+ 	// VM stop
+ 	pWb35Rx->EP3vm_state = VM_STOP;
+-	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Rx->RxFireCounter );
++	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Rx->RxFireCounter );
  }
  
- void set_tx_power_per_channel_max2829(  phw_data_t pHwData,  ChanInfo Channel)
-@@ -1903,7 +1903,7 @@ void set_tx_power_per_channel_wb242(  phw_data_t pHwData,  ChanInfo Channel)
- void
- RFSynthesizer_SwitchingChannel(  phw_data_t pHwData,  ChanInfo Channel )
- {
--	PWB35REG pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	u32	pltmp[16]; // The 16 is the maximum capability of hardware
- 	u32	count, ltmp;
- 	u8	i, j, number;
-@@ -2090,40 +2090,40 @@ RFSynthesizer_SwitchingChannel(  phw_data_t pHwData,  ChanInfo Channel )
- 	if( Channel.band <= BAND_TYPE_OFDM_24 )
- 	{
-         // BB: select 2.4 GHz, bit[12-11]=00
--		pWb35Reg->BB50 &= ~(BIT(11)|BIT(12));
--		Wb35Reg_Write( pHwData, 0x1050, pWb35Reg->BB50 ); // MODE_Ctrl
-+		reg->BB50 &= ~(BIT(11)|BIT(12));
-+		Wb35Reg_Write( pHwData, 0x1050, reg->BB50 ); // MODE_Ctrl
-         // MAC: select 2.4 GHz, bit[5]=0
--		pWb35Reg->M78_ERPInformation &= ~BIT(5);
--		Wb35Reg_Write( pHwData, 0x0878, pWb35Reg->M78_ERPInformation );
-+		reg->M78_ERPInformation &= ~BIT(5);
-+		Wb35Reg_Write( pHwData, 0x0878, reg->M78_ERPInformation );
-         // enable 11b Baseband
--		pWb35Reg->BB30 &= ~BIT(31);
--		Wb35Reg_Write( pHwData, 0x1030, pWb35Reg->BB30 );
-+		reg->BB30 &= ~BIT(31);
-+		Wb35Reg_Write( pHwData, 0x1030, reg->BB30 );
- 	}
- 	else if( (Channel.band == BAND_TYPE_OFDM_5) )
- 	{
-         // BB: select 5 GHz
--		pWb35Reg->BB50 &= ~(BIT(11)|BIT(12));
-+		reg->BB50 &= ~(BIT(11)|BIT(12));
- 		if (Channel.ChanNo <=64 )
--			pWb35Reg->BB50 |= BIT(12);				// 10-5.25GHz
-+			reg->BB50 |= BIT(12);				// 10-5.25GHz
- 		else if ((Channel.ChanNo >= 100) && (Channel.ChanNo <= 124))
--			pWb35Reg->BB50 |= BIT(11);				// 01-5.48GHz
-+			reg->BB50 |= BIT(11);				// 01-5.48GHz
- 		else if ((Channel.ChanNo >=128) && (Channel.ChanNo <= 161))
--			pWb35Reg->BB50 |= (BIT(12)|BIT(11));	// 11-5.775GHz
-+			reg->BB50 |= (BIT(12)|BIT(11));	// 11-5.775GHz
- 		else	//Chan 184 ~ 196 will use bit[12-11] = 10 in version sh-src-1.2.25
--			pWb35Reg->BB50 |= BIT(12);
--		Wb35Reg_Write( pHwData, 0x1050, pWb35Reg->BB50 ); // MODE_Ctrl
-+			reg->BB50 |= BIT(12);
-+		Wb35Reg_Write( pHwData, 0x1050, reg->BB50 ); // MODE_Ctrl
+ void Wb35Rx_Complete(struct urb *urb)
+@@ -156,7 +156,7 @@ void Wb35Rx_Complete(struct urb *urb)
  
- 		//(1) M78 should alway use 2.4G setting when using RF_AIROHA_7230
- 		//(2) BB30 has been updated previously.
- 		if (pHwData->phy_type != RF_AIROHA_7230)
+ error:
+ 	pWb35Rx->RxOwner[ RxBufferId ] = 1; // Set the owner to hardware
+-	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Rx->RxFireCounter );
++	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Rx->RxFireCounter );
+ 	pWb35Rx->EP3vm_state = VM_STOP;
+ }
+ 
+diff --git a/drivers/staging/winbond/linux/wb35tx.c b/drivers/staging/winbond/linux/wb35tx.c
+index 6687051..3c40e31 100644
+--- a/drivers/staging/winbond/linux/wb35tx.c
++++ b/drivers/staging/winbond/linux/wb35tx.c
+@@ -25,20 +25,20 @@ void Wb35Tx_start(phw_data_t pHwData)
+ 	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
+ 
+ 	// Allow only one thread to run into function
+-	if (OS_ATOMIC_INC(pHwData->Adapter, &pWb35Tx->TxFireCounter) == 1) {
++	if (OS_ATOMIC_INC(pHwData->adapter, &pWb35Tx->TxFireCounter) == 1) {
+ 		pWb35Tx->EP4vm_state = VM_RUNNING;
+ 		Wb35Tx(pHwData);
+ 	} else
+-		OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Tx->TxFireCounter );
++		OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxFireCounter );
+ }
+ 
+ 
+ void Wb35Tx(phw_data_t pHwData)
+ {
+ 	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
+-	PADAPTER	Adapter = pHwData->Adapter;
++	struct wb35_adapter *adapter = pHwData->adapter;
+ 	u8		*pTxBufferAddress;
+-	PMDS		pMds = &Adapter->Mds;
++	PMDS		pMds = &adapter->Mds;
+ 	struct urb *	pUrb = (struct urb *)pWb35Tx->Tx4Urb;
+ 	int         	retv;
+ 	u32		SendIndex;
+@@ -81,16 +81,16 @@ void Wb35Tx(phw_data_t pHwData)
+ 
+  cleanup:
+ 	pWb35Tx->EP4vm_state = VM_STOP;
+-	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Tx->TxFireCounter );
++	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxFireCounter );
+ }
+ 
+ 
+ void Wb35Tx_complete(struct urb * pUrb)
+ {
+ 	phw_data_t	pHwData = pUrb->context;
+-	PADAPTER	Adapter = (PADAPTER)pHwData->Adapter;
++	struct wb35_adapter *adapter = pHwData->adapter;
+ 	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
+-	PMDS		pMds = &Adapter->Mds;
++	PMDS		pMds = &adapter->Mds;
+ 
+ 	printk("wb35: tx complete\n");
+ 	// Variable setting
+@@ -113,12 +113,12 @@ void Wb35Tx_complete(struct urb * pUrb)
+ 		goto error;
+ 	}
+ 
+-	Mds_Tx(Adapter);
++	Mds_Tx(adapter);
+ 	Wb35Tx(pHwData);
+ 	return;
+ 
+ error:
+-	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Tx->TxFireCounter );
++	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxFireCounter );
+ 	pWb35Tx->EP4vm_state = VM_STOP;
+ }
+ 
+@@ -211,12 +211,12 @@ void Wb35Tx_EP2VM_start(phw_data_t pHwData)
+ 	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
+ 
+ 	// Allow only one thread to run into function
+-	if (OS_ATOMIC_INC( pHwData->Adapter, &pWb35Tx->TxResultCount ) == 1) {
++	if (OS_ATOMIC_INC( pHwData->adapter, &pWb35Tx->TxResultCount ) == 1) {
+ 		pWb35Tx->EP2vm_state = VM_RUNNING;
+ 		Wb35Tx_EP2VM( pHwData );
+ 	}
+ 	else
+-		OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Tx->TxResultCount );
++		OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxResultCount );
+ }
+ 
+ 
+@@ -252,7 +252,7 @@ void Wb35Tx_EP2VM(phw_data_t pHwData)
+ 	return;
+ error:
+ 	pWb35Tx->EP2vm_state = VM_STOP;
+-	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Tx->TxResultCount );
++	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxResultCount );
+ }
+ 
+ 
+@@ -260,7 +260,7 @@ void Wb35Tx_EP2VM_complete(struct urb * pUrb)
+ {
+ 	phw_data_t	pHwData = pUrb->context;
+ 	T02_DESCRIPTOR	T02, TSTATUS;
+-	PADAPTER	Adapter = (PADAPTER)pHwData->Adapter;
++	struct wb35_adapter *adapter = pHwData->adapter;
+ 	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
+ 	u32 *		pltmp = (u32 *)pWb35Tx->EP2_buf;
+ 	u32		i;
+@@ -295,13 +295,13 @@ void Wb35Tx_EP2VM_complete(struct urb * pUrb)
+ 		T02.value |= ((cpu_to_le32(pltmp[i]) & 0xff) << 24);
+ 
+ 		TSTATUS.value = T02.value;  //20061009 anson's endian
+-		Mds_SendComplete( Adapter, &TSTATUS );
++		Mds_SendComplete( adapter, &TSTATUS );
+ 		T02.value = cpu_to_le32(pltmp[i]) >> 8;
+ 	}
+ 
+ 	return;
+ error:
+-	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Tx->TxResultCount );
++	OS_ATOMIC_DEC( pHwData->adapter, &pWb35Tx->TxResultCount );
+ 	pWb35Tx->EP2vm_state = VM_STOP;
+ }
+ 
+diff --git a/drivers/staging/winbond/linux/wbusb.c b/drivers/staging/winbond/linux/wbusb.c
+index c1e2562..1e43232 100644
+--- a/drivers/staging/winbond/linux/wbusb.c
++++ b/drivers/staging/winbond/linux/wbusb.c
+@@ -34,7 +34,7 @@ static struct ieee80211_channel wbsoft_channels[] = {
+ 
+ int wbsoft_enabled;
+ struct ieee80211_hw *my_dev;
+-PADAPTER my_adapter;
++struct wb35_adapter * my_adapter;
+ 
+ static int wbsoft_add_interface(struct ieee80211_hw *dev,
+ 				 struct ieee80211_if_init_conf *conf)
+@@ -187,7 +187,7 @@ struct wbsoft_priv {
+ 
+ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
+ {
+-	PADAPTER	Adapter;
++	struct wb35_adapter *adapter;
+ 	PWBLINUX	pWbLinux;
+ 	PWBUSB		pWbUsb;
+         struct usb_host_interface *interface;
+@@ -211,11 +211,11 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
+ 	if (ltmp)  // Is already initialized?
+ 		goto error;
+ 
+-	Adapter = kzalloc(sizeof(ADAPTER), GFP_KERNEL);
++	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
+ 
+-	my_adapter = Adapter;
+-	pWbLinux = &Adapter->WbLinux;
+-	pWbUsb = &Adapter->sHwData.WbUsb;
++	my_adapter = adapter;
++	pWbLinux = &adapter->WbLinux;
++	pWbUsb = &adapter->sHwData.WbUsb;
+ 	pWbUsb->udev = udev;
+ 
+         interface = intf->cur_altsetting;
+@@ -226,7 +226,7 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
+ 		pWbUsb->IsUsb20 = 1;
+ 	}
+ 
+-	if (!WbWLanInitialize(Adapter)) {
++	if (!WbWLanInitialize(adapter)) {
+ 		printk("[w35und]WbWLanInitialize fail\n");
+ 		goto error;
+ 	}
+@@ -248,7 +248,7 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
+ 
+ 		SET_IEEE80211_DEV(dev, &udev->dev);
  		{
-     	    // MAC: select 5 GHz, bit[5]=1
--			pWb35Reg->M78_ERPInformation |= BIT(5);
--			Wb35Reg_Write( pHwData, 0x0878, pWb35Reg->M78_ERPInformation );
-+			reg->M78_ERPInformation |= BIT(5);
-+			Wb35Reg_Write( pHwData, 0x0878, reg->M78_ERPInformation );
- 
-     	    // disable 11b Baseband
--			pWb35Reg->BB30 |= BIT(31);
--			Wb35Reg_Write( pHwData, 0x1030, pWb35Reg->BB30 );
-+			reg->BB30 |= BIT(31);
-+			Wb35Reg_Write( pHwData, 0x1030, reg->BB30 );
- 		}
+-			phw_data_t pHwData = &Adapter->sHwData;
++			phw_data_t pHwData = &adapter->sHwData;
+ 			unsigned char		dev_addr[MAX_ADDR_LEN];
+ 			hal_get_permanent_address(pHwData, dev_addr);
+ 			SET_IEEE80211_PERM_ADDR(dev, dev_addr);
+@@ -284,7 +284,7 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
+ 		BUG_ON(res);
  	}
- }
-@@ -2313,21 +2313,21 @@ u8 RFSynthesizer_SetWinbond242Power(  phw_data_t pHwData, u8 index )
- //===========================================================================================================
- void Dxx_initial(  phw_data_t pHwData )
+ 
+-	usb_set_intfdata( intf, Adapter );
++	usb_set_intfdata( intf, adapter );
+ 
+ 	printk("[w35und] _probe OK\n");
+ 	return 0;
+@@ -335,13 +335,13 @@ WbUsb_destroy(phw_data_t pHwData)
+ static void wb35_disconnect(struct usb_interface *intf)
  {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
+ 	PWBLINUX pWbLinux;
+-	PADAPTER Adapter = usb_get_intfdata(intf);
++	struct wb35_adapter * adapter = usb_get_intfdata(intf);
+ 	usb_set_intfdata(intf, NULL);
  
- 	// Old IC:Single mode only.
- 	// New IC: operation decide by Software set bit[4]. 1:multiple 0: single
--	pWb35Reg->D00_DmaControl = 0xc0000004;	//Txon, Rxon, multiple Rx for new 4k DMA
-+	reg->D00_DmaControl = 0xc0000004;	//Txon, Rxon, multiple Rx for new 4k DMA
- 											//Txon, Rxon, single Rx for old 8k ASIC
- 	if( !HAL_USB_MODE_BURST( pHwData ) )
--		pWb35Reg->D00_DmaControl = 0xc0000000;//Txon, Rxon, single Rx for new 4k DMA
-+		reg->D00_DmaControl = 0xc0000000;//Txon, Rxon, single Rx for new 4k DMA
+-        pWbLinux = &Adapter->WbLinux;
++        pWbLinux = &adapter->WbLinux;
  
--	Wb35Reg_WriteSync( pHwData, 0x0400, pWb35Reg->D00_DmaControl );
-+	Wb35Reg_WriteSync( pHwData, 0x0400, reg->D00_DmaControl );
+ 	// Card remove
+-	WbWlanHalt(Adapter);
++	WbWlanHalt(adapter);
+ 
  }
  
- void Mxx_initial(  phw_data_t pHwData )
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	u32		tmp;
- 	u32		pltmp[11];
- 	u16	i;
-@@ -2339,23 +2339,23 @@ void Mxx_initial(  phw_data_t pHwData )
+diff --git a/drivers/staging/winbond/linux/wbusb_f.h b/drivers/staging/winbond/linux/wbusb_f.h
+index d08fbc2..5a811f6 100644
+--- a/drivers/staging/winbond/linux/wbusb_f.h
++++ b/drivers/staging/winbond/linux/wbusb_f.h
+@@ -13,7 +13,7 @@
  
- 	// M00 bit set
- #ifdef _IBSS_BEACON_SEQ_STICK_
--	pWb35Reg->M00_MacControl = 0; // Solve beacon sequence number stop by software
-+	reg->M00_MacControl = 0; // Solve beacon sequence number stop by software
- #else
--	pWb35Reg->M00_MacControl = 0x80000000; // Solve beacon sequence number stop by hardware
-+	reg->M00_MacControl = 0x80000000; // Solve beacon sequence number stop by hardware
+ unsigned char WbUsb_initial(phw_data_t pHwData);
+ void WbUsb_destroy(phw_data_t pHwData);
+-unsigned char WbWLanInitialize(PADAPTER Adapter);
++unsigned char WbWLanInitialize(struct wb35_adapter *adapter);
+ #define	WbUsb_Stop( _A )
+ 
+ #define wb_usb_submit_urb(_A) usb_submit_urb(_A, GFP_ATOMIC)
+diff --git a/drivers/staging/winbond/localpara.h b/drivers/staging/winbond/localpara.h
+index 268cf91..087f486 100644
+--- a/drivers/staging/winbond/localpara.h
++++ b/drivers/staging/winbond/localpara.h
+@@ -25,7 +25,7 @@
+ #define LOCAL_UNKNOWN_5_CHANNEL_NUM			34	//not include 165
+ 
+ 
+-#define psLOCAL			(&(Adapter->sLocalPara))
++#define psLOCAL			(&(adapter->sLocalPara))
+ 
+ #define MODE_802_11_BG			0
+ #define MODE_802_11_A			1
+diff --git a/drivers/staging/winbond/mds.c b/drivers/staging/winbond/mds.c
+index f1de813..78e33d0 100644
+--- a/drivers/staging/winbond/mds.c
++++ b/drivers/staging/winbond/mds.c
+@@ -1,9 +1,9 @@
+ #include "os_common.h"
+ 
+ void
+-Mds_reset_descriptor(PADAPTER Adapter)
++Mds_reset_descriptor(struct wb35_adapter * adapter)
+ {
+-	PMDS pMds = &Adapter->Mds;
++	PMDS pMds = &adapter->Mds;
+ 
+ 	pMds->TxPause = 0;
+ 	pMds->TxThreadCount = 0;
+@@ -14,30 +14,30 @@ Mds_reset_descriptor(PADAPTER Adapter)
+ }
+ 
+ unsigned char
+-Mds_initial(PADAPTER Adapter)
++Mds_initial(struct wb35_adapter * adapter)
+ {
+-	PMDS pMds = &Adapter->Mds;
++	PMDS pMds = &adapter->Mds;
+ 
+ 	pMds->TxPause = FALSE;
+ 	pMds->TxRTSThreshold = DEFAULT_RTSThreshold;
+ 	pMds->TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
+ 
+-	vRxTimerInit(Adapter);//for WPA countermeasure
++	vRxTimerInit(adapter);//for WPA countermeasure
+ 
+-	return hal_get_tx_buffer( &Adapter->sHwData, &pMds->pTxBuffer );
++	return hal_get_tx_buffer( &adapter->sHwData, &pMds->pTxBuffer );
+ }
+ 
+ void
+-Mds_Destroy(PADAPTER Adapter)
++Mds_Destroy(struct wb35_adapter * adapter)
+ {
+-	vRxTimerStop(Adapter);
++	vRxTimerStop(adapter);
+ }
+ 
+ void
+-Mds_Tx(PADAPTER Adapter)
++Mds_Tx(struct wb35_adapter * adapter)
+ {
+-	phw_data_t	pHwData = &Adapter->sHwData;
+-	PMDS		pMds = &Adapter->Mds;
++	phw_data_t	pHwData = &adapter->sHwData;
++	PMDS		pMds = &adapter->Mds;
+ 	DESCRIPTOR	TxDes;
+ 	PDESCRIPTOR	pTxDes = &TxDes;
+ 	u8		*XmitBufAddress;
+@@ -52,7 +52,7 @@ Mds_Tx(PADAPTER Adapter)
+ 		return;
+ 
+ 	//Only one thread can be run here
+-	if (!OS_ATOMIC_INC( Adapter, &pMds->TxThreadCount) == 1)
++	if (!OS_ATOMIC_INC( adapter, &pMds->TxThreadCount) == 1)
+ 		goto cleanup;
+ 
+ 	// Start to fill the data
+@@ -69,7 +69,7 @@ Mds_Tx(PADAPTER Adapter)
+ 		XmitBufSize = 0;
+ 		FillCount = 0;
+ 		do {
+-			PacketSize = Adapter->sMlmeFrame.len;
++			PacketSize = adapter->sMlmeFrame.len;
+ 			if (!PacketSize)
+ 				break;
+ 
+@@ -98,10 +98,10 @@ Mds_Tx(PADAPTER Adapter)
+ 			pMds->TxDesIndex++;
+ 			pMds->TxDesIndex %= MAX_USB_TX_DESCRIPTOR;
+ 
+-			MLME_GetNextPacket( Adapter, pTxDes );
++			MLME_GetNextPacket( adapter, pTxDes );
+ 
+ 			// Copy header. 8byte USB + 24byte 802.11Hdr. Set TxRate, Preamble type
+-			Mds_HeaderCopy( Adapter, pTxDes, XmitBufAddress );
++			Mds_HeaderCopy( adapter, pTxDes, XmitBufAddress );
+ 
+ 			// For speed up Key setting
+ 			if (pTxDes->EapFix) {
+@@ -112,16 +112,16 @@ Mds_Tx(PADAPTER Adapter)
+ 			}
+ 
+ 			// Copy (fragment) frame body, and set USB, 802.11 hdr flag
+-			CurrentSize = Mds_BodyCopy(Adapter, pTxDes, XmitBufAddress);
++			CurrentSize = Mds_BodyCopy(adapter, pTxDes, XmitBufAddress);
+ 
+ 			// Set RTS/CTS and Normal duration field into buffer
+-			Mds_DurationSet(Adapter, pTxDes, XmitBufAddress);
++			Mds_DurationSet(adapter, pTxDes, XmitBufAddress);
+ 
+ 			//
+ 			// Calculation MIC from buffer which maybe fragment, then fill into temporary address 8 byte
+ 			// 931130.5.e
+ 			if (MICAdd)
+-				Mds_MicFill( Adapter, pTxDes, XmitBufAddress );
++				Mds_MicFill( adapter, pTxDes, XmitBufAddress );
+ 
+ 			//Shift to the next address
+ 			XmitBufSize += CurrentSize;
+@@ -133,7 +133,7 @@ Mds_Tx(PADAPTER Adapter)
+ 				pMds->TxToggle = TRUE;
+ 
+ 			// Get packet to transmit completed, 1:TESTSTA 2:MLME 3: Ndis data
+-			MLME_SendComplete(Adapter, 0, TRUE);
++			MLME_SendComplete(adapter, 0, TRUE);
+ 
+ 			// Software TSC count 20060214
+ 			pMds->TxTsc++;
+@@ -172,14 +172,14 @@ Mds_Tx(PADAPTER Adapter)
+ 		Wb35Tx_start(pHwData);
+ 
+  cleanup:
+-	OS_ATOMIC_DEC( Adapter, &pMds->TxThreadCount );
++	OS_ATOMIC_DEC( adapter, &pMds->TxThreadCount );
+ }
+ 
+ void
+-Mds_SendComplete(PADAPTER Adapter, PT02_DESCRIPTOR pT02)
++Mds_SendComplete(struct wb35_adapter * adapter, PT02_DESCRIPTOR pT02)
+ {
+-	PMDS	pMds = &Adapter->Mds;
+-	phw_data_t	pHwData = &Adapter->sHwData;
++	PMDS	pMds = &adapter->Mds;
++	phw_data_t	pHwData = &adapter->sHwData;
+ 	u8	PacketId = (u8)pT02->T02_Tx_PktID;
+ 	unsigned char	SendOK = TRUE;
+ 	u8	RetryCount, TxRate;
+@@ -205,7 +205,7 @@ Mds_SendComplete(PADAPTER Adapter, PT02_DESCRIPTOR pT02)
+ 				#ifdef _PE_STATE_DUMP_
+ 				WBDEBUG(("dto_tx_retry_count =%d\n", pHwData->dto_tx_retry_count));
+ 				#endif
+-				MTO_SetTxCount(Adapter, TxRate, RetryCount);
++				MTO_SetTxCount(adapter, TxRate, RetryCount);
+ 			}
+ 			pHwData->dto_tx_frag_count += (RetryCount+1);
+ 
+@@ -219,7 +219,7 @@ Mds_SendComplete(PADAPTER Adapter, PT02_DESCRIPTOR pT02)
+ 		} else {
+ 			if (pT02->T02_effective_transmission_rate)
+ 				pHwData->tx_ETR_count++;
+-			MTO_SetTxCount(Adapter, TxRate, RetryCount);
++			MTO_SetTxCount(adapter, TxRate, RetryCount);
+ 		}
+ 
+ 		// Clear send result buffer
+@@ -229,9 +229,9 @@ Mds_SendComplete(PADAPTER Adapter, PT02_DESCRIPTOR pT02)
+ }
+ 
+ void
+-Mds_HeaderCopy(PADAPTER Adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
++Mds_HeaderCopy(struct wb35_adapter * adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
+ {
+-	PMDS	pMds = &Adapter->Mds;
++	PMDS	pMds = &adapter->Mds;
+ 	u8	*src_buffer = pDes->buffer_address[0];//931130.5.g
+ 	PT00_DESCRIPTOR	pT00;
+ 	PT01_DESCRIPTOR	pT01;
+@@ -326,10 +326,10 @@ Mds_HeaderCopy(PADAPTER Adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
+ 
+ // The function return the 4n size of usb pk
+ u16
+-Mds_BodyCopy(PADAPTER Adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
++Mds_BodyCopy(struct wb35_adapter * adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
+ {
+ 	PT00_DESCRIPTOR	pT00;
+-	PMDS	pMds = &Adapter->Mds;
++	PMDS	pMds = &adapter->Mds;
+ 	u8	*buffer;
+ 	u8	*src_buffer;
+ 	u8	*pctmp;
+@@ -429,7 +429,7 @@ Mds_BodyCopy(PADAPTER Adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
+ 
+ 
+ void
+-Mds_DurationSet(  PADAPTER Adapter,  PDESCRIPTOR pDes,  u8 *buffer )
++Mds_DurationSet(  struct wb35_adapter * adapter,  PDESCRIPTOR pDes,  u8 *buffer )
+ {
+ 	PT00_DESCRIPTOR	pT00;
+ 	PT01_DESCRIPTOR	pT01;
+@@ -624,9 +624,9 @@ Mds_DurationSet(  PADAPTER Adapter,  PDESCRIPTOR pDes,  u8 *buffer )
+ 
+ }
+ 
+-void MDS_EthernetPacketReceive(  PADAPTER Adapter,  PRXLAYER1 pRxLayer1 )
++void MDS_EthernetPacketReceive(  struct wb35_adapter * adapter,  PRXLAYER1 pRxLayer1 )
+ {
+-		OS_RECEIVE_PACKET_INDICATE( Adapter, pRxLayer1 );
++		OS_RECEIVE_PACKET_INDICATE( adapter, pRxLayer1 );
+ }
+ 
+ 
+diff --git a/drivers/staging/winbond/mds_f.h b/drivers/staging/winbond/mds_f.h
+index 7a682d4..0733b9f 100644
+--- a/drivers/staging/winbond/mds_f.h
++++ b/drivers/staging/winbond/mds_f.h
+@@ -1,33 +1,33 @@
+-unsigned char Mds_initial(  PADAPTER Adapter );
+-void Mds_Destroy(  PADAPTER Adapter );
+-void Mds_Tx(  PADAPTER Adapter );
+-void Mds_HeaderCopy(  PADAPTER Adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
+-u16 Mds_BodyCopy(  PADAPTER Adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
+-void Mds_DurationSet(  PADAPTER Adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
+-void Mds_SendComplete(  PADAPTER Adapter,  PT02_DESCRIPTOR pT02 );
+-void Mds_MpduProcess(  PADAPTER Adapter,  PDESCRIPTOR pRxDes );
+-void Mds_reset_descriptor(  PADAPTER Adapter );
++unsigned char Mds_initial(  struct wb35_adapter *adapter );
++void Mds_Destroy(  struct wb35_adapter *adapter );
++void Mds_Tx(  struct wb35_adapter *adapter );
++void Mds_HeaderCopy(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
++u16 Mds_BodyCopy(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
++void Mds_DurationSet(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
++void Mds_SendComplete(  struct wb35_adapter *adapter,  PT02_DESCRIPTOR pT02 );
++void Mds_MpduProcess(  struct wb35_adapter *adapter,  PDESCRIPTOR pRxDes );
++void Mds_reset_descriptor(  struct wb35_adapter *adapter );
+ extern void DataDmp(u8 *pdata, u32 len, u32 offset);
+ 
+ 
+-void vRxTimerInit(PWB32_ADAPTER Adapter);
+-void vRxTimerStart(PWB32_ADAPTER Adapter, int timeout_value);
+-void RxTimerHandler_1a( PADAPTER Adapter);
+-void vRxTimerStop(PWB32_ADAPTER Adapter);
++void vRxTimerInit(struct wb35_adapter *adapter);
++void vRxTimerStart(struct wb35_adapter *adapter, int timeout_value);
++void RxTimerHandler_1a( struct wb35_adapter *adapter);
++void vRxTimerStop(struct wb35_adapter *adapter);
+ void RxTimerHandler( void*			SystemSpecific1,
+-					   PWB32_ADAPTER 	Adapter,
++					   struct wb35_adapter * 	adapter,
+ 					   void*			SystemSpecific2,
+ 					   void*			SystemSpecific3);
+ 
+ 
+ // For Asynchronous indicating. The routine collocates with USB.
+-void Mds_MsduProcess(  PWB32_ADAPTER Adapter,  PRXLAYER1 pRxLayer1,  u8 SlotIndex);
++void Mds_MsduProcess(  struct wb35_adapter *adapter,  PRXLAYER1 pRxLayer1,  u8 SlotIndex);
+ 
+ // For data frame sending 20060802
+-u16 MDS_GetPacketSize(  PADAPTER Adapter );
+-void MDS_GetNextPacket(  PADAPTER Adapter,  PDESCRIPTOR pDes );
+-void MDS_GetNextPacketComplete(  PADAPTER Adapter,  PDESCRIPTOR pDes );
+-void MDS_SendResult(  PADAPTER Adapter,  u8 PacketId,  unsigned char SendOK );
+-void MDS_EthernetPacketReceive(  PADAPTER Adapter,  PRXLAYER1 pRxLayer1 );
++u16 MDS_GetPacketSize(  struct wb35_adapter *adapter );
++void MDS_GetNextPacket(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes );
++void MDS_GetNextPacketComplete(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes );
++void MDS_SendResult(  struct wb35_adapter *adapter,  u8 PacketId,  unsigned char SendOK );
++void MDS_EthernetPacketReceive(  struct wb35_adapter *adapter,  PRXLAYER1 pRxLayer1 );
+ 
+ 
+diff --git a/drivers/staging/winbond/mds_s.h b/drivers/staging/winbond/mds_s.h
+index 9df2e09..283945c 100644
+--- a/drivers/staging/winbond/mds_s.h
++++ b/drivers/staging/winbond/mds_s.h
+@@ -21,20 +21,20 @@
+ #define CURRENT_PAIRWISE_KEY			psSME->tx_mic_key
+ #define CURRENT_GROUP_KEY				psSME->group_tx_mic_key
+ #define CURRENT_ENCRYPT_STATUS			psSME->encrypt_status
+-#define CURRENT_WEP_ID					Adapter->sSmePara._dot11WEPDefaultKeyID
+-#define CURRENT_CONTROL_PORT_BLOCK		( psSME->wpa_ok!=1 || (Adapter->Mds.boCounterMeasureBlock==1 && (CURRENT_ENCRYPT_STATUS==ENCRYPT_TKIP)) )
+-#define CURRENT_FRAGMENT_THRESHOLD		(Adapter->Mds.TxFragmentThreshold & ~0x1)
++#define CURRENT_WEP_ID					adapter->sSmePara._dot11WEPDefaultKeyID
++#define CURRENT_CONTROL_PORT_BLOCK		( psSME->wpa_ok!=1 || (adapter->Mds.boCounterMeasureBlock==1 && (CURRENT_ENCRYPT_STATUS==ENCRYPT_TKIP)) )
++#define CURRENT_FRAGMENT_THRESHOLD		(adapter->Mds.TxFragmentThreshold & ~0x1)
+ #define CURRENT_PREAMBLE_MODE			psLOCAL->boShortPreamble?WLAN_PREAMBLE_TYPE_SHORT:WLAN_PREAMBLE_TYPE_LONG
+ #define CURRENT_LINK_ON					OS_LINK_STATUS
+-#define CURRENT_TX_RATE					Adapter->sLocalPara.CurrentTxRate
+-#define CURRENT_FALL_BACK_TX_RATE		Adapter->sLocalPara.CurrentTxFallbackRate
+-#define CURRENT_TX_RATE_FOR_MNG			Adapter->sLocalPara.CurrentTxRateForMng
++#define CURRENT_TX_RATE					adapter->sLocalPara.CurrentTxRate
++#define CURRENT_FALL_BACK_TX_RATE		adapter->sLocalPara.CurrentTxFallbackRate
++#define CURRENT_TX_RATE_FOR_MNG			adapter->sLocalPara.CurrentTxRateForMng
+ #define CURRENT_PROTECT_MECHANISM		psLOCAL->boProtectMechanism
+-#define CURRENT_RTS_THRESHOLD			Adapter->Mds.TxRTSThreshold
++#define CURRENT_RTS_THRESHOLD			adapter->Mds.TxRTSThreshold
+ 
+-#define MIB_GS_XMIT_OK_INC				Adapter->sLocalPara.GS_XMIT_OK++
+-#define MIB_GS_RCV_OK_INC				Adapter->sLocalPara.GS_RCV_OK++
+-#define MIB_GS_XMIT_ERROR_INC			Adapter->sLocalPara.GS_XMIT_ERROR
++#define MIB_GS_XMIT_OK_INC				adapter->sLocalPara.GS_XMIT_OK++
++#define MIB_GS_RCV_OK_INC				adapter->sLocalPara.GS_RCV_OK++
++#define MIB_GS_XMIT_ERROR_INC			adapter->sLocalPara.GS_XMIT_ERROR
+ 
+ //---------- TX -----------------------------------
+ #define ETHERNET_TX_DESCRIPTORS         MAX_USB_TX_BUFFER_NUMBER
+diff --git a/drivers/staging/winbond/mlme_mib.h b/drivers/staging/winbond/mlme_mib.h
+index 8975973..ca8922e 100644
+--- a/drivers/staging/winbond/mlme_mib.h
++++ b/drivers/staging/winbond/mlme_mib.h
+@@ -22,15 +22,15 @@
+ //   Set the dot11ExcludeUnencrypted value.
+ //
+ // Arguments:
+-//   Adapter        - The pointer to the miniport adapter context.
++//   adapter        - The pointer to the miniport adapter context.
+ //   ExUnencrypted  - unsigned char type. The value to be set.
+ //
+ // Return values:
+ //   None.
+ //============================================================================
+-#define MLMESetExcludeUnencrypted(Adapter, ExUnencrypted)     \
++#define MLMESetExcludeUnencrypted(adapter, ExUnencrypted)     \
+ {                                                              \
+-    (Adapter)->sLocalPara.ExcludeUnencrypted = ExUnencrypted;             \
++    (adapter)->sLocalPara.ExcludeUnencrypted = ExUnencrypted;             \
+ }
+ 
+ //============================================================================
+@@ -40,12 +40,12 @@
+ //   Get the dot11ExcludeUnencrypted value.
+ //
+ // Arguments:
+-//   Adapter        - The pointer to the miniport adapter context.
++//   adapter        - The pointer to the miniport adapter context.
+ //
+ // Return values:
+ //   unsigned char type. The current dot11ExcludeUnencrypted value.
+ //============================================================================
+-#define MLMEGetExcludeUnencrypted(Adapter) ((unsigned char) (Adapter)->sLocalPara.ExcludeUnencrypted)
++#define MLMEGetExcludeUnencrypted(adapter) ((unsigned char) (adapter)->sLocalPara.ExcludeUnencrypted)
+ 
+ //============================================================================
+ // MLMESetMaxReceiveLifeTime --
+@@ -54,15 +54,15 @@
+ //   Set the dot11MaxReceiveLifeTime value.
+ //
+ // Arguments:
+-//   Adapter        - The pointer to the miniport adapter context.
++//   adapter        - The pointer to the miniport adapter context.
+ //   ReceiveLifeTime- u32 type. The value to be set.
+ //
+ // Return values:
+ //   None.
+ //============================================================================
+-#define MLMESetMaxReceiveLifeTime(Adapter, ReceiveLifeTime)    \
++#define MLMESetMaxReceiveLifeTime(adapter, ReceiveLifeTime)    \
+ {                                                               \
+-    (Adapter)->Mds.MaxReceiveTime = ReceiveLifeTime;                \
++    (adapter)->Mds.MaxReceiveTime = ReceiveLifeTime;                \
+ }
+ 
+ //============================================================================
+@@ -72,12 +72,12 @@
+ //   Get the dot11MaxReceiveLifeTime value.
+ //
+ // Arguments:
+-//   Adapter        - The pointer to the miniport adapter context.
++//   adapter        - The pointer to the miniport adapter context.
+ //
+ // Return values:
+ //   u32 type. The current dot11MaxReceiveLifeTime value.
+ //============================================================================
+-#define MLMEGetMaxReceiveLifeTime(Adapter) ((u32) (Adapter)->Mds.MaxReceiveTime)
++#define MLMEGetMaxReceiveLifeTime(adapter) ((u32) (adapter)->Mds.MaxReceiveTime)
+ 
  #endif
  
- 	// M24 disable enter power save, BB RxOn and enable NAV attack
--	pWb35Reg->M24_MacControl = 0x08040042;
--	pltmp[0] = pWb35Reg->M24_MacControl;
-+	reg->M24_MacControl = 0x08040042;
-+	pltmp[0] = reg->M24_MacControl;
+diff --git a/drivers/staging/winbond/mlmetxrx.c b/drivers/staging/winbond/mlmetxrx.c
+index e8533b8..341e4b2 100644
+--- a/drivers/staging/winbond/mlmetxrx.c
++++ b/drivers/staging/winbond/mlmetxrx.c
+@@ -17,23 +17,23 @@
+ //============================================================================
+ #include "os_common.h"
  
- 	pltmp[1] = 0; // Skip M28, because no initialize value is required.
+-void MLMEResetTxRx(PWB32_ADAPTER Adapter)
++void MLMEResetTxRx(struct wb35_adapter * adapter)
+ {
+ 	s32     i;
  
- 	// M2C CWmin and CWmax setting
- 	pHwData->cwmin = DEFAULT_CWMIN;
- 	pHwData->cwmax = DEFAULT_CWMAX;
--	pWb35Reg->M2C_MacControl = DEFAULT_CWMIN << 10;
--	pWb35Reg->M2C_MacControl |= DEFAULT_CWMAX;
--	pltmp[2] = pWb35Reg->M2C_MacControl;
-+	reg->M2C_MacControl = DEFAULT_CWMIN << 10;
-+	reg->M2C_MacControl |= DEFAULT_CWMAX;
-+	pltmp[2] = reg->M2C_MacControl;
+ 	// Reset the interface between MDS and MLME
+ 	for (i = 0; i < MAX_NUM_TX_MMPDU; i++)
+-		Adapter->sMlmeFrame.TxMMPDUInUse[i] = FALSE;
++		adapter->sMlmeFrame.TxMMPDUInUse[i] = FALSE;
+ 	for (i = 0; i < MAX_NUM_RX_MMPDU; i++)
+-		Adapter->sMlmeFrame.SaveRxBufSlotInUse[i] = FALSE;
+-
+-	Adapter->sMlmeFrame.wNumRxMMPDUInMLME   = 0;
+-	Adapter->sMlmeFrame.wNumRxMMPDUDiscarded = 0;
+-	Adapter->sMlmeFrame.wNumRxMMPDU          = 0;
+-	Adapter->sMlmeFrame.wNumTxMMPDUDiscarded = 0;
+-	Adapter->sMlmeFrame.wNumTxMMPDU          = 0;
+-	Adapter->sLocalPara.boCCAbusy    = FALSE;
+-	Adapter->sLocalPara.iPowerSaveMode     = PWR_ACTIVE;     // Power active
++		adapter->sMlmeFrame.SaveRxBufSlotInUse[i] = FALSE;
++
++	adapter->sMlmeFrame.wNumRxMMPDUInMLME   = 0;
++	adapter->sMlmeFrame.wNumRxMMPDUDiscarded = 0;
++	adapter->sMlmeFrame.wNumRxMMPDU          = 0;
++	adapter->sMlmeFrame.wNumTxMMPDUDiscarded = 0;
++	adapter->sMlmeFrame.wNumTxMMPDU          = 0;
++	adapter->sLocalPara.boCCAbusy    = FALSE;
++	adapter->sLocalPara.iPowerSaveMode     = PWR_ACTIVE;     // Power active
+ }
  
- 	// M30 BSSID
- 	pltmp[3] = *(u32 *)pHwData->bssid;
-@@ -2367,35 +2367,35 @@ void Mxx_initial(  phw_data_t pHwData )
- 	pltmp[4] = tmp;
+ //=============================================================================
+@@ -45,7 +45,7 @@ void MLMEResetTxRx(PWB32_ADAPTER Adapter)
+ //    the size MAX_MMPDU_SIZE for a MMPDU.
+ //
+ //  Arguments:
+-//    Adapter   - pointer to the miniport adapter context.
++//    adapter   - pointer to the miniport adapter context.
+ //
+ //	Return value:
+ //    NULL     : No available data buffer available
+@@ -53,51 +53,51 @@ void MLMEResetTxRx(PWB32_ADAPTER Adapter)
+ //=============================================================================
  
- 	// M38
--	pWb35Reg->M38_MacControl = (DEFAULT_RATE_RETRY_LIMIT<<8) | (DEFAULT_LONG_RETRY_LIMIT << 4) | DEFAULT_SHORT_RETRY_LIMIT;
--	pltmp[5] = pWb35Reg->M38_MacControl;
-+	reg->M38_MacControl = (DEFAULT_RATE_RETRY_LIMIT<<8) | (DEFAULT_LONG_RETRY_LIMIT << 4) | DEFAULT_SHORT_RETRY_LIMIT;
-+	pltmp[5] = reg->M38_MacControl;
+ /* FIXME: Should this just be replaced with kmalloc() and kfree()? */
+-u8 *MLMEGetMMPDUBuffer(PWB32_ADAPTER Adapter)
++u8 *MLMEGetMMPDUBuffer(struct wb35_adapter * adapter)
+ {
+ 	s32 i;
+ 	u8 *returnVal;
  
- 	// M3C
- 	tmp = (DEFAULT_PIFST << 26) | (DEFAULT_EIFST << 16) | (DEFAULT_DIFST << 8) | (DEFAULT_SIFST << 4) | DEFAULT_OSIFST ;
--	pWb35Reg->M3C_MacControl = tmp;
-+	reg->M3C_MacControl = tmp;
- 	pltmp[6] = tmp;
+ 	for (i = 0; i< MAX_NUM_TX_MMPDU; i++) {
+-		if (Adapter->sMlmeFrame.TxMMPDUInUse[i] == FALSE)
++		if (adapter->sMlmeFrame.TxMMPDUInUse[i] == FALSE)
+ 			break;
+ 	}
+ 	if (i >= MAX_NUM_TX_MMPDU) return NULL;
  
- 	// M40
- 	pHwData->slot_time_select = DEFAULT_SLOT_TIME;
- 	tmp = (DEFAULT_ATIMWD << 16) | DEFAULT_SLOT_TIME;
--	pWb35Reg->M40_MacControl = tmp;
-+	reg->M40_MacControl = tmp;
- 	pltmp[7] = tmp;
+-	returnVal = (u8 *)&(Adapter->sMlmeFrame.TxMMPDU[i]);
+-	Adapter->sMlmeFrame.TxMMPDUInUse[i] = TRUE;
++	returnVal = (u8 *)&(adapter->sMlmeFrame.TxMMPDU[i]);
++	adapter->sMlmeFrame.TxMMPDUInUse[i] = TRUE;
  
- 	// M44
- 	tmp = DEFAULT_MAX_TX_MSDU_LIFE_TIME << 10; // *1024
--	pWb35Reg->M44_MacControl = tmp;
-+	reg->M44_MacControl = tmp;
- 	pltmp[8] = tmp;
+ 	return returnVal;
+ }
  
- 	// M48
- 	pHwData->BeaconPeriod = DEFAULT_BEACON_INTERVAL;
- 	pHwData->ProbeDelay = DEFAULT_PROBE_DELAY_TIME;
- 	tmp = (DEFAULT_BEACON_INTERVAL << 16) | DEFAULT_PROBE_DELAY_TIME;
--	pWb35Reg->M48_MacControl = tmp;
-+	reg->M48_MacControl = tmp;
- 	pltmp[9] = tmp;
+ //=============================================================================
+-u8 MLMESendFrame(PWB32_ADAPTER Adapter, u8 *pMMPDU, u16 len, u8 DataType)
++u8 MLMESendFrame(struct wb35_adapter * adapter, u8 *pMMPDU, u16 len, u8 DataType)
+ /*	DataType : FRAME_TYPE_802_11_MANAGEMENT, FRAME_TYPE_802_11_MANAGEMENT_CHALLENGE,
+ 				FRAME_TYPE_802_11_DATA */
+ {
+-	if (Adapter->sMlmeFrame.IsInUsed != PACKET_FREE_TO_USE) {
+-		Adapter->sMlmeFrame.wNumTxMMPDUDiscarded++;
++	if (adapter->sMlmeFrame.IsInUsed != PACKET_FREE_TO_USE) {
++		adapter->sMlmeFrame.wNumTxMMPDUDiscarded++;
+ 		return FALSE;
+ 	}
+-	Adapter->sMlmeFrame.IsInUsed = PACKET_COME_FROM_MLME;
++	adapter->sMlmeFrame.IsInUsed = PACKET_COME_FROM_MLME;
  
- 	//M4C
--	pWb35Reg->M4C_MacStatus = (DEFAULT_PROTOCOL_VERSION << 30) | (DEFAULT_MAC_POWER_STATE << 28) | (DEFAULT_DTIM_ALERT_TIME << 24);
--	pltmp[10] = pWb35Reg->M4C_MacStatus;
-+	reg->M4C_MacStatus = (DEFAULT_PROTOCOL_VERSION << 30) | (DEFAULT_MAC_POWER_STATE << 28) | (DEFAULT_DTIM_ALERT_TIME << 24);
-+	pltmp[10] = reg->M4C_MacStatus;
+ 	// Keep information for sending
+-	Adapter->sMlmeFrame.pMMPDU = pMMPDU;
+-	Adapter->sMlmeFrame.DataType = DataType;
++	adapter->sMlmeFrame.pMMPDU = pMMPDU;
++	adapter->sMlmeFrame.DataType = DataType;
+ 	// len must be the last setting due to QUERY_SIZE_SECOND of Mds
+-	Adapter->sMlmeFrame.len = len;
+-	Adapter->sMlmeFrame.wNumTxMMPDU++;
++	adapter->sMlmeFrame.len = len;
++	adapter->sMlmeFrame.wNumTxMMPDU++;
  
- 	// Burst write
- 	//Wb35Reg_BurstWrite( pHwData, 0x0824, pltmp, 11, AUTO_INCREMENT );
-@@ -2404,15 +2404,15 @@ void Mxx_initial(  phw_data_t pHwData )
+ 	// H/W will enter power save by set the register. S/W don't send null frame
+ 	//with PWRMgt bit enbled to enter power save now.
  
- 	// M60
- 	Wb35Reg_WriteSync( pHwData, 0x0860, 0x12481248 );
--	pWb35Reg->M60_MacControl = 0x12481248;
-+	reg->M60_MacControl = 0x12481248;
+ 	// Transmit NDIS packet
+-	Mds_Tx(Adapter);
++	Mds_Tx(adapter);
+ 	return TRUE;
+ }
  
- 	// M68
- 	Wb35Reg_WriteSync( pHwData, 0x0868, 0x00050900 ); // 20051018 0x000F0F00 ); // 940930 0x00131300
--	pWb35Reg->M68_MacControl = 0x00050900;
-+	reg->M68_MacControl = 0x00050900;
+ void
+-MLME_GetNextPacket(PADAPTER Adapter, PDESCRIPTOR pDes)
++MLME_GetNextPacket(struct wb35_adapter * adapter, PDESCRIPTOR pDes)
+ {
+ #define DESCRIPTOR_ADD_BUFFER( _D, _A, _S ) \
+ {\
+@@ -109,21 +109,21 @@ MLME_GetNextPacket(PADAPTER Adapter, PDESCRIPTOR pDes)
+ 	_D->buffer_number++;\
+ }
  
- 	// M98
- 	Wb35Reg_WriteSync( pHwData, 0x0898, 0xffff8888 );
--	pWb35Reg->M98_MacControl = 0xffff8888;
-+	reg->M98_MacControl = 0xffff8888;
+-	DESCRIPTOR_ADD_BUFFER( pDes, Adapter->sMlmeFrame.pMMPDU, Adapter->sMlmeFrame.len );
+-	pDes->Type = Adapter->sMlmeFrame.DataType;
++	DESCRIPTOR_ADD_BUFFER( pDes, adapter->sMlmeFrame.pMMPDU, adapter->sMlmeFrame.len );
++	pDes->Type = adapter->sMlmeFrame.DataType;
+ }
+ 
+-void MLMEfreeMMPDUBuffer(PWB32_ADAPTER Adapter, s8 *pData)
++void MLMEfreeMMPDUBuffer(struct wb35_adapter * adapter, s8 *pData)
+ {
+ 	int i;
+ 
+ 	// Reclaim the data buffer
+ 	for (i = 0; i < MAX_NUM_TX_MMPDU; i++) {
+-		if (pData == (s8 *)&(Adapter->sMlmeFrame.TxMMPDU[i]))
++		if (pData == (s8 *)&(adapter->sMlmeFrame.TxMMPDU[i]))
+ 			break;
+ 	}
+-	if (Adapter->sMlmeFrame.TxMMPDUInUse[i])
+-		Adapter->sMlmeFrame.TxMMPDUInUse[i] = FALSE;
++	if (adapter->sMlmeFrame.TxMMPDUInUse[i])
++		adapter->sMlmeFrame.TxMMPDUInUse[i] = FALSE;
+ 	else  {
+ 		// Something wrong
+ 		// PD43 Add debug code here???
+@@ -131,19 +131,19 @@ void MLMEfreeMMPDUBuffer(PWB32_ADAPTER Adapter, s8 *pData)
+ }
+ 
+ void
+-MLME_SendComplete(PADAPTER Adapter, u8 PacketID, unsigned char SendOK)
++MLME_SendComplete(struct wb35_adapter * adapter, u8 PacketID, unsigned char SendOK)
+ {
+ 	MLME_TXCALLBACK	TxCallback;
+ 
+     // Reclaim the data buffer
+-	Adapter->sMlmeFrame.len = 0;
+-	MLMEfreeMMPDUBuffer( Adapter, Adapter->sMlmeFrame.pMMPDU );
++	adapter->sMlmeFrame.len = 0;
++	MLMEfreeMMPDUBuffer( adapter, adapter->sMlmeFrame.pMMPDU );
+ 
+ 
+ 	TxCallback.bResult = MLME_SUCCESS;
+ 
+ 	// Return resource
+-	Adapter->sMlmeFrame.IsInUsed = PACKET_FREE_TO_USE;
++	adapter->sMlmeFrame.IsInUsed = PACKET_FREE_TO_USE;
  }
  
  
-@@ -2620,7 +2620,7 @@ void EEPROMTxVgaAdjust(  phw_data_t pHwData ) // 20060619.5 Add
+diff --git a/drivers/staging/winbond/mlmetxrx_f.h b/drivers/staging/winbond/mlmetxrx_f.h
+index 24cd5f3..5f108d8 100644
+--- a/drivers/staging/winbond/mlmetxrx_f.h
++++ b/drivers/staging/winbond/mlmetxrx_f.h
+@@ -10,30 +10,30 @@
  
- void BBProcessor_RateChanging(  phw_data_t pHwData,  u8 rate ) // 20060613.1
+ void
+ MLMEProcThread(
+-     PWB32_ADAPTER    Adapter
++     struct wb35_adapter *    adapter
+ 	);
+ 
+-void MLMEResetTxRx( PWB32_ADAPTER Adapter);
++void MLMEResetTxRx( struct wb35_adapter * adapter);
+ 
+ u8 *
+ MLMEGetMMPDUBuffer(
+-     PWB32_ADAPTER    Adapter
++     struct wb35_adapter *    adapter
+    );
+ 
+-void MLMEfreeMMPDUBuffer( PWB32_ADAPTER Adapter,  s8 * pData);
++void MLMEfreeMMPDUBuffer( struct wb35_adapter * adapter,  s8 * pData);
+ 
+-void MLME_GetNextPacket(  PADAPTER Adapter,  PDESCRIPTOR pDes );
+-u8 MLMESendFrame( PWB32_ADAPTER Adapter,
++void MLME_GetNextPacket(  struct wb35_adapter * adapter,  PDESCRIPTOR pDes );
++u8 MLMESendFrame( struct wb35_adapter * adapter,
+ 					u8	*pMMPDU,
+ 					u16	len,
+ 					 u8	DataType);
+ 
+ void
+-MLME_SendComplete(  PWB32_ADAPTER Adapter,  u8 PacketID,  unsigned char SendOK );
++MLME_SendComplete(  struct wb35_adapter * adapter,  u8 PacketID,  unsigned char SendOK );
+ 
+ void
+ MLMERcvFrame(
+-     PWB32_ADAPTER    Adapter,
++     struct wb35_adapter *    adapter,
+      PRXBUFFER        pRxBufferArray,
+      u8            NumOfBuffer,
+      u8            ReturnSlotIndex
+@@ -41,11 +41,11 @@ MLMERcvFrame(
+ 
+ void
+ MLMEReturnPacket(
+-     PWB32_ADAPTER    Adapter,
++     struct wb35_adapter *    adapter,
+      u8 *          pRxBufer
+    );
+ #ifdef _IBSS_BEACON_SEQ_STICK_
+-s8 SendBCNullData(PWB32_ADAPTER Adapter, u16 wIdx);
++s8 SendBCNullData(struct wb35_adapter * adapter, u16 wIdx);
+ #endif
+ 
+ #endif
+diff --git a/drivers/staging/winbond/mto.c b/drivers/staging/winbond/mto.c
+index 2ef60e5..70d2a50 100644
+--- a/drivers/staging/winbond/mto.c
++++ b/drivers/staging/winbond/mto.c
+@@ -353,7 +353,7 @@ void MTO_SetDTORateRange(MTO_FUNC_INPUT,u8 *pRateArray, u8 ArraySize)
+ //    This function should be invoked during system initialization.
+ //
+ //  Arguments:
+-//    Adapter      - The pointer to the Miniport Adapter Context
++//    adapter      - The pointer to the Miniport adapter Context
+ //
+ //  Return Value:
+ //    None
+@@ -393,8 +393,8 @@ void MTO_Init(MTO_FUNC_INPUT)
+     MTO_SQ_ANT(0)       = 0;
+     MTO_SQ_ANT(1)       = 0;
+     MTO_ANT_DIVERSITY() = MTO_ANTENNA_DIVERSITY_ON;
+-    //CardSet_AntennaDiversity(Adapter, MTO_ANT_DIVERSITY());
+-    //PLMESetAntennaDiversity( Adapter, MTO_ANT_DIVERSITY());
++    //CardSet_AntennaDiversity(adapter, MTO_ANT_DIVERSITY());
++    //PLMESetAntennaDiversity( adapter, MTO_ANT_DIVERSITY());
+ 
+     MTO_AGING_TIMEOUT() = 0;//MTO_TMR_AGING() / MTO_TMR_PERIODIC();
+ 
+@@ -1210,7 +1210,7 @@ u8 MTO_GetTxFallbackRate(MTO_FUNC_INPUT)
+ //    to transmit a packet or when MSDULifeTime expired.
+ //
+ //  Arguments:
+-//    Adapter      - The pointer to the Miniport Adapter Context
++//    adapter      - The pointer to the Miniport adapter Context
+ //
+ //  Return Value:
+ //    None
+diff --git a/drivers/staging/winbond/mto.h b/drivers/staging/winbond/mto.h
+index f47936f..4ed15b0 100644
+--- a/drivers/staging/winbond/mto.h
++++ b/drivers/staging/winbond/mto.h
+@@ -129,17 +129,17 @@ typedef struct _MTO_PARAMETERS
+ } MTO_PARAMETERS, *PMTO_PARAMETERS;
+ 
+ 
+-#define MTO_FUNC_INPUT              PWB32_ADAPTER	Adapter
+-#define MTO_FUNC_INPUT_DATA         Adapter
+-#define MTO_DATA()                  (Adapter->sMtoPara)
+-#define MTO_HAL()                   (&Adapter->sHwData)
++#define MTO_FUNC_INPUT              struct wb35_adapter *	adapter
++#define MTO_FUNC_INPUT_DATA         adapter
++#define MTO_DATA()                  (adapter->sMtoPara)
++#define MTO_HAL()                   (&adapter->sHwData)
+ #define MTO_SET_PREAMBLE_TYPE(x)    // 20040511 Turbo mark LM_PREAMBLE_TYPE(&pcore_data->lm_data) = (x)
+-#define MTO_ENABLE					(Adapter->sLocalPara.TxRateMode == RATE_AUTO)
+-#define MTO_TXPOWER_FROM_EEPROM		(Adapter->sHwData.PowerIndexFromEEPROM)
+-#define LOCAL_ANTENNA_NO()			(Adapter->sLocalPara.bAntennaNo)
+-#define LOCAL_IS_CONNECTED()		(Adapter->sLocalPara.wConnectedSTAindex != 0)
+-#define LOCAL_IS_IBSS_MODE()		(Adapter->asBSSDescriptElement[Adapter->sLocalPara.wConnectedSTAindex].bBssType == IBSS_NET)
+-#define MTO_INITTXRATE_MODE			(Adapter->sHwData.SoftwareSet&0x2)	//bit 1
++#define MTO_ENABLE					(adapter->sLocalPara.TxRateMode == RATE_AUTO)
++#define MTO_TXPOWER_FROM_EEPROM		(adapter->sHwData.PowerIndexFromEEPROM)
++#define LOCAL_ANTENNA_NO()			(adapter->sLocalPara.bAntennaNo)
++#define LOCAL_IS_CONNECTED()		(adapter->sLocalPara.wConnectedSTAindex != 0)
++#define LOCAL_IS_IBSS_MODE()		(adapter->asBSSDescriptElement[adapter->sLocalPara.wConnectedSTAindex].bBssType == IBSS_NET)
++#define MTO_INITTXRATE_MODE			(adapter->sHwData.SoftwareSet&0x2)	//bit 1
+ // 20040510 Turbo add
+ #define MTO_TMR_CNT()               MTO_DATA().TmrCnt
+ #define MTO_TOGGLE_STATE()          MTO_DATA().ToggleState
+@@ -157,7 +157,7 @@ typedef struct _MTO_PARAMETERS
+ #define MTO_TMR_PERIODIC()          MTO_DATA().Tmr_Periodic
+ 
+ #define MTO_POWER_CHANGE_ENABLE()   MTO_DATA().PowerChangeEnable
+-#define MTO_ANT_DIVERSITY_ENABLE()  Adapter->sLocalPara.boAntennaDiversity
++#define MTO_ANT_DIVERSITY_ENABLE()  adapter->sLocalPara.boAntennaDiversity
+ #define MTO_ANT_MAC()               MTO_DATA().Ant_mac
+ #define MTO_ANT_DIVERSITY()         MTO_DATA().Ant_div
+ #define MTO_CCA_MODE()              MTO_DATA().CCA_Mode
+diff --git a/drivers/staging/winbond/mto_f.h b/drivers/staging/winbond/mto_f.h
+index 30b3df2..de3d8d4 100644
+--- a/drivers/staging/winbond/mto_f.h
++++ b/drivers/staging/winbond/mto_f.h
+@@ -1,6 +1,6 @@
+-extern void MTO_Init(PWB32_ADAPTER);
+-extern void MTO_PeriodicTimerExpired(PWB32_ADAPTER);
+-extern void MTO_SetDTORateRange(PWB32_ADAPTER, u8 *, u8);
++extern void MTO_Init(struct wb35_adapter *);
++extern void MTO_PeriodicTimerExpired(struct wb35_adapter *);
++extern void MTO_SetDTORateRange(struct wb35_adapter *, u8 *, u8);
+ extern u8 MTO_GetTxRate(MTO_FUNC_INPUT, u32 fpdu_len);
+ extern u8 MTO_GetTxFallbackRate(MTO_FUNC_INPUT);
+ extern void MTO_SetTxCount(MTO_FUNC_INPUT, u8 t0, u8 index);
+diff --git a/drivers/staging/winbond/rxisr.c b/drivers/staging/winbond/rxisr.c
+index 18e942c..6678660 100644
+--- a/drivers/staging/winbond/rxisr.c
++++ b/drivers/staging/winbond/rxisr.c
+@@ -1,29 +1,29 @@
+ #include "os_common.h"
+ 
+-void vRxTimerInit(PWB32_ADAPTER Adapter)
++void vRxTimerInit(struct wb35_adapter * adapter)
  {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	unsigned char		Is11bRate;
+-	OS_TIMER_INITIAL(&(Adapter->Mds.nTimer), (void*) RxTimerHandler, (void*) Adapter);
++	OS_TIMER_INITIAL(&(adapter->Mds.nTimer), (void*) RxTimerHandler, (void*) adapter);
+ }
  
- 	Is11bRate = (rate % 6) ? 1 : 0;
-@@ -2630,8 +2630,8 @@ void BBProcessor_RateChanging(  phw_data_t pHwData,  u8 rate ) // 20060613.1
- 		case RF_AIROHA_2230S: // 20060420 Add this
- 			if( Is11bRate )
- 			{
--				if( (pWb35Reg->BB48 != BB48_DEFAULT_AL2230_11B) &&
--					(pWb35Reg->BB4C != BB4C_DEFAULT_AL2230_11B) )
-+				if( (reg->BB48 != BB48_DEFAULT_AL2230_11B) &&
-+					(reg->BB4C != BB4C_DEFAULT_AL2230_11B) )
- 				{
- 					Wb35Reg_Write( pHwData, 0x1048, BB48_DEFAULT_AL2230_11B );
- 					Wb35Reg_Write( pHwData, 0x104c, BB4C_DEFAULT_AL2230_11B );
-@@ -2639,8 +2639,8 @@ void BBProcessor_RateChanging(  phw_data_t pHwData,  u8 rate ) // 20060613.1
- 			}
- 			else
- 			{
--				if( (pWb35Reg->BB48 != BB48_DEFAULT_AL2230_11G) &&
--					(pWb35Reg->BB4C != BB4C_DEFAULT_AL2230_11G) )
-+				if( (reg->BB48 != BB48_DEFAULT_AL2230_11G) &&
-+					(reg->BB4C != BB4C_DEFAULT_AL2230_11G) )
- 				{
- 					Wb35Reg_Write( pHwData, 0x1048, BB48_DEFAULT_AL2230_11G );
- 					Wb35Reg_Write( pHwData, 0x104c, BB4C_DEFAULT_AL2230_11G );
-@@ -2651,22 +2651,22 @@ void BBProcessor_RateChanging(  phw_data_t pHwData,  u8 rate ) // 20060613.1
- 		case RF_WB_242: // 20060623 The fix only for old TxVGA setting
- 			if( Is11bRate )
- 			{
--				if( (pWb35Reg->BB48 != BB48_DEFAULT_WB242_11B) &&
--					(pWb35Reg->BB4C != BB4C_DEFAULT_WB242_11B) )
-+				if( (reg->BB48 != BB48_DEFAULT_WB242_11B) &&
-+					(reg->BB4C != BB4C_DEFAULT_WB242_11B) )
- 				{
--					pWb35Reg->BB48 = BB48_DEFAULT_WB242_11B;
--					pWb35Reg->BB4C = BB4C_DEFAULT_WB242_11B;
-+					reg->BB48 = BB48_DEFAULT_WB242_11B;
-+					reg->BB4C = BB4C_DEFAULT_WB242_11B;
- 					Wb35Reg_Write( pHwData, 0x1048, BB48_DEFAULT_WB242_11B );
- 					Wb35Reg_Write( pHwData, 0x104c, BB4C_DEFAULT_WB242_11B );
- 				}
- 			}
- 			else
- 			{
--				if( (pWb35Reg->BB48 != BB48_DEFAULT_WB242_11G) &&
--					(pWb35Reg->BB4C != BB4C_DEFAULT_WB242_11G) )
-+				if( (reg->BB48 != BB48_DEFAULT_WB242_11G) &&
-+					(reg->BB4C != BB4C_DEFAULT_WB242_11G) )
- 				{
--					pWb35Reg->BB48 = BB48_DEFAULT_WB242_11G;
--					pWb35Reg->BB4C = BB4C_DEFAULT_WB242_11G;
-+					reg->BB48 = BB48_DEFAULT_WB242_11G;
-+					reg->BB4C = BB4C_DEFAULT_WB242_11G;
- 					Wb35Reg_Write( pHwData, 0x1048, BB48_DEFAULT_WB242_11G );
- 					Wb35Reg_Write( pHwData, 0x104c, BB4C_DEFAULT_WB242_11G );
- 				}
+-void vRxTimerStart(PWB32_ADAPTER Adapter, int timeout_value)
++void vRxTimerStart(struct wb35_adapter * adapter, int timeout_value)
+ {
+ 	if (timeout_value<MIN_TIMEOUT_VAL)
+ 		timeout_value=MIN_TIMEOUT_VAL;
+ 
+-	OS_TIMER_SET( &(Adapter->Mds.nTimer), timeout_value );
++	OS_TIMER_SET( &(adapter->Mds.nTimer), timeout_value );
+ }
+ 
+-void vRxTimerStop(PWB32_ADAPTER Adapter)
++void vRxTimerStop(struct wb35_adapter * adapter)
+ {
+-	OS_TIMER_CANCEL( &(Adapter->Mds.nTimer), 0 );
++	OS_TIMER_CANCEL( &(adapter->Mds.nTimer), 0 );
+ }
+ 
+-void RxTimerHandler_1a( PADAPTER Adapter)
++void RxTimerHandler_1a( struct wb35_adapter * adapter)
+ {
+-	RxTimerHandler(NULL, Adapter, NULL, NULL);
++	RxTimerHandler(NULL, adapter, NULL, NULL);
+ }
+ 
+-void RxTimerHandler(void* SystemSpecific1, PWB32_ADAPTER Adapter,
++void RxTimerHandler(void* SystemSpecific1, struct wb35_adapter * adapter,
+ 		    void* SystemSpecific2, void* SystemSpecific3)
+ {
+ 	WARN_ON(1);
+diff --git a/drivers/staging/winbond/scan_s.h b/drivers/staging/winbond/scan_s.h
+index 1d1b0c4..a7489cb 100644
+--- a/drivers/staging/winbond/scan_s.h
++++ b/drivers/staging/winbond/scan_s.h
+@@ -78,9 +78,9 @@ typedef struct _SCAN_PARAMETERS
+ 
+ } SCAN_PARAMETERS, *psSCAN_PARAMETERS;
+ 
+-// Encapsulate 'Adapter' data structure
+-#define psSCAN			(&(Adapter->sScanPara))
+-#define psSCANREQ			(&(Adapter->sScanPara.sScanReq))
++// Encapsulate 'adapter' data structure
++#define psSCAN			(&(adapter->sScanPara))
++#define psSCANREQ			(&(adapter->sScanPara.sScanReq))
+ 
+ //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ //	scan.h
+@@ -109,7 +109,7 @@ typedef struct _SCAN_PARAMETERS
+ 
+ // static functions
+ 
+-//static void ScanTimerHandler(PWB32_ADAPTER Adapter);
+-//static void vScanTimerStart(PWB32_ADAPTER	Adapter, int timeout_value);
+-//static void vScanTimerStop(PWB32_ADAPTER Adapter);
++//static void ScanTimerHandler(struct wb35_adapter * adapter);
++//static void vScanTimerStart(struct wb35_adapter *	adapter, int timeout_value);
++//static void vScanTimerStop(struct wb35_adapter * adapter);
+ 
+diff --git a/drivers/staging/winbond/sme_s.h b/drivers/staging/winbond/sme_s.h
+index dfd2fbc..de4efa1 100644
+--- a/drivers/staging/winbond/sme_s.h
++++ b/drivers/staging/winbond/sme_s.h
+@@ -196,9 +196,9 @@ typedef struct _SME_PARAMETERS
+ 
+ } SME_PARAMETERS, *PSME_PARAMETERS;
+ 
+-#define psSME			(&(Adapter->sSmePara))
++#define psSME			(&(adapter->sSmePara))
+ 
+-#define wSMEGetCurrentSTAState(Adapter)		((u16)(Adapter)->sSmePara.wState)
++#define wSMEGetCurrentSTAState(adapter)		((u16)(adapter)->sSmePara.wState)
+ 
+ 
+ 
 diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
-index 1a2533b..d012f05 100644
+index d012f05..3049ab6 100644
 --- a/drivers/staging/winbond/wbhal.c
 +++ b/drivers/staging/winbond/wbhal.c
-@@ -92,7 +92,7 @@ void hal_halt(phw_data_t pHwData, void *ppa_data)
- void hal_set_rates(phw_data_t pHwData, u8 *pbss_rates,
- 		   u8 length, unsigned char basic_rate_set)
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	u32		tmp, tmp1;
- 	u8		Rate[12]={ 2, 4, 11, 22, 12, 18, 24, 36, 48, 72, 96, 108 };
- 	u8		SupportedRate[16];
-@@ -101,10 +101,10 @@ void hal_set_rates(phw_data_t pHwData, u8 *pbss_rates,
- 	if( pHwData->SurpriseRemove ) return;
- 
- 	if (basic_rate_set) {
--		pWb35Reg->M28_MacControl &= ~0x000fff00;
-+		reg->M28_MacControl &= ~0x000fff00;
- 		tmp1 = 0x00000100;
- 	} else {
--		pWb35Reg->M28_MacControl &= ~0xfff00000;
-+		reg->M28_MacControl &= ~0xfff00000;
- 		tmp1 = 0x00100000;
- 	}
- 
-@@ -120,8 +120,8 @@ void hal_set_rates(phw_data_t pHwData, u8 *pbss_rates,
- 			tmp |= (tmp1<<j);
- 	}
- 
--	pWb35Reg->M28_MacControl |= tmp;
--	Wb35Reg_Write( pHwData, 0x0828, pWb35Reg->M28_MacControl );
-+	reg->M28_MacControl |= tmp;
-+	Wb35Reg_Write( pHwData, 0x0828, reg->M28_MacControl );
- 
- 	// 930206.2.c M78 setting
- 	j = k = Count1 = Count2 = 0;
-@@ -129,10 +129,10 @@ void hal_set_rates(phw_data_t pHwData, u8 *pbss_rates,
- 	tmp = 0x00100000;
- 	tmp1 = 0x00000100;
- 	for (i=0; i<12; i++) { // Get the supported rate
--		if (tmp & pWb35Reg->M28_MacControl) {
-+		if (tmp & reg->M28_MacControl) {
- 			SupportedRate[j] = Rate[i];
- 
--			if (tmp1 & pWb35Reg->M28_MacControl)
-+			if (tmp1 & reg->M28_MacControl)
- 				SupportedRate[j] |= 0x80;
- 
- 			if (k)
-@@ -144,7 +144,7 @@ void hal_set_rates(phw_data_t pHwData, u8 *pbss_rates,
- 		}
- 
- 		if (i==4 && k==0) {
--			if( !(pWb35Reg->M28_MacControl & 0x000ff000) ) // if basic rate in 11g domain)
-+			if( !(reg->M28_MacControl & 0x000ff000) ) // if basic rate in 11g domain)
- 			{
- 				k = 1;
- 				j = 8;
-@@ -161,16 +161,16 @@ void hal_set_rates(phw_data_t pHwData, u8 *pbss_rates,
- 		*(u32 *)(SupportedRate+(i<<2)) = cpu_to_le32( *(u32 *)(SupportedRate+(i<<2)) );
- 	//--- end 20060926 add by anson's endian
- 	Wb35Reg_BurstWrite( pHwData,0x087c, (u32 *)SupportedRate, 4, AUTO_INCREMENT );
--	pWb35Reg->M7C_MacControl = ((u32 *)SupportedRate)[0];
--	pWb35Reg->M80_MacControl = ((u32 *)SupportedRate)[1];
--	pWb35Reg->M84_MacControl = ((u32 *)SupportedRate)[2];
--	pWb35Reg->M88_MacControl = ((u32 *)SupportedRate)[3];
-+	reg->M7C_MacControl = ((u32 *)SupportedRate)[0];
-+	reg->M80_MacControl = ((u32 *)SupportedRate)[1];
-+	reg->M84_MacControl = ((u32 *)SupportedRate)[2];
-+	reg->M88_MacControl = ((u32 *)SupportedRate)[3];
- 
- 	// Fill length
- 	tmp = Count1<<28 | Count2<<24;
--	pWb35Reg->M78_ERPInformation &= ~0xff000000;
--	pWb35Reg->M78_ERPInformation |= tmp;
--	Wb35Reg_Write( pHwData, 0x0878, pWb35Reg->M78_ERPInformation );
-+	reg->M78_ERPInformation &= ~0xff000000;
-+	reg->M78_ERPInformation |= tmp;
-+	Wb35Reg_Write( pHwData, 0x0878, reg->M78_ERPInformation );
+@@ -28,10 +28,10 @@ void hal_get_permanent_address( phw_data_t pHwData, u8 *pethernet_address )
+ 	memcpy( pethernet_address, pHwData->PermanentMacAddress, 6 );
  }
  
- 
-@@ -190,7 +190,7 @@ void hal_set_beacon_period(  phw_data_t pHwData,  u16 beacon_period )
- 
- void hal_set_current_channel_ex(  phw_data_t pHwData,  ChanInfo channel )
+-u8 hal_init_hardware(phw_data_t pHwData, PWB32_ADAPTER Adapter)
++u8 hal_init_hardware(phw_data_t pHwData, struct wb35_adapter * adapter)
  {
--	PWB35REG pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
+ 	u16 SoftwareSet;
+-	pHwData->Adapter = Adapter;
++	pHwData->adapter = adapter;
  
- 	if( pHwData->SurpriseRemove )
- 		return;
-@@ -203,9 +203,9 @@ void hal_set_current_channel_ex(  phw_data_t pHwData,  ChanInfo channel )
- 	#ifdef _PE_STATE_DUMP_
- 	WBDEBUG(("Set channel is %d, band =%d\n", pHwData->Channel, pHwData->band));
- 	#endif
--	pWb35Reg->M28_MacControl &= ~0xff; // Clean channel information field
--	pWb35Reg->M28_MacControl |= channel.ChanNo;
--	Wb35Reg_WriteWithCallbackValue( pHwData, 0x0828, pWb35Reg->M28_MacControl,
-+	reg->M28_MacControl &= ~0xff; // Clean channel information field
-+	reg->M28_MacControl |= channel.ChanNo;
-+	Wb35Reg_WriteWithCallbackValue( pHwData, 0x0828, reg->M28_MacControl,
- 					(s8 *)&channel, sizeof(ChanInfo));
- }
- //---------------------------------------------------------------------------------------------------
-@@ -222,47 +222,47 @@ void hal_get_current_channel(  phw_data_t pHwData,  ChanInfo *channel )
- //---------------------------------------------------------------------------------------------------
- void hal_set_accept_broadcast(  phw_data_t pHwData,  u8 enable )
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 
- 	if( pHwData->SurpriseRemove ) return;
- 
--	pWb35Reg->M00_MacControl &= ~0x02000000;//The HW value
-+	reg->M00_MacControl &= ~0x02000000;//The HW value
- 
- 	if (enable)
--		pWb35Reg->M00_MacControl |= 0x02000000;//The HW value
-+		reg->M00_MacControl |= 0x02000000;//The HW value
- 
--	Wb35Reg_Write( pHwData, 0x0800, pWb35Reg->M00_MacControl );
-+	Wb35Reg_Write( pHwData, 0x0800, reg->M00_MacControl );
- }
- 
- //for wep key error detection, we need to accept broadcast packets to be received temporary.
- void hal_set_accept_promiscuous( phw_data_t pHwData,  u8 enable)
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 
- 	if (pHwData->SurpriseRemove) return;
- 	if (enable) {
--		pWb35Reg->M00_MacControl |= 0x00400000;
--		Wb35Reg_Write( pHwData, 0x0800, pWb35Reg->M00_MacControl );
-+		reg->M00_MacControl |= 0x00400000;
-+		Wb35Reg_Write( pHwData, 0x0800, reg->M00_MacControl );
- 	} else {
--		pWb35Reg->M00_MacControl&=~0x00400000;
--		Wb35Reg_Write( pHwData, 0x0800, pWb35Reg->M00_MacControl );
-+		reg->M00_MacControl&=~0x00400000;
-+		Wb35Reg_Write( pHwData, 0x0800, reg->M00_MacControl );
- 	}
- }
- 
- void hal_set_accept_multicast(  phw_data_t pHwData,  u8 enable )
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 
- 	if( pHwData->SurpriseRemove ) return;
- 
--	pWb35Reg->M00_MacControl &= ~0x01000000;//The HW value
--	if (enable)  pWb35Reg->M00_MacControl |= 0x01000000;//The HW value
--	Wb35Reg_Write( pHwData, 0x0800, pWb35Reg->M00_MacControl );
-+	reg->M00_MacControl &= ~0x01000000;//The HW value
-+	if (enable)  reg->M00_MacControl |= 0x01000000;//The HW value
-+	Wb35Reg_Write( pHwData, 0x0800, reg->M00_MacControl );
- }
- 
- void hal_set_accept_beacon(  phw_data_t pHwData,  u8 enable )
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 
- 	if( pHwData->SurpriseRemove ) return;
- 
-@@ -270,43 +270,43 @@ void hal_set_accept_beacon(  phw_data_t pHwData,  u8 enable )
- 	if( !enable )//Due to SME and MLME are not suitable for 35
- 		return;
- 
--	pWb35Reg->M00_MacControl &= ~0x04000000;//The HW value
-+	reg->M00_MacControl &= ~0x04000000;//The HW value
- 	if( enable )
--		pWb35Reg->M00_MacControl |= 0x04000000;//The HW value
-+		reg->M00_MacControl |= 0x04000000;//The HW value
- 
--	Wb35Reg_Write( pHwData, 0x0800, pWb35Reg->M00_MacControl );
-+	Wb35Reg_Write( pHwData, 0x0800, reg->M00_MacControl );
- }
- //---------------------------------------------------------------------------------------------------
- void hal_set_multicast_address( phw_data_t pHwData, u8 *address, u8 number )
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	u8		Byte, Bit;
- 
- 	if( pHwData->SurpriseRemove ) return;
- 
- 	//Erases and refills the card multicast registers. Used when an address
- 	//    has been deleted and all bits must be recomputed.
--	pWb35Reg->M04_MulticastAddress1 = 0;
--	pWb35Reg->M08_MulticastAddress2 = 0;
-+	reg->M04_MulticastAddress1 = 0;
-+	reg->M08_MulticastAddress2 = 0;
- 
- 	while( number )
- 	{
- 		number--;
- 		CardGetMulticastBit( (address+(number*ETH_LENGTH_OF_ADDRESS)), &Byte, &Bit);
--		pWb35Reg->Multicast[Byte] |= Bit;
-+		reg->Multicast[Byte] |= Bit;
- 	}
- 
- 	// Updating register
--	Wb35Reg_BurstWrite( pHwData, 0x0804, (u32 *)pWb35Reg->Multicast, 2, AUTO_INCREMENT );
-+	Wb35Reg_BurstWrite( pHwData, 0x0804, (u32 *)reg->Multicast, 2, AUTO_INCREMENT );
- }
- //---------------------------------------------------------------------------------------------------
- u8 hal_get_accept_beacon(  phw_data_t pHwData )
- {
--	PWB35REG pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 
- 	if( pHwData->SurpriseRemove ) return 0;
- 
--	if( pWb35Reg->M00_MacControl & 0x04000000 )
-+	if( reg->M00_MacControl & 0x04000000 )
- 		return 1;
- 	else
- 		return 0;
-@@ -320,7 +320,7 @@ unsigned char hal_reset_hardware( phw_data_t pHwData, void* ppa )
- 
- void hal_stop(  phw_data_t pHwData )
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 
- 	pHwData->Wb35Rx.rx_halt = 1;
- 	Wb35Rx_stop( pHwData );
-@@ -328,18 +328,18 @@ void hal_stop(  phw_data_t pHwData )
- 	pHwData->Wb35Tx.tx_halt = 1;
- 	Wb35Tx_stop( pHwData );
- 
--	pWb35Reg->D00_DmaControl &= ~0xc0000000;//Tx Off, Rx Off
--	Wb35Reg_Write( pHwData, 0x0400, pWb35Reg->D00_DmaControl );
-+	reg->D00_DmaControl &= ~0xc0000000;//Tx Off, Rx Off
-+	Wb35Reg_Write( pHwData, 0x0400, reg->D00_DmaControl );
- 
- 	WbUsb_Stop( pHwData ); // 20051230 Add.4
- }
- 
- unsigned char hal_idle(phw_data_t pHwData)
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	PWBUSB	pWbUsb = &pHwData->WbUsb;
- 
--	if( !pHwData->SurpriseRemove && ( pWbUsb->DetectCount || pWb35Reg->EP0vm_state!=VM_STOP ) )
-+	if( !pHwData->SurpriseRemove && ( pWbUsb->DetectCount || reg->EP0vm_state!=VM_STOP ) )
- 		return FALSE;
- 
- 	return TRUE;
-@@ -347,19 +347,19 @@ unsigned char hal_idle(phw_data_t pHwData)
- //---------------------------------------------------------------------------------------------------
- void hal_set_cwmin(  phw_data_t pHwData,  u8	cwin_min )
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 
- 	if( pHwData->SurpriseRemove ) return;
- 
- 	pHwData->cwmin = cwin_min;
--	pWb35Reg->M2C_MacControl &= ~0x7c00;	//bit 10 ~ 14
--	pWb35Reg->M2C_MacControl |= (pHwData->cwmin<<10);
--	Wb35Reg_Write( pHwData, 0x082c, pWb35Reg->M2C_MacControl );
-+	reg->M2C_MacControl &= ~0x7c00;	//bit 10 ~ 14
-+	reg->M2C_MacControl |= (pHwData->cwmin<<10);
-+	Wb35Reg_Write( pHwData, 0x082c, reg->M2C_MacControl );
- }
- 
- s32 hal_get_rssi(  phw_data_t pHwData,  u32 *HalRssiArry,  u8 Count )
- {
--	PWB35REG pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 	R01_DESCRIPTOR	r01;
- 	s32 ltmp = 0, tmp;
- 	u8	i;
-@@ -373,7 +373,7 @@ s32 hal_get_rssi(  phw_data_t pHwData,  u32 *HalRssiArry,  u8 Count )
- 	for (i=0; i<Count; i++)
- 	{
- 		r01.value = HalRssiArry[i];
--		tmp = ((( r01.R01_AGC_state + pWb35Reg->LNAValue[r01.R01_LNA_state]) * 85 ) >>7 ) - 195;
-+		tmp = ((( r01.R01_AGC_state + reg->LNAValue[r01.R01_LNA_state]) * 85 ) >>7 ) - 195;
- 		ltmp += tmp;
- 	}
- 	ltmp /= Count;
-@@ -388,7 +388,7 @@ s32 hal_get_rssi(  phw_data_t pHwData,  u32 *HalRssiArry,  u8 Count )
- //----------------------------------------------------------------------------------------------------
- s32 hal_get_rssi_bss(  phw_data_t pHwData,  u16 idx,  u8 Count )
- {
--	PWB35REG pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
+ 	// Initial the variable
+ 	pHwData->MaxReceiveLifeTime = DEFAULT_MSDU_LIFE_TIME; // Setting Rx maximum MSDU life time
+@@ -392,7 +392,7 @@ s32 hal_get_rssi_bss(  phw_data_t pHwData,  u16 idx,  u8 Count )
  	R01_DESCRIPTOR	r01;
  	s32 ltmp = 0, tmp;
  	u8	i, j;
-@@ -405,7 +405,7 @@ s32 hal_get_rssi_bss(  phw_data_t pHwData,  u16 idx,  u8 Count )
- 	for (i=0; i<Count; i++)
- 	{
- 		r01.value = HalRssiArry[i];
--		tmp = ((( r01.R01_AGC_state + pWb35Reg->LNAValue[r01.R01_LNA_state]) * 85 ) >>7 ) - 195;
-+		tmp = ((( r01.R01_AGC_state + reg->LNAValue[r01.R01_LNA_state]) * 85 ) >>7 ) - 195;
- 		ltmp += tmp;
- 	}
- #else
-@@ -416,7 +416,7 @@ s32 hal_get_rssi_bss(  phw_data_t pHwData,  u16 idx,  u8 Count )
- 	for (i=0; i<Count; i++)
- 	{
- 		r01.value = psBSS(idx)->HalRssi[j];
--		tmp = ((( r01.R01_AGC_state + pWb35Reg->LNAValue[r01.R01_LNA_state]) * 85 ) >>7 ) - 195;
-+		tmp = ((( r01.R01_AGC_state + reg->LNAValue[r01.R01_LNA_state]) * 85 ) >>7 ) - 195;
- 		ltmp += tmp;
- 		if (j == 0)
- 		{
-@@ -444,7 +444,7 @@ void hal_led_control_1a(  phw_data_t pHwData )
+-	PADAPTER	Adapter = pHwData->Adapter;
++	struct wb35_adapter *	adapter = pHwData->adapter;
+ //	u32 *HalRssiArry = psBSS(idx)->HalRssi;
+ 
+ 	if( pHwData->SurpriseRemove ) return -200;
+@@ -443,7 +443,7 @@ void hal_led_control_1a(  phw_data_t pHwData )
+ 
  void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
  {
- 	PADAPTER	Adapter = pHwData->Adapter;
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
+-	PADAPTER	Adapter = pHwData->Adapter;
++	struct wb35_adapter *	adapter = pHwData->adapter;
+ 	struct wb35_reg *reg = &pHwData->reg;
  	u32	LEDSet = (pHwData->SoftwareSet & HAL_LED_SET_MASK) >> HAL_LED_SET_SHIFT;
  	u8	LEDgray[20] = { 0,3,4,6,8,10,11,12,13,14,15,14,13,12,11,10,8,6,4,2 };
- 	u8	LEDgray2[30] = { 7,8,9,10,11,12,13,14,15,0,0,0,0,0,0,0,0,0,0,0,0,0,15,14,13,12,11,10,9,8 };
-@@ -487,21 +487,21 @@ void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
- 			}
- 			pHwData->LED_Blinking++;
- 
--			pWb35Reg->U1BC_LEDConfigure = ltmp;
-+			reg->U1BC_LEDConfigure = ltmp;
- 			if( LEDSet != 7 ) // Only 111 mode has 2 LEDs on PCB.
- 			{
--				pWb35Reg->U1BC_LEDConfigure |= (ltmp &0xff)<<8; // Copy LED result to each LED control register
--				pWb35Reg->U1BC_LEDConfigure |= (ltmp &0xff00)>>8;
-+				reg->U1BC_LEDConfigure |= (ltmp &0xff)<<8; // Copy LED result to each LED control register
-+				reg->U1BC_LEDConfigure |= (ltmp &0xff00)>>8;
- 			}
--			Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure );
-+			Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
- 		}
- 	}
- 	else if( pHwData->CurrentRadioSw || pHwData->CurrentRadioHw ) // If radio off
- 	{
--		if( pWb35Reg->U1BC_LEDConfigure & 0x1010 )
-+		if( reg->U1BC_LEDConfigure & 0x1010 )
- 		{
--			pWb35Reg->U1BC_LEDConfigure &= ~0x1010;
--			Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure );
-+			reg->U1BC_LEDConfigure &= ~0x1010;
-+			Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
- 		}
- 	}
- 	else
-@@ -516,15 +516,15 @@ void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
- 					{
- 						if( pHwData->LED_Blinking == 0 )
- 						{
--							pWb35Reg->U1BC_LEDConfigure |= 0x10;
--							Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure ); // LED_0 On
-+							reg->U1BC_LEDConfigure |= 0x10;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 On
- 							pHwData->LED_Blinking = 1;
- 							TimeInterval = 300;
- 						}
- 						else
- 						{
--							pWb35Reg->U1BC_LEDConfigure &= ~0x10;
--							Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure ); // LED_0 Off
-+							reg->U1BC_LEDConfigure &= ~0x10;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
- 							pHwData->LED_Blinking = 0;
- 							TimeInterval = 300;
- 						}
-@@ -532,20 +532,20 @@ void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
- 					else
- 					{
- 						//Turn Off LED_0
--						if( pWb35Reg->U1BC_LEDConfigure & 0x10 )
-+						if( reg->U1BC_LEDConfigure & 0x10 )
- 						{
--							pWb35Reg->U1BC_LEDConfigure &= ~0x10;
--							Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure ); // LED_0 Off
-+							reg->U1BC_LEDConfigure &= ~0x10;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
- 						}
- 					}
- 				}
+@@ -633,8 +633,8 @@ void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
  				else
  				{
- 					// Turn On LED_0
--					if( (pWb35Reg->U1BC_LEDConfigure & 0x10) == 0 )
-+					if( (reg->U1BC_LEDConfigure & 0x10) == 0 )
+ 					// Is transmitting/receiving ??
+-					if( (OS_CURRENT_RX_BYTE( Adapter ) != pHwData->RxByteCountLast ) ||
+-						(OS_CURRENT_TX_BYTE( Adapter ) != pHwData->TxByteCountLast ) )
++					if( (OS_CURRENT_RX_BYTE( adapter ) != pHwData->RxByteCountLast ) ||
++						(OS_CURRENT_TX_BYTE( adapter ) != pHwData->TxByteCountLast ) )
  					{
--						pWb35Reg->U1BC_LEDConfigure |= 0x10;
--						Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure ); // LED_0 Off
-+						reg->U1BC_LEDConfigure |= 0x10;
-+						Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
- 					}
- 				}
- 				break;
-@@ -558,16 +558,16 @@ void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
- 					{
- 						if( pHwData->LED_Blinking == 0 )
+ 						if( (reg->U1BC_LEDConfigure & 0x3000) != 0x3000 )
  						{
--							pWb35Reg->U1BC_LEDConfigure &= ~0xf;
--							pWb35Reg->U1BC_LEDConfigure |= 0x10;
--							Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure ); // LED_0 On
-+							reg->U1BC_LEDConfigure &= ~0xf;
-+							reg->U1BC_LEDConfigure |= 0x10;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 On
- 							pHwData->LED_Blinking = 1;
- 							TimeInterval = 300;
- 						}
- 						else
- 						{
--							pWb35Reg->U1BC_LEDConfigure &= ~0x1f;
--							Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure ); // LED_0 Off
-+							reg->U1BC_LEDConfigure &= ~0x1f;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
- 							pHwData->LED_Blinking = 0;
- 							TimeInterval = 300;
- 						}
-@@ -575,26 +575,26 @@ void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
- 					else
- 					{
- 						// 20060901 Gray blinking if in disconnect state and not scanning
--						ltmp = pWb35Reg->U1BC_LEDConfigure;
--						pWb35Reg->U1BC_LEDConfigure &= ~0x1f;
-+						ltmp = reg->U1BC_LEDConfigure;
-+						reg->U1BC_LEDConfigure &= ~0x1f;
- 						if( LEDgray2[(pHwData->LED_Blinking%30)] )
- 						{
--							pWb35Reg->U1BC_LEDConfigure |= 0x10;
--							pWb35Reg->U1BC_LEDConfigure |= LEDgray2[ (pHwData->LED_Blinking%30) ];
-+							reg->U1BC_LEDConfigure |= 0x10;
-+							reg->U1BC_LEDConfigure |= LEDgray2[ (pHwData->LED_Blinking%30) ];
- 						}
- 						pHwData->LED_Blinking++;
--						if( pWb35Reg->U1BC_LEDConfigure != ltmp )
--							Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure ); // LED_0 Off
-+						if( reg->U1BC_LEDConfigure != ltmp )
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
- 						TimeInterval = 100;
- 					}
- 				}
- 				else
- 				{
- 					// Turn On LED_0
--					if( (pWb35Reg->U1BC_LEDConfigure & 0x10) == 0 )
-+					if( (reg->U1BC_LEDConfigure & 0x10) == 0 )
- 					{
--						pWb35Reg->U1BC_LEDConfigure |= 0x10;
--						Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure ); // LED_0 Off
-+						reg->U1BC_LEDConfigure |= 0x10;
-+						Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_0 Off
- 					}
- 				}
- 				break;
-@@ -607,15 +607,15 @@ void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
- 					{
- 						if( pHwData->LED_Blinking == 0 )
- 						{
--							pWb35Reg->U1BC_LEDConfigure |= 0x1000;
--							Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure ); // LED_1 On
-+							reg->U1BC_LEDConfigure |= 0x1000;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_1 On
- 							pHwData->LED_Blinking = 1;
- 							TimeInterval = 300;
- 						}
- 						else
- 						{
--							pWb35Reg->U1BC_LEDConfigure &= ~0x1000;
--							Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure ); // LED_1 Off
-+							reg->U1BC_LEDConfigure &= ~0x1000;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_1 Off
- 							pHwData->LED_Blinking = 0;
- 							TimeInterval = 300;
- 						}
-@@ -623,10 +623,10 @@ void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
- 					else
- 					{
- 						//Turn Off LED_1
--						if( pWb35Reg->U1BC_LEDConfigure & 0x1000 )
-+						if( reg->U1BC_LEDConfigure & 0x1000 )
- 						{
--							pWb35Reg->U1BC_LEDConfigure &= ~0x1000;
--							Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure ); // LED_1 Off
-+							reg->U1BC_LEDConfigure &= ~0x1000;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_1 Off
- 						}
- 					}
- 				}
-@@ -636,10 +636,10 @@ void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
- 					if( (OS_CURRENT_RX_BYTE( Adapter ) != pHwData->RxByteCountLast ) ||
- 						(OS_CURRENT_TX_BYTE( Adapter ) != pHwData->TxByteCountLast ) )
- 					{
--						if( (pWb35Reg->U1BC_LEDConfigure & 0x3000) != 0x3000 )
-+						if( (reg->U1BC_LEDConfigure & 0x3000) != 0x3000 )
- 						{
--							pWb35Reg->U1BC_LEDConfigure |= 0x3000;
--							Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure ); // LED_1 On
-+							reg->U1BC_LEDConfigure |= 0x3000;
-+							Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_1 On
+@@ -643,8 +643,8 @@ void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
  						}
  
  						// Update variable
-@@ -650,30 +650,30 @@ void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
+-						pHwData->RxByteCountLast = OS_CURRENT_RX_BYTE( Adapter );
+-						pHwData->TxByteCountLast = OS_CURRENT_TX_BYTE( Adapter );
++						pHwData->RxByteCountLast = OS_CURRENT_RX_BYTE( adapter );
++						pHwData->TxByteCountLast = OS_CURRENT_TX_BYTE( adapter );
+ 						TimeInterval = 200;
+ 					}
  					else
- 					{
- 						// Turn On LED_1 and blinking if transmitting/receiving
--						 if( (pWb35Reg->U1BC_LEDConfigure & 0x3000) != 0x1000 )
-+						 if( (reg->U1BC_LEDConfigure & 0x3000) != 0x1000 )
- 						 {
--							 pWb35Reg->U1BC_LEDConfigure &= ~0x3000;
--							 pWb35Reg->U1BC_LEDConfigure |= 0x1000;
--							 Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure ); // LED_1 On
-+							 reg->U1BC_LEDConfigure &= ~0x3000;
-+							 reg->U1BC_LEDConfigure |= 0x1000;
-+							 Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure ); // LED_1 On
- 						 }
- 					}
- 				}
- 				break;
+@@ -846,18 +846,18 @@ void hal_system_power_change(phw_data_t pHwData, u32 PowerState)
  
- 			default: // Default setting. 2 LED be placed on PCB. LED_0: Link On LED_1 Active
--				if( (pWb35Reg->U1BC_LEDConfigure & 0x3000) != 0x3000 )
-+				if( (reg->U1BC_LEDConfigure & 0x3000) != 0x3000 )
- 				{
--					pWb35Reg->U1BC_LEDConfigure |= 0x3000;// LED_1 is always on and event enable
--					Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure );
-+					reg->U1BC_LEDConfigure |= 0x3000;// LED_1 is always on and event enable
-+					Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
- 				}
- 
- 				if( pHwData->LED_Blinking )
- 				{
- 					// Gray blinking
--					pWb35Reg->U1BC_LEDConfigure &= ~0x0f;
--					pWb35Reg->U1BC_LEDConfigure |= 0x10;
--					pWb35Reg->U1BC_LEDConfigure |= LEDgray[ (pHwData->LED_Blinking-1)%20 ];
--					Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure );
-+					reg->U1BC_LEDConfigure &= ~0x0f;
-+					reg->U1BC_LEDConfigure |= 0x10;
-+					reg->U1BC_LEDConfigure |= LEDgray[ (pHwData->LED_Blinking-1)%20 ];
-+					Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
- 
- 					pHwData->LED_Blinking += 2;
- 					if( pHwData->LED_Blinking < 40 )
-@@ -681,28 +681,28 @@ void hal_led_control(  void* S1,  phw_data_t pHwData,  void* S3,  void* S4 )
- 					else
- 					{
- 						pHwData->LED_Blinking = 0; // Stop blinking
--						pWb35Reg->U1BC_LEDConfigure &= ~0x0f;
--						Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure );
-+						reg->U1BC_LEDConfigure &= ~0x0f;
-+						Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
- 					}
- 					break;
- 				}
- 
- 				if( pHwData->LED_LinkOn )
- 				{
--					if( !(pWb35Reg->U1BC_LEDConfigure & 0x10) ) // Check the LED_0
-+					if( !(reg->U1BC_LEDConfigure & 0x10) ) // Check the LED_0
- 					{
- 						//Try to turn ON LED_0 after gray blinking
--						pWb35Reg->U1BC_LEDConfigure |= 0x10;
-+						reg->U1BC_LEDConfigure |= 0x10;
- 						pHwData->LED_Blinking = 1; //Start blinking
- 						TimeInterval = 50;
- 					}
- 				}
- 				else
- 				{
--					if( pWb35Reg->U1BC_LEDConfigure & 0x10 ) // Check the LED_0
-+					if( reg->U1BC_LEDConfigure & 0x10 ) // Check the LED_0
- 					{
--						pWb35Reg->U1BC_LEDConfigure &= ~0x10;
--						Wb35Reg_Write( pHwData, 0x03bc, pWb35Reg->U1BC_LEDConfigure );
-+						reg->U1BC_LEDConfigure &= ~0x10;
-+						Wb35Reg_Write( pHwData, 0x03bc, reg->U1BC_LEDConfigure );
- 					}
- 				}
- 				break;
-@@ -744,28 +744,28 @@ void hal_reset_counter(  phw_data_t pHwData )
- 
- void hal_set_radio_mode( phw_data_t pHwData,  unsigned char radio_off)
+ void hal_surprise_remove(  phw_data_t pHwData )
  {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 
- 	if( pHwData->SurpriseRemove ) return;
- 
- 	if (radio_off)	//disable Baseband receive off
- 	{
- 		pHwData->CurrentRadioSw = 1; // off
--		pWb35Reg->M24_MacControl &= 0xffffffbf;
-+		reg->M24_MacControl &= 0xffffffbf;
+-	PADAPTER Adapter = pHwData->Adapter;
+-	if (OS_ATOMIC_INC( Adapter, &pHwData->SurpriseRemoveCount ) == 1) {
++	struct wb35_adapter * adapter = pHwData->adapter;
++	if (OS_ATOMIC_INC( adapter, &pHwData->SurpriseRemoveCount ) == 1) {
+ 		#ifdef _PE_STATE_DUMP_
+ 		WBDEBUG(("Calling hal_surprise_remove\n"));
+ 		#endif
+-		OS_STOP( Adapter );
++		OS_STOP( adapter );
  	}
- 	else
- 	{
- 		pHwData->CurrentRadioSw = 0; // on
--		pWb35Reg->M24_MacControl |= 0x00000040;
-+		reg->M24_MacControl |= 0x00000040;
- 	}
--	Wb35Reg_Write( pHwData, 0x0824, pWb35Reg->M24_MacControl );
-+	Wb35Reg_Write( pHwData, 0x0824, reg->M24_MacControl );
  }
  
- u8 hal_get_antenna_number(  phw_data_t pHwData )
+ void hal_rate_change(  phw_data_t pHwData ) // Notify the HAL rate is changing 20060613.1
  {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
+-	PADAPTER	Adapter = pHwData->Adapter;
++	struct wb35_adapter *	adapter = pHwData->adapter;
+ 	u8		rate = CURRENT_TX_RATE;
  
--	if ((pWb35Reg->BB2C & BIT(11)) == 0)
-+	if ((reg->BB2C & BIT(11)) == 0)
- 		return 0;
- 	else
- 		return 1;
-@@ -774,14 +774,14 @@ u8 hal_get_antenna_number(  phw_data_t pHwData )
- void hal_set_antenna_number(  phw_data_t pHwData, u8 number )
- {
- 
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 
- 	if (number == 1) {
--		pWb35Reg->BB2C |= BIT(11);
-+		reg->BB2C |= BIT(11);
- 	} else {
--		pWb35Reg->BB2C &= ~BIT(11);
-+		reg->BB2C &= ~BIT(11);
- 	}
--	Wb35Reg_Write( pHwData, 0x102c, pWb35Reg->BB2C );
-+	Wb35Reg_Write( pHwData, 0x102c, reg->BB2C );
- #ifdef _PE_STATE_DUMP_
- 	WBDEBUG(("Current antenna number : %d\n", number));
- #endif
-@@ -791,13 +791,13 @@ void hal_set_antenna_number(  phw_data_t pHwData, u8 number )
- //0 : radio on; 1: radio off
- u8 hal_get_hw_radio_off(  phw_data_t pHwData )
- {
--	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
-+	struct wb35_reg *reg = &pHwData->reg;
- 
- 	if( pHwData->SurpriseRemove ) return 1;
- 
- 	//read the bit16 of register U1B0
--	Wb35Reg_Read( pHwData, 0x3b0, &pWb35Reg->U1B0 );
--	if ((pWb35Reg->U1B0 & 0x00010000)) {
-+	Wb35Reg_Read( pHwData, 0x3b0, &reg->U1B0 );
-+	if ((reg->U1B0 & 0x00010000)) {
- 		pHwData->CurrentRadioHw = 1;
- 		return 1;
- 	} else {
+ 	BBProcessor_RateChanging( pHwData, rate );
 diff --git a/drivers/staging/winbond/wbhal_f.h b/drivers/staging/winbond/wbhal_f.h
-index aee5192..8e36aff 100644
+index 8e36aff..56cd310 100644
 --- a/drivers/staging/winbond/wbhal_f.h
 +++ b/drivers/staging/winbond/wbhal_f.h
-@@ -79,7 +79,7 @@ void hal_descriptor_indicate(  phw_data_t pHwData,  PDESCRIPTOR pDes );
- u8 hal_get_antenna_number(  phw_data_t pHwData );
- void hal_set_antenna_number(  phw_data_t pHwData, u8 number );
- u32 hal_get_bss_pk_cnt(  phw_data_t pHwData );
--#define hal_get_region_from_EEPROM( _A ) ( (_A)->Wb35Reg.EEPROMRegion )
-+#define hal_get_region_from_EEPROM( _A ) ( (_A)->reg.EEPROMRegion )
- void hal_set_accept_promiscuous		(  phw_data_t pHwData,  u8 enable);
- #define hal_get_tx_buffer( _A, _B ) Wb35Tx_get_tx_buffer( _A, _B )
- u8 hal_get_hw_radio_off			(  phw_data_t pHwData );
+@@ -18,8 +18,8 @@
+ //====================================================================================
+ void hal_remove_mapping_key(  phw_data_t pHwData,  u8 *pmac_addr );
+ void hal_remove_default_key(  phw_data_t pHwData,  u32 index );
+-unsigned char hal_set_mapping_key(  phw_data_t Adapter,  u8 *pmac_addr,  u8 null_key,  u8 wep_on,  u8 *ptx_tsc,  u8 *prx_tsc,  u8 key_type,  u8 key_len,  u8 *pkey_data );
+-unsigned char hal_set_default_key(  phw_data_t Adapter,  u8 index,  u8 null_key,  u8 wep_on,  u8 *ptx_tsc,  u8 *prx_tsc,  u8 key_type,  u8 key_len,  u8 *pkey_data );
++unsigned char hal_set_mapping_key(  phw_data_t adapter,  u8 *pmac_addr,  u8 null_key,  u8 wep_on,  u8 *ptx_tsc,  u8 *prx_tsc,  u8 key_type,  u8 key_len,  u8 *pkey_data );
++unsigned char hal_set_default_key(  phw_data_t adapter,  u8 index,  u8 null_key,  u8 wep_on,  u8 *ptx_tsc,  u8 *prx_tsc,  u8 key_type,  u8 key_len,  u8 *pkey_data );
+ void hal_clear_all_default_key(  phw_data_t pHwData );
+ void hal_clear_all_group_key(  phw_data_t pHwData );
+ void hal_clear_all_mapping_key(  phw_data_t pHwData );
+@@ -27,7 +27,7 @@ void hal_clear_all_key(  phw_data_t pHwData );
+ void hal_get_ethernet_address(  phw_data_t pHwData,  u8 *current_address );
+ void hal_set_ethernet_address(  phw_data_t pHwData,  u8 *current_address );
+ void hal_get_permanent_address(  phw_data_t pHwData,  u8 *pethernet_address );
+-unsigned char hal_init_hardware(  phw_data_t pHwData,  PADAPTER Adapter );
++unsigned char hal_init_hardware(  phw_data_t pHwData,  struct wb35_adapter * adapter );
+ void hal_set_power_save_mode(  phw_data_t pHwData,  unsigned char power_save,  unsigned char wakeup,  unsigned char dtim );
+ void hal_get_power_save_mode(  phw_data_t pHwData,   u8 *pin_pwr_save );
+ void hal_set_slot_time(  phw_data_t pHwData,  u8 type );
 diff --git a/drivers/staging/winbond/wbhal_s.h b/drivers/staging/winbond/wbhal_s.h
-index 2ee3f0f..86b66be 100644
+index 86b66be..47f99e1 100644
 --- a/drivers/staging/winbond/wbhal_s.h
 +++ b/drivers/staging/winbond/wbhal_s.h
-@@ -506,7 +506,7 @@ typedef struct _HW_DATA_T
- 	// Variable for each module
- 	//========================================================================
- 	WBUSB		WbUsb; // Need WbUsb.h
--	WB35REG		Wb35Reg; // Need Wb35Reg.h
-+	struct wb35_reg	reg; // Need Wb35Reg.h
- 	WB35TX		Wb35Tx; // Need Wb35Tx.h
- 	WB35RX		Wb35Rx; // Need Wb35Rx.h
+@@ -445,12 +445,12 @@ typedef struct _HW_DATA_T
+ 	//=======================================================================================
+ 	// For USB driver, hal need more variables. Due to
+ 	//	1. NDIS-WDM operation
+-	//	2. The SME, MLME and OLD MDS need Adapter structure, but the driver under HAL doesn't
++	//	2. The SME, MLME and OLD MDS need adapter structure, but the driver under HAL doesn't
+ 	//		have that parameter when receiving and indicating packet.
+-	//		The MDS must input the Adapter pointer as the second parameter of hal_init_hardware.
++	//		The MDS must input the adapter pointer as the second parameter of hal_init_hardware.
+ 	//		The function usage is different than PCI driver.
+ 	//=======================================================================================
+-	void* Adapter;
++	void* adapter;
  
+ 	//===============================================
+ 	// Definition for MAC address
+diff --git a/drivers/staging/winbond/wblinux.c b/drivers/staging/winbond/wblinux.c
+index acf5640..6259dd0 100644
+--- a/drivers/staging/winbond/wblinux.c
++++ b/drivers/staging/winbond/wblinux.c
+@@ -21,9 +21,9 @@ WBLINUX_MemoryAlloc(void* *VirtualAddress, u32 Length)
+ }
+ 
+ s32
+-EncapAtomicInc(PADAPTER Adapter, void* pAtomic)
++EncapAtomicInc(struct wb35_adapter * adapter, void* pAtomic)
+ {
+-	PWBLINUX pWbLinux = &Adapter->WbLinux;
++	PWBLINUX pWbLinux = &adapter->WbLinux;
+ 	u32	ltmp;
+ 	u32 *	pltmp = (u32 *)pAtomic;
+ 	spin_lock_irq( &pWbLinux->AtomicSpinLock );
+@@ -34,9 +34,9 @@ EncapAtomicInc(PADAPTER Adapter, void* pAtomic)
+ }
+ 
+ s32
+-EncapAtomicDec(PADAPTER Adapter, void* pAtomic)
++EncapAtomicDec(struct wb35_adapter * adapter, void* pAtomic)
+ {
+-	PWBLINUX pWbLinux = &Adapter->WbLinux;
++	PWBLINUX pWbLinux = &adapter->WbLinux;
+ 	u32	ltmp;
+ 	u32 *	pltmp = (u32 *)pAtomic;
+ 	spin_lock_irq( &pWbLinux->AtomicSpinLock );
+@@ -47,9 +47,9 @@ EncapAtomicDec(PADAPTER Adapter, void* pAtomic)
+ }
+ 
+ unsigned char
+-WBLINUX_Initial(PADAPTER Adapter)
++WBLINUX_Initial(struct wb35_adapter * adapter)
+ {
+-	PWBLINUX pWbLinux = &Adapter->WbLinux;
++	PWBLINUX pWbLinux = &adapter->WbLinux;
+ 
+ 	spin_lock_init( &pWbLinux->SpinLock );
+ 	spin_lock_init( &pWbLinux->AtomicSpinLock );
+@@ -57,40 +57,40 @@ WBLINUX_Initial(PADAPTER Adapter)
+ }
+ 
+ void
+-WBLinux_ReceivePacket(PADAPTER Adapter, PRXLAYER1 pRxLayer1)
++WBLinux_ReceivePacket(struct wb35_adapter * adapter, PRXLAYER1 pRxLayer1)
+ {
+ 	BUG();
+ }
+ 
+ 
+ void
+-WBLINUX_GetNextPacket(PADAPTER Adapter,  PDESCRIPTOR pDes)
++WBLINUX_GetNextPacket(struct wb35_adapter * adapter,  PDESCRIPTOR pDes)
+ {
+ 	BUG();
+ }
+ 
+ void
+-WBLINUX_GetNextPacketCompleted(PADAPTER Adapter, PDESCRIPTOR pDes)
++WBLINUX_GetNextPacketCompleted(struct wb35_adapter * adapter, PDESCRIPTOR pDes)
+ {
+ 	BUG();
+ }
+ 
+ void
+-WBLINUX_Destroy(PADAPTER Adapter)
++WBLINUX_Destroy(struct wb35_adapter * adapter)
+ {
+-	WBLINUX_stop( Adapter );
++	WBLINUX_stop( adapter );
+ #ifdef _PE_USB_INI_DUMP_
+ 	WBDEBUG(("[w35und] unregister_netdev!\n"));
+ #endif
+ }
+ 
+ void
+-WBLINUX_stop(  PADAPTER Adapter )
++WBLINUX_stop(  struct wb35_adapter * adapter )
+ {
+-	PWBLINUX	pWbLinux = &Adapter->WbLinux;
++	PWBLINUX	pWbLinux = &adapter->WbLinux;
+ 	struct sk_buff *pSkb;
+ 
+-	if (OS_ATOMIC_INC( Adapter, &pWbLinux->ThreadCount ) == 1) {
++	if (OS_ATOMIC_INC( adapter, &pWbLinux->ThreadCount ) == 1) {
+ 		// Shutdown module immediately
+ 		pWbLinux->shutdown = 1;
+ 
+@@ -112,33 +112,33 @@ WBLINUX_stop(  PADAPTER Adapter )
+ #endif
+ 	}
+ 
+-	OS_ATOMIC_DEC( Adapter, &pWbLinux->ThreadCount );
++	OS_ATOMIC_DEC(adapter, &pWbLinux->ThreadCount);
+ }
+ 
+ void
+-WbWlanHalt(  PADAPTER Adapter )
++WbWlanHalt(struct wb35_adapter *adapter)
+ {
+ 	//---------------------
+-	Adapter->sLocalPara.ShutDowned = TRUE;
++	adapter->sLocalPara.ShutDowned = TRUE;
+ 
+-	Mds_Destroy( Adapter );
++	Mds_Destroy(adapter);
+ 
+ 	// Turn off Rx and Tx hardware ability
+-	hal_stop( &Adapter->sHwData );
++	hal_stop(&adapter->sHwData);
+ #ifdef _PE_USB_INI_DUMP_
+ 	WBDEBUG(("[w35und] Hal_stop O.K.\n"));
+ #endif
+ 	msleep(100);// Waiting Irp completed
+ 
+ 	// Destroy the NDIS module
+-	WBLINUX_Destroy( Adapter );
++	WBLINUX_Destroy(adapter);
+ 
+ 	// Halt the HAL
+-	hal_halt(&Adapter->sHwData, NULL);
++	hal_halt(&adapter->sHwData, NULL);
+ }
+ 
+ unsigned char
+-WbWLanInitialize(PADAPTER Adapter)
++WbWLanInitialize(struct wb35_adapter *adapter)
+ {
+ 	phw_data_t	pHwData;
+ 	u8		*pMacAddr;
+@@ -150,22 +150,22 @@ WbWLanInitialize(PADAPTER Adapter)
+ 	//
+ 	// Setting default value for Linux
+ 	//
+-	Adapter->sLocalPara.region_INF = REGION_AUTO;
+-	Adapter->sLocalPara.TxRateMode = RATE_AUTO;
++	adapter->sLocalPara.region_INF = REGION_AUTO;
++	adapter->sLocalPara.TxRateMode = RATE_AUTO;
+ 	psLOCAL->bMacOperationMode = MODE_802_11_BG;	// B/G mode
+-	Adapter->Mds.TxRTSThreshold = DEFAULT_RTSThreshold;
+-	Adapter->Mds.TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
+-	hal_set_phy_type( &Adapter->sHwData, RF_WB_242_1 );
+-	Adapter->sLocalPara.MTUsize = MAX_ETHERNET_PACKET_SIZE;
++	adapter->Mds.TxRTSThreshold = DEFAULT_RTSThreshold;
++	adapter->Mds.TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
++	hal_set_phy_type( &adapter->sHwData, RF_WB_242_1 );
++	adapter->sLocalPara.MTUsize = MAX_ETHERNET_PACKET_SIZE;
+ 	psLOCAL->bPreambleMode = AUTO_MODE;
+-	Adapter->sLocalPara.RadioOffStatus.boSwRadioOff = FALSE;
+-	pHwData = &Adapter->sHwData;
++	adapter->sLocalPara.RadioOffStatus.boSwRadioOff = FALSE;
++	pHwData = &adapter->sHwData;
+ 	hal_set_phy_type( pHwData, RF_DECIDE_BY_INF );
+ 
+ 	//
+ 	// Initial each module and variable
+ 	//
+-	if (!WBLINUX_Initial(Adapter)) {
++	if (!WBLINUX_Initial(adapter)) {
+ #ifdef _PE_USB_INI_DUMP_
+ 		WBDEBUG(("[w35und]WBNDIS initialization failed\n"));
+ #endif
+@@ -173,17 +173,17 @@ WbWLanInitialize(PADAPTER Adapter)
+ 	}
+ 
+ 	// Initial Software variable
+-	Adapter->sLocalPara.ShutDowned = FALSE;
++	adapter->sLocalPara.ShutDowned = FALSE;
+ 
+ 	//added by ws for wep key error detection
+-	Adapter->sLocalPara.bWepKeyError= FALSE;
+-	Adapter->sLocalPara.bToSelfPacketReceived = FALSE;
+-	Adapter->sLocalPara.WepKeyDetectTimerCount= 2 * 100; /// 2 seconds
++	adapter->sLocalPara.bWepKeyError= FALSE;
++	adapter->sLocalPara.bToSelfPacketReceived = FALSE;
++	adapter->sLocalPara.WepKeyDetectTimerCount= 2 * 100; /// 2 seconds
+ 
+ 	// Initial USB hal
+ 	InitStep = 1;
+-	pHwData = &Adapter->sHwData;
+-	if (!hal_init_hardware(pHwData, Adapter))
++	pHwData = &adapter->sHwData;
++	if (!hal_init_hardware(pHwData, adapter))
+ 		goto error;
+ 
+ 	EEPROM_region = hal_get_region_from_EEPROM( pHwData );
+@@ -197,9 +197,9 @@ WbWLanInitialize(PADAPTER Adapter)
+ 	}
+ 
+ 	// Get Software setting flag from hal
+-	Adapter->sLocalPara.boAntennaDiversity = FALSE;
++	adapter->sLocalPara.boAntennaDiversity = FALSE;
+ 	if (hal_software_set(pHwData) & 0x00000001)
+-		Adapter->sLocalPara.boAntennaDiversity = TRUE;
++		adapter->sLocalPara.boAntennaDiversity = TRUE;
+ 
+ 	//
+ 	// For TS module
+@@ -208,7 +208,7 @@ WbWLanInitialize(PADAPTER Adapter)
+ 
+ 	// For MDS module
+ 	InitStep = 3;
+-	Mds_initial(Adapter);
++	Mds_initial(adapter);
+ 
+ 	//=======================================
+ 	// Initialize the SME, SCAN, MLME, ROAM
+@@ -218,15 +218,15 @@ WbWLanInitialize(PADAPTER Adapter)
+ 	InitStep = 6;
+ 
+ 	// If no user-defined address in the registry, use the addresss "burned" on the NIC instead.
+-	pMacAddr = Adapter->sLocalPara.ThisMacAddress;
+-	pMacAddr2 = Adapter->sLocalPara.PermanentAddress;
+-	hal_get_permanent_address( pHwData, Adapter->sLocalPara.PermanentAddress );// Reading ethernet address from EEPROM
++	pMacAddr = adapter->sLocalPara.ThisMacAddress;
++	pMacAddr2 = adapter->sLocalPara.PermanentAddress;
++	hal_get_permanent_address( pHwData, adapter->sLocalPara.PermanentAddress );// Reading ethernet address from EEPROM
+ 	if (OS_MEMORY_COMPARE(pMacAddr, "\x00\x00\x00\x00\x00\x00", MAC_ADDR_LENGTH )) // Is equal
+ 	{
+ 		memcpy( pMacAddr, pMacAddr2, MAC_ADDR_LENGTH );
+ 	} else {
+ 		// Set the user define MAC address
+-		hal_set_ethernet_address( pHwData, Adapter->sLocalPara.ThisMacAddress );
++		hal_set_ethernet_address( pHwData, adapter->sLocalPara.ThisMacAddress );
+ 	}
+ 
+ 	//get current antenna
+@@ -240,7 +240,7 @@ WbWLanInitialize(PADAPTER Adapter)
+ 	while (!hal_idle(pHwData))
+ 		msleep(10);
+ 
+-	MTO_Init(Adapter);
++	MTO_Init(adapter);
+ 
+ 	HwRadioOff = hal_get_hw_radio_off( pHwData );
+ 	psLOCAL->RadioOffStatus.boHwRadioOff = !!HwRadioOff;
+@@ -249,16 +249,16 @@ WbWLanInitialize(PADAPTER Adapter)
+ 
+ 	hal_driver_init_OK(pHwData) = 1; // Notify hal that the driver is ready now.
+ 	//set a tx power for reference.....
+-//	sme_set_tx_power_level(Adapter, 12);	FIXME?
++//	sme_set_tx_power_level(adapter, 12);	FIXME?
+ 	return TRUE;
+ 
+ error:
+ 	switch (InitStep) {
+ 	case 5:
+ 	case 4:
+-	case 3: Mds_Destroy( Adapter );
++	case 3: Mds_Destroy( adapter );
+ 	case 2:
+-	case 1: WBLINUX_Destroy( Adapter );
++	case 1: WBLINUX_Destroy( adapter );
+ 		hal_halt( pHwData, NULL );
+ 	case 0: break;
+ 	}
+@@ -266,9 +266,9 @@ error:
+ 	return FALSE;
+ }
+ 
+-void WBLINUX_ConnectStatus(PADAPTER Adapter, u32 flag)
++void WBLINUX_ConnectStatus(struct wb35_adapter * adapter, u32 flag)
+ {
+-	PWBLINUX	pWbLinux = &Adapter->WbLinux;
++	PWBLINUX	pWbLinux = &adapter->WbLinux;
+ 
+ 	pWbLinux->LinkStatus = flag; // OS_DISCONNECTED	or  OS_CONNECTED
+ }
+diff --git a/drivers/staging/winbond/wblinux_f.h b/drivers/staging/winbond/wblinux_f.h
+index 68240c5..446ace9 100644
+--- a/drivers/staging/winbond/wblinux_f.h
++++ b/drivers/staging/winbond/wblinux_f.h
+@@ -4,20 +4,20 @@
+ // wblinux_f.h
+ //
+ u32 WBLINUX_MemoryAlloc(  void* *VirtualAddress,  u32 Length );
+-s32 EncapAtomicInc(  PADAPTER Adapter,  void* pAtomic );
+-s32 EncapAtomicDec(  PADAPTER Adapter,  void* pAtomic );
+-void WBLinux_ReceivePacket(  PADAPTER Adapter,  PRXLAYER1 pRxLayer1 );
+-unsigned char WBLINUX_Initial(  PADAPTER Adapter );
++s32 EncapAtomicInc(  struct wb35_adapter *adapter,  void* pAtomic );
++s32 EncapAtomicDec(  struct wb35_adapter *adapter,  void* pAtomic );
++void WBLinux_ReceivePacket(  struct wb35_adapter *adapter,  PRXLAYER1 pRxLayer1 );
++unsigned char WBLINUX_Initial(  struct wb35_adapter *adapter );
+ int wb35_start_xmit(struct sk_buff *skb, struct net_device *netdev );
+-void WBLINUX_GetNextPacket(  PADAPTER Adapter,  PDESCRIPTOR pDes );
+-void WBLINUX_GetNextPacketCompleted(  PADAPTER Adapter,  PDESCRIPTOR pDes );
+-void WBLINUX_stop(  PADAPTER Adapter );
+-void WBLINUX_Destroy(  PADAPTER Adapter );
++void WBLINUX_GetNextPacket(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes );
++void WBLINUX_GetNextPacketCompleted(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes );
++void WBLINUX_stop(  struct wb35_adapter *adapter );
++void WBLINUX_Destroy(  struct wb35_adapter *adapter );
+ void wb35_set_multicast( struct net_device *netdev );
+ struct net_device_stats * wb35_netdev_stats( struct net_device *netdev );
+-void WBLINUX_stop(  PADAPTER Adapter );
+-void WbWlanHalt(  PADAPTER Adapter );
+-void WBLINUX_ConnectStatus(  PADAPTER Adapter,  u32 flag );
++void WBLINUX_stop(  struct wb35_adapter *adapter );
++void WbWlanHalt(  struct wb35_adapter *adapter );
++void WBLINUX_ConnectStatus(  struct wb35_adapter *adapter,  u32 flag );
+ 
+ 
+ 
+diff --git a/drivers/staging/winbond/wblinux_s.h b/drivers/staging/winbond/wblinux_s.h
+index fd2bb43..619843f 100644
+--- a/drivers/staging/winbond/wblinux_s.h
++++ b/drivers/staging/winbond/wblinux_s.h
+@@ -2,7 +2,7 @@
+ // wblinux_s.h
+ //
+ #define OS_MEMORY_ALLOC( _V, _S )	WBLINUX_MemoryAlloc( _V, _S )
+-#define OS_LINK_STATUS			(Adapter->WbLinux.LinkStatus == OS_CONNECTED)
++#define OS_LINK_STATUS			(adapter->WbLinux.LinkStatus == OS_CONNECTED)
+ #define OS_SET_SHUTDOWN( _A )		_A->WbLinux.shutdown=1
+ #define OS_SET_RESUME( _A )		_A->WbLinux.shutdown=0
+ #define OS_CONNECT_STATUS_INDICATE( _A, _F )		WBLINUX_ConnectStatus( _A, _F )
 -- 
 1.6.0.2
 
