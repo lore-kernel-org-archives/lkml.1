@@ -1,175 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbYJ2BRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753731AbYJ2B15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567AbYJ2BRW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 21:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbYJ2BRN
+	id S1753731AbYJ2B15 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 21:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYJ2B1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 21:17:13 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:50510 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752704AbYJ2BRL (ORCPT
+	Tue, 28 Oct 2008 21:27:49 -0400
+Received: from gw2.scei.a-star.edu.sg ([192.122.140.11]:41994 "EHLO
+	gw2.scei.a-star.edu.sg" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751981AbYJ2B1s convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 21:17:11 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=ox3G2v4KUVc9KgKLHGD+nhTZLYPL+poCqPifC0/GzzRl6bUwzHROtjt8MIZSpFvft
-	wKXQkI4NX4/PRw8lwa/9g==
-Message-ID: <2846be6b0810281817x70ea8d4ev378f4893aaf1f61e@mail.gmail.com>
-Date: Tue, 28 Oct 2008 18:17:05 -0700
-From: "Naveen Gupta" <ngupta@google.com>
-To: "Aaron Carroll" <aaronc@gelato.unsw.edu.au>
-Subject: Re: [PATCH] Priorities in Anticipatory I/O scheduler
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       akpm@linux-foundation.org, s-uchida@ap.jp.nec.com, david@fromorbit.com
-In-Reply-To: <4907AEE7.5030508@gelato.unsw.edu.au>
+	Tue, 28 Oct 2008 21:27:48 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081027190131.070061000@elf.corp.google.com>
-	 <20081027190139.838646000@elf.corp.google.com>
-	 <20081028002024.GM4985@disturbed>
-	 <2846be6b0810281014q495cef22mae344423ed59c71a@mail.gmail.com>
-	 <20081028214443.GX4985@disturbed>
-	 <2846be6b0810281548oc81fbe4td2e1a5e2fba18745@mail.gmail.com>
-	 <20081028233101.GD17077@disturbed>
-	 <2846be6b0810281704r5092c415n3fea9c849c6086ca@mail.gmail.com>
-	 <4907AEE7.5030508@gelato.unsw.edu.au>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: UWB, WUSB, and WLP subsystems for 2.6.28
+Date: Wed, 29 Oct 2008 09:27:26 +0800
+Message-ID: <162B8AFBFBBB2148A9A1B8F9C5753428057B9D53@mailbe01.teak.local.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: UWB, WUSB, and WLP subsystems for 2.6.28
+Thread-Index: Ack07e3s/h2fDgRBSNS5fq0hME3uUAEdrQQM
+References: <fa.s78bJIT7sRB89tYmSVZWUEBUq5k@ifi.uio.no> <6f3df9eb-5c1a-4ee1-a78f-7c0ff55a42fc@t18g2000prt.googlegroups.com> <49003D45.4080708@csr.com>
+From: "Law Sie Yong" <sylaw@i2r.a-star.edu.sg>
+To: "David Vrabel" <david.vrabel@csr.com>
+Cc: "Kernel development list" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 29 Oct 2008 01:27:26.0952 (UTC) FILETIME=[80A49680:01C93965]
+X-Proofpoint-Virus-Version: vendor=fsecure engine=1.12.7400:2.4.4,1.2.40,4.0.166 definitions=2008-10-28_08:2008-10-10,2008-10-28,2008-10-28 signatures=0
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 ipscore=0 phishscore=0 bulkscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx engine=5.0.0-0810130000 definitions=main-0810280195
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/28 Aaron Carroll <aaronc@gelato.unsw.edu.au>:
-> Naveen Gupta wrote:
->> 2008/10/28 Dave Chinner <david@fromorbit.com>:
->>> On Tue, Oct 28, 2008 at 03:48:44PM -0700, Naveen Gupta wrote:
->>>> I/O from RT class in CFQ can still see a bubble with this new latency
->>>> class. An easy way to check this would be to submit ios at multiple
->>>> levels both in CFQ and AS and check max latency of the highest levels.
->>>> I will let Jens or Satoshi comment on exact algorithm for RT class.
->>> You're missing my point entirely.
->>>
->>> You're defining a new class that has the exact same meaning as
->>> the current RT class definition, then mapping the BE class over
->>> the top of that, hence changing what that means for everyone.
->>>
->>> The fact that the *implementation* of AS and CFQ is different is
->>> irrelevant; if you use the RT class then on CFQ you get the current
->>> RT behaviour, if you use the RT class on AS you should get your new
->>> priority dispatch mechanism. We don't need a new API just because
->>> the implementations are different.
->>>
->>
->> There is nothing "real-time" about the current RT class anyways. It is
->
-> Yes, this is stupid.  IMO the real time class should be strict priorities
-> within the class, and within the same priority level, round robin.  As it
-> stands, RT seems to be just like a second BE class.
->
->> basically these small *implementation* differences that defines these
->> classes in current scheme of things, precise definitions of which
->> would be very hard to find if one started looking around.
->>
->> The current implementation of AS is basically a flat structure with
->> multiple priority levels. Initially I planned them to be different
->> levels of best-effort class, which is exactly what we are doing
->> "best-effort" from the scheduler/software point of view. So, the
->> question is what you do with other classes for which you don't have a
->> significantly different behavior: to keep things simple you map them
->> to existing flat structure. And, I mapped RT (all levels to BE 0),
->> idle (all levels to BE 7).
->
-> Even compared to CFQs broken RT handling, this is wrong, because now
-> any old BE0 process is equal in priority to any RT process.
->
->> This leaves these RT and IDLE classes open for future implementations,
->> where one could use hardware priorities (may be in NCQ) to implement
->> RT class or other improvisations in software other than schedulers to
->> map to RT class.
->>
->> Now the initial feedback was since this *implementation* is different
->> from anything we have in CFQ which is our current *standard* way of
->> thinking and comparing (that is the only thing that exists) why not
->> make them into a new class :). And somehow map others so that they
->> make some sense till we get something for those classes as well.
->>
->>>>>> So, in some sense it kind of implements absolute priority and
->>>>>> is best used for jobs which are latency sensitive.  Since the
->>>>>> priorities can be and are mapped internally in anticipatory
->>>>>> scheduler, BEST_EFFORT class is mapped one-one with the LATENCY
->>>>>> class.
->>>>> So you map the BE class to something with the same semantics as
->>>>> the RT class? What mapping do you do when an application uses
->>>>> the RT class?
->>>>>
->>>> Yes I could have used RT class but it was used in CFQ to implement
->>>> it's time-sliced based highest priority class.  If an application
->>>> uses RT class, AS maps all levels of RT class to BE class level 0
->>>> (i.e. to the highest priority available)
->>> Which means you are throwing away all the RT priority levels and
->>> so an application using the RT class would be subtly broken on AS....
->>>
->>
->> As I said earlier the organization of the AS levels is flat, so we
->> could use any class (RT, BE, LATENCY) and fold the remaining ones. The
->> other way which you would probably like is to increase number of
->> levels and map different classes so that they are not folded.
->
-> As I said in my reply to the initial posting of this, I think there are
-> only two sensible ways of handling this:
->
->  1) Maintain the full number of I/O priorities (1 IDLE, 8 BE, 8 RT);
+Hi David,
 
-But then we are assuming that we are providing different quality of
-service according to classes.
+  As i look through the WUSB linux code, i couldnt seem to locate the code that append the UWB MAC layer header to the data frame of WUSB, or i might have missed it. To send out the WUSB data frame, does the code is expected to append the MAC header that indicate the EUI of dest and src, so the WUSB data frame can be sent correctly to the receiver, in this case dest EUI will be the HUB? Dlink DUB1210 spec said that its compliance to  MAC 1.0 which i believe the MAC header should contains the dest and src EUI for the data frame.
 
->  2) Collapse the levels and only deal with the classes;
+Law Sie Yong
+Senior Research Officer
+Communication Systems Department
 
-I am not sure if this is meaningful. When all we have is different
-levels of BE, it wouldn't make sense to call them different classes.
->
-> Any other mapping seems arbitrary and likely to confuse.
->
->>>>>> A filesystem can use best-effort class using similar interface
->>>>>> as for cfq.
->>>>> The folk using the RT priority classes greatly objected to using
->>>>> the RT class for journal I/O precisely because it would then
->>>>> preempt their application's RT I/O and introduce unpredictable
->>>>> latencies.
->>>>>
->>>>> Journal I/O will typically use the highest priority BE class so
->>>>> that it is promoted above BE I/O but does not preempt RT I/O.
->>>>> With your mapping of BE classes to this new "absolute priority
->>>>> latency" class, this configuration will give journal I/O the
->>>>> highest priority in the scheduler. This will cause preemption of
->>>>> your latency sensitive I/O and so those latencies you are trying
->>>>> to avoid won't go away....
->>>>>
->>>> I see your problem, we could make the LATENCY class different from
->>>> and above BE class (instead of one-one mapping).
->>> Like the RT class is currently defined to be? ;)
->>>
->>
->> I agree with you and we could use RT (though you and I know that
->> basically it is best effort). LATENCY was invented due to a previous
->> suggestion.
->
-> Maybe what you want to do is make RT really real-time, and then use this
-> latency class to differentiate latency-sensitive BE traffic from regular
-> BE traffic.  Not necessarily ``higher'' priority, just a different kind of
-> best-effort.  One way of implementing this in CFQ might be to have smaller
-> but more frequent dispatches.
->
->
-> Also from the original posting, I think the weights are still broken
-> (especially in the context of RT) but I won't repeat that here.
 
-Sorry I am out of context. I can look at them later.
 
->
->
->    -- Aaron
->
->
+-----Original Message-----
+From: David Vrabel [mailto:david.vrabel@csr.com]
+Sent: Thu 10/23/2008 5:00 PM
+To: Law Sie Yong
+Cc: Kernel development list
+Subject: Re: UWB, WUSB, and WLP subsystems for 2.6.28
+ 
+sylaw@i2r.a-star.edu.sg wrote:
+> 
+>   I am currently working on trying to WUSB linux to work on DLINK
+> dub1210 dongle. Does the 2.6.26-rc8 of WUSB UWB linux work with
+> DUB1210, as when i try to connect to the DLINK UWB Hub it show me
+> error when it try to enumerate the hub i believe. Your help is greatly
+> appreciated ! thx in advance !
+
+The WUSB hub (DWA) won't do anything useful because there's no DWA
+driver.  However, you should be able to authenticate and enumerate it.
+
+Could you expand on the error messages?  It may be useful to build the
+driver with additional debugging.
+
+David
+-- 
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
+
+**********************  ANNOUNCEMENT ********************************
+ We have moved to Fusionopolis!
+ Our official address is:
+ Institute for Infocomm Research,  1 Fusionopolis Way,  #21-01 Connexis, South Tower,
+ Singapore 138632.   Main line: +65 64082000. Main fax: +65 67761378
+ Please visit http://www.fusionopolis.a-star.edu.sg/ for more information
+ on Fusionopolis.
+******************************************************************
+
+Institute For Infocomm Research - Disclaimer This email is confidential and may be privileged.  If you are not the intended recipient, please delete it and notify us immediately. Please do not copy or use it for any purpose, or disclose its contents to any other person. Thank you."
