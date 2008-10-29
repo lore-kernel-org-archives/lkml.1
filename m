@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbYJ2ODQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbYJ2OIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754614AbYJ2ODQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 10:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbYJ2ODA
+	id S1754360AbYJ2OIf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 10:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbYJ2OI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 10:03:00 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:36904 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752996AbYJ2OC7 (ORCPT
+	Wed, 29 Oct 2008 10:08:27 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48703 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752878AbYJ2OI1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 10:02:59 -0400
-Subject: Re: Timeout regression introduced
-	by	242f9dcb8ba6f68fcd217a119a7648a4f69290e9
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Tejun Heo <tj@kernel.org>, Mike Anderson <andmike@linux.vnet.ibm.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081029132654.GE31673@kernel.dk>
-References: <49043C7C.8050207@kernel.org>
-	 <1225034105.3958.4.camel@localhost.localdomain>
-	 <49051EA4.3040403@kernel.org> <20081027213006.GB17946@linux.vnet.ibm.com>
-	 <490666D6.8090603@kernel.org>  <20081029132654.GE31673@kernel.dk>
-Content-Type: text/plain
-Date: Wed, 29 Oct 2008 09:02:56 -0500
-Message-Id: <1225288976.3257.5.camel@localhost.localdomain>
+	Wed, 29 Oct 2008 10:08:27 -0400
+Date: Wed, 29 Oct 2008 07:08:24 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Glauber Costa <gcosta@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: Fix CONFIG_PCI=n compile failure
+Message-ID: <20081029070824.10c19a57@infradead.org>
+In-Reply-To: <1225288906.3257.4.camel@localhost.localdomain>
+References: <1225228943.3251.17.camel@localhost.localdomain>
+	<20081029073629.GB17992@elte.hu>
+	<1225288906.3257.4.camel@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-29 at 14:26 +0100, Jens Axboe wrote:
-> On Tue, Oct 28 2008, Tejun Heo wrote:
-> > Mike Anderson wrote:
-> > > Tejun Heo <tj@kernel.org> wrote:
-> > >> James Bottomley wrote:
-> > >>> On Sun, 2008-10-26 at 18:46 +0900, Tejun Heo wrote:
-> > >>>> Hello, Jens.
-> > >>>>
-> > >>>> Commit 242f9dcb8ba6f68fcd217a119a7648a4f69290e9 introduces a strange
-> > >>>> regression for libata.  The second timeout gives puts different
-> > >>>> pointer from the issued command onto eh_cmd_q breaking libata EH
-> > >>>> command matching which triggers WARN_ON() in ata_eh_finish() and hangs
-> > >>>> command processing or causes oops later depending on circumstances.
-> > >>>>
-> > >>>> Here are logs with induced timeouts (patch attached).  In commit
-> > >>>> 242f9dcb8, the XXX messages for the second timeout shows different
-> > >>>> scsi_cmd pointers for eh_cmd_q and qc->scmd which is initialized by
-> > >>>> ata_scsi_qc_new() during command translation.
-> > >>> I can't see a way we could be getting a different command passed in from
-> > >>> the actual one, since the only way to lose the command from the request
-> > >>> is to go through the command completion routines which free it (and end
-> > >>> the request).
-> > >> I have no idea either.  It's something in the timeout logic because on
-> > >> the issue path the scmd pointer is identical but on tiemout pointer
-> > >> for another scmd is queued on eh_cmd_q, which doesn't make much sense.
-> > >>
-> > > 
-> > > I was trying to recreate this error using ata_ram wth v2.6.28-rc2.
-> > > Currently I am not able to see this error on timeout recovery using this
-> > > setup. Does IO load (or other factors) effect the error being seen?
-> > 
-> > Not at all.  That's the only write command I issued.
+On Wed, 29 Oct 2008 09:01:46 -0500
+James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+
+> This is obviously some strange definition of the word "right" of
+> which I was previously unaware.  That patch moves forbid_dac plus a
+> load of quirk processing (also for a PCI bus) out from under
+> CONFIG_PCI only ... which will fix the compile error, sure.
 > 
-> It's all extremely puzzling. Any chance I could talk you into stuffing
-> some debug printks in there to see what the hell is going on?
+> However, if you'd be so kind, please explain how a DAC (meaning Dual
+> Addressing Cycle on the PCI bus) is useful (or even can be effected)
+> without a PCI bus?
+> 
+> All its really doing is contaminating pci-dma.c with clutter that only
+> needs to be there because someone can't get the separation right.o
+>
 
-Right ... me too.  The number one thing I want to see is what SCSI
-commands are going to what controllers ... that might tell us which one
-is bogus and where it's coming from.
+why do you even want that file for CONFIG_PCI=n ??
 
-James
-
-
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
