@@ -1,50 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbYJ2VKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbYJ2VKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755250AbYJ2VKT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 17:10:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYJ2VKE
+	id S1755412AbYJ2VKi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 17:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbYJ2VKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 17:10:04 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:57925 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752481AbYJ2VKB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 17:10:01 -0400
-Date: Wed, 29 Oct 2008 17:09:49 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Arthur Jones <ajones@riverbed.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       sct@redhat.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: ext3: slow symlink corruption on umount...
-Message-ID: <20081029210949.GA27274@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Eric Sandeen <sandeen@redhat.com>,
-	Arthur Jones <ajones@riverbed.com>,
-	"linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-	sct@redhat.com, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
-References: <20081024183733.GA25797@ajones-laptop.nbttech.com> <20081027165423.GB25797@ajones-laptop.nbttech.com> <20081029195403.GA8333@ajones-laptop.nbttech.com> <4908C951.2000309@redhat.com>
-MIME-Version: 1.0
+	Wed, 29 Oct 2008 17:10:07 -0400
+Received: from main.gmane.org ([80.91.229.2]:39551 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753572AbYJ2VKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 17:10:05 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Moritz Muehlenhoff <jmm@debian.org>
+Subject: Re: staging: me4000 and relation to other data acquisition devices
+Date: Wed, 29 Oct 2008 19:57:19 +0100
+Organization: Cocytus
+Message-ID: <slrngghcgf.3do.jmm@inutil.org>
+References: <20081028154918.GA5630@mediacenter>
+ <20081028163456.GA4278@suse.de>
+ <20081028103337.a021e85d.rdunlap@xenotime.net>
+ <20081028181402.GB4873@suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4908C951.2000309@redhat.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: dslb-082-083-192-054.pools.arcor-ip.net
+User-Agent: slrn/0.9.9 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 03:36:33PM -0500, Eric Sandeen wrote:
-> 
-> Sorry for the silence, this is a nice bug you've found :)
-> 
-> I'll look into it ...
+Greg KH wrote:
+> Of course, if someone doesn't want their code in the staging tree, I
+> will not add it, that's just being "nice".
+>
+> As for what I will not put into staging, right now I'm sticking with
+> drivers only, no filesystems (people have asked already).  I don't think
+> we have seen any drivers that I will not put into the staging tree yet.
 
-You may want to take a quick look at this thread:
+Hi Greg,
+Great effort with staging, thanks a lot!
 
-    http://lkml.org/lkml/2008/10/28/413
+I've had a look at the out-of-tree kernel drivers currently present
+in Debian, maybe you want to merge some into staging. The Debian
+overview pages contain download links (the orig.tar.gz files):
 
-					- Ted
+Acer hotkey driver:
+http://packages.qa.debian.org/a/acerhk.html
+http://www.cakey.de/acerhk/
+
+Synaptics cPad:
+http://packages.qa.debian.org/c/cpad-kernel.html
+http://www.janerob.com/rob/ts5100/cPad/index.shtml
+
+3Dfx driver:
+http://packages.qa.debian.org/d/device3dfx.html
+http://glide.sourceforge.net/
+
+et131x Ethernet Controller:
+http://packages.qa.debian.org/e/et131x.html
+http://sourceforge.net/projects/et131x/
+
+GPIB (IEEE 488) drivers:
+http://packages.qa.debian.org/g/gpib.html
+http://linux-gpib.sourceforge.net/
+
+LEDs driver of PCEngines ALIX 2/3 boards:
+http://packages.qa.debian.org/l/leds-alix.html
+https://dev.openwrt.org/
+
+Kernel driver for the back-end scaler on Matrox cards:
+http://packages.qa.debian.org/m/mga-vid.html
+http://attila.kinali.ch/mga/
+
+ov51x-jpeg driver:
+http://packages.qa.debian.org/o/ov51x-jpeg.html
+http://www.rastageeks.org/ov51x-jpeg/index.php/Main_Page
+
+tp_smapi kernel modules:
+http://packages.qa.debian.org/t/tp-smapi.html
+http://tpctl.sourceforge.net/
+
+Voicetronix telephony hardware:
+http://packages.qa.debian.org/v/vpb-driver.html
+http://www.voicetronix.com.au/
+
+Cheers,
+        Moritz
+
