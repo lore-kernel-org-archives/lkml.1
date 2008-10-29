@@ -1,97 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbYJ2QZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbYJ2Q1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649AbYJ2QZK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 12:25:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbYJ2QY6
+	id S1754628AbYJ2Q1t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 12:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYJ2Q1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 12:24:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43393 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753637AbYJ2QY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 12:24:57 -0400
-Date: Wed, 29 Oct 2008 17:24:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [git pull] tracing fixlets
-Message-ID: <20081029162450.GA13351@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Wed, 29 Oct 2008 12:27:40 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47632 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752110AbYJ2Q1k convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 12:27:40 -0400
+Date: Wed, 29 Oct 2008 09:27:56 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: torvalds@linux-foundation.org
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: [PATCH] corruption checker: print the DMI board name on corruption
+Message-ID: <20081029092756.1e441b80@infradead.org>
+In-Reply-To: <20081029091703.47628e54@infradead.org>
+References: <20081029091703.47628e54@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Hi Linus,
 
-Please pull the latest tracing-fixes-for-linus git tree from:
+would you consider merging this patch for 2.6.28 still?
+Without this patch, kerneloops.org only gets to see THAT corruption
+happens, but doesn't have information about what kind of system the
+corruption is happening on.. (which is the useful part to make a
+DMI blacklist).
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
-
- Thanks,
-
-	Ingo
-
------------------->
-Frederic Weisbecker (1):
-      ftrace: perform an initialization for ftrace to enable it
-
-Steven Rostedt (1):
-      ftrace: fix trace_nop config select
+So far we have 1 such report in kerneloops.org but it's useless... no
+system information.
 
 
- kernel/trace/Kconfig  |    2 +-
- kernel/trace/ftrace.c |    8 ++++++++
- 2 files changed, 9 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index e0cea28..b58f43b 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -8,7 +8,6 @@ config NOP_TRACER
+>From c66993517ac861964d6968d3672f88b3b69e29ce Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Wed, 29 Oct 2008 09:24:44 -0700
+Subject: [PATCH] corruption checker: print the DMI board name on corruption
+
+when the memory corruptor checker hits (as it has done now based on
+kerneloops.org data), it would be extremely useful to know the DMI board
+name so we can add a blacklist for such a machine... without having to ask
+the user for lots of extra info.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ arch/x86/kernel/setup.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 0fa6790..d57fee2 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -697,6 +697,7 @@ void check_for_bios_corruption(void)
+ {
+ 	int i;
+ 	int corruption = 0;
++	const char *board;
  
- config HAVE_FUNCTION_TRACER
- 	bool
--	select NOP_TRACER
+ 	if (!memory_corruption_check)
+ 		return;
+@@ -715,7 +716,11 @@ void check_for_bios_corruption(void)
+ 		}
+ 	}
  
- config HAVE_DYNAMIC_FTRACE
- 	bool
-@@ -28,6 +27,7 @@ config TRACING
- 	select RING_BUFFER
- 	select STACKTRACE
- 	select TRACEPOINTS
-+	select NOP_TRACER
- 
- menu "Tracers"
- 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 7618c52..4a39d24 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -1339,6 +1339,14 @@ void __init ftrace_init(void)
+-	WARN(corruption, KERN_ERR "Memory corruption detected in low memory\n");
++	board = dmi_get_system_info(DMI_PRODUCT_NAME);
++	if (!board)
++		board = "";
++	WARN_ONCE(corruption, KERN_ERR "Memory corruption detected in low memory\nBoard name: %s\n",
++		board);
  }
  
- #else
-+
-+static int __init ftrace_nodyn_init(void)
-+{
-+	ftrace_enabled = 1;
-+	return 0;
-+}
-+device_initcall(ftrace_nodyn_init);
-+
- # define ftrace_startup()		do { } while (0)
- # define ftrace_shutdown()		do { } while (0)
- # define ftrace_startup_sysctl()	do { } while (0)
+ static void periodic_check_for_corruption(unsigned long data)
+-- 
+1.5.5.1
+
