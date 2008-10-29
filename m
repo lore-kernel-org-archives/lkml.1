@@ -1,390 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbYJ2KOJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbYJ2KRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbYJ2KOJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 06:14:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbYJ2KNz
+	id S1753843AbYJ2KRZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 06:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbYJ2KRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 06:13:55 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:60858 "EHLO smtp.gentoo.org"
+	Wed, 29 Oct 2008 06:17:08 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:58385 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752366AbYJ2KNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 06:13:53 -0400
-Message-ID: <4908375B.2040202@gentoo.org>
-Date: Wed, 29 Oct 2008 11:13:47 +0100
-From: =?UTF-8?B?UmHDumwgUG9yY2Vs?= <armin76@gentoo.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	id S1753162AbYJ2KRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 06:17:07 -0400
+Date: Wed, 29 Oct 2008 12:15:47 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: gerg@uclinux.org
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [RFC: 2.6.28 patch] m68knommu: set NO_DMA
+Message-ID: <20081029101547.GB28224@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, klausman@gentoo.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [ALPHA] 2.6.28-rc fails to compile
-References: <49083361.5060907@gentoo.org> <20081029100356.GA28224@cs181140183.pp.htv.fi>
-In-Reply-To: <20081029100356.GA28224@cs181140183.pp.htv.fi>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Wed, Oct 29, 2008 at 10:56:49AM +0100, Raúl Porcel wrote:
->> Hi,
->>
->> I guess the git bisect says everything, but if you need more info,
->> please say so.
-> 
-> Please send your .config
-> 
->>   CHK     include/linux/version.h
->>   CHK     include/linux/utsrelease.h
->>   HOSTCC  scripts/basic/fixdep
->>   HOSTCC  scripts/basic/docproc
->>   HOSTCC  scripts/basic/hash
->>   CC      kernel/bounds.s
->>   GEN     include/linux/bounds.h
->>   CC      arch/alpha/kernel/asm-offsets.s
->> In file included from
->> /usr/src/linux-2.6.28-rc2/arch/alpha/include/asm/core_tsun
->> ami.h:5,
->>                  from
->> /usr/src/linux-2.6.28-rc2/arch/alpha/include/asm/io.h:232,
->>                  from arch/alpha/kernel/asm-offsets.c:12:
->> include/linux/pci.h: In function 'pci_ioremap_bar':
->> include/linux/pci.h:1148: error: implicit declaration of function
->> 'ioremap_nocac
->> he'
->> include/linux/pci.h:1149: warning: return makes pointer from integer
->> without a c
->> ast
->> In file included from arch/alpha/kernel/asm-offsets.c:12:
->> /usr/src/linux-2.6.28-rc2/arch/alpha/include/asm/io.h: At top level:
->> /usr/src/linux-2.6.28-rc2/arch/alpha/include/asm/io.h:300: error:
->> conflicting ty
->> pes for 'ioremap_nocache'
->> include/linux/pci.h:1148: error: previous implicit declaration of
->> 'ioremap_nocac
->> he' was here
->> make[1]: *** [arch/alpha/kernel/asm-offsets.s] Error 1
->> make: *** [prepare0] Error 2
->>
->>
->> -------------------------
->>
->> aa42d7c6138afdc54f74e971456a0fbfec16b77b is first bad commit
->> commit aa42d7c6138afdc54f74e971456a0fbfec16b77b
->> Author: Arjan van de Ven <arjan@infradead.org>
->> Date:   Sun Sep 28 16:36:11 2008 -0700
->>
->>     PCI: introduce an pci_ioremap(pdev, barnr) function
-> 
-> cu
-> Adrian
-> 
+m68knommu does not set the Kconfig NO_DMA variable, but also does
+not provide the required functions, resulting in the following 
+build error triggered by commit a40c24a13366e324bc0ff8c3bb107db89312c984
+(net: Add SKB DMA mapping helper functions.):
 
+<--  snip  -->
 
-CONFIG_ALPHA=y
-CONFIG_64BIT=y
-CONFIG_MMU=y
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-CONFIG_GENERIC_FIND_NEXT_BIT=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_ZONE_DMA=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-CONFIG_EXPERIMENTAL=y
-CONFIG_BROKEN_ON_SMP=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-CONFIG_LOCALVERSION=""
-CONFIG_LOCALVERSION_AUTO=y
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_SYSVIPC_SYSCTL=y
-CONFIG_POSIX_MQUEUE=y
-CONFIG_LOG_BUF_SHIFT=14
-CONFIG_SYSFS_DEPRECATED=y
-CONFIG_SYSFS_DEPRECATED_V2=y
-CONFIG_NAMESPACES=y
-CONFIG_SYSCTL=y
-CONFIG_SYSCTL_SYSCALL=y
-CONFIG_KALLSYMS=y
-CONFIG_KALLSYMS_ALL=y
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_PCSPKR_PLATFORM=y
-CONFIG_COMPAT_BRK=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_ANON_INODES=y
-CONFIG_EPOLL=y
-CONFIG_SIGNALFD=y
-CONFIG_TIMERFD=y
-CONFIG_EVENTFD=y
-CONFIG_SHMEM=y
-CONFIG_AIO=y
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_PCI_QUIRKS=y
-CONFIG_SLUB_DEBUG=y
-CONFIG_SLUB=y
-CONFIG_HAVE_OPROFILE=y
-CONFIG_SLABINFO=y
-CONFIG_RT_MUTEXES=y
-CONFIG_BASE_SMALL=0
-CONFIG_MODULES=y
-CONFIG_MODULE_UNLOAD=y
-CONFIG_KMOD=y
-CONFIG_BLOCK=y
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_AS=y
-CONFIG_IOSCHED_DEADLINE=y
-CONFIG_IOSCHED_CFQ=y
-CONFIG_DEFAULT_CFQ=y
-CONFIG_DEFAULT_IOSCHED="cfq"
-CONFIG_CLASSIC_RCU=y
-CONFIG_ALPHA_GENERIC=y
-CONFIG_ISA=y
-CONFIG_ISA_DMA_API=y
-CONFIG_PCI=y
-CONFIG_PCI_DOMAINS=y
-CONFIG_PCI_SYSCALL=y
-CONFIG_IOMMU_HELPER=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_ALPHA_BROKEN_IRQ_MASK=y
-CONFIG_VGA_HOSE=y
-CONFIG_EISA=y
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_FLATMEM_MANUAL=y
-CONFIG_FLATMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-CONFIG_PAGEFLAGS_EXTENDED=y
-CONFIG_SPLIT_PTLOCK_CPUS=4
-CONFIG_RESOURCES_64BIT=y
-CONFIG_PHYS_ADDR_T_64BIT=y
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_BOUNCE=y
-CONFIG_VIRT_TO_BUS=y
-CONFIG_UNEVICTABLE_LRU=y
-CONFIG_VERBOSE_MCHECK=y
-CONFIG_VERBOSE_MCHECK_ON=1
-CONFIG_HZ=1024
-CONFIG_PCI_LEGACY=y
-CONFIG_EISA_PCI_EISA=y
-CONFIG_EISA_VIRTUAL_ROOT=y
-CONFIG_EISA_NAMES=y
-CONFIG_SRM_ENV=m
-CONFIG_BINFMT_ELF=y
-CONFIG_HAVE_AOUT=y
-CONFIG_NET=y
-CONFIG_PACKET=y
-CONFIG_UNIX=y
-CONFIG_XFRM=y
-CONFIG_XFRM_USER=m
-CONFIG_NET_KEY=m
-CONFIG_INET=y
-CONFIG_IP_MULTICAST=y
-CONFIG_IP_FIB_HASH=y
-CONFIG_INET_AH=m
-CONFIG_INET_ESP=m
-CONFIG_INET_XFRM_MODE_TRANSPORT=y
-CONFIG_INET_XFRM_MODE_TUNNEL=y
-CONFIG_INET_XFRM_MODE_BEET=y
-CONFIG_INET_DIAG=y
-CONFIG_INET_TCP_DIAG=y
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-CONFIG_NETFILTER=y
-CONFIG_NETFILTER_ADVANCED=y
-CONFIG_NETFILTER_XTABLES=m
-CONFIG_IP_NF_QUEUE=m
-CONFIG_IP_NF_IPTABLES=m
-CONFIG_IP_NF_FILTER=m
-CONFIG_VLAN_8021Q=m
-CONFIG_WIRELESS=y
-CONFIG_WIRELESS_OLD_REGULATORY=y
-CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_FW_LOADER=y
-CONFIG_FIRMWARE_IN_KERNEL=y
-CONFIG_EXTRA_FIRMWARE=""
-CONFIG_PNP=y
-CONFIG_PNP_DEBUG_MESSAGES=y
-CONFIG_ISAPNP=y
-CONFIG_BLK_DEV=y
-CONFIG_BLK_DEV_FD=y
-CONFIG_BLK_DEV_LOOP=m
-CONFIG_MISC_DEVICES=y
-CONFIG_HAVE_IDE=y
-CONFIG_IDE=y
-CONFIG_IDE_TIMINGS=y
-CONFIG_IDE_GD=y
-CONFIG_IDE_GD_ATA=y
-CONFIG_BLK_DEV_IDECD=y
-CONFIG_BLK_DEV_IDECD_VERBOSE_ERRORS=y
-CONFIG_IDE_PROC_FS=y
-CONFIG_IDE_GENERIC=y
-CONFIG_BLK_DEV_IDEDMA_SFF=y
-CONFIG_BLK_DEV_IDEPCI=y
-CONFIG_IDEPCI_PCIBUS_ORDER=y
-CONFIG_BLK_DEV_GENERIC=y
-CONFIG_BLK_DEV_IDEDMA_PCI=y
-CONFIG_BLK_DEV_ALI15X3=y
-CONFIG_BLK_DEV_CMD64X=y
-CONFIG_BLK_DEV_CY82C693=y
-CONFIG_BLK_DEV_IDEDMA=y
-CONFIG_SCSI=y
-CONFIG_SCSI_DMA=y
-CONFIG_SCSI_PROC_FS=y
-CONFIG_BLK_DEV_SD=y
-CONFIG_BLK_DEV_SR=y
-CONFIG_BLK_DEV_SR_VENDOR=y
-CONFIG_SCSI_WAIT_SCAN=m
-CONFIG_SCSI_SPI_ATTRS=m
-CONFIG_SCSI_LOWLEVEL=y
-CONFIG_SCSI_AIC7XXX=m
-CONFIG_AIC7XXX_CMDS_PER_DEVICE=253
-CONFIG_AIC7XXX_RESET_DELAY_MS=5000
-CONFIG_AIC7XXX_DEBUG_MASK=0
-CONFIG_AIC7XXX_REG_PRETTY_PRINT=y
-CONFIG_NETDEVICES=y
-CONFIG_DUMMY=m
-CONFIG_NET_ETHERNET=y
-CONFIG_MII=y
-CONFIG_NET_VENDOR_3COM=y
-CONFIG_VORTEX=y
-CONFIG_NET_TULIP=y
-CONFIG_DE2104X=m
-CONFIG_TULIP=y
-CONFIG_TULIP_MMIO=y
-CONFIG_NET_PCI=y
-CONFIG_NETDEV_1000=y
-CONFIG_YELLOWFIN=y
-CONFIG_NETDEV_10000=y
-CONFIG_INPUT=y
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_PSAUX=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-CONFIG_INPUT_KEYBOARD=y
-CONFIG_KEYBOARD_ATKBD=y
-CONFIG_INPUT_MOUSE=y
-CONFIG_MOUSE_PS2=y
-CONFIG_MOUSE_PS2_ALPS=y
-CONFIG_MOUSE_PS2_LOGIPS2PP=y
-CONFIG_MOUSE_PS2_SYNAPTICS=y
-CONFIG_MOUSE_PS2_LIFEBOOK=y
-CONFIG_MOUSE_PS2_TRACKPOINT=y
-CONFIG_SERIO=y
-CONFIG_SERIO_I8042=y
-CONFIG_SERIO_SERPORT=y
-CONFIG_SERIO_LIBPS2=y
-CONFIG_VT=y
-CONFIG_CONSOLE_TRANSLATIONS=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-CONFIG_DEVKMEM=y
-CONFIG_SERIAL_8250=y
-CONFIG_SERIAL_8250_CONSOLE=y
-CONFIG_SERIAL_8250_PCI=y
-CONFIG_SERIAL_8250_PNP=y
-CONFIG_SERIAL_8250_NR_UARTS=4
-CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-CONFIG_SERIAL_CORE=y
-CONFIG_SERIAL_CORE_CONSOLE=y
-CONFIG_UNIX98_PTYS=y
-CONFIG_LEGACY_PTYS=y
-CONFIG_LEGACY_PTY_COUNT=256
-CONFIG_HW_RANDOM=m
-CONFIG_RTC=y
-CONFIG_DEVPORT=y
-CONFIG_HWMON=y
-CONFIG_SSB_POSSIBLE=y
-CONFIG_VGA_CONSOLE=y
-CONFIG_DUMMY_CONSOLE=y
-CONFIG_HID_SUPPORT=y
-CONFIG_HID=y
-CONFIG_HID_DEBUG=y
-CONFIG_HID_COMPAT=y
-CONFIG_USB_SUPPORT=y
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB_ARCH_HAS_OHCI=y
-CONFIG_USB_ARCH_HAS_EHCI=y
-CONFIG_EXT2_FS=y
-CONFIG_REISERFS_FS=m
-CONFIG_FILE_LOCKING=y
-CONFIG_DNOTIFY=y
-CONFIG_INOTIFY=y
-CONFIG_INOTIFY_USER=y
-CONFIG_AUTOFS_FS=m
-CONFIG_ISO9660_FS=y
-CONFIG_FAT_FS=y
-CONFIG_MSDOS_FS=y
-CONFIG_VFAT_FS=y
-CONFIG_FAT_DEFAULT_CODEPAGE=437
-CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
-CONFIG_PROC_FS=y
-CONFIG_PROC_KCORE=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_PROC_PAGE_MONITOR=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-CONFIG_NETWORK_FILESYSTEMS=y
-CONFIG_NFS_FS=m
-CONFIG_NFS_V3=y
-CONFIG_NFSD=m
-CONFIG_NFSD_V3=y
-CONFIG_LOCKD=m
-CONFIG_LOCKD_V4=y
-CONFIG_EXPORTFS=m
-CONFIG_NFS_COMMON=y
-CONFIG_SUNRPC=m
-CONFIG_OSF_PARTITION=y
-CONFIG_MSDOS_PARTITION=y
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="iso8859-1"
-CONFIG_NLS_CODEPAGE_437=y
-CONFIG_ENABLE_WARN_DEPRECATED=y
-CONFIG_ENABLE_MUST_CHECK=y
-CONFIG_FRAME_WARN=2048
-CONFIG_MAGIC_SYSRQ=y
-CONFIG_DEBUG_KERNEL=y
-CONFIG_DETECT_SOFTLOCKUP=y
-CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
-CONFIG_SCHED_DEBUG=y
-CONFIG_DEBUG_INFO=y
-CONFIG_DEBUG_MEMORY_INIT=y
-CONFIG_EARLY_PRINTK=y
-CONFIG_ALPHA_LEGACY_START_ADDRESS=y
-CONFIG_MATHEMU=y
-CONFIG_CRYPTO=y
-CONFIG_CRYPTO_ALGAPI=y
-CONFIG_CRYPTO_AEAD=y
-CONFIG_CRYPTO_BLKCIPHER=y
-CONFIG_CRYPTO_HASH=y
-CONFIG_CRYPTO_RNG=y
-CONFIG_CRYPTO_MANAGER=y
-CONFIG_CRYPTO_AUTHENC=m
-CONFIG_CRYPTO_CBC=m
-CONFIG_CRYPTO_HMAC=y
-CONFIG_CRYPTO_MD5=m
-CONFIG_CRYPTO_SHA1=m
-CONFIG_CRYPTO_DES=m
-CONFIG_CRYPTO_HW=y
-CONFIG_BITREVERSE=y
-CONFIG_CRC32=y
-CONFIG_PLIST=y
-CONFIG_HAS_IOMEM=y
-CONFIG_HAS_IOPORT=y
-CONFIG_HAS_DMA=y
+...
+  LD      vmlinux
+net/built-in.o: In function `skb_dma_unmap':
+(.text+0xac5e): undefined reference to `dma_unmap_single'
+net/built-in.o: In function `skb_dma_unmap':
+(.text+0xac7a): undefined reference to `dma_unmap_page'
+net/built-in.o: In function `skb_dma_map':
+(.text+0xacdc): undefined reference to `dma_map_single'
+net/built-in.o: In function `skb_dma_map':
+(.text+0xace8): undefined reference to `dma_mapping_error'
+net/built-in.o: In function `skb_dma_map':
+(.text+0xad10): undefined reference to `dma_map_page'
+net/built-in.o: In function `skb_dma_map':
+(.text+0xad82): undefined reference to `dma_unmap_page'
+net/built-in.o: In function `skb_dma_map':
+(.text+0xadc6): undefined reference to `dma_unmap_single'
+make[1]: *** [vmlinux] Error 1
 
-This is the machine:
+<--  snip  -->
 
-Linux monolith 2.6.27 #1 SMP Wed Oct 15 14:28:47 CEST 2008 alpha EV68AL
-Tsunami GNU/Linux
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+
+diff --git a/arch/m68knommu/Kconfig b/arch/m68knommu/Kconfig
+index 76b66fe..d532687 100644
+--- a/arch/m68knommu/Kconfig
++++ b/arch/m68knommu/Kconfig
+@@ -14,6 +14,10 @@ config MMU
+ 	bool
+ 	default n
+ 
++config NO_DMA
++	bool
++	default y
++
+ config FPU
+ 	bool
+ 	default n
+
