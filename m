@@ -1,82 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbYJ2N1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754437AbYJ2N23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754485AbYJ2N1g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 09:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbYJ2N1Y
+	id S1754437AbYJ2N23 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 09:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbYJ2N2U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 09:27:24 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50563 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753106AbYJ2N1X convert rfc822-to-8bit (ORCPT
+	Wed, 29 Oct 2008 09:28:20 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:9286 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753837AbYJ2N2T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 09:27:23 -0400
-Date: Wed, 29 Oct 2008 06:27:41 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: =?UTF-8?B?UmHDumw=?= Porcel <armin76@gentoo.org>,
-       linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, klausman@gentoo.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [ALPHA] 2.6.28-rc fails to compile
-Message-ID: <20081029062741.7400e330@infradead.org>
-In-Reply-To: <20081029100356.GA28224@cs181140183.pp.htv.fi>
-References: <49083361.5060907@gentoo.org>
-	<20081029100356.GA28224@cs181140183.pp.htv.fi>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 29 Oct 2008 09:28:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=i9rd7CUNa94qBHfmgFYKObfs2PDyQsNSIziSgqcWTRGAaYQk8+kyQDgNqhjXCZUqeN
+         LIdnDyeG1govgTPvn/IdSi9djQBZSvQK/fcCVRqv3DpbvBj5E/xHcOUjmjyDiBfFJtUX
+         Ys+PU/o2ljczgksh8Q1LTzkptYMerBFmHmN5k=
+Message-ID: <7a9b5c320810290628q615285gb3b67230776ab4e1@mail.gmail.com>
+Date: Thu, 30 Oct 2008 02:28:16 +1300
+From: "Phillip O'Donnell" <phillip.odonnell@gmail.com>
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: [PATCH] libata: Avoid overflow in ata_tf_to_lba48() when tf->hba_lbal > 127
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org
+In-Reply-To: <ada4p2wmg5n.fsf_-_@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081028170105.GA21933@osk.mine.nu>
+	 <7a9b5c320810281625kbf8904x9ba432ff0ca8c2f8@mail.gmail.com>
+	 <ada4p2wmg5n.fsf_-_@cisco.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Oct 2008 12:03:56 +0200
-Adrian Bunk <bunk@kernel.org> wrote:
+Confirmed - HPA is no longer detected on boot.
 
-> On Wed, Oct 29, 2008 at 10:56:49AM +0100, Raúl Porcel wrote:
-> > Hi,
-> > 
-> > I guess the git bisect says everything, but if you need more info,
-> > please say so.
-> 
-> Please send your .config
-> 
-> >   CHK     include/linux/version.h
-> >   CHK     include/linux/utsrelease.h
-> >   HOSTCC  scripts/basic/fixdep
-> >   HOSTCC  scripts/basic/docproc
-> >   HOSTCC  scripts/basic/hash
-> >   CC      kernel/bounds.s
-> >   GEN     include/linux/bounds.h
-> >   CC      arch/alpha/kernel/asm-offsets.s
-> > In file included from
-> > /usr/src/linux-2.6.28-rc2/arch/alpha/include/asm/core_tsun
-> > ami.h:5,
-> >                  from
-> > /usr/src/linux-2.6.28-rc2/arch/alpha/include/asm/io.h:232,
-> >                  from arch/alpha/kernel/asm-offsets.c:12:
-> > include/linux/pci.h: In function 'pci_ioremap_bar':
-> > include/linux/pci.h:1148: error: implicit declaration of function
-> > 'ioremap_nocac
-> > he'
-> > include/linux/pci.h:1149: warning: return makes pointer from integer
-> > without a c
-> > ast
-> > In file included from arch/alpha/kernel/asm-offsets.c:12:
-> > /usr/src/linux-2.6.28-rc2/arch/alpha/include/asm/io.h: At top level:
-> > /usr/src/linux-2.6.28-rc2/arch/alpha/include/asm/io.h:300: error:
-> > conflicting ty
-> > pes for 'ioremap_nocache'
-> > include/linux/pci.h:1148: error: previous implicit declaration of
-> > 'ioremap_nocac
-> > he' was here
-> > make[1]: *** [arch/alpha/kernel/asm-offsets.s] Error 1
-> > make: *** [prepare0] Error 2
-> > 
+Cheers,
+Phillip
 
-Andrew has a patch for this in his tree for a while... I was assuming
-he'd do a patchdump to Linus late in -rc1 but it seems not to have
-happened..
+On Wed, Oct 29, 2008 at 12:52 PM, Roland Dreier <rdreier@cisco.com> wrote:
+> In ata_tf_to_lba48(), when evaluating
+>
+>        (tf->hob_lbal & 0xff) << 24
+>
+> the expression is promoted to signed int (since int can hold all values
+> of u8).  However, if hob_lbal is 128 or more, then it is treated as a
+> negative signed value and sign-extended when promoted to u64 to | into
+> sectors, which leads to the MSB 32 bits of section getting set
+> incorrectly.
+>
+> For example, Phillip O'Donnell <phillip.odonnell@gmail.com> reported
+> that a 1.5GB drive caused:
+>
+>    ata3.00: HPA detected: current 2930277168, native 18446744072344861488
+>
+> where 2930277168 == 0xAEA87B30 and 18446744072344861488 == 0xffffffffaea87b30
+> which shows the problem when hob_lbal is 0xae.
+>
+> Fix this by adding a cast to u64, just as is used by for hob_lbah and
+> hob_lbam in the function.
+>
+> Reported-by: Phillip O'Donnell <phillip.odonnell@gmail.com>
+> Signed-off-by: Roland Dreier <rolandd@cisco.com>
+> ---
+> Phillip, this should fix at least your cosmetic issue; can you test it
+> and report back?
+>
+> Thanks,
+>  Roland
+>
+>  drivers/ata/libata-core.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+> index bbb3cae..10424ff 100644
+> --- a/drivers/ata/libata-core.c
+> +++ b/drivers/ata/libata-core.c
+> @@ -1268,7 +1268,7 @@ u64 ata_tf_to_lba48(const struct ata_taskfile *tf)
+>
+>        sectors |= ((u64)(tf->hob_lbah & 0xff)) << 40;
+>        sectors |= ((u64)(tf->hob_lbam & 0xff)) << 32;
+> -       sectors |= (tf->hob_lbal & 0xff) << 24;
+> +       sectors |= ((u64)(tf->hob_lbal & 0xff)) << 24;
+>        sectors |= (tf->lbah & 0xff) << 16;
+>        sectors |= (tf->lbam & 0xff) << 8;
+>        sectors |= (tf->lbal & 0xff);
+>
