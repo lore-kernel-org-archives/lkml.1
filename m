@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbYJ2Wps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbYJ2WqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756317AbYJ2Wps (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 18:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755661AbYJ2Wnt
+	id S1755993AbYJ2WqE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 18:46:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755959AbYJ2Wnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 18:43:49 -0400
-Received: from kroah.org ([198.145.64.141]:43742 "EHLO coco.kroah.org"
+	Wed, 29 Oct 2008 18:43:52 -0400
+Received: from kroah.org ([198.145.64.141]:43745 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755639AbYJ2Wns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 18:43:48 -0400
+	id S1755795AbYJ2Wnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 18:43:51 -0400
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 06/49] Staging: w35und: remove the no-op pa_stall_execution macro
-Date: Wed, 29 Oct 2008 15:39:33 -0700
-Message-Id: <1225320016-21803-6-git-send-email-greg@kroah.com>
+Subject: [PATCH 07/49] Staging: w35und: purb typedef removal
+Date: Wed, 29 Oct 2008 15:39:34 -0700
+Message-Id: <1225320016-21803-7-git-send-email-greg@kroah.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081029223832.GC21657@kroah.com>
 References: <20081029223832.GC21657@kroah.com>
@@ -24,188 +24,418 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-The pa_stall_execution() macro doesn't do anything so remove it from driver
-code.
+This patch removes the struct urb pointer typedef from the driver code and
+fixes up variable names that use the typedef while we're at it.
 
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 Acked-by: Pavel Machek <pavel@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/winbond/phy_calibration.c |   23 -----------------------
- drivers/staging/winbond/wbhal_f.h         |    1 -
- 2 files changed, 0 insertions(+), 24 deletions(-)
+ drivers/staging/winbond/linux/common.h    |    4 --
+ drivers/staging/winbond/linux/wb35reg.c   |   74 ++++++++++++++--------------
+ drivers/staging/winbond/linux/wb35reg_f.h |    2 +-
+ drivers/staging/winbond/linux/wb35reg_s.h |    2 +-
+ drivers/staging/winbond/linux/wb35rx.c    |   14 +++---
+ drivers/staging/winbond/linux/wb35rx_f.h  |    2 +-
+ drivers/staging/winbond/linux/wb35tx_f.h  |    4 +-
+ drivers/staging/winbond/linux/wbusb_s.h   |    2 +-
+ 8 files changed, 50 insertions(+), 54 deletions(-)
 
-diff --git a/drivers/staging/winbond/phy_calibration.c b/drivers/staging/winbond/phy_calibration.c
-index 76183b2..e83c2f2 100644
---- a/drivers/staging/winbond/phy_calibration.c
-+++ b/drivers/staging/winbond/phy_calibration.c
-@@ -431,7 +431,6 @@ void _rxadc_dc_offset_cancellation_winbond(hw_data_t *phw_data, u32 frequency)
+diff --git a/drivers/staging/winbond/linux/common.h b/drivers/staging/winbond/linux/common.h
+index 712a86c..64bd1c7 100644
+--- a/drivers/staging/winbond/linux/common.h
++++ b/drivers/staging/winbond/linux/common.h
+@@ -69,10 +69,6 @@
+ #define BIT(x)                  (1 << (x))
+ #endif
  
- 	val |= MASK_ADC_DC_CAL_STR;
- 	hw_set_dxx_reg(phw_data, REG_MODE_CTRL, val);
--	pa_stall_execution(US); // *MUST* wait for a while
+-typedef struct urb * PURB;
+-
+-
+-
+ //==================================================================================================
+ // Common function definition
+ //==================================================================================================
+diff --git a/drivers/staging/winbond/linux/wb35reg.c b/drivers/staging/winbond/linux/wb35reg.c
+index de4040b..b7560b5 100644
+--- a/drivers/staging/winbond/linux/wb35reg.c
++++ b/drivers/staging/winbond/linux/wb35reg.c
+@@ -13,7 +13,7 @@ unsigned char
+ Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 NumberOfData, u8 Flag)
+ {
+ 	PWB35REG pWb35Reg = &pHwData->Wb35Reg;
+-	PURB		pUrb = NULL;
++	struct urb	*urb = NULL;
+ 	PREG_QUEUE	pRegQueue = NULL;
+ 	u16		UrbSize;
+ 	struct      usb_ctrlrequest *dr;
+@@ -26,8 +26,8 @@ Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 N
+ 	// Trying to use burst write function if use new hardware
+ 	UrbSize = sizeof(REG_QUEUE) + DataSize + sizeof(struct usb_ctrlrequest);
+ 	OS_MEMORY_ALLOC( (void* *)&pRegQueue, UrbSize );
+-	pUrb = wb_usb_alloc_urb(0);
+-	if( pUrb && pRegQueue ) {
++	urb = wb_usb_alloc_urb(0);
++	if( urb && pRegQueue ) {
+ 		pRegQueue->DIRECT = 2;// burst write register
+ 		pRegQueue->INDEX = RegisterNo;
+ 		pRegQueue->pBuffer = (u32 *)((u8 *)pRegQueue + sizeof(REG_QUEUE));
+@@ -44,7 +44,7 @@ Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 N
+ 		dr->wLength = cpu_to_le16( DataSize );
+ 		pRegQueue->Next = NULL;
+ 		pRegQueue->pUsbReq = dr;
+-		pRegQueue->pUrb = pUrb;
++		pRegQueue->urb = urb;
  
- 	// e. The result are shown in "adc_dc_cal_i[8:0] and adc_dc_cal_q[8:0]"
- #ifdef _DEBUG
-@@ -522,7 +521,6 @@ void _txidac_dc_offset_cancellation_winbond(hw_data_t *phw_data)
- 	reg_mode_ctrl |= (MASK_CALIB_START|2|(2<<2));
- 	hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 	PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--	pa_stall_execution(US);
+ 		spin_lock_irq( &pWb35Reg->EP0VM_spin_lock );
+ 		if (pWb35Reg->pRegFirst == NULL)
+@@ -60,8 +60,8 @@ Wb35Reg_BurstWrite(phw_data_t pHwData, u16 RegisterNo, u32 * pRegisterData, u8 N
  
- 	hw_get_dxx_reg(phw_data, 0x5C, &reg_dc_cancel);
- 	PHY_DEBUG(("[CAL]    DC_CANCEL (read) = 0x%08X\n", reg_dc_cancel));
-@@ -536,7 +534,6 @@ void _txidac_dc_offset_cancellation_winbond(hw_data_t *phw_data)
- 		reg_dc_cancel &= ~(0x03FF);
- 		PHY_DEBUG(("[CAL]    DC_CANCEL (write) = 0x%08X\n", reg_dc_cancel));
- 		hw_set_dxx_reg(phw_data, 0x5C, reg_dc_cancel);
--		pa_stall_execution(US);
+ 		return TRUE;
+ 	} else {
+-		if (pUrb)
+-			usb_free_urb(pUrb);
++		if (urb)
++			usb_free_urb(urb);
+ 		if (pRegQueue)
+ 			kfree(pRegQueue);
+ 		return FALSE;
+@@ -163,7 +163,7 @@ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+ {
+ 	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
+ 	struct usb_ctrlrequest *dr;
+-	PURB		pUrb = NULL;
++	struct urb	*urb = NULL;
+ 	PREG_QUEUE	pRegQueue = NULL;
+ 	u16		UrbSize;
  
- 		hw_get_dxx_reg(phw_data, REG_CALIB_READ2, &val);
- 		PHY_DEBUG(("[CAL]    CALIB_READ2 = 0x%08X\n", val));
-@@ -552,7 +549,6 @@ void _txidac_dc_offset_cancellation_winbond(hw_data_t *phw_data)
- 		reg_dc_cancel |= (1 << CANCEL_DC_I_SHIFT);
- 		PHY_DEBUG(("[CAL]    DC_CANCEL (write) = 0x%08X\n", reg_dc_cancel));
- 		hw_set_dxx_reg(phw_data, 0x5C, reg_dc_cancel);
--		pa_stall_execution(US);
+@@ -175,8 +175,8 @@ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+ 	// update the register by send urb request------------------------------------
+ 	UrbSize = sizeof(REG_QUEUE) + sizeof(struct usb_ctrlrequest);
+ 	OS_MEMORY_ALLOC( (void* *)&pRegQueue, UrbSize );
+-	pUrb = wb_usb_alloc_urb(0);
+-	if (pUrb && pRegQueue) {
++	urb = wb_usb_alloc_urb(0);
++	if (urb && pRegQueue) {
+ 		pRegQueue->DIRECT = 1;// burst write register
+ 		pRegQueue->INDEX = RegisterNo;
+ 		pRegQueue->VALUE = cpu_to_le32(RegisterValue);
+@@ -191,7 +191,7 @@ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+ 		// Enter the sending queue
+ 		pRegQueue->Next = NULL;
+ 		pRegQueue->pUsbReq = dr;
+-		pRegQueue->pUrb = pUrb;
++		pRegQueue->urb = urb;
  
- 		hw_get_dxx_reg(phw_data, REG_CALIB_READ2, &val);
- 		PHY_DEBUG(("[CAL]    CALIB_READ2 = 0x%08X\n", val));
-@@ -600,7 +596,6 @@ void _txidac_dc_offset_cancellation_winbond(hw_data_t *phw_data)
- 	reg_mode_ctrl &= ~MASK_CALIB_START;
- 	hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 	PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--	pa_stall_execution(US);
+ 		spin_lock_irq(&pWb35Reg->EP0VM_spin_lock );
+ 		if (pWb35Reg->pRegFirst == NULL)
+@@ -207,8 +207,8 @@ Wb35Reg_Write(  phw_data_t pHwData,  u16 RegisterNo,  u32 RegisterValue )
+ 
+ 		return TRUE;
+ 	} else {
+-		if (pUrb)
+-			usb_free_urb(pUrb);
++		if (urb)
++			usb_free_urb(urb);
+ 		kfree(pRegQueue);
+ 		return FALSE;
+ 	}
+@@ -224,7 +224,7 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
+ {
+ 	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
+ 	struct usb_ctrlrequest *dr;
+-	PURB		pUrb = NULL;
++	struct urb	*urb = NULL;
+ 	PREG_QUEUE	pRegQueue = NULL;
+ 	u16		UrbSize;
+ 
+@@ -235,8 +235,8 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
+ 	// update the register by send urb request------------------------------------
+ 	UrbSize = sizeof(REG_QUEUE) + sizeof(struct usb_ctrlrequest);
+ 	OS_MEMORY_ALLOC((void* *) &pRegQueue, UrbSize );
+-	pUrb = wb_usb_alloc_urb(0);
+-	if (pUrb && pRegQueue) {
++	urb = wb_usb_alloc_urb(0);
++	if (urb && pRegQueue) {
+ 		pRegQueue->DIRECT = 1;// burst write register
+ 		pRegQueue->INDEX = RegisterNo;
+ 		pRegQueue->VALUE = cpu_to_le32(RegisterValue);
+@@ -253,7 +253,7 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
+ 		// Enter the sending queue
+ 		pRegQueue->Next = NULL;
+ 		pRegQueue->pUsbReq = dr;
+-		pRegQueue->pUrb = pUrb;
++		pRegQueue->urb = urb;
+ 		spin_lock_irq (&pWb35Reg->EP0VM_spin_lock );
+ 		if( pWb35Reg->pRegFirst == NULL )
+ 			pWb35Reg->pRegFirst = pRegQueue;
+@@ -267,8 +267,8 @@ Wb35Reg_WriteWithCallbackValue( phw_data_t pHwData, u16 RegisterNo, u32 Register
+ 		Wb35Reg_EP0VM_start(pHwData);
+ 		return TRUE;
+ 	} else {
+-		if (pUrb)
+-			usb_free_urb(pUrb);
++		if (urb)
++			usb_free_urb(urb);
+ 		kfree(pRegQueue);
+ 		return FALSE;
+ 	}
+@@ -331,7 +331,7 @@ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
+ {
+ 	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
+ 	struct usb_ctrlrequest * dr;
+-	PURB		pUrb;
++	struct urb	*urb;
+ 	PREG_QUEUE	pRegQueue;
+ 	u16		UrbSize;
+ 
+@@ -342,8 +342,8 @@ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
+ 	// update the variable by send Urb to read register ------------------------------------
+ 	UrbSize = sizeof(REG_QUEUE) + sizeof(struct usb_ctrlrequest);
+ 	OS_MEMORY_ALLOC( (void* *)&pRegQueue, UrbSize );
+-	pUrb = wb_usb_alloc_urb(0);
+-	if( pUrb && pRegQueue )
++	urb = wb_usb_alloc_urb(0);
++	if( urb && pRegQueue )
+ 	{
+ 		pRegQueue->DIRECT = 0;// read register
+ 		pRegQueue->INDEX = RegisterNo;
+@@ -358,7 +358,7 @@ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
+ 		// Enter the sending queue
+ 		pRegQueue->Next = NULL;
+ 		pRegQueue->pUsbReq = dr;
+-		pRegQueue->pUrb = pUrb;
++		pRegQueue->urb = urb;
+ 		spin_lock_irq ( &pWb35Reg->EP0VM_spin_lock );
+ 		if( pWb35Reg->pRegFirst == NULL )
+ 			pWb35Reg->pRegFirst = pRegQueue;
+@@ -373,8 +373,8 @@ Wb35Reg_Read(phw_data_t pHwData, u16 RegisterNo,  u32 * pRegisterValue )
+ 
+ 		return TRUE;
+ 	} else {
+-		if (pUrb)
+-			usb_free_urb( pUrb );
++		if (urb)
++			usb_free_urb( urb );
+ 		kfree(pRegQueue);
+ 		return FALSE;
+ 	}
+@@ -397,7 +397,7 @@ void
+ Wb35Reg_EP0VM(phw_data_t pHwData )
+ {
+ 	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
+-	PURB		pUrb;
++	struct urb	*urb;
+ 	struct usb_ctrlrequest *dr;
+ 	u32 *		pBuffer;
+ 	int			ret = -1;
+@@ -419,22 +419,22 @@ Wb35Reg_EP0VM(phw_data_t pHwData )
+ 		goto cleanup;
+ 
+ 	// Get an Urb, send it
+-	pUrb = (PURB)pRegQueue->pUrb;
++	urb = (struct urb *)pRegQueue->urb;
+ 
+ 	dr = pRegQueue->pUsbReq;
+-	pUrb = pRegQueue->pUrb;
++	urb = pRegQueue->urb;
+ 	pBuffer = pRegQueue->pBuffer;
+ 	if (pRegQueue->DIRECT == 1) // output
+ 		pBuffer = &pRegQueue->VALUE;
+ 
+-	usb_fill_control_urb( pUrb, pHwData->WbUsb.udev,
++	usb_fill_control_urb( urb, pHwData->WbUsb.udev,
+ 			      REG_DIRECTION(pHwData->WbUsb.udev,pRegQueue),
+ 			      (u8 *)dr,pBuffer,cpu_to_le16(dr->wLength),
+ 			      Wb35Reg_EP0VM_complete, (void*)pHwData);
+ 
+ 	pWb35Reg->EP0vm_state = VM_RUNNING;
+ 
+-	ret = wb_usb_submit_urb( pUrb );
++	ret = wb_usb_submit_urb( urb );
+ 
+ 	if (ret < 0) {
+ #ifdef _PE_REG_DUMP_
+@@ -452,16 +452,16 @@ Wb35Reg_EP0VM(phw_data_t pHwData )
+ 
+ 
+ void
+-Wb35Reg_EP0VM_complete(PURB pUrb)
++Wb35Reg_EP0VM_complete(struct urb *urb)
+ {
+-	phw_data_t  pHwData = (phw_data_t)pUrb->context;
++	phw_data_t  pHwData = (phw_data_t)urb->context;
+ 	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
+ 	PREG_QUEUE	pRegQueue;
+ 
+ 
+ 	// Variable setting
+ 	pWb35Reg->EP0vm_state = VM_COMPLETED;
+-	pWb35Reg->EP0VM_status = pUrb->status;
++	pWb35Reg->EP0VM_status = urb->status;
+ 
+ 	if (pHwData->SurpriseRemove) { // Let WbWlanHalt to handle surprise remove
+ 		pWb35Reg->EP0vm_state = VM_STOP;
+@@ -492,7 +492,7 @@ Wb35Reg_EP0VM_complete(PURB pUrb)
+    		kfree(pRegQueue);
+ 	}
+ 
+-	usb_free_urb(pUrb);
++	usb_free_urb(urb);
  }
  
- ///////////////////////////////////////////////////////
-@@ -651,7 +646,6 @@ void _txqdac_dc_offset_cacellation_winbond(hw_data_t *phw_data)
- 	reg_mode_ctrl |= (MASK_CALIB_START|3);
- 	hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 	PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--	pa_stall_execution(US);
  
- 	hw_get_dxx_reg(phw_data, 0x5C, &reg_dc_cancel);
- 	PHY_DEBUG(("[CAL]    DC_CANCEL (read) = 0x%08X\n", reg_dc_cancel));
-@@ -665,11 +659,9 @@ void _txqdac_dc_offset_cacellation_winbond(hw_data_t *phw_data)
- 		reg_dc_cancel &= ~(0x001F);
- 		PHY_DEBUG(("[CAL]    DC_CANCEL (write) = 0x%08X\n", reg_dc_cancel));
- 		hw_set_dxx_reg(phw_data, 0x5C, reg_dc_cancel);
--		pa_stall_execution(US);
+@@ -500,7 +500,7 @@ void
+ Wb35Reg_destroy(phw_data_t pHwData)
+ {
+ 	PWB35REG	pWb35Reg = &pHwData->Wb35Reg;
+-	PURB		pUrb;
++	struct urb	*urb;
+ 	PREG_QUEUE	pRegQueue;
  
- 		hw_get_dxx_reg(phw_data, REG_CALIB_READ2, &val);
- 		PHY_DEBUG(("[CAL]    CALIB_READ2 = 0x%08X\n", val));
--		pa_stall_execution(US);
  
- 		iqcal_image_i = _s13_to_s32(val & 0x00001FFF);
- 		iqcal_image_q = _s13_to_s32((val & 0x03FFE000) >> 13);
-@@ -682,11 +674,9 @@ void _txqdac_dc_offset_cacellation_winbond(hw_data_t *phw_data)
- 		reg_dc_cancel |= (1 << CANCEL_DC_Q_SHIFT);
- 		PHY_DEBUG(("[CAL]    DC_CANCEL (write) = 0x%08X\n", reg_dc_cancel));
- 		hw_set_dxx_reg(phw_data, 0x5C, reg_dc_cancel);
--		pa_stall_execution(US);
+@@ -520,10 +520,10 @@ Wb35Reg_destroy(phw_data_t pHwData)
+ 			pWb35Reg->pRegLast = NULL;
+ 		pWb35Reg->pRegFirst = pWb35Reg->pRegFirst->Next;
  
- 		hw_get_dxx_reg(phw_data, REG_CALIB_READ2, &val);
- 		PHY_DEBUG(("[CAL]    CALIB_READ2 = 0x%08X\n", val));
--		pa_stall_execution(US);
+-		pUrb = pRegQueue->pUrb;
++		urb = pRegQueue->urb;
+ 		spin_unlock_irq( &pWb35Reg->EP0VM_spin_lock );
+-		if (pUrb) {
+-			usb_free_urb(pUrb);
++		if (urb) {
++			usb_free_urb(urb);
+ 			kfree(pRegQueue);
+ 		} else {
+ 			#ifdef _PE_REG_DUMP_
+diff --git a/drivers/staging/winbond/linux/wb35reg_f.h b/drivers/staging/winbond/linux/wb35reg_f.h
+index 3006cfe..fc94091 100644
+--- a/drivers/staging/winbond/linux/wb35reg_f.h
++++ b/drivers/staging/winbond/linux/wb35reg_f.h
+@@ -42,7 +42,7 @@ unsigned char Wb35Reg_BurstWrite(  phw_data_t pHwData,  u16 RegisterNo,  u32 * p
  
- 		iqcal_image_i = _s13_to_s32(val & 0x00001FFF);
- 		iqcal_image_q = _s13_to_s32((val & 0x03FFE000) >> 13);
-@@ -732,7 +722,6 @@ void _txqdac_dc_offset_cacellation_winbond(hw_data_t *phw_data)
- 	reg_mode_ctrl &= ~MASK_CALIB_START;
- 	hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 	PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--	pa_stall_execution(US);
+ void Wb35Reg_EP0VM(  phw_data_t pHwData );
+ void Wb35Reg_EP0VM_start(  phw_data_t pHwData );
+-void Wb35Reg_EP0VM_complete(  PURB pUrb );
++void Wb35Reg_EP0VM_complete(struct urb *urb);
+ 
+ u32 BitReverse( u32 dwData, u32 DataLength);
+ 
+diff --git a/drivers/staging/winbond/linux/wb35reg_s.h b/drivers/staging/winbond/linux/wb35reg_s.h
+index 8b35b93..c633b92 100644
+--- a/drivers/staging/winbond/linux/wb35reg_s.h
++++ b/drivers/staging/winbond/linux/wb35reg_s.h
+@@ -69,7 +69,7 @@
+ 
+ typedef struct _REG_QUEUE
+ {
+-    struct  urb *pUrb;
++    struct  urb *urb;
+ 	void*	pUsbReq;
+ 	void*	Next;
+ 	union
+diff --git a/drivers/staging/winbond/linux/wb35rx.c b/drivers/staging/winbond/linux/wb35rx.c
+index 545c610..24ef23e 100644
+--- a/drivers/staging/winbond/linux/wb35rx.c
++++ b/drivers/staging/winbond/linux/wb35rx.c
+@@ -28,7 +28,7 @@ void Wb35Rx(  phw_data_t pHwData )
+ {
+ 	PWB35RX	pWb35Rx = &pHwData->Wb35Rx;
+ 	u8 *	pRxBufferAddress;
+-	PURB	pUrb = (PURB)pWb35Rx->RxUrb;
++	struct urb *urb = pWb35Rx->RxUrb;
+ 	int	retv;
+ 	u32	RxBufferId;
+ 
+@@ -63,14 +63,14 @@ void Wb35Rx(  phw_data_t pHwData )
+ 	}
+ 	pRxBufferAddress = pWb35Rx->pDRx;
+ 
+-	usb_fill_bulk_urb(pUrb, pHwData->WbUsb.udev,
++	usb_fill_bulk_urb(urb, pHwData->WbUsb.udev,
+ 			  usb_rcvbulkpipe(pHwData->WbUsb.udev, 3),
+ 			  pRxBufferAddress, MAX_USB_RX_BUFFER,
+ 			  Wb35Rx_Complete, pHwData);
+ 
+ 	pWb35Rx->EP3vm_state = VM_RUNNING;
+ 
+-	retv = wb_usb_submit_urb(pUrb);
++	retv = wb_usb_submit_urb(urb);
+ 
+ 	if (retv != 0) {
+ 		printk("Rx URB sending error\n");
+@@ -84,9 +84,9 @@ error:
+ 	OS_ATOMIC_DEC( pHwData->Adapter, &pWb35Rx->RxFireCounter );
  }
  
- //20060612.1.a 20060718.1 Modify
-@@ -792,12 +781,10 @@ u8 _tx_iq_calibration_loop_winbond(hw_data_t *phw_data,
- 			reg_mode_ctrl |= (MASK_CALIB_START|0x02|2<<2);
- 			hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 			PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--			pa_stall_execution(US);
+-void Wb35Rx_Complete(PURB pUrb)
++void Wb35Rx_Complete(struct urb *urb)
+ {
+-	phw_data_t	pHwData = pUrb->context;
++	phw_data_t	pHwData = urb->context;
+ 	PWB35RX		pWb35Rx = &pHwData->Wb35Rx;
+ 	u8 *		pRxBufferAddress;
+ 	u32		SizeCheck;
+@@ -96,12 +96,12 @@ void Wb35Rx_Complete(PURB pUrb)
  
- 			// b.
- 			hw_get_dxx_reg(phw_data, REG_CALIB_READ1, &val);
- 			PHY_DEBUG(("[CAL]    CALIB_READ1 = 0x%08X\n", val));
--			pa_stall_execution(US);
+ 	// Variable setting
+ 	pWb35Rx->EP3vm_state = VM_COMPLETED;
+-	pWb35Rx->EP3VM_status = pUrb->status;//Store the last result of Irp
++	pWb35Rx->EP3VM_status = urb->status;//Store the last result of Irp
  
- 			iqcal_tone_i0 = _s13_to_s32(val & 0x00001FFF);
- 			iqcal_tone_q0 = _s13_to_s32((val & 0x03FFE000) >> 13);
-@@ -813,7 +800,6 @@ u8 _tx_iq_calibration_loop_winbond(hw_data_t *phw_data,
- 			reg_mode_ctrl &= ~MASK_CALIB_START;
- 			hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 			PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--			pa_stall_execution(US);
+ 	RxBufferId = pWb35Rx->CurrentRxBufferId;
  
- 			// d. Set iqcal_mode[1:0] to 0x3 and set "calib_start" to 0x1 to
- 			//    enable "IQ alibration Mode II"
-@@ -823,12 +809,10 @@ u8 _tx_iq_calibration_loop_winbond(hw_data_t *phw_data,
- 			reg_mode_ctrl |= (MASK_CALIB_START|0x03);
- 			hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 			PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--			pa_stall_execution(US);
+ 	pRxBufferAddress = pWb35Rx->pDRx;
+-	BulkLength = (u16)pUrb->actual_length;
++	BulkLength = (u16)urb->actual_length;
  
- 			// e.
- 			hw_get_dxx_reg(phw_data, REG_CALIB_READ1, &val);
- 			PHY_DEBUG(("[CAL]    CALIB_READ1 = 0x%08X\n", val));
--			pa_stall_execution(US);
+ 	// The IRP is completed
+ 	pWb35Rx->EP3vm_state = VM_COMPLETED;
+diff --git a/drivers/staging/winbond/linux/wb35rx_f.h b/drivers/staging/winbond/linux/wb35rx_f.h
+index daa3e73..565280e 100644
+--- a/drivers/staging/winbond/linux/wb35rx_f.h
++++ b/drivers/staging/winbond/linux/wb35rx_f.h
+@@ -10,7 +10,7 @@ void		Wb35Rx_adjust(  PDESCRIPTOR pRxDes );
+ void		Wb35Rx_start(  phw_data_t pHwData );
  
- 			iqcal_tone_i = _s13_to_s32(val & 0x00001FFF);
- 			iqcal_tone_q = _s13_to_s32((val & 0x03FFE000) >> 13);
-@@ -1282,13 +1266,11 @@ u8 _rx_iq_calibration_loop_winbond(hw_data_t *phw_data, u16 factor, u32 frequenc
- 		if( !hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl) )//20060718.1 modify
- 			return 0;
- 		PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--		pa_stall_execution(US);
+ void		Wb35Rx(  phw_data_t pHwData );
+-void		Wb35Rx_Complete(  PURB pUrb );
++void		Wb35Rx_Complete(struct urb *urb);
  
- 		reg_mode_ctrl &= ~MASK_IQCAL_MODE;
- 		reg_mode_ctrl |= (MASK_CALIB_START|0x1);
- 		hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 		PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
--		pa_stall_execution(US);  //Should be read out after 450us
  
- 		// c.
- 		hw_get_dxx_reg(phw_data, REG_CALIB_READ1, &val);
-@@ -1697,7 +1679,6 @@ unsigned char adjust_TXVGA_for_iq_mag(hw_data_t *phw_data)
- 		phy_set_rf_data(phw_data, 5, ((5<<24)|current_txvga) );
- 		phw_data->txvga_setting_for_cal = current_txvga;
  
--		//pa_stall_execution(30000);//Sleep(30);
- 		msleep(30); // 20060612.1.a
+diff --git a/drivers/staging/winbond/linux/wb35tx_f.h b/drivers/staging/winbond/linux/wb35tx_f.h
+index 107b129..1815c10 100644
+--- a/drivers/staging/winbond/linux/wb35tx_f.h
++++ b/drivers/staging/winbond/linux/wb35tx_f.h
+@@ -7,12 +7,12 @@ unsigned char Wb35Tx_get_tx_buffer(  phw_data_t pHwData,  u8 **pBuffer );
  
- 		if( !hw_get_dxx_reg(phw_data, REG_MODE_CTRL, &reg_mode_ctrl) ) // 20060718.1 modify
-@@ -1714,18 +1695,14 @@ unsigned char adjust_TXVGA_for_iq_mag(hw_data_t *phw_data)
- 		hw_set_dxx_reg(phw_data, REG_MODE_CTRL, reg_mode_ctrl);
- 		PHY_DEBUG(("[CAL]    MODE_CTRL (write) = 0x%08X\n", reg_mode_ctrl));
+ void Wb35Tx_EP2VM(  phw_data_t pHwData );
+ void Wb35Tx_EP2VM_start(  phw_data_t pHwData );
+-void Wb35Tx_EP2VM_complete(  PURB purb );
++void Wb35Tx_EP2VM_complete(struct urb *urb);
  
--		//pa_stall_execution(US);
- 		udelay(1); // 20060612.1.a
+ void Wb35Tx_start(  phw_data_t pHwData );
+ void Wb35Tx_stop(  phw_data_t pHwData );
+ void Wb35Tx(  phw_data_t pHwData );
+-void Wb35Tx_complete(  PURB purb );
++void Wb35Tx_complete(struct urb *urb);
+ void Wb35Tx_reset_descriptor(  phw_data_t pHwData );
  
--		//pa_stall_execution(300);//Sleep(30);
- 		udelay(300); // 20060612.1.a
+ void Wb35Tx_CurrentTime(  phw_data_t pHwData,  u32 TimeCount );
+diff --git a/drivers/staging/winbond/linux/wbusb_s.h b/drivers/staging/winbond/linux/wbusb_s.h
+index b7fc722..45e41b3 100644
+--- a/drivers/staging/winbond/linux/wbusb_s.h
++++ b/drivers/staging/winbond/linux/wbusb_s.h
+@@ -19,7 +19,7 @@
+ typedef struct _RW_CONTEXT
+ {
+ 	void*			pHwData;
+-	PURB			pUrb;
++	struct urb		*urb;
+ 	void*			pCallBackFunctionParameter;
+ } RW_CONTEXT, *PRW_CONTEXT;
  
- 		// b.
- 		hw_get_dxx_reg(phw_data, REG_CALIB_READ1, &val);
- 
- 		PHY_DEBUG(("[CAL]    CALIB_READ1 = 0x%08X\n", val));
--		//pa_stall_execution(US);
--		//pa_stall_execution(300);//Sleep(30);
- 		udelay(300); // 20060612.1.a
- 
- 		iqcal_tone_i0 = _s13_to_s32(val & 0x00001FFF);
-diff --git a/drivers/staging/winbond/wbhal_f.h b/drivers/staging/winbond/wbhal_f.h
-index ea9531a..aee5192 100644
---- a/drivers/staging/winbond/wbhal_f.h
-+++ b/drivers/staging/winbond/wbhal_f.h
-@@ -113,7 +113,6 @@ unsigned char hal_set_LED(  phw_data_t pHwData,  u32 Mode ); // 20061108 for WPS
- #define hal_ibss_disconnect(_A) hal_stop_sync_bss(_A)
- #define hal_join_request_stop(_A)
- unsigned char	hal_idle(  phw_data_t pHwData );
--#define pa_stall_execution( _A )	//OS_SLEEP( 1 )
- #define hw_get_cxx_reg( _A, _B, _C )
- #define hw_set_cxx_reg( _A, _B, _C )
- #define hw_get_dxx_reg( _A, _B, _C )	hal_get_dxx_reg( _A, _B, (u32 *)_C )
 -- 
 1.6.0.2
 
