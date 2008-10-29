@@ -1,91 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbYJ2G3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbYJ2Gbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753237AbYJ2G3h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 02:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbYJ2G32
+	id S1753269AbYJ2Gbk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 02:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbYJ2Gbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 02:29:28 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:21375 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751357AbYJ2G31 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 02:29:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Hq1GhcOe5bh+iQm8jq4il2I/1cf60C+KU9RUKABR+DrqlJv9w4SThNBtLaqpB4ZMeM
-         WJ13qYByhsrNa2ckT++33RP45rqco2xW+CdujlwElAB0Z774CJ4L07cQ/y8ELwkCnfqJ
-         gt26/H+ZFgJ8BU3O5bNQJiDcp2doVMrW6JaXc=
-Subject: Re: [PATCH 1/2] headers: move release_kernel_lock(),
- reacquire_kernel_lock() to sched.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, torvalds@osdl.org,
-       viro@zeniv.linux.org.uk, acme@ghostprotocols.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081029061827.GA7936@elte.hu>
-References: <20081029044351.GA2304@x200.localdomain>
-	 <20081029044447.GB2304@x200.localdomain>  <20081029061827.GA7936@elte.hu>
-Content-Type: text/plain
-Date: Tue, 28 Oct 2008 23:29:24 -0700
-Message-Id: <1225261764.20276.7.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Wed, 29 Oct 2008 02:31:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43224 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751357AbYJ2Gbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 02:31:31 -0400
+Message-ID: <49080347.70503@redhat.com>
+Date: Wed, 29 Oct 2008 08:31:35 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Parag Warudkar <parag.lkml@gmail.com>
+CC: Avi Kivity <avi@qumranet.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.28-rc2 : KVM FAIL
+References: <f7848160810271515v65007926g8537c43c67f1bd72@mail.gmail.com>
+In-Reply-To: <f7848160810271515v65007926g8537c43c67f1bd72@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-29 at 07:18 +0100, Ingo Molnar wrote:
-> * Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> > +#ifdef CONFIG_LOCK_KERNEL
-> > +/*
-> > + * Release/re-acquire global kernel lock for the scheduler
-> > + */
-> > +#define release_kernel_lock(tsk) do { 		\
-> > +	if (unlikely((tsk)->lock_depth >= 0))	\
-> > +		__release_kernel_lock();	\
-> > +} while (0)
-> > +
-> > +static inline int reacquire_kernel_lock(struct task_struct *task)
-> > +{
-> > +	if (unlikely(task->lock_depth >= 0))
-> > +		return __reacquire_kernel_lock();
-> > +	return 0;
-> > +}
-> > +#else
-> > +#define release_kernel_lock(task)		do { } while(0)
-> > +#define reacquire_kernel_lock(task)		0
-> > +#endif
-> 
+Parag Warudkar wrote:
+> With today's git host kernel I can no longer boot my Ubuntu virtual
+> machine - udevd, modprobe etc. just die with glibc detecting realloc()
+> errors (invalid next size) and I am dropped to initramfs prompt.
+>
+> Going back to the distro kernel 2.6.26 makes the same VM work again.
+>   
 
-Also is it possible to keep them as inlines in both the CONFIG_LOCK_KERNEL
-and !CONFIG_LOCK_KERNEL
+Please pull again and retry.
 
-Something like (without checking if release_kernel_lock _can_ be an inline:
-
-static inline void release_kernel_lock(struct task_struct *task)
-{
-#ifdef CONFIG_LOCK_KERNEL
-	if (unlikely(task->lock_depth >= 0))
-		__release_kernel_lock();
-#endif
-	return;
-}
-
-static inline int reacquire_kernel_lock(struct task_struct *task)
-{
-#ifdef CONFIG_LOCK_KERNEL
-	if (unlikely(task->lock_depth >= 0))
-		return __reacquire_kernel_lock();
-#endif
-	return 0;
-}
-
-Then the typechecking is kept in both CONFIG_LOCK_KERNEL/!CONFIG_LOCK_KERNEL
-
-Cheers,
-
-Harvey
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
