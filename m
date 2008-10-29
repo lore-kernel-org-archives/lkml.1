@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbYJ2V66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbYJ2WD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755331AbYJ2V66 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 17:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbYJ2V6u
+	id S1755172AbYJ2WD0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 18:03:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbYJ2WDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 17:58:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46526 "EHLO mx2.redhat.com"
+	Wed, 29 Oct 2008 18:03:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45748 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753782AbYJ2V6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 17:58:49 -0400
-Subject: Re: [PATCH 3/4] AUDIT: audit when fcaps increase the permitted or
- inheritable capabilities
-From: Eric Paris <eparis@redhat.com>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-audit@redhat.com, sgrubb@redhat.com, viro@ZenIV.linux.org.uk,
-       sgrubb@redhat.com
-In-Reply-To: <48FFFA07.3060707@kernel.org>
-References: <20081020222538.3895.50175.stgit@paris.rdu.redhat.com>
-	 <20081020222612.3895.6710.stgit@paris.rdu.redhat.com>
-	 <48FD6E49.6060104@kernel.org> <20081021191625.GA4657@us.ibm.com>
-	 <48FF21BF.9090509@kernel.org> <20081022141430.GB21612@us.ibm.com>
-	 <48FFFA07.3060707@kernel.org>
-Content-Type: text/plain
-Date: Wed, 29 Oct 2008 17:58:39 -0400
-Message-Id: <1225317519.23736.60.camel@localhost.localdomain>
-Mime-Version: 1.0
+	id S1753537AbYJ2WDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 18:03:16 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen filesystems.
+Date: Wed, 29 Oct 2008 23:07:26 +0100
+User-Agent: KMail/1.9.9
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Miklos Szeredi <miklos@szeredi.hu>
+References: <Pine.LNX.4.44L0.0810291627040.3986-100000@iolanthe.rowland.org> <200810292211.49021.rjw@sisk.pl> <1225316715.18786.1.camel@nigel-laptop>
+In-Reply-To: <1225316715.18786.1.camel@nigel-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810292307.26945.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-22 at 21:13 -0700, Andrew G. Morgan wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+On Wednesday, 29 of October 2008, Nigel Cunningham wrote:
+> Hi.
 > 
-> Serge E. Hallyn wrote:
-> >>> ... except if (!issecure(SECURE_NOROOT) && uid==0) I guess?
-> >>>
-> >>> And then it also might be interesting in the case where
-> >>> (!issecure(SECURE_NOROOT) && uid==0) and pP is not full.
-> >> I guess so, although this seems like a case of being interested in a
-> >> (unusual) non-privileged execve().
-> > 
-> > I'm not sure what you mean - but this can only happen if bits are taken
-> > out of the capability bounding set, right?
+> On Wed, 2008-10-29 at 22:11 +0100, Rafael J. Wysocki wrote:
+> > The current design of the freezer is rather simplistic and I'm not really sure
+> > it's the best one possible.  Perhaps we can redesign the freezer to work
+> > differently and handle the cases like fuse.
 > 
-> Yes, it can happen as you say.
-> 
-> This is a case of an unprivileged uid==0 execution. Since we don't
-> appear to want to audit other non-privileged execve()s, its not clear to
-> me that this one deserves attention.
+> Why redo what I've already done? In the full patch, you have the basis
+> of what you're talking about. I haven't seen a failure to freeze fuse or
+> anything else in a year of use.
 
-So what did you two agree on for when to collect fcaps type information?
-Any time bprm->cap_post_exec_permitted is non-zero?
+Still, Miklos noticed some problems with it.
 
-> >>>>>  	rc = bprm_caps_from_vfs_caps(&vcaps, bprm);
-> >>>>>  
-> >>>>> +	audit_log_bprm_fcaps(bprm, &vcaps);
-> >>>>> +
-> >>>> When rc != 0, the execve() will fail. Is it appropriate to log in this case?
-> >>> It might fail because fP contains bits not in pP', right?  That's
-> >>> probably interesting to auditors.
-> >> In which case, how is the fact it didn't execute captured in the audit log?
-> > 
-> > I assume as a FAIL?  (Not sure of the exact wording in the logs)
-> 
-> OK. As long as its clearly identified as a failure and the logs are not
-> misleading - making it look like the execve() succeeded with privilege -
-> then I'm not as concerned.
+I'm not talking about doing things on top of the current signal-based
+freezing mechanism, but rather about moving the freezer a bit closer towards
+the scheduler.  Maybe this is the way to go.  I don't know.
 
-The syscall record (rather than this auxilary fcaps record) will
-indicate that the syscall failed.  it says something like success=no.
+In any case, the freezing of user space seems to be much simpler than modifying
+all drivers to add suspend synchronization.
 
+Thanks,
+Rafael
