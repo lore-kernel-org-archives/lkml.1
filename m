@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbYJ2KoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753858AbYJ2Kvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753928AbYJ2KoB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 06:44:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbYJ2Knm
+	id S1753858AbYJ2Kvs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 06:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbYJ2Kvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 06:43:42 -0400
-Received: from cpsmtpo-eml01.KPNXCHANGE.COM ([213.75.38.150]:48738 "EHLO
-	cpsmtpo-eml01.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753499AbYJ2Knk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 06:43:40 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: Long delays and keystrokes required - related to disk encryption?
-Date: Wed, 29 Oct 2008 11:43:33 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Yves-Alexis Perez <corsac@debian.org>,
-       "Carlos R. Mafra" <crmafra2@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-References: <200810281744.52587.elendil@planet.nl> <200810290153.23514.elendil@planet.nl> <4907D957.6040206@linux.intel.com>
-In-Reply-To: <4907D957.6040206@linux.intel.com>
+	Wed, 29 Oct 2008 06:51:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54000 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752439AbYJ2Kvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 06:51:40 -0400
+Date: Wed, 29 Oct 2008 11:51:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] x86: replace BIO_VMERGE_BOUNDARY with
+	BIOVEC_PHYS_MERGEABLE
+Message-ID: <20081029105113.GA15981@elte.hu>
+References: <20081027094111.GU22217@kernel.dk> <4905A961.9000603@goop.org> <20081027115659.GZ22217@kernel.dk> <20081029080603J.fujita.tomonori@lab.ntt.co.jp> <20081029083713.GE6364@elte.hu> <49082BBC.60302@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810291143.35041.elendil@planet.nl>
-X-OriginalArrivalTime: 29 Oct 2008 10:43:37.0766 (UTC) FILETIME=[3332B460:01C939B3]
+In-Reply-To: <49082BBC.60302@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0061]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 October 2008, Arjan van de Ven wrote:
-> Frans Pop wrote:
-> > On Tuesday 28 October 2008, Frans Pop wrote:
-> >> During the boot there are several places where I need to hit a key
-> >> for the boot to continue. There are also some very long delays
-> >> before the next syslog message is displayed.
-> >
-> > I've bisected it to:
-> > commit dc4304f7deee29fcdf6a2b62f7146ea7f505fd42
-> > Author: Arjan van de Ven <arjan@linux.intel.com>
-> > Date:   Mon Oct 13 10:32:15 2008 -0400
-> >     rangetimers: fix the bug reported by Ingo for real
+
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+>> does it have any dependency on:
+>>
+>>   Subject: [PATCH 1/2] bio: define __BIOVEC_PHYS_MERGEABLE
 >
-> ok one easy thing to try, in the peek function (that this patch
-> touches), just stick a "return" as first statement in.
-> If that "fixes" it, we have a real issue with hrtimers, if not then
-> something else is going on..
+> No, they're independent.  Defining __BIOVEC_PHYS_MERGEABLE will be 
+> useful for the Xen changes I need to make in the wake of Tomo's 
+> patch.
 
-Confirmed here too: adding the "return" results in a good boot.
+ok - applied to tip/x86/xen, thanks Jeremy! (also added Jens's 
+Acked-by)
 
-Cheers,
-FJP
+	Ingo
