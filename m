@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbYJ2WzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758000AbYJ2Wzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbYJ2WzW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 18:55:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756270AbYJ2Wpo
+	id S1758000AbYJ2Wzp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 18:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756282AbYJ2Wpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 18:45:44 -0400
-Received: from kroah.org ([198.145.64.141]:56247 "EHLO coco.kroah.org"
+	Wed, 29 Oct 2008 18:45:45 -0400
+Received: from kroah.org ([198.145.64.141]:56249 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755623AbYJ2Wpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 18:45:33 -0400
+	id S1755595AbYJ2Wpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 18:45:35 -0400
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
 Cc: Solomon Peachy <pizza@shaftnet.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 31/49] Staging: wlan-ng: Eliminate one more rx mtu test.
-Date: Wed, 29 Oct 2008 15:39:58 -0700
-Message-Id: <1225320016-21803-31-git-send-email-greg@kroah.com>
+Subject: [PATCH 32/49] Staging: wlan-ng: Eliminate local 'version.h'
+Date: Wed, 29 Oct 2008 15:39:59 -0700
+Message-Id: <1225320016-21803-32-git-send-email-greg@kroah.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081029223832.GC21657@kroah.com>
 References: <20081029223832.GC21657@kroah.com>
@@ -24,35 +24,251 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Solomon Peachy <pizza@shaftnet.org>
 
-It also isn't needed.
+The kernel provides us with the proper version of this file.
 
 Signed-off-by: Solomon Peachy <pizza@shaftnet.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/wlan-ng/p80211conv.c |   10 ----------
- 1 files changed, 0 insertions(+), 10 deletions(-)
+ drivers/staging/wlan-ng/hfa384x_usb.c  |    3 --
+ drivers/staging/wlan-ng/p80211conv.c   |    1 -
+ drivers/staging/wlan-ng/p80211mod.c    |    1 -
+ drivers/staging/wlan-ng/p80211netdev.c |    5 +--
+ drivers/staging/wlan-ng/p80211req.c    |    1 -
+ drivers/staging/wlan-ng/p80211wep.c    |    1 -
+ drivers/staging/wlan-ng/p80211wext.c   |    1 -
+ drivers/staging/wlan-ng/prism2mgmt.c   |    3 --
+ drivers/staging/wlan-ng/prism2mib.c    |    3 --
+ drivers/staging/wlan-ng/prism2sta.c    |    6 +--
+ drivers/staging/wlan-ng/version.h      |   56 --------------------------------
+ drivers/staging/wlan-ng/wlan_compat.h  |    2 +
+ 12 files changed, 6 insertions(+), 77 deletions(-)
+ delete mode 100644 drivers/staging/wlan-ng/version.h
 
+diff --git a/drivers/staging/wlan-ng/hfa384x_usb.c b/drivers/staging/wlan-ng/hfa384x_usb.c
+index 0670068..53c547d 100644
+--- a/drivers/staging/wlan-ng/hfa384x_usb.c
++++ b/drivers/staging/wlan-ng/hfa384x_usb.c
+@@ -114,9 +114,6 @@
+ /* System Includes */
+ #define WLAN_DBVAR	prism2_debug
+ 
+-#include "version.h"
+-
+-
+ #include <linux/version.h>
+ 
+ #include <linux/module.h>
 diff --git a/drivers/staging/wlan-ng/p80211conv.c b/drivers/staging/wlan-ng/p80211conv.c
-index d58f10f..aaf1c9d 100644
+index aaf1c9d..749ea8d 100644
 --- a/drivers/staging/wlan-ng/p80211conv.c
 +++ b/drivers/staging/wlan-ng/p80211conv.c
-@@ -444,16 +444,6 @@ int skb_p80211_to_ether( wlandevice_t *wlandev, UINT32 ethconv, struct sk_buff *
- 		/*  build an 802.3 frame */
- 		/* allocate space and setup hostbuf */
+@@ -70,7 +70,6 @@
  
--		/* Test for an overlength frame */
--		if ( payload_length > netdev->mtu ) {
--			/* A bogus length ethfrm has been sent. */
--			/* Is someone trying an oflow attack? */
--			WLAN_LOG_ERROR("OTHER frame too large (%d > %d)\n",
--				payload_length,
--				netdev->mtu);
--			return 1;
--		}
+ #include <asm/byteorder.h>
+ 
+-#include "version.h"
+ #include "wlan_compat.h"
+ 
+ /*================================================================*/
+diff --git a/drivers/staging/wlan-ng/p80211mod.c b/drivers/staging/wlan-ng/p80211mod.c
+index 7a3834e..29cae87 100644
+--- a/drivers/staging/wlan-ng/p80211mod.c
++++ b/drivers/staging/wlan-ng/p80211mod.c
+@@ -68,7 +68,6 @@
+ #include <linux/wireless.h>
+ #include <linux/netdevice.h>
+ 
+-#include "version.h"
+ #include "wlan_compat.h"
+ 
+ /*================================================================*/
+diff --git a/drivers/staging/wlan-ng/p80211netdev.c b/drivers/staging/wlan-ng/p80211netdev.c
+index 40d0b78..9d64e0b 100644
+--- a/drivers/staging/wlan-ng/p80211netdev.c
++++ b/drivers/staging/wlan-ng/p80211netdev.c
+@@ -85,7 +85,6 @@
+ /*================================================================*/
+ /* Project Includes */
+ 
+-#include "version.h"
+ #include "wlan_compat.h"
+ #include "p80211types.h"
+ #include "p80211hdr.h"
+@@ -1102,8 +1101,8 @@ p80211netdev_proc_read(
+ 		goto exit;
+ 	}
+ 
+-	p += sprintf(p, "p80211 version: %s (%s)\n\n",
+-		     WLAN_RELEASE, WLAN_BUILD_DATE);
++	p += sprintf(p, "p80211 version: %s\n\n",
++		     WLAN_RELEASE);
+ 	p += sprintf(p, "name       : %s\n", wlandev->name);
+ 	p += sprintf(p, "nsd name   : %s\n", wlandev->nsdname);
+ 	p += sprintf(p, "address    : %02x:%02x:%02x:%02x:%02x:%02x\n",
+diff --git a/drivers/staging/wlan-ng/p80211req.c b/drivers/staging/wlan-ng/p80211req.c
+index 0233abe..83bd65b 100644
+--- a/drivers/staging/wlan-ng/p80211req.c
++++ b/drivers/staging/wlan-ng/p80211req.c
+@@ -68,7 +68,6 @@
+ #include <net/sock.h>
+ #include <linux/netlink.h>
+ 
+-#include "version.h"
+ #include "wlan_compat.h"
+ 
+ /*================================================================*/
+diff --git a/drivers/staging/wlan-ng/p80211wep.c b/drivers/staging/wlan-ng/p80211wep.c
+index 11a50c7..0ab0d07 100644
+--- a/drivers/staging/wlan-ng/p80211wep.c
++++ b/drivers/staging/wlan-ng/p80211wep.c
+@@ -56,7 +56,6 @@
+ #include <linux/slab.h>
+ #include <linux/random.h>
+ 
+-#include "version.h"
+ #include "wlan_compat.h"
+ 
+ // #define WEP_DEBUG
+diff --git a/drivers/staging/wlan-ng/p80211wext.c b/drivers/staging/wlan-ng/p80211wext.c
+index c1ab0f8..9936b5c 100644
+--- a/drivers/staging/wlan-ng/p80211wext.c
++++ b/drivers/staging/wlan-ng/p80211wext.c
+@@ -56,7 +56,6 @@
+ /*================================================================*/
+ /* Project Includes */
+ 
+-#include "version.h"
+ #include "wlan_compat.h"
+ 
+ #include "p80211types.h"
+diff --git a/drivers/staging/wlan-ng/prism2mgmt.c b/drivers/staging/wlan-ng/prism2mgmt.c
+index de2ec1e..c2f61ed 100644
+--- a/drivers/staging/wlan-ng/prism2mgmt.c
++++ b/drivers/staging/wlan-ng/prism2mgmt.c
+@@ -61,9 +61,6 @@
+ /* System Includes */
+ #define WLAN_DBVAR	prism2_debug
+ 
+-#include "version.h"
 -
- 		/* Chop off the 802.11 header. */
- 		skb_pull(skb, payload_offset);
+-
+ #include <linux/version.h>
  
+ #include <linux/if_arp.h>
+diff --git a/drivers/staging/wlan-ng/prism2mib.c b/drivers/staging/wlan-ng/prism2mib.c
+index 5785ff9..5a8dffc 100644
+--- a/drivers/staging/wlan-ng/prism2mib.c
++++ b/drivers/staging/wlan-ng/prism2mib.c
+@@ -54,9 +54,6 @@
+ /* System Includes */
+ #define WLAN_DBVAR	prism2_debug
+ 
+-#include "version.h"
+-
+-
+ #include <linux/version.h>
+ 
+ #include <linux/module.h>
+diff --git a/drivers/staging/wlan-ng/prism2sta.c b/drivers/staging/wlan-ng/prism2sta.c
+index 8ce1ee9..05c0480 100644
+--- a/drivers/staging/wlan-ng/prism2sta.c
++++ b/drivers/staging/wlan-ng/prism2sta.c
+@@ -54,8 +54,6 @@
+ /* System Includes */
+ #define WLAN_DBVAR	prism2_debug
+ 
+-#include "version.h"
+-
+ #include <linux/version.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+@@ -2221,9 +2219,9 @@ prism2sta_proc_read(
+ 	// XXX 0x0001 for prism2.5/3, 0x0000 for prism2.
+ 	hwtype = BIT0;
+ 
+-	p += sprintf(p, "# %s version %s (%s)\n\n",
++	p += sprintf(p, "# %s version %s\n\n",
+ 		     dev_info,
+-		     WLAN_RELEASE, WLAN_BUILD_DATE);
++		     WLAN_RELEASE);
+ 
+ 	p += sprintf(p, "# nic h/w: id=0x%02x %d.%d.%d\n",
+ 		     hw->ident_nic.id, hw->ident_nic.major,
+diff --git a/drivers/staging/wlan-ng/version.h b/drivers/staging/wlan-ng/version.h
+deleted file mode 100644
+index 86190a1..0000000
+--- a/drivers/staging/wlan-ng/version.h
++++ /dev/null
+@@ -1,56 +0,0 @@
+-/* src/include/wlan/version.h
+-*
+-*
+-* Copyright (C) 1999 AbsoluteValue Systems, Inc.  All Rights Reserved.
+-* --------------------------------------------------------------------
+-*
+-* linux-wlan
+-*
+-*   The contents of this file are subject to the Mozilla Public
+-*   License Version 1.1 (the "License"); you may not use this file
+-*   except in compliance with the License. You may obtain a copy of
+-*   the License at http://www.mozilla.org/MPL/
+-*
+-*   Software distributed under the License is distributed on an "AS
+-*   IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
+-*   implied. See the License for the specific language governing
+-*   rights and limitations under the License.
+-*
+-*   Alternatively, the contents of this file may be used under the
+-*   terms of the GNU Public License version 2 (the "GPL"), in which
+-*   case the provisions of the GPL are applicable instead of the
+-*   above.  If you wish to allow the use of your version of this file
+-*   only under the terms of the GPL and not to allow others to use
+-*   your version of this file under the MPL, indicate your decision
+-*   by deleting the provisions above and replace them with the notice
+-*   and other provisions required by the GPL.  If you do not delete
+-*   the provisions above, a recipient may use your version of this
+-*   file under either the MPL or the GPL.
+-*
+-* --------------------------------------------------------------------
+-*
+-* Inquiries regarding the linux-wlan Open Source project can be
+-* made directly to:
+-*
+-* AbsoluteValue Systems Inc.
+-* info@linux-wlan.com
+-* http://www.linux-wlan.com
+-*
+-* --------------------------------------------------------------------
+-*
+-* Portions of the development of this software were funded by
+-* Intersil Corporation as part of PRISM(R) chipset product development.
+-*
+-* --------------------------------------------------------------------
+-*/
+-#ifndef _WLAN_VERSION_H
+-#define _WLAN_VERSION_H
+-#ifndef KERNEL_VERSION
+-#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
+-#endif
+-
+-#define WLAN_RELEASE	"0.2.8"
+-#define WLAN_RELEASE_CODE 0x000208
+-#define WLAN_BUILD_DATE "Thu Oct  2 11:04:42 PDT 2008"
+-
+-#endif
+diff --git a/drivers/staging/wlan-ng/wlan_compat.h b/drivers/staging/wlan-ng/wlan_compat.h
+index 3127754..0ecc3fa 100644
+--- a/drivers/staging/wlan-ng/wlan_compat.h
++++ b/drivers/staging/wlan-ng/wlan_compat.h
+@@ -134,6 +134,8 @@ typedef int64_t		INT64;
+ #define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
+ #endif
+ 
++#define WLAN_RELEASE	"0.3.0-lkml"
++
+ #include <linux/hardirq.h>
+ 
+ #define WLAN_LOG_ERROR(x,args...) printk(KERN_ERR "%s: " x , __func__ , ##args);
 -- 
 1.6.0.2
 
