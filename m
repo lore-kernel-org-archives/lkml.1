@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbYJ2Tan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbYJ2Tkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755004AbYJ2Tan (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 15:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbYJ2Ta3
+	id S1754664AbYJ2Tkc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 15:40:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYJ2TkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 15:30:29 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:56617 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754629AbYJ2Ta2 (ORCPT
+	Wed, 29 Oct 2008 15:40:17 -0400
+Received: from smarthost03.mail.zen.net.uk ([212.23.3.142]:51251 "EHLO
+	smarthost03.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752423AbYJ2TkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 15:30:28 -0400
-Date: Wed, 29 Oct 2008 15:30:26 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH] ftrace, kbuild: condense recordmcount.pl parameter code
-In-Reply-To: <20081029190045.GC22105@uranus.ravnborg.org>
-Message-ID: <alpine.DEB.1.10.0810291529410.13214@gandalf.stny.rr.com>
-References: <20081022184313.179487464@goodmis.org> <20081022185135.618026303@goodmis.org> <alpine.DEB.1.10.0810271337370.8006@gandalf.stny.rr.com> <20081029190045.GC22105@uranus.ravnborg.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 29 Oct 2008 15:40:16 -0400
+Subject: Re: 2.6.28-rc2 / hso driver oops
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Jonathan McDowell <noodles@earth.li>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <20081029164006.GH3162@earth.li>
+References: <20081029164006.GH3162@earth.li>
+Content-Type: text/plain
+Organization: Solarflare Communications
+Date: Wed, 29 Oct 2008 19:40:11 +0000
+Message-Id: <1225309212.3068.44.camel@achroite>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-Originating-Smarthost03-IP: [82.69.137.158]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-10-29 at 16:40 +0000, Jonathan McDowell wrote:
+> Hi.
+> 
+> Tried out 2.6.28-rc2 today on my EEE 901 and my Option Icon 225 and got
+> the following oops:
+> 
+> hso: drivers/net/usb/hso.c: 1.2 Option Wireless
+> usbcore: registered new interface driver hso
+> usb 2-2: new full speed USB device using uhci_hcd and address 3
+> usb 2-2: configuration #1 chosen from 1 choice
+> hso0: Disabled Privacy Extensions
+> BUG: unable to handle kernel NULL pointer dereference at 000000d0
+> IP: [<c03589b9>] dev_driver_string+0x1/0x2a
 
-Sam Ravnborg pointed out that I could condense the code for the parameters of
-recordmcount.pl by using an $(if ...) condition.
+Something passed a null device pointer to dev_printk().
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- scripts/Makefile.build |   12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+[...]
+> [<f81b8265>] ? hso_create_net_device+0x305/0x32d [hso]
+[...]
 
-Index: linux-tip.git/scripts/Makefile.build
-===================================================================
---- linux-tip.git.orig/scripts/Makefile.build	2008-10-27 15:29:01.000000000 -0400
-+++ linux-tip.git/scripts/Makefile.build	2008-10-29 15:16:13.000000000 -0400
-@@ -198,16 +198,10 @@ cmd_modversions =							\
- 	fi;
- endif
- 
--ifdef CONFIG_64BIT
--arch_bits = 64
--else
--arch_bits = 32
--endif
--
- ifdef CONFIG_FTRACE_MCOUNT_RECORD
--cmd_record_mcount = perl $(srctree)/scripts/recordmcount.pl \
--	"$(ARCH)" "$(arch_bits)" "$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" \
--	"$(NM)" "$(RM)" "$(MV)" "$(@)";
-+cmd_record_mcount = perl $(srctree)/scripts/recordmcount.pl "$(ARCH)" \
-+	"$(if $(CONFIG_64BIT),64,32)" \
-+	"$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" "$(NM)" "$(RM)" "$(MV)" "$(@)";
- endif
- 
- define rule_cc_o_c
+I think that hso_create_rfkill() is the culprit here (and has been
+inlined into hso_create_net_device()).  It's using hso_dev->dev as the
+first argument to dev_err() and it doesn't look like that field is
+initialised except by kzalloc.  At a guess, it should be using
+&hso_dev->usb->dev.
 
+Ben.
+
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
 
