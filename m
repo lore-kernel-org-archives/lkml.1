@@ -1,123 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbYJ2EnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbYJ2FIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752792AbYJ2EnT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 00:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbYJ2EnJ
+	id S1752664AbYJ2FIa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 01:08:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYJ2FIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 00:43:09 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:60844 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750999AbYJ2EnI (ORCPT
+	Wed, 29 Oct 2008 01:08:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54296 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751332AbYJ2FIS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 00:43:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=lrzy8bADeckSeGrhMSL5Fe5xaAhXQys5prl29SgpMwyCtJuYTSMNdwY5jbOuNxy3hp
-         zDihu2vXqqDIQHpVIGq9gaqzvWq6P8pG57bZfANrJPVmCR4kMain4vw0Y9iA8FLxr6as
-         7zCpQHRfpNlygjxaRKL7azMeg88hrOZs8PS64=
-Date: Wed, 29 Oct 2008 07:44:47 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: torvalds@osdl.org
-Cc: viro@zeniv.linux.org.uk, acme@ghostprotocols.net,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] headers: move release_kernel_lock(),
-	reacquire_kernel_lock() to sched.c
-Message-ID: <20081029044447.GB2304@x200.localdomain>
-References: <20081029044351.GA2304@x200.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081029044351.GA2304@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 29 Oct 2008 01:08:18 -0400
+Date: Tue, 28 Oct 2008 22:07:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-wireless@vger.kernel.org,
+       Mark Fasheh <mfasheh@suse.com>, Joel Becker <Joel.Becker@oracle.com>
+Subject: Re: linux-next: Tree for October 28
+Message-Id: <20081028220741.f5d331ba.akpm@linux-foundation.org>
+In-Reply-To: <20081028183055.fbcf5420.sfr@canb.auug.org.au>
+References: <20081028183055.fbcf5420.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 21b76c6e7d2340805664b91dc1c83eb23c6f785d Mon Sep 17 00:00:00 2001
-From: Alexey Dobriyan <adobriyan@gmail.com>
-Date: Mon, 27 Oct 2008 00:57:28 +0300
-Subject: [PATCH 1/2] headers: move release_kernel_lock(), reacquire_kernel_lock() to sched.c
+On Tue, 28 Oct 2008 18:30:55 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-Both are used only by scheduler, both are low-level enough to not allow in
-drivers. Removal allows to remove sched.h from smp_lock.h, which is needed
-solely for inline function.
+> I have created today's linux-next tree at
+> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+> (patches at
+> http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
- include/linux/smp_lock.h |   18 ------------------
- kernel/sched.c           |   20 ++++++++++++++++++++
- 2 files changed, 20 insertions(+), 18 deletions(-)
+ia64 allmodconfig:
 
-diff --git a/include/linux/smp_lock.h b/include/linux/smp_lock.h
-index 813be59..6052f02 100644
---- a/include/linux/smp_lock.h
-+++ b/include/linux/smp_lock.h
-@@ -8,22 +8,6 @@
+arch/ia64/kernel/iosapic.c: In function `get_target_cpu':
+arch/ia64/kernel/iosapic.c:723: error: `nr_cpus_ids' undeclared (first use in this function)
+arch/ia64/kernel/iosapic.c:723: error: (Each undeclared identifier is reported only once
+arch/ia64/kernel/iosapic.c:723: error: for each function it appears in.)
+
+Fixed by:
+
+From: Andrew Morton <akpm@linux-foundation.org>
+
+- someone can't type (or test)
+
+- nr_cpu_ids is declared in cpumask.h.  Include it.
+
+--- a/arch/ia64/kernel/iosapic.c~ia64-fix-arch-ia64-kernel-iosapicc-build
++++ a/arch/ia64/kernel/iosapic.c
+@@ -85,6 +85,7 @@
+ #include <linux/irq.h>
+ #include <linux/kernel.h>
+ #include <linux/list.h>
++#include <linux/cpumask.h>
+ #include <linux/pci.h>
+ #include <linux/smp.h>
+ #include <linux/string.h>
+@@ -720,7 +721,7 @@ get_target_cpu (unsigned int gsi, int ir
+ 		for (numa_cpu = first_cpu(cpu_mask) ; i < cpu_index ; i++)
+ 			numa_cpu = next_cpu(numa_cpu, cpu_mask);
  
- extern int __lockfunc __reacquire_kernel_lock(void);
- extern void __lockfunc __release_kernel_lock(void);
--
--/*
-- * Release/re-acquire global kernel lock for the scheduler
-- */
--#define release_kernel_lock(tsk) do { 		\
--	if (unlikely((tsk)->lock_depth >= 0))	\
--		__release_kernel_lock();	\
--} while (0)
--
--static inline int reacquire_kernel_lock(struct task_struct *task)
--{
--	if (unlikely(task->lock_depth >= 0))
--		return __reacquire_kernel_lock();
--	return 0;
--}
--
- extern void __lockfunc lock_kernel(void)	__acquires(kernel_lock);
- extern void __lockfunc unlock_kernel(void)	__releases(kernel_lock);
- 
-@@ -43,9 +27,7 @@ static inline void cycle_kernel_lock(void)
- 
- #define lock_kernel()				do { } while(0)
- #define unlock_kernel()				do { } while(0)
--#define release_kernel_lock(task)		do { } while(0)
- #define cycle_kernel_lock()			do { } while(0)
--#define reacquire_kernel_lock(task)		0
- #define kernel_locked()				1
- 
- #endif /* CONFIG_LOCK_KERNEL */
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 6625c3c..96a4462 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -79,6 +79,26 @@
- 
- #include "sched_cpupri.h"
- 
-+#ifdef CONFIG_LOCK_KERNEL
-+/*
-+ * Release/re-acquire global kernel lock for the scheduler
-+ */
-+#define release_kernel_lock(tsk) do { 		\
-+	if (unlikely((tsk)->lock_depth >= 0))	\
-+		__release_kernel_lock();	\
-+} while (0)
-+
-+static inline int reacquire_kernel_lock(struct task_struct *task)
-+{
-+	if (unlikely(task->lock_depth >= 0))
-+		return __reacquire_kernel_lock();
-+	return 0;
-+}
-+#else
-+#define release_kernel_lock(task)		do { } while(0)
-+#define reacquire_kernel_lock(task)		0
-+#endif
-+
- /*
-  * Convert user-nice values [ -20 ... 0 ... 19 ]
-  * to static priority [ MAX_RT_PRIO..MAX_PRIO-1 ],
--- 
-1.5.6.5
+-		if (numa_cpu < nr_cpus_ids)
++		if (numa_cpu < nr_cpu_ids)
+ 			return cpu_physical_id(numa_cpu);
+ 	}
+ skip_numa_setup:
+_
+
+
+
+also rather a lot of these:
+
+
+In file included from drivers/misc/sgi-gru/gruhandles.h:25,
+                 from drivers/misc/sgi-gru/grutables.h:151,
+                 from drivers/misc/sgi-gru/grufile.c:41:
+drivers/misc/sgi-gru/gru_instructions.h: In function `gru_flush_cache':
+drivers/misc/sgi-gru/gru_instructions.h:292: warning: passing arg 1 of pointer to function makes integer from pointer without a cast
+In file included from drivers/misc/sgi-gru/gruhandles.h:25,
+                 from drivers/misc/sgi-gru/grutables.h:151,
+                 from drivers/misc/sgi-gru/grumain.c:22:
+drivers/misc/sgi-gru/gru_instructions.h: In function `gru_flush_cache':
+drivers/misc/sgi-gru/gru_instructions.h:292: warning: passing arg 1 of pointer to function makes integer from pointer without a cast
+
+
+
+and this:
+
+
+kernel/trace/trace.c: In function `tracing_generic_entry_update':
+kernel/trace/trace.c:681: error: implicit declaration of function `irqs_disabled_flags'
+kernel/trace/trace.c: In function `kretprobed':
+kernel/trace/trace.c:1112: error: `kretprobe_trampoline' undeclared (first use in this function)
+kernel/trace/trace.c:1112: error: (Each undeclared identifier is reported only once
+kernel/trace/trace.c:1112: error: for each function it appears in.)
+
+
+and wireless needs some Kconfig help.  Please don't just break other
+architecture's build like this.
+
+drivers/staging/wlan-ng/wlan_compat.h:136:3: #error "No CPU identified!"
+drivers/staging/wlan-ng/wlan_compat.h:695:6: warning: "WLAN_CPU_FAMILY" is not defined
+drivers/staging/wlan-ng/wlan_compat.h:699:6: warning: "WLAN_CPU_FAMILY" is not defined
+
+
+
+plus of course enough compile warnings to start a small war.   ocfs2 is prominent.
+
+fs/ocfs2/xattr.c: In function `ocfs2_xattr_index_block_find':
+fs/ocfs2/xattr.c:2338: warning: long long unsigned int format, u64 arg (arg 7)
+fs/ocfs2/xattr.c:2338: warning: long long unsigned int format, u64 arg (arg 7)
+fs/ocfs2/xattr.c:2338: warning: long long unsigned int format, u64 arg (arg 7)
+fs/ocfs2/xattr.c: In function `ocfs2_iterate_xattr_buckets':
+fs/ocfs2/xattr.c:2362: warning: long long unsigned int format, u64 arg (arg 7)
+fs/ocfs2/xattr.c:2362: warning: long long unsigned int format, u64 arg (arg 7)
+fs/ocfs2/xattr.c:2362: warning: long long unsigned int format, u64 arg (arg 7)
+fs/ocfs2/xattr.c:2381: warning: long long unsigned int format, u64 arg (arg 6)
+fs/ocfs2/xattr.c:2381: warning: long long unsigned int format, u64 arg (arg 6)
+fs/ocfs2/xattr.c:2381: warning: long long unsigned int format, u64 arg (arg 6)
+fs/ocfs2/xattr.c: In function `ocfs2_xattr_create_index_block':
+fs/ocfs2/xattr.c:2717: warning: long long unsigned int format, u64 arg (arg 6)
+fs/ocfs2/xattr.c:2717: warning: long long unsigned int format, u64 arg (arg 6)
 
