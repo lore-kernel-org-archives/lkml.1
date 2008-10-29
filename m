@@ -1,112 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbYJ2N77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbYJ2OA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754518AbYJ2N77 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 09:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbYJ2N7s
+	id S1753484AbYJ2OA1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 10:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYJ2N7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 29 Oct 2008 09:59:50 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:34830 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752955AbYJ2N7s (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
 	Wed, 29 Oct 2008 09:59:48 -0400
-Received: from exchange07.timesys.com ([209.114.137.35]:18013 "EHLO
-	exchange07.timesys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752909AbYJ2N7r convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 09:59:47 -0400
-X-Greylist: delayed 325 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Oct 2008 09:59:47 EDT
-From: "Sally, Gene" <Gene.Sally@timesys.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 29 Oct 2008 09:54:17 -0400
-Subject: [PATCH 2.6.28-rc2] gen_init_cpio expands shell variables in file
- names
-Thread-Topic: [PATCH 2.6.28-rc2] gen_init_cpio expands shell variables in
- file names
-Thread-Index: Ack5zdWygissXaLuS/aMjd3qy1KYyA==
-Message-ID: <CFEB29247FA6A94796A15592E348E7B90D2706EE30@exchange07.timesys.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Date: Wed, 29 Oct 2008 14:59:46 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Jared Hulbert <jaredeh@gmail.com>
+cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>, tim.bird@AM.SONY.COM,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 06/10] AXFS: axfs_super.c
+In-Reply-To: <48AD0101.4020505@gmail.com>
+Message-ID: <Pine.LNX.4.64.0810291456320.17174@vixen.sonytel.be>
+References: <48AD0101.4020505@gmail.com>
 MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1773774162-1225288786=:17174"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-This patch modifies gen_init_cpio so that lines that specify files can contain what looks like a shell variable that's expanded during processing.
+---584349381-1773774162-1225288786=:17174
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-For example:
+On Wed, 20 Aug 2008, Jared Hulbert wrote:
+> --- /dev/null
+> +++ b/fs/axfs/axfs_super.c
 
-file /sbin/kinit ${RFS_BASE}/usr/src/klibc/kinit/kinit 0755 0 0
+> +static int axfs_fill_region_data(struct super_block *sb,
+> +				 struct axfs_region_desc *region, int force)
+> +{
+> +	struct axfs_super *sbi = AXFS_SB(sb);
+> +	unsigned long addr;
+> +	void *buff = NULL;
+> +	void *vaddr;
+> +	int err = -ENOMEM;
+> +	u64 size = region->size;
+> +	u64 fsoffset = region->fsoffset;
+> +	u64 end = fsoffset + size;
+> +	u64 c_size = region->compressed_size;
+> +
+> +	if (size == 0)
+> +		return 0;
+> +
+> +	if (AXFS_IS_REGION_INCORE(region))
+> +		goto incore;
+> +
+> +	if (AXFS_IS_REGION_COMPRESSED(region))
+> +		goto incore;
+> +
+> +	if (AXFS_IS_REGION_XIP(sbi, region)) {
+> +		if ((end > sbi->mmap_size) && (force))
+> +			goto incore;
+> +		addr = sbi->virt_start_addr;
+> +		addr += (unsigned long)fsoffset;
+> +		region->virt_addr = (void *)addr;
+> +		return 0;
+> +	}
+> +
+> +	if (force)
+> +		goto incore;
+> +
+> +	region->virt_addr = NULL;
+> +	return 0;
+> +
+> +incore:
+> +	region->virt_addr = vmalloc(size);
+> +	if (!region->virt_addr)
+> +		goto out;
+> +	vaddr = region->virt_addr;
+> +
+> +	if (AXFS_IS_REGION_COMPRESSED(region)) {
+> +		buff = vmalloc(c_size);
+> +		if (!buff)
+> +			goto out;
+> +		axfs_copy_metadata(sb, buff, fsoffset, c_size);
+> +		err = axfs_uncompress_block(vaddr, size, buff, c_size);
+                ^^^
+axfs_uncompress_block() doesn't return an error code, so `err' is a bit of a
+misnomer.
 
-given RFS_BASE is "/some/directory" in the environment
+> +		if (!err)
+                    ^^^^
+Instead, it returns zero for error, hence this check is correct...
 
-would be expanded to
+> +			goto out;
+> +		vfree(buff);
+> +	} else {
+> +		axfs_copy_metadata(sb, vaddr, fsoffset, size);
+> +	}
+> +
+> +	return 0;
+> +
+> +out:
+> +	if (buff)
+> +		vfree(buff);
+> +	if (region->virt_addr)
+> +		vfree(region->virt_addr);
+> +	return err;
+               ^^^
+... but it will also return zero here, which is not correct.
 
-file /sbin/kinit /some/directory/usr/src/klibc/kinit/kinit 0755 0 0
+Probably it's better to let axfs_uncompress_block() return an (negative) error
+code (e.g. -EINVAL or -EIO) in case of failure, which you can just let
+propagate.
 
-If several environment variables appear in a line, they are all expanded with processing happening from left to right.  Undefined variables expand to a null string.  Syntax errors stop processing, letting the existing error handling show the user offending line.
+With kind regards,
 
-This patch helps embedded folks who frequently create several RFS directories and then switch between them as they're tuning an initramfs.  Having just been such an embedded folk, this seems the most efficient solution.
+Geert Uytterhoeven
+Software Architect
 
-I didn't see a maintainer for this area (forgive me if I overlooked) so I don't know who I should CC for this patch.
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-Regards,
-gene
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
---- a/usr/gen_init_cpio.c
-+++ b/usr/gen_init_cpio.c
-@@ -370,6 +370,30 @@ error:
-        return rc;
- }
-
-+static char *cpio_replace_env(char *new_location)
-+{
-+       char expanded[PATH_MAX + 1];
-+       char env_var[PATH_MAX + 1];
-+       char *start;
-+       char *end;
-+
-+       for (start = NULL; (start = strstr(new_location, "${")); ) {
-+               end = strchr(start, '}');
-+               if (start < end) {
-+                       *env_var = *expanded = '\0';
-+                       strncat(env_var, start + 2, end - start - 2);
-+                       strncat(expanded, new_location, start - new_location);
-+                       strncat(expanded, getenv(env_var), PATH_MAX);
-+                       strncat(expanded, end + 1, PATH_MAX);
-+                       strncpy(new_location, expanded, PATH_MAX);
-+               } else
-+                       break;
-+       }
-+
-+       return new_location;
-+}
-+
-+
- static int cpio_mkfile_line(const char *line)
- {
-        char name[PATH_MAX + 1];
-@@ -415,7 +439,8 @@ static int cpio_mkfile_line(const char *line)
-        } else {
-                dname = name;
-        }
--       rc = cpio_mkfile(dname, location, mode, uid, gid, nlinks);
-+       rc = cpio_mkfile(dname, cpio_replace_env(location),
-+                        mode, uid, gid, nlinks);
-  fail:
-        if (dname_len) free(dname);
-        return rc;
-@@ -439,6 +464,7 @@ void usage(const char *prog)
-                "\n"
-                "<name>       name of the file/dir/nod/etc in the archive\n"
-                "<location>   location of the file in the current filesystem\n"
-+               "             expands shell variables quoted with ${}\n"
-                "<target>     link target\n"
-                "<mode>       mode/permissions of the file\n"
-                "<uid>        user id (0=root)\n"
-
-Signed-off-by: gene.sally@timesys.com
-
-
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-1773774162-1225288786=:17174--
