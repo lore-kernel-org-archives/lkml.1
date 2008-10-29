@@ -1,179 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbYJ2Oyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbYJ2O5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754478AbYJ2Oyo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 10:54:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbYJ2Oyg
+	id S1754453AbYJ2O5g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 10:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbYJ2O5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 10:54:36 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:33347 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752028AbYJ2Oye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 10:54:34 -0400
-From: Andrey Mirkin <major@openvz.org>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Subject: Re: [Devel] Re: [PATCH 08/10] Introduce functions to restart a process
-Date: Wed, 29 Oct 2008 18:52:17 +0400
-User-Agent: KMail/1.8.2
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Louis.Rilling@kerlabs.com, Cedric Le Goater <clg@fr.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-References: <1224285098-573-1-git-send-email-major@openvz.org> <200810240757.38012.major@openvz.org> <49038B4C.2010009@cs.columbia.edu>
-In-Reply-To: <49038B4C.2010009@cs.columbia.edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810291752.19281.major@openvz.org>
+	Wed, 29 Oct 2008 10:57:25 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:18923 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752920AbYJ2O5Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 10:57:25 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 29 Oct 2008 10:57:18 -0400 (EDT)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SMC91x: delete unused local variable "lp"
+In-reply-to: <1225288566-18457-1-git-send-email-vapier@gentoo.org>
+Message-id: <alpine.LFD.2.00.0810291056590.13034@xanadu.home>
+References: <1225288566-18457-1-git-send-email-vapier@gentoo.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 26 October 2008 01:10 Oren Laadan wrote:
-> Andrey Mirkin wrote:
-> > On Thursday 23 October 2008 17:57 Dave Hansen wrote:
-> >> On Thu, 2008-10-23 at 13:00 +0400, Andrey Mirkin wrote:
-> >>>>>>> It is not related to the freezer code actually.
-> >>>>>>> That is needed to restart syscalls. Right now I don't have a code
-> >>>>>>> in my patchset which restarts a syscall, but later I plan to add
-> >>>>>>> it. In OpenVZ checkpointing we restart syscalls if process was
-> >>>>>>> caught in syscall during checkpointing.
-> >>>>>>
-> >>>>>> Do you checkpoint uninterruptible syscalls as well? If only
-> >>>>>> interruptible syscalls are checkpointed, I'd say that either this
-> >>>>>> syscall uses ERESTARTSYS or ERESTART_RESTARTBLOCK, and then signal
-> >>>>>> handling code already does the trick, or this syscall does not
-> >>>>>> restart itself when interrupted, and well, this is life, userspace
-> >>>>>> just sees -EINTR, which is allowed by the syscall spec.
-> >>>>>> Actually this is how we checkpoint/migrate tasks in interruptible
-> >>>>>> syscalls in Kerrighed and this works.
-> >>>>>
-> >>>>> We checkpoint only interruptible syscalls. Some syscalls do not
-> >>>>> restart themself, that is why after restarting a process we restart
-> >>>>> syscall to complete it.
-> >>>>
-> >>>> Can you please elaborate on this ?  I don't recall having had issues
-> >>>> with that.
-> >>>
-> >>> Right now in 2.6.18 kernel we restarts in such a way pause,
-> >>> rt_sigtimedwait and futex syscalls. Recently futex syscall was reworked
-> >>> and we will not need such hooks for it.
-> >>
-> >> Could you elaborate on this a bit?
-> >>
-> >> If the futex syscall was reworked, perhaps we can do the same for
-> >> rt_sigtimedwait() and get rid of this code completely.
-> >
-> > Well, we can try to rework rt_sigtimedwait(), but we will still need this
-> > code in the future to restart pause syscall from kernel without returning
-> > to user space. Also this code will be needed to restore some complex
-> > states. As concerns pause syscall I have already written to Louis about
-> > the problem we are trying to solve with this code. There is a gap when
-> > process will be in user space just before entering syscall again. At this
-> > time a signal can be delivered to process and it even can be handled. So,
-> > we will miss a signal which must interrupt pause syscall.
->
-> I'm not convinced that you a real race exists, and even if it does, I'm not
-> convinced that hacking the assembly entry/exit code is the best way to do
-> it.
+On Wed, 29 Oct 2008, Mike Frysinger wrote:
 
-Well, as I already told pause() syscall is is not only one case why we need to 
-do some additional job in that place.
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 
-> Let me explain:
->
-> You are concerned about a race in which a signal is delivered to a task
-> that resumes from restart to user space and is about to (re)invoke
-> 'pause()' (because the restart so arranged its EIP and registers).
->
-> This almost always means that the user code is buggy and relies on specific
-> scheduling, because you can usually find a scheduling (without the C/R)
-> where the intended recipient of the signal was delayed and only calls
-> pause() after the signal is delivered.
->
-> For instance, if the sequence of events is:
-> 	A calls pause() -> checkpoint -> restart ->
-> 		B signals A -> A calls pause() (after restart),
-> then the following sequence is possible(*) without C/R:
-> 	B signals A -> A calls pause()
-> because normally B cannot assume anything about when A is actually,
-> really, is suspended (which means the programmer did an imperfect job).
+Acked-by: Nicolas Pitre <nico@cam.org>
 
-You right here. Both sequences are possible in theory. You will be surprised 
-but in practice we found out that probability to miss a signal in case of C/R 
-is much higher then during ordinary execution.
 
-> I said "almost always" and "usually", because there is one case where the
-> alternative schedule: task B could, prior to sending the signal, "ensure"
-> that task A is already sleeping within the 'pause()' syscall. While this
-> is possible, it is definitely unusual, and in fact I never code that does
-> that. And what if the sysadmin send SIGSTOP followed by SIGCONT ?  In
-> short, such code is simply broken.
->
-> More importantly, if you think about the operation and semantics of the
-> freezer cgroup - similar behavior is to be expected when you freeze and
-> then thaw a container.
->
-> Specifically, when you freeze the container that has a task in sys_pause(),
-> then that task will abort the syscall become frozen. As soon as it becomes
-> unfrozen, it will return to user space (with the EIP "rewinded") only to
-> re-invoke the syscall. So the same "race" remains even if you only freeze
-> and then thaw, regardless of C/R.
+> ---
+>  drivers/net/smc91x.c |    2 --
+>  1 files changed, 0 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/smc91x.c b/drivers/net/smc91x.c
+> index c70870e..6f9895d 100644
+> --- a/drivers/net/smc91x.c
+> +++ b/drivers/net/smc91x.c
+> @@ -2060,7 +2060,6 @@ static int smc_request_attrib(struct platform_device *pdev,
+>  			      struct net_device *ndev)
+>  {
+>  	struct resource * res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "smc91x-attrib");
+> -	struct smc_local *lp = netdev_priv(ndev);
+>  
+>  	if (!res)
+>  		return 0;
+> @@ -2075,7 +2074,6 @@ static void smc_release_attrib(struct platform_device *pdev,
+>  			       struct net_device *ndev)
+>  {
+>  	struct resource * res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "smc91x-attrib");
+> -	struct smc_local *lp = netdev_priv(ndev);
+>  
+>  	if (res)
+>  		release_mem_region(res->start, ATTRIB_SIZE);
+> -- 
+> 1.6.0.2
+> 
 
-Exactly. But during freeze/unfreeze probability to catch such situation is 
-very low. In our tests we were tried to checkpoint/restart LTP tests. And 
-this "race" were triggered during restart almost in 100% of tests.
 
-> Moreover, I argue that basically when you return from a sys_restart(), the
-> entire container should, by default, remain in frozen state - just like it
-> is with sys_checkpoint(). An explicit thaw will make the container resume
-> execution.
-
-No doubt. That is how we do in OpenVZ, after restart the container remains 
-frozen. And we need to thaw it to resume its execution.
-
-> Therefore, there are two options: the first is to decide that this behavior
-> - going back to user space to re-invoke the syscall - is valid. In this
-> case you don't need a special hack for returning from sys_restart(). The
-> second option is to decide that it is broken, in which case you need to
-> also fix the freezer code. Personally, I think that this behavior is valid
-> and need not be fixed.
-
-I still believe that we need to fix such behaviour during restart as in 
-practice it is very easy to trigger it.
-
-> Finally, even if you do want to fix the behavior for this pathologic case,
-> I don't see why you'd want to do it in this manner. Instead, you can add a
-> simple test prior to returning from sys_restart(), something like this:
->
-> 	...
-> 	/* almost done: now handle special cases: */
-> 	if (our last syscall == __NR_pause) {
-> 		ret = sys_pause();
-> 	} else if (our last syscall == __NR_futex) {
-> 		do some stuff;
-> 		ret = sys_futex();
-> 	} else {
-> 		ret = what-we-want-to-return
-> 	}
-> 	/* finally, return to user space */
-> 	return ret;
-> }
-
-This only works if we do not want to stay in frozen state after restart. Or am 
-I missed something?
-
-> I'm not quite know what other "complex states" you refer to; but I wonder
-> whether that code "needed to restore some complex states" could not be
-> implemented along the same idea.
-
-In the same manner we are restoring for instance ptrace.
-
-> The upside is clear: the code is less obscure, simple to debug, and not
-> architecture-dependent. (hehe .. it even runs faster because it saves a
-> whole kernel->user->kernel switch, what do you know !).
-In our case we also do not need a switch and the code actually not very 
-complicated.
-
-Andrey
+Nicolas
