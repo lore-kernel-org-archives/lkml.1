@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbYJ2Sxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbYJ2S7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567AbYJ2Sxn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 14:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbYJ2Sxg
+	id S1754313AbYJ2S7i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 14:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbYJ2S73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 14:53:36 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:41493 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753325AbYJ2Sxf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 14:53:35 -0400
-Date: Wed, 29 Oct 2008 19:54:48 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Mike Frysinger <vapier@gentoo.org>
+	Wed, 29 Oct 2008 14:59:29 -0400
+Received: from smtp2.sensus.se ([193.13.139.17]:35052 "EHLO smtp2.sensus.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753004AbYJ2S72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 14:59:28 -0400
+Date: Wed, 29 Oct 2008 19:58:56 +0100
+From: Oskar Liljeblad <oskar@osk.mine.nu>
+To: Robert Hancock <hancockr@shaw.ca>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kbuild: include localarch for simple cross overrides
-Message-ID: <20081029185448.GB22105@uranus.ravnborg.org>
-References: <1225304495-28079-1-git-send-email-vapier@gentoo.org>
-Mime-Version: 1.0
+Subject: Re: sata errors with Seagate 1.5TB on AMD 780G/SB700 motherboard
+Message-ID: <20081029185856.GA8152@osk.mine.nu>
+References: <fa.01zEaARwrup2dCOTuHTYxzuS9BI@ifi.uio.no> <49079E09.20703@shaw.ca>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1225304495-28079-1-git-send-email-vapier@gentoo.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <49079E09.20703@shaw.ca>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -96.0 (---------------------------------------------------)
+X-Spam-Report: Spam detection software, running on the system "smtp2.sensus.se", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	the administrator of that system for details.
+	Content preview:  On Tuesday, October 28, 2008 at 17:37, Robert Hancock
+	wrote: [..] >> Hard drives (ata1/sda, ata2/sdb, ata3/sdc): Seagate
+	ST31500341AS 1.5TB SATA [..] >> 19:24:26 ata2: exception Emask 0x50 SAct
+	0x0 SErr 0x90a02 action 0xe frozen >> 19:24:26 ata2: irq_stat
+	0x00400000, PHY RDY changed >> 19:24:26 ata2: SError: { RecovComm
+	Persist HostInt PHYRdyChg 10B8B } [..] > Sounds like the drive and the
+	controller are unhappy with each other, or > there's some kind of
+	communications or hardware problem. Not likely a > kernel issue. > >
+	It's unclear if limiting to 1.5 Gbps would help, you could try it and
+	see.. [...] 
+	Content analysis details:   (-96.0 points, 5.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-100 USER_IN_WHITELIST      From: address is in the user's white-list
+	2.0 RCVD_IN_SORBS_DUL      RBL: SORBS: sent directly from dynamic IP address
+	[81.236.171.23 listed in dnsbl.sorbs.net]
+	2.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 02:21:35PM -0400, Mike Frysinger wrote:
-> For people banging on kernel trees which are dedicated to a specific arch,
-> it'd be nice to allow the repo itself to declare the default ARCH (and
-> CROSS_COMPILE) easily.  Just like the "localversion-*" files, people can
-> just do:
-> echo 'ARCH ?= blackfin' > localarch
-> and the tree will default to 'blackfin' all the time rather than whatever
-> the build machine happens to be.
-> 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> ---
->  Makefile |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Makefile b/Makefile
-> index a7f2068..7fa1f81 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -180,6 +180,7 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
->  # make ARCH=ia64
->  # Another way is to have ARCH set in the environment.
->  # The default ARCH is the host where make is executed.
-> +-include localarch
->  
->  # CROSS_COMPILE specify the prefix used for all executables used
->  # during compilation. Only gcc and related bin-utils executables
+On Tuesday, October 28, 2008 at 17:37, Robert Hancock wrote:
+[..]
+>> Hard drives (ata1/sda, ata2/sdb, ata3/sdc): Seagate ST31500341AS 1.5TB SATA
+[..]
+>> 19:24:26 ata2: exception Emask 0x50 SAct 0x0 SErr 0x90a02 action 0xe frozen
+>> 19:24:26 ata2: irq_stat 0x00400000, PHY RDY changed
+>> 19:24:26 ata2: SError: { RecovComm Persist HostInt PHYRdyChg 10B8B }
+[..]
+> Sounds like the drive and the controller are unhappy with each other, or  
+> there's some kind of communications or hardware problem. Not likely a  
+> kernel issue.
+>
+> It's unclear if limiting to 1.5 Gbps would help, you could try it and see..
 
-Last time I did something similar it broke a few archs.
-But then it was automatically done where this approach is mnually.
+It seems the solution is to disable write caching. So far no errors, and
+other people confirm this solution.
 
-I will apply this to kbuild-next but it will most likely change
-sometime in the future.
+Anyway Seagate (inofficially) claims it's a driver issue in Linux - from
+http://forums.seagate.com/stx/board/message?board.id=ata_drives&thread.id=2390&view=by_date_ascending&page=6
 
-	Sam
+  "We already know about the Linux issue, it is indeed a kernel error
+  causing the problem as it was explained to me by one of our developers."
+
+Regards,
+
+Oskar
