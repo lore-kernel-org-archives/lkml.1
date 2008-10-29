@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758000AbYJ2Wzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbYJ2Wz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758000AbYJ2Wzp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 18:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756282AbYJ2Wpp
+	id S1757883AbYJ2Wz7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 18:55:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756258AbYJ2Wpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 18:45:45 -0400
-Received: from kroah.org ([198.145.64.141]:56249 "EHLO coco.kroah.org"
+	Wed, 29 Oct 2008 18:45:46 -0400
+Received: from kroah.org ([198.145.64.141]:56256 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755595AbYJ2Wpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 18:45:35 -0400
+	id S1754709AbYJ2Wph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 18:45:37 -0400
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
 Cc: Solomon Peachy <pizza@shaftnet.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 32/49] Staging: wlan-ng: Eliminate local 'version.h'
-Date: Wed, 29 Oct 2008 15:39:59 -0700
-Message-Id: <1225320016-21803-32-git-send-email-greg@kroah.com>
+Subject: [PATCH 33/49] Staging: wlan-ng: Eliminate usage of procfs.
+Date: Wed, 29 Oct 2008 15:40:00 -0700
+Message-Id: <1225320016-21803-33-git-send-email-greg@kroah.com>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <20081029223832.GC21657@kroah.com>
 References: <20081029223832.GC21657@kroah.com>
@@ -24,251 +24,315 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Solomon Peachy <pizza@shaftnet.org>
 
-The kernel provides us with the proper version of this file.
+These files are not needed to work properly, and don't belong in procfs
 
 Signed-off-by: Solomon Peachy <pizza@shaftnet.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/wlan-ng/hfa384x_usb.c  |    3 --
- drivers/staging/wlan-ng/p80211conv.c   |    1 -
- drivers/staging/wlan-ng/p80211mod.c    |    1 -
- drivers/staging/wlan-ng/p80211netdev.c |    5 +--
- drivers/staging/wlan-ng/p80211req.c    |    1 -
- drivers/staging/wlan-ng/p80211wep.c    |    1 -
- drivers/staging/wlan-ng/p80211wext.c   |    1 -
- drivers/staging/wlan-ng/prism2mgmt.c   |    3 --
- drivers/staging/wlan-ng/prism2mib.c    |    3 --
- drivers/staging/wlan-ng/prism2sta.c    |    6 +--
- drivers/staging/wlan-ng/version.h      |   56 --------------------------------
- drivers/staging/wlan-ng/wlan_compat.h  |    2 +
- 12 files changed, 6 insertions(+), 77 deletions(-)
- delete mode 100644 drivers/staging/wlan-ng/version.h
+ drivers/staging/wlan-ng/p80211netdev.c |  126 --------------------------------
+ drivers/staging/wlan-ng/p80211netdev.h |   10 ---
+ drivers/staging/wlan-ng/prism2sta.c    |   67 -----------------
+ 3 files changed, 0 insertions(+), 203 deletions(-)
 
-diff --git a/drivers/staging/wlan-ng/hfa384x_usb.c b/drivers/staging/wlan-ng/hfa384x_usb.c
-index 0670068..53c547d 100644
---- a/drivers/staging/wlan-ng/hfa384x_usb.c
-+++ b/drivers/staging/wlan-ng/hfa384x_usb.c
-@@ -114,9 +114,6 @@
- /* System Includes */
- #define WLAN_DBVAR	prism2_debug
- 
--#include "version.h"
--
--
- #include <linux/version.h>
- 
- #include <linux/module.h>
-diff --git a/drivers/staging/wlan-ng/p80211conv.c b/drivers/staging/wlan-ng/p80211conv.c
-index aaf1c9d..749ea8d 100644
---- a/drivers/staging/wlan-ng/p80211conv.c
-+++ b/drivers/staging/wlan-ng/p80211conv.c
-@@ -70,7 +70,6 @@
- 
- #include <asm/byteorder.h>
- 
--#include "version.h"
- #include "wlan_compat.h"
- 
- /*================================================================*/
-diff --git a/drivers/staging/wlan-ng/p80211mod.c b/drivers/staging/wlan-ng/p80211mod.c
-index 7a3834e..29cae87 100644
---- a/drivers/staging/wlan-ng/p80211mod.c
-+++ b/drivers/staging/wlan-ng/p80211mod.c
-@@ -68,7 +68,6 @@
- #include <linux/wireless.h>
- #include <linux/netdevice.h>
- 
--#include "version.h"
- #include "wlan_compat.h"
- 
- /*================================================================*/
 diff --git a/drivers/staging/wlan-ng/p80211netdev.c b/drivers/staging/wlan-ng/p80211netdev.c
-index 40d0b78..9d64e0b 100644
+index 9d64e0b..d229780 100644
 --- a/drivers/staging/wlan-ng/p80211netdev.c
 +++ b/drivers/staging/wlan-ng/p80211netdev.c
-@@ -85,7 +85,6 @@
+@@ -112,10 +112,6 @@
+ 
+ #define __NO_VERSION__		/* prevent the static definition */
+ 
+-#ifdef CONFIG_PROC_FS
+-static struct proc_dir_entry	*proc_p80211;
+-#endif
+-
  /*================================================================*/
- /* Project Includes */
+ /* Local Function Declarations */
  
--#include "version.h"
- #include "wlan_compat.h"
- #include "p80211types.h"
- #include "p80211hdr.h"
-@@ -1102,8 +1101,8 @@ p80211netdev_proc_read(
- 		goto exit;
- 	}
+@@ -134,16 +130,6 @@ static int p80211knetdev_set_mac_address(netdevice_t *dev, void *addr);
+ static void p80211knetdev_tx_timeout(netdevice_t *netdev);
+ static int p80211_rx_typedrop( wlandevice_t *wlandev, UINT16 fc);
  
--	p += sprintf(p, "p80211 version: %s (%s)\n\n",
--		     WLAN_RELEASE, WLAN_BUILD_DATE);
-+	p += sprintf(p, "p80211 version: %s\n\n",
-+		     WLAN_RELEASE);
- 	p += sprintf(p, "name       : %s\n", wlandev->name);
- 	p += sprintf(p, "nsd name   : %s\n", wlandev->nsdname);
- 	p += sprintf(p, "address    : %02x:%02x:%02x:%02x:%02x:%02x\n",
-diff --git a/drivers/staging/wlan-ng/p80211req.c b/drivers/staging/wlan-ng/p80211req.c
-index 0233abe..83bd65b 100644
---- a/drivers/staging/wlan-ng/p80211req.c
-+++ b/drivers/staging/wlan-ng/p80211req.c
-@@ -68,7 +68,6 @@
- #include <net/sock.h>
- #include <linux/netlink.h>
- 
--#include "version.h"
- #include "wlan_compat.h"
+-#ifdef CONFIG_PROC_FS
+-static int
+-p80211netdev_proc_read(
+-	char	*page,
+-	char	**start,
+-	off_t	offset,
+-	int	count,
+-	int	*eof,
+-	void	*data);
+-#endif
  
  /*================================================================*/
-diff --git a/drivers/staging/wlan-ng/p80211wep.c b/drivers/staging/wlan-ng/p80211wep.c
-index 11a50c7..0ab0d07 100644
---- a/drivers/staging/wlan-ng/p80211wep.c
-+++ b/drivers/staging/wlan-ng/p80211wep.c
-@@ -56,7 +56,6 @@
- #include <linux/slab.h>
- #include <linux/random.h>
+ /* Function Definitions */
+@@ -164,14 +150,6 @@ void p80211netdev_startup(void)
+ {
+ 	DBFENTER;
  
--#include "version.h"
- #include "wlan_compat.h"
+-#ifdef CONFIG_PROC_FS
+-	if (init_net.proc_net != NULL) {
+-		proc_p80211 = create_proc_entry(
+-				"p80211",
+-				(S_IFDIR|S_IRUGO|S_IXUGO),
+-				init_net.proc_net);
+-	}
+-#endif
+ 	DBFEXIT;
+ 	return;
+ }
+@@ -192,11 +170,6 @@ void
+ p80211netdev_shutdown(void)
+ {
+ 	DBFENTER;
+-#ifdef CONFIG_PROC_FS
+-	if (proc_p80211 != NULL) {
+-		remove_proc_entry("p80211", init_net.proc_net);
+-	}
+-#endif
+ 	DBFEXIT;
+ }
  
- // #define WEP_DEBUG
-diff --git a/drivers/staging/wlan-ng/p80211wext.c b/drivers/staging/wlan-ng/p80211wext.c
-index c1ab0f8..9936b5c 100644
---- a/drivers/staging/wlan-ng/p80211wext.c
-+++ b/drivers/staging/wlan-ng/p80211wext.c
-@@ -56,7 +56,6 @@
- /*================================================================*/
- /* Project Includes */
+@@ -997,23 +970,6 @@ int register_wlandev(wlandevice_t *wlandev)
  
--#include "version.h"
- #include "wlan_compat.h"
+ 	strcpy(wlandev->name, dev->name);
  
- #include "p80211types.h"
-diff --git a/drivers/staging/wlan-ng/prism2mgmt.c b/drivers/staging/wlan-ng/prism2mgmt.c
-index de2ec1e..c2f61ed 100644
---- a/drivers/staging/wlan-ng/prism2mgmt.c
-+++ b/drivers/staging/wlan-ng/prism2mgmt.c
-@@ -61,9 +61,6 @@
- /* System Includes */
- #define WLAN_DBVAR	prism2_debug
+-#ifdef CONFIG_PROC_FS
+-	if (proc_p80211) {
+-		wlandev->procdir = proc_mkdir(wlandev->name, proc_p80211);
+-		if ( wlandev->procdir )
+-			wlandev->procwlandev =
+-				create_proc_read_entry("wlandev", 0,
+-						       wlandev->procdir,
+-						       p80211netdev_proc_read,
+-						       wlandev);
+-		if (wlandev->nsd_proc_read)
+-			create_proc_read_entry("nsd", 0,
+-					       wlandev->procdir,
+-					       wlandev->nsd_proc_read,
+-					       wlandev);
+-	}
+-#endif
+-
+ 	DBFEXIT;
+ 	return 0;
+ }
+@@ -1042,18 +998,6 @@ int unregister_wlandev(wlandevice_t *wlandev)
  
--#include "version.h"
+ 	DBFENTER;
+ 
+-#ifdef CONFIG_PROC_FS
+-	if ( wlandev->procwlandev ) {
+-		remove_proc_entry("wlandev", wlandev->procdir);
+-	}
+-	if ( wlandev->nsd_proc_read ) {
+-		remove_proc_entry("nsd", wlandev->procdir);
+-	}
+-	if (wlandev->procdir) {
+-		remove_proc_entry(wlandev->name, proc_p80211);
+-	}
+-#endif
+-
+ 	unregister_netdev(wlandev->netdev);
+ 
+ 	/* Now to clean out the rx queue */
+@@ -1065,76 +1009,6 @@ int unregister_wlandev(wlandevice_t *wlandev)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_PROC_FS
+-/*----------------------------------------------------------------
+-* proc_read
+-*
+-* Read function for /proc/net/p80211/<device>/wlandev
+-*
+-* Arguments:
+-*	buf
+-*	start
+-*	offset
+-*	count
+-*	eof
+-*	data
+-* Returns:
+-*	zero on success, non-zero otherwise.
+-* Call Context:
+-*	Can be either interrupt or not.
+-----------------------------------------------------------------*/
+-static int
+-p80211netdev_proc_read(
+-	char	*page,
+-	char	**start,
+-	off_t	offset,
+-	int	count,
+-	int	*eof,
+-	void	*data)
+-{
+-	char	 *p = page;
+-	wlandevice_t *wlandev = (wlandevice_t *) data;
+-
+-	DBFENTER;
+-	if (offset != 0) {
+-		*eof = 1;
+-		goto exit;
+-	}
+-
+-	p += sprintf(p, "p80211 version: %s\n\n",
+-		     WLAN_RELEASE);
+-	p += sprintf(p, "name       : %s\n", wlandev->name);
+-	p += sprintf(p, "nsd name   : %s\n", wlandev->nsdname);
+-	p += sprintf(p, "address    : %02x:%02x:%02x:%02x:%02x:%02x\n",
+-		     wlandev->netdev->dev_addr[0], wlandev->netdev->dev_addr[1], wlandev->netdev->dev_addr[2],
+-		     wlandev->netdev->dev_addr[3], wlandev->netdev->dev_addr[4], wlandev->netdev->dev_addr[5]);
+-	p += sprintf(p, "nsd caps   : %s%s%s%s%s%s%s%s%s%s\n",
+-		     (wlandev->nsdcaps & P80211_NSDCAP_HARDWAREWEP) ? "wep_hw " : "",
+-		     (wlandev->nsdcaps & P80211_NSDCAP_TIEDWEP) ? "wep_tied " : "",
+-		     (wlandev->nsdcaps & P80211_NSDCAP_NOHOSTWEP) ? "wep_hw_only " : "",
+-		     (wlandev->nsdcaps & P80211_NSDCAP_PBCC) ? "pbcc " : "",
+-		     (wlandev->nsdcaps & P80211_NSDCAP_SHORT_PREAMBLE) ? "short_preamble " : "",
+-		     (wlandev->nsdcaps & P80211_NSDCAP_AGILITY) ? "agility " : "",
+-		     (wlandev->nsdcaps & P80211_NSDCAP_AP_RETRANSMIT) ? "ap_retransmit " : "",
+-		     (wlandev->nsdcaps & P80211_NSDCAP_HWFRAGMENT) ? "hw_frag " : "",
+-		     (wlandev->nsdcaps & P80211_NSDCAP_AUTOJOIN) ? "autojoin " : "",
+-		     (wlandev->nsdcaps & P80211_NSDCAP_NOSCAN) ? "" : "scan ");
 -
 -
- #include <linux/version.h>
- 
- #include <linux/if_arp.h>
-diff --git a/drivers/staging/wlan-ng/prism2mib.c b/drivers/staging/wlan-ng/prism2mib.c
-index 5785ff9..5a8dffc 100644
---- a/drivers/staging/wlan-ng/prism2mib.c
-+++ b/drivers/staging/wlan-ng/prism2mib.c
-@@ -54,9 +54,6 @@
- /* System Includes */
- #define WLAN_DBVAR	prism2_debug
- 
--#include "version.h"
+-	p += sprintf(p, "bssid      : %02x:%02x:%02x:%02x:%02x:%02x\n",
+-		     wlandev->bssid[0], wlandev->bssid[1], wlandev->bssid[2],
+-		     wlandev->bssid[3], wlandev->bssid[4], wlandev->bssid[5]);
+-
+-	p += sprintf(p, "Enabled    : %s%s\n",
+-		     (wlandev->shortpreamble) ? "short_preamble " : "",
+-		     (wlandev->hostwep & HOSTWEP_PRIVACYINVOKED) ? "privacy" : "");
 -
 -
- #include <linux/version.h>
+- exit:
+-	DBFEXIT;
+-	return (p - page);
+-}
+-#endif
  
- #include <linux/module.h>
+ /*----------------------------------------------------------------
+ * p80211netdev_hwremoved
+diff --git a/drivers/staging/wlan-ng/p80211netdev.h b/drivers/staging/wlan-ng/p80211netdev.h
+index ddfcc98..62fc2cb 100644
+--- a/drivers/staging/wlan-ng/p80211netdev.h
++++ b/drivers/staging/wlan-ng/p80211netdev.h
+@@ -203,10 +203,6 @@ typedef struct wlandevice
+ 					      netdevice_t *dev);
+ 	void		(*tx_timeout)(struct wlandevice *wlandev);
+ 
+-#ifdef CONFIG_PROC_FS
+-	int             (*nsd_proc_read)(char *page, char **start, off_t offset, int count, int	*eof, void *data);
+-#endif
+-
+ 	/* 802.11 State */
+ 	UINT8		bssid[WLAN_BSSID_LEN];
+ 	p80211pstr32_t	ssid;
+@@ -228,12 +224,6 @@ typedef struct wlandevice
+ 	netdevice_t		*netdev;	/* ptr to linux netdevice */
+ 	struct net_device_stats linux_stats;
+ 
+-#ifdef CONFIG_PROC_FS
+-	/* Procfs support */
+-	struct proc_dir_entry	*procdir;
+-	struct proc_dir_entry	*procwlandev;
+-#endif
+-
+ 	/* Rx bottom half */
+ 	struct tasklet_struct	rx_bh;
+ 
 diff --git a/drivers/staging/wlan-ng/prism2sta.c b/drivers/staging/wlan-ng/prism2sta.c
-index 8ce1ee9..05c0480 100644
+index 05c0480..bc48014 100644
 --- a/drivers/staging/wlan-ng/prism2sta.c
 +++ b/drivers/staging/wlan-ng/prism2sta.c
-@@ -54,8 +54,6 @@
- /* System Includes */
- #define WLAN_DBVAR	prism2_debug
+@@ -164,17 +164,6 @@ static void	prism2sta_inf_authreq_defer(
+ static void	prism2sta_inf_psusercnt(
+ 			wlandevice_t *wlandev, hfa384x_InfFrame_t *inf);
  
--#include "version.h"
--
- #include <linux/version.h>
- #include <linux/module.h>
- #include <linux/moduleparam.h>
-@@ -2221,9 +2219,9 @@ prism2sta_proc_read(
- 	// XXX 0x0001 for prism2.5/3, 0x0000 for prism2.
- 	hwtype = BIT0;
- 
--	p += sprintf(p, "# %s version %s (%s)\n\n",
-+	p += sprintf(p, "# %s version %s\n\n",
- 		     dev_info,
--		     WLAN_RELEASE, WLAN_BUILD_DATE);
-+		     WLAN_RELEASE);
- 
- 	p += sprintf(p, "# nic h/w: id=0x%02x %d.%d.%d\n",
- 		     hw->ident_nic.id, hw->ident_nic.major,
-diff --git a/drivers/staging/wlan-ng/version.h b/drivers/staging/wlan-ng/version.h
-deleted file mode 100644
-index 86190a1..0000000
---- a/drivers/staging/wlan-ng/version.h
-+++ /dev/null
-@@ -1,56 +0,0 @@
--/* src/include/wlan/version.h
--*
--*
--* Copyright (C) 1999 AbsoluteValue Systems, Inc.  All Rights Reserved.
--* --------------------------------------------------------------------
--*
--* linux-wlan
--*
--*   The contents of this file are subject to the Mozilla Public
--*   License Version 1.1 (the "License"); you may not use this file
--*   except in compliance with the License. You may obtain a copy of
--*   the License at http://www.mozilla.org/MPL/
--*
--*   Software distributed under the License is distributed on an "AS
--*   IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
--*   implied. See the License for the specific language governing
--*   rights and limitations under the License.
--*
--*   Alternatively, the contents of this file may be used under the
--*   terms of the GNU Public License version 2 (the "GPL"), in which
--*   case the provisions of the GPL are applicable instead of the
--*   above.  If you wish to allow the use of your version of this file
--*   only under the terms of the GPL and not to allow others to use
--*   your version of this file under the MPL, indicate your decision
--*   by deleting the provisions above and replace them with the notice
--*   and other provisions required by the GPL.  If you do not delete
--*   the provisions above, a recipient may use your version of this
--*   file under either the MPL or the GPL.
--*
--* --------------------------------------------------------------------
--*
--* Inquiries regarding the linux-wlan Open Source project can be
--* made directly to:
--*
--* AbsoluteValue Systems Inc.
--* info@linux-wlan.com
--* http://www.linux-wlan.com
--*
--* --------------------------------------------------------------------
--*
--* Portions of the development of this software were funded by
--* Intersil Corporation as part of PRISM(R) chipset product development.
--*
--* --------------------------------------------------------------------
--*/
--#ifndef _WLAN_VERSION_H
--#define _WLAN_VERSION_H
--#ifndef KERNEL_VERSION
--#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
+-#ifdef CONFIG_PROC_FS
+-static int
+-prism2sta_proc_read(
+-	char	*page,
+-	char	**start,
+-	off_t	offset,
+-	int	count,
+-	int	*eof,
+-	void	*data);
 -#endif
 -
--#define WLAN_RELEASE	"0.2.8"
--#define WLAN_RELEASE_CODE 0x000208
--#define WLAN_BUILD_DATE "Thu Oct  2 11:04:42 PDT 2008"
--
+ /*================================================================*/
+ /* Function Definitions */
+ 
+@@ -2177,9 +2166,6 @@ static wlandevice_t *create_wlan(void)
+ 	wlandev->open = prism2sta_open;
+ 	wlandev->close = prism2sta_close;
+ 	wlandev->reset = prism2sta_reset;
+-#ifdef CONFIG_PROC_FS
+-	wlandev->nsd_proc_read = prism2sta_proc_read;
 -#endif
-diff --git a/drivers/staging/wlan-ng/wlan_compat.h b/drivers/staging/wlan-ng/wlan_compat.h
-index 3127754..0ecc3fa 100644
---- a/drivers/staging/wlan-ng/wlan_compat.h
-+++ b/drivers/staging/wlan-ng/wlan_compat.h
-@@ -134,6 +134,8 @@ typedef int64_t		INT64;
- #define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
- #endif
+ 	wlandev->txframe = prism2sta_txframe;
+ 	wlandev->mlmerequest = prism2sta_mlmerequest;
+ 	wlandev->set_multicast_list = prism2sta_setmulticast;
+@@ -2194,59 +2180,6 @@ static wlandevice_t *create_wlan(void)
+ 	return wlandev;
+ }
  
-+#define WLAN_RELEASE	"0.3.0-lkml"
-+
- #include <linux/hardirq.h>
- 
- #define WLAN_LOG_ERROR(x,args...) printk(KERN_ERR "%s: " x , __func__ , ##args);
+-#ifdef CONFIG_PROC_FS
+-static int
+-prism2sta_proc_read(
+-	char	*page,
+-	char	**start,
+-	off_t	offset,
+-	int	count,
+-	int	*eof,
+-	void	*data)
+-{
+-	char	 *p = page;
+-	wlandevice_t *wlandev = (wlandevice_t *) data;
+-	hfa384x_t *hw = (hfa384x_t *) wlandev->priv;
+-
+-	UINT16 hwtype = 0;
+-
+-	DBFENTER;
+-	if (offset != 0) {
+-		*eof = 1;
+-		goto exit;
+-	}
+-
+-	// XXX 0x0001 for prism2.5/3, 0x0000 for prism2.
+-	hwtype = BIT0;
+-
+-	p += sprintf(p, "# %s version %s\n\n",
+-		     dev_info,
+-		     WLAN_RELEASE);
+-
+-	p += sprintf(p, "# nic h/w: id=0x%02x %d.%d.%d\n",
+-		     hw->ident_nic.id, hw->ident_nic.major,
+-		     hw->ident_nic.minor, hw->ident_nic.variant);
+-
+-	p += sprintf(p, "# pri f/w: id=0x%02x %d.%d.%d\n",
+-		     hw->ident_pri_fw.id, hw->ident_pri_fw.major,
+-		     hw->ident_pri_fw.minor, hw->ident_pri_fw.variant);
+-
+-	if (hw->ident_sta_fw.id == 0x1f) {
+-		p += sprintf(p, "# sta f/w: id=0x%02x %d.%d.%d\n",
+-			     hw->ident_sta_fw.id, hw->ident_sta_fw.major,
+-			     hw->ident_sta_fw.minor, hw->ident_sta_fw.variant);
+-	} else {
+-		p += sprintf(p, "# ap f/w: id=0x%02x %d.%d.%d\n",
+-			     hw->ident_sta_fw.id, hw->ident_sta_fw.major,
+-			     hw->ident_sta_fw.minor, hw->ident_sta_fw.variant);
+-	}
+-
+- exit:
+-	DBFEXIT;
+-	return (p - page);
+-}
+-#endif
+-
+ void prism2sta_commsqual_defer(struct work_struct *data)
+ {
+ 	hfa384x_t		*hw = container_of(data, struct hfa384x, commsqual_bh);
 -- 
 1.6.0.2
 
