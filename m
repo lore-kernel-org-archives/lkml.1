@@ -1,97 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbYJ2GjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbYJ2G4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753442AbYJ2GjX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 02:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbYJ2GjM
+	id S1752758AbYJ2G4T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 02:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbYJ2G4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 02:39:12 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56871 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752073AbYJ2GjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 02:39:11 -0400
-From: "Li Xiaodong" <lixd@cn.fujitsu.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: [PATCH]swap-zero-page-bug
-Date: Wed, 29 Oct 2008 14:31:18 +0800
-Message-ID: <2C69C7D31680437FB174C65D043E2455@fujitsulixd>
+	Wed, 29 Oct 2008 02:56:05 -0400
+Received: from smtp6-g19.free.fr ([212.27.42.36]:46614 "EHLO smtp6-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751930AbYJ2G4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 02:56:04 -0400
+Date: Wed, 29 Oct 2008 07:54:28 +0100
+From: Yves-Alexis Perez <corsac@debian.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       "Carlos R. Mafra" <crmafra2@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Long delays and keystrokes required - related to disk
+	encryption?
+Message-ID: <20081029065428.GA15581@corsac.net>
+References: <200810281744.52587.elendil@planet.nl> <200810290153.23514.elendil@planet.nl> <4907D957.6040206@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0011_01C939D3.01849A80"
-X-Mailer: Microsoft Office Outlook 11
-Thread-Index: Ack5j/Mjp5MenFDFS0adHjELXF2A+Q==
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4907D957.6040206@linux.intel.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Tue, Oct 28, 2008 at 08:32:39PM -0700, Arjan van de Ven wrote:
+> ok one easy thing to try, in the peek function (that this patch touches),
+> just stick a "return" as first statement in.
+> If that "fixes" it, we have a real issue with hrtimers, if not then something else is going on..
 
-------=_NextPart_000_0011_01C939D3.01849A80
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
+At first sight, it fixes it, yes. Tried on a recent git pull. I'll try
+to rebuild it without the fix to see if the problem reappears or if it
+was a side-effect from other change.
 
-According to Documentation/filesystems/proc.txt, kernel should swap one page
-as vm.page-cluster is 0, while it seems not like so in mm/swapfile.c:
-     ...
-	int our_page_cluster = page_cluster;
-	...
-	if (!our_page_cluster)  /* no readahead */
-                return 0;
-	...
-
-It is better to remove that checkpoint.
-
-Signed-off-by: Li Xiaodong<lixd@cn.fujitsu.com>
---- swapfile.c.orig	2008-10-29 21:29:36.000000000 +0800
-+++ swapfile.c	2008-10-29 21:59:49.000000000 +0800
-@@ -1810,9 +1810,6 @@
- 	pgoff_t base, end;
- 	int nr_pages = 0;
- 
--	if (!our_page_cluster)	/* no readahead */
--		return 0;
--
- 	si = &swap_info[swp_type(entry)];
- 	target = swp_offset(entry);
- 	base = (target >> our_page_cluster) << our_page_cluster; @@ -1847,5
-+1844,5 @@
- 	 * if only 1, say 0, since there's then no readahead to be done.
- 	 */
- 	*offset = ++toff;
--	return nr_pages? ++nr_pages: 0;
-+	return nr_pages ? ++nr_pages : nr_pages;
- }
-
-
-------=_NextPart_000_0011_01C939D3.01849A80
-Content-Type: application/octet-stream;
-	name="[PATCH]swap-zero-page-bug.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="[PATCH]swap-zero-page-bug.patch"
-
-Signed-off-by: Li Xiaodong<lixd@cn.fujitsu.com>=0A=
---- swapfile.c.orig	2008-10-29 21:29:36.000000000 +0800=0A=
-+++ swapfile.c	2008-10-29 21:59:49.000000000 +0800=0A=
-@@ -1810,9 +1810,6 @@=0A=
- 	pgoff_t base, end;=0A=
- 	int nr_pages =3D 0;=0A=
- =0A=
--	if (!our_page_cluster)	/* no readahead */=0A=
--		return 0;=0A=
--=0A=
- 	si =3D &swap_info[swp_type(entry)];=0A=
- 	target =3D swp_offset(entry);=0A=
- 	base =3D (target >> our_page_cluster) << our_page_cluster;=0A=
-@@ -1847,5 +1844,5 @@=0A=
- 	 * if only 1, say 0, since there's then no readahead to be done.=0A=
- 	 */=0A=
- 	*offset =3D ++toff;=0A=
--	return nr_pages? ++nr_pages: 0;=0A=
-+	return nr_pages ? ++nr_pages : nr_pages;=0A=
- }=0A=
-
-------=_NextPart_000_0011_01C939D3.01849A80--
-
-
+Cheers,
+-- 
+Yves-Alexis
