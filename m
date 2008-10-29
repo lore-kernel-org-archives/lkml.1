@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbYJ2Xkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbYJ2Xma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755860AbYJ2Xkw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 19:40:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbYJ2Xkl
+	id S1755902AbYJ2Xma (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 19:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbYJ2XmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 19:40:41 -0400
-Received: from nebensachen.de ([195.34.83.29]:50571 "EHLO mail.nebensachen.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751981AbYJ2Xkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 19:40:40 -0400
-X-Hashcash: 1:20:081029:linville@tuxdriver.com::FHWZdvQORflurFly:0000000000000000000000000000000000000003FW4
-X-Hashcash: 1:20:081029:davem@davemloft.net::rjOzxm4OnJsOXc51:0000000000000000000000000000000000000000000pUw
-X-Hashcash: 1:20:081029:linux-wireless@vger.kernel.org::v9m2Op4d/pr+YoYp:0000000000000000000000000000000AIHI
-X-Hashcash: 1:20:081029:netdev@vger.kernel.org::QwshER+gRnTHYC6T:00000000000000000000000000000000000000051fd
-X-Hashcash: 1:20:081029:linux-kernel@vger.kernel.org::hhDfxI0yD86II/JN:0000000000000000000000000000000001HwB
-From: Elias Oltmanns <eo@nebensachen.de>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2008-10-29
-References: <20081029231855.GD3485@tuxdriver.com>
-Date: Thu, 30 Oct 2008 00:40:09 +0100
-In-Reply-To: <20081029231855.GD3485@tuxdriver.com> (John W. Linville's message
-	of "Wed, 29 Oct 2008 19:18:55 -0400")
-Message-ID: <87iqrb2co6.fsf@denkblock.local>
-User-Agent: Gnus/5.110011 (No Gnus v0.11)
+	Wed, 29 Oct 2008 19:42:22 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:5968 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751964AbYJ2XmW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 19:42:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=eb/Kb5zaNaeqTRcLTFT/a66iAT76oy7SQVNrqy7OPBdPdXTnjCNAzoGV9rhLhCHFL+
+         CN/RuR57Uz6WxqRtwfvvQR2zVuL++yBB0sHmXUSxupX/6KB+Kg+CNvRmeeCY5oeQNIbH
+         9O00ssb0wVbzam8p6+IDpdKAL0rD4T5ojBoIA=
+Message-ID: <f7848160810291642y5263635ao6ce5ed4f11152b31@mail.gmail.com>
+Date: Wed, 29 Oct 2008 19:42:21 -0400
+From: "Parag Warudkar" <parag.lkml@gmail.com>
+To: "Avi Kivity" <avi@redhat.com>
+Subject: Re: 2.6.28-rc2 : KVM FAIL
+Cc: "Avi Kivity" <avi@qumranet.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <49080347.70503@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <f7848160810271515v65007926g8537c43c67f1bd72@mail.gmail.com>
+	 <49080347.70503@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"John W. Linville" <linville-2XuSBdqkA4R54TAoqtyWWQ@public.gmane.org> wrote:
-> Dave,
+On Wed, Oct 29, 2008 at 2:31 AM, Avi Kivity <avi@redhat.com> wrote:
+> Parag Warudkar wrote:
+>>
+>> With today's git host kernel I can no longer boot my Ubuntu virtual
+>> machine - udevd, modprobe etc. just die with glibc detecting realloc()
+>> errors (invalid next size) and I am dropped to initramfs prompt.
+>>
+>> Going back to the distro kernel 2.6.26 makes the same VM work again.
+>>
 >
-> Another quick round of fixes intended for 2.6.28...
+> Please pull again and retry.
 >
-> This includes fixes for bugs 11749 and 11845, fixes a reset-related
-> regression in ath5k, fixes a Kconfig-related error for rt2x00, and
-> fixes some sparse warnings and a possible buffer overrun in libertas.
-> Also, it corrects a spelling error and marks Bob Copeland as an
-> ath5k maintainer.
->
-> Please let me know if there are problems!
->
-> Thanks,
->
-> John
->
-> ---
->
-> Individual patches are available here:
->
-> 	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
->
-> ---
->
-> The following changes since commit 882716604ecf388b2ff09bc76eb2a752aa9cc76b:
-[...]
-> Elias Oltmanns (1):
->       ath5k: Fix reset sequence for AR5212 in general and RF5111 in particular
 
-Pity, I just posted a *nicer* version of that patch for 2.6.28-rc2.
-Well, it doesn't really matter all that much, I suppose.
+Worked fine - thanks.
 
-Regards,
-
-Elias
+Parag
