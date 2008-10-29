@@ -1,30 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbYJ2Ibl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbYJ2IfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461AbYJ2Ibl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 04:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbYJ2Iba
+	id S1753455AbYJ2IfA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 04:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYJ2Iew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 04:31:30 -0400
-Received: from simmts7.bellnexxia.net ([206.47.199.165]:56728 "EHLO
-	simmts7-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753434AbYJ2Iba (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 04:31:30 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AipEAJW5B0nOL8eh/2dsb2JhbACBdoonwiY
-X-Mailer: Openwave WebEngine, version 2.8.10 (webedge20-101-191-20030113)
-X-Originating-IP: [61.55.135.1]
-From: Online Co-Ordinator <dda@nbnet.nb.ca>
-To: <info@asia.com>
-Subject: Malaysia Award $2,500,000 USD
-Date: Wed, 29 Oct 2008 4:31:28 -0400
+	Wed, 29 Oct 2008 04:34:52 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40987 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752532AbYJ2Iev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 04:34:51 -0400
+Date: Wed, 29 Oct 2008 09:34:34 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATH -mm -v2] Fix a race condtion of oops_in_progress
+Message-ID: <20081029083434.GC6364@elte.hu>
+References: <1225268796.24095.48.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081029083128.JIQQ2983.simmts7-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225268796.24095.48.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Malaysia Sweepstakes.Contact Mr.Andy Jerry via,Tel:+60173802875 email:asia_pacific2008@live.com.my :Address:Occupation:Country
 
+* Huang Ying <ying.huang@intel.com> wrote:
+
+> Fix a race condition accessing oops_in_progress.  Which may be 
+> changed on multiple CPU simultaneously, but it is changed via 
+> non-atomic operation ++/--.  This patch changes the definition of 
+> oops_in_process from int to atomic_t, and accessing method to atomic 
+> operations.
+> 
+> 
+> ChangeLog
+> 
+> v2:
+> 
+> - Includes fixes from Andrew Moton.
+> 
+> - Re-based on Matthew Wilcox's new atomic_t patch.
+
+hm, there are a couple of places now that do atomic_set(,1) - they 
+should be atomic_inc(), correct?
+
+	Ingo
