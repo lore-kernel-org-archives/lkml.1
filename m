@@ -1,94 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbYJ2USX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbYJ2UU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754782AbYJ2USX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 16:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbYJ2USG
+	id S1754711AbYJ2UU3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 16:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbYJ2UUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 16:18:06 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:59515 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753733AbYJ2USE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 16:18:04 -0400
-Date: Wed, 29 Oct 2008 22:16:46 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 01/11] ftrace: handle generic arch calls
-Message-ID: <20081029201646.GA1816@cs181140183.pp.htv.fi>
-References: <20081022184313.179487464@goodmis.org> <20081022185135.618026303@goodmis.org> <alpine.DEB.1.10.0810271337370.8006@gandalf.stny.rr.com> <20081029190045.GC22105@uranus.ravnborg.org> <alpine.DEB.1.10.0810291517220.13214@gandalf.stny.rr.com> <20081029194956.GA22606@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20081029194956.GA22606@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 29 Oct 2008 16:20:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42668
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753725AbYJ2UUM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 16:20:12 -0400
+Date: Wed, 29 Oct 2008 13:19:46 -0700 (PDT)
+Message-Id: <20081029.131946.174652987.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 08:49:56PM +0100, Sam Ravnborg wrote:
-> On Wed, Oct 29, 2008 at 03:24:19PM -0400, Steven Rostedt wrote:
-> > 
-> > On Wed, 29 Oct 2008, Sam Ravnborg wrote:
-> > > >  
-> > > > +if ($arch eq "x86") {
-> > > > +    if ($bits == 64) {
-> > > > +	$arch = "x86_64";
-> > > > +    } else {
-> > > > +	$arch = "i386";
-> > > > +    }
-> > > > +}
-> > > > +
-> > > >  if ($arch eq "x86_64") {
-> > > >      $section_regex = "Disassembly of section";
-> > > >      $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
-> > > > 
-> > > 
-> > > This looks strange to my eyes.
-> > > Why not do the more obvious:
-> > > if ($arch eq "x86" && $bits == 64) {
-> > > 
-> > > The change above is like trying to stick to the old i386/x86_64
-> > > notation.
-> > 
-> > Trying to fix it tells me my answer to why I did it his way ;-)
-> > 
-> > I have queued patches that will support other archs so x86 is not the
-> > only arch that can be used here. But x86 is special, it seems to be the 
-> > only arch (that I know of, correct me if I'm wrong) that can compile with
-> > multiple archs defined: make ARCH=x86_64, make ARCH=i386, or
-> > make ARCH=x86. All are legit.
-> > 
-> > Now how do we handle this. I've been fine for all my testing to do just 
-> > x86_64 and i386 because a normal make of x86 will use automatically set
-> > ARCH to i386 or x86_64 depending on the build.
-> > 
-> > But then Adrian Bunk pointed out that "make ARCH=x86" fails. Now I need to 
-> > add a case for x86, but still allow for x86_64 or i386 being passed in.
-> > 
-> > Since x86 is the ambiguous case, I made it the one that would be converted 
-> > to i386 or x86_64 since those could be passed in directly.
-> The trick is usually to replace use of ARCH with SRCARCH.
 
-That won't help - what he wants to know is whether he's on 32bit or
-on 64bit.
+Wired and wireless driver bug fixes via Jeff Garzik
+and John Linville.
 
-> 	Sam
+Highlights:
 
-cu
-Adrian
+1) amd8111e NAPI ->poll() handler processes incorrectly the case where
+   there are exactly "quota" RX packets available in the ring,
+   resulting in a crash.
 
--- 
+   Fix from Chris Friesen
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+2) Fix resume bustage in ath5k, from Elias Oltmanns
 
+3) ibm_newemac checks typo'd CONFIG_FOO option, fix from
+   Josh Boyer
+
+4) pktgen checks multiqueue limits using off-by-one test,
+   fix from Jesse Brandeburg.
+
+Please pull, thanks a lot!
+
+The following changes since commit 8b5f12d04b2e93842f3dda01f029842047bf3f81:
+  Florian Westphal (1):
+        syncookies: fix inclusion of tcp options in syn-ack
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Chris Friesen (1):
+      amd8111e: Fix rx return code
+
+Christian Lamparter (2):
+      p54: fix misbehavings when firmware can't be found
+      p54: fix build warnings
+
+David S. Miller (1):
+      Merge branch 'davem-fixes' of master.kernel.org:/.../jgarzik/netdev-2.6
+
+Dmitry Baryshkov (1):
+      RFKILL: fix input layer initialisation
+
+Elias Oltmanns (1):
+      ath5k: Reset key cache on interface up, thus fixing resume
+
+FUJITA Tomonori (1):
+      dmfe: check pci_alloc_consistent errors
+
+Frank Blaschka (2):
+      qeth: fix offset error in non prealloc header path
+      qeth: remove unnecessary support ckeck in sysfs route6
+
+Huang Weiyi (1):
+      mlx4_en: remove duplicated #include
+
+Jeff Garzik (1):
+      drivers/net/wan/syncppp: Fix unused-var warnings
+
+Jesse Brandeburg (1):
+      pktgen: fix multiple queue warning
+
+John W. Linville (1):
+      mac80211: correct warnings in minstrel rate control algorithm
+
+Josh Boyer (1):
+      ibm_newemac: Fix typo in flow control config option
+
+Peter Korsgaard (1):
+      dm9601: runtime mac address change support
+
+Randy Dunlap (1):
+      mac80211.h: fix kernel-doc excesses
+
+Sven Hartge (1):
+      via-velocity: use driver string instead of dev->name before register_netdev()
+
+Thomas Klein (1):
+      ehea: Detect 16GB hugepages for firmware restriction
+
+Ursula Braun (2):
+      qeth: remove non-recover-thread checkings
+      qeth: avoid skb_under_panic for malformatted inbound data
+
+Yevgeny Petrilin (1):
+      mlx4: Setting the correct offset for default mac address
+
+ drivers/net/amd8111e.c                  |   14 ++--
+ drivers/net/ehea/ehea.h                 |    2 +-
+ drivers/net/ehea/ehea_qmr.c             |   57 ++++++++++++-
+ drivers/net/ehea/ehea_qmr.h             |    3 +
+ drivers/net/ibm_newemac/core.c          |    2 +-
+ drivers/net/mlx4/en_main.c              |    1 -
+ drivers/net/mlx4/fw.c                   |    2 +-
+ drivers/net/tulip/dmfe.c                |   12 +++-
+ drivers/net/usb/dm9601.c                |   15 ++++
+ drivers/net/via-velocity.c              |   11 ++-
+ drivers/net/wan/syncppp.c               |    5 +-
+ drivers/net/wireless/ath5k/base.c       |   33 +++-----
+ drivers/net/wireless/p54/p54common.c    |    5 +-
+ drivers/net/wireless/p54/p54pci.c       |  132 +++++++++++++++---------------
+ drivers/s390/net/qeth_core_main.c       |    3 +-
+ drivers/s390/net/qeth_l2_main.c         |   27 ++----
+ drivers/s390/net/qeth_l3_main.c         |   13 +---
+ drivers/s390/net/qeth_l3_sys.c          |    7 --
+ include/net/mac80211.h                  |   11 +--
+ net/core/pktgen.c                       |   27 +++---
+ net/mac80211/rc80211_minstrel_debugfs.c |    6 +-
+ net/rfkill/rfkill-input.c               |    5 +
+ 22 files changed, 220 insertions(+), 173 deletions(-)
