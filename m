@@ -1,142 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbYJ2TOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbYJ2TQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754632AbYJ2TOk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 15:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbYJ2TOc
+	id S1754718AbYJ2TQx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 15:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbYJ2TQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 15:14:32 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:63139 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753171AbYJ2TOc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 15:14:32 -0400
-Date: Wed, 29 Oct 2008 15:14:28 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 01/11] ftrace: handle generic arch calls
-In-Reply-To: <20081029190045.GC22105@uranus.ravnborg.org>
-Message-ID: <alpine.DEB.1.10.0810291511340.13214@gandalf.stny.rr.com>
-References: <20081022184313.179487464@goodmis.org> <20081022185135.618026303@goodmis.org> <alpine.DEB.1.10.0810271337370.8006@gandalf.stny.rr.com> <20081029190045.GC22105@uranus.ravnborg.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 29 Oct 2008 15:16:44 -0400
+Received: from zombie2.ncsc.mil ([144.51.88.133]:63291 "EHLO zombie2.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753628AbYJ2TQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 15:16:43 -0400
+Subject: Re: [PATCH -v1 2/3] vm: use new has_capability_noaudit
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, jmorris@nameil.org,
+       serue@us.ibm.com, morgan@kernel.org, casey@schaufler-ca.com,
+       esandeen@redhat.com
+In-Reply-To: <20081029190658.31292.10620.stgit@paris.rdu.redhat.com>
+References: <20081029190652.31292.5901.stgit@paris.rdu.redhat.com>
+	 <20081029190658.31292.10620.stgit@paris.rdu.redhat.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 29 Oct 2008 15:15:23 -0400
+Message-Id: <1225307723.6588.119.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 29 Oct 2008, Sam Ravnborg wrote:
-
-> On Mon, Oct 27, 2008 at 01:41:41PM -0400, Steven Rostedt wrote:
-> > 
-> > [
-> >   Resending patch.
-> > 
-> >   Sam, can you Ack this?
-> > 
-> >   -- Steve
-> > ]
-> > 
-> > From: Steven Rostedt <srostedt@redhat.com>
-> > Subject: ftrace: handle generic arch calls
-> > 
-> > The recordmcount script requires that the actual arch is passed in.
-> > This works well when ARCH=i386 or ARCH=x86_64 but does not handle the
-> > case of ARCH=x86.
-> > 
-> > This patch adds a parameter to the function to pass in the number of
-> > bits of the architecture. So that it can determine if x86 should be
-> > run for x86_64 or i386 archs.
-> > 
-> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> > ---
-> >  scripts/Makefile.build  |   10 ++++++++--
-> >  scripts/recordmcount.pl |   11 ++++++++++-
-> >  2 files changed, 18 insertions(+), 3 deletions(-)
-> > 
-> > Index: linux-compile.git/scripts/Makefile.build
-> > ===================================================================
-> > --- linux-compile.git.orig/scripts/Makefile.build	2008-10-22 15:09:04.000000000 -0400
-> > +++ linux-compile.git/scripts/Makefile.build	2008-10-22 15:09:07.000000000 -0400
-> > @@ -198,10 +198,16 @@ cmd_modversions =							\
-> >  	fi;
-> >  endif
-> >  
-> > +ifdef CONFIG_64BIT
-> > +arch_bits = 64
-> > +else
-> > +arch_bits = 32
-> > +endif
-> > +
-> >  ifdef CONFIG_FTRACE_MCOUNT_RECORD
-> >  cmd_record_mcount = perl $(srctree)/scripts/recordmcount.pl \
-> > -	"$(ARCH)" "$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" "$(NM)" "$(RM)" \
-> > -	"$(MV)" "$(@)";
-> > +	"$(ARCH)" "$(arch_bits)" "$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" \
-> > +	"$(NM)" "$(RM)" "$(MV)" "$(@)";
-> >  endif
+On Wed, 2008-10-29 at 15:06 -0400, Eric Paris wrote:
+> The oomkiller calculations make decisions based on capabilities.  Since
+> these are not security decisions and LSMs should not record if they fall
+> the request they should use the new has_capability_noaudit() interface so
+> the denials will not be recorded.
 > 
-> A simple $(if $(CONFIG_64BIT),64,32) in the command would be more dense.
-
-OK, will fix.
-
+> Signed-off-by: Eric Paris <eparis@redhat.com>
+> ---
 > 
-> >  
-> >  define rule_cc_o_c
-> > Index: linux-compile.git/scripts/recordmcount.pl
-> > ===================================================================
-> > --- linux-compile.git.orig/scripts/recordmcount.pl	2008-10-22 15:09:04.000000000 -0400
-> > +++ linux-compile.git/scripts/recordmcount.pl	2008-10-22 15:09:45.000000000 -0400
-> > @@ -106,7 +106,8 @@ if ($#ARGV < 6) {
-> >  	exit(1);
-> >  }
-> >  
-> > -my ($arch, $objdump, $objcopy, $cc, $ld, $nm, $rm, $mv, $inputfile) = @ARGV;
-> > +my ($arch, $bits, $objdump, $objcopy, $cc,
-> > +    $ld, $nm, $rm, $mv, $inputfile) = @ARGV;
-> >  
-> >  $objdump = "objdump" if ((length $objdump) == 0);
-> >  $objcopy = "objcopy" if ((length $objcopy) == 0);
-> > @@ -129,6 +130,14 @@ my $function_regex;	# Find the name of a
-> >  			#    (return offset and func name)
-> >  my $mcount_regex;	# Find the call site to mcount (return offset)
-> >  
-> > +if ($arch eq "x86") {
-> > +    if ($bits == 64) {
-> > +	$arch = "x86_64";
-> > +    } else {
-> > +	$arch = "i386";
-> > +    }
-> > +}
-> > +
-> >  if ($arch eq "x86_64") {
-> >      $section_regex = "Disassembly of section";
-> >      $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
-> > 
+>  fs/proc/base.c |    2 +-
+>  mm/oom_kill.c  |    6 +++---
+>  2 files changed, 4 insertions(+), 4 deletions(-)
 > 
-> This looks strange to my eyes.
-> Why not do the more obvious:
-> if ($arch eq "x86" && $bits == 64) {
-> 
-> The change above is like trying to stick to the old i386/x86_64
-> notation.
+> diff --git a/fs/proc/base.c b/fs/proc/base.c
+> index 486cf3f..ef83e81 100644
+> --- a/fs/proc/base.c
+> +++ b/fs/proc/base.c
+> @@ -1020,7 +1020,7 @@ static ssize_t oom_adjust_write(struct file *file, const char __user *buf,
+>  	task = get_proc_task(file->f_path.dentry->d_inode);
+>  	if (!task)
+>  		return -ESRCH;
+> -	if (oom_adjust < task->oomkilladj && !capable(CAP_SYS_RESOURCE)) {
+> +	if (oom_adjust < task->oomkilladj && !has_capability_noaudit(current, CAP_SYS_RESOURCE)) {
 
-Heh, you're right. This is from writing an update without wanting to 
-modify the original code too much. But it makes the end result ugly.
+This one looks like an actual permission check to see whether the
+current task is authorized to modify this value (by writing to some proc
+node).  Which should be audited.  Unlike the others, where they are
+checking whether some other task has a capability in order to help
+decide priorities for the OOM killer.
 
-I'll create another patch to go on top of this one. We needed this one in 
-because without it, it broke "make ARCH=x86"
 
-Thanks,
+>  		put_task_struct(task);
+>  		return -EACCES;
+>  	}
+> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> index 64e5b4b..34a458a 100644
+> --- a/mm/oom_kill.c
+> +++ b/mm/oom_kill.c
+> @@ -129,8 +129,8 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
+>  	 * Superuser processes are usually more important, so we make it
+>  	 * less likely that we kill those.
+>  	 */
+> -	if (has_capability(p, CAP_SYS_ADMIN) ||
+> -	    has_capability(p, CAP_SYS_RESOURCE))
+> +	if (has_capability_noaudit(p, CAP_SYS_ADMIN) ||
+> +	    has_capability_noaudit(p, CAP_SYS_RESOURCE))
+>  		points /= 4;
+>  
+>  	/*
+> @@ -139,7 +139,7 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
+>  	 * tend to only have this flag set on applications they think
+>  	 * of as important.
+>  	 */
+> -	if (has_capability(p, CAP_SYS_RAWIO))
+> +	if (has_capability_noaudit(p, CAP_SYS_RAWIO))
+>  		points /= 4;
+>  
+>  	/*
+-- 
+Stephen Smalley
+National Security Agency
 
--- Steve
