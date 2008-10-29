@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbYJ2PQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbYJ2PQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754156AbYJ2PQR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 11:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYJ2PQA
+	id S1754627AbYJ2PQa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 11:16:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYJ2PQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 11:16:00 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:50281 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752416AbYJ2PQA (ORCPT
+	Wed, 29 Oct 2008 11:16:04 -0400
+Received: from smtp104.prem.mail.sp1.yahoo.com ([98.136.44.59]:39970 "HELO
+	smtp104.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752732AbYJ2PQB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 11:16:00 -0400
-Date: Wed, 29 Oct 2008 11:15:57 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Noonan <steven@uplinklabs.net>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH] ftrace: fix trace_nop config select
-In-Reply-To: <20081029091857.GA4414@osiris.boeblingen.de.ibm.com>
-Message-ID: <alpine.DEB.1.10.0810291113500.2865@gandalf.stny.rr.com>
-References: <200810281802.m9SI2fYX030138@hera.kernel.org> <20081029091857.GA4414@osiris.boeblingen.de.ibm.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 29 Oct 2008 11:16:01 -0400
+X-YMail-OSG: xVd2shgVM1mOihtTKKbPgGEoF3vhBFBlE8NMTnf4CzzY1yHq4wtdATnx9nXOd6ccb2CjWAPvAuKPmv1_fZKeR.sb9QjGQw.rnRDMHmf3rDYyaWuSEJjJDNnYiz06Xq3fFeVSd913RBiJP1NPaLOMOHH1kVMblk_gZXWPJdipKdS2fsjl4lXLmNSg0YM-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <49087E26.2080905@schaufler-ca.com>
+Date: Wed, 29 Oct 2008 08:15:50 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+CC: Rob MacKinnon <c4blem0nkey@gmail.com>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Stephen Smalley <sds@tycho.nsa.gov>, rob.mackinnon@gmail.com,
+       hpa@zytor.com, hugh@veritas.com
+Subject: [PATCH] smack inode_listsecurity fix
+References: <4902DD98.4090302@gmail.com> <4906211E.8030603@gmail.com> <1225139131.31818.51.camel@moss-spartans.epoch.ncsc.mil> <200810272153.56301.agruen@suse.de> <49062EC0.4040809@gmail.com> <4906A871.6010501@schaufler-ca.com>
+In-Reply-To: <4906A871.6010501@schaufler-ca.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Casey Schaufler <casey@schaufler-ca.com>
 
-The trace_nop is the tracer that is defined when no tracer is set in
-the ftrace infrastructure.
+This patch fixes the problem known by "tmpfs support of xattrs?"
+which is in fact the result of a bad implementation of the
+inode_listsecurity LSM hook in Smack. Thanks to Stephen Smalley,
+who identified the problem and all but coded the fix before I'd
+even heard about it.
 
-The trace_nop was mistakenly selected by HAVE_FTRACE due to the confusion
-between ftrace infrastructure and the ftrace function tracer (which has
-been solved by renaming the function tracer).
+Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
 
-This patch changes the select to the approriate TRACING.
-
-This patch should fix compile errors on architectures that do not define
-the FUNCTION_TRACER.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-tip.git/kernel/trace/Kconfig
-===================================================================
---- linux-tip.git.orig/kernel/trace/Kconfig	2008-10-29 10:37:49.000000000 -0400
-+++ linux-tip.git/kernel/trace/Kconfig	2008-10-29 11:07:20.000000000 -0400
-@@ -8,7 +8,6 @@ config NOP_TRACER
+ security/smack/smack_lsm.c |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff -uprN -X linux-2.6/Documentation/dontdiff linux-2.6/security/smack/smack_lsm.c linux-smack/security/smack/smack_lsm.c
+--- linux-2.6/security/smack/smack_lsm.c	2008-10-26 17:37:08.000000000 -0700
++++ linux-smack/security/smack/smack_lsm.c	2008-10-26 19:11:23.000000000 -0700
+@@ -763,13 +763,11 @@ static int smack_inode_getsecurity(const
+ static int smack_inode_listsecurity(struct inode *inode, char *buffer,
+ 				    size_t buffer_size)
+ {
+-	int len = strlen(XATTR_NAME_SMACK);
++	int len = sizeof(XATTR_NAME_SMACK);
  
- config HAVE_FUNCTION_TRACER
- 	bool
--	select NOP_TRACER
+-	if (buffer != NULL && len <= buffer_size) {
++	if (buffer != NULL && len <= buffer_size)
+ 		memcpy(buffer, XATTR_NAME_SMACK, len);
+-		return len;
+-	}
+-	return -EINVAL;
++	return len;
+ }
  
- config HAVE_DYNAMIC_FTRACE
- 	bool
-@@ -28,6 +27,7 @@ config TRACING
- 	select RING_BUFFER
- 	select STACKTRACE
- 	select TRACEPOINTS
-+	select NOP_TRACER
- 
- menu "Tracers"
- 
+ /**
+
 
 
