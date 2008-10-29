@@ -1,76 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbYJ2XNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbYJ2XRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756075AbYJ2XNk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 19:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbYJ2XNb
+	id S1755496AbYJ2XRS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 19:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbYJ2XRE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 19:13:31 -0400
-Received: from www.tglx.de ([62.245.132.106]:56408 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752464AbYJ2XNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 19:13:30 -0400
-Date: Thu, 30 Oct 2008 00:13:16 +0100
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: hjk@linutronix.de, gregkh@suse.de, damm@igel.co.jp,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] UIO: uio_pdrv_genirq: allow custom irq_flags
-Message-ID: <20081029231315.GA7182@local>
-References: <1225319752-659-1-git-send-email-vapier@gentoo.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1225319752-659-1-git-send-email-vapier@gentoo.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 29 Oct 2008 19:17:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57924 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752081AbYJ2XRD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 19:17:03 -0400
+Date: Wed, 29 Oct 2008 16:16:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Zan Lynx <zlynx@acm.org>
+Cc: linux-kernel@vger.kernel.org, jack@suse.cz
+Subject: Re: 2.6.28-rc2-mm1: Build failure on fs/quota.o
+Message-Id: <20081029161626.1fa5acb0.akpm@linux-foundation.org>
+In-Reply-To: <4908EA82.8090308@acm.org>
+References: <20081028233836.8b1ff9ae.akpm@linux-foundation.org>
+	<4908EA82.8090308@acm.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 06:35:52PM -0400, Mike Frysinger wrote:
-> I can't think of a reason why the driver prevents people from setting any
-> custom bits in their platform device, but I can think of some reasons for
-> allowing custom flags.  Like setting the IRQF_TRIGGER_... bits.
+On Wed, 29 Oct 2008 16:58:10 -0600
+Zan Lynx <zlynx@acm.org> wrote:
 
-We wanted to prevent users from setting IRQF_SHARED in their platform
-code, because uio_pdrv_genirq.c explicitly relies on an interrupt not
-being shared. This code explicitly checks for IRQF_SHARED and lets
-uio_pdrv_genirq_probe() fail if it's set. This allows users to set other
-IRQF_* flags. That's an improvement and looks alright to me.
-
+> Andrew Morton wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.28-rc2/2.6.28-rc2-mm1/
+> > 
+> > - Various architectures don't compile very well.  ia64, alpha, s390,
+> >   arm.  ftrace seems to be a particular culprit.
+> > 
+> > - But it seems to work OK on the six machines I ran it on.
+> > 
 > 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
-
-> ---
-> v2
-> 	- disallow IRQF_SHARED in irq_flags
+> Here is the error:
 > 
->  drivers/uio/uio_pdrv_genirq.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/uio/uio_pdrv_genirq.c b/drivers/uio/uio_pdrv_genirq.c
-> index 1f82c83..3f06818 100644
-> --- a/drivers/uio/uio_pdrv_genirq.c
-> +++ b/drivers/uio/uio_pdrv_genirq.c
-> @@ -81,7 +81,8 @@ static int uio_pdrv_genirq_probe(struct platform_device *pdev)
->  		goto bad0;
->  	}
->  
-> -	if (uioinfo->handler || uioinfo->irqcontrol || uioinfo->irq_flags) {
-> +	if (uioinfo->handler || uioinfo->irqcontrol ||
-> +	    uioinfo->irq_flags & IRQF_SHARED) {
->  		dev_err(&pdev->dev, "interrupt configuration error\n");
->  		goto bad0;
->  	}
-> @@ -132,7 +133,7 @@ static int uio_pdrv_genirq_probe(struct platform_device *pdev)
->  	 * Interrupt sharing is not supported.
->  	 */
->  
-> -	uioinfo->irq_flags = IRQF_DISABLED;
-> +	uioinfo->irq_flags |= IRQF_DISABLED;
->  	uioinfo->handler = uio_pdrv_genirq_handler;
->  	uioinfo->irqcontrol = uio_pdrv_genirq_irqcontrol;
->  	uioinfo->priv = priv;
-> -- 
-> 1.6.0.2
+>   CC      fs/quota.o
+> fs/quota.c: In function ___generic_quotactl_valid___:
+> fs/quota.c:76: error: implicit declaration of function ___sb_has_quota_active___
+> make[1]: *** [fs/quota.o] Error 1
+> make: *** [fs] Error 2
+
+Thanks.
+
+From: Andrew Morton <akpm@linux-foundation.org>
+
+fs/quota.c: In function `generic_quotactl_valid':
+fs/quota.c:76: error: implicit declaration of function `sb_has_quota_active'
+
+Cc: Jan Kara <jack@suse.cz>
+Reported-by: Zan Lynx <zlynx@acm.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/quotaops.h |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff -puN include/linux/quotaops.h~quota-permit-separately-enabling-quota-accounting-and-enforcing-limits-fix include/linux/quotaops.h
+--- a/include/linux/quotaops.h~quota-permit-separately-enabling-quota-accounting-and-enforcing-limits-fix
++++ a/include/linux/quotaops.h
+@@ -257,6 +257,11 @@ static inline int sb_any_quota_loaded(st
+ 	return 0;
+ }
+ 
++static inline int sb_has_quota_active(struct super_block *sb, int type)
++{
++	return 0;
++}
++
+ static inline int sb_any_quota_active(struct super_block *sb)
+ {
+ 	return 0;
+_
+
