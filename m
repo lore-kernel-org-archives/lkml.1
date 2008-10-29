@@ -1,124 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbYJ2PzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbYJ2P40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754597AbYJ2PzT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 11:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbYJ2PzF
+	id S1754040AbYJ2P40 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 11:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbYJ2P4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 11:55:05 -0400
-Received: from ns.suse.de ([195.135.220.2]:44090 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753038AbYJ2PzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 11:55:03 -0400
-From: Thomas Renninger <trenn@suse.de>
-Organization: SUSE Linux - Novell
-To: Andrey Borzenkov <arvidjaar@mail.ru>, Len Brown <len.brown@intel.com>
-Subject: Re: ACPI video.c brightness handler conflicts with toshiba_acpi
-Date: Wed, 29 Oct 2008 16:54:54 +0100
-User-Agent: KMail/1.9.9
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, toshiba_acpi@memebeam.org,
-       linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       andi@firstfloor.org, preining@logic.at
-References: <200809061108.34877.arvidjaar@mail.ru> <200810281615.19894.rjw@sisk.pl> <200810281922.20490.arvidjaar@mail.ru>
-In-Reply-To: <200810281922.20490.arvidjaar@mail.ru>
+	Wed, 29 Oct 2008 11:56:17 -0400
+Received: from rn-out-0910.google.com ([64.233.170.185]:8422 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753368AbYJ2P4R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 11:56:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=InOHWe66Nc2aRzAZZh7xq8PYhszs6ieuyQ+4XJZF0RAwo30X2eBimkOSPKSELhlKHc
+         m/VNKggEdCKVUQHlR3tU8RsA6qF4hp0K4J0JokgkriiHXFDNoJSimHK223cOX1YT2v1a
+         Sdggq1PRDpcsIomN4+K8duAGQsnZJQR+t1G4w=
+Message-ID: <49088797.3060802@gmail.com>
+Date: Wed, 29 Oct 2008 08:56:07 -0700
+From: Rob MacKinnon <c4blem0nkey@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080904)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Casey Schaufler <casey@schaufler-ca.com>
+CC: rob.mackinnon@gmail.com, Andreas Gruenbacher <agruen@suse.de>,
+       Stephen Smalley <sds@tycho.nsa.gov>, hpa@zytor.com, hugh@veritas.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: tmpfs support of xattrs?
+References: <4902DD98.4090302@gmail.com> <4906211E.8030603@gmail.com> <1225139131.31818.51.camel@moss-spartans.epoch.ncsc.mil> <200810272153.56301.agruen@suse.de> <49062EC0.4040809@gmail.com> <4906A871.6010501@schaufler-ca.com>
+In-Reply-To: <4906A871.6010501@schaufler-ca.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810291654.56710.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 28 October 2008 17:22:12 Andrey Borzenkov wrote:
-> On Tuesday 28 October 2008, Rafael J. Wysocki wrote:
-> > On Tuesday, 28 of October 2008, Thomas Renninger wrote:
-> > > On Monday 27 October 2008 17:52:55 Andrey Borzenkov wrote:
-> > > > On Monday 08 September 2008, Thomas Renninger wrote:
-> > > > > On Saturday 06 September 2008 09:19:59 am Andrey Borzenkov wrote:
-> > > > > > On Saturday 06 September 2008, Andrey Borzenkov wrote:
-> > > > > > > I have now two different devices that refer to the same
-> > > > > > > hardware:
-> > > > > > >
-> > > > > > > lrwxrwxrwx 1 root root 0 2008-09-06 11:04 acpi_video0 ->
-> > > > > > > ../../devices/virtual/backlight/acpi_video0/ lrwxrwxrwx 1 root
-> > > > > > > root 0 2008-09-06 11:04 toshiba ->
-> > > > > > > ../../devices/virtual/backlight/toshiba/
-> > > > > > >
-> > > > > > > Unfortunately, due to ACPI implementation the acpi_video0 one
-> > > > > > > is much inferior (as it provides only effectively two levels
-> > > > > > > instead of 8); and user level tools are apparently quite
-> > > > > > > confused which one to select.
-> > > > > > >
-> > > > > > > Is there any mechanism that would allow tochiba_acpi to claim
-> > > > > > > brightness for internal LCD screen that video would not attempt
-> > > > > > > to grab it too?
-> > > > > > >
-> > > > > > > Of course manually disabling brightness handling in video is
-> > > > > > > always possible,
-> > > > > >
-> > > > > > Actually it is not. brightness_switch_enabled only disables event
-> > > > > > handling; it still resets actual brightness on loading and
-> > > > > > creates sysfs files to confuse user space.
-> > > > > >
-> > > > > > > still is nice for this to be handled automatically.
-> > > > >
-> > > > > It is in latest ACPI test branch queued for 2.6.28.
-> > > >
-> > > > It is still not in rc2; is it scheduled for 2.6.28 or delayed
-> > > > further?
-> > >
-> > > Right, it's not there.
-> > > Len, what happened with the:
-> > > "Check for ACPI backlight support otherwise use vendor ACPIdrivers -
-> > > version 4" patches?
-> > >
-> > > They are pretty essential for video.ko.
-> > > Otherwise graphics devices may get double poked (through vendor_acpi.ko
-> > > drivers) or may register for graphics cards which are not there.
-> >
-> > Do you have a pointer to those patches?
->
-> So far I am running with these commits from
-> git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-acpi-2.6:
-This tree does not exist anymore...
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Andrey, do you still have a local copy?
-Could you use git format-patch and repost the whole series
-(should be about 11 patches) to Len and CC me.
-It would be some work for me to recollect everything.
+Casey Schaufler wrote:
+> Rob MacKinnon wrote:
+>> Andreas Gruenbacher wrote:
+>>  
+>>> On Monday, 27 October 2008 21:25:31 Stephen Smalley wrote:
+>>>    
+>>>> Looks like a bug in Smack's implementation of the inode_listsecurity
+>>>> hook to me.  Did you mean to enable Smack in your kernel config?
+>>>>       
+>>> Yes, there is at least one bug there; this kernel is broken. You may
+>>> want to try booting with a kernel command line option like
+>>> "security=none", which *should* turn smack off.
+>>>
+>>> Andreas
+>>>     
+>>
+>> All,
+>>
+>> Indeed the kernel cmdline option security=none did disable smack. So
+>> atleast that works. Thank you all for helping me track this down.  I can
+>> now return to updating packages (some of which have been waiting
+>> patiently for this to be cleared up)!  Though I will be looking forward
+>> to this feature working as it was intended. ;)  Let me know if there is
+>> a bug # assigned and I'll quietly return to lurking... ;
+> 
+> It looks like a trivial fix and the patch is here. I have just started
+> testing it myself, but if I don't send it now it will be Wednesday before
+> I do. No sign-off because I haven't verified it, but I would be delighted
+> if you would pass judgement on its efficacy. Thank you.
+> 
 
-I hope Len is reading that soon and can give a comment why this was
-in Andi's, but did not get into his ACPI git tree...
+All,
 
-This should directly go into ACPI test branch again.
-It would be great if it could still get cherry-picked into .28.
+Applied, compiled, and tested clean on a P4 Prescott. I'll try this a
+little later on my x64. Thank you for this fix, and thank you all for
+just a fast response.
 
-Thanks,
+- -- Rob
 
-     Thomas
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-Norbert: I just saw your brightness complains about your Sony on the acpi 
-list. You should start testing with the patchset we are talking about here.
-video.ko is rather broken without them.
-
-     Thomas
-
-> commit f43d728731c691772ddc29e50d25c68a859935b5
-> Author: Thomas Renninger <trenn@suse.de>
-> Date:   Fri Aug 1 17:37:55 2008 +0200
->
->     Check for ACPI backlight support otherwise use vendor ACPI drivers
->
->
-> commit ad9ed8385ed6ec5be8da7094db911c824258ceec
-> Author: Thomas Renninger <trenn@suse.de>
-> Date:   Fri Aug 1 17:37:54 2008 +0200
->
->     ACPI: video: Ignore devices that aren't present in hardware
->
-> I have been waiting for in-tree inclusion to submit patches for
-> toshiba_acpi against stable base.
-
-
+iQIcBAEBAgAGBQJJCIeXAAoJEPviweVbLO8VzcQP/i09jHZpF1yulLj7NsnyKtUB
+F3Dni/2Qu8pUQ0qG/r4i99e78YS2be781E7qjKkSRxsp+zw90h9qENqHU0dCI7P5
+d9FFZqmOp1eVxYPy2Qm7L8QgOrO852G0/No3uetgNj5WdSQVEEzIjJbQIp8pkYhd
+Q/BLKbLW9DhwRHN4GlgMa6xsCxVgP1GFasnRb5scdoWmTswwfVbbC1PiGXYP7rrz
+sfDGKgBHX7U3/QAZSw2ihm5t/N2DZYJas5JG1Ywyx6bp+Np51nzbrhaMmg04mp2r
+HyWYvqxxK4Ukhw8wFqFL6qZxrAluBRjx++INXgmWqZydp8mW83zeRV1c/NInrOZf
+s5wnk796579l3Wme3o5o1bxS1jLYQ5LMSI/5wjYT2W32g8wvj2er5Pj3utYvVG9B
+5uKW3bqeUZKblQQBbbKoG4qPTZ6xHe21tDby2PcJj5KNevzXuPWGvVZg1jdYYVnN
+DVTPmaHrtk3Z1MdlwJlRCIamAHXW0hwfDY7aYqaQAI2oTJSBFJanw1aGp5POUH+X
+2RT7ychNDRvp22KSqA8DOqD5wucy8fgqQsuFu4R8CkW5Gdq3uST+F4ELbZxKRmqG
+prNVUY72Di4ynnSFca6CFH3Cwh/jpYE32/ZD+56iOqUd/8LqgEYQxEarDh3B+sjF
+X2JuRe4mmwHG+LtrjnOe
+=lrma
+-----END PGP SIGNATURE-----
