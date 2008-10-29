@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbYJ2QHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754333AbYJ2QKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754583AbYJ2QHK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 12:07:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbYJ2QGz
+	id S1754333AbYJ2QKo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 12:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbYJ2QKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 12:06:55 -0400
-Received: from ns1.suse.de ([195.135.220.2]:45368 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753511AbYJ2QGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 12:06:53 -0400
-Date: Wed, 29 Oct 2008 09:01:26 -0700
-From: Greg KH <gregkh@suse.de>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       linux-wireless@vger.kernel.org, Mark Fasheh <mfasheh@suse.com>,
-       Joel Becker <Joel.Becker@oracle.com>
-Subject: Re: linux-next: Tree for October 28
-Message-ID: <20081029160126.GA19132@suse.de>
-References: <20081028183055.fbcf5420.sfr@canb.auug.org.au> <20081028220741.f5d331ba.akpm@linux-foundation.org> <20081029125449.GD24103@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081029125449.GD24103@tuxdriver.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 29 Oct 2008 12:10:36 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:47334 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753357AbYJ2QKf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 12:10:35 -0400
+To: stern@rowland.harvard.edu
+CC: miklos@szeredi.hu, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org
+In-reply-to: <Pine.LNX.4.44L0.0810291122220.2189-100000@iolanthe.rowland.org>
+	(message from Alan Stern on Wed, 29 Oct 2008 11:28:34 -0400 (EDT))
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
+ filesystems.
+References: <Pine.LNX.4.44L0.0810291122220.2189-100000@iolanthe.rowland.org>
+Message-Id: <E1KvDcp-0008B7-SR@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 29 Oct 2008 17:10:27 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 08:54:49AM -0400, John W. Linville wrote:
-> On Tue, Oct 28, 2008 at 10:07:41PM -0700, Andrew Morton wrote:
-> > On Tue, 28 Oct 2008 18:30:55 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > 
-> > > I have created today's linux-next tree at
-> > > git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-> > > (patches at
-> > > http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
+On Wed, 29 Oct 2008, Alan Stern wrote:
+> On Wed, 29 Oct 2008, Miklos Szeredi wrote:
 > 
-> > and wireless needs some Kconfig help.  Please don't just break other
-> > architecture's build like this.
+> > Actually I was thinking of an rw-semaphore, not a mutex.  But yeah
+> > that still has scalability problems.  But it could be done with custom
+> > locking primitives, optimized for this case:
 > > 
-> > drivers/staging/wlan-ng/wlan_compat.h:136:3: #error "No CPU identified!"
-> > drivers/staging/wlan-ng/wlan_compat.h:695:6: warning: "WLAN_CPU_FAMILY" is not defined
-> > drivers/staging/wlan-ng/wlan_compat.h:699:6: warning: "WLAN_CPU_FAMILY" is not defined
+> >    suspend_disable();
+> >    /* driver stuff */
+> >    suspend_enable();
 > 
-> For the record, I blame Greg K-H for this... :-)
+> Yes, it could be done.  And the overhead could be minimized by using
+> per-CPU variables.  It would still be an awful lot of work, and easy to
+> get wrong.
 
-Ick, yes, _ANYTHING_ in drivers/staging/ is my fault, please let me know
-about this.
+OK, getting back to this, as it seems to be the only way that we agree
+is doable.
 
-I'll fix this up, thanks for the report.
+How about this,
 
-greg k-h
+ a) identify syscalls that may make drivers do I/O:
+
+ - read
+ - write
+ - ioctl
+ ???
+
+ b) add the suspend_disable/enable() primitives to these syscalls
+
+ c) push primitives inside the implementation
+
+c) is slightly tricky, but could be done for example by setting a flag
+on open: FMODE_NO_SUSPEND_DISABLE (better name required), saying that
+implementation is responsible for getting the suspend disable magic
+right.
+
+For starters this flag could be set for all non-device opens (maybe all
+non-char-dev opens?), solving the fuse vs. freezer issues without any
+complicated trickery.
+
+Miklos
