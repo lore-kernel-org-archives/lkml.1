@@ -1,93 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbYJ2Pv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbYJ2Py2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754731AbYJ2Pv2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 11:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbYJ2PvP
+	id S1754201AbYJ2Py2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 11:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbYJ2PyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 11:51:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33835 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754269AbYJ2PvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 11:51:13 -0400
-Date: Wed, 29 Oct 2008 13:50:56 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][v2] blktrace: conversion to tracepoints
-Message-ID: <20081029155056.GE28123@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20081029120556.GD28123@ghostprotocols.net> <20081029131855.GC31673@kernel.dk>
+	Wed, 29 Oct 2008 11:54:19 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:39803 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752823AbYJ2PyS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 11:54:18 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=vx79jQIV3S8xSN71u1znAGlK5okobL3r/xSmLU+GHpexoSVJ3jPXeuprvchNdvpJ85FRI4LtqS1JLbfUoHxkbzRLzOIRhYnc2POz2OtSceLgwKlpBsYqG6OOEFUcxsIjQ/moHEhMfhu1rB64bjz3EU5iaRFXXmNGk4qJyrmrbV0=  ;
+X-YMail-OSG: BxXUv9cVM1mTkc4ntngxwvhnx3CEpZauKQdJcfUw0z4Kr08hICpB3UfjEykq80y6sahDJ.BnOlu7TQsBpe0_RWen6m63Huf3xd3M1qT3bWYsDY4IF8THdlNX6Z._XbGln6YZEVUb6_ezMGjvGFV7hjVq
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: Re: [patch 2.6.28-rc2] atmel_serial: keep clock off when it's not needed
+Date: Wed, 29 Oct 2008 08:54:15 -0700
+User-Agent: KMail/1.9.10
+Cc: "Andrew Victor" <avictor.za@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "Nicolas Ferre" <nicolas.ferre@rfo.atmel.com>
+References: <200810271406.24110.david-b@pacbell.net> <200810281251.30031.david-b@pacbell.net> <20081029110845.309a7548@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <20081029110845.309a7548@hskinnemo-gx745.norway.atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081029131855.GC31673@kernel.dk>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200810290854.15506.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Wed, Oct 29, 2008 at 02:18:55PM +0100, Jens Axboe escreveu:
-> On Wed, Oct 29 2008, Arnaldo Carvalho de Melo wrote:
-> > Hi Jens,
+On Wednesday 29 October 2008, Haavard Skinnemoen wrote:
+> David Brownell <david-b@pacbell.net> wrote:
+> > On Tuesday 28 October 2008, Andrew Victor wrote:
+> > > 
+> > > > I verified it on AT91, where the console is normally DBGU and the
+> > > > other USARTs do get an open().
+> > > 
+> > > The DBGU is part of the system peripherals, which are clocked from MCK
+> > > and which is always enabled.
 > > 
-> > 	Now that the tracepoints infrastructure is merged I updated the
-> > patch, please take a look.
-> > 
-> > 	One suggestion I got was to have things like:
-> > 
-> >   trace_block_unplug_io(q, q->rq.count[READ] + q->rq.count[WRITE]);
-> > 
-> > 	That was:
-> > 
-> >   blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_IO, NULL,
-> > 	                q->rq.count[READ] + q->rq.count[WRITE]);
-> > 
-> > 	To be:
-> > 
-> >   trace_block_unplug_io(q, q->rq.count[READ], q->rq.count[WRITE]);
-> > 
-> > 	Or even:
-> > 
-> >   trace_block_unplug_io(q);
-> > 
-> > 	And on  blk_add_trace_unplug_io tracepoint do the math and feed
-> > it to __blk_add_trace.
-> > 
-> >         So that the information on the number of types of requests
-> > instead of the sum, what do you think? Overengineering? For blktrace it
-> > would end up being preserved as is in, say:
-> > 
-> > static void blk_add_trace_unplug_io(struct request_queue *q,
-> > 				    unsigned int rd, unsigned int wr)
-> > {
-> >         struct blk_trace *bt = q->blk_trace;
-> > 
-> >         if (bt) {
-> >                 __be64 rpdu = cpu_to_be64(rd + wr);
-> > 
-> >                 __blk_add_trace(bt, 0, 0, 0, BLK_TA_UNPLUG_IO, 0,
-> >                                 sizeof(rpdu), &rpdu);
-> >         }
-> > }
-> > 
-> > 	Perhaps doing it as 'trace_block_unplug_io(q)' would be the best
-> > scenario, as the tracepoint user can look at struct_request queue at
-> > will anyway and the code gets cleaner :-)
-> > 
-> > 	Feel free to point any disgusting aspect, perhaps there is at
-> > least one to warn me about fixing 8-)
+> > Exactly.
 > 
-> You my as well pass the members separately now that it's a specific call
-> anyway, to avoid doing the calculation when tracing is disabled.
+> Exactly what?
+
+Exactly the point I was making by describing the testing:
+it covered "normal" behavior where the console was clocked
+when Linux started.  But not the case you described.
+
+
+> That your patch has exactly zero effect on your test case? 
+
+Hardly; if that were the case, I wouldn't have posted it!
+
+The other UARTs' clocks again behaved correctly during normal
+operation ... acting like they did a few years ago when last I
+happened to look at how clocks interacted with this driver.
+(Or maybe "with its predecessor".)
+
+
+> > > Therefore I don't think this is a valid test-case.
+> > 
+> > Not for the oddball case Haavard mentioned, no:  the console port
+> > being something the boot loader wasn't using, which couldn't show
+> > the early boot messages (before console setup) in any case.  Those
+> > kinds of systems aren't especially debuggable (it's JTAG or nothing).
 > 
-> Patch looks straight forward. Perhaps it would be cleaner to use an
-> atomic type for the reference?
+> Since when is it acceptable to lock up solid in "oddball" cases?
 
-I'll do that now and repost, thanks,
+I'm not sure why you're asking *me* that, instead of some
+person who said it was OK.  I pointed out that a system
+configured like that would have a lot more rude failure
+modes than just the one you were pointing out.  Enough to
+ensure such configurations wouldn't find much use at all.
 
-- Arnaldo
+
+> Not to work
+> mention that I don't think this is an "oddball" case at all -- the
+> bootloader has absolutely _no_ way of influencing the initial enable
+> count of the clock, so the kernel will turn it off as soon as it gets
+> the chance.
+
+That's a nuance that the platform's clock code needs to handle.
+
+Rule of thumb:  don't turn off "unused" clocks until late in the
+system boot sequence ... when drivers for various devices, like
+the console, have been fully initialized.  Else you'll turn off
+something that was used implicitly during booting:  clocks for
+intermediate busses, boot media, console, etc.
+
+
+> > I don't have any issue with getting that fixed too ... but unless
+> > someone has a platform that relies on that case (or can be made to
+> > do so, for testing), then it's hard for me to worry about it!
+> 
+> David, I can't believe you're taking such an easy attitude towards
+> basic correctness!
+
+Call it pragmatism.  In a choice between fixing a bug that's been
+observed to happen, or not doing so because of an issue that's never
+been observed (and won't appear on production systems) ... I'd fix
+the bug, and worry about that issue later (if at all).
+
+
+> I agree that the clock management is already wrong, but keeping a
+> couple of clocks enabled when they could have been disabled is far less
+> of a problem than locking up the console.
+
+And I asked what systems would actually see such a lockup.  What
+system will let me talk to the boot loader on a console, telling
+it how to boot, but then lock up when it gets into Linux?
+
+
+> I also understand if you don't want to fix the console issue I pointed
+> out, but I'm surprised that you aren't even willing to acknowledge the
+> problem, brushing it off with words like "normally" and "as a rule".
+
+Reread the words of mine that you quoted above; I acknowledged the
+issue but can't see it being critical.
+
+- Dave
