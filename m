@@ -1,75 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbYJ2Msk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbYJ2MxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753920AbYJ2Msk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 08:48:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbYJ2Msb
+	id S1753711AbYJ2MxO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 08:53:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbYJ2Mwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 08:48:31 -0400
-Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:35909 "EHLO
-	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752895AbYJ2Msa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 08:48:30 -0400
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <49085BA9.8050306@cam.ac.uk>
-Date: Wed, 29 Oct 2008 12:48:41 +0000
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080801)
+	Wed, 29 Oct 2008 08:52:55 -0400
+Received: from gw.goop.org ([64.81.55.164]:42264 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753504AbYJ2Mwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 08:52:54 -0400
+Message-ID: <49085C9B.6000905@goop.org>
+Date: Wed, 29 Oct 2008 23:52:43 +1100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-To: Mark Brown <broonie@sirena.org.uk>
-CC: Jonathan Cameron <Jonathan.Cameron@gmail.com>,
-       Liam Girdwood <lrg@kernel.org>, felipe.balbi@nokia.com,
-       eric miao <eric.y.miao@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Regulator RFC] da903x: Where should usb charge pump support
- go?
-References: <4906F500.7080100@cam.ac.uk> <20081028112341.GF27144@gandalf.research.nokia.com> <1225195382.28382.168.camel@dell-desktop.example.com> <4908547C.4090907@gmail.com> <20081029122705.GA14648@sirena.org.uk>
-In-Reply-To: <20081029122705.GA14648@sirena.org.uk>
+To: Joe Damato <ice799@gmail.com>
+CC: linux-x86_64@vger.kernel.org, linux-newbie@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 03/12] x86: Cleanup usage of struct desc_struct
+References: <> <1224904532-9586-1-git-send-email-ice799@gmail.com> <52f8491fb5d55c0171840b01638ea6db0a98f3be.1224903712.git.ice799@gmail.com> <03269a2e8f455b431612a32e8cce048e98c75b27.1224903712.git.ice799@gmail.com> <4810cc08c12cd78612b53f9b52d7ba93a9b03fd0.1224903712.git.ice799@gmail.com>
+In-Reply-To: <4810cc08c12cd78612b53f9b52d7ba93a9b03fd0.1224903712.git.ice799@gmail.com>
 X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Brown wrote:
-> On Wed, Oct 29, 2008 at 12:18:04PM +0000, Jonathan Cameron wrote:
-> 
->> ADC
->>     Used partly for internal monitoring functionality, partly for
->>     auxiliary inputs.  The question on this is whether to implement
->>     it as a hwmon driver (somewhat unusual form, but sort of fits)
->>     or whether some of this is needed for feedback to the battery
->>     charger code etc.
-> 
-> For WM8350 this is implemented as a device-specific function in the
-> driver core which is then used by other drivers to export the
-> information to relevant subsystems.
-Seems a sensible option.  Can always put a hwmon driver on top of that
-if people want the nice userspace interfaces etc.
- 
-> There was some work on a generic ADC framework that might be a better
-> fit for the auxiliary inputs but I'm not sure where that's going ATM or
-> if it's really appropriate.
-That's probably me anyway (industrialio), it's stalled whilst I switch
-my test platform to this driver and isn't really suitable for this 
-(unless someone wants to abuse the auxiliary adc inputs for general
-purpose stuff).
+Joe Damato wrote:
+> Use gate_desc typedef for IDT entries instead of struct desc_struct.
+>   
 
-It's focus (principally) is on fast capture from sensors by triggering events
-(periodic timers / gpio / non periodic triggering schedules - haven't done
-that one yet) rather than internal monitoring.  Other such as input / hwmon
-may be built on top of the underlying core, but that's not done yet.
+Why's that?  In general we try to avoid typedefs unless they're really 
+necessary.  If it is necessary, it should be named gate_desc_t.
 
-As a quick and dirty progress report, the device handling side of things
-is in place and working well. Current work is on generalizing the triggering
-framework and working out how to handle the connectivity issues cleanly.
-I did promise to post a release at the end of last week but have dropped
-back a chunk as some 'minor' changes proved rather complex to do.
-
-Jonathan
-
-
- 
-
+    J
