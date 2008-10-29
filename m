@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754322AbYJ2BvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbYJ2Bv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754322AbYJ2BvI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Oct 2008 21:51:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbYJ2BuA
+	id S1754736AbYJ2Bv7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Oct 2008 21:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbYJ2BuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Oct 2008 21:50:00 -0400
-Received: from anchor-post-31.mail.demon.net ([194.217.242.89]:1314 "EHLO
+	Tue, 28 Oct 2008 21:50:16 -0400
+Received: from anchor-post-31.mail.demon.net ([194.217.242.89]:1323 "EHLO
 	anchor-post-31.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752041AbYJ2Bt5 (ORCPT
+	by vger.kernel.org with ESMTP id S1752234AbYJ2BuA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Oct 2008 21:49:57 -0400
+	Tue, 28 Oct 2008 21:50:00 -0400
 To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        tim.bird@am.sony.com
-Subject: [PATCH V2 16/16] MAINTAINERS: squashfs entry
-Message-Id: <E1Kv0C4-0006Hx-O7@dylan>
+Subject: [PATCH V2 14/16] Squashfs: Kconfig entry
+Message-Id: <E1Kv0C4-0006Hm-Jz@dylan>
 From: Phillip Lougher <phillip@lougher.demon.co.uk>
 Date: Wed, 29 Oct 2008 01:49:56 +0000
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,27 +24,72 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
 ---
- MAINTAINERS |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ fs/Kconfig |   52 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 52 insertions(+), 0 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 16202c8..bc5b063 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3951,6 +3951,13 @@ L:	cbe-oss-dev@ozlabs.org
- W:	http://www.ibm.com/developerworks/power/cell/
- S:	Supported
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 522469a..1d7a5f9 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -931,6 +931,58 @@ config CRAMFS
  
-+SQUASHFS FILE SYSTEM
-+P:	Phillip Lougher
-+M:	phillip@lougher.demon.co.uk
-+L:	squashfs-devel@lists.sourceforge.net (subscribers-only)
-+W:	http://squashfs.org.uk
-+S:	Maintained
+ 	  If unsure, say N.
+ 
++config SQUASHFS
++	tristate "SquashFS 4.0 - Squashed file system support"
++	depends on BLOCK
++	select ZLIB_INFLATE
++	help
++	  Saying Y here includes support for SquashFS 4.0 (a Compressed
++	  Read-Only File System).  Squashfs is a highly compressed read-only
++	  filesystem for Linux.  It uses zlib compression to compress both
++	  files, inodes and directories.  Inodes in the system are very small
++	  and all blocks are packed to minimise data overhead. Block sizes
++	  greater than 4K are supported up to a maximum of 1 Mbytes (default
++	  block size 128K).  SquashFS 4.0 supports 64 bit filesystems and files
++	  (larger than 4GB), full uid/gid information, hard links and
++	  timestamps.  
 +
- SRM (Alpha) environment access
- P:	Jan-Benedict Glaw
- M:	jbglaw@lug-owl.de
++	  Squashfs is intended for general read-only filesystem use, for
++	  archival use (i.e. in cases where a .tar.gz file may be used), and in
++	  embedded systems where low overhead is needed.  Further information
++	  and tools are available from http://squashfs.sourceforge.net.
++
++	  If you want to compile this as a module ( = code which can be
++	  inserted in and removed from the running kernel whenever you want),
++	  say M here and read <file:Documentation/modules.txt>.  The module
++	  will be called squashfs.  Note that the root file system (the one
++	  containing the directory /) cannot be compiled as a module.
++
++	  If unsure, say N.
++
++config SQUASHFS_EMBEDDED
++
++	bool "Additional option for memory-constrained systems" 
++	depends on SQUASHFS
++	default n
++	help
++	  Saying Y here allows you to specify cache size.
++
++	  If unsure, say N.
++
++config SQUASHFS_FRAGMENT_CACHE_SIZE
++	int "Number of fragments cached" if SQUASHFS_EMBEDDED
++	depends on SQUASHFS
++	default "3"
++	help
++	  By default SquashFS caches the last 3 fragments read from
++	  the filesystem.  Increasing this amount may mean SquashFS
++	  has to re-read fragments less often from disk, at the expense
++	  of extra system memory.  Decreasing this amount will mean
++	  SquashFS uses less memory at the expense of extra reads from disk.
++
++	  Note there must be at least one cached fragment.  Anything
++	  much more than three will probably not make much difference.
++
+ config VXFS_FS
+ 	tristate "FreeVxFS file system support (VERITAS VxFS(TM) compatible)"
+ 	depends on BLOCK
 -- 
 1.5.2.5
 
