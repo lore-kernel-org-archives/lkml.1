@@ -1,187 +1,390 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753860AbYJ2KL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbYJ2KOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753860AbYJ2KL7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 06:11:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbYJ2KLt
+	id S1753846AbYJ2KOJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 06:14:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbYJ2KNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 06:11:49 -0400
-Received: from mx1.suse.de ([195.135.220.2]:38552 "EHLO mx1.suse.de"
+	Wed, 29 Oct 2008 06:13:55 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:60858 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752366AbYJ2KLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 06:11:48 -0400
-Date: Wed, 29 Oct 2008 11:11:45 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Glauber Costa <glommer@redhat.com>
-Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, avi@redhat.com,
-       aliguori@codemonkey.ws, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] regression: vmalloc easily fail.
-Message-ID: <20081029101145.GB5953@wotan.suse.de>
-References: <1225234513-3996-1-git-send-email-glommer@redhat.com> <20081028232944.GA3759@wotan.suse.de> <20081029094856.GD4269@poweredge.glommer>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081029094856.GD4269@poweredge.glommer>
-User-Agent: Mutt/1.5.9i
+	id S1752366AbYJ2KNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 06:13:53 -0400
+Message-ID: <4908375B.2040202@gentoo.org>
+Date: Wed, 29 Oct 2008 11:13:47 +0100
+From: =?UTF-8?B?UmHDumwgUG9yY2Vs?= <armin76@gentoo.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, klausman@gentoo.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [ALPHA] 2.6.28-rc fails to compile
+References: <49083361.5060907@gentoo.org> <20081029100356.GA28224@cs181140183.pp.htv.fi>
+In-Reply-To: <20081029100356.GA28224@cs181140183.pp.htv.fi>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 07:48:56AM -0200, Glauber Costa wrote:
-
-> 0xf7bfe000-0xf7c00000    8192 hpet_enable+0x2d/0x279 phys=fed00000 ioremap
-> 0xf7c02000-0xf7c04000    8192 acpi_os_map_memory+0x11/0x1a phys=7fed1000 ioremap
-> 0xf7c06000-0xf7c08000    8192 acpi_os_map_memory+0x11/0x1a phys=7fef2000 ioremap
-> 0xf7c0a000-0xf7c0c000    8192 acpi_os_map_memory+0x11/0x1a phys=7fef2000 ioremap
-> 0xf7c0d000-0xf7c0f000    8192 __kvm_set_memory_region+0x164/0x355 [kvm] pages=1 vmalloc
-> 0xf7c10000-0xf7c1f000   61440 acpi_os_map_memory+0x11/0x1a phys=7fed1000 ioremap
-> 0xf7c20000-0xf7c22000    8192 acpi_os_map_memory+0x11/0x1a phys=7fef2000 ioremap
-> 0xf7c24000-0xf7c27000   12288 acpi_os_map_memory+0x11/0x1a phys=7fef2000 ioremap
-> 0xf7c28000-0xf7c2a000    8192 acpi_os_map_memory+0x11/0x1a phys=7fede000 ioremap
-> 0xf7c2c000-0xf7c2e000    8192 acpi_os_map_memory+0x11/0x1a phys=7fef4000 ioremap
-> 0xf7c30000-0xf7c32000    8192 acpi_os_map_memory+0x11/0x1a phys=7fede000 ioremap
-> 0xf7c34000-0xf7c36000    8192 acpi_os_map_memory+0x11/0x1a phys=7fef4000 ioremap
-> 0xf7c38000-0xf7c3a000    8192 acpi_os_map_memory+0x11/0x1a phys=7fed1000 ioremap
-> 0xf7c3c000-0xf7c3e000    8192 acpi_os_map_memory+0x11/0x1a phys=7fede000 ioremap
-> 0xf7c40000-0xf7c42000    8192 acpi_os_map_memory+0x11/0x1a phys=7fede000 ioremap
-> 0xf7c44000-0xf7c46000    8192 acpi_os_map_memory+0x11/0x1a phys=7fede000 ioremap
-> 0xf7c48000-0xf7c4a000    8192 acpi_os_map_memory+0x11/0x1a phys=7fede000 ioremap
-> 0xf7c4b000-0xf7c57000   49152 zisofs_init+0xd/0x1c pages=11 vmalloc
-> 0xf7c58000-0xf7c5a000    8192 yenta_probe+0x123/0x63f phys=e4300000 ioremap
-> 0xf7c5b000-0xf7c5e000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf7c61000-0xf7c65000   16384 vmalloc_exec+0x12/0x14 pages=3 vmalloc
-> 0xf7c67000-0xf7c71000   40960 vmalloc_exec+0x12/0x14 pages=9 vmalloc
-> 0xf7c72000-0xf7c74000    8192 usb_hcd_pci_probe+0x132/0x277 phys=ee404000 ioremap
-> 0xf7c75000-0xf7c7c000   28672 vmalloc_exec+0x12/0x14 pages=6 vmalloc
-> 0xf7c7d000-0xf7c86000   36864 vmalloc_exec+0x12/0x14 pages=8 vmalloc
-> 0xf7c87000-0xf7c89000    8192 __kvm_set_memory_region+0x1df/0x355 [kvm] pages=1 vmalloc
-> 0xf7c8a000-0xf7c91000   28672 vmalloc_exec+0x12/0x14 pages=6 vmalloc
-> 0xf7c92000-0xf7c97000   20480 vmalloc_exec+0x12/0x14 pages=4 vmalloc
-> 0xf7c9b000-0xf7c9f000   16384 vmalloc_exec+0x12/0x14 pages=3 vmalloc
-> 0xf7ca0000-0xf7ca5000   20480 vmalloc_exec+0x12/0x14 pages=4 vmalloc
-> 0xf7ca6000-0xf7cab000   20480 vmalloc_exec+0x12/0x14 pages=4 vmalloc
-> 0xf7cac000-0xf7caf000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf7cb0000-0xf7cb2000    8192 iTCO_wdt_probe+0xbe/0x281 [iTCO_wdt] phys=fed1f000 ioremap
-> 0xf7cb3000-0xf7cbf000   49152 vmalloc_exec+0x12/0x14 pages=11 vmalloc
-> 0xf7cc0000-0xf7cce000   57344 vmalloc_exec+0x12/0x14 pages=13 vmalloc
-> 0xf7ccf000-0xf7cd2000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf7cd3000-0xf7cd5000    8192 __kvm_set_memory_region+0x164/0x355 [kvm] pages=1 vmalloc
-> 0xf7cd6000-0xf7cdc000   24576 vmalloc_exec+0x12/0x14 pages=5 vmalloc
-> 0xf7cdd000-0xf7ce0000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf7ce1000-0xf7ce4000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf7ce6000-0xf7d02000  114688 vmalloc_exec+0x12/0x14 pages=27 vmalloc
-> 0xf7d03000-0xf7d08000   20480 vmalloc_exec+0x12/0x14 pages=4 vmalloc
-> 0xf7d09000-0xf7d0b000    8192 __kvm_set_memory_region+0x1df/0x355 [kvm] pages=1 vmalloc
-> 0xf7d0c000-0xf7d12000   24576 vmalloc_exec+0x12/0x14 pages=5 vmalloc
-> 0xf7d13000-0xf7d24000   69632 snd_malloc_sgbuf_pages+0x190/0x1ca [snd_page_alloc] vmap
-> 0xf7d25000-0xf7d2a000   20480 drm_ht_create+0x69/0xa5 [drm] pages=4 vmalloc
-> 0xf7d2d000-0xf7d2f000    8192 dm_vcalloc+0x24/0x4c [dm_mod] pages=1 vmalloc
-> 0xf7d30000-0xf7d50000  131072 vmalloc_exec+0x12/0x14 pages=31 vmalloc
-> 0xf7d51000-0xf7d54000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf7d56000-0xf7d5a000   16384 vmalloc_exec+0x12/0x14 pages=3 vmalloc
-> 0xf7d5b000-0xf7d5e000   12288 vmalloc_user+0x13/0x38 pages=2 vmalloc user
-> 0xf7d5f000-0xf7d67000   32768 vmalloc_exec+0x12/0x14 pages=7 vmalloc
-> 0xf7d68000-0xf7d79000   69632 snd_malloc_sgbuf_pages+0x190/0x1ca [snd_page_alloc] vmap
-> 0xf7d7a000-0xf7d86000   49152 vmalloc_exec+0x12/0x14 pages=11 vmalloc
-> 0xf7d87000-0xf7d8e000   28672 vmalloc_exec+0x12/0x14 pages=6 vmalloc
-> 0xf7d8f000-0xf7d91000    8192 __kvm_set_memory_region+0x164/0x355 [kvm] pages=1 vmalloc
-> 0xf7d92000-0xf7d94000    8192 dm_vcalloc+0x24/0x4c [dm_mod] pages=1 vmalloc
-> 0xf7d96000-0xf7dba000  147456 vmalloc_exec+0x12/0x14 pages=35 vmalloc
-> 0xf7dbb000-0xf7dc0000   20480 vmalloc_exec+0x12/0x14 pages=4 vmalloc
-> 0xf7dc1000-0xf7dc4000   12288 vmalloc_32+0x12/0x14 pages=2 vmalloc
-> 0xf7dc7000-0xf7dc9000    8192 dm_vcalloc+0x24/0x4c [dm_mod] pages=1 vmalloc
-> 0xf7dcb000-0xf7dd4000   36864 vmalloc_exec+0x12/0x14 pages=8 vmalloc
-> 0xf7dd5000-0xf7dd7000    8192 __kvm_set_memory_region+0x1df/0x355 [kvm] pages=1 vmalloc
-> 0xf7dd8000-0xf7dda000    8192 pci_iomap+0x72/0x7b phys=ee404000 ioremap
-> 0xf7ddb000-0xf7dec000   69632 snd_malloc_sgbuf_pages+0x190/0x1ca [snd_page_alloc] vmap
-> 0xf7ded000-0xf7e0e000  135168 vmalloc_exec+0x12/0x14 pages=32 vmalloc
-> 0xf7e0f000-0xf7e23000   81920 vmalloc_exec+0x12/0x14 pages=19 vmalloc
-> 0xf7e24000-0xf7e2a000   24576 vmalloc_exec+0x12/0x14 pages=5 vmalloc
-> 0xf7e2b000-0xf7e2f000   16384 vmalloc_exec+0x12/0x14 pages=3 vmalloc
-> 0xf7e30000-0xf7e34000   16384 vmalloc_exec+0x12/0x14 pages=3 vmalloc
-> 0xf7e36000-0xf7e45000   61440 vmalloc_exec+0x12/0x14 pages=14 vmalloc
-> 0xf7e46000-0xf7e68000  139264 vmalloc_exec+0x12/0x14 pages=33 vmalloc
-> 0xf7e6d000-0xf7e6f000    8192 __kvm_set_memory_region+0x164/0x355 [kvm] pages=1 vmalloc
-> 0xf7e70000-0xf7e79000   36864 ioremap_wc+0x21/0x23 phys=dbff8000 ioremap
-> 0xf7e80000-0xf7e91000   69632 drm_addmap_core+0x16d/0x4d5 [drm] phys=ee100000 ioremap
-> 0xf7e92000-0xf7ea0000   57344 vmalloc_exec+0x12/0x14 pages=13 vmalloc
-> 0xf7ea1000-0xf7ea6000   20480 vmalloc_exec+0x12/0x14 pages=4 vmalloc
-> 0xf7ec8000-0xf7ecf000   28672 vmalloc_exec+0x12/0x14 pages=6 vmalloc
-> 0xf7ed0000-0xf7f06000  221184 vmalloc_exec+0x12/0x14 pages=53 vmalloc
-> 0xf7f07000-0xf7f0e000   28672 vmalloc_exec+0x12/0x14 pages=6 vmalloc
-> 0xf7f0f000-0xf7f28000  102400 vmalloc_exec+0x12/0x14 pages=24 vmalloc
-> 0xf7f29000-0xf7f2f000   24576 vmalloc_exec+0x12/0x14 pages=5 vmalloc
-> 0xf7f3c000-0xf7f3e000    8192 __kvm_set_memory_region+0x1df/0x355 [kvm] pages=1 vmalloc
-> 0xf7f3f000-0xf7f42000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf7f43000-0xf7f4d000   40960 vmalloc_exec+0x12/0x14 pages=9 vmalloc
-> 0xf7f4e000-0xf7f50000    8192 __kvm_set_memory_region+0x164/0x355 [kvm] pages=1 vmalloc
-> 0xf7f51000-0xf7f57000   24576 vmalloc_exec+0x12/0x14 pages=5 vmalloc
-> 0xf7f59000-0xf7f67000   57344 vmalloc_exec+0x12/0x14 pages=13 vmalloc
-> 0xf7faa000-0xf7fbc000   73728 vmalloc_exec+0x12/0x14 pages=17 vmalloc
-> 0xf802f000-0xf8032000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf8033000-0xf8039000   24576 vmalloc_exec+0x12/0x14 pages=5 vmalloc
-> 0xf803a000-0xf803c000    8192 __kvm_set_memory_region+0x1df/0x355 [kvm] pages=1 vmalloc
-> 0xf803d000-0xf8043000   24576 vmalloc_exec+0x12/0x14 pages=5 vmalloc
-> 0xf8044000-0xf8046000    8192 __kvm_set_memory_region+0x164/0x355 [kvm] pages=1 vmalloc
-> 0xf8047000-0xf8053000   49152 vmalloc_exec+0x12/0x14 pages=11 vmalloc
-> 0xf8054000-0xf8058000   16384 vmalloc_exec+0x12/0x14 pages=3 vmalloc
-> 0xf8059000-0xf805b000    8192 __kvm_set_memory_region+0x1df/0x355 [kvm] pages=1 vmalloc
-> 0xf805c000-0xf805e000    8192 pci_iomap+0x72/0x7b phys=edf00000 ioremap
-> 0xf8062000-0xf8066000   16384 vmalloc_exec+0x12/0x14 pages=3 vmalloc
-> 0xf8069000-0xf806b000    8192 dm_vcalloc+0x24/0x4c [dm_mod] pages=1 vmalloc
-> 0xf80c0000-0xf81b9000 1019904 sys_swapon+0x481/0xaa0 pages=248 vmalloc
-> 0xf81e3000-0xf81e8000   20480 vmalloc_exec+0x12/0x14 pages=4 vmalloc
-> 0xf8237000-0xf823c000   20480 vmalloc_exec+0x12/0x14 pages=4 vmalloc
-> 0xf8275000-0xf827a000   20480 vmalloc_exec+0x12/0x14 pages=4 vmalloc
-> 0xf8451000-0xf845f000   57344 vmalloc_exec+0x12/0x14 pages=13 vmalloc
-> 0xf848a000-0xf848d000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf84ba000-0xf84bd000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf84be000-0xf84c2000   16384 vmalloc_exec+0x12/0x14 pages=3 vmalloc
-> 0xf84f1000-0xf84f4000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf84f5000-0xf84f8000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf8502000-0xf8510000   57344 vmalloc_exec+0x12/0x14 pages=13 vmalloc
-> 0xf8511000-0xf851f000   57344 vmalloc_exec+0x12/0x14 pages=13 vmalloc
-> 0xf8523000-0xf852a000   28672 vmalloc_exec+0x12/0x14 pages=6 vmalloc
-> 0xf8534000-0xf8538000   16384 vmalloc_exec+0x12/0x14 pages=3 vmalloc
-> 0xf8539000-0xf853b000    8192 __kvm_set_memory_region+0x1df/0x355 [kvm] pages=1 vmalloc
-> 0xf853c000-0xf8545000   36864 vmalloc_exec+0x12/0x14 pages=8 vmalloc
-> 0xf8546000-0xf8550000   40960 vmalloc_exec+0x12/0x14 pages=9 vmalloc
-> 0xf8551000-0xf8554000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf8555000-0xf8561000   49152 vmalloc_exec+0x12/0x14 pages=11 vmalloc
-> 0xf856c000-0xf856f000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf8578000-0xf857d000   20480 azx_probe+0x32b/0xa0a [snd_hda_intel] phys=ee400000 ioremap
-> 0xf8594000-0xf85c1000  184320 vmalloc_exec+0x12/0x14 pages=44 vmalloc
-> 0xf85db000-0xf85df000   16384 vmalloc_exec+0x12/0x14 pages=3 vmalloc
-> 0xf85f4000-0xf85f6000    8192 __kvm_set_memory_region+0x255/0x355 [kvm] pages=1 vmalloc
-> 0xf85f7000-0xf85fa000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf85fb000-0xf8620000  151552 vmalloc_exec+0x12/0x14 pages=36 vmalloc
-> 0xf8624000-0xf8628000   16384 vmalloc_exec+0x12/0x14 pages=3 vmalloc
-> 0xf8629000-0xf8689000  393216 vmalloc_exec+0x12/0x14 pages=95 vmalloc
-> 0xf868a000-0xf8690000   24576 vmalloc_exec+0x12/0x14 pages=5 vmalloc
-> 0xf8691000-0xf8695000   16384 vmalloc_exec+0x12/0x14 pages=3 vmalloc
-> 0xf8699000-0xf869c000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf86a5000-0xf86a9000   16384 vmalloc_exec+0x12/0x14 pages=3 vmalloc
-> 0xf86c4000-0xf86c7000   12288 vmalloc_exec+0x12/0x14 pages=2 vmalloc
-> 0xf87a6000-0xf87af000   36864 vmalloc_exec+0x12/0x14 pages=8 vmalloc
-> 0xf87dd000-0xf87e2000   20480 vmalloc_exec+0x12/0x14 pages=4 vmalloc
-> 0xf8815000-0xf881c000   28672 vmalloc_exec+0x12/0x14 pages=6 vmalloc
-> 0xf89b8000-0xf89d2000  106496 vmalloc_exec+0x12/0x14 pages=25 vmalloc
-> 0xf8a00000-0xf8a21000  135168 e1000_probe+0x1a5/0xbb3 [e1000e] phys=ee000000 ioremap
-> 0xf8a22000-0xf9223000 8392704 vmalloc_32+0x12/0x14 pages=2048 vmalloc vpages
-> 0xf97a4000-0xf97a7000   12288 e1000e_setup_tx_resources+0x1d/0xbf [e1000e] pages=2 vmalloc
-> 0xf97a8000-0xf97ab000   12288 e1000e_setup_rx_resources+0x1d/0xfa [e1000e] pages=2 vmalloc
-> 0xf97ac000-0xf98ad000 1052672 __kvm_set_memory_region+0x164/0x355 [kvm] pages=256 vmalloc
-> 0xf98ae000-0xf98b1000   12288 __kvm_set_memory_region+0x1df/0x355 [kvm] pages=2 vmalloc
-> 0xf98b2000-0xf98b7000   20480 __kvm_set_memory_region+0x164/0x355 [kvm] pages=4 vmalloc
-
-Hmm, spanning <30MB of memory... how much vmalloc space do you have?
-
-Anyway, there's quite a lot of little allocations there, and things are
-getting a bit fragmented. Why don't we just drop the guard pages
-completely (maybe turn them on with a debug option)? I don't think I have
-ever seen a problem caught by them... not to say they can't catch problems,
-but those problems could equally appear in linear KVA too (or between guard
-pages).
+Adrian Bunk wrote:
+> On Wed, Oct 29, 2008 at 10:56:49AM +0100, Raúl Porcel wrote:
+>> Hi,
+>>
+>> I guess the git bisect says everything, but if you need more info,
+>> please say so.
+> 
+> Please send your .config
+> 
+>>   CHK     include/linux/version.h
+>>   CHK     include/linux/utsrelease.h
+>>   HOSTCC  scripts/basic/fixdep
+>>   HOSTCC  scripts/basic/docproc
+>>   HOSTCC  scripts/basic/hash
+>>   CC      kernel/bounds.s
+>>   GEN     include/linux/bounds.h
+>>   CC      arch/alpha/kernel/asm-offsets.s
+>> In file included from
+>> /usr/src/linux-2.6.28-rc2/arch/alpha/include/asm/core_tsun
+>> ami.h:5,
+>>                  from
+>> /usr/src/linux-2.6.28-rc2/arch/alpha/include/asm/io.h:232,
+>>                  from arch/alpha/kernel/asm-offsets.c:12:
+>> include/linux/pci.h: In function 'pci_ioremap_bar':
+>> include/linux/pci.h:1148: error: implicit declaration of function
+>> 'ioremap_nocac
+>> he'
+>> include/linux/pci.h:1149: warning: return makes pointer from integer
+>> without a c
+>> ast
+>> In file included from arch/alpha/kernel/asm-offsets.c:12:
+>> /usr/src/linux-2.6.28-rc2/arch/alpha/include/asm/io.h: At top level:
+>> /usr/src/linux-2.6.28-rc2/arch/alpha/include/asm/io.h:300: error:
+>> conflicting ty
+>> pes for 'ioremap_nocache'
+>> include/linux/pci.h:1148: error: previous implicit declaration of
+>> 'ioremap_nocac
+>> he' was here
+>> make[1]: *** [arch/alpha/kernel/asm-offsets.s] Error 1
+>> make: *** [prepare0] Error 2
+>>
+>>
+>> -------------------------
+>>
+>> aa42d7c6138afdc54f74e971456a0fbfec16b77b is first bad commit
+>> commit aa42d7c6138afdc54f74e971456a0fbfec16b77b
+>> Author: Arjan van de Ven <arjan@infradead.org>
+>> Date:   Sun Sep 28 16:36:11 2008 -0700
+>>
+>>     PCI: introduce an pci_ioremap(pdev, barnr) function
+> 
+> cu
+> Adrian
+> 
 
 
+CONFIG_ALPHA=y
+CONFIG_64BIT=y
+CONFIG_MMU=y
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_ZONE_DMA=y
+CONFIG_GENERIC_ISA_DMA=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_GENERIC_IRQ_PROBE=y
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+CONFIG_EXPERIMENTAL=y
+CONFIG_BROKEN_ON_SMP=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+CONFIG_LOCALVERSION_AUTO=y
+CONFIG_SWAP=y
+CONFIG_SYSVIPC=y
+CONFIG_SYSVIPC_SYSCTL=y
+CONFIG_POSIX_MQUEUE=y
+CONFIG_LOG_BUF_SHIFT=14
+CONFIG_SYSFS_DEPRECATED=y
+CONFIG_SYSFS_DEPRECATED_V2=y
+CONFIG_NAMESPACES=y
+CONFIG_SYSCTL=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+CONFIG_KALLSYMS_ALL=y
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_PCSPKR_PLATFORM=y
+CONFIG_COMPAT_BRK=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_ANON_INODES=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_TIMERFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_AIO=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_PCI_QUIRKS=y
+CONFIG_SLUB_DEBUG=y
+CONFIG_SLUB=y
+CONFIG_HAVE_OPROFILE=y
+CONFIG_SLABINFO=y
+CONFIG_RT_MUTEXES=y
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+CONFIG_KMOD=y
+CONFIG_BLOCK=y
+CONFIG_IOSCHED_NOOP=y
+CONFIG_IOSCHED_AS=y
+CONFIG_IOSCHED_DEADLINE=y
+CONFIG_IOSCHED_CFQ=y
+CONFIG_DEFAULT_CFQ=y
+CONFIG_DEFAULT_IOSCHED="cfq"
+CONFIG_CLASSIC_RCU=y
+CONFIG_ALPHA_GENERIC=y
+CONFIG_ISA=y
+CONFIG_ISA_DMA_API=y
+CONFIG_PCI=y
+CONFIG_PCI_DOMAINS=y
+CONFIG_PCI_SYSCALL=y
+CONFIG_IOMMU_HELPER=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_ALPHA_BROKEN_IRQ_MASK=y
+CONFIG_VGA_HOSE=y
+CONFIG_EISA=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+CONFIG_SELECT_MEMORY_MODEL=y
+CONFIG_FLATMEM_MANUAL=y
+CONFIG_FLATMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+CONFIG_PAGEFLAGS_EXTENDED=y
+CONFIG_SPLIT_PTLOCK_CPUS=4
+CONFIG_RESOURCES_64BIT=y
+CONFIG_PHYS_ADDR_T_64BIT=y
+CONFIG_ZONE_DMA_FLAG=1
+CONFIG_BOUNCE=y
+CONFIG_VIRT_TO_BUS=y
+CONFIG_UNEVICTABLE_LRU=y
+CONFIG_VERBOSE_MCHECK=y
+CONFIG_VERBOSE_MCHECK_ON=1
+CONFIG_HZ=1024
+CONFIG_PCI_LEGACY=y
+CONFIG_EISA_PCI_EISA=y
+CONFIG_EISA_VIRTUAL_ROOT=y
+CONFIG_EISA_NAMES=y
+CONFIG_SRM_ENV=m
+CONFIG_BINFMT_ELF=y
+CONFIG_HAVE_AOUT=y
+CONFIG_NET=y
+CONFIG_PACKET=y
+CONFIG_UNIX=y
+CONFIG_XFRM=y
+CONFIG_XFRM_USER=m
+CONFIG_NET_KEY=m
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+CONFIG_IP_FIB_HASH=y
+CONFIG_INET_AH=m
+CONFIG_INET_ESP=m
+CONFIG_INET_XFRM_MODE_TRANSPORT=y
+CONFIG_INET_XFRM_MODE_TUNNEL=y
+CONFIG_INET_XFRM_MODE_BEET=y
+CONFIG_INET_DIAG=y
+CONFIG_INET_TCP_DIAG=y
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_DEFAULT_TCP_CONG="cubic"
+CONFIG_NETFILTER=y
+CONFIG_NETFILTER_ADVANCED=y
+CONFIG_NETFILTER_XTABLES=m
+CONFIG_IP_NF_QUEUE=m
+CONFIG_IP_NF_IPTABLES=m
+CONFIG_IP_NF_FILTER=m
+CONFIG_VLAN_8021Q=m
+CONFIG_WIRELESS=y
+CONFIG_WIRELESS_OLD_REGULATORY=y
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+CONFIG_STANDALONE=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=y
+CONFIG_FIRMWARE_IN_KERNEL=y
+CONFIG_EXTRA_FIRMWARE=""
+CONFIG_PNP=y
+CONFIG_PNP_DEBUG_MESSAGES=y
+CONFIG_ISAPNP=y
+CONFIG_BLK_DEV=y
+CONFIG_BLK_DEV_FD=y
+CONFIG_BLK_DEV_LOOP=m
+CONFIG_MISC_DEVICES=y
+CONFIG_HAVE_IDE=y
+CONFIG_IDE=y
+CONFIG_IDE_TIMINGS=y
+CONFIG_IDE_GD=y
+CONFIG_IDE_GD_ATA=y
+CONFIG_BLK_DEV_IDECD=y
+CONFIG_BLK_DEV_IDECD_VERBOSE_ERRORS=y
+CONFIG_IDE_PROC_FS=y
+CONFIG_IDE_GENERIC=y
+CONFIG_BLK_DEV_IDEDMA_SFF=y
+CONFIG_BLK_DEV_IDEPCI=y
+CONFIG_IDEPCI_PCIBUS_ORDER=y
+CONFIG_BLK_DEV_GENERIC=y
+CONFIG_BLK_DEV_IDEDMA_PCI=y
+CONFIG_BLK_DEV_ALI15X3=y
+CONFIG_BLK_DEV_CMD64X=y
+CONFIG_BLK_DEV_CY82C693=y
+CONFIG_BLK_DEV_IDEDMA=y
+CONFIG_SCSI=y
+CONFIG_SCSI_DMA=y
+CONFIG_SCSI_PROC_FS=y
+CONFIG_BLK_DEV_SD=y
+CONFIG_BLK_DEV_SR=y
+CONFIG_BLK_DEV_SR_VENDOR=y
+CONFIG_SCSI_WAIT_SCAN=m
+CONFIG_SCSI_SPI_ATTRS=m
+CONFIG_SCSI_LOWLEVEL=y
+CONFIG_SCSI_AIC7XXX=m
+CONFIG_AIC7XXX_CMDS_PER_DEVICE=253
+CONFIG_AIC7XXX_RESET_DELAY_MS=5000
+CONFIG_AIC7XXX_DEBUG_MASK=0
+CONFIG_AIC7XXX_REG_PRETTY_PRINT=y
+CONFIG_NETDEVICES=y
+CONFIG_DUMMY=m
+CONFIG_NET_ETHERNET=y
+CONFIG_MII=y
+CONFIG_NET_VENDOR_3COM=y
+CONFIG_VORTEX=y
+CONFIG_NET_TULIP=y
+CONFIG_DE2104X=m
+CONFIG_TULIP=y
+CONFIG_TULIP_MMIO=y
+CONFIG_NET_PCI=y
+CONFIG_NETDEV_1000=y
+CONFIG_YELLOWFIN=y
+CONFIG_NETDEV_10000=y
+CONFIG_INPUT=y
+CONFIG_INPUT_MOUSEDEV=y
+CONFIG_INPUT_MOUSEDEV_PSAUX=y
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+CONFIG_INPUT_KEYBOARD=y
+CONFIG_KEYBOARD_ATKBD=y
+CONFIG_INPUT_MOUSE=y
+CONFIG_MOUSE_PS2=y
+CONFIG_MOUSE_PS2_ALPS=y
+CONFIG_MOUSE_PS2_LOGIPS2PP=y
+CONFIG_MOUSE_PS2_SYNAPTICS=y
+CONFIG_MOUSE_PS2_LIFEBOOK=y
+CONFIG_MOUSE_PS2_TRACKPOINT=y
+CONFIG_SERIO=y
+CONFIG_SERIO_I8042=y
+CONFIG_SERIO_SERPORT=y
+CONFIG_SERIO_LIBPS2=y
+CONFIG_VT=y
+CONFIG_CONSOLE_TRANSLATIONS=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+CONFIG_DEVKMEM=y
+CONFIG_SERIAL_8250=y
+CONFIG_SERIAL_8250_CONSOLE=y
+CONFIG_SERIAL_8250_PCI=y
+CONFIG_SERIAL_8250_PNP=y
+CONFIG_SERIAL_8250_NR_UARTS=4
+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+CONFIG_UNIX98_PTYS=y
+CONFIG_LEGACY_PTYS=y
+CONFIG_LEGACY_PTY_COUNT=256
+CONFIG_HW_RANDOM=m
+CONFIG_RTC=y
+CONFIG_DEVPORT=y
+CONFIG_HWMON=y
+CONFIG_SSB_POSSIBLE=y
+CONFIG_VGA_CONSOLE=y
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_HID_SUPPORT=y
+CONFIG_HID=y
+CONFIG_HID_DEBUG=y
+CONFIG_HID_COMPAT=y
+CONFIG_USB_SUPPORT=y
+CONFIG_USB_ARCH_HAS_HCD=y
+CONFIG_USB_ARCH_HAS_OHCI=y
+CONFIG_USB_ARCH_HAS_EHCI=y
+CONFIG_EXT2_FS=y
+CONFIG_REISERFS_FS=m
+CONFIG_FILE_LOCKING=y
+CONFIG_DNOTIFY=y
+CONFIG_INOTIFY=y
+CONFIG_INOTIFY_USER=y
+CONFIG_AUTOFS_FS=m
+CONFIG_ISO9660_FS=y
+CONFIG_FAT_FS=y
+CONFIG_MSDOS_FS=y
+CONFIG_VFAT_FS=y
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_PROC_PAGE_MONITOR=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+CONFIG_NETWORK_FILESYSTEMS=y
+CONFIG_NFS_FS=m
+CONFIG_NFS_V3=y
+CONFIG_NFSD=m
+CONFIG_NFSD_V3=y
+CONFIG_LOCKD=m
+CONFIG_LOCKD_V4=y
+CONFIG_EXPORTFS=m
+CONFIG_NFS_COMMON=y
+CONFIG_SUNRPC=m
+CONFIG_OSF_PARTITION=y
+CONFIG_MSDOS_PARTITION=y
+CONFIG_NLS=y
+CONFIG_NLS_DEFAULT="iso8859-1"
+CONFIG_NLS_CODEPAGE_437=y
+CONFIG_ENABLE_WARN_DEPRECATED=y
+CONFIG_ENABLE_MUST_CHECK=y
+CONFIG_FRAME_WARN=2048
+CONFIG_MAGIC_SYSRQ=y
+CONFIG_DEBUG_KERNEL=y
+CONFIG_DETECT_SOFTLOCKUP=y
+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
+CONFIG_SCHED_DEBUG=y
+CONFIG_DEBUG_INFO=y
+CONFIG_DEBUG_MEMORY_INIT=y
+CONFIG_EARLY_PRINTK=y
+CONFIG_ALPHA_LEGACY_START_ADDRESS=y
+CONFIG_MATHEMU=y
+CONFIG_CRYPTO=y
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_AEAD=y
+CONFIG_CRYPTO_BLKCIPHER=y
+CONFIG_CRYPTO_HASH=y
+CONFIG_CRYPTO_RNG=y
+CONFIG_CRYPTO_MANAGER=y
+CONFIG_CRYPTO_AUTHENC=m
+CONFIG_CRYPTO_CBC=m
+CONFIG_CRYPTO_HMAC=y
+CONFIG_CRYPTO_MD5=m
+CONFIG_CRYPTO_SHA1=m
+CONFIG_CRYPTO_DES=m
+CONFIG_CRYPTO_HW=y
+CONFIG_BITREVERSE=y
+CONFIG_CRC32=y
+CONFIG_PLIST=y
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
 
+This is the machine:
+
+Linux monolith 2.6.27 #1 SMP Wed Oct 15 14:28:47 CEST 2008 alpha EV68AL
+Tsunami GNU/Linux
