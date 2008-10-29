@@ -1,79 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbYJ2Pek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754238AbYJ2Pif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754515AbYJ2Pek (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 11:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbYJ2Peb
+	id S1754238AbYJ2Pif (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 11:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbYJ2Pi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 11:34:31 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:41290 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752749AbYJ2Peb (ORCPT
+	Wed, 29 Oct 2008 11:38:27 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:35074 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753059AbYJ2Pi1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 11:34:31 -0400
-Date: Wed, 29 Oct 2008 08:34:03 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: dedekind@infradead.org
+	Wed, 29 Oct 2008 11:38:27 -0400
+Subject: Re: How do I printk <type> correctly?
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Randy Dunlap <randy.dunlap@oracle.com>
 Cc: Alexey Dobriyan <adobriyan@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
        ericvh@gmail.com, mfasheh@suse.com
-Subject: Re: How do I printk <type> correctly?
-Message-Id: <20081029083403.5afac2c1.randy.dunlap@oracle.com>
-In-Reply-To: <1225267204.4350.10.camel@sauron>
+In-Reply-To: <20081029083403.5afac2c1.randy.dunlap@oracle.com>
 References: <20081023114133.GA30187@x200.localdomain>
-	<20081028161136.c652b9fd.randy.dunlap@oracle.com>
-	<1225267204.4350.10.camel@sauron>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	 <20081028161136.c652b9fd.randy.dunlap@oracle.com>
+	 <1225267204.4350.10.camel@sauron>
+	 <20081029083403.5afac2c1.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 29 Oct 2008 17:36:50 +0200
+Message-Id: <1225294610.4350.19.camel@sauron>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 29 Oct 2008 15:38:13.0308 (UTC) FILETIME=[5AA45FC0:01C939DC]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Oct 2008 10:00:04 +0200 Artem Bityutskiy wrote:
-
-> On Tue, 2008-10-28 at 16:11 -0700, Randy Dunlap wrote:
-> > On Thu, 23 Oct 2008 15:41:33 +0400 Alexey Dobriyan wrote:
-> > 
-> > > If variable is of Type	use	printk format specifier.
-> > > ---------------------------------------------------------
-> > > 		int			%d or %x
-> > > 		unsigned int		%u or %x
-> > > 		long			%ld ot %lx
-> > > 		unsigned long		%lu or %lx
-> > > 		long long		%lld or %llx
-> > > 		unsigned long long	%llu or %llx
-> > > 		size_t			%zu or %zx
-> > > 		ssize_t			%zd or %zx
-> > > 
-> > > Raw pointer value SHOULD be printed with %p.
-> > > 
-> > > u64 SHOULD be printed with %llu/%llx, (unsigned long long):
-> > > 
-> > > 	printk("%llu", (unsigned long long)u64_var);
-> > > 
-> > > s64 SHOULD be printed with %lld/%llx, (long long):
-> > > 
-> > > 	printk("%lld", (long long)s64_var);
-> > > 
-> > > If type is dependent on config option (sector_t), use format specifier
-> > > of biggest type and explicitly cast to it.
-> > > 
-> > > Reminder: sizeof() result is of type size_t.
+On Wed, 2008-10-29 at 08:34 -0700, Randy Dunlap wrote:
+> It's in the C standard, which we don't try to put into Documentation/ AFAIK.
 > 
-> Do we have this somewhere in Documentation? Would be nice to have it.
+> section 6.5.3.4, The sizeof operator:
+> 
+> 4 The value of the result is implementation-defined, and its type (an unsigned integer type)
+> is size_t, defined in <stddef.h> (and other headers).
 
-It's in the C standard, which we don't try to put into Documentation/ AFAIK.
+Well, OK. I was more thinking about printing stuff like ino_t.
+UBIFS used %lu for this which was the source of warnings.
 
-section 6.5.3.4, The sizeof operator:
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
-4 The value of the result is implementation-defined, and its type (an unsigned integer type)
-is size_t, defined in <stddef.h> (and other headers).
-
-
----
-~Randy
