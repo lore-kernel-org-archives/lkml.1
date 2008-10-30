@@ -1,102 +1,374 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758714AbYJ3TG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758462AbYJ3TIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758714AbYJ3TG0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 15:06:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353AbYJ3TGR
+	id S1758462AbYJ3TIf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 15:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYJ3TIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 15:06:17 -0400
-Received: from gv-out-0910.google.com ([216.239.58.187]:52652 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754219AbYJ3TGQ (ORCPT
+	Thu, 30 Oct 2008 15:08:25 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47569 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753188AbYJ3TIY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 15:06:16 -0400
-Subject: uwb: struct device - replace bus_id with dev_name(), dev_set_name()
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: David Vrabel <david.vrabel@csr.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Content-Type: text/plain
-Date: Thu, 30 Oct 2008 20:06:16 +0100
-Message-Id: <1225393576.21973.36.camel@nga.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Oct 2008 15:08:24 -0400
+Date: Thu, 30 Oct 2008 20:09:57 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: greg@kroah.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] w35und: remove ->adapter from struct _HW_DATA_T
+Message-ID: <20081030190956.GA22185@elf.ucw.cz>
+References: <1225376079-9592-1-git-send-email-penberg@cs.helsinki.fi> <1225376079-9592-2-git-send-email-penberg@cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225376079-9592-2-git-send-email-penberg@cs.helsinki.fi>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is part of a larger patch series which will remove
-the "char bus_id[20]" name string from struct device. The device
-name is managed in the kobject anyway, and without any size
-limitation, and just needlessly copied into "struct device".
+On Thu 2008-10-30 16:14:36, Pekka Enberg wrote:
+> Eventually we want to pass a pointer to struct ieee80211_hw around in the
+> driver, so remove the bidirectional link between struct wb35_adapter and struct
+> _HW_DATA_T to simplify the code.
 
-To set and read the device name dev_name(dev) and dev_set_name(dev)
-must be used. If your code uses static kobjects, which it shouldn't
-do, "const char *init_name" can be used to statically provide the
-name the registered device should have. At registration time, the
-init_name field is cleared, to enforce the use of dev_name(dev) to
-access the device name at a later time.
+Acked-by: Pavel Machek <pavel@suse.cz>
 
-We need to get rid of all occurrences of bus_id in the entire tree
-to be able to enable the new interface. Please apply this patch,
-and possibly convert any remaining remaining occurrences of bus_id.
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> ---
+>  drivers/staging/winbond/mds.c      |    2 +-
+>  drivers/staging/winbond/wb35tx.c   |   38 +++++++++++++++++++----------------
+>  drivers/staging/winbond/wb35tx_f.h |   11 +++++----
+>  drivers/staging/winbond/wbhal.c    |   24 +++++++++++-----------
+>  drivers/staging/winbond/wbhal_f.h  |    6 ++--
+>  drivers/staging/winbond/wbhal_s.h  |   10 ---------
+>  6 files changed, 43 insertions(+), 48 deletions(-)
+> 
+> diff --git a/drivers/staging/winbond/mds.c b/drivers/staging/winbond/mds.c
+> index a23b74e..af4fdf1 100644
+> --- a/drivers/staging/winbond/mds.c
+> +++ b/drivers/staging/winbond/mds.c
+> @@ -176,7 +176,7 @@ Mds_Tx(struct wb35_adapter * adapter)
+>  	// Start to send by lower module
+>  	//
+>  	if (!pHwData->IsKeyPreSet)
+> -		Wb35Tx_start(pHwData);
+> +		Wb35Tx_start(adapter);
+>  
+>   cleanup:
+>  	atomic_dec(&pMds->TxThreadCount);
+> diff --git a/drivers/staging/winbond/wb35tx.c b/drivers/staging/winbond/wb35tx.c
+> index af4a61f..ce7e981 100644
+> --- a/drivers/staging/winbond/wb35tx.c
+> +++ b/drivers/staging/winbond/wb35tx.c
+> @@ -23,23 +23,24 @@ Wb35Tx_get_tx_buffer(phw_data_t pHwData, u8 **pBuffer)
+>  	return true;
+>  }
+>  
+> -void Wb35Tx_start(phw_data_t pHwData)
+> +void Wb35Tx_start(struct wb35_adapter *adapter)
+>  {
+> +	phw_data_t pHwData = &adapter->sHwData;
+>  	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
+>  
+>  	// Allow only one thread to run into function
+>  	if (atomic_inc_return(&pWb35Tx->TxFireCounter) == 1) {
+>  		pWb35Tx->EP4vm_state = VM_RUNNING;
+> -		Wb35Tx(pHwData);
+> +		Wb35Tx(adapter);
+>  	} else
+>  		atomic_dec(&pWb35Tx->TxFireCounter);
+>  }
+>  
+>  
+> -void Wb35Tx(phw_data_t pHwData)
+> +void Wb35Tx(struct wb35_adapter *adapter)
+>  {
+> +	phw_data_t	pHwData = &adapter->sHwData;
+>  	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
+> -	struct wb35_adapter *adapter = pHwData->adapter;
+>  	u8		*pTxBufferAddress;
+>  	PMDS		pMds = &adapter->Mds;
+>  	struct urb *	pUrb = (struct urb *)pWb35Tx->Tx4Urb;
+> @@ -65,7 +66,7 @@ void Wb35Tx(phw_data_t pHwData)
+>  	usb_fill_bulk_urb(pUrb, pHwData->WbUsb.udev,
+>  			  usb_sndbulkpipe(pHwData->WbUsb.udev, 4),
+>  			  pTxBufferAddress, pMds->TxBufferSize[ SendIndex ],
+> -			  Wb35Tx_complete, pHwData);
+> +			  Wb35Tx_complete, adapter);
+>  
+>  	pWb35Tx->EP4vm_state = VM_RUNNING;
+>  	retv = usb_submit_urb(pUrb, GFP_ATOMIC);
+> @@ -77,7 +78,7 @@ void Wb35Tx(phw_data_t pHwData)
+>  	// Check if driver needs issue Irp for EP2
+>  	pWb35Tx->TxFillCount += pMds->TxCountInBuffer[SendIndex];
+>  	if (pWb35Tx->TxFillCount > 12)
+> -		Wb35Tx_EP2VM_start( pHwData );
+> +		Wb35Tx_EP2VM_start(adapter);
+>  
+>  	pWb35Tx->ByteTransfer += pMds->TxBufferSize[SendIndex];
+>  	return;
+> @@ -90,8 +91,8 @@ void Wb35Tx(phw_data_t pHwData)
+>  
+>  void Wb35Tx_complete(struct urb * pUrb)
+>  {
+> -	phw_data_t	pHwData = pUrb->context;
+> -	struct wb35_adapter *adapter = pHwData->adapter;
+> +	struct wb35_adapter *adapter = pUrb->context;
+> +	phw_data_t	pHwData = &adapter->sHwData;
+>  	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
+>  	PMDS		pMds = &adapter->Mds;
+>  
+> @@ -117,7 +118,7 @@ void Wb35Tx_complete(struct urb * pUrb)
+>  	}
+>  
+>  	Mds_Tx(adapter);
+> -	Wb35Tx(pHwData);
+> +	Wb35Tx(adapter);
+>  	return;
+>  
+>  error:
+> @@ -193,8 +194,9 @@ void Wb35Tx_destroy(phw_data_t pHwData)
+>  	#endif
+>  }
+>  
+> -void Wb35Tx_CurrentTime(phw_data_t pHwData, u32 TimeCount)
+> +void Wb35Tx_CurrentTime(struct wb35_adapter *adapter, u32 TimeCount)
+>  {
+> +	phw_data_t pHwData = &adapter->sHwData;
+>  	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
+>  	unsigned char Trigger = false;
+>  
+> @@ -205,26 +207,28 @@ void Wb35Tx_CurrentTime(phw_data_t pHwData, u32 TimeCount)
+>  
+>  	if (Trigger) {
+>  		pWb35Tx->TxTimer = TimeCount;
+> -		Wb35Tx_EP2VM_start( pHwData );
+> +		Wb35Tx_EP2VM_start(adapter);
+>  	}
+>  }
+>  
+> -void Wb35Tx_EP2VM_start(phw_data_t pHwData)
+> +void Wb35Tx_EP2VM_start(struct wb35_adapter *adapter)
+>  {
+> +	phw_data_t pHwData = &adapter->sHwData;
+>  	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
+>  
+>  	// Allow only one thread to run into function
+>  	if (atomic_inc_return(&pWb35Tx->TxResultCount) == 1) {
+>  		pWb35Tx->EP2vm_state = VM_RUNNING;
+> -		Wb35Tx_EP2VM( pHwData );
+> +		Wb35Tx_EP2VM(adapter);
+>  	}
+>  	else
+>  		atomic_dec(&pWb35Tx->TxResultCount);
+>  }
+>  
+>  
+> -void Wb35Tx_EP2VM(phw_data_t pHwData)
+> +void Wb35Tx_EP2VM(struct wb35_adapter *adapter)
+>  {
+> +	phw_data_t	pHwData = &adapter->sHwData;
+>  	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
+>  	struct urb *	pUrb = (struct urb *)pWb35Tx->Tx2Urb;
+>  	u32 *	pltmp = (u32 *)pWb35Tx->EP2_buf;
+> @@ -240,7 +244,7 @@ void Wb35Tx_EP2VM(phw_data_t pHwData)
+>  	// Issuing URB
+>  	//
+>  	usb_fill_int_urb( pUrb, pHwData->WbUsb.udev, usb_rcvintpipe(pHwData->WbUsb.udev,2),
+> -			  pltmp, MAX_INTERRUPT_LENGTH, Wb35Tx_EP2VM_complete, pHwData, 32);
+> +			  pltmp, MAX_INTERRUPT_LENGTH, Wb35Tx_EP2VM_complete, adapter, 32);
+>  
+>  	pWb35Tx->EP2vm_state = VM_RUNNING;
+>  	retv = usb_submit_urb(pUrb, GFP_ATOMIC);
+> @@ -261,9 +265,9 @@ error:
+>  
+>  void Wb35Tx_EP2VM_complete(struct urb * pUrb)
+>  {
+> -	phw_data_t	pHwData = pUrb->context;
+> +	struct wb35_adapter *adapter = pUrb->context;
+> +	phw_data_t	pHwData = &adapter->sHwData;
+>  	T02_DESCRIPTOR	T02, TSTATUS;
+> -	struct wb35_adapter *adapter = pHwData->adapter;
+>  	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
+>  	u32 *		pltmp = (u32 *)pWb35Tx->EP2_buf;
+>  	u32		i;
+> diff --git a/drivers/staging/winbond/wb35tx_f.h b/drivers/staging/winbond/wb35tx_f.h
+> index 6aca4e9..466eb6f 100644
+> --- a/drivers/staging/winbond/wb35tx_f.h
+> +++ b/drivers/staging/winbond/wb35tx_f.h
+> @@ -1,6 +1,7 @@
+>  #ifndef __WINBOND_WB35TX_F_H
+>  #define __WINBOND_WB35TX_F_H
+>  
+> +#include "adapter.h"
+>  #include "wbhal_f.h"
+>  
+>  //====================================
+> @@ -10,16 +11,16 @@ unsigned char Wb35Tx_initial(	 phw_data_t pHwData );
+>  void Wb35Tx_destroy(  phw_data_t pHwData );
+>  unsigned char Wb35Tx_get_tx_buffer(  phw_data_t pHwData,  u8 **pBuffer );
+>  
+> -void Wb35Tx_EP2VM(  phw_data_t pHwData );
+> -void Wb35Tx_EP2VM_start(  phw_data_t pHwData );
+> +void Wb35Tx_EP2VM(struct wb35_adapter *adapter);
+> +void Wb35Tx_EP2VM_start(struct wb35_adapter *adapter);
+>  void Wb35Tx_EP2VM_complete(struct urb *urb);
+>  
+> -void Wb35Tx_start(  phw_data_t pHwData );
+> +void Wb35Tx_start(struct wb35_adapter *adapter);
+>  void Wb35Tx_stop(  phw_data_t pHwData );
+> -void Wb35Tx(  phw_data_t pHwData );
+> +void Wb35Tx(struct wb35_adapter *adapter);
+>  void Wb35Tx_complete(struct urb *urb);
+>  void Wb35Tx_reset_descriptor(  phw_data_t pHwData );
+>  
+> -void Wb35Tx_CurrentTime(  phw_data_t pHwData,  u32 TimeCount );
+> +void Wb35Tx_CurrentTime(struct wb35_adapter *adapter,  u32 TimeCount);
+>  
+>  #endif
+> diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
+> index 752ce59..3b7e90b 100644
+> --- a/drivers/staging/winbond/wbhal.c
+> +++ b/drivers/staging/winbond/wbhal.c
+> @@ -32,8 +32,8 @@ void hal_get_permanent_address( phw_data_t pHwData, u8 *pethernet_address )
+>  
+>  static void hal_led_control(unsigned long data)
+>  {
+> -	phw_data_t pHwData = (phw_data_t) data;
+> -	struct wb35_adapter *	adapter = pHwData->adapter;
+> +	struct wb35_adapter *adapter = (struct wb35_adapter *) data;
+> +	phw_data_t pHwData = &adapter->sHwData;
+>  	struct wb35_reg *reg = &pHwData->reg;
+>  	u32	LEDSet = (pHwData->SoftwareSet & HAL_LED_SET_MASK) >> HAL_LED_SET_SHIFT;
+>  	u8	LEDgray[20] = { 0,3,4,6,8,10,11,12,13,14,15,14,13,12,11,10,8,6,4,2 };
+> @@ -310,7 +310,7 @@ static void hal_led_control(unsigned long data)
+>  	}
+>  
+>  	pHwData->time_count += TimeInterval;
+> -	Wb35Tx_CurrentTime( pHwData, pHwData->time_count ); // 20060928 add
+> +	Wb35Tx_CurrentTime(adapter, pHwData->time_count); // 20060928 add
+>  	pHwData->LEDTimer.expires = jiffies + msecs_to_jiffies(TimeInterval);
+>  	add_timer(&pHwData->LEDTimer);
+>  }
+> @@ -319,7 +319,6 @@ static void hal_led_control(unsigned long data)
+>  u8 hal_init_hardware(phw_data_t pHwData, struct wb35_adapter * adapter)
+>  {
+>  	u16 SoftwareSet;
+> -	pHwData->adapter = adapter;
+>  
+>  	// Initial the variable
+>  	pHwData->MaxReceiveLifeTime = DEFAULT_MSDU_LIFE_TIME; // Setting Rx maximum MSDU life time
+> @@ -334,7 +333,7 @@ u8 hal_init_hardware(phw_data_t pHwData, struct wb35_adapter * adapter)
+>  				pHwData->InitialResource = 4;
+>  				init_timer(&pHwData->LEDTimer);
+>  				pHwData->LEDTimer.function = hal_led_control;
+> -				pHwData->LEDTimer.data = (unsigned long) pHwData;
+> +				pHwData->LEDTimer.data = (unsigned long) adapter;
+>  				pHwData->LEDTimer.expires = jiffies + msecs_to_jiffies(1000);
+>  				add_timer(&pHwData->LEDTimer);
+>  
+> @@ -351,7 +350,7 @@ u8 hal_init_hardware(phw_data_t pHwData, struct wb35_adapter * adapter)
+>  				#endif
+>  
+>  				Wb35Rx_start( pHwData );
+> -				Wb35Tx_EP2VM_start( pHwData );
+> +				Wb35Tx_EP2VM_start(adapter);
+>  
+>  				return true;
+>  			}
+> @@ -672,13 +671,13 @@ s32 hal_get_rssi(  phw_data_t pHwData,  u32 *HalRssiArry,  u8 Count )
+>  	return ltmp;
+>  }
+>  //----------------------------------------------------------------------------------------------------
+> -s32 hal_get_rssi_bss(  phw_data_t pHwData,  u16 idx,  u8 Count )
+> +s32 hal_get_rssi_bss(struct wb35_adapter *adapter,  u16 idx,  u8 Count)
+>  {
+> +	phw_data_t pHwData = &adapter->sHwData;
+>  	struct wb35_reg *reg = &pHwData->reg;
+>  	R01_DESCRIPTOR	r01;
+>  	s32 ltmp = 0, tmp;
+>  	u8	i, j;
+> -	struct wb35_adapter *	adapter = pHwData->adapter;
+>  //	u32 *HalRssiArry = psBSS(idx)->HalRssi;
+>  
+>  	if( pHwData->SurpriseRemove ) return -200;
+> @@ -842,9 +841,10 @@ void hal_system_power_change(phw_data_t pHwData, u32 PowerState)
+>  	}
+>  }
+>  
+> -void hal_surprise_remove(  phw_data_t pHwData )
+> +void hal_surprise_remove(struct wb35_adapter *adapter)
+>  {
+> -	struct wb35_adapter * adapter = pHwData->adapter;
+> +	phw_data_t pHwData = &adapter->sHwData;
+> +
+>  	if (atomic_inc_return( &pHwData->SurpriseRemoveCount ) == 1) {
+>  		#ifdef _PE_STATE_DUMP_
+>  		WBDEBUG(("Calling hal_surprise_remove\n"));
+> @@ -853,9 +853,9 @@ void hal_surprise_remove(  phw_data_t pHwData )
+>  	}
+>  }
+>  
+> -void hal_rate_change(  phw_data_t pHwData ) // Notify the HAL rate is changing 20060613.1
+> +void hal_rate_change(struct wb35_adapter *adapter) // Notify the HAL rate is changing 20060613.1
+>  {
+> -	struct wb35_adapter *	adapter = pHwData->adapter;
+> +	phw_data_t pHwData = &adapter->sHwData;
+>  	u8		rate = CURRENT_TX_RATE;
+>  
+>  	BBProcessor_RateChanging( pHwData, rate );
+> diff --git a/drivers/staging/winbond/wbhal_f.h b/drivers/staging/winbond/wbhal_f.h
+> index d64fd17..4cb4da0 100644
+> --- a/drivers/staging/winbond/wbhal_f.h
+> +++ b/drivers/staging/winbond/wbhal_f.h
+> @@ -61,7 +61,7 @@ void hal_set_cwmax(  phw_data_t pHwData,  u16 cwin_max );
+>  void hal_set_rsn_wpa(  phw_data_t pHwData,  u32 * RSN_IE_Bitmap , u32 * RSN_OUI_type , unsigned char bDesiredAuthMode);
+>  //s32 hal_get_rssi(  phw_data_t pHwData,  u32 HalRssi );
+>  s32 hal_get_rssi(  phw_data_t pHwData,  u32 *HalRssiArry,  u8 Count );
+> -s32 hal_get_rssi_bss(  phw_data_t pHwData,  u16 idx,  u8 Count );
+> +s32 hal_get_rssi_bss(struct wb35_adapter *adapter,  u16 idx,  u8 Count);
+>  void hal_set_connect_info(  phw_data_t pHwData,  unsigned char boConnect );
+>  u8 hal_get_est_sq3(  phw_data_t pHwData,  u8 Count );
+>  void hal_set_rf_power(  phw_data_t pHwData,  u8 PowerIndex ); // 20060621 Modify
+> @@ -82,13 +82,13 @@ u8 hal_get_hw_radio_off			(  phw_data_t pHwData );
+>  #define hal_scan_interval( _A )		(_A->Scan_Interval)
+>  void hal_scan_status_indicate(  phw_data_t pHwData, u8 status);	// 0: complete, 1: in progress
+>  void hal_system_power_change(  phw_data_t pHwData, u32 PowerState ); // 20051230 -=D0 1=D1 ..
+> -void hal_surprise_remove(  phw_data_t pHwData );
+> +void hal_surprise_remove(struct wb35_adapter *adapter);
+>  
+>  #define PHY_DEBUG( msg, args... )
+>  
+>  
+>  
+> -void hal_rate_change(  phw_data_t pHwData ); // Notify the HAL rate is changing 20060613.1
+> +void hal_rate_change(struct wb35_adapter *adapter); // Notify the HAL rate is changing 20060613.1
+>  unsigned char hal_get_dxx_reg(  phw_data_t pHwData,  u16 number,  u32 * pValue );
+>  unsigned char hal_set_dxx_reg(  phw_data_t pHwData,  u16 number,  u32 value );
+>  #define hal_get_time_count( _P )	(_P->time_count/10)	// return 100ms count
+> diff --git a/drivers/staging/winbond/wbhal_s.h b/drivers/staging/winbond/wbhal_s.h
+> index 995976a..276d2b1 100644
+> --- a/drivers/staging/winbond/wbhal_s.h
+> +++ b/drivers/staging/winbond/wbhal_s.h
+> @@ -449,16 +449,6 @@ typedef struct _HW_DATA_T
+>  	u32	FragCount;
+>  	u32	DMAFix; //V1_DMA_FIX The variable can be removed if driver want to save mem space for V2.
+>  
+> -	//=======================================================================================
+> -	// For USB driver, hal need more variables. Due to
+> -	//	1. NDIS-WDM operation
+> -	//	2. The SME, MLME and OLD MDS need adapter structure, but the driver under HAL doesn't
+> -	//		have that parameter when receiving and indicating packet.
+> -	//		The MDS must input the adapter pointer as the second parameter of hal_init_hardware.
+> -	//		The function usage is different than PCI driver.
+> -	//=======================================================================================
+> -	void* adapter;
+> -
+>  	//===============================================
+>  	// Definition for MAC address
+>  	//===============================================
 
-We want to submit a patch to -next, which will remove bus_id from
-"struct device", to find the remaining pieces to convert, and finally
-switch over to the new api, which will remove the 20 bytes array
-and does no longer have a size limitation.
-
-Thanks,
-Kay
-
-
-From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: uwb: struct device - replace bus_id with dev_name(), dev_set_name()
-
-Cc: David Vrabel <david.vrabel@csr.com>
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
----
-
-
-diff --git a/drivers/uwb/umc-dev.c b/drivers/uwb/umc-dev.c
-index aa44e1c..53207e1 100644
---- a/drivers/uwb/umc-dev.c
-+++ b/drivers/uwb/umc-dev.c
-@@ -31,8 +31,7 @@ struct umc_dev *umc_device_create(struct device *parent, int n)
- 
- 	umc = kzalloc(sizeof(struct umc_dev), GFP_KERNEL);
- 	if (umc) {
--		snprintf(umc->dev.bus_id, sizeof(umc->dev.bus_id), "%s-%d",
--			 parent->bus_id, n);
-+		dev_set_name(&umc->dev, "%s-%d", dev_name(parent), n);
- 		umc->dev.parent  = parent;
- 		umc->dev.bus     = &umc_bus_type;
- 		umc->dev.release = umc_device_release;
-diff --git a/drivers/uwb/whci.c b/drivers/uwb/whci.c
-index 3df2388..e626467 100644
---- a/drivers/uwb/whci.c
-+++ b/drivers/uwb/whci.c
-@@ -111,7 +111,7 @@ static int whci_add_cap(struct whci_card *card, int n)
- 		+ UWBCAPDATA_TO_OFFSET(capdata);
- 	umc->resource.end    = umc->resource.start
- 		+ (n == 0 ? 0x20 : UWBCAPDATA_TO_SIZE(capdata)) - 1;
--	umc->resource.name   = umc->dev.bus_id;
-+	umc->resource.name   = dev_name(&umc->dev);
- 	umc->resource.flags  = card->pci->resource[bar].flags;
- 	umc->resource.parent = &card->pci->resource[bar];
- 	umc->irq             = card->pci->irq;
-diff --git a/include/linux/uwb/debug.h b/include/linux/uwb/debug.h
-index a86a73f..67a2405 100644
---- a/include/linux/uwb/debug.h
-+++ b/include/linux/uwb/debug.h
-@@ -60,7 +60,7 @@ do {									\
- 				snprintf(__head, sizeof(__head),	\
- 					 "%s %s: ",			\
- 					 dev_driver_string(__dev),	\
--					 __dev->bus_id);		\
-+					 dev_name(__dev));		\
- 		}							\
- 		printk(KERN_ERR "%s%s" _tag ": " f, __head,		\
- 			__func__, ## a);				\
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
