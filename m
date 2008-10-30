@@ -1,50 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbYJ3UR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755574AbYJ3USn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308AbYJ3UR0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 16:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbYJ3URR
+	id S1755574AbYJ3USn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 16:18:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYJ3USf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 16:17:17 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:4565 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752520AbYJ3URR (ORCPT
+	Thu, 30 Oct 2008 16:18:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43064 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752461AbYJ3USe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 16:17:17 -0400
-Date: Thu, 30 Oct 2008 20:08:54 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: Jonas Bonn <jonas.bonn@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Message-ID: <20081030200851.GC13678@sirena.org.uk>
-References: <7a6abd110810300741wf73f838laa3754e23c22baf3@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7a6abd110810300741wf73f838laa3754e23c22baf3@mail.gmail.com>
-X-Cookie: You may be recognized soon.  Hide.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [RFC] API for system clocks (oscillators)
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+	Thu, 30 Oct 2008 16:18:34 -0400
+Date: Thu, 30 Oct 2008 13:17:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Viktor Rosendahl <viktor.rosendahl@nokia.com>
+Cc: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
+Subject: Re: [PATCH 1/1] Make sure that any oops is flushed to the mtdoops
+ console
+Message-Id: <20081030131734.c74e614d.akpm@linux-foundation.org>
+In-Reply-To: <1224688588-2665-2-git-send-email-viktor.rosendahl@nokia.com>
+References: <1224688588-2665-1-git-send-email-viktor.rosendahl@nokia.com>
+	<1224688588-2665-2-git-send-email-viktor.rosendahl@nokia.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 03:41:17PM +0100, Jonas Bonn wrote:
+On Wed, 22 Oct 2008 18:16:28 +0300
+Viktor Rosendahl <viktor.rosendahl@nokia.com> wrote:
 
-> I'd be happy to get some feedback on this, whether or not it is a good
-> idea or even the right way to approach this problem.  This is part of
+> This used to work unpatched with older kernels, during the development phase
+> of mtdoops. Before commit e3e8a75d2acfc61ebf25524666a0a2c6abb0620c a space was
+> printed with console_loglevel set to 15, which probably flushed the oops
+> message as a side effect.
+> 
+> This is another patch from the Nokia N810 kernel.
+> 
+> Signed-off-by: Viktor Rosendahl <viktor.rosendahl@nokia.com>
+> ---
+>  lib/bust_spinlocks.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/lib/bust_spinlocks.c b/lib/bust_spinlocks.c
+> index 486da62..9681d54 100644
+> --- a/lib/bust_spinlocks.c
+> +++ b/lib/bust_spinlocks.c
+> @@ -12,6 +12,7 @@
+>  #include <linux/tty.h>
+>  #include <linux/wait.h>
+>  #include <linux/vt_kern.h>
+> +#include <linux/console.h>
+>  
+>  
+>  void __attribute__((weak)) bust_spinlocks(int yes)
+> @@ -22,6 +23,7 @@ void __attribute__((weak)) bust_spinlocks(int yes)
+>  #ifdef CONFIG_VT
+>  		unblank_screen();
+>  #endif
+> +		console_unblank();
+>  		if (--oops_in_progress == 0)
+>  			wake_up_klogd();
+>  	}
 
-Something like this would certainly be very useful for audio clocking if
-it could be made to fit - that can get complex, is partly off-SoC and
-frequently has multiple interrelated clock sources available, often with
-various hard to describe interdependencies with constraints coming from
-multiple sources and changing dynamically at run time.
+That looks logical.  From my reading we can now remove that
+unblank_screen(), because the console_unblank() will call
+vt_console_driver.unblank() for us?
 
-In general your problem statement looks fairly sane.  I've not reviewed
-this in detail but do think you should have a look at the OMAP stuff.
+--- a/lib/bust_spinlocks.c~oops-handling-ensure-that-any-oops-is-flushed-to-the-mtdoops-console-fix
++++ a/lib/bust_spinlocks.c
+@@ -11,7 +11,6 @@
+ #include <linux/spinlock.h>
+ #include <linux/tty.h>
+ #include <linux/wait.h>
+-#include <linux/vt_kern.h>
+ #include <linux/console.h>
+ 
+ 
+@@ -20,9 +19,6 @@ void __attribute__((weak)) bust_spinlock
+ 	if (yes) {
+ 		++oops_in_progress;
+ 	} else {
+-#ifdef CONFIG_VT
+-		unblank_screen();
+-#endif
+ 		console_unblank();
+ 		if (--oops_in_progress == 0)
+ 			wake_up_klogd();
+_
 
-One thing to watch out for is that you'll find clocks doing things like
-originating in one chip, going through another and being fed back into
-the original chip.
