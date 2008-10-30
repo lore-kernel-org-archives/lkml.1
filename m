@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758675AbYJ3XQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756906AbYJ3XRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758675AbYJ3XQT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 19:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYJ3XQF
+	id S1756906AbYJ3XRq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 19:17:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbYJ3XRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 19:16:05 -0400
-Received: from qb-out-0506.google.com ([72.14.204.235]:64207 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753022AbYJ3XQD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 19:16:03 -0400
-Message-ID: <ac3eb2510810301616n271102fcred30bc1eef6a8dba@mail.gmail.com>
-Date: Fri, 31 Oct 2008 00:16:01 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Jiri Kosina" <jkosina@suse.cz>
-Subject: Re: hid: struct device - replace bus_id with dev_name(), dev_set_name()
-Cc: "Jiri Slaby" <jirislaby@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>
-In-Reply-To: <alpine.LNX.1.10.0810310009110.31273@jikos.suse.cz>
+	Thu, 30 Oct 2008 19:17:37 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42891 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754280AbYJ3XRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 19:17:36 -0400
+Date: Fri, 31 Oct 2008 00:17:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: fix missing cpu_index initialisation
+Message-ID: <20081030231723.GB1985@elte.hu>
+References: <1225401217.19324.28.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1225385705.21973.20.camel@nga.site> <490A0A35.9060606@gmail.com>
-	 <1225395316.21973.47.camel@nga.site>
-	 <alpine.LNX.1.10.0810310009110.31273@jikos.suse.cz>
+In-Reply-To: <1225401217.19324.28.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 31, 2008 at 00:10, Jiri Kosina <jkosina@suse.cz> wrote:
-> On Thu, 30 Oct 2008, Kay Sievers wrote:
->
->> > > switch over to the new api, which will remove the 20 bytes array
->> > > and does no longer have a size limitation.
->> > Cool!
->> > Could you left the comment above to remind us about removing this ugly hack
->> > later when the new non-limited api will be used?
->> Sure!
->> From: Kay Sievers <kay.sievers@vrfy.org>
->> Subject: hid: struct device - replace bus_id with dev_name(), dev_set_name()
->
-> Hi Kay,
->
-> thanks for this cleanup. What is the timeframe the bus_id will be removed
-> from struct device?
 
-Hmm, not sure. We will put the remaining pieces into Greg's tree, wait
-for -next to carry most of it, and convert the rest. Maybe we can do
-it for the next kernel, but we might get sidetracked again, and it
-might take longer.
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-Thanks,
-Kay
+> >From f49bbb826d8ec87609a63fb014af6aacb16aac38 Mon Sep 17 00:00:00 2001
+> From: James Bottomley <James.Bottomley@HansenPartnership.com>
+> Date: Wed, 29 Oct 2008 15:13:09 -0500
+> Subject: [VOYAGER] x86: fix missing cpu_index initialisation
+> 
+> Ever since
+> 
+> commit 92cb7612aee39642d109b8d935ad265e602c0563
+> Author: Mike Travis <travis@sgi.com>
+> Date:   Fri Oct 19 20:35:04 2007 +0200
+> 
+>     x86: convert cpuinfo_x86 array to a per_cpu array
+> 
+> We've had an extra field in cpuinfo_x86 which is cpu_index.
+> Unfortunately, voyager has never initialised this, although the only
+> noticeable impact seems to be that /proc/cpuinfo shows all zeros for
+> the processor ids.
+> 
+> Anyway, fix this by initialising the boot CPU properly and setting the
+> index when the secondaries update.
+> 
+> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+> ---
+> 
+> Depends on [VOYAGER] x86: add ability to test for boot CPU
+
+applied both to tip/x86/urgent:
+
+ 6b5496e: x86/voyager: fix missing cpu_index initialisation
+ 3b25aec: x86/voyager: fix compile breakage caused by dc1e35c6e95e8923cf1d35104
+
+thanks James,
+
+	Ingo
