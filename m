@@ -1,498 +1,568 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbYJ3RF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758063AbYJ3RGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757334AbYJ3RF6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 13:05:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757364AbYJ3REr
+	id S1758063AbYJ3RGi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 13:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757056AbYJ3RFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 13:04:47 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:27579 "EHLO
+	Thu, 30 Oct 2008 13:05:53 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:25723 "EHLO
 	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756862AbYJ3REp (ORCPT
+	with ESMTP id S1757096AbYJ3RFw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 13:04:45 -0400
+	Thu, 30 Oct 2008 13:05:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
          :sender;
-        b=l7kyD6X0RXuyT+eXjjWaYDECch1RHBWcGNvZ8yMCmByfTl/823Mlg0QHFff/O95+05
-         Orb86CAbEaAXUv07ihe1tgALeMRMhUq79DFQctvLq2uQI9dw/MFXdCkFQIRhTd5yAM1n
-         Q6DV6FBAjLGOuG/fGhCOLRw8JpgwZ7o6G8VvQ=
+        b=bMUuOMYtWV9r+NtnIER2DrjqArKlpYLqkT8fU3bDzjXpo5JnrNwVVbZM+jT4AAOSrA
+         kWZPTqKe8LuEYIb/T7QHRGXiMNkW5rs6l+CSiBe8mWz5GTJjXSyL3QLQTX2MdrneI1o4
+         xP9JxEtRq+Zo2GIUS1WUdz7YH4TgNB5oIoSKU=
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 To: greg@kroah.com
 Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
        Pavel Machek <pavel@suse.cz>
-Subject: [PATCH 6/7] w35und: remove dead code from wbhal.c
-Date: Thu, 30 Oct 2008 19:04:55 +0200
-Message-Id: <1225386296-19632-6-git-send-email-penberg@cs.helsinki.fi>
+Subject: [PATCH 4/7] w35und: make functions local to wb35rx.c static
+Date: Thu, 30 Oct 2008 19:04:53 +0200
+Message-Id: <1225386296-19632-4-git-send-email-penberg@cs.helsinki.fi>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1225386296-19632-5-git-send-email-penberg@cs.helsinki.fi>
+In-Reply-To: <1225386296-19632-3-git-send-email-penberg@cs.helsinki.fi>
 References: <>
  <1225386296-19632-1-git-send-email-penberg@cs.helsinki.fi>
  <1225386296-19632-2-git-send-email-penberg@cs.helsinki.fi>
  <1225386296-19632-3-git-send-email-penberg@cs.helsinki.fi>
- <1225386296-19632-4-git-send-email-penberg@cs.helsinki.fi>
- <1225386296-19632-5-git-send-email-penberg@cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove tons of unused code from wbhal.c.
+While there are no functional changes, the diff is quite large because we need
+to shuffle code around to avoid forward declarations.
 
 Cc: Pavel Machek <pavel@suse.cz>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- drivers/staging/winbond/wbhal.c   |  311 +------------------------------------
- drivers/staging/winbond/wbhal_f.h |   22 ---
- 2 files changed, 1 insertions(+), 332 deletions(-)
+ drivers/staging/winbond/wb35rx.c   |  425 ++++++++++++++++++------------------
+ drivers/staging/winbond/wb35rx_f.h |    6 -
+ 2 files changed, 213 insertions(+), 218 deletions(-)
 
-diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
-index 7ab5300..d7bbb9a 100644
---- a/drivers/staging/winbond/wbhal.c
-+++ b/drivers/staging/winbond/wbhal.c
-@@ -2,13 +2,6 @@
- #include "wbhal_f.h"
- #include "wblinux_f.h"
+diff --git a/drivers/staging/winbond/wb35rx.c b/drivers/staging/winbond/wb35rx.c
+index 85b861c..7f8b6d7 100644
+--- a/drivers/staging/winbond/wb35rx.c
++++ b/drivers/staging/winbond/wb35rx.c
+@@ -14,85 +14,150 @@
+ #include "sysdef.h"
+ #include "wb35rx_f.h"
  
--void hal_get_ethernet_address( phw_data_t pHwData, u8 *current_address )
--{
--	if( pHwData->SurpriseRemove ) return;
--
--	memcpy( current_address, pHwData->CurrentMacAddress, ETH_LENGTH_OF_ADDRESS );
--}
--
- void hal_set_ethernet_address( phw_data_t pHwData, u8 *current_address )
+-void Wb35Rx_start(struct ieee80211_hw *hw)
++static void packet_came(struct ieee80211_hw *hw, char *pRxBufferAddress, int PacketSize)
  {
- 	u32 ltmp[2];
-@@ -377,92 +370,6 @@ void hal_halt(phw_data_t pHwData, void *ppa_data)
+ 	struct wbsoft_priv *priv = hw->priv;
+-	phw_data_t pHwData = &priv->sHwData;
+-	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
++	struct sk_buff *skb;
++	struct ieee80211_rx_status rx_status = {0};
+ 
+-	// Allow only one thread to run into the Wb35Rx() function
+-	if (atomic_inc_return(&pWb35Rx->RxFireCounter) == 1) {
+-		pWb35Rx->EP3vm_state = VM_RUNNING;
+-		Wb35Rx(hw);
+-	} else
+-		atomic_dec(&pWb35Rx->RxFireCounter);
++	if (!priv->enabled)
++		return;
++
++	skb = dev_alloc_skb(PacketSize);
++	if (!skb) {
++		printk("Not enough memory for packet, FIXME\n");
++		return;
++	}
++
++	memcpy(skb_put(skb, PacketSize),
++	       pRxBufferAddress,
++	       PacketSize);
++
++/*
++	rx_status.rate = 10;
++	rx_status.channel = 1;
++	rx_status.freq = 12345;
++	rx_status.phymode = MODE_IEEE80211B;
++*/
++
++	ieee80211_rx_irqsafe(hw, skb, &rx_status);
  }
  
- //---------------------------------------------------------------------------------------------------
--void hal_set_rates(phw_data_t pHwData, u8 *pbss_rates,
--		   u8 length, unsigned char basic_rate_set)
--{
--	struct wb35_reg *reg = &pHwData->reg;
--	u32		tmp, tmp1;
--	u8		Rate[12]={ 2, 4, 11, 22, 12, 18, 24, 36, 48, 72, 96, 108 };
--	u8		SupportedRate[16];
--	u8		i, j, k, Count1, Count2, Byte;
--
--	if( pHwData->SurpriseRemove ) return;
--
--	if (basic_rate_set) {
--		reg->M28_MacControl &= ~0x000fff00;
--		tmp1 = 0x00000100;
--	} else {
--		reg->M28_MacControl &= ~0xfff00000;
--		tmp1 = 0x00100000;
--	}
--
--	tmp = 0;
--	for (i=0; i<length; i++) {
--		Byte = pbss_rates[i] & 0x7f;
--		for (j=0; j<12; j++) {
--			if( Byte == Rate[j] )
--				break;
--		}
--
--		if (j < 12)
--			tmp |= (tmp1<<j);
--	}
--
--	reg->M28_MacControl |= tmp;
--	Wb35Reg_Write( pHwData, 0x0828, reg->M28_MacControl );
--
--	// 930206.2.c M78 setting
--	j = k = Count1 = Count2 = 0;
--	memset( SupportedRate, 0, 16 );
--	tmp = 0x00100000;
--	tmp1 = 0x00000100;
--	for (i=0; i<12; i++) { // Get the supported rate
--		if (tmp & reg->M28_MacControl) {
--			SupportedRate[j] = Rate[i];
--
--			if (tmp1 & reg->M28_MacControl)
--				SupportedRate[j] |= 0x80;
--
--			if (k)
--				Count2++;
--			else
--				Count1++;
--
--			j++;
--		}
--
--		if (i==4 && k==0) {
--			if( !(reg->M28_MacControl & 0x000ff000) ) // if basic rate in 11g domain)
--			{
--				k = 1;
--				j = 8;
--			}
--		}
--
--		tmp <<= 1;
--		tmp1 <<= 1;
--	}
--
--	// Fill data into support rate until buffer full
--	//---20060926 add by anson's endian
--	for (i=0; i<4; i++)
--		*(u32 *)(SupportedRate+(i<<2)) = cpu_to_le32( *(u32 *)(SupportedRate+(i<<2)) );
--	//--- end 20060926 add by anson's endian
--	Wb35Reg_BurstWrite( pHwData,0x087c, (u32 *)SupportedRate, 4, AUTO_INCREMENT );
--	reg->M7C_MacControl = ((u32 *)SupportedRate)[0];
--	reg->M80_MacControl = ((u32 *)SupportedRate)[1];
--	reg->M84_MacControl = ((u32 *)SupportedRate)[2];
--	reg->M88_MacControl = ((u32 *)SupportedRate)[3];
--
--	// Fill length
--	tmp = Count1<<28 | Count2<<24;
--	reg->M78_ERPInformation &= ~0xff000000;
--	reg->M78_ERPInformation |= tmp;
--	Wb35Reg_Write( pHwData, 0x0878, reg->M78_ERPInformation );
--}
--
--
--//---------------------------------------------------------------------------------------------------
- void hal_set_beacon_period(  phw_data_t pHwData,  u16 beacon_period )
+-// This function cannot reentrain
+-void Wb35Rx(struct ieee80211_hw *hw)
++static void Wb35Rx_adjust(PDESCRIPTOR pRxDes)
++{
++	u32 *	pRxBufferAddress;
++	u32	DecryptionMethod;
++	u32	i;
++	u16	BufferSize;
++
++	DecryptionMethod = pRxDes->R01.R01_decryption_method;
++	pRxBufferAddress = pRxDes->buffer_address[0];
++	BufferSize = pRxDes->buffer_size[0];
++
++	// Adjust the last part of data. Only data left
++	BufferSize -= 4; // For CRC-32
++	if (DecryptionMethod)
++		BufferSize -= 4;
++	if (DecryptionMethod == 3) // For CCMP
++		BufferSize -= 4;
++
++	// Adjust the IV field which after 802.11 header and ICV field.
++	if (DecryptionMethod == 1) // For WEP
++	{
++		for( i=6; i>0; i-- )
++			pRxBufferAddress[i] = pRxBufferAddress[i-1];
++		pRxDes->buffer_address[0] = pRxBufferAddress + 1;
++		BufferSize -= 4; // 4 byte for IV
++	}
++	else if( DecryptionMethod ) // For TKIP and CCMP
++	{
++		for (i=7; i>1; i--)
++			pRxBufferAddress[i] = pRxBufferAddress[i-2];
++		pRxDes->buffer_address[0] = pRxBufferAddress + 2;//Update the descriptor, shift 8 byte
++		BufferSize -= 8; // 8 byte for IV + ICV
++	}
++	pRxDes->buffer_size[0] = BufferSize;
++}
++
++static u16 Wb35Rx_indicate(struct ieee80211_hw *hw)
  {
- 	u32	tmp;
-@@ -476,7 +383,7 @@ void hal_set_beacon_period(  phw_data_t pHwData,  u16 beacon_period )
- }
+ 	struct wbsoft_priv *priv = hw->priv;
+ 	phw_data_t pHwData = &priv->sHwData;
++	DESCRIPTOR	RxDes;
+ 	PWB35RX	pWb35Rx = &pHwData->Wb35Rx;
+-	u8 *	pRxBufferAddress;
+-	struct urb *urb = pWb35Rx->RxUrb;
+-	int	retv;
+-	u32	RxBufferId;
++	u8 *		pRxBufferAddress;
++	u16		PacketSize;
++	u16		stmp, BufferSize, stmp2 = 0;
++	u32		RxBufferId;
  
+-	//
+-	// Issuing URB
+-	//
+-	if (pHwData->SurpriseRemove || pHwData->HwStop)
+-		goto error;
++	// Only one thread be allowed to run into the following
++	do {
++		RxBufferId = pWb35Rx->RxProcessIndex;
++		if (pWb35Rx->RxOwner[ RxBufferId ]) //Owner by VM
++			break;
  
--void hal_set_current_channel_ex(  phw_data_t pHwData,  ChanInfo channel )
-+static void hal_set_current_channel_ex(  phw_data_t pHwData,  ChanInfo channel )
- {
- 	struct wb35_reg *reg = &pHwData->reg;
+-	if (pWb35Rx->rx_halt)
+-		goto error;
++		pWb35Rx->RxProcessIndex++;
++		pWb35Rx->RxProcessIndex %= MAX_USB_RX_BUFFER_NUMBER;
  
-@@ -502,12 +409,6 @@ void hal_set_current_channel(  phw_data_t pHwData,  ChanInfo channel )
- 	hal_set_current_channel_ex( pHwData, channel );
- }
- //---------------------------------------------------------------------------------------------------
--void hal_get_current_channel(  phw_data_t pHwData,  ChanInfo *channel )
--{
--	channel->ChanNo = pHwData->Channel;
--	channel->band = pHwData->band;
--}
--//---------------------------------------------------------------------------------------------------
- void hal_set_accept_broadcast(  phw_data_t pHwData,  u8 enable )
- {
- 	struct wb35_reg *reg = &pHwData->reg;
-@@ -565,46 +466,6 @@ void hal_set_accept_beacon(  phw_data_t pHwData,  u8 enable )
- 	Wb35Reg_Write( pHwData, 0x0800, reg->M00_MacControl );
- }
- //---------------------------------------------------------------------------------------------------
--void hal_set_multicast_address( phw_data_t pHwData, u8 *address, u8 number )
--{
--	struct wb35_reg *reg = &pHwData->reg;
--	u8		Byte, Bit;
--
--	if( pHwData->SurpriseRemove ) return;
--
--	//Erases and refills the card multicast registers. Used when an address
--	//    has been deleted and all bits must be recomputed.
--	reg->M04_MulticastAddress1 = 0;
--	reg->M08_MulticastAddress2 = 0;
--
--	while( number )
--	{
--		number--;
--		CardGetMulticastBit( (address+(number*ETH_LENGTH_OF_ADDRESS)), &Byte, &Bit);
--		reg->Multicast[Byte] |= Bit;
--	}
--
--	// Updating register
--	Wb35Reg_BurstWrite( pHwData, 0x0804, (u32 *)reg->Multicast, 2, AUTO_INCREMENT );
--}
--//---------------------------------------------------------------------------------------------------
--u8 hal_get_accept_beacon(  phw_data_t pHwData )
--{
--	struct wb35_reg *reg = &pHwData->reg;
--
--	if( pHwData->SurpriseRemove ) return 0;
--
--	if( reg->M00_MacControl & 0x04000000 )
--		return 1;
--	else
--		return 0;
--}
--
--unsigned char hal_reset_hardware( phw_data_t pHwData, void* ppa )
--{
--	// Not implement yet
--	return true;
--}
- 
- void hal_stop(  phw_data_t pHwData )
- {
-@@ -631,115 +492,11 @@ unsigned char hal_idle(phw_data_t pHwData)
- 	return true;
- }
- //---------------------------------------------------------------------------------------------------
--void hal_set_cwmin(  phw_data_t pHwData,  u8	cwin_min )
--{
--	struct wb35_reg *reg = &pHwData->reg;
--
--	if( pHwData->SurpriseRemove ) return;
--
--	pHwData->cwmin = cwin_min;
--	reg->M2C_MacControl &= ~0x7c00;	//bit 10 ~ 14
--	reg->M2C_MacControl |= (pHwData->cwmin<<10);
--	Wb35Reg_Write( pHwData, 0x082c, reg->M2C_MacControl );
--}
--
--s32 hal_get_rssi(  phw_data_t pHwData,  u32 *HalRssiArry,  u8 Count )
--{
--	struct wb35_reg *reg = &pHwData->reg;
--	R01_DESCRIPTOR	r01;
--	s32 ltmp = 0, tmp;
--	u8	i;
--
--	if( pHwData->SurpriseRemove ) return -200;
--	if( Count > MAX_ACC_RSSI_COUNT ) // Because the TS may use this funtion
--		Count = MAX_ACC_RSSI_COUNT;
--
--	// RSSI = C1 + C2 * (agc_state[7:0] + offset_map(lna_state[1:0]))
--	// C1 = -195, C2 = 0.66 = 85/128
--	for (i=0; i<Count; i++)
--	{
--		r01.value = HalRssiArry[i];
--		tmp = ((( r01.R01_AGC_state + reg->LNAValue[r01.R01_LNA_state]) * 85 ) >>7 ) - 195;
--		ltmp += tmp;
--	}
--	ltmp /= Count;
--	if( pHwData->phy_type == RF_AIROHA_2230 ) ltmp -= 5; // 10;
--	if( pHwData->phy_type == RF_AIROHA_2230S ) ltmp -= 5; // 10; 20060420 Add this
--
--	//if( ltmp < -200 ) ltmp = -200;
--	if( ltmp < -110 ) ltmp = -110;// 1.0.24.0 For NJRC
--
--	return ltmp;
--}
--//----------------------------------------------------------------------------------------------------
--s32 hal_get_rssi_bss(struct wbsoft_priv *adapter,  u16 idx,  u8 Count)
--{
--	phw_data_t pHwData = &adapter->sHwData;
--	struct wb35_reg *reg = &pHwData->reg;
--	R01_DESCRIPTOR	r01;
--	s32 ltmp = 0, tmp;
--	u8	i, j;
--//	u32 *HalRssiArry = psBSS(idx)->HalRssi;
--
--	if( pHwData->SurpriseRemove ) return -200;
--	if( Count > MAX_ACC_RSSI_COUNT ) // Because the TS may use this funtion
--		Count = MAX_ACC_RSSI_COUNT;
--
--	// RSSI = C1 + C2 * (agc_state[7:0] + offset_map(lna_state[1:0]))
--	// C1 = -195, C2 = 0.66 = 85/128
--#if 0
--	for (i=0; i<Count; i++)
--	{
--		r01.value = HalRssiArry[i];
--		tmp = ((( r01.R01_AGC_state + reg->LNAValue[r01.R01_LNA_state]) * 85 ) >>7 ) - 195;
--		ltmp += tmp;
--	}
--#else
--	if (psBSS(idx)->HalRssiIndex == 0)
--		psBSS(idx)->HalRssiIndex = MAX_ACC_RSSI_COUNT;
--	j = (u8)psBSS(idx)->HalRssiIndex-1;
--
--	for (i=0; i<Count; i++)
--	{
--		r01.value = psBSS(idx)->HalRssi[j];
--		tmp = ((( r01.R01_AGC_state + reg->LNAValue[r01.R01_LNA_state]) * 85 ) >>7 ) - 195;
--		ltmp += tmp;
--		if (j == 0)
--		{
--			j = MAX_ACC_RSSI_COUNT;
--		}
--		j--;
--	}
--#endif
--	ltmp /= Count;
--	if( pHwData->phy_type == RF_AIROHA_2230 ) ltmp -= 5; // 10;
--	if( pHwData->phy_type == RF_AIROHA_2230S ) ltmp -= 5; // 10; 20060420 Add this
--
--	//if( ltmp < -200 ) ltmp = -200;
--	if( ltmp < -110 ) ltmp = -110;// 1.0.24.0 For NJRC
--
--	return ltmp;
--}
--
--//---------------------------------------------------------------------------
--
- void hal_set_phy_type(  phw_data_t pHwData,  u8 PhyType )
- {
- 	pHwData->phy_type = PhyType;
- }
- 
--void hal_get_phy_type(  phw_data_t pHwData,  u8 *PhyType )
--{
--	*PhyType = pHwData->phy_type;
--}
--
--void hal_reset_counter(  phw_data_t pHwData )
--{
--	pHwData->dto_tx_retry_count = 0;
--	pHwData->dto_tx_frag_count = 0;
--	memset( pHwData->tx_retry_count, 0, 8);
--}
--
- void hal_set_radio_mode( phw_data_t pHwData,  unsigned char radio_off)
- {
- 	struct wb35_reg *reg = &pHwData->reg;
-@@ -769,22 +526,6 @@ u8 hal_get_antenna_number(  phw_data_t pHwData )
- 		return 1;
- }
- 
--void hal_set_antenna_number(  phw_data_t pHwData, u8 number )
--{
--
--	struct wb35_reg *reg = &pHwData->reg;
--
--	if (number == 1) {
--		reg->BB2C |= BIT(11);
--	} else {
--		reg->BB2C &= ~BIT(11);
--	}
--	Wb35Reg_Write( pHwData, 0x102c, reg->BB2C );
--#ifdef _PE_STATE_DUMP_
--	WBDEBUG(("Current antenna number : %d\n", number));
--#endif
--}
--
- //----------------------------------------------------------------------------------------------------
- //0 : radio on; 1: radio off
- u8 hal_get_hw_radio_off(  phw_data_t pHwData )
-@@ -821,57 +562,7 @@ unsigned char hal_set_dxx_reg(  phw_data_t pHwData,  u16 number,  u32 value )
- 	return ret;
- }
- 
--void hal_scan_status_indicate(phw_data_t pHwData, unsigned char IsOnProgress)
--{
--	if( pHwData->SurpriseRemove ) return;
--	pHwData->LED_Scanning = IsOnProgress ? 1 : 0;
--}
--
--void hal_system_power_change(phw_data_t pHwData, u32 PowerState)
--{
--	if( PowerState != 0 )
--	{
--		pHwData->SurpriseRemove = 1;
--		if( pHwData->WbUsb.IsUsb20 )
--			hal_stop( pHwData );
--	}
--	else
--	{
--		if( !pHwData->WbUsb.IsUsb20 )
--			hal_stop( pHwData );
--	}
--}
--
--void hal_surprise_remove(struct wbsoft_priv *adapter)
--{
--	phw_data_t pHwData = &adapter->sHwData;
--
--	if (atomic_inc_return( &pHwData->SurpriseRemoveCount ) == 1) {
--		#ifdef _PE_STATE_DUMP_
--		WBDEBUG(("Calling hal_surprise_remove\n"));
+-	// Get RxBuffer's ID
+-	RxBufferId = pWb35Rx->RxBufferId;
+-	if (!pWb35Rx->RxOwner[RxBufferId]) {
+-		// It's impossible to run here.
+-		#ifdef _PE_RX_DUMP_
+-		WBDEBUG(("Rx driver fifo unavailable\n"));
 -		#endif
+-		goto error;
 -	}
--}
--
--void hal_rate_change(struct wbsoft_priv *adapter) // Notify the HAL rate is changing 20060613.1
--{
--	phw_data_t pHwData = &adapter->sHwData;
--	u8		rate = CURRENT_TX_RATE;
--
--	BBProcessor_RateChanging( pHwData, rate );
--}
--
- void hal_set_rf_power(phw_data_t pHwData, u8 PowerIndex)
- {
- 	RFSynthesizer_SetPowerIndex( pHwData, PowerIndex );
++		pRxBufferAddress = pWb35Rx->pDRx;
++		BufferSize = pWb35Rx->RxBufferSize[ RxBufferId ];
+ 
+-	// Update buffer point, then start to bulkin the data from USB
+-	pWb35Rx->RxBufferId++;
+-	pWb35Rx->RxBufferId %= MAX_USB_RX_BUFFER_NUMBER;
++		// Parse the bulkin buffer
++		while (BufferSize >= 4) {
++			if ((cpu_to_le32(*(u32 *)pRxBufferAddress) & 0x0fffffff) == RX_END_TAG) //Is ending? 921002.9.a
++				break;
+ 
+-	pWb35Rx->CurrentRxBufferId = RxBufferId;
++			// Get the R00 R01 first
++			RxDes.R00.value = le32_to_cpu(*(u32 *)pRxBufferAddress);
++			PacketSize = (u16)RxDes.R00.R00_receive_byte_count;
++			RxDes.R01.value = le32_to_cpu(*((u32 *)(pRxBufferAddress+4)));
++			// For new DMA 4k
++			if ((PacketSize & 0x03) > 0)
++				PacketSize -= 4;
+ 
+-	pWb35Rx->pDRx = kzalloc(MAX_USB_RX_BUFFER, GFP_ATOMIC);
+-	if (!pWb35Rx->pDRx) {
+-		printk("w35und: Rx memory alloc failed\n");
+-		goto error;
+-	}
+-	pRxBufferAddress = pWb35Rx->pDRx;
++			// Basic check for Rx length. Is length valid?
++			if (PacketSize > MAX_PACKET_SIZE) {
++				#ifdef _PE_RX_DUMP_
++				WBDEBUG(("Serious ERROR : Rx data size too long, size =%d\n", PacketSize));
++				#endif
+ 
+-	usb_fill_bulk_urb(urb, pHwData->WbUsb.udev,
+-			  usb_rcvbulkpipe(pHwData->WbUsb.udev, 3),
+-			  pRxBufferAddress, MAX_USB_RX_BUFFER,
+-			  Wb35Rx_Complete, hw);
++				pWb35Rx->EP3vm_state = VM_STOP;
++				pWb35Rx->Ep3ErrorCount2++;
++				break;
++			}
+ 
+-	pWb35Rx->EP3vm_state = VM_RUNNING;
++			// Start to process Rx buffer
++//			RxDes.Descriptor_ID = RxBufferId; // Due to synchronous indicate, the field doesn't necessary to use.
++			BufferSize -= 8; //subtract 8 byte for 35's USB header length
++			pRxBufferAddress += 8;
+ 
+-	retv = usb_submit_urb(urb, GFP_ATOMIC);
++			RxDes.buffer_address[0] = pRxBufferAddress;
++			RxDes.buffer_size[0] = PacketSize;
++			RxDes.buffer_number = 1;
++			RxDes.buffer_start_index = 0;
++			RxDes.buffer_total_size = RxDes.buffer_size[0];
++			Wb35Rx_adjust(&RxDes);
+ 
+-	if (retv != 0) {
+-		printk("Rx URB sending error\n");
+-		goto error;
+-	}
+-	return;
++			packet_came(hw, pRxBufferAddress, PacketSize);
+ 
+-error:
+-	// VM stop
+-	pWb35Rx->EP3vm_state = VM_STOP;
+-	atomic_dec(&pWb35Rx->RxFireCounter);
++			// Move RxBuffer point to the next
++			stmp = PacketSize + 3;
++			stmp &= ~0x03; // 4n alignment
++			pRxBufferAddress += stmp;
++			BufferSize -= stmp;
++			stmp2 += stmp;
++		}
++
++		// Reclaim resource
++		pWb35Rx->RxOwner[ RxBufferId ] = 1;
++	} while (true);
++
++	return stmp2;
  }
+ 
+-void Wb35Rx_Complete(struct urb *urb)
++static void Wb35Rx(struct ieee80211_hw *hw);
++
++static void Wb35Rx_Complete(struct urb *urb)
+ {
+ 	struct ieee80211_hw *hw = urb->context;
+ 	struct wbsoft_priv *priv = hw->priv;
+@@ -170,49 +235,86 @@ error:
+ 	pWb35Rx->EP3vm_state = VM_STOP;
+ }
+ 
+-//=====================================================================================
+-unsigned char Wb35Rx_initial(phw_data_t pHwData)
++// This function cannot reentrain
++static void Wb35Rx(struct ieee80211_hw *hw)
+ {
+-	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
 -
--unsigned char hal_set_LED(phw_data_t pHwData, u32 Mode) // 20061108 for WPS led control
--{
--	pHwData->LED_Blinking = 0;
--	pHwData->LED_control = Mode;
--	pHwData->LEDTimer.expires = jiffies + msecs_to_jiffies(10);
--	add_timer(&pHwData->LEDTimer);
--	return true;
+-	// Initial the Buffer Queue
+-	Wb35Rx_reset_descriptor( pHwData );
++	struct wbsoft_priv *priv = hw->priv;
++	phw_data_t pHwData = &priv->sHwData;
++	PWB35RX	pWb35Rx = &pHwData->Wb35Rx;
++	u8 *	pRxBufferAddress;
++	struct urb *urb = pWb35Rx->RxUrb;
++	int	retv;
++	u32	RxBufferId;
+ 
+-	pWb35Rx->RxUrb = usb_alloc_urb(0, GFP_ATOMIC);
+-	return (!!pWb35Rx->RxUrb);
 -}
--
-diff --git a/drivers/staging/winbond/wbhal_f.h b/drivers/staging/winbond/wbhal_f.h
-index dc5709f..e805f40 100644
---- a/drivers/staging/winbond/wbhal_f.h
-+++ b/drivers/staging/winbond/wbhal_f.h
-@@ -26,9 +26,6 @@ void hal_set_power_save_mode(  phw_data_t pHwData,  unsigned char power_save,  u
- void hal_get_power_save_mode(  phw_data_t pHwData,   u8 *pin_pwr_save );
- void hal_set_slot_time(  phw_data_t pHwData,  u8 type );
- #define hal_set_atim_window( _A, _ATM )
--void hal_set_rates(  phw_data_t pHwData,  u8 *pbss_rates,  u8 length,  unsigned char basic_rate_set );
--#define hal_set_basic_rates( _A, _R, _L ) hal_set_rates( _A, _R, _L, TRUE )
--#define hal_set_op_rates( _A, _R, _L ) hal_set_rates( _A, _R, _L, FALSE )
- void hal_start_bss(  phw_data_t pHwData,  u8 mac_op_mode );
- void hal_join_request(  phw_data_t pHwData,  u8 bss_type ); // 0:BSS STA 1:IBSS STA//
- void hal_stop_sync_bss(  phw_data_t pHwData );
-@@ -41,35 +38,23 @@ void hal_set_listen_interval(  phw_data_t pHwData,  u16 listen_interval );
- void hal_set_cap_info(  phw_data_t pHwData,  u16 capability_info );
- void hal_set_ssid(  phw_data_t pHwData,  u8 *pssid,  u8 ssid_len );
- void hal_set_current_channel(  phw_data_t pHwData,  ChanInfo channel );
--void hal_set_current_channel_ex(  phw_data_t pHwData,  ChanInfo channel );
--void hal_get_current_channel(  phw_data_t pHwData,  ChanInfo *channel );
- void hal_set_accept_broadcast(  phw_data_t pHwData,  u8 enable );
- void hal_set_accept_multicast(  phw_data_t pHwData,  u8 enable );
- void hal_set_accept_beacon(  phw_data_t pHwData,  u8 enable );
--void hal_set_multicast_address(  phw_data_t pHwData,  u8 *address,  u8 number );
--u8 hal_get_accept_beacon(  phw_data_t pHwData );
- void hal_stop(  phw_data_t pHwData );
- void hal_halt(  phw_data_t pHwData, void *ppa_data );
- void hal_start_tx0(  phw_data_t pHwData );
- void hal_set_phy_type(  phw_data_t pHwData,  u8 PhyType );
--void hal_get_phy_type(  phw_data_t pHwData,  u8 *PhyType );
--unsigned char hal_reset_hardware(  phw_data_t pHwData,  void* ppa );
--void hal_set_cwmin(  phw_data_t pHwData,  u8	cwin_min );
- #define hal_get_cwmin( _A ) ( (_A)->cwmin )
- void hal_set_cwmax(  phw_data_t pHwData,  u16 cwin_max );
- #define hal_get_cwmax( _A ) ( (_A)->cwmax )
- void hal_set_rsn_wpa(  phw_data_t pHwData,  u32 * RSN_IE_Bitmap , u32 * RSN_OUI_type , unsigned char bDesiredAuthMode);
--//s32 hal_get_rssi(  phw_data_t pHwData,  u32 HalRssi );
--s32 hal_get_rssi(  phw_data_t pHwData,  u32 *HalRssiArry,  u8 Count );
--s32 hal_get_rssi_bss(struct wbsoft_priv *adapter,  u16 idx,  u8 Count);
- void hal_set_connect_info(  phw_data_t pHwData,  unsigned char boConnect );
- u8 hal_get_est_sq3(  phw_data_t pHwData,  u8 Count );
- void hal_set_rf_power(  phw_data_t pHwData,  u8 PowerIndex ); // 20060621 Modify
--void hal_reset_counter(  phw_data_t pHwData );
- void hal_set_radio_mode(  phw_data_t pHwData,  unsigned char boValue);
- void hal_descriptor_indicate(  phw_data_t pHwData,  PDESCRIPTOR pDes );
- u8 hal_get_antenna_number(  phw_data_t pHwData );
--void hal_set_antenna_number(  phw_data_t pHwData, u8 number );
- u32 hal_get_bss_pk_cnt(  phw_data_t pHwData );
- #define hal_get_region_from_EEPROM( _A ) ( (_A)->reg.EEPROMRegion )
- void hal_set_accept_promiscuous		(  phw_data_t pHwData,  u8 enable);
-@@ -80,20 +65,13 @@ u8 hal_get_hw_radio_off			(  phw_data_t pHwData );
- #define hal_rssi_boundary_high( _A ) (_A->RSSI_high)
- #define hal_rssi_boundary_low( _A ) (_A->RSSI_low)
- #define hal_scan_interval( _A )		(_A->Scan_Interval)
--void hal_scan_status_indicate(  phw_data_t pHwData, u8 status);	// 0: complete, 1: in progress
--void hal_system_power_change(  phw_data_t pHwData, u32 PowerState ); // 20051230 -=D0 1=D1 ..
--void hal_surprise_remove(struct wbsoft_priv *adapter);
++	//
++	// Issuing URB
++	//
++	if (pHwData->SurpriseRemove || pHwData->HwStop)
++		goto error;
  
- #define PHY_DEBUG( msg, args... )
+-void Wb35Rx_stop(phw_data_t pHwData)
+-{
+-	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
++	if (pWb35Rx->rx_halt)
++		goto error;
+ 
+-	// Canceling the Irp if already sends it out.
+-	if (pWb35Rx->EP3vm_state == VM_RUNNING) {
+-		usb_unlink_urb( pWb35Rx->RxUrb ); // Only use unlink, let Wb35Rx_destroy to free them
++	// Get RxBuffer's ID
++	RxBufferId = pWb35Rx->RxBufferId;
++	if (!pWb35Rx->RxOwner[RxBufferId]) {
++		// It's impossible to run here.
+ 		#ifdef _PE_RX_DUMP_
+-		WBDEBUG(("EP3 Rx stop\n"));
++		WBDEBUG(("Rx driver fifo unavailable\n"));
+ 		#endif
++		goto error;
++	}
++
++	// Update buffer point, then start to bulkin the data from USB
++	pWb35Rx->RxBufferId++;
++	pWb35Rx->RxBufferId %= MAX_USB_RX_BUFFER_NUMBER;
++
++	pWb35Rx->CurrentRxBufferId = RxBufferId;
++
++	pWb35Rx->pDRx = kzalloc(MAX_USB_RX_BUFFER, GFP_ATOMIC);
++	if (!pWb35Rx->pDRx) {
++		printk("w35und: Rx memory alloc failed\n");
++		goto error;
++	}
++	pRxBufferAddress = pWb35Rx->pDRx;
++
++	usb_fill_bulk_urb(urb, pHwData->WbUsb.udev,
++			  usb_rcvbulkpipe(pHwData->WbUsb.udev, 3),
++			  pRxBufferAddress, MAX_USB_RX_BUFFER,
++			  Wb35Rx_Complete, hw);
++
++	pWb35Rx->EP3vm_state = VM_RUNNING;
++
++	retv = usb_submit_urb(urb, GFP_ATOMIC);
++
++	if (retv != 0) {
++		printk("Rx URB sending error\n");
++		goto error;
+ 	}
++	return;
++
++error:
++	// VM stop
++	pWb35Rx->EP3vm_state = VM_STOP;
++	atomic_dec(&pWb35Rx->RxFireCounter);
+ }
+ 
+-// Needs process context
+-void Wb35Rx_destroy(phw_data_t pHwData)
++void Wb35Rx_start(struct ieee80211_hw *hw)
+ {
++	struct wbsoft_priv *priv = hw->priv;
++	phw_data_t pHwData = &priv->sHwData;
+ 	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
+ 
+-	do {
+-		msleep(10); // Delay for waiting function enter 940623.1.a
+-	} while (pWb35Rx->EP3vm_state != VM_STOP);
+-	msleep(10); // Delay for waiting function exit 940623.1.b
+-
+-	if (pWb35Rx->RxUrb)
+-		usb_free_urb( pWb35Rx->RxUrb );
+-	#ifdef _PE_RX_DUMP_
+-	WBDEBUG(("Wb35Rx_destroy OK\n"));
+-	#endif
++	// Allow only one thread to run into the Wb35Rx() function
++	if (atomic_inc_return(&pWb35Rx->RxFireCounter) == 1) {
++		pWb35Rx->EP3vm_state = VM_RUNNING;
++		Wb35Rx(hw);
++	} else
++		atomic_dec(&pWb35Rx->RxFireCounter);
+ }
+ 
+-void Wb35Rx_reset_descriptor(  phw_data_t pHwData )
++//=====================================================================================
++static void Wb35Rx_reset_descriptor(  phw_data_t pHwData )
+ {
+ 	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
+ 	u32	i;
+@@ -228,145 +330,44 @@ void Wb35Rx_reset_descriptor(  phw_data_t pHwData )
+ 		pWb35Rx->RxOwner[i] = 1;
+ }
+ 
+-void Wb35Rx_adjust(PDESCRIPTOR pRxDes)
++unsigned char Wb35Rx_initial(phw_data_t pHwData)
+ {
+-	u32 *	pRxBufferAddress;
+-	u32	DecryptionMethod;
+-	u32	i;
+-	u16	BufferSize;
+-
+-	DecryptionMethod = pRxDes->R01.R01_decryption_method;
+-	pRxBufferAddress = pRxDes->buffer_address[0];
+-	BufferSize = pRxDes->buffer_size[0];
++	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
+ 
+-	// Adjust the last part of data. Only data left
+-	BufferSize -= 4; // For CRC-32
+-	if (DecryptionMethod)
+-		BufferSize -= 4;
+-	if (DecryptionMethod == 3) // For CCMP
+-		BufferSize -= 4;
++	// Initial the Buffer Queue
++	Wb35Rx_reset_descriptor( pHwData );
+ 
+-	// Adjust the IV field which after 802.11 header and ICV field.
+-	if (DecryptionMethod == 1) // For WEP
+-	{
+-		for( i=6; i>0; i-- )
+-			pRxBufferAddress[i] = pRxBufferAddress[i-1];
+-		pRxDes->buffer_address[0] = pRxBufferAddress + 1;
+-		BufferSize -= 4; // 4 byte for IV
+-	}
+-	else if( DecryptionMethod ) // For TKIP and CCMP
+-	{
+-		for (i=7; i>1; i--)
+-			pRxBufferAddress[i] = pRxBufferAddress[i-2];
+-		pRxDes->buffer_address[0] = pRxBufferAddress + 2;//Update the descriptor, shift 8 byte
+-		BufferSize -= 8; // 8 byte for IV + ICV
+-	}
+-	pRxDes->buffer_size[0] = BufferSize;
++	pWb35Rx->RxUrb = usb_alloc_urb(0, GFP_ATOMIC);
++	return (!!pWb35Rx->RxUrb);
+ }
+ 
+-static void packet_came(struct ieee80211_hw *hw, char *pRxBufferAddress, int PacketSize)
++void Wb35Rx_stop(phw_data_t pHwData)
+ {
+-	struct wbsoft_priv *priv = hw->priv;
+-	struct sk_buff *skb;
+-	struct ieee80211_rx_status rx_status = {0};
+-
+-	if (!priv->enabled)
+-		return;
++	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
+ 
+-	skb = dev_alloc_skb(PacketSize);
+-	if (!skb) {
+-		printk("Not enough memory for packet, FIXME\n");
+-		return;
++	// Canceling the Irp if already sends it out.
++	if (pWb35Rx->EP3vm_state == VM_RUNNING) {
++		usb_unlink_urb( pWb35Rx->RxUrb ); // Only use unlink, let Wb35Rx_destroy to free them
++		#ifdef _PE_RX_DUMP_
++		WBDEBUG(("EP3 Rx stop\n"));
++		#endif
+ 	}
+-
+-	memcpy(skb_put(skb, PacketSize),
+-	       pRxBufferAddress,
+-	       PacketSize);
+-
+-/*
+-	rx_status.rate = 10;
+-	rx_status.channel = 1;
+-	rx_status.freq = 12345;
+-	rx_status.phymode = MODE_IEEE80211B;
+-*/
+-
+-	ieee80211_rx_irqsafe(hw, skb, &rx_status);
+ }
+ 
+-u16 Wb35Rx_indicate(struct ieee80211_hw *hw)
++// Needs process context
++void Wb35Rx_destroy(phw_data_t pHwData)
+ {
+-	struct wbsoft_priv *priv = hw->priv;
+-	phw_data_t pHwData = &priv->sHwData;
+-	DESCRIPTOR	RxDes;
+-	PWB35RX	pWb35Rx = &pHwData->Wb35Rx;
+-	u8 *		pRxBufferAddress;
+-	u16		PacketSize;
+-	u16		stmp, BufferSize, stmp2 = 0;
+-	u32		RxBufferId;
++	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
+ 
+-	// Only one thread be allowed to run into the following
+ 	do {
+-		RxBufferId = pWb35Rx->RxProcessIndex;
+-		if (pWb35Rx->RxOwner[ RxBufferId ]) //Owner by VM
+-			break;
+-
+-		pWb35Rx->RxProcessIndex++;
+-		pWb35Rx->RxProcessIndex %= MAX_USB_RX_BUFFER_NUMBER;
+-
+-		pRxBufferAddress = pWb35Rx->pDRx;
+-		BufferSize = pWb35Rx->RxBufferSize[ RxBufferId ];
+-
+-		// Parse the bulkin buffer
+-		while (BufferSize >= 4) {
+-			if ((cpu_to_le32(*(u32 *)pRxBufferAddress) & 0x0fffffff) == RX_END_TAG) //Is ending? 921002.9.a
+-				break;
+-
+-			// Get the R00 R01 first
+-			RxDes.R00.value = le32_to_cpu(*(u32 *)pRxBufferAddress);
+-			PacketSize = (u16)RxDes.R00.R00_receive_byte_count;
+-			RxDes.R01.value = le32_to_cpu(*((u32 *)(pRxBufferAddress+4)));
+-			// For new DMA 4k
+-			if ((PacketSize & 0x03) > 0)
+-				PacketSize -= 4;
+-
+-			// Basic check for Rx length. Is length valid?
+-			if (PacketSize > MAX_PACKET_SIZE) {
+-				#ifdef _PE_RX_DUMP_
+-				WBDEBUG(("Serious ERROR : Rx data size too long, size =%d\n", PacketSize));
+-				#endif
+-
+-				pWb35Rx->EP3vm_state = VM_STOP;
+-				pWb35Rx->Ep3ErrorCount2++;
+-				break;
+-			}
+-
+-			// Start to process Rx buffer
+-//			RxDes.Descriptor_ID = RxBufferId; // Due to synchronous indicate, the field doesn't necessary to use.
+-			BufferSize -= 8; //subtract 8 byte for 35's USB header length
+-			pRxBufferAddress += 8;
+-
+-			RxDes.buffer_address[0] = pRxBufferAddress;
+-			RxDes.buffer_size[0] = PacketSize;
+-			RxDes.buffer_number = 1;
+-			RxDes.buffer_start_index = 0;
+-			RxDes.buffer_total_size = RxDes.buffer_size[0];
+-			Wb35Rx_adjust(&RxDes);
+-
+-			packet_came(hw, pRxBufferAddress, PacketSize);
+-
+-			// Move RxBuffer point to the next
+-			stmp = PacketSize + 3;
+-			stmp &= ~0x03; // 4n alignment
+-			pRxBufferAddress += stmp;
+-			BufferSize -= stmp;
+-			stmp2 += stmp;
+-		}
+-
+-		// Reclaim resource
+-		pWb35Rx->RxOwner[ RxBufferId ] = 1;
+-	} while (true);
++		msleep(10); // Delay for waiting function enter 940623.1.a
++	} while (pWb35Rx->EP3vm_state != VM_STOP);
++	msleep(10); // Delay for waiting function exit 940623.1.b
+ 
+-	return stmp2;
++	if (pWb35Rx->RxUrb)
++		usb_free_urb( pWb35Rx->RxUrb );
++	#ifdef _PE_RX_DUMP_
++	WBDEBUG(("Wb35Rx_destroy OK\n"));
++	#endif
+ }
  
 -
--
--void hal_rate_change(struct wbsoft_priv *adapter); // Notify the HAL rate is changing 20060613.1
- unsigned char hal_get_dxx_reg(  phw_data_t pHwData,  u16 number,  u32 * pValue );
- unsigned char hal_set_dxx_reg(  phw_data_t pHwData,  u16 number,  u32 value );
- #define hal_get_time_count( _P )	(_P->time_count/10)	// return 100ms count
- #define hal_detect_error( _P )		(_P->WbUsb.DetectCount)
--unsigned char hal_set_LED(  phw_data_t pHwData,  u32 Mode ); // 20061108 for WPS led control
+diff --git a/drivers/staging/winbond/wb35rx_f.h b/drivers/staging/winbond/wb35rx_f.h
+index 5585b55..d993041 100644
+--- a/drivers/staging/winbond/wb35rx_f.h
++++ b/drivers/staging/winbond/wb35rx_f.h
+@@ -7,15 +7,9 @@
+ //====================================
+ // Interface function declare
+ //====================================
+-void		Wb35Rx_reset_descriptor(  phw_data_t pHwData );
+ unsigned char		Wb35Rx_initial(  phw_data_t pHwData );
+ void		Wb35Rx_destroy(  phw_data_t pHwData );
+ void		Wb35Rx_stop(  phw_data_t pHwData );
+-u16		Wb35Rx_indicate(struct ieee80211_hw *hw);
+-void		Wb35Rx_adjust(  PDESCRIPTOR pRxDes );
+ void		Wb35Rx_start(struct ieee80211_hw *hw);
  
- //-------------------------------------------------------------------------
- // The follow function is unused for IS89C35
+-void		Wb35Rx(struct ieee80211_hw *hw);
+-void		Wb35Rx_Complete(struct urb *urb);
+-
+ #endif
 -- 
 1.5.3.7
 
