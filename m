@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbYJ3Lyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755133AbYJ3L5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754697AbYJ3Lyr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 07:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbYJ3Lyj
+	id S1755133AbYJ3L5p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 07:57:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbYJ3L5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 07:54:39 -0400
-Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:34202 "EHLO
-	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbYJ3Lyi (ORCPT
+	Thu, 30 Oct 2008 07:57:36 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:50485 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600AbYJ3L5f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 07:54:38 -0400
-X-Greylist: delayed 448 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Oct 2008 07:54:38 EDT
-Date: Thu, 30 Oct 2008 12:47:08 +0100
-From: Gabor Gombas <gombasg@sztaki.hu>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
-Subject: Re: [PATCH] Really remove unwinder
-Message-ID: <20081030114708.GC12152@boogie.lpds.sztaki.hu>
-References: <20081030112023.GA27476@x200.localdomain>
+	Thu, 30 Oct 2008 07:57:35 -0400
+Date: Thu, 30 Oct 2008 13:56:47 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Greg Kroah-Hartman <gregkh@suse.de>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 06/10] usbtmc: indent & braces disagree, something else is
+ desired
+In-Reply-To: <Pine.LNX.4.64.0810301307160.7072@wrl-59.cs.helsinki.fi>
+Message-ID: <Pine.LNX.4.64.0810301349460.7072@wrl-59.cs.helsinki.fi>
+References: <Pine.LNX.4.64.0810301307160.7072@wrl-59.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081030112023.GA27476@x200.localdomain>
-X-Copyright: Forwarding or publishing without permission is prohibited.
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-545473979-1225367807=:7072"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Thu, Oct 30, 2008 at 02:20:23PM +0300, Alexey Dobriyan wrote:
+---696208474-545473979-1225367807=:7072
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-> -static inline void unwind_init(void) {}
 
-[...]
+It seems that there's rather involved way to say something
+which is commonly written in a plain simple form.
 
-> -	/*
-> -	 * Need to run as early as possible, to initialize the
-> -	 * lockdep hash:
-> -	 */
-> -	unwind_init();
->  	lockdep_init();
->  	debug_objects_early_init();
+Some type changes would probably be necessary to get gcc
+to do bitops instead of divide but it's no worse after my
+change than before I think.
 
-IMHO the comment does not refer to unwind_init() so it should not be
-removed...
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+---
+ drivers/usb/class/usbtmc.c |    9 +++------
+ 1 files changed, 3 insertions(+), 6 deletions(-)
 
-Gabor
-
+diff --git a/drivers/usb/class/usbtmc.c b/drivers/usb/class/usbtmc.c
+index 543811f..711a9fa 100644
+--- a/drivers/usb/class/usbtmc.c
++++ b/drivers/usb/class/usbtmc.c
+@@ -21,6 +21,7 @@
+ 
+ #include <linux/init.h>
+ #include <linux/module.h>
++#include <linux/kernel.h>
+ #include <linux/fs.h>
+ #include <linux/uaccess.h>
+ #include <linux/kref.h>
+@@ -481,7 +482,6 @@ static ssize_t usbtmc_write(struct file *filp, const char __user *buf,
+ 	int retval;
+ 	int actual;
+ 	unsigned long int n_bytes;
+-	int n;
+ 	int remaining;
+ 	int done;
+ 	int this_part;
+@@ -525,11 +525,8 @@ static ssize_t usbtmc_write(struct file *filp, const char __user *buf,
+ 			goto exit;
+ 		}
+ 
+-		n_bytes = 12 + this_part;
+-		if (this_part % 4)
+-			n_bytes += 4 - this_part % 4;
+-			for (n = 12 + this_part; n < n_bytes; n++)
+-				buffer[n] = 0;
++		n_bytes = roundup(12 + this_part, 4);
++		memset(buffer + 12 + this_part, 0, n_bytes - (12 + this_part));
+ 
+ 		retval = usb_bulk_msg(data->usb_dev,
+ 				      usb_sndbulkpipe(data->usb_dev,
 -- 
-     ---------------------------------------------------------
-     MTA SZTAKI Computer and Automation Research Institute
-                Hungarian Academy of Sciences
-     ---------------------------------------------------------
+1.5.2.2
+
+---696208474-545473979-1225367807=:7072--
