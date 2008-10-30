@@ -1,181 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbYJ3Rpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbYJ3Rr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757710AbYJ3Rpp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 13:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755152AbYJ3Rpg
+	id S1757420AbYJ3Rr6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 13:47:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbYJ3Rrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 13:45:36 -0400
-Received: from gv-out-0910.google.com ([216.239.58.185]:47604 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755149AbYJ3Rpf (ORCPT
+	Thu, 30 Oct 2008 13:47:48 -0400
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:45437 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753882AbYJ3Rrr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 13:45:35 -0400
-Subject: rtc: struct device - replace bus_id with dev_name(), dev_set_name()
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Alessandro Zummo <a.zummo@towertech.it>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Content-Type: text/plain
-Date: Thu, 30 Oct 2008 18:45:32 +0100
-Message-Id: <1225388732.21973.30.camel@nga.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Thu, 30 Oct 2008 13:47:47 -0400
+Message-ID: <4909F2B5.7040907@cs.columbia.edu>
+Date: Thu, 30 Oct 2008 13:45:25 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+MIME-Version: 1.0
+To: Louis.Rilling@kerlabs.com
+CC: Andrey Mirkin <major@openvz.org>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [Devel] Re: [PATCH 0/9] OpenVZ kernel based	checkpointing/restart
+References: <1220439476-16465-1-git-send-email-major@openvz.org> <200810271707.13580.major@openvz.org> <4905D2AD.1070309@cs.columbia.edu> <200810300902.47067.major@openvz.org> <20081030114747.GL15171@hawkmoon.kerlabs.com>
+In-Reply-To: <20081030114747.GL15171@hawkmoon.kerlabs.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is part of a larger patch series which will remove
-the "char bus_id[20]" name string from struct device. The device
-name is managed in the kobject anyway, and without any size
-limitation, and just needlessly copied into "struct device".
-
-To set and read the device name dev_name(dev) and dev_set_name(dev)
-must be used. If your code uses static kobjects, which it shouldn't
-do, "const char *init_name" can be used to statically provide the
-name the registered device should have. At registration time, the
-init_name field is cleared, to enforce the use of dev_name(dev) to
-access the device name at a later time.
-
-We need to get rid of all occurrences of bus_id in the entire tree
-to be able to enable the new interface. Please apply this patch,
-and possibly convert any remaining remaining occurrences of bus_id.
-
-We want to submit a patch to -next, which will remove bus_id from
-"struct device", to find the remaining pieces to convert, and finally
-switch over to the new api, which will remove the 20 bytes array
-and does no longer have a size limitation.
-
-Thanks,
-Kay
 
 
-From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: rtc: struct device - replace bus_id with dev_name(), dev_set_name()
+Louis Rilling wrote:
+> On Thu, Oct 30, 2008 at 10:02:44AM +0400, Andrey Mirkin wrote:
+>>>> kernel. Also we will need a functionolity to create processes with
+>>>> predefined PID. I think it is not very good to provide such ability to
+>>>> user space. That is why we prefer in OpenVZ to do all the job in kernel.
+>>> This is the weak side of creating the processes in user space -
+>>> that we need such an interface. Note, however, that we can
+>>> easily "hide" it inside the interface of the sys_restart() call,
+>>> and restrict how it may be used.
+>> Of course we can "hide" it somehow, but anyway we will have a hole and that is 
+>> not good.
+>>
+>> Anyway we should ask everyone what they think about user- and kernel- based 
+>> process creation.
+>> Dave, Serge, Cedric, Daniel, Louis what do you think about that?
+> 
+> Frankly, I'm not convinced (yet) that one approach is better than the other one.
+> I only *tend* to prefer kernel-based, for the reasons explained below. I know
+> that there are arguments in favor of userspace (I've at least seen
+> security-related ones), but I let their authors detail them (again).
 
-CC: Alessandro Zummo <a.zummo@towertech.it>
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
----
+I'm not convinced either. I think both implementation can eventually
+work well.
 
+> 
+> In Kerrighed this is kernel-based, and will remain kernel-based because we
+> checkpoint a distributed task tree, and want to restart it as mush as possible
+> with the same distribution. The distributed protocol used for restart is
+> currently too fragile and complex to rely on customized user-space
+> implementations. That said, if someone brings very good arguments in favor of
+> userspace implementations, we might consider changing this.
 
-diff --git a/drivers/rtc/class.c b/drivers/rtc/class.c
-index 4dfdf01..280226d 100644
---- a/drivers/rtc/class.c
-+++ b/drivers/rtc/class.c
-@@ -48,9 +48,7 @@ static int rtc_suspend(struct device *dev, pm_message_t mesg)
- 	struct rtc_time		tm;
- 	struct timespec		ts = current_kernel_time();
- 
--	if (strncmp(rtc->dev.bus_id,
--				CONFIG_RTC_HCTOSYS_DEVICE,
--				BUS_ID_SIZE) != 0)
-+	if (strcmp(dev_name(&rtc->dev), CONFIG_RTC_HCTOSYS_DEVICE) != 0)
- 		return 0;
- 
- 	rtc_read_time(rtc, &tm);
-@@ -71,20 +69,18 @@ static int rtc_resume(struct device *dev)
- 	time_t			newtime;
- 	struct timespec		time;
- 
--	if (strncmp(rtc->dev.bus_id,
--				CONFIG_RTC_HCTOSYS_DEVICE,
--				BUS_ID_SIZE) != 0)
-+	if (strncmp(dev_name(&rtc->dev), CONFIG_RTC_HCTOSYS_DEVICE) != 0)
- 		return 0;
- 
- 	rtc_read_time(rtc, &tm);
- 	if (rtc_valid_tm(&tm) != 0) {
--		pr_debug("%s:  bogus resume time\n", rtc->dev.bus_id);
-+		pr_debug("%s:  bogus resume time\n", dev_name(&rtc->dev));
- 		return 0;
- 	}
- 	rtc_tm_to_time(&tm, &newtime);
- 	if (newtime <= oldtime) {
- 		if (newtime < oldtime)
--			pr_debug("%s:  time travel!\n", rtc->dev.bus_id);
-+			pr_debug("%s:  time travel!\n", dev_name(&rtc->dev));
- 		return 0;
- 	}
- 
-@@ -156,7 +152,7 @@ struct rtc_device *rtc_device_register(const char *name, struct device *dev,
- 	init_waitqueue_head(&rtc->irq_queue);
- 
- 	strlcpy(rtc->name, name, RTC_DEVICE_NAME_SIZE);
--	snprintf(rtc->dev.bus_id, BUS_ID_SIZE, "rtc%d", id);
-+	dev_set_name(&rtc->dev, "rtc%d", id);
- 
- 	rtc_dev_prepare(rtc);
- 
-@@ -169,7 +165,7 @@ struct rtc_device *rtc_device_register(const char *name, struct device *dev,
- 	rtc_proc_add_device(rtc);
- 
- 	dev_info(dev, "rtc core: registered %s as %s\n",
--			rtc->name, rtc->dev.bus_id);
-+			rtc->name, dev_name(&rtc->dev));
- 
- 	return rtc;
- 
-diff --git a/drivers/rtc/interface.c b/drivers/rtc/interface.c
-index 7af60b9..fa08067 100644
---- a/drivers/rtc/interface.c
-+++ b/drivers/rtc/interface.c
-@@ -335,7 +335,7 @@ static int __rtc_match(struct device *dev, void *data)
- {
- 	char *name = (char *)data;
- 
--	if (strncmp(dev->bus_id, name, BUS_ID_SIZE) == 0)
-+	if (strcmp(dev_name(dev), name) == 0)
- 		return 1;
- 	return 0;
- }
-diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
-index 5549231..5d3be30 100644
---- a/drivers/rtc/rtc-cmos.c
-+++ b/drivers/rtc/rtc-cmos.c
-@@ -729,7 +729,7 @@ cmos_do_probe(struct device *dev, struct resource *ports, int rtc_irq)
- 
- 	cmos_rtc.dev = dev;
- 	dev_set_drvdata(dev, &cmos_rtc);
--	rename_region(ports, cmos_rtc.rtc->dev.bus_id);
-+	rename_region(ports, dev_name(&cmos_rtc.rtc->dev));
- 
- 	spin_lock_irq(&rtc_lock);
- 
-@@ -777,7 +777,7 @@ cmos_do_probe(struct device *dev, struct resource *ports, int rtc_irq)
- 			rtc_cmos_int_handler = cmos_interrupt;
- 
- 		retval = request_irq(rtc_irq, rtc_cmos_int_handler,
--				IRQF_DISABLED, cmos_rtc.rtc->dev.bus_id,
-+				IRQF_DISABLED, dev_name(&cmos_rtc.rtc->dev),
- 				cmos_rtc.rtc);
- 		if (retval < 0) {
- 			dev_dbg(dev, "IRQ %d is already in use\n", rtc_irq);
-@@ -795,7 +795,7 @@ cmos_do_probe(struct device *dev, struct resource *ports, int rtc_irq)
- 	}
- 
- 	pr_info("%s: alarms up to one %s%s, %zd bytes nvram, %s irqs\n",
--			cmos_rtc.rtc->dev.bus_id,
-+			dev_name(&cmos_rtc.rtc->dev),
- 			is_valid_irq(rtc_irq)
- 				?  (cmos_rtc.mon_alrm
- 					? "year"
-@@ -885,7 +885,7 @@ static int cmos_suspend(struct device *dev, pm_message_t mesg)
- 	}
- 
- 	pr_debug("%s: suspend%s, ctrl %02x\n",
--			cmos_rtc.rtc->dev.bus_id,
-+			dev_name(&cmos_rtc.rtc->dev),
- 			(tmp & RTC_AIE) ? ", alarm may wake" : "",
- 			tmp);
- 
-@@ -941,7 +941,7 @@ static int cmos_resume(struct device *dev)
- 	}
- 
- 	pr_debug("%s: resume, ctrl %02x\n",
--			cmos_rtc.rtc->dev.bus_id,
-+			dev_name(&cmos_rtc.rtc->dev),
- 			tmp);
- 
- 	return 0;
+Zap also has distributed checkpoint which does not require strict
+kernel-side ordering. Do you need that because you do SSI ?
 
+> 
+> Without taking distributed restart into account, I also tend to prefer
+> kernel-based, mainly for two (not so strong) reasons:
+> 1) this prevents userspace from doing weird things, like changing the task tree
+> and let the kernel detect it and deal with the mess this creates (think about
+> two threads being restarted in separate processes that do not even share their
+> parents). But one can argue that userspace can change the checkpoint image as
+> well, so that the kernel must check for such weird things anyway.
+
+I don't really buy this argument. First, as you say, user can change
+the checkpoint image file. Second, you can verify in the kernel that
+the real relationships of the processes match those specified (and
+expected from) the image file. That's pretty straightforward.
+
+> 2) restart will be more efficient with respect to shared objects.
+
+Can you elaborate on this ?  In what sense "more efficient" ?
+
+Note that the topic in question is not whether to do the entire restart
+from user space (and I argue that most work should be done in the kernel),
+but rather whether process creation (and only that) should be done in
+kernel or user space.
+
+Quick thoughts of pros/cons of each approach are:
+
+user space:
+
++ re-use existing api (fork)
++ easier to debug
++ will allow 'handmade' resources restart: it was mentioned before that
+  one may want to reattach stdout to a different place after restart; a
+  user based restart of processes can make this much easier: e.g. the
+  user process can create the alternative resources, give them to the
+  kernel and only then call sys_restart)
++ arch-independent code
+
+- a bit slower than in kernel space
+- requires a clone-with-specific-pid syscall or interface
+
+kernel space:
+
++ a bit easier to control everything
++ a bit faster than user space
++ no need for user-visible interface for clone-with-...
+
+- arch-dependent code
+- needs special code to fight 'fork-bomb'
+
+So, I'm not convinced, and I even think there may be room to both, for
+the time being. I volunteer to support the user-space alternative while
+we make up our minds.
+
+Oren.
 
