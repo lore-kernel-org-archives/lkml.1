@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbYJ3JES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbYJ3JHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754558AbYJ3JES (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 05:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYJ3JED
+	id S1754246AbYJ3JHM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 05:07:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbYJ3JHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 05:04:03 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:50354 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753307AbYJ3JEB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 05:04:01 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type;
-	b=uxKhXWk9f82TJB5O6YO7BPD405NVEEBNOQ1gcK2IRAoJNm9T2JTNXwoW0sQNkIu+w
-	Cr6bsXtFqk8T/K5ATnXxg==
-Date: Thu, 30 Oct 2008 02:03:14 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Paul Menage <menage@google.com>,
-       Derek Fults <dfults@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 6/7] cpusets: per cpuset dirty ratios
-In-Reply-To: <1225356285.7803.7.camel@twins>
-Message-ID: <alpine.DEB.2.00.0810300154040.29917@chino.kir.corp.google.com>
-References: <alpine.DEB.1.10.0810280259500.15270@chino.kir.corp.google.com>  <alpine.DEB.1.10.0810280302320.15270@chino.kir.corp.google.com> <1225356285.7803.7.camel@twins>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 30 Oct 2008 05:07:00 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:56631 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753271AbYJ3JG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 05:06:59 -0400
+Date: Thu, 30 Oct 2008 10:06:52 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Subject: Re: mmc: struct device - replace bus_id with dev_name(),
+ dev_set_name()
+Message-ID: <20081030100652.73730cdf@mjolnir.drzeus.cx>
+In-Reply-To: <1225329600.5970.72.camel@nga.site>
+References: <1225329600.5970.72.camel@nga.site>
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-9819-1225357616-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Oct 2008, Peter Zijlstra wrote:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> On Tue, 2008-10-28 at 09:08 -0700, David Rientjes wrote:
-> 
-> > +/*
-> > + * Determine the dirty ratios for the currently active cpuset
-> > + */
-> > +void cpuset_get_current_dirty_ratios(int *background, int *throttle)
-> > +{
-> > +	mutex_lock(&callback_mutex);
-> > +	task_lock(current);
-> > +	*background = task_cs(current)->dirty_background_ratio;
-> > +	*throttle = task_cs(current)->cpuset_dirty_ratio;
-> > +	task_unlock(current);
-> > +	mutex_unlock(&callback_mutex);
-> > +
-> > +	if (*background == -1)
-> > +		*background = dirty_background_ratio;
-> > +	if (*throttle == -1)
-> > +		*throttle = vm_dirty_ratio;
-> > +}
-> 
-> That's rather an awful lot of locking to read just two integers.
-> 
+--=_freyr.drzeus.cx-9819-1225357616-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-As far as I know, task_lock(current) is required to dereference 
-task_cs(current) and callback_mutex is required to ensure its the same 
-cpuset.
+On Thu, 30 Oct 2008 02:20:00 +0100
+Kay Sievers <kay.sievers@vrfy.org> wrote:
+
+> From: Kay Sievers <kay.sievers@vrfy.org>
+> Subject: mmc: struct device - replace bus_id with dev_name(), dev_set_nam=
+e()
+>=20
+> Cc: Pierre Ossman <drzeus@drzeus.cx>
+> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
+> ---
+
+That patch looks good to me. Are the prerequisites already in Linus'
+tree so you want me to push this to him as well?
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-9819-1225357616-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkkJeTAACgkQ7b8eESbyJLgKGACfcifhJoN5fjqmuYYAOUkfKB1p
+FqkAoIp1/Wkzze1Dw3MRXVup0A6t0uiV
+=MBYf
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-9819-1225357616-0001-2--
