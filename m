@@ -1,568 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758063AbYJ3RGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbYJ3RHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758063AbYJ3RGi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 13:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757056AbYJ3RFx
+	id S1758241AbYJ3RHj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 13:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755447AbYJ3RH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 13:05:53 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:25723 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757096AbYJ3RFw (ORCPT
+	Thu, 30 Oct 2008 13:07:29 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:50715 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755182AbYJ3RH2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 13:05:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
-         :sender;
-        b=bMUuOMYtWV9r+NtnIER2DrjqArKlpYLqkT8fU3bDzjXpo5JnrNwVVbZM+jT4AAOSrA
-         kWZPTqKe8LuEYIb/T7QHRGXiMNkW5rs6l+CSiBe8mWz5GTJjXSyL3QLQTX2MdrneI1o4
-         xP9JxEtRq+Zo2GIUS1WUdz7YH4TgNB5oIoSKU=
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: greg@kroah.com
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Pavel Machek <pavel@suse.cz>
-Subject: [PATCH 4/7] w35und: make functions local to wb35rx.c static
-Date: Thu, 30 Oct 2008 19:04:53 +0200
-Message-Id: <1225386296-19632-4-git-send-email-penberg@cs.helsinki.fi>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1225386296-19632-3-git-send-email-penberg@cs.helsinki.fi>
-References: <>
- <1225386296-19632-1-git-send-email-penberg@cs.helsinki.fi>
- <1225386296-19632-2-git-send-email-penberg@cs.helsinki.fi>
- <1225386296-19632-3-git-send-email-penberg@cs.helsinki.fi>
+	Thu, 30 Oct 2008 13:07:28 -0400
+Date: Thu, 30 Oct 2008 13:07:27 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: rjw@sisk.pl, <linux-kernel@vger.kernel.org>, <ncunningham@crca.org.au>,
+       <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
+ filesystems.
+In-Reply-To: <E1KvYgR-0002Cx-AZ@pomaz-ex.szeredi.hu>
+Message-ID: <Pine.LNX.4.44L0.0810301301540.2513-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While there are no functional changes, the diff is quite large because we need
-to shuffle code around to avoid forward declarations.
+On Thu, 30 Oct 2008, Miklos Szeredi wrote:
 
-Cc: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- drivers/staging/winbond/wb35rx.c   |  425 ++++++++++++++++++------------------
- drivers/staging/winbond/wb35rx_f.h |    6 -
- 2 files changed, 213 insertions(+), 218 deletions(-)
+> On Thu, 30 Oct 2008, Alan Stern wrote:
+> > On Thu, 30 Oct 2008, Miklos Szeredi wrote:
+> > 
+> > > On Wed, 29 Oct 2008, Alan Stern wrote:
+> > > > I discussed this last summer with Rafael.  It's a lot harder than it 
+> > > > looks, for all sorts of reasons.  For example, what about user tasks 
+> > > > that have access to memory-mapped I/O regions?
+> > > 
+> > > What about them?  Freezing doesn't seem to help with that.
+> > 
+> > Sure it does.  A frozen process can't touch a memory-mapped I/O region, 
+> > whereas a non-frozen process can.
+> 
+> But it can be in the middle of I/O by your definition.
 
-diff --git a/drivers/staging/winbond/wb35rx.c b/drivers/staging/winbond/wb35rx.c
-index 85b861c..7f8b6d7 100644
---- a/drivers/staging/winbond/wb35rx.c
-+++ b/drivers/staging/winbond/wb35rx.c
-@@ -14,85 +14,150 @@
- #include "sysdef.h"
- #include "wb35rx_f.h"
- 
--void Wb35Rx_start(struct ieee80211_hw *hw)
-+static void packet_came(struct ieee80211_hw *hw, char *pRxBufferAddress, int PacketSize)
- {
- 	struct wbsoft_priv *priv = hw->priv;
--	phw_data_t pHwData = &priv->sHwData;
--	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
-+	struct sk_buff *skb;
-+	struct ieee80211_rx_status rx_status = {0};
- 
--	// Allow only one thread to run into the Wb35Rx() function
--	if (atomic_inc_return(&pWb35Rx->RxFireCounter) == 1) {
--		pWb35Rx->EP3vm_state = VM_RUNNING;
--		Wb35Rx(hw);
--	} else
--		atomic_dec(&pWb35Rx->RxFireCounter);
-+	if (!priv->enabled)
-+		return;
-+
-+	skb = dev_alloc_skb(PacketSize);
-+	if (!skb) {
-+		printk("Not enough memory for packet, FIXME\n");
-+		return;
-+	}
-+
-+	memcpy(skb_put(skb, PacketSize),
-+	       pRxBufferAddress,
-+	       PacketSize);
-+
-+/*
-+	rx_status.rate = 10;
-+	rx_status.channel = 1;
-+	rx_status.freq = 12345;
-+	rx_status.phymode = MODE_IEEE80211B;
-+*/
-+
-+	ieee80211_rx_irqsafe(hw, skb, &rx_status);
- }
- 
--// This function cannot reentrain
--void Wb35Rx(struct ieee80211_hw *hw)
-+static void Wb35Rx_adjust(PDESCRIPTOR pRxDes)
-+{
-+	u32 *	pRxBufferAddress;
-+	u32	DecryptionMethod;
-+	u32	i;
-+	u16	BufferSize;
-+
-+	DecryptionMethod = pRxDes->R01.R01_decryption_method;
-+	pRxBufferAddress = pRxDes->buffer_address[0];
-+	BufferSize = pRxDes->buffer_size[0];
-+
-+	// Adjust the last part of data. Only data left
-+	BufferSize -= 4; // For CRC-32
-+	if (DecryptionMethod)
-+		BufferSize -= 4;
-+	if (DecryptionMethod == 3) // For CCMP
-+		BufferSize -= 4;
-+
-+	// Adjust the IV field which after 802.11 header and ICV field.
-+	if (DecryptionMethod == 1) // For WEP
-+	{
-+		for( i=6; i>0; i-- )
-+			pRxBufferAddress[i] = pRxBufferAddress[i-1];
-+		pRxDes->buffer_address[0] = pRxBufferAddress + 1;
-+		BufferSize -= 4; // 4 byte for IV
-+	}
-+	else if( DecryptionMethod ) // For TKIP and CCMP
-+	{
-+		for (i=7; i>1; i--)
-+			pRxBufferAddress[i] = pRxBufferAddress[i-2];
-+		pRxDes->buffer_address[0] = pRxBufferAddress + 2;//Update the descriptor, shift 8 byte
-+		BufferSize -= 8; // 8 byte for IV + ICV
-+	}
-+	pRxDes->buffer_size[0] = BufferSize;
-+}
-+
-+static u16 Wb35Rx_indicate(struct ieee80211_hw *hw)
- {
- 	struct wbsoft_priv *priv = hw->priv;
- 	phw_data_t pHwData = &priv->sHwData;
-+	DESCRIPTOR	RxDes;
- 	PWB35RX	pWb35Rx = &pHwData->Wb35Rx;
--	u8 *	pRxBufferAddress;
--	struct urb *urb = pWb35Rx->RxUrb;
--	int	retv;
--	u32	RxBufferId;
-+	u8 *		pRxBufferAddress;
-+	u16		PacketSize;
-+	u16		stmp, BufferSize, stmp2 = 0;
-+	u32		RxBufferId;
- 
--	//
--	// Issuing URB
--	//
--	if (pHwData->SurpriseRemove || pHwData->HwStop)
--		goto error;
-+	// Only one thread be allowed to run into the following
-+	do {
-+		RxBufferId = pWb35Rx->RxProcessIndex;
-+		if (pWb35Rx->RxOwner[ RxBufferId ]) //Owner by VM
-+			break;
- 
--	if (pWb35Rx->rx_halt)
--		goto error;
-+		pWb35Rx->RxProcessIndex++;
-+		pWb35Rx->RxProcessIndex %= MAX_USB_RX_BUFFER_NUMBER;
- 
--	// Get RxBuffer's ID
--	RxBufferId = pWb35Rx->RxBufferId;
--	if (!pWb35Rx->RxOwner[RxBufferId]) {
--		// It's impossible to run here.
--		#ifdef _PE_RX_DUMP_
--		WBDEBUG(("Rx driver fifo unavailable\n"));
--		#endif
--		goto error;
--	}
-+		pRxBufferAddress = pWb35Rx->pDRx;
-+		BufferSize = pWb35Rx->RxBufferSize[ RxBufferId ];
- 
--	// Update buffer point, then start to bulkin the data from USB
--	pWb35Rx->RxBufferId++;
--	pWb35Rx->RxBufferId %= MAX_USB_RX_BUFFER_NUMBER;
-+		// Parse the bulkin buffer
-+		while (BufferSize >= 4) {
-+			if ((cpu_to_le32(*(u32 *)pRxBufferAddress) & 0x0fffffff) == RX_END_TAG) //Is ending? 921002.9.a
-+				break;
- 
--	pWb35Rx->CurrentRxBufferId = RxBufferId;
-+			// Get the R00 R01 first
-+			RxDes.R00.value = le32_to_cpu(*(u32 *)pRxBufferAddress);
-+			PacketSize = (u16)RxDes.R00.R00_receive_byte_count;
-+			RxDes.R01.value = le32_to_cpu(*((u32 *)(pRxBufferAddress+4)));
-+			// For new DMA 4k
-+			if ((PacketSize & 0x03) > 0)
-+				PacketSize -= 4;
- 
--	pWb35Rx->pDRx = kzalloc(MAX_USB_RX_BUFFER, GFP_ATOMIC);
--	if (!pWb35Rx->pDRx) {
--		printk("w35und: Rx memory alloc failed\n");
--		goto error;
--	}
--	pRxBufferAddress = pWb35Rx->pDRx;
-+			// Basic check for Rx length. Is length valid?
-+			if (PacketSize > MAX_PACKET_SIZE) {
-+				#ifdef _PE_RX_DUMP_
-+				WBDEBUG(("Serious ERROR : Rx data size too long, size =%d\n", PacketSize));
-+				#endif
- 
--	usb_fill_bulk_urb(urb, pHwData->WbUsb.udev,
--			  usb_rcvbulkpipe(pHwData->WbUsb.udev, 3),
--			  pRxBufferAddress, MAX_USB_RX_BUFFER,
--			  Wb35Rx_Complete, hw);
-+				pWb35Rx->EP3vm_state = VM_STOP;
-+				pWb35Rx->Ep3ErrorCount2++;
-+				break;
-+			}
- 
--	pWb35Rx->EP3vm_state = VM_RUNNING;
-+			// Start to process Rx buffer
-+//			RxDes.Descriptor_ID = RxBufferId; // Due to synchronous indicate, the field doesn't necessary to use.
-+			BufferSize -= 8; //subtract 8 byte for 35's USB header length
-+			pRxBufferAddress += 8;
- 
--	retv = usb_submit_urb(urb, GFP_ATOMIC);
-+			RxDes.buffer_address[0] = pRxBufferAddress;
-+			RxDes.buffer_size[0] = PacketSize;
-+			RxDes.buffer_number = 1;
-+			RxDes.buffer_start_index = 0;
-+			RxDes.buffer_total_size = RxDes.buffer_size[0];
-+			Wb35Rx_adjust(&RxDes);
- 
--	if (retv != 0) {
--		printk("Rx URB sending error\n");
--		goto error;
--	}
--	return;
-+			packet_came(hw, pRxBufferAddress, PacketSize);
- 
--error:
--	// VM stop
--	pWb35Rx->EP3vm_state = VM_STOP;
--	atomic_dec(&pWb35Rx->RxFireCounter);
-+			// Move RxBuffer point to the next
-+			stmp = PacketSize + 3;
-+			stmp &= ~0x03; // 4n alignment
-+			pRxBufferAddress += stmp;
-+			BufferSize -= stmp;
-+			stmp2 += stmp;
-+		}
-+
-+		// Reclaim resource
-+		pWb35Rx->RxOwner[ RxBufferId ] = 1;
-+	} while (true);
-+
-+	return stmp2;
- }
- 
--void Wb35Rx_Complete(struct urb *urb)
-+static void Wb35Rx(struct ieee80211_hw *hw);
-+
-+static void Wb35Rx_Complete(struct urb *urb)
- {
- 	struct ieee80211_hw *hw = urb->context;
- 	struct wbsoft_priv *priv = hw->priv;
-@@ -170,49 +235,86 @@ error:
- 	pWb35Rx->EP3vm_state = VM_STOP;
- }
- 
--//=====================================================================================
--unsigned char Wb35Rx_initial(phw_data_t pHwData)
-+// This function cannot reentrain
-+static void Wb35Rx(struct ieee80211_hw *hw)
- {
--	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
--
--	// Initial the Buffer Queue
--	Wb35Rx_reset_descriptor( pHwData );
-+	struct wbsoft_priv *priv = hw->priv;
-+	phw_data_t pHwData = &priv->sHwData;
-+	PWB35RX	pWb35Rx = &pHwData->Wb35Rx;
-+	u8 *	pRxBufferAddress;
-+	struct urb *urb = pWb35Rx->RxUrb;
-+	int	retv;
-+	u32	RxBufferId;
- 
--	pWb35Rx->RxUrb = usb_alloc_urb(0, GFP_ATOMIC);
--	return (!!pWb35Rx->RxUrb);
--}
-+	//
-+	// Issuing URB
-+	//
-+	if (pHwData->SurpriseRemove || pHwData->HwStop)
-+		goto error;
- 
--void Wb35Rx_stop(phw_data_t pHwData)
--{
--	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
-+	if (pWb35Rx->rx_halt)
-+		goto error;
- 
--	// Canceling the Irp if already sends it out.
--	if (pWb35Rx->EP3vm_state == VM_RUNNING) {
--		usb_unlink_urb( pWb35Rx->RxUrb ); // Only use unlink, let Wb35Rx_destroy to free them
-+	// Get RxBuffer's ID
-+	RxBufferId = pWb35Rx->RxBufferId;
-+	if (!pWb35Rx->RxOwner[RxBufferId]) {
-+		// It's impossible to run here.
- 		#ifdef _PE_RX_DUMP_
--		WBDEBUG(("EP3 Rx stop\n"));
-+		WBDEBUG(("Rx driver fifo unavailable\n"));
- 		#endif
-+		goto error;
-+	}
-+
-+	// Update buffer point, then start to bulkin the data from USB
-+	pWb35Rx->RxBufferId++;
-+	pWb35Rx->RxBufferId %= MAX_USB_RX_BUFFER_NUMBER;
-+
-+	pWb35Rx->CurrentRxBufferId = RxBufferId;
-+
-+	pWb35Rx->pDRx = kzalloc(MAX_USB_RX_BUFFER, GFP_ATOMIC);
-+	if (!pWb35Rx->pDRx) {
-+		printk("w35und: Rx memory alloc failed\n");
-+		goto error;
-+	}
-+	pRxBufferAddress = pWb35Rx->pDRx;
-+
-+	usb_fill_bulk_urb(urb, pHwData->WbUsb.udev,
-+			  usb_rcvbulkpipe(pHwData->WbUsb.udev, 3),
-+			  pRxBufferAddress, MAX_USB_RX_BUFFER,
-+			  Wb35Rx_Complete, hw);
-+
-+	pWb35Rx->EP3vm_state = VM_RUNNING;
-+
-+	retv = usb_submit_urb(urb, GFP_ATOMIC);
-+
-+	if (retv != 0) {
-+		printk("Rx URB sending error\n");
-+		goto error;
- 	}
-+	return;
-+
-+error:
-+	// VM stop
-+	pWb35Rx->EP3vm_state = VM_STOP;
-+	atomic_dec(&pWb35Rx->RxFireCounter);
- }
- 
--// Needs process context
--void Wb35Rx_destroy(phw_data_t pHwData)
-+void Wb35Rx_start(struct ieee80211_hw *hw)
- {
-+	struct wbsoft_priv *priv = hw->priv;
-+	phw_data_t pHwData = &priv->sHwData;
- 	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
- 
--	do {
--		msleep(10); // Delay for waiting function enter 940623.1.a
--	} while (pWb35Rx->EP3vm_state != VM_STOP);
--	msleep(10); // Delay for waiting function exit 940623.1.b
--
--	if (pWb35Rx->RxUrb)
--		usb_free_urb( pWb35Rx->RxUrb );
--	#ifdef _PE_RX_DUMP_
--	WBDEBUG(("Wb35Rx_destroy OK\n"));
--	#endif
-+	// Allow only one thread to run into the Wb35Rx() function
-+	if (atomic_inc_return(&pWb35Rx->RxFireCounter) == 1) {
-+		pWb35Rx->EP3vm_state = VM_RUNNING;
-+		Wb35Rx(hw);
-+	} else
-+		atomic_dec(&pWb35Rx->RxFireCounter);
- }
- 
--void Wb35Rx_reset_descriptor(  phw_data_t pHwData )
-+//=====================================================================================
-+static void Wb35Rx_reset_descriptor(  phw_data_t pHwData )
- {
- 	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
- 	u32	i;
-@@ -228,145 +330,44 @@ void Wb35Rx_reset_descriptor(  phw_data_t pHwData )
- 		pWb35Rx->RxOwner[i] = 1;
- }
- 
--void Wb35Rx_adjust(PDESCRIPTOR pRxDes)
-+unsigned char Wb35Rx_initial(phw_data_t pHwData)
- {
--	u32 *	pRxBufferAddress;
--	u32	DecryptionMethod;
--	u32	i;
--	u16	BufferSize;
--
--	DecryptionMethod = pRxDes->R01.R01_decryption_method;
--	pRxBufferAddress = pRxDes->buffer_address[0];
--	BufferSize = pRxDes->buffer_size[0];
-+	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
- 
--	// Adjust the last part of data. Only data left
--	BufferSize -= 4; // For CRC-32
--	if (DecryptionMethod)
--		BufferSize -= 4;
--	if (DecryptionMethod == 3) // For CCMP
--		BufferSize -= 4;
-+	// Initial the Buffer Queue
-+	Wb35Rx_reset_descriptor( pHwData );
- 
--	// Adjust the IV field which after 802.11 header and ICV field.
--	if (DecryptionMethod == 1) // For WEP
--	{
--		for( i=6; i>0; i-- )
--			pRxBufferAddress[i] = pRxBufferAddress[i-1];
--		pRxDes->buffer_address[0] = pRxBufferAddress + 1;
--		BufferSize -= 4; // 4 byte for IV
--	}
--	else if( DecryptionMethod ) // For TKIP and CCMP
--	{
--		for (i=7; i>1; i--)
--			pRxBufferAddress[i] = pRxBufferAddress[i-2];
--		pRxDes->buffer_address[0] = pRxBufferAddress + 2;//Update the descriptor, shift 8 byte
--		BufferSize -= 8; // 8 byte for IV + ICV
--	}
--	pRxDes->buffer_size[0] = BufferSize;
-+	pWb35Rx->RxUrb = usb_alloc_urb(0, GFP_ATOMIC);
-+	return (!!pWb35Rx->RxUrb);
- }
- 
--static void packet_came(struct ieee80211_hw *hw, char *pRxBufferAddress, int PacketSize)
-+void Wb35Rx_stop(phw_data_t pHwData)
- {
--	struct wbsoft_priv *priv = hw->priv;
--	struct sk_buff *skb;
--	struct ieee80211_rx_status rx_status = {0};
--
--	if (!priv->enabled)
--		return;
-+	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
- 
--	skb = dev_alloc_skb(PacketSize);
--	if (!skb) {
--		printk("Not enough memory for packet, FIXME\n");
--		return;
-+	// Canceling the Irp if already sends it out.
-+	if (pWb35Rx->EP3vm_state == VM_RUNNING) {
-+		usb_unlink_urb( pWb35Rx->RxUrb ); // Only use unlink, let Wb35Rx_destroy to free them
-+		#ifdef _PE_RX_DUMP_
-+		WBDEBUG(("EP3 Rx stop\n"));
-+		#endif
- 	}
--
--	memcpy(skb_put(skb, PacketSize),
--	       pRxBufferAddress,
--	       PacketSize);
--
--/*
--	rx_status.rate = 10;
--	rx_status.channel = 1;
--	rx_status.freq = 12345;
--	rx_status.phymode = MODE_IEEE80211B;
--*/
--
--	ieee80211_rx_irqsafe(hw, skb, &rx_status);
- }
- 
--u16 Wb35Rx_indicate(struct ieee80211_hw *hw)
-+// Needs process context
-+void Wb35Rx_destroy(phw_data_t pHwData)
- {
--	struct wbsoft_priv *priv = hw->priv;
--	phw_data_t pHwData = &priv->sHwData;
--	DESCRIPTOR	RxDes;
--	PWB35RX	pWb35Rx = &pHwData->Wb35Rx;
--	u8 *		pRxBufferAddress;
--	u16		PacketSize;
--	u16		stmp, BufferSize, stmp2 = 0;
--	u32		RxBufferId;
-+	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
- 
--	// Only one thread be allowed to run into the following
- 	do {
--		RxBufferId = pWb35Rx->RxProcessIndex;
--		if (pWb35Rx->RxOwner[ RxBufferId ]) //Owner by VM
--			break;
--
--		pWb35Rx->RxProcessIndex++;
--		pWb35Rx->RxProcessIndex %= MAX_USB_RX_BUFFER_NUMBER;
--
--		pRxBufferAddress = pWb35Rx->pDRx;
--		BufferSize = pWb35Rx->RxBufferSize[ RxBufferId ];
--
--		// Parse the bulkin buffer
--		while (BufferSize >= 4) {
--			if ((cpu_to_le32(*(u32 *)pRxBufferAddress) & 0x0fffffff) == RX_END_TAG) //Is ending? 921002.9.a
--				break;
--
--			// Get the R00 R01 first
--			RxDes.R00.value = le32_to_cpu(*(u32 *)pRxBufferAddress);
--			PacketSize = (u16)RxDes.R00.R00_receive_byte_count;
--			RxDes.R01.value = le32_to_cpu(*((u32 *)(pRxBufferAddress+4)));
--			// For new DMA 4k
--			if ((PacketSize & 0x03) > 0)
--				PacketSize -= 4;
--
--			// Basic check for Rx length. Is length valid?
--			if (PacketSize > MAX_PACKET_SIZE) {
--				#ifdef _PE_RX_DUMP_
--				WBDEBUG(("Serious ERROR : Rx data size too long, size =%d\n", PacketSize));
--				#endif
--
--				pWb35Rx->EP3vm_state = VM_STOP;
--				pWb35Rx->Ep3ErrorCount2++;
--				break;
--			}
--
--			// Start to process Rx buffer
--//			RxDes.Descriptor_ID = RxBufferId; // Due to synchronous indicate, the field doesn't necessary to use.
--			BufferSize -= 8; //subtract 8 byte for 35's USB header length
--			pRxBufferAddress += 8;
--
--			RxDes.buffer_address[0] = pRxBufferAddress;
--			RxDes.buffer_size[0] = PacketSize;
--			RxDes.buffer_number = 1;
--			RxDes.buffer_start_index = 0;
--			RxDes.buffer_total_size = RxDes.buffer_size[0];
--			Wb35Rx_adjust(&RxDes);
--
--			packet_came(hw, pRxBufferAddress, PacketSize);
--
--			// Move RxBuffer point to the next
--			stmp = PacketSize + 3;
--			stmp &= ~0x03; // 4n alignment
--			pRxBufferAddress += stmp;
--			BufferSize -= stmp;
--			stmp2 += stmp;
--		}
--
--		// Reclaim resource
--		pWb35Rx->RxOwner[ RxBufferId ] = 1;
--	} while (true);
-+		msleep(10); // Delay for waiting function enter 940623.1.a
-+	} while (pWb35Rx->EP3vm_state != VM_STOP);
-+	msleep(10); // Delay for waiting function exit 940623.1.b
- 
--	return stmp2;
-+	if (pWb35Rx->RxUrb)
-+		usb_free_urb( pWb35Rx->RxUrb );
-+	#ifdef _PE_RX_DUMP_
-+	WBDEBUG(("Wb35Rx_destroy OK\n"));
-+	#endif
- }
- 
--
-diff --git a/drivers/staging/winbond/wb35rx_f.h b/drivers/staging/winbond/wb35rx_f.h
-index 5585b55..d993041 100644
---- a/drivers/staging/winbond/wb35rx_f.h
-+++ b/drivers/staging/winbond/wb35rx_f.h
-@@ -7,15 +7,9 @@
- //====================================
- // Interface function declare
- //====================================
--void		Wb35Rx_reset_descriptor(  phw_data_t pHwData );
- unsigned char		Wb35Rx_initial(  phw_data_t pHwData );
- void		Wb35Rx_destroy(  phw_data_t pHwData );
- void		Wb35Rx_stop(  phw_data_t pHwData );
--u16		Wb35Rx_indicate(struct ieee80211_hw *hw);
--void		Wb35Rx_adjust(  PDESCRIPTOR pRxDes );
- void		Wb35Rx_start(struct ieee80211_hw *hw);
- 
--void		Wb35Rx(struct ieee80211_hw *hw);
--void		Wb35Rx_Complete(struct urb *urb);
--
- #endif
--- 
-1.5.3.7
+True.  Yet another problem...
+
+> > Would you like to write a first-pass patch?  I don't think it will 
+> > work.
+> 
+> If somebody doesn't beat me to it, I'll do that (first implemented
+> with a global rw-sem).
+
+Converting it to per-CPU counters later on should be fairly easy.
+
+> > Doing that seems like a lot of work, just as modifying every driver 
+> > does.  Changing a few kernel entry points is simpler, but I'm pretty
+> > sure it won't work.  For instance, tasks can block arbitrarily long on 
+> > read calls (waiting for data to arrive); you can't allow such things to 
+> > prevent the system from suspending.
+> 
+> But we already do: either
+> 
+>  a) it's in interruptible sleep (I/O on sockets, pipes, etc), and
+>     freezing simply interrupts it, or
+> 
+>  b) it's in uninterruptible sleep and suspend will wait it out (or
+>     time out).
+> 
+> In the new scheme we could retain that part of the freezer: interrupt
+> all tasks which are inside the critical region and wait for them to
+> exit the critical region.
+> 
+> To put it in another way: it's still the freezer, it does all the same
+> things as the old freezer, except that the condition for freezing is
+> not that the task is out of the kernel, rather that it's out of the
+> disable_supend - enable_suspend region.  As such it's not a big change
+> to the whole suspend system, and so there shouldn't be anything big
+> going wrong there.
+
+Okay.  Don't forget things like ioctl for sockets -- they often involve 
+doing I/O directly to the network interface device.
+
+What happens to a task accessing a non-regular file on a fuse 
+filesystem?  :-)
+
+Alan Stern
 
