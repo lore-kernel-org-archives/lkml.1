@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbYJ3Rnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbYJ3Rnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757584AbYJ3Rnf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 13:43:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756955AbYJ3RnO
+	id S1757931AbYJ3Rnu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 13:43:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756947AbYJ3RnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 30 Oct 2008 13:43:14 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:49740 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756947AbYJ3RnM (ORCPT
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:34110 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754715AbYJ3RnN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 13:43:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=XNsBfetGLrNcunb3FVhSVYoW1zgNp8L2nnzAhWFYlFVCFcl82J9vNiwwqQmBkirQaN
-         /E1EqXCa3moeO0S6DjD+GJt5S8EbVRAp/BFsd16q54f/BYFUo1DgrPNliUmJs4/Himz3
-         LGQqgQfaKVnrg2O7yLdUT3C8af5D+XVU1p/b4=
-Date: Thu, 30 Oct 2008 20:43:07 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Aristeu Rozanski <aris@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC -tip] x86: nmi - add sensible names to nmi_watchdog boot
-	param
-Message-ID: <20081030174307.GE19888@localhost>
-References: <20081030161646.GC19888@localhost> <20081030171052.GR771@redhat.com> <20081030171426.GD19888@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081030171426.GD19888@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 30 Oct 2008 13:43:13 -0400
+To: stern@rowland.harvard.edu
+CC: miklos@szeredi.hu, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org
+In-reply-to: <Pine.LNX.4.44L0.0810301301540.2513-100000@iolanthe.rowland.org>
+	(message from Alan Stern on Thu, 30 Oct 2008 13:07:27 -0400 (EDT))
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
+ filesystems.
+References: <Pine.LNX.4.44L0.0810301301540.2513-100000@iolanthe.rowland.org>
+Message-Id: <E1KvbXx-0002dH-4j@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 30 Oct 2008 18:43:01 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Thu, Oct 30, 2008 at 08:14:26PM +0300]
-| [Aristeu Rozanski - Thu, Oct 30, 2008 at 01:10:53PM -0400]
-| | > Add sensible names as "lapic" and "ioapic" to
-| | > nmi_watchdog boot parameter. Sometimes it is not
-| | > that easy to recall what exactly nmi_watchdog=1
-| | > does mean so we allow the using of symbolic names here.
-| | > 
-| | > Old numeric values remain valid.
-| | looks good to me, but you need to update the documentation as well.
-| | 
-| | -- 
-| | Aristeu
-| | 
-| 
-| Aristeu, maybe you could do it for me -- English is quite weak
-| side of me :)
-| 
-| 		- Cyrill -
+On Thu, 30 Oct 2008, Alan Stern wrote:
+> Okay.  Don't forget things like ioctl for sockets -- they often involve 
+> doing I/O directly to the network interface device.
 
-I think I'd better wait 'till your patch (for nmi_watchdog.txt)
-applied. It allows me to just write a few words so it would be pushed
-on top of _all_ nmi related changes these days (without interdiff).
+Yeah, ioctls should probably just always be protected (at least
+initially), regardless of what type of file they are done on.
 
-		- Cyrill -
+> What happens to a task accessing a non-regular file on a fuse 
+> filesystem?  :-)
+
+The same as on any other filesystem, i.e. the fs is only involved as
+far as calling init_special_inode(), the rest is taken care of by the
+VFS.
+
+Tejun Heo recently posted patches to fuse which enable emulating a
+char device from userspace.  That is another matter, obviously we'd
+want to keep the "allow suspend during I/O" property of fuse in that
+case, even though there's a char device involved (but no hardware, at
+least not on that level).
+
+Miklos
