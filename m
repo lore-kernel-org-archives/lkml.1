@@ -1,153 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbYJ3Et7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbYJ3Eyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753370AbYJ3Et7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 00:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbYJ3Ett
+	id S1753408AbYJ3Eyo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 00:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYJ3Eyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 00:49:49 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:49166 "EHLO mx2.suse.de"
+	Thu, 30 Oct 2008 00:54:36 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:14706 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751615AbYJ3Ets (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 00:49:48 -0400
-Date: Thu, 30 Oct 2008 05:49:41 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Glauber Costa <glommer@redhat.com>
-Cc: Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, aliguori@codemonkey.ws,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] regression: vmalloc easily fail.
-Message-ID: <20081030044941.GA9470@wotan.suse.de>
-References: <1225234513-3996-1-git-send-email-glommer@redhat.com> <20081028232944.GA3759@wotan.suse.de> <20081029094856.GD4269@poweredge.glommer> <20081029101145.GB5953@wotan.suse.de> <49083B14.6070402@redhat.com> <20081029104333.GD5953@wotan.suse.de> <20081029220737.GF11532@poweredge.glommer>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751364AbYJ3Eyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 00:54:35 -0400
+From: Andrey Mirkin <major@openvz.org>
+To: devel@openvz.org
+Subject: Re: [Devel] Re: [PATCH 10/10] Add support for multiple processes
+Date: Thu, 30 Oct 2008 08:55:03 +0400
+User-Agent: KMail/1.8.2
+Cc: Oren Laadan <orenl@cs.columbia.edu>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <1224285098-573-1-git-send-email-major@openvz.org> <1224285098-573-11-git-send-email-major@openvz.org> <4905E50C.8020803@cs.columbia.edu>
+In-Reply-To: <4905E50C.8020803@cs.columbia.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081029220737.GF11532@poweredge.glommer>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200810300755.05077.major@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 08:07:37PM -0200, Glauber Costa wrote:
-> On Wed, Oct 29, 2008 at 11:43:33AM +0100, Nick Piggin wrote:
-> > On Wed, Oct 29, 2008 at 12:29:40PM +0200, Avi Kivity wrote:
-> > > Nick Piggin wrote:
-> > > >Hmm, spanning <30MB of memory... how much vmalloc space do you have?
-> > > >
-> > > >  
-> > > 
-> > > From the original report:
-> > > 
-> > > >VmallocTotal:     122880 kB
-> > > >VmallocUsed:       15184 kB
-> > > >VmallocChunk:      83764 kB
-> > > 
-> > > So it seems there's quite a bit of free space.
-> > > 
-> > > Chunk is the largest free contiguous region, right?  If so, it seems the 
-> > 
-> > Yes.
-> > 
-> > 
-> > > problem is unrelated to guard pages, instead the search isn't finding a 
-> > > 1-page area (with two guard pages) for some reason, even though lots of 
-> > > free space is available.
-> > 
-> > Hmm. The free area search could be buggy...
-> Do you want me to grab any specific info of it? Or should I just hack myself
-> randomly into it? I'll probably have some time for that tomorrow.
+On Monday 27 October 2008 18:58 Oren Laadan wrote:
+> Andrey Mirkin wrote:
+> > The whole tree of processes can be checkpointed and restarted now.
+> > Shared objects are not supported yet.
+> >
+> > Signed-off-by: Andrey Mirkin <major@openvz.org>
+> > ---
+> >  checkpoint/cpt_image.h   |    2 +
+> >  checkpoint/cpt_process.c |   24 +++++++++++++
+> >  checkpoint/rst_process.c |   85
+> > +++++++++++++++++++++++++++------------------- 3 files changed, 76
+> > insertions(+), 35 deletions(-)
+> >
+> > diff --git a/checkpoint/cpt_image.h b/checkpoint/cpt_image.h
+> > index e1fb483..f370df2 100644
+> > --- a/checkpoint/cpt_image.h
+> > +++ b/checkpoint/cpt_image.h
+> > @@ -128,6 +128,8 @@ struct cpt_task_image {
+> >  	__u64	cpt_nivcsw;
+> >  	__u64	cpt_min_flt;
+> >  	__u64	cpt_maj_flt;
+> > +	__u32	cpt_children_num;
+> > +	__u32	cpt_pad;
+> >  } __attribute__ ((aligned (8)));
+> >
+> >  struct cpt_mm_image {
+> > diff --git a/checkpoint/cpt_process.c b/checkpoint/cpt_process.c
+> > index 1f7a54b..d73ec3c 100644
+> > --- a/checkpoint/cpt_process.c
+> > +++ b/checkpoint/cpt_process.c
+> > @@ -40,6 +40,19 @@ static unsigned int encode_task_flags(unsigned int
+> > task_flags)
+> >
+> >  }
+> >
+> > +static int cpt_count_children(struct task_struct *tsk, struct
+> > cpt_context *ctx) +{
+> > +	int num = 0;
+> > +	struct task_struct *child;
+> > +
+> > +	list_for_each_entry(child, &tsk->children, sibling) {
+> > +		if (child->parent != tsk)
+> > +			continue;
+> > +		num++;
+> > +	}
+> > +	return num;
+> > +}
+> > +
+>
+> I noticed that don't take the appropriate locks when browsing through
+> tasks lists (siblings, children, global list). Although I realize that
+> the container should be frozen at this time, I keep wondering if this
+> is indeed always safe.
+You right here. We need to take tasklist_lock to be sure that everything will 
+be consistent.
 
-I took a bit of a look. Does this help you at all?
+> For instance, are you protected against an OOM killer that might just
+> occur uninvited and kill one of those tasks ?
 
-I still think we should get rid of the guard pages in non-debug kernels
-completely, but hopefully this will fix your problems?
---
+OOM killer can't kill one of those tasks as all of them should be frozen at 
+that time and be in uninterruptible state. So, we can just do not think about 
+OOM at that time. But anyway you right and we need locking around browsing 
+tasks list.
 
-- Fix off by one bug in the KVA allocator that can leave gaps 
-- An initial vmalloc failure should start off a synchronous flush of lazy
-  areas, in case someone is in progress flushing them already.
-- Purge lock can be a mutex so we can sleep while that's going on.
- 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
----
-Index: linux-2.6/mm/vmalloc.c
-===================================================================
---- linux-2.6.orig/mm/vmalloc.c
-+++ linux-2.6/mm/vmalloc.c
-@@ -14,6 +14,7 @@
- #include <linux/highmem.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
-+#include <linux/mutex.h>
- #include <linux/interrupt.h>
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
-@@ -362,7 +363,7 @@ retry:
- 				goto found;
- 		}
- 
--		while (addr + size >= first->va_start && addr + size <= vend) {
-+		while (addr + size > first->va_start && addr + size <= vend) {
- 			addr = ALIGN(first->va_end + PAGE_SIZE, align);
- 
- 			n = rb_next(&first->rb_node);
-@@ -472,7 +473,7 @@ static atomic_t vmap_lazy_nr = ATOMIC_IN
- static void __purge_vmap_area_lazy(unsigned long *start, unsigned long *end,
- 					int sync, int force_flush)
- {
--	static DEFINE_SPINLOCK(purge_lock);
-+	static DEFINE_MUTEX(purge_lock);
- 	LIST_HEAD(valist);
- 	struct vmap_area *va;
- 	int nr = 0;
-@@ -483,10 +484,10 @@ static void __purge_vmap_area_lazy(unsig
- 	 * the case that isn't actually used at the moment anyway.
- 	 */
- 	if (!sync && !force_flush) {
--		if (!spin_trylock(&purge_lock))
-+		if (!mutex_trylock(&purge_lock))
- 			return;
- 	} else
--		spin_lock(&purge_lock);
-+		mutex_lock(&purge_lock);
- 
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(va, &vmap_area_list, list) {
-@@ -518,7 +519,18 @@ static void __purge_vmap_area_lazy(unsig
- 			__free_vmap_area(va);
- 		spin_unlock(&vmap_area_lock);
- 	}
--	spin_unlock(&purge_lock);
-+	mutex_unlock(&purge_lock);
-+}
-+
-+/*
-+ * Kick off a purge of the outstanding lazy areas. Don't bother if somebody
-+ * is already purging.
-+ */
-+static void try_purge_vmap_area_lazy(void)
-+{
-+	unsigned long start = ULONG_MAX, end = 0;
-+
-+	__purge_vmap_area_lazy(&start, &end, 0, 0);
- }
- 
- /*
-@@ -528,7 +540,7 @@ static void purge_vmap_area_lazy(void)
- {
- 	unsigned long start = ULONG_MAX, end = 0;
- 
--	__purge_vmap_area_lazy(&start, &end, 0, 0);
-+	__purge_vmap_area_lazy(&start, &end, 1, 0);
- }
- 
- /*
-@@ -539,7 +551,7 @@ static void free_unmap_vmap_area(struct 
- 	va->flags |= VM_LAZY_FREE;
- 	atomic_add((va->va_end - va->va_start) >> PAGE_SHIFT, &vmap_lazy_nr);
- 	if (unlikely(atomic_read(&vmap_lazy_nr) > lazy_max_pages()))
--		purge_vmap_area_lazy();
-+		try_purge_vmap_area_lazy();
- }
- 
- static struct vmap_area *find_vmap_area(unsigned long addr)
+> Can the administrator force an un-freeze of the container ?  Or perhaps
+> some error condition if the kernel cause that ?
+
+The main idea is that context should be protected with a mutex and only one 
+process can do some activity (freeze, dump, unfreeze, kill) with a container. 
+Right now it is not implemented at all, but in future it will be added.
+
+Andrey
+
+> >  int cpt_dump_task_struct(struct task_struct *tsk, struct cpt_context
+> > *ctx) {
+> >  	struct cpt_task_image *t;
+> > @@ -102,6 +115,7 @@ int cpt_dump_task_struct(struct task_struct *tsk,
+> > struct cpt_context *ctx) t->cpt_egid = tsk->egid;
+> >  	t->cpt_sgid = tsk->sgid;
+> >  	t->cpt_fsgid = tsk->fsgid;
+> > +	t->cpt_children_num = cpt_count_children(tsk, ctx);
+> >
+> >  	err = ctx->write(t, sizeof(*t), ctx);
+> >
+> > @@ -231,6 +245,16 @@ int cpt_dump_task(struct task_struct *tsk, struct
+> > cpt_context *ctx) err = cpt_dump_fpustate(tsk, ctx);
+> >  	if (!err)
+> >  		err = cpt_dump_registers(tsk, ctx);
+> > +	if (!err) {
+> > +		struct task_struct *child;
+> > +		list_for_each_entry(child, &tsk->children, sibling) {
+> > +			if (child->parent != tsk)
+> > +				continue;
+> > +			err = cpt_dump_task(child, ctx);
+> > +			if (err)
+> > +				break;
+>
+> Here too.
+>
+> [...]
+>
+> Oren.
+>
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
+>
+> _______________________________________________
+> Devel mailing list
+> Devel@openvz.org
+> https://openvz.org/mailman/listinfo/devel
