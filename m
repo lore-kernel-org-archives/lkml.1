@@ -1,75 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624AbYJ3Fio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbYJ3Fj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753624AbYJ3Fio (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 01:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbYJ3Fie
+	id S1754529AbYJ3Fj1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 01:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbYJ3FjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 01:38:34 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:48298 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752076AbYJ3Fid (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 01:38:33 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Michael Kerrisk <mtk.manpages@gmail.com>
-Cc: Halesh S <halesh.s@india.com>, linux-kernel@vger.kernel.org
-Subject: Re: parent process behaviour to signal after vfork()
-In-Reply-To: Your message of "Wed, 29 Oct 2008 08:17:36 CDT."
-             <517f3f820810290617m49b5deccu5d639cd0d3c94592@mail.gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <loom.20081028T062822-852@post.gmane.org>
-            <517f3f820810290617m49b5deccu5d639cd0d3c94592@mail.gmail.com>
+	Thu, 30 Oct 2008 01:39:17 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:24973 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752436AbYJ3FjQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 01:39:16 -0400
+X-YMail-OSG: iEmV_KIVM1mJyAxX4BcrtHjRCMjR1GRlbGDzu6K_VAhdjbtGRGuB_Cc7Ey04iEoxIyqZ64qKrFZWxIrtqT853QgLk5nfqb_Hm6rbmda4XVijH1DkjoIiuvvFsktG_RKO43es8xJL3RiDPgCKjbqM_7s560CUfS3hI8J31xn.4O1Iy7ghTnZUb2FPRbs-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH] [Target_Core_Mod]: Updates for v2.6.28-rc2
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 29 Oct 2008 22:39:13 -0700
+Message-Id: <1225345154.4387.228.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1225345110_4046P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Date: Thu, 30 Oct 2008 01:38:30 -0400
-Message-ID: <53383.1225345110@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1225345110_4046P
-Content-Type: text/plain; charset=us-ascii
+>From 92eaaa2d3fe569ec0654b44658504c8c75fa9a43 Mon Sep 17 00:00:00 2001
+From: Nicholas Bellinger <nab@linux-iscsi.org>
+Date: Wed, 29 Oct 2008 22:30:00 -0700
+Subject: [PATCH] [Target_Core_Mod]: Updates for v2.6.28-rc2
 
-On Wed, 29 Oct 2008 08:17:36 CDT, Michael Kerrisk said:
+There are two updates to Target_Core_Mod code for v2.6.27 -> v2.6.28-rc2
 
-> diff --git a/man2/vfork.2 b/man2/vfork.2
-> index 55044ad..8a7ed50 100644
-> --- a/man2/vfork.2
-> +++ b/man2/vfork.2
-> @@ -94,7 +94,10 @@ but may call
->  .PP
->  Signal handlers are inherited, but not shared.
->  Signals to the parent
-> -arrive after the child releases the parent's memory.
-> +arrive after the child releases the parent's memory (i.e., after the child calls
-> +.BR _exit (2)
-> +or
-> +.BR execve (2)).
+*) blkdev_get() loses "unsigned flags" parameter
+*) blkdev_put() gains "fmode_t mode" parameter
 
-OK, I'll bite - when is the parent's memory released if the child doesn't
-depart by calling _exit() or execve(), but manages to get killed by an
-unhandled signal or the OOM killer or similar?
+For the first two, updated linux_blockdevice_claim*() and linux_blockdevice_release()
+in drivers/lio-core/target_core_device.c, Also updated READ-ONLY cases for
+Target_Core_Mod/IBLOCK and Target_Core_Mod/FILEIO.
 
-(That's the generic problem with adding itemized lists to an explanation - it's
-rarely clear if the list is an exhaustive list, or a non-complete list of
-examples.  Note how often we have flame wars regarding which EQUUX should be
-returned in a corner case that hinge on whether Posix says "Only FOO, BAR,
-and BAZ can be returned" or "FOO, BAR, BAZ are among the errors that can be
-returned")
+*) struct genhd->capacity goes away
+
+Target_Core_Mod/IBLOCK had been using this to emulate READ_CAPACITY.  Changed
+iblock_emulate_read_cap() and iblock_emulate_read_cap16() to correctly use
+include/linux/genhd.h:get_capacity() macro
+
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+---
+ drivers/lio-core/target_core_device.c |   12 ++++++------
+ drivers/lio-core/target_core_file.c   |    2 +-
+ drivers/lio-core/target_core_iblock.c |    8 ++++----
+ 3 files changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/lio-core/target_core_device.c b/drivers/lio-core/target_core_device.c
+index 6891b54..11dc965 100644
+--- a/drivers/lio-core/target_core_device.c
++++ b/drivers/lio-core/target_core_device.c
+@@ -68,7 +68,7 @@ extern se_global_t *se_global;
+ 
+ extern struct block_device *linux_blockdevice_claim_bd (struct block_device *bd, void *claim_ptr)
+ {
+-	if (blkdev_get(bd, FMODE_WRITE|FMODE_READ, O_RDWR) < 0)
++	if (blkdev_get(bd, FMODE_WRITE|FMODE_READ) < 0)
+ 		return(NULL);	
+ 	/*
+ 	 * If no claim pointer was passed from claimee, use struct block_device.
+@@ -77,7 +77,7 @@ extern struct block_device *linux_blockdevice_claim_bd (struct block_device *bd,
+ 		claim_ptr = (void *)bd;
+ 
+ 	if (bd_claim(bd, claim_ptr) < 0) {
+-		blkdev_put(bd);
++		blkdev_put(bd, FMODE_WRITE|FMODE_READ);
+ 		return(NULL);
+ 	}
+ 	
+@@ -96,7 +96,7 @@ extern struct block_device *__linux_blockdevice_claim (int major, int minor, voi
+ 		return(NULL);
+ 	}
+ 
+-	if (blkdev_get(bd, FMODE_WRITE, O_RDWR) < 0) {
++	if (blkdev_get(bd, FMODE_WRITE|FMODE_READ) < 0) {
+ 		*ret = -1;
+ 		return(NULL);
+ 	}
+@@ -129,7 +129,7 @@ extern struct block_device *linux_blockdevice_claim (int major, int minor, void
+ 	if (!(bd = bdget(dev)))
+ 		return(NULL);
+ 
+-	if (blkdev_get(bd, FMODE_WRITE, O_RDWR) < 0)
++	if (blkdev_get(bd, FMODE_WRITE|FMODE_READ) < 0)
+ 		return(NULL);
+ 	/*
+ 	 * If no claim pointer was passed from claimee, use struct block_device.
+@@ -138,7 +138,7 @@ extern struct block_device *linux_blockdevice_claim (int major, int minor, void
+ 		claim_ptr = (void *)bd;
+ 
+ 	if (bd_claim(bd, claim_ptr) < 0) {
+-		blkdev_put(bd);
++		blkdev_put(bd, FMODE_WRITE|FMODE_READ);
+ 		return(NULL);
+ 	}
+ 	
+@@ -159,7 +159,7 @@ extern int linux_blockdevice_release (int major, int minor, struct block_device
+ 		bd = bd_p;
+ 
+ 	bd_release(bd);
+-	blkdev_put(bd);
++	blkdev_put(bd, FMODE_WRITE|FMODE_READ);
+ 
+ 	return(0);
+ }
+diff --git a/drivers/lio-core/target_core_file.c b/drivers/lio-core/target_core_file.c
+index 35c7665..1ea126f 100644
+--- a/drivers/lio-core/target_core_file.c
++++ b/drivers/lio-core/target_core_file.c
+@@ -159,7 +159,7 @@ extern int fd_release_phydevice (se_device_t *dev)
+ 	if (dev->dev_flags & DF_READ_ONLY) {
+ 		PYXPRINT("FILEIO: Calling blkdev_put() for Major:Minor - %d:%d\n",
+ 			fd_dev->fd_major, fd_dev->fd_minor);
+-		blkdev_put((struct block_device *)fd_dev->fd_bd);
++		blkdev_put((struct block_device *)fd_dev->fd_bd, FMODE_READ);
+ 	} else {	
+ 		PYXPRINT("FILEIO: Releasing Major:Minor - %d:%d\n", fd_dev->fd_major,
+ 			fd_dev->fd_minor);
+diff --git a/drivers/lio-core/target_core_iblock.c b/drivers/lio-core/target_core_iblock.c
+index f5beb70..8f5a442 100644
+--- a/drivers/lio-core/target_core_iblock.c
++++ b/drivers/lio-core/target_core_iblock.c
+@@ -159,7 +159,7 @@ extern int iblock_release_phydevice (se_device_t *dev)
+ 	if (dev->dev_flags & DF_READ_ONLY) {
+ 		PYXPRINT("IBLOCK: Calling blkdev_put() for Major:Minor - %d:%d\n",
+ 			ib_dev->ibd_major, ib_dev->ibd_minor);
+-		blkdev_put((struct block_device *)ib_dev->ibd_bd);
++		blkdev_put((struct block_device *)ib_dev->ibd_bd, FMODE_READ);
+ 	} else {
+ 		PYXPRINT("IBLOCK: Releasing Major:Minor - %d:%d\n",
+ 			ib_dev->ibd_major, ib_dev->ibd_minor);
+@@ -415,9 +415,9 @@ static int iblock_emulate_read_cap (se_task_t *task)
+ {
+ 	iblock_dev_t *ibd = (iblock_dev_t *) task->iscsi_dev->dev_ptr;
+ 	struct block_device *bd = ibd->ibd_bd;
+-	u32 blocks = (bd->bd_disk->capacity - 1);
++	u32 blocks = (get_capacity(bd->bd_disk) - 1);
+ 
+-	if ((bd->bd_disk->capacity - 1) >= 0x00000000ffffffff)
++	if ((get_capacity(bd->bd_disk) - 1) >= 0x00000000ffffffff)
+ 		blocks = 0xffffffff;
+ 
+ 	return(transport_generic_emulate_readcapacity(task->iscsi_cmd, blocks, IBLOCK_BLOCKSIZE));
+@@ -427,7 +427,7 @@ static int iblock_emulate_read_cap16 (se_task_t *task)
+ {
+ 	iblock_dev_t *ibd = (iblock_dev_t *) task->iscsi_dev->dev_ptr;
+ 	struct block_device *bd = ibd->ibd_bd;
+-	unsigned long long blocks_long = (bd->bd_disk->capacity - 1);
++	unsigned long long blocks_long = (get_capacity(bd->bd_disk) - 1);
+ 
+ 	return(transport_generic_emulate_readcapacity_16(task->iscsi_cmd, blocks_long, IBLOCK_BLOCKSIZE));;
+ }
+-- 
+1.5.4.1
 
 
---==_Exmh_1225345110_4046P
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJCUhWcC3lWbTT17ARAqtxAJ0WxsrZVlfEMhof44MX6ByLRBJATQCeJoTR
-L36H9yMajqUjd8HfnPbOEPw=
-=dGAN
------END PGP SIGNATURE-----
-
---==_Exmh_1225345110_4046P--
