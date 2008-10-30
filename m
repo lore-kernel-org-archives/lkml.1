@@ -1,91 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbYJ3VRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757053AbYJ3VUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757397AbYJ3VRi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 17:17:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbYJ3VR2
+	id S1757053AbYJ3VUe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 17:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbYJ3VUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 17:17:28 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:6595 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754897AbYJ3VR1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 17:17:27 -0400
-Message-ID: <ac3eb2510810301417i60d6e68cv8b9545c29db8018a@mail.gmail.com>
-Date: Thu, 30 Oct 2008 22:17:03 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Andrey Borzenkov" <arvidjaar@mail.ru>
-Subject: Re: 2.6.28-rc2 - strange (redundant) sysfs paths for SCSI
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <200810292105.40220.arvidjaar@mail.ru>
+	Thu, 30 Oct 2008 17:20:25 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56755 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754015AbYJ3VUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 17:20:25 -0400
+Date: Thu, 30 Oct 2008 22:20:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <Jens.Axboe@oracle.com>
+Subject: Re: [PATCH] fix smp generic helper voyager breakage
+Message-ID: <20081030212019.GA30303@elte.hu>
+References: <1225400980.19324.24.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200810292105.40220.arvidjaar@mail.ru>
+In-Reply-To: <1225400980.19324.24.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 19:05, Andrey Borzenkov <arvidjaar@mail.ru> wrote:
-> Running with PATA driver:
->
-> /sys/devices/pci0000:00/0000:00:04.0/host0/scsi_host/host0
-> /sys/devices/pci0000:00/0000:00:04.0/host0/target0:0:0/0:0:0:0
->
-> well, in both cases at least one component is redundant?
 
-Yes, it's a duplication. Ideally all the scsi_* class devices would
-just offer their attributes at the "real" devices, the bus devices,
-and not exist at all. But it's that way for a long time now, and they
-can not just be removed. One possible solution could be to create the
-attributes of the class devices at the "real" devices, and keep
-compatibility symlinks from the class directory to the "real" device.
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-> Also the intermediate nodes (scsi_host and target0:0:0) do not seem
-> to contain any useful information at all?
+> >From c3029f2bac04e387a1eb6aa2967310d61e9f2561 Mon Sep 17 00:00:00 2001
+> From: James Bottomley <James.Bottomley@HansenPartnership.com>
+> Date: Wed, 29 Oct 2008 14:53:06 -0500
+> Subject: [VOYAGER] fix generic smp helpers non compile
+> 
+> commit 3d4422332711ef48ef0f132f1fcbfcbd56c7f3d1
+> Author: Jens Axboe <jens.axboe@oracle.com>
+> Date:   Thu Jun 26 11:21:34 2008 +0200
+> 
+>     Add generic helpers for arch IPI function calls
+> 
+> didn't wire up the voyager smp call function correctly, so do that
+> here.  Also make CONFIG_USE_GENERIC_SMP_HELPERS a def_bool y again,
+> since we now use the generic helpers for every x86 architecture.
+> 
+> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+> ---
+>  arch/x86/Kconfig                    |    4 +++-
+>  arch/x86/mach-voyager/voyager_smp.c |   16 ++++++++++++++--
+>  2 files changed, 17 insertions(+), 3 deletions(-)
 
-The target represents a main scsi device object and is expected to be
-there. It's part of the specification, and the way scsi works. You can
-have multiple targets per host and below the target the devices. All
-that might not really make sense for ATA drives mapped to scsi, but
-that's not a problem scsi could solve. :)
+applied to tip/x86/urgent, thanks James!
 
-As mentioned a few lines above, the scsi_host class device "host0" is
-already represented as the host bus device "host0" and is a
-duplication, that's correct. Same is true for the scsi_device class
-device.
-
-The actual directory named "scsi_host" is just the glue the
-driver-core creates for all class devices which have a bus device as a
-parent. It's not created by scsi. The same thing like your pci
-ethernet card is a "pci*" device and the "eth0" device, which is a
-child of the pci device, lives in a subdir, always called after the
-subsytem, "net". That way network devices can get almost any name
-without conflicting with an attribute name of the parent device.
-People complained, that they couldn't rename their network interface
-to "irq". :)
-
-> I noticed this because kernel installer in Mandriva started to
-> complaint about host* and target* device nodes under /sys/bus/scsi/devices:
-
-Yeah, users of sysfs are always required to check what the type of
-device they retrieve. It must always be allowed to add new stuff to
-existing directories. The host and target devices belong to the scsi
-bus and got added a while ago. In the past, they have been created in
-the device tree only, without a subsystem attached, and with no events
-to userspace, which isn't a good thing to do.
-
-> lrwxrwxrwx 1 root root 0 2008-10-29 19:58 0:0:0:0 -> ../../../devices/pci0000:00/0000:00:04.0/host0/target0:0:0/0:0:0:0/
-> lrwxrwxrwx 1 root root 0 2008-10-29 19:58 1:0:0:0 -> ../../../devices/pci0000:00/0000:00:04.0/host1/target1:0:0/1:0:0:0/
-> lrwxrwxrwx 1 root root 0 2008-10-29 19:58 host0 -> ../../../devices/pci0000:00/0000:00:04.0/host0/
-> lrwxrwxrwx 1 root root 0 2008-10-29 19:58 host1 -> ../../../devices/pci0000:00/0000:00:04.0/host1/
-> lrwxrwxrwx 1 root root 0 2008-10-29 19:58 target0:0:0 -> ../../../devices/pci0000:00/0000:00:04.0/host0/target0:0:0/
-> lrwxrwxrwx 1 root root 0 2008-10-29 19:58 target1:0:0 -> ../../../devices/pci0000:00/0000:00:04.0/host1/target1:0:0/
->
-> It is really not quite clear what use they have.
-
-That looks all totally fine. The only things one could argue about are
-the 1:1 duplicated class devices scsi_device and scsi_host, which you
-don't even see in this listing, because they are class devices.
-
-Kay
+	Ingo
