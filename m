@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbYJ3QQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757046AbYJ3QRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756803AbYJ3QQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 12:16:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYJ3QQq
+	id S1757046AbYJ3QRS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 12:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756856AbYJ3QQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 12:16:46 -0400
-Received: from hades.rz.tu-clausthal.de ([139.174.2.20]:53234 "EHLO
-	hades.rz.tu-clausthal.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752955AbYJ3QQp convert rfc822-to-8bit (ORCPT
+	Thu, 30 Oct 2008 12:16:58 -0400
+Received: from ik-out-1112.google.com ([66.249.90.177]:63792 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756674AbYJ3QQ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 12:16:45 -0400
-From: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
-To: Greg KH <greg@kroah.com>
-Subject: Re: 2.6.27: ehci bug with AMD 770nb/SB700 southbridge. usb lockup
-Date: Thu, 30 Oct 2008 17:16:39 +0100
-User-Agent: KMail/1.10.90 (Linux/2.6.27.4r4; KDE/4.1.71; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       Libin.Yang@amd.com, Crane Cai <crane.cai@amd.com>
-References: <200810300215.18792.volker.armin.hemmann@tu-clausthal.de> <20081030055410.GB19035@kroah.com>
-In-Reply-To: <20081030055410.GB19035@kroah.com>
+	Thu, 30 Oct 2008 12:16:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=cdf/iWtIunaQLC1+Gj+583gT0VefzO/KCj1clGb/GZ1FaiQkeNM+Pp5W1xQ8EWIDg5
+         5ePDHfDbhrentSzDvzpHWcguTqBdRp6sop+uZ/bZsflW6xqPisV00TfzGCI3EJD7VoWj
+         C5Yav/0q5scYhuWtQ6NL5zpD/Ff7uGZq2E744=
+Date: Thu, 30 Oct 2008 19:16:46 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Aristeu Rozanski <aris@redhat.com>
+Subject: [RFC -tip] x86: nmi - add sensible names to nmi_watchdog boot param
+Message-ID: <20081030161646.GC19888@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810301716.39839.volker.armin.hemmann@tu-clausthal.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Donnerstag 30 Oktober 2008, Greg KH wrote:
-Hi,
-thanks for your answer. 
+Add sensible names as "lapic" and "ioapic" to
+nmi_watchdog boot parameter. Sometimes it is not
+that easy to recall what exactly nmi_watchdog=1
+does mean so we allow the using of symbolic names here.
 
->
-> This chipset was known to have bugs in it, which I think we fixed
-> already.  I have a laptop with this chipset and it can sustain large
-> ammounts of USB data just fine with the 2.6.27 kernel series, so I
-> wonder if something is wrong with your usb disk drive?
+Old numeric values remain valid.
 
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
-as I wrote - it happens with several different enclosures.
+ arch/x86/kernel/nmi.c |   15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
-1 containing a dvd-rw drive
-1 containing ide disks - tried two different disks in this one
-1 from a friend containing an ide disk, working well with his systems.
-1 from the same friend containing a 2,5" drive and a y-cable,
-
-That are four different enclosures and 5 different drives that are 
-problematic. I thought that it might be the 4 port hub, but if I disconnect it 
-and put in the mouse receiver directly the same things are happening. I also 
-tried different ports, it is always the same.
-
-Glück Auf
-Volker
-
+Index: linux-2.6.git/arch/x86/kernel/nmi.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/nmi.c	2008-10-27 21:35:21.000000000 +0300
++++ linux-2.6.git/arch/x86/kernel/nmi.c	2008-10-30 19:01:52.000000000 +0300
+@@ -208,12 +208,17 @@ static int __init setup_nmi_watchdog(cha
+ 		++str;
+ 	}
+ 
+-	get_option(&str, &nmi);
+-
+-	if (nmi >= NMI_INVALID)
+-		return 0;
++	if (!strncmp(str, "lapic", 5))
++		nmi_watchdog = NMI_LOCAL_APIC;
++	else if (!strncmp(str, "ioapic", 6))
++		nmi_watchdog = NMI_IO_APIC;
++	else {
++		get_option(&str, &nmi);
++		if (nmi >= NMI_INVALID)
++			return 0;
++		nmi_watchdog = nmi;
++	}
+ 
+-	nmi_watchdog = nmi;
+ 	return 1;
+ }
+ __setup("nmi_watchdog=", setup_nmi_watchdog);
