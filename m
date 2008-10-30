@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759099AbYJ3VzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759310AbYJ3V4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759099AbYJ3VzT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 17:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYJ3VzE
+	id S1759310AbYJ3V4L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 17:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbYJ3Vz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 17:55:04 -0400
-Received: from byss.tchmachines.com ([208.76.80.75]:54219 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753021AbYJ3VzD (ORCPT
+	Thu, 30 Oct 2008 17:55:59 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:22633 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752826AbYJ3Vz6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 17:55:03 -0400
-Date: Thu, 30 Oct 2008 14:54:56 -0700
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, tim@scalemp.com, shai@scalex86.org
-Subject: Re: [patch] x86: Fix /dev/mem mmap breakage when PAT is disabled
-Message-ID: <20081030215455.GC6583@localdomain>
-References: <20081030020203.GA12423@localdomain> <20081030132103.2daff1e1@infradead.org> <20081030212121.GB6583@localdomain> <20081030142949.75df90cc@infradead.org>
+	Thu, 30 Oct 2008 17:55:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=LDo2YH3TMw5PFzASUgBBWmrryf+Z/tGvmb8n60RX+NzylCQSPtMHkMNtYYIViDKbUy
+         ycqSW2p/mmSRkTwBoJQfo0b1B8aJsQQu7EY98eZoh+ava9jaLqBiCb9KcSzg2GSHMajK
+         yHkDDG2MA+GNyj6FkkP4bkVJNc5iP9uSG0QpI=
+Date: Fri, 31 Oct 2008 00:49:10 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Geert Uytterhoeven <geert@linux-m68k.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] tracing: fix a build error on alpha and m68k
+Message-ID: <20081030214910.GA14679@x200.localdomain>
+References: <20081023213637.eff9b414.sfr@canb.auug.org.au> <20081023121145.GB27984@x200.localdomain> <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com> <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com> <49008D12.5090204@gmail.com> <Pine.LNX.4.64.0810231635440.18978@anakin> <c62985530810230757r411b4e3dj4ecec649cf8cf0b3@mail.gmail.com> <Pine.LNX.4.64.0810231727430.18978@anakin> <4900B414.7090002@gmail.com> <20081023163433.GA3160@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081030142949.75df90cc@infradead.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+In-Reply-To: <20081023163433.GA3160@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 02:29:49PM -0700, Arjan van de Ven wrote:
->On Thu, 30 Oct 2008 14:21:21 -0700
->Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
->
->> On Thu, Oct 30, 2008 at 01:21:03PM -0700, Arjan van de Ven wrote:
->> >On Wed, 29 Oct 2008 19:02:03 -0700
->> >Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
->> >
->> >well... technically the aliases are bad without PAT as well...
->> >
->> 
->> Hmm! Well, you mean if mtrr is used to change attributes?
->
->you can also set uncached in the pagetables, like via ioremap_uncached
->and other ways.
->
->and /dev/mem may or may not imply cached/uncached, depending on the
->open flags.
->
->On memory... what would that mean?
->
+On Thu, Oct 23, 2008 at 08:34:33PM +0400, Alexey Dobriyan wrote:
+> On Thu, Oct 23, 2008 at 07:27:48PM +0200, Frederic Weisbecker wrote:
+> > When tracing is enabled, some arch have included <linux/irqflags.h>
+> > on their <asm/system.h> but others like alpha or m68k don't.
+> > 
+> > Build error on alpha:
+> > 
+> > kernel/trace/trace.c: In function 'tracing_generic_entry_update':
+> > kernel/trace/trace.c:658: error: implicit declaration of function 'irqs_disabled_flags'
 
-Well, I am not denying that an incorrectly written userspace program could cause
-cache aliasing/crash the system  I am not arguing for or against this
-argument at all.
-
-However, there is what seems like an unintended change in behavior from
-2.6.25 to 2.6.26 when CONFIG_STRICT_DEVMEM is disabled and PAT is disabled,
-which is a bug, and this patch fixes it that's all. If this was intentional,
-then I don't see the reason for having CONFIG_STRICT_DEVMEM!!
+FYI, this error still exists in mainline (7f82f000ed030d1108b4de47d9e2d556092980c6).
