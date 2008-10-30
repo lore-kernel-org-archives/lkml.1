@@ -1,100 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbYJ3BUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755684AbYJ3BV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756160AbYJ3BUw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 21:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYJ3BUm
+	id S1755684AbYJ3BV4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 21:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYJ3BVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 21:20:42 -0400
-Received: from twinlark.arctic.org ([208.69.40.136]:50220 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752603AbYJ3BUl (ORCPT
+	Wed, 29 Oct 2008 21:21:48 -0400
+Received: from qb-out-0506.google.com ([72.14.204.234]:55383 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752234AbYJ3BVs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 21:20:41 -0400
-Message-ID: <49090BC0.9060202@kernel.org>
-Date: Wed, 29 Oct 2008 18:20:00 -0700
-From: "Andrew G. Morgan" <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>, Eric Paris <eparis@redhat.com>
-CC: linux-kernel@vger.kernel.org, arjan@infradead.org
-Subject: Re: [PATCH] Capabilities: BUG when an invalid capability is	requested
-References: <1225294932.23736.28.camel@localhost.localdomain> <20081029162817.GB14705@us.ibm.com>
-In-Reply-To: <20081029162817.GB14705@us.ibm.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 29 Oct 2008 21:21:48 -0400
+Subject: ISDN: struct device - replace bus_id with dev_name(),
+	dev_set_name()
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Karsten Keil <kkeil@suse.de>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Content-Type: text/plain
+Date: Thu, 30 Oct 2008 02:21:49 +0100
+Message-Id: <1225329709.5970.75.camel@nga.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+This patch is part of a larger patch series which will remove
+the "char bus_id[20]" name string from struct device. The device
+name is managed in the kobject anyway, and without any size
+limitation, and just needlessly copied into "struct device".
 
-Acked-by: Andrew G. Morgan <morgan@kernel.org>
+To set and read the device name dev_name(dev) and dev_set_name(dev)
+must be used. If your code uses static kobjects, which it shouldn't
+do, "const char *init_name" can be used to statically provide the
+name the registered device should have. At registration time, the
+init_name field is cleared, to enforce the use of dev_name(dev) to
+access the device name at a later time.
 
-Cheers
+We need to get rid of all occurrences of bus_id in the entire tree
+to be able to enable the new interface. Please apply this patch,
+and possibly convert any remaining remaining occurrences of bus_id.
 
-Andrew
+We want to submit a patch to -next, which will remove bus_id from
+"struct device", to find the remaining pieces to convert, and finally
+switch over to the new api, which will remove the 20 bytes array
+and does no longer have a size limitation.
 
-Serge E. Hallyn wrote:
-> Quoting Eric Paris (eparis@redhat.com):
->> If an invalid (large) capability is requested the capabilities system
->> may panic as it is dereferencing an array of fixed (short) length.  Its
->> possible (and actually often happens) that the capability system
->> accidentally stumbled into a valid memory region but it also regularly
->> happens that it hits invalid memory and BUGs.  If such an operation does
->> get past cap_capable then the selinux system is sure to have problems as
->> it already does a (simple) validity check and BUG.  This is known to
->> happen by the broken and buggy firegl driver.
->>
->> This patch cleanly checks all capable calls and BUG if a call is for an
->> invalid capability.  This will likely break the firegl driver for some
->> situations, but it is the right thing to do.  Garbage into a security
->> system gets you killed/bugged
->>
->> Signed-off-by: Eric Paris <eparis@redhat.com>
-> 
-> I really don't like this, but I'm not sure we really have a choice.
-> 
-> Acked-by: Serge Hallyn <serue@us.ibm.com>
-> 
-> I suppose we can think later about whether it's worthwhile (a) having a
-> separate capable() function exported, keeping one without the check for
-> compiled-in use only, and/or (b) changing the cap_valid() definition to
-> be "(((unsigned int)cap) <= CAP_LAST_CAP)" which seems to work and shave
-> one whopping instruction.  I suspect the answer will be no to both.
-> 
-> Thanks, Eric.
-> 
-> -serge
-> 
->> ---
->>
->>  kernel/capability.c |    5 +++++
->>  1 files changed, 5 insertions(+), 0 deletions(-)
->>
->> diff --git a/kernel/capability.c b/kernel/capability.c
->> index 33e51e7..50d9d99 100644
->> --- a/kernel/capability.c
->> +++ b/kernel/capability.c
->> @@ -498,6 +498,11 @@ asmlinkage long sys_capset(cap_user_header_t header, const cap_user_data_t data)
->>   */
->>  int capable(int cap)
->>  {
->> +	if (unlikely(!cap_valid(cap))) {
->> +		printk(KERN_CRIT "capable() called with invalid cap=%u\n", cap);
->> +		BUG();
->> +	}
->> +
->>  	if (has_capability(current, cap)) {
->>  		current->flags |= PF_SUPERPRIV;
->>  		return 1;
->>
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+Thanks,
+Kay
 
-iD8DBQFJCQu++bHCR3gb8jsRAi/GAKCgAFXp+wRi8oWffVDWJUAeZMzsuwCcCAd6
-AbXnEetgq2fI8t2lIJikmtQ=
-=dl4H
------END PGP SIGNATURE-----
+
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: ISDN: struct device - replace bus_id with dev_name(), dev_set_name()
+
+CC: Karsten Keil <kkeil@suse.de>
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
+---
+
+
+diff --git a/drivers/isdn/mISDN/dsp_pipeline.c b/drivers/isdn/mISDN/dsp_pipeline.c
+index 850260a..fdc800b 100644
+--- a/drivers/isdn/mISDN/dsp_pipeline.c
++++ b/drivers/isdn/mISDN/dsp_pipeline.c
+@@ -91,7 +91,7 @@ int mISDN_dsp_element_register(struct mISDN_dsp_element *elem)
+ 
+ 	entry->dev.class = elements_class;
+ 	dev_set_drvdata(&entry->dev, elem);
+-	snprintf(entry->dev.bus_id, BUS_ID_SIZE, elem->name);
++	dev_set_name(&entry->dev, elem->name);
+ 	ret = device_register(&entry->dev);
+ 	if (ret) {
+ 		printk(KERN_ERR "%s: failed to register %s\n",
+
+
