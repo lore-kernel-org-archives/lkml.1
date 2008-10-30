@@ -1,99 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbYJ3Pzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbYJ3P6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756697AbYJ3Pzu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 11:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139AbYJ3Pzm
+	id S1756241AbYJ3P6f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 11:58:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbYJ3P6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 11:55:42 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:52584 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754001AbYJ3Pzl (ORCPT
+	Thu, 30 Oct 2008 11:58:23 -0400
+Received: from the2masters.de ([213.146.113.64]:41147 "EHLO
+	smtp.the2masters.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753572AbYJ3P6V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 11:55:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=JY7xSVxbaQwlo0lNdFSFArkJRojzK/oIsoGw5Rf3n8TP8EH74N1Q1ZIBNaugXuQdcy
-         7Dub+K6GWbtbvLqFGwByTA5YZbhiX2jxGyMeXE3J38ifzot5WwE94iv4oGfaD3uxNLks
-         6JCkBgZ1veQz7+lFqjI1t/5ueul8lsr+XfEco=
-Message-ID: <cfd18e0f0810300855w6e14bb81gfacd33d6bcb103b5@mail.gmail.com>
-Date: Thu, 30 Oct 2008 10:55:40 -0500
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Oleg Nesterov" <oleg@redhat.com>
-Subject: Re: Strange stop-signal behavior in multithreaded program with defunct main
-Cc: lkml <linux-kernel@vger.kernel.org>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Bert Wesarg" <bert.wesarg@googlemail.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Roland McGrath" <roland@redhat.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <20081030110000.GA3767@redhat.com>
+	Thu, 30 Oct 2008 11:58:21 -0400
+X-Greylist: delayed 4177 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Oct 2008 11:58:21 EDT
+Message-ID: <4909C93E.7020400@the2masters.de>
+Date: Thu, 30 Oct 2008 15:48:30 +0100
+From: Stefan Hellermann <stefan@the2masters.de>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080930)
 MIME-Version: 1.0
+To: "John W. Linville" <linville@tuxdriver.com>
+CC: Arjan van de Ven <arjan@infradead.org>, davem@davemloft.net,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, me@bobcopeland.com, mcgrof@gmail.com,
+       mickflemm@gmail.com
+Subject: Re: pull request: wireless-2.6 2008-10-29
+References: <20081029231855.GD3485@tuxdriver.com> <20081029162324.28f5864d@infradead.org> <20081029233350.GE3485@tuxdriver.com>
+In-Reply-To: <20081029233350.GE3485@tuxdriver.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4907E6B9.8080700@gmail.com> <20081030110000.GA3767@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Oleg,
-
-On Thu, Oct 30, 2008 at 6:00 AM, Oleg Nesterov <oleg@redhat.com> wrote:
-> On 10/28, Michael Kerrisk wrote:
+John W. Linville schrieb:
+> On Wed, Oct 29, 2008 at 04:23:24PM -0700, Arjan van de Ven wrote:
+>   
+>> On Wed, 29 Oct 2008 19:18:55 -0400
+>> "John W. Linville" <linville@tuxdriver.com> wrote:
 >>
->> Bert Wesarg described a scenario that I quickly replicated on
->> 2.6.28-rc2 (and 2.6.25 -- it's not a regression in 2.6.28-rc)
->> using the program below: if we have a multithreaded process
->> with a defunct main thread running on a tty, and that
->> process is sent a stop signal (either ^Z (SIGTSTP) or a stop
->> signal sent from another terminal using kill(1)), then:
+>>     
+>>> Dave,
+>>>
+>>> Another quick round of fixes intended for 2.6.28...
+>>>
+>>> This includes fixes for bugs 11749 and 11845, fixes a reset-related
+>>> regression in ath5k, fixes a Kconfig-related error for rt2x00, and
+>>> fixes some sparse warnings and a possible buffer overrun in libertas.
+>>> Also, it corrects a spelling error and marks Bob Copeland as an
+>>> ath5k maintainer.
+>>>       
+>> speaking of ath5k:
 >>
->> a) the terminal is locked up; and
+>> http://www.kerneloops.org/version.php?start=1835008&end=1867775&version=28-rc
 >>
->> b) the program is unresponsive to any other signal, except SIGKILL
->> or SIGCONT.
+>> it seems to have added a few WARN_ON()s which now end up at the top of
+>> the list .. are these known or should I spend some time writing reports
+>> for netdev ?
+>>     
 >
-> Yes, known problem. Please look at
+> I wasn't aware of them -- thanks... :-)
 >
->        [RFC,PATCH 3/3] do_wait: fix waiting for stopped group with dead leader
->        http://marc.info/?t=119713920000003
+>   
+I think some of the reports on kerneloops are from my machine, I'm
+running wireless-testing#master in the hope to get my card fully
+working. It's a AR2425 chip (MAC: 0xe2, PHY: 0x70), in a Lenovo Notebook.
 
-Okay -- thanks for the info.  I've added some text to man-pages to
-cover this bug.
+The wireless-connection is nearly unusable. I can provide access to this
+machine or test patches if anyone can help.
 
-Cheers,
+I get many warnings like
 
-Michael
+WARNING: at /srv/devel/kernel/net/mac80211/rx.c:2203
+ath5k_tasklet_rx+0x318/0x5c0()
+Modules linked in:
+Pid: 0, comm: swapper Not tainted 2.6.28-rc1-wl #46
+Call Trace:
+ [<c014744f>] warn_on_slowpath+0x5f/0xa0
+ [<c013ef69>] enqueue_task_fair+0xb9/0x100
+ [<c013ef69>] enqueue_task_fair+0xb9/0x100
+ [<c0137835>] default_spin_lock_flags+0x5/0x10
+ [<c0574fbb>] _spin_lock_irqsave+0x2b/0x40
+ [<c0151347>] lock_timer_base+0x27/0x60
+ [<c01514e0>] __mod_timer+0x90/0xa0
+ [<c03e8dea>] rexmit_timer+0x36a/0x3d0
+ [<c03aebe8>] ath5k_tasklet_rx+0x318/0x5c0
+ [<c014bfb0>] tasklet_action+0x70/0x100
+ [<c014ca97>] __do_softirq+0x97/0x160
+ [<c014ca00>] __do_softirq+0x0/0x160
+ <IRQ>  [<c0170c50>] handle_fasteoi_irq+0x0/0xe0
+ [<c014c7bd>] irq_exit+0x5d/0x80
+ [<c012297c>] do_IRQ+0xcc/0x100
+ [<c0120aeb>] common_interrupt+0x23/0x28
+ [<c0334f88>] acpi_idle_enter_bm+0x315/0x39e
+ [<c04346c4>] cpuidle_idle_call+0x74/0xc0
+ [<c011eded>] cpu_idle+0x6d/0xd0
+---[ end trace 8ac847f454371229 ]---
 
---- a/man3/pthread_exit.3
-+++ b/man3/pthread_exit.3
-@@ -21,7 +21,7 @@
- .\" Formatted or processed versions of this manual, if unaccompanied by
- .\" the source, must acknowledge the copyright and authors of this work.
- .\"
--.TH PTHREAD_EXIT 3 2008-10-24 "Linux" "Linux Programmer's Manual"
-+.TH PTHREAD_EXIT 3 2008-10-30 "Linux" "Linux Programmer's Manual"
- .SH NAME
- pthread_exit \- terminate calling thread
- .SH SYNOPSIS
-@@ -87,6 +87,18 @@ The value pointed to by
- .IR retval
- should not be located on the calling thread's stack,
- since the contents of that stack are undefined after the thread terminates.
-+.SH BUGS
-+Currently,
-+.\" Linux 2.6.27
-+there are limitations in the kernel implementation logic for
-+.BR wait (2)ing
-+on a stopped thread group with a dead thread group leader.
-+This can manifest in problems such as a locked terminal if a stop signal is
-+sent to a foreground process whose thread group leader has already called
-+.BR pthread_exit (3).
-+.\" FIXME . review a later kernel to see if this gets fixed
-+.\" http://thread.gmane.org/gmane.linux.kernel/611611
-+.\" http://marc.info/?l=linux-kernel&m=122525468300823&w=2
- .SH SEE ALSO
- .BR pthread_create (3),
- .BR pthread_join (3),
