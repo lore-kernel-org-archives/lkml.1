@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbYJ3CEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbYJ3CSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755235AbYJ3CEV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 22:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbYJ3CEJ
+	id S1753838AbYJ3CSX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 22:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYJ3CSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 22:04:09 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:33623 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752004AbYJ3CEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 22:04:08 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
-	filesystems.
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: rjw@sisk.pl, stern@rowland.harvard.edu,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <E1KvKm8-0000cP-6f@pomaz-ex.szeredi.hu>
-References: <Pine.LNX.4.44L0.0810291627040.3986-100000@iolanthe.rowland.org>
-	 <200810292211.49021.rjw@sisk.pl> <1225316715.18786.1.camel@nigel-laptop>
-	 <E1KvKm8-0000cP-6f@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Fri, 31 Oct 2008 00:04:02 +1100
-Message-Id: <1225371842.8576.6.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Oct 2008 22:18:14 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:54110 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751773AbYJ3CSN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 22:18:13 -0400
+To: linux-kernel@vger.kernel.org
+Subject: [REGRESSION 2.6.28-rc2-git3] lots of extra timer interrupts costing 2W
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1KvN6w-0002QE-E3@closure.thunk.org>
+Date: Wed, 29 Oct 2008 22:18:10 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+I've noticed that sometime between 2.6.27-git7 and 2.6.28-rc2-git3,
+powertop is reporting a huge number of excess timer interrupts on my
+x61s laptop:
 
-On Thu, 2008-10-30 at 00:48 +0100, Miklos Szeredi wrote:
-> On Thu, 30 Oct 2008, Nigel Cunningham wrote:
-> > Hi.
-> > 
-> > On Wed, 2008-10-29 at 22:11 +0100, Rafael J. Wysocki wrote:
-> > > The current design of the freezer is rather simplistic and I'm not really sure
-> > > it's the best one possible.  Perhaps we can redesign the freezer to work
-> > > differently and handle the cases like fuse.
-> > 
-> > Why redo what I've already done? In the full patch, you have the basis
-> > of what you're talking about. I haven't seen a failure to freeze fuse or
-> > anything else in a year of use.
-> 
-> Well yeah, your patch handles the straightforward cases.  But it
-> doesn't help with the more tricky cases, where one fuse filesystem is
-> using another, and as those may become more widespread, this approach
-> will fail.
+Wakeups-from-idle per second : 617.8    interval: 3.1s
+no ACPI power usage estimate available
 
-At the moment, yes. But it's not impossible for us to modify the patch
-to handle that as well.
+Top causes for wakeups:
+  71.3% (543.7)       <interrupt> : extra timer interrupt 
+  13.5% (103.0)     <kernel core> : hrtimer_start_expires (tick_sched_timer) 
+   7.2% ( 55.0)      <kernel IPI> : Rescheduling interrupts 
+   1.7% ( 13.0)    gnome-terminal : hrtimer_start_expires (hrtimer_wakeup) 
+   1.4% ( 10.3)       <interrupt> : PS/2 keyboard/mouse/touchpad 
+   1.1% (  8.3)       <interrupt> : ahci
+   0.4% (  3.3)   multiload-apple : hrtimer_start_expires (hrtimer_wakeup)
+   0.3% (  2.7)              Xorg : hrtimer_start (it_real_fn)
 
-Regards,
 
-Nigel
+This is costing me an extra 2 Watts or so.   Does this ring a bell with
+anyone, before I start trying to bisect this problem?
 
+						- Ted
