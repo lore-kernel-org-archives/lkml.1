@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbYJ3Bxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbYJ3CDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755798AbYJ3Bxs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 21:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbYJ3Bxi
+	id S1754675AbYJ3CDS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 22:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbYJ3CDD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 21:53:38 -0400
-Received: from mx1.suse.de ([195.135.220.2]:57832 "EHLO mx1.suse.de"
+	Wed, 29 Oct 2008 22:03:03 -0400
+Received: from mga01.intel.com ([192.55.52.88]:46099 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751554AbYJ3Bxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 21:53:37 -0400
-Date: Thu, 30 Oct 2008 02:53:35 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Glauber Costa <glommer@redhat.com>
-Cc: Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, aliguori@codemonkey.ws,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] regression: vmalloc easily fail.
-Message-ID: <20081030015335.GA18041@wotan.suse.de>
-References: <1225234513-3996-1-git-send-email-glommer@redhat.com> <20081028232944.GA3759@wotan.suse.de> <20081029094856.GD4269@poweredge.glommer> <20081029101145.GB5953@wotan.suse.de> <49083B14.6070402@redhat.com> <20081029104333.GD5953@wotan.suse.de> <20081029220737.GF11532@poweredge.glommer>
+	id S1751554AbYJ3CDB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 22:03:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,511,1220252400"; 
+   d="asc'?scan'208";a="633176613"
+Subject: Re: [PATH -mm -v2] Fix a race condtion of oops_in_progress
+From: Huang Ying <ying.huang@intel.com>
+To: Chris Snook <csnook@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <49087871.3010303@redhat.com>
+References: <1225268796.24095.48.camel@yhuang-dev.sh.intel.com>
+	 <49087871.3010303@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-cfKCy/D25sQ2d8swzmf2"
+Date: Thu, 30 Oct 2008 10:02:59 +0800
+Message-Id: <1225332179.24095.61.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081029220737.GF11532@poweredge.glommer>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 29, 2008 at 08:07:37PM -0200, Glauber Costa wrote:
-> On Wed, Oct 29, 2008 at 11:43:33AM +0100, Nick Piggin wrote:
-> > On Wed, Oct 29, 2008 at 12:29:40PM +0200, Avi Kivity wrote:
-> > > Nick Piggin wrote:
-> > > >Hmm, spanning <30MB of memory... how much vmalloc space do you have?
-> > > >
-> > > >  
-> > > 
-> > > From the original report:
-> > > 
-> > > >VmallocTotal:     122880 kB
-> > > >VmallocUsed:       15184 kB
-> > > >VmallocChunk:      83764 kB
-> > > 
-> > > So it seems there's quite a bit of free space.
-> > > 
-> > > Chunk is the largest free contiguous region, right?  If so, it seems the 
-> > 
-> > Yes.
-> > 
-> > 
-> > > problem is unrelated to guard pages, instead the search isn't finding a 
-> > > 1-page area (with two guard pages) for some reason, even though lots of 
-> > > free space is available.
-> > 
-> > Hmm. The free area search could be buggy...
-> Do you want me to grab any specific info of it? Or should I just hack myself
-> randomly into it? I'll probably have some time for that tomorrow.
 
-I can take a look at it, in the next day or two. If you hack at it, and
-find the problem I wouldn't be upset ;)
+--=-cfKCy/D25sQ2d8swzmf2
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+Hi, Chris,
+
+On Wed, 2008-10-29 at 08:51 -0600, Chris Snook wrote:
+> Huang Ying wrote:
+> > Fix a race condition accessing oops_in_progress.  Which may be changed =
+on
+> > multiple CPU simultaneously, but it is changed via non-atomic operation
+> > ++/--.  This patch changes the definition of oops_in_process from int t=
+o
+> > atomic_t, and accessing method to atomic operations.
+>=20
+> You also need barriers.  I believe rmb() before atomic_read() and wmb() a=
+fter=20
+> atomic_set() should suffice.
+
+I don't think that is necessary. I haven't found there is particular
+consistent requirement about oops_in_progress.
+
+Best Regards,
+Huang Ying
+
+
+--=-cfKCy/D25sQ2d8swzmf2
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkkJFc0ACgkQKhFGF+eHlphovwCgqYa9Bfjch32UMwLb8EEXwBFr
+WCQAn1UawQHscEK+fbTbltUQvdvJaqX3
+=MHmX
+-----END PGP SIGNATURE-----
+
+--=-cfKCy/D25sQ2d8swzmf2--
+
