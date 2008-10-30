@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758999AbYJ3XbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759192AbYJ3XcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758999AbYJ3XbN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 19:31:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754183AbYJ3Xa5
+	id S1759192AbYJ3XcS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 19:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbYJ3XcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 19:30:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43683 "EHLO mx2.mail.elte.hu"
+	Thu, 30 Oct 2008 19:32:06 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:32993 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753769AbYJ3Xa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 19:30:57 -0400
-Date: Fri, 31 Oct 2008 00:30:42 +0100
+	id S1754056AbYJ3XcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 19:32:03 -0400
+Date: Fri, 31 Oct 2008 00:31:50 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [git pull] tracing fix
-Message-ID: <20081030233042.GA14498@elte.hu>
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [git pull] scheduler fixes
+Message-ID: <20081030233150.GA15278@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -37,95 +36,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest tracing-fixes-for-linus git tree from:
+Please pull the latest sched-fixes-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Steven Rostedt (1):
-      ftrace: handle archs that do not support irqs_disabled_flags
+Li Zefan (2):
+      sched: change sched_debug's mode to 0444
+      sched: remove sched-design.txt from 00-INDEX
 
 
- Documentation/ftrace.txt |    3 +++
- kernel/trace/trace.c     |    7 ++++++-
- kernel/trace/trace.h     |   20 +++++++++++---------
- 3 files changed, 20 insertions(+), 10 deletions(-)
+ Documentation/scheduler/00-INDEX |    2 --
+ kernel/sched_debug.c             |    2 +-
+ 2 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/ftrace.txt b/Documentation/ftrace.txt
-index d330fe3..ea5a827 100644
---- a/Documentation/ftrace.txt
-+++ b/Documentation/ftrace.txt
-@@ -291,6 +291,9 @@ explains which is which.
-   CPU#: The CPU which the process was running on.
+diff --git a/Documentation/scheduler/00-INDEX b/Documentation/scheduler/00-INDEX
+index fc234d0..aabcc3a 100644
+--- a/Documentation/scheduler/00-INDEX
++++ b/Documentation/scheduler/00-INDEX
+@@ -4,8 +4,6 @@ sched-arch.txt
+ 	- CPU Scheduler implementation hints for architecture specific code.
+ sched-coding.txt
+ 	- reference for various scheduler-related methods in the O(1) scheduler.
+-sched-design.txt
+-	- goals, design and implementation of the Linux O(1) scheduler.
+ sched-design-CFS.txt
+ 	- goals, design and implementation of the Complete Fair Scheduler.
+ sched-domains.txt
+diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
+index ad958c1..5ae1776 100644
+--- a/kernel/sched_debug.c
++++ b/kernel/sched_debug.c
+@@ -319,7 +319,7 @@ static int __init init_sched_debug_procfs(void)
+ {
+ 	struct proc_dir_entry *pe;
  
-   irqs-off: 'd' interrupts are disabled. '.' otherwise.
-+	    Note: If the architecture does not support a way to
-+		  read the irq flags variable, an 'X' will always
-+		  be printed here.
- 
-   need-resched: 'N' task need_resched is set, '.' otherwise.
- 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index a610ca7..8a499e2 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -656,7 +656,11 @@ tracing_generic_entry_update(struct trace_entry *entry, unsigned long flags,
- 	entry->preempt_count		= pc & 0xff;
- 	entry->pid			= (tsk) ? tsk->pid : 0;
- 	entry->flags =
-+#ifdef CONFIG_TRACE_IRQFLAGS_SUPPORT
- 		(irqs_disabled_flags(flags) ? TRACE_FLAG_IRQS_OFF : 0) |
-+#else
-+		TRACE_FLAG_IRQS_NOSUPPORT |
-+#endif
- 		((pc & HARDIRQ_MASK) ? TRACE_FLAG_HARDIRQ : 0) |
- 		((pc & SOFTIRQ_MASK) ? TRACE_FLAG_SOFTIRQ : 0) |
- 		(need_resched() ? TRACE_FLAG_NEED_RESCHED : 0);
-@@ -1244,7 +1248,8 @@ lat_print_generic(struct trace_seq *s, struct trace_entry *entry, int cpu)
- 	trace_seq_printf(s, "%8.8s-%-5d ", comm, entry->pid);
- 	trace_seq_printf(s, "%3d", cpu);
- 	trace_seq_printf(s, "%c%c",
--			(entry->flags & TRACE_FLAG_IRQS_OFF) ? 'd' : '.',
-+			(entry->flags & TRACE_FLAG_IRQS_OFF) ? 'd' :
-+			 (entry->flags & TRACE_FLAG_IRQS_NOSUPPORT) ? 'X' : '.',
- 			((entry->flags & TRACE_FLAG_NEED_RESCHED) ? 'N' : '.'));
- 
- 	hardirq = entry->flags & TRACE_FLAG_HARDIRQ;
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 6889ca4..8465ad0 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -120,18 +120,20 @@ struct trace_boot {
- /*
-  * trace_flag_type is an enumeration that holds different
-  * states when a trace occurs. These are:
-- *  IRQS_OFF	- interrupts were disabled
-- *  NEED_RESCED - reschedule is requested
-- *  HARDIRQ	- inside an interrupt handler
-- *  SOFTIRQ	- inside a softirq handler
-- *  CONT	- multiple entries hold the trace item
-+ *  IRQS_OFF		- interrupts were disabled
-+ *  IRQS_NOSUPPORT 	- arch does not support irqs_disabled_flags
-+ *  NEED_RESCED		- reschedule is requested
-+ *  HARDIRQ		- inside an interrupt handler
-+ *  SOFTIRQ		- inside a softirq handler
-+ *  CONT		- multiple entries hold the trace item
-  */
- enum trace_flag_type {
- 	TRACE_FLAG_IRQS_OFF		= 0x01,
--	TRACE_FLAG_NEED_RESCHED		= 0x02,
--	TRACE_FLAG_HARDIRQ		= 0x04,
--	TRACE_FLAG_SOFTIRQ		= 0x08,
--	TRACE_FLAG_CONT			= 0x10,
-+	TRACE_FLAG_IRQS_NOSUPPORT	= 0x02,
-+	TRACE_FLAG_NEED_RESCHED		= 0x04,
-+	TRACE_FLAG_HARDIRQ		= 0x08,
-+	TRACE_FLAG_SOFTIRQ		= 0x10,
-+	TRACE_FLAG_CONT			= 0x20,
- };
- 
- #define TRACE_BUF_SIZE		1024
+-	pe = proc_create("sched_debug", 0644, NULL, &sched_debug_fops);
++	pe = proc_create("sched_debug", 0444, NULL, &sched_debug_fops);
+ 	if (!pe)
+ 		return -ENOMEM;
+ 	return 0;
