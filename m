@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbYJ3J7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281AbYJ3KDB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754135AbYJ3J7b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 05:59:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbYJ3J7W
+	id S1754281AbYJ3KDB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 06:03:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbYJ3KCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 05:59:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35253 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752879AbYJ3J7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 05:59:21 -0400
-Date: Thu, 30 Oct 2008 12:00:00 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Bert Wesarg <bert.wesarg@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Strange stop-signal behavior in multithreaded program with
-	defunct main
-Message-ID: <20081030110000.GA3767@redhat.com>
-References: <4907E6B9.8080700@gmail.com>
+	Thu, 30 Oct 2008 06:02:52 -0400
+Received: from mexforward.lss.emc.com ([128.222.32.20]:45143 "EHLO
+	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752879AbYJ3KCv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 06:02:51 -0400
+From: Sarangi_Santosh@emc.com
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4907E6B9.8080700@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: PROBLEM: ioctl (HDIO_GETGEO) on partition
+Date: Thu, 30 Oct 2008 06:02:17 -0400
+Message-ID: <A68C75D82BABF64AB13A6AC1875BF275052D707A@CORPUSMX10B.corp.emc.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: PROBLEM: ioctl (HDIO_GETGEO) on partition
+Thread-Index: Ack6dpdjrnEbZSLjQHKwsNLEjbSnOA==
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 30 Oct 2008 10:02:33.0317 (UTC) FILETIME=[A0AF6150:01C93A76]
+X-RSA-Inspected: yes
+X-RSA-Classifications: 
+X-RSA-Action: allow
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/28, Michael Kerrisk wrote:
->
-> Bert Wesarg described a scenario that I quickly replicated on
-> 2.6.28-rc2 (and 2.6.25 -- it's not a regression in 2.6.28-rc)
-> using the program below: if we have a multithreaded process
-> with a defunct main thread running on a tty, and that
-> process is sent a stop signal (either ^Z (SIGTSTP) or a stop
-> signal sent from another terminal using kill(1)), then:
->
-> a) the terminal is locked up; and
->
-> b) the program is unresponsive to any other signal, except SIGKILL
-> or SIGCONT.
+Hi,
+I am into a problem where the ioctl (HDIO_GETGEO) if failing on a device
+partition(ex: /dev/emcpowerg1), which is working fine for full device (
+ex: /dev/emcpowerg).
+Basically I am trying to get start offset of the device partition
+(hd_geometry.start).
+The host information where I am seeing the above problem is as follows:
 
-Yes, known problem. Please look at
+Linux ampersandmex01 2.6.18-53.el5PAE #1 SMP Wed Oct 10 16:48:18 EDT
+2007 i686 i686 i386 GNU/Linux 
 
-	[RFC,PATCH 3/3] do_wait: fix waiting for stopped group with dead leader
-	http://marc.info/?t=119713920000003
+Red Hat Enterprise Linux Server release 5.1 (Tikanga)
 
-Oleg.
+
+Can anyone suggest if there is any patch available, so that the problem
+can be resolved ?
+If the patch is not available, then is there any other way, I can get
+the above information without using  the ioctl (HDIO_GETGEO) ?
+
+I am pasting the code snip set below for your reference.
+
+Thanks,
+-Santosh
+
+<code snip>
+  int                  fd;
+  int                  sts;
+  struct hd_geometry   hd_geometry_rec;
+  unsigned int                offset;
+
+  
+  if ((fd = open(p_ppdevname, O_RDONLY | O_NONBLOCK)) < 0)
+    {
+        return OS_SYSTEM_CALL_FAILED;
+    }
+  if ((sts = ioctl(fd, HDIO_GETGEO, &hd_geometry_rec)) < 0) ------->
+ioctl((HDIO_GETGEO)  is failing for device partition (/dev/emcpowerg1)
+    {
+      close(fd);
+      return OS_SYSTEM_CALL_FAILED;
+    }
+  offset = (unsigned int) hd_geometry_rec.start;
+.
+.
+.
 
