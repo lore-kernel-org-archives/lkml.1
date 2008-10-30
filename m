@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbYJ3Ktv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbYJ3KwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754610AbYJ3Ktv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 06:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbYJ3Ktn
+	id S1754785AbYJ3KwO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 06:52:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbYJ3Kv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 06:49:43 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39864 "EHLO mx2.mail.elte.hu"
+	Thu, 30 Oct 2008 06:51:58 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38068 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753209AbYJ3Ktn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 06:49:43 -0400
-Date: Thu, 30 Oct 2008 11:49:26 +0100
+	id S1753209AbYJ3Kv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 06:51:58 -0400
+Date: Thu, 30 Oct 2008 11:51:46 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Jan Beulich <jbeulich@novell.com>
-Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] i386/PAE: fix pud_page()
-Message-ID: <20081030104926.GF3569@elte.hu>
-References: <49099C71.76E4.0078.0@novell.com>
+Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: simplify X86_MPPARSE config option
+Message-ID: <20081030105146.GG3569@elte.hu>
+References: <49099CB0.76E4.0078.0@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49099C71.76E4.0078.0@novell.com>
+In-Reply-To: <49099CB0.76E4.0078.0@novell.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,29 +38,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Jan Beulich <jbeulich@novell.com> wrote:
 
-> To the unsuspecting user it is quite annoying that this broken and
-> inconsistent with x86-64 definition still exists.
-> 
 > Signed-off-by: Jan Beulich <jbeulich@novell.com>
 > 
 > ---
->  arch/x86/include/asm/pgtable-3level.h |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-
-applied, thanks Jan!
-
-> -#define pud_page(pud) ((struct page *) __va(pud_val(pud) & PTE_PFN_MASK))
-> +#define pud_page(pud) pfn_to_page(pud_val(pud) >> PAGE_SHIFT)
+>  arch/x86/Kconfig |   12 ++----------
+>  1 file changed, 2 insertions(+), 10 deletions(-)
+> 
+> --- linux-2.6.28-rc2/arch/x86/Kconfig	2008-10-30 11:03:18.000000000 +0100
+> +++ 2.6.28-rc2-x86-kconfig-cleanup/arch/x86/Kconfig	2008-10-21 13:57:07.000000000 +0200
+> @@ -235,21 +235,13 @@ config X86_FIND_SMP_CONFIG
+>  	def_bool y
+>  	depends on X86_MPPARSE || X86_VOYAGER
 >  
->  #define pud_page_vaddr(pud) ((unsigned long) __va(pud_val(pud) & PTE_PFN_MASK))
->  
->  
->  /* Find an entry in the second-level page table.. */
-> -#define pmd_offset(pud, address) ((pmd_t *)pud_page(*(pud)) +	\
-> +#define pmd_offset(pud, address) ((pmd_t *)pud_page_vaddr(*(pud)) +	\
->  				  pmd_index(address))
+> -if ACPI
+>  config X86_MPPARSE
+> -	def_bool y
+> -	bool "Enable MPS table"
+> +	bool "Enable MPS table" if ACPI
+> +	default y
+>  	depends on X86_LOCAL_APIC
+>  	help
+>  	  For old smp systems that do not have proper acpi support. Newer systems
+>  	  (esp with 64bit cpus) with acpi support, MADT and DSDT will override it
+> -endif
+> -
+> -if !ACPI
+> -config X86_MPPARSE
+> -	def_bool y
+> -	depends on X86_LOCAL_APIC
+> -endif
 
-we were quite lucky there. Despite being a cleanup i've put this into 
-x86/urgent - i agree that it's just too ugly and confusing.
+hm, that's not an equivalent change. But i guess we can do this, it 
+sure looks like a cleaner construct.
 
 	Ingo
