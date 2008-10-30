@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753702AbYJ3Gf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbYJ3Gjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753702AbYJ3Gf3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 02:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbYJ3GfU
+	id S1753676AbYJ3Gjg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 02:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbYJ3Gj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 02:35:20 -0400
-Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:28793 "HELO
-	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752704AbYJ3GfT (ORCPT
+	Thu, 30 Oct 2008 02:39:28 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:20360 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752665AbYJ3Gj1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 02:35:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Kjxe2lhJg+X418Em8lfoKKUMfk5kARJXHDcTJHotYuqrGh2j9k5olT/dGfAwR7ntzq0ol62ORf6xvpo/ylRutb/zCOuCrLTIJkVtTHCWJLIhqF8hbc5/7hI/dhX8/ZIYUQ+wTqeHm9cfPxc1wS4FkZRjVH5TbR7d6nyn7q002O4=  ;
-X-YMail-OSG: FwWt280VM1levCMBUwKm_ydadPJqX1IeGhaifRVwhkql.h4uabX.Rv0HAm2d_vp77s.SX5MOV1XX7pCzES8eaZU5Li7PWgv5Ts29PhSDHa6mNTRTh9aSW2BXpKBkecA4kCwyd2NaWSqHUELtW4D7hbK.HeemiDOrKgu7un2ZPj_deHaJpXo4z2uq3duX
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: spi: struct device - replace bus_id with dev_name(), dev_set_name()
-Date: Wed, 29 Oct 2008 23:35:17 -0700
+	Thu, 30 Oct 2008 02:39:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id;
+        b=jD3c95sxKYcq4b0fKR5hezfAouk1Ahr5MUGuPM+FtnoAqNpIJqu03WDsfAchMvb5pp
+         NwlOBNJjV+lR5DWvx7Vz8U2Mgvi30doLvPZi4N3QUPRyB0C9ZKK9kdFNifUu7vnIaabk
+         l5Df3Ny8bPzyB1Djil07Pt7gvhGaXChuUBYYM=
+From: Gene Heskett <gene.heskett@gmail.com>
+Organization: Organization? very little
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.28-rc2 seems to fail at powering down the monitor when it should
+Date: Thu, 30 Oct 2008 02:39:18 -0400
 User-Agent: KMail/1.9.10
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-References: <1225330937.5970.99.camel@nga.site>
-In-Reply-To: <1225330937.5970.99.camel@nga.site>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810292335.17631.david-b@pacbell.net>
+Message-Id: <200810300239.18842.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 October 2008, Kay Sievers wrote:
-> From: Kay Sievers <kay.sievers@vrfy.org>
-> Subject: spi: struct device - replace bus_id with dev_name(), dev_set_name()
-> 
-> Cc: David Brownell <dbrownell@users.sourceforge.net>
-> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
+Greetings all;  Subject says it.  When it comes time for the monitor to go 
+into standby and powerdown, the on-screen clock I use for the short screen 
+saver just stops, frozen, but the monitor is very much alive at normal 
+brightness.
 
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+2.6.27.1(2/3/4) does this inactivity power down normally.
 
-... OK by me if this goes into 2.6.28.  There's one more use
-of spi->dev.bus_id that I know about, in the spi_gpio driver
-currently found in the MM tree.
+Any .config options I should check?
 
+Thanks.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Those who hate and fight must stop themselves -- otherwise it is not stopped.
+		-- Spock, "Day of the Dove", stardate unknown
