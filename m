@@ -1,67 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757677AbYJ3XEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756961AbYJ3XHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757677AbYJ3XEV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 19:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbYJ3XEJ
+	id S1756961AbYJ3XHM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 19:07:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYJ3XG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 19:04:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59857 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753616AbYJ3XEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 19:04:08 -0400
-Date: Fri, 31 Oct 2008 00:03:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] tracing: fix a build error on alpha and m68k
-Message-ID: <20081030230355.GA918@elte.hu>
-References: <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com> <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com> <49008D12.5090204@gmail.com> <Pine.LNX.4.64.0810231635440.18978@anakin> <c62985530810230757r411b4e3dj4ecec649cf8cf0b3@mail.gmail.com> <Pine.LNX.4.64.0810231727430.18978@anakin> <4900B414.7090002@gmail.com> <20081023163433.GA3160@x200.localdomain> <20081030214910.GA14679@x200.localdomain> <c62985530810301557x2c92a78ay49cdc72931b6caae@mail.gmail.com>
+	Thu, 30 Oct 2008 19:06:58 -0400
+Received: from qb-out-0506.google.com ([72.14.204.228]:60872 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752482AbYJ3XG6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 19:06:58 -0400
+Message-ID: <ac3eb2510810301606q5ff8e001j239c5108c3db4b6f@mail.gmail.com>
+Date: Fri, 31 Oct 2008 00:06:55 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Folkert van Heusden" <folkert@vanheusden.com>
+Subject: Re: [2.6.26] kobject_add_internal failed for 2:0 with -EEXIST / unable to handle kernel NULL pointer dereference in sysfs_create_link
+Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+In-Reply-To: <20081030105513.GY11214@vanheusden.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530810301557x2c92a78ay49cdc72931b6caae@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+References: <20081028151157.GI11214@vanheusden.com>
+	 <ac3eb2510810281607o19266977l4c77d3d3ab4bb849@mail.gmail.com>
+	 <20081029094041.GO11214@vanheusden.com>
+	 <ac3eb2510810290525h1579bad8i4836ce1291d9022@mail.gmail.com>
+	 <20081029132704.GS11214@vanheusden.com>
+	 <ac3eb2510810290749o2dd062b5m7b966d2d25b69714@mail.gmail.com>
+	 <20081029152550.GT11214@vanheusden.com>
+	 <ac3eb2510810291451u577aa825lc12a7e8fbc213020@mail.gmail.com>
+	 <20081030105513.GY11214@vanheusden.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Oct 30, 2008 at 11:55, Folkert van Heusden
+<folkert@vanheusden.com> wrote:
+>> >> >> >> > While running my http://vanheusden.com/pyk/ script (which randomly
+>> >> >> >> > inserts and removes modules) I triggered the folllowing oops in a 2.6.26
+>> >> >> >> > kernel on an IBM xSeries 260. This oops (in fact no oops at all) did not
+>> >> >> >> > get triggered in a 2.6.18 kernel on that system.
+>> >> >> >> >
+>> >> >> >> > [   42.507375] FDC 0 is a National Semiconductor PC87306
+>> >> >> >> > [   42.509057] kobject_add_internal failed for 2:0 with -EEXIST, don't try to register things with the same name in the same directory.
+>> >> >> >> > [   42.509291] Pid: 5301, comm: modprobe Not tainted 2.6.26-1-amd64 #1
+>> >> >> >> > [   42.509431]
+>> >> >> >> > [   42.509433] Call Trace:
+>> >> >> >> > [   42.509685]  [<ffffffff8031b031>] kobject_add_internal+0x13f/0x17e
+>> >> > ...
+>> >> >> >> > [   42.511519]  [<ffffffff8027d23b>] bdi_register+0x57/0xb4
+>> >> >> >>
+>> >> >> >> Looks like bdi sees two devices with the same devnum, or didn't
+>> >> >> >> cleanup an old entry. What does: ls -l "/sys/class/bdi/" print?
+>> >> >> >
+>> >> >> > The following:
+>> >> >> > folkert@debiantesthw:~$ ls -l /sys/class/bdi/
+>> >> >> > drwxr-xr-x 3 root root 0 2008-10-28 18:32 2:0
+>> >> >> > drwxr-xr-x 3 root root 0 2008-10-28 18:32 2:1
+>> >> >>
+>> >> >> Oh, you are running the old sysfs layout without symlinks. Care to
+>> >> >> tell where the "device" link in these directories points to?
+>> >> >
+>> >> > None exist:
+>> >> > folkert@debiantesthw:~$ ls -la /sys/class/bdi/*/device
+>> >> > ls: cannot access /sys/class/bdi/*/device: No such file or directory
+>> >>
+>> >> Ah, sorry. Seems the bdi stuff never got to pass the usual parent
+>> >> device with the device registration, to let the bdi device show up at
+>> >> the right place in the device tree.
+>> >>
+>> >> Let's see what current devices on your box have the major 2:
+>> >>   find /sys -name dev | xargs grep '^2:'
+>> >
+>> > /sys/block/fd0/dev:2:0
+>> > /sys/block/fd1/dev:2:1
+>> >
+>> > As my script does modprobe/rmmod in parallel (4 processes) maybe it is a
+>> > conflict of one process doing an modprobe of floppy while the other does
+>> > an rmmod? Or both a modprobe?
+>>
+>> Might be, yes. If you just bootup, and don't run your modprobe/rmmod
+>> script, does the box have 2 floppy devices in /sys too?
+>
+> Yes it does. One physical drive.
 
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+Seems that always happens with multiple floppies. I can reproduce it
+here with qemu. It seems not related to modprobing. Also mtd devices
+suffer from the same problem, as bug reports show.
 
-> 2008/10/30 Alexey Dobriyan <adobriyan@gmail.com>:
-> > On Thu, Oct 23, 2008 at 08:34:33PM +0400, Alexey Dobriyan wrote:
-> >> On Thu, Oct 23, 2008 at 07:27:48PM +0200, Frederic Weisbecker wrote:
-> >> > When tracing is enabled, some arch have included <linux/irqflags.h>
-> >> > on their <asm/system.h> but others like alpha or m68k don't.
-> >> >
-> >> > Build error on alpha:
-> >> >
-> >> > kernel/trace/trace.c: In function 'tracing_generic_entry_update':
-> >> > kernel/trace/trace.c:658: error: implicit declaration of function 'irqs_disabled_flags'
-> >
-> > FYI, this error still exists in mainline (7f82f000ed030d1108b4de47d9e2d556092980c6).
-> >
-> 
-> Thanks.
-> 
-> Yes Steven sent a patch to correct it: http://lkml.org/lkml/2008/10/24/205
-> But it has not been applied yet (still in discussion?).
+It might be a bug in bdi. Looks like floppies share a single queue,
+the bdi structure lives in the queue. Now we register for every device
+a bdi device, but the queue is shared and the former recorded dev_t in
+the bdi structure is overwritten. At unregistering the bdi device, all
+earlier devices using the same queue are not removed.
 
-i've just applied it to tip/tracing/urgent - should get to Linus 
-tomorrow-ish.
+Peter, please check, if something like this can happen?
 
-	Ingo
+Thanks,
+Kay
