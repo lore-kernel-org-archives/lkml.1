@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbYJ3V1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758150AbYJ3V2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757482AbYJ3V1Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 17:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbYJ3V1R
+	id S1758150AbYJ3V2S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 17:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbYJ3V2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 17:27:17 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:42908 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753522AbYJ3V1Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 17:27:16 -0400
-Subject: Re: [PATCH] x86: fix missing cpu_index initialisation
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081030212359.GC30303@elte.hu>
-References: <1225401217.19324.28.camel@localhost.localdomain>
-	 <86802c440810301421t71e88ffm112a7bd361e7920a@mail.gmail.com>
-	 <20081030212359.GC30303@elte.hu>
-Content-Type: text/plain
-Date: Thu, 30 Oct 2008 16:27:13 -0500
-Message-Id: <1225402033.19324.38.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Oct 2008 17:28:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40444 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753419AbYJ3V2H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 17:28:07 -0400
+Date: Thu, 30 Oct 2008 22:27:53 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: use CONFIG_X86_SMP instead of CONFIG_SMP
+Message-ID: <20081030212753.GD30303@elte.hu>
+References: <1225400739.19324.18.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225400739.19324.18.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-30 at 22:23 +0100, Ingo Molnar wrote:
-> * Yinghai Lu <yinghai@kernel.org> wrote:
+
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+
+> >From 6e5fbb4691fd68f5b03608c5d8d96e4f189e623a Mon Sep 17 00:00:00 2001
+> From: James Bottomley <James.Bottomley@HansenPartnership.com>
+> Date: Wed, 29 Oct 2008 13:11:48 -0500
+> Subject: [VOYAGER] x86: use CONFIG_X86_SMP instead of CONFIG_SMP
 > 
-> >   CC      arch/x86/kernel/cpu/common.o
-> > arch/x86/kernel/cpu/common.c: In function 'early_identify_cpu':
-> > arch/x86/kernel/cpu/common.c:553: error: 'boot_cpu_id' undeclared
-> > (first use in this function)
-> > arch/x86/kernel/cpu/common.c:553: error: (Each undeclared identifier
-> > is reported only once
-> > arch/x86/kernel/cpu/common.c:553: error: for each function it appears in.)
-> > make[2]: *** [arch/x86/kernel/cpu/common.o] Error 1
-> > make[1]: *** [arch/x86/kernel/cpu] Error 2
-> > make: *** [arch/x86/kernel] Error 2
-> 
-> depends on this patch perhaps:
-> 
-> Subject: [PATCH] fix compile breakage caused by	dc1e35c6e95e8923cf1d3510438b63c600fee1e2
+> CONFIG_SMP is used for features which work on *all* x86 boxes. 
+> CONFIG_X86_SMP is used for standard PC like x86 boxes (for things 
+> like multi core and apics)
 
-Yes, sorry, that's what the line:
+i've applied your fix to tip/x86/urgent, as it's obviously correct in 
+the current scheme of things, thanks!
 
+but that needless build-time distinction should go away. We can now 
+support a whole host of 'weird' SMP boxes via genapic and x86_quirks.
 
-> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-> ---
-> 
-> Depends on [VOYAGER] x86: add ability to test for boot CPU
-> 
->  arch/x86/kernel/cpu/common.c        |    2 ++
-
-Was supposed to convey
-
-James
-
-
+	Ingo
