@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbYJ3Ve1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbYJ3VfE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893AbYJ3Ve1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 17:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752968AbYJ3VeS
+	id S1757466AbYJ3VfE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 17:35:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbYJ3Vey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 17:34:18 -0400
-Received: from smtp2.riverbed.com ([206.169.144.7]:10710 "EHLO
-	smtp2.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752229AbYJ3VeR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 17:34:17 -0400
-Date: Thu, 30 Oct 2008 14:34:00 -0700
-From: Arthur Jones <ajones@riverbed.com>
-To: Eric Sandeen <sandeen@redhat.com>
-CC: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "sct@redhat.com" <sct@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: ext3: slow symlink corruption on umount...
-Message-ID: <20081030213400.GA28900@ajones-laptop.nbttech.com>
-References: <20081024183733.GA25797@ajones-laptop.nbttech.com> <20081027165423.GB25797@ajones-laptop.nbttech.com> <20081029195403.GA8333@ajones-laptop.nbttech.com> <4908C951.2000309@redhat.com> <20081030174057.GB7926@ajones-laptop.nbttech.com> <4909F705.8090904@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <4909F705.8090904@redhat.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 30 Oct 2008 17:34:54 -0400
+Received: from xes-mad.com ([216.165.139.214]:56344 "EHLO xes-mad.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752811AbYJ3Vex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 17:34:53 -0400
+Subject: Re: [PATCH] rtc-ds1307: Reset bogus register values on m41t00
+From: Nate Case <ncase@xes-inc.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1225398691.27415.170.camel@localhost.localdomain>
+References: <1225301377-9092-1-git-send-email-ncase@xes-inc.com>
+	 <200810300116.33131.david-b@pacbell.net>
+	 <1225379144.27415.111.camel@localhost.localdomain>
+	 <200810301006.01689.david-b@pacbell.net>
+	 <1225398691.27415.170.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 30 Oct 2008 16:34:46 -0500
+Message-Id: <1225402486.27415.177.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eric,  ...
+On Thu, 2008-10-30 at 15:31 -0500, Nate Case wrote:
+> I'll go ahead and re-spin the patch.
 
-On Thu, Oct 30, 2008 at 11:03:49AM -0700, Eric Sandeen wrote:
-> [...]
-> Something is definitely racy here; in my simple testcase I get failures
-> maybe 30-50% of the time...
+After thinking about this more, I'm not sure it's right to do anything
+more than the "remove legacy probe checks" patch already does.  Can you
+think of any harm in having the oscillator running with bogus register
+values?  Calls to get_time() will return -EINVAL, but that seems to be
+the norm for any "bad time" condition.  It makes me think that resetting
+to a sane time is putting more policy than desired in the driver.
 
-Some more info: in the working case, the inodes are put
-back on sb->s_dirty at then next ext3_sync_fs() call:
+-- 
+Nate Case <ncase@xes-inc.com>
 
-__fsync_super -> DQUOT_SYNC -> ext3_sync_fs -> log_wait_commit
-
-In the failing case, journal_start_commit returns 0 in ext_sync_fs
-and the inodes disappear into never-never land...
-
-Arthur
