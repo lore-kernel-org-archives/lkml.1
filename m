@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbYJ3Pvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756768AbYJ3PwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756576AbYJ3Pvo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 11:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbYJ3Pve
+	id S1756768AbYJ3PwH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 11:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbYJ3Pvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 11:51:34 -0400
-Received: from gv-out-0910.google.com ([216.239.58.186]:34327 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753572AbYJ3Pvd (ORCPT
+	Thu, 30 Oct 2008 11:51:52 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:8836 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753953AbYJ3Pvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 11:51:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=VyW8I/PMjyc6iYR6wj13f8ucJ2N/ILna0UxdLJIT3WkJblr2us876G/e0mFZYRB/ze
-         ldWTWqUF4zmAAGn1yVdOqnqy03PjRcpUvJ1yCwijP8TTF2gDythjPQlQUq4UsxYfuoLJ
-         pUlQLvkBKHBwOEsnUntaG01HHuLKJ8hDnMq6A=
-Date: Thu, 30 Oct 2008 18:51:27 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Aristeu Rozanski <aris@redhat.com>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] nmi_watchdog: update procfs nmi_watchdog file
-	documentation
-Message-ID: <20081030155127.GB19888@localhost>
-References: <20081030151712.GO771@redhat.com> <20081030154534.GA19888@localhost> <20081030155120.GP771@redhat.com>
+	Thu, 30 Oct 2008 11:51:52 -0400
+Message-ID: <ac3eb2510810300851q719ccde6l6914b862a330d010@mail.gmail.com>
+Date: Thu, 30 Oct 2008 16:51:41 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Heiko Carstens" <heiko.carstens@de.ibm.com>
+Subject: Re: s390: struct device - replace bus_id with dev_name(), dev_set_name()
+Cc: "Cornelia Huck" <cornelia.huck@de.ibm.com>,
+       "Martin Schwidefsky" <schwidefsky@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>
+In-Reply-To: <20081030154635.GB3871@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081030155120.GP771@redhat.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <1225328227.5970.51.camel@nga.site>
+	 <20081030103200.438576a1@gondolin>
+	 <20081030113831.GA3871@osiris.boeblingen.de.ibm.com>
+	 <ac3eb2510810300758yf0df0e8j43875dd7c98a56c@mail.gmail.com>
+	 <20081030154635.GB3871@osiris.boeblingen.de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Aristeu Rozanski - Thu, Oct 30, 2008 at 11:51:21AM -0400]
-| > Hi Aristeu,
-| > 
-| > by reading this patch I found that maybe it's time to start
-| > using nmi_watchdog=[lapic,ioapic] instead of 1 and 2? We could make
-| > them as alases to existing numbers. Thoughts?
-| Yes, that would be useful.
-| 
-| -- 
-| Aristeu
-| 
+On Thu, Oct 30, 2008 at 16:46, Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> On Thu, Oct 30, 2008 at 03:58:21PM +0100, Kay Sievers wrote:
+>> On Thu, Oct 30, 2008 at 12:38, Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+>> > On Thu, Oct 30, 2008 at 10:32:00AM +0100, Cornelia Huck wrote:
+>> >> On Thu, 30 Oct 2008 01:57:07 +0100,
+>> >> Kay Sievers <kay.sievers@vrfy.org> wrote:
+>> >>
+>> >> > From: Kay Sievers <kay.sievers@vrfy.org>
+>> >> > Subject: s390: struct device - replace bus_id with dev_name(), dev_set_name()
+>> >> >
+>> >> > Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+>> >> > Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
+>> >> > Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+>> >> > Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
+>> >>
+>> >> Other than the fact that this patch is a bit mis-named (it just gets
+>> >> rid of BUS_ID_SIZE), this looks fine to me.
+>>
+>> Yeah, sorry, it's one of the 49 patches, where the subjects isn't
+>> right, because you did the conversion already. :)
+>>
+>> > Who is supposed to send this upstream and when?
+>>
+>> Would be fine if it goes through the s390 tree, and gets merged there
+>> soon so it shows up in -next.
+>
+> Just to get this right: it doesn't depend on any other patches and is
+> fine as a standalone patch, right?
+> Sorry, this isn't obvious for me ;)
 
-ok, will handle it :)
+The stuff it depends on, we already put into .27. It should not depend
+on anything not in a released version, yes.
 
-		- Cyrill -
+Kay
