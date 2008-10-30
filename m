@@ -1,98 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbYJ3L2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755024AbYJ3LdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754785AbYJ3L2T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 07:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbYJ3L2H
+	id S1755024AbYJ3LdP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 07:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbYJ3Lc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 07:28:07 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:3205 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753191AbYJ3L2G (ORCPT
+	Thu, 30 Oct 2008 07:32:59 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:60348 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753634AbYJ3Lc7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 07:28:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=tDMbcPeM+B/E1gFWR/g50jMlVxcpOEnn+Df/EDOSKfq15kNadXXvsjvf55ccAB5gLe
-         jkVMmpUPs3LmIY23R/GInDxLVWpNVj6K8pRK+6zOuqILTyQrt6LZzmiBJoor9hAHxr9X
-         f+erNmI/o2M5aKdm4lxl6t/arZTT7OeSb+4Lo=
-Message-ID: <916fcc2f0810300428n2cd95ffauf94a049a0dac1442@mail.gmail.com>
-Date: Thu, 30 Oct 2008 12:28:05 +0100
-From: Marietta <senorita.marietta@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Fwd: CONFIRM YOUR EMAIL ACCOUNT
-In-Reply-To: <20081029171919.4913594xypd7hyf4@mail.cosett.com.bo>
+	Thu, 30 Oct 2008 07:32:59 -0400
+Date: Thu, 30 Oct 2008 13:32:57 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: kkeil@suse.de
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 03/10] misdn: indentation & braces disagree - add braces
+In-Reply-To: <Pine.LNX.4.64.0810301307160.7072@wrl-59.cs.helsinki.fi>
+Message-ID: <Pine.LNX.4.64.0810301331000.7072@wrl-59.cs.helsinki.fi>
+References: <Pine.LNX.4.64.0810301307160.7072@wrl-59.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081029171919.4913594xypd7hyf4@mail.cosett.com.bo>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-742200299-1225366377=:7072"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all!
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-For those who have received that mail: don't answer to it!
- Phishing.
-
-
----------- Forwarded message ----------
-From: UPGRADING WEBMAIL TEAM <info@upgradeteam.com>
-Date: 2008/10/29
-Subject: CONFIRM YOUR EMAIL ACCOUNT
-To: undisclosed-recipients
+---696208474-742200299-1225366377=:7072
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
 
+Nothing is broken because of this - currently.
 
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+---
+ drivers/isdn/mISDN/dsp_cmx.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Dear Email Account Owner,
-
-This message is from UPGRADING EDU messaging center to all WEBMAIL EDU
-
-emailaccount owners. We are
-currently upgrading our data base and e-mail account center. We are deleting
-all unused email account to create space for new accounts.To prevent
-your account
-from being deactivated you will have to update it.
-
-
-CONFIRM YOUR EMAIL ACCOUNT
-Email Username : ...............
-Email Password : ..............
-Date of Birth : ..................
-Country or Territory : .........
-
-
-Warning!!! All Edu Account owner that refuses to update his or her
-account within Seven
-
-days of receiving
-this email will lose his or her account permanently.
-
-
-Thank you for using Webmail Edu!
-Warning Code:USV64MT1
-
-
-Thanks,
-UPGRADING EDU TEAM
-WEBMAIL EDU TEAM Beta
-
-WEBMAIL EDU TEAM
-
-----------------------------------------------------------------
-Este mensaje fue enviado usando COSETT Web Mail.
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
-
-
+diff --git a/drivers/isdn/mISDN/dsp_cmx.c b/drivers/isdn/mISDN/dsp_cmx.c
+index c2f51cc..f503eb1 100644
+--- a/drivers/isdn/mISDN/dsp_cmx.c
++++ b/drivers/isdn/mISDN/dsp_cmx.c
+@@ -1855,7 +1855,7 @@ dsp_cmx_hdlc(struct dsp *dsp, struct sk_buff *skb)
+ 		/* in case of hardware (echo) */
+ 		if (dsp->pcm_slot_tx >= 0)
+ 			return;
+-		if (dsp->echo)
++		if (dsp->echo) {
+ 			nskb = skb_clone(skb, GFP_ATOMIC);
+ 			if (nskb) {
+ 				hh = mISDN_HEAD_P(nskb);
+@@ -1864,6 +1864,7 @@ dsp_cmx_hdlc(struct dsp *dsp, struct sk_buff *skb)
+ 				skb_queue_tail(&dsp->sendq, nskb);
+ 				schedule_work(&dsp->workq);
+ 			}
++		}
+ 		return;
+ 	}
+ 	/* in case of hardware conference */
 -- 
-Senorita Marietta
+1.5.2.2
+
+---696208474-742200299-1225366377=:7072--
