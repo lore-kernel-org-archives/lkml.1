@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757896AbYJ3RPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757214AbYJ3RQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757896AbYJ3RPP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 13:15:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbYJ3ROs
+	id S1757214AbYJ3RQo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 13:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbYJ3RQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 13:14:48 -0400
-Received: from gv-out-0910.google.com ([216.239.58.189]:41406 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752759AbYJ3ROr (ORCPT
+	Thu, 30 Oct 2008 13:16:36 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:58195 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752759AbYJ3RQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 13:14:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ZFoqFMbUAQFDm08FqbHrkUUczoPxI+5HgumcTIxJIw9X3WVr7d9n+NKH5n7hktHIia
-         9MbG/imzU6BAwYs+usQLCBqVDqdKYZEhTc7V79u3Dl1gyszw9KH/QJilPXHQ237c2HFU
-         yjlIu8QC69yToezb4QobQldBujcBaMGaqs+l0=
-Date: Thu, 30 Oct 2008 20:14:26 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Aristeu Rozanski <aris@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC -tip] x86: nmi - add sensible names to nmi_watchdog boot
-	param
-Message-ID: <20081030171426.GD19888@localhost>
-References: <20081030161646.GC19888@localhost> <20081030171052.GR771@redhat.com>
+	Thu, 30 Oct 2008 13:16:35 -0400
+Date: Thu, 30 Oct 2008 22:46:22 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, bharata@linux.vnet.ibm.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Add hierarchical accounting to cpu accounting
+	controller
+Message-ID: <20081030171622.GA19872@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20081023054335.GC3280@in.ibm.com> <6599ad830810230849x71961a0asd7f00d3baa2f2271@mail.gmail.com> <20081024050830.GA4387@in.ibm.com> <6599ad830810241037h575ec17bgb43f750d99bd1518@mail.gmail.com> <20081025060157.GA4614@in.ibm.com> <6599ad830810250838q3f96644bm6dfee8ba9f35dfa3@mail.gmail.com> <20081027101703.e954071d.kamezawa.hiroyu@jp.fujitsu.com> <20081027044319.GA4386@in.ibm.com> <661de9470810262357y6c560facl87dcaea3ce35e3ac@mail.gmail.com> <49057ADD.1050705@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081030171052.GR771@redhat.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <49057ADD.1050705@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Aristeu Rozanski - Thu, Oct 30, 2008 at 01:10:53PM -0400]
-| > Add sensible names as "lapic" and "ioapic" to
-| > nmi_watchdog boot parameter. Sometimes it is not
-| > that easy to recall what exactly nmi_watchdog=1
-| > does mean so we allow the using of symbolic names here.
-| > 
-| > Old numeric values remain valid.
-| looks good to me, but you need to update the documentation as well.
-| 
-| -- 
-| Aristeu
-| 
+On Mon, Oct 27, 2008 at 04:25:01PM +0800, Li Zefan wrote:
+> >>>> So in technical terms this patch looks fine now. There's still the
+> >>>> question of whether it's OK to change the existing API, since it's
+> >>>> been in the kernel in its currently (non-hierarchical) form for
+> >>>> several releases now.
+> >> Hmm... Can we consider this as an API change ? Currently cpuacct.usage
+> >> readers of a parent accounting group are missing the usage contributions
+> >> from its children groups. I would consider this patch as fixing the
+> >> above problem by correctly reflecting the cpu usage for every accounting
+> >> group.
+> >>
+> > 
+> > If a particular application desires to derive the usage of its
+> > immediate tasks and does not care about subcgroups, it is a simple
+> > iteration (after this fix)
+> > 
+> > cpuacct - sigma(cpuacct_child)
+> > 
+> > and currently if we cared about child accounting, we could do
+> > 
+> > cpuacct + recursively(sigma(cpuacct_child))
+> > 
+> > In that sense this fix makes more sense, but like Paul said we need to
+> > figure out if it is an API change. My take is that it is a BUG fix,
+> > since we do care about child subgroups in accounting.
+> > 
+> 
+> cpuacct was designed to count cpu usage of a group of tasks, and now some people
+> want it to also take child group's usage into account, so I think this is a feature
+> request but not a bug fix.
+> 
 
-Aristeu, maybe you could do it for me -- English is quite weak
-side of me :)
+I disagree. The child is a part of the parent's hierarchy, and therefore
+its usage should reflect in the parent's usage.
 
-		- Cyrill -
+Thanks,
+-- 
+regards,
+Dhaval
