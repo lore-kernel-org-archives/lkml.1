@@ -1,164 +1,498 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbYJ3RGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbYJ3RF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757948AbYJ3RGX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 13:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757378AbYJ3REt
+	id S1757334AbYJ3RF6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 13:05:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757364AbYJ3REr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 13:04:49 -0400
+	Thu, 30 Oct 2008 13:04:47 -0400
 Received: from ey-out-2122.google.com ([74.125.78.26]:27579 "EHLO
 	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755545AbYJ3REr (ORCPT
+	with ESMTP id S1756862AbYJ3REp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 13:04:47 -0400
+	Thu, 30 Oct 2008 13:04:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
          :sender;
-        b=D5gqMCmsgb8tsXBU34q1llwMBi21ag9U9FeFcdeTkbPrL+FksFfcYev56sfm1LuKrl
-         dn1zaWwee8iEjlTEO2CLkQH2uGdp17/kEj/TEsXC4VNeG7Ofosme8z9khAmzt+9krnVg
-         NxtMe9aol57haAiEdGj0v5zTJA1JvkY8oq5FA=
+        b=l7kyD6X0RXuyT+eXjjWaYDECch1RHBWcGNvZ8yMCmByfTl/823Mlg0QHFff/O95+05
+         Orb86CAbEaAXUv07ihe1tgALeMRMhUq79DFQctvLq2uQI9dw/MFXdCkFQIRhTd5yAM1n
+         Q6DV6FBAjLGOuG/fGhCOLRw8JpgwZ7o6G8VvQ=
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 To: greg@kroah.com
 Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
        Pavel Machek <pavel@suse.cz>
-Subject: [PATCH 7/7] w35und: remove rxisr.c as dead code
-Date: Thu, 30 Oct 2008 19:04:56 +0200
-Message-Id: <1225386296-19632-7-git-send-email-penberg@cs.helsinki.fi>
+Subject: [PATCH 6/7] w35und: remove dead code from wbhal.c
+Date: Thu, 30 Oct 2008 19:04:55 +0200
+Message-Id: <1225386296-19632-6-git-send-email-penberg@cs.helsinki.fi>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1225386296-19632-6-git-send-email-penberg@cs.helsinki.fi>
+In-Reply-To: <1225386296-19632-5-git-send-email-penberg@cs.helsinki.fi>
 References: <>
  <1225386296-19632-1-git-send-email-penberg@cs.helsinki.fi>
  <1225386296-19632-2-git-send-email-penberg@cs.helsinki.fi>
  <1225386296-19632-3-git-send-email-penberg@cs.helsinki.fi>
  <1225386296-19632-4-git-send-email-penberg@cs.helsinki.fi>
  <1225386296-19632-5-git-send-email-penberg@cs.helsinki.fi>
- <1225386296-19632-6-git-send-email-penberg@cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The vRxTimerStart() function is never called nor does the timer do anything
-useful so remove the code.
+Remove tons of unused code from wbhal.c.
 
 Cc: Pavel Machek <pavel@suse.cz>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- drivers/staging/winbond/Makefile |    1 -
- drivers/staging/winbond/mds.c    |    3 ---
- drivers/staging/winbond/mds_f.h  |    5 -----
- drivers/staging/winbond/mds_s.h  |    2 --
- drivers/staging/winbond/rxisr.c  |   28 ----------------------------
- drivers/staging/winbond/sysdef.h |    3 ---
- 6 files changed, 0 insertions(+), 42 deletions(-)
- delete mode 100644 drivers/staging/winbond/rxisr.c
+ drivers/staging/winbond/wbhal.c   |  311 +------------------------------------
+ drivers/staging/winbond/wbhal_f.h |   22 ---
+ 2 files changed, 1 insertions(+), 332 deletions(-)
 
-diff --git a/drivers/staging/winbond/Makefile b/drivers/staging/winbond/Makefile
-index d337571..b49c973 100644
---- a/drivers/staging/winbond/Makefile
-+++ b/drivers/staging/winbond/Makefile
-@@ -4,7 +4,6 @@ w35und-objs :=			\
- 	mto.o			\
- 	phy_calibration.o	\
- 	reg.o			\
--	rxisr.o			\
- 	wb35reg.o		\
- 	wb35rx.o		\
- 	wb35tx.o		\
-diff --git a/drivers/staging/winbond/mds.c b/drivers/staging/winbond/mds.c
-index 0dd1eec..8b638d7 100644
---- a/drivers/staging/winbond/mds.c
-+++ b/drivers/staging/winbond/mds.c
-@@ -16,15 +16,12 @@ Mds_initial(struct wbsoft_priv * adapter)
- 	pMds->TxRTSThreshold = DEFAULT_RTSThreshold;
- 	pMds->TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
+diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
+index 7ab5300..d7bbb9a 100644
+--- a/drivers/staging/winbond/wbhal.c
++++ b/drivers/staging/winbond/wbhal.c
+@@ -2,13 +2,6 @@
+ #include "wbhal_f.h"
+ #include "wblinux_f.h"
  
--	vRxTimerInit(adapter);//for WPA countermeasure
+-void hal_get_ethernet_address( phw_data_t pHwData, u8 *current_address )
+-{
+-	if( pHwData->SurpriseRemove ) return;
 -
- 	return hal_get_tx_buffer( &adapter->sHwData, &pMds->pTxBuffer );
- }
- 
- void
- Mds_Destroy(struct wbsoft_priv * adapter)
+-	memcpy( current_address, pHwData->CurrentMacAddress, ETH_LENGTH_OF_ADDRESS );
+-}
+-
+ void hal_set_ethernet_address( phw_data_t pHwData, u8 *current_address )
  {
--	vRxTimerStop(adapter);
+ 	u32 ltmp[2];
+@@ -377,92 +370,6 @@ void hal_halt(phw_data_t pHwData, void *ppa_data)
  }
  
- static void Mds_DurationSet(struct wbsoft_priv *adapter,  PDESCRIPTOR pDes,  u8 *buffer)
-diff --git a/drivers/staging/winbond/mds_f.h b/drivers/staging/winbond/mds_f.h
-index 8109eba..ee0f120 100644
---- a/drivers/staging/winbond/mds_f.h
-+++ b/drivers/staging/winbond/mds_f.h
-@@ -11,11 +11,6 @@ void Mds_SendComplete(  struct wbsoft_priv *adapter,  PT02_DESCRIPTOR pT02 );
- void Mds_MpduProcess(  struct wbsoft_priv *adapter,  PDESCRIPTOR pRxDes );
- extern void DataDmp(u8 *pdata, u32 len, u32 offset);
- 
--
--void vRxTimerInit(struct wbsoft_priv *adapter);
--void vRxTimerStart(struct wbsoft_priv *adapter, int timeout_value);
--void vRxTimerStop(struct wbsoft_priv *adapter);
--
- // For Asynchronous indicating. The routine collocates with USB.
- void Mds_MsduProcess(  struct wbsoft_priv *adapter,  PRXLAYER1 pRxLayer1,  u8 SlotIndex);
- 
-diff --git a/drivers/staging/winbond/mds_s.h b/drivers/staging/winbond/mds_s.h
-index 29f1568..ebf61e3 100644
---- a/drivers/staging/winbond/mds_s.h
-+++ b/drivers/staging/winbond/mds_s.h
-@@ -142,8 +142,6 @@ typedef struct _MDS
- 	u8		boCounterMeasureBlock;
- 	u8		reserved_4[2];
- 
--	struct timer_list timer;
--
- 	u32	TxTsc; // 20060214
- 	u32	TxTsc_2; // 20060214
- 
-diff --git a/drivers/staging/winbond/rxisr.c b/drivers/staging/winbond/rxisr.c
-deleted file mode 100644
-index f4619d9..0000000
---- a/drivers/staging/winbond/rxisr.c
-+++ /dev/null
-@@ -1,28 +0,0 @@
--#include "sysdef.h"
--#include "core.h"
--
--static void RxTimerHandler(unsigned long data)
+ //---------------------------------------------------------------------------------------------------
+-void hal_set_rates(phw_data_t pHwData, u8 *pbss_rates,
+-		   u8 length, unsigned char basic_rate_set)
 -{
--	WARN_ON(1);
+-	struct wb35_reg *reg = &pHwData->reg;
+-	u32		tmp, tmp1;
+-	u8		Rate[12]={ 2, 4, 11, 22, 12, 18, 24, 36, 48, 72, 96, 108 };
+-	u8		SupportedRate[16];
+-	u8		i, j, k, Count1, Count2, Byte;
+-
+-	if( pHwData->SurpriseRemove ) return;
+-
+-	if (basic_rate_set) {
+-		reg->M28_MacControl &= ~0x000fff00;
+-		tmp1 = 0x00000100;
+-	} else {
+-		reg->M28_MacControl &= ~0xfff00000;
+-		tmp1 = 0x00100000;
+-	}
+-
+-	tmp = 0;
+-	for (i=0; i<length; i++) {
+-		Byte = pbss_rates[i] & 0x7f;
+-		for (j=0; j<12; j++) {
+-			if( Byte == Rate[j] )
+-				break;
+-		}
+-
+-		if (j < 12)
+-			tmp |= (tmp1<<j);
+-	}
+-
+-	reg->M28_MacControl |= tmp;
+-	Wb35Reg_Write( pHwData, 0x0828, reg->M28_MacControl );
+-
+-	// 930206.2.c M78 setting
+-	j = k = Count1 = Count2 = 0;
+-	memset( SupportedRate, 0, 16 );
+-	tmp = 0x00100000;
+-	tmp1 = 0x00000100;
+-	for (i=0; i<12; i++) { // Get the supported rate
+-		if (tmp & reg->M28_MacControl) {
+-			SupportedRate[j] = Rate[i];
+-
+-			if (tmp1 & reg->M28_MacControl)
+-				SupportedRate[j] |= 0x80;
+-
+-			if (k)
+-				Count2++;
+-			else
+-				Count1++;
+-
+-			j++;
+-		}
+-
+-		if (i==4 && k==0) {
+-			if( !(reg->M28_MacControl & 0x000ff000) ) // if basic rate in 11g domain)
+-			{
+-				k = 1;
+-				j = 8;
+-			}
+-		}
+-
+-		tmp <<= 1;
+-		tmp1 <<= 1;
+-	}
+-
+-	// Fill data into support rate until buffer full
+-	//---20060926 add by anson's endian
+-	for (i=0; i<4; i++)
+-		*(u32 *)(SupportedRate+(i<<2)) = cpu_to_le32( *(u32 *)(SupportedRate+(i<<2)) );
+-	//--- end 20060926 add by anson's endian
+-	Wb35Reg_BurstWrite( pHwData,0x087c, (u32 *)SupportedRate, 4, AUTO_INCREMENT );
+-	reg->M7C_MacControl = ((u32 *)SupportedRate)[0];
+-	reg->M80_MacControl = ((u32 *)SupportedRate)[1];
+-	reg->M84_MacControl = ((u32 *)SupportedRate)[2];
+-	reg->M88_MacControl = ((u32 *)SupportedRate)[3];
+-
+-	// Fill length
+-	tmp = Count1<<28 | Count2<<24;
+-	reg->M78_ERPInformation &= ~0xff000000;
+-	reg->M78_ERPInformation |= tmp;
+-	Wb35Reg_Write( pHwData, 0x0878, reg->M78_ERPInformation );
 -}
 -
--void vRxTimerInit(struct wbsoft_priv *adapter)
--{
--	init_timer(&adapter->Mds.timer);
--	adapter->Mds.timer.function = RxTimerHandler;
--	adapter->Mds.timer.data = (unsigned long) adapter;
--}
 -
--void vRxTimerStart(struct wbsoft_priv *adapter, int timeout_value)
--{
--	if (timeout_value < MIN_TIMEOUT_VAL)
--		timeout_value = MIN_TIMEOUT_VAL;
--
--	adapter->Mds.timer.expires = jiffies + msecs_to_jiffies(timeout_value);
--	add_timer(&adapter->Mds.timer);
--}
--
--void vRxTimerStop(struct wbsoft_priv *adapter)
--{
--	del_timer_sync(&adapter->Mds.timer);
--}
-diff --git a/drivers/staging/winbond/sysdef.h b/drivers/staging/winbond/sysdef.h
-index 60e4c04..251b9c5 100644
---- a/drivers/staging/winbond/sysdef.h
-+++ b/drivers/staging/winbond/sysdef.h
-@@ -37,7 +37,4 @@
- #define _PE_USB_INI_DUMP_
- #endif
+-//---------------------------------------------------------------------------------------------------
+ void hal_set_beacon_period(  phw_data_t pHwData,  u16 beacon_period )
+ {
+ 	u32	tmp;
+@@ -476,7 +383,7 @@ void hal_set_beacon_period(  phw_data_t pHwData,  u16 beacon_period )
+ }
  
--// Kernel Timer resolution, NDIS is 10ms, 10000us
--#define MIN_TIMEOUT_VAL	(10) //ms
+ 
+-void hal_set_current_channel_ex(  phw_data_t pHwData,  ChanInfo channel )
++static void hal_set_current_channel_ex(  phw_data_t pHwData,  ChanInfo channel )
+ {
+ 	struct wb35_reg *reg = &pHwData->reg;
+ 
+@@ -502,12 +409,6 @@ void hal_set_current_channel(  phw_data_t pHwData,  ChanInfo channel )
+ 	hal_set_current_channel_ex( pHwData, channel );
+ }
+ //---------------------------------------------------------------------------------------------------
+-void hal_get_current_channel(  phw_data_t pHwData,  ChanInfo *channel )
+-{
+-	channel->ChanNo = pHwData->Channel;
+-	channel->band = pHwData->band;
+-}
+-//---------------------------------------------------------------------------------------------------
+ void hal_set_accept_broadcast(  phw_data_t pHwData,  u8 enable )
+ {
+ 	struct wb35_reg *reg = &pHwData->reg;
+@@ -565,46 +466,6 @@ void hal_set_accept_beacon(  phw_data_t pHwData,  u8 enable )
+ 	Wb35Reg_Write( pHwData, 0x0800, reg->M00_MacControl );
+ }
+ //---------------------------------------------------------------------------------------------------
+-void hal_set_multicast_address( phw_data_t pHwData, u8 *address, u8 number )
+-{
+-	struct wb35_reg *reg = &pHwData->reg;
+-	u8		Byte, Bit;
 -
- #endif
+-	if( pHwData->SurpriseRemove ) return;
+-
+-	//Erases and refills the card multicast registers. Used when an address
+-	//    has been deleted and all bits must be recomputed.
+-	reg->M04_MulticastAddress1 = 0;
+-	reg->M08_MulticastAddress2 = 0;
+-
+-	while( number )
+-	{
+-		number--;
+-		CardGetMulticastBit( (address+(number*ETH_LENGTH_OF_ADDRESS)), &Byte, &Bit);
+-		reg->Multicast[Byte] |= Bit;
+-	}
+-
+-	// Updating register
+-	Wb35Reg_BurstWrite( pHwData, 0x0804, (u32 *)reg->Multicast, 2, AUTO_INCREMENT );
+-}
+-//---------------------------------------------------------------------------------------------------
+-u8 hal_get_accept_beacon(  phw_data_t pHwData )
+-{
+-	struct wb35_reg *reg = &pHwData->reg;
+-
+-	if( pHwData->SurpriseRemove ) return 0;
+-
+-	if( reg->M00_MacControl & 0x04000000 )
+-		return 1;
+-	else
+-		return 0;
+-}
+-
+-unsigned char hal_reset_hardware( phw_data_t pHwData, void* ppa )
+-{
+-	// Not implement yet
+-	return true;
+-}
+ 
+ void hal_stop(  phw_data_t pHwData )
+ {
+@@ -631,115 +492,11 @@ unsigned char hal_idle(phw_data_t pHwData)
+ 	return true;
+ }
+ //---------------------------------------------------------------------------------------------------
+-void hal_set_cwmin(  phw_data_t pHwData,  u8	cwin_min )
+-{
+-	struct wb35_reg *reg = &pHwData->reg;
+-
+-	if( pHwData->SurpriseRemove ) return;
+-
+-	pHwData->cwmin = cwin_min;
+-	reg->M2C_MacControl &= ~0x7c00;	//bit 10 ~ 14
+-	reg->M2C_MacControl |= (pHwData->cwmin<<10);
+-	Wb35Reg_Write( pHwData, 0x082c, reg->M2C_MacControl );
+-}
+-
+-s32 hal_get_rssi(  phw_data_t pHwData,  u32 *HalRssiArry,  u8 Count )
+-{
+-	struct wb35_reg *reg = &pHwData->reg;
+-	R01_DESCRIPTOR	r01;
+-	s32 ltmp = 0, tmp;
+-	u8	i;
+-
+-	if( pHwData->SurpriseRemove ) return -200;
+-	if( Count > MAX_ACC_RSSI_COUNT ) // Because the TS may use this funtion
+-		Count = MAX_ACC_RSSI_COUNT;
+-
+-	// RSSI = C1 + C2 * (agc_state[7:0] + offset_map(lna_state[1:0]))
+-	// C1 = -195, C2 = 0.66 = 85/128
+-	for (i=0; i<Count; i++)
+-	{
+-		r01.value = HalRssiArry[i];
+-		tmp = ((( r01.R01_AGC_state + reg->LNAValue[r01.R01_LNA_state]) * 85 ) >>7 ) - 195;
+-		ltmp += tmp;
+-	}
+-	ltmp /= Count;
+-	if( pHwData->phy_type == RF_AIROHA_2230 ) ltmp -= 5; // 10;
+-	if( pHwData->phy_type == RF_AIROHA_2230S ) ltmp -= 5; // 10; 20060420 Add this
+-
+-	//if( ltmp < -200 ) ltmp = -200;
+-	if( ltmp < -110 ) ltmp = -110;// 1.0.24.0 For NJRC
+-
+-	return ltmp;
+-}
+-//----------------------------------------------------------------------------------------------------
+-s32 hal_get_rssi_bss(struct wbsoft_priv *adapter,  u16 idx,  u8 Count)
+-{
+-	phw_data_t pHwData = &adapter->sHwData;
+-	struct wb35_reg *reg = &pHwData->reg;
+-	R01_DESCRIPTOR	r01;
+-	s32 ltmp = 0, tmp;
+-	u8	i, j;
+-//	u32 *HalRssiArry = psBSS(idx)->HalRssi;
+-
+-	if( pHwData->SurpriseRemove ) return -200;
+-	if( Count > MAX_ACC_RSSI_COUNT ) // Because the TS may use this funtion
+-		Count = MAX_ACC_RSSI_COUNT;
+-
+-	// RSSI = C1 + C2 * (agc_state[7:0] + offset_map(lna_state[1:0]))
+-	// C1 = -195, C2 = 0.66 = 85/128
+-#if 0
+-	for (i=0; i<Count; i++)
+-	{
+-		r01.value = HalRssiArry[i];
+-		tmp = ((( r01.R01_AGC_state + reg->LNAValue[r01.R01_LNA_state]) * 85 ) >>7 ) - 195;
+-		ltmp += tmp;
+-	}
+-#else
+-	if (psBSS(idx)->HalRssiIndex == 0)
+-		psBSS(idx)->HalRssiIndex = MAX_ACC_RSSI_COUNT;
+-	j = (u8)psBSS(idx)->HalRssiIndex-1;
+-
+-	for (i=0; i<Count; i++)
+-	{
+-		r01.value = psBSS(idx)->HalRssi[j];
+-		tmp = ((( r01.R01_AGC_state + reg->LNAValue[r01.R01_LNA_state]) * 85 ) >>7 ) - 195;
+-		ltmp += tmp;
+-		if (j == 0)
+-		{
+-			j = MAX_ACC_RSSI_COUNT;
+-		}
+-		j--;
+-	}
+-#endif
+-	ltmp /= Count;
+-	if( pHwData->phy_type == RF_AIROHA_2230 ) ltmp -= 5; // 10;
+-	if( pHwData->phy_type == RF_AIROHA_2230S ) ltmp -= 5; // 10; 20060420 Add this
+-
+-	//if( ltmp < -200 ) ltmp = -200;
+-	if( ltmp < -110 ) ltmp = -110;// 1.0.24.0 For NJRC
+-
+-	return ltmp;
+-}
+-
+-//---------------------------------------------------------------------------
+-
+ void hal_set_phy_type(  phw_data_t pHwData,  u8 PhyType )
+ {
+ 	pHwData->phy_type = PhyType;
+ }
+ 
+-void hal_get_phy_type(  phw_data_t pHwData,  u8 *PhyType )
+-{
+-	*PhyType = pHwData->phy_type;
+-}
+-
+-void hal_reset_counter(  phw_data_t pHwData )
+-{
+-	pHwData->dto_tx_retry_count = 0;
+-	pHwData->dto_tx_frag_count = 0;
+-	memset( pHwData->tx_retry_count, 0, 8);
+-}
+-
+ void hal_set_radio_mode( phw_data_t pHwData,  unsigned char radio_off)
+ {
+ 	struct wb35_reg *reg = &pHwData->reg;
+@@ -769,22 +526,6 @@ u8 hal_get_antenna_number(  phw_data_t pHwData )
+ 		return 1;
+ }
+ 
+-void hal_set_antenna_number(  phw_data_t pHwData, u8 number )
+-{
+-
+-	struct wb35_reg *reg = &pHwData->reg;
+-
+-	if (number == 1) {
+-		reg->BB2C |= BIT(11);
+-	} else {
+-		reg->BB2C &= ~BIT(11);
+-	}
+-	Wb35Reg_Write( pHwData, 0x102c, reg->BB2C );
+-#ifdef _PE_STATE_DUMP_
+-	WBDEBUG(("Current antenna number : %d\n", number));
+-#endif
+-}
+-
+ //----------------------------------------------------------------------------------------------------
+ //0 : radio on; 1: radio off
+ u8 hal_get_hw_radio_off(  phw_data_t pHwData )
+@@ -821,57 +562,7 @@ unsigned char hal_set_dxx_reg(  phw_data_t pHwData,  u16 number,  u32 value )
+ 	return ret;
+ }
+ 
+-void hal_scan_status_indicate(phw_data_t pHwData, unsigned char IsOnProgress)
+-{
+-	if( pHwData->SurpriseRemove ) return;
+-	pHwData->LED_Scanning = IsOnProgress ? 1 : 0;
+-}
+-
+-void hal_system_power_change(phw_data_t pHwData, u32 PowerState)
+-{
+-	if( PowerState != 0 )
+-	{
+-		pHwData->SurpriseRemove = 1;
+-		if( pHwData->WbUsb.IsUsb20 )
+-			hal_stop( pHwData );
+-	}
+-	else
+-	{
+-		if( !pHwData->WbUsb.IsUsb20 )
+-			hal_stop( pHwData );
+-	}
+-}
+-
+-void hal_surprise_remove(struct wbsoft_priv *adapter)
+-{
+-	phw_data_t pHwData = &adapter->sHwData;
+-
+-	if (atomic_inc_return( &pHwData->SurpriseRemoveCount ) == 1) {
+-		#ifdef _PE_STATE_DUMP_
+-		WBDEBUG(("Calling hal_surprise_remove\n"));
+-		#endif
+-	}
+-}
+-
+-void hal_rate_change(struct wbsoft_priv *adapter) // Notify the HAL rate is changing 20060613.1
+-{
+-	phw_data_t pHwData = &adapter->sHwData;
+-	u8		rate = CURRENT_TX_RATE;
+-
+-	BBProcessor_RateChanging( pHwData, rate );
+-}
+-
+ void hal_set_rf_power(phw_data_t pHwData, u8 PowerIndex)
+ {
+ 	RFSynthesizer_SetPowerIndex( pHwData, PowerIndex );
+ }
+-
+-unsigned char hal_set_LED(phw_data_t pHwData, u32 Mode) // 20061108 for WPS led control
+-{
+-	pHwData->LED_Blinking = 0;
+-	pHwData->LED_control = Mode;
+-	pHwData->LEDTimer.expires = jiffies + msecs_to_jiffies(10);
+-	add_timer(&pHwData->LEDTimer);
+-	return true;
+-}
+-
+diff --git a/drivers/staging/winbond/wbhal_f.h b/drivers/staging/winbond/wbhal_f.h
+index dc5709f..e805f40 100644
+--- a/drivers/staging/winbond/wbhal_f.h
++++ b/drivers/staging/winbond/wbhal_f.h
+@@ -26,9 +26,6 @@ void hal_set_power_save_mode(  phw_data_t pHwData,  unsigned char power_save,  u
+ void hal_get_power_save_mode(  phw_data_t pHwData,   u8 *pin_pwr_save );
+ void hal_set_slot_time(  phw_data_t pHwData,  u8 type );
+ #define hal_set_atim_window( _A, _ATM )
+-void hal_set_rates(  phw_data_t pHwData,  u8 *pbss_rates,  u8 length,  unsigned char basic_rate_set );
+-#define hal_set_basic_rates( _A, _R, _L ) hal_set_rates( _A, _R, _L, TRUE )
+-#define hal_set_op_rates( _A, _R, _L ) hal_set_rates( _A, _R, _L, FALSE )
+ void hal_start_bss(  phw_data_t pHwData,  u8 mac_op_mode );
+ void hal_join_request(  phw_data_t pHwData,  u8 bss_type ); // 0:BSS STA 1:IBSS STA//
+ void hal_stop_sync_bss(  phw_data_t pHwData );
+@@ -41,35 +38,23 @@ void hal_set_listen_interval(  phw_data_t pHwData,  u16 listen_interval );
+ void hal_set_cap_info(  phw_data_t pHwData,  u16 capability_info );
+ void hal_set_ssid(  phw_data_t pHwData,  u8 *pssid,  u8 ssid_len );
+ void hal_set_current_channel(  phw_data_t pHwData,  ChanInfo channel );
+-void hal_set_current_channel_ex(  phw_data_t pHwData,  ChanInfo channel );
+-void hal_get_current_channel(  phw_data_t pHwData,  ChanInfo *channel );
+ void hal_set_accept_broadcast(  phw_data_t pHwData,  u8 enable );
+ void hal_set_accept_multicast(  phw_data_t pHwData,  u8 enable );
+ void hal_set_accept_beacon(  phw_data_t pHwData,  u8 enable );
+-void hal_set_multicast_address(  phw_data_t pHwData,  u8 *address,  u8 number );
+-u8 hal_get_accept_beacon(  phw_data_t pHwData );
+ void hal_stop(  phw_data_t pHwData );
+ void hal_halt(  phw_data_t pHwData, void *ppa_data );
+ void hal_start_tx0(  phw_data_t pHwData );
+ void hal_set_phy_type(  phw_data_t pHwData,  u8 PhyType );
+-void hal_get_phy_type(  phw_data_t pHwData,  u8 *PhyType );
+-unsigned char hal_reset_hardware(  phw_data_t pHwData,  void* ppa );
+-void hal_set_cwmin(  phw_data_t pHwData,  u8	cwin_min );
+ #define hal_get_cwmin( _A ) ( (_A)->cwmin )
+ void hal_set_cwmax(  phw_data_t pHwData,  u16 cwin_max );
+ #define hal_get_cwmax( _A ) ( (_A)->cwmax )
+ void hal_set_rsn_wpa(  phw_data_t pHwData,  u32 * RSN_IE_Bitmap , u32 * RSN_OUI_type , unsigned char bDesiredAuthMode);
+-//s32 hal_get_rssi(  phw_data_t pHwData,  u32 HalRssi );
+-s32 hal_get_rssi(  phw_data_t pHwData,  u32 *HalRssiArry,  u8 Count );
+-s32 hal_get_rssi_bss(struct wbsoft_priv *adapter,  u16 idx,  u8 Count);
+ void hal_set_connect_info(  phw_data_t pHwData,  unsigned char boConnect );
+ u8 hal_get_est_sq3(  phw_data_t pHwData,  u8 Count );
+ void hal_set_rf_power(  phw_data_t pHwData,  u8 PowerIndex ); // 20060621 Modify
+-void hal_reset_counter(  phw_data_t pHwData );
+ void hal_set_radio_mode(  phw_data_t pHwData,  unsigned char boValue);
+ void hal_descriptor_indicate(  phw_data_t pHwData,  PDESCRIPTOR pDes );
+ u8 hal_get_antenna_number(  phw_data_t pHwData );
+-void hal_set_antenna_number(  phw_data_t pHwData, u8 number );
+ u32 hal_get_bss_pk_cnt(  phw_data_t pHwData );
+ #define hal_get_region_from_EEPROM( _A ) ( (_A)->reg.EEPROMRegion )
+ void hal_set_accept_promiscuous		(  phw_data_t pHwData,  u8 enable);
+@@ -80,20 +65,13 @@ u8 hal_get_hw_radio_off			(  phw_data_t pHwData );
+ #define hal_rssi_boundary_high( _A ) (_A->RSSI_high)
+ #define hal_rssi_boundary_low( _A ) (_A->RSSI_low)
+ #define hal_scan_interval( _A )		(_A->Scan_Interval)
+-void hal_scan_status_indicate(  phw_data_t pHwData, u8 status);	// 0: complete, 1: in progress
+-void hal_system_power_change(  phw_data_t pHwData, u32 PowerState ); // 20051230 -=D0 1=D1 ..
+-void hal_surprise_remove(struct wbsoft_priv *adapter);
+ 
+ #define PHY_DEBUG( msg, args... )
+ 
+-
+-
+-void hal_rate_change(struct wbsoft_priv *adapter); // Notify the HAL rate is changing 20060613.1
+ unsigned char hal_get_dxx_reg(  phw_data_t pHwData,  u16 number,  u32 * pValue );
+ unsigned char hal_set_dxx_reg(  phw_data_t pHwData,  u16 number,  u32 value );
+ #define hal_get_time_count( _P )	(_P->time_count/10)	// return 100ms count
+ #define hal_detect_error( _P )		(_P->WbUsb.DetectCount)
+-unsigned char hal_set_LED(  phw_data_t pHwData,  u32 Mode ); // 20061108 for WPS led control
+ 
+ //-------------------------------------------------------------------------
+ // The follow function is unused for IS89C35
 -- 
 1.5.3.7
 
