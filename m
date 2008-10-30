@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbYJ3N5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbYJ3N5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756233AbYJ3N5g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 09:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbYJ3NzO
+	id S1755527AbYJ3N5S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 09:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755503AbYJ3NzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 09:55:14 -0400
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:42444 "EHLO
+	Thu, 30 Oct 2008 09:55:12 -0400
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:42428 "EHLO
 	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755493AbYJ3NzK (ORCPT
+	with ESMTP id S1755372AbYJ3NzH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 09:55:10 -0400
+	Thu, 30 Oct 2008 09:55:07 -0400
 From: Oren Laadan <orenl@cs.columbia.edu>
 To: Linus Torvalds <torvalds@osdl.org>
 Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
@@ -19,9 +19,9 @@ Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
        "H. Peter Anvin" <hpa@zytor.com>,
        Alexander Viro <viro@zeniv.linux.org.uk>,
        Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v8][PATCH 03/12] Make file_pos_read/write() public
-Date: Thu, 30 Oct 2008 09:51:06 -0400
-Message-Id: <1225374675-22850-4-git-send-email-orenl@cs.columbia.edu>
+Subject: [RFC v8][PATCH 11/12] External checkpoint of a task other than ourself
+Date: Thu, 30 Oct 2008 09:51:14 -0400
+Message-Id: <1225374675-22850-12-git-send-email-orenl@cs.columbia.edu>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <1225374675-22850-1-git-send-email-orenl@cs.columbia.edu>
 References: <1225374675-22850-1-git-send-email-orenl@cs.columbia.edu>
@@ -30,57 +30,179 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These two are needed when we will use vfs_read() and vfs_write(),
-in the next patch.
+Now we can do "external" checkpoint, i.e. act on another task.
+
+sys_checkpoint() now looks up the target pid (in our namespace) and
+checkpoints that corresponding task. That task should be the root of
+a container.
+
+sys_restart() remains the same, as the restart is always done in the
+context of the restarting task.
 
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- fs/read_write.c    |   10 ----------
- include/linux/fs.h |   10 ++++++++++
- 2 files changed, 10 insertions(+), 10 deletions(-)
+ checkpoint/checkpoint.c    |    4 ++-
+ checkpoint/sys.c           |   71 ++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/checkpoint.h |    5 ++-
+ 3 files changed, 76 insertions(+), 4 deletions(-)
 
-diff --git a/fs/read_write.c b/fs/read_write.c
-index 9ba495d..5d5c192 100644
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -324,16 +324,6 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
- 
- EXPORT_SYMBOL(vfs_write);
- 
--static inline loff_t file_pos_read(struct file *file)
--{
--	return file->f_pos;
--}
--
--static inline void file_pos_write(struct file *file, loff_t pos)
--{
--	file->f_pos = pos;
--}
--
- asmlinkage ssize_t sys_read(unsigned int fd, char __user * buf, size_t count)
+diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
+index ce622e1..f636958 100644
+--- a/checkpoint/checkpoint.c
++++ b/checkpoint/checkpoint.c
+@@ -190,6 +190,8 @@ static int cr_write_task(struct cr_ctx *ctx, struct task_struct *t)
  {
- 	struct file *file;
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 580b513..5537435 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1296,6 +1296,16 @@ ssize_t rw_copy_check_uvector(int type, const struct iovec __user * uvector,
- 				struct iovec *fast_pointer,
- 				struct iovec **ret_pointer);
+ 	int ret ;
  
-+static inline loff_t file_pos_read(struct file *file)
++	/* TODO: verity that the task is frozen (unless self) */
++
+ 	if (t->state == TASK_DEAD) {
+ 		pr_warning("C/R: task may not be in state TASK_DEAD\n");
+ 		return -EAGAIN;
+@@ -227,7 +229,7 @@ int do_checkpoint(struct cr_ctx *ctx)
+ 	ret = cr_write_head(ctx);
+ 	if (ret < 0)
+ 		goto out;
+-	ret = cr_write_task(ctx, current);
++	ret = cr_write_task(ctx, ctx->root_task);
+ 	if (ret < 0)
+ 		goto out;
+ 	ret = cr_write_tail(ctx);
+diff --git a/checkpoint/sys.c b/checkpoint/sys.c
+index c57ae96..3421d47 100644
+--- a/checkpoint/sys.c
++++ b/checkpoint/sys.c
+@@ -9,6 +9,8 @@
+  */
+ 
+ #include <linux/sched.h>
++#include <linux/nsproxy.h>
++#include <linux/ptrace.h>
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
+ #include <linux/file.h>
+@@ -152,6 +154,66 @@ void cr_hbuf_put(struct cr_ctx *ctx, int n)
+  * restart operation, and persists until the operation is completed.
+  */
+ 
++static void cr_ctx_put_container(struct cr_ctx *ctx)
 +{
-+	return file->f_pos;
++	if (ctx->root_nsproxy)
++		put_nsproxy(ctx->root_nsproxy);
++	if (ctx->root_task)
++		put_task_struct(ctx->root_task);
++	ctx->root_pid = 0;
 +}
 +
-+static inline void file_pos_write(struct file *file, loff_t pos)
++static int cr_ctx_get_container(pid_t pid, struct cr_ctx *ctx)
 +{
-+	file->f_pos = pos;
++	struct task_struct *task = NULL;
++	struct nsproxy *nsproxy = NULL;
++	int err = -ESRCH;
++
++	read_lock(&tasklist_lock);
++	task = find_task_by_vpid(pid);
++	if (task)
++		get_task_struct(task);
++	read_unlock(&tasklist_lock);
++
++	if (!task)
++		goto out;
++
++#if 0	/* enable to use containers */
++	if (!is_container_init(task)) {
++		err = -EINVAL;
++		goto out;
++	}
++#endif
++
++	if (!ptrace_may_access(task, PTRACE_MODE_READ)) {
++		err = -EPERM;
++		goto out;
++	}
++
++	rcu_read_lock();
++	if (task_nsproxy(task)) {
++		nsproxy = task_nsproxy(task);
++		get_nsproxy(nsproxy);
++	}
++	rcu_read_unlock();
++
++	if (!nsproxy)
++		goto out;
++
++	/* TODO: verify that the container is frozen */
++
++	ctx->root_pid = pid;
++	ctx->root_task = task;
++	ctx->root_nsproxy = nsproxy;
++
++	return 0;
++
++ out:
++	if (task)
++		put_task_struct(task);
++	return err;
 +}
 +
- extern ssize_t vfs_read(struct file *, char __user *, size_t, loff_t *);
- extern ssize_t vfs_write(struct file *, const char __user *, size_t, loff_t *);
- extern ssize_t vfs_readv(struct file *, const struct iovec __user *,
+ /* unique checkpoint identifier (FIXME: should be per-container) */
+ static atomic_t cr_ctx_count = ATOMIC_INIT(0);
+ 
+@@ -168,6 +230,8 @@ static void cr_ctx_free(struct cr_ctx *ctx)
+ 	cr_pgarr_free(ctx);
+ 	cr_objhash_free(ctx);
+ 
++	cr_ctx_put_container(ctx);
++
+ 	kfree(ctx);
+ }
+ 
+@@ -180,7 +244,6 @@ static struct cr_ctx *cr_ctx_alloc(pid_t pid, int fd, unsigned long flags)
+ 	if (!ctx)
+ 		return ERR_PTR(-ENOMEM);
+ 
+-	ctx->pid = pid;
+ 	ctx->flags = flags;
+ 
+ 	INIT_LIST_HEAD(&ctx->pgarr_list);
+@@ -190,6 +253,10 @@ static struct cr_ctx *cr_ctx_alloc(pid_t pid, int fd, unsigned long flags)
+ 	if (!ctx->file)
+ 		goto err;
+ 
++	err = cr_ctx_get_container(pid, ctx);
++	if (err < 0)
++		goto err;
++
+ 	err = -ENOMEM;
+ 	ctx->hbuf = kmalloc(CR_HBUF_TOTAL, GFP_KERNEL);
+ 
+@@ -205,7 +272,7 @@ static struct cr_ctx *cr_ctx_alloc(pid_t pid, int fd, unsigned long flags)
+ 	 * assume checkpointer is in container's root vfs
+ 	 * FIXME: this works for now, but will change with real containers
+ 	 */
+-	ctx->vfsroot = &current->fs->root;
++	ctx->vfsroot = &ctx->root_task->fs->root;
+ 	path_get(ctx->vfsroot);
+ 
+ 	ctx->crid = atomic_inc_return(&cr_ctx_count);
+diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
+index 6c1e87f..e9d554e 100644
+--- a/include/linux/checkpoint.h
++++ b/include/linux/checkpoint.h
+@@ -16,9 +16,12 @@
+ #define CR_VERSION  2
+ 
+ struct cr_ctx {
+-	pid_t pid;		/* container identifier */
+ 	int crid;		/* unique checkpoint id */
+ 
++	pid_t root_pid;		/* container identifier */
++	struct task_struct *root_task;	/* container root task */
++	struct nsproxy *root_nsproxy;	/* container root nsproxy */
++
+ 	unsigned long flags;
+ 	unsigned long oflags;	/* restart: old flags */
+ 
 -- 
 1.5.4.3
 
