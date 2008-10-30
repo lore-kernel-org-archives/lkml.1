@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbYJ3A00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbYJ3A3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756117AbYJ3A00 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 20:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753391AbYJ3A0T
+	id S1755915AbYJ3A3S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 20:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbYJ3A3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 20:26:19 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:11302 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753381AbYJ3A0S (ORCPT
+	Wed, 29 Oct 2008 20:29:04 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:10749 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751170AbYJ3A3C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 20:26:18 -0400
-Subject: block: struct device - replace bus_id with dev_name(),
+	Wed, 29 Oct 2008 20:29:02 -0400
+Subject: dmaengine: struct device - replace bus_id with dev_name(),
 	dev_set_name()
 From: Kay Sievers <kay.sievers@vrfy.org>
-To: Jens Axboe <jens.axboe@oracle.com>
+To: Maciej Sosnowski <maciej.sosnowski@intel.com>,
+       Dan Williams <dan.j.williams@intel.com>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
 Content-Type: text/plain
-Date: Thu, 30 Oct 2008 01:26:19 +0100
-Message-Id: <1225326379.5970.23.camel@nga.site>
+Date: Thu, 30 Oct 2008 01:29:03 +0100
+Message-Id: <1225326543.5970.25.camel@nga.site>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
@@ -51,91 +52,119 @@ Kay
 
 
 From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: block: struct device - replace bus_id with dev_name(), dev_set_name()
+Subject: dmaengine: struct device - replace bus_id with dev_name(), dev_set_name()
 
-Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
 Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
 ---
 
 
-diff --git a/block/bsg.c b/block/bsg.c
-index e8bd247..f8b4c3d 100644
---- a/block/bsg.c
-+++ b/block/bsg.c
-@@ -42,7 +42,7 @@ struct bsg_device {
- 	int done_cmds;
- 	wait_queue_head_t wq_done;
- 	wait_queue_head_t wq_free;
--	char name[BUS_ID_SIZE];
-+	char name[20];
- 	int max_queue;
- 	unsigned long flags;
- };
-@@ -779,7 +779,7 @@ static struct bsg_device *bsg_add_device(struct inode *inode,
- 	mutex_lock(&bsg_mutex);
- 	hlist_add_head(&bd->dev_list, bsg_dev_idx_hash(iminor(inode)));
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index dc003a3..5317e08 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -399,8 +399,8 @@ int dma_async_device_register(struct dma_device *device)
+ 		chan->chan_id = chancnt++;
+ 		chan->dev.class = &dma_devclass;
+ 		chan->dev.parent = device->dev;
+-		snprintf(chan->dev.bus_id, BUS_ID_SIZE, "dma%dchan%d",
+-		         device->dev_id, chan->chan_id);
++		dev_set_name(&chan->dev, "dma%dchan%d",
++			     device->dev_id, chan->chan_id);
  
--	strncpy(bd->name, rq->bsg_dev.class_dev->bus_id, sizeof(bd->name) - 1);
-+	strncpy(bd->name, dev_name(rq->bsg_dev.class_dev), sizeof(bd->name) - 1);
- 	dprintk("bound to <%s>, max queue %d\n",
- 		format_dev_t(buf, inode->i_rdev), bd->max_queue);
+ 		rc = device_register(&chan->dev);
+ 		if (rc) {
+diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
+index d1e381e..ed9636b 100644
+--- a/drivers/dma/dmatest.c
++++ b/drivers/dma/dmatest.c
+@@ -20,11 +20,11 @@ static unsigned int test_buf_size = 16384;
+ module_param(test_buf_size, uint, S_IRUGO);
+ MODULE_PARM_DESC(test_buf_size, "Size of the memcpy test buffer");
  
-@@ -990,7 +990,7 @@ int bsg_register_queue(struct request_queue *q, struct device *parent,
- 	if (name)
- 		devname = name;
- 	else
--		devname = parent->bus_id;
-+		devname = dev_name(parent);
+-static char test_channel[BUS_ID_SIZE];
++static char test_channel[20];
+ module_param_string(channel, test_channel, sizeof(test_channel), S_IRUGO);
+ MODULE_PARM_DESC(channel, "Bus ID of the channel to test (default: any)");
  
- 	/*
- 	 * we need a proper transport to send commands, not a stacked device
-diff --git a/block/genhd.c b/block/genhd.c
-index 4e5e749..7fb2b6f 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -1067,7 +1067,7 @@ dev_t blk_lookup_devt(const char *name, int partno)
- 		struct gendisk *disk = dev_to_disk(dev);
- 		struct hd_struct *part;
+-static char test_device[BUS_ID_SIZE];
++static char test_device[20];
+ module_param_string(device, test_device, sizeof(test_device), S_IRUGO);
+ MODULE_PARM_DESC(device, "Bus ID of the DMA Engine to test (default: any)");
  
--		if (strcmp(dev->bus_id, name))
-+		if (strcmp(dev_name(dev), name))
- 			continue;
+@@ -80,14 +80,14 @@ static bool dmatest_match_channel(struct dma_chan *chan)
+ {
+ 	if (test_channel[0] == '\0')
+ 		return true;
+-	return strcmp(chan->dev.bus_id, test_channel) == 0;
++	return strcmp(dev_name(&chan->dev), test_channel) == 0;
+ }
  
- 		part = disk_get_part(disk, partno);
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 633f7a0..8cd966a 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -384,9 +384,9 @@ int add_partition(struct gendisk *disk, int partno,
+ static bool dmatest_match_device(struct dma_device *device)
+ {
+ 	if (test_device[0] == '\0')
+ 		return true;
+-	return strcmp(device->dev->bus_id, test_device) == 0;
++	return strcmp(dev_name(device->dev), test_device) == 0;
+ }
  
- 	dname = dev_name(ddev);
- 	if (isdigit(dname[strlen(dname) - 1]))
--		snprintf(pdev->bus_id, BUS_ID_SIZE, "%sp%d", dname, partno);
-+		dev_set_name(pdev, "%sp%d", dname, partno);
- 	else
--		snprintf(pdev->bus_id, BUS_ID_SIZE, "%s%d", dname, partno);
-+		dev_set_name(pdev, "%s%d", dname, partno);
+ static unsigned long dmatest_random(void)
+@@ -332,7 +332,7 @@ static enum dma_state_client dmatest_add_channel(struct dma_chan *chan)
  
- 	device_initialize(pdev);
- 	pdev->class = &block_class;
-@@ -445,16 +445,11 @@ void register_disk(struct gendisk *disk)
- 	struct block_device *bdev;
- 	struct disk_part_iter piter;
- 	struct hd_struct *part;
--	char *s;
- 	int err;
+ 	dtc = kmalloc(sizeof(struct dmatest_chan), GFP_KERNEL);
+ 	if (!dtc) {
+-		pr_warning("dmatest: No memory for %s\n", chan->dev.bus_id);
++		pr_warning("dmatest: No memory for %s\n", dev_name(&chan->dev));
+ 		return DMA_NAK;
+ 	}
  
- 	ddev->parent = disk->driverfs_dev;
+@@ -343,16 +343,16 @@ static enum dma_state_client dmatest_add_channel(struct dma_chan *chan)
+ 		thread = kzalloc(sizeof(struct dmatest_thread), GFP_KERNEL);
+ 		if (!thread) {
+ 			pr_warning("dmatest: No memory for %s-test%u\n",
+-					chan->dev.bus_id, i);
++				   dev_name(&chan->dev), i);
+ 			break;
+ 		}
+ 		thread->chan = dtc->chan;
+ 		smp_wmb();
+ 		thread->task = kthread_run(dmatest_func, thread, "%s-test%u",
+-				chan->dev.bus_id, i);
++				dev_name(&chan->dev), i);
+ 		if (IS_ERR(thread->task)) {
+ 			pr_warning("dmatest: Failed to run thread %s-test%u\n",
+-					chan->dev.bus_id, i);
++					dev_name(&chan->dev), i);
+ 			kfree(thread);
+ 			break;
+ 		}
+@@ -362,7 +362,7 @@ static enum dma_state_client dmatest_add_channel(struct dma_chan *chan)
+ 		list_add_tail(&thread->node, &dtc->threads);
+ 	}
  
--	strlcpy(ddev->bus_id, disk->disk_name, BUS_ID_SIZE);
--	/* ewww... some of these buggers have / in the name... */
--	s = strchr(ddev->bus_id, '/');
--	if (s)
--		*s = '!';
-+	dev_set_name(ddev, disk->disk_name);
+-	pr_info("dmatest: Started %u threads using %s\n", i, chan->dev.bus_id);
++	pr_info("dmatest: Started %u threads using %s\n", i, dev_name(&chan->dev));
  
- 	/* delay uevents, until we scanned partition table */
- 	ddev->uevent_suppress = 1;
-
+ 	list_add_tail(&dtc->node, &dmatest_channels);
+ 	nr_channels++;
+@@ -379,7 +379,7 @@ static enum dma_state_client dmatest_remove_channel(struct dma_chan *chan)
+ 			list_del(&dtc->node);
+ 			dmatest_cleanup_channel(dtc);
+ 			pr_debug("dmatest: lost channel %s\n",
+-					chan->dev.bus_id);
++					dev_name(&chan->dev));
+ 			return DMA_ACK;
+ 		}
+ 	}
+@@ -418,7 +418,7 @@ dmatest_event(struct dma_client *client, struct dma_chan *chan,
+ 
+ 	default:
+ 		pr_info("dmatest: Unhandled event %u (%s)\n",
+-				state, chan->dev.bus_id);
++				state, dev_name(&chan->dev));
+ 		break;
+ 	}
+ 
 
