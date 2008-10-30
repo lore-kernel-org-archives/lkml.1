@@ -1,60 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbYJ3VPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbYJ3VRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbYJ3VPb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 17:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbYJ3VPX
+	id S1757397AbYJ3VRi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 17:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbYJ3VR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 17:15:23 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41067 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753342AbYJ3VPV (ORCPT
+	Thu, 30 Oct 2008 17:17:28 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:6595 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754897AbYJ3VR1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 17:15:21 -0400
-Date: Thu, 30 Oct 2008 17:15:20 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/2] ftrace: handle NMIs safely
-In-Reply-To: <20081030203434.GL27407@elte.hu>
-Message-ID: <alpine.DEB.1.10.0810301714190.21031@gandalf.stny.rr.com>
-References: <20081030200831.467420488@goodmis.org> <20081030203434.GL27407@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 30 Oct 2008 17:17:27 -0400
+Message-ID: <ac3eb2510810301417i60d6e68cv8b9545c29db8018a@mail.gmail.com>
+Date: Thu, 30 Oct 2008 22:17:03 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Andrey Borzenkov" <arvidjaar@mail.ru>
+Subject: Re: 2.6.28-rc2 - strange (redundant) sysfs paths for SCSI
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200810292105.40220.arvidjaar@mail.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200810292105.40220.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Oct 29, 2008 at 19:05, Andrey Borzenkov <arvidjaar@mail.ru> wrote:
+> Running with PATA driver:
+>
+> /sys/devices/pci0000:00/0000:00:04.0/host0/scsi_host/host0
+> /sys/devices/pci0000:00/0000:00:04.0/host0/target0:0:0/0:0:0:0
+>
+> well, in both cases at least one component is redundant?
 
-On Thu, 30 Oct 2008, Ingo Molnar wrote:
+Yes, it's a duplication. Ideally all the scsi_* class devices would
+just offer their attributes at the "real" devices, the bus devices,
+and not exist at all. But it's that way for a long time now, and they
+can not just be removed. One possible solution could be to create the
+attributes of the class devices at the "real" devices, and keep
+compatibility symlinks from the class directory to the "real" device.
 
-> 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > The robustness of ftrace has been the focus of the code modification 
-> > in 2.6.28. There is one remaining issue that needed to be addressed. 
-> > This was the case of NMIs.
-> 
-> applied to tip/tracing/nmisafe, thanks Steve!
-> 
-> this looks a lot nicer approach than either putting some sort of lock 
-> into NMI context (yuck) or the disabling of NMIs (not really possible 
-> in a generic way architecturally).
-> 
-> the impact is quite non-trivial, so i dont think this is v2.6.28 
-> material.
+> Also the intermediate nodes (scsi_host and target0:0:0) do not seem
+> to contain any useful information at all?
 
-Ingo,
+The target represents a main scsi device object and is expected to be
+there. It's part of the specification, and the way scsi works. You can
+have multiple targets per host and below the target the devices. All
+that might not really make sense for ATA drives mapped to scsi, but
+that's not a problem scsi could solve. :)
 
-Do you want me to send patches on top of these to address Andrew's 
-comements? Or do you want me to resend these with the updates.
+As mentioned a few lines above, the scsi_host class device "host0" is
+already represented as the host bus device "host0" and is a
+duplication, that's correct. Same is true for the scsi_device class
+device.
 
-I prefer to send patches on top, that way Andrew can make sure I did his 
-changes correctly ;-)
+The actual directory named "scsi_host" is just the glue the
+driver-core creates for all class devices which have a bus device as a
+parent. It's not created by scsi. The same thing like your pci
+ethernet card is a "pci*" device and the "eth0" device, which is a
+child of the pci device, lives in a subdir, always called after the
+subsytem, "net". That way network devices can get almost any name
+without conflicting with an attribute name of the parent device.
+People complained, that they couldn't rename their network interface
+to "irq". :)
 
--- Steve
+> I noticed this because kernel installer in Mandriva started to
+> complaint about host* and target* device nodes under /sys/bus/scsi/devices:
 
+Yeah, users of sysfs are always required to check what the type of
+device they retrieve. It must always be allowed to add new stuff to
+existing directories. The host and target devices belong to the scsi
+bus and got added a while ago. In the past, they have been created in
+the device tree only, without a subsystem attached, and with no events
+to userspace, which isn't a good thing to do.
+
+> lrwxrwxrwx 1 root root 0 2008-10-29 19:58 0:0:0:0 -> ../../../devices/pci0000:00/0000:00:04.0/host0/target0:0:0/0:0:0:0/
+> lrwxrwxrwx 1 root root 0 2008-10-29 19:58 1:0:0:0 -> ../../../devices/pci0000:00/0000:00:04.0/host1/target1:0:0/1:0:0:0/
+> lrwxrwxrwx 1 root root 0 2008-10-29 19:58 host0 -> ../../../devices/pci0000:00/0000:00:04.0/host0/
+> lrwxrwxrwx 1 root root 0 2008-10-29 19:58 host1 -> ../../../devices/pci0000:00/0000:00:04.0/host1/
+> lrwxrwxrwx 1 root root 0 2008-10-29 19:58 target0:0:0 -> ../../../devices/pci0000:00/0000:00:04.0/host0/target0:0:0/
+> lrwxrwxrwx 1 root root 0 2008-10-29 19:58 target1:0:0 -> ../../../devices/pci0000:00/0000:00:04.0/host1/target1:0:0/
+>
+> It is really not quite clear what use they have.
+
+That looks all totally fine. The only things one could argue about are
+the 1:1 duplicated class devices scsi_device and scsi_host, which you
+don't even see in this listing, because they are class devices.
+
+Kay
