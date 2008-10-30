@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbYJ3G4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbYJ3G7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754004AbYJ3G4o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 02:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbYJ3G4f
+	id S1754188AbYJ3G7U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 02:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbYJ3G7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 02:56:35 -0400
-Received: from [200.13.152.5] ([200.13.152.5]:49000 "EHLO mail.cosett.com.bo"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752656AbYJ3G4e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 02:56:34 -0400
-X-Greylist: delayed 32557 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Oct 2008 02:56:34 EDT
-Message-ID: <20081029171919.4913594xypd7hyf4@mail.cosett.com.bo>
-Date: Wed, 29 Oct 2008 17:19:19 -0400
-From: UPGRADING WEBMAIL TEAM <info@upgradeteam.com>
-Reply-to: upgrade.team.beta@live.com
-To: undisclosed-recipients:;
-Subject: CONFIRM YOUR EMAIL ACCOUNT
+	Thu, 30 Oct 2008 02:59:12 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:44042 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752704AbYJ3G7L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 02:59:11 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=A6YtOATG3w9MVgIvrA9jaK1pdCcWJstpEzoyyM+0YvIMc4YP2GT16Sdw4xTVEx5lb
+	uvATsbj7+PRIWYQG45aKA==
+Message-ID: <6599ad830810292359u6a2d0191ud235b866a73a7359@mail.gmail.com>
+Date: Wed, 29 Oct 2008 23:59:02 -0700
+From: "Paul Menage" <menage@google.com>
+To: "David Rientjes" <rientjes@google.com>
+Subject: Re: [patch 6/7] cpusets: per cpuset dirty ratios
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Christoph Lameter" <cl@linux-foundation.org>,
+       "Nick Piggin" <npiggin@suse.de>,
+       "Peter Zijlstra" <peterz@infradead.org>, "Derek Fults" <dfults@sgi.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.1.10.0810280302320.15270@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.3)
+Content-Disposition: inline
+References: <alpine.DEB.1.10.0810280259500.15270@chino.kir.corp.google.com>
+	 <alpine.DEB.1.10.0810280302320.15270@chino.kir.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Oct 28, 2008 at 9:08 AM, David Rientjes <rientjes@google.com> wrote:
+> From: Christoph Lameter <cl@linux-foundation.org>
+>
+> This implements dirty ratios per cpuset.  Two new files are added to the
+> cpuset directories:
 
+Wouldn't this be equally applicable to cgroups using the memory
+controller rather than cpusets? Might it make sense to have a common
+subsystem that could be used by either of them?
 
-Dear Email Account Owner,
-
-This message is from UPGRADING EDU messaging center to all WEBMAIL EDU
-
-emailaccount owners. We are
-currently upgrading our data base and e-mail account center. We are deleting
-all unused email account to create space for new accounts.To prevent  
-your account
-from being deactivated you will have to update it.
-
-
-CONFIRM YOUR EMAIL ACCOUNT
-Email Username : ...............
-Email Password : ..............
-Date of Birth : ..................
-Country or Territory : .........
-
-
-Warning!!! All Edu Account owner that refuses to update his or her  
-account within Seven
-
-days of receiving
-this email will lose his or her account permanently.
-
-
-Thank you for using Webmail Edu!
-Warning Code:USV64MT1
-
-
-Thanks,
-UPGRADING EDU TEAM
-WEBMAIL EDU TEAM Beta
-
-WEBMAIL EDU TEAM
-
-----------------------------------------------------------------
-Este mensaje fue enviado usando COSETT Web Mail.
-
+Paul
