@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbYJ3Qqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756827AbYJ3Qqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756179AbYJ3Qqi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 12:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbYJ3Qq3
+	id S1756827AbYJ3Qqw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 12:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755627AbYJ3Qqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 12:46:29 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:36947 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753338AbYJ3Qq2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 12:46:28 -0400
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: Eric Paris <eparis@redhat.com>
-Subject: Re: [PATCH -v1 1/3] SECURITY: new capable_noaudit interface
-Date: Thu, 30 Oct 2008 12:46:20 -0400
-User-Agent: KMail/1.9.10
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org,
-       sds@tycho.nsa.gov, jmorris@nameil.org, morgan@kernel.org,
-       casey@schaufler-ca.com, esandeen@redhat.com
-References: <20081029190652.31292.5901.stgit@paris.rdu.redhat.com> <20081030152940.GA24853@us.ibm.com>
-In-Reply-To: <20081030152940.GA24853@us.ibm.com>
+	Thu, 30 Oct 2008 12:46:35 -0400
+Received: from threatwall.zlynx.org ([199.45.143.218]:36370 "EHLO zlynx.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755545AbYJ3Qqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 12:46:34 -0400
+Message-ID: <4909E4DE.30207@acm.org>
+Date: Thu, 30 Oct 2008 10:46:22 -0600
+From: Zan Lynx <zlynx@acm.org>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, jack@suse.cz
+Subject: Re: 2.6.28-rc2-mm1: Build failure on fs/quota.o
+References: <20081028233836.8b1ff9ae.akpm@linux-foundation.org>	<4908EA82.8090308@acm.org> <20081029161626.1fa5acb0.akpm@linux-foundation.org>
+In-Reply-To: <20081029161626.1fa5acb0.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810301246.20328.paul.moore@hp.com>
+X-Envelope-From: zlynx@acm.org
+X-Spam-Id: 20081030/1Kvaf8-0002Cv-OT-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 30 October 2008 11:29:40 am Serge E. Hallyn wrote:
-> Quoting Eric Paris (eparis@redhat.com):
-> > Add a new capable interface that will be used by systems that use
-> > audit to make an A or B type decision instead of a security
-> > decision.  Currently this is the case at least for filesystems when
-> > deciding if a process can use the reserved 'root' blocks and for
-> > the case of things like the oom algorithm determining if processes
-> > are root processes and should be less likely to be killed.  These
-> > types of security system requests should not be audited or logged
-> > since they are not really security decisions.  It would be possible
-> > to solve this problem like the vm_enough_memory security check did
-> > by creating a new LSM interface and moving all of the policy into
-> > that interface but proves the needlessly bloat the LSM and provide
-> > complex indirection.
-> >
-> > This merely allows those decisions to be made where they belong and
-> > to not flood logs or printk with denials for thing that are not
-> > security decisions.
-> >
-> > Signed-off-by: Eric Paris <eparis@redhat.com>
->
-> Please introduce some meaningful defines instead of passing 0 and 1.
-> I.e.
->
-> #define CAP_NOAUDIT 0
-> #define CAP_AUDIT 1
->
-> Otherwise, looks fine.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-As a general rule aren't boolean arguments like this frowned upon, with 
-variations on the function preferred, i.e. something like below?
+Andrew Morton wrote:
+> diff -puN include/linux/quotaops.h~quota-permit-separately-enabling-quota-accounting-and-enforcing-limits-fix include/linux/quotaops.h
+> --- a/include/linux/quotaops.h~quota-permit-separately-enabling-quota-accounting-and-enforcing-limits-fix
+> +++ a/include/linux/quotaops.h
+> @@ -257,6 +257,11 @@ static inline int sb_any_quota_loaded(st
+>  	return 0;
+>  }
+>  
+> +static inline int sb_has_quota_active(struct super_block *sb, int type)
+> +{
+> +	return 0;
+> +}
+> +
+>  static inline int sb_any_quota_active(struct super_block *sb)
+>  {
+>  	return 0;
+> _
+> 
 
- int cap_capable(struct task_struct *tsk, int cap);
- int cap_capable_audit(struct task_struct *tsk, int cap);
+Thank you.  This fixed the compilation error.
 
--- 
-paul moore
-linux @ hp
+Now I can boot up to the point where the root filesystem fails to load.
+
+No Reiser4 in this -mm.  I see that the old prepare and commit functions
+were removed in 2.6.28.  Hopefully someone will fix Reiser4 so I don't
+have to try doing it myself. :-)
+- --
+Zan Lynx
+zlynx@acm.org
+
+"Knowledge is Power.  Power Corrupts.  Study Hard.  Be Evil."
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkkJ5N0ACgkQolqWs/Y4NLyAtgCfdvhEF5x/80NLC9d/9jNTL1J2
+DTYAoIDo+djCOleYRtt4+WSzIEFqgrnK
+=Kr6s
+-----END PGP SIGNATURE-----
