@@ -1,414 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbYJ3N4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbYJ3N4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755590AbYJ3N4X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 09:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbYJ3NzF
+	id S1756090AbYJ3N4x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 09:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbYJ3NzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 09:55:05 -0400
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:42395 "EHLO
-	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755478AbYJ3NzB (ORCPT
+	Thu, 30 Oct 2008 09:55:10 -0400
+Received: from mail-in-03.arcor-online.net ([151.189.21.43]:56056 "EHLO
+	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754657AbYJ3NzF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 09:55:01 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-api@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Serge Hallyn <serue@us.ibm.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v8][PATCH 08/12] Infrastructure for shared objects
-Date: Thu, 30 Oct 2008 09:51:11 -0400
-Message-Id: <1225374675-22850-9-git-send-email-orenl@cs.columbia.edu>
-X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <1225374675-22850-1-git-send-email-orenl@cs.columbia.edu>
-References: <1225374675-22850-1-git-send-email-orenl@cs.columbia.edu>
-X-No-Spam-Score: Local
+	Thu, 30 Oct 2008 09:55:05 -0400
+Date: Thu, 30 Oct 2008 14:50:18 +0100
+From: Wolfgang Erig <Wolfgang.Erig@gmx.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.28-rc2 lost IDE disk on old laptop
+Message-ID: <20081030135017.GA8325@erig.dyndns.org>
+Mail-Followup-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.00.0810261221350.3386@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="EVF5PPMfhYS0aIcm"
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0810261221350.3386@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Infrastructure to handle objects that may be shared and referenced by
-multiple tasks or other objects, e..g open files, memory address space
-etc.
 
-The state of shared objects is saved once. On the first encounter, the
-state is dumped and the object is assigned a unique identifier (objref)
-and also stored in a hash table (indexed by its physical kenrel address).
->From then on the object will be found in the hash and only its identifier
-is saved.
+--EVF5PPMfhYS0aIcm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On restart the identifier is looked up in the hash table; if not found
-then the state is read, the object is created, and added to the hash
-table (this time indexed by its identifier). Otherwise, the object in
-the hash table is used.
+Hi,
 
-Changelog[v4]:
-  - Fix calculation of hash table size
+the kernel 2.6.28-rc2 does not boot on my old laptop.
+Panic ... cannot access (301) ... aka /dev/hda1
+The previously used version 2.6.27-rc8 runs fine.
 
-Changelog[v3]:
-  - Use standard hlist_... for hash table
+During 'make oldconfig' I saw questions about IDE (or ATA)
+but I see no obvious problem with my .config
 
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
----
- checkpoint/Makefile        |    2 +-
- checkpoint/objhash.c       |  268 ++++++++++++++++++++++++++++++++++++++++++++
- checkpoint/sys.c           |    6 +
- include/linux/checkpoint.h |   20 ++++
- 4 files changed, 295 insertions(+), 1 deletions(-)
- create mode 100644 checkpoint/objhash.c
+Wolfgang
 
-diff --git a/checkpoint/Makefile b/checkpoint/Makefile
-index ac35033..9843fb9 100644
---- a/checkpoint/Makefile
-+++ b/checkpoint/Makefile
-@@ -2,5 +2,5 @@
- # Makefile for linux checkpoint/restart.
- #
- 
--obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o checkpoint.o restart.o \
-+obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o checkpoint.o restart.o objhash.o \
- 		ckpt_mem.o rstr_mem.o
-diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
-new file mode 100644
-index 0000000..05b1a1b
---- /dev/null
-+++ b/checkpoint/objhash.c
-@@ -0,0 +1,268 @@
-+/*
-+ *  Checkpoint-restart - object hash infrastructure to manage shared objects
-+ *
-+ *  Copyright (C) 2008 Oren Laadan
-+ *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License.  See the file COPYING in the main directory of the Linux
-+ *  distribution for more details.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/file.h>
-+#include <linux/hash.h>
-+#include <linux/checkpoint.h>
-+
-+struct cr_objref {
-+	int objref;
-+	void *ptr;
-+	unsigned short type;
-+	unsigned short flags;
-+	struct hlist_node hash;
-+};
-+
-+struct cr_objhash {
-+	struct hlist_head *head;
-+	int next_free_objref;
-+};
-+
-+#define CR_OBJHASH_NBITS  10
-+#define CR_OBJHASH_TOTAL  (1UL << CR_OBJHASH_NBITS)
-+
-+static void cr_obj_ref_drop(struct cr_objref *obj)
-+{
-+	switch (obj->type) {
-+	case CR_OBJ_FILE:
-+		fput((struct file *) obj->ptr);
-+		break;
-+	default:
-+		BUG();
-+	}
-+}
-+
-+static void cr_obj_ref_grab(struct cr_objref *obj)
-+{
-+	switch (obj->type) {
-+	case CR_OBJ_FILE:
-+		get_file((struct file *) obj->ptr);
-+		break;
-+	default:
-+		BUG();
-+	}
-+}
-+
-+static void cr_objhash_clear(struct cr_objhash *objhash)
-+{
-+	struct hlist_head *h = objhash->head;
-+	struct hlist_node *n, *t;
-+	struct cr_objref *obj;
-+	int i;
-+
-+	for (i = 0; i < CR_OBJHASH_TOTAL; i++) {
-+		hlist_for_each_entry_safe(obj, n, t, &h[i], hash) {
-+			cr_obj_ref_drop(obj);
-+			kfree(obj);
-+		}
-+	}
-+}
-+
-+void cr_objhash_free(struct cr_ctx *ctx)
-+{
-+	struct cr_objhash *objhash = ctx->objhash;
-+
-+	if (objhash) {
-+		cr_objhash_clear(objhash);
-+		kfree(objhash->head);
-+		kfree(ctx->objhash);
-+		ctx->objhash = NULL;
-+	}
-+}
-+
-+int cr_objhash_alloc(struct cr_ctx *ctx)
-+{
-+	struct cr_objhash *objhash;
-+	struct hlist_head *head;
-+
-+	objhash = kzalloc(sizeof(*objhash), GFP_KERNEL);
-+	if (!objhash)
-+		return -ENOMEM;
-+	head = kzalloc(CR_OBJHASH_TOTAL * sizeof(*head), GFP_KERNEL);
-+	if (!head) {
-+		kfree(objhash);
-+		return -ENOMEM;
-+	}
-+
-+	objhash->head = head;
-+	objhash->next_free_objref = 1;
-+
-+	ctx->objhash = objhash;
-+	return 0;
-+}
-+
-+static struct cr_objref *cr_obj_find_by_ptr(struct cr_ctx *ctx, void *ptr)
-+{
-+	struct hlist_head *h;
-+	struct hlist_node *n;
-+	struct cr_objref *obj;
-+
-+	h = &ctx->objhash->head[hash_ptr(ptr, CR_OBJHASH_NBITS)];
-+	hlist_for_each_entry(obj, n, h, hash)
-+		if (obj->ptr == ptr)
-+			return obj;
-+	return NULL;
-+}
-+
-+static struct cr_objref *cr_obj_find_by_objref(struct cr_ctx *ctx, int objref)
-+{
-+	struct hlist_head *h;
-+	struct hlist_node *n;
-+	struct cr_objref *obj;
-+
-+	h = &ctx->objhash->head[hash_ptr((void *) objref, CR_OBJHASH_NBITS)];
-+	hlist_for_each_entry(obj, n, h, hash)
-+		if (obj->objref == objref)
-+			return obj;
-+	return NULL;
-+}
-+
-+/**
-+ * cr_obj_new - allocate an object and add to the hash table
-+ * @ctx: checkpoint context
-+ * @ptr: pointer to object
-+ * @objref: unique object reference
-+ * @type: object type
-+ * @flags: object flags
-+ *
-+ * Allocate an object referring to @ptr and add to the hash table.
-+ * If @objref is zero, assign a unique object reference and use @ptr
-+ * as a hash key [checkpoint]. Else use @objref as a key [restart].
-+ */
-+static struct cr_objref *cr_obj_new(struct cr_ctx *ctx, void *ptr, int objref,
-+				    unsigned short type, unsigned short flags)
-+{
-+	struct cr_objref *obj;
-+	int i;
-+
-+	obj = kmalloc(sizeof(*obj), GFP_KERNEL);
-+	if (!obj)
-+		return NULL;
-+
-+	obj->ptr = ptr;
-+	obj->type = type;
-+	obj->flags = flags;
-+
-+	if (objref) {
-+		/* use @objref to index (restart) */
-+		obj->objref = objref;
-+		i = hash_ptr((void *) objref, CR_OBJHASH_NBITS);
-+	} else {
-+		/* use @ptr to index, assign objref (checkpoint) */
-+		obj->objref = ctx->objhash->next_free_objref++;;
-+		i = hash_ptr(ptr, CR_OBJHASH_NBITS);
-+	}
-+
-+	hlist_add_head(&obj->hash, &ctx->objhash->head[i]);
-+	cr_obj_ref_grab(obj);
-+	return obj;
-+}
-+
-+/**
-+ * cr_obj_add_ptr - add an object to the hash table if not already there
-+ * @ctx: checkpoint context
-+ * @ptr: pointer to object
-+ * @objref: unique object reference [output]
-+ * @type: object type
-+ * @flags: object flags
-+ *
-+ * Look up the object pointed to by @ptr in the hash table. If it isn't
-+ * already found there, then add the object to the table, and allocate a
-+ * fresh unique object reference (objref). Fills the unique objref of
-+ * the object into @objref.
-+ * [This is used during checkpoint].
-+ *
-+ * Returns 0 if found, 1 if added, < 0 on error
-+ */
-+int cr_obj_add_ptr(struct cr_ctx *ctx, void *ptr, int *objref,
-+		   unsigned short type, unsigned short flags)
-+{
-+	struct cr_objref *obj;
-+	int ret = 0;
-+
-+	obj = cr_obj_find_by_ptr(ctx, ptr);
-+	if (!obj) {
-+		obj = cr_obj_new(ctx, ptr, 0, type, flags);
-+		if (!obj)
-+			return -ENOMEM;
-+		else
-+			ret = 1;
-+	} else if (obj->type != type)	/* sanity check */
-+		return -EINVAL;
-+	*objref = obj->objref;
-+	return ret;
-+}
-+
-+/**
-+ * cr_obj_add_ref - add an object with unique objref to the hash table
-+ * @ctx: checkpoint context
-+ * @ptr: pointer to object
-+ * @objref: unique identifier - object reference
-+ * @type: object type
-+ * @flags: object flags
-+ *
-+ * Add the object pointer to by @ptr and identified by unique object
-+ * reference given by @objref to the hash table (indexed by @objref).
-+ * [This is used during restart].
-+ */
-+int cr_obj_add_ref(struct cr_ctx *ctx, void *ptr, int objref,
-+		   unsigned short type, unsigned short flags)
-+{
-+	struct cr_objref *obj;
-+
-+	obj = cr_obj_new(ctx, ptr, objref, type, flags);
-+	return obj ? 0 : -ENOMEM;
-+}
-+
-+/**
-+ * cr_obj_get_by_ptr - find the unique object reference of an object
-+ * @ctx: checkpoint context
-+ * @ptr: pointer to object
-+ * @type: object type
-+ *
-+ * Look up the unique object reference (objref) of the object pointed
-+ * to by @ptr, and return that number, or 0 if not found.
-+ * [This is used during checkpoint].
-+ */
-+int cr_obj_get_by_ptr(struct cr_ctx *ctx, void *ptr, unsigned short type)
-+{
-+	struct cr_objref *obj;
-+
-+	obj = cr_obj_find_by_ptr(ctx, ptr);
-+	if (!obj)
-+		return -ESRCH;
-+	if (obj->type != type)
-+		return -EINVAL;
-+	return obj->objref;
-+}
-+
-+/**
-+ * cr_obj_get_by_ref - find an object given its unique object reference
-+ * @ctx: checkpoint context
-+ * @objref: unique identifier - object reference
-+ * @type: object type
-+ *
-+ * Look up the object who is identified by unique object reference that
-+ * is specified by @objref, and return a pointer to that matching object,
-+ * or NULL if not found.
-+ * [This is used during restart].
-+ */
-+void *cr_obj_get_by_ref(struct cr_ctx *ctx, int objref, unsigned short type)
-+{
-+	struct cr_objref *obj;
-+
-+	obj = cr_obj_find_by_objref(ctx, objref);
-+	if (!obj)
-+		return NULL;
-+	if (obj->type != type)
-+		return ERR_PTR(-EINVAL);
-+	return obj->ptr;
-+}
-diff --git a/checkpoint/sys.c b/checkpoint/sys.c
-index 0bcfadb..c57ae96 100644
---- a/checkpoint/sys.c
-+++ b/checkpoint/sys.c
-@@ -166,6 +166,7 @@ static void cr_ctx_free(struct cr_ctx *ctx)
- 		path_put(ctx->vfsroot);
- 
- 	cr_pgarr_free(ctx);
-+	cr_objhash_free(ctx);
- 
- 	kfree(ctx);
- }
-@@ -195,6 +196,11 @@ static struct cr_ctx *cr_ctx_alloc(pid_t pid, int fd, unsigned long flags)
- 	if (!ctx->hbuf)
- 		goto err;
- 
-+	if (cr_objhash_alloc(ctx) < 0) {
-+		cr_ctx_free(ctx);
-+		return ERR_PTR(-ENOMEM);
-+	}
-+
- 	/*
- 	 * assume checkpointer is in container's root vfs
- 	 * FIXME: this works for now, but will change with real containers
-diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index 3563bce..e85b95c 100644
---- a/include/linux/checkpoint.h
-+++ b/include/linux/checkpoint.h
-@@ -28,6 +28,8 @@ struct cr_ctx {
- 	void *hbuf;		/* temporary buffer for headers */
- 	int hpos;		/* position in headers buffer */
- 
-+	struct cr_objhash *objhash;	/* hash for shared objects */
-+
- 	struct list_head pgarr_list;	/* page array to dump VMA contents */
- 
- 	struct path *vfsroot;	/* container root (FIXME) */
-@@ -45,6 +47,24 @@ extern int cr_kread(struct cr_ctx *ctx, void *buf, int count);
- extern void *cr_hbuf_get(struct cr_ctx *ctx, int n);
- extern void cr_hbuf_put(struct cr_ctx *ctx, int n);
- 
-+/* shared objects handling */
-+
-+enum {
-+	CR_OBJ_FILE = 1,
-+	CR_OBJ_MAX
-+};
-+
-+extern void cr_objhash_free(struct cr_ctx *ctx);
-+extern int cr_objhash_alloc(struct cr_ctx *ctx);
-+extern void *cr_obj_get_by_ref(struct cr_ctx *ctx,
-+			       int objref, unsigned short type);
-+extern int cr_obj_get_by_ptr(struct cr_ctx *ctx,
-+			     void *ptr, unsigned short type);
-+extern int cr_obj_add_ptr(struct cr_ctx *ctx, void *ptr, int *objref,
-+			  unsigned short type, unsigned short flags);
-+extern int cr_obj_add_ref(struct cr_ctx *ctx, void *ptr, int objref,
-+			  unsigned short type, unsigned short flags);
-+
- struct cr_hdr;
- 
- extern int cr_write_obj(struct cr_ctx *ctx, struct cr_hdr *h, void *buf);
--- 
-1.5.4.3
 
+$ lspci
+00:00.0 Host bridge: Intel Corporation 430TX - 82439TX MTXC (rev 01)
+00:01.0 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ISA (rev 01)
+00:01.1 IDE interface: Intel Corporation 82371AB/EB/MB PIIX4 IDE (rev 01)
+00:01.2 USB Controller: Intel Corporation 82371AB/EB/MB PIIX4 USB (rev 01)
+00:01.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI (rev 01)
+00:06.0 VGA compatible controller: Chips and Technologies F65554 (rev c2)
+00:14.0 CardBus bridge: Cirrus Logic PD 6832 PCMCIA/CardBus Ctrlr (rev c1)
+00:14.1 CardBus bridge: Cirrus Logic PD 6832 PCMCIA/CardBus Ctrlr (rev c1)
+
+$ egrep -i 'ide|ata' .config
+# CONFIG_X86_MCE_NONFATAL is not set
+# CONFIG_ATALK is not set
+CONFIG_HAVE_IDE=y
+CONFIG_IDE=y
+# Please see Documentation/ide/ide.txt for help/info on IDE drives
+# CONFIG_BLK_DEV_IDE_SATA is not set
+CONFIG_IDE_GD=y
+CONFIG_IDE_GD_ATA=y
+# CONFIG_IDE_GD_ATAPI is not set
+# CONFIG_BLK_DEV_IDECS is not set
+CONFIG_BLK_DEV_IDECD=y
+CONFIG_BLK_DEV_IDECD_VERBOSE_ERRORS=y
+# CONFIG_BLK_DEV_IDETAPE is not set
+# CONFIG_BLK_DEV_IDESCSI is not set
+# CONFIG_IDE_TASK_IOCTL is not set
+# CONFIG_IDE_PROC_FS is not set
+# IDE chipset support/bugfixes
+CONFIG_IDE_GENERIC=y
+# CONFIG_BLK_DEV_IDEPNP is not set
+# PCI IDE chipsets support
+# Other IDE chipsets support
+# CONFIG_BLK_DEV_IDEDMA is not set
+# CONFIG_ATA is not set
+# CONFIG_VIDEO_DEV is not set
+# CONFIG_VIDEO_MEDIA is not set
+CONFIG_VIDEO_OUTPUT_CONTROL=m
+# CONFIG_USB_STORAGE_DATAFAB is not set
+# CONFIG_USB_STORAGE_CYPRESS_ATACB is not set
+# CONFIG_PROVIDE_OHCI1394_DMA_INIT is not set
+# Authenticated Encryption with Associated Data
+
+--EVF5PPMfhYS0aIcm
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="config.gz"
+Content-Transfer-Encoding: base64
+
+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
+
+--EVF5PPMfhYS0aIcm--
