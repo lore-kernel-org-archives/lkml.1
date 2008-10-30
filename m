@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760585AbYJ3Vvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759993AbYJ3Vwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760585AbYJ3Vvx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 17:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759470AbYJ3Vvn
+	id S1759993AbYJ3Vwn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 17:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759180AbYJ3Vwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 17:51:43 -0400
-Received: from qb-out-0506.google.com ([72.14.204.226]:53692 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759495AbYJ3Vvn (ORCPT
+	Thu, 30 Oct 2008 17:52:34 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:56657 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759209AbYJ3Vwd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 17:51:43 -0400
-Message-ID: <ac3eb2510810301451x7dbf18edgd03c1433099ce5e4@mail.gmail.com>
-Date: Thu, 30 Oct 2008 22:51:41 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Peter Korsgaard" <jacmet@sunsite.dk>
-Subject: Re: 2.6.28-rc2: (mtd)block/partitions BUG with kobject reference count
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <87abcnj810.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 30 Oct 2008 17:52:33 -0400
+Subject: Re: merging other repos into linux-2.6
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.00.0810301152230.3505@nehalem.linux-foundation.org>
+References: <20081030054944.GA19035@kroah.com>
+	 <alpine.LFD.2.00.0810301152230.3505@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 30 Oct 2008 16:52:31 -0500
+Message-Id: <1225403551.3322.42.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <87ej1z4ep8.fsf@macbook.be.48ers.dk>
-	 <200810300027.19116.rjw@sisk.pl> <87abcnj810.fsf@macbook.be.48ers.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 00:28, Peter Korsgaard <jacmet@sunsite.dk> wrote:
->>>>>> "Rafael" == Rafael J Wysocki <rjw@sisk.pl> writes:
->
->  Rafael> On Wednesday, 29 of October 2008, Peter Korsgaard wrote:
->  >> Hi,
->  >>
->  >> I'm seing what looks like a kobject reference count issue with
->  >> mtdblock_ro + mtd_dataflash + mtd partitions and repeated unbind/bind.
->  >> I'm on 2.6.28-rc2, but I can reproduce the problem on 2.6.27 as well.
->
->  Rafael> Is it reproducible with 2.6.26 too?
->
-> Sorry, I haven't backported my platform support code to such "old"
-> kernel. I can do it though, if you think it will help pinpoint the
-> issue.
+On Thu, 2008-10-30 at 12:04 -0700, Linus Torvalds wrote:
+> 
+> On Wed, 29 Oct 2008, Greg KH wrote:
+> > 
+> > In working with some of the current out-of-tree drivers, some of them
+> > are asking if they could keep their past development history when
+> > merging the code into the main kernel tree.
+> > 
+> > Now normally we don't do this for new drivers, just dropping them in in
+> > one big patch, or sometimes multiple patches to get it through email
+> > filters.
+> 
+> I'd suggest you talk to Chris Mason about his btrfs import.
+> 
+> I'd _like_ for old history to be merged, but quite frankly, bisectability 
+> is a fairly big deal, and while we often have cases where a _few_ commits 
+> don't build and make bisecting hard, if you import the past development 
+> history badly, you can easily end up with _hundreds_ of commits that 
+> simply don't build as a kernel at all.
 
-This sounds like a possible reason for the problem:
-"After digging into the mtd code, this bug is not related to our driver. It
-should be a subtle bug in mtd core code.
+Is bisection really important for a new driver?  I wouldn't expect
+anyone to have a config that builds a new driver when bisecting prior to
+the point where the driver was merged.  Just to be safe, it would be
+easy enough to have the last commit be the one that adds the driver to
+Kconfig and the higher-level Makefile.
 
-In add_mtd_partition, for 2 partitions, 2 gendisk structures will be
-allocated. But these 2 gendisk->queue will be set to the same
-request_queue. Then when unregistering the 1st partition, from the
-same request_queue->backing_dev_info, the bdi struct will be set to
-NULL. So for the 2nd partition (bdi == NULL), the sysfs dir of 2nd
-partition will not be removed. Finally, when modprobe the module
-again, the 2nd partition won't be added"
-https://blackfin.uclinux.org/gf/tracker/4463
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
 
-Kay
