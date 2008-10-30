@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbYJ3Rnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbYJ3Rom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757931AbYJ3Rnu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 13:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756947AbYJ3RnO
+	id S1757468AbYJ3Rom (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 13:44:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754946AbYJ3Rod
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 13:43:14 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:34110 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754715AbYJ3RnN (ORCPT
+	Thu, 30 Oct 2008 13:44:33 -0400
+Received: from homer.mvista.com ([63.81.120.158]:29337 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754715AbYJ3Roc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 13:43:13 -0400
-To: stern@rowland.harvard.edu
-CC: miklos@szeredi.hu, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org
-In-reply-to: <Pine.LNX.4.44L0.0810301301540.2513-100000@iolanthe.rowland.org>
-	(message from Alan Stern on Thu, 30 Oct 2008 13:07:27 -0400 (EDT))
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
- filesystems.
-References: <Pine.LNX.4.44L0.0810301301540.2513-100000@iolanthe.rowland.org>
-Message-Id: <E1KvbXx-0002dH-4j@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 30 Oct 2008 18:43:01 +0100
+	Thu, 30 Oct 2008 13:44:32 -0400
+Message-ID: <4909F27D.7000701@ct.jp.nec.com>
+Date: Thu, 30 Oct 2008 10:44:29 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip/cpus4096-v2] cpumask: fix cpumask of call_function_data
+References: <49015358.9050308@ct.jp.nec.com> <200810242205.47181.rusty@rustcorp.com.au> <49024220.5000908@ct.jp.nec.com> <200810270940.21617.rusty@rustcorp.com.au>
+In-Reply-To: <200810270940.21617.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Oct 2008, Alan Stern wrote:
-> Okay.  Don't forget things like ioctl for sockets -- they often involve 
-> doing I/O directly to the network interface device.
+Rusty Russell wrote:
+...
+> From: Rusty Russell <rusty@rustcorp.com.au>
+> cpumask: smp_call_function_many()
+> 
+> Actually change smp_call_function_mask() to smp_call_function_many().
+> 
+> S390 has its own version, so we do trivial conversion on that too.
+> 
+> We have to do some dancing to figure out if 0 or 1 other cpus are in
+> the mask supplied and the online mask without allocating a tmp
+> cpumask.  It's still fairly cheap.
+> 
+> We allocate the cpumask at the end of the call_function_data
+> structure: if allocation fails we fallback to smp_call_function_single
+> rather than using the baroque quiescing code.
+> 
+> (Thanks to Hiroshi Shimamoto for spotting several bugs in previous versions!)
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> Signed-off-by: Mike Travis <travis@sgi.com>
+> Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> Cc: schwidefsky@de.ibm.com
+> Cc: heiko.carstens@de.ibm.com
 
-Yeah, ioctls should probably just always be protected (at least
-initially), regardless of what type of file they are done on.
+Hi Rusty,
 
-> What happens to a task accessing a non-regular file on a fuse 
-> filesystem?  :-)
+I'd like to know which tree this patch is against for.
 
-The same as on any other filesystem, i.e. the fs is only involved as
-far as calling init_special_inode(), the rest is taken care of by the
-VFS.
-
-Tejun Heo recently posted patches to fuse which enable emulating a
-char device from userspace.  That is another matter, obviously we'd
-want to keep the "allow suspend during I/O" property of fuse in that
-case, even though there's a char device involved (but no hardware, at
-least not on that level).
-
-Miklos
+thanks,
+Hiroshi Shimamoto
