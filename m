@@ -1,83 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757278AbYJ3U7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbYJ3VBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757278AbYJ3U7t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 16:59:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYJ3U7j
+	id S1757019AbYJ3VBR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 17:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbYJ3VBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 16:59:39 -0400
-Received: from byss.tchmachines.com ([208.76.80.75]:51073 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752811AbYJ3U7i (ORCPT
+	Thu, 30 Oct 2008 17:01:04 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:56440 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752687AbYJ3VBD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 16:59:38 -0400
-Date: Thu, 30 Oct 2008 13:59:21 -0700
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org,
-       tim@scalemp.com, shai@scalex86.org,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch] x86: Fix /dev/mem mmap breakage when PAT is disabled
-Message-ID: <20081030205921.GA6583@localdomain>
-References: <20081030020203.GA12423@localdomain> <20081030182902.GF14102@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081030182902.GF14102@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+	Thu, 30 Oct 2008 17:01:03 -0400
+Subject: [PATCH] fix compile breakage caused by
+	dc1e35c6e95e8923cf1d3510438b63c600fee1e2
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 30 Oct 2008 16:00:59 -0500
+Message-Id: <1225400459.19324.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 07:29:02PM +0100, Ingo Molnar wrote:
->
->I guess it might be cleaner to push this check into the 
->range_is_allowed() function?
->
+>From 101b41be2124c11a5c43c6e5428ce42683a59b1a Mon Sep 17 00:00:00 2001
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Date: Wed, 29 Oct 2008 10:54:47 -0500
+Subject: [VOYAGER] x86: add ability to test for boot CPU
 
-OK.  Here it is.
+Given commits like this:
 
+Author: Suresh Siddha <suresh.b.siddha@intel.com>
+Date:   Tue Jul 29 10:29:19 2008 -0700
 
-Fix mmap to /dev/mem when CONFIG_X86_PAT is off and CONFIG_STRICT_DEVMEM is
-off
+    x86, xsave: enable xsave/xrstor on cpus with xsave support
 
-mmap to /dev/mem on kernel memory has been failing since the
-introduction of PAT (CONFIG_STRICT_DEVMEM=n case).   Seems like
-the check to avoid cache aliasing with PAT is kicking in even
-when PAT is disabled. The bug seems to have crept in 2.6.26.
+Which deliberately expose boot cpu dependence to pieces of the system,
+I think it's time to explicitly have a variable for it to prevent this
+continual misassumption that the boot CPU is zero.
 
-This patch makes sure that the mmap to regular
-kernel memory succeeds if CONFIG_STRICT_DEVMEM=n and
-PAT is disabled, and the checks to avoid cache aliasing
-still happens if PAT is enabled.
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ arch/x86/Kconfig             |    4 ++++
+ arch/x86/include/asm/smp.h   |    6 ++++++
+ arch/x86/kernel/cpu/common.c |    2 +-
+ 3 files changed, 11 insertions(+), 1 deletions(-)
 
-Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
-Tested-by: Tim Sirianni <tim@scalemp.com>
-
-Index: git.tip/arch/x86/mm/pat.c
-===================================================================
---- git.tip.orig/arch/x86/mm/pat.c	2008-10-29 13:19:51.000000000 -0800
-+++ git.tip/arch/x86/mm/pat.c	2008-10-30 10:44:46.000000000 -0800
-@@ -481,12 +481,16 @@
- 	return 1;
- }
- #else
-+/* This check is needed to avoid cache aliasing when PAT is enabled */
- static inline int range_is_allowed(unsigned long pfn, unsigned long size)
- {
- 	u64 from = ((u64)pfn) << PAGE_SHIFT;
- 	u64 to = from + size;
- 	u64 cursor = from;
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 350bee1..4e529cc 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -235,6 +235,10 @@ config X86_FIND_SMP_CONFIG
+ 	def_bool y
+ 	depends on X86_MPPARSE || X86_VOYAGER
  
-+	if (!pat_enabled)
-+		return 1;
++config X86_HAS_BOOT_CPU_ID
++	def_bool y
++	depends on X86_VOYAGER
 +
- 	while (cursor < to) {
- 		if (!devmem_is_allowed(pfn)) {
- 			printk(KERN_INFO
+ if ACPI
+ config X86_MPPARSE
+ 	def_bool y
+diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
+index 2766021..d12811c 100644
+--- a/arch/x86/include/asm/smp.h
++++ b/arch/x86/include/asm/smp.h
+@@ -225,5 +225,11 @@ static inline int hard_smp_processor_id(void)
+ 
+ #endif /* CONFIG_X86_LOCAL_APIC */
+ 
++#ifdef CONFIG_X86_HAS_BOOT_CPU_ID
++extern unsigned char boot_cpu_id;
++#else
++#define boot_cpu_id	0
++#endif
++
+ #endif /* __ASSEMBLY__ */
+ #endif /* _ASM_X86_SMP_H */
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index 25581dc..93e9393 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -1134,7 +1134,7 @@ void __cpuinit cpu_init(void)
+ 	/*
+ 	 * Boot processor to setup the FP and extended state context info.
+ 	 */
+-	if (!smp_processor_id())
++	if (smp_processor_id() == boot_cpu_id)
+ 		init_thread_xstate();
+ 
+ 	xsave_init();
+-- 
+1.5.6.5
+
+
+
