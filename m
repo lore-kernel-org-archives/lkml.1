@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbYJ3CSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbYJ3C01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753838AbYJ3CSX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 22:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYJ3CSO
+	id S1753843AbYJ3C01 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 22:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbYJ3C0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 22:18:14 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:54110 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751773AbYJ3CSN (ORCPT
+	Wed, 29 Oct 2008 22:26:18 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:38165 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751896AbYJ3C0R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 22:18:13 -0400
-To: linux-kernel@vger.kernel.org
-Subject: [REGRESSION 2.6.28-rc2-git3] lots of extra timer interrupts costing 2W
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1KvN6w-0002QE-E3@closure.thunk.org>
-Date: Wed, 29 Oct 2008 22:18:10 -0400
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Wed, 29 Oct 2008 22:26:17 -0400
+Date: Wed, 29 Oct 2008 19:21:24 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+X-X-Sender: xyzzy@t2.domain.actdsltmp
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Richard Purdie <rpurdie@rpsys.net>,
+       Sean MacLennan <smaclennan@pikatech.com>,
+       Wolfram Sang <w.sang@pengutronix.de>,
+       Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/4] of_gpio: Return GPIO flags from of_get_gpio()A
+In-Reply-To: <20081028143933.GA18453@oksana.dev.rtsoft.ru>
+Message-ID: <Pine.LNX.4.64.0810291857110.25957@t2.domain.actdsltmp>
+References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
+ <1224889741-4167-1-git-send-email-tpiepho@freescale.com>
+ <20081028143933.GA18453@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've noticed that sometime between 2.6.27-git7 and 2.6.28-rc2-git3,
-powertop is reporting a huge number of excess timer interrupts on my
-x61s laptop:
+On Tue, 28 Oct 2008, Anton Vorontsov wrote:
+> On Fri, Oct 24, 2008 at 04:08:58PM -0700, Trent Piepho wrote:
+>> + * @flags:	if non-NUll flags are returned here
+>
+> NULL, not NUll.
 
-Wakeups-from-idle per second : 617.8    interval: 3.1s
-no ACPI power usage estimate available
+Thanks, fixed.
 
-Top causes for wakeups:
-  71.3% (543.7)       <interrupt> : extra timer interrupt 
-  13.5% (103.0)     <kernel core> : hrtimer_start_expires (tick_sched_timer) 
-   7.2% ( 55.0)      <kernel IPI> : Rescheduling interrupts 
-   1.7% ( 13.0)    gnome-terminal : hrtimer_start_expires (hrtimer_wakeup) 
-   1.4% ( 10.3)       <interrupt> : PS/2 keyboard/mouse/touchpad 
-   1.1% (  8.3)       <interrupt> : ahci
-   0.4% (  3.3)   multiload-apple : hrtimer_start_expires (hrtimer_wakeup)
-   0.3% (  2.7)              Xorg : hrtimer_start (it_real_fn)
+>> +			 const void *gpio_spec, unsigned int *flags)
+>
+> Why you made it unsigned int? In my original patch, I used
+> named enum, which is self-documenting type.
 
+I started writing this patch before you posted yours, and I didn't think of
+the enum.  But you have a good point so I'll switch to an enum.
 
-This is costing me an extra 2 Watts or so.   Does this ring a bell with
-anyone, before I start trying to bisect this problem?
+>> + * Flags as returned by OF GPIO chip's xlate function.
+>> + * These do not need to be the same as the flags in the GPIO specifier in the
+>> + * OF device tree, but it's convenient if they are.  The mm chip OF GPIO
+>> + * driver works this way.
+>
+> This is not of_mm_gpio_chip specific.
 
-						- Ted
+of_mm_gpio_chip was just an example of a driver that uses the same flag format
+for Linux and the OF binding.  I'll clarify the comment.
+
+WRT changing the interface, Linux doesn't provide a stable kernel API. 
+Functions that have been around far longer than of_get_gpio() and have far
+more users have changed.  Yes, it is slightly annoying now.  But providing
+backward compatibility for every single interface change will produce a
+bloated and redundant API that will be around forever.
+
+> Can you repost a fixed version with my Ack and Cc: Andrew Morton,
+> Benjamin Herrenschmidt?
+>
+> I think this change should go into the 2.6.28, so that we can
+> write new code on top of new API. Otherwise this change will cause
+> issues in the next merge window.
+
+If you can get your patch into Ben's -next tree before the high .28-RCs come
+out, I can just rebase my patch to that tree and make the changes to any new
+callers of of_get_gpio() that are there.
