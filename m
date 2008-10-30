@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759498AbYJ3Vyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759099AbYJ3VzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759498AbYJ3Vyh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 17:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbYJ3Vy3
+	id S1759099AbYJ3VzT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 17:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYJ3VzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 17:54:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56283 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752960AbYJ3Vy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 17:54:28 -0400
-Date: Thu, 30 Oct 2008 22:54:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <Jens.Axboe@oracle.com>
-Subject: Re: [PATCH] fix smp generic helper voyager breakage
-Message-ID: <20081030215421.GG30303@elte.hu>
-References: <1225400980.19324.24.camel@localhost.localdomain>
+	Thu, 30 Oct 2008 17:55:04 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:54219 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753021AbYJ3VzD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 17:55:03 -0400
+Date: Thu, 30 Oct 2008 14:54:56 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, tim@scalemp.com, shai@scalex86.org
+Subject: Re: [patch] x86: Fix /dev/mem mmap breakage when PAT is disabled
+Message-ID: <20081030215455.GC6583@localdomain>
+References: <20081030020203.GA12423@localdomain> <20081030132103.2daff1e1@infradead.org> <20081030212121.GB6583@localdomain> <20081030142949.75df90cc@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1225400980.19324.24.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+In-Reply-To: <20081030142949.75df90cc@infradead.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Oct 30, 2008 at 02:29:49PM -0700, Arjan van de Ven wrote:
+>On Thu, 30 Oct 2008 14:21:21 -0700
+>Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+>
+>> On Thu, Oct 30, 2008 at 01:21:03PM -0700, Arjan van de Ven wrote:
+>> >On Wed, 29 Oct 2008 19:02:03 -0700
+>> >Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+>> >
+>> >well... technically the aliases are bad without PAT as well...
+>> >
+>> 
+>> Hmm! Well, you mean if mtrr is used to change attributes?
+>
+>you can also set uncached in the pagetables, like via ioremap_uncached
+>and other ways.
+>
+>and /dev/mem may or may not imply cached/uncached, depending on the
+>open flags.
+>
+>On memory... what would that mean?
+>
 
-* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+Well, I am not denying that an incorrectly written userspace program could cause
+cache aliasing/crash the system  I am not arguing for or against this
+argument at all.
 
-> +++ b/arch/x86/Kconfig
-> @@ -167,9 +167,11 @@ config GENERIC_PENDING_IRQ
->  config X86_SMP
->  	bool
->  	depends on SMP && ((X86_32 && !X86_VOYAGER) || X86_64)
-> -	select USE_GENERIC_SMP_HELPERS
->  	default y
->  
-> +config USE_GENERIC_SMP_HELPERS
-> +	def_bool y
-> +
-
-uhm, that's a bogus change - USE_GENERIC_SMP_HELPERS must not be set 
-on UP. This will break all UP compilations, on all x86 UP boxes:
-
-kernel/softirq.c: In function '__try_remote_softirq':
-kernel/softirq.c:522: error: implicit declaration of function '__smp_call_function_single'
-
-so i've removed your patch for now.
-
-	Ingo
+However, there is what seems like an unintended change in behavior from
+2.6.25 to 2.6.26 when CONFIG_STRICT_DEVMEM is disabled and PAT is disabled,
+which is a bug, and this patch fixes it that's all. If this was intentional,
+then I don't see the reason for having CONFIG_STRICT_DEVMEM!!
