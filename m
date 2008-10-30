@@ -1,581 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757151AbYJ3X1C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758653AbYJ3X2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757151AbYJ3X1C (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 19:27:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYJ3X0x
+	id S1758653AbYJ3X2U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 19:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbYJ3X2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 19:26:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48997 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753402AbYJ3X0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 19:26:52 -0400
-Date: Fri, 31 Oct 2008 00:26:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] tracepoint: introduce *_noupdate APIs.
-Message-ID: <20081030232638.GA12778@elte.hu>
-References: <49067E49.4040304@cn.fujitsu.com> <20081030053457.GB27381@Krystal> <20081030053949.GC27381@Krystal> <20081030231419.GA1985@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081030231419.GA1985@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Thu, 30 Oct 2008 19:28:08 -0400
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:41066 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754739AbYJ3X2H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 19:28:07 -0400
+X-YMail-OSG: cmQMHQsVM1l.Sny1thQUY_QfWUv8HzkwTB_XxgWalS1O7pCYoOLXA8bX8.fGPTPjPBXXjQ4_EWvq9bWtEayw8vmzN1LgoqHFIOeNzHt3pbpFZfJgQ63Fe1B2CgRncc1_lVgAFCfOZwlqPLa9.S9InBt4JBr87ebBPWDYzQQSl9seYqa7Ef8Z9sLmjYM-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH] [Target_Core_Mod/ConfigFS]: Updates for target_core_cit
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 30 Oct 2008 16:28:01 -0700
+Message-Id: <1225409281.4387.256.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From 1bfa0c16284c97121229e82d2be1838873b1178e Mon Sep 17 00:00:00 2001
+From: Nicholas Bellinger <nab@linux-iscsi.org>
+Date: Thu, 30 Oct 2008 16:10:49 -0700
+Subject: [PATCH] [Target_Core_Mod/ConfigFS]: Updates for target_core_cit
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Remove last remaining IOCTL bits from /sys/kernel/config/target/core/$PLUGIN_HBA
+in target_core_ops->make_group() and target_core_ops->drop_item().
 
-> (Note, i had to resolve conflicts, hopefully i got the end result 
-> right. Please double-check tip/master.)
+Also, updated some ERR_PTR() return values in target_core_call_freedev(),
+and removed incorrect FIXME: from early devel days before it was understood
+that ConfigFS protects se_hba_t->hba_id, but we still want to block when
+when access se_hba_t across different $STORAGE_OBJECTS.
 
-hm, it didnt work out. Below are the merged up commits against 
-tip/master, but they cause this build failure:
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+---
+ drivers/lio-core/target_core_configfs.c |   71 ++++--------------------------
+ 1 files changed, 10 insertions(+), 61 deletions(-)
 
- kernel/tracepoint.c: In function ‘tracepoint_probe_unregister’:
- kernel/tracepoint.c:380: error: label ‘end’ used but not defined
-
-could you please resend against tip/master:
-
-  http://people.redhat.com/mingo/tip.git/README
-
-Thanks,
-
-	Ingo
-
--------------->
-commit 57bc8ea87d534303374932191273bdd3f3c37d09
-Author: Lai Jiangshan <laijs@cn.fujitsu.com>
-Date:   Tue Oct 28 10:51:53 2008 +0800
-
-    tracepoint: introduce *_noupdate APIs.
-    
-    Impact: add new tracepoint APIs to allow the batched registration of probes
-    
-    new APIs separate tracepoint_probe_register(),
-    tracepoint_probe_unregister() into 2 steps. The first step of them
-    is just update tracepoint_entry, not connect or disconnect.
-    
-    this patch introduces tracepoint_probe_update_all() for update all.
-    
-    these APIs are very useful for registering lots of probes
-    but just updating once. Another very important thing is that
-    *_noupdate APIs do not require module_mutex.
-    
-    Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-    Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-index c5bb39c..63064e9 100644
---- a/include/linux/tracepoint.h
-+++ b/include/linux/tracepoint.h
-@@ -112,6 +112,10 @@ extern int tracepoint_probe_register(const char *name, void *probe);
-  */
- extern int tracepoint_probe_unregister(const char *name, void *probe);
+diff --git a/drivers/lio-core/target_core_configfs.c b/drivers/lio-core/target_core_configfs.c
+index a5792e3..77950c1 100644
+--- a/drivers/lio-core/target_core_configfs.c
++++ b/drivers/lio-core/target_core_configfs.c
+@@ -41,8 +41,6 @@
+ #include <iscsi_target_core.h>
+ #include <target_core_base.h>
+ #include <iscsi_target_error.h>
+-#include <iscsi_target_ioctl.h>
+-#include <iscsi_target_ioctl_defs.h>
+ #include <target_core_device.h>
+ #include <iscsi_target_device.h>
+ #include <target_core_hba.h>
+@@ -831,7 +829,6 @@ static struct config_item_type target_core_dev_cit = {
  
-+extern int tracepoint_probe_register_noupdate(const char *name, void *probe);
-+extern int tracepoint_probe_unregister_noupdate(const char *name, void *probe);
-+extern void tracepoint_probe_update_all(void);
-+
- struct tracepoint_iter {
- 	struct module *module;
- 	struct tracepoint *tracepoint;
-diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-index 4159c2a..c39bdbc 100644
---- a/kernel/tracepoint.c
-+++ b/kernel/tracepoint.c
-@@ -59,7 +59,10 @@ struct tracepoint_entry {
- };
+ // Start functions for struct config_item_type target_core_hba_cit
  
- struct tp_probes {
--	struct rcu_head rcu;
-+	union {
-+		struct rcu_head rcu;
-+		struct list_head list;
-+	} u;
- 	void *probes[0];
- };
- 
-@@ -72,7 +75,7 @@ static inline void *allocate_probes(int count)
- 
- static void rcu_free_old_probes(struct rcu_head *head)
- {
--	kfree(container_of(head, struct tp_probes, rcu));
-+	kfree(container_of(head, struct tp_probes, u.rcu));
+-#warning Fix unprotected reference to hba_p
+ static struct config_group *target_core_call_createdev (
+ 	struct config_group *group,
+ 	const char *name)
+@@ -907,7 +904,6 @@ out:
+ 	return(NULL);
  }
  
- static inline void release_probes(void *old)
-@@ -80,7 +83,7 @@ static inline void release_probes(void *old)
- 	if (old) {
- 		struct tp_probes *tp_probes = container_of(old,
- 			struct tp_probes, probes[0]);
--		call_rcu(&tp_probes->rcu, rcu_free_old_probes);
-+		call_rcu_sched(&tp_probes->u.rcu, rcu_free_old_probes);
+-#warning Fix unprotected reference to hba_p
+ static void target_core_call_freedev (
+ 	struct config_group *group,
+ 	struct config_item *item)
+@@ -1009,9 +1005,7 @@ static struct config_group *target_core_call_addhbatotarget (
+ {
+ 	char *se_plugin_str, *str, *str2, *endptr;
+ 	se_hba_t *hba;
+-	se_hbainfo_t hba_info;
+ 	se_plugin_t *se_plugin;
+-	struct iscsi_target *tg;
+ 	char buf[TARGET_CORE_NAME_MAX_LEN];
+ 	u32 plugin_dep_id;
+ 	int hba_type = 0, ret;
+@@ -1021,13 +1015,13 @@ static struct config_group *target_core_call_addhbatotarget (
+ 		printk(KERN_ERR "Passed *name strlen(): %d exceeds"
+ 			" TARGET_CORE_NAME_MAX_LEN: %d\n", (int)strlen(name),
+ 			TARGET_CORE_NAME_MAX_LEN);
+-		return(NULL);
++		return(ERR_PTR(-ENAMETOOLONG));
  	}
- }
+ 	snprintf(buf, TARGET_CORE_NAME_MAX_LEN, "%s", name);
  
-@@ -299,6 +302,23 @@ static void tracepoint_update_probes(void)
- 	module_update_tracepoints();
- }
+ 	if (!(str = strstr(buf, "_"))) {
+ 		printk(KERN_ERR "Unable to locate \"_\" for $SUBSYSTEM_PLUGIN_$HOST_ID\n");
+-		return(NULL);
++		return(ERR_PTR(-EINVAL));
+ 	}
+ 	se_plugin_str = buf;
  
-+static void *tracepoint_add_probe(const char *name, void *probe)
-+{
-+	struct tracepoint_entry *entry;
-+	void *old;
-+
-+	entry = get_tracepoint(name);
-+	if (!entry) {
-+		entry = add_tracepoint(name);
-+		if (IS_ERR(entry))
-+			return entry;
-+	}
-+	old = tracepoint_entry_add_probe(entry, probe);
-+	if (IS_ERR(old) && !entry->refcount)
-+		remove_tracepoint(entry);
-+	return old;
-+}
-+
- /**
-  * tracepoint_probe_register -  Connect a probe to a tracepoint
-  * @name: tracepoint name
-@@ -309,36 +329,36 @@ static void tracepoint_update_probes(void)
-  */
- int tracepoint_probe_register(const char *name, void *probe)
- {
--	struct tracepoint_entry *entry;
--	int ret = 0;
- 	void *old;
+@@ -1044,7 +1038,7 @@ static struct config_group *target_core_call_addhbatotarget (
+ 	}
  
- 	mutex_lock(&tracepoints_mutex);
--	entry = get_tracepoint(name);
--	if (!entry) {
--		entry = add_tracepoint(name);
--		if (IS_ERR(entry)) {
--			ret = PTR_ERR(entry);
--			goto end;
--		}
+ 	if (!(se_plugin = transport_core_get_plugin_by_name(se_plugin_str)))
+-		return(NULL);
++		return(ERR_PTR(-EINVAL));
+ 
+ 	hba_type = se_plugin->plugin_type;
+ 	plugin_dep_id = simple_strtoul(str, &endptr, 0);
+@@ -1053,70 +1047,30 @@ static struct config_group *target_core_call_addhbatotarget (
+ 		se_plugin->plugin_name, hba_type, plugin_dep_id);
+ 
+ 	if (!(hba = core_get_next_free_hba()))
+-		return(NULL);
+-	
+-	if (!(tg = kzalloc(sizeof(struct iscsi_target), GFP_KERNEL)))
+-		return(ERR_PTR(-ENOMEM));
++		return(ERR_PTR(-EINVAL));
+ 	
+-#warning This should go into se_subsystem_api_t API
+-	switch (hba_type) {
+-	case PSCSI:
+-		tg->scsi_host_id = plugin_dep_id;
+-		tg->hba_params_set |= PARAM_HBA_SCSI_HOST_ID;	
+-		break;
+-	case IBLOCK:
+-		tg->iblock_host_id = plugin_dep_id;
+-		tg->hba_params_set |= PARAM_HBA_IBLOCK_HOST_ID;
+-		break;
+-	case FILEIO:
+-		tg->fd_host_id = plugin_dep_id;
+-		tg->hba_params_set |= PARAM_HBA_FD_HOST_ID;
+-		break;
+-	case RAMDISK_DR:
+-	case RAMDISK_MCP:
+-		tg->rd_host_id = plugin_dep_id;
+-		tg->hba_params_set |= PARAM_HBA_RD_HOST_ID;
+-		break;
+-	default:
+-		printk(KERN_ERR "Unable to setup hba_type: %d name: %s\n",
+-			hba_type, se_plugin_str);
+-		goto out;
 -	}
--	old = tracepoint_entry_add_probe(entry, probe);
--	if (IS_ERR(old)) {
--		if (!entry->refcount)
--			remove_tracepoint(entry);
--		ret = PTR_ERR(old);
--		goto end;
--	}
-+	old = tracepoint_add_probe(name, probe);
- 	mutex_unlock(&tracepoints_mutex);
-+	if (IS_ERR(old))
-+		return PTR_ERR(old);
-+
- 	tracepoint_update_probes();		/* may update entry */
- 	release_probes(old);
- 	return 0;
--end:
--	mutex_unlock(&tracepoints_mutex);
--	return ret;
- }
- EXPORT_SYMBOL_GPL(tracepoint_probe_register);
- 
-+static void *tracepoint_remove_probe(const char *name, void *probe)
-+{
-+	struct tracepoint_entry *entry;
-+	void *old;
-+
-+	entry = get_tracepoint(name);
-+	if (!entry)
-+		return ERR_PTR(-ENOENT);
-+	old = tracepoint_entry_remove_probe(entry, probe);
-+	if (IS_ERR(old))
-+		return old;
-+	if (!entry->refcount)
-+		remove_tracepoint(entry);
-+	return old;
-+}
-+
- /**
-  * tracepoint_probe_unregister -  Disconnect a probe from a tracepoint
-  * @name: tracepoint name
-@@ -351,36 +371,110 @@ EXPORT_SYMBOL_GPL(tracepoint_probe_register);
-  */
- int tracepoint_probe_unregister(const char *name, void *probe)
- {
--	struct tracepoint_entry *entry;
- 	void *old;
--	int ret = -ENOENT;
- 
- 	mutex_lock(&tracepoints_mutex);
--	entry = get_tracepoint(name);
--	if (!entry)
--		goto end;
--	old = tracepoint_entry_remove_probe(entry, probe);
- 	if (!old) {
- 		printk(KERN_WARNING "Warning: Trying to unregister a probe"
- 				    "that doesn't exist\n");
- 		goto end;
- 	}
--	if (IS_ERR(old)) {
--		ret = PTR_ERR(old);
--		goto end;
--	}
--	if (!entry->refcount)
--		remove_tracepoint(entry);
-+	old = tracepoint_remove_probe(name, probe);
- 	mutex_unlock(&tracepoints_mutex);
-+	if (IS_ERR(old))
-+		return PTR_ERR(old);
-+
- 	tracepoint_update_probes();		/* may update entry */
- 	release_probes(old);
- 	return 0;
--end:
--	mutex_unlock(&tracepoints_mutex);
--	return ret;
- }
- EXPORT_SYMBOL_GPL(tracepoint_probe_unregister);
- 
-+static LIST_HEAD(old_probes);
-+static int need_update;
-+
-+static void tracepoint_add_old_probes(void *old)
-+{
-+	need_update = 1;
-+	if (old) {
-+		struct tp_probes *tp_probes = container_of(old,
-+			struct tp_probes, probes[0]);
-+		list_add(&tp_probes->u.list, &old_probes);
-+	}
-+}
-+
-+/**
-+ * tracepoint_probe_register_noupdate -  register a probe but not connect
-+ * @name: tracepoint name
-+ * @probe: probe handler
-+ *
-+ * caller must call tracepoint_probe_update_all()
-+ */
-+int tracepoint_probe_register_noupdate(const char *name, void *probe)
-+{
-+	void *old;
-+
-+	mutex_lock(&tracepoints_mutex);
-+	old = tracepoint_add_probe(name, probe);
-+	if (IS_ERR(old)) {
-+		mutex_unlock(&tracepoints_mutex);
-+		return PTR_ERR(old);
-+	}
-+	tracepoint_add_old_probes(old);
-+	mutex_unlock(&tracepoints_mutex);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(tracepoint_probe_register_noupdate);
-+
-+/**
-+ * tracepoint_probe_unregister_noupdate -  remove a probe but not disconnect
-+ * @name: tracepoint name
-+ * @probe: probe function pointer
-+ *
-+ * caller must call tracepoint_probe_update_all()
-+ */
-+int tracepoint_probe_unregister_noupdate(const char *name, void *probe)
-+{
-+	void *old;
-+
-+	mutex_lock(&tracepoints_mutex);
-+	old = tracepoint_remove_probe(name, probe);
-+	if (IS_ERR(old)) {
-+		mutex_unlock(&tracepoints_mutex);
-+		return PTR_ERR(old);
-+	}
-+	tracepoint_add_old_probes(old);
-+	mutex_unlock(&tracepoints_mutex);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(tracepoint_probe_unregister_noupdate);
-+
-+/**
-+ * tracepoint_probe_update_all -  update tracepoints
-+ */
-+void tracepoint_probe_update_all(void)
-+{
-+	LIST_HEAD(release_probes);
-+	struct tp_probes *pos, *next;
-+
-+	mutex_lock(&tracepoints_mutex);
-+	if (!need_update) {
-+		mutex_unlock(&tracepoints_mutex);
-+		return;
-+	}
-+	if (!list_empty(&old_probes))
-+		list_replace_init(&old_probes, &release_probes);
-+	need_update = 0;
-+	mutex_unlock(&tracepoints_mutex);
-+
-+	tracepoint_update_probes();
-+	list_for_each_entry_safe(pos, next, &release_probes, u.list) {
-+		list_del(&pos->u.list);
-+		call_rcu_sched(&pos->u.rcu, rcu_free_old_probes);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(tracepoint_probe_update_all);
-+
- /**
-  * tracepoint_get_iter_range - Get a next tracepoint iterator given a range.
-  * @tracepoint: current tracepoints (in), next tracepoint (out)
-
-commit bbec237d365b96ed6f5f372f1b090af374609059
-Author: Lai Jiangshan <laijs@cn.fujitsu.com>
-Date:   Tue Oct 28 10:51:49 2008 +0800
-
-    tracepoint: simplification for tracepoints using RCU
-    
-    Impact: simplify implementation
-    
-    Now, unused memory is handled by struct tp_probes.
-    
-    old code use these three field to handle unused memory.
-    struct tracepoint_entry {
-    	...
-    	struct rcu_head rcu;
-    	void *oldptr;
-    	unsigned char rcu_pending:1;
-    	...
-    };
-    
-    in this way, unused memory is handled by struct tracepoint_entry.
-    it bring reenter bug(it was fixed) and tracepoint.c is filled
-    full of ".*rcu.*" code statements. this patch removes all these.
-    
-    and:
-      rcu_barrier_sched() is removed.
-      Do not need regain tracepoints_mutex after tracepoint_update_probes()
-      several little cleanup.
-    
-    Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-    Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-index af8c856..4159c2a 100644
---- a/kernel/tracepoint.c
-+++ b/kernel/tracepoint.c
-@@ -43,6 +43,7 @@ static DEFINE_MUTEX(tracepoints_mutex);
-  */
- #define TRACEPOINT_HASH_BITS 6
- #define TRACEPOINT_TABLE_SIZE (1 << TRACEPOINT_HASH_BITS)
-+static struct hlist_head tracepoint_table[TRACEPOINT_TABLE_SIZE];
- 
- /*
-  * Note about RCU :
-@@ -54,40 +55,40 @@ struct tracepoint_entry {
- 	struct hlist_node hlist;
- 	void **funcs;
- 	int refcount;	/* Number of times armed. 0 if disarmed. */
--	struct rcu_head rcu;
--	void *oldptr;
--	unsigned char rcu_pending:1;
- 	char name[0];
- };
- 
--static struct hlist_head tracepoint_table[TRACEPOINT_TABLE_SIZE];
-+struct tp_probes {
-+	struct rcu_head rcu;
-+	void *probes[0];
-+};
- 
--static void free_old_closure(struct rcu_head *head)
-+static inline void *allocate_probes(int count)
- {
--	struct tracepoint_entry *entry = container_of(head,
--		struct tracepoint_entry, rcu);
--	kfree(entry->oldptr);
--	/* Make sure we free the data before setting the pending flag to 0 */
--	smp_wmb();
--	entry->rcu_pending = 0;
-+	struct tp_probes *p  = kmalloc(count * sizeof(void *)
-+			+ sizeof(struct tp_probes), GFP_KERNEL);
-+	return p == NULL ? NULL : p->probes;
- }
- 
--static void tracepoint_entry_free_old(struct tracepoint_entry *entry, void *old)
-+static void rcu_free_old_probes(struct rcu_head *head)
- {
--	if (!old)
--		return;
--	entry->oldptr = old;
--	entry->rcu_pending = 1;
--	/* write rcu_pending before calling the RCU callback */
--	smp_wmb();
--	call_rcu_sched(&entry->rcu, free_old_closure);
-+	kfree(container_of(head, struct tp_probes, rcu));
-+}
-+
-+static inline void release_probes(void *old)
-+{
-+	if (old) {
-+		struct tp_probes *tp_probes = container_of(old,
-+			struct tp_probes, probes[0]);
-+		call_rcu(&tp_probes->rcu, rcu_free_old_probes);
-+	}
- }
- 
- static void debug_print_probes(struct tracepoint_entry *entry)
- {
- 	int i;
- 
--	if (!tracepoint_debug)
-+	if (!tracepoint_debug || !entry->funcs)
- 		return;
- 
- 	for (i = 0; entry->funcs[i]; i++)
-@@ -111,12 +112,13 @@ tracepoint_entry_add_probe(struct tracepoint_entry *entry, void *probe)
- 				return ERR_PTR(-EEXIST);
- 	}
- 	/* + 2 : one for new probe, one for NULL func */
--	new = kzalloc((nr_probes + 2) * sizeof(void *), GFP_KERNEL);
-+	new = allocate_probes(nr_probes + 2);
- 	if (new == NULL)
- 		return ERR_PTR(-ENOMEM);
- 	if (old)
- 		memcpy(new, old, nr_probes * sizeof(void *));
- 	new[nr_probes] = probe;
-+	new[nr_probes + 1] = NULL;
- 	entry->refcount = nr_probes + 1;
- 	entry->funcs = new;
- 	debug_print_probes(entry);
-@@ -151,13 +153,13 @@ tracepoint_entry_remove_probe(struct tracepoint_entry *entry, void *probe)
- 		int j = 0;
- 		/* N -> M, (N > 1, M > 0) */
- 		/* + 1 for NULL */
--		new = kzalloc((nr_probes - nr_del + 1)
--			* sizeof(void *), GFP_KERNEL);
-+		new = allocate_probes(nr_probes - nr_del + 1);
- 		if (new == NULL)
- 			return ERR_PTR(-ENOMEM);
- 		for (i = 0; old[i]; i++)
- 			if ((probe && old[i] != probe))
- 				new[j++] = old[i];
-+		new[nr_probes - nr_del] = NULL;
- 		entry->refcount = nr_probes - nr_del;
- 		entry->funcs = new;
- 	}
-@@ -215,7 +217,6 @@ static struct tracepoint_entry *add_tracepoint(const char *name)
- 	memcpy(&e->name[0], name, name_len);
- 	e->funcs = NULL;
- 	e->refcount = 0;
--	e->rcu_pending = 0;
- 	hlist_add_head(&e->hlist, head);
- 	return e;
- }
-@@ -224,32 +225,10 @@ static struct tracepoint_entry *add_tracepoint(const char *name)
-  * Remove the tracepoint from the tracepoint hash table. Must be called with
-  * mutex_lock held.
-  */
--static int remove_tracepoint(const char *name)
-+static inline void remove_tracepoint(struct tracepoint_entry *e)
- {
--	struct hlist_head *head;
--	struct hlist_node *node;
--	struct tracepoint_entry *e;
--	int found = 0;
--	size_t len = strlen(name) + 1;
--	u32 hash = jhash(name, len-1, 0);
+-	tg->hba_type = hba_type;
+-	tg->params_set |= PARAM_HBA_TYPE;
+-	tg->hba_id = hba->hba_id;
+-	tg->params_set |= PARAM_HBA_ID;
 -
--	head = &tracepoint_table[hash & (TRACEPOINT_TABLE_SIZE - 1)];
--	hlist_for_each_entry(e, node, head, hlist) {
--		if (!strcmp(name, e->name)) {
--			found = 1;
--			break;
--		}
--	}
--	if (!found)
--		return -ENOENT;
--	if (e->refcount)
--		return -EBUSY;
- 	hlist_del(&e->hlist);
--	/* Make sure the call_rcu_sched has been executed */
--	if (e->rcu_pending)
--		rcu_barrier_sched();
- 	kfree(e);
--	return 0;
+-	memset(&hba_info, 0, sizeof(se_hbainfo_t));
+-	hba_info.hba_id = hba->hba_id;
+-	hba_info.hba_type = hba_type;
++	hba->type = hba_type;
+ 
+-	if ((ret = iscsi_hba_check_addhba_params(tg, &hba_info)) < 0)
+-		goto out;
+-
+-	if ((ret = iscsi_hba_add_hba(hba, &hba_info, tg)) < 0)
++	if ((ret = se_core_add_hba(hba, plugin_dep_id)) < 0)
+ 		goto out;
+ 
+ 	config_group_init_type_name(&hba->hba_group, name, &target_core_hba_cit);
+ 
+-	kfree(tg);
+ 	core_put_hba(hba);
+ 	return(&hba->hba_group);
+ out:
+-	kfree(tg);
++	hba->type = 0;
+ 	core_put_hba(hba);
+-	return(NULL);
++	return(ERR_PTR(ret));
  }
  
- /*
-@@ -343,25 +322,17 @@ int tracepoint_probe_register(const char *name, void *probe)
- 			goto end;
- 		}
+ 
+-#warning Fix unprotected reference to hba_p
+ static void target_core_call_delhbafromtarget (
+ 	struct config_group *group,
+ 	struct config_item *item)
+ {
+ 	se_hba_t *hba_p = container_of(to_config_group(item), se_hba_t, hba_group);
+ 	se_hba_t *hba = NULL;
+-	struct iscsi_target *tg;
+ 	int ret;
+ 
+ 	if (!(hba_p)) {
+@@ -1124,18 +1078,13 @@ static void target_core_call_delhbafromtarget (
+ 		return;
  	}
--	/*
--	 * If we detect that a call_rcu_sched is pending for this tracepoint,
--	 * make sure it's executed now.
--	 */
--	if (entry->rcu_pending)
--		rcu_barrier_sched();
- 	old = tracepoint_entry_add_probe(entry, probe);
- 	if (IS_ERR(old)) {
-+		if (!entry->refcount)
-+			remove_tracepoint(entry);
- 		ret = PTR_ERR(old);
- 		goto end;
- 	}
- 	mutex_unlock(&tracepoints_mutex);
- 	tracepoint_update_probes();		/* may update entry */
--	mutex_lock(&tracepoints_mutex);
--	entry = get_tracepoint(name);
--	WARN_ON(!entry);
--	if (entry->rcu_pending)
--		rcu_barrier_sched();
--	tracepoint_entry_free_old(entry, old);
-+	release_probes(old);
-+	return 0;
- end:
- 	mutex_unlock(&tracepoints_mutex);
- 	return ret;
-@@ -388,25 +359,22 @@ int tracepoint_probe_unregister(const char *name, void *probe)
- 	entry = get_tracepoint(name);
- 	if (!entry)
- 		goto end;
--	if (entry->rcu_pending)
--		rcu_barrier_sched();
- 	old = tracepoint_entry_remove_probe(entry, probe);
- 	if (!old) {
- 		printk(KERN_WARNING "Warning: Trying to unregister a probe"
- 				    "that doesn't exist\n");
- 		goto end;
- 	}
-+	if (IS_ERR(old)) {
-+		ret = PTR_ERR(old);
-+		goto end;
-+	}
-+	if (!entry->refcount)
-+		remove_tracepoint(entry);
- 	mutex_unlock(&tracepoints_mutex);
- 	tracepoint_update_probes();		/* may update entry */
--	mutex_lock(&tracepoints_mutex);
--	entry = get_tracepoint(name);
--	if (!entry)
--		goto end;
--	if (entry->rcu_pending)
--		rcu_barrier_sched();
--	tracepoint_entry_free_old(entry, old);
--	remove_tracepoint(name);	/* Ignore busy error message */
--	ret = 0;
-+	release_probes(old);
-+	return 0;
- end:
- 	mutex_unlock(&tracepoints_mutex);
- 	return ret;
+ 
+-	if (!(tg = kzalloc(sizeof(struct iscsi_target), GFP_KERNEL)))
+-		return;
+-
+ 	if (!(hba = core_get_hba_from_id(hba_p->hba_id, 0)))
+-		goto out;
++		return;
+ 	
+ 	config_item_put(item);
+ 
+-	ret = iscsi_hba_del_hba(hba);
++	ret = se_core_del_hba(hba);
+ 	core_put_hba(hba);
+-out:
+-	kfree(tg);
+ 	return;
+ 
+ }
+-- 
+1.5.4.1
+
+
+
