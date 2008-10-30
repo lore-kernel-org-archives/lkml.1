@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbYJ3LuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbYJ3Lyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755161AbYJ3LuV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 07:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbYJ3LuH
+	id S1754697AbYJ3Lyr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 07:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbYJ3Lyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 07:50:07 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:40962 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753421AbYJ3LuF (ORCPT
+	Thu, 30 Oct 2008 07:54:39 -0400
+Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:34202 "EHLO
+	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600AbYJ3Lyi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 07:50:05 -0400
-Date: Thu, 30 Oct 2008 13:47:20 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: James.Bottomley@HansenPartnership.com
-cc: linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 10/10] arcmsr: add missing braces to multistatement if block
-In-Reply-To: <Pine.LNX.4.64.0810301307160.7072@wrl-59.cs.helsinki.fi>
-Message-ID: <Pine.LNX.4.64.0810301345050.7072@wrl-59.cs.helsinki.fi>
-References: <Pine.LNX.4.64.0810301307160.7072@wrl-59.cs.helsinki.fi>
+	Thu, 30 Oct 2008 07:54:38 -0400
+X-Greylist: delayed 448 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Oct 2008 07:54:38 EDT
+Date: Thu, 30 Oct 2008 12:47:08 +0100
+From: Gabor Gombas <gombasg@sztaki.hu>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
+Subject: Re: [PATCH] Really remove unwinder
+Message-ID: <20081030114708.GC12152@boogie.lpds.sztaki.hu>
+References: <20081030112023.GA27476@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="-696208474-1836378461-1225367149=:7072"
-Content-ID: <Pine.LNX.4.64.0810301345550.7072@wrl-59.cs.helsinki.fi>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081030112023.GA27476@x200.localdomain>
+X-Copyright: Forwarding or publishing without permission is prohibited.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi,
 
----696208474-1836378461-1225367149=:7072
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0810301345551.7072@wrl-59.cs.helsinki.fi>
+On Thu, Oct 30, 2008 at 02:20:23PM +0300, Alexey Dobriyan wrote:
 
+> -static inline void unwind_init(void) {}
 
-Funny, there are plenty of the braces in case block where
-one does not need them while in here they seem to be
-forgotten.
+[...]
 
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
----
- drivers/scsi/arcmsr/arcmsr_hba.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+> -	/*
+> -	 * Need to run as early as possible, to initialize the
+> -	 * lockdep hash:
+> -	 */
+> -	unwind_init();
+>  	lockdep_init();
+>  	debug_objects_early_init();
 
-diff --git a/drivers/scsi/arcmsr/arcmsr_hba.c b/drivers/scsi/arcmsr/arcmsr_hba.c
-index f91f79c..b57834b 100644
---- a/drivers/scsi/arcmsr/arcmsr_hba.c
-+++ b/drivers/scsi/arcmsr/arcmsr_hba.c
-@@ -673,10 +673,11 @@ static void arcmsr_report_ccb_state(struct AdapterControlBlock *acb, \
- 	id = ccb->pcmd->device->id;
- 	lun = ccb->pcmd->device->lun;
- 	if (!(flag_ccb & ARCMSR_CCBREPLY_FLAG_ERROR)) {
--		if (acb->devstate[id][lun] == ARECA_RAID_GONE)
-+		if (acb->devstate[id][lun] == ARECA_RAID_GONE) {
- 			acb->devstate[id][lun] = ARECA_RAID_GOOD;
- 			ccb->pcmd->result = DID_OK << 16;
- 			arcmsr_ccb_complete(ccb, 1);
-+		}
- 	} else {
- 		switch (ccb->arcmsr_cdb.DeviceStatus) {
- 		case ARCMSR_DEV_SELECT_TIMEOUT: {
+IMHO the comment does not refer to unwind_init() so it should not be
+removed...
+
+Gabor
+
 -- 
-1.5.2.2
----696208474-1836378461-1225367149=:7072--
+     ---------------------------------------------------------
+     MTA SZTAKI Computer and Automation Research Institute
+                Hungarian Academy of Sciences
+     ---------------------------------------------------------
