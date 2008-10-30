@@ -1,64 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbYJ3SCB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758368AbYJ3SC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758197AbYJ3SCB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 14:02:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbYJ3SBj
+	id S1758368AbYJ3SC3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 14:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbYJ3SCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 14:01:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42831 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755482AbYJ3SBi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 14:01:38 -0400
-Date: Thu, 30 Oct 2008 14:01:34 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: "Steve French" <smfrench@gmail.com>
-Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/4] cifs: fix oopses and mem corruption with concurrent
- mount/umount (try #4)
-Message-ID: <20081030140134.7adcef56@barsoom.rdu.redhat.com>
-In-Reply-To: <524f69650810301051j7400a3f6m1840d06924ab8e89@mail.gmail.com>
-References: <1225379793-23283-1-git-send-email-jlayton@redhat.com>
-	<524f69650810301025t3f3b7fb6t10d96b6567a67715@mail.gmail.com>
-	<20081030134235.6d1276ae@barsoom.rdu.redhat.com>
-	<524f69650810301051j7400a3f6m1840d06924ab8e89@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 30 Oct 2008 14:02:11 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:51187 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755904AbYJ3SCI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 14:02:08 -0400
+Message-ID: <4909F690.9090208@cosmosbay.com>
+Date: Thu, 30 Oct 2008 19:01:52 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: linux kernel <linux-kernel@vger.kernel.org>
+CC: Andi Kleen <ak@linux.intel.com>
+Subject: linux-2.6.28-rc2 regression : oprofile doesnt work anymore ?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 30 Oct 2008 19:02:02 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Oct 2008 12:51:03 -0500
-"Steve French" <smfrench@gmail.com> wrote:
+Hi
 
-> On Thu, Oct 30, 2008 at 12:42 PM, Jeff Layton <jlayton@redhat.com> wrote:
-> > I think we want to resist having locks that protect too many things.
-> > With that, we end up with the locks held over too much code. Not only is
-> > that generally worse for performance, but it can paper over race
-> > conditions.
-> 
-> I agree that it is trivially worse for performance to have a single
-> spinlock protecting the three interrelated structures (cifs tcp, smb
-> and tree connection structs), but since they point to one another and
-> frequently have operations that require us to use all three lists -
-> to do things like iterate through all tree connections within a
-> particular smb session, or iterate across all cifs smb sessions within
-> each cifs tcp session - it makes code more complicated to have to grab
-> and unlock multiple spinlocks in the correct order every time across
-> all exit paths etc.
-> 
+I tried to start my favorite tool, and discovered it wont fly on my HP BL460C G1
 
-A fair point, but most of that is in rarely-traveled procfile code. One
-thing we could consider is some helper macros or functions. For
-instance, a for_all_tcons() function or something that would take a
-pointer to a function that takes a tcon arg. It would
-basically just walk over all the tcons and handle the locking
-correctly and call the function for each.
+It samples few events then, seems to stop (no more NMI), other than that, machine
+still running correctly.
 
-In any case, I don't see the benefit of not using fine grained locking
-here. deadlock is a possibility, but I think having well-defined
-locking rules mitigates that danger.
+(8 cpus like that one
 
--- 
-Jeff Layton <jlayton@redhat.com>
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 23
+model name      : Intel(R) Xeon(R) CPU           E5450  @ 3.00GHz
+stepping        : 6
+cpu MHz         : 3000.253
+cache size      : 6144 KB
+physical id     : 0
+siblings        : 4
+core id         : 0
+cpu cores       : 4
+apicid          : 0
+initial apicid  : 0
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 10
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe lm constant_tsc arch_perfmon pebs bts pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 lahf_lm tpr_shadow vnmi flexpriority
+bogomips        : 6000.50
+clflush size    : 64
+power management:
+
+It is working correctly on 2.6.27
+
+I tried a git bisect but quickly found a point where machine was not useable...
+(partly because of the problem with the VPD problem on 5708S (PCI: Limit VPD length for Broadcom 5708S)
+
+# opcontrol --deinit
+Stopping profiling.
+Killing daemon.
+# rm -rf /var/lib/oprofile/samples/current
+# opcontrol --vmlinux=vmlinux --start
+Using 2.6+ OProfile kernel interface.
+Reading module info.
+Using log file /var/lib/oprofile/samples/oprofiled.log
+Daemon started.
+Profiler running.
+
+# opcontrol --dump; opreport
+CPU: Core 2, speed 3000.25 MHz (estimated)
+Counted CPU_CLK_UNHALTED events (Clock cycles when not halted) with a unit mask of 0x00 (Unhalted core cycles) count 10000
+CPU_CLK_UNHALT...|
+  samples|      %|
+------------------
+       17 80.9524 vmlinux
+        2  9.5238 libc-2.3.4.so
+        1  4.7619 bash
+        1  4.7619 ld-2.3.4.so
+# opcontrol --dump; opreport
+CPU: Core 2, speed 3000.25 MHz (estimated)
+Counted CPU_CLK_UNHALTED events (Clock cycles when not halted) with a unit mask of 0x00 (Unhalted core cycles) count 10000
+CPU_CLK_UNHALT...|
+  samples|      %|
+------------------
+       17 80.9524 vmlinux
+        2  9.5238 libc-2.3.4.so
+        1  4.7619 bash
+        1  4.7619 ld-2.3.4.so
+# opcontrol --dump; opreport
+CPU: Core 2, speed 3000.25 MHz (estimated)
+Counted CPU_CLK_UNHALTED events (Clock cycles when not halted) with a unit mask of 0x00 (Unhalted core cycles) count 10000
+CPU_CLK_UNHALT...|
+  samples|      %|
+------------------
+       17 80.9524 vmlinux
+        2  9.5238 libc-2.3.4.so
+        1  4.7619 bash
+        1  4.7619 ld-2.3.4.so
+
+# grep NMI /proc/interrupts
+NMI:          8          2          2          6         11          7          6          5   Non-maskable interrupts
+# grep NMI /proc/interrupts
+NMI:          8          2          2          6         11          7          6          5   Non-maskable interrupts
+# grep NMI /proc/interrupts
+NMI:          8          2          2          6         11          7          6          5   Non-maskable interrupts
+# grep NMI /proc/interrupts
+NMI:          8          2          2          6         11          7          6          5   Non-maskable interrupts
