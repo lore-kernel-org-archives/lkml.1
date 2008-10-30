@@ -1,47 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260AbYJ3IAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753868AbYJ3IDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754260AbYJ3IAY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 04:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306AbYJ3IAJ
+	id S1753868AbYJ3IDc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 04:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbYJ3IDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 04:00:09 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:51495 "EHLO pasmtpB.tele.dk"
+	Thu, 30 Oct 2008 04:03:14 -0400
+Received: from verein.lst.de ([213.95.11.210]:35424 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752994AbYJ3IAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 04:00:07 -0400
-Date: Thu, 30 Oct 2008 08:58:56 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH] block: add timer on blkdev_dequeue_request() not elv_next_request()
-Message-ID: <20081030075855.GO31673@kernel.dk>
-References: <490927CD.2010205@kernel.org> <20081030072956.GL31673@kernel.dk> <49096865.2050006@kernel.org>
-MIME-Version: 1.0
+	id S1750705AbYJ3IDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 04:03:11 -0400
+Date: Thu, 30 Oct 2008 09:02:32 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Parag Warudkar <parag.lkml@gmail.com>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: Stale NFS File Handle but !NFS
+Message-ID: <20081030080232.GA26490@lst.de>
+References: <f7848160810231458tea58cf7x362ad03743b564ed@mail.gmail.com> <20081029175643.ad0f1dca.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49096865.2050006@kernel.org>
+In-Reply-To: <20081029175643.ad0f1dca.akpm@linux-foundation.org>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30 2008, Tejun Heo wrote:
-> Jens Axboe wrote:
-> > That's actually a pretty dumb error, I'm surprised it hasn't reared its
-> > ugly face in more ways. Presumably because the timeout is usually so
-> > long, that we'll get to actually issuing and completing it within the
-> > normal timeout anyway.
+On Wed, Oct 29, 2008 at 05:56:43PM -0700, Andrew Morton wrote:
+> Is this still happening?
 > 
-> Heh... it showed its ugly face in many different ways while I was
-> playing with PMP connected via a very long eSATA cable.
+> If so, I'd be looking at that new `return ERR_PTR(-ESTALE)' in
+> d_obtain_alias().
 
-Ah :-)
-
-If we had it wired up for eg the old IDE drivers, it would have shown up
-quite quickly as well I think.
-
--- 
-Jens Axboe
-
+d_obtain is only used in the nfs export code, some special case in the
+nfs client code and the xfs open by handle code.
