@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758178AbYJ3Rtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbYJ3RvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758178AbYJ3Rtr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 13:49:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756060AbYJ3Rth
+	id S1757950AbYJ3RvU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 13:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbYJ3RvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 13:49:37 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:49295 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756133AbYJ3Rtg convert rfc822-to-8bit (ORCPT
+	Thu, 30 Oct 2008 13:51:08 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:46050 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755295AbYJ3RvE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 13:49:36 -0400
-X-Greylist: delayed 3599 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Oct 2008 13:49:35 EDT
-Message-ID: <20081030174925.36023f19jy3o832t@feanor.sssup.it>
-Date: Thu, 30 Oct 2008 17:49:25 +0100
-From: faggioli@gandalf.sssup.it
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: henrik@austad.us, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>, fabio@gandalf.sssup.it,
-       trimarchimichael@yahoo.it
-Subject: Re: Rearranging layout of code in the scheduler
-References: <200810281634.11285.henrik@austad.us>
-	<1225212627.15763.16.camel@lappy.programming.kicks-ass.net>
-In-Reply-To: <1225212627.15763.16.camel@lappy.programming.kicks-ass.net>
+	Thu, 30 Oct 2008 13:51:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=oik3/J5ainSCknVDjQoA7X2m/0l1Hk3Yu3+eOGMTiRYaKjo/jJ0m1XrJwSZBzlfNMp
+         9QSu3mxAF4IMehKw4mBPaYHU9TzWYRHi/yuRmM65jQN+5M6XMamrnTjsWntDOmf8+pp1
+         sbb0xTr2RL+k2qzPhQjxeYY14GejlbK1SB82c=
+Message-ID: <524f69650810301051j7400a3f6m1840d06924ab8e89@mail.gmail.com>
+Date: Thu, 30 Oct 2008 12:51:03 -0500
+From: "Steve French" <smfrench@gmail.com>
+To: "Jeff Layton" <jlayton@redhat.com>
+Subject: Re: [PATCH 0/4] cifs: fix oopses and mem corruption with concurrent mount/umount (try #4)
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081030134235.6d1276ae@barsoom.rdu.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
-	DelSp=Yes	format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.3) / FreeBSD-7.1
+References: <1225379793-23283-1-git-send-email-jlayton@redhat.com>
+	 <524f69650810301025t3f3b7fb6t10d96b6567a67715@mail.gmail.com>
+	 <20081030134235.6d1276ae@barsoom.rdu.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Peter Zijlstra <peterz@infradead.org>:
->> Before I dive in, I should probably justify my motivations for writing
->> this email. I'm working away on implementing an EDF scheduler for real
->> time tasks in the kernel. This again leads to hacking at the existing
->> source as I'm not about to toss out the entire scheduler - just replace
->> (by some Kconfig switch) the RR/FIFO classes. As to why I'm looking at
->> EDF, I think the answer to that is a bit too long (and not appropriate
->> for this email anyway) so I'll leave that part out.
-Well, I understand that, but it could be interesting... At least to me. :-)
+On Thu, Oct 30, 2008 at 12:42 PM, Jeff Layton <jlayton@redhat.com> wrote:
+> I think we want to resist having locks that protect too many things.
+> With that, we end up with the locks held over too much code. Not only is
+> that generally worse for performance, but it can paper over race
+> conditions.
 
-> You and a few other folks.
-Yes, here we are! :-)
+I agree that it is trivially worse for performance to have a single
+spinlock protecting the three interrelated structures (cifs tcp, smb
+and tree connection structs), but since they point to one another and
+frequently have operations that require us to use all three lists -
+to do things like iterate through all tree connections within a
+particular smb session, or iterate across all cifs smb sessions within
+each cifs tcp session - it makes code more complicated to have to grab
+and unlock multiple spinlocks in the correct order every time across
+all exit paths etc.
 
-We also have some code, but it still is highly experimental and we are  
-deeply rearranging it.
 
-> The most interesting part of EDF is not the
-> actual scheduler itself (although there are fun issues with that as
-> well), but extending the Priority Inheritance framework to deal with all
-> the fun cases that come with EDF.
-The main problem is that, especially to deal with SMP systems, we also  
-need to investigate theoretical issues and find out what the best  
-approach could be.
 
-> Well, adding a sched_class, no need to replace anything besides that.
->
-I'm not saying anything in possible sched.c and sched_{fair|rt}.c code  
-rearranging, I also only wonder why replacing fixed priority RT  
-scheduling with EDF.
+-- 
+Thanks,
 
-I think they both could be in... Maybe we can discuss on where, I mean  
-on which position, in the linked list of scheduling classes, to put  
-each of them.
-
-Regards,
-Dario
-
-Thanks for the Cc. Peter, I also added Fabio and Michael that, you  
-know, are working to this thing. :-)
-
-----------------------------------------------------------------
-This message was sent using IMP, the Internet Messaging Program.
+Steve
