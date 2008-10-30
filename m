@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbYJ3WlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755121AbYJ3Wnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbYJ3WlW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 18:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbYJ3WlN
+	id S1755121AbYJ3Wnw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 18:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbYJ3Wnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 18:41:13 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38941 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750941AbYJ3WlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 18:41:11 -0400
-Date: Thu, 30 Oct 2008 23:40:57 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: Re: next-20081030: voyager compile busted
-Message-ID: <20081030224057.GB20507@elte.hu>
-References: <20081030173030.d8847df6.sfr@canb.auug.org.au> <20081030180323.GA13399@x200.localdomain> <1225398287.19324.1.camel@localhost.localdomain> <20081030205230.GO27407@elte.hu> <1225400283.19324.6.camel@localhost.localdomain> <20081030210704.GA25665@elte.hu> <1225401708.19324.35.camel@localhost.localdomain> <490A2A30.5040905@zytor.com> <1225403266.19324.42.camel@localhost.localdomain> <490A2C3D.4020202@zytor.com>
+	Thu, 30 Oct 2008 18:43:45 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:41801 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751421AbYJ3Wno (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 18:43:44 -0400
+Date: Thu, 30 Oct 2008 23:43:31 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@strlen.de>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       randy.dunlap@oracle.com
+Subject: Re: [PATCH 1/8] Add scripts/get_maintainer.pl
+Message-ID: <20081030224331.GA30814@strlen.de>
+References: <1224803366-6478-1-git-send-email-joe@perches.com> <ab48bcafb1ceab1c0d53e93781605603cfabf6dc.1224802312.git.joe@perches.com> <20081027155254.a710c779.akpm@linux-foundation.org> <20081030104136.GB32389@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <490A2C3D.4020202@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+In-Reply-To: <20081030104136.GB32389@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
-
-> James Bottomley wrote:
+> > Also, this:
 > > 
-> > Yes ... been having IRC conversations about that.  We'd need to use
-> > runtime patching to fix the performance regressions virtualisation has
-> > been causing us first ... but then we could use it for voyager.
+> >  MAINTAINERS | 1096 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+> >  1 file changed, 1094 insertions(+), 2 deletions(-)
+> > 
+> > isn't practical for me or Stephen to carry, I'm afraid.  That's
+> > probably the most-patched file in the kernel.  This will need to be a
+> > direct you->Linus thing.
+> > 
+> > I think the feature is sorely needed and will prove useful.
 > 
-> I thought we already were, at least to some degree (the call sites 
-> are way too big and way bigger than they need to be, so we end up 
-> with a lot of NOPs.  I proposed a solution to Jeremy at Kernel 
-> Summit, but he basically said "I don't want to maintain that, I 
-> don't care about hardware performance", which is understandable but 
-> highly unfortunate.)
+> Would you be willing to merge the scripts etc, leaving only
+> MAINTAINERS file for direct merge with Linus, preferably at the -rc5
+> or something?
+I still think that the source files should (additionally) be parsed
+somehow, too.  Something like
 
-in practice the function pointer overhead is almost unmeasurable for 
-things like IPIs which are rather expensive to issue. In fact it's 
-probably more expensive on Voyager as it does not utilize the local 
-APIC for SMP messaging (which is pretty much the only 
-performance-sensitive thing here). It uses its own glue logic it 
-appears, which is almost certainly behind the system bus.
+	/*
+	 * TOPIC
+	 * P: A. U. Thor <author@examp.l.e>
+	 * M: lkml@kernel.org
+	 */
 
-James, how many cycles do typical SMP ops take on Voyager?
-
-	Ingo
+at the beginning of a file.  The advantage is that MAINTAINERS doesn't
+need to have an entry for each driver and so the F: field cannot become
+inconsistent and the author doesn't need to bother getting the entry
+into MAINTAINERS---just the driver file is enough.
+ 
+Best regards
+Uwe
