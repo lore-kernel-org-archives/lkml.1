@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbYJ3VfE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758232AbYJ3Vfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757466AbYJ3VfE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 17:35:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbYJ3Vey
+	id S1758232AbYJ3Vfj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 17:35:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbYJ3Vfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 17:34:54 -0400
-Received: from xes-mad.com ([216.165.139.214]:56344 "EHLO xes-mad.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752811AbYJ3Vex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 17:34:53 -0400
-Subject: Re: [PATCH] rtc-ds1307: Reset bogus register values on m41t00
-From: Nate Case <ncase@xes-inc.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1225398691.27415.170.camel@localhost.localdomain>
-References: <1225301377-9092-1-git-send-email-ncase@xes-inc.com>
-	 <200810300116.33131.david-b@pacbell.net>
-	 <1225379144.27415.111.camel@localhost.localdomain>
-	 <200810301006.01689.david-b@pacbell.net>
-	 <1225398691.27415.170.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 30 Oct 2008 16:34:46 -0500
-Message-Id: <1225402486.27415.177.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Oct 2008 17:35:31 -0400
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:48617 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752826AbYJ3Vfa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 17:35:30 -0400
+Date: Thu, 30 Oct 2008 16:33:34 -0500 (CDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Dave Chinner <david@fromorbit.com>
+cc: David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <peterz@infradead.org>,
+       Paul Menage <menage@google.com>, Derek Fults <dfults@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/7] cpuset writeback throttling
+In-Reply-To: <20081030210826.GR17077@disturbed>
+Message-ID: <Pine.LNX.4.64.0810301632030.3839@quilx.com>
+References: <alpine.DEB.2.00.0810292337170.23858@chino.kir.corp.google.com>
+ <20081030210826.GR17077@disturbed>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Spam-Score: -2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-30 at 15:31 -0500, Nate Case wrote:
-> I'll go ahead and re-spin the patch.
+On Fri, 31 Oct 2008, Dave Chinner wrote:
 
-After thinking about this more, I'm not sure it's right to do anything
-more than the "remove legacy probe checks" patch already does.  Can you
-think of any harm in having the oscillator running with bogus register
-values?  Calls to get_time() will return -EINVAL, but that seems to be
-the norm for any "bad time" condition.  It makes me think that resetting
-to a sane time is putting more policy than desired in the driver.
+> What sort of validation/regression testing has this been through?
 
--- 
-Nate Case <ncase@xes-inc.com>
+There were several tests run more than a year ago by me on large SGI 
+machines. Then there was Solomita who did various tests and posts of 
+the patchset over the last year.
+
 
