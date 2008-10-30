@@ -1,54 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbYJ3Gjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbYJ3Gks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753676AbYJ3Gjg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 02:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbYJ3Gj2
+	id S1754092AbYJ3Gks (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 02:40:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYJ3Gkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 02:39:28 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:20360 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752665AbYJ3Gj1 (ORCPT
+	Thu, 30 Oct 2008 02:40:40 -0400
+Received: from ti-out-0910.google.com ([209.85.142.188]:49503 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752543AbYJ3Gkj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 02:39:27 -0400
+	Thu, 30 Oct 2008 02:40:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:mime-version
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :message-id;
-        b=jD3c95sxKYcq4b0fKR5hezfAouk1Ahr5MUGuPM+FtnoAqNpIJqu03WDsfAchMvb5pp
-         NwlOBNJjV+lR5DWvx7Vz8U2Mgvi30doLvPZi4N3QUPRyB0C9ZKK9kdFNifUu7vnIaabk
-         l5Df3Ny8bPzyB1Djil07Pt7gvhGaXChuUBYYM=
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: 2.6.28-rc2 seems to fail at powering down the monitor when it should
-Date: Thu, 30 Oct 2008 02:39:18 -0400
-User-Agent: KMail/1.9.10
+         :references;
+        b=OXIp1WcdrjSJVLPBhPoi4tLlnRETtDfgeeEZs6JR2B0Nik6ilakLnZ48uA8IUcAyJa
+         unVjFP5mXNy5rnYHI/rS5ALdaEEDfgCQC0iMF4hjCsOvroAwcGbjxA42JqCYDQH/+Hba
+         LxeljmuA/2sJEsqrenZa3hwbF63TvwAUvpzdg=
+Message-ID: <df9815e70810292340g52d38e83t47dffd02125b4fe3@mail.gmail.com>
+Date: Thu, 30 Oct 2008 14:40:37 +0800
+From: "Jike Song" <albcamus@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: fix inline assembly constraints
+Cc: "Ingo Molnar" <mingo@elte.hu>, tglx@linutronix.de, mingo@redhat.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <49093012.7010301@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810300239.18842.gene.heskett@gmail.com>
+References: <1225297937-2917-1-git-send-email-albcamus@gmail.com>
+	 <20081029163400.GA14866@elte.hu>
+	 <df9815e70810291931i4c00966u8f4493386e376b28@mail.gmail.com>
+	 <49093012.7010301@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings all;  Subject says it.  When it comes time for the monitor to go 
-into standby and powerdown, the on-screen clock I use for the short screen 
-saver just stops, frozen, but the monitor is very much alive at normal 
-brightness.
+On Thu, Oct 30, 2008 at 11:54 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Jike Song wrote:
+>>
+>> Besides, by looking at the inline assembly in kernel,  I found lots of
+>> codes like this:
+>>
+>>         static inline void atomic_add(int i, atomic_t *v)
+>>         {
+>>               asm volatile(LOCK_PREFIX "addl %1,%0"
+>>                            : "=m" (v->counter)
+>>                            : "ir" (i), "m" (v->counter));
+>>         }
+>>
+>>
+>> Yes, it works. But a little ugly..  Should this be cleaned-up with the
+>> following?
+>>
+>>         : "+m" (v->counter)
+>>         : "ir" (i)
+>>
+>> If you agrees, I'll send out the patch; otherwise I won't wasting your time ;-)
+>>
+>
+> Please don't change them just to change them, if there is no actual
+> error.  You never know when you're going to trigger a new bug in some
+> weird version of gcc.
+>
+>        -hpa
 
-2.6.27.1(2/3/4) does this inactivity power down normally.
+Yes, sometimes gcc did have bugs with its obscure inline asm
+conventions. But I think the change of x86-64 atomic operations should
+be OK. Anyway, the "+" constraint is more clear than a "=m" output and
+ a "m" input.
 
-Any .config options I should check?
-
-Thanks.
+The 32-bit atomic ops were already changed to "+m".(commit
+b862f3b099f3ea672c7438c0b282ce8201d39dfc)
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Those who hate and fight must stop themselves -- otherwise it is not stopped.
-		-- Spock, "Day of the Dove", stardate unknown
+Thanks,
+Jike
