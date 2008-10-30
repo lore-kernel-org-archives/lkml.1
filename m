@@ -1,125 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756310AbYJ3OwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbYJ3OxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756310AbYJ3OwZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 10:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755661AbYJ3Ov7
+	id S1756196AbYJ3OxU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 10:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbYJ3OxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 10:51:59 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:37676 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755545AbYJ3Ov6 (ORCPT
+	Thu, 30 Oct 2008 10:53:09 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36883 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753982AbYJ3OxJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 10:51:58 -0400
-Subject: ssb: struct device - replace bus_id with dev_name(), dev_set_name()
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Content-Type: text/plain
-Date: Thu, 30 Oct 2008 15:51:57 +0100
-Message-Id: <1225378317.21973.1.camel@nga.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Thu, 30 Oct 2008 10:53:09 -0400
+Message-ID: <4909C9D9.7040105@zytor.com>
+Date: Thu, 30 Oct 2008 07:51:05 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jike Song <albcamus@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de, mingo@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix inline assembly constraints
+References: <1225297937-2917-1-git-send-email-albcamus@gmail.com>	 <20081029163400.GA14866@elte.hu>	 <df9815e70810291931i4c00966u8f4493386e376b28@mail.gmail.com>	 <49093012.7010301@zytor.com> <df9815e70810292340g52d38e83t47dffd02125b4fe3@mail.gmail.com>
+In-Reply-To: <df9815e70810292340g52d38e83t47dffd02125b4fe3@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is part of a larger patch series which will remove
-the "char bus_id[20]" name string from struct device. The device
-name is managed in the kobject anyway, and without any size
-limitation, and just needlessly copied into "struct device".
+Jike Song wrote:
+> 
+> Yes, sometimes gcc did have bugs with its obscure inline asm
+> conventions. But I think the change of x86-64 atomic operations should
+> be OK. Anyway, the "+" constraint is more clear than a "=m" output and
+>  a "m" input.
+> 
+> The 32-bit atomic ops were already changed to "+m".(commit
+> b862f3b099f3ea672c7438c0b282ce8201d39dfc)
+> 
 
-To set and read the device name dev_name(dev) and dev_set_name(dev)
-must be used. If your code uses static kobjects, which it shouldn't
-do, "const char *init_name" can be used to statically provide the
-name the registered device should have. At registration time, the
-init_name field is cleared, to enforce the use of dev_name(dev) to
-access the device name at a later time.
+You *THINK*.  It's very easy to *THINK* that gcc won't do something
+utterly moronic, and you'd be wrong.
 
-We need to get rid of all occurrences of bus_id in the entire tree
-to be able to enable the new interface. Please apply this patch,
-and possibly convert any remaining remaining occurrences of bus_id.
+Just changing it for the sake of churn is pointless... if there is a
+bug, then we have to take the risk anyway, but if it is already correct,
+then there is no point in provoking a bug.  Not *your* bug, because your
+code is correct, but gcc's bug.
 
-We want to submit a patch to -next, which will remove bus_id from
-"struct device", to find the remaining pieces to convert, and finally
-switch over to the new api, which will remove the 20 bytes array
-and does no longer have a size limitation.
+FWIW, the reason that code doesn't use "+m" is because a version of gcc
+which we no longer support didn't handle it.  That by itself isn't a
+reason to keep it, but there is also no reason to just "tidy" it, IMNSHO.
 
-Thanks,
-Kay
-
-
-From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: ssb: struct device - replace bus_id with dev_name(), dev_set_name()
-
-CC: Michael Buesch <mb@bu3sch.de>
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
----
-
-
-diff --git a/drivers/ssb/main.c b/drivers/ssb/main.c
-index 0ffabf5..65a1ed9 100644
---- a/drivers/ssb/main.c
-+++ b/drivers/ssb/main.c
-@@ -226,7 +226,7 @@ int ssb_devices_freeze(struct ssb_bus *bus)
- 		err = drv->suspend(dev, state);
- 		if (err) {
- 			ssb_printk(KERN_ERR PFX "Failed to freeze device %s\n",
--				   dev->dev->bus_id);
-+				   dev_name(dev->dev));
- 			goto err_unwind;
- 		}
- 	}
-@@ -269,7 +269,7 @@ int ssb_devices_thaw(struct ssb_bus *bus)
- 		err = drv->resume(dev);
- 		if (err) {
- 			ssb_printk(KERN_ERR PFX "Failed to thaw device %s\n",
--				   dev->dev->bus_id);
-+				   dev_name(dev->dev));
- 		}
- 	}
- 
-@@ -454,8 +454,7 @@ static int ssb_devices_register(struct ssb_bus *bus)
- 
- 		dev->release = ssb_release_dev;
- 		dev->bus = &ssb_bustype;
--		snprintf(dev->bus_id, sizeof(dev->bus_id),
--			 "ssb%u:%d", bus->busnumber, dev_idx);
-+		dev_set_name(dev, "ssb%u:%d", bus->busnumber, dev_idx);
- 
- 		switch (bus->bustype) {
- 		case SSB_BUSTYPE_PCI:
-@@ -480,7 +479,7 @@ static int ssb_devices_register(struct ssb_bus *bus)
- 		if (err) {
- 			ssb_printk(KERN_ERR PFX
- 				   "Could not register %s\n",
--				   dev->bus_id);
-+				   dev_name(dev));
- 			/* Set dev to NULL to not unregister
- 			 * dev on error unwinding. */
- 			sdev->dev = NULL;
-@@ -796,7 +795,7 @@ int ssb_bus_pcibus_register(struct ssb_bus *bus,
- 	err = ssb_bus_register(bus, ssb_pci_get_invariants, 0);
- 	if (!err) {
- 		ssb_printk(KERN_INFO PFX "Sonics Silicon Backplane found on "
--			   "PCI device %s\n", host_pci->dev.bus_id);
-+			   "PCI device %s\n", dev_name(&host_pci->dev));
- 	}
- 
- 	return err;
-diff --git a/drivers/ssb/pcihost_wrapper.c b/drivers/ssb/pcihost_wrapper.c
-index e82db4a..26737a0 100644
---- a/drivers/ssb/pcihost_wrapper.c
-+++ b/drivers/ssb/pcihost_wrapper.c
-@@ -65,7 +65,7 @@ static int ssb_pcihost_probe(struct pci_dev *dev,
- 	err = pci_enable_device(dev);
- 	if (err)
- 		goto err_kfree_ssb;
--	name = dev->dev.bus_id;
-+	name = dev_name(&dev->dev);
- 	if (dev->driver && dev->driver->name)
- 		name = dev->driver->name;
- 	err = pci_request_regions(dev, name);
-
-
+	-hpa
