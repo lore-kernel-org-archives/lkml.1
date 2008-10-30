@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756432AbYJ3Aof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756290AbYJ3AqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756432AbYJ3Aof (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 20:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYJ3Ao1
+	id S1756290AbYJ3AqT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 20:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYJ3AqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 20:44:27 -0400
-Received: from styx.suse.cz ([82.119.242.94]:36297 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751119AbYJ3Ao0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 20:44:26 -0400
-Date: Thu, 30 Oct 2008 01:44:25 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: [GIT] HID updates
-Message-ID: <alpine.LNX.1.10.0810290101510.12928@jikos.suse.cz>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 29 Oct 2008 20:46:09 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:64544 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbYJ3AqI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 20:46:08 -0400
+Subject: dmi: struct device - replace bus_id with dev_name(), dev_set_name()
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Lennart Poettering <mzxreary@0pointer.de>
+Content-Type: text/plain
+Date: Thu, 30 Oct 2008 01:46:07 +0100
+Message-Id: <1225327567.5970.39.camel@nga.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Greg, care to pick that up?
 
-could you please pull from 'for-linus' branch of
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid.git for-linus
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: dmi: struct device - replace bus_id with dev_name(), dev_set_name()
 
-to receive updates for HID layer. This, most importantly, fixes an oops on
-systems that have devices driven by appletouch driver (or generally any
-device that is not claimed at all by HID subsystem due to blacklist
-entry).
+CC: Lennart Poettering <mzxreary@0pointer.de>
+Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
+---
 
-There are currently no other critical bugreports pending against the new 
-HID infrastructure.
 
-Thanks.
-
- drivers/hid/hid-core.c          |    1 +
- drivers/hid/hid-dell.c          |    1 +
- drivers/hid/hid-ids.h           |    3 ++
- drivers/hid/usbhid/hid-core.c   |   60 +++++++++++++++++++++++++++-----------
- drivers/hid/usbhid/usbhid.h     |    2 +
- include/linux/hid.h             |    1 +
- include/linux/mod_devicetable.h |    1 +
- 7 files changed, 51 insertions(+), 18 deletions(-)
-
-Alan Stern (1):
-      HID: add quirk entry for no-name keyboard (0x13ba/0x0017)
-
-Andreas Schwab (1):
-      HID: fix hid_device_id for cross compiling
-
-Jiri Slaby (2):
-      HID: fix oops during suspend of unbound HID devices
-      HID: sync on deleted io_retry timer in usbhid driver
+diff --git a/drivers/firmware/dmi-id.c b/drivers/firmware/dmi-id.c
+index e880d6c..5a76d05 100644
+--- a/drivers/firmware/dmi-id.c
++++ b/drivers/firmware/dmi-id.c
+@@ -223,7 +223,7 @@ static int __init dmi_id_init(void)
+ 	}
+ 
+ 	dmi_dev->class = &dmi_class;
+-	strcpy(dmi_dev->bus_id, "id");
++	dev_set_name(dmi_dev, "id");
+ 	dmi_dev->groups = sys_dmi_attribute_groups;
+ 
+ 	ret = device_register(dmi_dev);
 
