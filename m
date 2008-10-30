@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbYJ3KzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbYJ3Kzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754826AbYJ3KzR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 06:55:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbYJ3KzF
+	id S1755224AbYJ3Kzn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 06:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbYJ3Kz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 06:55:05 -0400
-Received: from [212.170.101.197] ([212.170.101.197]:9054 "EHLO
-	pluton.idata3.local" rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752803AbYJ3KzE (ORCPT
+	Thu, 30 Oct 2008 06:55:29 -0400
+Received: from fmmailgate04.web.de ([217.72.192.242]:60825 "EHLO
+	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754946AbYJ3Kz1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 06:55:04 -0400
-X-Greylist: delayed 967 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Oct 2008 06:55:04 EDT
-Subject: Problem report
-From: Javier Valdehita <jvaldehita@intelligentdata.es>
+	Thu, 30 Oct 2008 06:55:27 -0400
+Date: Thu, 30 Oct 2008 11:54:57 +0100
+Message-Id: <488434293@web.de>
+MIME-Version: 1.0
+From: devzero@web.de
 To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Thu, 30 Oct 2008 11:38:50 +0100
-Message-Id: <1225363130.6232.7.camel@jvaldehita-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Subject: how much license information inside the kernel ?
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX19F9ARCLxO0DmDoWACWpTRQ9LdSwHgXe1V9dE15x88aEl6WX
+ 8HEVnw5qMbNoSAQspimhXKdvldU/lntcpy4hlHs28w2id3SPa0=
+Content-Type: text/plain; charset=iso-8859-15
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Oct 2008 10:44:03.0812 (UTC) FILETIME=[6D22C240:01C93A7C]
-X-TM-AS-Product-Ver: SMEX-7.5.0.1256-5.5.1027-16248.006
-X-TM-AS-Result: No--10.318600-5.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+hi, 
 
-I was trying to configure my kernel through the Menuconfig and i
-obtained the following message:
+i found that there is a LOT of repeating licensing information in the kernel.
 
-Menuconfig has encountered a possible error in one of the kernel's
-configuration files and is unable to continue.  Here is the error
-report:
+for me, 
 
- Q> scripts/Menuconfig: line 828: MCmenu0: orden no encontrada
+find ./linux-2.6.27 -type f -exec cat {} \; |egrep "free software|GNU General Public License|Free Software Foundation|version 2 of the License|distributed in the hope|WITHOUT ANY WARRANTY|FITNESS FOR A PARTICULAR"
 
-Please report this to the maintainer <mec@shout.net>.  You may also
-send a problem report to <linux-kernel@vger.kernel.org>.
+gives a file sized ~3.5M
 
-Please indicate the kernel version you are trying to configure and
-which menu you were trying to enter when this error occurred.
+That`s more than 1% of the kernel source.
 
-make: *** [menuconfig] Error 1
+What about the idea to shorten that licening information to a minimum , e.g. by shrinking that to a single, catchy line ,  linking to a special licensing file like COPYING or linking to the FSF website ?
 
-So, please, Can you help me?
+please no flames, i know this idea could be pure dynamite for some people - but i thought 3.5M is worth this mail.
 
-the kernel version is 2.4.20.
+regards
+roland
 
-Thanks in advance.
-
-Regards.
+ps:
+i`m not sure if that has been discussed already, but i didn`t find that in the archive. please ignore, otherwise.
+________________________________________________________________________
+n 5 Schritten zur eigenen Homepage. Jetzt Domain sichern und gestalten! 
+Nur 3,99 EUR/Monat! http://www.maildomain.web.de/?mc=021114
 
