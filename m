@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbYJ3Fgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbYJ3Fgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753998AbYJ3Fgj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 01:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754321AbYJ3FgF
+	id S1754845AbYJ3Fgz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 01:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbYJ3FgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 01:36:05 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:47167 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754288AbYJ3FgD (ORCPT
+	Thu, 30 Oct 2008 01:36:14 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:34758 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752984AbYJ3FgM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 01:36:03 -0400
-Date: Wed, 29 Oct 2008 22:35:03 -0700
+	Thu, 30 Oct 2008 01:36:12 -0400
+Date: Wed, 29 Oct 2008 22:35:12 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>,
-       Matt Porter <mporter@kernel.crashing.org>
-Subject: [PATCH 4/7] rapidio: remove excess kernel-doc notation
-Message-Id: <20081029223503.61b6e5af.randy.dunlap@oracle.com>
+Cc: linux-pci@vger.kernel.org, akpm <akpm@linux-foundation.org>,
+       jbarnes@virtuousgeek.org
+Subject: [PATCH 6/7] PCI: remove excess kernel-doc notation
+Message-Id: <20081029223512.401bd1e6.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -32,34 +32,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Remove excess kernel-doc notation from rio header and driver:
+Fix pci/rom.c kernel-doc function notation:
 
-Warning(include/linux/rio_drv.h:399): Excess function parameter or struct member 'buffer' description in 'rio_get_inb_message'
+Warning(drivers/pci/rom.c:110): Excess function parameter or struct member 'return' description in 'pci_map_rom'
+Warning(drivers/pci/rom.c:177): Excess function parameter or struct member 'return' description in 'pci_map_rom_copy'
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Matt Porter <mporter@kernel.crashing.org>
 ---
- drivers/rapidio/rio-driver.c |    1 -
- include/linux/rio_drv.h      |    1 -
- 2 files changed, 2 deletions(-)
+ drivers/pci/rom.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- lin2628-rc2.orig/include/linux/rio_drv.h
-+++ lin2628-rc2/include/linux/rio_drv.h
-@@ -391,7 +391,6 @@ static inline int rio_add_inb_buffer(str
-  * rio_get_inb_message - Get A RIO message from an inbound mailbox queue
-  * @mport: Master port containing the inbound mailbox
-  * @mbox: The inbound mailbox number
-- * @buffer: Pointer to the message buffer
+--- lin2628-rc2.orig/drivers/pci/rom.c
++++ lin2628-rc2/drivers/pci/rom.c
+@@ -100,7 +100,8 @@ size_t pci_get_rom_size(void __iomem *ro
+  * pci_map_rom - map a PCI ROM to kernel space
+  * @pdev: pointer to pci device struct
+  * @size: pointer to receive size of pci window over ROM
+- * @return: kernel virtual pointer to image of ROM
++ *
++ * Return: kernel virtual pointer to image of ROM
   *
-  * Get a RIO message from an inbound mailbox queue. Returns 0 on success.
-  */
---- lin2628-rc2.orig/drivers/rapidio/rio-driver.c
-+++ lin2628-rc2/drivers/rapidio/rio-driver.c
-@@ -79,7 +79,6 @@ void rio_dev_put(struct rio_dev *rdev)
- 
- /**
-  *  rio_device_probe - Tell if a RIO device structure has a matching RIO device id structure
-- *  @id: the RIO device id structure to match against
-  *  @dev: the RIO device structure to match against
+  * Map a PCI ROM into kernel space. If ROM is boot video ROM,
+  * the shadow BIOS copy will be returned instead of the
+@@ -167,7 +168,8 @@ void __iomem *pci_map_rom(struct pci_dev
+  * pci_map_rom_copy - map a PCI ROM to kernel space, create a copy
+  * @pdev: pointer to pci device struct
+  * @size: pointer to receive size of pci window over ROM
+- * @return: kernel virtual pointer to image of ROM
++ *
++ * Return: kernel virtual pointer to image of ROM
   *
-  * return 0 and set rio_dev->driver when drv claims rio_dev, else error
+  * Map a PCI ROM into kernel space. If ROM is boot video ROM,
+  * the shadow BIOS copy will be returned instead of the
