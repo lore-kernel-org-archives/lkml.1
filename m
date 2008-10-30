@@ -1,178 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbYJ3BmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbYJ3Bnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754906AbYJ3BmZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 21:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbYJ3BmQ
+	id S1755457AbYJ3Bnb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 21:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbYJ3BnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 21:42:16 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:2536 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752364AbYJ3BmQ (ORCPT
+	Wed, 29 Oct 2008 21:43:23 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:43169 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752895AbYJ3BnW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 21:42:16 -0400
-Subject: spi: struct device - replace bus_id with dev_name(), dev_set_name()
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: David Brownell <dbrownell@users.sourceforge.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Content-Type: text/plain
-Date: Thu, 30 Oct 2008 02:42:17 +0100
-Message-Id: <1225330937.5970.99.camel@nga.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Oct 2008 21:43:22 -0400
+Date: Wed, 29 Oct 2008 21:43:19 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [PATCH][RFC] x86: add non x86 build configuration
+In-Reply-To: <20081029091857.GA4414@osiris.boeblingen.de.ibm.com>
+Message-ID: <alpine.DEB.1.10.0810292139170.6145@gandalf.stny.rr.com>
+References: <200810281802.m9SI2fYX030138@hera.kernel.org> <20081029091857.GA4414@osiris.boeblingen.de.ibm.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is part of a larger patch series which will remove
-the "char bus_id[20]" name string from struct device. The device
-name is managed in the kobject anyway, and without any size
-limitation, and just needlessly copied into "struct device".
 
-To set and read the device name dev_name(dev) and dev_set_name(dev)
-must be used. If your code uses static kobjects, which it shouldn't
-do, "const char *init_name" can be used to statically provide the
-name the registered device should have. At registration time, the
-init_name field is cleared, to enforce the use of dev_name(dev) to
-access the device name at a later time.
+A lot of developers develop on x86 architectures, and do things that
+sometimes breaks non x86 archs. This patch adds a debug option to
+turn off all the CONFIG_HAVE_ options that x86 sets. This allows
+developers to easily test their code to make sure that it compiles
+without a lot of the assumptions that x86 makes.
 
-We need to get rid of all occurrences of bus_id in the entire tree
-to be able to enable the new interface. Please apply this patch,
-and possibly convert any remaining remaining occurrences of bus_id.
+Note: Recently the ftrace code had an issue where a depend was set
+  by the wrong select, but that select was not set by all archs.
+  This patch catches that issue when compiling on x86.
 
-We want to submit a patch to -next, which will remove bus_id from
-"struct device", to find the remaining pieces to convert, and finally
-switch over to the new api, which will remove the 20 bytes array
-and does no longer have a size limitation.
-
-Thanks,
-Kay
-
-
-From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: spi: struct device - replace bus_id with dev_name(), dev_set_name()
-
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
+ arch/x86/Kconfig |   27 ++++++++++++++++++++++++++-
+ 1 file changed, 26 insertions(+), 1 deletion(-)
 
-
-diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-index 3734dc9..643908b 100644
---- a/drivers/spi/spi.c
-+++ b/drivers/spi/spi.c
-@@ -47,7 +47,7 @@ modalias_show(struct device *dev, struct device_attribute *a, char *buf)
- {
- 	const struct spi_device	*spi = to_spi_device(dev);
+Index: linux-tip.git/arch/x86/Kconfig
+===================================================================
+--- linux-tip.git.orig/arch/x86/Kconfig	2008-10-29 20:49:11.000000000 -0400
++++ linux-tip.git/arch/x86/Kconfig	2008-10-29 21:28:52.000000000 -0400
+@@ -18,11 +18,20 @@ config X86_64
+ ### Arch settings
+ config X86
+ 	def_bool y
++	# configs needed by arch/x86 code
++	select HAVE_IOREMAP_PROT
++
++# make a choice to keep allyesconfig from choosing non x86
++choice
++	prompt "Configuration Model"
++	default NORMAL_X86_CONFIGURATION
++
++config NORMAL_X86_CONFIGURATION
++	prompt "Normal Configuration Model"
+ 	select HAVE_AOUT if X86_32
+ 	select HAVE_UNSTABLE_SCHED_CLOCK
+ 	select HAVE_IDE
+ 	select HAVE_OPROFILE
+-	select HAVE_IOREMAP_PROT
+ 	select HAVE_KPROBES
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select HAVE_KRETPROBES
+@@ -35,6 +44,22 @@ config X86
+ 	select HAVE_GENERIC_DMA_COHERENT if X86_32
+ 	select HAVE_EFFICIENT_UNALIGNED_ACCESS
  
--	return snprintf(buf, BUS_ID_SIZE + 1, "%s\n", spi->modalias);
-+	return sprintf(buf, "%s\n", spi->modalias);
- }
- 
- static struct device_attribute spi_dev_attrs[] = {
-@@ -63,7 +63,7 @@ static int spi_match_device(struct device *dev, struct device_driver *drv)
- {
- 	const struct spi_device	*spi = to_spi_device(dev);
- 
--	return strncmp(spi->modalias, drv->name, BUS_ID_SIZE) == 0;
-+	return strcmp(spi->modalias, drv->name) == 0;
- }
- 
- static int spi_uevent(struct device *dev, struct kobj_uevent_env *env)
-@@ -243,8 +243,7 @@ int spi_add_device(struct spi_device *spi)
- 	}
- 
- 	/* Set the bus ID string */
--	snprintf(spi->dev.bus_id, sizeof spi->dev.bus_id,
--			"%s.%u", spi->master->dev.bus_id,
-+	dev_set_name(&spi->dev, "%s.%u", dev_name(&spi->master->dev),
- 			spi->chip_select);
- 
- 
-@@ -254,7 +253,7 @@ int spi_add_device(struct spi_device *spi)
- 	 */
- 	mutex_lock(&spi_add_lock);
- 
--	if (bus_find_device_by_name(&spi_bus_type, NULL, spi->dev.bus_id)
-+	if (bus_find_device_by_name(&spi_bus_type, NULL, dev_name(&spi->dev))
- 			!= NULL) {
- 		dev_err(dev, "chipselect %d already in use\n",
- 				spi->chip_select);
-@@ -269,7 +268,7 @@ int spi_add_device(struct spi_device *spi)
- 	status = spi->master->setup(spi);
- 	if (status < 0) {
- 		dev_err(dev, "can't %s %s, status %d\n",
--				"setup", spi->dev.bus_id, status);
-+				"setup", dev_name(&spi->dev), status);
- 		goto done;
- 	}
- 
-@@ -277,9 +276,9 @@ int spi_add_device(struct spi_device *spi)
- 	status = device_add(&spi->dev);
- 	if (status < 0)
- 		dev_err(dev, "can't %s %s, status %d\n",
--				"add", spi->dev.bus_id, status);
-+				"add", dev_name(&spi->dev), status);
- 	else
--		dev_dbg(dev, "registered child %s\n", spi->dev.bus_id);
-+		dev_dbg(dev, "registered child %s\n", dev_name(&spi->dev));
- 
- done:
- 	mutex_unlock(&spi_add_lock);
-@@ -504,12 +503,11 @@ int spi_register_master(struct spi_master *master)
- 	/* register the device, then userspace will see it.
- 	 * registration fails if the bus ID is in use.
- 	 */
--	snprintf(master->dev.bus_id, sizeof master->dev.bus_id,
--		"spi%u", master->bus_num);
-+	dev_set_name(&master->dev, "spi%u", master->bus_num);
- 	status = device_add(&master->dev);
- 	if (status < 0)
- 		goto done;
--	dev_dbg(dev, "registered master %s%s\n", master->dev.bus_id,
-+	dev_dbg(dev, "registered master %s%s\n", dev_name(&master->dev),
- 			dynamic ? " (dynamic)" : "");
- 
- 	/* populate children from any spi device tables */
-diff --git a/drivers/spi/spi_bitbang.c b/drivers/spi/spi_bitbang.c
-index 96cc39e..85e61f4 100644
---- a/drivers/spi/spi_bitbang.c
-+++ b/drivers/spi/spi_bitbang.c
-@@ -475,7 +475,7 @@ int spi_bitbang_start(struct spi_bitbang *bitbang)
- 	/* this task is the only thing to touch the SPI bits */
- 	bitbang->busy = 0;
- 	bitbang->workqueue = create_singlethread_workqueue(
--			bitbang->master->dev.parent->bus_id);
-+			dev_name(bitbang->master->dev.parent));
- 	if (bitbang->workqueue == NULL) {
- 		status = -EBUSY;
- 		goto err1;
-diff --git a/drivers/spi/spi_butterfly.c b/drivers/spi/spi_butterfly.c
-index 0ee2b20..c218486 100644
---- a/drivers/spi/spi_butterfly.c
-+++ b/drivers/spi/spi_butterfly.c
-@@ -287,7 +287,7 @@ static void butterfly_attach(struct parport *p)
- 	pp->dataflash = spi_new_device(pp->bitbang.master, &pp->info[0]);
- 	if (pp->dataflash)
- 		pr_debug("%s: dataflash at %s\n", p->name,
--				pp->dataflash->dev.bus_id);
-+				dev_name(&pp->dataflash->dev));
- 
- 	// dev_info(_what?_, ...)
- 	pr_info("%s: AVR Butterfly\n", p->name);
-diff --git a/drivers/spi/spi_lm70llp.c b/drivers/spi/spi_lm70llp.c
-index 39d8d8a..af65267 100644
---- a/drivers/spi/spi_lm70llp.c
-+++ b/drivers/spi/spi_lm70llp.c
-@@ -287,7 +287,7 @@ static void spi_lm70llp_attach(struct parport *p)
- 	pp->spidev_lm70 = spi_new_device(pp->bitbang.master, &pp->info);
- 	if (pp->spidev_lm70)
- 		dev_dbg(&pp->spidev_lm70->dev, "spidev_lm70 at %s\n",
--				pp->spidev_lm70->dev.bus_id);
-+				dev_name(&pp->spidev_lm70->dev));
- 	else {
- 		printk(KERN_WARNING "%s: spi_new_device failed\n", DRVNAME);
- 		status = -ENODEV;
++config SIMULATE_NON_X86_CONFIGURATION
++	bool "Simulate non x86 configuration"
++	depends on DEBUG_KERNEL
++	help
++	  Several developers just test on a x86 architecture, and sometimes
++	  break non x86 architectures without realizing it. This config
++	  option disables a lot of configurations that are set by
++	  being x86. Any development should compile an allyesconfig
++	  with this setting enabled.
++
++	  Note, the kernel should compile, there's no guarantee that it
++	  will boot.
++
++	  If unsure, select "Normal Operation Model"
++endchoice
++
+ config ARCH_DEFCONFIG
+ 	string
+ 	default "arch/x86/configs/i386_defconfig" if X86_32
 
 
