@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbYJ3SDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758450AbYJ3SEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758073AbYJ3SDe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 14:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbYJ3SDY
+	id S1758450AbYJ3SEP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 14:04:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730AbYJ3SD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 14:03:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42870 "EHLO mx2.redhat.com"
+	Thu, 30 Oct 2008 14:03:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42894 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754536AbYJ3SDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 14:03:23 -0400
-Date: Thu, 30 Oct 2008 16:04:43 -0200
-From: Glauber Costa <glommer@redhat.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Nick Piggin <npiggin@suse.de>, Avi Kivity <avi@redhat.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       aliguori@codemonkey.ws, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] regression: vmalloc easily fail.
-Message-ID: <20081030180443.GE18634@poweredge.glommer>
-References: <1225234513-3996-1-git-send-email-glommer@redhat.com> <20081028232944.GA3759@wotan.suse.de> <20081029094856.GD4269@poweredge.glommer> <20081029101145.GB5953@wotan.suse.de> <49083B14.6070402@redhat.com> <20081029104333.GD5953@wotan.suse.de> <20081029220737.GF11532@poweredge.glommer> <20081030044941.GA9470@wotan.suse.de> <1225385162.23508.33.camel@calx>
+	id S1756242AbYJ3SD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 14:03:56 -0400
+Message-ID: <4909F705.8090904@redhat.com>
+Date: Thu, 30 Oct 2008 13:03:49 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1225385162.23508.33.camel@calx>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Arthur Jones <ajones@riverbed.com>
+CC: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "sct@redhat.com" <sct@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: ext3: slow symlink corruption on umount...
+References: <20081024183733.GA25797@ajones-laptop.nbttech.com> <20081027165423.GB25797@ajones-laptop.nbttech.com> <20081029195403.GA8333@ajones-laptop.nbttech.com> <4908C951.2000309@redhat.com> <20081030174057.GB7926@ajones-laptop.nbttech.com>
+In-Reply-To: <20081030174057.GB7926@ajones-laptop.nbttech.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 11:46:02AM -0500, Matt Mackall wrote:
-> On Thu, 2008-10-30 at 05:49 +0100, Nick Piggin wrote:
-> > I still think we should get rid of the guard pages in non-debug kernels
-> > completely,
+Arthur Jones wrote:
+> Hi Eric, ...
 > 
-> For what it's worth, I agree.
-Do we want any specific option, or is DEBUG_VM enough ?
+> On Wed, Oct 29, 2008 at 01:36:33PM -0700, Eric Sandeen wrote:
+>> [...]
+>> I'll look into it ...
+> 
+> In the cases that fail, I'm seeing bdi_write_congested()
+> return 2 at the top of write_cache_pages().  In the working
+> case, bdi_write_congested() returns 0 and the inodes are
+> found twice in the s_io list in generic_sync_sb_inodes,
+> first as i_state==7, where they are skipped, then a second
+> time as i_state==4, where ->writepage() is then called...
+> 
+> Arthur
 
-> 
-> -- 
-> Mathematics is the supreme nostalgia of our time.
-> 
+Something is definitely racy here; in my simple testcase I get failures
+maybe 30-50% of the time...
+
+If I add a mark_buffer_dirty to write_end_fn, it always passes but I
+need to think a bit about that.
+
+-Eric
+
