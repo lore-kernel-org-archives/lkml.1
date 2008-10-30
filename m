@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758150AbYJ3V2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758821AbYJ3V2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758150AbYJ3V2S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 17:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbYJ3V2J
+	id S1758821AbYJ3V2s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 17:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbYJ3V2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 17:28:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40444 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753419AbYJ3V2H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 17:28:07 -0400
-Date: Thu, 30 Oct 2008 22:27:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: use CONFIG_X86_SMP instead of CONFIG_SMP
-Message-ID: <20081030212753.GD30303@elte.hu>
-References: <1225400739.19324.18.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1225400739.19324.18.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Thu, 30 Oct 2008 17:28:38 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:42924 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753536AbYJ3V2i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 17:28:38 -0400
+Subject: [PATCH] fix compile breakage casued by x86: move
+	prefill_possible_map calling early
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>
+Content-Type: text/plain
+Date: Thu, 30 Oct 2008 16:28:35 -0500
+Message-Id: <1225402115.19324.40.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From 2947cdda39c36e5a0d56fe0c6b70a17526abb5b5 Mon Sep 17 00:00:00 2001
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Date: Thu, 30 Oct 2008 15:51:22 -0500
+Subject: [VOYAGER] add prefill_possible_mask() to fix linker breakage
 
-* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+Before
 
-> >From 6e5fbb4691fd68f5b03608c5d8d96e4f189e623a Mon Sep 17 00:00:00 2001
-> From: James Bottomley <James.Bottomley@HansenPartnership.com>
-> Date: Wed, 29 Oct 2008 13:11:48 -0500
-> Subject: [VOYAGER] x86: use CONFIG_X86_SMP instead of CONFIG_SMP
-> 
-> CONFIG_SMP is used for features which work on *all* x86 boxes. 
-> CONFIG_X86_SMP is used for standard PC like x86 boxes (for things 
-> like multi core and apics)
+commit 329513a35d1a2b6b28d54f5c2c0dde4face8200b
+Author: Yinghai Lu <yhlu.kernel@gmail.com>
+Date:   Wed Jul 2 18:54:40 2008 -0700
 
-i've applied your fix to tip/x86/urgent, as it's obviously correct in 
-the current scheme of things, thanks!
+    x86: move prefill_possible_map calling early
 
-but that needless build-time distinction should go away. We can now 
-support a whole host of 'weird' SMP boxes via genapic and x86_quirks.
+prefill_possible_mask() was hidden under CONFIG_HOTPLUG_CPU rendering
+it invisitble to voyager.  Since this commit it's exposed, but not
+provided by the voyager subarch, so add a dummy stub to fix the link
+breakage.
 
-	Ingo
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ arch/x86/mach-voyager/voyager_smp.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
+index 761d491..ece93b1 100644
+--- a/arch/x86/mach-voyager/voyager_smp.c
++++ b/arch/x86/mach-voyager/voyager_smp.c
+@@ -346,6 +346,12 @@ static void do_quad_bootstrap(void)
+ 	}
+ }
+ 
++void prefill_possible_map(void)
++{
++	/* This is empty on voyager because we need a much
++	 * earlier detection which is done in find_smp_config */
++}
++
+ /* Set up all the basic stuff: read the SMP config and make all the
+  * SMP information reflect only the boot cpu.  All others will be
+  * brought on-line later. */
+-- 
+1.5.6.5
+
+
+
