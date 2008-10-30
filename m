@@ -1,112 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbYJ3FkD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbYJ3FlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752766AbYJ3FkD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 01:40:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYJ3Fjw
+	id S1754188AbYJ3FlQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 01:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYJ3Fk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 01:39:52 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:45386 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752745AbYJ3Fjv (ORCPT
+	Thu, 30 Oct 2008 01:40:59 -0400
+Received: from ausmtp06.au.ibm.com ([202.81.18.155]:64339 "EHLO
+	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752082AbYJ3Fk7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 01:39:51 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AkwFABflCElMQWao/2dsb2JhbACBdsp5g1E
-Date: Thu, 30 Oct 2008 01:39:49 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] tracepoint: introduce *_noupdate APIs.
-Message-ID: <20081030053949.GC27381@Krystal>
-References: <49067E49.4040304@cn.fujitsu.com> <20081030053457.GB27381@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Oct 2008 01:40:59 -0400
+Date: Thu, 30 Oct 2008 11:02:44 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Zan Lynx <zlynx@acm.org>, linux-kernel@vger.kernel.org, jack@suse.cz
+Subject: Re: 2.6.28-rc2-mm1: Build failure on fs/quota.o
+Message-ID: <20081030053244.GA4870@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20081028233836.8b1ff9ae.akpm@linux-foundation.org> <4908EA82.8090308@acm.org> <20081029161626.1fa5acb0.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20081030053457.GB27381@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 01:38:36 up 147 days, 10:19,  5 users,  load average: 0.30, 0.23,
-	0.20
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20081029161626.1fa5acb0.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> * Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
+* Andrew Morton <akpm@linux-foundation.org> [2008-10-29 16:16:26]:
+
+> On Wed, 29 Oct 2008 16:58:10 -0600
+> Zan Lynx <zlynx@acm.org> wrote:
+> 
+> > Andrew Morton wrote:
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.28-rc2/2.6.28-rc2-mm1/
+> > > 
+> > > - Various architectures don't compile very well.  ia64, alpha, s390,
+> > >   arm.  ftrace seems to be a particular culprit.
+> > > 
+> > > - But it seems to work OK on the six machines I ran it on.
+> > > 
 > > 
-> > new APIs separate tracepoint_probe_register(),
-> > tracepoint_probe_unregister() into 2 steps. The first step of them
-> > is just update tracepoint_entry, not connect or disconnect.
+> > Here is the error:
 > > 
-> > this patch introduce tracepoint_probe_update_all() for update all.
-> > 
-> > these APIs are very useful for registering a lots of probes
-> > but just update once only. and a very important thing is that
-> > *_noupdate APIs do not require module_mutex.
-> > 
-> > Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> >   CC      fs/quota.o
+> > fs/quota.c: In function ___generic_quotactl_valid___:
+> > fs/quota.c:76: error: implicit declaration of function ___sb_has_quota_active___
+> > make[1]: *** [fs/quota.o] Error 1
+> > make: *** [fs] Error 2
 > 
-> [...]
-> 
-> > +/**
-> > + * tracepoint_probe_update_all -  update tracepoints
-> > + */
-> > +void tracepoint_probe_update_all(void)
-> > +{
-> > +	LIST_HEAD(release_probes);
-> > +	struct tp_probes *pos, *next;
-> > +
-> > +	mutex_lock(&tracepoints_mutex);
-> > +	if (!need_update) {
-> > +		mutex_unlock(&tracepoints_mutex);
-> > +		return;
-> > +	}
-> > +	if (!list_empty(&old_probes))
-> > +		list_replace_init(&old_probes, &release_probes);
-> > +	need_update = 0;
-> > +	mutex_unlock(&tracepoints_mutex);
-> > +
-> > +	tracepoint_update_probes();
-> 
-> I think the read-side of this release_probes list should be protected by
-> the tracepoints_mutex too. Two concurrent tracepoint_probe_update_all()
-> could cause havoc here :
-> 
-> 
-> mutex_lock(&tracepoints_mutex);
-> 
-> > +	list_for_each_entry_safe(pos, next, &release_probes, u.list) {
-> > +		list_del(&pos->u.list);
-> > +		call_rcu_sched(&pos->u.rcu, rcu_free_old_probes);
-> > +	}
-> 
-> mutex_unlock(&tracepoints_mutex);
-> 
-> ?
-> 
-> The rest looks good.
-> 
+> Thanks.
 
-Argh, forget it. LIST_HEAD(release_probes); is local to the function,
-there is nothing to protect here. My eyes thought they saw a "static"
-here for some reason. Night shift....
+Thanks, the patch fixes the build failure.
 
-The patch is good as-is.
-
-Thanks !
-
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
-> Mathieu
 > 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> From: Andrew Morton <akpm@linux-foundation.org>
+> 
+> fs/quota.c: In function `generic_quotactl_valid':
+> fs/quota.c:76: error: implicit declaration of function `sb_has_quota_active'
+> 
+> Cc: Jan Kara <jack@suse.cz>
+> Reported-by: Zan Lynx <zlynx@acm.org>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+  Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> ---
+> 
+>  include/linux/quotaops.h |    5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff -puN include/linux/quotaops.h~quota-permit-separately-enabling-quota-accounting-and-enforcing-limits-fix include/linux/quotaops.h
+> --- a/include/linux/quotaops.h~quota-permit-separately-enabling-quota-accounting-and-enforcing-limits-fix
+> +++ a/include/linux/quotaops.h
+> @@ -257,6 +257,11 @@ static inline int sb_any_quota_loaded(st
+>  	return 0;
+>  }
+> 
+> +static inline int sb_has_quota_active(struct super_block *sb, int type)
+> +{
+> +	return 0;
+> +}
+> +
+>  static inline int sb_any_quota_active(struct super_block *sb)
+>  {
+>  	return 0;
+> _
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
