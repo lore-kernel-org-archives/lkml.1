@@ -1,203 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbYJ3OrJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755705AbYJ3Orr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755888AbYJ3OrJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 10:47:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbYJ3Oq4
+	id S1755705AbYJ3Orr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 10:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084AbYJ3Ori
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 10:46:56 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:14458 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752662AbYJ3Oqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 10:46:55 -0400
-From: Andrey Mirkin <major@openvz.org>
-To: devel@openvz.org
-Subject: Re: [Devel] [RFC v8][PATCH 0/12] Kernel based checkpoint/restart
-Date: Thu, 30 Oct 2008 18:45:41 +0400
-User-Agent: KMail/1.8.2
-Cc: Oren Laadan <orenl@cs.columbia.edu>, Linus Torvalds <torvalds@osdl.org>,
-       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-       linux-mm@kvack.org, Alexander Viro <viro@zeniv.linux.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-References: <1225374675-22850-1-git-send-email-orenl@cs.columbia.edu>
-In-Reply-To: <1225374675-22850-1-git-send-email-orenl@cs.columbia.edu>
+	Thu, 30 Oct 2008 10:47:38 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:24976 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752967AbYJ3Orh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 10:47:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:subject:content-type
+         :content-transfer-encoding:from;
+        b=nvBfHGTIQU95HHkq15O4Pmtloypb1I3U+L84Jjj39lKugFSW4wV1AvK8rDKZmnl0qV
+         2JdPh+/dP7gIUNkBbqrGF23uQkUM+mtly3znm4kYlmm+PEAjIzZ0ghA6Lqu1nW5NheAx
+         iWV32hxUONxq+4xUHFSX/BuDoxJoqdUbvf5Gc=
+Message-ID: <4909C8D5.3080608@gmail.com>
+Date: Thu, 30 Oct 2008 09:46:45 -0500
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: man-pages-3.12 is released
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810301745.45068.major@openvz.org>
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oren,
+Gidday
 
-Can you please check your git server. I can't update to the latest version:
+I've released man-pages-3.12.
 
-# git-pull
-fatal: The remote end hung up unexpectedly
+This release is now available for download at:
 
-git-clone exits with the same error.
+   http://www.kernel.org/pub/linux/docs/man-pages
+   or ftp://ftp.kernel.org/pub/linux/docs/man-pages
 
-Andrey
+The online changelog is available at
+http://www.kernel.org/doc/man-pages/changelog.html
+(blogged at
+http://linux-man-pages.blogspot.com/2008/10/man-pages-312-is-released.html)
+and the current version of the pages is browsable at
+http://www.kernel.org/doc/man-pages/
+
+An abridged version of the changes in this release that may be of
+particular interest to readers of this list is provided below.
+
+Cheers,
+
+Michael
+
+==================== Changes in man-pages-3.12 ====================
+
+New and rewritten pages
+-----------------------
+
+pthread_attr_init.3
+     Michael Kerrisk
+         New page for pthread_attr_init(3) and pthread_attr_destroy(3)
+
+pthread_attr_setdetachstate.3
+     Michael Kerrisk
+         New page for pthread_attr_setdetachstate(3) and
+         pthread_attr_getdetachstate(3)
+
+pthread_attr_setguardsize.3
+     Michael Kerrisk
+         New page for pthread_attr_setguardsize(3) and
+         pthread_attr_getguardsize(3)
+
+pthread_attr_setscope.3
+     Michael Kerrisk
+         New page for pthread_attr_setscope(3) and pthread_attr_getscope(3)
+
+pthread_attr_setstack.3
+     Michael Kerrisk
+         New page for pthread_attr_setstack(3) and pthread_attr_getstack(3)
+
+pthread_attr_setstackaddr.3
+     Michael Kerrisk
+         New page for pthread_attr_setstackaddr(3) and
+         pthread_attr_getstackaddr(3)
+
+pthread_attr_setstacksize.3
+     Michael Kerrisk
+         New page for pthread_attr_setstacksize(3) and
+         pthread_attr_getstacksize(3)
+
+pthread_create.3
+     Michael Kerrisk
+         New page describing pthread_create(3)
+
+pthread_detach.3
+     Michael Kerrisk
+         New page for pthread_detach(3)
+
+pthread_equal.3
+     Michael Kerrisk
+         New page for pthread_equal(3)
+
+pthread_exit.3
+     Michael Kerrisk
+         New page describing pthread_exit(3)
+
+pthread_getattr_np.3
+     Michael Kerrisk
+         New page for pthread_getattr_np(3)
+
+pthread_join.3
+     Michael Kerrisk
+         New page for pthread_join(3)
+
+pthread_self.3
+     Michael Kerrisk
+         New page for pthread_self(3)
+
+pthread_tryjoin_np.3
+     Michael Kerrisk
+         New page for pthread_tryjoin_np(3) and pthread_timedjoin_np(3)
 
 
-On Thursday 30 October 2008 16:51 Oren Laadan wrote:
-> Basic checkpoint-restart [C/R]: v8 adds support for "external" checkpoint
-> and improves documentation. Older announcements below.
->
-> The git tree tracking v8 (branch 'ckpt-v8'), and older versions, is at:
-> 	git://gorgona.ncl.cs.columbia.edu/pub/git/linux-cr-dev.git
->
-> (or for the latest version -
-> 	git://gorgona.ncl.cs.columbia.edu/pub/git/linux-cr.git)
->
-> We'd like to see these make their way into -mm.
-> As Dave Hansen put it:
->
-> --
-> Why do we want it?  It allows containers to be moved between physical
-> machines' kernels in the same way that VMWare can move VMs between
-> physical machines' hypervisors.  There are currently at least two
-> out-of-tree implementations of this in the commercial world (IBM's
-> Metacluster and Parallels' OpenVZ/Virtuozzo) and several in the academic
-> world like Zap.
->
-> Why do we need it in mainline now?  Because we already have plenty of
-> out-of-tree ones, and  want to know what an in-tree one will be like.   :)
-> What *I* want right now is the extra review and scrutiny that comes with
-> a mainline submission to make sure we're not going in a direction
-> contrary to the community.
->
-> This only supports pretty simple apps.  But, I trust Ingo when he says:
-> >> > > Generally, if something works for simple apps already (in a robust,
-> >> > > compatible and supportable way) and users find it "very cool", then
-> >> > > support for more complex apps is not far in the future.  but if you
-> >> > > want to support more complex apps straight away, it takes forever
-> >> > > and gets ugly.
->
-> We're *certainly* going to be changing the ABI (which is the format of
-> the checkpoint).  I'd like to follow the model that we used for
-> ext4-dev, which is to make it very clear that this is a development-only
-> feature for now.  Perhaps we do that by making the interface only
-> available through debugfs or something similar for now.  Or, reserving
-> the syscall numbers but require some runtime switch to be thrown before
-> they can be used.  I'm open to suggestions here.
-> --
->
-> Oren.
->
-> --
-> Todo:
-> - Add support for x86-64 and improve ABI
-> - Refine or change syscall interface
-> - Extend to handle (multiple) tasks in a container
-> - Handle multiple namespaces in a container (e.g. save the filesystem
->   namespaces state with the file descriptors)
-> - Security (without CAPS_SYS_ADMIN files restore may fail)
->
-> Changelog:
->
-> [2008-Oct-29] v8:
->   - Support "external" checkpoint
->   - Include Dave Hansen's 'deny-checkpoint' patch
->   - Split docs in Documentation/checkpoint/..., and improve contents
->
-> [2008-Oct-17] v7:
->   - Fix save/restore state of FPU
->   - Fix argument given to kunmap_atomic() in memory dump/restore
->
-> [2008-Oct-07] v6:
->   - Balance all calls to cr_hbuf_get() with matching cr_hbuf_put()
->     (even though it's not really needed)
->   - Add assumptions and what's-missing to documentation
->   - Misc fixes and cleanups
->
-> [2008-Sep-11] v5:
->   - Config is now 'def_bool n' by default
->   - Improve memory dump/restore code (following Dave Hansen's comments)
->   - Change dump format (and code) to allow chunks of <vaddrs, pages>
->     instead of one long list of each
->   - Fix use of follow_page() to avoid faulting in non-present pages
->   - Memory restore now maps user pages explicitly to copy data into them,
->     instead of reading directly to user space; got rid of mprotect_fixup()
->   - Remove preempt_disable() when restoring debug registers
->   - Rename headers files s/ckpt/checkpoint/
->   - Fix misc bugs in files dump/restore
->   - Fixes and cleanups on some error paths
->   - Fix misc coding style
->
-> [2008-Sep-09] v4:
->   - Various fixes and clean-ups
->   - Fix calculation of hash table size
->   - Fix header structure alignment
->   - Use stand list_... for cr_pgarr
->
-> [2008-Aug-29] v3:
->   - Various fixes and clean-ups
->   - Use standard hlist_... for hash table
->   - Better use of standard kmalloc/kfree
->
-> [2008-Aug-20] v2:
->   - Added Dump and restore of open files (regular and directories)
->   - Added basic handling of shared objects, and improve handling of
->     'parent tag' concept
->   - Added documentation
->   - Improved ABI, 64bit padding for image data
->   - Improved locking when saving/restoring memory
->   - Added UTS information to header (release, version, machine)
->   - Cleanup extraction of filename from a file pointer
->   - Refactor to allow easier reviewing
->   - Remove requirement for CAPS_SYS_ADMIN until we come up with a
->     security policy (this means that file restore may fail)
->   - Other cleanup and response to comments for v1
->
-> [2008-Jul-29] v1:
->   - Initial version: support a single task with address space of only
->     private anonymous or file-mapped VMAs; syscalls ignore pid/crid
->     argument and act on current process.
->
-> --
-> At the containers mini-conference before OLS, the consensus among
-> all the stakeholders was that doing checkpoint/restart in the kernel
-> as much as possible was the best approach.  With this approach, the
-> kernel will export a relatively opaque 'blob' of data to userspace
-> which can then be handed to the new kernel at restore time.
->
-> This is different than what had been proposed before, which was
-> that a userspace application would be responsible for collecting
-> all of this data.  We were also planning on adding lots of new,
-> little kernel interfaces for all of the things that needed
-> checkpointing.  This unites those into a single, grand interface.
->
-> The 'blob' will contain copies of select portions of kernel
-> structures such as vmas and mm_structs.  It will also contain
-> copies of the actual memory that the process uses.  Any changes
-> in this blob's format between kernel revisions can be handled by
-> an in-userspace conversion program.
->
-> This is a similar approach to virtually all of the commercial
-> checkpoint/restart products out there, as well as the research
-> project Zap.
->
-> These patches basically serialize internel kernel state and write
-> it out to a file descriptor.  The checkpoint and restore are done
-> with two new system calls: sys_checkpoint and sys_restart.
->
-> In this incarnation, they can only work checkpoint and restore a
-> single task. The task's address space may consist of only private,
-> simple vma's - anonymous or file-mapped. The open files may consist
-> of only simple files and directories.
-> --
->
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
->
-> _______________________________________________
-> Devel mailing list
-> Devel@openvz.org
-> https://openvz.org/mailman/listinfo/devel
+Newly documented interfaces in existing pages
+---------------------------------------------
+
+dup.2
+     Michael Kerrisk
+         Add description of dup3()
+             dup3() was added in kernel 2.6.27.
+
+epoll_create.2
+     Michael Kerrisk
+         Add description of new epoll_create1()
+             The new epoll_create1() system call appeared in Linux 2.6.27.
+eventfd.2
+     Michael Kerrisk
+         Describe eventfd2() and EFD_NONBLOCK and EFD_CLOEXEC
+             Linux 2.6.27 added eventfd(), which supports a flags argument
+             that eventfd() did not provide.  The flags so far implemented
+             are EFD_NONBLOCK and EFD_CLOEXEC,
+
+inotify_init.2
+     Michael Kerrisk
+         Add description of inotify_init1()
+             The inotify_init1() system call was added in Linux 2.6.27.
+
+pipe.2
+     Michael Kerrisk
+         Add description of new pipe2() syscall
+             pipe2() was added in 2.6.27.  Describe the O_NONBLOCK and
+             O_CLOEXEC flags.
+
+signalfd.2
+     Michael Kerrisk
+         Describe signalfd4() and SFD_NONBLOCK and SFD_CLOEXEC
+             Linux 2.6.27 added signalfd4(), which supports a flags argument
+             that signalfd() did not provide.  The flags so far implemented
+             are SFD_NONBLOCK and SFD_CLOEXEC.
+
+
+Changes to individual pages
+---------------------------
+
+sched_yield.2
+     Michael Kerrisk
+         Rewrite description in terms of threads
+             The text formerly described the operation of sched_yield() in
+             terms of processes.  It should be in terms of threads.
+     Michael Kerrisk
+         Add NOTES text on appropriate use of sched_yield()
+             Strategic calls to sched_yield() can be used to improve
+             performance, but unnecessary use should be avoided.
+
+sigaction.2
+     Michael Kerrisk
+         Clarify that sa_mask affects the *per-thread* signal mask
+             The page didn't previously clearly explain the scope of the
+             signal mask that is affected by sa_mask.
+
+sigprocmask.2
+     Michael Kerrisk
+         Clarify that sigprocmask() operates on a per-thread mask
+             The first sentence of the page was vague on the scope of the
+             attribute changed by sigprocmask().  Reword to make this
+             clearer and add a sentence in NOTES to explicitly state that
+             the signal mask is a per-thread attribute.
+
+socket.2
+     Michael Kerrisk
+         Document SOCK_NONBLOCK and SOCK_CLOEXEC flags
+             These flags, specified in the 'type' argument, are supported
+             since Linux 2.6.27.
+
+socketpair.2
+     Michael Kerrisk
+         Refer to socket(2) for SOCK_CLOEXEC and SOCK_NONBLOCK
+             Refer the reader to socket(2) for a description of the SOCK_CLOEXEC
+             and SOCK_NONBLOCK flags, which are supported by socketpair() since
+             Linux 2.6.27.
+
+timerfd_create.2
+     Michael Kerrisk
+         Document timerfd_create() TFD_CLOEXEC and TFD_NONBLOCK
+             TFD_CLOEXEC and TFD_NONBLOCK are supported since LInux 2.6.27.
+
+dlopen.3
+     Michael Kerrisk
+         LD_LIBRARY_PATH is inspected once, at program start-up
+             Make it clear that LD_LIBRARY_PATH is inspected *once*, at
+             program start-up.  (Verified from source and by experiment.)
+
+getaddrinfo.3
+     Michael Kerrisk
+         Clarify error descriptions with some examples
+             Clarify the description of some errors by giving examples
+             that produce the errors.  (Text added for EAI_SERVICE and
+             EAI_SOCKTYPE.)
+
+             Also, add an error case for EAI_BADFLAGS.
+
+tty_ioctl.4
+     Michael Kerrisk
+         Explain capability requirements for TIOCCONS
+             Explain capability requirements for TIOCCONS, and describe
+             changes in 2.6.10 relating to capabilities.
+     Michael Kerrisk
+         Explain capability requirements for various ioctls
+             For TIOCSLCKTRMIOS, TIOCSCTTY, TIOCEXCL, explain the exact
+             capability that is required (the text formerly just said "root"
+             in each case).
+
+proc.5
+     Michael Kerrisk
+         Document /proc/sys/kernel/threads-max
+             Defines the system-wide limit on the number of threads (tasks).
+
+utmp.5
+     Pierre Cazenave
+         It is just "other" who should not have write perms on utmp
+             The page was vague before, saying that utmp should not be
+             writable by any user.  This isn't true: it can be, and
+             typically is, writable by user and group.
+
+ld.so.8
+     Michael Kerrisk
+         Document LD_USE_LOAD_BIAS
+             Drawing heavily on Jakub Jelinek's description in
+             http://sources.redhat.com/ml/libc-hacker/2003-11/msg00127.html
+             (Subject: [PATCH] Support LD_USE_LOAD_BIAS)
+         --inhibit-rpath is ignored for setuid/setgid ld.so
+             The --inhibit-rpath option is ignored if ld.so is setuid/setgid
+             (not if the executable is setuid/setgid).
+     Michael Kerrisk
+         Since glibc 2.4, setuid/setgid programs ignore LD_ORIGIN_PATH
+     Michael Kerrisk
+         Fix description of LD_PROFILE and LD_PROFILE_OUTPUT
+             Clarify that LD_PROFILE is pathname or a soname,
+             and identify name of profiling output file.
+             Fix description of LD_PROFILE_OUTPUT, which wasn't even close to
+             the truth.  (But why did it remain unfixed for so many years?)
+     Michael Kerrisk
+         Since glibc 2.3.4, setuid/setgid programs ignore LD_DYNAMIC_WEAK
+     Michael Kerrisk
+         Since version 2.3.5, setuid/setgid programs ignore LD_SHOW_AUXV
+     Michael Kerrisk
+         Reorder lists of LD_* environment variables alphabetically
+     Michael Kerrisk
+         Since glibc 2.3.4, setuid/setgid programs ignore LD_DEBUG
+
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
