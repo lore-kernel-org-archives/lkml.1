@@ -1,65 +1,1019 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755792AbYJ3OoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756114AbYJ3Oow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755792AbYJ3OoW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 10:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbYJ3OoL
+	id S1756114AbYJ3Oow (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 10:44:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754987AbYJ3Oom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 10:44:11 -0400
-Received: from the.earth.li ([217.147.81.2]:59195 "EHLO the.earth.li"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754279AbYJ3OoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 10:44:10 -0400
-Date: Thu, 30 Oct 2008 14:44:09 +0000
-From: Jonathan McDowell <noodles@earth.li>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH] Fix logic error in rfkill_check_duplicity
-Message-ID: <20081030144409.GJ3162@earth.li>
-References: <20081029164006.GH3162@earth.li> <1225309212.3068.44.camel@achroite> <20081030102746.GI3162@earth.li>
-MIME-Version: 1.0
+	Thu, 30 Oct 2008 10:44:42 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:34472 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754882AbYJ3Ook (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 10:44:40 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AkwFADtjCUlMQWao/2dsb2JhbACBdssVg1E
+Date: Thu, 30 Oct 2008 10:44:37 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][v3] blktrace: conversion to tracepoints 2.6.27.4
+	backport
+Message-ID: <20081030144437.GA13812@Krystal>
+References: <20081029120556.GD28123@ghostprotocols.net> <20081029131855.GC31673@kernel.dk> <20081029194323.GA25056@ghostprotocols.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081030102746.GI3162@earth.li>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081029194323.GA25056@ghostprotocols.net>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:42:47 up 147 days, 19:23,  9 users,  load average: 0.32, 0.19,
+	0.45
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 10:27:46AM +0000, Jonathan McDowell wrote:
+Hi Arnaldo,
+
+I've backported it to 2.6.27.4 so I can merge it in my current -lttng
+tree.  (I'll move to 2.6.28-rc soon though). I send it here for future
+reference.
+
+Mathieu
+
+
+Em Wed, Oct 29, 2008 at 02:18:55PM +0100, Jens Axboe escreveu:
+> > 	Feel free to point any disgusting aspect, perhaps there is at
+> > least one to warn me about fixing 8-)
+> 
+> You my as well pass the members separately now that it's a specific call
+> anyway, to avoid doing the calculation when tracing is disabled.
+> 
+> Patch looks straight forward. Perhaps it would be cleaner to use an
+> atomic type for the reference?
+
+Done and made the old pdu_int + NULL bio (trace_block_unplug_{io,timer})
+functions to receive just the request_queue.
+
+Found and fixed a bug in the process:
+
+In v2 we had:
+
++       unregister_trace_block_rq_insert(blk_add_trace_rq_insert);
++       unregister_trace_block_rq_insert(blk_add_trace_rq_abort);
+
+Where it should have been:
+
++       unregister_trace_block_rq_insert(blk_add_trace_rq_insert);
++       unregister_trace_block_rq_abort(blk_add_trace_rq_abort);
+
+c'n'p roblem!
+
+Also removed the leftover tracepoint_synchronize_unregister macro, it
+was already merged righfully as an inline function.
+
+Everything should be rock solid now 8)
+
+Regards,
+
+- Arnaldo
+
+commit 61205226c1aed87e444c3e0e4a271aee76c57589
+Author: Arnaldo Carvalho de Melo <acme@redhat.com>
+Date:   Wed Oct 29 17:23:47 2008 -0200
+
+    blktrace: port to tracepoints
+    
+    This was a forward port of work done by Mathieu Desnoyers, I changed it to
+    encode the 'what' parameter on the tracepoint name, so that one can register
+    interest in specific events and not on classes of events to then check the
+    'what' parameter.
+    
+    Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+
+Ported to 2.6.27.4 LTTng tree by Mathieu Desnoyers. "abort event" is not used.
+
+Also :
+
+static void blk_add_trace_rq(struct request_queue *q, struct request *rq,
+				    u32 what)
+{
+	struct blk_trace *bt = q->blk_trace;
+	int rw = rq->cmd_flags & 0x03;
+
+	if (likely(!bt))
+		return;
+
+#if 0 //port to 2.6.27.4
+	if (blk_discard_rq(rq))
+		rw |= (1 << BIO_RW_DISCARD);
+#endif //0
+
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ block/Kconfig                |    1 
+ block/blk-core.c             |   33 +---
+ block/blktrace.c             |  334 ++++++++++++++++++++++++++++++++++++++++++-
+ block/elevator.c             |    5 
+ drivers/md/dm.c              |    6 
+ fs/bio.c                     |    3 
+ include/linux/blktrace_api.h |  143 ------------------
+ include/trace/block.h        |   60 +++++++
+ mm/bounce.c                  |    3 
+ 9 files changed, 422 insertions(+), 166 deletions(-)
+
+Index: linux-2.6-lttng/block/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/block/Kconfig	2008-10-30 10:01:12.000000000 -0400
++++ linux-2.6-lttng/block/Kconfig	2008-10-30 10:02:04.000000000 -0400
+@@ -47,6 +47,7 @@ config BLK_DEV_IO_TRACE
+ 	depends on SYSFS
+ 	select RELAY
+ 	select DEBUG_FS
++	select TRACEPOINTS
+ 	help
+ 	  Say Y here if you want to be able to trace the block layer actions
+ 	  on a given queue. Tracing allows you to see any traffic happening
+Index: linux-2.6-lttng/block/blk-core.c
+===================================================================
+--- linux-2.6-lttng.orig/block/blk-core.c	2008-10-30 10:01:12.000000000 -0400
++++ linux-2.6-lttng/block/blk-core.c	2008-10-30 10:02:42.000000000 -0400
+@@ -30,6 +30,7 @@
+ #include <linux/cpu.h>
+ #include <linux/blktrace_api.h>
+ #include <linux/fault-inject.h>
++#include <trace/block.h>
  
-> I'll have a prod at why the [hso] rfkill stuff isn't working next
-
-Ok, I believe this is due to the addition of rfkill_check_duplicity in
-rfkill and the fact that test_bit actually returns a negative value
-rather than the postive one expected (which is of course equally true).
-So when the second WLAN device (the hso device, with the EEE PC WLAN
-being the first) comes along rfkill_check_duplicity returns a negative
-value and so rfkill_register returns an error. Patch below fixes this
-for me.
-
-The hso driver should probably be claiming to be a WWAN device as well,
-given that it's GSM/HSDPA rather than 802.11.
-
-Signed-Off-By: Jonathan McDowell <noodles@earth.li>
-
------
-diff --git a/net/rfkill/rfkill.c b/net/rfkill/rfkill.c
-index f949a48..1ba35a7 100644
---- a/net/rfkill/rfkill.c
-+++ b/net/rfkill/rfkill.c
-@@ -603,7 +603,7 @@ static int rfkill_check_duplicity(const struct rfkill *rfkil
-        }
+ #include "blk.h"
  
-        /* 0: first switch of its kind */
--       return test_bit(rfkill->type, seen);
-+       return (test_bit(rfkill->type, seen)) ? 1 : 0;
+@@ -207,7 +208,7 @@ void blk_plug_device(struct request_queu
+ 
+ 	if (!queue_flag_test_and_set(QUEUE_FLAG_PLUGGED, q)) {
+ 		mod_timer(&q->unplug_timer, jiffies + q->unplug_delay);
+-		blk_add_trace_generic(q, NULL, 0, BLK_TA_PLUG);
++		trace_block_plug(q);
+ 	}
+ }
+ EXPORT_SYMBOL(blk_plug_device);
+@@ -295,9 +296,7 @@ void blk_unplug_work(struct work_struct 
+ 	struct request_queue *q =
+ 		container_of(work, struct request_queue, unplug_work);
+ 
+-	blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_IO, NULL,
+-				q->rq.count[READ] + q->rq.count[WRITE]);
+-
++	trace_block_unplug_io(q);
+ 	q->unplug_fn(q);
  }
  
- static int rfkill_add_switch(struct rfkill *rfkill)
------
-
-J.
+@@ -305,9 +304,7 @@ void blk_unplug_timeout(unsigned long da
+ {
+ 	struct request_queue *q = (struct request_queue *)data;
+ 
+-	blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_TIMER, NULL,
+-				q->rq.count[READ] + q->rq.count[WRITE]);
+-
++	trace_block_unplug_timer(q);
+ 	kblockd_schedule_work(&q->unplug_work);
+ }
+ 
+@@ -317,9 +314,7 @@ void blk_unplug(struct request_queue *q)
+ 	 * devices don't necessarily have an ->unplug_fn defined
+ 	 */
+ 	if (q->unplug_fn) {
+-		blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_IO, NULL,
+-					q->rq.count[READ] + q->rq.count[WRITE]);
+-
++		trace_block_unplug_io(q);
+ 		q->unplug_fn(q);
+ 	}
+ }
+@@ -806,7 +801,7 @@ rq_starved:
+ 	if (ioc_batching(q, ioc))
+ 		ioc->nr_batch_requests--;
+ 
+-	blk_add_trace_generic(q, bio, rw, BLK_TA_GETRQ);
++	trace_block_getrq(q, bio, rw);
+ out:
+ 	return rq;
+ }
+@@ -832,7 +827,7 @@ static struct request *get_request_wait(
+ 		prepare_to_wait_exclusive(&rl->wait[rw], &wait,
+ 				TASK_UNINTERRUPTIBLE);
+ 
+-		blk_add_trace_generic(q, bio, rw, BLK_TA_SLEEPRQ);
++		trace_block_sleeprq(q, bio, rw);
+ 
+ 		__generic_unplug_device(q);
+ 		spin_unlock_irq(q->queue_lock);
+@@ -907,7 +902,7 @@ EXPORT_SYMBOL(blk_start_queueing);
+  */
+ void blk_requeue_request(struct request_queue *q, struct request *rq)
+ {
+-	blk_add_trace_rq(q, rq, BLK_TA_REQUEUE);
++	trace_block_rq_requeue(q, rq);
+ 
+ 	if (blk_rq_tagged(rq))
+ 		blk_queue_end_tag(q, rq);
+@@ -1132,7 +1127,7 @@ static int __make_request(struct request
+ 		if (!ll_back_merge_fn(q, req, bio))
+ 			break;
+ 
+-		blk_add_trace_bio(q, bio, BLK_TA_BACKMERGE);
++		trace_block_bio_backmerge(q, bio);
+ 
+ 		req->biotail->bi_next = bio;
+ 		req->biotail = bio;
+@@ -1149,7 +1144,7 @@ static int __make_request(struct request
+ 		if (!ll_front_merge_fn(q, req, bio))
+ 			break;
+ 
+-		blk_add_trace_bio(q, bio, BLK_TA_FRONTMERGE);
++		trace_block_bio_frontmerge(q, bio);
+ 
+ 		bio->bi_next = req->bio;
+ 		req->bio = bio;
+@@ -1228,7 +1223,7 @@ static inline void blk_partition_remap(s
+ 		bio->bi_sector += p->start_sect;
+ 		bio->bi_bdev = bdev->bd_contains;
+ 
+-		blk_add_trace_remap(bdev_get_queue(bio->bi_bdev), bio,
++		trace_block_remap(bdev_get_queue(bio->bi_bdev), bio,
+ 				    bdev->bd_dev, bio->bi_sector,
+ 				    bio->bi_sector - p->start_sect);
+ 	}
+@@ -1399,10 +1394,10 @@ end_io:
+ 			goto end_io;
+ 
+ 		if (old_sector != -1)
+-			blk_add_trace_remap(q, bio, old_dev, bio->bi_sector,
++			trace_block_remap(q, bio, old_dev, bio->bi_sector,
+ 					    old_sector);
+ 
+-		blk_add_trace_bio(q, bio, BLK_TA_QUEUE);
++		trace_block_bio_queue(q, bio);
+ 
+ 		old_sector = bio->bi_sector;
+ 		old_dev = bio->bi_bdev->bd_dev;
+@@ -1536,7 +1531,7 @@ static int __end_that_request_first(stru
+ 	int total_bytes, bio_nbytes, next_idx = 0;
+ 	struct bio *bio;
+ 
+-	blk_add_trace_rq(req->q, req, BLK_TA_COMPLETE);
++	trace_block_rq_complete(req->q, req);
+ 
+ 	/*
+ 	 * for a REQ_BLOCK_PC request, we want to carry any eventual
+Index: linux-2.6-lttng/block/blktrace.c
+===================================================================
+--- linux-2.6-lttng.orig/block/blktrace.c	2008-10-30 10:01:12.000000000 -0400
++++ linux-2.6-lttng/block/blktrace.c	2008-10-30 10:33:06.000000000 -0400
+@@ -23,10 +23,18 @@
+ #include <linux/mutex.h>
+ #include <linux/debugfs.h>
+ #include <linux/time.h>
++#include <trace/block.h>
+ #include <asm/uaccess.h>
+ 
+ static unsigned int blktrace_seq __read_mostly = 1;
+ 
++/* Global reference count of probes */
++static DEFINE_MUTEX(blk_probe_mutex);
++static atomic_t blk_probes_ref = ATOMIC_INIT(0);
++
++static int blk_register_tracepoints(void);
++static void blk_unregister_tracepoints(void);
++
+ /*
+  * Send out a notify message.
+  */
+@@ -133,7 +141,7 @@ static u32 bio_act[9] __read_mostly = { 
+  * The worker for the various blk_add_trace*() types. Fills out a
+  * blk_io_trace structure and places it in a per-cpu subbuffer.
+  */
+-void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
++static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
+ 		     int rw, u32 what, int error, int pdu_len, void *pdu_data)
+ {
+ 	struct task_struct *tsk = current;
+@@ -190,8 +198,6 @@ void __blk_add_trace(struct blk_trace *b
+ 	local_irq_restore(flags);
+ }
+ 
+-EXPORT_SYMBOL_GPL(__blk_add_trace);
+-
+ static struct dentry *blk_tree_root;
+ static DEFINE_MUTEX(blk_tree_mutex);
+ static unsigned int root_users;
+@@ -250,6 +256,10 @@ static void blk_trace_cleanup(struct blk
+ 	free_percpu(bt->sequence);
+ 	free_percpu(bt->msg_data);
+ 	kfree(bt);
++	mutex_lock(&blk_probe_mutex);
++	if (atomic_dec_and_test(&blk_probes_ref))
++		blk_unregister_tracepoints();
++	mutex_unlock(&blk_probe_mutex);
+ }
+ 
+ int blk_trace_remove(struct request_queue *q)
+@@ -440,6 +450,14 @@ int do_blk_trace_setup(struct request_qu
+ 	bt->pid = buts->pid;
+ 	bt->trace_state = Blktrace_setup;
+ 
++	mutex_lock(&blk_probe_mutex);
++	if (atomic_add_return(1, &blk_probes_ref) == 1) {
++		ret = blk_register_tracepoints();
++		if (ret)
++			goto probe_err;
++	}
++	mutex_unlock(&blk_probe_mutex);
++
+ 	ret = -EBUSY;
+ 	old_bt = xchg(&q->blk_trace, bt);
+ 	if (old_bt) {
+@@ -448,6 +466,9 @@ int do_blk_trace_setup(struct request_qu
+ 	}
+ 
+ 	return 0;
++probe_err:
++	atomic_dec(&blk_probes_ref);
++	mutex_unlock(&blk_probe_mutex);
+ err:
+ 	if (dir)
+ 		blk_remove_tree(dir);
+@@ -574,3 +595,310 @@ void blk_trace_shutdown(struct request_q
+ 		blk_trace_remove(q);
+ 	}
+ }
++
++/*
++ * blktrace probes
++ */
++
++/**
++ * blk_add_trace_rq - Add a trace for a request oriented action
++ * @q:		queue the io is for
++ * @rq:		the source request
++ * @what:	the action
++ *
++ * Description:
++ *     Records an action against a request. Will log the bio offset + size.
++ *
++ **/
++static void blk_add_trace_rq(struct request_queue *q, struct request *rq,
++				    u32 what)
++{
++	struct blk_trace *bt = q->blk_trace;
++	int rw = rq->cmd_flags & 0x03;
++
++	if (likely(!bt))
++		return;
++
++#if 0 //port to 2.6.27.4
++	if (blk_discard_rq(rq))
++		rw |= (1 << BIO_RW_DISCARD);
++#endif //0
++
++	if (blk_pc_request(rq)) {
++		what |= BLK_TC_ACT(BLK_TC_PC);
++		__blk_add_trace(bt, 0, rq->data_len, rw, what, rq->errors,
++				sizeof(rq->cmd), rq->cmd);
++	} else  {
++		what |= BLK_TC_ACT(BLK_TC_FS);
++		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9,
++				rw, what, rq->errors, 0, NULL);
++	}
++}
++
++static void blk_add_trace_rq_abort(struct request_queue *q, struct request *rq)
++{
++	blk_add_trace_rq(q, rq, BLK_TA_ABORT);
++}
++
++static void blk_add_trace_rq_insert(struct request_queue *q, struct request *rq)
++{
++	blk_add_trace_rq(q, rq, BLK_TA_INSERT);
++}
++
++static void blk_add_trace_rq_issue(struct request_queue *q, struct request *rq)
++{
++	blk_add_trace_rq(q, rq, BLK_TA_ISSUE);
++}
++
++static void blk_add_trace_rq_requeue(struct request_queue *q, struct request *rq)
++{
++	blk_add_trace_rq(q, rq, BLK_TA_REQUEUE);
++}
++
++static void blk_add_trace_rq_complete(struct request_queue *q, struct request *rq)
++{
++	blk_add_trace_rq(q, rq, BLK_TA_COMPLETE);
++}
++
++/**
++ * blk_add_trace_bio - Add a trace for a bio oriented action
++ * @q:		queue the io is for
++ * @bio:	the source bio
++ * @what:	the action
++ *
++ * Description:
++ *     Records an action against a bio. Will log the bio offset + size.
++ *
++ **/
++static void blk_add_trace_bio(struct request_queue *q, struct bio *bio,
++				     u32 what)
++{
++	struct blk_trace *bt = q->blk_trace;
++
++	if (likely(!bt))
++		return;
++
++	__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw, what,
++			!bio_flagged(bio, BIO_UPTODATE), 0, NULL);
++}
++
++static void blk_add_trace_bio_bounce(struct request_queue *q, struct bio *bio)
++{
++	blk_add_trace_bio(q, bio, BLK_TA_BOUNCE);
++}
++
++static void blk_add_trace_bio_complete(struct request_queue *q, struct bio *bio)
++{
++	blk_add_trace_bio(q, bio, BLK_TA_COMPLETE);
++}
++
++static void blk_add_trace_bio_backmerge(struct request_queue *q, struct bio *bio)
++{
++	blk_add_trace_bio(q, bio, BLK_TA_BACKMERGE);
++}
++
++static void blk_add_trace_bio_frontmerge(struct request_queue *q, struct bio *bio)
++{
++	blk_add_trace_bio(q, bio, BLK_TA_FRONTMERGE);
++}
++
++static void blk_add_trace_bio_queue(struct request_queue *q, struct bio *bio)
++{
++	blk_add_trace_bio(q, bio, BLK_TA_QUEUE);
++}
++
++static void blk_add_trace_getrq(struct request_queue *q, struct bio *bio, int rw)
++{
++	if (bio)
++		blk_add_trace_bio(q, bio, BLK_TA_GETRQ);
++	else {
++		struct blk_trace *bt = q->blk_trace;
++
++		if (bt)
++			__blk_add_trace(bt, 0, 0, rw, BLK_TA_GETRQ, 0, 0, NULL);
++	}
++}
++
++
++static void blk_add_trace_sleeprq(struct request_queue *q, struct bio *bio, int rw)
++{
++	if (bio)
++		blk_add_trace_bio(q, bio, BLK_TA_SLEEPRQ);
++	else {
++		struct blk_trace *bt = q->blk_trace;
++
++		if (bt)
++			__blk_add_trace(bt, 0, 0, rw, BLK_TA_SLEEPRQ, 0, 0, NULL);
++	}
++}
++
++static void blk_add_trace_plug(struct request_queue *q)
++{
++	struct blk_trace *bt = q->blk_trace;
++
++	if (bt)
++		__blk_add_trace(bt, 0, 0, 0, BLK_TA_PLUG, 0, 0, NULL);
++}
++
++static void blk_add_trace_unplug_io(struct request_queue *q)
++{
++	struct blk_trace *bt = q->blk_trace;
++
++	if (bt) {
++		unsigned int pdu = q->rq.count[READ] + q->rq.count[WRITE];
++		__be64 rpdu = cpu_to_be64(pdu);
++
++		__blk_add_trace(bt, 0, 0, 0, BLK_TA_UNPLUG_IO, 0,
++				sizeof(rpdu), &rpdu);
++	}
++}
++
++static void blk_add_trace_unplug_timer(struct request_queue *q)
++{
++	struct blk_trace *bt = q->blk_trace;
++
++	if (bt) {
++		unsigned int pdu = q->rq.count[READ] + q->rq.count[WRITE];
++		__be64 rpdu = cpu_to_be64(pdu);
++
++		__blk_add_trace(bt, 0, 0, 0, BLK_TA_UNPLUG_TIMER, 0,
++				sizeof(rpdu), &rpdu);
++	}
++}
++
++static void blk_add_trace_split(struct request_queue *q, struct bio *bio,
++				unsigned int pdu)
++{
++	struct blk_trace *bt = q->blk_trace;
++
++	if (bt) {
++		__be64 rpdu = cpu_to_be64(pdu);
++
++		__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw,
++				BLK_TA_SPLIT, !bio_flagged(bio, BIO_UPTODATE),
++				sizeof(rpdu), &rpdu);
++	}
++}
++
++/**
++ * blk_add_trace_remap - Add a trace for a remap operation
++ * @q:		queue the io is for
++ * @bio:	the source bio
++ * @dev:	target device
++ * @from:	source sector
++ * @to:		target sector
++ *
++ * Description:
++ *     Device mapper or raid target sometimes need to split a bio because
++ *     it spans a stripe (or similar). Add a trace for that action.
++ *
++ **/
++static void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
++				       dev_t dev, sector_t from, sector_t to)
++{
++	struct blk_trace *bt = q->blk_trace;
++	struct blk_io_trace_remap r;
++
++	if (likely(!bt))
++		return;
++
++	r.device = cpu_to_be32(dev);
++	r.device_from = cpu_to_be32(bio->bi_bdev->bd_dev);
++	r.sector = cpu_to_be64(to);
++
++	__blk_add_trace(bt, from, bio->bi_size, bio->bi_rw, BLK_TA_REMAP,
++			!bio_flagged(bio, BIO_UPTODATE), sizeof(r), &r);
++}
++
++/**
++ * blk_add_driver_data - Add binary message with driver-specific data
++ * @q:		queue the io is for
++ * @rq:		io request
++ * @data:	driver-specific data
++ * @len:	length of driver-specific data
++ *
++ * Description:
++ *     Some drivers might want to write driver-specific data per request.
++ *
++ **/
++void blk_add_driver_data(struct request_queue *q,
++			 struct request *rq,
++			 void *data, size_t len)
++{
++	struct blk_trace *bt = q->blk_trace;
++
++	if (likely(!bt))
++		return;
++
++	if (blk_pc_request(rq))
++		__blk_add_trace(bt, 0, rq->data_len, 0, BLK_TA_DRV_DATA,
++				rq->errors, len, data);
++	else
++		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9,
++				0, BLK_TA_DRV_DATA, rq->errors, len, data);
++}
++EXPORT_SYMBOL_GPL(blk_add_driver_data);
++
++static int blk_register_tracepoints(void)
++{
++	int ret;
++
++	ret = register_trace_block_rq_abort(blk_add_trace_rq_abort);
++	WARN_ON(ret);
++	ret = register_trace_block_rq_insert(blk_add_trace_rq_insert);
++	WARN_ON(ret);
++	ret = register_trace_block_rq_issue(blk_add_trace_rq_issue);
++	WARN_ON(ret);
++	ret = register_trace_block_rq_requeue(blk_add_trace_rq_requeue);
++	WARN_ON(ret);
++	ret = register_trace_block_rq_complete(blk_add_trace_rq_complete);
++	WARN_ON(ret);
++	ret = register_trace_block_bio_bounce(blk_add_trace_bio_bounce);
++	WARN_ON(ret);
++	ret = register_trace_block_bio_complete(blk_add_trace_bio_complete);
++	WARN_ON(ret);
++	ret = register_trace_block_bio_backmerge(blk_add_trace_bio_backmerge);
++	WARN_ON(ret);
++	ret = register_trace_block_bio_frontmerge(blk_add_trace_bio_frontmerge);
++	WARN_ON(ret);
++	ret = register_trace_block_bio_queue(blk_add_trace_bio_queue);
++	WARN_ON(ret);
++	ret = register_trace_block_getrq(blk_add_trace_getrq);
++	WARN_ON(ret);
++	ret = register_trace_block_sleeprq(blk_add_trace_sleeprq);
++	WARN_ON(ret);
++	ret = register_trace_block_plug(blk_add_trace_plug);
++	WARN_ON(ret);
++	ret = register_trace_block_unplug_timer(blk_add_trace_unplug_timer);
++	WARN_ON(ret);
++	ret = register_trace_block_unplug_io(blk_add_trace_unplug_io);
++	WARN_ON(ret);
++	ret = register_trace_block_split(blk_add_trace_split);
++	WARN_ON(ret);
++	ret = register_trace_block_remap(blk_add_trace_remap);
++	WARN_ON(ret);
++	return 0;
++}
++
++static void blk_unregister_tracepoints(void)
++{
++	unregister_trace_block_remap(blk_add_trace_remap);
++	unregister_trace_block_split(blk_add_trace_split);
++	unregister_trace_block_unplug_io(blk_add_trace_unplug_io);
++	unregister_trace_block_unplug_timer(blk_add_trace_unplug_timer);
++	unregister_trace_block_plug(blk_add_trace_plug);
++	unregister_trace_block_sleeprq(blk_add_trace_sleeprq);
++	unregister_trace_block_getrq(blk_add_trace_getrq);
++	unregister_trace_block_bio_queue(blk_add_trace_bio_queue);
++	unregister_trace_block_bio_frontmerge(blk_add_trace_bio_frontmerge);
++	unregister_trace_block_bio_backmerge(blk_add_trace_bio_backmerge);
++	unregister_trace_block_bio_complete(blk_add_trace_bio_complete);
++	unregister_trace_block_bio_bounce(blk_add_trace_bio_bounce);
++	unregister_trace_block_rq_complete(blk_add_trace_rq_complete);
++	unregister_trace_block_rq_requeue(blk_add_trace_rq_requeue);
++	unregister_trace_block_rq_issue(blk_add_trace_rq_issue);
++	unregister_trace_block_rq_insert(blk_add_trace_rq_insert);
++	unregister_trace_block_rq_abort(blk_add_trace_rq_abort);
++
++	tracepoint_synchronize_unregister();
++}
+Index: linux-2.6-lttng/block/elevator.c
+===================================================================
+--- linux-2.6-lttng.orig/block/elevator.c	2008-10-30 10:01:12.000000000 -0400
++++ linux-2.6-lttng/block/elevator.c	2008-10-30 10:03:15.000000000 -0400
+@@ -33,6 +33,7 @@
+ #include <linux/compiler.h>
+ #include <linux/delay.h>
+ #include <linux/blktrace_api.h>
++#include <trace/block.h>
+ #include <linux/hash.h>
+ 
+ #include <asm/uaccess.h>
+@@ -577,7 +578,7 @@ void elv_insert(struct request_queue *q,
+ 	unsigned ordseq;
+ 	int unplug_it = 1;
+ 
+-	blk_add_trace_rq(q, rq, BLK_TA_INSERT);
++	trace_block_rq_insert(q, rq);
+ 
+ 	rq->q = q;
+ 
+@@ -763,7 +764,7 @@ struct request *elv_next_request(struct 
+ 			 * not be passed by new incoming requests
+ 			 */
+ 			rq->cmd_flags |= REQ_STARTED;
+-			blk_add_trace_rq(q, rq, BLK_TA_ISSUE);
++			trace_block_rq_issue(q, rq);
+ 		}
+ 
+ 		if (!q->boundary_rq || q->boundary_rq == rq) {
+Index: linux-2.6-lttng/drivers/md/dm.c
+===================================================================
+--- linux-2.6-lttng.orig/drivers/md/dm.c	2008-10-30 10:01:11.000000000 -0400
++++ linux-2.6-lttng/drivers/md/dm.c	2008-10-30 10:04:25.000000000 -0400
+@@ -22,6 +22,7 @@
+ #include <linux/hdreg.h>
+ #include <linux/blktrace_api.h>
+ #include <linux/smp_lock.h>
++#include <trace/block.h>
+ 
+ #define DM_MSG_PREFIX "core"
+ 
+@@ -514,8 +515,7 @@ static void dec_pending(struct dm_io *io
+ 			wake_up(&io->md->wait);
+ 
+ 		if (io->error != DM_ENDIO_REQUEUE) {
+-			blk_add_trace_bio(io->md->queue, io->bio,
+-					  BLK_TA_COMPLETE);
++			trace_block_bio_complete(io->md->queue, io->bio);
+ 
+ 			bio_endio(io->bio, io->error);
+ 		}
+@@ -608,7 +608,7 @@ static void __map_bio(struct dm_target *
+ 	if (r == DM_MAPIO_REMAPPED) {
+ 		/* the bio has been remapped so dispatch it */
+ 
+-		blk_add_trace_remap(bdev_get_queue(clone->bi_bdev), clone,
++		trace_block_remap(bdev_get_queue(clone->bi_bdev), clone,
+ 				    tio->io->bio->bi_bdev->bd_dev,
+ 				    clone->bi_sector, sector);
+ 
+Index: linux-2.6-lttng/fs/bio.c
+===================================================================
+--- linux-2.6-lttng.orig/fs/bio.c	2008-10-30 10:01:12.000000000 -0400
++++ linux-2.6-lttng/fs/bio.c	2008-10-30 10:02:04.000000000 -0400
+@@ -26,6 +26,7 @@
+ #include <linux/mempool.h>
+ #include <linux/workqueue.h>
+ #include <linux/blktrace_api.h>
++#include <trace/block.h>
+ #include <scsi/sg.h>		/* for struct sg_iovec */
+ 
+ static struct kmem_cache *bio_slab __read_mostly;
+@@ -1237,7 +1238,7 @@ struct bio_pair *bio_split(struct bio *b
+ 	if (!bp)
+ 		return bp;
+ 
+-	blk_add_trace_pdu_int(bdev_get_queue(bi->bi_bdev), BLK_TA_SPLIT, bi,
++	trace_block_split(bdev_get_queue(bi->bi_bdev), bi,
+ 				bi->bi_sector + first_sectors);
+ 
+ 	BUG_ON(bi->bi_vcnt != 1);
+Index: linux-2.6-lttng/include/linux/blktrace_api.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/blktrace_api.h	2008-10-30 10:01:12.000000000 -0400
++++ linux-2.6-lttng/include/linux/blktrace_api.h	2008-10-30 10:21:49.000000000 -0400
+@@ -21,6 +21,8 @@ enum blktrace_cat {
+ 	BLK_TC_NOTIFY	= 1 << 10,	/* special message */
+ 	BLK_TC_AHEAD	= 1 << 11,	/* readahead */
+ 	BLK_TC_META	= 1 << 12,	/* metadata */
++	BLK_TC_DISCARD	= 1 << 13,	/* discard requests */
++	BLK_TC_DRV_DATA	= 1 << 14,	/* binary per-driver data */
+ 
+ 	BLK_TC_END	= 1 << 15,	/* only 16-bits, reminder */
+ };
+@@ -47,6 +49,8 @@ enum blktrace_act {
+ 	__BLK_TA_SPLIT,			/* bio was split */
+ 	__BLK_TA_BOUNCE,		/* bio was bounced */
+ 	__BLK_TA_REMAP,			/* bio was remapped */
++	__BLK_TA_ABORT,			/* request aborted */
++	__BLK_TA_DRV_DATA,		/* driver-specific binary data */
+ };
+ 
+ /*
+@@ -77,6 +81,8 @@ enum blktrace_notify {
+ #define BLK_TA_SPLIT		(__BLK_TA_SPLIT)
+ #define BLK_TA_BOUNCE		(__BLK_TA_BOUNCE)
+ #define BLK_TA_REMAP		(__BLK_TA_REMAP | BLK_TC_ACT(BLK_TC_QUEUE))
++#define BLK_TA_ABORT		(__BLK_TA_ABORT | BLK_TC_ACT(BLK_TC_QUEUE))
++#define BLK_TA_DRV_DATA		(__BLK_TA_DRV_DATA | BLK_TC_ACT(BLK_TC_DRV_DATA))
+ 
+ #define BLK_TN_PROCESS		(__BLK_TN_PROCESS | BLK_TC_ACT(BLK_TC_NOTIFY))
+ #define BLK_TN_TIMESTAMP	(__BLK_TN_TIMESTAMP | BLK_TC_ACT(BLK_TC_NOTIFY))
+@@ -150,7 +156,6 @@ struct blk_user_trace_setup {
+ #if defined(CONFIG_BLK_DEV_IO_TRACE)
+ extern int blk_trace_ioctl(struct block_device *, unsigned, char __user *);
+ extern void blk_trace_shutdown(struct request_queue *);
+-extern void __blk_add_trace(struct blk_trace *, sector_t, int, int, u32, int, int, void *);
+ extern int do_blk_trace_setup(struct request_queue *q,
+ 	char *name, dev_t dev, struct blk_user_trace_setup *buts);
+ extern void __trace_note_message(struct blk_trace *, const char *fmt, ...);
+@@ -176,137 +181,6 @@ extern void __trace_note_message(struct 
+ 	} while (0)
+ #define BLK_TN_MAX_MSG		128
+ 
+-/**
+- * blk_add_trace_rq - Add a trace for a request oriented action
+- * @q:		queue the io is for
+- * @rq:		the source request
+- * @what:	the action
+- *
+- * Description:
+- *     Records an action against a request. Will log the bio offset + size.
+- *
+- **/
+-static inline void blk_add_trace_rq(struct request_queue *q, struct request *rq,
+-				    u32 what)
+-{
+-	struct blk_trace *bt = q->blk_trace;
+-	int rw = rq->cmd_flags & 0x03;
+-
+-	if (likely(!bt))
+-		return;
+-
+-	if (blk_pc_request(rq)) {
+-		what |= BLK_TC_ACT(BLK_TC_PC);
+-		__blk_add_trace(bt, 0, rq->data_len, rw, what, rq->errors, sizeof(rq->cmd), rq->cmd);
+-	} else  {
+-		what |= BLK_TC_ACT(BLK_TC_FS);
+-		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9, rw, what, rq->errors, 0, NULL);
+-	}
+-}
+-
+-/**
+- * blk_add_trace_bio - Add a trace for a bio oriented action
+- * @q:		queue the io is for
+- * @bio:	the source bio
+- * @what:	the action
+- *
+- * Description:
+- *     Records an action against a bio. Will log the bio offset + size.
+- *
+- **/
+-static inline void blk_add_trace_bio(struct request_queue *q, struct bio *bio,
+-				     u32 what)
+-{
+-	struct blk_trace *bt = q->blk_trace;
+-
+-	if (likely(!bt))
+-		return;
+-
+-	__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw, what, !bio_flagged(bio, BIO_UPTODATE), 0, NULL);
+-}
+-
+-/**
+- * blk_add_trace_generic - Add a trace for a generic action
+- * @q:		queue the io is for
+- * @bio:	the source bio
+- * @rw:		the data direction
+- * @what:	the action
+- *
+- * Description:
+- *     Records a simple trace
+- *
+- **/
+-static inline void blk_add_trace_generic(struct request_queue *q,
+-					 struct bio *bio, int rw, u32 what)
+-{
+-	struct blk_trace *bt = q->blk_trace;
+-
+-	if (likely(!bt))
+-		return;
+-
+-	if (bio)
+-		blk_add_trace_bio(q, bio, what);
+-	else
+-		__blk_add_trace(bt, 0, 0, rw, what, 0, 0, NULL);
+-}
+-
+-/**
+- * blk_add_trace_pdu_int - Add a trace for a bio with an integer payload
+- * @q:		queue the io is for
+- * @what:	the action
+- * @bio:	the source bio
+- * @pdu:	the integer payload
+- *
+- * Description:
+- *     Adds a trace with some integer payload. This might be an unplug
+- *     option given as the action, with the depth at unplug time given
+- *     as the payload
+- *
+- **/
+-static inline void blk_add_trace_pdu_int(struct request_queue *q, u32 what,
+-					 struct bio *bio, unsigned int pdu)
+-{
+-	struct blk_trace *bt = q->blk_trace;
+-	__be64 rpdu = cpu_to_be64(pdu);
+-
+-	if (likely(!bt))
+-		return;
+-
+-	if (bio)
+-		__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw, what, !bio_flagged(bio, BIO_UPTODATE), sizeof(rpdu), &rpdu);
+-	else
+-		__blk_add_trace(bt, 0, 0, 0, what, 0, sizeof(rpdu), &rpdu);
+-}
+-
+-/**
+- * blk_add_trace_remap - Add a trace for a remap operation
+- * @q:		queue the io is for
+- * @bio:	the source bio
+- * @dev:	target device
+- * @from:	source sector
+- * @to:		target sector
+- *
+- * Description:
+- *     Device mapper or raid target sometimes need to split a bio because
+- *     it spans a stripe (or similar). Add a trace for that action.
+- *
+- **/
+-static inline void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
+-				       dev_t dev, sector_t from, sector_t to)
+-{
+-	struct blk_trace *bt = q->blk_trace;
+-	struct blk_io_trace_remap r;
+-
+-	if (likely(!bt))
+-		return;
+-
+-	r.device = cpu_to_be32(dev);
+-	r.device_from = cpu_to_be32(bio->bi_bdev->bd_dev);
+-	r.sector = cpu_to_be64(to);
+-
+-	__blk_add_trace(bt, from, bio->bi_size, bio->bi_rw, BLK_TA_REMAP, !bio_flagged(bio, BIO_UPTODATE), sizeof(r), &r);
+-}
+-
+ extern int blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
+ 			   char __user *arg);
+ extern int blk_trace_startstop(struct request_queue *q, int start);
+@@ -315,11 +189,6 @@ extern int blk_trace_remove(struct reque
+ #else /* !CONFIG_BLK_DEV_IO_TRACE */
+ #define blk_trace_ioctl(bdev, cmd, arg)		(-ENOTTY)
+ #define blk_trace_shutdown(q)			do { } while (0)
+-#define blk_add_trace_rq(q, rq, what)		do { } while (0)
+-#define blk_add_trace_bio(q, rq, what)		do { } while (0)
+-#define blk_add_trace_generic(q, rq, rw, what)	do { } while (0)
+-#define blk_add_trace_pdu_int(q, what, bio, pdu)	do { } while (0)
+-#define blk_add_trace_remap(q, bio, dev, f, t)	do {} while (0)
+ #define do_blk_trace_setup(q, name, dev, buts)	(-ENOTTY)
+ #define blk_trace_setup(q, name, dev, arg)	(-ENOTTY)
+ #define blk_trace_startstop(q, start)		(-ENOTTY)
+Index: linux-2.6-lttng/include/trace/block.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/trace/block.h	2008-10-30 10:02:04.000000000 -0400
+@@ -0,0 +1,60 @@
++#ifndef _TRACE_BLOCK_H
++#define _TRACE_BLOCK_H
++
++#include <linux/blkdev.h>
++#include <linux/tracepoint.h>
++
++DEFINE_TRACE(block_rq_abort,
++	TPPROTO(struct request_queue *q, struct request *rq),
++	TPARGS(q, rq));
++DEFINE_TRACE(block_rq_insert,
++	TPPROTO(struct request_queue *q, struct request *rq),
++	TPARGS(q, rq));
++DEFINE_TRACE(block_rq_issue,
++	TPPROTO(struct request_queue *q, struct request *rq),
++	TPARGS(q, rq));
++DEFINE_TRACE(block_rq_requeue,
++	TPPROTO(struct request_queue *q, struct request *rq),
++	TPARGS(q, rq));
++DEFINE_TRACE(block_rq_complete,
++	TPPROTO(struct request_queue *q, struct request *rq),
++	TPARGS(q, rq));
++DEFINE_TRACE(block_bio_bounce,
++	TPPROTO(struct request_queue *q, struct bio *bio),
++	TPARGS(q, bio));
++DEFINE_TRACE(block_bio_complete,
++	TPPROTO(struct request_queue *q, struct bio *bio),
++	TPARGS(q, bio));
++DEFINE_TRACE(block_bio_backmerge,
++	TPPROTO(struct request_queue *q, struct bio *bio),
++	TPARGS(q, bio));
++DEFINE_TRACE(block_bio_frontmerge,
++	TPPROTO(struct request_queue *q, struct bio *bio),
++	TPARGS(q, bio));
++DEFINE_TRACE(block_bio_queue,
++	TPPROTO(struct request_queue *q, struct bio *bio),
++	TPARGS(q, bio));
++DEFINE_TRACE(block_getrq,
++	TPPROTO(struct request_queue *q, struct bio *bio, int rw),
++	TPARGS(q, bio, rw));
++DEFINE_TRACE(block_sleeprq,
++	TPPROTO(struct request_queue *q, struct bio *bio, int rw),
++	TPARGS(q, bio, rw));
++DEFINE_TRACE(block_plug,
++	TPPROTO(struct request_queue *q),
++	TPARGS(q));
++DEFINE_TRACE(block_unplug_timer,
++	TPPROTO(struct request_queue *q),
++	TPARGS(q));
++DEFINE_TRACE(block_unplug_io,
++	TPPROTO(struct request_queue *q),
++	TPARGS(q));
++DEFINE_TRACE(block_split,
++	TPPROTO(struct request_queue *q, struct bio *bio, unsigned int pdu),
++	TPARGS(q, bio, pdu));
++DEFINE_TRACE(block_remap,
++	TPPROTO(struct request_queue *q, struct bio *bio, dev_t dev,
++		sector_t from, sector_t to),
++	TPARGS(q, bio, dev, from, to));
++
++#endif
+Index: linux-2.6-lttng/mm/bounce.c
+===================================================================
+--- linux-2.6-lttng.orig/mm/bounce.c	2008-10-30 10:01:12.000000000 -0400
++++ linux-2.6-lttng/mm/bounce.c	2008-10-30 10:02:04.000000000 -0400
+@@ -14,6 +14,7 @@
+ #include <linux/hash.h>
+ #include <linux/highmem.h>
+ #include <linux/blktrace_api.h>
++#include <trace/block.h>
+ #include <asm/tlbflush.h>
+ 
+ #define POOL_SIZE	64
+@@ -222,7 +223,7 @@ static void __blk_queue_bounce(struct re
+ 	if (!bio)
+ 		return;
+ 
+-	blk_add_trace_bio(q, *bio_orig, BLK_TA_BOUNCE);
++	trace_block_bio_bounce(q, *bio_orig);
+ 
+ 	/*
+ 	 * at least one page was bounced, fill in possible non-highmem
 
 -- 
-/-\                             |  Shall I call the United Nations?
-|@/  Debian GNU/Linux Developer |
-\-                              |
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
