@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071AbYJ3UUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbYJ3UVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755071AbYJ3UUx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 16:20:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbYJ3UUp
+	id S1754014AbYJ3UVT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 16:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755642AbYJ3UVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 16:20:45 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50576 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752907AbYJ3UUo (ORCPT
+	Thu, 30 Oct 2008 16:21:05 -0400
+Received: from lazybastard.de ([212.112.238.170]:42171 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755613AbYJ3UVE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 16:20:44 -0400
-Date: Thu, 30 Oct 2008 13:21:03 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-Cc: Ingo Molnar <mingo@elte.hu>, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, tim@scalemp.com, shai@scalex86.org
-Subject: Re: [patch] x86: Fix /dev/mem mmap breakage when PAT is disabled
-Message-ID: <20081030132103.2daff1e1@infradead.org>
-In-Reply-To: <20081030020203.GA12423@localdomain>
-References: <20081030020203.GA12423@localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 30 Oct 2008 16:21:04 -0400
+Date: Thu, 30 Oct 2008 21:20:54 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] B+Tree library
+Message-ID: <20081030202054.GD7157@logfs.org>
+References: <20081026124643.GA1328@logfs.org> <20081030174300.GA1773@ucw.cz> <20081030175844.GC7157@logfs.org> <20081030191451.GE22185@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081030191451.GE22185@elf.ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Oct 2008 19:02:03 -0700
-Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
-
-> Fix mmap to /dev/mem when CONFIG_X86_PAT is off and
-> CONFIG_STRICT_DEVMEM is off
+On Thu, 30 October 2008 20:14:51 +0100, Pavel Machek wrote:
+> On Thu 2008-10-30 18:58:44, Jörn Engel wrote:
+> > On Thu, 30 October 2008 18:43:00 +0100, Pavel Machek wrote:
+> > > 
+> > > + * Disks have fulfilled the prerequite for a long time.  More recently DRAM
+> > > prerequisite?
+> > 
+> > In the paragraph above:
 > 
-> mmap to /dev/mem on kernel memory has been failing since the
-> introduction of PAT (CONFIG_STRICT_DEVMEM=n case).   Seems like
-> the check to avoid cache aliasing with PAT is kicking in even
-> when PAT is disabled. The bug seems to have crept in 2.6.26.
-> 
-> This patch makes sure that mmap to regular kernel memory
-> succeeds if CONFIG_STRICT_DEVMEM=n and
-> PAT is disabled.  The checks to avoid cache aliasing
-> still happens if PAT is enabled.
+> I don't thing "prerequite" is valid english word... is it?
 
-well... technically the aliases are bad without PAT as well...
+Indeed.  I could have read it another dozen times and not noticed
+myself.  Thanks.
 
+Jörn
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+The wise man seeks everything in himself; the ignorant man tries to get
+everything from somebody else.
+-- unknown
