@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbYJ3T6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbYJ3UAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132AbYJ3T6b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 15:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbYJ3T6W
+	id S1754204AbYJ3UAA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 16:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbYJ3T7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 15:58:22 -0400
-Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:47662 "EHLO
-	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752273AbYJ3T6V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 15:58:21 -0400
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <490A11DB.3060703@gmail.com>
-Date: Thu, 30 Oct 2008 19:58:19 +0000
-From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080801)
-MIME-Version: 1.0
-To: video4linux-list@redhat.com, LKML <linux-kernel@vger.kernel.org>
-Subject: media/common/tuner selection when using a webcam and i2c
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Oct 2008 15:59:48 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:57267 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752481AbYJ3T7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 15:59:48 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: David Woodhouse <David.Woodhouse@intel.com>,
+       Chen Gong <g.chen@freescale.com>
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Michael Hennerich <Michael.Hennerich@analog.com>
+Subject: [PATCH] m25p80: fix detection of m25p16 flashes
+Date: Thu, 30 Oct 2008 15:59:46 -0400
+Message-Id: <1225396786-23679-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1225286467-17955-1-git-send-email-vapier@gentoo.org>
+References: <1225286467-17955-1-git-send-email-vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear All,
+Commit d0e8c47c58575b9131e786edb488fd029eba443e added support for extended ids
+but seems to break on flashes which don't have an extended id defined.  If the
+table does not have an extid defined, then we should ignore it.
 
-I've been trying to track down why when I enable i2c (for some embedded
-sensors)
-and the options required to get a v4l gspca camera I end up with a lot
-of unnecessary tuner modues.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: Michael Hennerich <Michael.Hennerich@analog.com>
+---
+ drivers/mtd/devices/m25p80.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-It looks to me like some false assumptions are being made within the Kconfig
-files.
-
-VIDEO_MEDIA gets enabled as VIDEO_DEV is and DVB_CORE is not.
-(in media/Kconfig)
-
-and i2c is enabled because I'm using it for numerous other things.
-
-Thus, the
-
-config MEDIA_TUNER
-       tristate
-       defaults VIDEO_MEDIA && I2C
-       depends on VIDEO_MEDIA && I2C
-       select MEDIA_TUNER_XC2028 if !MEDIA_TUNER_CUSTOMIZE
-
-enables a lot of tuner drivers.
-
-Now once I'd figured out what was happening it is clear these
-can be disabled by using menuconfig MEDIA_TUNER_CUSTOMIZE.
-
-However, to me the fact I needed to do this suggests some false assumptions
-in the media Kconfig files, given I never specified anything that would
-ever actually have a tuner.
-
-Jonathan Cameron
+diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
+index a298fed..6188fd4 100644
+--- a/drivers/mtd/devices/m25p80.c
++++ b/drivers/mtd/devices/m25p80.c
+@@ -575,7 +575,7 @@ static struct flash_info *__devinit jedec_probe(struct spi_device *spi)
+ 			tmp < ARRAY_SIZE(m25p_data);
+ 			tmp++, info++) {
+ 		if (info->jedec_id == jedec) {
+-			if (ext_jedec != 0 && info->ext_id != ext_jedec)
++			if (info->ext_id != 0 && info->ext_id != ext_jedec)
+ 				continue;
+ 			return info;
+ 		}
+-- 
+1.6.0.2
 
