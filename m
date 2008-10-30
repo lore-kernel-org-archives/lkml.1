@@ -1,104 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbYJ3Odv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbYJ3OkC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755916AbYJ3Odv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 10:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbYJ3Odl
+	id S1755595AbYJ3OkC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 10:40:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbYJ3Ojt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 10:33:41 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:20179 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754599AbYJ3Odk (ORCPT
+	Thu, 30 Oct 2008 10:39:49 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:60195 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754710AbYJ3Ojt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 10:33:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=V4NQBH3yQhfrj/DUa3cCwyEojvXa29N/7BWzlijoq4I5yf8gzTU31wYo9MslbmTgJT
-         MfHeQ9wgKhq/H8qQU48RGBUHOyNDOgQ4pOH858LUAug1atf48J46cWDRlYY7Vwm47wAn
-         xAqXhw74wpAsDw+hUdv7ay+frRhAZZ5uNOfU0=
-Message-ID: <9ea470500810300733u34dab7d2rd69a8d806b85ac65@mail.gmail.com>
-Date: Thu, 30 Oct 2008 15:33:38 +0100
-From: "Borislav Petkov" <petkovbb@googlemail.com>
-Reply-To: petkovbb@gmail.com
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.28-rc2 lost IDE disk on old laptop
-Cc: "IDE/ATA development list" <linux-ide@vger.kernel.org>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-In-Reply-To: <20081030135017.GA8325@erig.dyndns.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.2.00.0810261221350.3386@nehalem.linux-foundation.org>
-	 <20081030135017.GA8325@erig.dyndns.org>
+	Thu, 30 Oct 2008 10:39:49 -0400
+To: stern@rowland.harvard.edu
+CC: miklos@szeredi.hu, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org
+In-reply-to: <Pine.LNX.4.44L0.0810300943001.2401-100000@iolanthe.rowland.org>
+	(message from Alan Stern on Thu, 30 Oct 2008 09:54:28 -0400 (EDT))
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
+ filesystems.
+References: <Pine.LNX.4.44L0.0810300943001.2401-100000@iolanthe.rowland.org>
+Message-Id: <E1KvYgR-0002Cx-AZ@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 30 Oct 2008 15:39:35 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 30 Oct 2008, Alan Stern wrote:
+> On Thu, 30 Oct 2008, Miklos Szeredi wrote:
+> 
+> > On Wed, 29 Oct 2008, Alan Stern wrote:
+> > > I discussed this last summer with Rafael.  It's a lot harder than it 
+> > > looks, for all sorts of reasons.  For example, what about user tasks 
+> > > that have access to memory-mapped I/O regions?
+> > 
+> > What about them?  Freezing doesn't seem to help with that.
+> 
+> Sure it does.  A frozen process can't touch a memory-mapped I/O region, 
+> whereas a non-frozen process can.
 
-On Thu, Oct 30, 2008 at 2:50 PM, Wolfgang Erig <Wolfgang.Erig@gmx.de> wrote:
-> Hi,
->
-> the kernel 2.6.28-rc2 does not boot on my old laptop.
-> Panic ... cannot access (301) ... aka /dev/hda1
-> The previously used version 2.6.27-rc8 runs fine.
->
-> During 'make oldconfig' I saw questions about IDE (or ATA)
-> but I see no obvious problem with my .config
->
-> Wolfgang
->
->
-> $ lspci
-> 00:00.0 Host bridge: Intel Corporation 430TX - 82439TX MTXC (rev 01)
-> 00:01.0 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ISA (rev 01)
-> 00:01.1 IDE interface: Intel Corporation 82371AB/EB/MB PIIX4 IDE (rev 01)
+But it can be in the middle of I/O by your definition.
 
-Have you tried compiling your kernel with CONFIG_BLK_DEV_PIIX enabled and
-CONFIG_IDE_GENERIC disabled?
+> > > I don't know.  There are other interfaces too, like sysfs attributes, 
+> > > that would have to be handled specially.  On the whole, the freezer 
+> > > seems much, much simpler.
+> > 
+> > OK, then non-device files on "regular" filesystems.
+> 
+> Would you like to write a first-pass patch?  I don't think it will 
+> work.
 
-> 00:01.2 USB Controller: Intel Corporation 82371AB/EB/MB PIIX4 USB (rev 01)
-> 00:01.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI (rev 01)
-> 00:06.0 VGA compatible controller: Chips and Technologies F65554 (rev c2)
-> 00:14.0 CardBus bridge: Cirrus Logic PD 6832 PCMCIA/CardBus Ctrlr (rev c1)
-> 00:14.1 CardBus bridge: Cirrus Logic PD 6832 PCMCIA/CardBus Ctrlr (rev c1)
->
-> $ egrep -i 'ide|ata' .config
-> # CONFIG_X86_MCE_NONFATAL is not set
-> # CONFIG_ATALK is not set
-> CONFIG_HAVE_IDE=y
-> CONFIG_IDE=y
-> # Please see Documentation/ide/ide.txt for help/info on IDE drives
-> # CONFIG_BLK_DEV_IDE_SATA is not set
-> CONFIG_IDE_GD=y
-> CONFIG_IDE_GD_ATA=y
-> # CONFIG_IDE_GD_ATAPI is not set
-> # CONFIG_BLK_DEV_IDECS is not set
-> CONFIG_BLK_DEV_IDECD=y
-> CONFIG_BLK_DEV_IDECD_VERBOSE_ERRORS=y
-> # CONFIG_BLK_DEV_IDETAPE is not set
-> # CONFIG_BLK_DEV_IDESCSI is not set
-> # CONFIG_IDE_TASK_IOCTL is not set
-> # CONFIG_IDE_PROC_FS is not set
-> # IDE chipset support/bugfixes
-> CONFIG_IDE_GENERIC=y
-> # CONFIG_BLK_DEV_IDEPNP is not set
-> # PCI IDE chipsets support
-> # Other IDE chipsets support
-> # CONFIG_BLK_DEV_IDEDMA is not set
-> # CONFIG_ATA is not set
-> # CONFIG_VIDEO_DEV is not set
-> # CONFIG_VIDEO_MEDIA is not set
-> CONFIG_VIDEO_OUTPUT_CONTROL=m
-> # CONFIG_USB_STORAGE_DATAFAB is not set
-> # CONFIG_USB_STORAGE_CYPRESS_ATACB is not set
-> # CONFIG_PROVIDE_OHCI1394_DMA_INIT is not set
-> # Authenticated Encryption with Associated Data
->
+If somebody doesn't beat me to it, I'll do that (first implemented
+with a global rw-sem).
 
--- 
-Regards/Gruss,
-Boris
+> Doing that seems like a lot of work, just as modifying every driver 
+> does.  Changing a few kernel entry points is simpler, but I'm pretty
+> sure it won't work.  For instance, tasks can block arbitrarily long on 
+> read calls (waiting for data to arrive); you can't allow such things to 
+> prevent the system from suspending.
+
+But we already do: either
+
+ a) it's in interruptible sleep (I/O on sockets, pipes, etc), and
+    freezing simply interrupts it, or
+
+ b) it's in uninterruptible sleep and suspend will wait it out (or
+    time out).
+
+In the new scheme we could retain that part of the freezer: interrupt
+all tasks which are inside the critical region and wait for them to
+exit the critical region.
+
+To put it in another way: it's still the freezer, it does all the same
+things as the old freezer, except that the condition for freezing is
+not that the task is out of the kernel, rather that it's out of the
+disable_supend - enable_suspend region.  As such it's not a big change
+to the whole suspend system, and so there shouldn't be anything big
+going wrong there.
+
+Miklos
