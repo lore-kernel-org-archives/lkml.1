@@ -1,451 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbYJ3QOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbYJ3QOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757917AbYJ3QOZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 12:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbYJ3QNL
+	id S1758012AbYJ3QOn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 12:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757867AbYJ3QOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 12:13:11 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:19763 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757371AbYJ3QNJ (ORCPT
+	Thu, 30 Oct 2008 12:14:18 -0400
+Received: from outbound-mail-122.bluehost.com ([67.222.38.22]:54608 "HELO
+	outbound-mail-122.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757224AbYJ3QOR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 12:13:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
-         :sender;
-        b=kKAsB2cT/Mi7bpK6qRMIVDcy5P+JOB23oY80uZh/cnhqqg/0FD96akeI2XEUrWbBp5
-         lu2E+lqBeefghEBHke+SS201o9pr6NWKSLAIfiX+MZnxoYvvYxx48HVSiONXq3rBg529
-         CmOTmcLnJzXZNqvYIUwfkoB+6lL7sSQhlLyb8=
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: greg@kroah.com
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Pavel Machek <pavel@suse.cz>
-Subject: [PATCH 2/7] w35und: clean up wblinux.c a bit
-Date: Thu, 30 Oct 2008 18:12:02 +0200
-Message-Id: <1225383127-16406-2-git-send-email-penberg@cs.helsinki.fi>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1225383127-16406-1-git-send-email-penberg@cs.helsinki.fi>
-References: <>
- <1225383127-16406-1-git-send-email-penberg@cs.helsinki.fi>
+	Thu, 30 Oct 2008 12:14:17 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=FgtYO414sowItweziQQB38e6AWpCHPyLJ0OvCwdwVmEx/MJEcUlI6+RY57jjByW0BpVfnSY1EvmqJ8/65CtqvVdXPoHKP46/OE+1GVO/8fM5bGpls0wqyPAQuZ6TEsK9;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Yu Zhao <yu.zhao@intel.com>
+Subject: Re: [PATCH] PCI: Limit VPD length for Broadcom 5708S
+Date: Thu, 30 Oct 2008 09:14:03 -0700
+User-Agent: KMail/1.10.1 (Linux/2.6.26.5-45.fc9.x86_64; KDE/4.1.2; x86_64; ; )
+Cc: Eric Dumazet <dada1@cosmosbay.com>, benli@broadcom.com,
+       "willy@linux.intel.com" <willy@linux.intel.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Michael Chan <mchan@broadcom.com>
+References: <48920413.6080508@cosmosbay.com> <4906AF5F.9040704@cosmosbay.com> <20081028064411.GA7043@yzhao12-linux.sh.intel.com>
+In-Reply-To: <20081028064411.GA7043@yzhao12-linux.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810300914.03885.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes wrapper functions from wblinux.c and moves the hardware init
-and halt functions to wbusb.c which has the only callers of them.
+On Monday, October 27, 2008 11:44 pm Yu Zhao wrote:
+>
+> VPD quirks needs to be called after the capability is initialized. Since
+> VPD initialization is move to after pci_fixup_header, VPD quirks should
+> be done at pci_fixup_final stage correspondingly.
+>
+> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 
-Cc: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- drivers/staging/winbond/wblinux.c   |  167 -----------------------------------
- drivers/staging/winbond/wblinux_f.h |    5 -
- drivers/staging/winbond/wbusb.c     |  150 ++++++++++++++++++++++++++++++-
- 3 files changed, 147 insertions(+), 175 deletions(-)
+Thanks, I'll queue this up for the next pull.
 
-diff --git a/drivers/staging/winbond/wblinux.c b/drivers/staging/winbond/wblinux.c
-index 31f2d20..433aa0d 100644
---- a/drivers/staging/winbond/wblinux.c
-+++ b/drivers/staging/winbond/wblinux.c
-@@ -16,22 +16,6 @@
- #include "wbhal_f.h"
- #include "wblinux_f.h"
- 
--unsigned char
--WBLINUX_Initial(struct wbsoft_priv * adapter)
--{
--	spin_lock_init( &adapter->SpinLock );
--	return true;
--}
--
--void
--WBLINUX_Destroy(struct wbsoft_priv * adapter)
--{
--	WBLINUX_stop( adapter );
--#ifdef _PE_USB_INI_DUMP_
--	WBDEBUG(("[w35und] unregister_netdev!\n"));
--#endif
--}
--
- void
- WBLINUX_stop(  struct wbsoft_priv * adapter )
- {
-@@ -61,154 +45,3 @@ WBLINUX_stop(  struct wbsoft_priv * adapter )
- 
- 	atomic_dec(&adapter->ThreadCount);
- }
--
--void
--WbWlanHalt(  struct wbsoft_priv * adapter )
--{
--	//---------------------
--	adapter->sLocalPara.ShutDowned = true;
--
--	Mds_Destroy( adapter );
--
--	// Turn off Rx and Tx hardware ability
--	hal_stop( &adapter->sHwData );
--#ifdef _PE_USB_INI_DUMP_
--	WBDEBUG(("[w35und] Hal_stop O.K.\n"));
--#endif
--	msleep(100);// Waiting Irp completed
--
--	// Destroy the NDIS module
--	WBLINUX_Destroy( adapter );
--
--	// Halt the HAL
--	hal_halt(&adapter->sHwData, NULL);
--}
--
--unsigned char
--WbWLanInitialize(struct ieee80211_hw *hw)
--{
--	struct wbsoft_priv *priv = hw->priv;
--	phw_data_t	pHwData;
--	u8		*pMacAddr;
--	u8		*pMacAddr2;
--	u32		InitStep = 0;
--	u8		EEPROM_region;
--	u8		HwRadioOff;
--
--	//
--	// Setting default value for Linux
--	//
--	priv->sLocalPara.region_INF = REGION_AUTO;
--	priv->sLocalPara.TxRateMode = RATE_AUTO;
--	priv->sLocalPara.bMacOperationMode = MODE_802_11_BG;	// B/G mode
--	priv->Mds.TxRTSThreshold = DEFAULT_RTSThreshold;
--	priv->Mds.TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
--	hal_set_phy_type( &priv->sHwData, RF_WB_242_1 );
--	priv->sLocalPara.MTUsize = MAX_ETHERNET_PACKET_SIZE;
--	priv->sLocalPara.bPreambleMode = AUTO_MODE;
--	priv->sLocalPara.RadioOffStatus.boSwRadioOff = false;
--	pHwData = &priv->sHwData;
--	hal_set_phy_type( pHwData, RF_DECIDE_BY_INF );
--
--	//
--	// Initial each module and variable
--	//
--	if (!WBLINUX_Initial(priv)) {
--#ifdef _PE_USB_INI_DUMP_
--		WBDEBUG(("[w35und]WBNDIS initialization failed\n"));
--#endif
--		goto error;
--	}
--
--	// Initial Software variable
--	priv->sLocalPara.ShutDowned = false;
--
--	//added by ws for wep key error detection
--	priv->sLocalPara.bWepKeyError= false;
--	priv->sLocalPara.bToSelfPacketReceived = false;
--	priv->sLocalPara.WepKeyDetectTimerCount= 2 * 100; /// 2 seconds
--
--	// Initial USB hal
--	InitStep = 1;
--	pHwData = &priv->sHwData;
--	if (!hal_init_hardware(hw))
--		goto error;
--
--	EEPROM_region = hal_get_region_from_EEPROM( pHwData );
--	if (EEPROM_region != REGION_AUTO)
--		priv->sLocalPara.region = EEPROM_region;
--	else {
--		if (priv->sLocalPara.region_INF != REGION_AUTO)
--			priv->sLocalPara.region = priv->sLocalPara.region_INF;
--		else
--			priv->sLocalPara.region = REGION_USA;	//default setting
--	}
--
--	// Get Software setting flag from hal
--	priv->sLocalPara.boAntennaDiversity = false;
--	if (hal_software_set(pHwData) & 0x00000001)
--		priv->sLocalPara.boAntennaDiversity = true;
--
--	//
--	// For TS module
--	//
--	InitStep = 2;
--
--	// For MDS module
--	InitStep = 3;
--	Mds_initial(priv);
--
--	//=======================================
--	// Initialize the SME, SCAN, MLME, ROAM
--	//=======================================
--	InitStep = 4;
--	InitStep = 5;
--	InitStep = 6;
--
--	// If no user-defined address in the registry, use the addresss "burned" on the NIC instead.
--	pMacAddr = priv->sLocalPara.ThisMacAddress;
--	pMacAddr2 = priv->sLocalPara.PermanentAddress;
--	hal_get_permanent_address( pHwData, priv->sLocalPara.PermanentAddress );// Reading ethernet address from EEPROM
--	if (memcmp(pMacAddr, "\x00\x00\x00\x00\x00\x00", MAC_ADDR_LENGTH) == 0)
--		memcpy(pMacAddr, pMacAddr2, MAC_ADDR_LENGTH);
--	else {
--		// Set the user define MAC address
--		hal_set_ethernet_address(pHwData, priv->sLocalPara.ThisMacAddress);
--	}
--
--	//get current antenna
--	priv->sLocalPara.bAntennaNo = hal_get_antenna_number(pHwData);
--#ifdef _PE_STATE_DUMP_
--	WBDEBUG(("Driver init, antenna no = %d\n", psLOCAL->bAntennaNo));
--#endif
--	hal_get_hw_radio_off( pHwData );
--
--	// Waiting for HAL setting OK
--	while (!hal_idle(pHwData))
--		msleep(10);
--
--	MTO_Init(priv);
--
--	HwRadioOff = hal_get_hw_radio_off( pHwData );
--	priv->sLocalPara.RadioOffStatus.boHwRadioOff = !!HwRadioOff;
--
--	hal_set_radio_mode( pHwData, (unsigned char)(priv->sLocalPara.RadioOffStatus.boSwRadioOff || priv->sLocalPara.RadioOffStatus.boHwRadioOff) );
--
--	hal_driver_init_OK(pHwData) = 1; // Notify hal that the driver is ready now.
--	//set a tx power for reference.....
--//	sme_set_tx_power_level(priv, 12);	FIXME?
--	return true;
--
--error:
--	switch (InitStep) {
--	case 5:
--	case 4:
--	case 3: Mds_Destroy( priv );
--	case 2:
--	case 1: WBLINUX_Destroy( priv );
--		hal_halt( pHwData, NULL );
--	case 0: break;
--	}
--
--	return false;
--}
-diff --git a/drivers/staging/winbond/wblinux_f.h b/drivers/staging/winbond/wblinux_f.h
-index 15e6a65..f531a01 100644
---- a/drivers/staging/winbond/wblinux_f.h
-+++ b/drivers/staging/winbond/wblinux_f.h
-@@ -9,15 +9,10 @@
- //
- // wblinux_f.h
- //
--unsigned char WBLINUX_Initial(  struct wbsoft_priv *adapter );
- int wb35_start_xmit(struct sk_buff *skb, struct net_device *netdev );
- void WBLINUX_stop(  struct wbsoft_priv *adapter );
--void WBLINUX_Destroy(  struct wbsoft_priv *adapter );
- void wb35_set_multicast( struct net_device *netdev );
- struct net_device_stats * wb35_netdev_stats( struct net_device *netdev );
- void WBLINUX_stop(  struct wbsoft_priv *adapter );
--void WbWlanHalt(  struct wbsoft_priv *adapter );
--unsigned char WbWLanInitialize(struct ieee80211_hw *hw);
--
- 
- #endif
-diff --git a/drivers/staging/winbond/wbusb.c b/drivers/staging/winbond/wbusb.c
-index 67847c8..673875d 100644
---- a/drivers/staging/winbond/wbusb.c
-+++ b/drivers/staging/winbond/wbusb.c
-@@ -7,7 +7,9 @@
- #include <linux/usb.h>
- 
- #include "core.h"
-+#include "mds_f.h"
- #include "mlmetxrx_f.h"
-+#include "mto_f.h"
- #include "wbhal_f.h"
- #include "wblinux_f.h"
- 
-@@ -180,7 +182,7 @@ static u64 wbsoft_get_tsf(struct ieee80211_hw *dev)
- 
- static const struct ieee80211_ops wbsoft_ops = {
- 	.tx			= wbsoft_tx,
--	.start			= wbsoft_start,		/* Start can be pretty much empty as we do WbWLanInitialize() during probe? */
-+	.start			= wbsoft_start,		/* Start can be pretty much empty as we do wb35_hw_init() during probe? */
- 	.stop			= wbsoft_stop,
- 	.add_interface		= wbsoft_add_interface,
- 	.remove_interface	= wbsoft_remove_interface,
-@@ -193,6 +195,124 @@ static const struct ieee80211_ops wbsoft_ops = {
- // conf_tx: hal_set_cwmin()/hal_set_cwmax;
- };
- 
-+static unsigned char wb35_hw_init(struct ieee80211_hw *hw)
-+{
-+	struct wbsoft_priv *priv = hw->priv;
-+	phw_data_t	pHwData;
-+	u8		*pMacAddr;
-+	u8		*pMacAddr2;
-+	u32		InitStep = 0;
-+	u8		EEPROM_region;
-+	u8		HwRadioOff;
-+
-+	//
-+	// Setting default value for Linux
-+	//
-+	priv->sLocalPara.region_INF = REGION_AUTO;
-+	priv->sLocalPara.TxRateMode = RATE_AUTO;
-+	priv->sLocalPara.bMacOperationMode = MODE_802_11_BG;	// B/G mode
-+	priv->Mds.TxRTSThreshold = DEFAULT_RTSThreshold;
-+	priv->Mds.TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
-+	hal_set_phy_type( &priv->sHwData, RF_WB_242_1 );
-+	priv->sLocalPara.MTUsize = MAX_ETHERNET_PACKET_SIZE;
-+	priv->sLocalPara.bPreambleMode = AUTO_MODE;
-+	priv->sLocalPara.RadioOffStatus.boSwRadioOff = false;
-+	pHwData = &priv->sHwData;
-+	hal_set_phy_type( pHwData, RF_DECIDE_BY_INF );
-+
-+	// Initial Software variable
-+	priv->sLocalPara.ShutDowned = false;
-+
-+	//added by ws for wep key error detection
-+	priv->sLocalPara.bWepKeyError= false;
-+	priv->sLocalPara.bToSelfPacketReceived = false;
-+	priv->sLocalPara.WepKeyDetectTimerCount= 2 * 100; /// 2 seconds
-+
-+	// Initial USB hal
-+	InitStep = 1;
-+	pHwData = &priv->sHwData;
-+	if (!hal_init_hardware(hw))
-+		goto error;
-+
-+	EEPROM_region = hal_get_region_from_EEPROM( pHwData );
-+	if (EEPROM_region != REGION_AUTO)
-+		priv->sLocalPara.region = EEPROM_region;
-+	else {
-+		if (priv->sLocalPara.region_INF != REGION_AUTO)
-+			priv->sLocalPara.region = priv->sLocalPara.region_INF;
-+		else
-+			priv->sLocalPara.region = REGION_USA;	//default setting
-+	}
-+
-+	// Get Software setting flag from hal
-+	priv->sLocalPara.boAntennaDiversity = false;
-+	if (hal_software_set(pHwData) & 0x00000001)
-+		priv->sLocalPara.boAntennaDiversity = true;
-+
-+	//
-+	// For TS module
-+	//
-+	InitStep = 2;
-+
-+	// For MDS module
-+	InitStep = 3;
-+	Mds_initial(priv);
-+
-+	//=======================================
-+	// Initialize the SME, SCAN, MLME, ROAM
-+	//=======================================
-+	InitStep = 4;
-+	InitStep = 5;
-+	InitStep = 6;
-+
-+	// If no user-defined address in the registry, use the addresss "burned" on the NIC instead.
-+	pMacAddr = priv->sLocalPara.ThisMacAddress;
-+	pMacAddr2 = priv->sLocalPara.PermanentAddress;
-+	hal_get_permanent_address( pHwData, priv->sLocalPara.PermanentAddress );// Reading ethernet address from EEPROM
-+	if (memcmp(pMacAddr, "\x00\x00\x00\x00\x00\x00", MAC_ADDR_LENGTH) == 0)
-+		memcpy(pMacAddr, pMacAddr2, MAC_ADDR_LENGTH);
-+	else {
-+		// Set the user define MAC address
-+		hal_set_ethernet_address(pHwData, priv->sLocalPara.ThisMacAddress);
-+	}
-+
-+	//get current antenna
-+	priv->sLocalPara.bAntennaNo = hal_get_antenna_number(pHwData);
-+#ifdef _PE_STATE_DUMP_
-+	WBDEBUG(("Driver init, antenna no = %d\n", psLOCAL->bAntennaNo));
-+#endif
-+	hal_get_hw_radio_off( pHwData );
-+
-+	// Waiting for HAL setting OK
-+	while (!hal_idle(pHwData))
-+		msleep(10);
-+
-+	MTO_Init(priv);
-+
-+	HwRadioOff = hal_get_hw_radio_off( pHwData );
-+	priv->sLocalPara.RadioOffStatus.boHwRadioOff = !!HwRadioOff;
-+
-+	hal_set_radio_mode( pHwData, (unsigned char)(priv->sLocalPara.RadioOffStatus.boSwRadioOff || priv->sLocalPara.RadioOffStatus.boHwRadioOff) );
-+
-+	hal_driver_init_OK(pHwData) = 1; // Notify hal that the driver is ready now.
-+	//set a tx power for reference.....
-+//	sme_set_tx_power_level(priv, 12);	FIXME?
-+	return true;
-+
-+error:
-+	switch (InitStep) {
-+	case 5:
-+	case 4:
-+	case 3: Mds_Destroy( priv );
-+	case 2:
-+	case 1: WBLINUX_stop(priv);
-+		hal_halt( pHwData, NULL );
-+	case 0: break;
-+	}
-+
-+	return false;
-+}
-+
- static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
- {
- 	PWBUSB		pWbUsb;
-@@ -225,6 +345,8 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
- 
- 	priv = dev->priv;
- 
-+	spin_lock_init(&priv->SpinLock);
-+
- 	pWbUsb = &priv->sHwData.WbUsb;
- 	pWbUsb->udev = udev;
- 
-@@ -236,7 +358,7 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
- 		pWbUsb->IsUsb20 = 1;
- 	}
- 
--	if (!WbWLanInitialize(dev)) {
-+	if (!wb35_hw_init(dev)) {
- 		err = -EINVAL;
- 		goto error_free_hw;
- 	}
-@@ -300,11 +422,33 @@ void packet_came(struct ieee80211_hw *hw, char *pRxBufferAddress, int PacketSize
- 	ieee80211_rx_irqsafe(hw, skb, &rx_status);
- }
- 
-+static void wb35_hw_halt(struct wbsoft_priv *adapter)
-+{
-+	//---------------------
-+	adapter->sLocalPara.ShutDowned = true;
-+
-+	Mds_Destroy( adapter );
-+
-+	// Turn off Rx and Tx hardware ability
-+	hal_stop( &adapter->sHwData );
-+#ifdef _PE_USB_INI_DUMP_
-+	WBDEBUG(("[w35und] Hal_stop O.K.\n"));
-+#endif
-+	msleep(100);// Waiting Irp completed
-+
-+	// Destroy the NDIS module
-+	WBLINUX_stop(adapter);
-+
-+	// Halt the HAL
-+	hal_halt(&adapter->sHwData, NULL);
-+}
-+
-+
- static void wb35_disconnect(struct usb_interface *intf)
- {
- 	struct wbsoft_priv *priv = usb_get_intfdata(intf);
- 
--	WbWlanHalt(priv);
-+	wb35_hw_halt(priv);
- 
- 	usb_set_intfdata(intf, NULL);
- 	usb_put_dev(interface_to_usbdev(intf));
--- 
-1.5.3.7
-
+Jesse
