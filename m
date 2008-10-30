@@ -1,154 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758372AbYJ3SOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758553AbYJ3SPQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758372AbYJ3SOk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 14:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756862AbYJ3SOW
+	id S1758553AbYJ3SPQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 14:15:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756186AbYJ3SO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 14:14:22 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:48846 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756656AbYJ3SOV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 14:14:21 -0400
-Date: Thu, 30 Oct 2008 19:14:18 +0100
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Andrey Mirkin <major@openvz.org>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [Devel] Re: [PATCH 0/9] OpenVZ kernel based
-	checkpointing/restart
-Message-ID: <20081030181418.GO15171@hawkmoon.kerlabs.com>
-Reply-To: Louis.Rilling@kerlabs.com
-References: <1220439476-16465-1-git-send-email-major@openvz.org> <200810271707.13580.major@openvz.org> <4905D2AD.1070309@cs.columbia.edu> <200810300902.47067.major@openvz.org> <20081030114747.GL15171@hawkmoon.kerlabs.com> <4909F2B5.7040907@cs.columbia.edu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-8888-1225390312-0001-2"
+	Thu, 30 Oct 2008 14:14:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43664 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755740AbYJ3SO6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 14:14:58 -0400
+Date: Thu, 30 Oct 2008 19:14:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org, hpa@zytor.com
+Subject: Re: [PATCH] x86: simplify X86_MPPARSE config option
+Message-ID: <20081030181445.GF4675@elte.hu>
+References: <49099CB0.76E4.0078.0@novell.com> <20081030105146.GG3569@elte.hu> <4909A212.76E4.0078.0@novell.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4909F2B5.7040907@cs.columbia.edu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <4909A212.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_bohort-8888-1225390312-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+* Jan Beulich <jbeulich@novell.com> wrote:
 
-On Thu, Oct 30, 2008 at 01:45:25PM -0400, Oren Laadan wrote:
->=20
->=20
-> Louis Rilling wrote:
-> > In Kerrighed this is kernel-based, and will remain kernel-based because=
- we
-> > checkpoint a distributed task tree, and want to restart it as mush as p=
-ossible
-> > with the same distribution. The distributed protocol used for restart is
-> > currently too fragile and complex to rely on customized user-space
-> > implementations. That said, if someone brings very good arguments in fa=
-vor of
-> > userspace implementations, we might consider changing this.
->=20
-> Zap also has distributed checkpoint which does not require strict
-> kernel-side ordering. Do you need that because you do SSI ?
+> >>> Ingo Molnar <mingo@elte.hu> 30.10.08 11:51 >>>
+> >
+> >* Jan Beulich <jbeulich@novell.com> wrote:
+> >
+> >> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> >> 
+> >> ---
+> >>  arch/x86/Kconfig |   12 ++----------
+> >>  1 file changed, 2 insertions(+), 10 deletions(-)
+> >> 
+> >> --- linux-2.6.28-rc2/arch/x86/Kconfig	2008-10-30 11:03:18.000000000 +0100
+> >> +++ 2.6.28-rc2-x86-kconfig-cleanup/arch/x86/Kconfig	2008-10-21 13:57:07.000000000 +0200
+> >> @@ -235,21 +235,13 @@ config X86_FIND_SMP_CONFIG
+> >>  	def_bool y
+> >>  	depends on X86_MPPARSE || X86_VOYAGER
+> >>  
+> >> -if ACPI
+> >>  config X86_MPPARSE
+> >> -	def_bool y
+> >> -	bool "Enable MPS table"
+> >> +	bool "Enable MPS table" if ACPI
+> >> +	default y
+> >>  	depends on X86_LOCAL_APIC
+> >>  	help
+> >>  	  For old smp systems that do not have proper acpi support. Newer systems
+> >>  	  (esp with 64bit cpus) with acpi support, MADT and DSDT will override it
+> >> -endif
+> >> -
+> >> -if !ACPI
+> >> -config X86_MPPARSE
+> >> -	def_bool y
+> >> -	depends on X86_LOCAL_APIC
+> >> -endif
+> >
+> >hm, that's not an equivalent change. But i guess we can do this, it 
+> >sure looks like a cleaner construct.
+> 
+> Why is it not equivalent (apart from the help portion, which doesn't 
+> matter when the prompt isn't visible)?
 
-Yes. Tasks from different nodes have parent-children, session leader, etc.
-relationships, and the distributed management of struct pid lifecycle is a =
-bit
-touchy too. By the way, splitting the checkpoint image in one file for each=
- task
-helps us a lot to make restart parallel, because it is more efficient for t=
-he file
-system to handle parallel reads of different files from different nodes than
-parallel reads on a single file descriptor from different nodes.
+you are right, it's equivalent - the "if ACPI" makes interactivity 
+(the prompt) conditional, not the option.
 
->=20
-> >=20
-> > Without taking distributed restart into account, I also tend to prefer
-> > kernel-based, mainly for two (not so strong) reasons:
-> > 1) this prevents userspace from doing weird things, like changing the t=
-ask tree
-> > and let the kernel detect it and deal with the mess this creates (think=
- about
-> > two threads being restarted in separate processes that do not even shar=
-e their
-> > parents). But one can argue that userspace can change the checkpoint im=
-age as
-> > well, so that the kernel must check for such weird things anyway.
->=20
-> I don't really buy this argument. First, as you say, user can change
-> the checkpoint image file. Second, you can verify in the kernel that
-> the real relationships of the processes match those specified (and
-> expected from) the image file. That's pretty straightforward.
->=20
-> > 2) restart will be more efficient with respect to shared objects.
->=20
-> Can you elaborate on this ?  In what sense "more efficient" ?
->=20
-> Note that the topic in question is not whether to do the entire restart
-> from user space (and I argue that most work should be done in the kernel),
-> but rather whether process creation (and only that) should be done in
-> kernel or user space.
+applied to tip/x86/cleanups, thanks!
 
-See my answer to Dave.
-
->=20
-> Quick thoughts of pros/cons of each approach are:
->=20
-> user space:
->=20
-> + re-use existing api (fork)
-> + easier to debug
-> + will allow 'handmade' resources restart: it was mentioned before that
->   one may want to reattach stdout to a different place after restart; a
->   user based restart of processes can make this much easier: e.g. the
->   user process can create the alternative resources, give them to the
->   kernel and only then call sys_restart)
-> + arch-independent code
->=20
-> - a bit slower than in kernel space
-> - requires a clone-with-specific-pid syscall or interface
->=20
-> kernel space:
->=20
-> + a bit easier to control everything
-> + a bit faster than user space
-> + no need for user-visible interface for clone-with-...
->=20
-> - arch-dependent code
-> - needs special code to fight 'fork-bomb'
->=20
-> So, I'm not convinced, and I even think there may be room to both, for
-> the time being. I volunteer to support the user-space alternative while
-> we make up our minds.
-
-Yes, I hope that investigating both approaches will give us stronger argume=
-nts.
-
-Louis
-
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
-
---=_bohort-8888-1225390312-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFJCfl6VKcRuvQ9Q1QRAuh1AJ40VfXrWVLGyDNob1doxP25r1juBwCfeoE/
-fvoTg6R2vmuMbvCFkQnMsKQ=
-=8jwl
------END PGP SIGNATURE-----
-
---=_bohort-8888-1225390312-0001-2--
+	Ingo
