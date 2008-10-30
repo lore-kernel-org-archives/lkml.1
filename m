@@ -1,58 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756354AbYJ3QKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbYJ3QLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756354AbYJ3QKJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 12:10:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbYJ3QJ6
+	id S1756904AbYJ3QLt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 12:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754885AbYJ3QLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 12:09:58 -0400
-Received: from mail.bitdefender.com ([91.199.104.2]:39377 "EHLO
-	mail.bitdefender.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752955AbYJ3QJ5 (ORCPT
+	Thu, 30 Oct 2008 12:11:40 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:10349 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754666AbYJ3QLj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 12:09:57 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Oct 2008 12:09:56 EDT
-From: Mihai =?utf-8?q?Don=C8=9Bu?= <mihai.dontu@gmail.com>
-Organization: Home
-To: linux-kernel@vger.kernel.org
-Subject: network weirdness
-Date: Thu, 30 Oct 2008 18:03:12 +0200
-User-Agent: KMail/1.9.9
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200810301803.12622.mihai.dontu@gmail.com>
-X-BitDefender-Scanner: Clean, Agent: BitDefender qmail 3.0.0 on
- mail.bitdefender.com, sigver: 7.21573
-X-BitDefender-Spam: No (241)
-X-BitDefender-SpamStamp: v1, build 2.7.20.55976, bayes score: 500(0),
- pbayes score: 241(241), neunet score: 500(0), total: 241
+	Thu, 30 Oct 2008 12:11:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
+         :sender;
+        b=kxHiRporfzGgL85yDsOSPRl9Hj0Lpb9NIfGMF697dFeKFk8GlJIYXb31r79DthHujN
+         VB3ZlAIrKzHDcZj2p+yTMtqR3kBCMFofutLibC3iahIifLrG1K0RrNmDt5wmT+lO7gxA
+         6zQHx0UH8jPEAO9NteJUKfXd1R6IFYE/f/8hI=
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: greg@kroah.com
+Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Pavel Machek <pavel@suse.cz>
+Subject: [PATCH 3/7] w35und: remove unused ->ShutDowned member from struct LOCAL_PARA
+Date: Thu, 30 Oct 2008 18:12:03 +0200
+Message-Id: <1225383127-16406-3-git-send-email-penberg@cs.helsinki.fi>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1225383127-16406-2-git-send-email-penberg@cs.helsinki.fi>
+References: <>
+ <1225383127-16406-1-git-send-email-penberg@cs.helsinki.fi>
+ <1225383127-16406-2-git-send-email-penberg@cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+It's not actually read by anyone so we might as well remove it.
 
-I'm sometimes faced with a problem, regarding the network, that I am unable to 
-reproduce (too easy). Today for example, when I got to work, I was unable to 
-do a remote desktop on one of the machines in the same network as me. I kept 
-getting a "recv() : connection reset by peer" message each time I tried to 
-connect. I was, however, able to talk to every other machine, local or from 
-the Internet, except this one. I could also do to a "ssh -X" on another 
-computer and then "rdesktop -g 1024x768 winhost" from there. Nothing 
-directly, however. After playing with my network interface for a while and 
-rebooting the windows machine, I finally gave up and rebooted mine. The 
-problem went away.
+Cc: Pavel Machek <pavel@suse.cz>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ drivers/staging/winbond/localpara.h |    1 -
+ drivers/staging/winbond/wbusb.c     |    6 ------
+ 2 files changed, 0 insertions(+), 7 deletions(-)
 
-Has anyone else came across this before?
-
-$ uname -a
-Linux mdontu-dell 2.6.27.2 #1 SMP PREEMPT Sun Oct 19 13:34:08 EEST 2008 x86_64 
-Intel(R) Core(TM)2 CPU T5500 @ 1.66GHz GenuineIntel GNU/Linux
-
-Almost forgot: I was able to ping the machine, so I assume it's something 
-related to TCP/IP.
-
+diff --git a/drivers/staging/winbond/localpara.h b/drivers/staging/winbond/localpara.h
+index a308ac2..607bb05 100644
+--- a/drivers/staging/winbond/localpara.h
++++ b/drivers/staging/winbond/localpara.h
+@@ -149,7 +149,6 @@ typedef struct LOCAL_PARA
+ 
+     //// power-save variables
+     u8  		  	iPowerSaveMode;     // 0 indicates it is on, 1 indicates it is off
+-	u8			ShutDowned;
+ 	u8			ATIMmode;
+ 	u8			ExcludeUnencrypted;
+ 
+diff --git a/drivers/staging/winbond/wbusb.c b/drivers/staging/winbond/wbusb.c
+index 673875d..0f70101 100644
+--- a/drivers/staging/winbond/wbusb.c
++++ b/drivers/staging/winbond/wbusb.c
+@@ -220,9 +220,6 @@ static unsigned char wb35_hw_init(struct ieee80211_hw *hw)
+ 	pHwData = &priv->sHwData;
+ 	hal_set_phy_type( pHwData, RF_DECIDE_BY_INF );
+ 
+-	// Initial Software variable
+-	priv->sLocalPara.ShutDowned = false;
+-
+ 	//added by ws for wep key error detection
+ 	priv->sLocalPara.bWepKeyError= false;
+ 	priv->sLocalPara.bToSelfPacketReceived = false;
+@@ -424,9 +421,6 @@ void packet_came(struct ieee80211_hw *hw, char *pRxBufferAddress, int PacketSize
+ 
+ static void wb35_hw_halt(struct wbsoft_priv *adapter)
+ {
+-	//---------------------
+-	adapter->sLocalPara.ShutDowned = true;
+-
+ 	Mds_Destroy( adapter );
+ 
+ 	// Turn off Rx and Tx hardware ability
 -- 
-Mihai Donțu
+1.5.3.7
+
