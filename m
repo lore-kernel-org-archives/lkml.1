@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756768AbYJ3PwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756252AbYJ3PyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756768AbYJ3PwH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 11:52:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbYJ3Pvw
+	id S1756252AbYJ3PyX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 11:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753687AbYJ3PyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 11:51:52 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:8836 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753953AbYJ3Pvw (ORCPT
+	Thu, 30 Oct 2008 11:54:15 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50408 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752460AbYJ3PyO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 11:51:52 -0400
-Message-ID: <ac3eb2510810300851q719ccde6l6914b862a330d010@mail.gmail.com>
-Date: Thu, 30 Oct 2008 16:51:41 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Heiko Carstens" <heiko.carstens@de.ibm.com>
-Subject: Re: s390: struct device - replace bus_id with dev_name(), dev_set_name()
-Cc: "Cornelia Huck" <cornelia.huck@de.ibm.com>,
-       "Martin Schwidefsky" <schwidefsky@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>
-In-Reply-To: <20081030154635.GB3871@osiris.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 30 Oct 2008 11:54:14 -0400
+Date: Thu, 30 Oct 2008 15:54:12 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.28-rc2 i/o error on /dev/ttyUSB0
+Message-ID: <20081030155412.33d57ca0@lxorguk.ukuu.org.uk>
+In-Reply-To: <490856FA.20609@aitel.hist.no>
+References: <alpine.LFD.2.00.0810261221350.3386@nehalem.linux-foundation.org>
+	<4906F54A.7020909@aitel.hist.no>
+	<alpine.LFD.2.00.0810280928320.3386@nehalem.linux-foundation.org>
+	<20081028170605.611c7759@lxorguk.ukuu.org.uk>
+	<490856FA.20609@aitel.hist.no>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1225328227.5970.51.camel@nga.site>
-	 <20081030103200.438576a1@gondolin>
-	 <20081030113831.GA3871@osiris.boeblingen.de.ibm.com>
-	 <ac3eb2510810300758yf0df0e8j43875dd7c98a56c@mail.gmail.com>
-	 <20081030154635.GB3871@osiris.boeblingen.de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 16:46, Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-> On Thu, Oct 30, 2008 at 03:58:21PM +0100, Kay Sievers wrote:
->> On Thu, Oct 30, 2008 at 12:38, Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
->> > On Thu, Oct 30, 2008 at 10:32:00AM +0100, Cornelia Huck wrote:
->> >> On Thu, 30 Oct 2008 01:57:07 +0100,
->> >> Kay Sievers <kay.sievers@vrfy.org> wrote:
->> >>
->> >> > From: Kay Sievers <kay.sievers@vrfy.org>
->> >> > Subject: s390: struct device - replace bus_id with dev_name(), dev_set_name()
->> >> >
->> >> > Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
->> >> > Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
->> >> > Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
->> >> > Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
->> >>
->> >> Other than the fact that this patch is a bit mis-named (it just gets
->> >> rid of BUS_ID_SIZE), this looks fine to me.
->>
->> Yeah, sorry, it's one of the 49 patches, where the subjects isn't
->> right, because you did the conversion already. :)
->>
->> > Who is supposed to send this upstream and when?
->>
->> Would be fine if it goes through the s390 tree, and gets merged there
->> soon so it shows up in -next.
->
-> Just to get this right: it doesn't depend on any other patches and is
-> fine as a standalone patch, right?
-> Sorry, this isn't obvious for me ;)
+On Wed, 29 Oct 2008 13:28:42 +0100
+Helge Hafting <helge.hafting@aitel.hist.no> wrote:
 
-The stuff it depends on, we already put into .27. It should not depend
-on anything not in a released version, yes.
+> Alan Cox wrote:
+> >> squarely in the "oops, kref's are screwed up" corner, and you should talk 
+> >> to Alan about your particular USB dongle. I bet that bisection would just 
+> >> show you one of the kref commits (eg 4a90f09b "tty: usb-serial krefs" or 
+> >> maybe 7d7b93c14 "tty: kref the tty driver object"). 
 
-Kay
+Please try:
+
+tty: Fix USB kref leak
+
+From: Alan Cox <alan@redhat.com>
+
+When we close we must clear the extra reference we got when we read
+port->tty. Setting the port tty NULL will clear the kref held by the driver
+but not the one we obtained ourselves while doing the lookup.
+
+Signed-off-by: Alan Cox <alan@redhat.com>
+---
+
+ drivers/usb/serial/usb-serial.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
+index 8be3f39..794b5ff 100644
+--- a/drivers/usb/serial/usb-serial.c
++++ b/drivers/usb/serial/usb-serial.c
+@@ -281,6 +281,7 @@ static void serial_close(struct tty_struct *tty, struct file *filp)
+ 			if (tty->driver_data)
+ 				tty->driver_data = NULL;
+ 			tty_port_tty_set(&port->port, NULL);
++			tty_kref_put(tty);
+ 		}
+ 	}
+ 
