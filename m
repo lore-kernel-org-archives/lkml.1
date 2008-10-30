@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756482AbYJ3B12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756298AbYJ3B33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756482AbYJ3B12 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 21:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbYJ3B1T
+	id S1756298AbYJ3B33 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 21:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbYJ3B3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 21:27:19 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:4551 "EHLO
+	Wed, 29 Oct 2008 21:29:21 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:3599 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751971AbYJ3B1T (ORCPT
+	with ESMTP id S1751196AbYJ3B3U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 21:27:19 -0400
-Subject: sound: struct device - replace bus_id with dev_name(),
-	dev_set_name()
+	Wed, 29 Oct 2008 21:29:20 -0400
+Subject: i2c: struct device - replace bus_id with dev_name(), dev_set_name()
 From: Kay Sievers <kay.sievers@vrfy.org>
-To: Takashi Iwai <tiwai@suse.de>
+To: Jean Delvare <khali@linux-fr.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
 Content-Type: text/plain
-Date: Thu, 30 Oct 2008 02:27:20 +0100
-Message-Id: <1225330040.5970.83.camel@nga.site>
+Date: Thu, 30 Oct 2008 02:29:21 +0100
+Message-Id: <1225330161.5970.86.camel@nga.site>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
@@ -51,30 +50,45 @@ Kay
 
 
 From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: sound: struct device - replace bus_id with dev_name(), dev_set_name()
+Subject: i2c: struct device - replace bus_id with dev_name(), dev_set_name()
 
-CC: Takashi Iwai <tiwai@suse.de>
+Cc: Jean Delvare <khali@linux-fr.org>
 Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
 ---
 
 
-diff --git a/sound/pci/ac97/ac97_codec.c b/sound/pci/ac97/ac97_codec.c
-index 6704acb..bd510ec 100644
---- a/sound/pci/ac97/ac97_codec.c
-+++ b/sound/pci/ac97/ac97_codec.c
-@@ -1927,9 +1927,9 @@ static int snd_ac97_dev_register(struct snd_device *device)
- 	ac97->dev.bus = &ac97_bus_type;
- 	ac97->dev.parent = ac97->bus->card->dev;
- 	ac97->dev.release = ac97_device_release;
--	snprintf(ac97->dev.bus_id, BUS_ID_SIZE, "%d-%d:%s",
--		 ac97->bus->card->number, ac97->num,
--		 snd_ac97_get_short_name(ac97));
-+	dev_set_name(&ac97->dev, "%d-%d:%s",
-+		     ac97->bus->card->number, ac97->num,
-+		     snd_ac97_get_short_name(ac97));
- 	if ((err = device_register(&ac97->dev)) < 0) {
- 		snd_printk(KERN_ERR "Can't register ac97 bus\n");
- 		ac97->dev.bus = NULL;
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index 5a485c2..ce3cd48 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -459,7 +459,7 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
+ 		pr_debug("I2C adapter driver [%s] forgot to specify "
+ 			 "physical device\n", adap->name);
+ 	}
+-	sprintf(adap->dev.bus_id, "i2c-%d", adap->nr);
++	dev_set_name(&adap->dev, "i2c-%d", adap->nr);
+ 	adap->dev.release = &i2c_adapter_dev_release;
+ 	adap->dev.class = &i2c_adapter_class;
+ 	res = device_register(&adap->dev);
+@@ -845,8 +845,7 @@ int i2c_attach_client(struct i2c_client *client)
+ 	} else
+ 		client->dev.release = i2c_client_dev_release;
+ 
+-	snprintf(&client->dev.bus_id[0], sizeof(client->dev.bus_id),
+-		"%d-%04x", i2c_adapter_id(adapter), client->addr);
++	dev_set_name(&client->dev, "%d-%04x", i2c_adapter_id(adapter), client->addr);
+ 	res = device_register(&client->dev);
+ 	if (res)
+ 		goto out_err;
+@@ -856,7 +855,7 @@ int i2c_attach_client(struct i2c_client *client)
+ 	mutex_unlock(&adapter->clist_lock);
+ 
+ 	dev_dbg(&adapter->dev, "client [%s] registered with bus id %s\n",
+-		client->name, client->dev.bus_id);
++		client->name, dev_name(&client->dev));
+ 
+ 	if (adapter->client_register)  {
+ 		if (adapter->client_register(client)) {
 
 
