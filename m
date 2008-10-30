@@ -1,443 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758845AbYJ3TLP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbYJ3TMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758845AbYJ3TLP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 15:11:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbYJ3TK6
+	id S1755560AbYJ3TMa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 15:12:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbYJ3TMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 15:10:58 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45525 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751548AbYJ3TK5 (ORCPT
+	Thu, 30 Oct 2008 15:12:22 -0400
+Received: from gv-out-0910.google.com ([216.239.58.187]:53267 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752907AbYJ3TMV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 15:10:57 -0400
-Date: Thu, 30 Oct 2008 20:12:30 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] w35und: remove global struct ieee80211_hw
-Message-ID: <20081030191230.GD22185@elf.ucw.cz>
-References: <1225376079-9592-1-git-send-email-penberg@cs.helsinki.fi> <1225376079-9592-2-git-send-email-penberg@cs.helsinki.fi> <1225376079-9592-3-git-send-email-penberg@cs.helsinki.fi> <1225376079-9592-4-git-send-email-penberg@cs.helsinki.fi> <1225376079-9592-5-git-send-email-penberg@cs.helsinki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1225376079-9592-5-git-send-email-penberg@cs.helsinki.fi>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 30 Oct 2008 15:12:21 -0400
+Subject: w1: struct device - replace bus_id with dev_name(), dev_set_name()
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Content-Type: text/plain
+Date: Thu, 30 Oct 2008 20:12:22 +0100
+Message-Id: <1225393942.21973.41.camel@nga.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-10-30 16:14:39, Pekka Enberg wrote:
-> Remove the my_dev global variable from wbusb.c by passing a pointer to struct
-> ieee80211_hw around so that packet_came() gets it.
+This patch is part of a larger patch series which will remove
+the "char bus_id[20]" name string from struct device. The device
+name is managed in the kobject anyway, and without any size
+limitation, and just needlessly copied into "struct device".
 
-Acked-by: Pavel Machek <pavel@suse.cz>
+To set and read the device name dev_name(dev) and dev_set_name(dev)
+must be used. If your code uses static kobjects, which it shouldn't
+do, "const char *init_name" can be used to statically provide the
+name the registered device should have. At registration time, the
+init_name field is cleared, to enforce the use of dev_name(dev) to
+access the device name at a later time.
 
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
->  drivers/staging/winbond/wb35rx.c    |   29 +++++++++-----
->  drivers/staging/winbond/wb35rx_f.h  |    7 ++-
->  drivers/staging/winbond/wbhal.c     |   11 +++--
->  drivers/staging/winbond/wbhal_f.h   |    2 +-
->  drivers/staging/winbond/wblinux.c   |   73 ++++++++++++++++++-----------------
->  drivers/staging/winbond/wblinux_f.h |    3 +-
->  drivers/staging/winbond/wbusb.c     |    8 +--
->  7 files changed, 72 insertions(+), 61 deletions(-)
-> 
-> diff --git a/drivers/staging/winbond/wb35rx.c b/drivers/staging/winbond/wb35rx.c
-> index 15a0650..cd5a8e1 100644
-> --- a/drivers/staging/winbond/wb35rx.c
-> +++ b/drivers/staging/winbond/wb35rx.c
-> @@ -10,24 +10,29 @@
->  //============================================================================
->  #include <linux/usb.h>
->  
-> +#include "core.h"
->  #include "sysdef.h"
->  #include "wb35rx_f.h"
->  
-> -void Wb35Rx_start(phw_data_t pHwData)
-> +void Wb35Rx_start(struct ieee80211_hw *hw)
->  {
-> +	struct wbsoft_priv *priv = hw->priv;
-> +	phw_data_t pHwData = &priv->sHwData;
->  	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
->  
->  	// Allow only one thread to run into the Wb35Rx() function
->  	if (atomic_inc_return(&pWb35Rx->RxFireCounter) == 1) {
->  		pWb35Rx->EP3vm_state = VM_RUNNING;
-> -		Wb35Rx(pHwData);
-> +		Wb35Rx(hw);
->  	} else
->  		atomic_dec(&pWb35Rx->RxFireCounter);
->  }
->  
->  // This function cannot reentrain
-> -void Wb35Rx(  phw_data_t pHwData )
-> +void Wb35Rx(struct ieee80211_hw *hw)
->  {
-> +	struct wbsoft_priv *priv = hw->priv;
-> +	phw_data_t pHwData = &priv->sHwData;
->  	PWB35RX	pWb35Rx = &pHwData->Wb35Rx;
->  	u8 *	pRxBufferAddress;
->  	struct urb *urb = pWb35Rx->RxUrb;
-> @@ -69,7 +74,7 @@ void Wb35Rx(  phw_data_t pHwData )
->  	usb_fill_bulk_urb(urb, pHwData->WbUsb.udev,
->  			  usb_rcvbulkpipe(pHwData->WbUsb.udev, 3),
->  			  pRxBufferAddress, MAX_USB_RX_BUFFER,
-> -			  Wb35Rx_Complete, pHwData);
-> +			  Wb35Rx_Complete, hw);
->  
->  	pWb35Rx->EP3vm_state = VM_RUNNING;
->  
-> @@ -89,7 +94,9 @@ error:
->  
->  void Wb35Rx_Complete(struct urb *urb)
->  {
-> -	phw_data_t	pHwData = urb->context;
-> +	struct ieee80211_hw *hw = urb->context;
-> +	struct wbsoft_priv *priv = hw->priv;
-> +	phw_data_t pHwData = &priv->sHwData;
->  	PWB35RX		pWb35Rx = &pHwData->Wb35Rx;
->  	u8 *		pRxBufferAddress;
->  	u32		SizeCheck;
-> @@ -150,11 +157,11 @@ void Wb35Rx_Complete(struct urb *urb)
->  	pWb35Rx->RxBufferSize[ RxBufferId ] = BulkLength;
->  
->  	if (!pWb35Rx->RxOwner[ RxBufferId ])
-> -		Wb35Rx_indicate(pHwData);
-> +		Wb35Rx_indicate(hw);
->  
->  	kfree(pWb35Rx->pDRx);
->  	// Do the next receive
-> -	Wb35Rx(pHwData);
-> +	Wb35Rx(hw);
->  	return;
->  
->  error:
-> @@ -257,11 +264,13 @@ void Wb35Rx_adjust(PDESCRIPTOR pRxDes)
->  	pRxDes->buffer_size[0] = BufferSize;
->  }
->  
-> -extern void packet_came(char *pRxBufferAddress, int PacketSize);
-> +extern void packet_came(struct ieee80211_hw *hw, char *pRxBufferAddress, int PacketSize);
->  
->  
-> -u16 Wb35Rx_indicate(phw_data_t pHwData)
-> +u16 Wb35Rx_indicate(struct ieee80211_hw *hw)
->  {
-> +	struct wbsoft_priv *priv = hw->priv;
-> +	phw_data_t pHwData = &priv->sHwData;
->  	DESCRIPTOR	RxDes;
->  	PWB35RX	pWb35Rx = &pHwData->Wb35Rx;
->  	u8 *		pRxBufferAddress;
-> @@ -317,7 +326,7 @@ u16 Wb35Rx_indicate(phw_data_t pHwData)
->  			RxDes.buffer_total_size = RxDes.buffer_size[0];
->  			Wb35Rx_adjust(&RxDes);
->  
-> -			packet_came(pRxBufferAddress, PacketSize);
-> +			packet_came(hw, pRxBufferAddress, PacketSize);
->  
->  			// Move RxBuffer point to the next
->  			stmp = PacketSize + 3;
-> diff --git a/drivers/staging/winbond/wb35rx_f.h b/drivers/staging/winbond/wb35rx_f.h
-> index 9fb2e2a..5585b55 100644
-> --- a/drivers/staging/winbond/wb35rx_f.h
-> +++ b/drivers/staging/winbond/wb35rx_f.h
-> @@ -1,6 +1,7 @@
->  #ifndef __WINBOND_WB35RX_F_H
->  #define __WINBOND_WB35RX_F_H
->  
-> +#include <net/mac80211.h>
->  #include "wbhal_s.h"
->  
->  //====================================
-> @@ -10,11 +11,11 @@ void		Wb35Rx_reset_descriptor(  phw_data_t pHwData );
->  unsigned char		Wb35Rx_initial(  phw_data_t pHwData );
->  void		Wb35Rx_destroy(  phw_data_t pHwData );
->  void		Wb35Rx_stop(  phw_data_t pHwData );
-> -u16		Wb35Rx_indicate(  phw_data_t pHwData );
-> +u16		Wb35Rx_indicate(struct ieee80211_hw *hw);
->  void		Wb35Rx_adjust(  PDESCRIPTOR pRxDes );
-> -void		Wb35Rx_start(  phw_data_t pHwData );
-> +void		Wb35Rx_start(struct ieee80211_hw *hw);
->  
-> -void		Wb35Rx(  phw_data_t pHwData );
-> +void		Wb35Rx(struct ieee80211_hw *hw);
->  void		Wb35Rx_Complete(struct urb *urb);
->  
->  #endif
-> diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
-> index 289ca7e..d2be5fb 100644
-> --- a/drivers/staging/winbond/wbhal.c
-> +++ b/drivers/staging/winbond/wbhal.c
-> @@ -315,9 +315,10 @@ static void hal_led_control(unsigned long data)
->  	add_timer(&pHwData->LEDTimer);
->  }
->  
-> -
-> -u8 hal_init_hardware(phw_data_t pHwData, struct wbsoft_priv * adapter)
-> +u8 hal_init_hardware(struct ieee80211_hw *hw)
->  {
-> +	struct wbsoft_priv *priv = hw->priv;
-> +	phw_data_t pHwData = &priv->sHwData;
->  	u16 SoftwareSet;
->  
->  	// Initial the variable
-> @@ -333,7 +334,7 @@ u8 hal_init_hardware(phw_data_t pHwData, struct wbsoft_priv * adapter)
->  				pHwData->InitialResource = 4;
->  				init_timer(&pHwData->LEDTimer);
->  				pHwData->LEDTimer.function = hal_led_control;
-> -				pHwData->LEDTimer.data = (unsigned long) adapter;
-> +				pHwData->LEDTimer.data = (unsigned long) priv;
->  				pHwData->LEDTimer.expires = jiffies + msecs_to_jiffies(1000);
->  				add_timer(&pHwData->LEDTimer);
->  
-> @@ -349,8 +350,8 @@ u8 hal_init_hardware(phw_data_t pHwData, struct wbsoft_priv * adapter)
->  					return false;
->  				#endif
->  
-> -				Wb35Rx_start( pHwData );
-> -				Wb35Tx_EP2VM_start(adapter);
-> +				Wb35Rx_start(hw);
-> +				Wb35Tx_EP2VM_start(priv);
->  
->  				return true;
->  			}
-> diff --git a/drivers/staging/winbond/wbhal_f.h b/drivers/staging/winbond/wbhal_f.h
-> index e7a1d61..dc5709f 100644
-> --- a/drivers/staging/winbond/wbhal_f.h
-> +++ b/drivers/staging/winbond/wbhal_f.h
-> @@ -21,7 +21,7 @@ void hal_clear_all_key(  phw_data_t pHwData );
->  void hal_get_ethernet_address(  phw_data_t pHwData,  u8 *current_address );
->  void hal_set_ethernet_address(  phw_data_t pHwData,  u8 *current_address );
->  void hal_get_permanent_address(  phw_data_t pHwData,  u8 *pethernet_address );
-> -unsigned char hal_init_hardware(  phw_data_t pHwData,  struct wbsoft_priv * adapter );
-> +u8 hal_init_hardware(struct ieee80211_hw *hw);
->  void hal_set_power_save_mode(  phw_data_t pHwData,  unsigned char power_save,  unsigned char wakeup,  unsigned char dtim );
->  void hal_get_power_save_mode(  phw_data_t pHwData,   u8 *pin_pwr_save );
->  void hal_set_slot_time(  phw_data_t pHwData,  u8 type );
-> diff --git a/drivers/staging/winbond/wblinux.c b/drivers/staging/winbond/wblinux.c
-> index 3b02aae..31f2d20 100644
-> --- a/drivers/staging/winbond/wblinux.c
-> +++ b/drivers/staging/winbond/wblinux.c
-> @@ -85,8 +85,9 @@ WbWlanHalt(  struct wbsoft_priv * adapter )
->  }
->  
->  unsigned char
-> -WbWLanInitialize(struct wbsoft_priv * adapter)
-> +WbWLanInitialize(struct ieee80211_hw *hw)
->  {
-> +	struct wbsoft_priv *priv = hw->priv;
->  	phw_data_t	pHwData;
->  	u8		*pMacAddr;
->  	u8		*pMacAddr2;
-> @@ -97,22 +98,22 @@ WbWLanInitialize(struct wbsoft_priv * adapter)
->  	//
->  	// Setting default value for Linux
->  	//
-> -	adapter->sLocalPara.region_INF = REGION_AUTO;
-> -	adapter->sLocalPara.TxRateMode = RATE_AUTO;
-> -	psLOCAL->bMacOperationMode = MODE_802_11_BG;	// B/G mode
-> -	adapter->Mds.TxRTSThreshold = DEFAULT_RTSThreshold;
-> -	adapter->Mds.TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
-> -	hal_set_phy_type( &adapter->sHwData, RF_WB_242_1 );
-> -	adapter->sLocalPara.MTUsize = MAX_ETHERNET_PACKET_SIZE;
-> -	psLOCAL->bPreambleMode = AUTO_MODE;
-> -	adapter->sLocalPara.RadioOffStatus.boSwRadioOff = false;
-> -	pHwData = &adapter->sHwData;
-> +	priv->sLocalPara.region_INF = REGION_AUTO;
-> +	priv->sLocalPara.TxRateMode = RATE_AUTO;
-> +	priv->sLocalPara.bMacOperationMode = MODE_802_11_BG;	// B/G mode
-> +	priv->Mds.TxRTSThreshold = DEFAULT_RTSThreshold;
-> +	priv->Mds.TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
-> +	hal_set_phy_type( &priv->sHwData, RF_WB_242_1 );
-> +	priv->sLocalPara.MTUsize = MAX_ETHERNET_PACKET_SIZE;
-> +	priv->sLocalPara.bPreambleMode = AUTO_MODE;
-> +	priv->sLocalPara.RadioOffStatus.boSwRadioOff = false;
-> +	pHwData = &priv->sHwData;
->  	hal_set_phy_type( pHwData, RF_DECIDE_BY_INF );
->  
->  	//
->  	// Initial each module and variable
->  	//
-> -	if (!WBLINUX_Initial(adapter)) {
-> +	if (!WBLINUX_Initial(priv)) {
->  #ifdef _PE_USB_INI_DUMP_
->  		WBDEBUG(("[w35und]WBNDIS initialization failed\n"));
->  #endif
-> @@ -120,33 +121,33 @@ WbWLanInitialize(struct wbsoft_priv * adapter)
->  	}
->  
->  	// Initial Software variable
-> -	adapter->sLocalPara.ShutDowned = false;
-> +	priv->sLocalPara.ShutDowned = false;
->  
->  	//added by ws for wep key error detection
-> -	adapter->sLocalPara.bWepKeyError= false;
-> -	adapter->sLocalPara.bToSelfPacketReceived = false;
-> -	adapter->sLocalPara.WepKeyDetectTimerCount= 2 * 100; /// 2 seconds
-> +	priv->sLocalPara.bWepKeyError= false;
-> +	priv->sLocalPara.bToSelfPacketReceived = false;
-> +	priv->sLocalPara.WepKeyDetectTimerCount= 2 * 100; /// 2 seconds
->  
->  	// Initial USB hal
->  	InitStep = 1;
-> -	pHwData = &adapter->sHwData;
-> -	if (!hal_init_hardware(pHwData, adapter))
-> +	pHwData = &priv->sHwData;
-> +	if (!hal_init_hardware(hw))
->  		goto error;
->  
->  	EEPROM_region = hal_get_region_from_EEPROM( pHwData );
->  	if (EEPROM_region != REGION_AUTO)
-> -		psLOCAL->region = EEPROM_region;
-> +		priv->sLocalPara.region = EEPROM_region;
->  	else {
-> -		if (psLOCAL->region_INF != REGION_AUTO)
-> -			psLOCAL->region = psLOCAL->region_INF;
-> +		if (priv->sLocalPara.region_INF != REGION_AUTO)
-> +			priv->sLocalPara.region = priv->sLocalPara.region_INF;
->  		else
-> -			psLOCAL->region = REGION_USA;	//default setting
-> +			priv->sLocalPara.region = REGION_USA;	//default setting
->  	}
->  
->  	// Get Software setting flag from hal
-> -	adapter->sLocalPara.boAntennaDiversity = false;
-> +	priv->sLocalPara.boAntennaDiversity = false;
->  	if (hal_software_set(pHwData) & 0x00000001)
-> -		adapter->sLocalPara.boAntennaDiversity = true;
-> +		priv->sLocalPara.boAntennaDiversity = true;
->  
->  	//
->  	// For TS module
-> @@ -155,7 +156,7 @@ WbWLanInitialize(struct wbsoft_priv * adapter)
->  
->  	// For MDS module
->  	InitStep = 3;
-> -	Mds_initial(adapter);
-> +	Mds_initial(priv);
->  
->  	//=======================================
->  	// Initialize the SME, SCAN, MLME, ROAM
-> @@ -165,18 +166,18 @@ WbWLanInitialize(struct wbsoft_priv * adapter)
->  	InitStep = 6;
->  
->  	// If no user-defined address in the registry, use the addresss "burned" on the NIC instead.
-> -	pMacAddr = adapter->sLocalPara.ThisMacAddress;
-> -	pMacAddr2 = adapter->sLocalPara.PermanentAddress;
-> -	hal_get_permanent_address( pHwData, adapter->sLocalPara.PermanentAddress );// Reading ethernet address from EEPROM
-> +	pMacAddr = priv->sLocalPara.ThisMacAddress;
-> +	pMacAddr2 = priv->sLocalPara.PermanentAddress;
-> +	hal_get_permanent_address( pHwData, priv->sLocalPara.PermanentAddress );// Reading ethernet address from EEPROM
->  	if (memcmp(pMacAddr, "\x00\x00\x00\x00\x00\x00", MAC_ADDR_LENGTH) == 0)
->  		memcpy(pMacAddr, pMacAddr2, MAC_ADDR_LENGTH);
->  	else {
->  		// Set the user define MAC address
-> -		hal_set_ethernet_address(pHwData, adapter->sLocalPara.ThisMacAddress);
-> +		hal_set_ethernet_address(pHwData, priv->sLocalPara.ThisMacAddress);
->  	}
->  
->  	//get current antenna
-> -	psLOCAL->bAntennaNo = hal_get_antenna_number(pHwData);
-> +	priv->sLocalPara.bAntennaNo = hal_get_antenna_number(pHwData);
->  #ifdef _PE_STATE_DUMP_
->  	WBDEBUG(("Driver init, antenna no = %d\n", psLOCAL->bAntennaNo));
->  #endif
-> @@ -186,25 +187,25 @@ WbWLanInitialize(struct wbsoft_priv * adapter)
->  	while (!hal_idle(pHwData))
->  		msleep(10);
->  
-> -	MTO_Init(adapter);
-> +	MTO_Init(priv);
->  
->  	HwRadioOff = hal_get_hw_radio_off( pHwData );
-> -	psLOCAL->RadioOffStatus.boHwRadioOff = !!HwRadioOff;
-> +	priv->sLocalPara.RadioOffStatus.boHwRadioOff = !!HwRadioOff;
->  
-> -	hal_set_radio_mode( pHwData, (unsigned char)(psLOCAL->RadioOffStatus.boSwRadioOff || psLOCAL->RadioOffStatus.boHwRadioOff) );
-> +	hal_set_radio_mode( pHwData, (unsigned char)(priv->sLocalPara.RadioOffStatus.boSwRadioOff || priv->sLocalPara.RadioOffStatus.boHwRadioOff) );
->  
->  	hal_driver_init_OK(pHwData) = 1; // Notify hal that the driver is ready now.
->  	//set a tx power for reference.....
-> -//	sme_set_tx_power_level(adapter, 12);	FIXME?
-> +//	sme_set_tx_power_level(priv, 12);	FIXME?
->  	return true;
->  
->  error:
->  	switch (InitStep) {
->  	case 5:
->  	case 4:
-> -	case 3: Mds_Destroy( adapter );
-> +	case 3: Mds_Destroy( priv );
->  	case 2:
-> -	case 1: WBLINUX_Destroy( adapter );
-> +	case 1: WBLINUX_Destroy( priv );
->  		hal_halt( pHwData, NULL );
->  	case 0: break;
->  	}
-> diff --git a/drivers/staging/winbond/wblinux_f.h b/drivers/staging/winbond/wblinux_f.h
-> index 4b786fc..15e6a65 100644
-> --- a/drivers/staging/winbond/wblinux_f.h
-> +++ b/drivers/staging/winbond/wblinux_f.h
-> @@ -17,6 +17,7 @@ void wb35_set_multicast( struct net_device *netdev );
->  struct net_device_stats * wb35_netdev_stats( struct net_device *netdev );
->  void WBLINUX_stop(  struct wbsoft_priv *adapter );
->  void WbWlanHalt(  struct wbsoft_priv *adapter );
-> -unsigned char WbWLanInitialize(struct wbsoft_priv *adapter);
-> +unsigned char WbWLanInitialize(struct ieee80211_hw *hw);
-> +
->  
->  #endif
-> diff --git a/drivers/staging/winbond/wbusb.c b/drivers/staging/winbond/wbusb.c
-> index a6bc78e..40bb77c 100644
-> --- a/drivers/staging/winbond/wbusb.c
-> +++ b/drivers/staging/winbond/wbusb.c
-> @@ -45,7 +45,6 @@ static struct ieee80211_supported_band wbsoft_band_2GHz = {
->  };
->  
->  int wbsoft_enabled;
-> -struct ieee80211_hw *my_dev;
->  
->  static int wbsoft_add_interface(struct ieee80211_hw *dev,
->  				 struct ieee80211_if_init_conf *conf)
-> @@ -225,7 +224,6 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
->  		goto error;
->  
->  	priv = dev->priv;
-> -	my_dev = dev;
->  
->  	pWbUsb = &priv->sHwData.WbUsb;
->  	pWbUsb->udev = udev;
-> @@ -238,7 +236,7 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
->  		pWbUsb->IsUsb20 = 1;
->  	}
->  
-> -	if (!WbWLanInitialize(priv)) {
-> +	if (!WbWLanInitialize(dev)) {
->  		err = -EINVAL;
->  		goto error_free_hw;
->  	}
-> @@ -274,7 +272,7 @@ error:
->  	return err;
->  }
->  
-> -void packet_came(char *pRxBufferAddress, int PacketSize)
-> +void packet_came(struct ieee80211_hw *hw, char *pRxBufferAddress, int PacketSize)
->  {
->  	struct sk_buff *skb;
->  	struct ieee80211_rx_status rx_status = {0};
-> @@ -299,7 +297,7 @@ void packet_came(char *pRxBufferAddress, int PacketSize)
->  	rx_status.phymode = MODE_IEEE80211B;
->  */
->  
-> -	ieee80211_rx_irqsafe(my_dev, skb, &rx_status);
-> +	ieee80211_rx_irqsafe(hw, skb, &rx_status);
->  }
->  
->  static void wb35_disconnect(struct usb_interface *intf)
+We need to get rid of all occurrences of bus_id in the entire tree
+to be able to enable the new interface. Please apply this patch,
+and possibly convert any remaining remaining occurrences of bus_id.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+We want to submit a patch to -next, which will remove bus_id from
+"struct device", to find the remaining pieces to convert, and finally
+switch over to the new api, which will remove the 20 bytes array
+and does no longer have a size limitation.
+
+Thanks,
+Kay
+
+
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: w1: struct device - replace bus_id with dev_name(), dev_set_name()
+
+CC: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
+---
+
+
+diff --git a/drivers/w1/w1.c b/drivers/w1/w1.c
+index 3b615d4..acc7e3b 100644
+--- a/drivers/w1/w1.c
++++ b/drivers/w1/w1.c
+@@ -197,7 +197,7 @@ struct device_driver w1_master_driver = {
+ struct device w1_master_device = {
+ 	.parent = NULL,
+ 	.bus = &w1_bus_type,
+-	.bus_id = "w1 bus master",
++	.init_name = "w1 bus master",
+ 	.driver = &w1_master_driver,
+ 	.release = &w1_master_release
+ };
+@@ -211,7 +211,7 @@ static struct device_driver w1_slave_driver = {
+ struct device w1_slave_device = {
+ 	.parent = NULL,
+ 	.bus = &w1_bus_type,
+-	.bus_id = "w1 bus slave",
++	.init_name = "w1 bus slave",
+ 	.driver = &w1_slave_driver,
+ 	.release = &w1_slave_release
+ };
+@@ -573,7 +573,7 @@ static int w1_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 	}
+ 
+ 	dev_dbg(dev, "Hotplug event for %s %s, bus_id=%s.\n",
+-			event_owner, name, dev->bus_id);
++			event_owner, name, dev_name(dev));
+ 
+ 	if (dev->driver != &w1_slave_driver || !sl)
+ 		return 0;
+@@ -605,8 +605,7 @@ static int __w1_attach_slave_device(struct w1_slave *sl)
+ 	sl->dev.bus = &w1_bus_type;
+ 	sl->dev.release = &w1_slave_release;
+ 
+-	snprintf(&sl->dev.bus_id[0], sizeof(sl->dev.bus_id),
+-		 "%02x-%012llx",
++	dev_set_name(&sl->dev, "%02x-%012llx",
+ 		 (unsigned int) sl->reg_num.family,
+ 		 (unsigned long long) sl->reg_num.id);
+ 	snprintf(&sl->name[0], sizeof(sl->name),
+@@ -615,13 +614,13 @@ static int __w1_attach_slave_device(struct w1_slave *sl)
+ 		 (unsigned long long) sl->reg_num.id);
+ 
+ 	dev_dbg(&sl->dev, "%s: registering %s as %p.\n", __func__,
+-		&sl->dev.bus_id[0], sl);
++		dev_name(&sl->dev), sl);
+ 
+ 	err = device_register(&sl->dev);
+ 	if (err < 0) {
+ 		dev_err(&sl->dev,
+ 			"Device registration [%s] failed. err=%d\n",
+-			sl->dev.bus_id, err);
++			dev_name(&sl->dev), err);
+ 		return err;
+ 	}
+ 
+@@ -630,7 +629,7 @@ static int __w1_attach_slave_device(struct w1_slave *sl)
+ 	if (err < 0) {
+ 		dev_err(&sl->dev,
+ 			"sysfs file creation for [%s] failed. err=%d\n",
+-			sl->dev.bus_id, err);
++			dev_name(&sl->dev), err);
+ 		goto out_unreg;
+ 	}
+ 
+@@ -639,7 +638,7 @@ static int __w1_attach_slave_device(struct w1_slave *sl)
+ 	if (err < 0) {
+ 		dev_err(&sl->dev,
+ 			"sysfs file creation for [%s] failed. err=%d\n",
+-			sl->dev.bus_id, err);
++			dev_name(&sl->dev), err);
+ 		goto out_rem1;
+ 	}
+ 
+@@ -648,7 +647,7 @@ static int __w1_attach_slave_device(struct w1_slave *sl)
+ 	    ((err = sl->family->fops->add_slave(sl)) < 0)) {
+ 		dev_err(&sl->dev,
+ 			"sysfs file creation for [%s] failed. err=%d\n",
+-			sl->dev.bus_id, err);
++			dev_name(&sl->dev), err);
+ 		goto out_rem2;
+ 	}
+ 
+diff --git a/drivers/w1/w1_int.c b/drivers/w1/w1_int.c
+index a3a5456..4a46ed5 100644
+--- a/drivers/w1/w1_int.c
++++ b/drivers/w1/w1_int.c
+@@ -75,8 +75,7 @@ static struct w1_master * w1_alloc_dev(u32 id, int slave_count, int slave_ttl,
+ 	mutex_init(&dev->mutex);
+ 
+ 	memcpy(&dev->dev, device, sizeof(struct device));
+-	snprintf(dev->dev.bus_id, sizeof(dev->dev.bus_id),
+-		  "w1_bus_master%u", dev->id);
++	dev_set_name(&dev->dev, "w1_bus_master%u", dev->id);
+ 	snprintf(dev->name, sizeof(dev->name), "w1_bus_master%u", dev->id);
+ 
+ 	dev->driver = driver;
+
+
