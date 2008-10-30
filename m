@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbYJ3MKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbYJ3MMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754545AbYJ3MKo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 08:10:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577AbYJ3MKf
+	id S1755147AbYJ3MMw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 08:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbYJ3MMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 08:10:35 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:38149 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753384AbYJ3MKf (ORCPT
+	Thu, 30 Oct 2008 08:12:40 -0400
+Received: from miranda.se.axis.com ([193.13.178.8]:52829 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753701AbYJ3MMk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 08:10:35 -0400
-Date: Thu, 30 Oct 2008 14:10:33 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Greg Kroah-Hartman <gregkh@suse.de>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] usbtmc: Fix type conflict
-Message-ID: <Pine.LNX.4.64.0810301409480.7072@wrl-59.cs.helsinki.fi>
+	Thu, 30 Oct 2008 08:12:40 -0400
+Date: Thu, 30 Oct 2008 13:12:35 +0100
+From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Mikael Starvik <mikael.starvik@axis.com>
+Subject: Re: [PATCH] [CRIS] Move header files from include to
+	arch/cris/include.
+Message-ID: <20081030121235.GS4608@axis.com>
+References: <20081021164211.GG24715@axis.com> <20081029173420.GM4608@axis.com> <20081029185313.GA22105@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1347708008-1225368633=:7072"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081029185313.GA22105@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wed, Oct 29, 2008 at 07:53:13PM +0100, Sam Ravnborg wrote:
+> Hi Jesper.
 
----696208474-1347708008-1225368633=:7072
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Hi Sam,
 
+> I have looked at the diffstat and the patches and this is a
+> great improvement in readability of the cris stuff.
+> 
+> It would be good to get this in mainline as fast as possible.
+> Can I ask you to prepare to git trees to pull from and ask
+> Linus to pull it.
+> First tree should be the header move only and if you can
+> convince him it would be great to take the next two patches
+> so add them to another tree.
+> 
+> You can add an:
+> Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> 
+> on all three patches.
 
-While making the other change, I noticed this:
+Thanks, good to hear. My original plan was to push all three for
+2.6.28, but I will see if Linus accepts the changes for 2.6.27.
 
-  CC      drivers/usb/class/usbtmc.o
-drivers/usb/class/usbtmc.c: In function 'usbtmc_ioctl_abort_bulk_in':
-drivers/usb/class/usbtmc.c:164: warning: comparison is always false due to
-limited range of data type
+I would also be happy to see it go in as soon as possible.
 
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
----
- drivers/usb/class/usbtmc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+>         Sam
 
-diff --git a/drivers/usb/class/usbtmc.c b/drivers/usb/class/usbtmc.c
-index 711a9fa..9f7fefd 100644
---- a/drivers/usb/class/usbtmc.c
-+++ b/drivers/usb/class/usbtmc.c
-@@ -134,7 +134,7 @@ static int usbtmc_release(struct inode *inode, struct file *file)
- 
- static int usbtmc_ioctl_abort_bulk_in(struct usbtmc_device_data *data)
- {
--	char *buffer;
-+	u8 *buffer;
- 	struct device *dev;
- 	int rv;
- 	int n;
+/^JN - Jesper Nilsson
 -- 
-1.5.2.2
-
----696208474-1347708008-1225368633=:7072--
+               Jesper Nilsson -- jesper.nilsson@axis.com
