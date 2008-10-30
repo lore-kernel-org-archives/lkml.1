@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206AbYJ3Tqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753165AbYJ3TtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753206AbYJ3Tqd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 15:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbYJ3TqY
+	id S1753165AbYJ3TtR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 15:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbYJ3TtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 15:46:24 -0400
-Received: from gv-out-0910.google.com ([216.239.58.190]:56937 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751302AbYJ3TqY (ORCPT
+	Thu, 30 Oct 2008 15:49:04 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52828 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750810AbYJ3TtB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 15:46:24 -0400
-Subject: Re: hid: struct device - replace bus_id with dev_name(),
-	dev_set_name()
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>
-In-Reply-To: <490A0A35.9060606@gmail.com>
-References: <1225385705.21973.20.camel@nga.site>
-	 <490A0A35.9060606@gmail.com>
-Content-Type: text/plain
-Date: Thu, 30 Oct 2008 20:35:16 +0100
-Message-Id: <1225395316.21973.47.camel@nga.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Oct 2008 15:49:01 -0400
+Date: Thu, 30 Oct 2008 20:50:31 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Long delays and keystrokes required - related to disk
+	encryption?
+Message-ID: <20081030195031.GA22805@elf.ucw.cz>
+References: <200810281744.52587.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810281744.52587.elendil@planet.nl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-30 at 20:25 +0100, Jiri Slaby wrote:
-> Kay Sievers napsal(a):
-> > switch over to the new api, which will remove the 20 bytes array
-> > and does no longer have a size limitation.
+On Tue 2008-10-28 17:44:51, Frans Pop wrote:
+> I'm seeing some very strange behavior with 2.6.28-rc2-95-g49fdf67 on my
+> HP 2510p notebook.
+
+> During the boot there are several places where I need to hit a key for the
+> boot to continue. There are also some very long delays before the next
+> syslog message is displayed.
+> The boot does continue and regularly hitting a key helps (but does not get
+> rid of all delays), but it is a huge regression from 2.6.27.
 > 
-> Cool!
+> The delays seem to continue until file systems get mounted.
+> 
+> As the delays start at the point my system asks for the passphrase to
+> unlock (LUKS) encrypted disks, I suspect it has to do with that.
+> Especially since hitting a key seems to "trigger" new disk activity.
+> 
+> However, the delays happen _again_ during shutdown, which makes it extra
+> strange that the system does behave normally when logged in.
 
-> Could you left the comment above to remind us about removing this ugly hack
-> later when the new non-limited api will be used?
-
-Sure!
-
-Thanks,
-Kay
-
-
-
-From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: hid: struct device - replace bus_id with dev_name(), dev_set_name()
-
-CC: Jiri Kosina <jkosina@suse.cz>
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
----
-
-diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-index 1903e75..27f1e16 100644
---- a/drivers/hid/hid-core.c
-+++ b/drivers/hid/hid-core.c
-@@ -1613,9 +1613,10 @@ int hid_add_device(struct hid_device *hdev)
- 	if (hid_ignore(hdev))
- 		return -ENODEV;
- 
--	/* XXX hack, any other cleaner solution < 20 bus_id bytes? */
--	sprintf(hdev->dev.bus_id, "%04X:%04X:%04X.%04X", hdev->bus,
--			hdev->vendor, hdev->product, atomic_inc_return(&id));
-+	/* XXX hack, any other cleaner solution after the driver core
-+	 * is converted to allow more than 20 bytes as the device name? */
-+	dev_set_name(&hdev->dev, "%04X:%04X:%04X.%04X", hdev->bus,
-+		     hdev->vendor, hdev->product, atomic_inc_return(&id));
- 
- 	ret = device_add(&hdev->dev);
- 	if (!ret)
+Try "nohz=off highres=off"...
+								Pavel
 
 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
