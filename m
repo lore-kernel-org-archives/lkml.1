@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbYJ3Avz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756149AbYJ3Ay5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756587AbYJ3Avz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 20:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbYJ3Avr
+	id S1756149AbYJ3Ay5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 20:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbYJ3Ayt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 20:51:47 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:26684 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753463AbYJ3Avq (ORCPT
+	Wed, 29 Oct 2008 20:54:49 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:18498 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbYJ3Ayr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 20:51:46 -0400
-Subject: V4L: struct device - replace bus_id with dev_name(), dev_set_name()
+	Wed, 29 Oct 2008 20:54:47 -0400
+Subject: SCSI: struct device - replace bus_id with dev_name(),
+	dev_set_name()
 From: Kay Sievers <kay.sievers@vrfy.org>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
 Content-Type: text/plain
-Date: Thu, 30 Oct 2008 01:51:46 +0100
-Message-Id: <1225327906.5970.44.camel@nga.site>
+Date: Thu, 30 Oct 2008 01:54:47 +0100
+Message-Id: <1225328087.5970.47.camel@nga.site>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
@@ -50,261 +51,540 @@ Kay
 
 
 From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: V4L: struct device - replace bus_id with dev_name(), dev_set_name()
+Subject: SCSI: struct device - replace bus_id with dev_name(), dev_set_name()
 
-CC: Mauro Carvalho Chehab <mchehab@redhat.com>
+CC: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
 Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
 ---
 
 
-diff --git a/drivers/media/video/bt8xx/bttv-gpio.c b/drivers/media/video/bt8xx/bttv-gpio.c
-index dce6dae..74c325e 100644
---- a/drivers/media/video/bt8xx/bttv-gpio.c
-+++ b/drivers/media/video/bt8xx/bttv-gpio.c
-@@ -42,7 +42,7 @@ static int bttv_sub_bus_match(struct device *dev, struct device_driver *drv)
- 	struct bttv_sub_driver *sub = to_bttv_sub_drv(drv);
- 	int len = strlen(sub->wanted);
- 
--	if (0 == strncmp(dev->bus_id, sub->wanted, len))
-+	if (0 == strncmp(dev_name(dev), sub->wanted, len))
- 		return 1;
- 	return 0;
- }
-@@ -91,15 +91,14 @@ int bttv_sub_add_device(struct bttv_core *core, char *name)
- 	sub->dev.parent  = &core->pci->dev;
- 	sub->dev.bus     = &bttv_sub_bus_type;
- 	sub->dev.release = release_sub_device;
--	snprintf(sub->dev.bus_id,sizeof(sub->dev.bus_id),"%s%d",
--		 name, core->nr);
-+	dev_set_name(&sub->dev, "%s%d", name, core->nr);
- 
- 	err = device_register(&sub->dev);
- 	if (0 != err) {
- 		kfree(sub);
- 		return err;
- 	}
--	printk("bttv%d: add subdevice \"%s\"\n", core->nr, sub->dev.bus_id);
-+	printk("bttv%d: add subdevice \"%s\"\n", core->nr, dev_name(&sub->dev));
- 	list_add_tail(&sub->list,&core->subs);
- 	return 0;
- }
-diff --git a/drivers/media/video/bt8xx/bttv.h b/drivers/media/video/bt8xx/bttv.h
-index 46cb90e..bc2c884 100644
---- a/drivers/media/video/bt8xx/bttv.h
-+++ b/drivers/media/video/bt8xx/bttv.h
-@@ -308,7 +308,7 @@ struct bttv_sub_device {
- 
- struct bttv_sub_driver {
- 	struct device_driver   drv;
--	char                   wanted[BUS_ID_SIZE];
-+	char                   wanted[20];
- 	int                    (*probe)(struct bttv_sub_device *sub);
- 	void                   (*remove)(struct bttv_sub_device *sub);
- };
-diff --git a/drivers/media/video/em28xx/em28xx-video.c b/drivers/media/video/em28xx/em28xx-video.c
-index a1ab2ef..bbd59de 100644
---- a/drivers/media/video/em28xx/em28xx-video.c
-+++ b/drivers/media/video/em28xx/em28xx-video.c
-@@ -1269,7 +1269,7 @@ static int vidioc_querycap(struct file *file, void  *priv,
- 
- 	strlcpy(cap->driver, "em28xx", sizeof(cap->driver));
- 	strlcpy(cap->card, em28xx_boards[dev->model].name, sizeof(cap->card));
--	strlcpy(cap->bus_info, dev->udev->dev.bus_id, sizeof(cap->bus_info));
-+	strlcpy(cap->bus_info, dev_name(&dev->udev->dev), sizeof(cap->bus_info));
- 
- 	cap->version = EM28XX_VERSION_CODE;
- 
-@@ -1422,7 +1422,7 @@ static int radio_querycap(struct file *file, void  *priv,
- 
- 	strlcpy(cap->driver, "em28xx", sizeof(cap->driver));
- 	strlcpy(cap->card, em28xx_boards[dev->model].name, sizeof(cap->card));
--	strlcpy(cap->bus_info, dev->udev->dev.bus_id, sizeof(cap->bus_info));
-+	strlcpy(cap->bus_info, dev_name(&dev->udev->dev), sizeof(cap->bus_info));
- 
- 	cap->version = EM28XX_VERSION_CODE;
- 	cap->capabilities = V4L2_CAP_TUNER;
-diff --git a/drivers/media/video/et61x251/et61x251_core.c b/drivers/media/video/et61x251/et61x251_core.c
-index 9d0ef96..83c0711 100644
---- a/drivers/media/video/et61x251/et61x251_core.c
-+++ b/drivers/media/video/et61x251/et61x251_core.c
-@@ -1581,7 +1581,7 @@ et61x251_vidioc_querycap(struct et61x251_device* cam, void __user * arg)
- 
- 	strlcpy(cap.card, cam->v4ldev->name, sizeof(cap.card));
- 	if (usb_make_path(cam->usbdev, cap.bus_info, sizeof(cap.bus_info)) < 0)
--		strlcpy(cap.bus_info, cam->usbdev->dev.bus_id,
-+		strlcpy(cap.bus_info, dev_name(&cam->usbdev->dev),
- 			sizeof(cap.bus_info));
- 
- 	if (copy_to_user(arg, &cap, sizeof(cap)))
-diff --git a/drivers/media/video/ir-kbd-i2c.c b/drivers/media/video/ir-kbd-i2c.c
-index efe8499..d4658c5 100644
---- a/drivers/media/video/ir-kbd-i2c.c
-+++ b/drivers/media/video/ir-kbd-i2c.c
-@@ -385,10 +385,10 @@ static int ir_attach(struct i2c_adapter *adap, int addr,
- 		goto err_out_detach;
- 	}
- 
--	/* Phys addr can only be set after attaching (for ir->c.dev.bus_id) */
-+	/* Phys addr can only be set after attaching (for ir->c.dev) */
- 	snprintf(ir->phys, sizeof(ir->phys), "%s/%s/ir0",
--		 ir->c.adapter->dev.bus_id,
--		 ir->c.dev.bus_id);
-+		 dev_name(&ir->c.adapter->dev),
-+		 dev_name(&ir->c.dev));
- 
- 	/* init + register input device */
- 	ir_input_init(input_dev, &ir->ir, ir_type, ir->ir_codes);
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-hdw.c b/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-index 5b81ba4..4358079 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-@@ -2395,7 +2395,7 @@ struct pvr2_hdw *pvr2_hdw_create(struct usb_interface *intf,
- 
- 	scnprintf(hdw->bus_info,sizeof(hdw->bus_info),
- 		  "usb %s address %d",
--		  hdw->usb_dev->dev.bus_id,
-+		  dev_name(&hdw->usb_dev->dev),
- 		  hdw->usb_dev->devnum);
- 
- 	ifnum = hdw->usb_intf->cur_altsetting->desc.bInterfaceNumber;
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-sysfs.c b/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
-index 733680f..e641cd9 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
-@@ -628,10 +628,10 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
- 
- 	class_dev->class = &class_ptr->class;
- 	if (pvr2_hdw_get_sn(sfp->channel.hdw)) {
--		snprintf(class_dev->bus_id, BUS_ID_SIZE, "sn-%lu",
-+		dev_set_name(class_dev, "sn-%lu",
- 			 pvr2_hdw_get_sn(sfp->channel.hdw));
- 	} else if (pvr2_hdw_get_unit_number(sfp->channel.hdw) >= 0) {
--		snprintf(class_dev->bus_id, BUS_ID_SIZE, "unit-%c",
-+		dev_set_name(class_dev, "unit-%c",
- 			 pvr2_hdw_get_unit_number(sfp->channel.hdw) + 'a');
- 	} else {
- 		kfree(class_dev);
-diff --git a/drivers/media/video/sh_mobile_ceu_camera.c b/drivers/media/video/sh_mobile_ceu_camera.c
-index 2407607..4677e2c 100644
---- a/drivers/media/video/sh_mobile_ceu_camera.c
-+++ b/drivers/media/video/sh_mobile_ceu_camera.c
-@@ -609,7 +609,7 @@ static int sh_mobile_ceu_probe(struct platform_device *pdev)
- 
- 	/* request irq */
- 	err = request_irq(pcdev->irq, sh_mobile_ceu_irq, IRQF_DISABLED,
--			  pdev->dev.bus_id, pcdev);
-+			  dev_name(&pdev->dev), pcdev);
- 	if (err) {
- 		dev_err(&pdev->dev, "Unable to register CEU interrupt.\n");
- 		goto exit_release_mem;
-@@ -618,8 +618,8 @@ static int sh_mobile_ceu_probe(struct platform_device *pdev)
- 	pcdev->ici.priv = pcdev;
- 	pcdev->ici.dev.parent = &pdev->dev;
- 	pcdev->ici.nr = pdev->id;
--	pcdev->ici.drv_name = pdev->dev.bus_id,
--	pcdev->ici.ops = &sh_mobile_ceu_host_ops,
-+	pcdev->ici.drv_name = dev_name(&pdev->dev);
-+	pcdev->ici.ops = &sh_mobile_ceu_host_ops;
- 
- 	err = soc_camera_host_register(&pcdev->ici);
+diff --git a/drivers/misc/enclosure.c b/drivers/misc/enclosure.c
+index 0736cff..3cf61ec 100644
+--- a/drivers/misc/enclosure.c
++++ b/drivers/misc/enclosure.c
+@@ -119,7 +119,7 @@ enclosure_register(struct device *dev, const char *name, int components,
+ 	edev->edev.class = &enclosure_class;
+ 	edev->edev.parent = get_device(dev);
+ 	edev->cb = cb;
+-	snprintf(edev->edev.bus_id, BUS_ID_SIZE, "%s", name);
++	dev_set_name(&edev->edev, name);
+ 	err = device_register(&edev->edev);
  	if (err)
-diff --git a/drivers/media/video/sn9c102/sn9c102_core.c b/drivers/media/video/sn9c102/sn9c102_core.c
-index fcd2b62..01a8efb 100644
---- a/drivers/media/video/sn9c102/sn9c102_core.c
-+++ b/drivers/media/video/sn9c102/sn9c102_core.c
-@@ -2162,7 +2162,7 @@ sn9c102_vidioc_querycap(struct sn9c102_device* cam, void __user * arg)
+ 		goto err;
+@@ -170,7 +170,7 @@ EXPORT_SYMBOL_GPL(enclosure_unregister);
+ static void enclosure_link_name(struct enclosure_component *cdev, char *name)
+ {
+ 	strcpy(name, "enclosure_device:");
+-	strcat(name, cdev->cdev.bus_id);
++	strcat(name, dev_name(&cdev->cdev));
+ }
  
- 	strlcpy(cap.card, cam->v4ldev->name, sizeof(cap.card));
- 	if (usb_make_path(cam->usbdev, cap.bus_info, sizeof(cap.bus_info)) < 0)
--		strlcpy(cap.bus_info, cam->usbdev->dev.bus_id,
-+		strlcpy(cap.bus_info, dev_name(&cam->usbdev->dev),
- 			sizeof(cap.bus_info));
+ static void enclosure_remove_links(struct enclosure_component *cdev)
+@@ -256,9 +256,9 @@ enclosure_component_register(struct enclosure_device *edev,
+ 	cdev = &ecomp->cdev;
+ 	cdev->parent = get_device(&edev->edev);
+ 	if (name)
+-		snprintf(cdev->bus_id, BUS_ID_SIZE, "%s", name);
++		dev_set_name(cdev, name);
+ 	else
+-		snprintf(cdev->bus_id, BUS_ID_SIZE, "%u", number);
++		dev_set_name(cdev, "%u", number);
  
- 	if (copy_to_user(arg, &cap, sizeof(cap)))
-diff --git a/drivers/media/video/soc_camera.c b/drivers/media/video/soc_camera.c
-index 66ebe59..28cf5c9 100644
---- a/drivers/media/video/soc_camera.c
-+++ b/drivers/media/video/soc_camera.c
-@@ -783,7 +783,7 @@ int soc_camera_host_register(struct soc_camera_host *ici)
- 		return -EINVAL;
+ 	cdev->release = enclosure_component_release;
+ 	cdev->groups = enclosure_groups;
+diff --git a/drivers/scsi/aic94xx/aic94xx_tmf.c b/drivers/scsi/aic94xx/aic94xx_tmf.c
+index d4640ef..78eb86f 100644
+--- a/drivers/scsi/aic94xx/aic94xx_tmf.c
++++ b/drivers/scsi/aic94xx/aic94xx_tmf.c
+@@ -189,7 +189,7 @@ int asd_I_T_nexus_reset(struct domain_device *dev)
+ 	asd_clear_nexus_I_T(dev, NEXUS_PHASE_PRE);
+ 	/* send a hard reset */
+ 	ASD_DPRINTK("sending %s reset to %s\n",
+-		    reset_type ? "hard" : "soft", phy->dev.bus_id);
++		    reset_type ? "hard" : "soft", dev_name(&phy->dev));
+ 	res = sas_phy_reset(phy, reset_type);
+ 	if (res == TMF_RESP_FUNC_COMPLETE) {
+ 		/* wait for the maximum settle time */
+diff --git a/drivers/scsi/hosts.c b/drivers/scsi/hosts.c
+index 3fdbb13..aa670a1 100644
+--- a/drivers/scsi/hosts.c
++++ b/drivers/scsi/hosts.c
+@@ -388,8 +388,7 @@ struct Scsi_Host *scsi_host_alloc(struct scsi_host_template *sht, int privsize)
+ 		shost->dma_boundary = 0xffffffff;
  
- 	/* Number might be equal to the platform device ID */
--	sprintf(ici->dev.bus_id, "camera_host%d", ici->nr);
-+	dev_set_name(&ici->dev, "camera_host%d", ici->nr);
+ 	device_initialize(&shost->shost_gendev);
+-	snprintf(shost->shost_gendev.bus_id, BUS_ID_SIZE, "host%d",
+-		shost->host_no);
++	dev_set_name(&shost->shost_gendev, "host%d", shost->host_no);
+ #ifndef CONFIG_SYSFS_DEPRECATED
+ 	shost->shost_gendev.bus = &scsi_bus_type;
+ #endif
+@@ -398,8 +397,7 @@ struct Scsi_Host *scsi_host_alloc(struct scsi_host_template *sht, int privsize)
+ 	device_initialize(&shost->shost_dev);
+ 	shost->shost_dev.parent = &shost->shost_gendev;
+ 	shost->shost_dev.class = &shost_class;
+-	snprintf(shost->shost_dev.bus_id, BUS_ID_SIZE, "host%d",
+-		 shost->host_no);
++	dev_set_name(&shost->shost_dev, "host%d", shost->host_no);
+ 	shost->shost_dev.groups = scsi_sysfs_shost_attr_groups;
  
- 	mutex_lock(&list_lock);
- 	list_for_each_entry(ix, &hosts, list) {
-@@ -867,8 +867,7 @@ int soc_camera_device_register(struct soc_camera_device *icd)
+ 	shost->ehandler = kthread_run(scsi_error_handler, shost,
+diff --git a/drivers/scsi/ipr.c b/drivers/scsi/ipr.c
+index ded854a..d773030 100644
+--- a/drivers/scsi/ipr.c
++++ b/drivers/scsi/ipr.c
+@@ -2184,7 +2184,7 @@ static void ipr_dump_location_data(struct ipr_ioa_cfg *ioa_cfg,
+ 		sizeof(struct ipr_dump_entry_header);
+ 	driver_dump->location_entry.hdr.data_type = IPR_DUMP_DATA_TYPE_ASCII;
+ 	driver_dump->location_entry.hdr.id = IPR_DUMP_LOCATION_ID;
+-	strcpy(driver_dump->location_entry.location, ioa_cfg->pdev->dev.bus_id);
++	strcpy(driver_dump->location_entry.location, dev_name(&ioa_cfg->pdev->dev));
+ 	driver_dump->hdr.num_entries++;
+ }
  
- 	icd->devnum = num;
- 	icd->dev.bus = &soc_camera_bus_type;
--	snprintf(icd->dev.bus_id, sizeof(icd->dev.bus_id),
--		 "%u-%u", icd->iface, icd->devnum);
-+	dev_set_name(&icd->dev, "%u-%u", icd->iface, icd->devnum);
+diff --git a/drivers/scsi/ipr.h b/drivers/scsi/ipr.h
+index 4871dd1..d5723c9 100644
+--- a/drivers/scsi/ipr.h
++++ b/drivers/scsi/ipr.h
+@@ -1272,7 +1272,7 @@ struct ipr_dump_entry_header {
  
- 	icd->dev.release = dummy_release;
+ struct ipr_dump_location_entry {
+ 	struct ipr_dump_entry_header hdr;
+-	u8 location[BUS_ID_SIZE];
++	u8 location[20];
+ }__attribute__((packed));
  
-diff --git a/drivers/media/video/usbvision/usbvision-video.c b/drivers/media/video/usbvision/usbvision-video.c
-index d185b57..27f9f70 100644
---- a/drivers/media/video/usbvision/usbvision-video.c
-+++ b/drivers/media/video/usbvision/usbvision-video.c
-@@ -523,7 +523,7 @@ static int vidioc_querycap (struct file *file, void  *priv,
- 	strlcpy(vc->card,
- 		usbvision_device_data[usbvision->DevModel].ModelString,
- 		sizeof(vc->card));
--	strlcpy(vc->bus_info, usbvision->dev->dev.bus_id,
-+	strlcpy(vc->bus_info, dev_name(&usbvision->dev->dev),
- 		sizeof(vc->bus_info));
- 	vc->version = USBVISION_DRIVER_VERSION;
- 	vc->capabilities = V4L2_CAP_VIDEO_CAPTURE |
-diff --git a/drivers/media/video/v4l2-dev.c b/drivers/media/video/v4l2-dev.c
-index ccd6566..78af624 100644
---- a/drivers/media/video/v4l2-dev.c
-+++ b/drivers/media/video/v4l2-dev.c
-@@ -339,7 +339,7 @@ int video_register_device_index(struct video_device *vfd, int type, int nr,
- 	vfd->dev.devt = MKDEV(VIDEO_MAJOR, vfd->minor);
- 	if (vfd->parent)
- 		vfd->dev.parent = vfd->parent;
--	sprintf(vfd->dev.bus_id, "%s%d", name_base, nr);
-+	dev_set_name(&vfd->dev, "%s%d", name_base, nr);
- 	ret = device_register(&vfd->dev);
- 	if (ret < 0) {
- 		printk(KERN_ERR "%s: device_register failed\n", __func__);
-diff --git a/drivers/media/video/zc0301/zc0301_core.c b/drivers/media/video/zc0301/zc0301_core.c
-index 9fc5817..9d00e60 100644
---- a/drivers/media/video/zc0301/zc0301_core.c
-+++ b/drivers/media/video/zc0301/zc0301_core.c
-@@ -1020,7 +1020,7 @@ zc0301_vidioc_querycap(struct zc0301_device* cam, void __user * arg)
+ struct ipr_dump_trace_entry {
+diff --git a/drivers/scsi/libsas/sas_discover.c b/drivers/scsi/libsas/sas_discover.c
+index 709a6f7..facc5bf 100644
+--- a/drivers/scsi/libsas/sas_discover.c
++++ b/drivers/scsi/libsas/sas_discover.c
+@@ -169,7 +169,7 @@ int sas_notify_lldd_dev_found(struct domain_device *dev)
+ 		if (res) {
+ 			printk("sas: driver on pcidev %s cannot handle "
+ 			       "device %llx, error:%d\n",
+-			       sas_ha->dev->bus_id,
++			       dev_name(sas_ha->dev),
+ 			       SAS_ADDR(dev->sas_addr), res);
+ 		}
+ 	}
+diff --git a/drivers/scsi/libsas/sas_dump.c b/drivers/scsi/libsas/sas_dump.c
+index bf34a23..c17c250 100644
+--- a/drivers/scsi/libsas/sas_dump.c
++++ b/drivers/scsi/libsas/sas_dump.c
+@@ -56,7 +56,7 @@ void sas_dprint_phye(int phyid, enum phy_event pe)
  
- 	strlcpy(cap.card, cam->v4ldev->name, sizeof(cap.card));
- 	if (usb_make_path(cam->usbdev, cap.bus_info, sizeof(cap.bus_info)) < 0)
--		strlcpy(cap.bus_info, cam->usbdev->dev.bus_id,
-+		strlcpy(cap.bus_info, dev_name(&cam->usbdev->dev),
- 			sizeof(cap.bus_info));
+ void sas_dprint_hae(struct sas_ha_struct *sas_ha, enum ha_event he)
+ {
+-	SAS_DPRINTK("ha %s: %s event\n", sas_ha->dev->bus_id,
++	SAS_DPRINTK("ha %s: %s event\n", dev_name(sas_ha->dev),
+ 		    sas_hae_str[he]);
+ }
  
- 	if (copy_to_user(arg, &cap, sizeof(cap)))
-diff --git a/include/media/soc_camera.h b/include/media/soc_camera.h
-index c5de7bb..9231e2d 100644
---- a/include/media/soc_camera.h
-+++ b/include/media/soc_camera.h
-@@ -56,7 +56,7 @@ struct soc_camera_host {
- 	struct device dev;
- 	unsigned char nr;				/* Host number */
- 	void *priv;
--	char *drv_name;
-+	const char *drv_name;
- 	struct soc_camera_host_ops *ops;
+diff --git a/drivers/scsi/libsas/sas_port.c b/drivers/scsi/libsas/sas_port.c
+index 139935a..e6ac59c 100644
+--- a/drivers/scsi/libsas/sas_port.c
++++ b/drivers/scsi/libsas/sas_port.c
+@@ -113,7 +113,7 @@ static void sas_form_port(struct asd_sas_phy *phy)
+ 	sas_port_add_phy(port->port, phy->phy);
+ 
+ 	SAS_DPRINTK("%s added to %s, phy_mask:0x%x (%16llx)\n",
+-		    phy->phy->dev.bus_id,port->port->dev.bus_id,
++		    dev_name(&phy->phy->dev), dev_name(&port->port->dev),
+ 		    port->phy_mask,
+ 		    SAS_ADDR(port->attached_sas_addr));
+ 
+diff --git a/drivers/scsi/raid_class.c b/drivers/scsi/raid_class.c
+index 913a931..8e5c169 100644
+--- a/drivers/scsi/raid_class.c
++++ b/drivers/scsi/raid_class.c
+@@ -237,8 +237,7 @@ int raid_component_add(struct raid_template *r,struct device *raid_dev,
+ 	rc->dev.parent = get_device(component_dev);
+ 	rc->num = rd->component_count++;
+ 
+-	snprintf(rc->dev.bus_id, sizeof(rc->dev.bus_id),
+-		 "component-%d", rc->num);
++	dev_set_name(&rc->dev, "component-%d", rc->num);
+ 	list_add_tail(&rc->node, &rd->component_list);
+ 	rc->dev.class = &raid_class.class;
+ 	err = device_add(&rc->dev);
+diff --git a/drivers/scsi/scsi_debug.c b/drivers/scsi/scsi_debug.c
+index 27c633f..6eebd0b 100644
+--- a/drivers/scsi/scsi_debug.c
++++ b/drivers/scsi/scsi_debug.c
+@@ -2508,7 +2508,7 @@ static void pseudo_0_release(struct device *dev)
+ }
+ 
+ static struct device pseudo_primary = {
+-	.bus_id		= "pseudo_0",
++	.init_name	= "pseudo_0",
+ 	.release	= pseudo_0_release,
  };
  
-@@ -107,7 +107,7 @@ extern int soc_camera_video_start(struct soc_camera_device *icd);
- extern void soc_camera_video_stop(struct soc_camera_device *icd);
+@@ -2680,7 +2680,7 @@ static int sdebug_add_adapter(void)
+         sdbg_host->dev.bus = &pseudo_lld_bus;
+         sdbg_host->dev.parent = &pseudo_primary;
+         sdbg_host->dev.release = &sdebug_release_adapter;
+-        sprintf(sdbg_host->dev.bus_id, "adapter%d", scsi_debug_add_host);
++        dev_set_name(&sdbg_host->dev, "adapter%d", scsi_debug_add_host);
  
- struct soc_camera_data_format {
--	char *name;
-+	const char *name;
- 	unsigned int depth;
- 	__u32 fourcc;
- 	enum v4l2_colorspace colorspace;
+         error = device_register(&sdbg_host->dev);
+ 
+diff --git a/drivers/scsi/scsi_ioctl.c b/drivers/scsi/scsi_ioctl.c
+index dc1cfb2..9ed8e2c 100644
+--- a/drivers/scsi/scsi_ioctl.c
++++ b/drivers/scsi/scsi_ioctl.c
+@@ -170,7 +170,8 @@ static int scsi_ioctl_get_pci(struct scsi_device *sdev, void __user *arg)
+ 
+         if (!dev)
+ 		return -ENXIO;
+-        return copy_to_user(arg, dev->bus_id, sizeof(dev->bus_id))? -EFAULT: 0;
++        return copy_to_user(arg,
++			    dev_name(dev), strlen(dev_name(dev)))? -EFAULT: 0;
+ }
+ 
+ 
+diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+index b14dc02..61141fb 100644
+--- a/drivers/scsi/scsi_scan.c
++++ b/drivers/scsi/scsi_scan.c
+@@ -411,8 +411,7 @@ static struct scsi_target *scsi_alloc_target(struct device *parent,
+ 	device_initialize(dev);
+ 	starget->reap_ref = 1;
+ 	dev->parent = get_device(parent);
+-	sprintf(dev->bus_id, "target%d:%d:%d",
+-		shost->host_no, channel, id);
++	dev_set_name(dev, "target%d:%d:%d", shost->host_no, channel, id);
+ #ifndef CONFIG_SYSFS_DEPRECATED
+ 	dev->bus = &scsi_bus_type;
+ #endif
+@@ -1010,7 +1009,7 @@ static int scsi_probe_and_add_lun(struct scsi_target *starget,
+ 		if (rescan || !scsi_device_created(sdev)) {
+ 			SCSI_LOG_SCAN_BUS(3, printk(KERN_INFO
+ 				"scsi scan: device exists on %s\n",
+-				sdev->sdev_gendev.bus_id));
++				dev_name(&sdev->sdev_gendev)));
+ 			if (sdevp)
+ 				*sdevp = sdev;
+ 			else
+@@ -1149,7 +1148,7 @@ static void scsi_sequential_lun_scan(struct scsi_target *starget,
+ 	struct Scsi_Host *shost = dev_to_shost(starget->dev.parent);
+ 
+ 	SCSI_LOG_SCAN_BUS(3, printk(KERN_INFO "scsi scan: Sequential scan of"
+-				    "%s\n", starget->dev.bus_id));
++				    "%s\n", dev_name(&starget->dev)));
+ 
+ 	max_dev_lun = min(max_scsi_luns, shost->max_lun);
+ 	/*
+diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
+index 93c28f3..f8eeb58 100644
+--- a/drivers/scsi/scsi_sysfs.c
++++ b/drivers/scsi/scsi_sysfs.c
+@@ -1079,16 +1079,14 @@ void scsi_sysfs_device_initialize(struct scsi_device *sdev)
+ 	device_initialize(&sdev->sdev_gendev);
+ 	sdev->sdev_gendev.bus = &scsi_bus_type;
+ 	sdev->sdev_gendev.type = &scsi_dev_type;
+-	sprintf(sdev->sdev_gendev.bus_id,"%d:%d:%d:%d",
+-		sdev->host->host_no, sdev->channel, sdev->id,
+-		sdev->lun);
+-	
++	dev_set_name(&sdev->sdev_gendev,"%d:%d:%d:%d",
++		     sdev->host->host_no, sdev->channel, sdev->id, sdev->lun);
++
+ 	device_initialize(&sdev->sdev_dev);
+ 	sdev->sdev_dev.parent = &sdev->sdev_gendev;
+ 	sdev->sdev_dev.class = &sdev_class;
+-	snprintf(sdev->sdev_dev.bus_id, BUS_ID_SIZE,
+-		 "%d:%d:%d:%d", sdev->host->host_no,
+-		 sdev->channel, sdev->id, sdev->lun);
++	dev_set_name(&sdev->sdev_dev, "%d:%d:%d:%d",
++		     sdev->host->host_no, sdev->channel, sdev->id, sdev->lun);
+ 	sdev->scsi_level = starget->scsi_level;
+ 	transport_setup_device(&sdev->sdev_gendev);
+ 	spin_lock_irqsave(shost->host_lock, flags);
+diff --git a/drivers/scsi/scsi_transport_fc.c b/drivers/scsi/scsi_transport_fc.c
+index 1e71abf..c845853 100644
+--- a/drivers/scsi/scsi_transport_fc.c
++++ b/drivers/scsi/scsi_transport_fc.c
+@@ -2486,8 +2486,8 @@ fc_rport_create(struct Scsi_Host *shost, int channel,
+ 	device_initialize(dev);			/* takes self reference */
+ 	dev->parent = get_device(&shost->shost_gendev); /* parent reference */
+ 	dev->release = fc_rport_dev_release;
+-	sprintf(dev->bus_id, "rport-%d:%d-%d",
+-		shost->host_no, channel, rport->number);
++	dev_set_name(dev, "rport-%d:%d-%d",
++		     shost->host_no, channel, rport->number);
+ 	transport_setup_device(dev);
+ 
+ 	error = device_add(dev);
+@@ -3157,8 +3157,8 @@ fc_vport_setup(struct Scsi_Host *shost, int channel, struct device *pdev,
+ 	device_initialize(dev);			/* takes self reference */
+ 	dev->parent = get_device(pdev);		/* takes parent reference */
+ 	dev->release = fc_vport_dev_release;
+-	sprintf(dev->bus_id, "vport-%d:%d-%d",
+-		shost->host_no, channel, vport->number);
++	dev_set_name(dev, "vport-%d:%d-%d",
++		     shost->host_no, channel, vport->number);
+ 	transport_setup_device(dev);
+ 
+ 	error = device_add(dev);
+@@ -3181,19 +3181,19 @@ fc_vport_setup(struct Scsi_Host *shost, int channel, struct device *pdev,
+ 	 */
+ 	if (pdev != &shost->shost_gendev) {
+ 		error = sysfs_create_link(&shost->shost_gendev.kobj,
+-				 &dev->kobj, dev->bus_id);
++				 &dev->kobj, dev_name(dev));
+ 		if (error)
+ 			printk(KERN_ERR
+ 				"%s: Cannot create vport symlinks for "
+ 				"%s, err=%d\n",
+-				__func__, dev->bus_id, error);
++				__func__, dev_name(dev), error);
+ 	}
+ 	spin_lock_irqsave(shost->host_lock, flags);
+ 	vport->flags &= ~FC_VPORT_CREATING;
+ 	spin_unlock_irqrestore(shost->host_lock, flags);
+ 
+ 	dev_printk(KERN_NOTICE, pdev,
+-			"%s created via shost%d channel %d\n", dev->bus_id,
++			"%s created via shost%d channel %d\n", dev_name(dev),
+ 			shost->host_no, channel);
+ 
+ 	*ret_vport = vport;
+@@ -3290,7 +3290,7 @@ fc_vport_terminate(struct fc_vport *vport)
+ 		return stat;
+ 
+ 	if (dev->parent != &shost->shost_gendev)
+-		sysfs_remove_link(&shost->shost_gendev.kobj, dev->bus_id);
++		sysfs_remove_link(&shost->shost_gendev.kobj, dev_name(dev));
+ 	transport_remove_device(dev);
+ 	device_del(dev);
+ 	transport_destroy_device(dev);
+@@ -3322,7 +3322,7 @@ fc_vport_sched_delete(struct work_struct *work)
+ 		dev_printk(KERN_ERR, vport->dev.parent,
+ 			"%s: %s could not be deleted created via "
+ 			"shost%d channel %d - error %d\n", __func__,
+-			vport->dev.bus_id, vport->shost->host_no,
++			dev_name(&vport->dev), vport->shost->host_no,
+ 			vport->channel, stat);
+ }
+ 
+diff --git a/drivers/scsi/scsi_transport_iscsi.c b/drivers/scsi/scsi_transport_iscsi.c
+index 4a803eb..75c9297 100644
+--- a/drivers/scsi/scsi_transport_iscsi.c
++++ b/drivers/scsi/scsi_transport_iscsi.c
+@@ -187,8 +187,7 @@ iscsi_create_endpoint(int dd_size)
+ 
+ 	ep->id = id;
+ 	ep->dev.class = &iscsi_endpoint_class;
+-	snprintf(ep->dev.bus_id, BUS_ID_SIZE, "ep-%llu",
+-		 (unsigned long long) id);
++	dev_set_name(&ep->dev, "ep-%llu", (unsigned long long) id);
+ 	err = device_register(&ep->dev);
+         if (err)
+                 goto free_ep;
+@@ -724,8 +723,7 @@ int iscsi_add_session(struct iscsi_cls_session *session, unsigned int target_id)
+ 	}
+ 	session->target_id = id;
+ 
+-	snprintf(session->dev.bus_id, BUS_ID_SIZE, "session%u",
+-		 session->sid);
++	dev_set_name(&session->dev, "session%u", session->sid);
+ 	err = device_add(&session->dev);
+ 	if (err) {
+ 		iscsi_cls_session_printk(KERN_ERR, session,
+@@ -898,8 +896,7 @@ iscsi_create_conn(struct iscsi_cls_session *session, int dd_size, uint32_t cid)
+ 	if (!get_device(&session->dev))
+ 		goto free_conn;
+ 
+-	snprintf(conn->dev.bus_id, BUS_ID_SIZE, "connection%d:%u",
+-		 session->sid, cid);
++	dev_set_name(&conn->dev, "connection%d:%u", session->sid, cid);
+ 	conn->dev.parent = &session->dev;
+ 	conn->dev.release = iscsi_conn_release;
+ 	err = device_register(&conn->dev);
+@@ -1816,7 +1813,7 @@ iscsi_register_transport(struct iscsi_transport *tt)
+ 		priv->t.create_work_queue = 1;
+ 
+ 	priv->dev.class = &iscsi_transport_class;
+-	snprintf(priv->dev.bus_id, BUS_ID_SIZE, "%s", tt->name);
++	dev_set_name(&priv->dev, "%s", tt->name);
+ 	err = device_register(&priv->dev);
+ 	if (err)
+ 		goto free_priv;
+diff --git a/drivers/scsi/scsi_transport_sas.c b/drivers/scsi/scsi_transport_sas.c
+index 3666093..50988cb 100644
+--- a/drivers/scsi/scsi_transport_sas.c
++++ b/drivers/scsi/scsi_transport_sas.c
+@@ -207,7 +207,7 @@ static int sas_bsg_initialize(struct Scsi_Host *shost, struct sas_rphy *rphy)
+ 	struct request_queue *q;
+ 	int error;
+ 	struct device *dev;
+-	char namebuf[BUS_ID_SIZE];
++	char namebuf[20];
+ 	const char *name;
+ 	void (*release)(struct device *);
+ 
+@@ -219,7 +219,7 @@ static int sas_bsg_initialize(struct Scsi_Host *shost, struct sas_rphy *rphy)
+ 	if (rphy) {
+ 		q = blk_init_queue(sas_non_host_smp_request, NULL);
+ 		dev = &rphy->dev;
+-		name = dev->bus_id;
++		name = dev_name(dev);
+ 		release = NULL;
+ 	} else {
+ 		q = blk_init_queue(sas_host_smp_request, NULL);
+@@ -629,10 +629,10 @@ struct sas_phy *sas_phy_alloc(struct device *parent, int number)
+ 	INIT_LIST_HEAD(&phy->port_siblings);
+ 	if (scsi_is_sas_expander_device(parent)) {
+ 		struct sas_rphy *rphy = dev_to_rphy(parent);
+-		sprintf(phy->dev.bus_id, "phy-%d:%d:%d", shost->host_no,
++		dev_set_name(&phy->dev, "phy-%d:%d:%d", shost->host_no,
+ 			rphy->scsi_target_id, number);
+ 	} else
+-		sprintf(phy->dev.bus_id, "phy-%d:%d", shost->host_no, number);
++		dev_set_name(&phy->dev, "phy-%d:%d", shost->host_no, number);
+ 
+ 	transport_setup_device(&phy->dev);
+ 
+@@ -770,7 +770,7 @@ static void sas_port_create_link(struct sas_port *port,
+ 	int res;
+ 
+ 	res = sysfs_create_link(&port->dev.kobj, &phy->dev.kobj,
+-				phy->dev.bus_id);
++				dev_name(&phy->dev));
+ 	if (res)
+ 		goto err;
+ 	res = sysfs_create_link(&phy->dev.kobj, &port->dev.kobj, "port");
+@@ -785,7 +785,7 @@ err:
+ static void sas_port_delete_link(struct sas_port *port,
+ 				 struct sas_phy *phy)
+ {
+-	sysfs_remove_link(&port->dev.kobj, phy->dev.bus_id);
++	sysfs_remove_link(&port->dev.kobj, dev_name(&phy->dev));
+ 	sysfs_remove_link(&phy->dev.kobj, "port");
+ }
+ 
+@@ -821,11 +821,11 @@ struct sas_port *sas_port_alloc(struct device *parent, int port_id)
+ 
+ 	if (scsi_is_sas_expander_device(parent)) {
+ 		struct sas_rphy *rphy = dev_to_rphy(parent);
+-		sprintf(port->dev.bus_id, "port-%d:%d:%d", shost->host_no,
+-			rphy->scsi_target_id, port->port_identifier);
++		dev_set_name(&port->dev, "port-%d:%d:%d", shost->host_no,
++			     rphy->scsi_target_id, port->port_identifier);
+ 	} else
+-		sprintf(port->dev.bus_id, "port-%d:%d", shost->host_no,
+-			port->port_identifier);
++		dev_set_name(&port->dev, "port-%d:%d", shost->host_no,
++			     port->port_identifier);
+ 
+ 	transport_setup_device(&port->dev);
+ 
+@@ -935,7 +935,7 @@ void sas_port_delete(struct sas_port *port)
+ 	if (port->is_backlink) {
+ 		struct device *parent = port->dev.parent;
+ 
+-		sysfs_remove_link(&port->dev.kobj, parent->bus_id);
++		sysfs_remove_link(&port->dev.kobj, dev_name(parent));
+ 		port->is_backlink = 0;
+ 	}
+ 
+@@ -984,7 +984,8 @@ void sas_port_add_phy(struct sas_port *port, struct sas_phy *phy)
+ 		/* If this trips, you added a phy that was already
+ 		 * part of a different port */
+ 		if (unlikely(tmp != phy)) {
+-			dev_printk(KERN_ERR, &port->dev, "trying to add phy %s fails: it's already part of another port\n", phy->dev.bus_id);
++			dev_printk(KERN_ERR, &port->dev, "trying to add phy %s fails: it's already part of another port\n",
++				   dev_name(&phy->dev));
+ 			BUG();
+ 		}
+ 	} else {
+@@ -1023,7 +1024,7 @@ void sas_port_mark_backlink(struct sas_port *port)
+ 		return;
+ 	port->is_backlink = 1;
+ 	res = sysfs_create_link(&port->dev.kobj, &parent->kobj,
+-				parent->bus_id);
++				dev_name(parent));
+ 	if (res)
+ 		goto err;
+ 	return;
+@@ -1367,11 +1368,12 @@ struct sas_rphy *sas_end_device_alloc(struct sas_port *parent)
+ 	rdev->rphy.dev.release = sas_end_device_release;
+ 	if (scsi_is_sas_expander_device(parent->dev.parent)) {
+ 		struct sas_rphy *rphy = dev_to_rphy(parent->dev.parent);
+-		sprintf(rdev->rphy.dev.bus_id, "end_device-%d:%d:%d",
+-			shost->host_no, rphy->scsi_target_id, parent->port_identifier);
++		dev_set_name(&rdev->rphy.dev, "end_device-%d:%d:%d",
++			     shost->host_no, rphy->scsi_target_id,
++			     parent->port_identifier);
+ 	} else
+-		sprintf(rdev->rphy.dev.bus_id, "end_device-%d:%d",
+-			shost->host_no, parent->port_identifier);
++		dev_set_name(&rdev->rphy.dev, "end_device-%d:%d",
++			     shost->host_no, parent->port_identifier);
+ 	rdev->rphy.identify.device_type = SAS_END_DEVICE;
+ 	sas_rphy_initialize(&rdev->rphy);
+ 	transport_setup_device(&rdev->rphy.dev);
+@@ -1411,8 +1413,8 @@ struct sas_rphy *sas_expander_alloc(struct sas_port *parent,
+ 	mutex_lock(&sas_host->lock);
+ 	rdev->rphy.scsi_target_id = sas_host->next_expander_id++;
+ 	mutex_unlock(&sas_host->lock);
+-	sprintf(rdev->rphy.dev.bus_id, "expander-%d:%d",
+-		shost->host_no, rdev->rphy.scsi_target_id);
++	dev_set_name(&rdev->rphy.dev, "expander-%d:%d",
++		     shost->host_no, rdev->rphy.scsi_target_id);
+ 	rdev->rphy.identify.device_type = type;
+ 	sas_rphy_initialize(&rdev->rphy);
+ 	transport_setup_device(&rdev->rphy.dev);
+@@ -1445,7 +1447,7 @@ int sas_rphy_add(struct sas_rphy *rphy)
+ 	transport_add_device(&rphy->dev);
+ 	transport_configure_device(&rphy->dev);
+ 	if (sas_bsg_initialize(shost, rphy))
+-		printk("fail to a bsg device %s\n", rphy->dev.bus_id);
++		printk("fail to a bsg device %s\n", dev_name(&rphy->dev));
+ 
+ 
+ 	mutex_lock(&sas_host->lock);
+diff --git a/drivers/scsi/scsi_transport_srp.c b/drivers/scsi/scsi_transport_srp.c
+index 8a7af95..21a045e 100644
+--- a/drivers/scsi/scsi_transport_srp.c
++++ b/drivers/scsi/scsi_transport_srp.c
+@@ -212,7 +212,7 @@ struct srp_rport *srp_rport_add(struct Scsi_Host *shost,
+ 	rport->roles = ids->roles;
+ 
+ 	id = atomic_inc_return(&to_srp_host_attrs(shost)->next_port_id);
+-	sprintf(rport->dev.bus_id, "port-%d:%d", shost->host_no, id);
++	dev_set_name(&rport->dev, "port-%d:%d", shost->host_no, id);
+ 
+ 	transport_setup_device(&rport->dev);
+ 
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index c9e1242..daf2875 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -1875,7 +1875,7 @@ static int sd_probe(struct device *dev)
+ 	device_initialize(&sdkp->dev);
+ 	sdkp->dev.parent = &sdp->sdev_gendev;
+ 	sdkp->dev.class = &sd_disk_class;
+-	strncpy(sdkp->dev.bus_id, sdp->sdev_gendev.bus_id, BUS_ID_SIZE);
++	dev_set_name(&sdkp->dev, dev_name(&sdp->sdev_gendev));
+ 
+ 	if (device_add(&sdkp->dev))
+ 		goto out_free_index;
+diff --git a/drivers/scsi/ses.c b/drivers/scsi/ses.c
+index 1bcf3c3..3b77b3b 100644
+--- a/drivers/scsi/ses.c
++++ b/drivers/scsi/ses.c
+@@ -525,7 +525,7 @@ static int ses_intf_add(struct device *cdev,
+ 	if (!scomp)
+ 		goto err_free;
+ 
+-	edev = enclosure_register(cdev->parent, sdev->sdev_gendev.bus_id,
++	edev = enclosure_register(cdev->parent, dev_name(&sdev->sdev_gendev),
+ 				  components, &ses_enclosure_callbacks);
+ 	if (IS_ERR(edev)) {
+ 		err = PTR_ERR(edev);
 
 
