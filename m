@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760346AbYJ3Vva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760585AbYJ3Vvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760346AbYJ3Vva (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 17:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759278AbYJ3VvW
+	id S1760585AbYJ3Vvx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 17:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759470AbYJ3Vvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 17:51:22 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:39852 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756240AbYJ3VvV (ORCPT
+	Thu, 30 Oct 2008 17:51:43 -0400
+Received: from qb-out-0506.google.com ([72.14.204.226]:53692 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759495AbYJ3Vvn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 17:51:21 -0400
-Message-ID: <490A2C3D.4020202@zytor.com>
-Date: Thu, 30 Oct 2008 14:50:53 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 30 Oct 2008 17:51:43 -0400
+Message-ID: <ac3eb2510810301451x7dbf18edgd03c1433099ce5e4@mail.gmail.com>
+Date: Thu, 30 Oct 2008 22:51:41 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Peter Korsgaard" <jacmet@sunsite.dk>
+Subject: Re: 2.6.28-rc2: (mtd)block/partitions BUG with kobject reference count
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <87abcnj810.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Ingo Molnar <mingo@elte.hu>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: Re: next-20081030: voyager compile busted
-References: <20081030173030.d8847df6.sfr@canb.auug.org.au>	 <20081030180323.GA13399@x200.localdomain>	 <1225398287.19324.1.camel@localhost.localdomain>	 <20081030205230.GO27407@elte.hu>	 <1225400283.19324.6.camel@localhost.localdomain>	 <20081030210704.GA25665@elte.hu>	 <1225401708.19324.35.camel@localhost.localdomain>	 <490A2A30.5040905@zytor.com> <1225403266.19324.42.camel@localhost.localdomain>
-In-Reply-To: <1225403266.19324.42.camel@localhost.localdomain>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <87ej1z4ep8.fsf@macbook.be.48ers.dk>
+	 <200810300027.19116.rjw@sisk.pl> <87abcnj810.fsf@macbook.be.48ers.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> 
-> Yes ... been having IRC conversations about that.  We'd need to use
-> runtime patching to fix the performance regressions virtualisation has
-> been causing us first ... but then we could use it for voyager.
-> 
+On Thu, Oct 30, 2008 at 00:28, Peter Korsgaard <jacmet@sunsite.dk> wrote:
+>>>>>> "Rafael" == Rafael J Wysocki <rjw@sisk.pl> writes:
+>
+>  Rafael> On Wednesday, 29 of October 2008, Peter Korsgaard wrote:
+>  >> Hi,
+>  >>
+>  >> I'm seing what looks like a kobject reference count issue with
+>  >> mtdblock_ro + mtd_dataflash + mtd partitions and repeated unbind/bind.
+>  >> I'm on 2.6.28-rc2, but I can reproduce the problem on 2.6.27 as well.
+>
+>  Rafael> Is it reproducible with 2.6.26 too?
+>
+> Sorry, I haven't backported my platform support code to such "old"
+> kernel. I can do it though, if you think it will help pinpoint the
+> issue.
 
-I thought we already were, at least to some degree (the call sites are
-way too big and way bigger than they need to be, so we end up with a lot
-of NOPs.  I proposed a solution to Jeremy at Kernel Summit, but he
-basically said "I don't want to maintain that, I don't care about
-hardware performance", which is understandable but highly unfortunate.)
+This sounds like a possible reason for the problem:
+"After digging into the mtd code, this bug is not related to our driver. It
+should be a subtle bug in mtd core code.
 
-	-hpa
+In add_mtd_partition, for 2 partitions, 2 gendisk structures will be
+allocated. But these 2 gendisk->queue will be set to the same
+request_queue. Then when unregistering the 1st partition, from the
+same request_queue->backing_dev_info, the bdi struct will be set to
+NULL. So for the 2nd partition (bdi == NULL), the sysfs dir of 2nd
+partition will not be removed. Finally, when modprobe the module
+again, the 2nd partition won't be added"
+https://blackfin.uclinux.org/gf/tracker/4463
+
+Kay
