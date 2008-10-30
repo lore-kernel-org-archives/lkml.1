@@ -1,94 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbYJ3UNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbYJ3UOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755820AbYJ3UNi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 16:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbYJ3UNQ
+	id S1755893AbYJ3UOR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 16:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbYJ3UN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 16:13:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50959 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753419AbYJ3UNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 16:13:15 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen filesystems.
-Date: Thu, 30 Oct 2008 21:17:48 +0100
-User-Agent: KMail/1.9.9
-Cc: stern@rowland.harvard.edu, linux-kernel@vger.kernel.org,
-       ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org
-References: <Pine.LNX.4.44L0.0810300943001.2401-100000@iolanthe.rowland.org> <E1KvYgR-0002Cx-AZ@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1KvYgR-0002Cx-AZ@pomaz-ex.szeredi.hu>
+	Thu, 30 Oct 2008 16:13:59 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:4555 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753581AbYJ3UN6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 16:13:58 -0400
+Date: Thu, 30 Oct 2008 20:13:44 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Jonas Bonn <jonas.bonn@gmail.com>
+Cc: Jon Smirl <jonsmirl@gmail.com>, linux-kernel@vger.kernel.org
+Message-ID: <20081030201341.GD13678@sirena.org.uk>
+References: <7a6abd110810300741wf73f838laa3754e23c22baf3@mail.gmail.com> <9e4733910810300840v7cd45c2cu629d23a27a02c61a@mail.gmail.com> <7a6abd110810300927l428b11f3u509ad31364c08f1f@mail.gmail.com> <9e4733910810300939x40a7afear7a49557604ced628@mail.gmail.com> <7a6abd110810301001r7fc311adifd85fece79cb5c45@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200810302117.49419.rjw@sisk.pl>
+In-Reply-To: <7a6abd110810301001r7fc311adifd85fece79cb5c45@mail.gmail.com>
+X-Cookie: You may be recognized soon.  Hide.
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [RFC] API for system clocks (oscillators)
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 30 of October 2008, Miklos Szeredi wrote:
-> On Thu, 30 Oct 2008, Alan Stern wrote:
-> > On Thu, 30 Oct 2008, Miklos Szeredi wrote:
-> > 
-> > > On Wed, 29 Oct 2008, Alan Stern wrote:
-> > > > I discussed this last summer with Rafael.  It's a lot harder than it 
-> > > > looks, for all sorts of reasons.  For example, what about user tasks 
-> > > > that have access to memory-mapped I/O regions?
-> > > 
-> > > What about them?  Freezing doesn't seem to help with that.
-> > 
-> > Sure it does.  A frozen process can't touch a memory-mapped I/O region, 
-> > whereas a non-frozen process can.
-> 
-> But it can be in the middle of I/O by your definition.
-> 
-> > > > I don't know.  There are other interfaces too, like sysfs attributes, 
-> > > > that would have to be handled specially.  On the whole, the freezer 
-> > > > seems much, much simpler.
-> > > 
-> > > OK, then non-device files on "regular" filesystems.
-> > 
-> > Would you like to write a first-pass patch?  I don't think it will 
-> > work.
-> 
-> If somebody doesn't beat me to it, I'll do that (first implemented
-> with a global rw-sem).
-> 
-> > Doing that seems like a lot of work, just as modifying every driver 
-> > does.  Changing a few kernel entry points is simpler, but I'm pretty
-> > sure it won't work.  For instance, tasks can block arbitrarily long on 
-> > read calls (waiting for data to arrive); you can't allow such things to 
-> > prevent the system from suspending.
-> 
-> But we already do: either
-> 
->  a) it's in interruptible sleep (I/O on sockets, pipes, etc), and
->     freezing simply interrupts it, or
-> 
->  b) it's in uninterruptible sleep and suspend will wait it out (or
->     time out).
-> 
-> In the new scheme we could retain that part of the freezer: interrupt
-> all tasks which are inside the critical region and wait for them to
-> exit the critical region.
-> 
-> To put it in another way: it's still the freezer, it does all the same
-> things as the old freezer, except that the condition for freezing is
-> not that the task is out of the kernel, rather that it's out of the
-> disable_supend - enable_suspend region.  As such it's not a big change
-> to the whole suspend system, and so there shouldn't be anything big
-> going wrong there.
+On Thu, Oct 30, 2008 at 06:01:42PM +0100, Jonas Bonn wrote:
 
-I like this idea.
+> > You could probably work those features into the existing clk framework.
+> > clk_set_rate() could compute the constrains and return an error.
+> > The API could be expanded with notifier support.
 
-I was thinking about using task flags to mark processes as "not freezable
-at the moment", which would make the freezer to wait for such tasks
-(currently a task may only be always freezable or not freezable at all,
-which is not very flexible).
+...
 
-Unfortunately, I didn't have the time to implement this.
+> What drove me to document a new interface is the fact that there are
+> so many users of "struct clk" already, that it becomes conceptually
+> easier to dream up something new that stays out of the way, even if
+> that new  thing becomes just a wrapper around the existing interface
 
-Thanks,
-Rafael
+BTW, on this point I don't know if you've seen Dmitry Baryshkov's work
+on a generic implementation of the existing clk API.
