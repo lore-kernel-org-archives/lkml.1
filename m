@@ -1,88 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbYJ3RHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbYJ3RGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758241AbYJ3RHj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 13:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755447AbYJ3RH3
+	id S1757453AbYJ3RGx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 13:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756115AbYJ3RGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 13:07:29 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:50715 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755182AbYJ3RH2 (ORCPT
+	Thu, 30 Oct 2008 13:06:05 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:40234 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756279AbYJ3RGE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 13:07:28 -0400
-Date: Thu, 30 Oct 2008 13:07:27 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: rjw@sisk.pl, <linux-kernel@vger.kernel.org>, <ncunningham@crca.org.au>,
-       <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
- filesystems.
-In-Reply-To: <E1KvYgR-0002Cx-AZ@pomaz-ex.szeredi.hu>
-Message-ID: <Pine.LNX.4.44L0.0810301301540.2513-100000@iolanthe.rowland.org>
+	Thu, 30 Oct 2008 13:06:04 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=tcCr6H6hbWt/LBcTolDuEU+lnzOvE7zVj+NXkEIHJWK7LxKJAaMggA2sNjI2urKugXFZcfPb8qqls+FpaK9J93zD9wi0bAWIY16+ILenSQd2p4PNO74xIuM/hFQXSblIRu+2vqXCpjlaFayrwvdny3v9CGaLYgXQ9CayzcacB2U=  ;
+X-YMail-OSG: iAqfVFwVM1kyScw.QrtFDxFz6E5NRwLrDFnnE_fMe2J.THnwVRVUXvZK1noHySeEeaT4T.AjJvpczGha95GO5mnqNIJCR4m4DPe3voTNCl3hFuJpo2EQyBX0EDfyyb0g3_Y-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Nate Case <ncase@xes-inc.com>
+Subject: Re: [PATCH] rtc-ds1307: Reset bogus register values on m41t00
+Date: Thu, 30 Oct 2008 10:06:01 -0700
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org
+References: <1225301377-9092-1-git-send-email-ncase@xes-inc.com> <200810300116.33131.david-b@pacbell.net> <1225379144.27415.111.camel@localhost.localdomain>
+In-Reply-To: <1225379144.27415.111.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810301006.01689.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Oct 2008, Miklos Szeredi wrote:
+On Thursday 30 October 2008, Nate Case wrote:
+> But, based on what you're saying, it sounds like I should rework this
+> patch to make a 'ds1307_reset_regs()' function that would be called both
+> when the registers are found to be in a bogus state (at least for the
+> m41t00), and also anytime we restart the oscillator for all chips?
 
-> On Thu, 30 Oct 2008, Alan Stern wrote:
-> > On Thu, 30 Oct 2008, Miklos Szeredi wrote:
-> > 
-> > > On Wed, 29 Oct 2008, Alan Stern wrote:
-> > > > I discussed this last summer with Rafael.  It's a lot harder than it 
-> > > > looks, for all sorts of reasons.  For example, what about user tasks 
-> > > > that have access to memory-mapped I/O regions?
-> > > 
-> > > What about them?  Freezing doesn't seem to help with that.
-> > 
-> > Sure it does.  A frozen process can't touch a memory-mapped I/O region, 
-> > whereas a non-frozen process can.
-> 
-> But it can be in the middle of I/O by your definition.
+I think that'd be good, yes.
 
-True.  Yet another problem...
+You'r sure that the m41t00 oscillator keeps going in this odd
+state you're defending against, and it wouldn't suffice to have
+the time and date registers initialized when restarting the
+oscillator?
 
-> > Would you like to write a first-pass patch?  I don't think it will 
-> > work.
-> 
-> If somebody doesn't beat me to it, I'll do that (first implemented
-> with a global rw-sem).
-
-Converting it to per-CPU counters later on should be fairly easy.
-
-> > Doing that seems like a lot of work, just as modifying every driver 
-> > does.  Changing a few kernel entry points is simpler, but I'm pretty
-> > sure it won't work.  For instance, tasks can block arbitrarily long on 
-> > read calls (waiting for data to arrive); you can't allow such things to 
-> > prevent the system from suspending.
-> 
-> But we already do: either
-> 
->  a) it's in interruptible sleep (I/O on sockets, pipes, etc), and
->     freezing simply interrupts it, or
-> 
->  b) it's in uninterruptible sleep and suspend will wait it out (or
->     time out).
-> 
-> In the new scheme we could retain that part of the freezer: interrupt
-> all tasks which are inside the critical region and wait for them to
-> exit the critical region.
-> 
-> To put it in another way: it's still the freezer, it does all the same
-> things as the old freezer, except that the condition for freezing is
-> not that the task is out of the kernel, rather that it's out of the
-> disable_supend - enable_suspend region.  As such it's not a big change
-> to the whole suspend system, and so there shouldn't be anything big
-> going wrong there.
-
-Okay.  Don't forget things like ioctl for sockets -- they often involve 
-doing I/O directly to the network interface device.
-
-What happens to a task accessing a non-regular file on a fuse 
-filesystem?  :-)
-
-Alan Stern
+- Dave
 
