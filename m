@@ -1,118 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758368AbYJ3SC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbYJ3SDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758368AbYJ3SC3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 14:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbYJ3SCL
+	id S1758073AbYJ3SDe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 14:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbYJ3SDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 14:02:11 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:51187 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755904AbYJ3SCI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 14:02:08 -0400
-Message-ID: <4909F690.9090208@cosmosbay.com>
-Date: Thu, 30 Oct 2008 19:01:52 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Thu, 30 Oct 2008 14:03:24 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42870 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754536AbYJ3SDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 14:03:23 -0400
+Date: Thu, 30 Oct 2008 16:04:43 -0200
+From: Glauber Costa <glommer@redhat.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Nick Piggin <npiggin@suse.de>, Avi Kivity <avi@redhat.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       aliguori@codemonkey.ws, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH] regression: vmalloc easily fail.
+Message-ID: <20081030180443.GE18634@poweredge.glommer>
+References: <1225234513-3996-1-git-send-email-glommer@redhat.com> <20081028232944.GA3759@wotan.suse.de> <20081029094856.GD4269@poweredge.glommer> <20081029101145.GB5953@wotan.suse.de> <49083B14.6070402@redhat.com> <20081029104333.GD5953@wotan.suse.de> <20081029220737.GF11532@poweredge.glommer> <20081030044941.GA9470@wotan.suse.de> <1225385162.23508.33.camel@calx>
 MIME-Version: 1.0
-To: linux kernel <linux-kernel@vger.kernel.org>
-CC: Andi Kleen <ak@linux.intel.com>
-Subject: linux-2.6.28-rc2 regression : oprofile doesnt work anymore ?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 30 Oct 2008 19:02:02 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225385162.23508.33.camel@calx>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Thu, Oct 30, 2008 at 11:46:02AM -0500, Matt Mackall wrote:
+> On Thu, 2008-10-30 at 05:49 +0100, Nick Piggin wrote:
+> > I still think we should get rid of the guard pages in non-debug kernels
+> > completely,
+> 
+> For what it's worth, I agree.
+Do we want any specific option, or is DEBUG_VM enough ?
 
-I tried to start my favorite tool, and discovered it wont fly on my HP BL460C G1
-
-It samples few events then, seems to stop (no more NMI), other than that, machine
-still running correctly.
-
-(8 cpus like that one
-
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 23
-model name      : Intel(R) Xeon(R) CPU           E5450  @ 3.00GHz
-stepping        : 6
-cpu MHz         : 3000.253
-cache size      : 6144 KB
-physical id     : 0
-siblings        : 4
-core id         : 0
-cpu cores       : 4
-apicid          : 0
-initial apicid  : 0
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe lm constant_tsc arch_perfmon pebs bts pni dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm dca sse4_1 lahf_lm tpr_shadow vnmi flexpriority
-bogomips        : 6000.50
-clflush size    : 64
-power management:
-
-It is working correctly on 2.6.27
-
-I tried a git bisect but quickly found a point where machine was not useable...
-(partly because of the problem with the VPD problem on 5708S (PCI: Limit VPD length for Broadcom 5708S)
-
-# opcontrol --deinit
-Stopping profiling.
-Killing daemon.
-# rm -rf /var/lib/oprofile/samples/current
-# opcontrol --vmlinux=vmlinux --start
-Using 2.6+ OProfile kernel interface.
-Reading module info.
-Using log file /var/lib/oprofile/samples/oprofiled.log
-Daemon started.
-Profiler running.
-
-# opcontrol --dump; opreport
-CPU: Core 2, speed 3000.25 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (Clock cycles when not halted) with a unit mask of 0x00 (Unhalted core cycles) count 10000
-CPU_CLK_UNHALT...|
-  samples|      %|
-------------------
-       17 80.9524 vmlinux
-        2  9.5238 libc-2.3.4.so
-        1  4.7619 bash
-        1  4.7619 ld-2.3.4.so
-# opcontrol --dump; opreport
-CPU: Core 2, speed 3000.25 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (Clock cycles when not halted) with a unit mask of 0x00 (Unhalted core cycles) count 10000
-CPU_CLK_UNHALT...|
-  samples|      %|
-------------------
-       17 80.9524 vmlinux
-        2  9.5238 libc-2.3.4.so
-        1  4.7619 bash
-        1  4.7619 ld-2.3.4.so
-# opcontrol --dump; opreport
-CPU: Core 2, speed 3000.25 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (Clock cycles when not halted) with a unit mask of 0x00 (Unhalted core cycles) count 10000
-CPU_CLK_UNHALT...|
-  samples|      %|
-------------------
-       17 80.9524 vmlinux
-        2  9.5238 libc-2.3.4.so
-        1  4.7619 bash
-        1  4.7619 ld-2.3.4.so
-
-# grep NMI /proc/interrupts
-NMI:          8          2          2          6         11          7          6          5   Non-maskable interrupts
-# grep NMI /proc/interrupts
-NMI:          8          2          2          6         11          7          6          5   Non-maskable interrupts
-# grep NMI /proc/interrupts
-NMI:          8          2          2          6         11          7          6          5   Non-maskable interrupts
-# grep NMI /proc/interrupts
-NMI:          8          2          2          6         11          7          6          5   Non-maskable interrupts
+> 
+> -- 
+> Mathematics is the supreme nostalgia of our time.
+> 
