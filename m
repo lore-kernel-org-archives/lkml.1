@@ -1,306 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757647AbYJ3RFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbYJ3RGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757647AbYJ3RFk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 13:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757285AbYJ3REm
+	id S1757948AbYJ3RGX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 13:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757378AbYJ3REt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 13:04:42 -0400
+	Thu, 30 Oct 2008 13:04:49 -0400
 Received: from ey-out-2122.google.com ([74.125.78.26]:27579 "EHLO
 	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757274AbYJ3REi (ORCPT
+	with ESMTP id S1755545AbYJ3REr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 13:04:38 -0400
+	Thu, 30 Oct 2008 13:04:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
          :sender;
-        b=Cx/lYAA+redkSI4rAEidPAtAOrSz4QcLpU44jZEDyOTK0SXSUQkFurA9FmqnOI6daa
-         8qxFqy01HPAn+hUfPyrBUbIc4AZK8J+QxBJvBM2wbvoUywEwSNVihg0Cd3G6w1YrEbbc
-         +6+R0ci4n8wp7RjKAELG1qv+KFgwqqM+eDBfo=
+        b=D5gqMCmsgb8tsXBU34q1llwMBi21ag9U9FeFcdeTkbPrL+FksFfcYev56sfm1LuKrl
+         dn1zaWwee8iEjlTEO2CLkQH2uGdp17/kEj/TEsXC4VNeG7Ofosme8z9khAmzt+9krnVg
+         NxtMe9aol57haAiEdGj0v5zTJA1JvkY8oq5FA=
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 To: greg@kroah.com
 Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
        Pavel Machek <pavel@suse.cz>
-Subject: [PATCH 5/7] w35und: make functions local to wb35tx.c static
-Date: Thu, 30 Oct 2008 19:04:54 +0200
-Message-Id: <1225386296-19632-5-git-send-email-penberg@cs.helsinki.fi>
+Subject: [PATCH 7/7] w35und: remove rxisr.c as dead code
+Date: Thu, 30 Oct 2008 19:04:56 +0200
+Message-Id: <1225386296-19632-7-git-send-email-penberg@cs.helsinki.fi>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1225386296-19632-4-git-send-email-penberg@cs.helsinki.fi>
+In-Reply-To: <1225386296-19632-6-git-send-email-penberg@cs.helsinki.fi>
 References: <>
  <1225386296-19632-1-git-send-email-penberg@cs.helsinki.fi>
  <1225386296-19632-2-git-send-email-penberg@cs.helsinki.fi>
  <1225386296-19632-3-git-send-email-penberg@cs.helsinki.fi>
  <1225386296-19632-4-git-send-email-penberg@cs.helsinki.fi>
+ <1225386296-19632-5-git-send-email-penberg@cs.helsinki.fi>
+ <1225386296-19632-6-git-send-email-penberg@cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While there are no functional changes, the diff is quite large because we need
-to shuffle code around to avoid forward declarations.
+The vRxTimerStart() function is never called nor does the timer do anything
+useful so remove the code.
 
 Cc: Pavel Machek <pavel@suse.cz>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- drivers/staging/winbond/wb35tx.c   |  199 +++++++++++++++++-------------------
- drivers/staging/winbond/wb35tx_f.h |    5 -
- 2 files changed, 95 insertions(+), 109 deletions(-)
+ drivers/staging/winbond/Makefile |    1 -
+ drivers/staging/winbond/mds.c    |    3 ---
+ drivers/staging/winbond/mds_f.h  |    5 -----
+ drivers/staging/winbond/mds_s.h  |    2 --
+ drivers/staging/winbond/rxisr.c  |   28 ----------------------------
+ drivers/staging/winbond/sysdef.h |    3 ---
+ 6 files changed, 0 insertions(+), 42 deletions(-)
+ delete mode 100644 drivers/staging/winbond/rxisr.c
 
-diff --git a/drivers/staging/winbond/wb35tx.c b/drivers/staging/winbond/wb35tx.c
-index 32ee391..b9b4456 100644
---- a/drivers/staging/winbond/wb35tx.c
-+++ b/drivers/staging/winbond/wb35tx.c
-@@ -23,21 +23,46 @@ Wb35Tx_get_tx_buffer(phw_data_t pHwData, u8 **pBuffer)
- 	return true;
+diff --git a/drivers/staging/winbond/Makefile b/drivers/staging/winbond/Makefile
+index d337571..b49c973 100644
+--- a/drivers/staging/winbond/Makefile
++++ b/drivers/staging/winbond/Makefile
+@@ -4,7 +4,6 @@ w35und-objs :=			\
+ 	mto.o			\
+ 	phy_calibration.o	\
+ 	reg.o			\
+-	rxisr.o			\
+ 	wb35reg.o		\
+ 	wb35rx.o		\
+ 	wb35tx.o		\
+diff --git a/drivers/staging/winbond/mds.c b/drivers/staging/winbond/mds.c
+index 0dd1eec..8b638d7 100644
+--- a/drivers/staging/winbond/mds.c
++++ b/drivers/staging/winbond/mds.c
+@@ -16,15 +16,12 @@ Mds_initial(struct wbsoft_priv * adapter)
+ 	pMds->TxRTSThreshold = DEFAULT_RTSThreshold;
+ 	pMds->TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
+ 
+-	vRxTimerInit(adapter);//for WPA countermeasure
+-
+ 	return hal_get_tx_buffer( &adapter->sHwData, &pMds->pTxBuffer );
  }
  
--void Wb35Tx_start(struct wbsoft_priv *adapter)
-+static void Wb35Tx(struct wbsoft_priv *adapter);
-+
-+static void Wb35Tx_complete(struct urb * pUrb)
+ void
+ Mds_Destroy(struct wbsoft_priv * adapter)
  {
--	phw_data_t pHwData = &adapter->sHwData;
--	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
-+	struct wbsoft_priv *adapter = pUrb->context;
-+	phw_data_t	pHwData = &adapter->sHwData;
-+	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
-+	PMDS		pMds = &adapter->Mds;
- 
--	// Allow only one thread to run into function
--	if (atomic_inc_return(&pWb35Tx->TxFireCounter) == 1) {
--		pWb35Tx->EP4vm_state = VM_RUNNING;
--		Wb35Tx(adapter);
--	} else
--		atomic_dec(&pWb35Tx->TxFireCounter);
--}
-+	printk("wb35: tx complete\n");
-+	// Variable setting
-+	pWb35Tx->EP4vm_state = VM_COMPLETED;
-+	pWb35Tx->EP4VM_status = pUrb->status; //Store the last result of Irp
-+	pMds->TxOwner[ pWb35Tx->TxSendIndex ] = 0;// Set the owner. Free the owner bit always.
-+	pWb35Tx->TxSendIndex++;
-+	pWb35Tx->TxSendIndex %= MAX_USB_TX_BUFFER_NUMBER;
- 
-+	if (pHwData->SurpriseRemove || pHwData->HwStop) // Let WbWlanHalt to handle surprise remove
-+		goto error;
- 
--void Wb35Tx(struct wbsoft_priv *adapter)
-+	if (pWb35Tx->tx_halt)
-+		goto error;
-+
-+	// The URB is completed, check the result
-+	if (pWb35Tx->EP4VM_status != 0) {
-+		printk("URB submission failed\n");
-+		pWb35Tx->EP4vm_state = VM_STOP;
-+		goto error;
-+	}
-+
-+	Mds_Tx(adapter);
-+	Wb35Tx(adapter);
-+	return;
-+
-+error:
-+	atomic_dec(&pWb35Tx->TxFireCounter);
-+	pWb35Tx->EP4vm_state = VM_STOP;
-+}
-+
-+static void Wb35Tx(struct wbsoft_priv *adapter)
- {
- 	phw_data_t	pHwData = &adapter->sHwData;
- 	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
-@@ -88,50 +113,17 @@ void Wb35Tx(struct wbsoft_priv *adapter)
- 	atomic_dec(&pWb35Tx->TxFireCounter);
+-	vRxTimerStop(adapter);
  }
+ 
+ static void Mds_DurationSet(struct wbsoft_priv *adapter,  PDESCRIPTOR pDes,  u8 *buffer)
+diff --git a/drivers/staging/winbond/mds_f.h b/drivers/staging/winbond/mds_f.h
+index 8109eba..ee0f120 100644
+--- a/drivers/staging/winbond/mds_f.h
++++ b/drivers/staging/winbond/mds_f.h
+@@ -11,11 +11,6 @@ void Mds_SendComplete(  struct wbsoft_priv *adapter,  PT02_DESCRIPTOR pT02 );
+ void Mds_MpduProcess(  struct wbsoft_priv *adapter,  PDESCRIPTOR pRxDes );
+ extern void DataDmp(u8 *pdata, u32 len, u32 offset);
  
 -
--void Wb35Tx_complete(struct urb * pUrb)
+-void vRxTimerInit(struct wbsoft_priv *adapter);
+-void vRxTimerStart(struct wbsoft_priv *adapter, int timeout_value);
+-void vRxTimerStop(struct wbsoft_priv *adapter);
+-
+ // For Asynchronous indicating. The routine collocates with USB.
+ void Mds_MsduProcess(  struct wbsoft_priv *adapter,  PRXLAYER1 pRxLayer1,  u8 SlotIndex);
+ 
+diff --git a/drivers/staging/winbond/mds_s.h b/drivers/staging/winbond/mds_s.h
+index 29f1568..ebf61e3 100644
+--- a/drivers/staging/winbond/mds_s.h
++++ b/drivers/staging/winbond/mds_s.h
+@@ -142,8 +142,6 @@ typedef struct _MDS
+ 	u8		boCounterMeasureBlock;
+ 	u8		reserved_4[2];
+ 
+-	struct timer_list timer;
+-
+ 	u32	TxTsc; // 20060214
+ 	u32	TxTsc_2; // 20060214
+ 
+diff --git a/drivers/staging/winbond/rxisr.c b/drivers/staging/winbond/rxisr.c
+deleted file mode 100644
+index f4619d9..0000000
+--- a/drivers/staging/winbond/rxisr.c
++++ /dev/null
+@@ -1,28 +0,0 @@
+-#include "sysdef.h"
+-#include "core.h"
+-
+-static void RxTimerHandler(unsigned long data)
 -{
--	struct wbsoft_priv *adapter = pUrb->context;
--	phw_data_t	pHwData = &adapter->sHwData;
--	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
--	PMDS		pMds = &adapter->Mds;
--
--	printk("wb35: tx complete\n");
--	// Variable setting
--	pWb35Tx->EP4vm_state = VM_COMPLETED;
--	pWb35Tx->EP4VM_status = pUrb->status; //Store the last result of Irp
--	pMds->TxOwner[ pWb35Tx->TxSendIndex ] = 0;// Set the owner. Free the owner bit always.
--	pWb35Tx->TxSendIndex++;
--	pWb35Tx->TxSendIndex %= MAX_USB_TX_BUFFER_NUMBER;
--
--	if (pHwData->SurpriseRemove || pHwData->HwStop) // Let WbWlanHalt to handle surprise remove
--		goto error;
--
--	if (pWb35Tx->tx_halt)
--		goto error;
--
--	// The URB is completed, check the result
--	if (pWb35Tx->EP4VM_status != 0) {
--		printk("URB submission failed\n");
--		pWb35Tx->EP4vm_state = VM_STOP;
--		goto error;
--	}
--
--	Mds_Tx(adapter);
--	Wb35Tx(adapter);
--	return;
--
--error:
--	atomic_dec(&pWb35Tx->TxFireCounter);
--	pWb35Tx->EP4vm_state = VM_STOP;
+-	WARN_ON(1);
 -}
 -
--void Wb35Tx_reset_descriptor(  phw_data_t pHwData )
-+void Wb35Tx_start(struct wbsoft_priv *adapter)
- {
-+	phw_data_t pHwData = &adapter->sHwData;
- 	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
- 
--	pWb35Tx->TxSendIndex = 0;
--	pWb35Tx->tx_halt = 0;
-+	// Allow only one thread to run into function
-+	if (atomic_inc_return(&pWb35Tx->TxFireCounter) == 1) {
-+		pWb35Tx->EP4vm_state = VM_RUNNING;
-+		Wb35Tx(adapter);
-+	} else
-+		atomic_dec(&pWb35Tx->TxFireCounter);
- }
- 
- unsigned char Wb35Tx_initial(phw_data_t pHwData)
-@@ -211,59 +203,9 @@ void Wb35Tx_CurrentTime(struct wbsoft_priv *adapter, u32 TimeCount)
- 	}
- }
- 
--void Wb35Tx_EP2VM_start(struct wbsoft_priv *adapter)
+-void vRxTimerInit(struct wbsoft_priv *adapter)
 -{
--	phw_data_t pHwData = &adapter->sHwData;
--	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
--
--	// Allow only one thread to run into function
--	if (atomic_inc_return(&pWb35Tx->TxResultCount) == 1) {
--		pWb35Tx->EP2vm_state = VM_RUNNING;
--		Wb35Tx_EP2VM(adapter);
--	}
--	else
--		atomic_dec(&pWb35Tx->TxResultCount);
+-	init_timer(&adapter->Mds.timer);
+-	adapter->Mds.timer.function = RxTimerHandler;
+-	adapter->Mds.timer.data = (unsigned long) adapter;
 -}
 -
-+static void Wb35Tx_EP2VM(struct wbsoft_priv *adapter);
- 
--void Wb35Tx_EP2VM(struct wbsoft_priv *adapter)
+-void vRxTimerStart(struct wbsoft_priv *adapter, int timeout_value)
 -{
--	phw_data_t	pHwData = &adapter->sHwData;
--	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
--	struct urb *	pUrb = (struct urb *)pWb35Tx->Tx2Urb;
--	u32 *	pltmp = (u32 *)pWb35Tx->EP2_buf;
--	int		retv;
+-	if (timeout_value < MIN_TIMEOUT_VAL)
+-		timeout_value = MIN_TIMEOUT_VAL;
 -
--	if (pHwData->SurpriseRemove || pHwData->HwStop)
--		goto error;
--
--	if (pWb35Tx->tx_halt)
--		goto error;
--
--	//
--	// Issuing URB
--	//
--	usb_fill_int_urb( pUrb, pHwData->WbUsb.udev, usb_rcvintpipe(pHwData->WbUsb.udev,2),
--			  pltmp, MAX_INTERRUPT_LENGTH, Wb35Tx_EP2VM_complete, adapter, 32);
--
--	pWb35Tx->EP2vm_state = VM_RUNNING;
--	retv = usb_submit_urb(pUrb, GFP_ATOMIC);
--
--	if (retv < 0) {
--		#ifdef _PE_TX_DUMP_
--		WBDEBUG(("EP2 Tx Irp sending error\n"));
--		#endif
--		goto error;
--	}
--
--	return;
--error:
--	pWb35Tx->EP2vm_state = VM_STOP;
--	atomic_dec(&pWb35Tx->TxResultCount);
+-	adapter->Mds.timer.expires = jiffies + msecs_to_jiffies(timeout_value);
+-	add_timer(&adapter->Mds.timer);
 -}
 -
+-void vRxTimerStop(struct wbsoft_priv *adapter)
+-{
+-	del_timer_sync(&adapter->Mds.timer);
+-}
+diff --git a/drivers/staging/winbond/sysdef.h b/drivers/staging/winbond/sysdef.h
+index 60e4c04..251b9c5 100644
+--- a/drivers/staging/winbond/sysdef.h
++++ b/drivers/staging/winbond/sysdef.h
+@@ -37,7 +37,4 @@
+ #define _PE_USB_INI_DUMP_
+ #endif
+ 
+-// Kernel Timer resolution, NDIS is 10ms, 10000us
+-#define MIN_TIMEOUT_VAL	(10) //ms
 -
--void Wb35Tx_EP2VM_complete(struct urb * pUrb)
-+static void Wb35Tx_EP2VM_complete(struct urb * pUrb)
- {
- 	struct wbsoft_priv *adapter = pUrb->context;
- 	phw_data_t	pHwData = &adapter->sHwData;
-@@ -312,3 +254,52 @@ error:
- 	pWb35Tx->EP2vm_state = VM_STOP;
- }
- 
-+static void Wb35Tx_EP2VM(struct wbsoft_priv *adapter)
-+{
-+	phw_data_t	pHwData = &adapter->sHwData;
-+	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
-+	struct urb *	pUrb = (struct urb *)pWb35Tx->Tx2Urb;
-+	u32 *	pltmp = (u32 *)pWb35Tx->EP2_buf;
-+	int		retv;
-+
-+	if (pHwData->SurpriseRemove || pHwData->HwStop)
-+		goto error;
-+
-+	if (pWb35Tx->tx_halt)
-+		goto error;
-+
-+	//
-+	// Issuing URB
-+	//
-+	usb_fill_int_urb( pUrb, pHwData->WbUsb.udev, usb_rcvintpipe(pHwData->WbUsb.udev,2),
-+			  pltmp, MAX_INTERRUPT_LENGTH, Wb35Tx_EP2VM_complete, adapter, 32);
-+
-+	pWb35Tx->EP2vm_state = VM_RUNNING;
-+	retv = usb_submit_urb(pUrb, GFP_ATOMIC);
-+
-+	if (retv < 0) {
-+		#ifdef _PE_TX_DUMP_
-+		WBDEBUG(("EP2 Tx Irp sending error\n"));
-+		#endif
-+		goto error;
-+	}
-+
-+	return;
-+error:
-+	pWb35Tx->EP2vm_state = VM_STOP;
-+	atomic_dec(&pWb35Tx->TxResultCount);
-+}
-+
-+void Wb35Tx_EP2VM_start(struct wbsoft_priv *adapter)
-+{
-+	phw_data_t pHwData = &adapter->sHwData;
-+	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
-+
-+	// Allow only one thread to run into function
-+	if (atomic_inc_return(&pWb35Tx->TxResultCount) == 1) {
-+		pWb35Tx->EP2vm_state = VM_RUNNING;
-+		Wb35Tx_EP2VM(adapter);
-+	}
-+	else
-+		atomic_dec(&pWb35Tx->TxResultCount);
-+}
-diff --git a/drivers/staging/winbond/wb35tx_f.h b/drivers/staging/winbond/wb35tx_f.h
-index 277faa7..4222fa8 100644
---- a/drivers/staging/winbond/wb35tx_f.h
-+++ b/drivers/staging/winbond/wb35tx_f.h
-@@ -11,15 +11,10 @@ unsigned char Wb35Tx_initial(	 phw_data_t pHwData );
- void Wb35Tx_destroy(  phw_data_t pHwData );
- unsigned char Wb35Tx_get_tx_buffer(  phw_data_t pHwData,  u8 **pBuffer );
- 
--void Wb35Tx_EP2VM(struct wbsoft_priv *adapter);
- void Wb35Tx_EP2VM_start(struct wbsoft_priv *adapter);
--void Wb35Tx_EP2VM_complete(struct urb *urb);
- 
- void Wb35Tx_start(struct wbsoft_priv *adapter);
- void Wb35Tx_stop(  phw_data_t pHwData );
--void Wb35Tx(struct wbsoft_priv *adapter);
--void Wb35Tx_complete(struct urb *urb);
--void Wb35Tx_reset_descriptor(  phw_data_t pHwData );
- 
- void Wb35Tx_CurrentTime(struct wbsoft_priv *adapter,  u32 TimeCount);
- 
+ #endif
 -- 
 1.5.3.7
 
