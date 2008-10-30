@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbYJ3F43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369AbYJ3F4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753539AbYJ3F43 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 01:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbYJ3F4S
+	id S1754369AbYJ3F4n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 01:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbYJ3F4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 01:56:18 -0400
-Received: from kroah.org ([198.145.64.141]:59353 "EHLO coco.kroah.org"
+	Thu, 30 Oct 2008 01:56:20 -0400
+Received: from kroah.org ([198.145.64.141]:59354 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752532AbYJ3F4S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 01:56:18 -0400
-Date: Wed, 29 Oct 2008 22:49:44 -0700
+	id S1752711AbYJ3F4T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 01:56:19 -0400
+Date: Wed, 29 Oct 2008 22:54:10 -0700
 From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: merging other repos into linux-2.6
-Message-ID: <20081030054944.GA19035@kroah.com>
+To: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       Libin.Yang@amd.com, Crane Cai <crane.cai@amd.com>
+Subject: Re: 2.6.27: ehci bug with AMD 770nb/SB700 southbridge. usb lockup
+Message-ID: <20081030055410.GB19035@kroah.com>
+References: <200810300215.18792.volker.armin.hemmann@tu-clausthal.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200810300215.18792.volker.armin.hemmann@tu-clausthal.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Oct 30, 2008 at 02:15:18AM +0100, Volker Armin Hemmann wrote:
+> Hi,
+> 
+> I have a A770Crossfire board from Asrock.
+> With kernel 2.6.26.X and 2.6.27.[1,2,3,4] I have the following problem that 
+> makes usb mostly unusable.
+> 
+> I have a 4 port hub attached. A logitech mouse receiver is inserted into one 
+> of its ports - it does not matter which one. Everything works fine.
+> 
+> I turn on an external enclosure, which is either attached to one of the 
+> mainboards ports or the hub. Everything works for a couple of seconds. I mount 
+> the cdrom/harddisk partition and start copying a file - or just wait a couple 
+> of seconds.
+> USB completly locks up. First the mouse, then a bit later the file transfer 
+> (so one was started) stops. Turning of the enclosure does not help, remving 
+> the receiver and reinserting it, does not help, not using the hub does not 
+> help.
+> Only thing that brings back USB:
+> rmmod ehci_hcd
+> modprobe ehci-hcd
+> 
+> rmmod and modprobe usb-storage does NOT help.
+> 
+> after that I get another couple of seconds until it locks up again.
+> 
+> If I modprobe ohci-hcd I get this:
+> with 2.6.26 and the mouse at ohci, enclosure at ehci, everything works - but 
+> gaming (with fglrx loaded) is impossible, since the mouse is extremly jerky 
+> (shared interrupts).
+> with 2.6.27 both mouse and enclose are driven by ohci - and copying works 
+> without locking up. Trying to 'force' ehci for the enclosure makes it lockup 
+> again.
+> 
+> This happens with kernel.org kernels+reiser4.
 
-In working with some of the current out-of-tree drivers, some of them
-are asking if they could keep their past development history when
-merging the code into the main kernel tree.
+This chipset was known to have bugs in it, which I think we fixed
+already.  I have a laptop with this chipset and it can sustain large
+ammounts of USB data just fine with the 2.6.27 kernel series, so I
+wonder if something is wrong with your usb disk drive?
 
-Now normally we don't do this for new drivers, just dropping them in in
-one big patch, or sometimes multiple patches to get it through email
-filters.
-
-The comedi group (data acquisition subsystem for Linux) have their whole
-history going back to 2000 in a git tree (well, a cvs->git repo.)
-
-I was wondering if it would be acceptable to graft their tree into the
-linux-2.6 tree (after moving the files to the proper location) to keep
-their whole old history alive.
-
-Now what good that old history would do, I really don't know and can't
-think of a solid reason to need it, other than to give proper authorship
-credit for the various individual drivers and parts of the code (which
-is good to have at tims.)
-
-But the merge looks pretty cool, and it is impressive that git can allow
-this to happen, so there are some extra "style" points a merge like this
-would give :)
-
-So, any thoughts?  Should I graft the trees, or just stick to simple
-"here's the whole driver" type patches like we have been doing?
+I've added some AMD developers on the CC: who helped develop the last
+fix for this chipset.  Libin, do you know of anything in the chipset
+that would cause these problems?
 
 thanks,
 
