@@ -1,25 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757601AbYJ3S03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbYJ3S3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757601AbYJ3S03 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 14:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbYJ3S0U
+	id S1757980AbYJ3S3c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 14:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbYJ3S3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 14:26:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33487 "EHLO mx3.mail.elte.hu"
+	Thu, 30 Oct 2008 14:29:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53294 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753738AbYJ3S0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 14:26:19 -0400
-Date: Thu, 30 Oct 2008 19:26:01 +0100
+	id S1755758AbYJ3S3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 14:29:20 -0400
+Date: Thu, 30 Oct 2008 19:29:02 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Rakib Mullick <rakib.mullick@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kernel/cpu.c: Section mismatch warning fix.
-Message-ID: <20081030182601.GE14102@elte.hu>
-References: <b9df5fa10810292104h38fcee68kae42cf5ab6275fbb@mail.gmail.com>
+To: Ravikiran G Thirumalai <kiran@scalex86.org>
+Cc: venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org,
+       tim@scalemp.com, shai@scalex86.org,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch] x86: Fix /dev/mem mmap breakage when PAT is disabled
+Message-ID: <20081030182902.GF14102@elte.hu>
+References: <20081030020203.GA12423@localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b9df5fa10810292104h38fcee68kae42cf5ab6275fbb@mail.gmail.com>
+In-Reply-To: <20081030020203.GA12423@localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,53 +40,46 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rakib Mullick <rakib.mullick@gmail.com> wrote:
+* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
 
->  LD      kernel/built-in.o
-> WARNING: kernel/built-in.o(.text+0xb7c8): Section mismatch in
-> reference from the function notify_cpu_starting() to the variable
-> .cpuinit.data:cpu_chain
-> The function notify_cpu_starting() references
-> the variable __cpuinitdata cpu_chain.
-> This is often because notify_cpu_starting lacks a __cpuinitdata
-> annotation or the annotation of cpu_chain is wrong.
+> Fix mmap to /dev/mem when CONFIG_X86_PAT is off and CONFIG_STRICT_DEVMEM is
+> off
 > 
-> This patch fixes the above section mismatch warning. If anything else
-> please notice.
-> Thanks.
+> mmap to /dev/mem on kernel memory has been failing since the
+> introduction of PAT (CONFIG_STRICT_DEVMEM=n case).   Seems like
+> the check to avoid cache aliasing with PAT is kicking in even
+> when PAT is disabled. The bug seems to have crept in 2.6.26.
 > 
-> Signed-off-by: Md.Rakib H. Mullick <rakib.mullick@gmail.com>
+> This patch makes sure that mmap to regular kernel memory
+> succeeds if CONFIG_STRICT_DEVMEM=n and
+> PAT is disabled.  The checks to avoid cache aliasing
+> still happens if PAT is enabled.
 > 
-> --- linux-2.6-orig/kernel/cpu.c	2008-10-28 20:52:38.000000000 +0600
-> +++ linux-2.6/kernel/cpu.c	2008-10-28 22:46:22.000000000 +0600
-> @@ -462,7 +462,7 @@ out:
->   * It must be called by the arch code on the new cpu, before the new cpu
->   * enables interrupts and before the "boot" cpu returns from __cpu_up().
->   */
-> -void notify_cpu_starting(unsigned int cpu)
-> +void __cpuinit notify_cpu_starting(unsigned int cpu)
+> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+> Tested-by: Tim Sirianni <tim@scalemp.com>
+> 
+> Index: git.tip/arch/x86/mm/pat.c
+> ===================================================================
+> --- git.tip.orig/arch/x86/mm/pat.c	2008-10-21 14:02:57.000000000 -0700
+> +++ git.tip/arch/x86/mm/pat.c	2008-10-29 13:19:47.000000000 -0800
+> @@ -481,6 +481,7 @@
+>  	return 1;
+>  }
+>  #else
+> +/* This check is needed to avoid cache aliasing when PAT is enabled */
+>  static inline int range_is_allowed(unsigned long pfn, unsigned long size)
 >  {
->  	unsigned long val = CPU_STARTING;
+>  	u64 from = ((u64)pfn) << PAGE_SHIFT;
+> @@ -508,7 +509,8 @@
+>  	unsigned long flags = -1;
+>  	int retval;
+>  
+> -	if (!range_is_allowed(pfn, size))
+> +	/* Ensure cache aliasing does not occur if and only if PAT is on */
+> +	if (pat_enabled && !range_is_allowed(pfn, size))
+>  		return 0;
 
-you've tested that on x86, right? Have you checked/reviewed all the 
-non-x86 architecture codepaths:
-
- ./arch/m32r/kernel/smpboot.c:	notify_cpu_starting(cpu_id);
- ./arch/cris/arch-v32/kernel/smp.c:	notify_cpu_starting(cpu);
- ./arch/s390/kernel/smp.c:	 notify_cpu_starting(smp_processor_id());
- ./arch/x86/mach-voyager/voyager_smp.c:	notify_cpu_starting(cpuid);
- ./arch/x86/kernel/smpboot.c:	notify_cpu_starting(cpuid);
- ./arch/mips/kernel/smp.c:	notify_cpu_starting(cpu);
- ./arch/sparc64/kernel/smp.c:	notify_cpu_starting(cpuid);
- ./arch/ia64/kernel/smpboot.c:	notify_cpu_starting(cpuid);
- ./arch/um/kernel/smp.c:	notify_cpu_starting(cpu);
- ./arch/sparc/kernel/sun4d_smp.c:	notify_cpu_starting(cpuid);
- ./arch/sparc/kernel/sun4m_smp.c:	notify_cpu_starting(cpuid);
- ./arch/powerpc/kernel/smp.c:	notify_cpu_starting(cpu);
- ./arch/alpha/kernel/smp.c:	notify_cpu_starting(cpuid);
- ./arch/sh/kernel/smp.c:	notify_cpu_starting(smp_processor_id());
- ./arch/arm/kernel/smp.c:	notify_cpu_starting(cpu);
-
-to make sure that they never use this function after free_initmem()?
+I guess it might be cleaner to push this check into the 
+range_is_allowed() function?
 
 	Ingo
