@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757046AbYJ3QRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbYJ3QSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757046AbYJ3QRS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 12:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756856AbYJ3QQ6
+	id S1758076AbYJ3QSL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 12:18:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756803AbYJ3QRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 12:16:58 -0400
-Received: from ik-out-1112.google.com ([66.249.90.177]:63792 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756674AbYJ3QQ4 (ORCPT
+	Thu, 30 Oct 2008 12:17:51 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:59892 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755811AbYJ3QRt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 12:16:56 -0400
+	Thu, 30 Oct 2008 12:17:49 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=cdf/iWtIunaQLC1+Gj+583gT0VefzO/KCj1clGb/GZ1FaiQkeNM+Pp5W1xQ8EWIDg5
-         5ePDHfDbhrentSzDvzpHWcguTqBdRp6sop+uZ/bZsflW6xqPisV00TfzGCI3EJD7VoWj
-         C5Yav/0q5scYhuWtQ6NL5zpD/Ff7uGZq2E744=
-Date: Thu, 30 Oct 2008 19:16:46 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Aristeu Rozanski <aris@redhat.com>
-Subject: [RFC -tip] x86: nmi - add sensible names to nmi_watchdog boot param
-Message-ID: <20081030161646.GC19888@localhost>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=nbNvtluhce8unN4kTIEjYumKlf1txfsHXgnFzMAoWQISo2/shtrtf3eUqEYLQeh4/9
+         0YUi0TgOXpShXfQozuEJ1KwC86VTCv9MQy+EBhU1fI3gfVW/XkFXtcVL75E4J0BZavMO
+         Y84Ac8tg+G5NR/1AH1XEIlNVSSUjBlhvfaoVA=
+Message-ID: <b6c5339f0810300917i25b4164fof2ba51569d4e7012@mail.gmail.com>
+Date: Thu, 30 Oct 2008 12:17:48 -0400
+From: "Bob Copeland" <me@bobcopeland.com>
+To: "Stefan Hellermann" <stefan@the2masters.de>
+Subject: Re: pull request: wireless-2.6 2008-10-29
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       "Arjan van de Ven" <arjan@infradead.org>, davem@davemloft.net,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mcgrof@gmail.com, mickflemm@gmail.com
+In-Reply-To: <4909C93E.7020400@the2masters.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <20081029231855.GD3485@tuxdriver.com>
+	 <20081029162324.28f5864d@infradead.org>
+	 <20081029233350.GE3485@tuxdriver.com>
+	 <4909C93E.7020400@the2masters.de>
+X-Google-Sender-Auth: cac5158624990f71
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add sensible names as "lapic" and "ioapic" to
-nmi_watchdog boot parameter. Sometimes it is not
-that easy to recall what exactly nmi_watchdog=1
-does mean so we allow the using of symbolic names here.
+On Thu, Oct 30, 2008 at 10:48 AM, Stefan Hellermann
+<stefan@the2masters.de> wrote:
+> I think some of the reports on kerneloops are from my machine, I'm
+> running wireless-testing#master in the hope to get my card fully
+> working. It's a AR2425 chip (MAC: 0xe2, PHY: 0x70), in a Lenovo Notebook.
 
-Old numeric values remain valid.
+Okay, I just added a bugzilla for this:
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+http://bugzilla.kernel.org/show_bug.cgi?id=11901
 
- arch/x86/kernel/nmi.c |   15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
-
-Index: linux-2.6.git/arch/x86/kernel/nmi.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/nmi.c	2008-10-27 21:35:21.000000000 +0300
-+++ linux-2.6.git/arch/x86/kernel/nmi.c	2008-10-30 19:01:52.000000000 +0300
-@@ -208,12 +208,17 @@ static int __init setup_nmi_watchdog(cha
- 		++str;
- 	}
- 
--	get_option(&str, &nmi);
--
--	if (nmi >= NMI_INVALID)
--		return 0;
-+	if (!strncmp(str, "lapic", 5))
-+		nmi_watchdog = NMI_LOCAL_APIC;
-+	else if (!strncmp(str, "ioapic", 6))
-+		nmi_watchdog = NMI_IO_APIC;
-+	else {
-+		get_option(&str, &nmi);
-+		if (nmi >= NMI_INVALID)
-+			return 0;
-+		nmi_watchdog = nmi;
-+	}
- 
--	nmi_watchdog = nmi;
- 	return 1;
- }
- __setup("nmi_watchdog=", setup_nmi_watchdog);
+I can reproduce it here after all...
+-- 
+Bob Copeland %% www.bobcopeland.com
