@@ -1,50 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbYJ3BDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbYJ3BGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755186AbYJ3BDv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 21:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbYJ3BD2
+	id S1755412AbYJ3BGo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 21:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbYJ3BGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 21:03:28 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:26169 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755190AbYJ3BD1 (ORCPT
+	Wed, 29 Oct 2008 21:06:35 -0400
+Received: from qb-out-0506.google.com ([72.14.204.228]:53017 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751200AbYJ3BGf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 21:03:27 -0400
-Message-ID: <490907DE.2030502@ct.jp.nec.com>
-Date: Wed, 29 Oct 2008 18:03:26 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] add include list.h in binfmts.h
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Oct 2008 21:06:35 -0400
+Subject: driver core: get rid of bus_id ()
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 30 Oct 2008 02:06:36 +0100
+Message-Id: <1225328796.5970.62.camel@nga.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Hey Greg,
+this will be the final remove of bus_id and BUS_ID_SIZE, when
+everything else is converted.
 
-linux_binfmt uses list_head, so list.h is needed.
+Would be nice, if you can put that into your tree without pushing
+it to -next for now, but to catch newly added bus_id stuff in
+staging.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Thanks,
+Kay
+
+
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: driver core: get rid of bus_id and ﻿BUS_ID_SIZE
+
+Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
 ---
- include/linux/binfmts.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/binfmts.h b/include/linux/binfmts.h
-index 7394b5b..06c1123 100644
---- a/include/linux/binfmts.h
-+++ b/include/linux/binfmts.h
-@@ -1,6 +1,7 @@
- #ifndef _LINUX_BINFMTS_H
- #define _LINUX_BINFMTS_H
+
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 8c2cc26..4e22175 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -777,11 +777,12 @@ static void device_remove_class_symlinks(struct device *dev)
+ int dev_set_name(struct device *dev, const char *fmt, ...)
+ {
+ 	va_list vargs;
++	int err;
  
-+#include <linux/list.h>
- #include <linux/capability.h>
+ 	va_start(vargs, fmt);
+-	vsnprintf(dev->bus_id, sizeof(dev->bus_id), fmt, vargs);
++	err = kobject_set_name_vargs(&dev->kobj, fmt, vargs);
+ 	va_end(vargs);
+-	return 0;
++	return err;
+ }
+ EXPORT_SYMBOL_GPL(dev_set_name);
  
- struct pt_regs;
--- 
-1.5.6
+@@ -858,12 +859,17 @@ int device_add(struct device *dev)
+ 	if (!dev)
+ 		goto done;
+ 
+-	/* Temporarily support init_name if it is set.
+-	 * It will override bus_id for now */
+-	if (dev->init_name)
+-		dev_set_name(dev, "%s", dev->init_name);
++	/*
++	 * for statically allocated devices, which should all be converted
++	 * some day, we need to initialize the name. We prevent reading back
++	 * the name, and force the use of dev_name()
++	 */
++	if (dev->init_name) {
++		dev_set_name(dev, dev->init_name);
++		dev->init_name = NULL;
++	}
+ 
+-	if (!strlen(dev->bus_id))
++	if (!dev_name(dev))
+ 		goto done;
+ 
+ 	pr_debug("device: '%s': %s\n", dev->bus_id, __func__);
+@@ -1248,7 +1254,10 @@ struct device *device_create_vargs(struct class *class, struct device *parent,
+ 	dev->release = device_create_release;
+ 	dev_set_drvdata(dev, drvdata);
+ 
+-	vsnprintf(dev->bus_id, BUS_ID_SIZE, fmt, args);
++	retval = kobject_set_name_vargs(&dev->kobj, fmt, args);
++	if (retval)
++		goto error;
++
+ 	retval = device_register(dev);
+ 	if (retval)
+ 		goto error;
+@@ -1352,19 +1361,15 @@ int device_rename(struct device *dev, char *new_name)
+ 		old_class_name = make_class_name(dev->class->name, &dev->kobj);
+ #endif
+ 
+-	old_device_name = kmalloc(BUS_ID_SIZE, GFP_KERNEL);
++	old_device_name = kstrdup(dev_name(dev), GFP_KERNEL);
+ 	if (!old_device_name) {
+ 		error = -ENOMEM;
+ 		goto out;
+ 	}
+-	strlcpy(old_device_name, dev->bus_id, BUS_ID_SIZE);
+-	strlcpy(dev->bus_id, new_name, BUS_ID_SIZE);
+ 
+ 	error = kobject_rename(&dev->kobj, new_name);
+-	if (error) {
+-		strlcpy(dev->bus_id, old_device_name, BUS_ID_SIZE);
++	if (error)
+ 		goto out;
+-	}
+ 
+ #ifdef CONFIG_SYSFS_DEPRECATED
+ 	if (old_class_name) {
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 1a3686d..836fa99 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -25,8 +25,6 @@
+ #include <asm/atomic.h>
+ #include <asm/device.h>
+ 
+-#define BUS_ID_SIZE		20
+-
+ struct device;
+ struct device_driver;
+ struct driver_private;
+@@ -372,7 +370,6 @@ struct device {
+ 	struct device		*parent;
+ 
+ 	struct kobject kobj;
+-	char	bus_id[BUS_ID_SIZE];	/* position on parent bus */
+ 	const char		*init_name; /* initial name of the device */
+ 	struct device_type	*type;
+ 	unsigned		uevent_suppress:1;
+@@ -424,8 +421,7 @@ struct device {
+ 
+ static inline const char *dev_name(const struct device *dev)
+ {
+-	/* will be changed into kobject_name(&dev->kobj) in the near future */
+-	return dev->bus_id;
++	return kobject_name(&dev->kobj);
+ }
+ 
+ extern int dev_set_name(struct device *dev, const char *name, ...)
+
 
