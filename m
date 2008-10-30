@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbYJ3BbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYJ3Bdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756132AbYJ3BbA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 21:31:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbYJ3Baw
+	id S1755487AbYJ3Bdo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 21:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbYJ3Bdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 21:30:52 -0400
-Received: from qb-out-0506.google.com ([72.14.204.225]:55048 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751382AbYJ3Bav (ORCPT
+	Wed, 29 Oct 2008 21:33:36 -0400
+Received: from mu-out-0910.google.com ([209.85.134.190]:40550 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751382AbYJ3Bdg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 21:30:51 -0400
-Subject: ide: struct device - replace bus_id with dev_name(), dev_set_name()
+	Wed, 29 Oct 2008 21:33:36 -0400
+Subject: memstick: struct device - replace bus_id with dev_name(),
+	dev_set_name()
 From: Kay Sievers <kay.sievers@vrfy.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alex Dubov <oakad@yahoo.com>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
 Content-Type: text/plain
-Date: Thu, 30 Oct 2008 02:30:52 +0100
-Message-Id: <1225330252.5970.89.camel@nga.site>
+Date: Thu, 30 Oct 2008 02:33:37 +0100
+Message-Id: <1225330417.5970.92.camel@nga.site>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
@@ -50,35 +51,118 @@ Kay
 
 
 From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: ide: struct device - replace bus_id with dev_name(), dev_set_name()
+Subject: memstick: struct device - replace bus_id with dev_name(), dev_set_name()
 
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Alex Dubov <oakad@yahoo.com>
 Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
 ---
 
 
-diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
-index 1649ea5..74d8677 100644
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -641,7 +641,7 @@ static int ide_register_port(ide_hwif_t *hwif)
- 	int ret;
+diff --git a/drivers/memstick/core/memstick.c b/drivers/memstick/core/memstick.c
+index cea4690..a5b448e 100644
+--- a/drivers/memstick/core/memstick.c
++++ b/drivers/memstick/core/memstick.c
+@@ -385,8 +385,7 @@ static struct memstick_dev *memstick_alloc_card(struct memstick_host *host)
  
- 	/* register with global device tree */
--	strlcpy(hwif->gendev.bus_id,hwif->name,BUS_ID_SIZE);
-+	dev_set_name(&hwif->gendev, hwif->name);
- 	hwif->gendev.driver_data = hwif;
- 	if (hwif->gendev.parent == NULL) {
- 		if (hwif->dev)
-@@ -1351,7 +1351,7 @@ static void hwif_register_devices(ide_hwif_t *hwif)
- 		if ((drive->dev_flags & IDE_DFLAG_PRESENT) == 0)
- 			continue;
+ 	if (card) {
+ 		card->host = host;
+-		snprintf(card->dev.bus_id, sizeof(card->dev.bus_id),
+-			 "%s", host->dev.bus_id);
++		dev_set_name(&card->dev, "%s", dev_name(&host->dev));
+ 		card->dev.parent = &host->dev;
+ 		card->dev.bus = &memstick_bus_type;
+ 		card->dev.release = memstick_free_card;
+@@ -519,7 +518,7 @@ int memstick_add_host(struct memstick_host *host)
+ 	if (rc)
+ 		return rc;
  
--		snprintf(dev->bus_id, BUS_ID_SIZE, "%u.%u", hwif->index, i);
-+		dev_set_name(dev, "%u.%u", hwif->index, i);
- 		dev->parent = &hwif->gendev;
- 		dev->bus = &ide_bus_type;
- 		dev->driver_data = drive;
-
+-	snprintf(host->dev.bus_id, BUS_ID_SIZE, "memstick%u", host->id);
++	dev_set_name(&host->dev, "memstick%u", host->id);
+ 
+ 	rc = device_add(&host->dev);
+ 	if (rc) {
+diff --git a/drivers/memstick/core/mspro_block.c b/drivers/memstick/core/mspro_block.c
+index 7911151..1f1e398 100644
+--- a/drivers/memstick/core/mspro_block.c
++++ b/drivers/memstick/core/mspro_block.c
+@@ -887,14 +887,14 @@ try_again:
+ 	if (rc) {
+ 		printk(KERN_WARNING
+ 		       "%s: could not switch to 4-bit mode, error %d\n",
+-		       card->dev.bus_id, rc);
++		       dev_name(&card->dev), rc);
+ 		return 0;
+ 	}
+ 
+ 	msb->system = MEMSTICK_SYS_PAR4;
+ 	host->set_param(host, MEMSTICK_INTERFACE, MEMSTICK_PAR4);
+ 	printk(KERN_INFO "%s: switching to 4-bit parallel mode\n",
+-	       card->dev.bus_id);
++	       dev_name(&card->dev));
+ 
+ 	if (msb->caps & MEMSTICK_CAP_PAR8) {
+ 		rc = mspro_block_set_interface(card, MEMSTICK_SYS_PAR8);
+@@ -905,11 +905,11 @@ try_again:
+ 					MEMSTICK_PAR8);
+ 			printk(KERN_INFO
+ 			       "%s: switching to 8-bit parallel mode\n",
+-			       card->dev.bus_id);
++			       dev_name(&card->dev));
+ 		} else
+ 			printk(KERN_WARNING
+ 			       "%s: could not switch to 8-bit mode, error %d\n",
+-			       card->dev.bus_id, rc);
++			       dev_name(&card->dev), rc);
+ 	}
+ 
+ 	card->next_request = h_mspro_block_req_init;
+@@ -922,7 +922,7 @@ try_again:
+ 	if (rc) {
+ 		printk(KERN_WARNING
+ 		       "%s: interface error, trying to fall back to serial\n",
+-		       card->dev.bus_id);
++		       dev_name(&card->dev));
+ 		msb->system = MEMSTICK_SYS_SERIAL;
+ 		host->set_param(host, MEMSTICK_POWER, MEMSTICK_POWER_OFF);
+ 		msleep(10);
+@@ -992,14 +992,14 @@ static int mspro_block_read_attributes(struct memstick_dev *card)
+ 
+ 	if (be16_to_cpu(attr->signature) != MSPRO_BLOCK_SIGNATURE) {
+ 		printk(KERN_ERR "%s: unrecognized device signature %x\n",
+-		       card->dev.bus_id, be16_to_cpu(attr->signature));
++		       dev_name(&card->dev), be16_to_cpu(attr->signature));
+ 		rc = -ENODEV;
+ 		goto out_free_attr;
+ 	}
+ 
+ 	if (attr->count > MSPRO_BLOCK_MAX_ATTRIBUTES) {
+ 		printk(KERN_WARNING "%s: way too many attribute entries\n",
+-		       card->dev.bus_id);
++		       dev_name(&card->dev));
+ 		attr_count = MSPRO_BLOCK_MAX_ATTRIBUTES;
+ 	} else
+ 		attr_count = attr->count;
+diff --git a/drivers/memstick/host/tifm_ms.c b/drivers/memstick/host/tifm_ms.c
+index d32d6ad..03f71a4 100644
+--- a/drivers/memstick/host/tifm_ms.c
++++ b/drivers/memstick/host/tifm_ms.c
+@@ -546,7 +546,7 @@ static void tifm_ms_abort(unsigned long data)
+ 	printk(KERN_ERR
+ 	       "%s : card failed to respond for a long period of time "
+ 	       "(%x, %x)\n",
+-	       host->dev->dev.bus_id, host->req ? host->req->tpc : 0,
++	       dev_name(&host->dev->dev), host->req ? host->req->tpc : 0,
+ 	       host->cmd_flags);
+ 
+ 	tifm_eject(host->dev);
+@@ -561,7 +561,7 @@ static int tifm_ms_probe(struct tifm_dev *sock)
+ 	if (!(TIFM_SOCK_STATE_OCCUPIED
+ 	      & readl(sock->addr + SOCK_PRESENT_STATE))) {
+ 		printk(KERN_WARNING "%s : card gone, unexpectedly\n",
+-		       sock->dev.bus_id);
++		       dev_name(&sock->dev));
+ 		return rc;
+ 	}
+ 
 
