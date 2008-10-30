@@ -1,76 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754652AbYJ3H0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754316AbYJ3H1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754652AbYJ3H0y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 03:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbYJ3H0b
+	id S1754316AbYJ3H1Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 03:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbYJ3H0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 03:26:31 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51264 "EHLO song.cn.fujitsu.com"
+	Thu, 30 Oct 2008 03:26:32 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60864 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753213AbYJ3H0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 03:26:30 -0400
-Message-ID: <490960EF.7020500@cn.fujitsu.com>
-Date: Thu, 30 Oct 2008 15:23:27 +0800
+	id S1753260AbYJ3H0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 03:26:31 -0400
+Message-ID: <490960F6.5060603@cn.fujitsu.com>
+Date: Thu, 30 Oct 2008 15:23:34 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Menage <menage@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: [PATCH] cgroup: fix invalid cgrp->dentry before cgroup has been completely
- removed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sched: change sched_debug's mode to 0444
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes oops when reading /proc/sched_debug.
-
-A cgroup won't be removed completely until finishing cgroup_diput(), so we
-shouldn't invalidate cgrp->dentry in cgroup_rmdir(). Otherwise, when a
-group is being removed while cgroup_path() gets called, we may trigger NULL
-dereference BUG.
-
-The bug can be reproduced:
-
- # cat test.sh
- #!/bin/sh
- mount -t cgroup -o cpu xxx /mnt
- for (( ; ; ))
- {
-	mkdir /mnt/sub
-	rmdir /mnt/sub
- }
- # ./test.sh &
- # cat /proc/sched_debug
-
-BUG: unable to handle kernel NULL pointer dereference at 00000038
-IP: [<c045a47f>] cgroup_path+0x39/0x90
-...
-Call Trace:
- [<c0420344>] ? print_cfs_rq+0x6e/0x75d
- [<c0421160>] ? sched_debug_show+0x72d/0xc1e
-...
+/proc/sched_debug is read-only.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/cgroup.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ kernel/sched_debug.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 35eebd5..358e775 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -2497,7 +2497,6 @@ static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
- 	list_del(&cgrp->sibling);
- 	spin_lock(&cgrp->dentry->d_lock);
- 	d = dget(cgrp->dentry);
--	cgrp->dentry = NULL;
- 	spin_unlock(&d->d_lock);
+diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
+index ad958c1..5ae1776 100644
+--- a/kernel/sched_debug.c
++++ b/kernel/sched_debug.c
+@@ -319,7 +319,7 @@ static int __init init_sched_debug_procfs(void)
+ {
+ 	struct proc_dir_entry *pe;
  
- 	cgroup_d_remove_dir(d);
+-	pe = proc_create("sched_debug", 0644, NULL, &sched_debug_fops);
++	pe = proc_create("sched_debug", 0444, NULL, &sched_debug_fops);
+ 	if (!pe)
+ 		return -ENOMEM;
+ 	return 0;
 -- 
 1.5.4.rc3
 
