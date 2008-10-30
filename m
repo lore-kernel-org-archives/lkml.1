@@ -1,38 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798AbYJ3Gon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbYJ3GqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753798AbYJ3Gon (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 02:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbYJ3Gof
+	id S1754220AbYJ3GqS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 02:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYJ3GqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 02:44:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56976 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752656AbYJ3Goe (ORCPT
+	Thu, 30 Oct 2008 02:46:07 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48188 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752711AbYJ3GqG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 02:44:34 -0400
-Date: Wed, 29 Oct 2008 23:43:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Marton Balint <cus@fazekas.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] block:do_mounts - add device info to mount message
-Message-Id: <20081029234356.aa1a3760.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0810241309190.31107@cinke.fazekas.hu>
-References: <Pine.LNX.4.64.0810241309190.31107@cinke.fazekas.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 30 Oct 2008 02:46:06 -0400
+Date: Thu, 30 Oct 2008 15:45:32 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Fernando Luis =?UTF-8?B?VsOhenF1ZXo=?= Cao 
+	<fernando@oss.ntt.co.jp>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] memcg: do not recalculate section unnecessarily in
+ init_section_page_cgroup
+Message-Id: <20081030154532.ad97ec93.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1225341530.3135.26.camel@sebastian.kern.oss.ntt.co.jp>
+References: <1225341530.3135.26.camel@sebastian.kern.oss.ntt.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Oct 2008 13:31:53 +0200 (CEST) Marton Balint <cus@fazekas.hu> wrote:
+On Thu, 30 Oct 2008 13:38:50 +0900
+Fernando Luis Vázquez Cao <fernando@oss.ntt.co.jp> wrote:
 
-> Printing the minor and major number of the successfully mounted root 
-> device can be quite useful, the patch adds this piece of information 
-> to the "VFS: Mounted root..." message.
+> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+> ---
 > 
+Thanks, but please add patch description "what this patch fixes".
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Can you expand upon "quite useful", please?  In what way is it useful? 
-A real-world example would help.
+
+> diff -urNp linux-2.6.28-rc2-mm1-orig/mm/page_cgroup.c linux-2.6.28-rc2-mm1/mm/page_cgroup.c
+> --- linux-2.6.28-rc2-mm1-orig/mm/page_cgroup.c	2008-10-30 12:49:27.000000000 +0900
+> +++ linux-2.6.28-rc2-mm1/mm/page_cgroup.c	2008-10-30 12:52:41.000000000 +0900
+> @@ -99,13 +99,11 @@ struct page_cgroup *lookup_page_cgroup(s
+>  
+>  int __meminit init_section_page_cgroup(unsigned long pfn)
+>  {
+> -	struct mem_section *section;
+> +	struct mem_section *section = __pfn_to_section(pfn);
+>  	struct page_cgroup *base, *pc;
+>  	unsigned long table_size;
+>  	int nid, index;
+>  
+> -	section = __pfn_to_section(pfn);
+> -
+>  	if (section->page_cgroup)
+>  		return 0;
+>  
+> @@ -131,7 +129,6 @@ int __meminit init_section_page_cgroup(u
+>  		__init_page_cgroup(pc, pfn + index);
+>  	}
+>  
+> -	section = __pfn_to_section(pfn);
+>  	section->page_cgroup = base - pfn;
+>  	total_usage += table_size;
+>  	return 0;
+> 
+> 
+> 
 
