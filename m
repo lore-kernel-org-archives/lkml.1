@@ -1,275 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbYJ3Gau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753702AbYJ3Gf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753531AbYJ3Gau (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 02:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYJ3Gal
+	id S1753702AbYJ3Gf3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 02:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbYJ3GfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 02:30:41 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38256 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752543AbYJ3Gaj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 02:30:39 -0400
-Date: Thu, 30 Oct 2008 17:30:30 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for October 30
-Message-Id: <20081030173030.d8847df6.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__30_Oct_2008_17_30_30_+1100_r0hVLBlTCZJbEF2T"
+	Thu, 30 Oct 2008 02:35:20 -0400
+Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:28793 "HELO
+	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752704AbYJ3GfT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 02:35:19 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Kjxe2lhJg+X418Em8lfoKKUMfk5kARJXHDcTJHotYuqrGh2j9k5olT/dGfAwR7ntzq0ol62ORf6xvpo/ylRutb/zCOuCrLTIJkVtTHCWJLIhqF8hbc5/7hI/dhX8/ZIYUQ+wTqeHm9cfPxc1wS4FkZRjVH5TbR7d6nyn7q002O4=  ;
+X-YMail-OSG: FwWt280VM1levCMBUwKm_ydadPJqX1IeGhaifRVwhkql.h4uabX.Rv0HAm2d_vp77s.SX5MOV1XX7pCzES8eaZU5Li7PWgv5Ts29PhSDHa6mNTRTh9aSW2BXpKBkecA4kCwyd2NaWSqHUELtW4D7hbK.HeemiDOrKgu7un2ZPj_deHaJpXo4z2uq3duX
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: spi: struct device - replace bus_id with dev_name(), dev_set_name()
+Date: Wed, 29 Oct 2008 23:35:17 -0700
+User-Agent: KMail/1.9.10
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+References: <1225330937.5970.99.camel@nga.site>
+In-Reply-To: <1225330937.5970.99.camel@nga.site>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810292335.17631.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__30_Oct_2008_17_30_30_+1100_r0hVLBlTCZJbEF2T
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wednesday 29 October 2008, Kay Sievers wrote:
+> From: Kay Sievers <kay.sievers@vrfy.org>
+> Subject: spi: struct device - replace bus_id with dev_name(), dev_set_name()
+> 
+> Cc: David Brownell <dbrownell@users.sourceforge.net>
+> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
 
-Hi all,
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 
-It turns out that using a different binutils (2.19) gets the powerpc
-allyesconfig building and a different compiler (4.3.2) makes the sparc32
-defconfig build.
+... OK by me if this goes into 2.6.28.  There's one more use
+of spi->dev.bus_id that I know about, in the spi_gpio driver
+currently found in the MM tree.
 
-I am no longer commenting on conflicts that are clearly just caused by
-slight differences in what has been merged into Linus' tree and
-linux-next or conflicts caused by further changes in the linux-next after
-a subset of a tree has been merged.
-
-Changes since 20081030:
-
-Undropped tree:	rr
-
-The xfs tree gained a build fix patch.
-
-The kvm tree lost its 2 conflicts.
-
-The rr tree lost all its conflicts.
-
-The creds tree gained 3 conflicts against the xfs tree.
-
-I have also applied the following patches for known problems:
-
-	sparc: qlogicpti fallout from sbus removal
-	Work around ld bug in older binutils (powerpc patch)
-	ftrace: rename FTRACE to FUNCTION_TRACER more successfully. (sh patch)
-	nfsctl: credentials error
-	coda: credentials error
-	cpu_alloc: per_cpu_offset is already defined for !CONFIG_SMP
-	ia64: Fix gru compiler warning
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups, it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 123 trees (counting Linus' and 14 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-2.6.26
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging quilt/m68k
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-CONFLICT (content): Merge conflict in drivers/s390/net/qeth_l2_main.c
-CONFLICT (content): Merge conflict in drivers/s390/net/qeth_l3_main.c
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging quilt/driver-core
-Merging quilt/usb
-Created commit d344f3f: Revert "USB: remove info() macro from usb.h"
-Created commit 1c4a756: Revert "USB: remove warn() macro from usb.h"
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging ftrace/auto-ftrace-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Applying v4l-dvb: fallout from DVB_DYNAMIC_MINORS addition
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Applying fs: xfs needs inode_wait to be exported
-Merging infiniband/for-next
-Merging acpi/test
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging tests/master
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging ocfs2/linux-next
-Merging ext4/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-CONFLICT (content): Merge conflict in drivers/net/wireless/p54/p54common.c
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging semaphore/semaphore
-Merging semaphore-removal/semaphore-removal
-CONFLICT (content): Merge conflict in net/9p/trans_virtio.c
-Merging bkl-removal/bkl-removal
-Merging trivial/next
-CONFLICT (content): Merge conflict in Documentation/edac.txt
-CONFLICT (content): Merge conflict in include/linux/securebits.h
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in drivers/scsi/qlogicpti.c
-CONFLICT (content): Merge conflict in firmware/WHENCE
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-CONFLICT (content): Merge conflict in mm/Makefile
-Merging uclinux/for-next
-Merging md/for-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in arch/x86/mm/Makefile
-CONFLICT (content): Merge conflict in mm/slab.c
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging generic-ipi/auto-generic-ipi-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-CONFLICT (delete/modify): drivers/net/wan/syncppp.c deleted in hdlc/hdlc-ne=
-xt and modified in HEAD. Version HEAD of drivers/net/wan/syncppp.c left in =
-tree.
-Merging drm/drm-next
-Merging voltage/for-linus
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging creds/creds-v4
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_cred.h
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_globals.h
-CONFLICT (content): Merge conflict in fs/xfs/xfs_vnodeops.h
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging proc/proc
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cpu_alloc/cpu_alloc
-CONFLICT (content): Merge conflict in kernel/lockdep.c
-CONFLICT (content): Merge conflict in kernel/module.c
-Merging userns/next
-Merging scsi-post-merge/master
-Applying sparc: qlogicpti fallout from sbus removal
-Applying Work around ld bug in older binutils
-Applying ftrace: rename FTRACE to FUNCTION_TRACER more successfully.
-Applying nfsctl: credentials error
-Applying coda: credentials error
-Applying cpu_alloc: per_cpu_offset is already defined for !CONFIG_SMP
-Applying ia64: Fix gru compiler warning
-
---Signature=_Thu__30_Oct_2008_17_30_30_+1100_r0hVLBlTCZJbEF2T
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkJVIYACgkQjjKRsyhoI8ypHwCgnfhEkjybS0bOSbWrwrZnD9MW
-orsAnRIH//YZ5P/7RLTRT/shoYr99TEs
-=uo0G
------END PGP SIGNATURE-----
-
---Signature=_Thu__30_Oct_2008_17_30_30_+1100_r0hVLBlTCZJbEF2T--
