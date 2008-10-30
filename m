@@ -1,190 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757597AbYJ3Squ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758042AbYJ3SsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757597AbYJ3Squ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 14:46:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbYJ3Sql
+	id S1758042AbYJ3SsP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 14:48:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbYJ3Sr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 14:46:41 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36142 "EHLO mx2.mail.elte.hu"
+	Thu, 30 Oct 2008 14:47:59 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38137 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753596AbYJ3Sqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 14:46:40 -0400
-Date: Thu, 30 Oct 2008 19:45:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] ring-buffer: add paranoid checks for loops
-Message-ID: <20081030184552.GC17822@elte.hu>
-References: <alpine.DEB.1.10.0810291439460.13214@gandalf.stny.rr.com>
+	id S1752811AbYJ3Sr6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 14:47:58 -0400
+Message-ID: <490A012B.90305@redhat.com>
+Date: Thu, 30 Oct 2008 14:47:07 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810291439460.13214@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: devzero@web.de
+CC: linux-kernel@vger.kernel.org
+Subject: Re: how much license information inside the kernel ?
+References: <488434293@web.de>
+In-Reply-To: <488434293@web.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> [ for 2.6.28 ]
+devzero@web.de wrote:
+> hi,
 > 
-> While writing a new tracer, I had a bug where I caused the 
-> ring-buffer to recurse in a bad way. The bug was with the tracer I 
-> was writing and not the ring-buffer itself. But it took a long time 
-> to find the problem.
+> i found that there is a LOT of repeating licensing information in the
+> kernel.
 > 
-> This patch adds paranoid checks into the ring-buffer infrastructure
-> that will catch bugs of this nature.
+> for me,
 > 
-> Note: I put the bug back in the tracer and this patch showed the error
->       nicely and prevented the lockup.
+> find ./linux-2.6.27 -type f -exec cat {} \; |egrep "free software|GNU
+> General Public License|Free Software Foundation|version 2 of the
+> License|distributed in the hope|WITHOUT ANY WARRANTY|FITNESS FOR A
+> PARTICULAR"
 > 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  kernel/trace/ring_buffer.c |   45 +++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 45 insertions(+)
+> gives a file sized ~3.5M
 > 
-> Index: linux-tip.git/kernel/trace/ring_buffer.c
-> ===================================================================
-> --- linux-tip.git.orig/kernel/trace/ring_buffer.c	2008-10-29 12:38:54.000000000 -0400
-> +++ linux-tip.git/kernel/trace/ring_buffer.c	2008-10-29 16:11:00.000000000 -0400
-> @@ -1022,8 +1022,20 @@ rb_reserve_next_event(struct ring_buffer
->  	struct ring_buffer_event *event;
->  	u64 ts, delta;
->  	int commit = 0;
-> +	int paranoid = 0;
->  
->   again:
-> +	/*
-> +	 * If we loop here 1,000 times, that means we are either
-> +	 * in an interrupt storm, or we have something buggy.
-> +	 * Bail!
-> +	 */
-> +	if (unlikely(paranoid > 1000)) {
-> +		RB_WARN_ON(cpu_buffer, 1);
-> +		return NULL;
-> +	}
-> +	paranoid++;
-> +
->  	ts = ring_buffer_time_stamp(cpu_buffer->cpu);
->  
->  	/*
-> @@ -1532,10 +1544,21 @@ rb_get_reader_page(struct ring_buffer_pe
->  {
->  	struct buffer_page *reader = NULL;
->  	unsigned long flags;
-> +	int paranoid = 0;
->  
->  	spin_lock_irqsave(&cpu_buffer->lock, flags);
->  
->   again:
-> +	/*
-> +	 * We can call here a couple of times, lets only allow 5.
-> +	 */
-> +	if (unlikely(paranoid > 4)) {
-> +		RB_WARN_ON(cpu_buffer, 1);
-> +		reader = NULL;
-> +		goto out;
-> +	}
-> +	paranoid++;
-> +
->  	reader = cpu_buffer->reader_page;
->  
->  	/* If there's more to read, return this page */
-> @@ -1665,6 +1688,7 @@ ring_buffer_peek(struct ring_buffer *buf
->  	struct ring_buffer_per_cpu *cpu_buffer;
->  	struct ring_buffer_event *event;
->  	struct buffer_page *reader;
-> +	int paranoid = 0;
->  
->  	if (!cpu_isset(cpu, buffer->cpumask))
->  		return NULL;
-> @@ -1672,6 +1696,16 @@ ring_buffer_peek(struct ring_buffer *buf
->  	cpu_buffer = buffer->buffers[cpu];
->  
->   again:
-> +	/*
-> +	 * This could happen a few times, but if more than
-> +	 * 10 times, then something is probably wrong.
-> +	 */
-> +	if (unlikely(paranoid > 10)) {
-> +		RB_WARN_ON(cpu_buffer, 1);
-> +		return NULL;
-> +	}
-> +	paranoid++;
-> +
->  	reader = rb_get_reader_page(cpu_buffer);
->  	if (!reader)
->  		return NULL;
-> @@ -1722,6 +1756,7 @@ ring_buffer_iter_peek(struct ring_buffer
->  	struct ring_buffer *buffer;
->  	struct ring_buffer_per_cpu *cpu_buffer;
->  	struct ring_buffer_event *event;
-> +	int paranoid = 0;
->  
->  	if (ring_buffer_iter_empty(iter))
->  		return NULL;
-> @@ -1730,6 +1765,16 @@ ring_buffer_iter_peek(struct ring_buffer
->  	buffer = cpu_buffer->buffer;
->  
->   again:
-> +	/*
-> +	 * This could happen a few times, but if more than
-> +	 * 10 times, then something is probably wrong.
-> +	 */
-> +	if (unlikely(paranoid > 10)) {
-> +		RB_WARN_ON(cpu_buffer, 1);
-> +		return NULL;
-> +	}
-> +	paranoid++;
-> +
+> That`s more than 1% of the kernel source.
+> 
+> What about the idea to shorten that licening information to a minimum
+> , e.g. by shrinking that to a single, catchy line ,  linking to a
+> special licensing file like COPYING or linking to the FSF website ?
+> 
+> please no flames, i know this idea could be pure dynamite for some
+> people - but i thought 3.5M is worth this mail.
+> 
+> regards roland
+> 
+> ps: i`m not sure if that has been discussed already, but i didn`t
+> find that in the archive. please ignore, otherwise.
 
-hm, all those magic constants look a bit like voodoo and make the 
-patch ugly, and people who read this will be confused about the 
-purpose for sure.
+It may be 3.5 MB uncompressed, but disk space is cheap, and repeated 
+strings compress extremely well to save bandwidth.  If you work with the 
+kernel source enough for this to be an issue, you should use git. 
+You'll download these license headers once, and never again unless the 
+copyright info gets changed by a patch.  From a technical perspective, 
+the problem isn't nearly as bad as it looks, and it keeps the lawyers 
+happy, so it's really not worth messing with.  There's plenty of 
+lower-hanging fruit in unifying drivers for similar hardware, unifying 
+32-bit and 64-bit architectures, and other things that make the code 
+more maintainable.
 
-But the checks are still worth having in practice. So could you please 
-improve the comments, to come up with some tangible calculation that 
-leads to these constants?
-
-For example the '1000' constant, how did you come to that? Could you 
-estimate what type of interrupt storm is needed to trigger it falsely? 
-So instead of this comment:
-
-> +	 * If we loop here 1,000 times, that means we are either
-> +	 * in an interrupt storm, or we have something buggy.
-> +	 * Bail!
-
-something like this might look more acceptable:
-
-> +	 * If we loop here 1,000 times, that means we are either
-> +	 * in an interrupt storm that preempted the same trace-entry
-> +	 * attempt 1000 times in a row, or we have a bug in the tracer.
-> +	 * Bail!
-
-i.e. please exaplain every single magic number there so that it can be 
-followed how you got to that number, and what precise effects that 
-number has.
-
-In the cases where you just guessed a number based on experiments, 
-please think it through and insert an analysis about the effects of 
-that number.
-
-Would this be doable?
-
-	Ingo
+-- Chris
