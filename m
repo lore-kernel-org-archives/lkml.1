@@ -1,104 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbYJ3HbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbYJ3Hcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754187AbYJ3HbX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 03:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbYJ3HbJ
+	id S1754530AbYJ3Hcx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 03:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbYJ3Hcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 03:31:09 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:55839 "EHLO pasmtpB.tele.dk"
+	Thu, 30 Oct 2008 03:32:46 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:56935 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752041AbYJ3HbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 03:31:08 -0400
-Date: Thu, 30 Oct 2008 08:29:56 +0100
+	id S1752768AbYJ3Hcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 03:32:45 -0400
+Date: Thu, 30 Oct 2008 08:31:34 +0100
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH] block: add timer on blkdev_dequeue_request() not elv_next_request()
-Message-ID: <20081030072956.GL31673@kernel.dk>
-References: <490927CD.2010205@kernel.org>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][v3] blktrace: conversion to tracepoints
+Message-ID: <20081030073134.GM31673@kernel.dk>
+References: <20081029120556.GD28123@ghostprotocols.net> <20081029131855.GC31673@kernel.dk> <20081029194323.GA25056@ghostprotocols.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <490927CD.2010205@kernel.org>
+In-Reply-To: <20081029194323.GA25056@ghostprotocols.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30 2008, Tejun Heo wrote:
-> Block queue supports two usage models - one where block driver peeks
-> at the front of queue using elv_next_request(), processes it and
-> finishes it and the other where block driver peeks at the front of
-> queue, dequeue the request using blkdev_dequeue_request() and finishes
-> it.  The latter is more flexible as it allows the driver to process
-> multiple commands concurrently.
+On Wed, Oct 29 2008, Arnaldo Carvalho de Melo wrote:
+> Em Wed, Oct 29, 2008 at 02:18:55PM +0100, Jens Axboe escreveu:
+> > > 	Feel free to point any disgusting aspect, perhaps there is at
+> > > least one to warn me about fixing 8-)
+> > 
+> > You my as well pass the members separately now that it's a specific call
+> > anyway, to avoid doing the calculation when tracing is disabled.
+> > 
+> > Patch looks straight forward. Perhaps it would be cleaner to use an
+> > atomic type for the reference?
 > 
-> These two inconsistent usage models affect the block layer
-> implementation confusing.  For some, elv_next_request() is considered
-> the issue point while others consider blkdev_dequeue_request() the
-> issue point.
+> Done and made the old pdu_int + NULL bio (trace_block_unplug_{io,timer})
+> functions to receive just the request_queue.
 > 
-> Till now the inconsistency mostly affect only accounting, so it didn't
-> really break anything seriously; however, with block layer timeout,
-> this inconsistency hits hard.  Block layer considers
-> elv_next_request() the issue point and adds timer but SCSI layer
-> thinks it was just peeking and when the request can't process the
-> command right away, it's just left there without further processing.
-> This makes the request dangling on the timer list and, when the timer
-> goes off, the request which the SCSI layer and below think is still on
-> the block queue ends up in the EH queue, causing various problems - EH
-> hang (failed count goes over busy count and EH never wakes up),
-> WARN_ON() and oopses as low level driver trying to handle the unknown
-> command, etc. depending on the timing.
+> Found and fixed a bug in the process:
 > 
-> As SCSI midlayer is the only user of block layer timer at the moment,
-> moving blk_add_timer() to elv_dequeue_request() fixes the problem;
-> however, this two usage models definitely need to be cleaned up in the
-> future.
+> In v2 we had:
 > 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> ---
->  block/elevator.c |   12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
+> +       unregister_trace_block_rq_insert(blk_add_trace_rq_insert);
+> +       unregister_trace_block_rq_insert(blk_add_trace_rq_abort);
 > 
-> Index: work/block/elevator.c
-> ===================================================================
-> --- work.orig/block/elevator.c
-> +++ work/block/elevator.c
-> @@ -773,12 +773,6 @@ struct request *elv_next_request(struct
->  			 */
->  			rq->cmd_flags |= REQ_STARTED;
->  			blk_add_trace_rq(q, rq, BLK_TA_ISSUE);
-> -
-> -			/*
-> -			 * We are now handing the request to the hardware,
-> -			 * add the timeout handler
-> -			 */
-> -			blk_add_timer(rq);
->  		}
->  
->  		if (!q->boundary_rq || q->boundary_rq == rq) {
-> @@ -850,6 +844,12 @@ void elv_dequeue_request(struct request_
->  	 */
->  	if (blk_account_rq(rq))
->  		q->in_flight++;
-> +
-> +	/*
-> +	 * We are now handing the request to the hardware, add the
-> +	 * timeout handler.
-> +	 */
-> +	blk_add_timer(rq);
->  }
->  EXPORT_SYMBOL(elv_dequeue_request);
+> Where it should have been:
+> 
+> +       unregister_trace_block_rq_insert(blk_add_trace_rq_insert);
+> +       unregister_trace_block_rq_abort(blk_add_trace_rq_abort);
+> 
+> c'n'p roblem!
+> 
+> Also removed the leftover tracepoint_synchronize_unregister macro, it
+> was already merged righfully as an inline function.
+> 
+> Everything should be rock solid now 8)
 
-That's actually a pretty dumb error, I'm surprised it hasn't reared its
-ugly face in more ways. Presumably because the timeout is usually so
-long, that we'll get to actually issuing and completing it within the
-normal timeout anyway.
-
-Thanks, applied!
+I'll apply this for 2.6.29. I'm assuming you have tested this as well?
 
 -- 
 Jens Axboe
