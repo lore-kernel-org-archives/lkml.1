@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758712AbYJ3VXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758516AbYJ3VYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758712AbYJ3VXW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 17:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbYJ3VXM
+	id S1758516AbYJ3VYU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 17:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbYJ3VYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 17:23:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50695 "EHLO mx3.mail.elte.hu"
+	Thu, 30 Oct 2008 17:24:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50829 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753533AbYJ3VXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 17:23:10 -0400
-Date: Thu, 30 Oct 2008 22:22:59 +0100
+	id S1752376AbYJ3VYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 17:24:08 -0400
+Date: Thu, 30 Oct 2008 22:23:59 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Glauber Costa <gcosta@redhat.com>
-Subject: Re: [PATCH] fix boot breakage caused by x86: boot secondary cpus
-	through initial_code
-Message-ID: <20081030212259.GB30303@elte.hu>
-References: <1225400918.19324.23.camel@localhost.localdomain>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: fix missing cpu_index initialisation
+Message-ID: <20081030212359.GC30303@elte.hu>
+References: <1225401217.19324.28.camel@localhost.localdomain> <86802c440810301421t71e88ffm112a7bd361e7920a@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1225400918.19324.23.camel@localhost.localdomain>
+In-Reply-To: <86802c440810301421t71e88ffm112a7bd361e7920a@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,30 +38,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-> >From 01d1cd30acbcdab745ebc90c73d5fa4a27ce1d5c Mon Sep 17 00:00:00 2001
-> From: James Bottomley <James.Bottomley@HansenPartnership.com>
-> Date: Wed, 29 Oct 2008 14:50:04 -0500
-> Subject: [VOYAGER] make non boot CPUs work again
-> 
-> This commit:
-> 
-> commit 3e9704739daf46a8ba6593d749c67b5f7cd633d2
-> Author: Glauber Costa <gcosta@redhat.com>
-> Date:   Wed May 28 13:01:54 2008 -0300
-> 
->     x86: boot secondary cpus through initial_code
-> 
-> removed the use of initialize_secondary.  However, it didn't update
-> voyager, so the secondary cpus no longer boot.  Fix this by adding the
-> initial_code switch to voyager as well.
-> 
-> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-> ---
->  arch/x86/mach-voyager/voyager_smp.c |    5 ++++-
->  1 files changed, 4 insertions(+), 1 deletions(-)
+>   CC      arch/x86/kernel/cpu/common.o
+> arch/x86/kernel/cpu/common.c: In function 'early_identify_cpu':
+> arch/x86/kernel/cpu/common.c:553: error: 'boot_cpu_id' undeclared
+> (first use in this function)
+> arch/x86/kernel/cpu/common.c:553: error: (Each undeclared identifier
+> is reported only once
+> arch/x86/kernel/cpu/common.c:553: error: for each function it appears in.)
+> make[2]: *** [arch/x86/kernel/cpu/common.o] Error 1
+> make[1]: *** [arch/x86/kernel/cpu] Error 2
+> make: *** [arch/x86/kernel] Error 2
 
-applied to tip/x86/urgent, thanks James!
+depends on this patch perhaps:
+
+Subject: [PATCH] fix compile breakage caused by	dc1e35c6e95e8923cf1d3510438b63c600fee1e2
+
+?
 
 	Ingo
