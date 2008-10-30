@@ -1,62 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755121AbYJ3Wnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbYJ3Wqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755121AbYJ3Wnw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 18:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbYJ3Wnp
+	id S1755245AbYJ3Wqj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 18:46:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbYJ3Wqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 18:43:45 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:41801 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751421AbYJ3Wno (ORCPT
+	Thu, 30 Oct 2008 18:46:30 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43032 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753171AbYJ3Wq3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 18:43:44 -0400
-Date: Thu, 30 Oct 2008 23:43:31 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@strlen.de>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       randy.dunlap@oracle.com
-Subject: Re: [PATCH 1/8] Add scripts/get_maintainer.pl
-Message-ID: <20081030224331.GA30814@strlen.de>
-References: <1224803366-6478-1-git-send-email-joe@perches.com> <ab48bcafb1ceab1c0d53e93781605603cfabf6dc.1224802312.git.joe@perches.com> <20081027155254.a710c779.akpm@linux-foundation.org> <20081030104136.GB32389@atrey.karlin.mff.cuni.cz>
+	Thu, 30 Oct 2008 18:46:29 -0400
+Date: Thu, 30 Oct 2008 18:46:25 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: xfs@oss.sgi.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: do_sync() and XFSQA test 182 failures....
+Message-ID: <20081030224625.GA18690@infradead.org>
+References: <20081030085020.GP17077@disturbed>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081030104136.GB32389@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20081030085020.GP17077@disturbed>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, Oct 30, 2008 at 07:50:20PM +1100, Dave Chinner wrote:
+> [*] Starting pdflush to sync data in the background when we are
+>     about to start flushing ourselves is self-defeating. instead of
+>     having a single thread doing optimal writeout patterns, we now
+>     have two threads trying to sync the same filesystems and
+>     competing with each other to write out dirty inodes.  This
+>     actually causes bugs in sync because pdflush is doing async
+>     flushes. Hence if pdflush races and wins during the sync flush
+>     part of the sync process, sync_inodes(1) will return before all
+>     the data/metadata is on disk because it can't be found to be
+>     waited on.
 
-> > Also, this:
-> > 
-> >  MAINTAINERS | 1096 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
-> >  1 file changed, 1094 insertions(+), 2 deletions(-)
-> > 
-> > isn't practical for me or Stephen to carry, I'm afraid.  That's
-> > probably the most-patched file in the kernel.  This will need to be a
-> > direct you->Linus thing.
-> > 
-> > I think the feature is sorely needed and will prove useful.
-> 
-> Would you be willing to merge the scripts etc, leaving only
-> MAINTAINERS file for direct merge with Linus, preferably at the -rc5
-> or something?
-I still think that the source files should (additionally) be parsed
-somehow, too.  Something like
+Note that this is an XFS special.  Every other filesystem (at least the
+major ones) rely on the VFS to write out data.
 
-	/*
-	 * TOPIC
-	 * P: A. U. Thor <author@examp.l.e>
-	 * M: lkml@kernel.org
-	 */
+> Now the sync is _supposedly_ complete. But we still have a dirty
+> log and superblock thanks to delayed allocation that may have
+> occurred after the sync_supers() call. Hence we can immediately
+> see that we cannot *ever* do a proper sync of an XFS filesystem
+> in Linux without modifying do_sync() to do more callouts.
+>
+> Worse, XFS can also still have *dirty inodes* because sync_inodes(1)
+> will remove inodes from the dirty list in the async pass, but they
+> can get dirtied a short time later (if they had dirty data) when the
+> data I/O completes. Hence if the second sync pass completes before
+> the inode is dirtied again we'll miss flushing it. This will mean we
+> don't write inode size updates during sync. This is the same race
+> that pdflush running in the background can trigger.
 
-at the beginning of a file.  The advantage is that MAINTAINERS doesn't
-need to have an entry for each driver and so the F: field cannot become
-inconsistent and the author doesn't need to bother getting the entry
-into MAINTAINERS---just the driver file is enough.
- 
-Best regards
-Uwe
+This is a common problem that would hit any filesystem trying to have
+some sort of ordered data or journaled data mode.
+
+> However, I have a problem - I'm an expert in XFS, not the other tens
+> of Linux filesystems so I can't begin to guess what the impact of
+> changing do_sync() would be on those many filesystems. How many
+> filesystems would such a change break? Indeed - how many are broken
+> right now by having dirty inodes and superblocks slip through
+> sync(1)?
+
+I would guess more are broken now then a change in order would break.
+Then again purely a change in order would still leave this code
+fragile as hell.
+
+> What are the alternatives? do_sync() operates above any particular
+> filesystem, so it's hard to provide a filesystem specific ->do_sync
+> method to avoid changing sync order for all filesystems. Do we
+> change do_sync() to completely sync a superblock at a time instead
+> of doing each operation across all superblocks before moving onto
+> the next operation? Is there any particular reason (e.g. performance, locking) for the current
+> method that would prevent changing to completely-sync-a-superblock
+> iteration algorithm so we can provide a custom ->do_sync method?
+
+Locking can't be the reason as we should never hold locks while
+returning from one of the VFS operations.  I think it's performance
+or rather alledged performance as I think it doesn't really matter.
+If it matters however there is an easy method to make it perform just
+as well with a proper callout - just spawn a thread for every filesystem
+to perform it in parallel.
+
+> Are there any other ways that we can get a custom ->do_sync
+> method for XFS? I'd prefer a custom method so we don't have to
+> revalidate every linux filesystem, especially as XFS already has
+> everything it needs to provide it's own sync method (used for
+> freezing) and a test suite to validate it is working correctly.....
+
+I think having a method for this would be useful.  And given that
+a proper sync should be exactly the same as a filesysytem freeze
+we should maybe use one method for both of those and use the chance
+to give filesystem better control over the freeze process?
+
