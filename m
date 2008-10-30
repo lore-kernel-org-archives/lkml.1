@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbYJ3UTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071AbYJ3UUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756030AbYJ3UTS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 16:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYJ3UTA
+	id S1755071AbYJ3UUx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 16:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbYJ3UUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 16:19:00 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:33405 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752520AbYJ3UTA (ORCPT
+	Thu, 30 Oct 2008 16:20:45 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50576 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752907AbYJ3UUo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 16:19:00 -0400
-Date: Thu, 30 Oct 2008 21:20:06 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH][RFC] x86: add non x86 build configuration
-Message-ID: <20081030202006.GA1255@uranus.ravnborg.org>
-References: <200810281802.m9SI2fYX030138@hera.kernel.org> <20081029091857.GA4414@osiris.boeblingen.de.ibm.com> <alpine.DEB.1.10.0810292139170.6145@gandalf.stny.rr.com> <20081030195107.GK27407@elte.hu>
+	Thu, 30 Oct 2008 16:20:44 -0400
+Date: Thu, 30 Oct 2008 13:21:03 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ravikiran G Thirumalai <kiran@scalex86.org>
+Cc: Ingo Molnar <mingo@elte.hu>, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, tim@scalemp.com, shai@scalex86.org
+Subject: Re: [patch] x86: Fix /dev/mem mmap breakage when PAT is disabled
+Message-ID: <20081030132103.2daff1e1@infradead.org>
+In-Reply-To: <20081030020203.GA12423@localdomain>
+References: <20081030020203.GA12423@localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081030195107.GK27407@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 29 Oct 2008 19:02:03 -0700
+Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+
+> Fix mmap to /dev/mem when CONFIG_X86_PAT is off and
+> CONFIG_STRICT_DEVMEM is off
 > 
-> So please name it something like CONFIG_STANDARD_X86_FEATURES, and 
-> also make it depend on CONFIG_EMBEDDED (only allow it to be turned off 
-> when EMBEDDED is enabled).
+> mmap to /dev/mem on kernel memory has been failing since the
+> introduction of PAT (CONFIG_STRICT_DEVMEM=n case).   Seems like
+> the check to avoid cache aliasing with PAT is kicking in even
+> when PAT is disabled. The bug seems to have crept in 2.6.26.
+> 
+> This patch makes sure that mmap to regular kernel memory
+> succeeds if CONFIG_STRICT_DEVMEM=n and
+> PAT is disabled.  The checks to avoid cache aliasing
+> still happens if PAT is enabled.
 
-Any chance to introduce a CONFIG_EXPERT option?
+well... technically the aliases are bad without PAT as well...
 
-CONFIG_EMBEDDED is supposed to be those features that may decrease performance
-or functionality but lower the footprint.
-And not all the crap it covers today.
 
-	Sam
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
