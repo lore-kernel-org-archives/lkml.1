@@ -1,134 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbYJ3SBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbYJ3SCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757194AbYJ3SBr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 14:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbYJ3SBg
+	id S1758197AbYJ3SCB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 14:02:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbYJ3SBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 14:01:36 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:41451 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753840AbYJ3SBf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 14:01:35 -0400
-Date: Thu, 30 Oct 2008 19:01:33 +0100
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Daniel Lezcano <dlezcano@fr.ibm.com>,
-       containers@lists.linux-foundation.org,
-       Cedric Le Goater <clg@fr.ibm.com>, Andrey Mirkin <major@openvz.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Devel] Re: [PATCH 0/9] OpenVZ kernel based
-	checkpointing/restart
-Message-ID: <20081030180133.GN15171@hawkmoon.kerlabs.com>
-Reply-To: Louis.Rilling@kerlabs.com
-References: <1220439476-16465-1-git-send-email-major@openvz.org> <200810271707.13580.major@openvz.org> <4905D2AD.1070309@cs.columbia.edu> <200810300902.47067.major@openvz.org> <20081030114747.GL15171@hawkmoon.kerlabs.com> <1225386524.12673.284.camel@nimitz>
+	Thu, 30 Oct 2008 14:01:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42831 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755482AbYJ3SBi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 14:01:38 -0400
+Date: Thu, 30 Oct 2008 14:01:34 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: "Steve French" <smfrench@gmail.com>
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/4] cifs: fix oopses and mem corruption with concurrent
+ mount/umount (try #4)
+Message-ID: <20081030140134.7adcef56@barsoom.rdu.redhat.com>
+In-Reply-To: <524f69650810301051j7400a3f6m1840d06924ab8e89@mail.gmail.com>
+References: <1225379793-23283-1-git-send-email-jlayton@redhat.com>
+	<524f69650810301025t3f3b7fb6t10d96b6567a67715@mail.gmail.com>
+	<20081030134235.6d1276ae@barsoom.rdu.redhat.com>
+	<524f69650810301051j7400a3f6m1840d06924ab8e89@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-8436-1225389547-0001-2"
-Content-Disposition: inline
-In-Reply-To: <1225386524.12673.284.camel@nimitz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Thu, 30 Oct 2008 12:51:03 -0500
+"Steve French" <smfrench@gmail.com> wrote:
 
---=_bohort-8436-1225389547-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Thu, Oct 30, 2008 at 12:42 PM, Jeff Layton <jlayton@redhat.com> wrote:
+> > I think we want to resist having locks that protect too many things.
+> > With that, we end up with the locks held over too much code. Not only is
+> > that generally worse for performance, but it can paper over race
+> > conditions.
+> 
+> I agree that it is trivially worse for performance to have a single
+> spinlock protecting the three interrelated structures (cifs tcp, smb
+> and tree connection structs), but since they point to one another and
+> frequently have operations that require us to use all three lists -
+> to do things like iterate through all tree connections within a
+> particular smb session, or iterate across all cifs smb sessions within
+> each cifs tcp session - it makes code more complicated to have to grab
+> and unlock multiple spinlocks in the correct order every time across
+> all exit paths etc.
+> 
 
-On Thu, Oct 30, 2008 at 10:08:44AM -0700, Dave Hansen wrote:
-> On Thu, 2008-10-30 at 12:47 +0100, Louis Rilling wrote:
-> > 1) this prevents userspace from doing weird things, like changing the t=
-ask tree
-> > and let the kernel detect it and deal with the mess this creates (think=
- about
-> > two threads being restarted in separate processes that do not even shar=
-e their
-> > parents). But one can argue that userspace can change the checkpoint im=
-age as
-> > well, so that the kernel must check for such weird things anyway.
->=20
-> To me, this is one of the strongest arguments out there for doing
-> restart as much as possible with existing user<->kernel APIs.  Having
-> the kernel detect and clean up userspace's messes is not going to work.
-> We might as well just do things in the kernel rather than do that.
->=20
-> What we *should* do is leverage all of the existing APIs that we already
-> have instead of creating completely new code paths into which my butter
-> fingers can introduce new kernel bugs.
->=20
-> > 2) restart will be more efficient with respect to shared objects.
->=20
-> Can you quantify this?  Which objects?  How much more efficient?
+A fair point, but most of that is in rarely-traveled procfile code. One
+thing we could consider is some helper macros or functions. For
+instance, a for_all_tcons() function or something that would take a
+pointer to a function that takes a tcon arg. It would
+basically just walk over all the tcons and handle the locking
+correctly and call the function for each.
 
-Quantify? No. I expect that investigating both approaches will show us numb=
-ers.
-Unless Oren already has some?
+In any case, I don't see the benefit of not using fine grained locking
+here. deadlock is a possibility, but I think having well-defined
+locking rules mitigates that danger.
 
-Which objects? I think that two kinds will especially matter: objects usual=
-ly
-shared only inside a thread group (mm_struct, fs_struct, files_struct,
-signal_struct and sighand_struct), and individual file descriptors. The poi=
-nt is
-to avoid creating new structures before destroying them because the restart=
-ed
-task shares them with a previously restarted one.
-
-Concerning individual file descriptors, limiting the number of open files b=
-efore
-calling sys_restart() may avoid these useless creations/destructions (actua=
-lly
-the "useless" work mainly consists in managing ref counts since file descri=
-ptors
-are shared after fork()).
-
-Concerning thread-shared structures, it is probably easy for userspace to g=
-uess
-which clone flags to use when restarting threads, but
-1) kernel-space will have to check that the sharing is correct anyway, and
-2) kernel-space will have to fix it anyway if structures are not shared in =
-an
-obvious manner between tasks (think about A creating B with shared files_st=
-ruct,
-B creating C with shared files_struct, B unsharing its files_struct, and th=
-en
-checkpoint).
-
-So, with a userspace implementation, useless structures will be created any=
-way,
-and optimizing the common cases (regular threads) just duplicates kernel's =
-work
-of checking which shared structure to use for each task to restart.
-With a kernel-space implementation, all useless creations can be avoided, a=
-nd no
-duplicate work is needed.
-
-That said, numbers may show us that useless creations are not so
-time-consuming, but we won't know before seeing them...
-
-Louis
-
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
-
---=_bohort-8436-1225389547-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFJCfZ9VKcRuvQ9Q1QRAgnGAJ4y/I50OqavdrDFvS5Vg4Ru0/ppIQCfZCPt
-N1UQfUCQboa1FxxqqiGxEMQ=
-=TvuX
------END PGP SIGNATURE-----
-
---=_bohort-8436-1225389547-0001-2--
+-- 
+Jeff Layton <jlayton@redhat.com>
