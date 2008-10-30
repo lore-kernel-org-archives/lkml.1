@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756303AbYJ3VFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757725AbYJ3VFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756303AbYJ3VFX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 17:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbYJ3VFJ
+	id S1757725AbYJ3VFw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 17:05:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbYJ3VFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 17:05:09 -0400
-Received: from rn-out-0910.google.com ([64.233.170.184]:42421 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753303AbYJ3VFH (ORCPT
+	Thu, 30 Oct 2008 17:05:42 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:55842 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753774AbYJ3VFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 17:05:07 -0400
-Date: Thu, 30 Oct 2008 17:05:01 -0400
-From: "Michael B. Trausch" <mike@trausch.us>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.28-rc2: System doesn't restart
-Message-ID: <20081030170501.2858257c@zest>
-In-Reply-To: <fa.1oHalgNC16O+xOrATo6drDAg6ls@ifi.uio.no>
-References: <fa.1oHalgNC16O+xOrATo6drDAg6ls@ifi.uio.no>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
-X-Face: V.VYf~Py*A]A=Ig&q'ryc:4rZ;J![}&08<H1=7E_.O\dF8Pbw,VE~_9QSzcs]DSM%TGA4j\
- .0/Sz8G(4s<D2VQ/uwq$dEL]LbY/y5TYyD$/6It5Yv#c=zo>wpW.<5dFb>I:aB^uO~EL+FT]m5[I4H
- s,s=
-X-Operating-System: Ubuntu 8.10 (Intrepid Ibex)
+	Thu, 30 Oct 2008 17:05:41 -0400
+Subject: [PATCH] x86: use CONFIG_X86_SMP instead of CONFIG_SMP
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 30 Oct 2008 16:05:39 -0500
+Message-Id: <1225400739.19324.18.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/LU2ovhopSshOkFTjbldLNzB";
- protocol="application/pgp-signature"; micalg=PGP-RIPEMD160
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/LU2ovhopSshOkFTjbldLNzB
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+>From 6e5fbb4691fd68f5b03608c5d8d96e4f189e623a Mon Sep 17 00:00:00 2001
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Date: Wed, 29 Oct 2008 13:11:48 -0500
+Subject: [VOYAGER] x86: use CONFIG_X86_SMP instead of CONFIG_SMP
 
-On Thu, 30 Oct 2008 20:35:43 UTC
-Thomas Meyer <thomas@m3y3r.de> wrote:
+CONFIG_SMP is used for features which work on *all* x86 boxes.
+CONFIG_X86_SMP is used for standard PC like x86 boxes (for things like
+multi core and apics)
 
-> Hi,
->=20
-> My system doesn't restart anymore with 2.6.28-rc2.
->=20
-> Most times I get is:
-> Restarting system
->=20
-> Then the system seems to wait forever...
->=20
-> But sometimes I get:
-> Restarting system
-> machine restart
-> ACPI MEMORY or I/O RESET_REG
->=20
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ arch/x86/kernel/cpu/addon_cpuid_features.c |    2 +-
+ arch/x86/kernel/tsc.c                      |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-A silly question for you; does your system reboot when using a stock
-Ubuntu kernel from the Ubuntu Live CD?
+diff --git a/arch/x86/kernel/cpu/addon_cpuid_features.c b/arch/x86/kernel/cpu/addon_cpuid_features.c
+index 0d9c993..ef8f831 100644
+--- a/arch/x86/kernel/cpu/addon_cpuid_features.c
++++ b/arch/x86/kernel/cpu/addon_cpuid_features.c
+@@ -69,7 +69,7 @@ void __cpuinit init_scattered_cpuid_features(struct cpuinfo_x86 *c)
+  */
+ void __cpuinit detect_extended_topology(struct cpuinfo_x86 *c)
+ {
+-#ifdef CONFIG_SMP
++#ifdef CONFIG_X86_SMP
+ 	unsigned int eax, ebx, ecx, edx, sub_index;
+ 	unsigned int ht_mask_width, core_plus_mask_width;
+ 	unsigned int core_select_mask, core_level_siblings;
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 161bb85..62348e4 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -759,7 +759,7 @@ __cpuinit int unsynchronized_tsc(void)
+ 	if (!cpu_has_tsc || tsc_unstable)
+ 		return 1;
+ 
+-#ifdef CONFIG_SMP
++#ifdef CONFIG_X86_SMP
+ 	if (apic_is_clustered_box())
+ 		return 1;
+ #endif
+-- 
+1.5.6.5
 
-I ask this because I have this issue with my system and 2.6.28-rc2,
-though Ubuntu has some patch or another that I haven't yet isolated
-that makes my system reboot properly.  Using 2.6.28-rc2, I just see the
-kernel message "[xxxxxx.xxxxxx] Restaring system", and have to use my
-power button or reset button, for the moment.
 
-It looks like your kernel is a 32-bit x86 build; I am having an issue
-on x86-64 (specifically, an AMD64 system).
 
-	--- Mike
-
---=20
-My sigfile ran away and is on hiatus.
-http://www.trausch.us/
-
---Sig_/LU2ovhopSshOkFTjbldLNzB
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEAREDAAYFAkkKIX4ACgkQ0kE/IBnFmjAXYwCgiAp9XZ3gQdw4LdlSWuVPwr9E
-dSIAniMVtqouLCb82ie+3S3y0WRByvQ6
-=g11Q
------END PGP SIGNATURE-----
-
---Sig_/LU2ovhopSshOkFTjbldLNzB--
