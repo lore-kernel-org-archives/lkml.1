@@ -1,131 +1,1268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752745AbYJ3FQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbYJ3FXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752745AbYJ3FQb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 01:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbYJ3FQU
+	id S1753354AbYJ3FXJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 01:23:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbYJ3FWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 01:16:20 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:39311 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751738AbYJ3FQT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 01:16:19 -0400
-Message-ID: <490942D4.3070504@ce.jp.nec.com>
-Date: Thu, 30 Oct 2008 14:15:00 +0900
-From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-CC: device-mapper development <dm-devel@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
-       linux-kernel@vger.kernel.org, Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Subject: [PATCH] Add gfp_mask to bio_integrity_clone()
-Content-Type: text/plain; charset=ISO-2022-JP
+	Thu, 30 Oct 2008 01:22:55 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:47729 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751371AbYJ3FWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 01:22:53 -0400
+Subject: 2.6.27.2 USB reset/IO Error problem when high load on ICH9 USB
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: LKML Mailinglist <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 30 Oct 2008 06:22:49 +0100
+Message-Id: <1225344169.17253.43.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Martin,
+Hello..
 
-What do you think about adding gfp_mask parameter to bio_integrity_clone()
-like the attached patch?
+I had to write an image to some usb flash drives, more specifically, 4GB
+kingston datatraveler sticks, and i figured, instead of doing just 1 at
+a time, i may aswell do 4, so i plugged in 4, and started 4 dd's of the
+images, to sdc, sdd, sde, sdf. However, i got usb disconnects and IO
+error messages from the kernel, these are at end of message. I had
+previously done ~5 writes of images to 5 other flash disks with no
+problem, but when i tried the next batch, those 4, it gave these errors.
+I killed the dd's, pulled them all out, and put in 1 at a time, and it
+worked perfectly.
 
-Kiyoshi Ueda and I are working on request-based device-mapper (*1)
-and it clones bios like the existing bio-based dm.
-However, since the request cloning may happen in interrupt context,
-GFP_ATOMIC is used in our case (*2).
+unfortunately the first kernel messages have been flooded away. If you
+need .config and/or the boot kernel messages, i can reboot and get it.
 
-(*1) http://lkml.org/lkml/2008/10/3/177
-(*2) http://lkml.org/lkml/2008/10/3/188
+this is on ICH9 ehci, from lspci:
+00:1a.0 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI
+Controller #4 (rev 02)
+00:1a.1 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI
+Controller #5 (rev 02)
+00:1a.2 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI
+Controller #6 (rev 02)
+00:1a.7 USB Controller: Intel Corporation 82801I (ICH9 Family) USB2 EHCI
+Controller #2 (rev 02)
+00:1d.0 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI
+Controller #1 (rev 02)
+00:1d.1 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI
+Controller #2 (rev 02)
+00:1d.2 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI
+Controller #3 (rev 02)
+00:1d.7 USB Controller: Intel Corporation 82801I (ICH9 Family) USB2 EHCI
+Controller #1 (rev 02)
 
-To cope with cloning the integrity payload,
-we want to pass gfp_mask to bio_integrity_clone().
 
-It also seems natural to inherit gfp_mask from bio_clone when
-bio_integrity_clone is called from it.
-Since bio_clone() is the only caller of bio_integrity_clone() in 2.6.28-rc2
-and all in-tree callers of bio_clone() are using GFP_NOIO,
-the patch does nothing other than changing the interface.
+and the messages:
+usb 8-6: new high speed USB device using ehci_hcd and address 17
+usb 8-6: configuration #1 chosen from 1 choice
+scsi24 : SCSI emulation for USB Mass Storage devices
+usb-storage: device found at 17
+usb-storage: waiting for device to settle before scanning
+scsi 24:0:0:0: Direct-Access     Kingston DataTraveler 2.0 PMAP PQ: 0
+ANSI: 0 CCS
+sd 24:0:0:0: [sdc] 7936000 512-byte hardware sectors (4063 MB)
+sd 24:0:0:0: [sdc] Write Protect is off
+sd 24:0:0:0: [sdc] Mode Sense: 23 00 00 00
+sd 24:0:0:0: [sdc] Assuming drive cache: write through
+sd 24:0:0:0: [sdc] 7936000 512-byte hardware sectors (4063 MB)
+sd 24:0:0:0: [sdc] Write Protect is off
+sd 24:0:0:0: [sdc] Mode Sense: 23 00 00 00
+sd 24:0:0:0: [sdc] Assuming drive cache: write through
+ sdc: sdc1
+sd 24:0:0:0: [sdc] Attached SCSI removable disk
+usb-storage: device scan complete
+usb 8-5: new high speed USB device using ehci_hcd and address 18
+usb 8-5: configuration #1 chosen from 1 choice
+scsi25 : SCSI emulation for USB Mass Storage devices
+usb-storage: device found at 18
+usb-storage: waiting for device to settle before scanning
+scsi 25:0:0:0: Direct-Access     Kingston DataTraveler 2.0 PMAP PQ: 0
+ANSI: 0 CCS
+sd 25:0:0:0: [sdd] 7936000 512-byte hardware sectors (4063 MB)
+sd 25:0:0:0: [sdd] Write Protect is off
+sd 25:0:0:0: [sdd] Mode Sense: 23 00 00 00
+sd 25:0:0:0: [sdd] Assuming drive cache: write through
+sd 25:0:0:0: [sdd] 7936000 512-byte hardware sectors (4063 MB)
+sd 25:0:0:0: [sdd] Write Protect is off
+sd 25:0:0:0: [sdd] Mode Sense: 23 00 00 00
+sd 25:0:0:0: [sdd] Assuming drive cache: write through
+ sdd: sdd1
+sd 25:0:0:0: [sdd] Attached SCSI removable disk
+usb-storage: device scan complete
+usb 7-2: new high speed USB device using ehci_hcd and address 6
+usb 7-2: configuration #1 chosen from 1 choice
+scsi26 : SCSI emulation for USB Mass Storage devices
+usb-storage: device found at 6
+usb-storage: waiting for device to settle before scanning
+scsi 26:0:0:0: Direct-Access     Kingston DataTraveler 2.0 PMAP PQ: 0
+ANSI: 0 CCS
+sd 26:0:0:0: [sde] 7936000 512-byte hardware sectors (4063 MB)
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 23 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+sd 26:0:0:0: [sde] 7936000 512-byte hardware sectors (4063 MB)
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 23 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+ sde: sde1
+sd 26:0:0:0: [sde] Attached SCSI removable disk
+usb-storage: device scan complete
+usb 7-1: new high speed USB device using ehci_hcd and address 7
+usb 7-1: configuration #1 chosen from 1 choice
+scsi27 : SCSI emulation for USB Mass Storage devices
+usb-storage: device found at 7
+usb-storage: waiting for device to settle before scanning
+scsi 27:0:0:0: Direct-Access     Kingston DataTraveler 2.0 PMAP PQ: 0
+ANSI: 0 CCS
+sd 27:0:0:0: [sdf] 7936000 512-byte hardware sectors (4063 MB)
+sd 27:0:0:0: [sdf] Write Protect is off
+sd 27:0:0:0: [sdf] Mode Sense: 23 00 00 00
+sd 27:0:0:0: [sdf] Assuming drive cache: write through
+sd 27:0:0:0: [sdf] 7936000 512-byte hardware sectors (4063 MB)
+sd 27:0:0:0: [sdf] Write Protect is off
+sd 27:0:0:0: [sdf] Mode Sense: 23 00 00 00
+sd 27:0:0:0: [sdf] Assuming drive cache: write through
+ sdf: sdf1
+sd 27:0:0:0: [sdf] Attached SCSI removable disk
+usb-storage: device scan complete
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+end_request: I/O error, dev sde, sector 216960
+Buffer I/O error on device sde, logical block 27120
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 27121
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 27122
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 27123
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 27124
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 27125
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 27126
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 27127
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 27128
+lost page write due to I/O error on sde
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+end_request: I/O error, dev sde, sector 217200
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+__ratelimit: 97148 callbacks suppressed
+Buffer I/O error on device sde, logical block 124277
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 124278
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 124279
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 124280
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 124281
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 124282
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 124283
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 124284
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 124285
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 124286
+lost page write due to I/O error on sde
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+__ratelimit: 152257 callbacks suppressed
+Buffer I/O error on device sde, logical block 276544
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 276545
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 276546
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 276547
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 276548
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 276549
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 276550
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 276551
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 276552
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 276553
+lost page write due to I/O error on sde
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+__ratelimit: 170419 callbacks suppressed
+Buffer I/O error on device sde, logical block 446973
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 446974
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 446975
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 446976
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 446977
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 446978
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 446979
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 446980
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 446981
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 446982
+lost page write due to I/O error on sde
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+__ratelimit: 152214 callbacks suppressed
+Buffer I/O error on device sde, logical block 599197
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 599198
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 599199
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 599200
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 599201
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 599202
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 599203
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 599204
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 599205
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 599206
+lost page write due to I/O error on sde
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+__ratelimit: 165606 callbacks suppressed
+Buffer I/O error on device sde, logical block 764813
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 764814
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 764815
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 764816
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 764817
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 764818
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 764819
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 764820
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 764821
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 764822
+lost page write due to I/O error on sde
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+__ratelimit: 165555 callbacks suppressed
+Buffer I/O error on device sde, logical block 930378
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 930379
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 930380
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 930381
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 930382
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 930383
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 930384
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 930385
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 930386
+lost page write due to I/O error on sde
+Buffer I/O error on device sde, logical block 930387
+lost page write due to I/O error on sde
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-1: USB disconnect, address 7
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 8-5: USB disconnect, address 18
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: reset high speed USB device using ehci_hcd and address 6
+usb 7-2: USB disconnect, address 6
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x07 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+sd 26:0:0:0: [sde] READ CAPACITY failed
+sd 26:0:0:0: [sde] Result: hostbyte=0x01 driverbyte=0x00
+sd 26:0:0:0: [sde] Sense not available.
+sd 26:0:0:0: [sde] Write Protect is off
+sd 26:0:0:0: [sde] Mode Sense: 00 00 00 00
+sd 26:0:0:0: [sde] Assuming drive cache: write through
+usb 8-6: USB disconnect, address 17
 
 
-Add gfp_mask parameter to bio_integrity_clone().
+mvh.
+Kasper Sandberg
 
-Stricter gfp_mask might be required for clone allocation.
-For example, request-based dm may clone bio in interrupt context
-so it has to use GFP_ATOMIC.
-
-Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-Cc: Martin K. Petersen <martin.petersen@oracle.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: Alasdair G Kergon <agk@redhat.com>
-
----
- fs/bio-integrity.c  |    5 +++--
- fs/bio.c            |    2 +-
- include/linux/bio.h |    4 ++--
- 3 files changed, 6 insertions(+), 5 deletions(-)
-
-Index: linux-2.6.28-rc2/fs/bio-integrity.c
-===================================================================
---- linux-2.6.28-rc2.orig/fs/bio-integrity.c
-+++ linux-2.6.28-rc2/fs/bio-integrity.c
-@@ -681,19 +681,20 @@ EXPORT_SYMBOL(bio_integrity_split);
-  * bio_integrity_clone - Callback for cloning bios with integrity metadata
-  * @bio:	New bio
-  * @bio_src:	Original bio
-+ * @gfp_mask:	Memory allocation mask
-  * @bs:		bio_set to allocate bip from
-  *
-  * Description:	Called to allocate a bip when cloning a bio
-  */
- int bio_integrity_clone(struct bio *bio, struct bio *bio_src,
--			struct bio_set *bs)
-+			gfp_t gfp_mask, struct bio_set *bs)
- {
- 	struct bio_integrity_payload *bip_src = bio_src->bi_integrity;
- 	struct bio_integrity_payload *bip;
- 
- 	BUG_ON(bip_src == NULL);
- 
--	bip = bio_integrity_alloc_bioset(bio, GFP_NOIO, bip_src->bip_vcnt, bs);
-+	bip = bio_integrity_alloc_bioset(bio, gfp_mask, bip_src->bip_vcnt, bs);
- 
- 	if (bip == NULL)
- 		return -EIO;
-Index: linux-2.6.28-rc2/include/linux/bio.h
-===================================================================
---- linux-2.6.28-rc2.orig/include/linux/bio.h
-+++ linux-2.6.28-rc2/include/linux/bio.h
-@@ -496,7 +496,7 @@ extern void bio_integrity_endio(struct b
- extern void bio_integrity_advance(struct bio *, unsigned int);
- extern void bio_integrity_trim(struct bio *, unsigned int, unsigned int);
- extern void bio_integrity_split(struct bio *, struct bio_pair *, int);
--extern int bio_integrity_clone(struct bio *, struct bio *, struct bio_set *);
-+extern int bio_integrity_clone(struct bio *, struct bio *, gfp_t, struct bio_set *);
- extern int bioset_integrity_create(struct bio_set *, int);
- extern void bioset_integrity_free(struct bio_set *);
- extern void bio_integrity_init_slab(void);
-@@ -507,7 +507,7 @@ extern void bio_integrity_init_slab(void
- #define bioset_integrity_create(a, b)	(0)
- #define bio_integrity_prep(a)		(0)
- #define bio_integrity_enabled(a)	(0)
--#define bio_integrity_clone(a, b, c)	(0)
-+#define bio_integrity_clone(a, b, c, d)	(0)
- #define bioset_integrity_free(a)	do { } while (0)
- #define bio_integrity_free(a, b)	do { } while (0)
- #define bio_integrity_endio(a, b)	do { } while (0)
-Index: linux-2.6.28-rc2/fs/bio.c
-===================================================================
---- linux-2.6.28-rc2.orig/fs/bio.c
-+++ linux-2.6.28-rc2/fs/bio.c
-@@ -309,7 +309,7 @@ struct bio *bio_clone(struct bio *bio, g
- 	if (bio_integrity(bio)) {
- 		int ret;
- 
--		ret = bio_integrity_clone(b, bio, fs_bio_set);
-+		ret = bio_integrity_clone(b, bio, gfp_mask, fs_bio_set);
- 
- 		if (ret < 0)
- 			return NULL;
