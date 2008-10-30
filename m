@@ -1,235 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753731AbYJ3DgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753720AbYJ3DmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753731AbYJ3DgY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 23:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbYJ3DgP
+	id S1753720AbYJ3DmS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 23:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbYJ3DmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 23:36:15 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59660 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752336AbYJ3DgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 23:36:14 -0400
-Message-ID: <49092AEB.2080000@cn.fujitsu.com>
-Date: Thu, 30 Oct 2008 11:32:59 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Wed, 29 Oct 2008 23:42:03 -0400
+Received: from mga05.intel.com ([192.55.52.89]:29058 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752308AbYJ3DmB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 23:42:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,511,1220252400"; 
+   d="scan'208";a="633216147"
+Date: Thu, 30 Oct 2008 11:41:46 +0800
+From: Kent Liu <kent.liu@linux.intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: herbert@gondor.apana.org.au, austin.zhang@intel.com,
+       austin_zhang@linux.intel.com
+Subject: [PATCH] crc32c-intel: Update copyright head
+Message-ID: <20081030034146.GA9027@wliu-linux.bj.intel.com>
 MIME-Version: 1.0
-To: sadump@cn.fujitsu.com
-CC: ltt-dev@lists.casi.polymtl.ca, "Martin J. Bligh" <mbligh@mbligh.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, kernel-trace-list@redhat.com,
-       linux-kernel@vger.kernel.org, systemtap@sources.redhat.com
-Subject: Re: [sadump 04308] Re: [ltt-dev] LTTng 0.44 and LTTV 0.11.3
-References: <20081024004502.GA21759@Krystal> <49068D2A.9010308@cn.fujitsu.com> <20081029174001.GA30796@Krystal>
-In-Reply-To: <20081029174001.GA30796@Krystal>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
->> Mathieu Desnoyers wrote:
->>> - I have also vastly simplified locking in the markers and tracepoints
->>>   by using _only_ the modules mutex. I actually took this mutex out of
->>>   module.c and created its own file so tracepoints and markers can use
->>>   it. That should please Lai Jiangshan. Although he may have some work
->>>   to do to see how his new probes manager might benefit from it.
->>>
->>>   See :
->>>   http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=7aea87ac46df7613d68034f5904bc8d575069076
->>>   and
->>>   http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=5f6814237f7a67650e7b6214d916825e3f8fc1b7
->>>   http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=410ba66a1cbe27a611e1c18c0a53e87b4652a2c9
->>>
->> Hi, Mathieu,
->>
->> I strongly reject for removing tracepoint_mutex and marker_mutex.
->>
->> As an independent subsystem, we should use our own locks. Do not use others.
->> otherwise coupling will be increased in linux kernel.
->> I condemn unnecessary coupling.
->>
->> Our tracepoint & marker had tied to modules(for traveling all tracepoints
->> or markers). The best thing is that we do not increase the coupling.
->>
->> [PATCH 2/2] tracepoint: introduce *_noupdate APIs.
->> is helpful for auto-active-tracepoint-mechanism.
->>
->> 		Thanx, Lai.
->>
-> 
-> Hi Lai,
-> 
-> The approach you propose looks interesting. Please see below to make
-> sure we are on the same page.
-> 
-> The problem is that when we want to connect
-> markers/tracepoints/immediate values together, it results in a real
-> locking mess between
-> 
-> modules_mutex
->   markers_mutex
->     tracepoints_mutex
->       imv_mutex
-> 
-> When we want to take care of a marker at module load, we have to insure
-> the following calling scenario is correct :
-> 
-> load_module()
->   call markers_update_probes_range() (on the module markers)
->     call tracepoint register (to automatically enable a tracepoint
->                                when a marker is connected to it)
->       call tracepoints_update_probe_range (on kernel core and all modules)
->         call imv_update_range (on kernel core and all modules)
-> 
-> The current locking status of tracepoints vs markers does not currently
-> allow tracepoints_register to be called from the marker update because
-> it would take the modules_mutex twice.
-> 
-> What you propose is something like this :
-> 
-> load_module()
->   call markers_update_probes_range()
->     call tracepoint_register_noupdate (to automatically enable a tracepoint
->                                        when a marker is connected to it)
->   call tracepoints_update_all() (for core kernel and all modules (*))
->     name##__imv = (i)
->   call imv_update_all() (for core kernel and all modules (*))
-> 
-> (*) This is required because registering a tracepoint might have impact
->     outside of the module in which the marker is located. Same for
->     changing an immediate value.
+The original copyright head for crc32c-intel.c is incorrect. Please merge
+the patch to update it.
 
-Er, my patch cannot handle updates when load_module().
-
-> 
-> And on marker_register_probe() :
->   call markers_update_probes_range()
->     call tracepoint_register_noupdate
->   call tracepoints_update_all()
->     name##__imv = (i)
->   call imv_update_all()
-> 
-> Which basically uses the same trick I used for immediate values : it
-> separates the "backing data" update (name##_imv = (i)) from the actual
-> update that needs to iterate on the modules.
-> 
-> The only thing we have to be aware of is that it actually couples
-> markers/tracepoints/immediate values much more thightly to keep separate
-> locking for each, because, as the example above shows, the markers have
-> to be aware that they must call tracepoints_update_all and
-> imv_update_all explicitely. On the plus side, it requires much less
-> iterations on the module sections, which is a clear win.
-> 
-> So the expected mutex nesting order is (indent implies "nested in"):
-> 
-> On load_module :
-> 
-> modules_mutex
->   markers_mutex
->   tracepoints_mutex
->   imv_mutex
-> 
-> On marker register :
-> 
-> markers_mutex
->   tracepoints_mutex
->   imv_mutex
-> 
-> On tracepoint register :
-> 
-> tracepoints_mutex
->   imv_mutex
-> 
-> On imv_update :
-> 
-> imv_mutex
-> 
-> So yes, I think your approach is good, although there are some
-> implementation quirks in the patch you submitted. I'll comment by
-> replying to your other post.
-
-Hmm, right, the patch <<[PATCH 2/2] tracepoint: introduce *_noupdate APIs>>
-is quirks for it separate working into 2 steps.
-
-currently, markers and tracepoint abuse RCU and use RCU in a very ugly way.
-patches <<[PATCH 1/2] tracepoint: simplify for tracepoint using RCU>>
-and <<[PATCH tip/tracing/markers] new probes manager>> had toll us how ugly they
-are. if you do not remove tracepoints_mutex and markers_mutex, these two
-patches can be applied now. (and if you want to remove mutexs, I will changed
-these two patches a little.)
-
---------------------
-
-Actually, markers and tracepoint are not like immediate-value, we do not need
-update markers and tracepoint on load_module(), we can register_module_notifier()
-and update them when MODULE_STATE_COMING.
-
-[Quick Quiz 1] why imv_update_all() must called on load_module()?
-load_module() will setup parameters, the routine of setuping parameters
-will use immediate-value.
-
-sys_init_module:
-  load_module
-    setup parameters
-  blocking_notifier_call_chain(MODULE_STATE_COMING)
-  mod->init();
-
-the markers and tracepoint in "setup parameters" will not be actived by this 
-approach, it's OK for it's a trace tool.
-
-PS and OT: why not introduce module_param_imv?
-a little like this:
-#define module_param_imv(name, type, perm)				\
-	module_param_named(name, name##__imv, type, perm)
-and update them in MODULE_STATE_COMING.
-
-most module param are readonly after initialized.
-
-----------------------------
-if you do not like <<[PATCH 2/2] tracepoint: introduce *_noupdate APIs>>,
-here is the second way:
-introduce these five APIs in module.c
-module_iter_start()   - require module_mutex and return first module
-module_iter_next()
-module_iter_stop()    - release module_mutex
-__module_iter_start() - do not require module_mutex
-__module_iter_stop()
-
-When we have fixed the mutex mess, code changed by this approach are
-the least. and we can implement robust tracepoint_iter, marker_iter
-by using these APIs.
-
-------------------------------
-
-I strongly reject for removing tracepoint_mutex and marker_mutex.
-you will pay for it when markers and tracepoint become powerful
-after you remove tracepoint_mutex and marker_mutex. and the
-modules guys will condemn you for bring coupling for modules.
-
-	Thanx, Lai.
-
-> 
-> Thanks,
-> 
-> Mathieu
-> 
-> 
->>> So hopefully everyone will be happy with this new release. :)
->>>
->>> Mathieu
->>>
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
-> 
-
-
+Signed-Off-By: Kent Liu <kent.liu@intel.com>
+---
+diff --git a/arch/x86/crypto/crc32c-intel.c b/arch/x86/crypto/crc32c-intel.c
+index 070afc5..a2c539c 100644
+--- a/arch/x86/crypto/crc32c-intel.c
++++ b/arch/x86/crypto/crc32c-intel.c
+@@ -6,13 +6,22 @@
+  * Intel(R) 64 and IA-32 Architectures Software Developer's Manual
+  * Volume 2A: Instruction Set Reference, A-M
+  *
+- * Copyright (c) 2008 Austin Zhang <austin_zhang@linux.intel.com>
+- * Copyright (c) 2008 Kent Liu <kent.liu@intel.com>
++ * Copyright (C) 2008 Intel Corporation
++ * Authors: Austin Zhang <austin_zhang@linux.intel.com>
++ *          Kent Liu <kent.liu@intel.com>
+  *
+  * This program is free software; you can redistribute it and/or modify it
+- * under the terms of the GNU General Public License as published by the Free
+- * Software Foundation; either version 2 of the License, or (at your option)
+- * any later version.
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+  *
+  */
+ #include <linux/init.h>
+@@ -194,4 +203,3 @@ MODULE_LICENSE("GPL");
+ 
+ MODULE_ALIAS("crc32c");
+ MODULE_ALIAS("crc32c-intel");
+-
