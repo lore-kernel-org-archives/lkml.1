@@ -1,118 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbYJ3XOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758675AbYJ3XQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756790AbYJ3XOp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 19:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbYJ3XOg
+	id S1758675AbYJ3XQT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 19:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYJ3XQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 19:14:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44088 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753413AbYJ3XOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 19:14:36 -0400
-Date: Fri, 31 Oct 2008 00:14:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] tracepoint: introduce *_noupdate APIs.
-Message-ID: <20081030231419.GA1985@elte.hu>
-References: <49067E49.4040304@cn.fujitsu.com> <20081030053457.GB27381@Krystal> <20081030053949.GC27381@Krystal>
+	Thu, 30 Oct 2008 19:16:05 -0400
+Received: from qb-out-0506.google.com ([72.14.204.235]:64207 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753022AbYJ3XQD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 19:16:03 -0400
+Message-ID: <ac3eb2510810301616n271102fcred30bc1eef6a8dba@mail.gmail.com>
+Date: Fri, 31 Oct 2008 00:16:01 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Jiri Kosina" <jkosina@suse.cz>
+Subject: Re: hid: struct device - replace bus_id with dev_name(), dev_set_name()
+Cc: "Jiri Slaby" <jirislaby@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>
+In-Reply-To: <alpine.LNX.1.10.0810310009110.31273@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081030053949.GC27381@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+References: <1225385705.21973.20.camel@nga.site> <490A0A35.9060606@gmail.com>
+	 <1225395316.21973.47.camel@nga.site>
+	 <alpine.LNX.1.10.0810310009110.31273@jikos.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 31, 2008 at 00:10, Jiri Kosina <jkosina@suse.cz> wrote:
+> On Thu, 30 Oct 2008, Kay Sievers wrote:
+>
+>> > > switch over to the new api, which will remove the 20 bytes array
+>> > > and does no longer have a size limitation.
+>> > Cool!
+>> > Could you left the comment above to remind us about removing this ugly hack
+>> > later when the new non-limited api will be used?
+>> Sure!
+>> From: Kay Sievers <kay.sievers@vrfy.org>
+>> Subject: hid: struct device - replace bus_id with dev_name(), dev_set_name()
+>
+> Hi Kay,
+>
+> thanks for this cleanup. What is the timeframe the bus_id will be removed
+> from struct device?
 
-* Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
+Hmm, not sure. We will put the remaining pieces into Greg's tree, wait
+for -next to carry most of it, and convert the rest. Maybe we can do
+it for the next kernel, but we might get sidetracked again, and it
+might take longer.
 
-> * Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> > * Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
-> > > 
-> > > new APIs separate tracepoint_probe_register(),
-> > > tracepoint_probe_unregister() into 2 steps. The first step of them
-> > > is just update tracepoint_entry, not connect or disconnect.
-> > > 
-> > > this patch introduce tracepoint_probe_update_all() for update all.
-> > > 
-> > > these APIs are very useful for registering a lots of probes
-> > > but just update once only. and a very important thing is that
-> > > *_noupdate APIs do not require module_mutex.
-> > > 
-> > > Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> > 
-> > [...]
-> > 
-> > > +/**
-> > > + * tracepoint_probe_update_all -  update tracepoints
-> > > + */
-> > > +void tracepoint_probe_update_all(void)
-> > > +{
-> > > +	LIST_HEAD(release_probes);
-> > > +	struct tp_probes *pos, *next;
-> > > +
-> > > +	mutex_lock(&tracepoints_mutex);
-> > > +	if (!need_update) {
-> > > +		mutex_unlock(&tracepoints_mutex);
-> > > +		return;
-> > > +	}
-> > > +	if (!list_empty(&old_probes))
-> > > +		list_replace_init(&old_probes, &release_probes);
-> > > +	need_update = 0;
-> > > +	mutex_unlock(&tracepoints_mutex);
-> > > +
-> > > +	tracepoint_update_probes();
-> > 
-> > I think the read-side of this release_probes list should be protected by
-> > the tracepoints_mutex too. Two concurrent tracepoint_probe_update_all()
-> > could cause havoc here :
-> > 
-> > 
-> > mutex_lock(&tracepoints_mutex);
-> > 
-> > > +	list_for_each_entry_safe(pos, next, &release_probes, u.list) {
-> > > +		list_del(&pos->u.list);
-> > > +		call_rcu_sched(&pos->u.rcu, rcu_free_old_probes);
-> > > +	}
-> > 
-> > mutex_unlock(&tracepoints_mutex);
-> > 
-> > ?
-> > 
-> > The rest looks good.
-> > 
-> 
-> Argh, forget it. LIST_HEAD(release_probes); is local to the function,
-> there is nothing to protect here. My eyes thought they saw a "static"
-> here for some reason. Night shift....
-> 
-> The patch is good as-is.
-> 
-> Thanks !
-> 
-> Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
-ok, i've applied both patches to tip/tracing/tracepoints:
-
- 57bc8ea: tracepoint: introduce *_noupdate APIs.
- bbec237: tracepoint: simplification for tracepoints using RCU
-
-thanks!
-
-(Note, i had to resolve conflicts, hopefully i got the end result 
-right. Please double-check tip/master.)
-
-	Ingo
+Thanks,
+Kay
