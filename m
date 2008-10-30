@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755684AbYJ3BV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYJ3BX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755684AbYJ3BV4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 21:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYJ3BVs
+	id S1755487AbYJ3BX6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 21:23:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbYJ3BXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 21:21:48 -0400
-Received: from qb-out-0506.google.com ([72.14.204.234]:55383 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752234AbYJ3BVs (ORCPT
+	Wed, 29 Oct 2008 21:23:50 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:38472 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751773AbYJ3BXt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 21:21:48 -0400
-Subject: ISDN: struct device - replace bus_id with dev_name(),
-	dev_set_name()
+	Wed, 29 Oct 2008 21:23:49 -0400
+Subject: gpu: struct device - replace bus_id with dev_name(), dev_set_name()
 From: Kay Sievers <kay.sievers@vrfy.org>
-To: Karsten Keil <kkeil@suse.de>
+To: Dave Airlie <airlied@redhat.com>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
 Content-Type: text/plain
-Date: Thu, 30 Oct 2008 02:21:49 +0100
-Message-Id: <1225329709.5970.75.camel@nga.site>
+Date: Thu, 30 Oct 2008 02:23:50 +0100
+Message-Id: <1225329830.5970.78.camel@nga.site>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
@@ -51,26 +50,26 @@ Kay
 
 
 From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: ISDN: struct device - replace bus_id with dev_name(), dev_set_name()
+Subject: gpu: struct device - replace bus_id with dev_name(), dev_set_name()
 
-CC: Karsten Keil <kkeil@suse.de>
+CC: Dave Airlie <airlied@redhat.com>
 Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
 ---
 
 
-diff --git a/drivers/isdn/mISDN/dsp_pipeline.c b/drivers/isdn/mISDN/dsp_pipeline.c
-index 850260a..fdc800b 100644
---- a/drivers/isdn/mISDN/dsp_pipeline.c
-+++ b/drivers/isdn/mISDN/dsp_pipeline.c
-@@ -91,7 +91,7 @@ int mISDN_dsp_element_register(struct mISDN_dsp_element *elem)
+diff --git a/drivers/gpu/drm/drm_sysfs.c b/drivers/gpu/drm/drm_sysfs.c
+index 1611b9b..98a575c 100644
+--- a/drivers/gpu/drm/drm_sysfs.c
++++ b/drivers/gpu/drm/drm_sysfs.c
+@@ -165,7 +165,7 @@ int drm_sysfs_device_add(struct drm_minor *minor)
+ 	minor->kdev.devt = minor->device;
+ 	minor_str = "card%d";
  
- 	entry->dev.class = elements_class;
- 	dev_set_drvdata(&entry->dev, elem);
--	snprintf(entry->dev.bus_id, BUS_ID_SIZE, elem->name);
-+	dev_set_name(&entry->dev, elem->name);
- 	ret = device_register(&entry->dev);
- 	if (ret) {
- 		printk(KERN_ERR "%s: failed to register %s\n",
+-	snprintf(minor->kdev.bus_id, BUS_ID_SIZE, minor_str, minor->index);
++	dev_set_name(&minor->kdev, minor_str, minor->index);
+ 
+ 	err = device_register(&minor->kdev);
+ 	if (err) {
 
 
