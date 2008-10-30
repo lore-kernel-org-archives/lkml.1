@@ -1,90 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbYJ3Bs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbYJ3Bxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756796AbYJ3Bs2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 21:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756703AbYJ3BsJ
+	id S1755798AbYJ3Bxs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 21:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbYJ3Bxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 21:48:09 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:27015 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753854AbYJ3BsH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 21:48:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Pr7y3VZcuU3vjWawRzouCYXE8A6gquqlDa5tWSvIW3OKqwSr0C6u4DDsHqfF9b6ylz
-         Ik+/t+JKaBeqecCCHxByDqCmfKDnKPnGgmi+JH4lVQBGV42Shj/YHLtAyj1NLdyFzcHe
-         KGxotFJ+NMNXJk/1yjs7gEJbxsbAAYfaVVoQM=
-Subject: Re: mmc: struct device - replace bus_id with dev_name(),
- dev_set_name()
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Pierre Ossman <drzeus@drzeus.cx>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-In-Reply-To: <1225329600.5970.72.camel@nga.site>
-References: <1225329600.5970.72.camel@nga.site>
-Content-Type: text/plain
-Date: Wed, 29 Oct 2008 18:48:04 -0700
-Message-Id: <1225331284.5496.12.camel@brick>
+	Wed, 29 Oct 2008 21:53:38 -0400
+Received: from mx1.suse.de ([195.135.220.2]:57832 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751554AbYJ3Bxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 21:53:37 -0400
+Date: Thu, 30 Oct 2008 02:53:35 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Glauber Costa <glommer@redhat.com>
+Cc: Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, aliguori@codemonkey.ws,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH] regression: vmalloc easily fail.
+Message-ID: <20081030015335.GA18041@wotan.suse.de>
+References: <1225234513-3996-1-git-send-email-glommer@redhat.com> <20081028232944.GA3759@wotan.suse.de> <20081029094856.GD4269@poweredge.glommer> <20081029101145.GB5953@wotan.suse.de> <49083B14.6070402@redhat.com> <20081029104333.GD5953@wotan.suse.de> <20081029220737.GF11532@poweredge.glommer>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081029220737.GF11532@poweredge.glommer>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-30 at 02:20 +0100, Kay Sievers wrote:
-> diff --git a/include/linux/mmc/card.h b/include/linux/mmc/card.h
-> index ee6e822..403aa50 100644
-> --- a/include/linux/mmc/card.h
-> +++ b/include/linux/mmc/card.h
-> @@ -130,7 +130,7 @@ struct mmc_card {
->  #define mmc_card_set_blockaddr(c) ((c)->state |= MMC_STATE_BLOCKADDR)
->  
->  #define mmc_card_name(c)	((c)->cid.prod_name)
-> -#define mmc_card_id(c)		((c)->dev.bus_id)
-> +#define mmc_card_id(c)		(dev_name(&(c)->dev))
->  
->  #define mmc_list_to_card(l)	container_of(l, struct mmc_card, node)
->  #define mmc_get_drvdata(c)	dev_get_drvdata(&(c)->dev)
-> diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-> index bde891f..f842f23 100644
-> --- a/include/linux/mmc/host.h
-> +++ b/include/linux/mmc/host.h
-> @@ -176,7 +176,7 @@ static inline void *mmc_priv(struct mmc_host *host)
->  
->  #define mmc_dev(x)	((x)->parent)
->  #define mmc_classdev(x)	(&(x)->class_dev)
-> -#define mmc_hostname(x)	((x)->class_dev.bus_id)
-> +#define mmc_hostname(x)	(dev_name(&(x)->class_dev))
->  
->  extern int mmc_suspend_host(struct mmc_host *, pm_message_t);
->  extern int mmc_resume_host(struct mmc_host *);
-> diff --git a/include/linux/mmc/sdio_func.h b/include/linux/mmc/sdio_func.h
-> index 07bee4a..451bdfc 100644
-> --- a/include/linux/mmc/sdio_func.h
-> +++ b/include/linux/mmc/sdio_func.h
-> @@ -63,7 +63,7 @@ struct sdio_func {
->  
->  #define sdio_func_set_present(f) ((f)->state |= SDIO_STATE_PRESENT)
->  
-> -#define sdio_func_id(f)		((f)->dev.bus_id)
-> +#define sdio_func_id(f)		(dev_name(&(f)->dev))
->  
->  #define sdio_get_drvdata(f)	dev_get_drvdata(&(f)->dev)
->  #define sdio_set_drvdata(f,d)	dev_set_drvdata(&(f)->dev, d)
-> 
+On Wed, Oct 29, 2008 at 08:07:37PM -0200, Glauber Costa wrote:
+> On Wed, Oct 29, 2008 at 11:43:33AM +0100, Nick Piggin wrote:
+> > On Wed, Oct 29, 2008 at 12:29:40PM +0200, Avi Kivity wrote:
+> > > Nick Piggin wrote:
+> > > >Hmm, spanning <30MB of memory... how much vmalloc space do you have?
+> > > >
+> > > >  
+> > > 
+> > > From the original report:
+> > > 
+> > > >VmallocTotal:     122880 kB
+> > > >VmallocUsed:       15184 kB
+> > > >VmallocChunk:      83764 kB
+> > > 
+> > > So it seems there's quite a bit of free space.
+> > > 
+> > > Chunk is the largest free contiguous region, right?  If so, it seems the 
+> > 
+> > Yes.
+> > 
+> > 
+> > > problem is unrelated to guard pages, instead the search isn't finding a 
+> > > 1-page area (with two guard pages) for some reason, even though lots of 
+> > > free space is available.
+> > 
+> > Hmm. The free area search could be buggy...
+> Do you want me to grab any specific info of it? Or should I just hack myself
+> randomly into it? I'll probably have some time for that tomorrow.
 
-A lot of these helpers don't seem to add that much, would you care for
-a patch removing them Pierre?
-
-Specifically sdio_func_id, sdio_get/set_drvdata don't have that many
-users.
-
-mmc_hostname has a lot of users, but if you're agreeable, I could
-take a crack at that too.
-
-Harvey
-
+I can take a look at it, in the next day or two. If you hack at it, and
+find the problem I wouldn't be upset ;)
