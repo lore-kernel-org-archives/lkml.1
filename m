@@ -1,62 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbYJ3OdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbYJ3Odv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755595AbYJ3OdL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 10:33:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbYJ3Oc5
+	id S1755916AbYJ3Odv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 10:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbYJ3Odl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 10:32:57 -0400
-Received: from lazybastard.de ([212.112.238.170]:59276 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753575AbYJ3Oc4 (ORCPT
+	Thu, 30 Oct 2008 10:33:41 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:20179 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754599AbYJ3Odk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 10:32:56 -0400
-Date: Thu, 30 Oct 2008 15:32:39 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Mike Snitzer <snitzer@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 1/2 v3][RFC] trace: profile likely and unlikely annotations
-Message-ID: <20081030143238.GB7157@logfs.org>
-References: <170fa0d20810271529g3c64ae89me29ed8b65a9c3b5e@mail.gmail.com> <alpine.DEB.1.10.0810271918390.19731@gandalf.stny.rr.com> <20081028001340.GB9797@mit.edu> <alpine.DEB.1.10.0810272316270.802@gandalf.stny.rr.com> <20081028143720.GD8869@mit.edu> <20081028074816.04193e04@infradead.org> <alpine.DEB.1.10.0810281050440.29482@gandalf.stny.rr.com> <alpine.DEB.1.10.0810291233580.13214@gandalf.stny.rr.com> <alpine.DEB.1.10.0810291833540.6145@gandalf.stny.rr.com>
+	Thu, 30 Oct 2008 10:33:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=V4NQBH3yQhfrj/DUa3cCwyEojvXa29N/7BWzlijoq4I5yf8gzTU31wYo9MslbmTgJT
+         MfHeQ9wgKhq/H8qQU48RGBUHOyNDOgQ4pOH858LUAug1atf48J46cWDRlYY7Vwm47wAn
+         xAqXhw74wpAsDw+hUdv7ay+frRhAZZ5uNOfU0=
+Message-ID: <9ea470500810300733u34dab7d2rd69a8d806b85ac65@mail.gmail.com>
+Date: Thu, 30 Oct 2008 15:33:38 +0100
+From: "Borislav Petkov" <petkovbb@googlemail.com>
+Reply-To: petkovbb@gmail.com
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.28-rc2 lost IDE disk on old laptop
+Cc: "IDE/ATA development list" <linux-ide@vger.kernel.org>,
+       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+In-Reply-To: <20081030135017.GA8325@erig.dyndns.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.DEB.1.10.0810291833540.6145@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <alpine.LFD.2.00.0810261221350.3386@nehalem.linux-foundation.org>
+	 <20081030135017.GA8325@erig.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 October 2008 18:39:55 -0400, Steven Rostedt wrote:
+Hi,
+
+On Thu, Oct 30, 2008 at 2:50 PM, Wolfgang Erig <Wolfgang.Erig@gmx.de> wrote:
+> Hi,
 >
->    69768    61064  87 __switch_to                    process_64.c         624
->    15557   115251 100 __switch_to                    process_64.c         594
->    15555   115227 100 __switch_to                    process_64.c         590
+> the kernel 2.6.28-rc2 does not boot on my old laptop.
+> Panic ... cannot access (301) ... aka /dev/hda1
+> The previously used version 2.6.27-rc8 runs fine.
+>
+> During 'make oldconfig' I saw questions about IDE (or ATA)
+> but I see no obvious problem with my .config
+>
+> Wolfgang
+>
+>
+> $ lspci
+> 00:00.0 Host bridge: Intel Corporation 430TX - 82439TX MTXC (rev 01)
+> 00:01.0 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ISA (rev 01)
+> 00:01.1 IDE interface: Intel Corporation 82371AB/EB/MB PIIX4 IDE (rev 01)
 
-I may be out of school for a while, but that math sure looks odd.
+Have you tried compiling your kernel with CONFIG_BLK_DEV_PIIX enabled and
+CONFIG_IDE_GENERIC disabled?
 
-> +	if (p->correct) {
-> +		percent = p->incorrect * 100;
-> +		percent /= p->correct;
-                percent /= p->correct + p->incorect;
-> +		/* No need to see huge numbers */
-> +		if (percent > 100)
-> +			percent = 100;
-> +	} else
-> +		percent = p->incorrect ? 100 : 0;
-
-Jörn
+> 00:01.2 USB Controller: Intel Corporation 82371AB/EB/MB PIIX4 USB (rev 01)
+> 00:01.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI (rev 01)
+> 00:06.0 VGA compatible controller: Chips and Technologies F65554 (rev c2)
+> 00:14.0 CardBus bridge: Cirrus Logic PD 6832 PCMCIA/CardBus Ctrlr (rev c1)
+> 00:14.1 CardBus bridge: Cirrus Logic PD 6832 PCMCIA/CardBus Ctrlr (rev c1)
+>
+> $ egrep -i 'ide|ata' .config
+> # CONFIG_X86_MCE_NONFATAL is not set
+> # CONFIG_ATALK is not set
+> CONFIG_HAVE_IDE=y
+> CONFIG_IDE=y
+> # Please see Documentation/ide/ide.txt for help/info on IDE drives
+> # CONFIG_BLK_DEV_IDE_SATA is not set
+> CONFIG_IDE_GD=y
+> CONFIG_IDE_GD_ATA=y
+> # CONFIG_IDE_GD_ATAPI is not set
+> # CONFIG_BLK_DEV_IDECS is not set
+> CONFIG_BLK_DEV_IDECD=y
+> CONFIG_BLK_DEV_IDECD_VERBOSE_ERRORS=y
+> # CONFIG_BLK_DEV_IDETAPE is not set
+> # CONFIG_BLK_DEV_IDESCSI is not set
+> # CONFIG_IDE_TASK_IOCTL is not set
+> # CONFIG_IDE_PROC_FS is not set
+> # IDE chipset support/bugfixes
+> CONFIG_IDE_GENERIC=y
+> # CONFIG_BLK_DEV_IDEPNP is not set
+> # PCI IDE chipsets support
+> # Other IDE chipsets support
+> # CONFIG_BLK_DEV_IDEDMA is not set
+> # CONFIG_ATA is not set
+> # CONFIG_VIDEO_DEV is not set
+> # CONFIG_VIDEO_MEDIA is not set
+> CONFIG_VIDEO_OUTPUT_CONTROL=m
+> # CONFIG_USB_STORAGE_DATAFAB is not set
+> # CONFIG_USB_STORAGE_CYPRESS_ATACB is not set
+> # CONFIG_PROVIDE_OHCI1394_DMA_INIT is not set
+> # Authenticated Encryption with Associated Data
+>
 
 -- 
-To my face you have the audacity to advise me to become a thief - the worst
-kind of thief that is conceivable, a thief of spiritual things, a thief of
-ideas! It is insufferable, intolerable!
--- M. Binet in Scarabouche
+Regards/Gruss,
+Boris
