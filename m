@@ -1,88 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbYJ3Ray@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbYJ3Rgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756603AbYJ3Ray (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 13:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYJ3Rao
+	id S1756129AbYJ3Rgx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 13:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbYJ3Rgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 13:30:44 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:3840 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752695AbYJ3Ran (ORCPT
+	Thu, 30 Oct 2008 13:36:44 -0400
+Received: from hs-out-0708.google.com ([64.233.178.246]:53501 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752695AbYJ3Rgn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 13:30:43 -0400
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: Eric Paris <eparis@redhat.com>
-Subject: Re: [PATCH -v1 1/3] SECURITY: new capable_noaudit interface
-Date: Thu, 30 Oct 2008 13:29:40 -0400
-User-Agent: KMail/1.9.10
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org,
-       sds@tycho.nsa.gov, jmorris@nameil.org, morgan@kernel.org,
-       casey@schaufler-ca.com, esandeen@redhat.com
-References: <20081029190652.31292.5901.stgit@paris.rdu.redhat.com> <200810301246.20328.paul.moore@hp.com> <1225387052.3235.1.camel@localhost.localdomain>
-In-Reply-To: <1225387052.3235.1.camel@localhost.localdomain>
+	Thu, 30 Oct 2008 13:36:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=LlYN5xNaLbppA3CW7afU5FCWAiBpHjf76JT9zIrN/Rk42XxUJVvGr/A6if8lBxBOV+
+         59s+66tR97G0Wa6Z4yhGoTC4FMzQiQIEn7K6Z053YHdPVz4xQpxKdhQiKIe95vupoDlW
+         EMWCDICuuAVZZFGTVGSFrfuBIZO91Mwnm3mCQ=
+Message-ID: <12c511ca0810301036o4d2e3960k1159a40b7401ca2b@mail.gmail.com>
+Date: Thu, 30 Oct 2008 10:36:41 -0700
+From: "Tony Luck" <tony.luck@gmail.com>
+To: "Mike Travis" <travis@sgi.com>
+Subject: Re: [PATCH 29/35] cpumask: switch over to cpu_online/possible/active/present_mask From: Rusty Russell <rusty@rustcorp.com.au>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Rusty Russell" <rusty@rustcorp.com.au>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081023020832.084887000@polaris-admin.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200810301329.40525.paul.moore@hp.com>
+References: <20081023020826.051012000@polaris-admin.engr.sgi.com>
+	 <20081023020832.084887000@polaris-admin.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 30 October 2008 1:17:32 pm Eric Paris wrote:
-> On Thu, 2008-10-30 at 12:46 -0400, Paul Moore wrote:
-> > On Thursday 30 October 2008 11:29:40 am Serge E. Hallyn wrote:
-> > > Quoting Eric Paris (eparis@redhat.com):
-> > > > Add a new capable interface that will be used by systems that
-> > > > use audit to make an A or B type decision instead of a security
-> > > > decision.  Currently this is the case at least for filesystems
-> > > > when deciding if a process can use the reserved 'root' blocks
-> > > > and for the case of things like the oom algorithm determining
-> > > > if processes are root processes and should be less likely to be
-> > > > killed.  These types of security system requests should not be
-> > > > audited or logged since they are not really security decisions.
-> > > >  It would be possible to solve this problem like the
-> > > > vm_enough_memory security check did by creating a new LSM
-> > > > interface and moving all of the policy into that interface but
-> > > > proves the needlessly bloat the LSM and provide complex
-> > > > indirection.
-> > > >
-> > > > This merely allows those decisions to be made where they belong
-> > > > and to not flood logs or printk with denials for thing that are
-> > > > not security decisions.
-> > > >
-> > > > Signed-off-by: Eric Paris <eparis@redhat.com>
-> > >
-> > > Please introduce some meaningful defines instead of passing 0 and
-> > > 1. I.e.
-> > >
-> > > #define CAP_NOAUDIT 0
-> > > #define CAP_AUDIT 1
-> > >
-> > > Otherwise, looks fine.
-> >
-> > As a general rule aren't boolean arguments like this frowned upon,
-> > with variations on the function preferred, i.e. something like
-> > below?
-> >
-> >  int cap_capable(struct task_struct *tsk, int cap);
-> >  int cap_capable_audit(struct task_struct *tsk, int cap);
->
-> Well from outside the "security" subsystem people should call either
->
-> has_capability()
-> has_capability_noaudit()
-> or
-> capable()   (which calls has_capability())
->
-> How far down do I have to keep duplicating functionality to avoid
-> booleans?
+--- linux-2.6.28.orig/include/linux/cpumask.h
++++ linux-2.6.28/include/linux/cpumask.h
+...
++#define cpu_online_map		(*(cpumask_t *)cpu_online_mask)
 
-Probably not this far :)  Sorry, reading mail too quickly ...
+This bit seems to be the reason why linux-next isn't building for ia64
+(tag next-20081029
+and next-20081030). With this error:
 
--- 
-paul moore
-linux @ hp
+>   CC      arch/ia64/kernel/asm-offsets.s
+> In file included from include/linux/smp.h:30,
+>                  from include/linux/sched.h:68,
+>                  from arch/ia64/kernel/asm-offsets.c:9:
+> arch/ia64/include/asm/smp.h:60: error: expected ')' before '*' token
+> arch/ia64/include/asm/smp.h:60: error: expected ')' before 'cpu_online_mask'
+
+Fix is trivial ... delete the declaration of cpu_online_map from
+arch/ia64/include/asm/smp.h
+
+-Tony
