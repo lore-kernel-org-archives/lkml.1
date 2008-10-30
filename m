@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbYJ3QSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758171AbYJ3QSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758076AbYJ3QSL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 12:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756803AbYJ3QRv
+	id S1758171AbYJ3QSb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 12:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757076AbYJ3QSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 12:17:51 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:59892 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755811AbYJ3QRt (ORCPT
+	Thu, 30 Oct 2008 12:18:20 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:8573 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758093AbYJ3QST (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 12:17:49 -0400
+	Thu, 30 Oct 2008 12:18:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=nbNvtluhce8unN4kTIEjYumKlf1txfsHXgnFzMAoWQISo2/shtrtf3eUqEYLQeh4/9
-         0YUi0TgOXpShXfQozuEJ1KwC86VTCv9MQy+EBhU1fI3gfVW/XkFXtcVL75E4J0BZavMO
-         Y84Ac8tg+G5NR/1AH1XEIlNVSSUjBlhvfaoVA=
-Message-ID: <b6c5339f0810300917i25b4164fof2ba51569d4e7012@mail.gmail.com>
-Date: Thu, 30 Oct 2008 12:17:48 -0400
-From: "Bob Copeland" <me@bobcopeland.com>
-To: "Stefan Hellermann" <stefan@the2masters.de>
-Subject: Re: pull request: wireless-2.6 2008-10-29
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       "Arjan van de Ven" <arjan@infradead.org>, davem@davemloft.net,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mcgrof@gmail.com, mickflemm@gmail.com
-In-Reply-To: <4909C93E.7020400@the2masters.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081029231855.GD3485@tuxdriver.com>
-	 <20081029162324.28f5864d@infradead.org>
-	 <20081029233350.GE3485@tuxdriver.com>
-	 <4909C93E.7020400@the2masters.de>
-X-Google-Sender-Auth: cac5158624990f71
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
+         :sender;
+        b=pToAy+RxvtpMVjoixzg/j+x3BhC6PsTvpIFPKLL1fKDnHPmGw5nScGuIHr1fQ56ebb
+         GPjC8IXaBPElr9y6M06dC7RHToHa7gJ0YqjcV4k8qcq8F0LJg1FEDEx6MKTVMh9JewCZ
+         9vFonqioK7jd7nT1Kxwmo5zqXzKVhH0vr1Nh0=
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: greg@kroah.com
+Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Pavel Machek <pavel@suse.cz>
+Subject: [PATCH 1/7] w35und: inline DRIVER_AUTHOR and DRIVER_DESC macros
+Date: Thu, 30 Oct 2008 18:12:01 +0200
+Message-Id: <1225383127-16406-1-git-send-email-penberg@cs.helsinki.fi>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 10:48 AM, Stefan Hellermann
-<stefan@the2masters.de> wrote:
-> I think some of the reports on kerneloops are from my machine, I'm
-> running wireless-testing#master in the hope to get my card fully
-> working. It's a AR2425 chip (MAC: 0xe2, PHY: 0x70), in a Lenovo Notebook.
+They're used in one place so we can inline them.
 
-Okay, I just added a bugzilla for this:
+Cc: Pavel Machek <pavel@suse.cz>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ drivers/staging/winbond/wbusb.c   |    4 ++--
+ drivers/staging/winbond/wbusb_s.h |    3 ---
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-http://bugzilla.kernel.org/show_bug.cgi?id=11901
-
-I can reproduce it here after all...
+diff --git a/drivers/staging/winbond/wbusb.c b/drivers/staging/winbond/wbusb.c
+index 40bb77c..67847c8 100644
+--- a/drivers/staging/winbond/wbusb.c
++++ b/drivers/staging/winbond/wbusb.c
+@@ -11,8 +11,8 @@
+ #include "wbhal_f.h"
+ #include "wblinux_f.h"
+ 
+-MODULE_AUTHOR(DRIVER_AUTHOR);
+-MODULE_DESCRIPTION(DRIVER_DESC);
++MODULE_AUTHOR("Original by: Jeff Lee<YY_Lee@issc.com.tw> Adapted to 2.6.x by Costantino Leandro (Rxart Desktop) <le_costantino@pixartargentina.com.ar>");
++MODULE_DESCRIPTION("IS89C35 802.11bg WLAN USB Driver");
+ MODULE_LICENSE("GPL");
+ MODULE_VERSION("0.1");
+ 
+diff --git a/drivers/staging/winbond/wbusb_s.h b/drivers/staging/winbond/wbusb_s.h
+index 1aa8ab1..1de9360 100644
+--- a/drivers/staging/winbond/wbusb_s.h
++++ b/drivers/staging/winbond/wbusb_s.h
+@@ -28,9 +28,6 @@ typedef struct _RW_CONTEXT
+ 	void*			pCallBackFunctionParameter;
+ } RW_CONTEXT, *PRW_CONTEXT;
+ 
+-#define DRIVER_AUTHOR "Original by: Jeff Lee<YY_Lee@issc.com.tw> Adapted to 2.6.x by Costantino Leandro (Rxart Desktop) <le_costantino@pixartargentina.com.ar>"
+-#define DRIVER_DESC   "IS89C35 802.11bg WLAN USB Driver"
+-
+ typedef struct _WBUSB {
+ 	u32	IsUsb20;
+ 	struct usb_device *udev;
 -- 
-Bob Copeland %% www.bobcopeland.com
+1.5.3.7
+
