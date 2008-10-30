@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbYJ3LDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754968AbYJ3LEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbYJ3LDT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 07:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbYJ3LDL
+	id S1754968AbYJ3LEU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 07:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbYJ3LEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 07:03:11 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:36214 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753749AbYJ3LDK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 07:03:10 -0400
-Date: Thu, 30 Oct 2008 13:02:54 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: linux-pcmcia@lists.infradead.org
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [PATCH] pcmcia: fix indentation & braces disagreement - add braces
-Message-ID: <Pine.LNX.4.64.0810301301260.7072@wrl-59.cs.helsinki.fi>
+	Thu, 30 Oct 2008 07:04:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33021 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753344AbYJ3LEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 07:04:09 -0400
+Date: Thu, 30 Oct 2008 09:03:52 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][v3] blktrace: conversion to tracepoints
+Message-ID: <20081030110352.GB25056@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20081029120556.GD28123@ghostprotocols.net> <20081029131855.GC31673@kernel.dk> <20081029194323.GA25056@ghostprotocols.net> <20081030073134.GM31673@kernel.dk>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-494574763-1225364574=:7072"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081030073134.GM31673@kernel.dk>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Em Thu, Oct 30, 2008 at 08:31:34AM +0100, Jens Axboe escreveu:
+> On Wed, Oct 29 2008, Arnaldo Carvalho de Melo wrote:
+> > Em Wed, Oct 29, 2008 at 02:18:55PM +0100, Jens Axboe escreveu:
+> > > > 	Feel free to point any disgusting aspect, perhaps there is at
+> > > > least one to warn me about fixing 8-)
+> > > 
+> > > You my as well pass the members separately now that it's a specific call
+> > > anyway, to avoid doing the calculation when tracing is disabled.
+> > > 
+> > > Patch looks straight forward. Perhaps it would be cleaner to use an
+> > > atomic type for the reference?
+> > 
+> > Done and made the old pdu_int + NULL bio (trace_block_unplug_{io,timer})
+> > functions to receive just the request_queue.
+> > 
+> > Found and fixed a bug in the process:
+> > 
+> > In v2 we had:
+> > 
+> > +       unregister_trace_block_rq_insert(blk_add_trace_rq_insert);
+> > +       unregister_trace_block_rq_insert(blk_add_trace_rq_abort);
+> > 
+> > Where it should have been:
+> > 
+> > +       unregister_trace_block_rq_insert(blk_add_trace_rq_insert);
+> > +       unregister_trace_block_rq_abort(blk_add_trace_rq_abort);
+> > 
+> > c'n'p roblem!
+> > 
+> > Also removed the leftover tracepoint_synchronize_unregister macro, it
+> > was already merged righfully as an inline function.
+> > 
+> > Everything should be rock solid now 8)
+> 
+> I'll apply this for 2.6.29. I'm assuming you have tested this as well?
 
----696208474-494574763-1225364574=:7072
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Yes, I tested it, run 'btrace /dev/sda' several times, while doing a
+45 GB backup using rsync over NFS, etc. So it should have exercised the
+tracepoints use and repeated registrater/unregister cycles.
 
-Broken by d8b0a49da4f2 (pcmcia: deprecate CS_BAD_VCC and
-CS_BAD_VPP).
+Thanks!
 
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>
----
- drivers/pcmcia/pcmcia_resource.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/pcmcia/pcmcia_resource.c b/drivers/pcmcia/pcmcia_resource.c
-index afea2b2..e3b3139 100644
---- a/drivers/pcmcia/pcmcia_resource.c
-+++ b/drivers/pcmcia/pcmcia_resource.c
-@@ -302,9 +302,10 @@ int pcmcia_modify_configuration(struct pcmcia_device *p_dev,
- 	/* We only allow changing Vpp1 and Vpp2 to the same value */
- 	if ((mod->Attributes & CONF_VPP1_CHANGE_VALID) &&
- 	    (mod->Attributes & CONF_VPP2_CHANGE_VALID)) {
--		if (mod->Vpp1 != mod->Vpp2)
-+		if (mod->Vpp1 != mod->Vpp2) {
- 			ds_dbg(s, 0, "Vpp1 and Vpp2 must be the same\n");
- 			return -EINVAL;
-+		}
- 		s->socket.Vpp = mod->Vpp1;
- 		if (s->ops->set_socket(s, &s->socket)) {
- 			dev_printk(KERN_WARNING, &s->dev,
--- 
-1.5.2.2
-
----696208474-494574763-1225364574=:7072--
+- Arnaldo
