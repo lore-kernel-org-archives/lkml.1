@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbYJ3JDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbYJ3JES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbYJ3JDf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 05:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYJ3JDZ
+	id S1754558AbYJ3JES (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 05:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYJ3JED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 05:03:25 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:33217 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753230AbYJ3JDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 05:03:24 -0400
-Date: Thu, 30 Oct 2008 10:03:07 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: ian@mnementh.co.uk
-Cc: spyro@f2s.com, LAK <linux-arm-kernel@lists.arm.linux.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: MMC maintainership help needed
-Message-ID: <20081030100307.7948f131@mjolnir.drzeus.cx>
-In-Reply-To: <4908A7CD.7070807@f2s.com>
-References: <20081029184254.56e05c4f@mjolnir.drzeus.cx>
-	<4908A7CD.7070807@f2s.com>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-9778-1225357401-0001-2"
+	Thu, 30 Oct 2008 05:04:03 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:50354 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753307AbYJ3JEB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 05:04:01 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type;
+	b=uxKhXWk9f82TJB5O6YO7BPD405NVEEBNOQ1gcK2IRAoJNm9T2JTNXwoW0sQNkIu+w
+	Cr6bsXtFqk8T/K5ATnXxg==
+Date: Thu, 30 Oct 2008 02:03:14 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Paul Menage <menage@google.com>,
+       Derek Fults <dfults@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 6/7] cpusets: per cpuset dirty ratios
+In-Reply-To: <1225356285.7803.7.camel@twins>
+Message-ID: <alpine.DEB.2.00.0810300154040.29917@chino.kir.corp.google.com>
+References: <alpine.DEB.1.10.0810280259500.15270@chino.kir.corp.google.com>  <alpine.DEB.1.10.0810280302320.15270@chino.kir.corp.google.com> <1225356285.7803.7.camel@twins>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Thu, 30 Oct 2008, Peter Zijlstra wrote:
 
---=_freyr.drzeus.cx-9778-1225357401-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+> On Tue, 2008-10-28 at 09:08 -0700, David Rientjes wrote:
+> 
+> > +/*
+> > + * Determine the dirty ratios for the currently active cpuset
+> > + */
+> > +void cpuset_get_current_dirty_ratios(int *background, int *throttle)
+> > +{
+> > +	mutex_lock(&callback_mutex);
+> > +	task_lock(current);
+> > +	*background = task_cs(current)->dirty_background_ratio;
+> > +	*throttle = task_cs(current)->cpuset_dirty_ratio;
+> > +	task_unlock(current);
+> > +	mutex_unlock(&callback_mutex);
+> > +
+> > +	if (*background == -1)
+> > +		*background = dirty_background_ratio;
+> > +	if (*throttle == -1)
+> > +		*throttle = vm_dirty_ratio;
+> > +}
+> 
+> That's rather an awful lot of locking to read just two integers.
+> 
 
-On Wed, 29 Oct 2008 18:13:33 +0000
-Ian Molton <spyro@f2s.com> wrote:
-
-> Pierre Ossman wrote:
->=20
-> > On a related note, I see very little comments to my reviews except
-> > from the original author. As such I'm having a hard time evaluating
-> > my role. Are people satisified with my work as a gatekeeper or am I
-> > just being a pain in the ass? I know I can be a bit anal at times. :)
->=20
-> Im happy with your reviews of the MMC/SD work I have done.
-
-
-Good to hear. Then there's at least one. :)
-
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-9778-1225357401-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkkJeFkACgkQ7b8eESbyJLgEfQCg6iM274d1KX+P01rtfwS8FDUW
-cE0AoK4mN/2IgTVlOxMaYU40VWUjNryy
-=xju4
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-9778-1225357401-0001-2--
+As far as I know, task_lock(current) is required to dereference 
+task_cs(current) and callback_mutex is required to ensure its the same 
+cpuset.
