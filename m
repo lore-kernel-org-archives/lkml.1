@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbYJ3C01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbYJ3Cbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753843AbYJ3C01 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 22:26:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbYJ3C0S
+	id S1753867AbYJ3Cbn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 22:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbYJ3Cbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 22:26:18 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:38165 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751896AbYJ3C0R (ORCPT
+	Wed, 29 Oct 2008 22:31:33 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:18899 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751896AbYJ3Cbc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 22:26:17 -0400
-Date: Wed, 29 Oct 2008 19:21:24 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-X-X-Sender: xyzzy@t2.domain.actdsltmp
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Richard Purdie <rpurdie@rpsys.net>,
-       Sean MacLennan <smaclennan@pikatech.com>,
-       Wolfram Sang <w.sang@pengutronix.de>,
-       Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/4] of_gpio: Return GPIO flags from of_get_gpio()A
-In-Reply-To: <20081028143933.GA18453@oksana.dev.rtsoft.ru>
-Message-ID: <Pine.LNX.4.64.0810291857110.25957@t2.domain.actdsltmp>
-References: <Pine.LNX.4.64.0810241442240.3790@t2.domain.actdsltmp>
- <1224889741-4167-1-git-send-email-tpiepho@freescale.com>
- <20081028143933.GA18453@oksana.dev.rtsoft.ru>
+	Wed, 29 Oct 2008 22:31:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ul4OyQJEit/D2DjIgtE5n6nMsJaMsGDy8imFPTgjAwRC856xm0ABBpnEcXgHnE6u3W
+         trYxtGErwhv9vBbIEa5Z/KKwpEGYqYUOY0PbEV/r4yiIenQ7Y8wrtvRkbP6ZlvlAUolW
+         WdyC8fhusGlU1JCYbot2GwBRKSXUJwzZ08siY=
+Message-ID: <df9815e70810291931i4c00966u8f4493386e376b28@mail.gmail.com>
+Date: Thu, 30 Oct 2008 10:31:30 +0800
+From: "Jike Song" <albcamus@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] x86: fix inline assembly constraints
+Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081029163400.GA14866@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1225297937-2917-1-git-send-email-albcamus@gmail.com>
+	 <20081029163400.GA14866@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Oct 2008, Anton Vorontsov wrote:
-> On Fri, Oct 24, 2008 at 04:08:58PM -0700, Trent Piepho wrote:
->> + * @flags:	if non-NUll flags are returned here
+On Thu, Oct 30, 2008 at 12:34 AM, Ingo Molnar <mingo@elte.hu> wrote:
 >
-> NULL, not NUll.
-
-Thanks, fixed.
-
->> +			 const void *gpio_spec, unsigned int *flags)
+> * Jike Song <albcamus@gmail.com> wrote:
+>>
+>> --
 >
-> Why you made it unsigned int? In my original patch, I used
-> named enum, which is self-documenting type.
-
-I started writing this patch before you posted yours, and I didn't think of
-the enum.  But you have a good point so I'll switch to an enum.
-
->> + * Flags as returned by OF GPIO chip's xlate function.
->> + * These do not need to be the same as the flags in the GPIO specifier in the
->> + * OF device tree, but it's convenient if they are.  The mm chip OF GPIO
->> + * driver works this way.
+> that was an easy patch to act upon ;-)
 >
-> This is not of_mm_gpio_chip specific.
-
-of_mm_gpio_chip was just an example of a driver that uses the same flag format
-for Linux and the OF binding.  I'll clarify the comment.
-
-WRT changing the interface, Linux doesn't provide a stable kernel API. 
-Functions that have been around far longer than of_get_gpio() and have far
-more users have changed.  Yes, it is slightly annoying now.  But providing
-backward compatibility for every single interface change will produce a
-bloated and redundant API that will be around forever.
-
-> Can you repost a fixed version with my Ack and Cc: Andrew Morton,
-> Benjamin Herrenschmidt?
+>        Ingo
 >
-> I think this change should go into the 2.6.28, so that we can
-> write new code on top of new API. Otherwise this change will cause
-> issues in the next merge window.
+Sorry Ingo, I missed your point. Do you mean this patch is trivial or
+unnecessary?
 
-If you can get your patch into Ben's -next tree before the high .28-RCs come
-out, I can just rebase my patch to that tree and make the changes to any new
-callers of of_get_gpio() that are there.
+Besides, by looking at the inline assembly in kernel,  I found lots of
+codes like this:
+
+        static inline void atomic_add(int i, atomic_t *v)
+        {
+	        asm volatile(LOCK_PREFIX "addl %1,%0"
+		             : "=m" (v->counter)
+		             : "ir" (i), "m" (v->counter));
+        }
+
+
+Yes, it works. But a little ugly..  Should this be cleaned-up with the
+following?
+
+        : "+m" (v->counter)
+        : "ir" (i)
+
+If you agrees, I'll send out the patch; otherwise I won't wasting your time ;-)
+
+
+-- 
+Thanks,
+Jike
