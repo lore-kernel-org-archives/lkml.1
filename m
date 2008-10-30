@@ -1,317 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbYJ3ISg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbYJ3IbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755038AbYJ3ISg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 04:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754636AbYJ3IR1
+	id S1754093AbYJ3IbS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 04:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbYJ3Ia7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 04:17:27 -0400
-Received: from mga09.intel.com ([134.134.136.24]:2226 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754580AbYJ3IRY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 04:17:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,513,1220252400"; 
-   d="asc'?scan'208";a="457096528"
-Subject: [PATCH -mm 3/3 -v3] kexec/i386: setup kexec page table in C
-From: Huang Ying <ying.huang@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Simon Horman <horms@verge.net.au>,
-       Ian Campbell <Ian.Campbell@citrix.com>,
-       Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-oNsKUTOgx3l8xELrUrXH"
-Date: Thu, 30 Oct 2008 16:17:14 +0800
-Message-Id: <1225354634.24095.113.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 30 Oct 2008 04:30:59 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:10840 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751683AbYJ3Ia6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 04:30:58 -0400
+Message-ID: <ac3eb2510810300130k29d6533ei6f49948889158712@mail.gmail.com>
+Date: Thu, 30 Oct 2008 09:30:56 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Tejun Heo" <tj@kernel.org>
+Subject: Re: why does udev set timeout for all SCSI devices?
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Jens Axboe" <jens.axboe@oracle.com>
+In-Reply-To: <49092208.9060909@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <49092208.9060909@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Oct 30, 2008 at 03:55, Tejun Heo <tj@kernel.org> wrote:
+> As the $SUBJ says, why does udev set timeout for all SCSI devices?
+> It's the following two rules.
+>
+> 50-udev-default.rules:SUBSYSTEM=="scsi", KERNEL=="[0-9]*:[0-9]*",
+> ACTION=="add", ATTR{type}=="0|7|14", ATTR{timeout}="60"
+> 50-udev-default.rules:SUBSYSTEM=="scsi", KERNEL=="[0-9]*:[0-9]*",
+> ACTION=="add", ATTR{type}=="1", ATTR{timeout}="900"
+>
+> The appropriate default timeout differs depending on the transport and
+> the type of the attached device, so the above two rules harm more than
+> help.  The affect of the above two rules weren't visible for some
+> reason but with recent block layer timeout update, they actually work
+> and cause problems.
 
---=-oNsKUTOgx3l8xELrUrXH
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+It's in there for years, I can not even dig out, where it is coming
+from. I just removed it from the default rules.
 
-This patch transforms the kexec page tables setup code from assembler
-code to C code in machine_kexec_prepare. This improves readability and
-reduces code line number.
-
-Signed-off-by: Huang Ying <ying.huang@intel.com>
-
----
- arch/x86/include/asm/kexec.h         |   17 -----
- arch/x86/kernel/machine_kexec_32.c   |   59 ++++++++++++++----
- arch/x86/kernel/relocate_kernel_32.S |  114 ------------------------------=
------
- 3 files changed, 49 insertions(+), 141 deletions(-)
-
---- a/arch/x86/kernel/machine_kexec_32.c
-+++ b/arch/x86/kernel/machine_kexec_32.c
-@@ -99,6 +99,45 @@ static int machine_kexec_alloc_page_tabl
- 	return 0;
- }
-=20
-+static void machine_kexec_page_table_set_one(
-+	pgd_t *pgd, pmd_t *pmd, pte_t *pte,
-+	unsigned long vaddr, unsigned long paddr)
-+{
-+	pud_t *pud;
-+
-+	pgd +=3D pgd_index(vaddr);
-+#ifdef CONFIG_X86_PAE
-+	if (!(pgd_val(*pgd) & _PAGE_PRESENT))
-+		set_pgd(pgd, __pgd(__pa(pmd) | _PAGE_PRESENT));
-+#endif
-+	pud =3D pud_offset(pgd, vaddr);
-+	pmd =3D pmd_offset(pud, vaddr);
-+	if (!(pmd_val(*pmd) & _PAGE_PRESENT))
-+		set_pmd(pmd, __pmd(__pa(pte) | _PAGE_TABLE));
-+	pte =3D pte_offset_kernel(pmd, vaddr);
-+	set_pte(pte, pfn_pte(paddr >> PAGE_SHIFT, PAGE_KERNEL_EXEC));
-+}
-+
-+static void machine_kexec_prepare_page_tables(struct kimage *image)
-+{
-+	void *control_page;
-+	pmd_t *pmd =3D 0;
-+
-+	control_page =3D page_address(image->control_code_page);
-+#ifdef CONFIG_X86_PAE
-+	pmd =3D image->arch.pmd0;
-+#endif
-+	machine_kexec_page_table_set_one(
-+		image->arch.pgd, pmd, image->arch.pte0,
-+		(unsigned long)control_page, __pa(control_page));
-+#ifdef CONFIG_X86_PAE
-+	pmd =3D image->arch.pmd1;
-+#endif
-+	machine_kexec_page_table_set_one(
-+		image->arch.pgd, pmd, image->arch.pte1,
-+		__pa(control_page), __pa(control_page));
-+}
-+
- /*
-  * A architecture hook called to validate the
-  * proposed image and prepare the control pages
-@@ -112,12 +151,19 @@ static int machine_kexec_alloc_page_tabl
-  *
-  * - Make control page executable.
-  * - Allocate page tables
-+ * - Setup page tables
-  */
- int machine_kexec_prepare(struct kimage *image)
- {
-+	int error;
-+
- 	if (nx_enabled)
- 		set_pages_x(image->control_code_page, 1);
--	return machine_kexec_alloc_page_tables(image);
-+	error =3D machine_kexec_alloc_page_tables(image);
-+	if (error)
-+		return error;
-+	machine_kexec_prepare_page_tables(image);
-+	return 0;
- }
-=20
- /*
-@@ -176,17 +222,6 @@ void machine_kexec(struct kimage *image)
- 	page_list[PA_CONTROL_PAGE] =3D __pa(control_page);
- 	page_list[VA_CONTROL_PAGE] =3D (unsigned long)control_page;
- 	page_list[PA_PGD] =3D __pa(image->arch.pgd);
--	page_list[VA_PGD] =3D (unsigned long)image->arch.pgd;
--#ifdef CONFIG_X86_PAE
--	page_list[PA_PMD_0] =3D __pa(image->arch.pmd0);
--	page_list[VA_PMD_0] =3D (unsigned long)image->arch.pmd0;
--	page_list[PA_PMD_1] =3D __pa(image->arch.pmd1);
--	page_list[VA_PMD_1] =3D (unsigned long)image->arch.pmd1;
--#endif
--	page_list[PA_PTE_0] =3D __pa(image->arch.pte0);
--	page_list[VA_PTE_0] =3D (unsigned long)image->arch.pte0;
--	page_list[PA_PTE_1] =3D __pa(image->arch.pte1);
--	page_list[VA_PTE_1] =3D (unsigned long)image->arch.pte1;
- 	page_list[PA_SWAP_PAGE] =3D (page_to_pfn(image->swap_page) << PAGE_SHIFT)=
-;
-=20
- 	/* The segment registers are funny things, they have both a
---- a/arch/x86/kernel/relocate_kernel_32.S
-+++ b/arch/x86/kernel/relocate_kernel_32.S
-@@ -10,15 +10,12 @@
- #include <asm/page.h>
- #include <asm/kexec.h>
- #include <asm/processor-flags.h>
--#include <asm/pgtable.h>
-=20
- /*
-  * Must be relocatable PIC code callable as a C function
-  */
-=20
- #define PTR(x) (x << 2)
--#define PAGE_ATTR (_PAGE_PRESENT | _PAGE_RW | _PAGE_ACCESSED | _PAGE_DIRTY=
-)
--#define PAE_PGD_ATTR (_PAGE_PRESENT)
-=20
- /* control_page + KEXEC_CONTROL_CODE_MAX_SIZE
-  * ~ control_page + PAGE_SIZE are used as data storage and stack for
-@@ -59,117 +56,6 @@ relocate_kernel:
- 	movl	%cr4, %eax
- 	movl	%eax, CR4(%edi)
-=20
--#ifdef CONFIG_X86_PAE
--	/* map the control page at its virtual address */
--
--	movl	PTR(VA_PGD)(%ebp), %edi
--	movl	PTR(VA_CONTROL_PAGE)(%ebp), %eax
--	andl	$0xc0000000, %eax
--	shrl	$27, %eax
--	addl	%edi, %eax
--
--	movl	PTR(PA_PMD_0)(%ebp), %edx
--	orl	$PAE_PGD_ATTR, %edx
--	movl	%edx, (%eax)
--
--	movl	PTR(VA_PMD_0)(%ebp), %edi
--	movl	PTR(VA_CONTROL_PAGE)(%ebp), %eax
--	andl	$0x3fe00000, %eax
--	shrl	$18, %eax
--	addl	%edi, %eax
--
--	movl	PTR(PA_PTE_0)(%ebp), %edx
--	orl	$PAGE_ATTR, %edx
--	movl	%edx, (%eax)
--
--	movl	PTR(VA_PTE_0)(%ebp), %edi
--	movl	PTR(VA_CONTROL_PAGE)(%ebp), %eax
--	andl	$0x001ff000, %eax
--	shrl	$9, %eax
--	addl	%edi, %eax
--
--	movl	PTR(PA_CONTROL_PAGE)(%ebp), %edx
--	orl	$PAGE_ATTR, %edx
--	movl	%edx, (%eax)
--
--	/* identity map the control page at its physical address */
--
--	movl	PTR(VA_PGD)(%ebp), %edi
--	movl	PTR(PA_CONTROL_PAGE)(%ebp), %eax
--	andl	$0xc0000000, %eax
--	shrl	$27, %eax
--	addl	%edi, %eax
--
--	movl	PTR(PA_PMD_1)(%ebp), %edx
--	orl	$PAE_PGD_ATTR, %edx
--	movl	%edx, (%eax)
--
--	movl	PTR(VA_PMD_1)(%ebp), %edi
--	movl	PTR(PA_CONTROL_PAGE)(%ebp), %eax
--	andl	$0x3fe00000, %eax
--	shrl	$18, %eax
--	addl	%edi, %eax
--
--	movl	PTR(PA_PTE_1)(%ebp), %edx
--	orl	$PAGE_ATTR, %edx
--	movl	%edx, (%eax)
--
--	movl	PTR(VA_PTE_1)(%ebp), %edi
--	movl	PTR(PA_CONTROL_PAGE)(%ebp), %eax
--	andl	$0x001ff000, %eax
--	shrl	$9, %eax
--	addl	%edi, %eax
--
--	movl	PTR(PA_CONTROL_PAGE)(%ebp), %edx
--	orl	$PAGE_ATTR, %edx
--	movl	%edx, (%eax)
--#else
--	/* map the control page at its virtual address */
--
--	movl	PTR(VA_PGD)(%ebp), %edi
--	movl	PTR(VA_CONTROL_PAGE)(%ebp), %eax
--	andl	$0xffc00000, %eax
--	shrl	$20, %eax
--	addl	%edi, %eax
--
--	movl	PTR(PA_PTE_0)(%ebp), %edx
--	orl	$PAGE_ATTR, %edx
--	movl	%edx, (%eax)
--
--	movl	PTR(VA_PTE_0)(%ebp), %edi
--	movl	PTR(VA_CONTROL_PAGE)(%ebp), %eax
--	andl	$0x003ff000, %eax
--	shrl	$10, %eax
--	addl	%edi, %eax
--
--	movl	PTR(PA_CONTROL_PAGE)(%ebp), %edx
--	orl	$PAGE_ATTR, %edx
--	movl	%edx, (%eax)
--
--	/* identity map the control page at its physical address */
--
--	movl	PTR(VA_PGD)(%ebp), %edi
--	movl	PTR(PA_CONTROL_PAGE)(%ebp), %eax
--	andl	$0xffc00000, %eax
--	shrl	$20, %eax
--	addl	%edi, %eax
--
--	movl	PTR(PA_PTE_1)(%ebp), %edx
--	orl	$PAGE_ATTR, %edx
--	movl	%edx, (%eax)
--
--	movl	PTR(VA_PTE_1)(%ebp), %edi
--	movl	PTR(PA_CONTROL_PAGE)(%ebp), %eax
--	andl	$0x003ff000, %eax
--	shrl	$10, %eax
--	addl	%edi, %eax
--
--	movl	PTR(PA_CONTROL_PAGE)(%ebp), %edx
--	orl	$PAGE_ATTR, %edx
--	movl	%edx, (%eax)
--#endif
--
--relocate_new_kernel:
- 	/* read the arguments and say goodbye to the stack */
- 	movl  20+4(%esp), %ebx /* page_list */
- 	movl  20+8(%esp), %ebp /* list of pages */
---- a/arch/x86/include/asm/kexec.h
-+++ b/arch/x86/include/asm/kexec.h
-@@ -5,21 +5,8 @@
- # define PA_CONTROL_PAGE	0
- # define VA_CONTROL_PAGE	1
- # define PA_PGD			2
--# define VA_PGD			3
--# define PA_PTE_0		4
--# define VA_PTE_0		5
--# define PA_PTE_1		6
--# define VA_PTE_1		7
--# define PA_SWAP_PAGE		8
--# ifdef CONFIG_X86_PAE
--#  define PA_PMD_0		9
--#  define VA_PMD_0		10
--#  define PA_PMD_1		11
--#  define VA_PMD_1		12
--#  define PAGES_NR		13
--# else
--#  define PAGES_NR		9
--# endif
-+# define PA_SWAP_PAGE		3
-+# define PAGES_NR		4
- #else
- # define PA_CONTROL_PAGE	0
- # define VA_CONTROL_PAGE	1
-
-
---=-oNsKUTOgx3l8xELrUrXH
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkkJbYcACgkQKhFGF+eHlpgp+ACdF80sKbRL3W+OOAbKS7s+RtQ8
-KPcAoJoc2s9TzRwVBTmw/+7Lv93+papl
-=P3y+
------END PGP SIGNATURE-----
-
---=-oNsKUTOgx3l8xELrUrXH--
-
+Thanks,
+Kay
