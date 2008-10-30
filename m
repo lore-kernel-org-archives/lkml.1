@@ -1,77 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbYJ3AKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbYJ3AOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755561AbYJ3AKk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 20:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYJ3AKb
+	id S1755716AbYJ3AOP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 20:14:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751108AbYJ3AOA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 20:10:31 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36633 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751108AbYJ3AKa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 20:10:30 -0400
-Date: Thu, 30 Oct 2008 09:09:58 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: gerald.schaefer@de.ibm.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       y-goto@jp.fujitsu.com, dave@linux.vnet.ibm.com
-Subject: Re: [PATCH] memory hotplug: fix page_zone() calculation in
- test_pages_isolated()
-Message-Id: <20081030090958.f86d49db.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1225290330.10021.7.camel@t60p>
-References: <1225290330.10021.7.camel@t60p>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Oct 2008 20:14:00 -0400
+Received: from ns.suse.de ([195.135.220.2]:53772 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751094AbYJ3AN7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 20:13:59 -0400
+Date: Wed, 29 Oct 2008 17:02:10 -0700
+From: Greg KH <gregkh@suse.de>
+To: Wolfgang Beiter <w.beiter@aon.at>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Shawn Bohrer <shawn.bohrer@gmail.com>,
+       David Schleef <ds@schleef.org>,
+       Frank Mori Hess <fmhess@users.sourceforge.net>,
+       Ian Abbott <abbotti@mev.co.uk>, linux-kernel@vger.kernel.org
+Subject: Re: staging: me4000 and relation to other data acquisition devices
+Message-ID: <20081030000210.GA23359@suse.de>
+References: <20081028154918.GA5630@mediacenter> <20081028163456.GA4278@suse.de> <20081028103337.a021e85d.rdunlap@xenotime.net> <20081028181402.GB4873@suse.de> <20081029151202.GB2190@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081029151202.GB2190@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Oct 2008 15:25:30 +0100
-Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
+On Wed, Oct 29, 2008 at 04:12:02PM +0100, Wolfgang Beiter wrote:
+> On  [28.10.2008 11:14], Greg KH wrote:
+> > On Tue, Oct 28, 2008 at 10:33:37AM -0700, Randy Dunlap wrote:
+> > > On Tue, 28 Oct 2008 09:34:56 -0700 Greg KH wrote:
+> > > 
+> > > > On Tue, Oct 28, 2008 at 10:49:18AM -0500, Shawn Bohrer wrote:
+> > > > > I have some questions about the user-kernel interface of the me4000
+> > > > > driver.  From my looking through the code it seems specific to the
+> > > > > me4000 hardware which does concern me since there are hundreds of
+> > > > > different data acquisition devices from many different vendors.  In my
+> > > > > opinion it would beneficial if at the very least all of these devices
+> > > > > shared a common device interface.
+> > > > 
+> > > > I totally agree.
+> > > > 
+> > > > The me4000's user interface is not "set in stone" and needs to be fixed
+> > > > up in order to move into the main kernel tree.
+> > > > 
+> > > > > Additionally there is the out of tree Comedi project:
+> > > > > 
+> > > > > http://comedi.org
+> > > > > 
+> > > > > Which supports this hardware, and many more, with a generic device
+> > > > > interface.  There may be other reason not to merge Comedi (I know they
+> > > > > have a desire to maintain support of their RT support), but I can't help
+> > > > > but feel that merging the me4000 driver without thinking about the
+> > > > > hundreds of other devices out there is a mistake.
+> > > > 
+> > > > I would love to get comedi into the kernel tree.  People have talked
+> > > > about it for years now, is it time for me to just take a snapshot and
+> > > > place it in drivers/staging/ for everyone to then work on cleaning up
+> > > > properly?
+> > > 
+> > > Greg,
+> > > 
+> > > Maybe I missed it at the beginning of the staging tree, but would you
+> > > explain which drivers you will or will not put into the staging tree?
+> > > 
+> > > E.g., what if someone doesn't want their driver merged into mainline?
+> > 
+> > Of course, if someone doesn't want their code in the staging tree, I
+> > will not add it, that's just being "nice".
+> > 
+> > As for what I will not put into staging, right now I'm sticking with
+> > drivers only, no filesystems (people have asked already).  I don't think
+> > we have seen any drivers that I will not put into the staging tree yet.
+> > 
+> > thanks,
+> > 
+> > greg k-h
+> 
+> sorry for causing the disput since the inital point to this may
+> belong to me.
+> 
+> At the beginning of this year, reading about the LDP (linux driver
+> project), this encouraged me to write an e-mail to Mr. Kroah-Hartman,
+> asking for me4000 driver support.
+> 
+> Pointing out that there are still mexxxx driver downloads on
+> www.sourceforge.net, although the drivers are no more supported by the
+> vendor and wont built with newer linux kernels, I felt it's a good idea.
 
-> From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-> 
-> My last bugfix here (adding zone->lock) introduced a new problem: Using
-> page_zone(pfn_to_page(pfn)) to get the zone after the for() loop is wrong.
-> pfn will then be >= end_pfn, which may be in a different zone or not
-> present at all. This may lead to an addressing exception in page_zone()
-> or spin_lock_irqsave().
-> 
-> Now I use __first_valid_page() again after the loop to find a valid page
-> for page_zone().
-> 
-> Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-> 
-Thanks.
+Yes, it's fine, don't worry about it.
 
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+If we can add the comedi code, that would be even better overall, and
+provide the common interface we really need for these kinds of devices
+in Linux.
 
-> ---
->  mm/page_isolation.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6/mm/page_isolation.c
-> ===================================================================
-> --- linux-2.6.orig/mm/page_isolation.c
-> +++ linux-2.6/mm/page_isolation.c
-> @@ -130,10 +130,11 @@ int test_pages_isolated(unsigned long st
->  		if (page && get_pageblock_migratetype(page) != MIGRATE_ISOLATE)
->  			break;
->  	}
-> -	if (pfn < end_pfn)
-> +	page = __first_valid_page(start_pfn, end_pfn - start_pfn);
-> +	if ((pfn < end_pfn) || !page)
->  		return -EBUSY;
->  	/* Check all pages are free or Marked as ISOLATED */
-> -	zone = page_zone(pfn_to_page(pfn));
-> +	zone = page_zone(page);
->  	spin_lock_irqsave(&zone->lock, flags);
->  	ret = __test_page_isolated_in_pageblock(start_pfn, end_pfn);
->  	spin_unlock_irqrestore(&zone->lock, flags);
-> 
-> 
+thanks,
 
+greg k-h
