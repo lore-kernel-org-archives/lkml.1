@@ -1,87 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbYJ3LHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755056AbYJ3LKR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755276AbYJ3LHH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 07:07:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbYJ3LGz
+	id S1755056AbYJ3LKR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 07:10:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbYJ3LKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 07:06:55 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56519 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753344AbYJ3LGy (ORCPT
+	Thu, 30 Oct 2008 07:10:04 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:37427 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753212AbYJ3LKB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 07:06:54 -0400
-Date: Thu, 30 Oct 2008 12:06:53 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] corruption checker: print the DMI board name
-Message-ID: <20081030110653.GA7291@atrey.karlin.mff.cuni.cz>
-References: <20081029091703.47628e54@infradead.org>
+	Thu, 30 Oct 2008 07:10:01 -0400
+Date: Thu, 30 Oct 2008 13:09:55 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: perex@perex.cz, tiwai@suse.de
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 01/10] sound/ice1712: indentation & braces disagree - add
+ braces
+Message-ID: <Pine.LNX.4.64.0810301307160.7072@wrl-59.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081029091703.47628e54@infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1087615928-1225364995=:7072"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> >From 4f829eef5a31b68a0cbaf83a75ac8b0a1ed05afb Mon Sep 17 00:00:00 2001
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Wed, 29 Oct 2008 09:13:23 -0700
-> Subject: [PATCH] corruption checker: print the DMI board name
-> 
-> when the memory corruptor checker hits (as it has done now based on kerneloops.org data),
-> it would be extremely useful to know the DMI board name so we can add a blacklist for
-> such a machine... without having to ask the user for lots of extra info.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I'm not sure if blacklisting whole brand for one case of bit
-corruption is fair -- perhaps the memory was overheating?
+---696208474-1087615928-1225364995=:7072
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-  
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-But ACK -- we certainly want to see the data.
+Neither has any significance currently to the flow
+because err is checked for the same condition before
+the place of disagreement.
 
-> ---
->  arch/x86/kernel/check.c |    8 +++++++-
->  1 files changed, 7 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/check.c b/arch/x86/kernel/check.c
-> index 2ac0ab7..f952182 100644
-> --- a/arch/x86/kernel/check.c
-> +++ b/arch/x86/kernel/check.c
-> @@ -2,6 +2,7 @@
->  #include <linux/sched.h>
->  #include <linux/kthread.h>
->  #include <linux/workqueue.h>
-> +#include <linux/dmi.h>
->  #include <asm/e820.h>
->  #include <asm/proto.h>
->  
-> @@ -113,6 +114,7 @@ void check_for_bios_corruption(void)
->  {
->  	int i;
->  	int corruption = 0;
-> +	const char *board;
->  
->  	if (!memory_corruption_check)
->  		return;
-> @@ -131,7 +133,11 @@ void check_for_bios_corruption(void)
->  		}
->  	}
->  
-> -	WARN_ONCE(corruption, KERN_ERR "Memory corruption detected in low memory\n");
-> +	board = dmi_get_system_info(DMI_PRODUCT_NAME);
-> +	if (!board)
-> +		board = "";
-> +	WARN_ONCE(corruption, KERN_ERR "Memory corruption detected in low memory\nBoard name: %s\n",
-> +		board);
->  }
->  
->  static void check_corruption(struct work_struct *dummy);
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+---
+ sound/pci/ice1712/ice1712.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
+diff --git a/sound/pci/ice1712/ice1712.c b/sound/pci/ice1712/ice1712.c
+index 5b44238..58d7cda 100644
+--- a/sound/pci/ice1712/ice1712.c
++++ b/sound/pci/ice1712/ice1712.c
+@@ -2688,12 +2688,13 @@ static int __devinit snd_ice1712_probe(struct pci_dev *pci,
+ 		return err;
+ 	}
+ 
+-	if (ice_has_con_ac97(ice))
++	if (ice_has_con_ac97(ice)) {
+ 		err = snd_ice1712_pcm(ice, pcm_dev++, NULL);
+ 		if (err < 0) {
+ 			snd_card_free(card);
+ 			return err;
+ 		}
++	}
+ 
+ 	err = snd_ice1712_ac97_mixer(ice);
+ 	if (err < 0) {
+@@ -2715,12 +2716,13 @@ static int __devinit snd_ice1712_probe(struct pci_dev *pci,
+ 		}
+ 	}
+ 
+-	if (ice_has_con_ac97(ice))
++	if (ice_has_con_ac97(ice)) {
+ 		err = snd_ice1712_pcm_ds(ice, pcm_dev++, NULL);
+ 		if (err < 0) {
+ 			snd_card_free(card);
+ 			return err;
+ 		}
++	}
+ 
+ 	if (!c->no_mpu401) {
+ 		err = snd_mpu401_uart_new(card, 0, MPU401_HW_ICE1712,
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.2.2
+
+---696208474-1087615928-1225364995=:7072--
