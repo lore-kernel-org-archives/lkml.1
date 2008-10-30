@@ -1,81 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbYJ3Ace@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbYJ3Aeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbYJ3Ace (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 20:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbYJ3AcX
+	id S1756167AbYJ3Aeu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 20:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625AbYJ3Aen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 20:32:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55755 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751154AbYJ3AcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 20:32:22 -0400
-Message-ID: <4909007F.5070602@kernel.org>
-Date: Thu, 30 Oct 2008 09:31:59 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Wed, 29 Oct 2008 20:34:43 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:21261 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753754AbYJ3Aem (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Oct 2008 20:34:42 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=O6zQN7YRlnZNtOCQghIA:9 a=1cnTDQ6TPThIdqxiiJjm3nzFOAMA:4 a=0txMyaFBVUcA:10
+Message-ID: <4909011F.1050102@shaw.ca>
+Date: Wed, 29 Oct 2008 18:34:39 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Mike Anderson <andmike@linux.vnet.ibm.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Timeout regression introduced by	242f9dcb8ba6f68fcd217a119a7648a4f69290e9
-References: <49043C7C.8050207@kernel.org> <1225034105.3958.4.camel@localhost.localdomain> <49051EA4.3040403@kernel.org> <20081027213006.GB17946@linux.vnet.ibm.com> <490666D6.8090603@kernel.org> <20081029132654.GE31673@kernel.dk>
-In-Reply-To: <20081029132654.GE31673@kernel.dk>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: upstream regression (IO-APIC?)
+References: <fa.mewpISr5S4wcdUNw1DVfOnQfl8s@ifi.uio.no>
+In-Reply-To: <fa.mewpISr5S4wcdUNw1DVfOnQfl8s@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 30 Oct 2008 00:32:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Tue, Oct 28 2008, Tejun Heo wrote:
->> Mike Anderson wrote:
->>> Tejun Heo <tj@kernel.org> wrote:
->>>> James Bottomley wrote:
->>>>> On Sun, 2008-10-26 at 18:46 +0900, Tejun Heo wrote:
->>>>>> Hello, Jens.
->>>>>>
->>>>>> Commit 242f9dcb8ba6f68fcd217a119a7648a4f69290e9 introduces a strange
->>>>>> regression for libata.  The second timeout gives puts different
->>>>>> pointer from the issued command onto eh_cmd_q breaking libata EH
->>>>>> command matching which triggers WARN_ON() in ata_eh_finish() and hangs
->>>>>> command processing or causes oops later depending on circumstances.
->>>>>>
->>>>>> Here are logs with induced timeouts (patch attached).  In commit
->>>>>> 242f9dcb8, the XXX messages for the second timeout shows different
->>>>>> scsi_cmd pointers for eh_cmd_q and qc->scmd which is initialized by
->>>>>> ata_scsi_qc_new() during command translation.
->>>>> I can't see a way we could be getting a different command passed in from
->>>>> the actual one, since the only way to lose the command from the request
->>>>> is to go through the command completion routines which free it (and end
->>>>> the request).
->>>> I have no idea either.  It's something in the timeout logic because on
->>>> the issue path the scmd pointer is identical but on tiemout pointer
->>>> for another scmd is queued on eh_cmd_q, which doesn't make much sense.
->>>>
->>> I was trying to recreate this error using ata_ram wth v2.6.28-rc2.
->>> Currently I am not able to see this error on timeout recovery using this
->>> setup. Does IO load (or other factors) effect the error being seen?
->> Not at all.  That's the only write command I issued.
+Bartlomiej Zolnierkiewicz wrote:
+> The current Linus tree as of commit e946217e4fdaa67681bbabfa8e6b18641921f750
+> is broken for me.  I get either the following panic (see log from qemu below)
+> or lost IRQs on ATA init...  Is this a known issue?
 > 
-> It's all extremely puzzling. Any chance I could talk you into stuffing
-> some debug printks in there to see what the hell is going on?
+> PS The tree that I used before and was supposedly good (sorry, I'm too tired
+> to verify it now) had commit 57f8f7b60db6f1ed2c6918ab9230c4623a9dbe37 at head.
 
-I got it pinned down.  I'll post the fix after some more testing but it
-looks like we'll need more extensive change to get it clean.  The
-problem is when the command is passed to driver - at elv_next_request()
-or blkdev_dequeue_request().  SCSI thinks it's blkdev_dequeue_request(),
-block layer thinks it's elv_next_request() for some purposes while
-blkdev_dequeue_request() for others.  I really think we should change
-the interface to something like blk_peek_request() and
-blk_fetch_request() and don't allow finishing a request which are not
-fetched.
-
-Thanks.
-
--- 
-tejun
+What's the bootup dmesg from a working kernel?
