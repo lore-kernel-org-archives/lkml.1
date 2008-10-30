@@ -1,125 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753310AbYJ3He4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbYJ3Hlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753310AbYJ3He4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 03:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbYJ3Heq
+	id S1754188AbYJ3Hlx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 03:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbYJ3Hln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 03:34:46 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:48014 "EHLO
-	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752825AbYJ3Hep convert rfc822-to-8bit (ORCPT
+	Thu, 30 Oct 2008 03:41:43 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:33524 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753175AbYJ3Hln (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 03:34:45 -0400
-X-BigFish: VPS-70(z21eWz542N1432R98dR936eQ148cM1805M936fO3117K9371P241fmzzzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K9JJPB-03-93P-01
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Thu, 30 Oct 2008 03:41:43 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=f2eM0SASr5Qrb0l51yyjPkZAVLMD79GHQrJpdoT8QFwyeEDkOd/ZsTmC6Gzk7CDMO
+	75+ZYq1hpq1Q3jexSX6lw==
+Message-ID: <6599ad830810300041o1f97999em7b64426414bae380@mail.gmail.com>
+Date: Thu, 30 Oct 2008 00:41:39 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Li Zefan" <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH] cgroup: fix invalid cgrp->dentry before cgroup has been completely removed
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       "Linux Containers" <containers@lists.linux-foundation.org>
+In-Reply-To: <490960EF.7020500@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: 2.6.27: ehci bug with AMD 770nb/SB700 southbridge. usb lockup
-Date: Thu, 30 Oct 2008 15:34:14 +0800
-Message-ID: <B90463BC30D2E446BA423D888DC85E50E8C0EB@sshaexmb1.amd.com>
-In-Reply-To: <20081030055410.GB19035@kroah.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.27: ehci bug with AMD 770nb/SB700 southbridge. usb lockup
-Thread-Index: Ack6VEMgbkbTHVvFRceY2+G7Nu6s5gADWD3Q
-References: <200810300215.18792.volker.armin.hemmann@tu-clausthal.de> <20081030055410.GB19035@kroah.com>
-From: "Yang, Libin" <Libin.Yang@amd.com>
-To: "Greg KH" <greg@kroah.com>,
-       "Volker Armin Hemmann" <volker.armin.hemmann@tu-clausthal.de>
-CC: <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>,
-       "Huang, Shane" <Shane.Huang@amd.com>
-X-OriginalArrivalTime: 30 Oct 2008 07:34:22.0578 (UTC) FILETIME=[ED644520:01C93A61]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <490960EF.7020500@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for reporting this bug. We are trying to reproduce this bug and
-will look into it.
+On Thu, Oct 30, 2008 at 12:23 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+> This fixes oops when reading /proc/sched_debug.
+>
+> A cgroup won't be removed completely until finishing cgroup_diput(), so we
+> shouldn't invalidate cgrp->dentry in cgroup_rmdir(). Otherwise, when a
+> group is being removed while cgroup_path() gets called, we may trigger NULL
+> dereference BUG.
 
-Thanks & Regards,
-Libin
+Clearly a bug if it can hit a NULL dereference. But clearing the
+dentry to NULL is something that cgroups inherited from cpusets - it
+looks OK to remove it, but I'm mildly nervous.
 
-> -----Original Message-----
-> From: Greg KH [mailto:greg@kroah.com]
-> Sent: Thursday, October 30, 2008 1:54 PM
-> To: Volker Armin Hemmann
-> Cc: linux-kernel@vger.kernel.org; linux-usb@vger.kernel.org; Yang,
-Libin;
-> Cai, Crane
-> Subject: Re: 2.6.27: ehci bug with AMD 770nb/SB700 southbridge. usb
-lockup
-> 
-> On Thu, Oct 30, 2008 at 02:15:18AM +0100, Volker Armin Hemmann wrote:
-> > Hi,
-> >
-> > I have a A770Crossfire board from Asrock.
-> > With kernel 2.6.26.X and 2.6.27.[1,2,3,4] I have the following
-problem
-> that
-> > makes usb mostly unusable.
-> >
-> > I have a 4 port hub attached. A logitech mouse receiver is inserted
-into
-> one
-> > of its ports - it does not matter which one. Everything works fine.
-> >
-> > I turn on an external enclosure, which is either attached to one of
-the
-> > mainboards ports or the hub. Everything works for a couple of
-seconds. I
-> mount
-> > the cdrom/harddisk partition and start copying a file - or just wait
-a
-> couple
-> > of seconds.
-> > USB completly locks up. First the mouse, then a bit later the file
-> transfer
-> > (so one was started) stops. Turning of the enclosure does not help,
-> remving
-> > the receiver and reinserting it, does not help, not using the hub
-does
-> not
-> > help.
-> > Only thing that brings back USB:
-> > rmmod ehci_hcd
-> > modprobe ehci-hcd
-> >
-> > rmmod and modprobe usb-storage does NOT help.
-> >
-> > after that I get another couple of seconds until it locks up again.
-> >
-> > If I modprobe ohci-hcd I get this:
-> > with 2.6.26 and the mouse at ohci, enclosure at ehci, everything
-works -
-> but
-> > gaming (with fglrx loaded) is impossible, since the mouse is
-extremly
-> jerky
-> > (shared interrupts).
-> > with 2.6.27 both mouse and enclose are driven by ohci - and copying
-> works
-> > without locking up. Trying to 'force' ehci for the enclosure makes
-it
-> lockup
-> > again.
-> >
-> > This happens with kernel.org kernels+reiser4.
-> 
-> This chipset was known to have bugs in it, which I think we fixed
-> already.  I have a laptop with this chipset and it can sustain large
-> ammounts of USB data just fine with the 2.6.27 kernel series, so I
-> wonder if something is wrong with your usb disk drive?
-> 
-> I've added some AMD developers on the CC: who helped develop the last
-> fix for this chipset.  Libin, do you know of anything in the chipset
-> that would cause these problems?
-> 
-> thanks,
-> 
-> greg k-h
+Directly after the code in your patch, we dput() the dentry. So
+theoretically it could be released any time after that. But I guess
+that as soon as it *is* released, cgroup_diput() will be called as
+part of that cleanup, at which point any subsystems should drop any
+pointers they have to the cgroup or the dentry. So I guess it should
+be OK.
+
+Thanks.
+
+Acked-by: Paul Menage <menage@google.com>
 
 
+
+>
+> The bug can be reproduced:
+>
+>  # cat test.sh
+>  #!/bin/sh
+>  mount -t cgroup -o cpu xxx /mnt
+>  for (( ; ; ))
+>  {
+>        mkdir /mnt/sub
+>        rmdir /mnt/sub
+>  }
+>  # ./test.sh &
+>  # cat /proc/sched_debug
+>
+> BUG: unable to handle kernel NULL pointer dereference at 00000038
+> IP: [<c045a47f>] cgroup_path+0x39/0x90
+> ...
+> Call Trace:
+>  [<c0420344>] ? print_cfs_rq+0x6e/0x75d
+>  [<c0421160>] ? sched_debug_show+0x72d/0xc1e
+> ...
+>
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  kernel/cgroup.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+>
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index 35eebd5..358e775 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -2497,7 +2497,6 @@ static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
+>        list_del(&cgrp->sibling);
+>        spin_lock(&cgrp->dentry->d_lock);
+>        d = dget(cgrp->dentry);
+> -       cgrp->dentry = NULL;
+>        spin_unlock(&d->d_lock);
+>
+>        cgroup_d_remove_dir(d);
+> --
+> 1.5.4.rc3
+>
+>
