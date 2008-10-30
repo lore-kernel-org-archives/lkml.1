@@ -1,96 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbYJ3FfN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbYJ3Ff5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753676AbYJ3FfN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 01:35:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbYJ3FfA
+	id S1754161AbYJ3Ff5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 01:35:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbYJ3Ffs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 01:35:00 -0400
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:60312 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752402AbYJ3Fe7 (ORCPT
+	Thu, 30 Oct 2008 01:35:48 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:47074 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752402AbYJ3Ffr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 01:34:59 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AkwFAP/eCElMQWao/2dsb2JhbACBdssMg1E
-Date: Thu, 30 Oct 2008 01:34:57 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] tracepoint: introduce *_noupdate APIs.
-Message-ID: <20081030053457.GB27381@Krystal>
-References: <49067E49.4040304@cn.fujitsu.com>
+	Thu, 30 Oct 2008 01:35:47 -0400
+Date: Wed, 29 Oct 2008 22:34:42 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: [PATCH 1/7] kmod: fix varargs kernel-doc
+Message-Id: <20081029223442.adacc33e.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <49067E49.4040304@cn.fujitsu.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 01:20:19 up 147 days, 10:00,  5 users,  load average: 0.06, 0.11,
-	0.15
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
-> 
-> new APIs separate tracepoint_probe_register(),
-> tracepoint_probe_unregister() into 2 steps. The first step of them
-> is just update tracepoint_entry, not connect or disconnect.
-> 
-> this patch introduce tracepoint_probe_update_all() for update all.
-> 
-> these APIs are very useful for registering a lots of probes
-> but just update once only. and a very important thing is that
-> *_noupdate APIs do not require module_mutex.
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-[...]
+Fix varargs kernel-doc format in kmod.c:
+Use @... instead of @varargs.
 
-> +/**
-> + * tracepoint_probe_update_all -  update tracepoints
-> + */
-> +void tracepoint_probe_update_all(void)
-> +{
-> +	LIST_HEAD(release_probes);
-> +	struct tp_probes *pos, *next;
-> +
-> +	mutex_lock(&tracepoints_mutex);
-> +	if (!need_update) {
-> +		mutex_unlock(&tracepoints_mutex);
-> +		return;
-> +	}
-> +	if (!list_empty(&old_probes))
-> +		list_replace_init(&old_probes, &release_probes);
-> +	need_update = 0;
-> +	mutex_unlock(&tracepoints_mutex);
-> +
-> +	tracepoint_update_probes();
+Warning(kernel/kmod.c:67): Excess function parameter or struct member 'varargs' description in 'request_module'
 
-I think the read-side of this release_probes list should be protected by
-the tracepoints_mutex too. Two concurrent tracepoint_probe_update_all()
-could cause havoc here :
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Rusty Russell <rusty@rustcorp.com.au>
+---
+ kernel/kmod.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-
-mutex_lock(&tracepoints_mutex);
-
-> +	list_for_each_entry_safe(pos, next, &release_probes, u.list) {
-> +		list_del(&pos->u.list);
-> +		call_rcu_sched(&pos->u.rcu, rcu_free_old_probes);
-> +	}
-
-mutex_unlock(&tracepoints_mutex);
-
-?
-
-The rest looks good.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+--- lin2628-rc2.orig/kernel/kmod.c
++++ lin2628-rc2/kernel/kmod.c
+@@ -51,8 +51,8 @@ char modprobe_path[KMOD_PATH_LEN] = "/sb
+ 
+ /**
+  * request_module - try to load a kernel module
+- * @fmt:     printf style format string for the name of the module
+- * @varargs: arguements as specified in the format string
++ * @fmt: printf style format string for the name of the module
++ * @...: arguments as specified in the format string
+  *
+  * Load a module using the user mode module loader. The function returns
+  * zero on success or a negative errno code on failure. Note that a
