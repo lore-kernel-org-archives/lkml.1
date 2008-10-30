@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbYJ3JLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136AbYJ3JUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754725AbYJ3JLV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 05:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbYJ3JLN
+	id S1754136AbYJ3JUF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 05:20:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbYJ3JTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 05:11:13 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:50753 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753271AbYJ3JLM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 05:11:12 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type;
-	b=O9y7p/sT0QOZCLk18AtJqe5t2RJGWIqVUmumsu5cqzjQ4xvRuxCPW7h5qqlpD2zVL
-	Tx+dSHdL6GOKMZu1OtfZQ==
-Date: Thu, 30 Oct 2008 02:10:24 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Paul Menage <menage@google.com>,
-       Derek Fults <dfults@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/7] mm: make page writeback obey cpuset constraints
-In-Reply-To: <1225356120.7803.5.camel@twins>
-Message-ID: <alpine.DEB.2.00.0810300203360.29917@chino.kir.corp.google.com>
-References: <alpine.DEB.1.10.0810280259500.15270@chino.kir.corp.google.com>  <alpine.DEB.1.10.0810280301300.15270@chino.kir.corp.google.com>  <1225215134.15763.27.camel@lappy.programming.kicks-ass.net>  <alpine.DEB.1.10.0810281216570.30390@chino.kir.corp.google.com>
- <1225356120.7803.5.camel@twins>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 30 Oct 2008 05:19:54 -0400
+Received: from ns1.suse.de ([195.135.220.2]:53016 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753192AbYJ3JTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 05:19:53 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-input@ver.kernel.org
+Subject: Re: [PATCH] Fix hid_device_id for cross compiling
+References: <jevdvgl345.fsf@sykes.suse.de>
+	<20081030002332.4ef1fac4.akpm@linux-foundation.org>
+X-Yow: I hope something GOOD came in the mail today so I have
+ a REASON to live!!
+Date: Thu, 30 Oct 2008 10:19:51 +0100
+In-Reply-To: <20081030002332.4ef1fac4.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Thu, 30 Oct 2008 00:23:32 -0700")
+Message-ID: <jehc6u8mo8.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Oct 2008, Peter Zijlstra wrote:
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-> On Tue, 2008-10-28 at 12:18 -0700, David Rientjes wrote:
-> > On Tue, 28 Oct 2008, Peter Zijlstra wrote:
-> > 
-> > > > +	is_subset = cpuset_populate_dirty_limits(dl, &dirtyable_memory,
-> > > > +						 &nr_mapped, nodes);
-> > > > +	if (!is_subset) {
-> > > > +		dl->nr_dirty = global_page_state(NR_FILE_DIRTY);
-> > > > +		dl->nr_unstable = global_page_state(NR_UNSTABLE_NFS);
-> > > > +		dl->nr_writeback = global_page_state(NR_WRITEBACK);
-> > > > +		dirtyable_memory = determine_dirtyable_memory();
-> > > > +		nr_mapped = global_page_state(NR_FILE_MAPPED) +
-> > > > +			global_page_state(NR_ANON_PAGES);
-> > > > +	} else
-> > > > +		dirtyable_memory -= highmem_dirtyable_memory(nodes,
-> > > > +							dirtyable_memory);
-> > > 
-> > > Why not fold that all into cpuset_populate_dirty_limits() ?
-> > > 
-> > 
-> > cpuset_populate_dirty_limits() is a no-op on !CONFIG_CPUSETS kernels.
-> 
-> Right, humm. Maybe introduce a populate_dirty_limits() and differentiate
-> that between CONFIG_CPUSETS and not, and make it do everything.
-> 
-> That would get rid of this fudge I think, no?
-> 
+> On Sun, 26 Oct 2008 00:30:18 +0200 Andreas Schwab <schwab@suse.de> wrote:
+>
+>> struct hid_device_id contains hidden padding which is bad for cross
+>> compiling.  Make the padding explicit and consistent across
+>> architectures.
+>> 
+>
+> What is "bad" about it?
 
-I agree it would look much cleaner and I actually did that originally, but 
-it requires adding #ifdef's for CONFIG_CPUSETS to mm/page-writeback.c 
-since highmem_dirtyable_memory() is static.
+It is bad because it depends on the alignment restrictions of the
+architecture.  On m68k everything is aligned on a 2-byte boundary, so
+this padding does not exist.
 
-There's actually nothing cpuset-specific about 
-cpuset_populate_dirty_limits() and it could be used for !CONFIG_CPUSETS 
-kernels, but there's a performance benefit of using the global ZVC values 
-for the page stats as opposed to iterating over each node and adding their 
-respective values.  So is_subset is only non-zero when the passed nodemask 
-excludes system nodes (the cpuset case), and we must iterate the node ZVC 
-values.
+> Can you expand a bit on the problem which is being fixed here?
 
-So perhaps the solution is to introduce populate_nodemask_dirty_limits() 
-and populate_global_dirty_limits() both in mm/page-writeback.c?
+It's the well known cross compiling problem with modpost that has bitten
+us so often before.  This one is even worse, because modpost would
+silently read bogus values since the struct size is the same, only the
+padding moves elsewhere.
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
