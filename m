@@ -1,73 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbYJ3UtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbYJ3Uu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754596AbYJ3UtY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 16:49:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbYJ3UtP
+	id S1755472AbYJ3Uu1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 16:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbYJ3UuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 16:49:15 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:44387 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753101AbYJ3UtO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 16:49:14 -0400
-X-Sasl-enc: lKrMPFDK/RQWBq8+J9NQV9yXDx/oQzKy4DeS7xhytSBs 1225399752
-Date: Thu, 30 Oct 2008 18:49:05 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Jonathan McDowell <noodles@earth.li>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] Fix logic error in rfkill_check_duplicity
-Message-ID: <20081030204905.GB29976@khazad-dum.debian.net>
-References: <20081029164006.GH3162@earth.li> <1225309212.3068.44.camel@achroite> <20081030102746.GI3162@earth.li> <20081030144409.GJ3162@earth.li>
+	Thu, 30 Oct 2008 16:50:15 -0400
+Received: from archer.toppoint.de ([217.70.197.1]:47521 "EHLO mail.toppoint.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753290AbYJ3UuN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 16:50:13 -0400
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Oct 2008 16:50:11 EDT
+Date: Thu, 30 Oct 2008 21:30:04 +0100
+From: Wilfried Klaebe <linux-kernel@lebenslange-mailadresse.de>
+To: calle@calle.de
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] b1isa: fix b1isa_exit() to really remove registered capi
+	controllers
+Message-ID: <20081030203004.GA26328@kaos.in-kiel.de>
+Mail-Followup-To: calle@calle.de, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081030144409.GJ3162@earth.li>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
+X-message-flag: Get yourself a real email client. http://www.mutt.org/
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Oct 2008, Jonathan McDowell wrote:
-> On Thu, Oct 30, 2008 at 10:27:46AM +0000, Jonathan McDowell wrote:
-> > I'll have a prod at why the [hso] rfkill stuff isn't working next
-> 
-> Ok, I believe this is due to the addition of rfkill_check_duplicity in
-> rfkill and the fact that test_bit actually returns a negative value
-> rather than the postive one expected (which is of course equally true).
-> So when the second WLAN device (the hso device, with the EEE PC WLAN
-> being the first) comes along rfkill_check_duplicity returns a negative
-> value and so rfkill_register returns an error. Patch below fixes this
-> for me.
+On "/etc/init.d/capiutils stop", this oops happened.
 
-Good catch, I screwed up on that one.  Please forward it with my ack to
-linux-wireless@kernel.org and to Ivo van Doorn <IvDoorn@gmail.com> and John
-W. Linville <linville@tuxdriver.com>.
+The oops happens on reading /proc/capi/controllers because
+capi_ctrl->procinfo is called for the wrongly not unregistered
+controller, which points to b1isa_procinfo(), which was removed on
+module unload.
 
-Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+b1isa_exit() did not call b1isa_remove() for its controllers because
+io[0] == 0 on module unload despite having been 0x340 on module load.
 
-> -----
-> diff --git a/net/rfkill/rfkill.c b/net/rfkill/rfkill.c
-> index f949a48..1ba35a7 100644
-> --- a/net/rfkill/rfkill.c
-> +++ b/net/rfkill/rfkill.c
-> @@ -603,7 +603,7 @@ static int rfkill_check_duplicity(const struct rfkill *rfkil
->         }
->  
->         /* 0: first switch of its kind */
-> -       return test_bit(rfkill->type, seen);
-> +       return (test_bit(rfkill->type, seen)) ? 1 : 0;
->  }
->  
->  static int rfkill_add_switch(struct rfkill *rfkill)
-> -----
-> 
-> J.
-> 
+Besides, just removing the controllers that where added on module
+load time and not those that were added later via b1isa_add_card() is
+wrong too - the place where all added cards are found is isa_dev[].
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+relevant dmesg lines:
+
+[    0.000000] Linux version 2.6.27.4 (w@shubashi) (gcc version 4.3.2 (Debian 4.3.2-1) ) #3 Thu Oct 30 16:49:03 CET 2008
+
+[   67.403555] CAPI Subsystem Rev 1.1.2.8
+[   68.529154] capifs: Rev 1.1.2.3
+[   68.563292] capi20: Rev 1.1.2.7: started up with major 68 (middleware+capifs)
+[   77.026936] b1: revision 1.1.2.2
+[   77.049992] b1isa: revision 1.1.2.3
+[   77.722655] kcapi: Controller [001]: b1isa-340 attached
+[   77.722671] b1isa: AVM B1 ISA at i/o 0x340, irq 5, revision 255
+[   81.272669] b1isa-340: card 1 "B1" ready.
+[   81.272683] b1isa-340: card 1 Protocol: DSS1
+[   81.272689] b1isa-340: card 1 Linetype: point to multipoint
+[   81.272695] b1isa-340: B1-card (3.11-03) now active
+[   81.272702] kcapi: card [001] "b1isa-340" ready.
+
+[  153.721281] kcapi: card [001] down.
+[  154.151889] BUG: unable to handle kernel paging request at e87af000
+[  154.152081] IP: [<e87af000>]
+[  154.153292] *pde = 2655b067 *pte = 00000000 
+[  154.153307] Oops: 0000 [#1] 
+[  154.153360] Modules linked in: rfcomm l2cap ppdev lp ipt_MASQUERADE tun capi capifs kernelcapi ac battery nfsd exportfs nfs lockd nfs_acl sunrpc sit tunnel4 bridge stp llc ipt_REJECT ipt_LOG xt_tcpudp xt_state iptable_filter iptable_mangle iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack ip_tables x_tables nls_utf8 isofs nls_base zlib_inflate loop ipv6 netconsole snd_via82xx dvb_usb_dib0700 gameport dib7000p dib7000m dvb_usb snd_ac97_codec ac97_bus dvb_core mt2266 snd_pcm tuner_xc2028 dib3000mc dibx000_common mt2060 dib0070 snd_page_alloc snd_mpu401_uart snd_seq_midi snd_seq_midi_event btusb snd_rawmidi bluetooth snd_seq snd_timer snd_seq_device snd via686a i2c_viapro soundcore i2c_core parport_pc parport button dm_mirror dm_log dm_snapshot floppy sg ohci1394 uhci_hcd ehci_hcd 8139too mii ieee1394 usbcore sr_mod cdrom sd_mod thermal processor fan [last unloaded: b1]
+[  154.153360] 
+[  154.153360] Pid: 4132, comm: capiinit Not tainted (2.6.27.4 #3)
+[  154.153360] EIP: 0060:[<e87af000>] EFLAGS: 00010286 CPU: 0
+[  154.153360] EIP is at 0xe87af000
+[  154.153360] EAX: e6b9ccc8 EBX: e6b9ccc8 ECX: e87a0c67 EDX: e87af000
+[  154.153360] ESI: e142bbc0 EDI: e87a56e0 EBP: e0505f0c ESP: e0505ee4
+[  154.153360]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+[  154.153360] Process capiinit (pid: 4132, ti=e0504000 task=d1196cf0 task.ti=e0504000)
+[  154.153360] Stack: e879f650 00000246 e0505ef4 c01472eb e0505f0c 00000246 e7001780 fffffff4 
+[  154.153360]        fffffff4 e142bbc0 e0505f48 c01a56c6 00000400 b805e000 d102dc80 e142bbe0 
+[  154.153360]        00000000 e87a56e0 00000246 e12617ac 00000000 00000000 e1261760 fffffffb 
+[  154.153360] Call Trace:
+[  154.153360]  [<e879f650>] ? controller_show+0x20/0x90 [kernelcapi]
+[  154.153360]  [<c01472eb>] ? trace_hardirqs_on+0xb/0x10
+[  154.153360]  [<c01a56c6>] ? seq_read+0x126/0x2f0
+[  154.153360]  [<c01a55a0>] ? seq_read+0x0/0x2f0
+[  154.153360]  [<c01c033c>] ? proc_reg_read+0x5c/0x90
+[  154.153360]  [<c0189919>] ? vfs_read+0x99/0x140
+[  154.153360]  [<c01c02e0>] ? proc_reg_read+0x0/0x90
+[  154.153360]  [<c0189a7d>] ? sys_read+0x3d/0x70
+[  154.153360]  [<c0103c3d>] ? sysenter_do_call+0x12/0x35
+[  154.153360]  =======================
+[  154.153360] Code:  Bad EIP value.
+[  154.153360] EIP: [<e87af000>] 0xe87af000 SS:ESP 0068:e0505ee4
+[  154.153360] ---[ end trace 23750b6c2862de94 ]---
+
+Signed-off-by: Wilfried Klaebe <linux-kernel@lebenslange-mailadresse.de>
+
+diff -pru linux-2.6.27.4.ori/drivers/isdn/hardware/avm/b1isa.c linux-2.6.27.4/drivers/isdn/hardware/avm/b1isa.c
+--- linux-2.6.27.4/drivers/isdn/hardware/avm/b1isa.c	2008-10-10 00:13:53.000000000 +0200
++++ linux-2.6.27.4.fixed/drivers/isdn/hardware/avm/b1isa.c	2008-10-30 15:55:03.000000000 +0100
+@@ -233,10 +233,8 @@ static void __exit b1isa_exit(void)
+ 	int i;
+ 
+ 	for (i = 0; i < MAX_CARDS; i++) {
+-		if (!io[i])
+-			break;
+-
+-		b1isa_remove(&isa_dev[i]);
++		if (isa_dev[i].resource[0].start)
++			b1isa_remove(&isa_dev[i]);
+ 	}
+ 	unregister_capi_driver(&capi_driver_b1isa);
+ }
