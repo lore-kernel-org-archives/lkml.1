@@ -1,64 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbYJ3QaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbYJ3QgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756706AbYJ3QaZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 12:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbYJ3QaL
+	id S1756862AbYJ3QgP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 12:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYJ3Qf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 12:30:11 -0400
-Received: from mga11.intel.com ([192.55.52.93]:11332 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753338AbYJ3QaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 12:30:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,516,1220252400"; 
-   d="scan'208";a="633445182"
-Date: Thu, 30 Oct 2008 09:30:08 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "jeremy.fitzhardinge@citrix.com" <jeremy.fitzhardinge@citrix.com>,
-       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Mallick, Asit K" <asit.k.mallick@intel.com>
-Subject: Re: [patch] generic-ipi: fix the smp_mb() placement
-Message-ID: <20081030163008.GL30573@linux-os.sc.intel.com>
-References: <20081029224229.GK30573@linux-os.sc.intel.com> <20081030072029.GK31673@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 30 Oct 2008 12:35:58 -0400
+Received: from poseidon.rz.tu-clausthal.de ([139.174.2.21]:62353 "EHLO
+	poseidon.rz.tu-clausthal.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753467AbYJ3Qf5 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 12:35:57 -0400
+From: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
+To: "Yang, Libin" <Libin.Yang@amd.com>
+Subject: Re: 2.6.27: ehci bug with AMD 770nb/SB700 southbridge. usb lockup
+Date: Thu, 30 Oct 2008 17:35:54 +0100
+User-Agent: KMail/1.10.90 (Linux/2.6.27.4r4; KDE/4.1.71; x86_64; ; )
+Cc: "Greg KH" <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, "Huang, Shane" <Shane.Huang@amd.com>
+References: <200810300215.18792.volker.armin.hemmann@tu-clausthal.de> <20081030055410.GB19035@kroah.com> <B90463BC30D2E446BA423D888DC85E50E8C0EB@sshaexmb1.amd.com>
+In-Reply-To: <B90463BC30D2E446BA423D888DC85E50E8C0EB@sshaexmb1.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20081030072029.GK31673@kernel.dk>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200810301735.55108.volker.armin.hemmann@tu-clausthal.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 12:20:30AM -0700, Jens Axboe wrote:
-> > @@ -76,6 +72,11 @@ static void generic_exec_single(int cpu, struct call_single_data *data)
-> >  	list_add_tail(&data->list, &dst->list);
-> >  	spin_unlock_irqrestore(&dst->lock, flags);
-> >  
-> > +	/*
-> > +	 * Make the list addition visible before sending the ipi.
-> > +	 */
-> > +	smp_mb();
-> > +
-> >  	if (ipi)
-> >  		arch_send_call_function_single_ipi(cpu);
-> 
-> We can downgrade this to a smp_wmb().
+On Donnerstag 30 Oktober 2008, Yang, Libin wrote:
+> Thanks for reporting this bug. We are trying to reproduce this bug and
+> will look into it.
 
-No. We want the ipi receiver to see the new consistent data rather than possible
-old consistent data.
+btw, it is not only enclosures, I have a multi-card reader that shows the same 
+misbehaviour. Connect it with a sd card - and mouse freezes  so fast I can't 
+even start to copy stuff.
 
-And on x86, smp_wmb() is a simple barrier() (in !CONFIG_X86_OOSTORE) and
-which doesn't do much in this case.
-
-on x86 mfence (smp_mb()) will ensure that msr based APIC (x2apic) accesses (ipi)
-will be visible only after the memory operations before smp_mb() are made
-visible.
-
-thanks,
-suresh
+Glück Auf,
+Volker
