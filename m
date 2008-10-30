@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbYJ3QYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbYJ3Q1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757530AbYJ3QYR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 12:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755431AbYJ3QYC
+	id S1757587AbYJ3Q1l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 12:27:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbYJ3Q1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 12:24:02 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:12447 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755381AbYJ3QYA (ORCPT
+	Thu, 30 Oct 2008 12:27:32 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:65361 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753931AbYJ3Q1c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 12:24:00 -0400
-Date: Thu, 30 Oct 2008 09:22:55 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Power Management support requires RTC_CLASS
-Message-Id: <20081030092255.948a7063.randy.dunlap@oracle.com>
-In-Reply-To: <20081031000407.8f16beb0.yoichi_yuasa@tripeaks.co.jp>
-References: <20081031000407.8f16beb0.yoichi_yuasa@tripeaks.co.jp>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 30 Oct 2008 12:27:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=eHzm5cQJot3+FNHQy8YPmiBHVQCY8CK8M91NE1qh2thbpNQPTAdwbGpsTVs5l5lW6f
+         o752nm/BDX0Vtrg4tXjDWLFumcN7zP6n1DGe1TVmciG5Cev0Ypeiad6uyGMOWD0hDitK
+         8JKhiMVzX60xDCUmk3Ujqiptm+tOaRxPW/PeA=
+Message-ID: <7a6abd110810300927l428b11f3u509ad31364c08f1f@mail.gmail.com>
+Date: Thu, 30 Oct 2008 17:27:30 +0100
+From: "Jonas Bonn" <jonas.bonn@gmail.com>
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: [RFC] API for system clocks (oscillators)
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <9e4733910810300840v7cd45c2cu629d23a27a02c61a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <7a6abd110810300741wf73f838laa3754e23c22baf3@mail.gmail.com>
+	 <9e4733910810300840v7cd45c2cu629d23a27a02c61a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Oct 2008 00:04:07 +0900 Yoichi Yuasa wrote:
+>
+> How does this compare to the framework in linux/include/linux/clk.h?
+>
 
-> kernel/built-in.o: In function `test_wakealarm':
-> linux/kernel/power/main.c:619: undefined reference to `rtc_read_time'
-> linux/kernel/power/main.c:619: relocation truncated to fit: R_MIPS_26 against `rtc_read_time'
-> linux/kernel/power/main.c:630: undefined reference to `rtc_set_alarm'
-> linux/kernel/power/main.c:630: relocation truncated to fit: R_MIPS_26 against `rtc_set_alarm'
-> linux/kernel/power/main.c:654: undefined reference to `rtc_set_alarm'
-> linux/kernel/power/main.c:654: relocation truncated to fit: R_MIPS_26 against `rtc_set_alarm'
-> kernel/built-in.o: In function `test_suspend':
-> linux/kernel/power/main.c:718: undefined reference to `rtc_class_open'
-> linux/kernel/power/main.c:718: relocation truncated to fit: R_MIPS_26 against `rtc_class_open'
-> linux/kernel/power/main.c:726: undefined reference to `rtc_class_close'
-> linux/kernel/power/main.c:726: relocation truncated to fit: R_MIPS_26 against `rtc_class_close'
-> kernel/built-in.o: In function `valid_state':
-> linux/kernel/power/main.c:403: undefined reference to `rtc_class'
-> kernel/built-in.o: In function `test_suspend':
-> linux/kernel/power/main.c:716: undefined reference to `rtc_class'
-> 
-> Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-> 
-> diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/kernel/power/Kconfig linux/kernel/power/Kconfig
-> --- linux-orig/kernel/power/Kconfig	2008-10-22 09:41:32.154425163 +0900
-> +++ linux/kernel/power/Kconfig	2008-10-22 11:04:48.230018848 +0900
-> @@ -1,6 +1,7 @@
->  config PM
->  	bool "Power Management support"
->  	depends on !IA64_HP_SIM
-> +	select RTC_CLASS
->  	---help---
->  	  "Power Management" means that parts of your computer are shut
->  	  off or put into a power conserving "sleep" mode if they are not
-> --
+clk.h is pretty much just an infrastructure for "storing" clock data
+and accessors... it does not provide:
 
-That should only be needed for the code block that is surrounded by
+i) Constraints on selectable frequencies of active devices
+ii) Notifiers on frequency change, including changes due to events
+such as reparenting
 
-#ifdef CONFIG_PM_TEST_SUSPEND
-...
-#endif /* CONFIG_PM_TEST_SUSPEND */
+These are the big ones that cause headaches.  When I want to switch
+frequency, I have to check elsewhere which devices are active and
+which frequencies they allow.  When a frequency changes, I have to
+manually make sure that the active devices are notified properly of
+the change.  These are the main things that my document tries to
+consolidate into one framework.  Like I said, I'm not sure it's the
+right approach, that's why I requested feedback...
 
-and the Kconfig file already contains
-
-config PM_TEST_SUSPEND
-	bool "Test suspend/resume and wakealarm during bootup"
-	depends on SUSPEND && PM_DEBUG && RTC_LIB=y
-
-so maybe that needs to be changed to use RTC_CLASS.  I dunno.
-
----
-~Randy
+/Jonas
