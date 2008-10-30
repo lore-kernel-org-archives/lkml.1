@@ -1,96 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757495AbYJ3TBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757942AbYJ3TC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757495AbYJ3TBS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 15:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYJ3TBE
+	id S1757942AbYJ3TC7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 15:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbYJ3TCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 15:01:04 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:32932 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752374AbYJ3TBB (ORCPT
+	Thu, 30 Oct 2008 15:02:51 -0400
+Received: from fmmailgate09.web.de ([217.72.192.184]:44021 "EHLO
+	fmmailgate09.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753773AbYJ3TCv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 15:01:01 -0400
-Date: Thu, 30 Oct 2008 15:00:59 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] ring-buffer: add paranoid checks for loops
-In-Reply-To: <20081030184552.GC17822@elte.hu>
-Message-ID: <alpine.DEB.1.10.0810301452070.15853@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0810291439460.13214@gandalf.stny.rr.com> <20081030184552.GC17822@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 30 Oct 2008 15:02:51 -0400
+Date: Thu, 30 Oct 2008 20:02:48 +0100
+Message-Id: <489164141@web.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: devzero@web.de
+To: Chris Snook <csnook@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: how much license information inside the kernel ?
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1/YkpF/gaG0fI0ReTEbORXOMZFTV5stiC3QMo7YUL0zxWJji
+ 6bnvXGrYLXXBCwQcFE2tCB7j3lr9u21Y6nPW9KCMrAJVXVdkig=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 30 Oct 2008, Ingo Molnar wrote:
+> devzero@web.de wrote:
+> > hi,
+> > 
+> > i found that there is a LOT of repeating licensing information in the
+> > kernel.
+> > 
+> > for me,
+> > 
+> > find ./linux-2.6.27 -type f -exec cat {} \; |egrep "free software|GNU
+> > General Public License|Free Software Foundation|version 2 of the
+> > License|distributed in the hope|WITHOUT ANY WARRANTY|FITNESS FOR A
+> > PARTICULAR"
+> > 
+> > gives a file sized ~3.5M
+> > 
+> > That`s more than 1% of the kernel source.
+> > 
+> > What about the idea to shorten that licening information to a minimum
+> > , e.g. by shrinking that to a single, catchy line ,  linking to a
+> > special licensing file like COPYING or linking to the FSF website ?
+> > 
+> > please no flames, i know this idea could be pure dynamite for some
+> > people - but i thought 3.5M is worth this mail.
+> > 
+> > regards roland
+> > 
+> > ps: i`m not sure if that has been discussed already, but i didn`t
+> > find that in the archive. please ignore, otherwise.
 > 
-> hm, all those magic constants look a bit like voodoo and make the 
-> patch ugly, and people who read this will be confused about the 
-> purpose for sure.
-
-Point taken.
-
+> It may be 3.5 MB uncompressed, but disk space is cheap, and repeated 
+> strings compress extremely well to save bandwidth.  If you work with the 
+> kernel source enough for this to be an issue, you should use git. 
+> You'll download these license headers once, and never again unless the 
+> copyright info gets changed by a patch.  From a technical perspective, 
+> the problem isn't nearly as bad as it looks, and it keeps the lawyers 
+> happy, so it's really not worth messing with.  There's plenty of 
+> lower-hanging fruit in unifying drivers for similar hardware, unifying 
+> 32-bit and 64-bit architectures, and other things that make the code 
+> more maintainable.
 > 
-> But the checks are still worth having in practice. So could you please 
-> improve the comments, to come up with some tangible calculation that 
-> leads to these constants?
+> -- Chris
 > 
-> For example the '1000' constant, how did you come to that? Could you 
-> estimate what type of interrupt storm is needed to trigger it falsely? 
-> So instead of this comment:
 
-My original number was 100,000, but I thought that a bit high ;-)
-Since it is OK for an interrupt to preempt this code and perform a trace, 
-which would make the condition fail by the one being preempted. The 
-likelyhood of an interrupt coming in at that location 1000 times in a row 
-seems to be awefully low. It's not enough that a 1000 interrupts come in, 
-the task being preempted must loop 1000 times and have a trace interrupt 
-cause the condition to fail each time. I'll explain it this way in the 
-comments.
-
-I picked a big number because I can see a traced interrupt that is very 
-active causing several interruptions in this code.
-
-> 
-> > +	 * If we loop here 1,000 times, that means we are either
-> > +	 * in an interrupt storm, or we have something buggy.
-> > +	 * Bail!
-> 
-> something like this might look more acceptable:
-> 
-> > +	 * If we loop here 1,000 times, that means we are either
-> > +	 * in an interrupt storm that preempted the same trace-entry
-> > +	 * attempt 1000 times in a row, or we have a bug in the tracer.
-> > +	 * Bail!
-> 
-> i.e. please exaplain every single magic number there so that it can be 
-> followed how you got to that number, and what precise effects that 
-> number has.
-> 
-> In the cases where you just guessed a number based on experiments, 
-> please think it through and insert an analysis about the effects of 
-> that number.
-> 
-> Would this be doable?
-
-Again, there are small "allowable" races that causes the code to loop a 
-few times.  I'll try to explain them a bit better in the comments.
-There's small races between the reader and writer that can hit just right 
-to cause a "loop again". But these chances are much smaller than the 
-interrupt tracing situation.
-
-I'll look deeper at the reasons for the races and explain them a bit 
-better.
-
-Thanks,
-
--- Steve
+yes, convinced - it´s not worth the work to clean that up.
+________________________________________________________________________
+Schon gehört? Bei WEB.DE gibt' s viele kostenlose Spiele:
+http://games.entertainment.web.de/de/entertainment/games/free/index.html
 
