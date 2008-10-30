@@ -1,1003 +1,442 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757536AbYJ3TKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758845AbYJ3TLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757536AbYJ3TKa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 15:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbYJ3TKV
+	id S1758845AbYJ3TLP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 15:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbYJ3TK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 15:10:21 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45522 "EHLO
+	Thu, 30 Oct 2008 15:10:58 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45525 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751548AbYJ3TKR (ORCPT
+	with ESMTP id S1751548AbYJ3TK5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 15:10:17 -0400
-Date: Thu, 30 Oct 2008 20:11:45 +0100
+	Thu, 30 Oct 2008 15:10:57 -0400
+Date: Thu, 30 Oct 2008 20:12:30 +0100
 From: Pavel Machek <pavel@suse.cz>
 To: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] w35und: merge struct wb35_adapter to struct wbsoft_priv
-Message-ID: <20081030191145.GC22185@elf.ucw.cz>
-References: <1225376079-9592-1-git-send-email-penberg@cs.helsinki.fi> <1225376079-9592-2-git-send-email-penberg@cs.helsinki.fi> <1225376079-9592-3-git-send-email-penberg@cs.helsinki.fi> <1225376079-9592-4-git-send-email-penberg@cs.helsinki.fi>
+Subject: Re: [PATCH] w35und: remove global struct ieee80211_hw
+Message-ID: <20081030191230.GD22185@elf.ucw.cz>
+References: <1225376079-9592-1-git-send-email-penberg@cs.helsinki.fi> <1225376079-9592-2-git-send-email-penberg@cs.helsinki.fi> <1225376079-9592-3-git-send-email-penberg@cs.helsinki.fi> <1225376079-9592-4-git-send-email-penberg@cs.helsinki.fi> <1225376079-9592-5-git-send-email-penberg@cs.helsinki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1225376079-9592-4-git-send-email-penberg@cs.helsinki.fi>
+In-Reply-To: <1225376079-9592-5-git-send-email-penberg@cs.helsinki.fi>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-10-30 16:14:38, Pekka Enberg wrote:
-> This patch merges struct wb35_adapter to struct wbsoft_priv. Now we can finally
-> start passing a pointer to struct ieee80211_hw around where necessary.
+On Thu 2008-10-30 16:14:39, Pekka Enberg wrote:
+> Remove the my_dev global variable from wbusb.c by passing a pointer to struct
+> ieee80211_hw around so that packet_came() gets it.
 
 Acked-by: Pavel Machek <pavel@suse.cz>
 
 > Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 > ---
->  drivers/staging/winbond/adapter.h    |   44 ---------------------
->  drivers/staging/winbond/bss_f.h      |   70 +++++++++++++++++-----------------
->  drivers/staging/winbond/core.h       |   38 +++++++++++++++++-
->  drivers/staging/winbond/mds.c        |   16 ++++----
->  drivers/staging/winbond/mds_f.h      |   36 +++++++++---------
->  drivers/staging/winbond/mlmetxrx.c   |   12 +++---
->  drivers/staging/winbond/mlmetxrx_f.h |   22 +++++-----
->  drivers/staging/winbond/mto.h        |    2 +-
->  drivers/staging/winbond/mto_f.h      |    8 ++--
->  drivers/staging/winbond/rxisr.c      |    8 ++--
->  drivers/staging/winbond/scan_s.h     |    6 +-
->  drivers/staging/winbond/wb35tx.c     |   14 +++---
->  drivers/staging/winbond/wb35tx_f.h   |   12 +++---
->  drivers/staging/winbond/wbhal.c      |   10 ++--
->  drivers/staging/winbond/wbhal_f.h    |   10 ++--
->  drivers/staging/winbond/wblinux.c    |   10 ++--
->  drivers/staging/winbond/wblinux_f.h  |   14 +++---
->  drivers/staging/winbond/wbusb.c      |   55 +++++++++++----------------
->  18 files changed, 183 insertions(+), 204 deletions(-)
->  delete mode 100644 drivers/staging/winbond/adapter.h
+>  drivers/staging/winbond/wb35rx.c    |   29 +++++++++-----
+>  drivers/staging/winbond/wb35rx_f.h  |    7 ++-
+>  drivers/staging/winbond/wbhal.c     |   11 +++--
+>  drivers/staging/winbond/wbhal_f.h   |    2 +-
+>  drivers/staging/winbond/wblinux.c   |   73 ++++++++++++++++++-----------------
+>  drivers/staging/winbond/wblinux_f.h |    3 +-
+>  drivers/staging/winbond/wbusb.c     |    8 +--
+>  7 files changed, 72 insertions(+), 61 deletions(-)
 > 
-> diff --git a/drivers/staging/winbond/adapter.h b/drivers/staging/winbond/adapter.h
-> deleted file mode 100644
-> index 239cc3a..0000000
-> --- a/drivers/staging/winbond/adapter.h
-> +++ /dev/null
-> @@ -1,44 +0,0 @@
-> -#ifndef __WINBOND_ADAPTER_H
-> -#define __WINBOND_ADAPTER_H
-> -
-> -#include <linux/wireless.h>
-> -
-> -#include "bssdscpt.h"
-> -#include "mto.h"
-> -#include "wbhal_s.h"
-> -
-> -#define WBLINUX_PACKET_ARRAY_SIZE (ETHERNET_TX_DESCRIPTORS*4)
-> -
-> -#define WB_MAX_LINK_NAME_LEN 40
-> -
-> -struct wb35_adapter {
-> -	u32 adapterIndex;	// 20060703.4 Add for using padapterContext global adapter point
-> -
-> -	WB_LOCALDESCRIPT sLocalPara;	// Myself connected parameters
-> -	PWB_BSSDESCRIPTION asBSSDescriptElement;
-> -
-> -	MLME_FRAME sMlmeFrame;	// connect to peerSTA parameters
-> -
-> -	MTO_PARAMETERS sMtoPara;	// MTO_struct ...
-> -	hw_data_t sHwData;	//For HAL
-> -	MDS Mds;
-> -
-> -	spinlock_t SpinLock;
-> -	u32 shutdown;
-> -
-> -	atomic_t ThreadCount;
-> -
-> -	u32 RxByteCount;
-> -	u32 TxByteCount;
-> -
-> -	struct sk_buff *skb_array[WBLINUX_PACKET_ARRAY_SIZE];
-> -	struct sk_buff *packet_return;
-> -	s32 skb_SetIndex;
-> -	s32 skb_GetIndex;
-> -	s32 netif_state_stop;	// 1: stop  0: normal
-> -	struct iw_statistics iw_stats;
-> -
-> -	u8 LinkName[WB_MAX_LINK_NAME_LEN];
-> -};
-> -
-> -#endif
-> diff --git a/drivers/staging/winbond/bss_f.h b/drivers/staging/winbond/bss_f.h
-> index feffe5f..a433b5a 100644
-> --- a/drivers/staging/winbond/bss_f.h
-> +++ b/drivers/staging/winbond/bss_f.h
-> @@ -1,7 +1,7 @@
->  #ifndef __WINBOND_BSS_F_H
->  #define __WINBOND_BSS_F_H
+> diff --git a/drivers/staging/winbond/wb35rx.c b/drivers/staging/winbond/wb35rx.c
+> index 15a0650..cd5a8e1 100644
+> --- a/drivers/staging/winbond/wb35rx.c
+> +++ b/drivers/staging/winbond/wb35rx.c
+> @@ -10,24 +10,29 @@
+>  //============================================================================
+>  #include <linux/usb.h>
 >  
-> -#include "adapter.h"
 > +#include "core.h"
->  
->  struct PMKID_Information_Element;
->  
-> @@ -9,54 +9,54 @@ struct PMKID_Information_Element;
->  // BSS descriptor DataBase management global function
->  //
->  
-> -void vBSSdescriptionInit(struct wb35_adapter * adapter);
-> -void vBSSfoundList(struct wb35_adapter * adapter);
-> -u8 boChanFilter(struct wb35_adapter * adapter, u8 ChanNo);
-> -u16 wBSSallocateEntry(struct wb35_adapter * adapter);
-> -u16 wBSSGetEntry(struct wb35_adapter * adapter);
-> -void vSimpleHouseKeeping(struct wb35_adapter * adapter);
-> -u16 wBSShouseKeeping(struct wb35_adapter * adapter);
-> -void ClearBSSdescpt(struct wb35_adapter * adapter, u16 i);
-> -u16 wBSSfindBssID(struct wb35_adapter * adapter, u8 *pbBssid);
-> -u16 wBSSfindDedicateCandidate(struct wb35_adapter * adapter, struct SSID_Element *psSsid, u8 *pbBssid);
-> -u16 wBSSfindMACaddr(struct wb35_adapter * adapter, u8 *pbMacAddr);
-> -u16 wBSSsearchMACaddr(struct wb35_adapter * adapter, u8 *pbMacAddr, u8 band);
-> -u16 wBSSaddScanData(struct wb35_adapter *, u16, psRXDATA);
-> -u16 wBSSUpdateScanData(struct wb35_adapter * adapter, u16 wBssIdx, psRXDATA psRcvData);
-> -u16 wBSScreateIBSSdata(struct wb35_adapter * adapter, PWB_BSSDESCRIPTION psDesData);
-> -void DesiredRate2BSSdescriptor(struct wb35_adapter * adapter, PWB_BSSDESCRIPTION psDesData,
-> +void vBSSdescriptionInit(struct wbsoft_priv * adapter);
-> +void vBSSfoundList(struct wbsoft_priv * adapter);
-> +u8 boChanFilter(struct wbsoft_priv * adapter, u8 ChanNo);
-> +u16 wBSSallocateEntry(struct wbsoft_priv * adapter);
-> +u16 wBSSGetEntry(struct wbsoft_priv * adapter);
-> +void vSimpleHouseKeeping(struct wbsoft_priv * adapter);
-> +u16 wBSShouseKeeping(struct wbsoft_priv * adapter);
-> +void ClearBSSdescpt(struct wbsoft_priv * adapter, u16 i);
-> +u16 wBSSfindBssID(struct wbsoft_priv * adapter, u8 *pbBssid);
-> +u16 wBSSfindDedicateCandidate(struct wbsoft_priv * adapter, struct SSID_Element *psSsid, u8 *pbBssid);
-> +u16 wBSSfindMACaddr(struct wbsoft_priv * adapter, u8 *pbMacAddr);
-> +u16 wBSSsearchMACaddr(struct wbsoft_priv * adapter, u8 *pbMacAddr, u8 band);
-> +u16 wBSSaddScanData(struct wbsoft_priv *, u16, psRXDATA);
-> +u16 wBSSUpdateScanData(struct wbsoft_priv * adapter, u16 wBssIdx, psRXDATA psRcvData);
-> +u16 wBSScreateIBSSdata(struct wbsoft_priv * adapter, PWB_BSSDESCRIPTION psDesData);
-> +void DesiredRate2BSSdescriptor(struct wbsoft_priv * adapter, PWB_BSSDESCRIPTION psDesData,
->  							 u8 *pBasicRateSet, u8 BasicRateCount,
->  							 u8 *pOperationRateSet, u8 OperationRateCount);
-> -void DesiredRate2InfoElement(struct wb35_adapter * adapter, u8	*addr, u16 *iFildOffset,
-> +void DesiredRate2InfoElement(struct wbsoft_priv * adapter, u8	*addr, u16 *iFildOffset,
->  							 u8 *pBasicRateSet, u8 BasicRateCount,
->  							 u8 *pOperationRateSet, u8 OperationRateCount);
-> -void BSSAddIBSSdata(struct wb35_adapter * adapter, PWB_BSSDESCRIPTION psDesData);
-> +void BSSAddIBSSdata(struct wbsoft_priv * adapter, PWB_BSSDESCRIPTION psDesData);
->  unsigned char boCmpMacAddr( u8 *, u8 *);
->  unsigned char boCmpSSID(struct SSID_Element *psSSID1, struct SSID_Element *psSSID2);
-> -u16 wBSSfindSSID(struct wb35_adapter * adapter, struct SSID_Element *psSsid);
-> -u16 wRoamingQuery(struct wb35_adapter * adapter);
-> -void vRateToBitmap(struct wb35_adapter * adapter, u16 index);
-> -u8 bRateToBitmapIndex(struct wb35_adapter * adapter, u8 bRate);
-> +u16 wBSSfindSSID(struct wbsoft_priv * adapter, struct SSID_Element *psSsid);
-> +u16 wRoamingQuery(struct wbsoft_priv * adapter);
-> +void vRateToBitmap(struct wbsoft_priv * adapter, u16 index);
-> +u8 bRateToBitmapIndex(struct wbsoft_priv * adapter, u8 bRate);
->  u8 bBitmapToRate(u8 i);
-> -unsigned char boIsERPsta(struct wb35_adapter * adapter, u16 i);
-> -unsigned char boCheckConnect(struct wb35_adapter * adapter);
-> -unsigned char boCheckSignal(struct wb35_adapter * adapter);
-> -void AddIBSSIe(struct wb35_adapter * adapter,PWB_BSSDESCRIPTION psDesData );//added by ws for WPA_None06/01/04
-> -void BssScanUpToDate(struct wb35_adapter * adapter);
-> -void BssUpToDate(struct wb35_adapter * adapter);
-> +unsigned char boIsERPsta(struct wbsoft_priv * adapter, u16 i);
-> +unsigned char boCheckConnect(struct wbsoft_priv * adapter);
-> +unsigned char boCheckSignal(struct wbsoft_priv * adapter);
-> +void AddIBSSIe(struct wbsoft_priv * adapter,PWB_BSSDESCRIPTION psDesData );//added by ws for WPA_None06/01/04
-> +void BssScanUpToDate(struct wbsoft_priv * adapter);
-> +void BssUpToDate(struct wbsoft_priv * adapter);
->  void RateSort(u8 *RateArray, u8 num, u8 mode);
-> -void RateReSortForSRate(struct wb35_adapter * adapter, u8 *RateArray, u8 num);
-> -void Assemble_IE(struct wb35_adapter * adapter, u16 wBssIdx);
-> -void SetMaxTxRate(struct wb35_adapter * adapter);
-> +void RateReSortForSRate(struct wbsoft_priv * adapter, u8 *RateArray, u8 num);
-> +void Assemble_IE(struct wbsoft_priv * adapter, u16 wBssIdx);
-> +void SetMaxTxRate(struct wbsoft_priv * adapter);
->  
-> -void CreateWpaIE(struct wb35_adapter * adapter, u16* iFildOffset, u8 *msg, struct  Management_Frame* msgHeader,
-> +void CreateWpaIE(struct wbsoft_priv * adapter, u16* iFildOffset, u8 *msg, struct  Management_Frame* msgHeader,
->  				 struct Association_Request_Frame_Body* msgBody, u16 iMSindex); //added by WS 05/14/05
->  
->  #ifdef _WPA2_
-> -void CreateRsnIE(struct wb35_adapter * adapter, u16* iFildOffset, u8 *msg, struct  Management_Frame* msgHeader,
-> +void CreateRsnIE(struct wbsoft_priv * adapter, u16* iFildOffset, u8 *msg, struct  Management_Frame* msgHeader,
->  				 struct Association_Request_Frame_Body* msgBody, u16 iMSindex);//added by WS 05/14/05
->  
-> -u16 SearchPmkid(struct wb35_adapter * adapter, struct  Management_Frame* msgHeader,
-> +u16 SearchPmkid(struct wbsoft_priv * adapter, struct  Management_Frame* msgHeader,
->  				   struct PMKID_Information_Element * AssoReq_PMKID );
->  #endif
->  
-> diff --git a/drivers/staging/winbond/core.h b/drivers/staging/winbond/core.h
-> index 62ad954..64b73bb 100644
-> --- a/drivers/staging/winbond/core.h
-> +++ b/drivers/staging/winbond/core.h
-> @@ -1,10 +1,44 @@
->  #ifndef __WINBOND_CORE_H
->  #define __WINBOND_CORE_H
->  
-> -#include "adapter.h"
-> +#include <linux/wireless.h>
-> +
-> +#include "bssdscpt.h"
-> +#include "mto.h"
-> +#include "wbhal_s.h"
-> +
-> +#define WBLINUX_PACKET_ARRAY_SIZE (ETHERNET_TX_DESCRIPTORS*4)
-> +
-> +#define WB_MAX_LINK_NAME_LEN 40
->  
->  struct wbsoft_priv {
-> -	struct wb35_adapter *adapter;
-> +	u32 adapterIndex;	// 20060703.4 Add for using padapterContext global adapter point
-> +
-> +	WB_LOCALDESCRIPT sLocalPara;	// Myself connected parameters
-> +	PWB_BSSDESCRIPTION asBSSDescriptElement;
-> +
-> +	MLME_FRAME sMlmeFrame;	// connect to peerSTA parameters
-> +
-> +	MTO_PARAMETERS sMtoPara;	// MTO_struct ...
-> +	hw_data_t sHwData;	//For HAL
-> +	MDS Mds;
-> +
-> +	spinlock_t SpinLock;
-> +	u32 shutdown;
-> +
-> +	atomic_t ThreadCount;
-> +
-> +	u32 RxByteCount;
-> +	u32 TxByteCount;
-> +
-> +	struct sk_buff *skb_array[WBLINUX_PACKET_ARRAY_SIZE];
-> +	struct sk_buff *packet_return;
-> +	s32 skb_SetIndex;
-> +	s32 skb_GetIndex;
-> +	s32 netif_state_stop;	// 1: stop  0: normal
-> +	struct iw_statistics iw_stats;
-> +
-> +	u8 LinkName[WB_MAX_LINK_NAME_LEN];
->  };
->  
->  #endif /* __WINBOND_CORE_H */
-> diff --git a/drivers/staging/winbond/mds.c b/drivers/staging/winbond/mds.c
-> index af4fdf1..a4e7300 100644
-> --- a/drivers/staging/winbond/mds.c
-> +++ b/drivers/staging/winbond/mds.c
-> @@ -8,7 +8,7 @@
->  #include "wblinux_f.h"
->  
->  void
-> -Mds_reset_descriptor(struct wb35_adapter * adapter)
-> +Mds_reset_descriptor(struct wbsoft_priv * adapter)
->  {
->  	PMDS pMds = &adapter->Mds;
->  
-> @@ -21,7 +21,7 @@ Mds_reset_descriptor(struct wb35_adapter * adapter)
->  }
->  
->  unsigned char
-> -Mds_initial(struct wb35_adapter * adapter)
-> +Mds_initial(struct wbsoft_priv * adapter)
->  {
->  	PMDS pMds = &adapter->Mds;
->  
-> @@ -35,13 +35,13 @@ Mds_initial(struct wb35_adapter * adapter)
->  }
->  
->  void
-> -Mds_Destroy(struct wb35_adapter * adapter)
-> +Mds_Destroy(struct wbsoft_priv * adapter)
->  {
->  	vRxTimerStop(adapter);
->  }
->  
->  void
-> -Mds_Tx(struct wb35_adapter * adapter)
-> +Mds_Tx(struct wbsoft_priv * adapter)
->  {
->  	phw_data_t	pHwData = &adapter->sHwData;
->  	PMDS		pMds = &adapter->Mds;
-> @@ -183,7 +183,7 @@ Mds_Tx(struct wb35_adapter * adapter)
->  }
->  
->  void
-> -Mds_SendComplete(struct wb35_adapter * adapter, PT02_DESCRIPTOR pT02)
-> +Mds_SendComplete(struct wbsoft_priv * adapter, PT02_DESCRIPTOR pT02)
->  {
->  	PMDS	pMds = &adapter->Mds;
->  	phw_data_t	pHwData = &adapter->sHwData;
-> @@ -236,7 +236,7 @@ Mds_SendComplete(struct wb35_adapter * adapter, PT02_DESCRIPTOR pT02)
->  }
->  
->  void
-> -Mds_HeaderCopy(struct wb35_adapter * adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
-> +Mds_HeaderCopy(struct wbsoft_priv * adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
->  {
->  	PMDS	pMds = &adapter->Mds;
->  	u8	*src_buffer = pDes->buffer_address[0];//931130.5.g
-> @@ -333,7 +333,7 @@ Mds_HeaderCopy(struct wb35_adapter * adapter, PDESCRIPTOR pDes, u8 *TargetBuffer
->  
->  // The function return the 4n size of usb pk
->  u16
-> -Mds_BodyCopy(struct wb35_adapter * adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
-> +Mds_BodyCopy(struct wbsoft_priv * adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
->  {
->  	PT00_DESCRIPTOR	pT00;
->  	PMDS	pMds = &adapter->Mds;
-> @@ -436,7 +436,7 @@ Mds_BodyCopy(struct wb35_adapter * adapter, PDESCRIPTOR pDes, u8 *TargetBuffer)
->  
->  
->  void
-> -Mds_DurationSet(  struct wb35_adapter * adapter,  PDESCRIPTOR pDes,  u8 *buffer )
-> +Mds_DurationSet(  struct wbsoft_priv * adapter,  PDESCRIPTOR pDes,  u8 *buffer )
->  {
->  	PT00_DESCRIPTOR	pT00;
->  	PT01_DESCRIPTOR	pT01;
-> diff --git a/drivers/staging/winbond/mds_f.h b/drivers/staging/winbond/mds_f.h
-> index 2e0f7a8..a3724ac 100644
-> --- a/drivers/staging/winbond/mds_f.h
-> +++ b/drivers/staging/winbond/mds_f.h
-> @@ -2,31 +2,31 @@
->  #define __WINBOND_MDS_F_H
->  
->  #include "wbhal_s.h"
-> -#include "adapter.h"
-> +#include "core.h"
->  
-> -unsigned char Mds_initial(  struct wb35_adapter *adapter );
-> -void Mds_Destroy(  struct wb35_adapter *adapter );
-> -void Mds_Tx(  struct wb35_adapter *adapter );
-> -void Mds_HeaderCopy(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
-> -u16 Mds_BodyCopy(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
-> -void Mds_DurationSet(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
-> -void Mds_SendComplete(  struct wb35_adapter *adapter,  PT02_DESCRIPTOR pT02 );
-> -void Mds_MpduProcess(  struct wb35_adapter *adapter,  PDESCRIPTOR pRxDes );
-> -void Mds_reset_descriptor(  struct wb35_adapter *adapter );
-> +unsigned char Mds_initial(  struct wbsoft_priv *adapter );
-> +void Mds_Destroy(  struct wbsoft_priv *adapter );
-> +void Mds_Tx(  struct wbsoft_priv *adapter );
-> +void Mds_HeaderCopy(  struct wbsoft_priv *adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
-> +u16 Mds_BodyCopy(  struct wbsoft_priv *adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
-> +void Mds_DurationSet(  struct wbsoft_priv *adapter,  PDESCRIPTOR pDes,  u8 *TargetBuffer );
-> +void Mds_SendComplete(  struct wbsoft_priv *adapter,  PT02_DESCRIPTOR pT02 );
-> +void Mds_MpduProcess(  struct wbsoft_priv *adapter,  PDESCRIPTOR pRxDes );
-> +void Mds_reset_descriptor(  struct wbsoft_priv *adapter );
->  extern void DataDmp(u8 *pdata, u32 len, u32 offset);
->  
->  
-> -void vRxTimerInit(struct wb35_adapter *adapter);
-> -void vRxTimerStart(struct wb35_adapter *adapter, int timeout_value);
-> -void vRxTimerStop(struct wb35_adapter *adapter);
-> +void vRxTimerInit(struct wbsoft_priv *adapter);
-> +void vRxTimerStart(struct wbsoft_priv *adapter, int timeout_value);
-> +void vRxTimerStop(struct wbsoft_priv *adapter);
->  
->  // For Asynchronous indicating. The routine collocates with USB.
-> -void Mds_MsduProcess(  struct wb35_adapter *adapter,  PRXLAYER1 pRxLayer1,  u8 SlotIndex);
-> +void Mds_MsduProcess(  struct wbsoft_priv *adapter,  PRXLAYER1 pRxLayer1,  u8 SlotIndex);
->  
->  // For data frame sending 20060802
-> -u16 MDS_GetPacketSize(  struct wb35_adapter *adapter );
-> -void MDS_GetNextPacket(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes );
-> -void MDS_GetNextPacketComplete(  struct wb35_adapter *adapter,  PDESCRIPTOR pDes );
-> -void MDS_SendResult(  struct wb35_adapter *adapter,  u8 PacketId,  unsigned char SendOK );
-> +u16 MDS_GetPacketSize(  struct wbsoft_priv *adapter );
-> +void MDS_GetNextPacket(  struct wbsoft_priv *adapter,  PDESCRIPTOR pDes );
-> +void MDS_GetNextPacketComplete(  struct wbsoft_priv *adapter,  PDESCRIPTOR pDes );
-> +void MDS_SendResult(  struct wbsoft_priv *adapter,  u8 PacketId,  unsigned char SendOK );
->  
->  #endif
-> diff --git a/drivers/staging/winbond/mlmetxrx.c b/drivers/staging/winbond/mlmetxrx.c
-> index 308309b..d83795f 100644
-> --- a/drivers/staging/winbond/mlmetxrx.c
-> +++ b/drivers/staging/winbond/mlmetxrx.c
-> @@ -19,7 +19,7 @@
->  
->  #include "mds_f.h"
->  
-> -void MLMEResetTxRx(struct wb35_adapter * adapter)
-> +void MLMEResetTxRx(struct wbsoft_priv * adapter)
->  {
->  	s32     i;
->  
-> @@ -55,7 +55,7 @@ void MLMEResetTxRx(struct wb35_adapter * adapter)
->  //=============================================================================
->  
->  /* FIXME: Should this just be replaced with kmalloc() and kfree()? */
-> -u8 *MLMEGetMMPDUBuffer(struct wb35_adapter * adapter)
-> +u8 *MLMEGetMMPDUBuffer(struct wbsoft_priv * adapter)
->  {
->  	s32 i;
->  	u8 *returnVal;
-> @@ -73,7 +73,7 @@ u8 *MLMEGetMMPDUBuffer(struct wb35_adapter * adapter)
->  }
->  
->  //=============================================================================
-> -u8 MLMESendFrame(struct wb35_adapter * adapter, u8 *pMMPDU, u16 len, u8 DataType)
-> +u8 MLMESendFrame(struct wbsoft_priv * adapter, u8 *pMMPDU, u16 len, u8 DataType)
->  /*	DataType : FRAME_TYPE_802_11_MANAGEMENT, FRAME_TYPE_802_11_MANAGEMENT_CHALLENGE,
->  				FRAME_TYPE_802_11_DATA */
->  {
-> @@ -98,7 +98,7 @@ u8 MLMESendFrame(struct wb35_adapter * adapter, u8 *pMMPDU, u16 len, u8 DataType
->  	return true;
->  }
->  
-> -void MLME_GetNextPacket(struct wb35_adapter *adapter, PDESCRIPTOR desc)
-> +void MLME_GetNextPacket(struct wbsoft_priv *adapter, PDESCRIPTOR desc)
->  {
->  	desc->InternalUsed = desc->buffer_start_index + desc->buffer_number;
->  	desc->InternalUsed %= MAX_DESCRIPTOR_BUFFER_INDEX;
-> @@ -109,7 +109,7 @@ void MLME_GetNextPacket(struct wb35_adapter *adapter, PDESCRIPTOR desc)
->  	desc->Type = adapter->sMlmeFrame.DataType;
->  }
->  
-> -void MLMEfreeMMPDUBuffer(struct wb35_adapter * adapter, s8 *pData)
-> +void MLMEfreeMMPDUBuffer(struct wbsoft_priv * adapter, s8 *pData)
->  {
->  	int i;
->  
-> @@ -127,7 +127,7 @@ void MLMEfreeMMPDUBuffer(struct wb35_adapter * adapter, s8 *pData)
->  }
->  
->  void
-> -MLME_SendComplete(struct wb35_adapter * adapter, u8 PacketID, unsigned char SendOK)
-> +MLME_SendComplete(struct wbsoft_priv * adapter, u8 PacketID, unsigned char SendOK)
->  {
->  	MLME_TXCALLBACK	TxCallback;
->  
-> diff --git a/drivers/staging/winbond/mlmetxrx_f.h b/drivers/staging/winbond/mlmetxrx_f.h
-> index 0f264ed..905c301 100644
-> --- a/drivers/staging/winbond/mlmetxrx_f.h
-> +++ b/drivers/staging/winbond/mlmetxrx_f.h
-> @@ -8,34 +8,34 @@
->  #ifndef _MLMETXRX_H
->  #define _MLMETXRX_H
->  
-> -#include "adapter.h"
-> +#include "core.h"
->  
->  void
->  MLMEProcThread(
-> -     struct wb35_adapter *    adapter
-> +     struct wbsoft_priv *    adapter
->  	);
->  
-> -void MLMEResetTxRx( struct wb35_adapter * adapter);
-> +void MLMEResetTxRx( struct wbsoft_priv * adapter);
->  
->  u8 *
->  MLMEGetMMPDUBuffer(
-> -     struct wb35_adapter *    adapter
-> +     struct wbsoft_priv *    adapter
->     );
->  
-> -void MLMEfreeMMPDUBuffer( struct wb35_adapter * adapter,  s8 * pData);
-> +void MLMEfreeMMPDUBuffer( struct wbsoft_priv * adapter,  s8 * pData);
->  
-> -void MLME_GetNextPacket(  struct wb35_adapter * adapter,  PDESCRIPTOR pDes );
-> -u8 MLMESendFrame( struct wb35_adapter * adapter,
-> +void MLME_GetNextPacket(  struct wbsoft_priv * adapter,  PDESCRIPTOR pDes );
-> +u8 MLMESendFrame( struct wbsoft_priv * adapter,
->  					u8	*pMMPDU,
->  					u16	len,
->  					 u8	DataType);
->  
->  void
-> -MLME_SendComplete(  struct wb35_adapter * adapter,  u8 PacketID,  unsigned char SendOK );
-> +MLME_SendComplete(  struct wbsoft_priv * adapter,  u8 PacketID,  unsigned char SendOK );
->  
->  void
->  MLMERcvFrame(
-> -     struct wb35_adapter *    adapter,
-> +     struct wbsoft_priv *    adapter,
->       PRXBUFFER        pRxBufferArray,
->       u8            NumOfBuffer,
->       u8            ReturnSlotIndex
-> @@ -43,11 +43,11 @@ MLMERcvFrame(
->  
->  void
->  MLMEReturnPacket(
-> -     struct wb35_adapter *    adapter,
-> +     struct wbsoft_priv *    adapter,
->       u8 *          pRxBufer
->     );
->  #ifdef _IBSS_BEACON_SEQ_STICK_
-> -s8 SendBCNullData(struct wb35_adapter * adapter, u16 wIdx);
-> +s8 SendBCNullData(struct wbsoft_priv * adapter, u16 wIdx);
->  #endif
->  
->  #endif
-> diff --git a/drivers/staging/winbond/mto.h b/drivers/staging/winbond/mto.h
-> index 9a17544..536c4f1 100644
-> --- a/drivers/staging/winbond/mto.h
-> +++ b/drivers/staging/winbond/mto.h
-> @@ -131,7 +131,7 @@ typedef struct _MTO_PARAMETERS
->  } MTO_PARAMETERS, *PMTO_PARAMETERS;
->  
->  
-> -#define MTO_FUNC_INPUT              struct wb35_adapter *	adapter
-> +#define MTO_FUNC_INPUT              struct wbsoft_priv *	adapter
->  #define MTO_FUNC_INPUT_DATA         adapter
->  #define MTO_DATA()                  (adapter->sMtoPara)
->  #define MTO_HAL()                   (&adapter->sHwData)
-> diff --git a/drivers/staging/winbond/mto_f.h b/drivers/staging/winbond/mto_f.h
-> index ce4319d..81f5913 100644
-> --- a/drivers/staging/winbond/mto_f.h
-> +++ b/drivers/staging/winbond/mto_f.h
-> @@ -1,11 +1,11 @@
->  #ifndef __WINBOND_MTO_F_H
->  #define __WINBOND_MTO_F_H
->  
-> -#include "adapter.h"
-> +#include "core.h"
->  
-> -extern void MTO_Init(struct wb35_adapter *);
-> -extern void MTO_PeriodicTimerExpired(struct wb35_adapter *);
-> -extern void MTO_SetDTORateRange(struct wb35_adapter *, u8 *, u8);
-> +extern void MTO_Init(struct wbsoft_priv *);
-> +extern void MTO_PeriodicTimerExpired(struct wbsoft_priv *);
-> +extern void MTO_SetDTORateRange(struct wbsoft_priv *, u8 *, u8);
->  extern u8 MTO_GetTxRate(MTO_FUNC_INPUT, u32 fpdu_len);
->  extern u8 MTO_GetTxFallbackRate(MTO_FUNC_INPUT);
->  extern void MTO_SetTxCount(MTO_FUNC_INPUT, u8 t0, u8 index);
-> diff --git a/drivers/staging/winbond/rxisr.c b/drivers/staging/winbond/rxisr.c
-> index d48fed7..f4619d9 100644
-> --- a/drivers/staging/winbond/rxisr.c
-> +++ b/drivers/staging/winbond/rxisr.c
-> @@ -1,19 +1,19 @@
 >  #include "sysdef.h"
-> -#include "adapter.h"
-> +#include "core.h"
+>  #include "wb35rx_f.h"
 >  
->  static void RxTimerHandler(unsigned long data)
+> -void Wb35Rx_start(phw_data_t pHwData)
+> +void Wb35Rx_start(struct ieee80211_hw *hw)
 >  {
->  	WARN_ON(1);
+> +	struct wbsoft_priv *priv = hw->priv;
+> +	phw_data_t pHwData = &priv->sHwData;
+>  	PWB35RX pWb35Rx = &pHwData->Wb35Rx;
+>  
+>  	// Allow only one thread to run into the Wb35Rx() function
+>  	if (atomic_inc_return(&pWb35Rx->RxFireCounter) == 1) {
+>  		pWb35Rx->EP3vm_state = VM_RUNNING;
+> -		Wb35Rx(pHwData);
+> +		Wb35Rx(hw);
+>  	} else
+>  		atomic_dec(&pWb35Rx->RxFireCounter);
 >  }
 >  
-> -void vRxTimerInit(struct wb35_adapter *adapter)
-> +void vRxTimerInit(struct wbsoft_priv *adapter)
+>  // This function cannot reentrain
+> -void Wb35Rx(  phw_data_t pHwData )
+> +void Wb35Rx(struct ieee80211_hw *hw)
 >  {
->  	init_timer(&adapter->Mds.timer);
->  	adapter->Mds.timer.function = RxTimerHandler;
->  	adapter->Mds.timer.data = (unsigned long) adapter;
+> +	struct wbsoft_priv *priv = hw->priv;
+> +	phw_data_t pHwData = &priv->sHwData;
+>  	PWB35RX	pWb35Rx = &pHwData->Wb35Rx;
+>  	u8 *	pRxBufferAddress;
+>  	struct urb *urb = pWb35Rx->RxUrb;
+> @@ -69,7 +74,7 @@ void Wb35Rx(  phw_data_t pHwData )
+>  	usb_fill_bulk_urb(urb, pHwData->WbUsb.udev,
+>  			  usb_rcvbulkpipe(pHwData->WbUsb.udev, 3),
+>  			  pRxBufferAddress, MAX_USB_RX_BUFFER,
+> -			  Wb35Rx_Complete, pHwData);
+> +			  Wb35Rx_Complete, hw);
+>  
+>  	pWb35Rx->EP3vm_state = VM_RUNNING;
+>  
+> @@ -89,7 +94,9 @@ error:
+>  
+>  void Wb35Rx_Complete(struct urb *urb)
+>  {
+> -	phw_data_t	pHwData = urb->context;
+> +	struct ieee80211_hw *hw = urb->context;
+> +	struct wbsoft_priv *priv = hw->priv;
+> +	phw_data_t pHwData = &priv->sHwData;
+>  	PWB35RX		pWb35Rx = &pHwData->Wb35Rx;
+>  	u8 *		pRxBufferAddress;
+>  	u32		SizeCheck;
+> @@ -150,11 +157,11 @@ void Wb35Rx_Complete(struct urb *urb)
+>  	pWb35Rx->RxBufferSize[ RxBufferId ] = BulkLength;
+>  
+>  	if (!pWb35Rx->RxOwner[ RxBufferId ])
+> -		Wb35Rx_indicate(pHwData);
+> +		Wb35Rx_indicate(hw);
+>  
+>  	kfree(pWb35Rx->pDRx);
+>  	// Do the next receive
+> -	Wb35Rx(pHwData);
+> +	Wb35Rx(hw);
+>  	return;
+>  
+>  error:
+> @@ -257,11 +264,13 @@ void Wb35Rx_adjust(PDESCRIPTOR pRxDes)
+>  	pRxDes->buffer_size[0] = BufferSize;
 >  }
 >  
-> -void vRxTimerStart(struct wb35_adapter *adapter, int timeout_value)
-> +void vRxTimerStart(struct wbsoft_priv *adapter, int timeout_value)
+> -extern void packet_came(char *pRxBufferAddress, int PacketSize);
+> +extern void packet_came(struct ieee80211_hw *hw, char *pRxBufferAddress, int PacketSize);
+>  
+>  
+> -u16 Wb35Rx_indicate(phw_data_t pHwData)
+> +u16 Wb35Rx_indicate(struct ieee80211_hw *hw)
 >  {
->  	if (timeout_value < MIN_TIMEOUT_VAL)
->  		timeout_value = MIN_TIMEOUT_VAL;
-> @@ -22,7 +22,7 @@ void vRxTimerStart(struct wb35_adapter *adapter, int timeout_value)
->  	add_timer(&adapter->Mds.timer);
->  }
+> +	struct wbsoft_priv *priv = hw->priv;
+> +	phw_data_t pHwData = &priv->sHwData;
+>  	DESCRIPTOR	RxDes;
+>  	PWB35RX	pWb35Rx = &pHwData->Wb35Rx;
+>  	u8 *		pRxBufferAddress;
+> @@ -317,7 +326,7 @@ u16 Wb35Rx_indicate(phw_data_t pHwData)
+>  			RxDes.buffer_total_size = RxDes.buffer_size[0];
+>  			Wb35Rx_adjust(&RxDes);
 >  
-> -void vRxTimerStop(struct wb35_adapter *adapter)
-> +void vRxTimerStop(struct wbsoft_priv *adapter)
->  {
->  	del_timer_sync(&adapter->Mds.timer);
->  }
-> diff --git a/drivers/staging/winbond/scan_s.h b/drivers/staging/winbond/scan_s.h
-> index 7269546..775bb81 100644
-> --- a/drivers/staging/winbond/scan_s.h
-> +++ b/drivers/staging/winbond/scan_s.h
-> @@ -114,8 +114,8 @@ typedef struct _SCAN_PARAMETERS
+> -			packet_came(pRxBufferAddress, PacketSize);
+> +			packet_came(hw, pRxBufferAddress, PacketSize);
 >  
->  // static functions
+>  			// Move RxBuffer point to the next
+>  			stmp = PacketSize + 3;
+> diff --git a/drivers/staging/winbond/wb35rx_f.h b/drivers/staging/winbond/wb35rx_f.h
+> index 9fb2e2a..5585b55 100644
+> --- a/drivers/staging/winbond/wb35rx_f.h
+> +++ b/drivers/staging/winbond/wb35rx_f.h
+> @@ -1,6 +1,7 @@
+>  #ifndef __WINBOND_WB35RX_F_H
+>  #define __WINBOND_WB35RX_F_H
 >  
-> -//static void ScanTimerHandler(struct wb35_adapter * adapter);
-> -//static void vScanTimerStart(struct wb35_adapter *	adapter, int timeout_value);
-> -//static void vScanTimerStop(struct wb35_adapter * adapter);
-> +//static void ScanTimerHandler(struct wbsoft_priv * adapter);
-> +//static void vScanTimerStart(struct wbsoft_priv *	adapter, int timeout_value);
-> +//static void vScanTimerStop(struct wbsoft_priv * adapter);
->  
->  #endif
-> diff --git a/drivers/staging/winbond/wb35tx.c b/drivers/staging/winbond/wb35tx.c
-> index ce7e981..32ee391 100644
-> --- a/drivers/staging/winbond/wb35tx.c
-> +++ b/drivers/staging/winbond/wb35tx.c
-> @@ -23,7 +23,7 @@ Wb35Tx_get_tx_buffer(phw_data_t pHwData, u8 **pBuffer)
->  	return true;
->  }
->  
-> -void Wb35Tx_start(struct wb35_adapter *adapter)
-> +void Wb35Tx_start(struct wbsoft_priv *adapter)
->  {
->  	phw_data_t pHwData = &adapter->sHwData;
->  	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
-> @@ -37,7 +37,7 @@ void Wb35Tx_start(struct wb35_adapter *adapter)
->  }
->  
->  
-> -void Wb35Tx(struct wb35_adapter *adapter)
-> +void Wb35Tx(struct wbsoft_priv *adapter)
->  {
->  	phw_data_t	pHwData = &adapter->sHwData;
->  	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
-> @@ -91,7 +91,7 @@ void Wb35Tx(struct wb35_adapter *adapter)
->  
->  void Wb35Tx_complete(struct urb * pUrb)
->  {
-> -	struct wb35_adapter *adapter = pUrb->context;
-> +	struct wbsoft_priv *adapter = pUrb->context;
->  	phw_data_t	pHwData = &adapter->sHwData;
->  	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
->  	PMDS		pMds = &adapter->Mds;
-> @@ -194,7 +194,7 @@ void Wb35Tx_destroy(phw_data_t pHwData)
->  	#endif
->  }
->  
-> -void Wb35Tx_CurrentTime(struct wb35_adapter *adapter, u32 TimeCount)
-> +void Wb35Tx_CurrentTime(struct wbsoft_priv *adapter, u32 TimeCount)
->  {
->  	phw_data_t pHwData = &adapter->sHwData;
->  	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
-> @@ -211,7 +211,7 @@ void Wb35Tx_CurrentTime(struct wb35_adapter *adapter, u32 TimeCount)
->  	}
->  }
->  
-> -void Wb35Tx_EP2VM_start(struct wb35_adapter *adapter)
-> +void Wb35Tx_EP2VM_start(struct wbsoft_priv *adapter)
->  {
->  	phw_data_t pHwData = &adapter->sHwData;
->  	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
-> @@ -226,7 +226,7 @@ void Wb35Tx_EP2VM_start(struct wb35_adapter *adapter)
->  }
->  
->  
-> -void Wb35Tx_EP2VM(struct wb35_adapter *adapter)
-> +void Wb35Tx_EP2VM(struct wbsoft_priv *adapter)
->  {
->  	phw_data_t	pHwData = &adapter->sHwData;
->  	PWB35TX pWb35Tx = &pHwData->Wb35Tx;
-> @@ -265,7 +265,7 @@ error:
->  
->  void Wb35Tx_EP2VM_complete(struct urb * pUrb)
->  {
-> -	struct wb35_adapter *adapter = pUrb->context;
-> +	struct wbsoft_priv *adapter = pUrb->context;
->  	phw_data_t	pHwData = &adapter->sHwData;
->  	T02_DESCRIPTOR	T02, TSTATUS;
->  	PWB35TX		pWb35Tx = &pHwData->Wb35Tx;
-> diff --git a/drivers/staging/winbond/wb35tx_f.h b/drivers/staging/winbond/wb35tx_f.h
-> index 466eb6f..277faa7 100644
-> --- a/drivers/staging/winbond/wb35tx_f.h
-> +++ b/drivers/staging/winbond/wb35tx_f.h
-> @@ -1,7 +1,7 @@
->  #ifndef __WINBOND_WB35TX_F_H
->  #define __WINBOND_WB35TX_F_H
->  
-> -#include "adapter.h"
-> +#include "core.h"
->  #include "wbhal_f.h"
+> +#include <net/mac80211.h>
+>  #include "wbhal_s.h"
 >  
 >  //====================================
-> @@ -11,16 +11,16 @@ unsigned char Wb35Tx_initial(	 phw_data_t pHwData );
->  void Wb35Tx_destroy(  phw_data_t pHwData );
->  unsigned char Wb35Tx_get_tx_buffer(  phw_data_t pHwData,  u8 **pBuffer );
+> @@ -10,11 +11,11 @@ void		Wb35Rx_reset_descriptor(  phw_data_t pHwData );
+>  unsigned char		Wb35Rx_initial(  phw_data_t pHwData );
+>  void		Wb35Rx_destroy(  phw_data_t pHwData );
+>  void		Wb35Rx_stop(  phw_data_t pHwData );
+> -u16		Wb35Rx_indicate(  phw_data_t pHwData );
+> +u16		Wb35Rx_indicate(struct ieee80211_hw *hw);
+>  void		Wb35Rx_adjust(  PDESCRIPTOR pRxDes );
+> -void		Wb35Rx_start(  phw_data_t pHwData );
+> +void		Wb35Rx_start(struct ieee80211_hw *hw);
 >  
-> -void Wb35Tx_EP2VM(struct wb35_adapter *adapter);
-> -void Wb35Tx_EP2VM_start(struct wb35_adapter *adapter);
-> +void Wb35Tx_EP2VM(struct wbsoft_priv *adapter);
-> +void Wb35Tx_EP2VM_start(struct wbsoft_priv *adapter);
->  void Wb35Tx_EP2VM_complete(struct urb *urb);
->  
-> -void Wb35Tx_start(struct wb35_adapter *adapter);
-> +void Wb35Tx_start(struct wbsoft_priv *adapter);
->  void Wb35Tx_stop(  phw_data_t pHwData );
-> -void Wb35Tx(struct wb35_adapter *adapter);
-> +void Wb35Tx(struct wbsoft_priv *adapter);
->  void Wb35Tx_complete(struct urb *urb);
->  void Wb35Tx_reset_descriptor(  phw_data_t pHwData );
->  
-> -void Wb35Tx_CurrentTime(struct wb35_adapter *adapter,  u32 TimeCount);
-> +void Wb35Tx_CurrentTime(struct wbsoft_priv *adapter,  u32 TimeCount);
+> -void		Wb35Rx(  phw_data_t pHwData );
+> +void		Wb35Rx(struct ieee80211_hw *hw);
+>  void		Wb35Rx_Complete(struct urb *urb);
 >  
 >  #endif
 > diff --git a/drivers/staging/winbond/wbhal.c b/drivers/staging/winbond/wbhal.c
-> index a7d25a6..289ca7e 100644
+> index 289ca7e..d2be5fb 100644
 > --- a/drivers/staging/winbond/wbhal.c
 > +++ b/drivers/staging/winbond/wbhal.c
-> @@ -32,7 +32,7 @@ void hal_get_permanent_address( phw_data_t pHwData, u8 *pethernet_address )
->  
->  static void hal_led_control(unsigned long data)
->  {
-> -	struct wb35_adapter *adapter = (struct wb35_adapter *) data;
-> +	struct wbsoft_priv *adapter = (struct wbsoft_priv *) data;
->  	phw_data_t pHwData = &adapter->sHwData;
->  	struct wb35_reg *reg = &pHwData->reg;
->  	u32	LEDSet = (pHwData->SoftwareSet & HAL_LED_SET_MASK) >> HAL_LED_SET_SHIFT;
-> @@ -316,7 +316,7 @@ static void hal_led_control(unsigned long data)
+> @@ -315,9 +315,10 @@ static void hal_led_control(unsigned long data)
+>  	add_timer(&pHwData->LEDTimer);
 >  }
 >  
->  
-> -u8 hal_init_hardware(phw_data_t pHwData, struct wb35_adapter * adapter)
-> +u8 hal_init_hardware(phw_data_t pHwData, struct wbsoft_priv * adapter)
+> -
+> -u8 hal_init_hardware(phw_data_t pHwData, struct wbsoft_priv * adapter)
+> +u8 hal_init_hardware(struct ieee80211_hw *hw)
 >  {
+> +	struct wbsoft_priv *priv = hw->priv;
+> +	phw_data_t pHwData = &priv->sHwData;
 >  	u16 SoftwareSet;
 >  
-> @@ -671,7 +671,7 @@ s32 hal_get_rssi(  phw_data_t pHwData,  u32 *HalRssiArry,  u8 Count )
->  	return ltmp;
->  }
->  //----------------------------------------------------------------------------------------------------
-> -s32 hal_get_rssi_bss(struct wb35_adapter *adapter,  u16 idx,  u8 Count)
-> +s32 hal_get_rssi_bss(struct wbsoft_priv *adapter,  u16 idx,  u8 Count)
->  {
->  	phw_data_t pHwData = &adapter->sHwData;
->  	struct wb35_reg *reg = &pHwData->reg;
-> @@ -841,7 +841,7 @@ void hal_system_power_change(phw_data_t pHwData, u32 PowerState)
->  	}
->  }
+>  	// Initial the variable
+> @@ -333,7 +334,7 @@ u8 hal_init_hardware(phw_data_t pHwData, struct wbsoft_priv * adapter)
+>  				pHwData->InitialResource = 4;
+>  				init_timer(&pHwData->LEDTimer);
+>  				pHwData->LEDTimer.function = hal_led_control;
+> -				pHwData->LEDTimer.data = (unsigned long) adapter;
+> +				pHwData->LEDTimer.data = (unsigned long) priv;
+>  				pHwData->LEDTimer.expires = jiffies + msecs_to_jiffies(1000);
+>  				add_timer(&pHwData->LEDTimer);
 >  
-> -void hal_surprise_remove(struct wb35_adapter *adapter)
-> +void hal_surprise_remove(struct wbsoft_priv *adapter)
->  {
->  	phw_data_t pHwData = &adapter->sHwData;
+> @@ -349,8 +350,8 @@ u8 hal_init_hardware(phw_data_t pHwData, struct wbsoft_priv * adapter)
+>  					return false;
+>  				#endif
 >  
-> @@ -853,7 +853,7 @@ void hal_surprise_remove(struct wb35_adapter *adapter)
->  	}
->  }
+> -				Wb35Rx_start( pHwData );
+> -				Wb35Tx_EP2VM_start(adapter);
+> +				Wb35Rx_start(hw);
+> +				Wb35Tx_EP2VM_start(priv);
 >  
-> -void hal_rate_change(struct wb35_adapter *adapter) // Notify the HAL rate is changing 20060613.1
-> +void hal_rate_change(struct wbsoft_priv *adapter) // Notify the HAL rate is changing 20060613.1
->  {
->  	phw_data_t pHwData = &adapter->sHwData;
->  	u8		rate = CURRENT_TX_RATE;
+>  				return true;
+>  			}
 > diff --git a/drivers/staging/winbond/wbhal_f.h b/drivers/staging/winbond/wbhal_f.h
-> index 4cb4da0..e7a1d61 100644
+> index e7a1d61..dc5709f 100644
 > --- a/drivers/staging/winbond/wbhal_f.h
 > +++ b/drivers/staging/winbond/wbhal_f.h
-> @@ -5,7 +5,7 @@
->  #include "wb35tx_f.h"
->  #include "wb35rx_f.h"
->  
-> -#include "adapter.h"
-> +#include "core.h"
->  
->  //====================================================================================
->  // Function declaration
 > @@ -21,7 +21,7 @@ void hal_clear_all_key(  phw_data_t pHwData );
 >  void hal_get_ethernet_address(  phw_data_t pHwData,  u8 *current_address );
 >  void hal_set_ethernet_address(  phw_data_t pHwData,  u8 *current_address );
 >  void hal_get_permanent_address(  phw_data_t pHwData,  u8 *pethernet_address );
-> -unsigned char hal_init_hardware(  phw_data_t pHwData,  struct wb35_adapter * adapter );
-> +unsigned char hal_init_hardware(  phw_data_t pHwData,  struct wbsoft_priv * adapter );
+> -unsigned char hal_init_hardware(  phw_data_t pHwData,  struct wbsoft_priv * adapter );
+> +u8 hal_init_hardware(struct ieee80211_hw *hw);
 >  void hal_set_power_save_mode(  phw_data_t pHwData,  unsigned char power_save,  unsigned char wakeup,  unsigned char dtim );
 >  void hal_get_power_save_mode(  phw_data_t pHwData,   u8 *pin_pwr_save );
 >  void hal_set_slot_time(  phw_data_t pHwData,  u8 type );
-> @@ -61,7 +61,7 @@ void hal_set_cwmax(  phw_data_t pHwData,  u16 cwin_max );
->  void hal_set_rsn_wpa(  phw_data_t pHwData,  u32 * RSN_IE_Bitmap , u32 * RSN_OUI_type , unsigned char bDesiredAuthMode);
->  //s32 hal_get_rssi(  phw_data_t pHwData,  u32 HalRssi );
->  s32 hal_get_rssi(  phw_data_t pHwData,  u32 *HalRssiArry,  u8 Count );
-> -s32 hal_get_rssi_bss(struct wb35_adapter *adapter,  u16 idx,  u8 Count);
-> +s32 hal_get_rssi_bss(struct wbsoft_priv *adapter,  u16 idx,  u8 Count);
->  void hal_set_connect_info(  phw_data_t pHwData,  unsigned char boConnect );
->  u8 hal_get_est_sq3(  phw_data_t pHwData,  u8 Count );
->  void hal_set_rf_power(  phw_data_t pHwData,  u8 PowerIndex ); // 20060621 Modify
-> @@ -82,13 +82,13 @@ u8 hal_get_hw_radio_off			(  phw_data_t pHwData );
->  #define hal_scan_interval( _A )		(_A->Scan_Interval)
->  void hal_scan_status_indicate(  phw_data_t pHwData, u8 status);	// 0: complete, 1: in progress
->  void hal_system_power_change(  phw_data_t pHwData, u32 PowerState ); // 20051230 -=D0 1=D1 ..
-> -void hal_surprise_remove(struct wb35_adapter *adapter);
-> +void hal_surprise_remove(struct wbsoft_priv *adapter);
->  
->  #define PHY_DEBUG( msg, args... )
->  
->  
->  
-> -void hal_rate_change(struct wb35_adapter *adapter); // Notify the HAL rate is changing 20060613.1
-> +void hal_rate_change(struct wbsoft_priv *adapter); // Notify the HAL rate is changing 20060613.1
->  unsigned char hal_get_dxx_reg(  phw_data_t pHwData,  u16 number,  u32 * pValue );
->  unsigned char hal_set_dxx_reg(  phw_data_t pHwData,  u16 number,  u32 value );
->  #define hal_get_time_count( _P )	(_P->time_count/10)	// return 100ms count
 > diff --git a/drivers/staging/winbond/wblinux.c b/drivers/staging/winbond/wblinux.c
-> index 5d3acc8..3b02aae 100644
+> index 3b02aae..31f2d20 100644
 > --- a/drivers/staging/winbond/wblinux.c
 > +++ b/drivers/staging/winbond/wblinux.c
-> @@ -17,14 +17,14 @@
->  #include "wblinux_f.h"
->  
->  unsigned char
-> -WBLINUX_Initial(struct wb35_adapter * adapter)
-> +WBLINUX_Initial(struct wbsoft_priv * adapter)
->  {
->  	spin_lock_init( &adapter->SpinLock );
->  	return true;
->  }
->  
->  void
-> -WBLINUX_Destroy(struct wb35_adapter * adapter)
-> +WBLINUX_Destroy(struct wbsoft_priv * adapter)
->  {
->  	WBLINUX_stop( adapter );
->  #ifdef _PE_USB_INI_DUMP_
-> @@ -33,7 +33,7 @@ WBLINUX_Destroy(struct wb35_adapter * adapter)
->  }
->  
->  void
-> -WBLINUX_stop(  struct wb35_adapter * adapter )
-> +WBLINUX_stop(  struct wbsoft_priv * adapter )
->  {
->  	struct sk_buff *pSkb;
->  
-> @@ -63,7 +63,7 @@ WBLINUX_stop(  struct wb35_adapter * adapter )
->  }
->  
->  void
-> -WbWlanHalt(  struct wb35_adapter * adapter )
-> +WbWlanHalt(  struct wbsoft_priv * adapter )
->  {
->  	//---------------------
->  	adapter->sLocalPara.ShutDowned = true;
-> @@ -85,7 +85,7 @@ WbWlanHalt(  struct wb35_adapter * adapter )
+> @@ -85,8 +85,9 @@ WbWlanHalt(  struct wbsoft_priv * adapter )
 >  }
 >  
 >  unsigned char
-> -WbWLanInitialize(struct wb35_adapter * adapter)
-> +WbWLanInitialize(struct wbsoft_priv * adapter)
+> -WbWLanInitialize(struct wbsoft_priv * adapter)
+> +WbWLanInitialize(struct ieee80211_hw *hw)
 >  {
+> +	struct wbsoft_priv *priv = hw->priv;
 >  	phw_data_t	pHwData;
 >  	u8		*pMacAddr;
+>  	u8		*pMacAddr2;
+> @@ -97,22 +98,22 @@ WbWLanInitialize(struct wbsoft_priv * adapter)
+>  	//
+>  	// Setting default value for Linux
+>  	//
+> -	adapter->sLocalPara.region_INF = REGION_AUTO;
+> -	adapter->sLocalPara.TxRateMode = RATE_AUTO;
+> -	psLOCAL->bMacOperationMode = MODE_802_11_BG;	// B/G mode
+> -	adapter->Mds.TxRTSThreshold = DEFAULT_RTSThreshold;
+> -	adapter->Mds.TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
+> -	hal_set_phy_type( &adapter->sHwData, RF_WB_242_1 );
+> -	adapter->sLocalPara.MTUsize = MAX_ETHERNET_PACKET_SIZE;
+> -	psLOCAL->bPreambleMode = AUTO_MODE;
+> -	adapter->sLocalPara.RadioOffStatus.boSwRadioOff = false;
+> -	pHwData = &adapter->sHwData;
+> +	priv->sLocalPara.region_INF = REGION_AUTO;
+> +	priv->sLocalPara.TxRateMode = RATE_AUTO;
+> +	priv->sLocalPara.bMacOperationMode = MODE_802_11_BG;	// B/G mode
+> +	priv->Mds.TxRTSThreshold = DEFAULT_RTSThreshold;
+> +	priv->Mds.TxFragmentThreshold = DEFAULT_FRAGMENT_THRESHOLD;
+> +	hal_set_phy_type( &priv->sHwData, RF_WB_242_1 );
+> +	priv->sLocalPara.MTUsize = MAX_ETHERNET_PACKET_SIZE;
+> +	priv->sLocalPara.bPreambleMode = AUTO_MODE;
+> +	priv->sLocalPara.RadioOffStatus.boSwRadioOff = false;
+> +	pHwData = &priv->sHwData;
+>  	hal_set_phy_type( pHwData, RF_DECIDE_BY_INF );
+>  
+>  	//
+>  	// Initial each module and variable
+>  	//
+> -	if (!WBLINUX_Initial(adapter)) {
+> +	if (!WBLINUX_Initial(priv)) {
+>  #ifdef _PE_USB_INI_DUMP_
+>  		WBDEBUG(("[w35und]WBNDIS initialization failed\n"));
+>  #endif
+> @@ -120,33 +121,33 @@ WbWLanInitialize(struct wbsoft_priv * adapter)
+>  	}
+>  
+>  	// Initial Software variable
+> -	adapter->sLocalPara.ShutDowned = false;
+> +	priv->sLocalPara.ShutDowned = false;
+>  
+>  	//added by ws for wep key error detection
+> -	adapter->sLocalPara.bWepKeyError= false;
+> -	adapter->sLocalPara.bToSelfPacketReceived = false;
+> -	adapter->sLocalPara.WepKeyDetectTimerCount= 2 * 100; /// 2 seconds
+> +	priv->sLocalPara.bWepKeyError= false;
+> +	priv->sLocalPara.bToSelfPacketReceived = false;
+> +	priv->sLocalPara.WepKeyDetectTimerCount= 2 * 100; /// 2 seconds
+>  
+>  	// Initial USB hal
+>  	InitStep = 1;
+> -	pHwData = &adapter->sHwData;
+> -	if (!hal_init_hardware(pHwData, adapter))
+> +	pHwData = &priv->sHwData;
+> +	if (!hal_init_hardware(hw))
+>  		goto error;
+>  
+>  	EEPROM_region = hal_get_region_from_EEPROM( pHwData );
+>  	if (EEPROM_region != REGION_AUTO)
+> -		psLOCAL->region = EEPROM_region;
+> +		priv->sLocalPara.region = EEPROM_region;
+>  	else {
+> -		if (psLOCAL->region_INF != REGION_AUTO)
+> -			psLOCAL->region = psLOCAL->region_INF;
+> +		if (priv->sLocalPara.region_INF != REGION_AUTO)
+> +			priv->sLocalPara.region = priv->sLocalPara.region_INF;
+>  		else
+> -			psLOCAL->region = REGION_USA;	//default setting
+> +			priv->sLocalPara.region = REGION_USA;	//default setting
+>  	}
+>  
+>  	// Get Software setting flag from hal
+> -	adapter->sLocalPara.boAntennaDiversity = false;
+> +	priv->sLocalPara.boAntennaDiversity = false;
+>  	if (hal_software_set(pHwData) & 0x00000001)
+> -		adapter->sLocalPara.boAntennaDiversity = true;
+> +		priv->sLocalPara.boAntennaDiversity = true;
+>  
+>  	//
+>  	// For TS module
+> @@ -155,7 +156,7 @@ WbWLanInitialize(struct wbsoft_priv * adapter)
+>  
+>  	// For MDS module
+>  	InitStep = 3;
+> -	Mds_initial(adapter);
+> +	Mds_initial(priv);
+>  
+>  	//=======================================
+>  	// Initialize the SME, SCAN, MLME, ROAM
+> @@ -165,18 +166,18 @@ WbWLanInitialize(struct wbsoft_priv * adapter)
+>  	InitStep = 6;
+>  
+>  	// If no user-defined address in the registry, use the addresss "burned" on the NIC instead.
+> -	pMacAddr = adapter->sLocalPara.ThisMacAddress;
+> -	pMacAddr2 = adapter->sLocalPara.PermanentAddress;
+> -	hal_get_permanent_address( pHwData, adapter->sLocalPara.PermanentAddress );// Reading ethernet address from EEPROM
+> +	pMacAddr = priv->sLocalPara.ThisMacAddress;
+> +	pMacAddr2 = priv->sLocalPara.PermanentAddress;
+> +	hal_get_permanent_address( pHwData, priv->sLocalPara.PermanentAddress );// Reading ethernet address from EEPROM
+>  	if (memcmp(pMacAddr, "\x00\x00\x00\x00\x00\x00", MAC_ADDR_LENGTH) == 0)
+>  		memcpy(pMacAddr, pMacAddr2, MAC_ADDR_LENGTH);
+>  	else {
+>  		// Set the user define MAC address
+> -		hal_set_ethernet_address(pHwData, adapter->sLocalPara.ThisMacAddress);
+> +		hal_set_ethernet_address(pHwData, priv->sLocalPara.ThisMacAddress);
+>  	}
+>  
+>  	//get current antenna
+> -	psLOCAL->bAntennaNo = hal_get_antenna_number(pHwData);
+> +	priv->sLocalPara.bAntennaNo = hal_get_antenna_number(pHwData);
+>  #ifdef _PE_STATE_DUMP_
+>  	WBDEBUG(("Driver init, antenna no = %d\n", psLOCAL->bAntennaNo));
+>  #endif
+> @@ -186,25 +187,25 @@ WbWLanInitialize(struct wbsoft_priv * adapter)
+>  	while (!hal_idle(pHwData))
+>  		msleep(10);
+>  
+> -	MTO_Init(adapter);
+> +	MTO_Init(priv);
+>  
+>  	HwRadioOff = hal_get_hw_radio_off( pHwData );
+> -	psLOCAL->RadioOffStatus.boHwRadioOff = !!HwRadioOff;
+> +	priv->sLocalPara.RadioOffStatus.boHwRadioOff = !!HwRadioOff;
+>  
+> -	hal_set_radio_mode( pHwData, (unsigned char)(psLOCAL->RadioOffStatus.boSwRadioOff || psLOCAL->RadioOffStatus.boHwRadioOff) );
+> +	hal_set_radio_mode( pHwData, (unsigned char)(priv->sLocalPara.RadioOffStatus.boSwRadioOff || priv->sLocalPara.RadioOffStatus.boHwRadioOff) );
+>  
+>  	hal_driver_init_OK(pHwData) = 1; // Notify hal that the driver is ready now.
+>  	//set a tx power for reference.....
+> -//	sme_set_tx_power_level(adapter, 12);	FIXME?
+> +//	sme_set_tx_power_level(priv, 12);	FIXME?
+>  	return true;
+>  
+>  error:
+>  	switch (InitStep) {
+>  	case 5:
+>  	case 4:
+> -	case 3: Mds_Destroy( adapter );
+> +	case 3: Mds_Destroy( priv );
+>  	case 2:
+> -	case 1: WBLINUX_Destroy( adapter );
+> +	case 1: WBLINUX_Destroy( priv );
+>  		hal_halt( pHwData, NULL );
+>  	case 0: break;
+>  	}
 > diff --git a/drivers/staging/winbond/wblinux_f.h b/drivers/staging/winbond/wblinux_f.h
-> index ed2676b..4b786fc 100644
+> index 4b786fc..15e6a65 100644
 > --- a/drivers/staging/winbond/wblinux_f.h
 > +++ b/drivers/staging/winbond/wblinux_f.h
-> @@ -1,7 +1,7 @@
->  #ifndef __WBLINUX_F_H
->  #define __WBLINUX_F_H
->  
-> -#include "adapter.h"
-> +#include "core.h"
->  #include "mds_s.h"
->  
->  //=========================================================================
-> @@ -9,14 +9,14 @@
->  //
->  // wblinux_f.h
->  //
-> -unsigned char WBLINUX_Initial(  struct wb35_adapter *adapter );
-> +unsigned char WBLINUX_Initial(  struct wbsoft_priv *adapter );
->  int wb35_start_xmit(struct sk_buff *skb, struct net_device *netdev );
-> -void WBLINUX_stop(  struct wb35_adapter *adapter );
-> -void WBLINUX_Destroy(  struct wb35_adapter *adapter );
-> +void WBLINUX_stop(  struct wbsoft_priv *adapter );
-> +void WBLINUX_Destroy(  struct wbsoft_priv *adapter );
->  void wb35_set_multicast( struct net_device *netdev );
+> @@ -17,6 +17,7 @@ void wb35_set_multicast( struct net_device *netdev );
 >  struct net_device_stats * wb35_netdev_stats( struct net_device *netdev );
-> -void WBLINUX_stop(  struct wb35_adapter *adapter );
-> -void WbWlanHalt(  struct wb35_adapter *adapter );
-> -unsigned char WbWLanInitialize(struct wb35_adapter *adapter);
-> +void WBLINUX_stop(  struct wbsoft_priv *adapter );
-> +void WbWlanHalt(  struct wbsoft_priv *adapter );
-> +unsigned char WbWLanInitialize(struct wbsoft_priv *adapter);
+>  void WBLINUX_stop(  struct wbsoft_priv *adapter );
+>  void WbWlanHalt(  struct wbsoft_priv *adapter );
+> -unsigned char WbWLanInitialize(struct wbsoft_priv *adapter);
+> +unsigned char WbWLanInitialize(struct ieee80211_hw *hw);
+> +
 >  
 >  #endif
 > diff --git a/drivers/staging/winbond/wbusb.c b/drivers/staging/winbond/wbusb.c
-> index d8fa9e5..a6bc78e 100644
+> index a6bc78e..40bb77c 100644
 > --- a/drivers/staging/winbond/wbusb.c
 > +++ b/drivers/staging/winbond/wbusb.c
-> @@ -120,7 +120,7 @@ static int wbsoft_tx(struct ieee80211_hw *dev, struct sk_buff *skb)
->  {
->  	struct wbsoft_priv *priv = dev->priv;
+> @@ -45,7 +45,6 @@ static struct ieee80211_supported_band wbsoft_band_2GHz = {
+>  };
 >  
-> -	MLMESendFrame(priv->adapter, skb->data, skb->len, FRAME_TYPE_802_11_MANAGEMENT);
-> +	MLMESendFrame(priv, skb->data, skb->len, FRAME_TYPE_802_11_MANAGEMENT);
+>  int wbsoft_enabled;
+> -struct ieee80211_hw *my_dev;
 >  
->  	return NETDEV_TX_OK;
->  }
-> @@ -144,20 +144,20 @@ static int wbsoft_config(struct ieee80211_hw *dev, struct ieee80211_conf *conf)
->  	ch.ChanNo = 1;	/* Should use channel_num, or something, as that is already pre-translated */
->  
->  
-> -	hal_set_current_channel(&priv->adapter->sHwData, ch);
-> -	hal_set_beacon_period(&priv->adapter->sHwData, conf->beacon_int);
-> -//	hal_set_cap_info(&priv->adapter->sHwData, ?? );
-> +	hal_set_current_channel(&priv->sHwData, ch);
-> +	hal_set_beacon_period(&priv->sHwData, conf->beacon_int);
-> +//	hal_set_cap_info(&priv->sHwData, ?? );
->  // hal_set_ssid(phw_data_t pHwData,  u8 * pssid,  u8 ssid_len); ??
-> -	hal_set_accept_broadcast(&priv->adapter->sHwData, 1);
-> -	hal_set_accept_promiscuous(&priv->adapter->sHwData,  1);
-> -	hal_set_accept_multicast(&priv->adapter->sHwData,  1);
-> -	hal_set_accept_beacon(&priv->adapter->sHwData,  1);
-> -	hal_set_radio_mode(&priv->adapter->sHwData,  0);
-> +	hal_set_accept_broadcast(&priv->sHwData, 1);
-> +	hal_set_accept_promiscuous(&priv->sHwData,  1);
-> +	hal_set_accept_multicast(&priv->sHwData,  1);
-> +	hal_set_accept_beacon(&priv->sHwData,  1);
-> +	hal_set_radio_mode(&priv->sHwData,  0);
->  	//hal_set_antenna_number(  phw_data_t pHwData, u8 number )
->  	//hal_set_rf_power(phw_data_t pHwData, u8 PowerIndex)
->  
->  
-> -//	hal_start_bss(&priv->adapter->sHwData, WLAN_BSSTYPE_INFRASTRUCTURE);	??
-> +//	hal_start_bss(&priv->sHwData, WLAN_BSSTYPE_INFRASTRUCTURE);	??
->  
->  //void hal_set_rates(phw_data_t pHwData, u8 * pbss_rates,
->  //		   u8 length, unsigned char basic_rate_set)
-> @@ -196,7 +196,6 @@ static const struct ieee80211_ops wbsoft_ops = {
->  
->  static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id_table)
->  {
-> -	struct wb35_adapter *adapter;
->  	PWBUSB		pWbUsb;
->          struct usb_host_interface *interface;
->  	struct usb_endpoint_descriptor *endpoint;
-> @@ -221,13 +220,14 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
+>  static int wbsoft_add_interface(struct ieee80211_hw *dev,
+>  				 struct ieee80211_if_init_conf *conf)
+> @@ -225,7 +224,6 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
 >  		goto error;
->  	}
 >  
-> -	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
-> -	if (!adapter) {
-> -		err = -ENOMEM;
-> +	dev = ieee80211_alloc_hw(sizeof(*priv), &wbsoft_ops);
-> +	if (!dev)
->  		goto error;
-> -	}
+>  	priv = dev->priv;
+> -	my_dev = dev;
 >  
-> -	pWbUsb = &adapter->sHwData.WbUsb;
-> +	priv = dev->priv;
-> +	my_dev = dev;
-> +
-> +	pWbUsb = &priv->sHwData.WbUsb;
+>  	pWbUsb = &priv->sHwData.WbUsb;
 >  	pWbUsb->udev = udev;
->  
->          interface = intf->cur_altsetting;
-> @@ -238,23 +238,14 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
+> @@ -238,7 +236,7 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
 >  		pWbUsb->IsUsb20 = 1;
 >  	}
 >  
-> -	if (!WbWLanInitialize(adapter)) {
-> +	if (!WbWLanInitialize(priv)) {
+> -	if (!WbWLanInitialize(priv)) {
+> +	if (!WbWLanInitialize(dev)) {
 >  		err = -EINVAL;
-> -		goto error_free_adapter;
-> +		goto error_free_hw;
->  	}
->  
-> -	dev = ieee80211_alloc_hw(sizeof(*priv), &wbsoft_ops);
-> -	if (!dev)
-> -		goto error_free_adapter;
-> -
-> -	priv = dev->priv;
-> -	priv->adapter = adapter;
-> -
-> -	my_dev = dev;
-> -
->  	SET_IEEE80211_DEV(dev, &udev->dev);
->  	{
-> -		phw_data_t pHwData = &adapter->sHwData;
-> +		phw_data_t pHwData = &priv->sHwData;
->  		unsigned char		dev_addr[MAX_ADDR_LEN];
->  		hal_get_permanent_address(pHwData, dev_addr);
->  		SET_IEEE80211_PERM_ADDR(dev, dev_addr);
-> @@ -272,14 +263,12 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
->  	if (err)
 >  		goto error_free_hw;
->  
-> -	usb_set_intfdata(intf, adapter);
-> +	usb_set_intfdata(intf, priv);
->  
->  	return 0;
->  
->  error_free_hw:
->  	ieee80211_free_hw(dev);
-> -error_free_adapter:
-> -	kfree(adapter);
->  error:
->  	usb_put_dev(udev);
+>  	}
+> @@ -274,7 +272,7 @@ error:
 >  	return err;
-> @@ -315,9 +304,9 @@ void packet_came(char *pRxBufferAddress, int PacketSize)
+>  }
+>  
+> -void packet_came(char *pRxBufferAddress, int PacketSize)
+> +void packet_came(struct ieee80211_hw *hw, char *pRxBufferAddress, int PacketSize)
+>  {
+>  	struct sk_buff *skb;
+>  	struct ieee80211_rx_status rx_status = {0};
+> @@ -299,7 +297,7 @@ void packet_came(char *pRxBufferAddress, int PacketSize)
+>  	rx_status.phymode = MODE_IEEE80211B;
+>  */
+>  
+> -	ieee80211_rx_irqsafe(my_dev, skb, &rx_status);
+> +	ieee80211_rx_irqsafe(hw, skb, &rx_status);
+>  }
 >  
 >  static void wb35_disconnect(struct usb_interface *intf)
->  {
-> -	struct wb35_adapter *adapter = usb_get_intfdata(intf);
-> +	struct wbsoft_priv *priv = usb_get_intfdata(intf);
->  
-> -	WbWlanHalt(adapter);
-> +	WbWlanHalt(priv);
->  
->  	usb_set_intfdata(intf, NULL);
->  	usb_put_dev(interface_to_usbdev(intf));
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
