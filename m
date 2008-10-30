@@ -1,289 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753588AbYJ3GBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191AbYJ3GCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753588AbYJ3GBt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 02:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYJ3GBl
+	id S1754191AbYJ3GCT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 02:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYJ3GCB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 02:01:41 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:60840 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752704AbYJ3GBk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 02:01:40 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AkwFAETmCElMQWao/2dsb2JhbACBdspxg1E
-Date: Thu, 30 Oct 2008 02:01:38 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: sadump@cn.fujitsu.com, kernel-trace-list@redhat.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Martin J. Bligh" <mbligh@mbligh.org>, ltt-dev@lists.casi.polymtl.ca,
-       systemtap@sources.redhat.com, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [ltt-dev] [sadump 04308] Re:  LTTng 0.44 and LTTV 0.11.3
-Message-ID: <20081030060138.GA29673@Krystal>
-References: <20081024004502.GA21759@Krystal> <49068D2A.9010308@cn.fujitsu.com> <20081029174001.GA30796@Krystal> <49092AEB.2080000@cn.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 30 Oct 2008 02:02:01 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:42717 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753767AbYJ3GCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 02:02:00 -0400
+From: Andrey Mirkin <major@openvz.org>
+To: Oren Laadan <orenl@cs.columbia.edu>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Louis Rilling <Louis.Rilling@kerlabs.com>
+Subject: Re: [Devel] Re: [PATCH 0/9] OpenVZ kernel based checkpointing/restart
+Date: Thu, 30 Oct 2008 10:02:44 +0400
+User-Agent: KMail/1.8.2
+Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <1220439476-16465-1-git-send-email-major@openvz.org> <200810271707.13580.major@openvz.org> <4905D2AD.1070309@cs.columbia.edu>
+In-Reply-To: <4905D2AD.1070309@cs.columbia.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49092AEB.2080000@cn.fujitsu.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 01:49:45 up 147 days, 10:30,  5 users,  load average: 0.36, 0.51,
-	0.45
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200810300902.47067.major@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
-> Mathieu Desnoyers wrote:
-> > * Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
-> >> Mathieu Desnoyers wrote:
-> >>> - I have also vastly simplified locking in the markers and tracepoints
-> >>>   by using _only_ the modules mutex. I actually took this mutex out of
-> >>>   module.c and created its own file so tracepoints and markers can use
-> >>>   it. That should please Lai Jiangshan. Although he may have some work
-> >>>   to do to see how his new probes manager might benefit from it.
-> >>>
-> >>>   See :
-> >>>   http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=7aea87ac46df7613d68034f5904bc8d575069076
-> >>>   and
-> >>>   http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=5f6814237f7a67650e7b6214d916825e3f8fc1b7
-> >>>   http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=commitdiff;h=410ba66a1cbe27a611e1c18c0a53e87b4652a2c9
-> >>>
-> >> Hi, Mathieu,
+On Monday 27 October 2008 17:39 Oren Laadan wrote:
+> Andrey Mirkin wrote:
+> > On Monday 20 October 2008 19:55 Dave Hansen wrote:
+> >> On Mon, 2008-10-20 at 16:14 +0400, Andrey Mirkin wrote:
+> >>> Right now my patchset (v2) provides an ability to checkpoint and
+> >>> restart a group of processes. The process of checkpointing and restart
+> >>> can be initiated from external process (not from the process which
+> >>> should be checkpointed).
 > >>
-> >> I strongly reject for removing tracepoint_mutex and marker_mutex.
+> >> Absolutely.  Oren's code does it this way to make for a smaller patch at
+> >> first.  The syscall takes a pid argument so it is surely expected to be
+> >> expanded upon later.
 > >>
-> >> As an independent subsystem, we should use our own locks. Do not use others.
-> >> otherwise coupling will be increased in linux kernel.
-> >> I condemn unnecessary coupling.
+> >>> Also I think that all the restart job (including process forking)
+> >>> should be done in kernel, as in this case we will not depend on user
+> >>> space and will be more secure. This is also implemented in my patchset.
 > >>
-> >> Our tracepoint & marker had tied to modules(for traveling all tracepoints
-> >> or markers). The best thing is that we do not increase the coupling.
+> >> Do you think that this is an approach that Oren's patches are married
+> >> to, or is this a "feature" we can add on later?
+> >
+> > Well, AFAICS from Oren's patch set his approach is oriented on process
+> > creation in user space. I think we should choose right now what approach
+> > will be used for process creation.
+>
+> This is inaccurate.
+>
+> I intentionally did not address how processes will be created, by
+> simply allowing either way to be added to the patch.
+
+Yes, you right. Either way is possible with your patchset. But as I understand 
+in ZAP you are using user space process creation. No?
+That is why I think that your design is more convenient for user process 
+creation.
+
+> I do agree that we probably want to decide how to do it. However,
+> there is also room to allow for both approaches, in a compatible
+> way, should we wish to explore both.
+
+Yes, we can implement both approaches. Do you think we really need this?
+
+> > We have two options here: fork processes in kernel or fork them in user
+> > space. If process will be forked in user space, then there will be a gap
+> > when process will be in user space and can be killed with received signal
+> > before entering
+>
+> Why do we care about it ?
+> Why is there a difference if it is killed before or after entering
+> the kernel (e.g. user aborted restart, or kernel OOM kicked in) ?
+
+If one process is killed during restart then you can even do not notice that 
+(if processes are created from user space and then call sys_restart). And you 
+will get not the same state as before C/R.
+
+> > kernel. Also we will need a functionolity to create processes with
+> > predefined PID. I think it is not very good to provide such ability to
+> > user space. That is why we prefer in OpenVZ to do all the job in kernel.
+>
+> This is the weak side of creating the processes in user space -
+> that we need such an interface. Note, however, that we can
+> easily "hide" it inside the interface of the sys_restart() call,
+> and restrict how it may be used.
+
+Of course we can "hide" it somehow, but anyway we will have a hole and that is 
+not good.
+
+Anyway we should ask everyone what they think about user- and kernel- based 
+process creation.
+Dave, Serge, Cedric, Daniel, Louis what do you think about that?
+
+Andrey
+
+> >> I don't care which patch set we end up sticking in the kernel.  I'm
+> >> trying to figure out which code we can more easily build upon in the
+> >> future.  The fact that Oren's or yours can't do certain little things
+> >> right now does not bother me.
 > >>
-> >> [PATCH 2/2] tracepoint: introduce *_noupdate APIs.
-> >> is helpful for auto-active-tracepoint-mechanism.
-> >>
-> >> 		Thanx, Lai.
-> >>
-> > 
-> > Hi Lai,
-> > 
-> > The approach you propose looks interesting. Please see below to make
-> > sure we are on the same page.
-> > 
-> > The problem is that when we want to connect
-> > markers/tracepoints/immediate values together, it results in a real
-> > locking mess between
-> > 
-> > modules_mutex
-> >   markers_mutex
-> >     tracepoints_mutex
-> >       imv_mutex
-> > 
-> > When we want to take care of a marker at module load, we have to insure
-> > the following calling scenario is correct :
-> > 
-> > load_module()
-> >   call markers_update_probes_range() (on the module markers)
-> >     call tracepoint register (to automatically enable a tracepoint
-> >                                when a marker is connected to it)
-> >       call tracepoints_update_probe_range (on kernel core and all modules)
-> >         call imv_update_range (on kernel core and all modules)
-> > 
-> > The current locking status of tracepoints vs markers does not currently
-> > allow tracepoints_register to be called from the marker update because
-> > it would take the modules_mutex twice.
-> > 
-> > What you propose is something like this :
-> > 
-> > load_module()
-> >   call markers_update_probes_range()
-> >     call tracepoint_register_noupdate (to automatically enable a tracepoint
-> >                                        when a marker is connected to it)
-> >   call tracepoints_update_all() (for core kernel and all modules (*))
-> >     name##__imv = (i)
-> >   call imv_update_all() (for core kernel and all modules (*))
-> > 
-> > (*) This is required because registering a tracepoint might have impact
-> >     outside of the module in which the marker is located. Same for
-> >     changing an immediate value.
-> 
-> Er, my patch cannot handle updates when load_module().
-> 
-> > 
-> > And on marker_register_probe() :
-> >   call markers_update_probes_range()
-> >     call tracepoint_register_noupdate
-> >   call tracepoints_update_all()
-> >     name##__imv = (i)
-> >   call imv_update_all()
-> > 
-> > Which basically uses the same trick I used for immediate values : it
-> > separates the "backing data" update (name##_imv = (i)) from the actual
-> > update that needs to iterate on the modules.
-> > 
-> > The only thing we have to be aware of is that it actually couples
-> > markers/tracepoints/immediate values much more thightly to keep separate
-> > locking for each, because, as the example above shows, the markers have
-> > to be aware that they must call tracepoints_update_all and
-> > imv_update_all explicitely. On the plus side, it requires much less
-> > iterations on the module sections, which is a clear win.
-> > 
-> > So the expected mutex nesting order is (indent implies "nested in"):
-> > 
-> > On load_module :
-> > 
-> > modules_mutex
-> >   markers_mutex
-> >   tracepoints_mutex
-> >   imv_mutex
-> > 
-> > On marker register :
-> > 
-> > markers_mutex
-> >   tracepoints_mutex
-> >   imv_mutex
-> > 
-> > On tracepoint register :
-> > 
-> > tracepoints_mutex
-> >   imv_mutex
-> > 
-> > On imv_update :
-> > 
-> > imv_mutex
-> > 
-> > So yes, I think your approach is good, although there are some
-> > implementation quirks in the patch you submitted. I'll comment by
-> > replying to your other post.
-> 
-> Hmm, right, the patch <<[PATCH 2/2] tracepoint: introduce *_noupdate APIs>>
-> is quirks for it separate working into 2 steps.
-> 
-> currently, markers and tracepoint abuse RCU and use RCU in a very ugly way.
-> patches <<[PATCH 1/2] tracepoint: simplify for tracepoint using RCU>>
-> and <<[PATCH tip/tracing/markers] new probes manager>> had toll us how ugly they
-> are. if you do not remove tracepoints_mutex and markers_mutex, these two
-> patches can be applied now. (and if you want to remove mutexs, I will changed
-> these two patches a little.)
-> 
-
-Yup, markers have a good reason to "abuse" RCU as they do. Tracepoints
-inherited from the same behavior as markers, but given they have no
-special-case for single probe, they don't have the same requirements
-with respect to reaching quiescent states between consecutive
-register/unregisters. So your patches are correct.
-
-> --------------------
-> 
-> Actually, markers and tracepoint are not like immediate-value, we do not need
-> update markers and tracepoint on load_module(), we can register_module_notifier()
-> and update them when MODULE_STATE_COMING.
-> 
-
-Hrm, interesting. And this would happen without modules_mutex held and
-solve all our problems, right ? :)
-
-> [Quick Quiz 1] why imv_update_all() must called on load_module()?
-> load_module() will setup parameters, the routine of setuping parameters
-> will use immediate-value.
-> 
-> sys_init_module:
->   load_module
->     setup parameters
->   blocking_notifier_call_chain(MODULE_STATE_COMING)
->   mod->init();
-> 
-> the markers and tracepoint in "setup parameters" will not be actived by this 
-> approach, it's OK for it's a trace tool.
-> 
-
-that's fine with me.
-
-> PS and OT: why not introduce module_param_imv?
-> a little like this:
-> #define module_param_imv(name, type, perm)				\
-> 	module_param_named(name, name##__imv, type, perm)
-> and update them in MODULE_STATE_COMING.
-> 
-> most module param are readonly after initialized.
-> 
-
-Yup, this sounds like a very good idea.
-
-Actually, I'm wondering if we could simply put the marker, tracepoint
-and immediate values update code in MODULE_STATE_COMING notifiers rather
-than in load_module() ?
-
-> ----------------------------
-> if you do not like <<[PATCH 2/2] tracepoint: introduce *_noupdate APIs>>,
-> here is the second way:
-> introduce these five APIs in module.c
-> module_iter_start()   - require module_mutex and return first module
-> module_iter_next()
-> module_iter_stop()    - release module_mutex
-> __module_iter_start() - do not require module_mutex
-> __module_iter_stop()
-> 
-> When we have fixed the mutex mess, code changed by this approach are
-> the least. and we can implement robust tracepoint_iter, marker_iter
-> by using these APIs.
-> 
-
-Hrm, finally I think I've got to like the _noupdate APIs, especially if
-we can use MODULE_STATE_COMING notifiers outside of modules_mutex
-section after module load.
-
-> ------------------------------
-> 
-> I strongly reject for removing tracepoint_mutex and marker_mutex.
-> you will pay for it when markers and tracepoint become powerful
-> after you remove tracepoint_mutex and marker_mutex. and the
-> modules guys will condemn you for bring coupling for modules.
-> 
-
-Agreed. If we can manage to keep them separate, let's do it.
-
-Thanks,
-
-Mathieu
-
-> 	Thanx, Lai.
-> 
-> > 
-> > Thanks,
-> > 
-> > Mathieu
-> > 
-> > 
-> >>> So hopefully everyone will be happy with this new release. :)
-> >>>
-> >>> Mathieu
-> >>>
-> >>
-> >> --
-> >> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> >> the body of a message to majordomo@vger.kernel.org
-> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >> Please read the FAQ at  http://www.tux.org/lkml/
-> >>
-> > 
-> 
-> 
-> 
-> _______________________________________________
-> ltt-dev mailing list
-> ltt-dev@lists.casi.polymtl.ca
-> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> >> Honestly, I'm a little more confident that everyone can work with Oren
+> >> since he managed to get 7 revisions of his patch out and make some
+> >> pretty large changes while in the same time the OpenVZ patch was only
+> >> released twice.  I'm not sure what has changed in the OpenVZ patch
+> >> between releases, either.
+> >
+> > That is my fault. I am working right now on my Ph.D, that is why my
+> > activity is not very high. But now I hope I will have more time for that.
+> >
+> >> Are there any reasons that you absolutely can not use the code Oren
+> >> posted?  Will it not fulfill your needs somehow?  If so, could you
+> >> please elaborate on how?
+> >
+> > We have one major difference with Oren's code - how processes are created
+> > during restr.
+> > Right now I'm trying to port kernel process creation on top of Oren's
+> > patches. I agree that working in collaboration will speed up merging of
+> > checkpointing to mainstream.
+> >
+> > Andrey
+> >
+> > P.S.: Sorry for late reply, my mailer attached your e-mail to wrong
+> > thread. _______________________________________________
+> > Containers mailing list
+> > Containers@lists.linux-foundation.org
+> > https://lists.linux-foundation.org/mailman/listinfo/containers
