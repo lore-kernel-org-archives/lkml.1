@@ -1,94 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758308AbYJ3VWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758946AbYJ3VWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758308AbYJ3VWQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 17:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758614AbYJ3VVo
+	id S1758946AbYJ3VWd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 17:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758799AbYJ3VVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 17:21:44 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:63034 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754764AbYJ3VVn (ORCPT
+	Thu, 30 Oct 2008 17:21:55 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:55995 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758792AbYJ3VVy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 17:21:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LZuWyej/8R3GrhoSPZ9UweUFbEGqB5z9bYNTDjaS4ZWLdATAkqSFWovLxGkA9M+/k8
-         v6c6oEHcsm7dZ2K6j7aySGHpUZvVcKbHJwTez5uVXYhrBNjAcTXPfnxTbIDDaPkD0JuF
-         ti+bRYs8CxlEnAzHiOG0rKaFNACyvqxk8yzRk=
-Date: Fri, 31 Oct 2008 00:24:55 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
+	Thu, 30 Oct 2008 17:21:54 -0400
+Subject: Re: next-20081030: voyager compile busted
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
        Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
        linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>
-Subject: Re: next-20081030: voyager compile busted
-Message-ID: <20081030212455.GA14580@x200.localdomain>
-References: <20081030173030.d8847df6.sfr@canb.auug.org.au> <20081030180323.GA13399@x200.localdomain> <1225398287.19324.1.camel@localhost.localdomain> <20081030205230.GO27407@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081030205230.GO27407@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081030210704.GA25665@elte.hu>
+References: <20081030173030.d8847df6.sfr@canb.auug.org.au>
+	 <20081030180323.GA13399@x200.localdomain>
+	 <1225398287.19324.1.camel@localhost.localdomain>
+	 <20081030205230.GO27407@elte.hu>
+	 <1225400283.19324.6.camel@localhost.localdomain>
+	 <20081030210704.GA25665@elte.hu>
+Content-Type: text/plain
+Date: Thu, 30 Oct 2008 16:21:48 -0500
+Message-Id: <1225401708.19324.35.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 09:52:30PM +0100, Ingo Molnar wrote:
-> 
+On Thu, 2008-10-30 at 22:07 +0100, Ingo Molnar wrote:
 > * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > > Would you be interested in helping us out with such a project? It 
+> > > would be a nice cleanup for sure.
+> > 
+> > Sure, I'd be interested in looking into that.
+> > 
+> > However, it won't help the problems since they're mostly compile 
+> > breakages caused by tampering with the HAL API for x86 and not 
+> > seeing that this affects various subarches. [...]
 > 
-> > On Thu, 2008-10-30 at 21:03 +0300, Alexey Dobriyan wrote:
-> > > On i386-voyager:
-> > > 
-> > >   Using /src/linux-1 as source for kernel
-> > >   GEN     /src/build/i386-voyager/Makefile
-> > >   CHK     include/linux/version.h
-> > >   CHK     include/linux/utsrelease.h
-> > >   SYMLINK include/asm -> include/asm-x86
-> > >   CALL    scripts/checksyscalls.sh
-> > >   CHK     include/linux/compile.h
-> > >   CC      arch/x86/kernel/tsc.o
-> > > arch/x86/kernel/tsc.c: In function 'unsynchronized_tsc':
-> > > arch/x86/kernel/tsc.c:763: error: implicit declaration of function 'apic_is_clustered_box'
-> > > make[2]: *** [arch/x86/kernel/tsc.o] Error 1
-> > >   CC      arch/x86/kernel/cpu/addon_cpuid_features.o
-> > > arch/x86/kernel/cpu/addon_cpuid_features.c: In function 'detect_extended_topology':
-> > > arch/x86/kernel/cpu/addon_cpuid_features.c:120: error: implicit declaration of function 'phys_pkg_id'
-> > > make[3]: *** [arch/x86/kernel/cpu/addon_cpuid_features.o] Error 1
-> > > make[3]: Target `__build' not remade because of errors.
-> > > make[2]: *** [arch/x86/kernel/cpu] Error 2
-> > > make[2]: Target `__build' not remade because of errors.
-> > > make[1]: *** [arch/x86/kernel] Error 2
-> > >   CC      arch/x86/mach-voyager/setup.o
-> > > arch/x86/mach-voyager/setup.c: In function 'intr_init_hook':
-> > > arch/x86/mach-voyager/setup.c:30: error: implicit declaration of function 'smp_intr_init'
-> > > arch/x86/mach-voyager/setup.c: In function 'machine_specific_memory_setup':
-> > > arch/x86/mach-voyager/setup.c:65: warning: unused variable 'new_nr'
-> > > make[2]: *** [arch/x86/mach-voyager/setup.o] Error 1
-> > >   CC      arch/x86/mach-voyager/voyager_smp.o
-> > > arch/x86/mach-voyager/voyager_smp.c:67: error: conflicting types for 'phys_cpu_present_map'
-> > > arch/x86/include/asm/mpspec.h:143: error: previous declaration of 'phys_cpu_present_map' was here
-> > > arch/x86/mach-voyager/voyager_smp.c: In function 'start_secondary':
-> > > arch/x86/mach-voyager/voyager_smp.c:444: error: implicit declaration of function 'notify_cpu_starting'
-> > > arch/x86/mach-voyager/voyager_smp.c: In function 'smp_call_function_interrupt':
-> > > arch/x86/mach-voyager/voyager_smp.c:955: error: implicit declaration of function 'generic_smp_call_function_interrupt'
-> > > arch/x86/mach-voyager/voyager_smp.c: In function 'smp_call_function_single_interrupt':
-> > > arch/x86/mach-voyager/voyager_smp.c:963: error: implicit declaration of function 'generic_smp_call_function_single_interrupt'
-> > > make[2]: *** [arch/x86/mach-voyager/voyager_smp.o] Error 1
-> > > make[2]: Target `__build' not remade because of errors.
-> > > make[1]: *** [arch/x86/mach-voyager] Error 2
+> it would fix that problem largely because we'd no longer have such 
+> 'HAL API' - we'd have runtime differences and function pointers.
 
-> Would you be interested in helping us out with such a project? It 
-> would be a nice cleanup for sure.
+Before you advocate this, think what it would entail.  Voyager replaces
+(and has to replace because its not apic based) the entirety of smp.c
+and smpboot.c ... they'd all have to be abstracted through function
+pointers.
 
-Meanwhile, voyager compilation can be tested with the following
-KCONFIG_ALLCONFIG file (suppy CROSS_COMPILE if necessary):
+Originally I wanted to do this ... after all, it's the way solaris does
+its SMP hal replacement as well, but a lot of argument on the mailing
+lists back in 1998 convinced me that we didn't want to pay the pipeline
+disruption penalty of a function pointer for every SMP operation.  I
+know CPUs have become way faster over that decade, but I believe (feel
+free to correct) that the pipeline disruption penalty of function
+pointers has actually become worse, not better.
 
-	CONFIG_X86_VOYAGER=y
-	# CONFIG_PCI is not set
+The subarchitectures, with their direct function replacement (and
+consequent having to accept a particular one to compile with) was the
+final compromise.
 
-	make ARCH=i386 KCONFIG_ALLCONFIG=... allmodconfig
-	make ARCH=i386
+I really think you don't want voyager slowing down mainline SMP by even
+a few percentage points?
+
+> > [...]  Moving voyager to a quirk wouldn't fix that problem.
+> 
+> btw., Voyager would not be a "quirk" (putting it that way looks a bit 
+> derogatory perhaps) - instead it would be a regular x86 platform, with 
+> a couple of quirk handlers to handle Voyager specialities.
+> 
+> Look at how CONFIG_X86_VISWS works today for example: that option only 
+> activates the quirk handlers - and a VISWS bzImage will boot fine on a 
+> regular PC. This is a far more powerful way of handling x86 hardware 
+> deviations than a full build-time thing. It makes it also far easier 
+> to test - while we cannot test the _quirks_, we can easily test the 
+> build and still boot it on regular PCs. (which makes it far more 
+> likely for people to enable this option)
+> 
+> This principle was followed for all the x86 subarchitectures we've 
+> converted already: visws and numaq is done, rdc3210 is basically there 
+> already. (waiting for generic gpio bits to complete that fully - but 
+> rdc otherwise has no differences from the generic arch code)
+> 
+> Voyager is certainly one of the most complex subarch cases, hence was 
+> it left last :-)
+
+Yes ... but the problem is that all the rest (even numa and visws) use
+smp.c and smpboot.c.  That makes them essentially x86 apic systems with
+a few quirks (which is ideal for a quirk based system).  Voyager
+isn't ... it replaces the entire SMP HAL.
+
+James
+
+
