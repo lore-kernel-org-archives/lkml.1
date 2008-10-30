@@ -1,58 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756509AbYJ3Ajj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbYJ3AmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756509AbYJ3Ajj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Oct 2008 20:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755740AbYJ3Aja
+	id S1756189AbYJ3AmO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Oct 2008 20:42:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbYJ3Al7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Oct 2008 20:39:30 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:57861 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755063AbYJ3Aj3 (ORCPT
+	Wed, 29 Oct 2008 20:41:59 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:27379 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751170AbYJ3Al6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Oct 2008 20:39:29 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=6K9UcZB1irvz1XBPfZkA:9 a=TYm2aEzDoQ08VyJ9UXkA:7 a=iTfKDgIDfxDTUjOO2W9c-6yiIe8A:4 a=MSl-tDqOz04A:10 a=JfD0Fch1gWkA:10 a=D4FwsTI08Q0A:10 a=BjSCe7YdmnEA:10
-Message-ID: <4909023E.60806@shaw.ca>
-Date: Wed, 29 Oct 2008 18:39:26 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: "Phillip O'Donnell" <phillip.odonnell@gmail.com>, jeff@garzik.org,
-       Oskar Liljeblad <oskar@osk.mine.nu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] libata: Avoid overflow in ata_tf_to_lba48() when tf->hba_lbal
- > 127
-References: <fa.01zEaARwrup2dCOTuHTYxzuS9BI@ifi.uio.no> <fa.Dwk+NgWNu7+JRcsgOPCxSr7y5SQ@ifi.uio.no> <fa.fIxdVik0iPc+lS+sd5ef+ZoALzQ@ifi.uio.no>
-In-Reply-To: <fa.fIxdVik0iPc+lS+sd5ef+ZoALzQ@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 29 Oct 2008 20:41:58 -0400
+Subject: firewire: struct device - replace bus_id with dev_name(),
+	dev_set_name()
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Content-Type: text/plain
+Date: Thu, 30 Oct 2008 01:41:56 +0100
+Message-Id: <1225327316.5970.33.camel@nga.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> In ata_tf_to_lba48(), when evaluating
-> 
-> 	(tf->hob_lbal & 0xff) << 24
-> 
-> the expression is promoted to signed int (since int can hold all values
-> of u8).  However, if hob_lbal is 128 or more, then it is treated as a
-> negative signed value and sign-extended when promoted to u64 to | into
-> sectors, which leads to the MSB 32 bits of section getting set
-> incorrectly.
-> 
-> For example, Phillip O'Donnell <phillip.odonnell@gmail.com> reported
-> that a 1.5GB drive caused:
-> 
->     ata3.00: HPA detected: current 2930277168, native 18446744072344861488
-> 
-> where 2930277168 == 0xAEA87B30 and 18446744072344861488 == 0xffffffffaea87b30
-> which shows the problem when hob_lbal is 0xae.
-> 
-> Fix this by adding a cast to u64, just as is used by for hob_lbah and
-> hob_lbam in the function.
-> 
-> Reported-by: Phillip O'Donnell <phillip.odonnell@gmail.com>
-> Signed-off-by: Roland Dreier <rolandd@cisco.com>
+This patch is part of a larger patch series which will remove
+the "char bus_id[20]" name string from struct device. The device
+name is managed in the kobject anyway, and without any size
+limitation, and just needlessly copied into "struct device".
 
-This should be pushed to -stable as well once it's merged..
+To set and read the device name dev_name(dev) and dev_set_name(dev)
+must be used. If your code uses static kobjects, which it shouldn't
+do, "const char *init_name" can be used to statically provide the
+name the registered device should have. At registration time, the
+init_name field is cleared, to enforce the use of dev_name(dev) to
+access the device name at a later time.
+
+We need to get rid of all occurrences of bus_id in the entire tree
+to be able to enable the new interface. Please apply this patch,
+and possibly convert any remaining remaining occurrences of bus_id.
+
+We want to submit a patch to -next, which will remove bus_id from
+"struct device", to find the remaining pieces to convert, and finally
+switch over to the new api, which will remove the 20 bytes array
+and does no longer have a size limitation.
+
+Thanks,
+Kay
+
+
+From: Kay Sievers <kay.sievers@vrfy.org>
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: firewire: struct device - replace bus_id with dev_name(), dev_set_name()
+
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
+---
+
+
+diff --git a/drivers/firewire/fw-device.c b/drivers/firewire/fw-device.c
+index 3fccdd4..6b9be42 100644
+--- a/drivers/firewire/fw-device.c
++++ b/drivers/firewire/fw-device.c
+@@ -587,8 +587,7 @@ static void create_units(struct fw_device *device)
+ 		unit->device.bus = &fw_bus_type;
+ 		unit->device.type = &fw_unit_type;
+ 		unit->device.parent = &device->device;
+-		snprintf(unit->device.bus_id, sizeof(unit->device.bus_id),
+-			 "%s.%d", device->device.bus_id, i++);
++		dev_set_name(&unit->device, "%s.%d", dev_name(&device->device), i++);
+ 
+ 		init_fw_attribute_group(&unit->device,
+ 					fw_unit_attributes,
+@@ -711,8 +710,7 @@ static void fw_device_init(struct work_struct *work)
+ 	device->device.type = &fw_device_type;
+ 	device->device.parent = device->card->device;
+ 	device->device.devt = MKDEV(fw_cdev_major, minor);
+-	snprintf(device->device.bus_id, sizeof(device->device.bus_id),
+-		 "fw%d", minor);
++	dev_set_name(&device->device, "fw%d", minor);
+ 
+ 	init_fw_attribute_group(&device->device,
+ 				fw_device_attributes,
+@@ -741,13 +739,13 @@ static void fw_device_init(struct work_struct *work)
+ 		if (device->config_rom_retries)
+ 			fw_notify("created device %s: GUID %08x%08x, S%d00, "
+ 				  "%d config ROM retries\n",
+-				  device->device.bus_id,
++				  dev_name(&device->device),
+ 				  device->config_rom[3], device->config_rom[4],
+ 				  1 << device->max_speed,
+ 				  device->config_rom_retries);
+ 		else
+ 			fw_notify("created device %s: GUID %08x%08x, S%d00\n",
+-				  device->device.bus_id,
++				  dev_name(&device->device),
+ 				  device->config_rom[3], device->config_rom[4],
+ 				  1 << device->max_speed);
+ 		device->config_rom_retries = 0;
+@@ -883,12 +881,12 @@ static void fw_device_refresh(struct work_struct *work)
+ 		    FW_DEVICE_RUNNING) == FW_DEVICE_SHUTDOWN)
+ 		goto gone;
+ 
+-	fw_notify("refreshed device %s\n", device->device.bus_id);
++	fw_notify("refreshed device %s\n", dev_name(&device->device));
+ 	device->config_rom_retries = 0;
+ 	goto out;
+ 
+  give_up:
+-	fw_notify("giving up on refresh of device %s\n", device->device.bus_id);
++	fw_notify("giving up on refresh of device %s\n", dev_name(&device->device));
+  gone:
+ 	atomic_set(&device->state, FW_DEVICE_SHUTDOWN);
+ 	fw_device_shutdown(work);
+diff --git a/drivers/firewire/fw-ohci.c b/drivers/firewire/fw-ohci.c
+index 251416f..964c697 100644
+--- a/drivers/firewire/fw-ohci.c
++++ b/drivers/firewire/fw-ohci.c
+@@ -2454,7 +2454,7 @@ pci_probe(struct pci_dev *dev, const struct pci_device_id *ent)
+ 		goto fail_self_id;
+ 
+ 	fw_notify("Added fw-ohci device %s, OHCI version %x.%x\n",
+-		  dev->dev.bus_id, version >> 16, version & 0xff);
++		  dev_name(&dev->dev), version >> 16, version & 0xff);
+ 	return 0;
+ 
+  fail_self_id:
+diff --git a/drivers/firewire/fw-sbp2.c b/drivers/firewire/fw-sbp2.c
+index ef0b9b4..0a87127 100644
+--- a/drivers/firewire/fw-sbp2.c
++++ b/drivers/firewire/fw-sbp2.c
+@@ -1119,7 +1119,7 @@ static int sbp2_probe(struct device *dev)
+ 	tgt->unit = unit;
+ 	kref_init(&tgt->kref);
+ 	INIT_LIST_HEAD(&tgt->lu_list);
+-	tgt->bus_id = unit->device.bus_id;
++	tgt->bus_id = dev_name(&unit->device);
+ 	tgt->guid = (u64)device->config_rom[3] << 32 | device->config_rom[4];
+ 
+ 	if (fw_device_enable_phys_dma(device) < 0)
+
+
