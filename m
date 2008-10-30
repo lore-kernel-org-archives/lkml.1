@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757505AbYJ3QN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757813AbYJ3QOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757505AbYJ3QN3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 12:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757182AbYJ3QM2
+	id S1757813AbYJ3QOF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 12:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757347AbYJ3QM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 12:12:28 -0400
-Received: from fmmailgate05.web.de ([217.72.192.243]:52082 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757173AbYJ3QM0 convert rfc822-to-8bit (ORCPT
+	Thu, 30 Oct 2008 12:12:59 -0400
+Received: from outbound-mail-160.bluehost.com ([67.222.39.40]:41077 "HELO
+	outbound-mail-160.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757341AbYJ3QM6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 12:12:26 -0400
-Date: Thu, 30 Oct 2008 17:12:02 +0100
-Message-Id: <488915452@web.de>
+	Thu, 30 Oct 2008 12:12:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=TJc+Ulk7tjF6YuRqlPF83BaHlNTQGlVkZwDYV2y+1QTQDV8nO6ttCZWVh1MlilthUorEOScG94iS9B+ye8zVXY9UynK3ebqbbhg7eXCmYAx3DCFBV+D7ZF6P5a9B75vp;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] PCI build fix
+Date: Thu, 30 Oct 2008 09:12:53 -0700
+User-Agent: KMail/1.10.1 (Linux/2.6.26.5-45.fc9.x86_64; KDE/4.1.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
 MIME-Version: 1.0
-From: devzero@web.de
-To: =?iso-8859-15?Q?J=F6rn_Engel?= <joern@logfs.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: how much license information inside the kernel ?
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX18NUjP49FRNmnuJK7qlQWvGoufXhopTiMKzNsJxak7aRx1xD
- v4DAOq+DxYQ7fofbXyfig7MuHsgNYM+0i5EzcCg9ODsTeb5jNQ=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200810300912.54111.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 30 October 2008 11:54:57 +0100, devzero@web.de wrote:
-> > 
-> > i found that there is a LOT of repeating licensing information in the kernel.
-> > 
-> > for me, 
-> > 
-> > find ./linux-2.6.27 -type f -exec cat {} \; |egrep "free software|GNU General Public License|Free Software Foundation|version 2 of the License|distributed in the hope|WITHOUT ANY WARRANTY|FITNESS FOR A PARTICULAR"
-> > 
-> > gives a file sized ~3.5M
-> > 
-> > That`s more than 1% of the kernel source.
-> 
-> Scary, isn't it?
+Please pull my for-linus branch:
+git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git for-linus
 
-i´m not really scared, but it`s a really impressing amount. :)
+Just one minor build fix in this pull.
 
-> One of the problems is that corporate lawyers require the full GPL
-> preample in any source file.  As a result, a lot of developers inside
-> companies cannot publish code without it.  Whether that makes any sense
-> is anyone's guess.  But it doesn't cause much harm either, so better
-> leave the bloat where it is.
+Thanks,
+Jesse
 
-i feared something like that.
+Fenghua Yu (1):
+      x86/PCI: build failure at x86/kernel/pci-dma.c with !CONFIG_PCI
 
-so, if it`s not just a common bad habit to add those lines again and again 
-but  something being forced by lawyers - it would indeed not being worth
-the effort to adress this, as you would need to review and discuss every 
-single file containing those lines....
-
-thanks for feedback
-
-roland
-
-__________________________________________________________________
-"Run, Fatboy, Run" sowie "Rails & Ties" kostenlos anschauen!
-Blockbuster-Gutscheine sichern unter http://www.blockbuster.web.de
+ arch/ia64/include/asm/iommu.h |    1 -
+ arch/ia64/kernel/pci-dma.c    |    7 -------
+ arch/x86/include/asm/iommu.h  |    1 -
+ arch/x86/kernel/pci-dma.c     |   16 ++++++++++++++++
+ drivers/pci/quirks.c          |   14 --------------
+ 5 files changed, 16 insertions(+), 23 deletions(-)
 
