@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbYJ3TOB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbYJ3TOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753110AbYJ3TOB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 15:14:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbYJ3TNv
+	id S1754544AbYJ3TOZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 15:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbYJ3TOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 15:13:51 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:27851 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753586AbYJ3TNv (ORCPT
+	Thu, 30 Oct 2008 15:14:11 -0400
+Received: from qb-out-0506.google.com ([72.14.204.226]:29432 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758782AbYJ3TOJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 15:13:51 -0400
-Subject: virtio: struct device - replace bus_id with dev_name(),
-	dev_set_name()
+	Thu, 30 Oct 2008 15:14:09 -0400
+Subject: xen: struct device - replace bus_id with dev_name(), dev_set_name()
 From: Kay Sievers <kay.sievers@vrfy.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
 Content-Type: text/plain
-Date: Thu, 30 Oct 2008 20:10:22 +0100
-Message-Id: <1225393822.21973.39.camel@nga.site>
+Date: Thu, 30 Oct 2008 20:14:05 +0100
+Message-Id: <1225394045.21973.44.camel@nga.site>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
@@ -51,47 +50,145 @@ Kay
 
 
 From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: virtio: struct device - replace bus_id with dev_name(), dev_set_name()
+Subject: xen: struct device - replace bus_id with dev_name(), dev_set_name()
 
-CC: Rusty Russell <rusty@rustcorp.com.au>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>
 Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
 ---
 
 
-diff --git a/drivers/virtio/virtio.c b/drivers/virtio/virtio.c
-index 5b78fd0..018c070 100644
---- a/drivers/virtio/virtio.c
-+++ b/drivers/virtio/virtio.c
-@@ -176,7 +176,7 @@ int register_virtio_device(struct virtio_device *dev)
+diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
+index 7f24a98..b2a0318 100644
+--- a/drivers/xen/xenbus/xenbus_probe.c
++++ b/drivers/xen/xenbus/xenbus_probe.c
+@@ -99,15 +99,15 @@ static int xenbus_uevent(struct device *_dev, struct kobj_uevent_env *env)
+ }
  
- 	/* Assign a unique device index and hence name. */
- 	dev->index = dev_index++;
--	sprintf(dev->dev.bus_id, "virtio%u", dev->index);
-+	dev_set_name(&dev->dev, "virtio%u", dev->index);
+ /* device/<type>/<id> => <type>-<id> */
+-static int frontend_bus_id(char bus_id[BUS_ID_SIZE], const char *nodename)
++static int frontend_bus_id(char bus_id[XEN_BUS_ID_SIZE], const char *nodename)
+ {
+ 	nodename = strchr(nodename, '/');
+-	if (!nodename || strlen(nodename + 1) >= BUS_ID_SIZE) {
++	if (!nodename || strlen(nodename + 1) >= XEN_BUS_ID_SIZE) {
+ 		printk(KERN_WARNING "XENBUS: bad frontend %s\n", nodename);
+ 		return -EINVAL;
+ 	}
  
- 	/* We always start by resetting the device, in case a previous
- 	 * driver messed it up.  This also tests that code path a little. */
-diff --git a/drivers/virtio/virtio_pci.c b/drivers/virtio/virtio_pci.c
-index c7dc37c..fbdd219 100644
---- a/drivers/virtio/virtio_pci.c
-+++ b/drivers/virtio/virtio_pci.c
-@@ -75,7 +75,7 @@ MODULE_DEVICE_TABLE(pci, virtio_pci_id_table);
-  * would make more sense for virtio to not insist on having it's own device. */
- static struct device virtio_pci_root = {
- 	.parent		= NULL,
--	.bus_id		= "virtio-pci",
-+	.init_name	= "virtio-pci",
- };
+-	strlcpy(bus_id, nodename + 1, BUS_ID_SIZE);
++	strlcpy(bus_id, nodename + 1, XEN_BUS_ID_SIZE);
+ 	if (!strchr(bus_id, '/')) {
+ 		printk(KERN_WARNING "XENBUS: bus_id %s no slash\n", bus_id);
+ 		return -EINVAL;
+@@ -460,6 +460,7 @@ int xenbus_probe_node(struct xen_bus_type *bus,
+ 		      const char *type,
+ 		      const char *nodename)
+ {
++	char devname[XEN_BUS_ID_SIZE];
+ 	int err;
+ 	struct xenbus_device *xendev;
+ 	size_t stringlen;
+@@ -494,10 +495,12 @@ int xenbus_probe_node(struct xen_bus_type *bus,
+ 	xendev->dev.bus = &bus->bus;
+ 	xendev->dev.release = xenbus_dev_release;
  
- /* Convert a generic virtio device to our structure */
-@@ -357,7 +357,7 @@ static int __devinit virtio_pci_probe(struct pci_dev *pci_dev,
- 
- 	/* register a handler for the queue with the PCI device's interrupt */
- 	err = request_irq(vp_dev->pci_dev->irq, vp_interrupt, IRQF_SHARED,
--			  vp_dev->vdev.dev.bus_id, vp_dev);
-+			  dev_name(&vp_dev->vdev.dev), vp_dev);
+-	err = bus->get_bus_id(xendev->dev.bus_id, xendev->nodename);
++	err = bus->get_bus_id(devname, xendev->nodename);
  	if (err)
- 		goto out_set_drvdata;
+ 		goto fail;
  
++	dev_set_name(&xendev->dev, devname);
++
+ 	/* Register with generic device framework. */
+ 	err = device_register(&xendev->dev);
+ 	if (err)
+@@ -611,7 +614,7 @@ void xenbus_dev_changed(const char *node, struct xen_bus_type *bus)
+ {
+ 	int exists, rootlen;
+ 	struct xenbus_device *dev;
+-	char type[BUS_ID_SIZE];
++	char type[XEN_BUS_ID_SIZE];
+ 	const char *p, *root;
+ 
+ 	if (char_count(node, '/') < 2)
+@@ -625,8 +628,8 @@ void xenbus_dev_changed(const char *node, struct xen_bus_type *bus)
+ 
+ 	/* backend/<type>/... or device/<type>/... */
+ 	p = strchr(node, '/') + 1;
+-	snprintf(type, BUS_ID_SIZE, "%.*s", (int)strcspn(p, "/"), p);
+-	type[BUS_ID_SIZE-1] = '\0';
++	snprintf(type, XEN_BUS_ID_SIZE, "%.*s", (int)strcspn(p, "/"), p);
++	type[XEN_BUS_ID_SIZE-1] = '\0';
+ 
+ 	rootlen = strsep_len(node, '/', bus->levels);
+ 	if (rootlen < 0)
+@@ -674,7 +677,7 @@ static int suspend_dev(struct device *dev, void *data)
+ 		err = drv->suspend(xdev);
+ 	if (err)
+ 		printk(KERN_WARNING
+-		       "xenbus: suspend %s failed: %i\n", dev->bus_id, err);
++		       "xenbus: suspend %s failed: %i\n", dev_name(dev), err);
+ 	return 0;
+ }
+ 
+@@ -695,7 +698,7 @@ static int suspend_cancel_dev(struct device *dev, void *data)
+ 	if (err)
+ 		printk(KERN_WARNING
+ 		       "xenbus: suspend_cancel %s failed: %i\n",
+-		       dev->bus_id, err);
++		       dev_name(dev), err);
+ 	return 0;
+ }
+ 
+@@ -717,7 +720,7 @@ static int resume_dev(struct device *dev, void *data)
+ 	if (err) {
+ 		printk(KERN_WARNING
+ 		       "xenbus: resume (talk_to_otherend) %s failed: %i\n",
+-		       dev->bus_id, err);
++		       dev_name(dev), err);
+ 		return err;
+ 	}
+ 
+@@ -728,7 +731,7 @@ static int resume_dev(struct device *dev, void *data)
+ 		if (err) {
+ 			printk(KERN_WARNING
+ 			       "xenbus: resume %s failed: %i\n",
+-			       dev->bus_id, err);
++			       dev_name(dev), err);
+ 			return err;
+ 		}
+ 	}
+@@ -737,7 +740,7 @@ static int resume_dev(struct device *dev, void *data)
+ 	if (err) {
+ 		printk(KERN_WARNING
+ 		       "xenbus_probe: resume (watch_otherend) %s failed: "
+-		       "%d.\n", dev->bus_id, err);
++		       "%d.\n", dev_name(dev), err);
+ 		return err;
+ 	}
+ 
+diff --git a/drivers/xen/xenbus/xenbus_probe.h b/drivers/xen/xenbus/xenbus_probe.h
+index e09b194..6c5e318 100644
+--- a/drivers/xen/xenbus/xenbus_probe.h
++++ b/drivers/xen/xenbus/xenbus_probe.h
+@@ -34,6 +34,8 @@
+ #ifndef _XENBUS_PROBE_H
+ #define _XENBUS_PROBE_H
+ 
++#define XEN_BUS_ID_SIZE			20
++
+ #ifdef CONFIG_XEN_BACKEND
+ extern void xenbus_backend_suspend(int (*fn)(struct device *, void *));
+ extern void xenbus_backend_resume(int (*fn)(struct device *, void *));
+@@ -52,7 +54,7 @@ struct xen_bus_type
+ {
+ 	char *root;
+ 	unsigned int levels;
+-	int (*get_bus_id)(char bus_id[BUS_ID_SIZE], const char *nodename);
++	int (*get_bus_id)(char bus_id[XEN_BUS_ID_SIZE], const char *nodename);
+ 	int (*probe)(const char *type, const char *dir);
+ 	struct bus_type bus;
+ };
+
 
