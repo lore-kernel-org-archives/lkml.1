@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752810AbYJaSsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753357AbYJaSsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752810AbYJaSsX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 14:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYJaSsN
+	id S1753357AbYJaSsg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 14:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbYJaSs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 14:48:13 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:42378 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750822AbYJaSsM (ORCPT
+	Fri, 31 Oct 2008 14:48:27 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44900 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753056AbYJaSs0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 14:48:12 -0400
-Date: Fri, 31 Oct 2008 16:48:59 -0200
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-Cc: "Nick Kossifidis" <mickflemm@gmail.com>, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, willy@linux.intel.com,
-       lrodriguez@atheros.com
-Subject: Re: ath5k gets lost with eeepc-laptop removal
-Message-ID: <20081031164859.7808de23@doriath.conectiva>
-In-Reply-To: <20081031164351.3e4a9d4e@doriath.conectiva>
-References: <20081031110502.18e33eba@doriath.conectiva>
-	<40f31dec0810310926p6edd0af5o24d7616eb54c6d0@mail.gmail.com>
-	<20081031151901.2d68c32d@doriath.conectiva>
-	<40f31dec0810311133v65001e59h28cf6946ac3f14e7@mail.gmail.com>
-	<20081031164351.3e4a9d4e@doriath.conectiva>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.4; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 31 Oct 2008 14:48:26 -0400
+Date: Fri, 31 Oct 2008 18:48:22 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: alpha: undefined reference to `save_stack_trace'
+Message-ID: <20081031184822.GS28946@ZenIV.linux.org.uk>
+References: <20081031165751.GA13558@x200.localdomain> <20081031182411.GR28946@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081031182411.GR28946@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, 31 Oct 2008 16:43:51 -0200
-"Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br> escreveu:
+On Fri, Oct 31, 2008 at 06:24:11PM +0000, Al Viro wrote:
+> On Fri, Oct 31, 2008 at 07:57:51PM +0300, Alexey Dobriyan wrote:
+> > On alpha-smp-[ny]-debug-y:
+> > 
+> >   LD      .tmp_vmlinux1
+> > kernel/built-in.o: In function `ftrace_trace_stack':
+> > (.text+0x706fc): undefined reference to `save_stack_trace'
+> > 
+> > 
+> > Somehow STACKTRACE is set despite no STACKTRACE_SUPPORT.
+> 
+> select blows, film at 11.  TRACING blindly selects STACKTRACE, with a bunch
+> of stuff in kernel/tracing/Kconfig doing select of TRACING.  Not just an alpha
+> problem, BTW.
 
-| Em Fri, 31 Oct 2008 20:33:43 +0200
-| "Nick Kossifidis" <mickflemm@gmail.com> escreveu:
-| 
-| | 2008/10/31 Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>:
-| | >
-| | >  No, it doesn't. It says:
-| | >
-| | > """
-| | > MAC revision 0xffff is not supported!
-| | > """
-| | >
-| | >  And I have realized that I get a flood of 'failed to wakeup'
-| | > and 'can't reset the hardware' error messages, just some seconds
-| | > after the eeepc-laptop module removal.
-| | >
-| | 
-| | Well it seems that during module removal, card gets no power at all.
-| | I don't see any reason for this behaviour. Do you have pci-e hotplug enabled ?
-| 
-|  Well, the pciehp module is not loaded and the eeepc's function keys
-| don't work anyway (this is the original problem I was looking at).
+While we are at it, we have that particular turd on allmodconfigs on (at least)
+	alpha
+	blackfin
+	cris
+	frv
+	h8300
+	ia64
+	m32r
+	m68k
+	m68knommu
+	mn10300
+	parisc
+	sparc (32bit one, that is)
+	uml/i386
+	uml/amd64
+	xtensa
 
- Hmm. You think this could be related, Matthew?
-
- Actually 'they don't work' is not helpful, I have been looking at
-the wireless one (fn2) which doesn't even turn the led off but the
-driver seems to receive the event.
-
--- 
-Luiz Fernando N. Capitulino
+We could slap && HAS_STACKTRACE_SUPPORT on all symbols that end up selecting
+TRACING, but that's almost certainly wrong; the thing won't break if we
+simply omit stack trace output on configs that do not have them supported.
+Why do we have that select STACKTRACE there, anyway?
