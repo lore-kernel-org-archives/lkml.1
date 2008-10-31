@@ -1,335 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754155AbYJaCjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbYJaClh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754155AbYJaCjP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 22:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYJaCi4
+	id S1753295AbYJaClh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 22:41:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYJaCl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 22:38:56 -0400
-Received: from home.keithp.com ([63.227.221.253]:60289 "EHLO keithp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753267AbYJaCiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 22:38:54 -0400
-From: Eric Anholt <eric@anholt.net>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Keith Packard <keithp@keithp.com>,
-       Eric Anholt <eric@anholt.net>
-Message-Id: <1225392985-6832-3-git-send-email-eric@anholt.net>
-In-Reply-To: <1225392985-6832-2-git-send-email-eric@anholt.net>
-References: <1225392985-6832-1-git-send-email-eric@anholt.net>
-	 <1225392985-6832-2-git-send-email-eric@anholt.net>
-Subject: [PATCH] i915: Use io-mapping interfaces instead of a variety of
-	mapping kludges
-Date: Thu, 30 Oct 2008 19:38:48 -0700
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Oct 2008 22:41:28 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:49930 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752695AbYJaCl1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 22:41:27 -0400
+Date: Thu, 30 Oct 2008 21:41:24 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-api@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [RFC v8][PATCH 11/12] External checkpoint of a task other than
+	ourself
+Message-ID: <20081031024124.GA7885@us.ibm.com>
+References: <1225374675-22850-1-git-send-email-orenl@cs.columbia.edu> <1225374675-22850-12-git-send-email-orenl@cs.columbia.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225374675-22850-12-git-send-email-orenl@cs.columbia.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Keith Packard <keithp@keithp.com>
+Quoting Oren Laadan (orenl@cs.columbia.edu):
+> Now we can do "external" checkpoint, i.e. act on another task.
+> 
+> sys_checkpoint() now looks up the target pid (in our namespace) and
+> checkpoints that corresponding task. That task should be the root of
+> a container.
+> 
+> sys_restart() remains the same, as the restart is always done in the
+> context of the restarting task.
+> 
+> Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 
-Switch the i915 device aperture mapping to the io-mapping interface, taking
-advantage of the cleaner API to extend it across all of the mapping uses,
-including both pwrite and relocation updates.
+Ok, I'm at a loss right now, and I'm not sure who to blame - Oren,
+Daniel, Matt, or someone else.
 
-This dramatically improves performance on 64-bit kernels which were using
-the same slow path as 32-bit non-HIGHMEM kernels prior to this patch.
+In one terminal I do:
 
-Signed-off-by: Keith Packard <keithp@keithp.com>
-Signed-off-by: Eric Anholt <eric@anholt.net>
----
- drivers/gpu/drm/i915/i915_drv.h |    3 +
- drivers/gpu/drm/i915/i915_gem.c |  174 ++++++++++++++++++---------------------
- 2 files changed, 83 insertions(+), 94 deletions(-)
+	lxc-execute -n nonet sleep 100
 
-diff --git a/drivers/gpu/drm/i915/i915_drv.h b/drivers/gpu/drm/i915/i915_drv.h
-index cc8a9f3..572dcd0 100644
---- a/drivers/gpu/drm/i915/i915_drv.h
-+++ b/drivers/gpu/drm/i915/i915_drv.h
-@@ -31,6 +31,7 @@
- #define _I915_DRV_H_
- 
- #include "i915_reg.h"
-+#include <linux/io-mapping.h>
- 
- /* General customization:
-  */
-@@ -246,6 +247,8 @@ typedef struct drm_i915_private {
- 	struct {
- 		struct drm_mm gtt_space;
- 
-+		struct io_mapping *gtt_mapping;
-+
- 		/**
- 		 * List of objects currently involved in rendering from the
- 		 * ringbuffer.
-diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
-index c1733ac..b0ec73f 100644
---- a/drivers/gpu/drm/i915/i915_gem.c
-+++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -193,35 +193,50 @@ i915_gem_pread_ioctl(struct drm_device *dev, void *data,
- 	return 0;
- }
- 
--/*
-- * Try to write quickly with an atomic kmap. Return true on success.
-- *
-- * If this fails (which includes a partial write), we'll redo the whole
-- * thing with the slow version.
-- *
-- * This is a workaround for the low performance of iounmap (approximate
-- * 10% cpu cost on normal 3D workloads).  kmap_atomic on HIGHMEM kernels
-- * happens to let us map card memory without taking IPIs.  When the vmap
-- * rework lands we should be able to dump this hack.
-+/* This is the fast write path which cannot handle
-+ * page faults in the source data
-  */
--static inline int fast_user_write(unsigned long pfn, char __user *user_data,
--				  int l, int o)
-+
-+static inline int
-+fast_user_write(struct io_mapping *mapping,
-+		loff_t page_base, int page_offset,
-+		char __user *user_data,
-+		int length)
- {
--#ifdef CONFIG_HIGHMEM
--	unsigned long unwritten;
- 	char *vaddr_atomic;
-+	unsigned long unwritten;
- 
--	vaddr_atomic = kmap_atomic_pfn(pfn, KM_USER0);
--#if WATCH_PWRITE
--	DRM_INFO("pwrite i %d o %d l %d pfn %ld vaddr %p\n",
--		 i, o, l, pfn, vaddr_atomic);
--#endif
--	unwritten = __copy_from_user_inatomic_nocache(vaddr_atomic + o, user_data, l);
--	kunmap_atomic(vaddr_atomic, KM_USER0);
--	return !unwritten;
--#else
-+	vaddr_atomic = io_mapping_map_atomic_wc(mapping, page_base);
-+	unwritten = __copy_from_user_inatomic_nocache(vaddr_atomic + page_offset,
-+						      user_data, length);
-+	io_mapping_unmap_atomic(vaddr_atomic);
-+	if (unwritten)
-+		return -EFAULT;
-+	return 0;
-+}
-+
-+/* Here's the write path which can sleep for
-+ * page faults
-+ */
-+
-+static inline int
-+slow_user_write(struct io_mapping *mapping,
-+		loff_t page_base, int page_offset,
-+		char __user *user_data,
-+		int length)
-+{
-+	char __iomem *vaddr;
-+	unsigned long unwritten;
-+
-+	vaddr = io_mapping_map_wc(mapping, page_base);
-+	if (vaddr == NULL)
-+		return -EFAULT;
-+	unwritten = __copy_from_user(vaddr + page_offset,
-+				     user_data, length);
-+	io_mapping_unmap(vaddr);
-+	if (unwritten)
-+		return -EFAULT;
- 	return 0;
--#endif
- }
- 
- static int
-@@ -230,10 +245,12 @@ i915_gem_gtt_pwrite(struct drm_device *dev, struct drm_gem_object *obj,
- 		    struct drm_file *file_priv)
- {
- 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
-+	drm_i915_private_t *dev_priv = dev->dev_private;
- 	ssize_t remain;
--	loff_t offset;
-+	loff_t offset, page_base;
- 	char __user *user_data;
--	int ret = 0;
-+	int page_offset, page_length;
-+	int ret;
- 
- 	user_data = (char __user *) (uintptr_t) args->data_ptr;
- 	remain = args->size;
-@@ -257,57 +274,37 @@ i915_gem_gtt_pwrite(struct drm_device *dev, struct drm_gem_object *obj,
- 	obj_priv->dirty = 1;
- 
- 	while (remain > 0) {
--		unsigned long pfn;
--		int i, o, l;
--
- 		/* Operation in this page
- 		 *
--		 * i = page number
--		 * o = offset within page
--		 * l = bytes to copy
-+		 * page_base = page offset within aperture
-+		 * page_offset = offset within page
-+		 * page_length = bytes to copy for this page
- 		 */
--		i = offset >> PAGE_SHIFT;
--		o = offset & (PAGE_SIZE-1);
--		l = remain;
--		if ((o + l) > PAGE_SIZE)
--			l = PAGE_SIZE - o;
--
--		pfn = (dev->agp->base >> PAGE_SHIFT) + i;
--
--		if (!fast_user_write(pfn, user_data, l, o)) {
--			unsigned long unwritten;
--			char __iomem *vaddr;
--
--			vaddr = ioremap_wc(pfn << PAGE_SHIFT, PAGE_SIZE);
--#if WATCH_PWRITE
--			DRM_INFO("pwrite slow i %d o %d l %d "
--				 "pfn %ld vaddr %p\n",
--				 i, o, l, pfn, vaddr);
--#endif
--			if (vaddr == NULL) {
--				ret = -EFAULT;
--				goto fail;
--			}
--			unwritten = __copy_from_user(vaddr + o, user_data, l);
--#if WATCH_PWRITE
--			DRM_INFO("unwritten %ld\n", unwritten);
--#endif
--			iounmap(vaddr);
--			if (unwritten) {
--				ret = -EFAULT;
-+		page_base = (offset & ~(PAGE_SIZE-1));
-+		page_offset = offset & (PAGE_SIZE-1);
-+		page_length = remain;
-+		if ((page_offset + remain) > PAGE_SIZE)
-+			page_length = PAGE_SIZE - page_offset;
-+
-+		ret = fast_user_write (dev_priv->mm.gtt_mapping, page_base,
-+				       page_offset, user_data, page_length);
-+
-+		/* If we get a fault while copying data, then (presumably) our
-+		 * source page isn't available. In this case, use the
-+		 * non-atomic function
-+		 */
-+		if (ret) {
-+			ret = slow_user_write (dev_priv->mm.gtt_mapping,
-+					       page_base, page_offset,
-+					       user_data, page_length);
-+			if (ret)
- 				goto fail;
--			}
- 		}
- 
--		remain -= l;
--		user_data += l;
--		offset += l;
-+		remain -= page_length;
-+		user_data += page_length;
-+		offset += page_length;
- 	}
--#if WATCH_PWRITE && 1
--	i915_gem_clflush_object(obj);
--	i915_gem_dump_object(obj, args->offset + args->size, __func__, ~0);
--	i915_gem_clflush_object(obj);
--#endif
- 
- fail:
- 	i915_gem_object_unpin(obj);
-@@ -1525,12 +1522,12 @@ i915_gem_object_pin_and_relocate(struct drm_gem_object *obj,
- 				 struct drm_i915_gem_exec_object *entry)
- {
- 	struct drm_device *dev = obj->dev;
-+	drm_i915_private_t *dev_priv = dev->dev_private;
- 	struct drm_i915_gem_relocation_entry reloc;
- 	struct drm_i915_gem_relocation_entry __user *relocs;
- 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
- 	int i, ret;
--	uint32_t last_reloc_offset = -1;
--	void __iomem *reloc_page = NULL;
-+	void __iomem *reloc_page;
- 
- 	/* Choose the GTT offset for our buffer and put it there. */
- 	ret = i915_gem_object_pin(obj, (uint32_t) entry->alignment);
-@@ -1653,26 +1650,11 @@ i915_gem_object_pin_and_relocate(struct drm_gem_object *obj,
- 		 * perform.
- 		 */
- 		reloc_offset = obj_priv->gtt_offset + reloc.offset;
--		if (reloc_page == NULL ||
--		    (last_reloc_offset & ~(PAGE_SIZE - 1)) !=
--		    (reloc_offset & ~(PAGE_SIZE - 1))) {
--			if (reloc_page != NULL)
--				iounmap(reloc_page);
--
--			reloc_page = ioremap_wc(dev->agp->base +
--						(reloc_offset &
--						 ~(PAGE_SIZE - 1)),
--						PAGE_SIZE);
--			last_reloc_offset = reloc_offset;
--			if (reloc_page == NULL) {
--				drm_gem_object_unreference(target_obj);
--				i915_gem_object_unpin(obj);
--				return -ENOMEM;
--			}
--		}
--
-+		reloc_page = io_mapping_map_atomic_wc(dev_priv->mm.gtt_mapping,
-+						      (reloc_offset &
-+						       ~(PAGE_SIZE - 1)));
- 		reloc_entry = (uint32_t __iomem *)(reloc_page +
--					   (reloc_offset & (PAGE_SIZE - 1)));
-+						   (reloc_offset & (PAGE_SIZE - 1)));
- 		reloc_val = target_obj_priv->gtt_offset + reloc.delta;
- 
- #if WATCH_BUF
-@@ -1681,6 +1663,7 @@ i915_gem_object_pin_and_relocate(struct drm_gem_object *obj,
- 			  readl(reloc_entry), reloc_val);
- #endif
- 		writel(reloc_val, reloc_entry);
-+		io_mapping_unmap_atomic(reloc_page);
- 
- 		/* Write the updated presumed offset for this entry back out
- 		 * to the user.
-@@ -1696,9 +1679,6 @@ i915_gem_object_pin_and_relocate(struct drm_gem_object *obj,
- 		drm_gem_object_unreference(target_obj);
- 	}
- 
--	if (reloc_page != NULL)
--		iounmap(reloc_page);
--
- #if WATCH_BUF
- 	if (0)
- 		i915_gem_dump_object(obj, 128, __func__, ~0);
-@@ -2540,6 +2520,10 @@ i915_gem_entervt_ioctl(struct drm_device *dev, void *data,
- 	if (ret != 0)
- 		return ret;
- 
-+	dev_priv->mm.gtt_mapping = io_mapping_create_wc(dev->agp->base,
-+							dev->agp->agp_info.aper_size
-+							* 1024 * 1024);
-+
- 	mutex_lock(&dev->struct_mutex);
- 	BUG_ON(!list_empty(&dev_priv->mm.active_list));
- 	BUG_ON(!list_empty(&dev_priv->mm.flushing_list));
-@@ -2557,11 +2541,13 @@ int
- i915_gem_leavevt_ioctl(struct drm_device *dev, void *data,
- 		       struct drm_file *file_priv)
- {
-+	drm_i915_private_t *dev_priv = dev->dev_private;
- 	int ret;
- 
- 	ret = i915_gem_idle(dev);
- 	drm_irq_uninstall(dev);
- 
-+	io_mapping_free(dev_priv->mm.gtt_mapping);
- 	return ret;
- }
- 
--- 
-1.5.6.5
+then in another terminal do
+	
+	lxc-checkpoint -s -n nonet > /tmp/o
 
+or
+	lxc-checkpoint -n nonet > /tmp/o
+followed by ctrl-c in the lxc-execute terminal.
+
+Without fail, the second time I do this (if not the first), I get
+a BUG (see below).  It really does look like it should have
+nothing to do with the c/r patches, but I can't reproduce this
+any other way.  I've tried doing
+
+	lxc-freeze -n nonet; lxc-unfreeze -n nonet; lxc-stop -n nonet
+
+I've tried manually doing freeze, checkpoint, unfreeze of containers
+hand-crafted to look like what lxc-execute creates (two tasks in private
+namespaces with private /proc mount, kill container inits of populated
+containers (bc it really looks like another task-exit-vs-container-cleanup
+race).
+
+I can't find any other way to reproduce this.
+
+(This is using Oren's patchset with freezer on top, and using
+a freshly pulled liblxc from cvs)
+
+-serge
+
+login: ------------[ cut here ]------------
+kernel BUG at fs/dcache.c:666!
+invalid opcode: 0000 [#1] SMP
+Modules linked in:
+
+Pid: 2963, comm: [vinit] Not tainted (2.6.27-rc9-00020-g2265283-dirty #344)
+EIP: 0060:[<c0188b5a>] EFLAGS: 00010292 CPU: 1
+EIP is at shrink_dcache_for_umount_subtree+0x14b/0x1fe
+EAX: 0000004e EBX: c04d22a7 ECX: 00000001 EDX: de6b5160
+ESI: df4040a0 EDI: ffffffff EBP: de779d7c ESP: de779d4c
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+Process [vinit] (pid: 2963, ti=de778000 task=de6b5160 task.ti=de778000)
+Stack: c04d1eb2 df4040a0 00000001 df404118 ffffffff c04d22a7 df830698 df404118
+       00000004 df830400 c041e788 00000020 de779d88 c0188c3a df830400 de779d98
+       c017b521 00000001 c054faf0 de779da4 c017b60b df830400 de779db0 c017b64d
+Call Trace:
+ [<c0188c3a>] ? shrink_dcache_for_umount+0x2d/0x3a
+ [<c017b521>] ? generic_shutdown_super+0x15/0xd3
+ [<c017b60b>] ? kill_anon_super+0xc/0x35
+ [<c017b64d>] ? kill_litter_super+0x19/0x1c
+ [<c017b6a3>] ? deactivate_super+0x53/0x6b
+ [<c018d422>] ? mntput_no_expire+0xc3/0xe7
+ [<c018d4b1>] ? release_mounts+0x6b/0x7a
+ [<c018d522>] ? __put_mnt_ns+0x62/0x70
+ [<c0134cad>] ? free_nsproxy+0x25/0x80
+ [<c0134d4c>] ? switch_task_namespaces+0x44/0x49
+ [<c0134d5b>] ? exit_task_namespaces+0xa/0xc
+ [<c012403a>] ? do_exit+0x55f/0x6c9
+ [<c0124202>] ? do_group_exit+0x5e/0x85
+ [<c012c243>] ? get_signal_to_deliver+0x2ea/0x303
+ [<c010232c>] ? do_notify_resume+0x6b/0x715
+ [<c013bcfe>] ? lock_release_holdtime+0x1a/0x153
+ [<c013da7e>] ? trace_hardirqs_on+0xb/0xd
+ [<c013da7e>] ? trace_hardirqs_on+0xb/0xd
+ [<c0131aa5>] ? remove_wait_queue+0x30/0x34
+ [<c0123903>] ? do_wait+0x1d6/0x284
+ [<c0152ecb>] ? audit_syscall_exit+0x2b1/0x2cc
+ [<c013da52>] ? trace_hardirqs_on_caller+0xe1/0x102
+ [<c01031a6>] ? work_notifysig+0x13/0x19
+ =======================
+Code: 1c 8b 18 8b 46 40 89 45 ec 8b 46 28 85 c0 74 03 8b 50 20 8d 81 98 02 00 00 50 53 57 ff 75 ec 52 56 68 b2 1e 4d c0 e8 9a 04 28 00 <0f> 0b 83 c4 1c eb fe 8b 7e 34 39 f7 75 04 31 ff eb 03 f0 ff 0f
+EIP: [<c0188b5a>] shrink_dcache_for_umount_subtree+0x14b/0x1fe SS:ESP 0068:de779d4c
+---[ end trace 218551429ab07a44 ]---
+Fixing recursive fault but reboot is needed!
 
