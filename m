@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbYJaH43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbYJaIFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754534AbYJaH43 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 03:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbYJaHzq
+	id S1753208AbYJaIFN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 04:05:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbYJaIEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 03:55:46 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47321 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753126AbYJaHzp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 03:55:45 -0400
-Date: Fri, 31 Oct 2008 08:57:05 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Long delays and keystrokes required - related to disk
-	encryption?
-Message-ID: <20081031075705.GA32689@elf.ucw.cz>
-References: <200810281744.52587.elendil@planet.nl> <20081030195031.GA22805@elf.ucw.cz> <200810310104.25932.elendil@planet.nl>
+	Fri, 31 Oct 2008 04:04:40 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:40737 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752649AbYJaIEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 04:04:36 -0400
+Date: Fri, 31 Oct 2008 09:03:23 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Cc: James.Bottomley@HansenPartnership.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, Mike Anderson <andmike@linux.vnet.ibm.com>
+Subject: Re: [PATCH] scsierror: fix indentation and braces disagreement - add braces
+Message-ID: <20081031080322.GC31673@kernel.dk>
+References: <Pine.LNX.4.64.0810301259000.7072@wrl-59.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200810310104.25932.elendil@planet.nl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0810301259000.7072@wrl-59.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-10-31 01:04:25, Frans Pop wrote:
-> On Thursday 30 October 2008, Pavel Machek wrote:
-> > Try "nohz=off highres=off"...
+On Thu, Oct 30 2008, Ilpo Järvinen wrote:
 > 
-> Oh, I have no doubt that that could help. The point is though that I don't 
-> think I should have to use such parameters.
+> ...and the list of recent breakage goes on and on, this time
+> it's 242f9dcb8ba6f (block: unify request timeout handling)
+> which broke it.
 > 
-> I think we've already established that disabling hires timers helps, so, 
-> unless this will provide some additional tracing info to the developers, 
-> I think I'll skip this suggestion.
+> Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+> Cc: Mike Anderson <andmike@linux.vnet.ibm.com>
+> Cc: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  drivers/scsi/scsi_error.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
 > 
-> 2.6 28-rc2 is a regression against 2.6.27 because hires is broken. I don't 
-> think I'll want to permanently add random boot parameters to work around 
-> that regression.
+> diff --git a/drivers/scsi/scsi_error.c b/drivers/scsi/scsi_error.c
+> index 94ed262..a6b107c 100644
+> --- a/drivers/scsi/scsi_error.c
+> +++ b/drivers/scsi/scsi_error.c
+> @@ -136,7 +136,7 @@ enum blk_eh_timer_return scsi_times_out(struct request *req)
+>  	else
+>  		eh_timed_out = NULL;
+> 
+> -	if (eh_timed_out)
+> +	if (eh_timed_out) {
+>  		rtn = eh_timed_out(scmd);
+>  		switch (rtn) {
+>  		case BLK_EH_NOT_HANDLED:
+> @@ -144,6 +144,7 @@ enum blk_eh_timer_return scsi_times_out(struct request *req)
+>  		default:
+>  			return rtn;
+>  		}
+> +	}
+> 
+>  	if (unlikely(!scsi_eh_scmd_add(scmd, SCSI_EH_CANCEL_CMD))) {
+>  		scmd->result |= DID_TIME_OUT << 16;
+> --
+> 1.5.2.2
 
-Well, you could probably narrow it down to "nohz=off", because I
-believe it is probably nohz and not highres that makes problems.
+James, will you queue this up? The missing braces are harmless as it
+stands, but the patch is correct :-)
 
-Anyway, if this does not get fixed soon, you should cc rjw so this
-gets on the regression list.
-
-You can probably debug this with git bisect if no other ideas
-surface...
-
-								Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jens Axboe
+
