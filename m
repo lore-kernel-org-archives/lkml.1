@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752435AbYJaSXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169AbYJaSYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752435AbYJaSXP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 14:23:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbYJaSW5
+	id S1753169AbYJaSYW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 14:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbYJaSYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 14:22:57 -0400
-Received: from tservice.ru ([195.178.208.66]:40548 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751351AbYJaSW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 14:22:56 -0400
-Date: Fri, 31 Oct 2008 21:22:54 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Evgeniy Polyakov <s0mbre@tservice.net.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: Re: SLAB vs. SLUB tbench regression (Was: [tbench regression fixes]: digging out smelly deadmen.)
-Message-ID: <20081031182253.GA32340@ioremap.net>
-References: <84144f020810310728j1f3b8a99se428ec55b0c165b5@mail.gmail.com>
+	Fri, 31 Oct 2008 14:24:14 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:35027 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750822AbYJaSYO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 14:24:14 -0400
+Date: Fri, 31 Oct 2008 18:24:11 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: alpha: undefined reference to `save_stack_trace'
+Message-ID: <20081031182411.GR28946@ZenIV.linux.org.uk>
+References: <20081031165751.GA13558@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f020810310728j1f3b8a99se428ec55b0c165b5@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081031165751.GA13558@x200.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pekka.
-
-On Fri, Oct 31, 2008 at 04:28:57PM +0200, Pekka Enberg (penberg@cs.helsinki.fi) wrote:
-> As you've already pointed out in private and in your blog, some part
-> of the tbench regression comes from SLUB vs. SLAB as well. Looks like
-> I can reproduce the regression locally as well:
+On Fri, Oct 31, 2008 at 07:57:51PM +0300, Alexey Dobriyan wrote:
+> On alpha-smp-[ny]-debug-y:
 > 
->   [ 8 clients and tbench_srv on the same machine on 2-way x86-64 ]
+>   LD      .tmp_vmlinux1
+> kernel/built-in.o: In function `ftrace_trace_stack':
+> (.text+0x706fc): undefined reference to `save_stack_trace'
 > 
->                   min      max      avg      sd
->   2.6.28-rc2-slab 234.57   244.88   242.68   0.71
->   2.6.28-rc2-slub 227.44   240.90   239.08   0.78
 > 
-> Oprofile seems to be busted for 2.6.28-rc2 so I'll follow up on this
-> as soon as that's settled.
-> 
-> Btw, just as one more data point, I accidentally tested with just 2
-> clients at first and SLUB actually beat SLAB.
+> Somehow STACKTRACE is set despite no STACKTRACE_SUPPORT.
 
-Looks like under the allocation/freeing pressure some tricky part of
-slub starts slowing things down, while at usual rate amount of operations
-is smaller, so slub gets its optimized results... Just a handwaving
-though.
+select blows, film at 11.  TRACING blindly selects STACKTRACE, with a bunch
+of stuff in kernel/tracing/Kconfig doing select of TRACING.  Not just an alpha
+problem, BTW.
 
-Tbench regression is not related to slab/slub fight though, since I
-always used slab in tests (if not specially tested slub), but of course
-fixing this issue in the more and more common allocator would be just
-great. Thanks for working on this issue Pekka.
-
--- 
-	Evgeniy Polyakov
+FWIW, we probably ought to make scripts/kconfig/conf check if dependencies
+are satisfied before writing .config out and scream bloody murder if they
+are not.
