@@ -1,80 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbYJaPhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753366AbYJaPiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753209AbYJaPhh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 11:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbYJaPh3
+	id S1753366AbYJaPiS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 11:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbYJaPiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 11:37:29 -0400
-Received: from mail.suse.de ([195.135.220.2]:48860 "EHLO mx1.suse.de"
+	Fri, 31 Oct 2008 11:38:07 -0400
+Received: from hobbit.corpit.ru ([81.13.33.150]:22350 "EHLO hobbit.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751450AbYJaPh1 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 11:37:27 -0400
-From: Daniel Gollub <dgollub@suse.de>
-Organization: SUSE Linux Products GmbH
-To: Kai Henningsen <kai.extern@googlemail.com>
-Subject: Re: [patch 0/3] [RFC] kernel/glibc mismatch of "readlink" syscall?
-Date: Fri, 31 Oct 2008 16:37:23 +0100
-User-Agent: KMail/1.10.1 (Linux/2.6.27-rc6-8-default; KDE/4.1.2; x86_64; ; )
-Cc: mtk.manpages@gmail.com, mtk.manpages@googlemail.com,
-       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
-       linux-man@vger.kernel.org, ltp-list@lists.sourceforge.net,
-       "A.E. Brouwer" <aeb@win.tue.nl>
-References: <20081023145054.998439866@marvin.suse.de> <cfd18e0f0810241553x77194611o11655a89871dc210@mail.gmail.com> <20081031160248.2b95d0e8@desktop.khms.westfalen.de>
-In-Reply-To: <20081031160248.2b95d0e8@desktop.khms.westfalen.de>
+	id S1751521AbYJaPiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 11:38:06 -0400
+Message-ID: <490B2659.9010304@msgid.tls.msk.ru>
+Date: Fri, 31 Oct 2008 18:38:01 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+User-Agent: Icedove 1.5.0.12 (X11/20070607)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200810311637.25371.dgollub@suse.de>
+To: Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: data corruption: revalidating a (removable) hdd/flash on re-insert
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 31 October 2008 16:02:48 Kai Henningsen wrote:
-> Am Fri, 24 Oct 2008 17:53:25 -0500
->
-> schrieb "Michael Kerrisk" <mtk.manpages@googlemail.com>:
-> > Hi Daniel,
-> >
-> > On Thu, Oct 23, 2008 at 9:50 AM, Daniel Gollub <dgollub@suse.de>
-> >
-> > wrote:
-> > > EINVAL bufsiz is not positive.
-> >
-> > The EINVAL error was added to man-pages-1.18 in 1997 (even though, as
-> > you note, the type was "size_t").  I suspect (this was well before I
-> > had any association with man-pages) that was done to reflect kernel
-> > reality (since one could bypass glibc invoke the syscall directly),
-> > but obviously it is inconsistent with the prototype.
->
-> Actually, it's not inconsistent as described, though perhaps that is
-> unintentional. "Not positive" isn't the same as "negative", as zero
-> isn't positive either, and zero is certainly a possible value of an
-> unsigned type
+To make a long story short: is there a way to force kernel
+to re-validate a replaced usb-connected hard drive (or a
+flash) *automatically*?
 
-True.
+Because right now, the kernel does not see that the drive
+has been replaced, and uses *some* old cached values, which
+results in random data corruption here and there, and other
+similar odd things.
 
-But there is still the problem for the ltp syscall test "readlink03", when 
-using the glibc "readlink" interface, by calling readlink with a buffer size 
-of "-1".
+For example, I've an USB flash reader (Carry Computer Eng.,
+Co., Ltd 6-in-1 Card Reader, but that's not really relevant).
+Among other things it has a compact flash slot.  And I've
+2 differently-size CF cards.
 
-Calling "-1" seems to be a valid code/error-path in the linux syscall 
-"readlink", since there is a check for less-equal zero.
+So I turn the machine on, insert one CF card, mount it, do
+something with its vfat filesystem, umount it and remove
+it.  Next I insert another card, and when trying to mount
+it, the kernel says:
 
-But the less zero, condition can't be reached via the glibc "readlink" 
-interface since this would cause fortify-check to fail (when buliding with -
-D_FORITFY_SOURCE=2).
+FAT: invalid media value (0x1e)
+VFS: Can't find a valid FAT filesystem on dev sdb1.
 
-To "workaround" the fortify check, by not compiling the testcase with -
-D_FORTIFY_SOURCE=2, or trying to test the linux readlink interface by calling 
-directly syscall() in the testcase ... both suggestion are just workarounds - 
-no real solutions.
+When trying to run cfdisk for example, it complains that
+"partition 0 ends after end of the drive" (or something
+similar).
 
-We could also just remove the testcase of buffer size "-1".
+Sometimes the mount succeeds, but there are all sorts of
+errors here in there, the filesystem is messed up, whith
+parts of the files "from" just-removed card, and parts
+from the new card.
 
-The problem is still, how to test the "readlink" syscall in LTP?
+And sure enough, when I, forgetting the issue, trying
+to WRITE something to the card, it becomes almost 100%
+messy...
 
-best regards,
-Daniel
+What helps is to run, for example,
+
+  blockdev --rereadpt /dev/sdb
+
+manually, after replacing the card.
+
+The first thing I was thinking of when saw the whole mess
+is: there must be some process like hald/udev/whatever
+messy subsystem du jur, which holds the device node open
+and prevents the kernel from re-reading the drive by its
+own as it correctly did in the past.  Nope, I've shut down
+everything, and the same happens when only shell process
+running INSTEAD of init (booting with init=/bin/sh option).
+
+So at some point the kernel stopped noticing the drive
+change in this configuration some time ago.  I can't say
+when exactly, since I didn't use the card reader for over
+a year, and certainly didn't try it with more than one
+card in a row for even longer time.   It worked in the
+past, that's for sure.  And it definitely does not work
+(resulting in the above mess) with 2.6.25, 2.6.26 and 2.6.27.
+
+Help?
+
+Thanks!
+
+/mjt
