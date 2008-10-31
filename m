@@ -1,84 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751845AbYJaL1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbYJaL2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751845AbYJaL1R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 07:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYJaL1B
+	id S1752185AbYJaL2T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 07:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYJaL2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 07:27:01 -0400
-Received: from lazybastard.de ([212.112.238.170]:60430 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750753AbYJaL1A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 07:27:00 -0400
-Date: Fri, 31 Oct 2008 12:26:51 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] B+Tree library
-Message-ID: <20081031112651.GD18182@logfs.org>
-References: <20081026124643.GA1328@logfs.org> <1225449314.3535.23.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1225449314.3535.23.camel@johannes.berg>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 31 Oct 2008 07:28:09 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:33955 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750753AbYJaL2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 07:28:08 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for
+	frozen	filesystems.
+From: Nigel Cunningham <ncunningham@crca.org.au>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <E1Kvq72-00049W-O1@pomaz-ex.szeredi.hu>
+References: <Pine.LNX.4.44L0.0810300955020.2401-100000@iolanthe.rowland.org>
+	 <1225403060.6574.10.camel@nigel-laptop>
+	 <E1Kvpgo-00045l-GU@pomaz-ex.szeredi.hu>
+	 <1225444253.6574.21.camel@nigel-laptop>
+	 <E1Kvq72-00049W-O1@pomaz-ex.szeredi.hu>
+Content-Type: text/plain
+Organization: Christian Reformed Churches of Australia
+Date: Fri, 31 Oct 2008 22:28:04 +1100
+Message-Id: <1225452484.6574.35.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 October 2008 11:35:14 +0100, Johannes Berg wrote:
+Hi again.
+
+On Fri, 2008-10-31 at 10:16 +0100, Miklos Szeredi wrote:
+> On Fri, 31 Oct 2008, Nigel Cunningham wrote:
+> > Hi.
+> > 
+> > On Fri, 2008-10-31 at 09:49 +0100, Miklos Szeredi wrote:
+> > > On Fri, 31 Oct 2008, Nigel Cunningham wrote:
+> > > > I'm not sure that's true. You see, I'm thinking of this as not that
+> > > > different to the problem of unmounting filesystems. There, too, we need
+> > > > to unmount in a particular order, and let transactions on each
+> > > > filesystem stop cleanly before we can unmount them. Even if there are
+> > > > differences, perhaps looking at how we handle unmounting will help with
+> > > > handling freezing.
+> > > 
+> > > There's nothing magic about umount, it just uses a refcount on the fs.
+> > > 
+> > > But umount changes the namespace, that's the big difference.  For
+> > > example if a process is accessing path P which has a component inside
+> > > the mount, it _will_ get different results before and after the
+> > > umount.  This is not acceptable for freezing.
+> > > 
+> > > For freezing to work with such a refcounting scheme, we'd have to
+> > > count _future_ uses of the fs as well, not just current ones, which is
+> > > obviously impossible.
+> > 
+> > I must be missing something. If you're freezing future users of the
+> > filesystem before they can start anything new, doesn't that deal with
+> > this problem?
 > 
-> [looks like this hitting LWN means everyone suddenly found it...]
+> How do you determine which are the future users?
 
-It did?
+You don't. You just use FUSE_MIGHT_FREEZE to stop them before they take
+locks that might cause problems. So my suggestion is:
 
-> > The one aspect where my implementation is actually nice is in allowing
-> > variable key length.  Btree keys are interpreted as an array of unsigned
-> > long.  So by passing the correct geometry to the core functions, it is
-> > possible to handle 32bit, 64bit or 128bit btrees, which logfs uses.  If
-> > so desired, any other weird data format can be used as well (Zach, are
-> > you reading this?).
-> 
-> Would there be an easy way to use 48-bit keys? Or variable length keys?
+1) Stop new requests at FUSE_MIGHT_FREEZE
+2) Handle existing requests by using freezer_do_not_count in
+request_send and request_send_nowait before the spin_lock and
+freezer_count after the spin_unlock.
 
-Variable as in one implementation for several trees with different
-sizes, yes.  Variable as in one tree with differently sized keys, no.
+With #2, we don't need to care about whether the request is completed
+before freezing completes or post-resume.
 
-With the existing code, 48bit keys would need to be expressed as an
-array of longs, thereby growing to 64bit.  Alternatively one could
-replace the longset/longcmp/longcpy with memset/memcmp/memcpy.
+If the userspace process tries to use an already frozen fuse filesystem
+and gets frozen, that's okay because we'll sit waiting for an answer,
+not be counted by the freezer and so not contribute to any failure to
+freeze processes.
 
-> > So would something like this be merged once some users are identified?
-> > Would it be useful for anything but logfs?  Or am I plain nuts?
-> 
-> I could imagine using it instead of the hash-table for stations and APs
-> in the wireless code, stations are identified by the MAC address (48
-> bit) and APs (BSSs) are identified by their BSSID+SSID (or mesh ID), so
-> variable length. Currently we use a hash table with 256 slots which is
-> quite large for the typical case of mostly less than a hundred entries.
+If the userspace process completes its work, we'll either get caught at
+the freezer_count (if we've already been told to freeze) or be gotten
+later, after exiting the fuse code.
 
-MAC address wouldn't be a problem.  For BSSID+SSID one could just keep
-the hashing and use the btree as an 'implementation detail' of the
-'hashtable'.  Beware that I don't allow two identical keys.  The
-implications of that make my toenails curl up.
+Regards,
 
-> > This implementation is extremely simple.  It splits nodes when they
-> > overflow.  It does not move elements to neighboring nodes.  It does not
-> > try fancy 2:3 splits.  It does not even merge nodes when they shrink,
-> > making degenerate cases possible.  And it requires callers to do
-> > tree-global locking.  In effect, it will be hard to find anything less
-> > sophisticated.
-> 
-> I think the wireless case would probably want to have real shrinking
-> because it's well possible that you're moving, with your laptop, from an
-> area with a large number of APs to say your home out in the countryside
-> that only has your single AP.
+Nigel
 
-Indeed.
-
-Jörn
-
--- 
-Joern's library part 7:
-http://www.usenix.org/publications/library/proceedings/neworl/full_papers/mckusick.a
