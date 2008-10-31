@@ -1,241 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756744AbYJaBM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756744AbYJaBNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756744AbYJaBM4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 21:12:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbYJaBMp
+	id S1756744AbYJaBNs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 21:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbYJaBNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 21:12:45 -0400
-Received: from mga01.intel.com ([192.55.52.88]:59518 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753212AbYJaBMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 21:12:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,519,1220252400"; 
-   d="scan'208";a="633633071"
-Subject: Re: [PATCH v2 2/3] ACPI: Behave uniquely based on processor
-	declaration definition type
-From: Zhao Yakui <yakui.zhao@intel.com>
-To: Myron Stowe <myron.stowe@hp.com>
-Cc: "lenb@kernel.org" <lenb@kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <aystarik@gmail.com>
-In-Reply-To: <20081030221319.30683.23234.stgit@bob.kio>
-References: <20081030215410.30683.95368.stgit@bob.kio>
-	 <20081030221319.30683.23234.stgit@bob.kio>
+	Thu, 30 Oct 2008 21:13:40 -0400
+Received: from qb-out-0506.google.com ([72.14.204.227]:18954 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751218AbYJaBNj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 21:13:39 -0400
+Subject: Re: [2.6.26] kobject_add_internal failed for 2:0 with -EEXIST /
+	unable to handle kernel NULL pointer dereference in sysfs_create_link
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Folkert van Heusden <folkert@vanheusden.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+In-Reply-To: <ac3eb2510810301623n6a7256a1td59d3e38a01add4c@mail.gmail.com>
+References: <20081028151157.GI11214@vanheusden.com>
+	 <ac3eb2510810281607o19266977l4c77d3d3ab4bb849@mail.gmail.com>
+	 <20081029094041.GO11214@vanheusden.com>
+	 <ac3eb2510810290525h1579bad8i4836ce1291d9022@mail.gmail.com>
+	 <20081029132704.GS11214@vanheusden.com>
+	 <ac3eb2510810290749o2dd062b5m7b966d2d25b69714@mail.gmail.com>
+	 <20081029152550.GT11214@vanheusden.com>
+	 <ac3eb2510810291451u577aa825lc12a7e8fbc213020@mail.gmail.com>
+	 <20081030105513.GY11214@vanheusden.com>
+	 <ac3eb2510810301606q5ff8e001j239c5108c3db4b6f@mail.gmail.com>
+	 <ac3eb2510810301623n6a7256a1td59d3e38a01add4c@mail.gmail.com>
 Content-Type: text/plain
-Date: Fri, 31 Oct 2008 09:19:18 +0800
-Message-Id: <1225415958.3993.10.camel@yakui_zhao.sh.intel.com>
+Date: Fri, 31 Oct 2008 02:13:40 +0100
+Message-Id: <1225415620.2667.27.camel@nga.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-31 at 06:13 +0800, Myron Stowe wrote:
-> Associating a Local SAPIC with a processor object is dependent upon the
-> processor object's definition type.  CPUs declared as "Processor" should
-> use the Local SAPIC's 'processor_id', and CPUs declared as "Device"
-> should use the 'uid'.  Note that for "Processor" declarations, even if a
-> '_UID' child object exists, it has no bearing with respect to mapping
-> Local SAPICs (see section 5.2.11.13 - Local SAPIC Structure; "Advanced
-> Configuration and Power Interface Specification", Revision 3.0b).
+On Fri, 2008-10-31 at 00:23 +0100, Kay Sievers wrote:
+> On Fri, Oct 31, 2008 at 00:06, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> > On Thu, Oct 30, 2008 at 11:55, Folkert van Heusden
+> > <folkert@vanheusden.com> wrote:
+> >>> >> >> >> > While running my http://vanheusden.com/pyk/ script (which randomly
+> >>> >> >> >> > inserts and removes modules) I triggered the folllowing oops in a 2.6.26
+> >>> >> >> >> > kernel on an IBM xSeries 260. This oops (in fact no oops at all) did not
+> >>> >> >> >> > get triggered in a 2.6.18 kernel on that system.
+> >>> >> >> >> >
+> >>> >> >> >> > [   42.507375] FDC 0 is a National Semiconductor PC87306
+> >>> >> >> >> > [   42.509057] kobject_add_internal failed for 2:0 with -EEXIST, don't try to register things with the same name in the same directory.
+> >>> >> >> >> > [   42.509291] Pid: 5301, comm: modprobe Not tainted 2.6.26-1-amd64 #1
+> >>> >> >> >> > [   42.509431]
+> >>> >> >> >> > [   42.509433] Call Trace:
+> >>> >> >> >> > [   42.509685]  [<ffffffff8031b031>] kobject_add_internal+0x13f/0x17e
+> >>> >> > ...
+> >>> >> >> >> > [   42.511519]  [<ffffffff8027d23b>] bdi_register+0x57/0xb4
+> >>> >> >> >>
+> >>> >> >> >> Looks like bdi sees two devices with the same devnum, or didn't
+> >>> >> >> >> cleanup an old entry. What does: ls -l "/sys/class/bdi/" print?
+> >>> >> >> >
+> >>> >> >> > The following:
+> >>> >> >> > folkert@debiantesthw:~$ ls -l /sys/class/bdi/
+> >>> >> >> > drwxr-xr-x 3 root root 0 2008-10-28 18:32 2:0
+> >>> >> >> > drwxr-xr-x 3 root root 0 2008-10-28 18:32 2:1
+> >>> >> >>
+> >>> >> >> Oh, you are running the old sysfs layout without symlinks. Care to
+> >>> >> >> tell where the "device" link in these directories points to?
+> >>> >> >
+> >>> >> > None exist:
+> >>> >> > folkert@debiantesthw:~$ ls -la /sys/class/bdi/*/device
+> >>> >> > ls: cannot access /sys/class/bdi/*/device: No such file or directory
+> >>> >>
+> >>> >> Ah, sorry. Seems the bdi stuff never got to pass the usual parent
+> >>> >> device with the device registration, to let the bdi device show up at
+> >>> >> the right place in the device tree.
+> >>> >>
+> >>> >> Let's see what current devices on your box have the major 2:
+> >>> >>   find /sys -name dev | xargs grep '^2:'
+> >>> >
+> >>> > /sys/block/fd0/dev:2:0
+> >>> > /sys/block/fd1/dev:2:1
+> >>> >
+> >>> > As my script does modprobe/rmmod in parallel (4 processes) maybe it is a
+> >>> > conflict of one process doing an modprobe of floppy while the other does
+> >>> > an rmmod? Or both a modprobe?
+> >>>
+> >>> Might be, yes. If you just bootup, and don't run your modprobe/rmmod
+> >>> script, does the box have 2 floppy devices in /sys too?
+> >>
+> >> Yes it does. One physical drive.
+> >
+> > Seems that always happens with multiple floppies. I can reproduce it
+> > here with qemu. It seems not related to modprobing. Also mtd devices
+> > suffer from the same problem, as bug reports show.
+> >
+> > It might be a bug in bdi. Looks like floppies share a single queue,
+> > the bdi structure lives in the queue. Now we register for every device
+> > a bdi device, but the queue is shared and the former recorded dev_t in
+> > the bdi structure is overwritten. At unregistering the bdi device, all
+> > earlier devices using the same queue are not removed.
+> >
+> > Peter, please check, if something like this can happen?
 > 
-> This patch changes the lsapic mapping logic to rely on the distinction of
-> how the processor object was declared - the mapping can't just try both
-> types of matches irregardless of declaration type and rely on one failing
-> as is currently being done.
+> Ok, I get annoyed by these sysfs bugs. :)
 > 
-> Signed-off-by: Myron Stowe <myron.stowe@hp.com>
-> Cc: Alexey Starikovskiy <aystarik@gmail.com>
-> Cc: Zhao Yakui <yakui.zhao@intel.com>
-> ---
+> Peter, it looks like bdi does not work for devices which share a single queue.
+> If I add:
+>   --- a/mm/backing-dev.c
+>  +++ b/mm/backing-dev.c
+>   @@ -184,6 +184,8 @@ int bdi_register(struct backing_dev_info *bdi,
+> struct device *parent,
+>                   goto exit;
+>           }
 > 
->  drivers/acpi/processor_core.c |   75 +++++++++++++++++++++++------------------
->  1 files changed, 42 insertions(+), 33 deletions(-)
+>   +       printk("XXXXXXX old bdidev is %p\n", bdi->dev);
+>   +       printk("XXXXXXX new bdidev is %p\n", dev);
+>           bdi->dev = dev;
+>           bdi_debug_register(bdi, dev_name(dev));
 > 
-> diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
-> index 0c670dd..35d33e8 100644
-> --- a/drivers/acpi/processor_core.c
-> +++ b/drivers/acpi/processor_core.c
-> @@ -410,7 +410,7 @@ static int acpi_processor_remove_fs(struct acpi_device *device)
->  /* Use the acpiid in MADT to map cpus in case of SMP */
->  
->  #ifndef CONFIG_SMP
-> -static int get_cpu_id(acpi_handle handle, u32 acpi_id) {return -1;}
-> +static int get_cpu_id(acpi_handle handle, int type, u32 acpi_id) { return -1; }
->  #else
->  
->  static struct acpi_table_madt *madt;
-> @@ -429,27 +429,35 @@ static int map_lapic_id(struct acpi_subtable_header *entry,
->  }
->  
->  static int map_lsapic_id(struct acpi_subtable_header *entry,
-> -		  u32 acpi_id, int *apic_id)
-> +		int device_declaration, u32 acpi_id, int *apic_id)
->  {
->  	struct acpi_madt_local_sapic *lsapic =
->  		(struct acpi_madt_local_sapic *)entry;
-> +	u32 tmp = (lsapic->id << 8) | lsapic->eid;
-> +
->  	/* Only check enabled APICs*/
-> -	if (lsapic->lapic_flags & ACPI_MADT_ENABLED) {
-> -		/* First check against id */
-> -		if (lsapic->processor_id == acpi_id) {
-> -			*apic_id = (lsapic->id << 8) | lsapic->eid;
-> -			return 1;
-> -		/* Check against optional uid */
-> -		} else if (entry->length >= 16 &&
-> -			lsapic->uid == acpi_id) {
-> -			*apic_id = lsapic->uid;
-> -			return 1;
-> -		}
-> -	}
-> +	if (!(lsapic->lapic_flags & ACPI_MADT_ENABLED))
-> +		return 0;
-> +
-> +	/* Device statement declaration type */
-> +	if (device_declaration) {
-> +		if (entry->length < 16)
-> +			printk(KERN_ERR PREFIX
-> +			    "Invalid LSAPIC with Device type processor (SAPIC ID %#x)\n",
-> +			    tmp);
-> +		else if (lsapic->uid == acpi_id)
-> +			goto found;
-> +	/* Processor statement declaration type */
-> +	} else if (lsapic->processor_id == acpi_id)
-> +		goto found;
-> +
->  	return 0;
-> +found:
-> +	*apic_id = tmp;
-> +	return 1;
->  }
->  
-> -static int map_madt_entry(u32 acpi_id)
-> +static int map_madt_entry(int type, u32 acpi_id)
->  {
->  	unsigned long madt_end, entry;
->  	int apic_id = -1;
-> @@ -470,7 +478,7 @@ static int map_madt_entry(u32 acpi_id)
->  			if (map_lapic_id(header, acpi_id, &apic_id))
->  				break;
->  		} else if (header->type == ACPI_MADT_TYPE_LOCAL_SAPIC) {
-> -			if (map_lsapic_id(header, acpi_id, &apic_id))
-> +			if (map_lsapic_id(header, type, acpi_id, &apic_id))
->  				break;
->  		}
->  		entry += header->length;
-> @@ -478,7 +486,7 @@ static int map_madt_entry(u32 acpi_id)
->  	return apic_id;
->  }
->  
-> -static int map_mat_entry(acpi_handle handle, u32 acpi_id)
-> +static int map_mat_entry(acpi_handle handle, int type, u32 acpi_id)
->  {
->  	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
->  	union acpi_object *obj;
-> @@ -501,7 +509,7 @@ static int map_mat_entry(acpi_handle handle, u32 acpi_id)
->  	if (header->type == ACPI_MADT_TYPE_LOCAL_APIC) {
->  		map_lapic_id(header, acpi_id, &apic_id);
->  	} else if (header->type == ACPI_MADT_TYPE_LOCAL_SAPIC) {
-> -		map_lsapic_id(header, acpi_id, &apic_id);
-> +		map_lsapic_id(header, type, acpi_id, &apic_id);
->  	}
->  
->  exit:
-> @@ -510,14 +518,14 @@ exit:
->  	return apic_id;
->  }
->  
-> -static int get_cpu_id(acpi_handle handle, u32 acpi_id)
-> +static int get_cpu_id(acpi_handle handle, int type, u32 acpi_id)
->  {
->  	int i;
->  	int apic_id = -1;
->  
-> -	apic_id = map_mat_entry(handle, acpi_id);
-> +	apic_id = map_mat_entry(handle, type, acpi_id);
->  	if (apic_id == -1)
-> -		apic_id = map_madt_entry(acpi_id);
-> +		apic_id = map_madt_entry(type, acpi_id);
->  	if (apic_id == -1)
->  		return apic_id;
->  
-> @@ -533,15 +541,16 @@ static int get_cpu_id(acpi_handle handle, u32 acpi_id)
->                                   Driver Interface
->     -------------------------------------------------------------------------- */
->  
-> -static int acpi_processor_get_info(struct acpi_processor *pr, unsigned has_uid)
-> +static int acpi_processor_get_info(struct acpi_device *device)
->  {
->  	acpi_status status = 0;
->  	union acpi_object object = { 0 };
->  	struct acpi_buffer buffer = { sizeof(union acpi_object), &object };
-> -	int cpu_index;
-> +	struct acpi_processor *pr;
-> +	int cpu_index, device_declaration = 0;
->  	static int cpu0_initialized;
->  
-> -
-> +	pr = acpi_driver_data(device);
->  	if (!pr)
->  		return -EINVAL;
->  
-> @@ -562,8 +571,11 @@ static int acpi_processor_get_info(struct acpi_processor *pr, unsigned has_uid)
->  		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
->  				  "No bus mastering arbitration control\n"));
->  
-> -	/* Check if it is a Device with HID and UID */
-> -	if (has_uid) {
-> +	if (!strcmp(acpi_device_hid(device), ACPI_PROCESSOR_HID)) {
-> +		/*
-> +		 * Declared with "Device" statement; match _UID.
-> +		 * Note that we don't handle string _UIDs yet.
-Looks very good. 
-Can you add the check whether the device.flags.unique_id exists before
-evaluating the _UID object? 
-If not exist, it indicates that the processor definition is incorrect.
+> I get:
+>   $ modprobe floppy
+>   Floppy drive(s): fd0 is 1.44M, fd1 is 1.44M
+>   FDC 0 is a S82078B
+>   XXXXXXX old bdidev is 0000000000000000
+>   XXXXXXX new bdidev is ffff88001f20cd10
+>   XXXXXXX old bdidev is ffff88001f20cd10
+>   XXXXXXX new bdidev is ffff88001f20de30
+> 
+> which very much looks like bdi will not remove any earlier registered
+> device, only the last one, right?
 
-Thanks.
-> +		 */
->  		unsigned long long value;
->  		status = acpi_evaluate_integer(pr->handle, METHOD_NAME__UID,
->  						NULL, &value);
-> @@ -571,13 +583,10 @@ static int acpi_processor_get_info(struct acpi_processor *pr, unsigned has_uid)
->  			printk(KERN_ERR PREFIX "Evaluating processor _UID\n");
->  			return -ENODEV;
->  		}
-> +		device_declaration = 1;
->  		pr->acpi_id = value;
->  	} else {
-> -		/*
-> -		* Evalute the processor object.  Note that it is common on SMP to
-> -		* have the first (boot) processor with a valid PBLK address while
-> -		* all others have a NULL address.
-> -		*/
-> +		/* Declared with "Processor" statement; match ProcessorID */
->  		status = acpi_evaluate_object(pr->handle, NULL, NULL, &buffer);
->  		if (ACPI_FAILURE(status)) {
->  			printk(KERN_ERR PREFIX "Evaluating processor object\n");
-> @@ -590,7 +599,7 @@ static int acpi_processor_get_info(struct acpi_processor *pr, unsigned has_uid)
->  		*/
->  		pr->acpi_id = object.processor.proc_id;
->  	}
-> -	cpu_index = get_cpu_id(pr->handle, pr->acpi_id);
-> +	cpu_index = get_cpu_id(pr->handle, device_declaration, pr->acpi_id);
->  
->  	/* Handle UP system running SMP kernel, with no LAPIC in MADT */
->  	if (!cpu0_initialized && (cpu_index == -1) &&
-> @@ -662,7 +671,7 @@ static int __cpuinit acpi_processor_start(struct acpi_device *device)
->  
->  	pr = acpi_driver_data(device);
->  
-> -	result = acpi_processor_get_info(pr, device->flags.unique_id);
-> +	result = acpi_processor_get_info(device);
->  	if (result) {
->  		/* Processor is physically not present */
->  		return 0;
-> 
+This fixes it for me.
+
+Thanks,
+Kay
+
+
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: bdi: register sysfs bdi device only once per queue
+
+Devices which share the same queue, like floppies and mtd devices,
+get registered multiple times in the bdi interface, but bdi accounts
+only the last registered device of the devices sharing one queue.
+
+On remove, all earlier registered devices leak, stay around in
+sysfs, and cause "duplicate filename" errors if the devices are
+recreated.
+
+This prevents the creation of multiple bdi interfaces per queue,
+and the bdi device will carry the dev_t name of the block device
+which is the first one registered, of the pool of devices using
+the same queue.
+
+Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
+---
+
+
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index f2e574d..e6676e5 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -176,6 +176,9 @@ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
+ 	int ret = 0;
+ 	struct device *dev;
+ 
++	if (bdi->dev)
++		goto exit;
++
+ 	va_start(args, fmt);
+ 	dev = device_create_vargs(bdi_class, parent, MKDEV(0, 0), bdi, fmt, args);
+ 	va_end(args);
+
 
