@@ -1,149 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbYJaBK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbYJaBMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756110AbYJaBK1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 21:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbYJaBKN
+	id S1756176AbYJaBMV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 21:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbYJaBMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 21:10:13 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:55330 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753200AbYJaBKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 21:10:11 -0400
-Date: Fri, 31 Oct 2008 02:10:04 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Helge Deller <deller@gmx.de>
-cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-parisc@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>
-Subject: Re: 2.6.28-rc2: USB/INPUT: slab error in cache_alloc_debugcheck_after():
- double free?
-In-Reply-To: <200810310011.08618.deller@gmx.de>
-Message-ID: <alpine.LRH.1.10.0810310209410.7585@twin.jikos.cz>
-References: <200810310011.08618.deller@gmx.de>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	Thu, 30 Oct 2008 21:12:13 -0400
+Received: from cinke.fazekas.hu ([195.199.244.225]:58998 "EHLO
+	cinke.fazekas.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753194AbYJaBMM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 21:12:12 -0400
+Date: Fri, 31 Oct 2008 02:11:59 +0100 (CET)
+From: Marton Balint <cus@fazekas.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] block:do_mounts - add device info to mount message
+In-Reply-To: <20081029234356.aa1a3760.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0810301741320.2819@cinke.fazekas.hu>
+References: <Pine.LNX.4.64.0810241309190.31107@cinke.fazekas.hu>
+ <20081029234356.aa1a3760.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Oct 2008, Helge Deller wrote:
+On Wed, 29 Oct 2008, Andrew Morton wrote:
 
-> I noticed various slab errors with complete kernel crashes with my USB keyboard/mouse on a 32bit parisc machine with both 2.6.28-rc1 and -rc2.
-> Kernel 2.6.27 was still OK.
+> On Fri, 24 Oct 2008 13:31:53 +0200 (CEST) Marton Balint <cus@fazekas.hu> wrote:
 > 
-> Linux kernel bootlog shows:
-> ---------------
-> ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
-> ohci_hcd 0000:00:0e.2: OHCI Host Controller
-> ohci_hcd 0000:00:0e.2: new USB bus registered, assigned bus number 1
-> ohci_hcd 0000:00:0e.2: irq 1, io mem 0xf2007000
-> usb usb1: configuration #1 chosen from 1 choice
-> hub 1-0:1.0: USB hub found
-> hub 1-0:1.0: 3 ports detected
-> usb usb1: New USB device found, idVendor=1d6b, idProduct=0001
-> usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-> usb usb1: Product: OHCI Host Controller
-> usb usb1: Manufacturer: Linux 2.6.28-rc2 ohci_hcd
-> usb usb1: SerialNumber: 0000:00:0e.2
-> uhci_hcd: USB Universal Host Controller Interface driver
+> > Printing the minor and major number of the successfully mounted root 
+> > device can be quite useful, the patch adds this piece of information 
+> > to the "VFS: Mounted root..." message.
+> > 
 > 
-> 
-> After sucessful bootup (without any USB devices attached)
-> I get this when I insert a USB keyboard:
-> ---------------
-> usb 1-1: new low speed USB device using ohci_hcd and address 2
-> usb 1-1: configuration #1 chosen from 1 choice
-> input: SILITEK USB Keyboard and Mouse as /class/input/input0
-> Slab corruption: size-4096 start=8dd9b000, len=4096
-> 000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> generic-usb 0004:047B:0002.0001: input,hidraw0: USB HID v1.00 Keyboard [SILITEK USB Keyboard and Mouse] on usb-0000:00:0e.2-1/input0
-> input: SILITEK USB Keyboard and Mouse as /class/input/input1
-> generic-usb 0003:047B:0002.0002: input,hidraw1: USB HID v1.00 Mouse [SILITEK USB Keyboard and Mouse] on usb-0000:00:0e.2-1/input1
-> usb 1-1: New USB device found, idVendor=047b, idProduct=0002
-> usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
-> usb 1-1: Product: USB Keyboard and Mouse
-> usb 1-1: Manufacturer: SILITEK
-> 
-> 
-> Similiar when I insert a mouse:
-> ------------------
-> usb 1-1: new low speed USB device using ohci_hcd and address 2
-> usb 1-1: configuration #1 chosen from 1 choice
-> input: Logitech N48 as /class/input/input0
-> Slab corruption: shmem_inode_cache start=8bd9daa0, len=640
-> Redzone: 0x0/0x9f911029d74e35b.
-> Last user: [<00000000>](0x0)
-> 000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> Prev obj: start=8bd9d870, len=640
-> Redzone: 0x6b6b6b6b6b6b6b6b/0x0.
-> Last user: [<00000000>](0x0)
-> 000: 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b
-> 010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> slab error in cache_alloc_debugcheck_after(): cache `shmem_inode_cache': double free, or memory outside objecn
-> Backtrace:
->  [<101a4e84>] cache_alloc_debugcheck_after+0xd8/0x200
->  [<101a540c>] kmem_cache_alloc+0x1a0/0x1e8
->  [<101a26e4>] shmem_alloc_inode+0x18/0x34
->  [<101be158>] alloc_inode+0x28/0x238
->  [<101bf204>] new_inode+0x20/0xc0
->  [<101a0eb8>] shmem_get_inode+0x34/0x1ac
->  [<101a1be0>] shmem_symlink+0x60/0x260
->  [<101b6034>] vfs_symlink+0x74/0xc8
->  [<101b6118>] sys_symlinkat+0x90/0xfc
->  [<101190c0>] syscall_exit+0x0/0x28
-> 
-> 8bd9da98: redzone 1:0x0, redzone 2:0x9f911029d74e35b
-> Slab corruption: size-4096 start=8bd18000, len=4096
-> 000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> generic-usb 0003:046D:C001.0001: input,hidraw0: USB HID v1.00 Mouse [Logitech N48] on usb-0000:00:0e.2-1/inpu0
-> usb 1-1: New USB device found, idVendor=046d, idProduct=c001
-> usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
-> usb 1-1: Product: N48
-> usb 1-1: Manufacturer: Logitech
-> 
-> 
-> On 2.6.28-rc1 I saw e.g. this:
-> --------------------
-> usbcore: registered new interface driver usbhid
-> usbhid: v2.6:USB HID core driver
-> usb 1-1: new low speed USB device using ohci_hcd and address 2
-> usb 1-1: configuration #1 chosen from 1 choice
-> input: Logitech N48 as /class/input/input0
-> generic-usb 0003:046D:C001.0001: input,hidraw0: USB HID v1.00 Mouse 
-> [Logitech N48] on usb-0000:00:0e.2-1/inpu0
-> usb 1-1: New USB device found, idVendor=046d, idProduct=c001
-> usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
-> usb 1-1: Product: N48
-> usb 1-1: Manufacturer: Logitech
-> usb 1-2: new low speed USB device using ohci_hcd and address 3
-> usb 1-2: configuration #1 chosen from 1 choice
-> slab error in cache_alloc_debugcheck_after(): cache `size-512': double free, or memory outside object was oven
-> Backtrace:
->    [<101a5724>] cache_alloc_debugcheck_after+0xd8/0x200
->    [<101a5cac>] kmem_cache_alloc+0x1a0/0x1e8
->    [<1042e294>] hid_register_report+0x60/0xc4
->    [<1042e5f8>] hid_add_field+0x40/0x1a4
->    [<1042ec40>] hid_parser_main+0x94/0xc4
+> Can you expand upon "quite useful", please?  In what way is it useful? 
+> A real-world example would help.
 
-Was Redzone 1 in this case also 0x0 please?
+In the past, I used the root=... command line parameter to specify the 
+root filesystem to the kernel. Now it seems that specifying it is not 
+necessary. The kernel detects the root filesystem even if the kernel 
+command line is empty. My root fs is on a raid1 device by the way, and I 
+am not using initrd for the boot process.
 
--- 
-Jiri Kosina
-SUSE Labs
+If the kernel detects the root filesystem somehow, I think it should print 
+out the result of this detection, otherwise I will not know which device 
+has the root filesystem. Or is there an easy way to get this information 
+on a running system? I had a quick look at the /proc and /sys filesystems, 
+but haven't found anything useful there.
 
+Regards,
+  Marton
