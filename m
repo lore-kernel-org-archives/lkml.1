@@ -1,36 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbYJaWB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753679AbYJaWCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753537AbYJaWB6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 18:01:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYJaWBq
+	id S1753679AbYJaWCc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 18:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYJaWCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 18:01:46 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:37905 "EHLO
+	Fri, 31 Oct 2008 18:02:24 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:37913 "EHLO
 	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752634AbYJaWBp (ORCPT
+	by vger.kernel.org with ESMTP id S1752542AbYJaWCX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 18:01:45 -0400
-Subject: Re: next-20081030: voyager compile busted
+	Fri, 31 Oct 2008 18:02:23 -0400
+Subject: Re: [PATCH] fix compile breakage caused by
+	2ae111cdd8d83ebf9de72e36e68a8c84b6ebbeea
 From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Yinghai Lu <yinghai@kernel.org>
-In-Reply-To: <20081030224057.GB20507@elte.hu>
-References: <20081030173030.d8847df6.sfr@canb.auug.org.au>
-	 <20081030180323.GA13399@x200.localdomain>
-	 <1225398287.19324.1.camel@localhost.localdomain>
-	 <20081030205230.GO27407@elte.hu>
-	 <1225400283.19324.6.camel@localhost.localdomain>
-	 <20081030210704.GA25665@elte.hu>
-	 <1225401708.19324.35.camel@localhost.localdomain>
-	 <490A2A30.5040905@zytor.com>
-	 <1225403266.19324.42.camel@localhost.localdomain>
-	 <490A2C3D.4020202@zytor.com>  <20081030224057.GB20507@elte.hu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <aa79d98a0810302315k760ce8e1q1eab3d0c2258baae@mail.gmail.com>
+References: <1225400664.19324.16.camel@localhost.localdomain>
+	 <20081030220653.GK30303@elte.hu>
+	 <aa79d98a0810302228x62519bfes5f68a6b6bfbd10a3@mail.gmail.com>
+	 <aa79d98a0810302315k760ce8e1q1eab3d0c2258baae@mail.gmail.com>
 Content-Type: text/plain
-Date: Fri, 31 Oct 2008 12:42:14 -0500
-Message-Id: <1225474934.3264.4.camel@localhost.localdomain>
+Date: Fri, 31 Oct 2008 12:46:00 -0500
+Message-Id: <1225475160.3264.8.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -38,44 +31,108 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-30 at 23:40 +0100, Ingo Molnar wrote: 
-> * H. Peter Anvin <hpa@zytor.com> wrote:
+On Fri, 2008-10-31 at 09:15 +0300, Cyrill Gorcunov wrote:
+> On Fri, Oct 31, 2008 at 8:28 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> > On Fri, Oct 31, 2008 at 1:06 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> >>
+> >> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> >>
+> >>> >From bd011c0cc51ce1fbab95403a570a8b47ad6ba500 Mon Sep 17 00:00:00 2001
+> >>> From: James Bottomley <James.Bottomley@HansenPartnership.com>
+> >>> Date: Wed, 29 Oct 2008 11:19:49 -0500
+> >>> Subject: [VOYAGER] x86: Fix subarch compile breakage
+> >>>
+> >>> commit 2ae111cdd8d83ebf9de72e36e68a8c84b6ebbeea
+> >>> Author: Cyrill Gorcunov <gorcunov@gmail.com>
+> >>> Date:   Mon Aug 11 18:34:08 2008 +0400
+> >>>
+> >>>     x86: apic interrupts - move assignments to irqinit_32.c, v2
+> >>>
+> >>> Wrongly moved irq2 setup out of the mach-default/setup.c file.  This
+> >>> causes a breakage on voyager which needs its own version.  Fix by
+> >>> moving it back again.
+> >>>
+> >>> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+> >>> ---
+> >>>  arch/x86/kernel/irqinit_32.c  |   12 ------------
+> >>>  arch/x86/mach-default/setup.c |   12 ++++++++++++
+> >>>  2 files changed, 12 insertions(+), 12 deletions(-)
+> >>>
+> >>> diff --git a/arch/x86/kernel/irqinit_32.c b/arch/x86/kernel/irqinit_32.c
+> >>> index 845aa98..3928784 100644
+> >>> --- a/arch/x86/kernel/irqinit_32.c
+> >>> +++ b/arch/x86/kernel/irqinit_32.c
+> >>> @@ -81,15 +81,6 @@ void __init init_ISA_irqs (void)
+> >>>       }
+> >>>  }
+> >>>
+> >>> -/*
+> >>> - * IRQ2 is cascade interrupt to second interrupt controller
+> >>> - */
+> >>> -static struct irqaction irq2 = {
+> >>> -     .handler = no_action,
+> >>> -     .mask = CPU_MASK_NONE,
+> >>> -     .name = "cascade",
+> >>> -};
+> >>> -
+> >>>  DEFINE_PER_CPU(vector_irq_t, vector_irq) = {
+> >>>       [0 ... IRQ0_VECTOR - 1] = -1,
+> >>>       [IRQ0_VECTOR] = 0,
+> >>> @@ -167,9 +158,6 @@ void __init native_init_IRQ(void)
+> >>>       alloc_intr_gate(THERMAL_APIC_VECTOR, thermal_interrupt);
+> >>>  #endif
+> >>>
+> >>> -     if (!acpi_ioapic)
+> >>> -             setup_irq(2, &irq2);
+> >>> -
+> >>>       /* setup after call gates are initialised (usually add in
+> >>>        * the architecture specific gates)
+> >>>        */
+> >>> diff --git a/arch/x86/mach-default/setup.c b/arch/x86/mach-default/setup.c
+> >>> index 37b9ae4..53b4202 100644
+> >>> --- a/arch/x86/mach-default/setup.c
+> >>> +++ b/arch/x86/mach-default/setup.c
+> >>> @@ -38,6 +38,15 @@ void __init pre_intr_init_hook(void)
+> >>>       init_ISA_irqs();
+> >>>  }
+> >>>
+> >>> +/*
+> >>> + * IRQ2 is cascade interrupt to second interrupt controller
+> >>> + */
+> >>> +static struct irqaction irq2 = {
+> >>> +     .handler = no_action,
+> >>> +     .mask = CPU_MASK_NONE,
+> >>> +     .name = "cascade",
+> >>> +};
+> >>> +
+> >>>  /**
+> >>>   * intr_init_hook - post gate setup interrupt initialisation
+> >>>   *
+> >>> @@ -53,6 +62,9 @@ void __init intr_init_hook(void)
+> >>>               if (x86_quirks->arch_intr_init())
+> >>>                       return;
+> >>>       }
+> >>> +     if (!acpi_ioapic)
+> >>> +             setup_irq(2, &irq2);
+> >>> +
+> >>>  }
+> >>
+> >> hm, this change looks backwards (doubly so ;-).
+> >>
+> >> Is the build problem caused by the lack of the acpi_ioapic flag on
+> >> Voyager?
+> >>
+> >>        Ingo
+> >>
+> >
+> > Thanks for report, cant get access to sources right now -- will check it later.
+> >
 > 
-> > James Bottomley wrote:
-> > > 
-> > > Yes ... been having IRC conversations about that.  We'd need to use
-> > > runtime patching to fix the performance regressions virtualisation has
-> > > been causing us first ... but then we could use it for voyager.
-> > 
-> > I thought we already were, at least to some degree (the call sites 
-> > are way too big and way bigger than they need to be, so we end up 
-> > with a lot of NOPs.  I proposed a solution to Jeremy at Kernel 
-> > Summit, but he basically said "I don't want to maintain that, I 
-> > don't care about hardware performance", which is understandable but 
-> > highly unfortunate.)
-> 
-> in practice the function pointer overhead is almost unmeasurable for 
-> things like IPIs which are rather expensive to issue. In fact it's 
-> probably more expensive on Voyager as it does not utilize the local 
-> APIC for SMP messaging (which is pretty much the only 
-> performance-sensitive thing here). It uses its own glue logic it 
-> appears, which is almost certainly behind the system bus.
+> Btw James, what the build bug message was? Could you post it please?
 
-Heh ... don't be so sure:  The VIC uses an array of up to 8 standard
-8255 IRQ lines, which is slow.  The QIC uses CPI trigger via cache line
-interference, which is far faster than APIC bus based systems (but is
-fairly similar to the way SAPIC systems work ... almost a decade after
-the original QIC system).
-
-> James, how many cycles do typical SMP ops take on Voyager?
-
-To be honest, I'm not too bothered about that.  What bothers me is that
-if a normal system performance goes down because of the function pointer
-replacement (remember all x86 SMP systems will see an increase in
-function pointer usage because of this approach), then it probably
-wasn't worth it.
-
-However, the only way to be sure is to try it and get the benchmarks.
+it gives a compile failure because acpi_ioapic isn't defined on
+Voyager ... however voyager also currently has its own setup for irq2
+which would need to be fixed as well.
 
 James
 
