@@ -1,78 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752225AbYJaLP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751962AbYJaLSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752225AbYJaLP2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 07:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751041AbYJaLPK
+	id S1751962AbYJaLSw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 07:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbYJaLSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 07:15:10 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:33556 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbYJaLPJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 07:15:09 -0400
-Date: Fri, 31 Oct 2008 13:15:00 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: David Miller <davem@davemloft.net>, shemminger@vyatta.com, zbr@ioremap.net,
-       rjw@sisk.pl, mingo@elte.hu, s0mbre@tservice.net.ru,
-       a.p.zijlstra@chello.nl, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>, efault@gmx.de,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-In-Reply-To: <490AE792.60200@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0810311313060.7072@wrl-59.cs.helsinki.fi>
-References: <Pine.LNX.4.64.0810302047030.22084@wrl-59.cs.helsinki.fi>
- <20081031.005219.141937694.davem@davemloft.net>
- <Pine.LNX.4.64.0810311119510.7072@wrl-59.cs.helsinki.fi>
- <20081031.025159.51432990.davem@davemloft.net> <490AE1CD.9040207@cosmosbay.com>
- <Pine.LNX.4.64.0810311300130.7072@wrl-59.cs.helsinki.fi> <490AE792.60200@cosmosbay.com>
+	Fri, 31 Oct 2008 07:18:44 -0400
+Received: from ozlabs.org ([203.10.76.45]:42226 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750735AbYJaLSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 07:18:43 -0400
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1642721910-1225451700=:7072"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18698.59790.393775.139313@cargo.ozlabs.ibm.com>
+Date: Fri, 31 Oct 2008 22:18:38 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, benh@kernel.crashing.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.28-rc1: NVRAM being corrupted on ppc64 preventing boot (bisected)
+In-Reply-To: <20081031103646.GA24395@csn.ul.ie>
+References: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org>
+	<20081030142632.GA15645@csn.ul.ie>
+	<18698.7794.500191.189515@cargo.ozlabs.ibm.com>
+	<20081031103646.GA24395@csn.ul.ie>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Mel Gorman writes:
 
----696208474-1642721910-1225451700=:7072
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+> Yaboot in my case and I've heard it affected a DVD installation. I don't
+> know for sure if it affects netboot but as I think it's something the
+> kernel is doing, it probably doesn't matter how it gets loaded?
 
-On Fri, 31 Oct 2008, Eric Dumazet wrote:
+I do need to know whether it was the vmlinux or the zImage.pseries
+that you were loading with yaboot.  That commit you identified affects
+the contents of an ELF note in the zImage.pseries that firmware looks
+at, as well as a structure in the kernel itself that gets passed as an
+argument to a call to firmware.  If you were loading a vmlinux with
+yaboot when you saw the corruption occur then that narrows things down
+a bit.
 
-> Ilpo Järvinen a écrit :
-> > On Fri, 31 Oct 2008, Eric Dumazet wrote:
-> > 
-> > > David Miller a écrit :
-> > > > From: "Ilpo Järvinen" <ilpo.jarvinen@helsinki.fi>
-> > > > Date: Fri, 31 Oct 2008 11:40:16 +0200 (EET)
-> > > > > > Let me remind that it is just a single process, so no ping-pong 
-> >> & other
-> > > > > lock related cache effects should play any significant role here, 
-> > > no? (I'm
-> > > > > no expert though :-)).
-> > > > > Not locks or ping-pongs perhaps, I guess.  So it just sends and
-> > > > receives over a socket, implementing both ends of the communication
-> > > > in the same process?
-> > > > > If hash chain conflicts do happen for those 2 sockets, just 
-> > > traversing
-> > > > the chain 2 entries deep could show up.
-> > >
-> > > tbench is very sensible to cache line ping-pongs (on SMP machines of
-> > > course)
-> > 
-> > ...Sorry to disappoint you but we were discussion there on my AIM9 tcp_test
-> > results :-).
-> > 
-> 
-> Well, before you added AIM9 on this topic, we were focusing on tbench :)
->
-> Sorry to disappoint you :)
-
-It's all Stephen's fault, he added port randomization first... ;-)
-
--- 
- i.
----696208474-1642721910-1225451700=:7072--
+Paul.
