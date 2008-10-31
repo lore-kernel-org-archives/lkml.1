@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbYJaJo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbYJaJwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753547AbYJaJo6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 05:44:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbYJaJot
+	id S1753413AbYJaJwh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 05:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbYJaJwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 05:44:49 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62705 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751668AbYJaJot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 05:44:49 -0400
-Message-ID: <490AD328.1010603@cn.fujitsu.com>
-Date: Fri, 31 Oct 2008 17:43:04 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] Avoid duplicate running of pud_offset and pmd_offset in one_md_table_init()
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+	Fri, 31 Oct 2008 05:52:25 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38429
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751035AbYJaJwY convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 05:52:24 -0400
+Date: Fri, 31 Oct 2008 02:51:59 -0700 (PDT)
+Message-Id: <20081031.025159.51432990.davem@davemloft.net>
+To: ilpo.jarvinen@helsinki.fi
+Cc: shemminger@vyatta.com, zbr@ioremap.net, rjw@sisk.pl, mingo@elte.hu,
+       s0mbre@tservice.net.ru, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, efault@gmx.de,
+       akpm@linux-foundation.org
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0810311119510.7072@wrl-59.cs.helsinki.fi>
+References: <Pine.LNX.4.64.0810302047030.22084@wrl-59.cs.helsinki.fi>
+	<20081031.005219.141937694.davem@davemloft.net>
+	<Pine.LNX.4.64.0810311119510.7072@wrl-59.cs.helsinki.fi>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If !(pgd_val(*pgd) & _PAGE_PRESENT) in PAE mode, we need not get value of
-pmd_table again.
+From: "Ilpo Järvinen" <ilpo.jarvinen@helsinki.fi>
+Date: Fri, 31 Oct 2008 11:40:16 +0200 (EET)
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- arch/x86/mm/init_32.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+> Let me remind that it is just a single process, so no ping-pong & other 
+> lock related cache effects should play any significant role here, no? (I'm 
+> no expert though :-)).
 
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 8396868..7f8a2da 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -102,6 +102,8 @@ static pmd_t * __init one_md_table_init(pgd_t *pgd)
- 		set_pgd(pgd, __pgd(__pa(pmd_table) | _PAGE_PRESENT));
- 		pud = pud_offset(pgd, 0);
- 		BUG_ON(pmd_table != pmd_offset(pud, 0));
-+
-+		return pmd_table;
- 	}
- #endif
- 	pud = pud_offset(pgd, 0);
--- 
-1.5.5.3
+Not locks or ping-pongs perhaps, I guess.  So it just sends and
+receives over a socket, implementing both ends of the communication
+in the same process?
 
+If hash chain conflicts do happen for those 2 sockets, just traversing
+the chain 2 entries deep could show up.
