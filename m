@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbYJaJY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753699AbYJaJ2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754490AbYJaJY2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 05:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYJaJYU
+	id S1753699AbYJaJ2i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 05:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYJaJ2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 05:24:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35430 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752947AbYJaJYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 05:24:19 -0400
-Date: Fri, 31 Oct 2008 10:23:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Huang Ying <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Simon Horman <horms@verge.net.au>,
-       Ian Campbell <Ian.Campbell@citrix.com>,
-       Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
-       kexec@lists.infradead.org
-Subject: Re: [PATCH 0/3 -v4] kexec/i386: kexec page table code clean up
-Message-ID: <20081031092341.GD14127@elte.hu>
-References: <1225417677.24095.135.camel@yhuang-dev.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1225417677.24095.135.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Fri, 31 Oct 2008 05:28:30 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:64520 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751668AbYJaJ23 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 05:28:29 -0400
+X-SourceIP: 213.46.9.244
+Subject: Re: [2.6.26] kobject_add_internal failed for 2:0 with -EEXIST /
+ unable to handle kernel NULL pointer dereference in sysfs_create_link
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Folkert van Heusden <folkert@vanheusden.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <ac3eb2510810301623n6a7256a1td59d3e38a01add4c@mail.gmail.com>
+References: <20081028151157.GI11214@vanheusden.com>
+	 <ac3eb2510810281607o19266977l4c77d3d3ab4bb849@mail.gmail.com>
+	 <20081029094041.GO11214@vanheusden.com>
+	 <ac3eb2510810290525h1579bad8i4836ce1291d9022@mail.gmail.com>
+	 <20081029132704.GS11214@vanheusden.com>
+	 <ac3eb2510810290749o2dd062b5m7b966d2d25b69714@mail.gmail.com>
+	 <20081029152550.GT11214@vanheusden.com>
+	 <ac3eb2510810291451u577aa825lc12a7e8fbc213020@mail.gmail.com>
+	 <20081030105513.GY11214@vanheusden.com>
+	 <ac3eb2510810301606q5ff8e001j239c5108c3db4b6f@mail.gmail.com>
+	 <ac3eb2510810301623n6a7256a1td59d3e38a01add4c@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 31 Oct 2008 10:28:55 +0100
+Message-Id: <1225445335.7803.1214.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-10-31 at 00:23 +0100, Kay Sievers wrote:
 
-* Huang Ying <ying.huang@intel.com> wrote:
-
-> This patchset cleans up page table setup code of kexec on i386.
+> Peter, it looks like bdi does not work for devices which share a single queue.
+> If I add:
+>   --- a/mm/backing-dev.c
+>  +++ b/mm/backing-dev.c
+>   @@ -184,6 +184,8 @@ int bdi_register(struct backing_dev_info *bdi,
+> struct device *parent,
+>                   goto exit;
+>           }
 > 
-> This patchset is based on v2.6.28-rc2-338-g65fc716 and has been 
-> tested on i386.
+>   +       printk("XXXXXXX old bdidev is %p\n", bdi->dev);
+>   +       printk("XXXXXXX new bdidev is %p\n", dev);
+>           bdi->dev = dev;
+>           bdi_debug_register(bdi, dev_name(dev));
+> 
+> I get:
+>   $ modprobe floppy
+>   Floppy drive(s): fd0 is 1.44M, fd1 is 1.44M
+>   FDC 0 is a S82078B
+>   XXXXXXX old bdidev is 0000000000000000
+>   XXXXXXX new bdidev is ffff88001f20cd10
+>   XXXXXXX old bdidev is ffff88001f20cd10
+>   XXXXXXX new bdidev is ffff88001f20de30
+> 
+> which very much looks like bdi will not remove any earlier registered
+> device, only the last one, right?
 
-applied to tip/x86/crashdump:
+Sharing a bdi is odd to begin with, let me poke at this a little.
 
- 9868ee6: kexec/i386: setup kexec page table in C
- 92be3d6: kexec/i386: allocate page table pages dynamically
- 31498a0: kexec/i386: remove PAGE_SIZE alignment from relocate_kernel
-
-thanks! They are nice cleanups - both the .text reduction and the 
-linecount reduction is nice:
-
- 4 files changed, 102 insertions(+), 152 deletions(-)
-
-	Ingo
