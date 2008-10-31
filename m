@@ -1,73 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbYJaSJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbYJaSJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752627AbYJaSJJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 14:09:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYJaSI4
+	id S1753012AbYJaSJa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 14:09:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbYJaSI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 14:08:56 -0400
-Received: from kroah.org ([198.145.64.141]:38927 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751099AbYJaSIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 14:08:55 -0400
-Date: Fri, 31 Oct 2008 11:05:22 -0700
-From: Greg KH <greg@kroah.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: driver core: struct device - replace bus_id with dev_name(),
-	dev_set_name()
-Message-ID: <20081031180522.GA30195@kroah.com>
-References: <1225327008.5970.27.camel@nga.site> <20081031170227.GC24826@kroah.com> <ac3eb2510810311057j6069aa99j4f46c6f563b5740@mail.gmail.com>
+	Fri, 31 Oct 2008 14:08:58 -0400
+Received: from picard.linux.it ([213.254.12.146]:51510 "EHLO picard.linux.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751099AbYJaSI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 14:08:57 -0400
+X-Greylist: delayed 1185 seconds by postgrey-1.27 at vger.kernel.org; Fri, 31 Oct 2008 14:08:56 EDT
+Message-ID: <33120.148.202.77.161.1225476534.squirrel@picard.linux.it>
+In-Reply-To: <200810302244.52329.henrik@austad.us>
+References: <200810281634.11285.henrik@austad.us>
+    <20081030174925.36023f19jy3o832t@feanor.sssup.it>
+    <1225387034.7803.182.camel@twins>
+    <200810302244.52329.henrik@austad.us>
+Date: Fri, 31 Oct 2008 19:08:54 +0100 (CET)
+Subject: Re: Deadline scheduling (was: Re: Rearranging layout of code in 
+     the scheduler)
+From: "Dario Faggioli" <raistlin@linux.it>
+To: "Henrik Austad" <henrik@austad.us>
+Cc: "Peter Zijlstra" <peterz@infradead.org>, faggioli@gandalf.sssup.it,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>, fabio@gandalf.sssup.it,
+       "Michael Trimarchi" <trimarchimichael@yahoo.it>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       "gregory.haskins" <gregory.haskins@gmail.com>
+User-Agent: SquirrelMail/1.4.9a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ac3eb2510810311057j6069aa99j4f46c6f563b5740@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 31, 2008 at 06:57:52PM +0100, Kay Sievers wrote:
-> On Fri, Oct 31, 2008 at 18:02, Greg KH <greg@kroah.com> wrote:
-> > On Thu, Oct 30, 2008 at 01:36:48AM +0100, Kay Sievers wrote: index 5437ac0..c9c214d 100644
-> >> --- a/include/linux/kobject.h
-> >> +++ b/include/linux/kobject.h
-> >> @@ -72,6 +72,8 @@ struct kobject {
-> >>
-> >>  extern int kobject_set_name(struct kobject *kobj, const char *name, ...)
-> >>                           __attribute__((format(printf, 2, 3)));
-> >> +extern int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
-> >> +                               va_list vargs);
-> >>
-> >>  static inline const char *kobject_name(const struct kobject *kobj)
-> >>  {
-> >> diff --git a/lib/kobject.c b/lib/kobject.c
-> >> index 0487d1f..a6dec32 100644
-> >> --- a/lib/kobject.c
-> >> +++ b/lib/kobject.c
-> >> @@ -212,7 +212,7 @@ static int kobject_add_internal(struct kobject *kobj)
-> >>   * @fmt: format string used to build the name
-> >>   * @vargs: vargs to format the string.
-> >>   */
-> >> -static int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
-> >> +int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
-> >>                                 va_list vargs)
-> >>  {
-> >>       const char *old_name = kobj->name;
-> >>
-> >
-> > I cut this part out of this patch, as it's not needed here, and applied
-> > the rest.
-> 
-> Ah, yeah, this hunk belongs to "driver core: get rid of bus_id" which
-> I sent you, and which should be locally in your tree to catch new
-> instances of bus_id in staging. We will push to -next when we got most
-> of it converted and want to fix the remaining pieces.
+On Gio, 30 Ottobre 2008 10:44 pm, Henrik Austad wrote:
+>> As to why I'm
+>> looking at EDF, I think the answer to that is a bit too long (and
+>> not
+>> appropriate for this email anyway) so I'll leave that part out.
+>> >
+>> > Well, I understand that, but it could be interesting... At least to
+>> > me.
+>
+> ok, simply put:
+> * give each task a relative deadline (will probably introduce a new
+> syscall,
+> please don't shoot me).
+> * when the task enters TASK_RUNNING, set abosolute deadline to time_now +
+> rel_deadline.
+> * insert task in rq, sorted by abs_deadline
+> * pick leftmost task and run it
+> * when task is done, pick next task
+>
+> that's it.
+>
+Ok, that is how EDF work, and I know it... I was asking something
+different... But nevermind! :-D
 
-Ok, that makes more sense.
+>> > > The most interesting part of EDF is not the
+>> > > actual scheduler itself (although there are fun issues with that as
+>> > > well), but extending the Priority Inheritance framework to deal with
+>> > > all the fun cases that come with EDF.
+>
+> Well, I find EDF intersting because it is so blissfully simple. :-)
+>
+I agree, EDF is very simple and has a lot of very nice properties...
+Problem is do decide how to assign a deadline to a task, if it is not a
+classical soft or hard real-time one! :-O
 
-Care to respin that patch with these chunks added to it so that it will
-work properly?
+But you're not talking about things like that, aren't you?
 
-thanks,
+> Yes, well, EDF is not optimal for SMP systems, only for single core.
+> However,
+> you can do a pretty good attempt by assigning tasks to cores in a greedy
+> fashion (simply put the next task at the CPU with the lowest load).
+>
+I definitely agree that hard real time workloads are better handled by
+partitioned EDF, but for soft ones, it was sad to suffer from the possible
+CPU utilization loss it entails.
 
-greg k-h
+Also, what about resources shared by different tasks in different
+CPU/partitions? And if you avoid sharing resources between tasks in
+different partitions (is that acceptable?), what about system resources,
+that are shared by _all_ tasks in the system by definition?
+
+Sorry about asking so much questions, but these are the issues we are
+trying to address, and I'm quite interested in knowing if you have any
+idea about them. :-)
+
+> No. You should have *either* FIFO/RR *or* EDF, not both at the same time.
+>
+Oh... Why?
+
+> If
+> you absolutely require both, you should at least separate them on a
+> per-core
+> basis. If you mix them, they need to be aware of the other in order to
+> make
+> the right descision, and that is not good.
+>
+Well, obvioulsy it's something that we have to think carefully, but I
+can't see any harmful situation in having a deadline based and a fixed
+priority based scheduling from where to pick task in (sorry) priority
+order.
+
+> Well.. why not just treat *all* RT-tasks as *either* FIFO/RR or EDF?
+> Having
+> fifo and edf together will complicate things. And, people looking for edf,
+> will not use fifo/rr anyway (famous last words).
+>
+Ok, maybe it's a matter of personal feelings, but I think that such a
+design, even more complicated, could be very nice and useful.
+
+>> Which leaves us with the big issue of priority inversion ;-)
+>
+> Couldn't above idea solve a bit of this? I have some papers on deadline
+> inheritance laying aorund somewhere, I can have a look at that, I think it
+> was a fairly elegant solution to some of these issues there.
+>
+Well, I personally think that partitioning _raises_ issues about resource
+sharing instead of lightening them... In an OS like Linux is, at least...
+:-O
+
+Regards,
+Dario Faggioli
+
+PS. Sorry for the webmail... I'm abroad and I've not my laptop with me :-(
+
