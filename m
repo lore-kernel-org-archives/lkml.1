@@ -1,74 +1,300 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbYJaOIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbYJaOKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752725AbYJaOIu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 10:08:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbYJaOIk
+	id S1752595AbYJaOKq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 10:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYJaOKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 10:08:40 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:41971 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbYJaOIi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 10:08:38 -0400
-Date: Fri, 31 Oct 2008 09:03:21 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "Andrew G. Morgan" <morgan@kernel.org>, dhowells@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, chrisw@sous-sol.org,
-       linux-security-module@vger.kernel.org
-Subject: [PATCH 1/1] file caps: always start with clear bprm->caps_*
-Message-ID: <20081031140321.GA11996@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 31 Oct 2008 10:10:37 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:49605 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751356AbYJaOKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 10:10:36 -0400
+Message-Id: <20081031140121.483131142@polymtl.ca>
+References: <20081031140000.423846207@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Fri, 31 Oct 2008 10:00:02 -0400
+From: mathieu.desnoyers@polymtl.ca
+To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 2/2] tracepoint: introduce *_noupdate APIs. (v2)
+Content-Disposition: inline; filename=tracepoint-introduce-noupdate-apis.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Fri, 31 Oct 2008 14:10:21 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Sorry, resending as I seemed to have dropped lkml from the headers on
-yesterday's post)
+new APIs separate tracepoint_probe_register(),
+tracepoint_probe_unregister() into 2 steps. The first step of them
+is just update tracepoint_entry, not connect or disconnect.
 
->From c7b9b5534182566b4526e6a5bd4641bd0ae99676 Mon Sep 17 00:00:00 2001
-From: Serge Hallyn <serue@us.ibm.com>
-Date: Thu, 30 Oct 2008 11:52:23 -0500
-Subject: [PATCH 1/1] file caps: always start with clear bprm->caps_*
+this patch introduce tracepoint_probe_update_all() for update all.
 
-While Linux doesn't honor setuid on scripts.  However, it mistakenly
-behaves differently for file capabilities.
+these APIs are very useful for registering a lots of probes
+but just update once only. and a very important thing is that
+*_noupdate APIs do not require module_mutex.
 
-This patch fixes that behavior by making sure that get_file_caps()
-begins with empty bprm->caps_*.  That way when a script is loaded,
-its bprm->caps_* may be filled when binfmt_misc calls prepare_binprm(),
-but they will be cleared again when binfmt_elf calls prepare_binprm()
-next to read the interpreter's file capabilities.
+Mathieu Desnoyers : Refreshed for -tip.
 
-Signed-off-by: Serge Hallyn <serue@us.ibm.com>
-Acked-by: David Howells <dhowells@redhat.com>
-Acked-by: Andrew G. Morgan <morgan@kernel.org>
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- security/commoncap.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+---
+ include/linux/tracepoint.h |    4 +
+ kernel/tracepoint.c        |  170 ++++++++++++++++++++++++++++++++++-----------
+ 2 files changed, 136 insertions(+), 38 deletions(-)
 
-diff --git a/security/commoncap.c b/security/commoncap.c
-index 399bfdb..3976613 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -279,10 +279,10 @@ static int get_file_caps(struct linux_binprm *bprm)
- 	struct vfs_cap_data vcaps;
- 	struct inode *inode;
+Index: linux-2.6-lttng/include/linux/tracepoint.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/tracepoint.h	2008-10-30 20:12:05.000000000 -0400
++++ linux-2.6-lttng/include/linux/tracepoint.h	2008-10-30 20:18:16.000000000 -0400
+@@ -112,6 +112,10 @@ extern int tracepoint_probe_register(con
+  */
+ extern int tracepoint_probe_unregister(const char *name, void *probe);
  
--	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID) {
--		bprm_clear_caps(bprm);
-+	bprm_clear_caps(bprm);
++extern int tracepoint_probe_register_noupdate(const char *name, void *probe);
++extern int tracepoint_probe_unregister_noupdate(const char *name, void *probe);
++extern void tracepoint_probe_update_all(void);
 +
-+	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID)
- 		return 0;
--	}
+ struct tracepoint_iter {
+ 	struct module *module;
+ 	struct tracepoint *tracepoint;
+Index: linux-2.6-lttng/kernel/tracepoint.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/tracepoint.c	2008-10-30 20:17:25.000000000 -0400
++++ linux-2.6-lttng/kernel/tracepoint.c	2008-10-30 20:18:16.000000000 -0400
+@@ -59,7 +59,10 @@ struct tracepoint_entry {
+ };
  
- 	dentry = dget(bprm->file->f_dentry);
- 	inode = dentry->d_inode;
--- 
-1.5.6.3
+ struct tp_probes {
+-	struct rcu_head rcu;
++	union {
++		struct rcu_head rcu;
++		struct list_head list;
++	} u;
+ 	void *probes[0];
+ };
+ 
+@@ -72,7 +75,7 @@ static inline void *allocate_probes(int 
+ 
+ static void rcu_free_old_probes(struct rcu_head *head)
+ {
+-	kfree(container_of(head, struct tp_probes, rcu));
++	kfree(container_of(head, struct tp_probes, u.rcu));
+ }
+ 
+ static inline void release_probes(void *old)
+@@ -80,7 +83,7 @@ static inline void release_probes(void *
+ 	if (old) {
+ 		struct tp_probes *tp_probes = container_of(old,
+ 			struct tp_probes, probes[0]);
+-		call_rcu(&tp_probes->rcu, rcu_free_old_probes);
++		call_rcu_sched(&tp_probes->u.rcu, rcu_free_old_probes);
+ 	}
+ }
+ 
+@@ -299,6 +302,23 @@ static void tracepoint_update_probes(voi
+ 	module_update_tracepoints();
+ }
+ 
++static void *tracepoint_add_probe(const char *name, void *probe)
++{
++	struct tracepoint_entry *entry;
++	void *old;
++
++	entry = get_tracepoint(name);
++	if (!entry) {
++		entry = add_tracepoint(name);
++		if (IS_ERR(entry))
++			return entry;
++	}
++	old = tracepoint_entry_add_probe(entry, probe);
++	if (IS_ERR(old) && !entry->refcount)
++		remove_tracepoint(entry);
++	return old;
++}
++
+ /**
+  * tracepoint_probe_register -  Connect a probe to a tracepoint
+  * @name: tracepoint name
+@@ -309,36 +329,36 @@ static void tracepoint_update_probes(voi
+  */
+ int tracepoint_probe_register(const char *name, void *probe)
+ {
+-	struct tracepoint_entry *entry;
+-	int ret = 0;
+ 	void *old;
+ 
+ 	mutex_lock(&tracepoints_mutex);
+-	entry = get_tracepoint(name);
+-	if (!entry) {
+-		entry = add_tracepoint(name);
+-		if (IS_ERR(entry)) {
+-			ret = PTR_ERR(entry);
+-			goto end;
+-		}
+-	}
+-	old = tracepoint_entry_add_probe(entry, probe);
+-	if (IS_ERR(old)) {
+-		if (!entry->refcount)
+-			remove_tracepoint(entry);
+-		ret = PTR_ERR(old);
+-		goto end;
+-	}
++	old = tracepoint_add_probe(name, probe);
+ 	mutex_unlock(&tracepoints_mutex);
++	if (IS_ERR(old))
++		return PTR_ERR(old);
++
+ 	tracepoint_update_probes();		/* may update entry */
+ 	release_probes(old);
+ 	return 0;
+-end:
+-	mutex_unlock(&tracepoints_mutex);
+-	return ret;
+ }
+ EXPORT_SYMBOL_GPL(tracepoint_probe_register);
+ 
++static void *tracepoint_remove_probe(const char *name, void *probe)
++{
++	struct tracepoint_entry *entry;
++	void *old;
++
++	entry = get_tracepoint(name);
++	if (!entry)
++		return ERR_PTR(-ENOENT);
++	old = tracepoint_entry_remove_probe(entry, probe);
++	if (IS_ERR(old))
++		return old;
++	if (!entry->refcount)
++		remove_tracepoint(entry);
++	return old;
++}
++
+ /**
+  * tracepoint_probe_unregister -  Disconnect a probe from a tracepoint
+  * @name: tracepoint name
+@@ -351,31 +371,105 @@ EXPORT_SYMBOL_GPL(tracepoint_probe_regis
+  */
+ int tracepoint_probe_unregister(const char *name, void *probe)
+ {
+-	struct tracepoint_entry *entry;
+ 	void *old;
+-	int ret = -ENOENT;
+ 
+ 	mutex_lock(&tracepoints_mutex);
+-	entry = get_tracepoint(name);
+-	if (!entry)
+-		goto end;
+-	old = tracepoint_entry_remove_probe(entry, probe);
+-	if (IS_ERR(old)) {
+-		ret = PTR_ERR(old);
+-		goto end;
+-	}
+-	if (!entry->refcount)
+-		remove_tracepoint(entry);
++	old = tracepoint_remove_probe(name, probe);
+ 	mutex_unlock(&tracepoints_mutex);
++	if (IS_ERR(old))
++		return PTR_ERR(old);
++
+ 	tracepoint_update_probes();		/* may update entry */
+ 	release_probes(old);
+ 	return 0;
+-end:
+-	mutex_unlock(&tracepoints_mutex);
+-	return ret;
+ }
+ EXPORT_SYMBOL_GPL(tracepoint_probe_unregister);
+ 
++static LIST_HEAD(old_probes);
++static int need_update;
++
++static void tracepoint_add_old_probes(void *old)
++{
++	need_update = 1;
++	if (old) {
++		struct tp_probes *tp_probes = container_of(old,
++			struct tp_probes, probes[0]);
++		list_add(&tp_probes->u.list, &old_probes);
++	}
++}
++
++/**
++ * tracepoint_probe_register_noupdate -  register a probe but not connect
++ * @name: tracepoint name
++ * @probe: probe handler
++ *
++ * caller must call tracepoint_probe_update_all()
++ */
++int tracepoint_probe_register_noupdate(const char *name, void *probe)
++{
++	void *old;
++
++	mutex_lock(&tracepoints_mutex);
++	old = tracepoint_add_probe(name, probe);
++	if (IS_ERR(old)) {
++		mutex_unlock(&tracepoints_mutex);
++		return PTR_ERR(old);
++	}
++	tracepoint_add_old_probes(old);
++	mutex_unlock(&tracepoints_mutex);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(tracepoint_probe_register_noupdate);
++
++/**
++ * tracepoint_probe_unregister_noupdate -  remove a probe but not disconnect
++ * @name: tracepoint name
++ * @probe: probe function pointer
++ *
++ * caller must call tracepoint_probe_update_all()
++ */
++int tracepoint_probe_unregister_noupdate(const char *name, void *probe)
++{
++	void *old;
++
++	mutex_lock(&tracepoints_mutex);
++	old = tracepoint_remove_probe(name, probe);
++	if (IS_ERR(old)) {
++		mutex_unlock(&tracepoints_mutex);
++		return PTR_ERR(old);
++	}
++	tracepoint_add_old_probes(old);
++	mutex_unlock(&tracepoints_mutex);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(tracepoint_probe_unregister_noupdate);
++
++/**
++ * tracepoint_probe_update_all -  update tracepoints
++ */
++void tracepoint_probe_update_all(void)
++{
++	LIST_HEAD(release_probes);
++	struct tp_probes *pos, *next;
++
++	mutex_lock(&tracepoints_mutex);
++	if (!need_update) {
++		mutex_unlock(&tracepoints_mutex);
++		return;
++	}
++	if (!list_empty(&old_probes))
++		list_replace_init(&old_probes, &release_probes);
++	need_update = 0;
++	mutex_unlock(&tracepoints_mutex);
++
++	tracepoint_update_probes();
++	list_for_each_entry_safe(pos, next, &release_probes, u.list) {
++		list_del(&pos->u.list);
++		call_rcu_sched(&pos->u.rcu, rcu_free_old_probes);
++	}
++}
++EXPORT_SYMBOL_GPL(tracepoint_probe_update_all);
++
+ /**
+  * tracepoint_get_iter_range - Get a next tracepoint iterator given a range.
+  * @tracepoint: current tracepoints (in), next tracepoint (out)
 
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
