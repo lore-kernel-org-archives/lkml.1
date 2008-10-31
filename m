@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753261AbYJaWWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753348AbYJaWZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753261AbYJaWWo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 18:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYJaWWe
+	id S1753348AbYJaWZa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 18:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbYJaWZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 18:22:34 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55505 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751856AbYJaWWe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 18:22:34 -0400
-Date: Fri, 31 Oct 2008 18:22:32 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: do_sync() and XFSQA test 182 failures....
-Message-ID: <20081031222232.GB29761@infradead.org>
-References: <20081030085020.GP17077@disturbed> <20081030224625.GA18690@infradead.org> <20081031001249.GM4985@disturbed> <20081031203123.GA11514@infradead.org> <20081031215430.GB19509@disturbed>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081031215430.GB19509@disturbed>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 31 Oct 2008 18:25:21 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55726 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752015AbYJaWZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 18:25:20 -0400
+X-Authenticated: #44953887
+X-Provags-ID: V01U2FsdGVkX18DvAEAhQoDGO8wY//3DCfGcJFlKvGuy1W881w+0z
+	bY0nvrAWhXECrP
+Date: Fri, 31 Oct 2008 23:25:12 +0100
+From: Mirco Tischler <mt-ml@gmx.de>
+To: reinette chatre <reinette.chatre@intel.com>
+Cc: "Zhu, Yi" <yi.zhu@intel.com>, Arjan van de Ven <arjan@infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "John W.Linville" <linville@tuxdriver.com>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [2.6.28-rc2]: iwl4965 doesn't connect / cfg80211 failure
+Message-ID: <20081031232512.774ef2a1@mtlp.12.dimension>
+In-Reply-To: <1225389338.1115.338.camel@rc-desk>
+References: <20081028020212.0dfcb6c9@mtlp.12.dimension>
+	<1225157618.2917.215.camel@debian.sh.intel.com>
+	<20081027213217.53558319@infradead.org>
+	<1225171414.2917.229.camel@debian.sh.intel.com>
+	<20081028172418.3c8e91f1@mtlp.12.dimension>
+	<1225261084.2917.254.camel@debian.sh.intel.com>
+	<20081030182433.0a4eb471@mtlp.12.dimension>
+	<1225389338.1115.338.camel@rc-desk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/wRoDSNpxqSsz3_0eMqgRBTj";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.74
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 01, 2008 at 08:54:30AM +1100, Dave Chinner wrote:
-> Effectively, yes. 
-> 
-> Currently we iterate inodes for data and "metadata" sync, and the
-> only other concept is writing superblocks. I think most filesystems
-> have more types of metadata than this, so it makes sense for sync to
-> work on abstracts sync as data and metadata rather than data, inodes
-> and superblocks...
+--Sig_/wRoDSNpxqSsz3_0eMqgRBTj
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Yes, absolutely.  And for those that have inodes as primary / only
-metadata besides superblock we can still provide a generic_sync_inodes
-helper that just takes a callback to apply to every inode.  Which we
-probably want anyway as XFS is the only intree-filesystem that currently
-has a more efficient way to iterate inodes.
+On Thu, 30 Oct 2008 10:55:38 -0700, reinette chatre wrote:
+>=20
+> That helped us to obtain more information. Could you please try commit
+> 9685e33a2c919c1e95cb7072988fc1e0f0bad3d9 ?
+>=20
+Solves the problem for me.
 
-> > And as we found out it's not just sync that gets it wrong, it's also
-> > fsync (which isn't part of the above picture as it's per-inode) that
-> > gets this utterly wrong, as well as all kinds of syncs, not just the
-> > unmount one.
-> 
-> Async writeback (write_inode()) has the same problem as fsync -
-> writing the inode before waiting for data I/O to complete - which
-> means we've got to jump through hoops in the filesystem to avoid
-> blocking on inodes that can't be immediately flushed, and often we
-> end up writing the inode multiple times and having to issue log
-> forces whenw e shouldn't need to. Effectively we have to tell the
-> VFS to "try again later" the entire time data is being flushed
-> before we can write the inode and it's exceedingly inefficient.....
+Thanks
 
-Yes, that was the couple of sync functions I meant above as the whole
-inode writeback path is extremly convoluted - mostly due to the dirty
-data vs metadata mixup mess.
+Mirco
 
+--Sig_/wRoDSNpxqSsz3_0eMqgRBTj
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkkLhcwACgkQz+diZ7c2xfg7ZQCfSA0w44IWHafd6/I/1DvtbRIf
+TS0An3RYQRc0l47+YChmNL9RoLx5WBf5
+=29jl
+-----END PGP SIGNATURE-----
+
+--Sig_/wRoDSNpxqSsz3_0eMqgRBTj--
