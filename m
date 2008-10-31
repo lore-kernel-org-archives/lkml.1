@@ -1,137 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbYJaGP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754020AbYJaG1I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753966AbYJaGP0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 02:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbYJaGPK
+	id S1754020AbYJaG1I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 02:27:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYJaG0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 02:15:10 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:51270 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752798AbYJaGPI (ORCPT
+	Fri, 31 Oct 2008 02:26:55 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:20946 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752374AbYJaG0y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 02:15:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=QEOOwCEn9QC+jjZDzrPZy+GpBts+/RC4Ctmi1e4zeCKX9UOmyJqbUwtoVRQTyIGbTF
-         AhA6IMxTSo+dzfODKW8Qeh2wMsz0lZ6OsnzaRBzIu2mGKkN5lVcHgAMSg3xWXUDwfeoC
-         pMQCjYZMn/lnqezGIYNrLs1xxAeD7rBE3IKJQ=
-Message-ID: <aa79d98a0810302315k760ce8e1q1eab3d0c2258baae@mail.gmail.com>
-Date: Fri, 31 Oct 2008 09:15:07 +0300
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] fix compile breakage caused by 2ae111cdd8d83ebf9de72e36e68a8c84b6ebbeea
-Cc: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <aa79d98a0810302228x62519bfes5f68a6b6bfbd10a3@mail.gmail.com>
+	Fri, 31 Oct 2008 02:26:54 -0400
+Message-ID: <ac3eb2510810302326s22dd6f44x5a4e9e2d9a681870@mail.gmail.com>
+Date: Fri, 31 Oct 2008 07:26:52 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Bryan Wu" <cooloney@kernel.org>
+Subject: Re: 2.6.28-rc2: (mtd)block/partitions BUG with kobject reference count
+Cc: "Peter Korsgaard" <jacmet@sunsite.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <386072610810302124x6b3bdcfby41f37941017f2ee7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1225400664.19324.16.camel@localhost.localdomain>
-	 <20081030220653.GK30303@elte.hu>
-	 <aa79d98a0810302228x62519bfes5f68a6b6bfbd10a3@mail.gmail.com>
+References: <87ej1z4ep8.fsf@macbook.be.48ers.dk>
+	 <200810300027.19116.rjw@sisk.pl> <87abcnj810.fsf@macbook.be.48ers.dk>
+	 <ac3eb2510810301451x7dbf18edgd03c1433099ce5e4@mail.gmail.com>
+	 <ac3eb2510810301647k5e3dfecdjfa79f7e916fcdd20@mail.gmail.com>
+	 <386072610810302124x6b3bdcfby41f37941017f2ee7@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 31, 2008 at 8:28 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> On Fri, Oct 31, 2008 at 1:06 AM, Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, Oct 31, 2008 at 05:24, Bryan Wu <cooloney@kernel.org> wrote:
+> On Fri, Oct 31, 2008 at 7:47 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+>> On Thu, Oct 30, 2008 at 22:51, Kay Sievers <kay.sievers@vrfy.org> wrote:
+>>> On Thu, Oct 30, 2008 at 00:28, Peter Korsgaard <jacmet@sunsite.dk> wrote:
+>>>>>>>>> "Rafael" == Rafael J Wysocki <rjw@sisk.pl> writes:
+>>>>
+>>>>  Rafael> On Wednesday, 29 of October 2008, Peter Korsgaard wrote:
+>>>>  >> Hi,
+>>>>  >>
+>>>>  >> I'm seing what looks like a kobject reference count issue with
+>>>>  >> mtdblock_ro + mtd_dataflash + mtd partitions and repeated unbind/bind.
+>>>>  >> I'm on 2.6.28-rc2, but I can reproduce the problem on 2.6.27 as well.
+>>>>
+>>>>  Rafael> Is it reproducible with 2.6.26 too?
+>>>>
+>>>> Sorry, I haven't backported my platform support code to such "old"
+>>>> kernel. I can do it though, if you think it will help pinpoint the
+>>>> issue.
+>>>
+>>> This sounds like a possible reason for the problem:
+>>> "After digging into the mtd code, this bug is not related to our driver. It
+>>> should be a subtle bug in mtd core code.
+>>>
+>>> In add_mtd_partition, for 2 partitions, 2 gendisk structures will be
+>>> allocated. But these 2 gendisk->queue will be set to the same
+>>> request_queue. Then when unregistering the 1st partition, from the
+>>> same request_queue->backing_dev_info, the bdi struct will be set to
+>>> NULL. So for the 2nd partition (bdi == NULL), the sysfs dir of 2nd
+>>> partition will not be removed. Finally, when modprobe the module
+>>> again, the 2nd partition won't be added"
+>>> https://blackfin.uclinux.org/gf/tracker/4463
 >>
->> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+>> Looks like a bdi issue:
+>>  http://lkml.org/lkml/2008/10/30/519
 >>
->>> >From bd011c0cc51ce1fbab95403a570a8b47ad6ba500 Mon Sep 17 00:00:00 2001
->>> From: James Bottomley <James.Bottomley@HansenPartnership.com>
->>> Date: Wed, 29 Oct 2008 11:19:49 -0500
->>> Subject: [VOYAGER] x86: Fix subarch compile breakage
->>>
->>> commit 2ae111cdd8d83ebf9de72e36e68a8c84b6ebbeea
->>> Author: Cyrill Gorcunov <gorcunov@gmail.com>
->>> Date:   Mon Aug 11 18:34:08 2008 +0400
->>>
->>>     x86: apic interrupts - move assignments to irqinit_32.c, v2
->>>
->>> Wrongly moved irq2 setup out of the mach-default/setup.c file.  This
->>> causes a breakage on voyager which needs its own version.  Fix by
->>> moving it back again.
->>>
->>> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
->>> ---
->>>  arch/x86/kernel/irqinit_32.c  |   12 ------------
->>>  arch/x86/mach-default/setup.c |   12 ++++++++++++
->>>  2 files changed, 12 insertions(+), 12 deletions(-)
->>>
->>> diff --git a/arch/x86/kernel/irqinit_32.c b/arch/x86/kernel/irqinit_32.c
->>> index 845aa98..3928784 100644
->>> --- a/arch/x86/kernel/irqinit_32.c
->>> +++ b/arch/x86/kernel/irqinit_32.c
->>> @@ -81,15 +81,6 @@ void __init init_ISA_irqs (void)
->>>       }
->>>  }
->>>
->>> -/*
->>> - * IRQ2 is cascade interrupt to second interrupt controller
->>> - */
->>> -static struct irqaction irq2 = {
->>> -     .handler = no_action,
->>> -     .mask = CPU_MASK_NONE,
->>> -     .name = "cascade",
->>> -};
->>> -
->>>  DEFINE_PER_CPU(vector_irq_t, vector_irq) = {
->>>       [0 ... IRQ0_VECTOR - 1] = -1,
->>>       [IRQ0_VECTOR] = 0,
->>> @@ -167,9 +158,6 @@ void __init native_init_IRQ(void)
->>>       alloc_intr_gate(THERMAL_APIC_VECTOR, thermal_interrupt);
->>>  #endif
->>>
->>> -     if (!acpi_ioapic)
->>> -             setup_irq(2, &irq2);
->>> -
->>>       /* setup after call gates are initialised (usually add in
->>>        * the architecture specific gates)
->>>        */
->>> diff --git a/arch/x86/mach-default/setup.c b/arch/x86/mach-default/setup.c
->>> index 37b9ae4..53b4202 100644
->>> --- a/arch/x86/mach-default/setup.c
->>> +++ b/arch/x86/mach-default/setup.c
->>> @@ -38,6 +38,15 @@ void __init pre_intr_init_hook(void)
->>>       init_ISA_irqs();
->>>  }
->>>
->>> +/*
->>> + * IRQ2 is cascade interrupt to second interrupt controller
->>> + */
->>> +static struct irqaction irq2 = {
->>> +     .handler = no_action,
->>> +     .mask = CPU_MASK_NONE,
->>> +     .name = "cascade",
->>> +};
->>> +
->>>  /**
->>>   * intr_init_hook - post gate setup interrupt initialisation
->>>   *
->>> @@ -53,6 +62,9 @@ void __init intr_init_hook(void)
->>>               if (x86_quirks->arch_intr_init())
->>>                       return;
->>>       }
->>> +     if (!acpi_ioapic)
->>> +             setup_irq(2, &irq2);
->>> +
->>>  }
->>
->> hm, this change looks backwards (doubly so ;-).
->>
->> Is the build problem caused by the lack of the acpi_ioapic flag on
->> Voyager?
->>
->>        Ingo
->>
->
-> Thanks for report, cant get access to sources right now -- will check it later.
->
+>> Peter, if I do this (whitespace mangled, just pasted in here), the
+>> error goes away for me. Can you try this?
 
-Btw James, what the build bug message was? Could you post it please?
+>> --- a/block/genhd.c
+>> +++ b/block/genhd.c
+>> @@ -515,7 +515,8 @@ void add_disk(struct gendisk *disk)
+>>        blk_register_queue(disk);
+>>
+>>        bdi = &disk->queue->backing_dev_info;
+>> -       bdi_register_dev(bdi, disk_devt(disk));
+>> +       if (!bdi->dev)
+>> +               bdi_register_dev(bdi, disk_devt(disk));
+>>        retval = sysfs_create_link(&disk_to_dev(disk)->kobj, &bdi->dev->kobj,
+>>                                   "bdi");
+>>        WARN_ON(retval);
+>
+> IMHO, this is a workaround, right? I think the final solution should
+> provide every 'gendisk' a dedicated 'bdi'.
+> So they won't mess up and overwrite.
+
+It's a per-queue property which is shared by multiple devices. The
+"bdi" symlink of the blockdev still points to the actual (shared) bdi
+device. It's just that only the first device, of the pool of devices
+sharing a queue, creates the bdi entry.
+
+Not sure what the final fix should be, but this sounds better than
+duplicating identical information and/or leaking the duplicates. :)
+
+Kay
