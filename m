@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbYJaFx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbYJaGDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753907AbYJaFx2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 01:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYJaFxT
+	id S1753840AbYJaGDd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 02:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbYJaGDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 01:53:19 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:61675 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752099AbYJaFxS (ORCPT
+	Fri, 31 Oct 2008 02:03:22 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39657
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752218AbYJaGDV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 01:53:18 -0400
-Message-ID: <f488382f0810302253l6e8b2705u29582f348256a91a@mail.gmail.com>
-Date: Thu, 30 Oct 2008 22:53:16 -0700
-From: "Steven Noonan" <steven@uplinklabs.net>
-To: david@lang.hm
-Subject: Re: [GIT PULL] XFS update for 2.6.28
-Cc: "Lachlan McIlroy" <lachlan@sgi.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
-       akpm@linux-foundation.org
-In-Reply-To: <alpine.DEB.1.10.0810302201030.3116@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 31 Oct 2008 02:03:21 -0400
+Date: Thu, 30 Oct 2008 23:02:56 -0700 (PDT)
+Message-Id: <20081030.230256.167447008.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Sparc
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081031045737.ECE0E58AE1E9@chook.melbourne.sgi.com>
-	 <alpine.DEB.1.10.0810302201030.3116@asgard.lang.hm>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 10:02 PM,  <david@lang.hm> wrote:
-> On Fri, 31 Oct 2008, Lachlan McIlroy wrote:
->
->> The following changes since commit
->> 721d5dfe7e516954c501d5e9d0dfab379cf4241a:
->>  Linus Torvalds (1):
->>       Merge branch 'for-linus' of git://neil.brown.name/md
->
-> I am a fairly heavy user of XFS and am as eager as anyone to see cleanups
-> and improvements, but 102 commits to go into -rc3????
->
-> David Lang
->
 
-I'm pretty sure these won't be accepted until 2.6.29's merge window
-opens. The merge window for 2.6.28 has closed, and due to the sheer
-number of commits, at least -one- is bound to cause a regression.
+Some fixes and tidies:
 
-- Steven
+1) RTC m48t59 century bit handling fix from Krzysztof Helt
+
+2) Byte ordering tidies from Harvey Harrison
+   a) PIO string ops don't need to use explicit byte shifting
+   b) sparc can easily use the new byteorder headers
+
+3) dbri sound driver doesn't check for dma_alloc_coherent() error
+   returns, from FUJITA Tomonori
+
+4) Device ID table for bq4802 RTC chip lacks a terminating NULL entry.
+
+Please pull, thanks a lot!
+
+The following changes since commit 60b8267338aafde5315fc65ff385f3d4d75eccfe:
+  David S. Miller (1):
+        math-emu: Fix thinko in _FP_DIV
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+
+David S. Miller (1):
+      sparc64: Add missing null terminating entry to bq4802_match[].
+
+FUJITA Tomonori (1):
+      dbri: check dma_alloc_coherent errors
+
+Harvey Harrison (2):
+      sparc64: remove byteshifting from out* helpers
+      sparc: use the new byteorder headers
+
+Krzysztof Helt (1):
+      rtc-m48t59: shift zero year to 1968 on sparc (rev 2)
+
+ arch/sparc/include/asm/byteorder.h |   22 ++----
+ arch/sparc/kernel/time.c           |   27 +------
+ arch/sparc64/kernel/time.c         |   34 ++-------
+ arch/sparc64/lib/PeeCeeI.c         |  139 ++++++++++++------------------------
+ drivers/rtc/rtc-m48t59.c           |   34 ++++++++-
+ sound/sparc/dbri.c                 |    2 +
+ 6 files changed, 97 insertions(+), 161 deletions(-)
+
