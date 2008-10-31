@@ -1,73 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbYJaCFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbYJaCJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbYJaCFu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 22:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbYJaCFk
+	id S1753539AbYJaCJj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 22:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYJaCJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 22:05:40 -0400
-Received: from mail.atheros.com ([12.36.123.2]:47715 "EHLO mail.atheros.com"
+	Thu, 30 Oct 2008 22:09:30 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:58584 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752496AbYJaCFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 22:05:39 -0400
-Date: Thu, 30 Oct 2008 19:05:37 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       Tim Gardner <tim.gardner@canonical.com>,
-       Tomas Winkler <tomasw@gmail.com>,
-       reinette chatre <reinette.chatre@linux.intel.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [MEMO] ftrace suckage++
-Message-ID: <20081031020537.GJ21459@tesla>
-References: <43e72e890810301445r665a0139g752fb1c97069fe59@mail.gmail.com> <alpine.DEB.1.10.0810302149330.21031@gandalf.stny.rr.com>
+	id S1750993AbYJaCJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 22:09:29 -0400
+Date: Fri, 31 Oct 2008 03:09:25 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Helge Deller <deller@gmx.de>
+cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-parisc@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>
+Subject: Re: 2.6.28-rc2: USB/INPUT: slab error in cache_alloc_debugcheck_after():
+ double free?
+In-Reply-To: <200810310011.08618.deller@gmx.de>
+Message-ID: <alpine.LRH.1.10.0810310305000.7585@twin.jikos.cz>
+References: <200810310011.08618.deller@gmx.de>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810302149330.21031@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 06:54:00PM -0700, Steven Rostedt wrote:
-> 
-> On Thu, 30 Oct 2008, Luis R. Rodriguez wrote:
-> 
-> > As johannes pointed out to me the culprit to the e1000e corruption was
-> > determined to be ftrace related [1]. Well it seems I hit an oops with
-> > ftrace using iwlagn after a simple load of the module using
-> > wireless-testing. I'm not sure if john's tree yet has ftrace fixes.
-> > Both Fedora 10 and Ubuntu 8.10 had dynamic ftrace enabled so users on
-> > these first kernels and using compat-wireless may run into this so
-> > just putting this out there. I'll can check for this flag in
-> > compat-wireless for now and bitch/exit if its enabled unless someone
-> > has a better idea.
-> >
-> > [1] http://lwn.net/Articles/303390/
-> >
-> > Oops, using wireless-testing and iwlagn with these options enabled:
-> >
-> > CONFIG_HAVE_FTRACE=y
-> > CONFIG_HAVE_DYNAMIC_FTRACE=y
-> > CONFIG_FTRACE=y
-> > CONFIG_DYNAMIC_FTRACE=y
-> >
-> 
-> Yes, ftrace in 2.6.27 is known to be broken. That's why 2.6.27.1 labeled
-> it as such. What is currently in Linus's 2.6.28 git tree is a completely
-> rewritten version of the dynamic ftracer, which addresses all of the
-> issues that caused breakage in the 2.6.27 release.
-> 
-> Do not use the 2.6.27 dynamic ftracer, it is known bad. 2.6.28 is fine. If
-> you find issues with what is currently in 2.6.28, please let me know.
-> There is currently some, "make allyesconfig" breakage that ftrace caused
-> on archs other than x86,ppc and sparc, but patches to fix them are
-> in queue to Linus.
+On Fri, 31 Oct 2008, Helge Deller wrote:
 
-OK then in that case if *and only if* on 27 and if dynamic tracer is enabled
-I'll set compat stuff to simply bail out at compile time.
+> After sucessful bootup (without any USB devices attached)
+> I get this when I insert a USB keyboard:
+> ---------------
+> usb 1-1: new low speed USB device using ohci_hcd and address 2
+> usb 1-1: configuration #1 chosen from 1 choice
+> input: SILITEK USB Keyboard and Mouse as /class/input/input0
+> Slab corruption: size-4096 start=8dd9b000, len=4096
+> 000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> generic-usb 0004:047B:0002.0001: input,hidraw0: USB HID v1.00 Keyboard [SILITEK USB Keyboard and Mouse] on usb-0000:00:0e.2-1/input0
 
-Thanks,
+Looks like something goes wrong somewhere around hid_connect() -- 
+hidinput_connect() is called, then slab complains about corruption, and 
+then the rest of the code in hid_connect() is executed, priting the 
+'generic-usb ...' message.
 
-  Luis
+I can't reproduce it here myself with CONFIG_DEBUG_SLAB=y. Could you 
+please send me your config?
+
+It is also quite strange that stacktrace is missing here for some 
+reason.
+
+> On 2.6.28-rc1 I saw e.g. this:
+> --------------------
+> usbcore: registered new interface driver usbhid
+> usbhid: v2.6:USB HID core driver
+> usb 1-1: new low speed USB device using ohci_hcd and address 2
+> usb 1-1: configuration #1 chosen from 1 choice
+> input: Logitech N48 as /class/input/input0
+> generic-usb 0003:046D:C001.0001: input,hidraw0: USB HID v1.00 Mouse 
+> [Logitech N48] on usb-0000:00:0e.2-1/inpu0
+> usb 1-1: New USB device found, idVendor=046d, idProduct=c001
+> usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+> usb 1-1: Product: N48
+> usb 1-1: Manufacturer: Logitech
+> usb 1-2: new low speed USB device using ohci_hcd and address 3
+> usb 1-2: configuration #1 chosen from 1 choice
+> slab error in cache_alloc_debugcheck_after(): cache `size-512': double free, or memory outside object was oven
+> Backtrace:
+>    [<101a5724>] cache_alloc_debugcheck_after+0xd8/0x200
+>    [<101a5cac>] kmem_cache_alloc+0x1a0/0x1e8
+>    [<1042e294>] hid_register_report+0x60/0xc4
+>    [<1042e5f8>] hid_add_field+0x40/0x1a4
+>    [<1042ec40>] hid_parser_main+0x94/0xc4
+
+This looks rather incomplete, backtrace starting at hid_parser_main is 
+odd.
+
+Also, this seems to happen for different slab cache than the previous 
+corrutpion.
+
+-- 
+Jiri Kosina
+SUSE Labs
+
