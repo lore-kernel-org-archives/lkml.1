@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbYJaRY5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752711AbYJaR0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752541AbYJaRY5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 13:24:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbYJaRYs
+	id S1752711AbYJaR0j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 13:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYJaR0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 13:24:48 -0400
-Received: from smtp2.riverbed.com ([206.169.144.7]:14867 "EHLO
-	smtp2.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751041AbYJaRYr (ORCPT
+	Fri, 31 Oct 2008 13:26:32 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:26018 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751559AbYJaR0b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 13:24:47 -0400
-Date: Fri, 31 Oct 2008 10:24:46 -0700
-From: Arthur Jones <ajones@riverbed.com>
-To: Eric Sandeen <sandeen@redhat.com>
-CC: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "sct@redhat.com" <sct@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: ext3: slow symlink corruption on umount...
-Message-ID: <20081031172446.GC8333@ajones-laptop.nbttech.com>
-References: <20081024183733.GA25797@ajones-laptop.nbttech.com> <20081027165423.GB25797@ajones-laptop.nbttech.com> <20081029195403.GA8333@ajones-laptop.nbttech.com> <4908C951.2000309@redhat.com> <20081030174057.GB7926@ajones-laptop.nbttech.com> <4909F705.8090904@redhat.com> <20081030213400.GA28900@ajones-laptop.nbttech.com>
+	Fri, 31 Oct 2008 13:26:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=rozCywWC3X1yLT+MR/HobzD9+U6tKg0DDQyCXhpFPBYu9DtMMAp/FsRgL81I29f5Tk
+         +BrwSio/3IoslINdrzBTX9RlUjpuNgCsxQDiSF1wajIEyrDDtSfkSGy5erI/QBNCPZLO
+         NeeiCiXrAVZ9cxhI6Zly37BUK8vdvccExWCeE=
+Date: Fri, 31 Oct 2008 20:29:38 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: sam@ravnborg.org, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] tags: link from CONFIG_x to 'config x' as well
+Message-ID: <20081031172938.GA13896@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081030213400.GA28900@ajones-laptop.nbttech.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 02:34:00PM -0700, Arthur Jones wrote:
-> Hi Eric,  ...
-> 
-> On Thu, Oct 30, 2008 at 11:03:49AM -0700, Eric Sandeen wrote:
-> > [...]
-> > Something is definitely racy here; in my simple testcase I get failures
-> > maybe 30-50% of the time...
-> 
-> Some more info: in the working case, the inodes are put
-> back on sb->s_dirty at then next ext3_sync_fs() call:
-> 
-> __fsync_super -> DQUOT_SYNC -> ext3_sync_fs -> log_wait_commit
-> 
-> In the failing case, journal_start_commit returns 0 in ext_sync_fs
-> and the inodes disappear into never-never land...
+Inability to jump from CONFIG_ symbol in source to symbol definition in 
+Kconfig is very, very annoying. You'll jump to useless entry in autoconf.h,
+if it exists at all.
 
-More details, these are dumps at __log_start_commit in the
-call chain described above, the first column is the failing
-case, the next column is working case, t_expires is the delta
-from the time the dump was taken:
+No more.
 
-        journal->j_flags                                0x10    0x10
-        journal->j_tail_sequence                         515     519
-        journal->j_transaction_sequence                  517     522
-        journal->j_commit_sequence                       514     519
-        journal->j_commit_request                        516     520
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-        journal->j_running_transaction->t_tid            516     521
-        journal->j_running_transaction->t_state            0       0
-        journal->j_running_transaction->t_updates          0       0
-        journal->j_running_transaction->t_handle_count 27305   27344
-        journal->j_running_transaction->t_expires       -566      28
+ Makefile |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Can you tell from this whether the transactions
-are messed up or whether we're just missing a
-wake_up?  Any other info you'd like to see?
-
-Arthur
+--- a/Makefile
++++ b/Makefile
+@@ -1482,6 +1482,10 @@ define xtags
+ 		--langdef=kconfig \
+ 		--language-force=kconfig \
+ 		--regex-kconfig='/^[[:blank:]]*(menu|)config[[:blank:]]+([[:alnum:]_]+)/\2/'; \
++	    $(all-kconfigs) | xargs $1 -a \
++		--langdef=kconfig \
++		--language-force=kconfig \
++		--regex-kconfig='/^[[:blank:]]*(menu|)config[[:blank:]]+([[:alnum:]_]+)/CONFIG_\2/'; \
+ 	    $(all-defconfigs) | xargs -r $1 -a \
+ 		--langdef=dotconfig \
+ 		--language-force=dotconfig \
+@@ -1490,6 +1494,8 @@ define xtags
+ 	    $(all-sources) | xargs $1 -a; \
+ 	    $(all-kconfigs) | xargs $1 -a \
+ 		--regex='/^[ \t]*\(\(menu\)*config\)[ \t]+\([a-zA-Z0-9_]+\)/\3/'; \
++	    $(all-kconfigs) | xargs $1 -a \
++		--regex='/^[ \t]*\(\(menu\)*config\)[ \t]+\([a-zA-Z0-9_]+\)/CONFIG_\3/'; \
+ 	    $(all-defconfigs) | xargs -r $1 -a \
+ 		--regex='/^#?[ \t]?\(CONFIG_[a-zA-Z0-9_]+\)/\1/'; \
+ 	else \
