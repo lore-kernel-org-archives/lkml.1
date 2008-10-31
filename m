@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbYJaVkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbYJaVl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752560AbYJaVkV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 17:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbYJaVjt
+	id S1753470AbYJaVl7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 17:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbYJaVlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 17:39:49 -0400
-Received: from ns1.suse.de ([195.135.220.2]:49482 "EHLO mx1.suse.de"
+	Fri, 31 Oct 2008 17:41:52 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51729 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751703AbYJaVjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 17:39:48 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix block dev compat ioctl handling
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-X-Yow: Yow!  Are you the self-frying president?
-Date: Fri, 31 Oct 2008 22:39:46 +0100
-Message-ID: <jeskqch2al.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.2 (gnu/linux)
+	id S1751096AbYJaVlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 17:41:51 -0400
+Message-ID: <490B7B6F.2080800@kernel.org>
+Date: Fri, 31 Oct 2008 14:41:03 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Aristeu Rozanski <aris@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: nmi - document lapic and ioapic parameters
+References: <20081031192358.GC20803@localhost> <86802c440810311422w79d0e697k246cb5ca76bf91b5@mail.gmail.com> <490B7AFE.2030505@zytor.com>
+In-Reply-To: <490B7AFE.2030505@zytor.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 33c2dca4957bd0da3e1af7b96d0758d97e708ef6 (trim file propagation
-in block/compat_ioctl.c) removed the handling of some ioctls from
-compat_blkdev_driver_ioctl.  That caused them to be rejected as unknown
-by the compat layer.
+H. Peter Anvin wrote:
+> Yinghai Lu wrote:
+>> On Fri, Oct 31, 2008 at 12:23 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+>>> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+>>> ---
+>>>
+>>> On top of -tip dda51106620c328b50007c259b9ef8cea2b7c3d2
+>>>
+>>> Index: linux-2.6.git/Documentation/kernel-parameters.txt
+>>> ===================================================================
+>>> --- linux-2.6.git.orig/Documentation/kernel-parameters.txt      2008-10-27 21:35:08.000000000 +0300
+>>> +++ linux-2.6.git/Documentation/kernel-parameters.txt   2008-10-31 22:21:59.000000000 +0300
+>>> @@ -1404,6 +1404,14 @@ and is between 256 and 4096 characters.
+>>>                        Format: [state][,regs][,debounce][,die]
+>>>
+>>>        nmi_watchdog=   [KNL,BUGS=X86-32] Debugging features for SMP kernels
+>>> +                       Format: [panic,][num]
+>>> +                       Valid num: 0,1,2
+>>> +                       0 - turn nmi_watchdog off
+>>> +                       1 - use IO-APIC
+>>> +                       2 - use local APIC
+>>> +                       Instead of 1 and 2 it is possible to use the following
+>>> +                       symbolic names: lapic and ioapic
+>>> +                       Example: nmi_watchdog=2 or nmi_watchdog=panic,lapic
+>>>
+>>>        no387           [BUGS=X86-32] Tells the kernel to use the 387 maths
+>>>                        emulation library even if a 387 maths coprocessor
+>>> --
+>> please update
+>>
+>> Documentation/x86/x86_64/boot-options.txt
+>>
+> 
+> If it's in x86-64, it's not =X86-32, so something is fishy.  The
+> x86_64/boot-options.txt file really should be merged into
+> kernel-parameters.txt.
 
-Signed-off-by: Andreas Schwab <schwab@suse.de>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
+should have all command line etc in source code .c, and use some tools to extract them to keep them consistent.
 
----
-diff --git a/block/compat_ioctl.c b/block/compat_ioctl.c
-index 3d3e7a4..d43e608 100644
---- a/block/compat_ioctl.c
-+++ b/block/compat_ioctl.c
-@@ -677,6 +677,29 @@ static int compat_blkdev_driver_ioctl(struct block_device *bdev, fmode_t mode,
- 	case DVD_WRITE_STRUCT:
- 	case DVD_AUTH:
- 		arg = (unsigned long)compat_ptr(arg);
-+	/* These intepret arg as an unsigned long, not as a pointer,
-+	 * so we must not do compat_ptr() conversion. */
-+	case HDIO_SET_MULTCOUNT:
-+	case HDIO_SET_UNMASKINTR:
-+	case HDIO_SET_KEEPSETTINGS:
-+	case HDIO_SET_32BIT:
-+	case HDIO_SET_NOWERR:
-+	case HDIO_SET_DMA:
-+	case HDIO_SET_PIO_MODE:
-+	case HDIO_SET_NICE:
-+	case HDIO_SET_WCACHE:
-+	case HDIO_SET_ACOUSTIC:
-+	case HDIO_SET_BUSSTATE:
-+	case HDIO_SET_ADDRESS:
-+	case CDROMEJECT_SW:
-+	case CDROM_SET_OPTIONS:
-+	case CDROM_CLEAR_OPTIONS:
-+	case CDROM_SELECT_SPEED:
-+	case CDROM_SELECT_DISC:
-+	case CDROM_MEDIA_CHANGED:
-+	case CDROM_DRIVE_STATUS:
-+	case CDROM_LOCKDOOR:
-+	case CDROM_DEBUG:
- 		break;
- 	default:
- 		/* unknown ioctl number */
+YH
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
