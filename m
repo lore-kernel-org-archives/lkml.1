@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752726AbYJaO60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbYJaPDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752726AbYJaO60 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 10:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbYJaO6R
+	id S1752724AbYJaPDY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 11:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbYJaPDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 10:58:17 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:61611 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751250AbYJaO6R (ORCPT
+	Fri, 31 Oct 2008 11:03:06 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:7500 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751398AbYJaPDD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 10:58:17 -0400
-Date: Fri, 31 Oct 2008 15:58:16 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: console_sem locking annotations?
-Message-ID: <Pine.LNX.4.64.0810311555240.23424@vixen.sonytel.be>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-344480228-1225465096=:23424"
+	Fri, 31 Oct 2008 11:03:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references
+         :organization:x-mailer:mime-version:content-type
+         :content-transfer-encoding;
+        b=XdnRZ/Hg2h//uyV6Ht0xiz5SWq2YX5WGLKi715F1SHvMu2ZeOIPkNnGQsoKHTn9MCX
+         fqIWeZXevJFX9jWK0Srv+7cxnKSCYbUjjF58QbtKWjzX129K/PUKr7xgANmZSnIYTiAq
+         vQszj7ItJKlSA4UnqTMubu4Emxi7r5rNrqtFs=
+Date: Fri, 31 Oct 2008 16:02:48 +0100
+From: Kai Henningsen <kai.extern@googlemail.com>
+To: mtk.manpages@gmail.com
+Cc: mtk.manpages@googlemail.com, "Daniel Gollub" <dgollub@suse.de>,
+       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
+       linux-man@vger.kernel.org, ltp-list@lists.sourceforge.net,
+       "A.E. Brouwer" <aeb@win.tue.nl>
+Subject: Re: [patch 0/3] [RFC] kernel/glibc mismatch of "readlink" syscall?
+Message-ID: <20081031160248.2b95d0e8@desktop.khms.westfalen.de>
+In-Reply-To: <cfd18e0f0810241553x77194611o11655a89871dc210@mail.gmail.com>
+References: <20081023145054.998439866@marvin.suse.de>
+	<cfd18e0f0810241553x77194611o11655a89871dc210@mail.gmail.com>
+Organization: Organization?! Me?!
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Am Fri, 24 Oct 2008 17:53:25 -0500
+schrieb "Michael Kerrisk" <mtk.manpages@googlemail.com>:
 
----584349381-344480228-1225465096=:23424
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+> Hi Daniel,
+> 
+> On Thu, Oct 23, 2008 at 9:50 AM, Daniel Gollub <dgollub@suse.de>
+> wrote:
 
-	Hi,
+> > EINVAL bufsiz is not positive.
 
-I'm trying to add sparse locking annotations for console_sem.
-However, I don't know how to handle try_acquire_console_sem().
+> The EINVAL error was added to man-pages-1.18 in 1997 (even though, as
+> you note, the type was "size_t").  I suspect (this was well before I
+> had any association with man-pages) that was done to reflect kernel
+> reality (since one could bypass glibc invoke the syscall directly),
+> but obviously it is inconsistent with the prototype.
 
-Without handling it, I get e.g.:
-
-| drivers/video/ps3fb.c:533:24: warning: context problem in 'ps3fb_release': 'release_console_sem' expected different context
-| drivers/video/ps3fb.c:533:24:    context 'console_sem': wanted >= 1, got 0
-
-I tried handling it using __cond_lock() --- as is used for e.g. spin_trylock()
---- but it didn't work. Besides, with spin_trylock(), I also get:
-
-| drivers/char/vt.c:2524:2: warning: context problem in 'vt_console_print': '_spin_unlock' expected different context
-| drivers/char/vt.c:2524:2:    context 'lock': wanted >= 1, got 0
-
-so it looks like it won't work anyway?
-
-Anyone with a clue? Thanks!
-
----
- include/linux/console.h |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
---- a/include/linux/console.h
-+++ b/include/linux/console.h
-@@ -115,9 +115,9 @@ extern int update_console_cmdline(char *
- extern void register_console(struct console *);
- extern int unregister_console(struct console *);
- extern struct console *console_drivers;
--extern void acquire_console_sem(void);
--extern int try_acquire_console_sem(void);
--extern void release_console_sem(void);
-+extern void acquire_console_sem(void) __acquires(console_sem);
-+extern int try_acquire_console_sem(void);	// ??? FIXME
-+extern void release_console_sem(void) __releases(console_sem);
- extern void console_conditional_schedule(void);
- extern void console_unblank(void);
- extern struct tty_driver *console_device(int *);
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-344480228-1225465096=:23424--
+Actually, it's not inconsistent as described, though perhaps that is
+unintentional. "Not positive" isn't the same as "negative", as zero
+isn't positive either, and zero is certainly a possible value of an
+unsigned type
