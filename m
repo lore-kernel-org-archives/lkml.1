@@ -1,70 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754166AbYJaDNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbYJaDQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754166AbYJaDNx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 23:13:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYJaDNo
+	id S1754301AbYJaDQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 23:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbYJaDQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 23:13:44 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:2980 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751313AbYJaDNo (ORCPT
+	Thu, 30 Oct 2008 23:16:49 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:63875 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751096AbYJaDQs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 23:13:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Qy3ORi1adkVvQWtijpIdqlx7ut0NQ1/nlSeaj8cYMvIfk5VYsGxHG19uC/6FC72LvM
-         +/ldW6/sMiPWgtEnSgqgrjB3HmC+UrG5asLsr2cxKxeK/NJlJUIymgSUU8qQOamhgOcI
-         9DKffSBsqehEGjqMmKm1hmdJowZl+0tbhYmH4=
-Message-ID: <524f69650810302013t76027b12i105214daf651ce6a@mail.gmail.com>
-Date: Thu, 30 Oct 2008 22:13:43 -0500
-From: "Steve French" <smfrench@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: mmotm 2008-10-30-02-23 uploaded (cifs)
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       "Jeff Layton" <jlayton@redhat.com>
-In-Reply-To: <20081030181427.bad789f5.randy.dunlap@oracle.com>
+	Thu, 30 Oct 2008 23:16:48 -0400
+Date: Thu, 30 Oct 2008 23:16:45 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -v2] ring-buffer: add paranoid checks for loops
+In-Reply-To: <20081030184552.GC17822@elte.hu>
+Message-ID: <alpine.DEB.1.10.0810302314460.26352@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0810291439460.13214@gandalf.stny.rr.com> <20081030184552.GC17822@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200810300924.m9U9OPqK030938@imap1.linux-foundation.org>
-	 <20081030181427.bad789f5.randy.dunlap@oracle.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 8:14 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> On Thu, 30 Oct 2008 02:24:25 -0700 akpm@linux-foundation.org wrote:
->
->> The mm-of-the-moment snapshot 2008-10-30-02-23 has been uploaded to
->>
->>    http://userweb.kernel.org/~akpm/mmotm/
->>
->> It contains the following patches against 2.6.28-rc2:
->
-> fs/cifs/connect.c: In function 'cifs_mount':
-> fs/cifs/connect.c:2180: error: request for member 'sin_addr' in something not a structure or union
->
-> rand-config attached.
+[
+  Changes since v1:
 
-These line numbers don't match anywhere close to what I expect to find
-in -mm based on the contents of fs/cifs in cifs-2.6.git tree.  My
-guess is that has a cifs patch from Jeff Layton, not in cifs-2.6.git
-which may have other dependencies, and in any case IIRC has since been
-removed from -mm but if not that patch may be the problem.
+   Updated comments to be more detailed.
+]
 
-The closest line I have is:
+While writing a new tracer, I had a bug where I caused the ring-buffer
+to recurse in a bad way. The bug was with the tracer I was writing
+and not the ring-buffer itself. But it took a long time to find the
+problem.
 
-			sprintf(pSesInfo->serverName, "%u.%u.%u.%u",
-				NIPQUAD(sin_server.sin_addr.s_addr));
+This patch adds paranoid checks into the ring-buffer infrastructure
+that will catch bugs of this nature.
 
-and since sin_server is defined as
-   	struct sockaddr_in sin_server;
-that should be fine.
--- 
-Thanks,
+Note: I put the bug back in the tracer and this patch showed the error
+      nicely and prevented the lockup.
 
-Steve
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/ring_buffer.c |   58 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
+
+Index: linux-tip.git/kernel/trace/ring_buffer.c
+===================================================================
+--- linux-tip.git.orig/kernel/trace/ring_buffer.c	2008-10-30 11:22:43.000000000 -0400
++++ linux-tip.git/kernel/trace/ring_buffer.c	2008-10-30 22:50:53.000000000 -0400
+@@ -1022,8 +1022,24 @@ rb_reserve_next_event(struct ring_buffer
+ 	struct ring_buffer_event *event;
+ 	u64 ts, delta;
+ 	int commit = 0;
++	int paranoid = 0;
+ 
+  again:
++	/*
++	 * We allow for interrupts to reenter here and do a trace.
++	 * If one does, it will cause this original code to loop
++	 * back here. Even with heavy interrupts happening, this
++	 * should only happen a few times in a row. If this happens
++	 * 1000 times in a row, there must be either an interrupt
++	 * storm or we have something buggy.
++	 * Bail!
++	 */
++	if (unlikely(paranoid > 1000)) {
++		RB_WARN_ON(cpu_buffer, 1);
++		return NULL;
++	}
++	paranoid++;
++
+ 	ts = ring_buffer_time_stamp(cpu_buffer->cpu);
+ 
+ 	/*
+@@ -1532,10 +1548,24 @@ rb_get_reader_page(struct ring_buffer_pe
+ {
+ 	struct buffer_page *reader = NULL;
+ 	unsigned long flags;
++	int paranoid = 0;
+ 
+ 	spin_lock_irqsave(&cpu_buffer->lock, flags);
+ 
+  again:
++	/*
++	 * This should normally only loop twice. But because the
++	 * start of the reader inserts an empty page, it causes
++	 * a case where we will loop three times. There should be no
++	 * reason to loop four times (that I know of).
++	 */
++	if (unlikely(paranoid > 2)) {
++		RB_WARN_ON(cpu_buffer, 1);
++		reader = NULL;
++		goto out;
++	}
++	paranoid++;
++
+ 	reader = cpu_buffer->reader_page;
+ 
+ 	/* If there's more to read, return this page */
+@@ -1665,6 +1695,7 @@ ring_buffer_peek(struct ring_buffer *buf
+ 	struct ring_buffer_per_cpu *cpu_buffer;
+ 	struct ring_buffer_event *event;
+ 	struct buffer_page *reader;
++	int paranoid = 0;
+ 
+ 	if (!cpu_isset(cpu, buffer->cpumask))
+ 		return NULL;
+@@ -1672,6 +1703,19 @@ ring_buffer_peek(struct ring_buffer *buf
+ 	cpu_buffer = buffer->buffers[cpu];
+ 
+  again:
++	/*
++	 * We repeat when a timestamp is encountered. It is possible
++	 * to get multiple timestamps from an interrupt entering just
++	 * as one timestamp is about to be written. The max times
++	 * that this can happen is the number of nested interrupts we
++	 * can have.  10 should be more than enough.
++	 */
++	if (unlikely(paranoid > 10)) {
++		RB_WARN_ON(cpu_buffer, 1);
++		return NULL;
++	}
++	paranoid++;
++
+ 	reader = rb_get_reader_page(cpu_buffer);
+ 	if (!reader)
+ 		return NULL;
+@@ -1722,6 +1766,7 @@ ring_buffer_iter_peek(struct ring_buffer
+ 	struct ring_buffer *buffer;
+ 	struct ring_buffer_per_cpu *cpu_buffer;
+ 	struct ring_buffer_event *event;
++	int paranoid = 0;
+ 
+ 	if (ring_buffer_iter_empty(iter))
+ 		return NULL;
+@@ -1730,6 +1775,19 @@ ring_buffer_iter_peek(struct ring_buffer
+ 	buffer = cpu_buffer->buffer;
+ 
+  again:
++	/*
++	 * We repeat when a timestamp is encountered. It is possible
++	 * to get multiple timestamps from an interrupt entering just
++	 * as one timestamp is about to be written. The max times
++	 * that this can happen is the number of nested interrupts we
++	 * can have.  10 should be more than enough.
++	 */
++	if (unlikely(paranoid > 10)) {
++		RB_WARN_ON(cpu_buffer, 1);
++		return NULL;
++	}
++	paranoid++;
++
+ 	if (rb_per_cpu_empty(cpu_buffer))
+ 		return NULL;
+ 
+
+
