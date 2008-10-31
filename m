@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbYJaEJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbYJaELV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753539AbYJaEJL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 00:09:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbYJaEI5
+	id S1753762AbYJaELV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 00:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbYJaELL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 00:08:57 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:43624 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750997AbYJaEI4 (ORCPT
+	Fri, 31 Oct 2008 00:11:11 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:43526 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752149AbYJaELK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 00:08:56 -0400
-Message-ID: <f73f7ab80810302108n37f72994qfc5d7d83b64e290@mail.gmail.com>
-Date: Fri, 31 Oct 2008 00:08:54 -0400
-From: "Kyle Moffett" <kyle@moffetthome.net>
-To: "J.R. Mauro" <jrm8005@gmail.com>
-Subject: Re: merging other repos into linux-2.6
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Greg KH" <greg@kroah.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <3aaafc130810301938k4ee654d6sf7de1fff5d9c9fc3@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081030054944.GA19035@kroah.com>
-	 <3aaafc130810301834w554fbd33p6f423ffef77e92aa@mail.gmail.com>
-	 <alpine.LFD.2.00.0810301843220.21084@nehalem.linux-foundation.org>
-	 <3aaafc130810301938k4ee654d6sf7de1fff5d9c9fc3@mail.gmail.com>
+	Fri, 31 Oct 2008 00:11:10 -0400
+Subject: [GIT PULL] ext4 fixes
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1KvlLo-0000tO-6m@closure.thunk.org>
+Date: Fri, 31 Oct 2008 00:11:08 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 10:38 PM, J.R. Mauro <jrm8005@gmail.com> wrote:
-> I agree. The only viable automated approach would be something akin to
-> git-submodule but with the ability to integrate the submodule'd
-> project upon import in such a way that things like bisection would
-> follow the main project's ancestry and ignore the submodule's. But
-> that's not possible right now and probably won't be in the foreseeable
-> future.
+Hi Linus,
 
-Here's one relatively easy solution:
+Please pull from:
 
-(1)  Fetch the to-be-merged branch of the "child" project into a
-repository with the parent project ($KIDBRANCH)
+        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
 
-(2)  Find a branch on which you are going to rebase the child
-project's history ($BASEBRANCH)
+This fixes some regressions that have been reported.
 
-(3)  Determine a directory into which you are going to put the child
-project's history ($SUBDIR)
+						- Ted
 
-(4)  Identify the first revision of the child project by looking at
-the last (first-in-time) entry in "git log" of that branch.
-($KIDSTART)
 
-(5)  Graft the kid's history onto the parent's history at that point:
-echo "$KIDSTART $(git rev-parse --verify $BASEBRANCH)" >.git/info/grafts
+Eric Sandeen (2):
+      merge ext4_claim_free_blocks & ext4_has_free_blocks
+      delay capable() check in ext4_has_free_blocks()
 
-(6)  Rewrite the kid's history as a subdir of that version of the parent:
-git filter-branch --index-filter 'git read-tree master && git
-read-tree --prefix=drivers/newkiddriver/ "$GIT_COMMIT"' --
-"$BASEBRANCH..$KIDBRANCH"
+Hidehiro Kawai (2):
+      ext3: fix a bug accessing freed memory in ext3_abort
+      ext4: fix a bug accessing freed memory in ext4_abort
 
-Now the history of $KIDBRANCH will appear to be a series of commits
-which add files in $SUBDIR of the parent project, without any changes
-at all to the parent project's tree.  You can then do a merge of what
-appears to be a normal development branch into the main repository.
+Theodore Ts'o (1):
+      jbd2: Call the commit callback before the transaction could get dropped
 
-Since none of the files are even remotely referenced, there can be no
-possible build failures (hence bisection is not broken).  You may then
-add commits which add Kconfig options and Makefile references and
-happily develop away.
-
-Cheers,
-Kyle Moffett
+ fs/ext3/super.c  |   10 +++++--
+ fs/ext4/balloc.c |   77 +++++++++++++++++++-----------------------------------
+ fs/ext4/ext4.h   |    3 +-
+ fs/ext4/super.c  |   11 +++++---
+ fs/jbd2/commit.c |    8 +++---
+ 5 files changed, 46 insertions(+), 63 deletions(-)
