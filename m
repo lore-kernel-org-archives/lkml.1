@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752078AbYJaMpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752082AbYJaMtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752078AbYJaMpA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 08:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbYJaMou
+	id S1752082AbYJaMtN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 08:49:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbYJaMs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 08:44:50 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:57245 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750870AbYJaMot (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 08:44:49 -0400
-To: ncunningham@crca.org.au
-CC: miklos@szeredi.hu, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <1225452484.6574.35.camel@nigel-laptop> (message from Nigel
-	Cunningham on Fri, 31 Oct 2008 22:28:04 +1100)
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for
-	frozen	filesystems.
-References: <Pine.LNX.4.44L0.0810300955020.2401-100000@iolanthe.rowland.org>
-	 <1225403060.6574.10.camel@nigel-laptop>
-	 <E1Kvpgo-00045l-GU@pomaz-ex.szeredi.hu>
-	 <1225444253.6574.21.camel@nigel-laptop>
-	 <E1Kvq72-00049W-O1@pomaz-ex.szeredi.hu> <1225452484.6574.35.camel@nigel-laptop>
-Message-Id: <E1KvtMn-0004YD-00@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 31 Oct 2008 13:44:41 +0100
+	Fri, 31 Oct 2008 08:48:58 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:51735 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750854AbYJaMs5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 08:48:57 -0400
+Date: Fri, 31 Oct 2008 13:47:44 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Miquel van Smoorenburg <mikevs@xs4all.net>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: disk statistics issue in 2.6.27
+Message-ID: <20081031124743.GH31673@kernel.dk>
+References: <20081019113102.GA18440@xs4all.net> <20081020171248.GE19428@kernel.dk> <1224686272.25437.14.camel@n2o.xs4all.nl> <20081022171712.GO22217@kernel.dk> <1224777902.26805.17.camel@n2o.xs4all.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1224777902.26805.17.camel@n2o.xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Oct 2008, Nigel Cunningham wrote:
-> You don't. You just use FUSE_MIGHT_FREEZE to stop them before they take
-> locks that might cause problems. So my suggestion is:
-
-Before?  FUSE_MIGHT_FREEZE is called _after_ i_mutex is taken by the
-VFS.
-
-> 1) Stop new requests at FUSE_MIGHT_FREEZE
-> 2) Handle existing requests by using freezer_do_not_count in
-> request_send and request_send_nowait before the spin_lock and
-> freezer_count after the spin_unlock.
+On Thu, Oct 23 2008, Miquel van Smoorenburg wrote:
+> On Wed, 2008-10-22 at 19:17 +0200, Jens Axboe wrote:
+> > On Wed, Oct 22 2008, Miquel van Smoorenburg wrote:
+> > > On Mon, 2008-10-20 at 19:12 +0200, Jens Axboe wrote:
+> > > > On Sun, Oct 19 2008, Miquel van Smoorenburg wrote:
+> >
+> > > > > I noticed that the "iostat -k -x 2" output does't make any sense.
+> > > > > The number of reads/sec and number of writes/sec are about what I
+> > > > > would expect, and so are the other fields, but rkB/sec and wkB/sec
+> > > > > are  completely off-scale: gigabytes read/written per second.
+> > > >
+> > > 
+> > > > Are the reported values in iostat any sort of multiple of the real
+> > > > throughtput, or is is just insanely large?
+> > > 
+> > > It looks like it's a multiple, but it appears to vary between 128 and
+> > > 512, and is different for reads and writes, so I do not know what to
+> > > make of it.
+> > > 
 > 
-> With #2, we don't need to care about whether the request is completed
-> before freezing completes or post-resume.
+> I added some debug statements to block/blk-core.c, and it appears that
+> blk_end_io() is always called with nr_bytes == 16320 Kbytes (16711680).
 > 
-> If the userspace process tries to use an already frozen fuse filesystem
-> and gets frozen, that's okay because we'll sit waiting for an answer,
-> not be counted by the freezer and so not contribute to any failure to
-> freeze processes.
-> 
-> If the userspace process completes its work, we'll either get caught at
-> the freezer_count (if we've already been told to freeze) or be gotten
-> later, after exiting the fuse code.
+> Ofcourse I should have noticed earlier that iostat -x 2 always prints
+> 32640 as "average request size" (in sectors).
 
-Yes, this is the variant of categorizing sleeps to freezing and
-non-freezing.  The problem is, you need to do that with all
-mutex_lock(&inode->i_mutex) instances as well.  Try grepping for that
-in fs/*.c!
+You didn't happen to log a backtrace from that, did you? That's a weird
+nr_bytes, it's 0xff0000.
 
-It _is_ possible, it's just not practical.
+I'm assuming this then fixes it, just wondering what the heck is going
+on here.
 
-Miklos
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 33c8d4b..a372618 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -1712,11 +1710,12 @@ static int __end_that_request_first(struct request *req, int error,
+ 	if (blk_fs_request(req) && req->rq_disk) {
+ 		const int rw = rq_data_dir(req);
+ 		struct hd_struct *part;
+-		int cpu;
++		int cpu, sectors;
+ 
++		sectors = min_t(int, nr_bytes >> 9, req->hard_nr_sectors);
+ 		cpu = part_stat_lock();
+ 		part = disk_map_sector_rcu(req->rq_disk, req->sector);
+-		part_stat_add(cpu, part, sectors[rw], nr_bytes >> 9);
++		part_stat_add(cpu, part, sectors[rw], sectors);
+ 		part_stat_unlock();
+ 	}
+ 
+
+-- 
+Jens Axboe
+
