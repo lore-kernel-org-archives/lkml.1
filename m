@@ -1,90 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbYJaL2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751891AbYJaLb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752185AbYJaL2T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 07:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYJaL2J
+	id S1751891AbYJaLb1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 07:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbYJaLbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 07:28:09 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:33955 "EHLO crca.org.au"
+	Fri, 31 Oct 2008 07:31:19 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:37260 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750753AbYJaL2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 07:28:08 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for
-	frozen	filesystems.
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <E1Kvq72-00049W-O1@pomaz-ex.szeredi.hu>
-References: <Pine.LNX.4.44L0.0810300955020.2401-100000@iolanthe.rowland.org>
-	 <1225403060.6574.10.camel@nigel-laptop>
-	 <E1Kvpgo-00045l-GU@pomaz-ex.szeredi.hu>
-	 <1225444253.6574.21.camel@nigel-laptop>
-	 <E1Kvq72-00049W-O1@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Fri, 31 Oct 2008 22:28:04 +1100
-Message-Id: <1225452484.6574.35.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	id S1751047AbYJaLbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 07:31:19 -0400
+Date: Fri, 31 Oct 2008 11:31:16 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, benh@kernel.crashing.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.28-rc1: NVRAM being corrupted on ppc64 preventing boot (bisected)
+Message-ID: <20081031113116.GA9872@csn.ul.ie>
+References: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org> <20081030142632.GA15645@csn.ul.ie> <18698.7794.500191.189515@cargo.ozlabs.ibm.com> <20081031103646.GA24395@csn.ul.ie> <18698.59327.927555.732608@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <18698.59327.927555.732608@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi again.
-
-On Fri, 2008-10-31 at 10:16 +0100, Miklos Szeredi wrote:
-> On Fri, 31 Oct 2008, Nigel Cunningham wrote:
-> > Hi.
-> > 
-> > On Fri, 2008-10-31 at 09:49 +0100, Miklos Szeredi wrote:
-> > > On Fri, 31 Oct 2008, Nigel Cunningham wrote:
-> > > > I'm not sure that's true. You see, I'm thinking of this as not that
-> > > > different to the problem of unmounting filesystems. There, too, we need
-> > > > to unmount in a particular order, and let transactions on each
-> > > > filesystem stop cleanly before we can unmount them. Even if there are
-> > > > differences, perhaps looking at how we handle unmounting will help with
-> > > > handling freezing.
-> > > 
-> > > There's nothing magic about umount, it just uses a refcount on the fs.
-> > > 
-> > > But umount changes the namespace, that's the big difference.  For
-> > > example if a process is accessing path P which has a component inside
-> > > the mount, it _will_ get different results before and after the
-> > > umount.  This is not acceptable for freezing.
-> > > 
-> > > For freezing to work with such a refcounting scheme, we'd have to
-> > > count _future_ uses of the fs as well, not just current ones, which is
-> > > obviously impossible.
-> > 
-> > I must be missing something. If you're freezing future users of the
-> > filesystem before they can start anything new, doesn't that deal with
-> > this problem?
+On Fri, Oct 31, 2008 at 10:10:55PM +1100, Paul Mackerras wrote:
+> Mel Gorman writes:
 > 
-> How do you determine which are the future users?
+> > Yaboot in my case and I've heard it affected a DVD installation. I don't
+> > know for sure if it affects netboot but as I think it's something the
+> > kernel is doing, it probably doesn't matter how it gets loaded?
+> 
+> What changed in that commit was the contents of a couple of structures
+> that the firmware looks at to see what the kernel wants from
+> firmware.  Specifically the change was to say that the kernel (or
+> really the zImage wrapper) would like the firmware to be based at the
+> 32MB point (which is what AIX uses) rather than 12MB (which was the
+> default on older machines).
+> 
+> So, as I understand it, it's not anything the kernel is actively
+> doing, it's how the firmware is reacting to what the kernel says it
+> wants.  And since we are requesting the same value as AIX (as far as I
+> know) I'm really surprised it caused problems.
+> 
 
-You don't. You just use FUSE_MIGHT_FREEZE to stop them before they take
-locks that might cause problems. So my suggestion is:
+Same here, it sounds like an innocent change. While it is possible that AIX
+could not work on this machine, it seems a bit unlikely.
 
-1) Stop new requests at FUSE_MIGHT_FREEZE
-2) Handle existing requests by using freezer_do_not_count in
-request_send and request_send_nowait before the spin_lock and
-freezer_count after the spin_unlock.
+> We can revert that commit, but I still need to solve the problem that
+> the distros are facing, namely that their installer kernel + initramfs
+> images are now bigger than 12MB and can't be loaded if the firmware is
+> based at 12MB.  That's why I really want to understand the problem in
+> more detail.
+> 
+> > It's been pointed out that it can be "fixed" by upgrading the firmware but
+> > surely we can avoid breaking the machine in the first place?
+> 
+> Have you upgraded the firmware on the machine you saw this problem on?
 
-With #2, we don't need to care about whether the request is completed
-before freezing completes or post-resume.
+No. Luckily for us, it was scheduled to be upgraded but it got delayed
+:). I've asked the guy to go somewhere else for a while so I should be able
+to keep the machine in the state it's currently in.
 
-If the userspace process tries to use an already frozen fuse filesystem
-and gets frozen, that's okay because we'll sit waiting for an answer,
-not be counted by the freezer and so not contribute to any failure to
-freeze processes.
+> If not, would you be willing to run some tests for me?
+> 
 
-If the userspace process completes its work, we'll either get caught at
-the freezer_count (if we've already been told to freeze) or be gotten
-later, after exiting the fuse code.
+Of course. 
 
-Regards,
-
-Nigel
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
