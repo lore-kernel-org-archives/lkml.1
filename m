@@ -1,132 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbYJaF2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbYJaFqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753836AbYJaF2W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 01:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYJaF2N
+	id S1753763AbYJaFqR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 01:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbYJaFp7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 01:28:13 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:43790 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750993AbYJaF2M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 01:28:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=T0GgIMPi4+1eRiN3cNrCFw/tUx6fIhicD1n6TsUM2A4ipuijdLzDDvSONBnfeJJLnw
-         qvspAH1lfZNEYSGHjFD1mBVy8R5qAzvvdChLyR7HBrgF4u9gLVLH2HGfgF9wxMV8rK42
-         bw2oXuFfzziS5Yn3qwLP74KSQjgXbAPZauFeo=
-Message-ID: <aa79d98a0810302228x62519bfes5f68a6b6bfbd10a3@mail.gmail.com>
-Date: Fri, 31 Oct 2008 08:28:10 +0300
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] fix compile breakage caused by 2ae111cdd8d83ebf9de72e36e68a8c84b6ebbeea
-Cc: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081030220653.GK30303@elte.hu>
+	Fri, 31 Oct 2008 01:45:59 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50944 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750800AbYJaFp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 01:45:59 -0400
+Message-ID: <490A9B8C.9000704@garzik.org>
+Date: Fri, 31 Oct 2008 01:45:48 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Roland Dreier <rdreier@cisco.com>
+CC: "Phillip O'Donnell" <phillip.odonnell@gmail.com>,
+       Oskar Liljeblad <oskar@osk.mine.nu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] libata: Avoid overflow in ata_tf_to_lba48() when tf->hba_lbal
+ > 127
+References: <20081028170105.GA21933@osk.mine.nu>	<7a9b5c320810281625kbf8904x9ba432ff0ca8c2f8@mail.gmail.com> <ada4p2wmg5n.fsf_-_@cisco.com>
+In-Reply-To: <ada4p2wmg5n.fsf_-_@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1225400664.19324.16.camel@localhost.localdomain>
-	 <20081030220653.GK30303@elte.hu>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 31, 2008 at 1:06 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
->
->> >From bd011c0cc51ce1fbab95403a570a8b47ad6ba500 Mon Sep 17 00:00:00 2001
->> From: James Bottomley <James.Bottomley@HansenPartnership.com>
->> Date: Wed, 29 Oct 2008 11:19:49 -0500
->> Subject: [VOYAGER] x86: Fix subarch compile breakage
->>
->> commit 2ae111cdd8d83ebf9de72e36e68a8c84b6ebbeea
->> Author: Cyrill Gorcunov <gorcunov@gmail.com>
->> Date:   Mon Aug 11 18:34:08 2008 +0400
->>
->>     x86: apic interrupts - move assignments to irqinit_32.c, v2
->>
->> Wrongly moved irq2 setup out of the mach-default/setup.c file.  This
->> causes a breakage on voyager which needs its own version.  Fix by
->> moving it back again.
->>
->> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
->> ---
->>  arch/x86/kernel/irqinit_32.c  |   12 ------------
->>  arch/x86/mach-default/setup.c |   12 ++++++++++++
->>  2 files changed, 12 insertions(+), 12 deletions(-)
->>
->> diff --git a/arch/x86/kernel/irqinit_32.c b/arch/x86/kernel/irqinit_32.c
->> index 845aa98..3928784 100644
->> --- a/arch/x86/kernel/irqinit_32.c
->> +++ b/arch/x86/kernel/irqinit_32.c
->> @@ -81,15 +81,6 @@ void __init init_ISA_irqs (void)
->>       }
->>  }
->>
->> -/*
->> - * IRQ2 is cascade interrupt to second interrupt controller
->> - */
->> -static struct irqaction irq2 = {
->> -     .handler = no_action,
->> -     .mask = CPU_MASK_NONE,
->> -     .name = "cascade",
->> -};
->> -
->>  DEFINE_PER_CPU(vector_irq_t, vector_irq) = {
->>       [0 ... IRQ0_VECTOR - 1] = -1,
->>       [IRQ0_VECTOR] = 0,
->> @@ -167,9 +158,6 @@ void __init native_init_IRQ(void)
->>       alloc_intr_gate(THERMAL_APIC_VECTOR, thermal_interrupt);
->>  #endif
->>
->> -     if (!acpi_ioapic)
->> -             setup_irq(2, &irq2);
->> -
->>       /* setup after call gates are initialised (usually add in
->>        * the architecture specific gates)
->>        */
->> diff --git a/arch/x86/mach-default/setup.c b/arch/x86/mach-default/setup.c
->> index 37b9ae4..53b4202 100644
->> --- a/arch/x86/mach-default/setup.c
->> +++ b/arch/x86/mach-default/setup.c
->> @@ -38,6 +38,15 @@ void __init pre_intr_init_hook(void)
->>       init_ISA_irqs();
->>  }
->>
->> +/*
->> + * IRQ2 is cascade interrupt to second interrupt controller
->> + */
->> +static struct irqaction irq2 = {
->> +     .handler = no_action,
->> +     .mask = CPU_MASK_NONE,
->> +     .name = "cascade",
->> +};
->> +
->>  /**
->>   * intr_init_hook - post gate setup interrupt initialisation
->>   *
->> @@ -53,6 +62,9 @@ void __init intr_init_hook(void)
->>               if (x86_quirks->arch_intr_init())
->>                       return;
->>       }
->> +     if (!acpi_ioapic)
->> +             setup_irq(2, &irq2);
->> +
->>  }
->
-> hm, this change looks backwards (doubly so ;-).
->
-> Is the build problem caused by the lack of the acpi_ioapic flag on
-> Voyager?
->
->        Ingo
->
+Roland Dreier wrote:
+> In ata_tf_to_lba48(), when evaluating
+> 
+> 	(tf->hob_lbal & 0xff) << 24
+> 
+> the expression is promoted to signed int (since int can hold all values
+> of u8).  However, if hob_lbal is 128 or more, then it is treated as a
+> negative signed value and sign-extended when promoted to u64 to | into
+> sectors, which leads to the MSB 32 bits of section getting set
+> incorrectly.
+> 
+> For example, Phillip O'Donnell <phillip.odonnell@gmail.com> reported
+> that a 1.5GB drive caused:
+> 
+>     ata3.00: HPA detected: current 2930277168, native 18446744072344861488
+> 
+> where 2930277168 == 0xAEA87B30 and 18446744072344861488 == 0xffffffffaea87b30
+> which shows the problem when hob_lbal is 0xae.
+> 
+> Fix this by adding a cast to u64, just as is used by for hob_lbah and
+> hob_lbam in the function.
+> 
+> Reported-by: Phillip O'Donnell <phillip.odonnell@gmail.com>
+> Signed-off-by: Roland Dreier <rolandd@cisco.com>
+> ---
+> Phillip, this should fix at least your cosmetic issue; can you test it
+> and report back?
+> 
+> Thanks,
+>   Roland
+> 
+>  drivers/ata/libata-core.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thanks for report, cant get access to sources right now -- will check it later.
+applied
+
+
