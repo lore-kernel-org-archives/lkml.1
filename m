@@ -1,118 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbYJaEn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753496AbYJaEtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753403AbYJaEn4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 00:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750867AbYJaEnl
+	id S1753496AbYJaEtM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 00:49:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbYJaEsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 00:43:41 -0400
-Received: from anchor-post-35.mail.demon.net ([194.217.242.85]:4569 "EHLO
-	anchor-post-35.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750809AbYJaEnk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 00:43:40 -0400
-Message-ID: <490A8D02.4090407@lougher.demon.co.uk>
-Date: Fri, 31 Oct 2008 04:43:46 +0000
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+	Fri, 31 Oct 2008 00:48:52 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54176 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750867AbYJaEsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 00:48:51 -0400
+Message-ID: <490A8E2E.7050502@garzik.org>
+Date: Fri, 31 Oct 2008 00:48:46 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>
-CC: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       tim.bird@am.sony.com
-Subject: Re: [PATCH V2 10/16] Squashfs: cache operations
-References: <E1Kv0C4-0006HO-BC@dylan> <20081029093218.GA26456@logfs.org>
-In-Reply-To: <20081029093218.GA26456@logfs.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: chunbo.luo@windriver.com
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] amd811e: fix dma_free_coherent warning
+References: <1225158706-5700-1-git-send-email-chunbo.luo@windriver.com>
+In-Reply-To: <1225158706-5700-1-git-send-email-chunbo.luo@windriver.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jörn Engel wrote:
-> On Wed, 29 October 2008 01:49:56 +0000, Phillip Lougher wrote:
->> +/*
->> + * Blocks in Squashfs are compressed.  To avoid repeatedly decompressing
->> + * recently accessed data Squashfs uses two small metadata and fragment caches.
->> + *
->> + * This file implements a generic cache implementation used for both caches,
->> + * plus functions layered ontop of the generic cache implementation to
->> + * access the metadata and fragment caches.
->> + */
+chunbo.luo@windriver.com wrote:
+> From: Chunbo Luo <chunbo.luo@windriver.com>
 > 
-> I tend to agree with Andrew that a lot of this should be done by the
-> page cache instead.  One of the problems seems to be that your blocksize
-> can exceed page size and there really isn't any infrastructure to deal
-> with such cases yet.  Bufferheads deal with blocks smaller than a page,
-> not the other way around.
+> Acoording commit aa24886e379d2b641c5117e178b15ce1d5d366ba,
+> dma_free_coherent() need irqs enabled.
 > 
+> This patch fix following warning messages:
+> 
+> WARNING: at linux/arch/x86/kernel/pci-dma.c:376 dma_free_coherent+0xaa/0xb0()
+> 
+> Call Trace:
+>  [<ffffffff8023f80f>] warn_on_slowpath+0x5f/0x90
+>  [<ffffffff80496ffa>] ? __kfree_skb+0x3a/0xa0
+>  [<ffffffff802a4723>] ? discard_slab+0x23/0x40
+>  [<ffffffff8021274a>] dma_free_coherent+0xaa/0xb0
+>  [<ffffffff8043668f>] amd8111e_close+0x10f/0x1b0
+>  [<ffffffff8049f3ae>] dev_close+0x5e/0xb0
+>  [<ffffffff8049efa1>] dev_change_flags+0xa1/0x1e0
+>  [<ffffffff806b2171>] ic_close_devs+0x36/0x4e
+>  [<ffffffff806b29ee>] ip_auto_config+0x581/0x10f3
+>  [<ffffffff803a6e19>] ? kobject_add+0x69/0x90
+>  [<ffffffff803a698a>] ? kobject_get+0x1a/0x30
+>  [<ffffffff803a785b>] ? kobject_uevent+0xb/0x10
+>  [<ffffffff803a6c62>] ? kset_register+0x52/0x60
+>  [<ffffffff803a6f9b>] ? kset_create_and_add+0x6b/0xa0
+>  [<ffffffff804e2e74>] ? tcp_ca_find+0x24/0x50
+>  [<ffffffff806b246d>] ? ip_auto_config+0x0/0x10f3
+>  [<ffffffff8020903c>] _stext+0x3c/0x150
+>  [<ffffffff802772d3>] ? register_irq_proc+0xd3/0xf0
+>  [<ffffffff802f0000>] ? mb_cache_create+0x80/0x1f0
+>  [<ffffffff80688693>] kernel_init+0x141/0x1b8
+>  [<ffffffff80688552>] ? kernel_init+0x0/0x1b8
+>  [<ffffffff8020d609>] child_rip+0xa/0x11
+>  [<ffffffff80688552>] ? kernel_init+0x0/0x1b8
+>  [<ffffffff80688552>] ? kernel_init+0x0/0x1b8
+>  [<ffffffff8020d5ff>] ? child_rip+0x0/0x11
+> 
+> Signed-off-by: Chunbo Luo <chunbo.luo@windriver.com>
+> ---
+>  drivers/net/amd8111e.c |    9 ++++-----
+>  1 files changed, 4 insertions(+), 5 deletions(-)
 
-I thought about using the page cache, but, the fact that blocksizes 
-exceed the page cache size is only one of a number of reasons why I 
-prefer the current solution, there is also simplicity and speed to consider.
+applied
 
-There are three types of compressed block in Squashfs: datablocks, 
-fragments, and metadata blocks.  Of these datablocks (by far the largest 
-number of blocks) are decompressed and pushed into the page cache, and 
-are not otherwise cached by Squashfs.  This, obviously (?), is because 
-they contain data for only one file, and so at time of access there is a 
-readily available address space to push the data into.
 
-Metadata and fragment blocks are different in that when accessed and 
-decompressed (say for an inode or for a particular tail-end block) they 
-will contain metadata or tail-ends for other files.  This data could be 
-thrown away but due to locality of reference it makes sense to 
-temporarily cache it in-case a near future file access references the 
-data.  But it doesn't make much sense to cache it more than temporarily, 
-  much of the data will probably not be reused, and it exists compressed 
-in the buffer cache.
-
-The squashfs cache is therefore designed to cache only the last couple 
-of metadata and fragment blocks.  It is also designed to be simple and 
-extremely fast.  The maximum size of the metadata cache is only 64 KiB.
-
-Simplicity and speed is extremely important.  The 
-squashfs_metadata_read() wrapper around the cache is designed to step 
-through the metadata a structure at a time (20 or so bytes), updating 
-the read position in the metadata each call, with more metadata cache 
-blocks being read and decompressed as necessary.  The common case where 
-the metadata is already in the cache (because we're stepping through it 
-20 or so bytes at a time), is designed to be extremely fast - a spinlock 
-and array search only.  I recently optimised the cache to use spinlocks 
-rather than mutexes and reduced the lock holding time (necessary to move 
-to spinlocks), and this resulted in a 20%+ speed improvement in reading 
-squashfs filesystems.
-
-Given the above using an address space in the page cache will result in 
-greater complexity, more memory overhead, and much slower operation. 
-There's a number of reasons for this.
-
-1. The amount and life-span of the data stored in the page cache is 
-outside of Squashfs' control.  As explained above it only makes sense to 
-temporarily cache the last couple of metadata and fragment blocks. 
-Using the page cache (if a 'large' address space is used) for these 
-keeps more of them around for longer than necessary, and will 
-potentially cause more worthy datablocks to be flushed on memory pressure.
-
-2. The address space will be caching uncompressed data, the squashfs 
-references to this data are the compressed locations within the 
-filesystem.  There doesn't exist a one-to-one linear mapping from 
-compressed location to decompressed location in the address space.  This 
-means a lookup table still needs to be used to store the mapping from 
-compressed location to decompressed location in the address space.  Now 
-this lookup table (however implemented) is itself at least as complex as 
-my current cache implementation.
-
-3. Once the locations of the decompressed pages in the address space 
-have been found, they'll need to be looked up in the page cache, and 
-this has to be done for every 4K page.  With the default fragment size 
-of 128 KiB this means 32 separate lookups.  Somewhat slower than one 
-spinlock and array search per 128 KiB block in the squashfs cache 
-implementation.
-
-Comments, especially those of the form "you've got this completely 
-wrong, and you can use the page cache like this, which will be simpler 
-and faster than your current implementation" welcome :)  I'm not adverse 
-  to using the page cache, but I can't see how it will be simpler or 
-faster than the current implementation.
-
-Phillip
