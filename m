@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751574AbYJaLLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751335AbYJaLMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751574AbYJaLLX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 07:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750822AbYJaLLJ
+	id S1751335AbYJaLMr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 07:12:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbYJaLMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 07:11:09 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:49028 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbYJaLLI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 07:11:08 -0400
-Message-ID: <490AE792.60200@cosmosbay.com>
-Date: Fri, 31 Oct 2008 12:10:10 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 31 Oct 2008 07:12:38 -0400
+Received: from gw.goop.org ([64.81.55.164]:53653 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750735AbYJaLMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 07:12:38 -0400
+Message-ID: <490AE820.1010301@goop.org>
+Date: Fri, 31 Oct 2008 22:12:32 +1100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-CC: David Miller <davem@davemloft.net>, shemminger@vyatta.com, zbr@ioremap.net,
-       rjw@sisk.pl, mingo@elte.hu, s0mbre@tservice.net.ru,
-       a.p.zijlstra@chello.nl, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>, efault@gmx.de,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-References: <Pine.LNX.4.64.0810302047030.22084@wrl-59.cs.helsinki.fi> <20081031.005219.141937694.davem@davemloft.net> <Pine.LNX.4.64.0810311119510.7072@wrl-59.cs.helsinki.fi> <20081031.025159.51432990.davem@davemloft.net> <490AE1CD.9040207@cosmosbay.com> <Pine.LNX.4.64.0810311300130.7072@wrl-59.cs.helsinki.fi>
-In-Reply-To: <Pine.LNX.4.64.0810311300130.7072@wrl-59.cs.helsinki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Suresh Siddha <suresh.b.siddha@intel.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>,
+       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>
+Subject: Re: [patch] generic-ipi: fix the smp_mb() placement
+References: <20081029224229.GK30573@linux-os.sc.intel.com> <20081030185322.GE17822@elte.hu> <20081030202322.GM30573@linux-os.sc.intel.com> <490A9337.6090504@goop.org> <20081031093924.GG30317@elte.hu>
+In-Reply-To: <20081031093924.GG30317@elte.hu>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 31 Oct 2008 12:10:15 +0100 (CET)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ilpo Järvinen a écrit :
-> On Fri, 31 Oct 2008, Eric Dumazet wrote:
-> 
->> David Miller a écrit :
->> > From: "Ilpo Järvinen" <ilpo.jarvinen@helsinki.fi>
->> > Date: Fri, 31 Oct 2008 11:40:16 +0200 (EET)
->> > > > Let me remind that it is just a single process, so no ping-pong 
->> & other
->> > > lock related cache effects should play any significant role here, 
->> no? (I'm
->> > > no expert though :-)).
->> > > Not locks or ping-pongs perhaps, I guess.  So it just sends and
->> > receives over a socket, implementing both ends of the communication
->> > in the same process?
->> > > If hash chain conflicts do happen for those 2 sockets, just 
->> traversing
->> > the chain 2 entries deep could show up.
->>
->> tbench is very sensible to cache line ping-pongs (on SMP machines of 
->> course)
-> 
-> ...Sorry to disappoint you but we were discussion there on my AIM9 
-> tcp_test results :-).
-> 
+Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>   
+>> Suresh Siddha wrote:
+>>     
+>>> We didn't see the lockup in our tests but Xen folks reported similar failures
+>>> with their smp call function code.
+>>>   
+>>>       
+>> ...really?  I don't remember anything like that, but perhaps I'm 
+>> forgetting something.  In Xen the IPI is sent with a hypercall, 
+>> which is definitely a solid enough barrier for these purposes.
+>>     
+>
+> i think Suresh might be referring to some of the fragilities Xen had 
+> with generic-ipi. But those AFAICT were due to the on-stack lifetime 
+> bug that Nick fixed via the kmalloc? v2.6.26-ish issue.
 
-Well, before you added AIM9 on this topic, we were focusing on tbench :)
+Right, that's all I could think of.
 
-Sorry to disappoint you :)
-
+    J
