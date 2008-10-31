@@ -1,265 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753638AbYJaJDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbYJaJIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753638AbYJaJDv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 05:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbYJaJDm
+	id S1753571AbYJaJIU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 05:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbYJaJII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 05:03:42 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54349 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752533AbYJaJDk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 05:03:40 -0400
-Subject: Re: Deadline scheduling (was: Re: Rearranging layout of code in
- the scheduler)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Henrik Austad <henrik@austad.us>
-Cc: faggioli@gandalf.sssup.it, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>, fabio@gandalf.sssup.it,
-       Michael Trimarchi <trimarchimichael@yahoo.it>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "gregory.haskins" <gregory.haskins@gmail.com>
-In-Reply-To: <200810302244.52329.henrik@austad.us>
-References: <200810281634.11285.henrik@austad.us>
-	 <20081030174925.36023f19jy3o832t@feanor.sssup.it>
-	 <1225387034.7803.182.camel@twins>  <200810302244.52329.henrik@austad.us>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 31 Oct 2008 10:03:52 +0100
-Message-Id: <1225443832.7803.1160.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Fri, 31 Oct 2008 05:08:08 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:25149 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752947AbYJaJIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 05:08:06 -0400
+Date: Fri, 31 Oct 2008 18:07:26 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.28-rc3
+Message-ID: <20081031090726.GA3615@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-30 at 22:44 +0100, Henrik Austad wrote:
-> On Thursday 30 October 2008 18:17:14 Peter Zijlstra wrote:
-> > On Thu, 2008-10-30 at 17:49 +0100, faggioli@gandalf.sssup.it wrote:
-> > > Quoting Peter Zijlstra <peterz@infradead.org>:
-> > > >> Before I dive in, I should probably justify my motivations for writing
-> > > >> this email. I'm working away on implementing an EDF scheduler for real
-> > > >> time tasks in the kernel. This again leads to hacking at the existing
-> > > >> source as I'm not about to toss out the entire scheduler - just
-> > > >> replace (by some Kconfig switch) the RR/FIFO classes. As to why I'm
-> > > >> looking at EDF, I think the answer to that is a bit too long (and not
-> > > >> appropriate for this email anyway) so I'll leave that part out.
-> > >
-> > > Well, I understand that, but it could be interesting... At least to me.
-> > > :-)
-> 
-> ok, simply put:
-> * give each task a relative deadline (will probably introduce a new syscall, 
-> please don't shoot me).
+Please pull from:
 
-We call that sys_sched_setscheduler2().
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
 
-> * when the task enters TASK_RUNNING, set abosolute deadline to time_now + 
-> rel_deadline.
-> * insert task in rq, sorted by abs_deadline
-> * pick leftmost task and run it
-> * when task is done, pick next task
-> 
-> that's it.
-> 
-> Then, of course, you have to add all the logic to make the thing work :)
+Which contains:
 
-Well, yes, I know how to do EDF, and its trivially simple - on UP.
-Deadline scheduling on SMP otoh is not.
+Harvey Harrison (1):
+      sh: use the new byteorder headers.
 
-> > >
-> > > > You and a few other folks.
-> > >
-> > > Yes, here we are! :-)
-> > >
-> > > We also have some code, but it still is highly experimental and we are
-> > > deeply rearranging it.
-> 
-> I have a very clear idea about *what* the scheduler should do, the problem is 
-> how to get it to work :-)
-> 
-> Things would be a lot easier if code in the scheduler was a bit 'more 
-> separated. I have started separating things and moving it to separate files. 
-> I'll ship off a few patches for comments if it's interesting?
+Kuninori Morimoto (4):
+      sh: Provide a sample defconfig for the UL2 (SH7366) board.
+      SH 7366 needs SCIF_ONLY
+      Add support usb setting on sh 7366
+      sh: Enable NFS root in Migo-R defconfig.
 
-Sure, but implementing an EDF class isn't really all that hard - esp if
-you only want UP.
+Matt Fleming (1):
+      Define SCSPTR1 for SH 7751R
 
-The real fun is in the PI stuff and schedulability tests on SMP.
+Michael Trimarchi (1):
+      sh: Fix up the shared IRQ demuxer's control bit testing logic.
 
-> > >
-> > > > The most interesting part of EDF is not the
-> > > > actual scheduler itself (although there are fun issues with that as
-> > > > well), but extending the Priority Inheritance framework to deal with
-> > > > all the fun cases that come with EDF.
-> 
-> Well, I find EDF intersting because it is so blissfully simple. :-)
+Nobuhiro Iwamatsu (3):
+      gdrom: Fix compile error
+      sh: Change register name SCSPTR to SCSPTR2
+      sh: Add sci_rxd_in of SH4-202
 
-Yes it is, until you do SMP :-)
+Paul Mundt (10):
+      serial: sh-sci: Kill off all of the SCI/SCIF special casing.
+      sh: oprofile: Fix up the SH7750 performance counter name.
+      sh: Fix FPU tuning on toolchains with mismatched multilib targets.
+      sh: Add on-chip RTC support for SH7722.
+      sh: sh7785lcr: Select uImage as default image target.
+      sh: Simplify and lock down the ISA tuning.
+      sh: Revert "SH 7366 needs SCIF_ONLY"
+      sh: Kill off long-dead HD64465 cchip support.
+      sh: SHmedia ISA tuning fixups.
+      sh: FTRACE renamed to FUNCTION_TRACER.
 
-> > > The main problem is that, especially to deal with SMP systems, we also
-> > > need to investigate theoretical issues and find out what the best
-> > > approach could be.
-> 
-> Yes, well, EDF is not optimal for SMP systems, only for single core. However, 
-> you can do a pretty good attempt by assigning tasks to cores in a greedy 
-> fashion (simply put the next task at the CPU with the lowest load).
-> 
-> As a further optimization, I guess you could do the whole sced-domain thing to 
-> minimize the search space.
+Yoshihiro Shimoda (1):
+      sh: fix sh2a cache entry_mask
 
-The problem with greedy binpacking heuristics is that your schedulablity
-test are out the window, making the whole thing useless.
-
-> > > > Well, adding a sched_class, no need to replace anything besides that.
-> > >
-> > > I'm not saying anything in possible sched.c and sched_{fair|rt}.c code
-> > > rearranging, I also only wonder why replacing fixed priority RT
-> > > scheduling with EDF.
-> > >
-> > > I think they both could be in... Maybe we can discuss on where, I mean
-> > > on which position, in the linked list of scheduling classes, to put
-> > > each of them.
-> 
-> No. You should have *either* FIFO/RR *or* EDF, not both at the same time. If 
-> you absolutely require both, you should at least separate them on a per-core 
-> basis. If you mix them, they need to be aware of the other in order to make 
-> the right descision, and that is not good. 
-
-We _have_ to have both. Its that simple.
-
-POSIX mandates we have SCHED_FIFO/RR, there is tons and tons of
-userspace that uses it, we cannot just replace it with a deadline
-scheduler.
-
-Also, start a linux-rt kernel and look at all the RT threads you have
-(and that's only going to get worse when we go to threads per interrupt
-handler instead of threads per interrupt source).
-
-Who is going to assign useful and meaningful periods, deadlines and
-execution times to all those threads?
-
-So the only other option is to add a deadline scheduler and allow people
-to use it.
-
-When you do that, you'll see that you have to add it above the FIFO/RR
-class because otherwise your schedulability is out the window again.
-
-> > Right, ideally I'd like to see 2 EDF classes on top of FIFO, so that we
-> > end up with the following classes
-> >
-> >   hedf     - hard EDF
-> >   sedf     - soft EDF (bounded tardiness)
-> >   fifo/rr  - the current static priority scheduler
-> >   fair     - the current proportional fair scheduler
-> >   idle     - the idle scheduler
-> >
-> > The two edf classes must share some state, so that the sedf class knows
-> > about the utilisation consumed by hedf, and the main difference between
-> > these two classes is the schedulability test.
-> 
-> Well.. why not just treat *all* RT-tasks as *either* FIFO/RR or EDF? Having 
-> fifo and edf together will complicate things. And, people looking for edf, 
-> will not use fifo/rr anyway (famous last words).
-
-errr, not so, see above. FIFO/RR are static priority schedulers, whereas
-deadline schedulers are job-static or dynamic priority schedulers. You
-cannot simply map FIFO onto them, you need more information and who is
-going to provide that?
-
-Also, with the above mentioned requirement that we must have FIFO/RR,
-there really is no choice.
-
-> Furthermore, hard/firm/soft could be treated as one class, but it should be 
-> treated differently at missed deadlines. 
-> * Soft: nothing. Scheduled at best effort, when deadline passes, prioritize 
-> other tasks to avoid cascading effect of deadlinemissies
-> * Firm: keep some statistics that the user can modify and a possible 
-> event-handler when limits are exceeded
-> * Hard: immediatly call a user registred function, or send signal to notify 
-> task.
-
-Thing is, you have to run hard tasks first, and scheduler weaker forms
-in its slack time, otherwise you cannot guarantee anything.
-
-And the easiest way to do that slack time stealing, is with such a
-hierarchy. Sure, you can share a lot of code etc. but you need separate
-classes.
-
-> > [ NOTE: read EDF as any deadline scheduler, so it might as well be
-> >         pfair PD^2 scheduler. ]
-> 
-> Well, the nice thing about EDF, is that it is provable optimal for any 
-> feasible schedule,  IOW, if all the tasks are schedulable, you can have 100% 
-> utilization of the CPU.
-
-On UP - which is not interesting on a general purpose kernel that runs
-on machines with up to 4096 CPUs.
-
-> On a multicore, EDF is not optimal, as rearranging the tasks becomes NP-hard 
-> (basically a knapsack problem) for several backpacks :-)
-
-That is partitioned EDF or PEDF for short. There are many other EDF
-variants who do not suffer this, for example global EDF (GEDF).
-
-GEDF can guarantee a utilization bound of 50% for hard-rt and is soft-rt
-up to 100%.
-
-Then there are the pfair class of scheduling algorithms which can
-theoretically yield up to 100% utilization on SMP systems.
-
-> Besides that, EDF is the simplest, most brain-dead scheduler you can imagine. 
-> Basically you want to add the deadline to the tasks, put it in a sorted list 
-> and pick the leftmost task every time untill it completes.
-
-Sure, and all that is useless without schedulability tests.
-
-> > The few problems this gives are things like kstopmachine and the
-> > migration threads, which should run at the max priority available on the
-> > system.
-> >
-> > [ NOTE: although possibly we could make an exception for the migration
-> >         threads, as we generally don't need to migrate running RT tasks]
-> >
-> > Perhaps we can introduce another class on top of hedf which will run
-> > just these two tasks and is not exposed to userspace (yes, I understand
-> > it will ruin just about any schedulability analysis).
-> >
-> > Which leaves us with the big issue of priority inversion ;-)
-> 
-> Couldn't above idea solve a bit of this? I have some papers on deadline 
-> inheritance laying aorund somewhere, I can have a look at that, I think it 
-> was a fairly elegant solution to some of these issues there.
-
-Yes, its brilliant, on UP :-)
-
-But it should work on SMP as well with a bit more effort. But you really
-need bandwidth inheritance as well, which is yet another bit of effort.
-
-But the Pisa folks mentioned some issues wrt partitioned EDF; Michael,
-was that because the deadline clock wasn't synchronized or something? -
-Could you explain that again, my brain seems to have mis-filed it.
-
-This is relevant, because even if you do GEDF or better, linux allows
-you to break your system into partitions using cpusets.
-
-> > We can do deadline inheritance and bandwidth inheritance by changing
-> > plist to a rb-tree/binary heap and mapping the static priority levels
-> > somewhere at the back and also propagating the actual task responsible
-> > for the boost down the chain (so as to be able to do bandwidth
-> > inheritance).
-> 
-> IMHO, you are complicating things unnecessary. EDF is simple. Why not go for a 
-> *very* basic system, not offer things that will be very difficult to 
-> guarantee.
-
-If you want a system that can guarantee anything, you must solve the
-priority inversion issue, and for deadline scheduling that means both DI
-and BI, even if you do PEDF.
-
-Because even if you do not allow your tasks to migrate, there will be
-shared resources (if not in userspace, then at least in the kernel), and
-as long as you have that....
-
-
+ Documentation/sh/new-machine.txt        |    4 +-
+ arch/sh/Kconfig                         |    2 +-
+ arch/sh/Makefile                        |   31 +-
+ arch/sh/boot/compressed/Makefile_32     |    2 +-
+ arch/sh/cchips/Kconfig                  |   33 -
+ arch/sh/cchips/hd6446x/Makefile         |    1 -
+ arch/sh/cchips/hd6446x/hd64465/Makefile |    6 -
+ arch/sh/cchips/hd6446x/hd64465/gpio.c   |  196 ------
+ arch/sh/cchips/hd6446x/hd64465/io.c     |  211 ------
+ arch/sh/cchips/hd6446x/hd64465/setup.c  |  181 -----
+ arch/sh/configs/migor_defconfig         |   35 +-
+ arch/sh/configs/ul2_defconfig           | 1169 +++++++++++++++++++++++++++++++
+ arch/sh/include/asm/byteorder.h         |   36 +-
+ arch/sh/include/asm/hd64465/gpio.h      |   46 --
+ arch/sh/include/asm/hd64465/hd64465.h   |  256 -------
+ arch/sh/include/asm/hd64465/io.h        |   44 --
+ arch/sh/include/asm/serial.h            |   17 -
+ arch/sh/include/cpu-sh4/cpu/rtc.h       |    2 +-
+ arch/sh/kernel/cpu/sh4a/setup-sh7366.c  |   28 +
+ arch/sh/kernel/cpu/sh4a/setup-sh7722.c  |   34 +-
+ arch/sh/kernel/entry-common.S           |    4 +-
+ arch/sh/kernel/sh_ksyms_32.c            |   13 +-
+ arch/sh/mm/cache-sh2a.c                 |    8 +-
+ arch/sh/oprofile/op_model_sh7750.c      |    6 +-
+ arch/sh/tools/mach-types                |    1 -
+ drivers/cdrom/gdrom.c                   |    5 +-
+ drivers/pcmcia/Kconfig                  |    4 -
+ drivers/pcmcia/Makefile                 |    1 -
+ drivers/pcmcia/hd64465_ss.c             |  939 -------------------------
+ drivers/serial/sh-sci.c                 |   40 +-
+ drivers/serial/sh-sci.h                 |   96 +--
+ 31 files changed, 1357 insertions(+), 2094 deletions(-)
+ delete mode 100644 arch/sh/cchips/hd6446x/hd64465/Makefile
+ delete mode 100644 arch/sh/cchips/hd6446x/hd64465/gpio.c
+ delete mode 100644 arch/sh/cchips/hd6446x/hd64465/io.c
+ delete mode 100644 arch/sh/cchips/hd6446x/hd64465/setup.c
+ create mode 100644 arch/sh/configs/ul2_defconfig
+ delete mode 100644 arch/sh/include/asm/hd64465/gpio.h
+ delete mode 100644 arch/sh/include/asm/hd64465/hd64465.h
+ delete mode 100644 arch/sh/include/asm/hd64465/io.h
+ delete mode 100644 drivers/pcmcia/hd64465_ss.c
