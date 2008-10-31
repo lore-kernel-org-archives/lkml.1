@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbYJaTdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753099AbYJaTfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752839AbYJaTdS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 15:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYJaTdH
+	id S1753099AbYJaTfe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 15:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbYJaTf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 15:33:07 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:43721 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751992AbYJaTdE (ORCPT
+	Fri, 31 Oct 2008 15:35:26 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:38456 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751284AbYJaTfZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 15:33:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Cep3EaDLh/RXOCGpCxOpDavenXkZF4/Hn6r+mMHUS6BLfNg6xOQ/pBmw3EPs5zuQxD
-         L1D+JEhMk8yCl53bTgms04LFcK47Ck/LHDM0s0U4zr3FsVAwPISc1aIbuawXchnQ5N8l
-         oFXHO5DXecKdVHaWDc0lrQxws6ZKWnDIQpRJY=
-Message-ID: <863e9df20810311233j13f996b8qa185cceddbd90849@mail.gmail.com>
-Date: Fri, 31 Oct 2008 15:33:00 -0400
-From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH] ftrace: distinguish kretprobe'd functions in trace logs
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Al Viro" <viro@zeniv.linux.org.uk>, ananth@in.ibm.com,
-       jkenisto@us.ibm.com, mhiramat@redhat.com
-In-Reply-To: <alpine.DEB.1.10.0810311142220.22451@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 31 Oct 2008 15:35:25 -0400
+Subject: Re: [PATCH 2/3] integrity: Linux Integrity Module(LIM)
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <1225471251.12673.408.camel@nimitz>
+References: <cover.1223869200.git.zohar@localhost.localdomain>
+	 <7c05f813215804a30d03821fd8e251b250d0e000.1223869200.git.zohar@localhost.localdomain>
+	 <1225471251.12673.408.camel@nimitz>
+Content-Type: text/plain
+Date: Fri, 31 Oct 2008 15:35:22 -0400
+Message-Id: <1225481722.21941.42.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <483C53EE.2060602@gmail.com>
-	 <alpine.DEB.1.10.0810302227360.21031@gandalf.stny.rr.com>
-	 <alpine.DEB.1.10.0810311036130.20157@gandalf.stny.rr.com>
-	 <863e9df20810310832uadf4daay7b5a98b677d86561@mail.gmail.com>
-	 <alpine.DEB.1.10.0810311142220.22451@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 31, 2008 at 11:50 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> From: Steven Rostedt <srostedt@redhat.com>
-> Subject: ftrace: use kretprobe trampoline name to test in output
->
-> When a function is kprobed, the return address is set to the
-> kprobe_trampoline, or something similar. This caused the output
-> of the trace to look confusing when the parent seemed to be this
-> "kprobe_trampoline" function.
->
-> To fix this, Abhishek Sagar added a test of the instruction pointer
-> of the parent to see if it matched the kprobe_trampoline. If it
-> did, the output would print a "[unknown/kretprobe'd]" instead.
->
-> Unfortunately, not all archs do this the same way, and the trampoline
-> function may not be exported, which causes failures in builds.
->
-> This patch will compare the name instead of the pointer to see
-> if it matches. This prevents us from depending on a function from
-> being exported, and should work on all archs. The worst that can
-> happen is that an arch might use a different name and then we
-> go back to the confusing output. At least the arch will still build.
->
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  kernel/trace/trace.c |   39 +++++++++++++++++++++------------------
->  1 file changed, 21 insertions(+), 18 deletions(-)
+On Fri, 2008-10-31 at 09:40 -0700, Dave Hansen wrote: 
+> On Mon, 2008-10-13 at 13:17 -0400, Mimi Zohar wrote:
+> > Concern was raised on the lkml mailing list, about adding i_integrity
+> > to the inode structure.  This patch adds a comment clarifying that
+> > i_integrity is only included in the inode if INTEGRITY is configured.
+> 
+> Mimi, it is nice that you made this a config option.  That definitely
+> helps the embedded folks and those compiling their own kernels.  But, it
+> doesn't really help those who run distros.
+> 
+> The distributions basically ship one kernel for everybody, and it has to
+> have CONFIG_KITCHEN_SINK=y in order to support everyone's individual
+> users.  Although you provided a config option, in practice, this always
+> bloats distro kernels which are the vast majority of users.
 
-Looks good, and worked on x86-32.
+Thank you for giving a more fuller explanation as to why extending the
+inode is such an issue.
 
-Acked-by: Abhishek Sagar <sagar.abhishek@gmail.com>
+> Is this even useful for filesystems like proc or sysfs?  Should we bloat
+> those inodes for a feature which might not possibly apply there?
+
+Currently, we're not measuring proc or sysfs files.
+
+Mimi
+
