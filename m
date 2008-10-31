@@ -1,77 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752379AbYJaOsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752634AbYJaOuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752379AbYJaOsx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 10:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180AbYJaOsp
+	id S1752634AbYJaOuR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 10:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbYJaOuB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 10:48:45 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:58965 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751174AbYJaOso (ORCPT
+	Fri, 31 Oct 2008 10:50:01 -0400
+Received: from ti-out-0910.google.com ([209.85.142.187]:54599 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751180AbYJaOuA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 10:48:44 -0400
+	Fri, 31 Oct 2008 10:50:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=OlwBbRkaoyrKxsbfKdRQTD6UUtc6vHyWH6xRoxBxwofKrb4aAStgUi21bdDx5csYLn
-         RJOqC0lYF8QI7PkJBIHtbtTIUs+XFPnGrTVeAQtB9gxvA1xNS6ObKVCiue68/5PEdlxN
-         sT08fXb1wmyodwLYtr+7i6y8EHgwVNTUoZJMQ=
-Message-ID: <490B1AC6.1030705@gmail.com>
-Date: Fri, 31 Oct 2008 14:48:38 +0000
-From: Iain <selsinork@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+        h=date:from:to:subject:cc:message-id:mime-version:content-type
+         :content-transfer-encoding:x-mailer;
+        b=aGwXd86PAhegAfO+46ppTqkN3aDm7EtygVeR7A815LAKBno5HkNWPi1RPhIySiH2KW
+         yEkZ4OoPBA1w7Vb2ow+BohGs5jpARZybqWWlSYog4K3ve5C15WLuUC0z9opQGDFIULbN
+         jGA6eMpDPlbWwiLSvneeIM0bd4A1ce6jTFeRw=
+Date: Fri, 31 Oct 2008 22:49:56 +0800
+From: Huang Weiyi <weiyi.huang@gmail.com>
+To: gregkh@suse.de
+Subject: Staging: wlan-ng: remove unused #include <version.h>
+Cc: linux-kernel@vger.kernel.org
+Message-Id: <20081031223057.0F1A.WEIYI.HUANG@gmail.com>
 MIME-Version: 1.0
-To: Carsten Niehaus <cniehaus@gmx.de>
-CC: Rafael Cunha de Almeida <almeidaraf@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Weird behaviour on iwl3945 module
-References: <200810311201.03588.cniehaus@gmx.de>
-In-Reply-To: <200810311201.03588.cniehaus@gmx.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.24.02 [en]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carsten Niehaus wrote:
-> Moin
-> 
-> Is that the same issue as the one I reported agains 2.6.27 on Ubuntu 8.10?
-> 
->   https://bugs.launchpad.net/ubuntu/+source/wireless-tools/+bug/290820
-> 
-> Carsten
-> 
+The file(s) below do not use LINUX_VERSION_CODE nor KERNEL_VERSION.
+  drivers/staging/wlan-ng/p80211conv.c
+  drivers/staging/wlan-ng/p80211req.c
+  drivers/staging/wlan-ng/p80211wext.c
+  drivers/staging/wlan-ng/prism2mgmt.c
 
-The rfkill messages in dmesg are probably meaningless. I see them too and they don't stop the card from working.
+This patch removes the said #include <version.h>.
 
-What do you get if you type 'ip link' in a shell ?
-I think you'll see something like:
-wlan0: <NO-CARRIER,BROADCAST,MULTICAST>
+Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
 
-You want
-wlan0: <NO-CARRIER,BROADCAST,MULTICAST,UP>
+diff --git a/drivers/staging/wlan-ng/p80211conv.c b/drivers/staging/wlan-ng/p80211conv.c
+index 68121b9..a97c5b8 100644
+--- a/drivers/staging/wlan-ng/p80211conv.c
++++ b/drivers/staging/wlan-ng/p80211conv.c
+@@ -55,7 +55,6 @@
+ #define __NO_VERSION__		/* prevent the static definition */
+ 
+ 
+-#include <linux/version.h>
+ 
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+diff --git a/drivers/staging/wlan-ng/p80211req.c b/drivers/staging/wlan-ng/p80211req.c
+index 0233abe..9c27d38 100644
+--- a/drivers/staging/wlan-ng/p80211req.c
++++ b/drivers/staging/wlan-ng/p80211req.c
+@@ -54,7 +54,6 @@
+ /* System Includes */
+ 
+ 
+-#include <linux/version.h>
+ 
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+diff --git a/drivers/staging/wlan-ng/p80211wext.c b/drivers/staging/wlan-ng/p80211wext.c
+index 906ba43..514afec 100644
+--- a/drivers/staging/wlan-ng/p80211wext.c
++++ b/drivers/staging/wlan-ng/p80211wext.c
+@@ -38,7 +38,6 @@
+ /* System Includes */
+ 
+ 
+-#include <linux/version.h>
+ 
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+diff --git a/drivers/staging/wlan-ng/prism2mgmt.c b/drivers/staging/wlan-ng/prism2mgmt.c
+index c975025..14939de 100644
+--- a/drivers/staging/wlan-ng/prism2mgmt.c
++++ b/drivers/staging/wlan-ng/prism2mgmt.c
+@@ -64,7 +64,6 @@
+ #include "version.h"
+ 
+ 
+-#include <linux/version.h>
+ 
+ #include <linux/if_arp.h>
+ #include <linux/module.h>
 
-to have any hope of getting any further.
-
-On my HP laptop, it's impossible to bring the card up with 'ip link set up dev wlan0' when the hardware button is set to disable the 
-wireless interfaces during boot, on at least 2.6.[25,26,27]. However once you press the button and enable the interface you can then 
-bring the card up and it'll stay up when you press the button again.
-
-The real problem for me with this is that normally the button is turned off during boot, so the startup scripts can't bring the card 
-up and everything else falls apart from there.
-
-Previously I've just been doing 'ip link set up dev wlan0' in an xterm after enabling via the button first time I need to use it, 
-having done that, everything works fine.
-
-With 2.6.27 the hp-wmi driver means that I get rfkill uevents over netlink and can use those to bring the card up automatically when 
-the button is pressed. Perhaps there's a similar option on your laptops.
-
-FWIW, I'm not using Debian/Ubuntu, or hal/dbus/NetworkManager,  but it was fairly trivial to find lots of discussion of this 
-elsewhere, seemingly mostly related to Debian/Ubuntu:
-<https://bugs.launchpad.net/ubuntu/intrepid/+source/linux/+bug/193970>
-<https://bugs.launchpad.net/ubuntu/+source/linux/+bug/267875>
-<https://wiki.ubuntu.com/IntrepidReleaseNotes#Cannot%20reactivate%20Intel%203945/4965%20wireless%20if%20booting%20with%20killswitch%20enabled>
-
-Iain
