@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbYJaRTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbYJaRY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752792AbYJaRTn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 13:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbYJaRTf
+	id S1752541AbYJaRY5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 13:24:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbYJaRYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 13:19:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51985 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751201AbYJaRTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 13:19:35 -0400
-Date: Fri, 31 Oct 2008 13:19:16 -0400
-From: Dave Jones <davej@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: sched domains oddness.
-Message-ID: <20081031171916.GB8837@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Ingo Molnar <mingo@elte.hu>
-References: <20081031162443.GA29885@redhat.com> <1225471911.7803.1596.camel@twins>
+	Fri, 31 Oct 2008 13:24:48 -0400
+Received: from smtp2.riverbed.com ([206.169.144.7]:14867 "EHLO
+	smtp2.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041AbYJaRYr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 13:24:47 -0400
+Date: Fri, 31 Oct 2008 10:24:46 -0700
+From: Arthur Jones <ajones@riverbed.com>
+To: Eric Sandeen <sandeen@redhat.com>
+CC: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "sct@redhat.com" <sct@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: ext3: slow symlink corruption on umount...
+Message-ID: <20081031172446.GC8333@ajones-laptop.nbttech.com>
+References: <20081024183733.GA25797@ajones-laptop.nbttech.com> <20081027165423.GB25797@ajones-laptop.nbttech.com> <20081029195403.GA8333@ajones-laptop.nbttech.com> <4908C951.2000309@redhat.com> <20081030174057.GB7926@ajones-laptop.nbttech.com> <4909F705.8090904@redhat.com> <20081030213400.GA28900@ajones-laptop.nbttech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <1225471911.7803.1596.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081030213400.GA28900@ajones-laptop.nbttech.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 31, 2008 at 05:51:51PM +0100, Peter Zijlstra wrote:
- > On Fri, 2008-10-31 at 12:24 -0400, Dave Jones wrote:
- > > The attached dmesg comes from my dual core laptop running 2.6.27
- > > What's up with all the sched domains transitions at the bottom?
- > > This was just a boot up from power off, no suspend/resume or anything funky.
- > 
- > > CPU0 attaching NULL sched-domain.
- > > CPU1 attaching NULL sched-domain.
- > > CPU0 attaching sched-domain:
- > >  domain 0: span 0-1 level MC
- > >   groups: 0 1
- > >   domain 1: span 0-1 level NODE
- > >    groups: 0-1
- > > CPU1 attaching sched-domain:
- > >  domain 0: span 0-1 level MC
- > >   groups: 1 0
- > >   domain 1: span 0-1 level NODE
- > >    groups: 0-1
- > 
- > 3x
- > 
- > looks like someone is triggering rebuild_sched_domains(), is something
- > poking cpusetfs files or flipping between sched_mc settings?
- 
-cpusetfs doesn't seem to be mounted, and I can't find anything
-obvious touching sched_mc
+On Thu, Oct 30, 2008 at 02:34:00PM -0700, Arthur Jones wrote:
+> Hi Eric,  ...
+> 
+> On Thu, Oct 30, 2008 at 11:03:49AM -0700, Eric Sandeen wrote:
+> > [...]
+> > Something is definitely racy here; in my simple testcase I get failures
+> > maybe 30-50% of the time...
+> 
+> Some more info: in the working case, the inodes are put
+> back on sb->s_dirty at then next ext3_sync_fs() call:
+> 
+> __fsync_super -> DQUOT_SYNC -> ext3_sync_fs -> log_wait_commit
+> 
+> In the failing case, journal_start_commit returns 0 in ext_sync_fs
+> and the inodes disappear into never-never land...
 
-	Dave
+More details, these are dumps at __log_start_commit in the
+call chain described above, the first column is the failing
+case, the next column is working case, t_expires is the delta
+from the time the dump was taken:
 
--- 
-http://www.codemonkey.org.uk
+        journal->j_flags                                0x10    0x10
+        journal->j_tail_sequence                         515     519
+        journal->j_transaction_sequence                  517     522
+        journal->j_commit_sequence                       514     519
+        journal->j_commit_request                        516     520
+
+        journal->j_running_transaction->t_tid            516     521
+        journal->j_running_transaction->t_state            0       0
+        journal->j_running_transaction->t_updates          0       0
+        journal->j_running_transaction->t_handle_count 27305   27344
+        journal->j_running_transaction->t_expires       -566      28
+
+Can you tell from this whether the transactions
+are messed up or whether we're just missing a
+wake_up?  Any other info you'd like to see?
+
+Arthur
