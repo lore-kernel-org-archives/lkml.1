@@ -1,103 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751525AbYJaRSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbYJaRTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751525AbYJaRSY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 13:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbYJaRSP
+	id S1752792AbYJaRTn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 13:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbYJaRTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 13:18:15 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:42564 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751778AbYJaRSN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 13:18:13 -0400
-Date: Fri, 31 Oct 2008 15:19:01 -0200
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: "Nick Kossifidis" <mickflemm@gmail.com>
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       willy@linux.intel.com, lrodriguez@atheros.com
-Subject: Re: ath5k gets lost with eeepc-laptop removal
-Message-ID: <20081031151901.2d68c32d@doriath.conectiva>
-In-Reply-To: <40f31dec0810310926p6edd0af5o24d7616eb54c6d0@mail.gmail.com>
-References: <20081031110502.18e33eba@doriath.conectiva>
-	<40f31dec0810310926p6edd0af5o24d7616eb54c6d0@mail.gmail.com>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.4; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 31 Oct 2008 13:19:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51985 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751201AbYJaRTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 13:19:35 -0400
+Date: Fri, 31 Oct 2008 13:19:16 -0400
+From: Dave Jones <davej@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: sched domains oddness.
+Message-ID: <20081031171916.GB8837@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Ingo Molnar <mingo@elte.hu>
+References: <20081031162443.GA29885@redhat.com> <1225471911.7803.1596.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225471911.7803.1596.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, 31 Oct 2008 18:26:28 +0200
-"Nick Kossifidis" <mickflemm@gmail.com> escreveu:
+On Fri, Oct 31, 2008 at 05:51:51PM +0100, Peter Zijlstra wrote:
+ > On Fri, 2008-10-31 at 12:24 -0400, Dave Jones wrote:
+ > > The attached dmesg comes from my dual core laptop running 2.6.27
+ > > What's up with all the sched domains transitions at the bottom?
+ > > This was just a boot up from power off, no suspend/resume or anything funky.
+ > 
+ > > CPU0 attaching NULL sched-domain.
+ > > CPU1 attaching NULL sched-domain.
+ > > CPU0 attaching sched-domain:
+ > >  domain 0: span 0-1 level MC
+ > >   groups: 0 1
+ > >   domain 1: span 0-1 level NODE
+ > >    groups: 0-1
+ > > CPU1 attaching sched-domain:
+ > >  domain 0: span 0-1 level MC
+ > >   groups: 1 0
+ > >   domain 1: span 0-1 level NODE
+ > >    groups: 0-1
+ > 
+ > 3x
+ > 
+ > looks like someone is triggering rebuild_sched_domains(), is something
+ > poking cpusetfs files or flipping between sched_mc settings?
+ 
+cpusetfs doesn't seem to be mounted, and I can't find anything
+obvious touching sched_mc
 
-| 2008/10/31 Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>:
-| >
-| >  Hi guys,
-| >
-| >  If I do a 'rmmod eeepc-laptop', while connected to my AP, I get the
-| > following error messages from ath5k:
-| >
-| > """
-| > ath5k phy0: noise floor calibration timeout (2417MHz)
-| > ath5k phy0: failed to wakeup the MAC Chip
-| > ath5k phy0: can't reset hardware (-5)
-| > ath5k phy0: failed to wakeup the MAC Chip
-| > ath5k phy0: can't reset hardware (-5)
-| > wlan0: No ProbeResp from current AP 00:1d:0f:e9:c7:c0 - assume out of range
-| > ath5k phy0: failed to wakeup the MAC Chip
-| > ath5k phy0: ath5k_chan_set: unable to reset channel (2412 Mhz)
-| > wlan0: failed to set freq to 2412 MHz for scan
-| > ath5k phy0: failed to wakeup the MAC Chip
-| > ath5k phy0: ath5k_chan_set: unable to reset channel (2417 Mhz)
-| > wlan0: failed to set freq to 2417 MHz for scan
-| > ath5k phy0: failed to wakeup the MAC Chip
-| > ath5k phy0: ath5k_chan_set: unable to reset channel (2422 Mhz)
-| > wlan0: failed to set freq to 2422 MHz for scan
-| > ath5k phy0: failed to wakeup the MAC Chip
-| > ath5k phy0: ath5k_chan_set: unable to reset channel (2427 Mhz)
-| > wlan0: failed to set freq to 2427 MHz for scan
-| > ath5k phy0: failed to wakeup the MAC Chip
-| > ath5k phy0: ath5k_chan_set: unable to reset channel (2432 Mhz)
-| > wlan0: failed to set freq to 2432 MHz for scan
-| > wlan0: failed to set freq to 2437 MHz for scan
-| > wlan0: failed to set freq to 2442 MHz for scan
-| > wlan0: failed to set freq to 2447 MHz for scan
-| > wlan0: failed to set freq to 2452 MHz for scan
-| > wlan0: failed to set freq to 2457 MHz for scan
-| > wlan0: failed to set freq to 2462 MHz for scan
-| > wlan0: failed to set freq to 2467 MHz for scan
-| > wlan0: failed to set freq to 2472 MHz for scan
-| > wlan0: failed to set freq to 2484 MHz for scan
-| > wlan0: failed to restore operational channel after scan
-| > wlan0: authenticate with AP 00:1d:0f:e9:c7:c0
-| > wlan0: authenticate with AP 00:1d:0f:e9:c7:c0
-| > wlan0: authenticate with AP 00:1d:0f:e9:c7:c0
-| > wlan0: authentication with AP 00:1d:0f:e9:c7:c0 timed out
-| > """
-| >
-| >  Then I lost my wireless connection.
-| >
-| >  I'm running latest Linus git tree (2.6.28-rc2) on a Eeepc 701.
-| >
-| >  The problem doesn't happen on 2.6.27.4, but as 2.6.28-rc1 doesn't
-| > boot on this machine, it would be a bit difficult to bisect it.
-| >
-| >  Thanks.
-| >
-| 
-| After this does ath_info work ?
-
- No, it doesn't. It says:
-
-"""
-MAC revision 0xffff is not supported!
-"""
-
- And I have realized that I get a flood of 'failed to wakeup'
-and 'can't reset the hardware' error messages, just some seconds
-after the eeepc-laptop module removal.
+	Dave
 
 -- 
-Luiz Fernando N. Capitulino
+http://www.codemonkey.org.uk
