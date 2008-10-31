@@ -1,76 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbYJaNQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752329AbYJaNUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752724AbYJaNQY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 09:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbYJaNQP
+	id S1752329AbYJaNUu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 09:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbYJaNUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 09:16:15 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:41683 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbYJaNQO (ORCPT
+	Fri, 31 Oct 2008 09:20:39 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:18911 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750869AbYJaNUh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 09:16:14 -0400
-Subject: Re: [RFC] B+Tree library
-From: Johannes Berg <johannes@sipsolutions.net>
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081026124643.GA1328@logfs.org>
-References: <20081026124643.GA1328@logfs.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-xNoa0cpkf290t6vbzRRH"
-Date: Fri, 31 Oct 2008 14:16:14 +0100
-Message-Id: <1225458974.5546.6.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 31 Oct 2008 09:20:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Cbvtlc8fOBevgIKo/3lAFRtIRmG4q5hk341xc5NsH+tf4b29oK6K40GGxMwOobHove
+         RC0mVtJrcKakMSNAlbM3/W8ZP+aZgPwn2sThs0QN+ZaSzz0TonGMkNNv0GwmnBJ+B05Z
+         vs8ZeMso7A8MJvolbrZjV9LeTEhurAeQuKEKw=
+Message-ID: <87f94c370810310620u77f2b31r85b196d7261ef75f@mail.gmail.com>
+Date: Fri, 31 Oct 2008 09:20:36 -0400
+From: "Greg Freemyer" <greg.freemyer@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: [git patches] libata fixes
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081031054949.GA10474@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081031054949.GA10474@havoc.gtf.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 31, 2008 at 1:49 AM, Jeff Garzik <jeff@garzik.org> wrote:
+>
+> Notes:
+>
+> 1) 1.5TB drive fix from Roland
+>
+> 2) Tejun's sata_via brings a non-working via configuration thanks to a
+>   new facility also being used in recent (ICH9/10) ata_piix.
+>
+>   Change is longer than one might like, but it accurately describes the
+>   hardware now, the previous stuff wasn't working, and the newly added
+>   support code shouldn't touch non-broken VIA controllers.
+>
+>
+>
+> Please pull from 'upstream-linus' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+>
+> to receive the following updates:
+>
+>  drivers/ata/ata_piix.c    |    1 -
+>  drivers/ata/libata-core.c |   11 +++-
+>  drivers/ata/sata_via.c    |  155 +++++++++++++++++++++++++++++++++++++++++----
+>  include/linux/libata.h    |    1 +
+>  4 files changed, 152 insertions(+), 16 deletions(-)
+>
+> Jens Axboe (1):
+>      libata: add whitelist for devices with known good pata-sata bridges
+>
+> Randy Dunlap (1):
+>      ATA: remove excess kernel-doc notation
+>
+> Roland Dreier (1):
+>      libata: Avoid overflow in ata_tf_to_lba48() when tf->hba_lbal > 127
+>
+> Tejun Heo (1):
+>      sata_via: fix support for 5287
+<snip>
 
---=-xNoa0cpkf290t6vbzRRH
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+> index 2ff633c..82af701 100644
+> --- a/drivers/ata/libata-core.c
+> +++ b/drivers/ata/libata-core.c
+> @@ -1268,7 +1268,7 @@ u64 ata_tf_to_lba48(const struct ata_taskfile *tf)
+>
+>        sectors |= ((u64)(tf->hob_lbah & 0xff)) << 40;
+>        sectors |= ((u64)(tf->hob_lbam & 0xff)) << 32;
+> -       sectors |= (tf->hob_lbal & 0xff) << 24;
+> +       sectors |= ((u64)(tf->hob_lbal & 0xff)) << 24;
+>        sectors |= (tf->lbah & 0xff) << 16;
+>        sectors |= (tf->lbam & 0xff) << 8;
+>        sectors |= (tf->lbal & 0xff);
+<snip>
 
+That looks really serious.
 
-> +static inline size_t btree_visitorl(struct btree_headl *head, long opaqu=
-e,
-> +		visitorl_t func2)
-> +{
-> +	return btree_visitor(&head->h, &btree_geo32, opaque, visitorl, func2);
-> +}
+What happens with all previous / stable kernels when connecting up a
+1.5TB drive and the user tries to use the last portion of the drive?
 
-Incidentally, do you think it would be possible to implement a kind of=20
+Greg
+-- 
+Greg Freemyer
+Litigation Triage Solutions Specialist
+http://www.linkedin.com/in/gregfreemyer
+First 99 Days Litigation White Paper -
+http://www.norcrossgroup.com/forms/whitepapers/99%20Days%20whitepaper.pdf
 
-btree_for_each_entry(e, ...) {
-	do something with e
-}
-
-macro or function/macro combination? You seem to be doing a recursive
-walk across the tree, would it be useful to have a linked list at the
-lowest level of nodes to be able to iterate more easily?
-
-johannes
-
---=-xNoa0cpkf290t6vbzRRH
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJCwUaAAoJEKVg1VMiehFYnfoP/0VymjftVsbTs+Xqbla4vHP6
-11/u7Ehwafsgcrlpy6Kp3uHhbcKvjPcbdQFELrDTub8Vv9P9id6OLVW+hvV5WAtN
-aazMli8DjbfQNIz+T63uZKYoo5fpX4oSPmy3aCD242UplJ9O7FikCVksPGCjFHCA
-Vf315W7YITROzzM6FPWMVG1MU8+BGNhqKz11/hzzYRxcfjYF99QmnzYmPpodEBkx
-aKje5wK+h8pueNr6zdhR4pk17Uvcwz0b3ayQH9zhCT6V8CTPbABJQBAVtHM5FofC
-xnNPWdxG1uG2cf5V432a8RjUKHL8tBR9uIgdnT+DBnUMGAiVz4MjiXUasyhRUzSn
-vj0B4yznbo7DOdjUovp3jfRMSCOvAFe93OV+vGCj/vB1eimZHWAkIoJYr/RSA8ZY
-KIMltZARlAIZ69+kWC0O3FQmhTHo+r3GZlHVcX1okHP1dAz3gKOqgU1Y+CPxPn+K
-cHCB4vKretfk1nm0HwwQO1kWV3YF+3WH9W5K6Gxj4lsayZ8bh/wiVLr1hKXDAhjK
-6l7T0jMOr9VrUK4Y3xQ6Y/uwzKpEQb1VPZiS+LUtyOQl07k8XCpkfn3D94BLBzS1
-nWCG0rhSmhBtMPFvw5FkSV+4/8Sej7r1siTDRvD1F4T6mu008EUs1yicDw7tQPkF
-67z3v9DNBFql4MuGwD6S
-=Efm0
------END PGP SIGNATURE-----
-
---=-xNoa0cpkf290t6vbzRRH--
-
+The Norcross Group
+The Intersection of Evidence & Technology
+http://www.norcrossgroup.com
