@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbYJaHkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753410AbYJaHw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753664AbYJaHkG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 03:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYJaHjy
+	id S1753410AbYJaHw5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 03:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYJaHwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 03:39:54 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:4230 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750810AbYJaHjy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 03:39:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:x-mailer:mime-version:content-type
-         :content-transfer-encoding;
-        b=odpezsBEpPr3tRyQJrUIrTNwCivVAwj7fRsPI2WU1y9jCmmXyNs9vs7DJI5i476HcU
-         gEu/VgZ+EQCX0l3jp6E//cNQQVNusbSAbzhXzpm+AN4LelItjGSIDM7PXo63iByfwMiI
-         ELHpDviGKta1WIerNb2HcNW7TDszpat0xyw8g=
-Date: Fri, 31 Oct 2008 05:39:50 -0200
-From: Rafael Cunha de Almeida <almeidaraf@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Weird behaviour on iwl3945 module
-Message-Id: <20081031053950.e2d22e55.almeidaraf@gmail.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+	Fri, 31 Oct 2008 03:52:45 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38791
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752412AbYJaHwo convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 03:52:44 -0400
+Date: Fri, 31 Oct 2008 00:52:19 -0700 (PDT)
+Message-Id: <20081031.005219.141937694.davem@davemloft.net>
+To: ilpo.jarvinen@helsinki.fi
+Cc: shemminger@vyatta.com, zbr@ioremap.net, rjw@sisk.pl, mingo@elte.hu,
+       s0mbre@tservice.net.ru, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, efault@gmx.de,
+       akpm@linux-foundation.org
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0810302047030.22084@wrl-59.cs.helsinki.fi>
+References: <20081026122300.GA30905@ioremap.net>
+	<20081030111526.7d9bb0f8@extreme>
+	<Pine.LNX.4.64.0810302047030.22084@wrl-59.cs.helsinki.fi>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: "Ilpo Järvinen" <ilpo.jarvinen@helsinki.fi>
+Date: Thu, 30 Oct 2008 21:01:19 +0200 (EET)
 
-I'm using Debian lenny (linux 2.6.26) and I have a iwl3945 wireless
-card. My laptop is a lenovo r61i. I've notice that, when I turn off
-the wireles/bluetooth switch the wireless module isn't removed, the
-kernel even displays a few warnings:
+> On Thu, 30 Oct 2008, Stephen Hemminger wrote:
+> 
+> > Has anyone looked into the impact of port randomization on this benchmark.
+> > If it is generating lots of sockets quickly there could be an impact:
+> >   * port randomization causes available port space to get filled non-uniformly
+> >     and what was once a linear scan may have to walk over existing ports.
+> >     (This could be improved by a hint bitmap)
+> > 
+> >   * port randomization adds at least one modulus operation per socket
+> >     creation. This could be optimized by using a loop instead.
+> 
+> I did something with AIM9's tcp_test recently (1-2 days ago depending on 
+> how one calculates that so didn't yet have time summarize the details in 
+> the AIM9 thread) by deterministicly binding in userspace and got much more 
+> sensible numbers than with randomized ports (2-4%/5-7% vs 25% variation 
+> some difference in variation in different kernel versions even with 
+> deterministic binding). Also, I'm still to actually oprofile and bisect 
+> the remaining ~4% regression (around 20% was reported by Christoph). For 
+> oprofiling I might have to change aim9 to do predefined number of loops 
+> instead of a deadline to get more consistent view on changes in per func 
+> runtime.
 
-% dmesg | tail -n11
-[ 1219.735652] iwl3945: Radio Frequency Kill Switch is On:
-[ 1219.735652] Kill switch must be turned off for wireless networking to work.
-[ 1219.787767] usb 1-1: USB disconnect, address 2
-[ 1221.291865] iwl3945: WARNING: Requesting MAC access during RFKILL wakes up NIC
-[ 1221.294246] iwl3945: MAC is in deep sleep!
-[ 1221.341983] iwl3945: WARNING: Requesting MAC access during RFKILL wakes up NIC
-[ 1221.345953] iwl3945: MAC is in deep sleep!
-[ 1221.405968] iwl3945: WARNING: Requesting MAC access during RFKILL wakes up NIC
-[ 1221.450835] iwl3945: MAC is in deep sleep!
-[ 1221.612230] iwl3945: WARNING: Requesting MAC access during RFKILL wakes up NIC
-[ 1221.632612] ACPI: PCI interrupt for device 0000:03:00.0 disabled
+Yes, it looks like port selection cache and locking effects are
+a very real issue.
 
-So, when I turn the switch back on, my wireless card is not
-operational. I have to manually remove and then reinstall the iwl3945
-module in order to the device to resume working. The bluetooth device
-doesn't have that issue.
-
-Is that an expected behaviour? Would it be impossible or undesirable
-to the kernel to behave differently? Is it already fixed in the newest
-kernel version (or on the -mm branch)? I am willing to hack into the
-kernel code in order to fix that problem, if someone would give me
-pointers of where to start.
-
-[]'s
-Rafael
+Good find.
