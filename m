@@ -1,44 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752943AbYJaUKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbYJaUN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752943AbYJaUKe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 16:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbYJaUKU
+	id S1753234AbYJaUN0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 16:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbYJaUNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 16:10:20 -0400
-Received: from kandzendo.ru ([195.178.208.66]:36184 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751095AbYJaUKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 16:10:19 -0400
-Date: Fri, 31 Oct 2008 23:10:16 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
-       ilpo.jarvinen@helsinki.fi, rjw@sisk.pl, mingo@elte.hu,
-       s0mbre@tservice.net.ru, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, efault@gmx.de,
-       akpm@linux-foundation.org
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-Message-ID: <20081031201016.GA4748@ioremap.net>
-References: <Pine.LNX.4.64.0810302047030.22084@wrl-59.cs.helsinki.fi> <20081031.005219.141937694.davem@davemloft.net> <Pine.LNX.4.64.0810311119510.7072@wrl-59.cs.helsinki.fi> <20081031.025159.51432990.davem@davemloft.net> <490AE1CD.9040207@cosmosbay.com> <20081031125713.6c6923de@extreme>
+	Fri, 31 Oct 2008 16:13:18 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:48630 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752271AbYJaUNR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 16:13:17 -0400
+Date: Fri, 31 Oct 2008 20:13:15 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Re: alpha: undefined reference to `save_stack_trace'
+Message-ID: <20081031201315.GW28946@ZenIV.linux.org.uk>
+References: <20081031165751.GA13558@x200.localdomain> <20081031182411.GR28946@ZenIV.linux.org.uk> <20081031184822.GS28946@ZenIV.linux.org.uk> <20081031185526.GT28946@ZenIV.linux.org.uk> <20081031190608.GU28946@ZenIV.linux.org.uk> <20081031195040.GV28946@ZenIV.linux.org.uk> <alpine.DEB.1.10.0810311604040.28774@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081031125713.6c6923de@extreme>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <alpine.DEB.1.10.0810311604040.28774@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 31, 2008 at 12:57:13PM -0700, Stephen Hemminger (shemminger@vyatta.com) wrote:
-> Why bother with last_rx at all on loopback.  I have been thinking
-> we should figure out a way to get rid of last_rx all together. It only
-> seems to be used by bonding, and the bonding driver could do the calculation
-> in its receive handling.
+On Fri, Oct 31, 2008 at 04:05:01PM -0400, Steven Rostedt wrote:
+> 
+> Ingo,
+> 
+> I guess this is needed to make alph (and perhasp others compile).
 
-Not related to the regression: bug will be just papered out by this
-changes. Having bonding on loopback is somewhat strange idea, but still
-this kind of changes is an attempt to make a good play in the bad game:
-this loopback-only optimization does not fix the problem.
-
--- 
-	Evgeniy Polyakov
+... and shitloads more than alpha.  Itanic, parisc, all embedded ones,
+m68k, uml, sparc32...
