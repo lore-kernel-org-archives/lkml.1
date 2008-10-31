@@ -1,57 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753099AbYJaTfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbYJaToV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753099AbYJaTfe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 15:35:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbYJaTf0
+	id S1752839AbYJaToV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 15:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbYJaToM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 15:35:26 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:38456 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751284AbYJaTfZ (ORCPT
+	Fri, 31 Oct 2008 15:44:12 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:36670 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbYJaToK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 15:35:25 -0400
-Subject: Re: [PATCH 2/3] integrity: Linux Integrity Module(LIM)
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-In-Reply-To: <1225471251.12673.408.camel@nimitz>
-References: <cover.1223869200.git.zohar@localhost.localdomain>
-	 <7c05f813215804a30d03821fd8e251b250d0e000.1223869200.git.zohar@localhost.localdomain>
-	 <1225471251.12673.408.camel@nimitz>
-Content-Type: text/plain
-Date: Fri, 31 Oct 2008 15:35:22 -0400
-Message-Id: <1225481722.21941.42.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 31 Oct 2008 15:44:10 -0400
+Date: Fri, 31 Oct 2008 15:44:07 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Abhishek Sagar <sagar.abhishek@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       ananth@in.ibm.com, jkenisto@us.ibm.com, mhiramat@redhat.com
+Subject: [PATCH] ftrace: use kretprobe trampoline name to test in output
+In-Reply-To: <863e9df20810311233j13f996b8qa185cceddbd90849@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0810311541280.28774@gandalf.stny.rr.com>
+References: <483C53EE.2060602@gmail.com>  <alpine.DEB.1.10.0810302227360.21031@gandalf.stny.rr.com>  <alpine.DEB.1.10.0810311036130.20157@gandalf.stny.rr.com>  <863e9df20810310832uadf4daay7b5a98b677d86561@mail.gmail.com>  <alpine.DEB.1.10.0810311142220.22451@gandalf.stny.rr.com>
+ <863e9df20810311233j13f996b8qa185cceddbd90849@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-31 at 09:40 -0700, Dave Hansen wrote: 
-> On Mon, 2008-10-13 at 13:17 -0400, Mimi Zohar wrote:
-> > Concern was raised on the lkml mailing list, about adding i_integrity
-> > to the inode structure.  This patch adds a comment clarifying that
-> > i_integrity is only included in the inode if INTEGRITY is configured.
-> 
-> Mimi, it is nice that you made this a config option.  That definitely
-> helps the embedded folks and those compiling their own kernels.  But, it
-> doesn't really help those who run distros.
-> 
-> The distributions basically ship one kernel for everybody, and it has to
-> have CONFIG_KITCHEN_SINK=y in order to support everyone's individual
-> users.  Although you provided a config option, in practice, this always
-> bloats distro kernels which are the vast majority of users.
 
-Thank you for giving a more fuller explanation as to why extending the
-inode is such an issue.
+[
+  Ingo,
 
-> Is this even useful for filesystems like proc or sysfs?  Should we bloat
-> those inodes for a feature which might not possibly apply there?
+  Can you get this ready for 2.6.28. Without this fix, tracing
+  breaks the ia64 build.
+]
 
-Currently, we're not measuring proc or sysfs files.
+When a function is kprobed, the return address is set to the
+kprobe_trampoline, or something similar. This caused the output
+of the trace to look confusing when the parent seemed to be this
+"kprobe_trampoline" function.
 
-Mimi
+To fix this, Abhishek Sagar added a test of the instruction pointer
+of the parent to see if it matched the kprobe_trampoline. If it
+did, the output would print a "[unknown/kretprobe'd]" instead.
+
+Unfortunately, not all archs do this the same way, and the trampoline
+function may not be exported, which causes failures in builds.
+
+This patch will compare the name instead of the pointer to see
+if it matches. This prevents us from depending on a function from
+being exported, and should work on all archs. The worst that can
+happen is that an arch might use a different name and then we
+go back to the confusing output. At least the arch will still build.
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Tested-by: Abhishek Sagar <sagar.abhishek@gmail.com>
+Acked-by: Abhishek Sagar <sagar.abhishek@gmail.com>
+---
+ kernel/trace/trace.c |   39 +++++++++++++++++++++------------------
+ 1 file changed, 21 insertions(+), 18 deletions(-)
+
+Index: linux-tip.git/kernel/trace/trace.c
+===================================================================
+--- linux-tip.git.orig/kernel/trace/trace.c	2008-10-31 10:41:29.000000000 -0400
++++ linux-tip.git/kernel/trace/trace.c	2008-10-31 11:25:21.000000000 -0400
+@@ -1104,17 +1104,20 @@ static void s_stop(struct seq_file *m, v
+ 	mutex_unlock(&trace_types_lock);
+ }
+ 
+-#define KRETPROBE_MSG "[unknown/kretprobe'd]"
+-
+ #ifdef CONFIG_KRETPROBES
+-static inline int kretprobed(unsigned long addr)
++static inline const char *kretprobed(const char *name)
+ {
+-	return addr == (unsigned long)kretprobe_trampoline;
++	static const char tramp_name[] = "kretprobe_trampoline";
++	int size = sizeof(tramp_name);
++
++	if (strncmp(tramp_name, name, size) == 0)
++		return "[unknown/kretprobe'd]";
++	return name;
+ }
+ #else
+-static inline int kretprobed(unsigned long addr)
++static inline const char *kretprobed(const char *name)
+ {
+-	return 0;
++	return name;
+ }
+ #endif /* CONFIG_KRETPROBES */
+ 
+@@ -1123,10 +1126,13 @@ seq_print_sym_short(struct trace_seq *s,
+ {
+ #ifdef CONFIG_KALLSYMS
+ 	char str[KSYM_SYMBOL_LEN];
++	const char *name;
+ 
+ 	kallsyms_lookup(address, NULL, NULL, NULL, str);
+ 
+-	return trace_seq_printf(s, fmt, str);
++	name = kretprobed(str);
++
++	return trace_seq_printf(s, fmt, name);
+ #endif
+ 	return 1;
+ }
+@@ -1137,9 +1143,12 @@ seq_print_sym_offset(struct trace_seq *s
+ {
+ #ifdef CONFIG_KALLSYMS
+ 	char str[KSYM_SYMBOL_LEN];
++	const char *name;
+ 
+ 	sprint_symbol(str, address);
+-	return trace_seq_printf(s, fmt, str);
++	name = kretprobed(str);
++
++	return trace_seq_printf(s, fmt, name);
+ #endif
+ 	return 1;
+ }
+@@ -1392,10 +1401,7 @@ print_lat_fmt(struct trace_iterator *ite
+ 
+ 		seq_print_ip_sym(s, field->ip, sym_flags);
+ 		trace_seq_puts(s, " (");
+-		if (kretprobed(field->parent_ip))
+-			trace_seq_puts(s, KRETPROBE_MSG);
+-		else
+-			seq_print_ip_sym(s, field->parent_ip, sym_flags);
++		seq_print_ip_sym(s, field->parent_ip, sym_flags);
+ 		trace_seq_puts(s, ")\n");
+ 		break;
+ 	}
+@@ -1511,12 +1517,9 @@ static enum print_line_t print_trace_fmt
+ 			ret = trace_seq_printf(s, " <-");
+ 			if (!ret)
+ 				return TRACE_TYPE_PARTIAL_LINE;
+-			if (kretprobed(field->parent_ip))
+-				ret = trace_seq_puts(s, KRETPROBE_MSG);
+-			else
+-				ret = seq_print_ip_sym(s,
+-						       field->parent_ip,
+-						       sym_flags);
++			ret = seq_print_ip_sym(s,
++					       field->parent_ip,
++					       sym_flags);
+ 			if (!ret)
+ 				return TRACE_TYPE_PARTIAL_LINE;
+ 		}
+
 
