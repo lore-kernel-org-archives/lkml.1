@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbYJaRLh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbYJaRMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752764AbYJaRLh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 13:11:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbYJaRL3
+	id S1753272AbYJaRMX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 13:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbYJaRMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 13:11:29 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:52597 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbYJaRL2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 13:11:28 -0400
-Date: Fri, 31 Oct 2008 17:11:26 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux acpi <linux-acpi@vger.kernel.org>
-Subject: Re: eeepc-laptop rfkill, stupid question #4 and 5
-Message-ID: <20081031171126.GA17313@srcf.ucam.org>
-References: <490B3BB5.8060801@tuffmail.co.uk>
+	Fri, 31 Oct 2008 13:12:15 -0400
+Received: from kroah.org ([198.145.64.141]:37625 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752163AbYJaRMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 13:12:14 -0400
+Date: Fri, 31 Oct 2008 10:02:27 -0700
+From: Greg KH <greg@kroah.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: driver core: struct device - replace bus_id with dev_name(),
+	dev_set_name()
+Message-ID: <20081031170227.GC24826@kroah.com>
+References: <1225327008.5970.27.camel@nga.site>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <490B3BB5.8060801@tuffmail.co.uk>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <1225327008.5970.27.camel@nga.site>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 31, 2008 at 05:09:09PM +0000, Alan Jenkins wrote:
-> Did you miss a call to rfkill_force_state() on resume?
+On Thu, Oct 30, 2008 at 01:36:48AM +0100, Kay Sievers wrote: index 5437ac0..c9c214d 100644
+> --- a/include/linux/kobject.h
+> +++ b/include/linux/kobject.h
+> @@ -72,6 +72,8 @@ struct kobject {
+>  
+>  extern int kobject_set_name(struct kobject *kobj, const char *name, ...)
+>  			    __attribute__((format(printf, 2, 3)));
+> +extern int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
+> +				  va_list vargs);
+>  
+>  static inline const char *kobject_name(const struct kobject *kobj)
+>  {
+> diff --git a/lib/kobject.c b/lib/kobject.c
+> index 0487d1f..a6dec32 100644
+> --- a/lib/kobject.c
+> +++ b/lib/kobject.c
+> @@ -212,7 +212,7 @@ static int kobject_add_internal(struct kobject *kobj)
+>   * @fmt: format string used to build the name
+>   * @vargs: vargs to format the string.
+>   */
+> -static int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
+> +int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
+>  				  va_list vargs)
+>  {
+>  	const char *old_name = kobj->name;
+> 
 
-Conceivably. I didn't test the hibernation case.
+I cut this part out of this patch, as it's not needed here, and applied
+the rest.
 
-> Actually, normal boot doesn't preserve the setting either.  Your commit
-> changes the behaviour from the rfkill state being persistent across
-> reboot / power off (as a bios setting), to being always enabled on
-> boot.  It seems like a bad idea to me.
+thanks,
 
-This is the behaviour of the rfkill core.
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+greg k-h
