@@ -1,83 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbYJaPbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753065AbYJaPcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752702AbYJaPbW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 11:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbYJaPbG
+	id S1753065AbYJaPcw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 11:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbYJaPco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 11:31:06 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:38296 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751267AbYJaPbF (ORCPT
+	Fri, 31 Oct 2008 11:32:44 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:50101 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbYJaPcn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 11:31:05 -0400
-Message-ID: <490B247F.5070603@oracle.com>
-Date: Fri, 31 Oct 2008 08:30:07 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 31 Oct 2008 11:32:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=vKmRC4d/TRSMtTXMKGwz1isWyEGQ4bSU34qr6ZpfFm4+Xj2TYUsf6/JJNSZr3aFD5W
+         +61xoxfRtlu6XZGltzC97nQPaUyNs7o6o9ILA6w/OUoaNvxX2lGVan4/vZllTaHLIDdq
+         76o5zp0URbLPnIG4jZC/yibULE+YC/Wik786E=
+Message-ID: <863e9df20810310832uadf4daay7b5a98b677d86561@mail.gmail.com>
+Date: Fri, 31 Oct 2008 11:32:42 -0400
+From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH] ftrace: distinguish kretprobe'd functions in trace logs
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Al Viro" <viro@zeniv.linux.org.uk>, ananth@in.ibm.com,
+       jkenisto@us.ibm.com, mhiramat@redhat.com
+In-Reply-To: <alpine.DEB.1.10.0810311036130.20157@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] ftrace: update txt document
-References: <alpine.DEB.1.10.0810231921590.4182@gandalf.stny.rr.com> <20081026193339.91e0c644.randy.dunlap@oracle.com> <alpine.DEB.1.10.0810311049090.20157@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.1.10.0810311049090.20157@gandalf.stny.rr.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt704.oracle.com [141.146.40.82]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.490B2496.003A:SCFSTAT928724,ss=1,fgs=0
+Content-Disposition: inline
+References: <483C53EE.2060602@gmail.com>
+	 <alpine.DEB.1.10.0810302227360.21031@gandalf.stny.rr.com>
+	 <alpine.DEB.1.10.0810311036130.20157@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> I finally got around to looking at the review notes.
-> 
-> On Sun, 26 Oct 2008, Randy Dunlap wrote:
->>>  
->>>   # sysctl kernel.ftrace_enabled=1
->>> - # echo ftrace > /debug/tracing/current_tracer
->>> + # echo function > /debug/tracing/current_tracer
->>>   # echo 1 > /debug/tracing/tracing_enabled
->>>   # usleep 1
->>>   # echo 0 > /debug/tracing/tracing_enabled
->>>   # cat /debug/tracing/trace
->>> -# tracer: ftrace
->>> +# tracer: function
->>>  #
->>>  #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
->>>  #              | |      |          |         |
->> General comment #2: debugfs is normally mounted at /sys/kernel/debug
->> (which Doc/x86/pat.txt, Doc/filesystems/relay.txt,
->> Doc/infiniband/ipoib.txt, and Doc/usb/usbmon.txt know about).
->> Please either use /sys/kernel/debug or use what Doc/kernel-parameters.txt
->> uses: <debugfs> (for the mount point).  I.e., don't use a poor example
->> in the doc text.
-> 
-> In the beginning of the document I did have a disclaimer:
+On Fri, Oct 31, 2008 at 10:36 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
+>> Hi Abhishek,
+>>
+>> Now that this code is in mainline, it has become apparent that
+>> kretprobe_trampoline is not defined on all archs as a global like it is in
+>> x86. This needs to be fixed (it breaks ia64 build).
+>>
+>
+> Also note that kretprobe_trampoline will not be the return address.
+>
+> Hmm, I think I can solve this by not even doing the test here, but simply
+> on the name itself.
 
-OK, sorry about that.  Somehow I missed seeing it.
+Ok. I wonder if it would be a good idea to export kretprobe_trampoline
+(or kretprobe_trampoline->ip) via asm/kprobes.h for all archs, for the
+kind of checks done here for ftrace (to have them elsewhere too like
+in OOPs generation etc).
 
-> ------------------------
-> To mount the debugfs system:
-> 
->   # mkdir /debug
->   # mount -t debugfs nodev /debug
-> 
-> (Note: it is more common to mount at /sys/kernel/debug, but for simplicity
->  this document will use /debug)
-> ------------------------
-> 
-> I know the recommended place is /sys/kernel/debug, but I never use it. And 
-> I know many others that do not either. It is just easier to make the
-> /debug directory. I feel this is more of a guideline than something
-> that must be enforced.  But if you do feel strongly on this subject, I
-> can change it to /sys/kernel/debug (which I absolutely loathe).
+Adding Kprobe folks in CC
 
-
--- 
-~Randy
+-- Abhishek
