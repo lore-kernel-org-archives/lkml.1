@@ -1,106 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbYJaNfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752518AbYJaNgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752127AbYJaNfa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 09:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbYJaNfR
+	id S1752518AbYJaNgv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 09:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbYJaNgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 09:35:17 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:26546 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750950AbYJaNfP (ORCPT
+	Fri, 31 Oct 2008 09:36:42 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:35122 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751164AbYJaNgl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 09:35:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=tR4SqQ3QroxOH9UyCTdescKTfSolbspnJdA6orREm14DI1qNwEsCok2lby2O5gKY5v
-         i3SIb6yS8dxTfMZED6qKrXgDnC5xGQ0hpA8YqV4flfgwHvKtxqOJhXFFNF53FOqF3vnr
-         5Y5Lsh/yU/XMwCVxDxMjmch/VILYLpTl8wmsE=
-Message-ID: <490B0987.2050801@tuffmail.co.uk>
-Date: Fri, 31 Oct 2008 13:35:03 +0000
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Fri, 31 Oct 2008 09:36:41 -0400
+Date: Fri, 31 Oct 2008 09:36:38 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, peterz@infradead.org, torvalds@linux-foundation.org,
+       srostedt@redhat.com
+Subject: [PATCH] ftrace: fix hardirq header for non ftrace archs
+In-Reply-To: <20081031093030.GC30317@elte.hu>
+Message-ID: <alpine.DEB.1.10.0810310934010.13290@gandalf.stny.rr.com>
+References: <20081030200831.467420488@goodmis.org> <20081030201127.820600693@goodmis.org> <20081030133228.824e3f69.akpm@linux-foundation.org> <alpine.DEB.1.10.0810301645100.21031@gandalf.stny.rr.com> <20081030141048.904c82e1.akpm@linux-foundation.org>
+ <alpine.DEB.1.10.0810310002320.28140@gandalf.stny.rr.com> <alpine.DEB.1.10.0810310016230.28140@gandalf.stny.rr.com> <20081031093030.GC30317@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Shivdas Gujare <shivdas.tech@gmail.com>
-CC: linux-kernel@vger.kernel.org, beagleboard@googlegroups.com
-Subject: Re: Diff between Linux-2.6.27-omap1-dirty and Linux-2.6.27-omap1
- ?
-References: <cf70f0210810310608x37f8e3dcu3ab0023891fcb339@mail.gmail.com>
-In-Reply-To: <cf70f0210810310608x37f8e3dcu3ab0023891fcb339@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shivdas Gujare wrote:
-> Hi All,
-> 
-> I am working on testing Linux-2.6.27 omap kernel on beagle board.
-> 
-> I cloned kernel from
-> git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git
-> 
-> and checked out to tag v2.6.27-omap1, I loaded kernel on beagle board,
-> and was able to boot properly like....
-> 
-> OMAP3 beagleboard.org # bootm 0x80300000
-> ## Booting kernel from Legacy Image at 80300000 ...
->    Image Name:   Linux-2.6.27-omap1
->    Image Type:   ARM Linux Kernel Image (uncompressed)
->    Data Size:    1614320 Bytes =  1.5 MB
->    Load Address: 80008000
->    Entry Point:  80008000
->    Verifying Checksum ... OK
->    Loading Kernel Image ... OK
-> OK
-> 
-> Now, I done some operations, like checkout to master, checkout to
-> v2.6.26-omap1 and v2.6.25-omap1, loaded corresponding uImages to
-> beagle board
-> and was able to boot board every time.
-> 
-> After this, I again checkout to v2.6.27-omap1, compiled and loaded
-> uImage to beagleboard
-> But this time I am not able to boot the board.
-> and Got the message like
-> 
-> OMAP3 beagleboard.org # bootm 0x80300000
-> ## Booting kernel from Legacy Image at 80300000 ...
->    Image Name:   Linux-2.6.27-omap1-dirty
->    Image Type:   ARM Linux Kernel Image (uncompressed)
->    Data Size:    1669176 Bytes =  1.6 MB
->    Load Address: 80008000
->    Entry Point:  80008000
->    Verifying Checksum ... OK
->    Loading Kernel Image ... OK
-> OK
-> 
-> Starting kernel ...
-> 
-> Uncompressing Linux...........................................................................................................
-> done, booting the kernel.
-> 
-> and it, stucks at here..
-> 
-> Here, the only difference I observed is "Image Name:
-> Linux-2.6.27-omap1" and "Image Name:   Linux-2.6.27-omap1-dirty",
-> where uImage with second Image name is not booting.
-> 
-> I think, I have done something wrong here, while compilation and checkout.
-> 
-> I just want to know in what cases "-dirty" is appended to linux kernel
-> Image Names or anything I done wrong?
 
--dirty is appended to the version string when there are differences between the working tree and the git HEAD.  In other words, it sounds like you accidentally modified some file.
+Not all archs implement ftrace, and therefore do not have an asm/ftrace.h.
+This patch corrects the problem.
 
-You can see which files have been modified with "git status".  It will also show extra files under "untracked"; you may see a few arch-specific object files, but all the .o, .ko, etc. files will be hidden by virtue of gitignore.
+The ftrace_nmi_enter/exit now must be defined for all archs that implement
+dynamic ftrace. Currently, only x86 does.
 
-If the files were modified before the last "git checkout", it would have tried to preserve the modifications.  It would also warn you by listing the files, with an "M" next to their name.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ arch/arm/include/asm/ftrace.h     |    5 -----
+ arch/powerpc/include/asm/ftrace.h |    5 -----
+ arch/sh/include/asm/ftrace.h      |    5 -----
+ arch/sparc/include/asm/ftrace.h   |    5 -----
+ arch/x86/include/asm/ftrace.h     |   16 ----------------
+ include/linux/ftrace.h            |    5 ++++-
+ include/linux/hardirq.h           |    2 +-
+ 7 files changed, 5 insertions(+), 38 deletions(-)
 
-Hope that helps.  You described your problem very well, btw.
+Index: linux-tip.git/arch/arm/include/asm/ftrace.h
+===================================================================
+--- linux-tip.git.orig/arch/arm/include/asm/ftrace.h	2008-10-30 23:24:18.000000000 -0400
++++ linux-tip.git/arch/arm/include/asm/ftrace.h	2008-10-31 08:48:47.000000000 -0400
+@@ -1,11 +1,6 @@
+ #ifndef _ASM_ARM_FTRACE
+ #define _ASM_ARM_FTRACE
+ 
+-#ifndef __ASSEMBLY__
+-static inline void ftrace_nmi_enter(void) { }
+-static inline void ftrace_nmi_exit(void) { }
+-#endif
+-
+ #ifdef CONFIG_FUNCTION_TRACER
+ #define MCOUNT_ADDR		((long)(mcount))
+ #define MCOUNT_INSN_SIZE	4 /* sizeof mcount call */
+Index: linux-tip.git/arch/powerpc/include/asm/ftrace.h
+===================================================================
+--- linux-tip.git.orig/arch/powerpc/include/asm/ftrace.h	2008-10-30 23:24:30.000000000 -0400
++++ linux-tip.git/arch/powerpc/include/asm/ftrace.h	2008-10-31 08:48:52.000000000 -0400
+@@ -1,11 +1,6 @@
+ #ifndef _ASM_POWERPC_FTRACE
+ #define _ASM_POWERPC_FTRACE
+ 
+-#ifndef __ASSEMBLY__
+-static inline void ftrace_nmi_enter(void) { }
+-static inline void ftrace_nmi_exit(void) { }
+-#endif
+-
+ #ifdef CONFIG_FUNCTION_TRACER
+ #define MCOUNT_ADDR		((long)(_mcount))
+ #define MCOUNT_INSN_SIZE	4 /* sizeof mcount call */
+Index: linux-tip.git/arch/sh/include/asm/ftrace.h
+===================================================================
+--- linux-tip.git.orig/arch/sh/include/asm/ftrace.h	2008-10-30 23:24:43.000000000 -0400
++++ linux-tip.git/arch/sh/include/asm/ftrace.h	2008-10-31 08:48:58.000000000 -0400
+@@ -2,11 +2,6 @@
+ #define __ASM_SH_FTRACE_H
+ 
+ #ifndef __ASSEMBLY__
+-static inline void ftrace_nmi_enter(void) { }
+-static inline void ftrace_nmi_exit(void) { }
+-#endif
+-
+-#ifndef __ASSEMBLY__
+ extern void mcount(void);
+ #endif
+ 
+Index: linux-tip.git/arch/sparc/include/asm/ftrace.h
+===================================================================
+--- linux-tip.git.orig/arch/sparc/include/asm/ftrace.h	2008-10-30 23:24:50.000000000 -0400
++++ linux-tip.git/arch/sparc/include/asm/ftrace.h	2008-10-31 08:49:01.000000000 -0400
+@@ -1,11 +1,6 @@
+ #ifndef _ASM_SPARC64_FTRACE
+ #define _ASM_SPARC64_FTRACE
+ 
+-#ifndef __ASSEMBLY__
+-static inline void ftrace_nmi_enter(void) { }
+-static inline void ftrace_nmi_exit(void) { }
+-#endif
+-
+ #ifdef CONFIG_MCOUNT
+ #define MCOUNT_ADDR		((long)(_mcount))
+ #define MCOUNT_INSN_SIZE	4 /* sizeof mcount call */
+Index: linux-tip.git/arch/x86/include/asm/ftrace.h
+===================================================================
+--- linux-tip.git.orig/arch/x86/include/asm/ftrace.h	2008-10-30 23:25:26.000000000 -0400
++++ linux-tip.git/arch/x86/include/asm/ftrace.h	2008-10-31 08:52:44.000000000 -0400
+@@ -17,23 +17,7 @@ static inline unsigned long ftrace_call_
+ 	 */
+ 	return addr - 1;
+ }
+-
+-#ifdef CONFIG_DYNAMIC_FTRACE
+-extern void ftrace_nmi_enter(void);
+-extern void ftrace_nmi_exit(void);
+-#else
+-static inline void ftrace_nmi_enter(void) { }
+-static inline void ftrace_nmi_exit(void) { }
+-#endif
+ #endif /* __ASSEMBLY__ */
+-
+-#else /* CONFIG_FUNCTION_TRACER */
+-
+-#ifndef __ASSEMBLY__
+-static inline void ftrace_nmi_enter(void) { }
+-static inline void ftrace_nmi_exit(void) { }
+-#endif
+-
+ #endif /* CONFIG_FUNCTION_TRACER */
+ 
+ #endif /* _ASM_X86_FTRACE_H */
+Index: linux-tip.git/include/linux/ftrace.h
+===================================================================
+--- linux-tip.git.orig/include/linux/ftrace.h	2008-10-30 23:31:33.000000000 -0400
++++ linux-tip.git/include/linux/ftrace.h	2008-10-31 08:52:29.000000000 -0400
+@@ -44,7 +44,6 @@ static inline void ftrace_kill(void) { }
+ #endif /* CONFIG_FUNCTION_TRACER */
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
+-
+ enum {
+ 	FTRACE_FL_FREE		= (1 << 0),
+ 	FTRACE_FL_FAILED	= (1 << 1),
+@@ -105,6 +104,8 @@ extern void ftrace_release(void *start, 
+ 
+ extern void ftrace_disable_daemon(void);
+ extern void ftrace_enable_daemon(void);
++extern void ftrace_nmi_enter(void);
++extern void ftrace_nmi_exit(void);
+ 
+ #else
+ # define skip_trace(ip)				({ 0; })
+@@ -113,6 +114,8 @@ extern void ftrace_enable_daemon(void);
+ # define ftrace_disable_daemon()		do { } while (0)
+ # define ftrace_enable_daemon()			do { } while (0)
+ static inline void ftrace_release(void *start, unsigned long size) { }
++static inline void ftrace_nmi_enter(void) { }
++static inline void ftrace_nmi_exit(void) { }
+ #endif /* CONFIG_DYNAMIC_FTRACE */
+ 
+ /* totally disable ftrace - can not re-enable after this */
+Index: linux-tip.git/include/linux/hardirq.h
+===================================================================
+--- linux-tip.git.orig/include/linux/hardirq.h	2008-10-31 00:07:46.000000000 -0400
++++ linux-tip.git/include/linux/hardirq.h	2008-10-31 08:53:01.000000000 -0400
+@@ -4,8 +4,8 @@
+ #include <linux/preempt.h>
+ #include <linux/smp_lock.h>
+ #include <linux/lockdep.h>
++#include <linux/ftrace.h>
+ #include <asm/hardirq.h>
+-#include <asm/ftrace.h>
+ #include <asm/system.h>
+ 
+ /*
 
-Regards
-Alan
+
