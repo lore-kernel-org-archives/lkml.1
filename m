@@ -1,65 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbYJaNIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbYJaNJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752836AbYJaNIU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 09:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbYJaNIL
+	id S1752999AbYJaNJA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 09:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYJaNIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 09:08:11 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:57400 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751302AbYJaNIJ (ORCPT
+	Fri, 31 Oct 2008 09:08:52 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:60664 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750854AbYJaNIv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 09:08:09 -0400
-Subject: Re: [PATCH 1/1] Make sure that any oops is flushed to the mtdoops
-	console
-From: Viktor Rosendahl <Viktor.Rosendahl@nokia.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
-In-Reply-To: <20081030131734.c74e614d.akpm@linux-foundation.org>
-References: <1224688588-2665-1-git-send-email-viktor.rosendahl@nokia.com>
-	 <1224688588-2665-2-git-send-email-viktor.rosendahl@nokia.com>
-	 <20081030131734.c74e614d.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 31 Oct 2008 15:05:28 +0200
-Message-Id: <1225458328.16867.23.camel@viktor.research.nokia.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 31 Oct 2008 09:08:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=BYNFe1rAe1JFVkQCKtjr02qfH3kyrEWOMEzK1njw2wdUniY0Tm5ZJ9C8CQNPpwsUI+
+         /ROqpaJKTtLp0E/pHjsNG4KIW0FJMX6+YfHm6ZYc2DxgfhoUAwlV6tXgte+tRaRetF2S
+         jltLuPDAC270hXBKThAMyzZDMItIGQOmX8LPo=
+Message-ID: <cf70f0210810310608x37f8e3dcu3ab0023891fcb339@mail.gmail.com>
+Date: Fri, 31 Oct 2008 18:38:49 +0530
+From: "Shivdas Gujare" <shivdas.tech@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Diff between Linux-2.6.27-omap1-dirty and Linux-2.6.27-omap1 ?
+Cc: beagleboard@googlegroups.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 Oct 2008 13:07:45.0981 (UTC) FILETIME=[AAC316D0:01C93B59]
-X-Nokia-AV: Clean
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-30 at 13:17 -0700, ext Andrew Morton wrote: 
-> On Wed, 22 Oct 2008 18:16:28 +0300
-> Viktor Rosendahl <viktor.rosendahl@nokia.com> wrote:
-<clip> 
-> >  void __attribute__((weak)) bust_spinlocks(int yes)
-> > @@ -22,6 +23,7 @@ void __attribute__((weak)) bust_spinlocks(int yes)
-> >  #ifdef CONFIG_VT
-> >  		unblank_screen();
-> >  #endif
-> > +		console_unblank();
-> >  		if (--oops_in_progress == 0)
-> >  			wake_up_klogd();
-> >  	}
-> 
-> That looks logical.  From my reading we can now remove that
-> unblank_screen(), because the console_unblank() will call
-> vt_console_driver.unblank() for us?
+Hi All,
 
-For some reason, we did not think about it here when the N810 kernel was
-fixed. It looks good to me but if you do it, then there will be a slight
-difference in behavior, since console_unblank() will call
-vt_console_driver.unblank() only if the console_sem can be acquired,
-otherwise it just returns without doing anything.
+I am working on testing Linux-2.6.27 omap kernel on beagle board.
 
-Maybe console_unblank() should be changed to not care too much about the
-console_sem if an oops is in progress? 
+I cloned kernel from
+git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git
 
-best regards,
+and checked out to tag v2.6.27-omap1, I loaded kernel on beagle board,
+and was able to boot properly like....
 
-Viktor
+OMAP3 beagleboard.org # bootm 0x80300000
+## Booting kernel from Legacy Image at 80300000 ...
+   Image Name:   Linux-2.6.27-omap1
+   Image Type:   ARM Linux Kernel Image (uncompressed)
+   Data Size:    1614320 Bytes =  1.5 MB
+   Load Address: 80008000
+   Entry Point:  80008000
+   Verifying Checksum ... OK
+   Loading Kernel Image ... OK
+OK
 
+Now, I done some operations, like checkout to master, checkout to
+v2.6.26-omap1 and v2.6.25-omap1, loaded corresponding uImages to
+beagle board
+and was able to boot board every time.
 
+After this, I again checkout to v2.6.27-omap1, compiled and loaded
+uImage to beagleboard
+But this time I am not able to boot the board.
+and Got the message like
+
+OMAP3 beagleboard.org # bootm 0x80300000
+## Booting kernel from Legacy Image at 80300000 ...
+   Image Name:   Linux-2.6.27-omap1-dirty
+   Image Type:   ARM Linux Kernel Image (uncompressed)
+   Data Size:    1669176 Bytes =  1.6 MB
+   Load Address: 80008000
+   Entry Point:  80008000
+   Verifying Checksum ... OK
+   Loading Kernel Image ... OK
+OK
+
+Starting kernel ...
+
+Uncompressing Linux...........................................................................................................
+done, booting the kernel.
+
+and it, stucks at here..
+
+Here, the only difference I observed is "Image Name:
+Linux-2.6.27-omap1" and "Image Name:   Linux-2.6.27-omap1-dirty",
+where uImage with second Image name is not booting.
+
+I think, I have done something wrong here, while compilation and checkout.
+
+I just want to know in what cases "-dirty" is appended to linux kernel
+Image Names or anything I done wrong?
+
+Thanks for your Helps.
+
+Regards,
+Shivdas
