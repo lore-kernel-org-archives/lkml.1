@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbYJaOWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752610AbYJaOXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752725AbYJaOWU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 10:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYJaOWM
+	id S1752610AbYJaOXh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 10:23:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbYJaOX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 10:22:12 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:53058 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbYJaOWL (ORCPT
+	Fri, 31 Oct 2008 10:23:27 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:58344 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751464AbYJaOX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 10:22:11 -0400
-Message-ID: <f73f7ab80810310722ja2cde63va46bacf59ca1698f@mail.gmail.com>
-Date: Fri, 31 Oct 2008 10:22:09 -0400
-From: "Kyle Moffett" <kyle@moffetthome.net>
-To: "J.R. Mauro" <jrm8005@gmail.com>
-Subject: Re: merging other repos into linux-2.6
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Greg KH" <greg@kroah.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <3aaafc130810310557p1c9c67c0t4407209955668839@mail.gmail.com>
+	Fri, 31 Oct 2008 10:23:27 -0400
+Date: Fri, 31 Oct 2008 14:23:18 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       willy@linux.intel.com, lrodriguez@atheros.com
+Subject: Re: ath5k gets lost with eeepc-laptop removal
+Message-ID: <20081031142318.GA9009@srcf.ucam.org>
+References: <20081031110502.18e33eba@doriath.conectiva> <490B0D75.8020601@tuffmail.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081030054944.GA19035@kroah.com>
-	 <3aaafc130810301834w554fbd33p6f423ffef77e92aa@mail.gmail.com>
-	 <alpine.LFD.2.00.0810301843220.21084@nehalem.linux-foundation.org>
-	 <3aaafc130810301938k4ee654d6sf7de1fff5d9c9fc3@mail.gmail.com>
-	 <f73f7ab80810302108n37f72994qfc5d7d83b64e290@mail.gmail.com>
-	 <3aaafc130810310557p1c9c67c0t4407209955668839@mail.gmail.com>
+In-Reply-To: <490B0D75.8020601@tuffmail.co.uk>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 31, 2008 at 8:57 AM, J.R. Mauro <jrm8005@gmail.com> wrote:
-> On Fri, Oct 31, 2008 at 12:08 AM, Kyle Moffett <kyle@moffetthome.net> wrote:
->> Now the history of $KIDBRANCH will appear to be a series of commits
->> which add files in $SUBDIR of the parent project, without any changes
->> at all to the parent project's tree.  You can then do a merge of what
->> appears to be a normal development branch into the main repository.
->>
->> Since none of the files are even remotely referenced, there can be no
->> possible build failures (hence bisection is not broken).  You may then
->> add commits which add Kconfig options and Makefile references and
->> happily develop away.
->
-> So this would keep their history but make it look like their first
-> commit (years ago) happened today? Or do I misunderstand you?
+On Fri, Oct 31, 2008 at 01:51:49PM +0000, Alan Jenkins wrote:
 
-Not really, since GIT will preserve the original commit date
-information when doing the filtering.  Essentially it's equivalent to
-taking some ancient long git branch of a project and doing a "git
-rebase" onto a recent kernel.  The difference is that there is no
-common ancestor and the entire contents of one are mapped onto a
-subdirectory of the other.  I'm trying to figure out if this would be
-a useful addition to the "git rebase" functionality (since that's
-essentially what it is).
+> Matthew: I nagged you twice about different consequences of this 
+> commit, so here's a third :).  You said rfkill no longer automatically 
+> frobs on suspend/resume, which was what I was worried about last time.  
+> Should the core code also be modified so it doesn't do anything when 
+> the rfkill device is unregistered?
 
-> But then if Greg thinks the history is rubbish, I doubt it will get
-> imported, although I think these methods are worth experimenting with
-> for the future.
+I think there's definitely an argument in favour of that, though I 
+suspect that's a design feature - if you remove the control mechanism 
+for a radio, the safe state for that radio to be in is not transmitting.
 
-Oh, I very much agree that importing a bunch of dodgy changelogs is
-hardly worth it.  The biggest difference between the Linux kernel and
-most other software projects is the Linux kernel has some of the best
-changelogs and one of the most bisectable histories.
-
-Greg did say he had another project he wanted to import, though, so I
-figured I'd post another suggestion about how to merge the projects
-histories together.
-
-Cheers,
-Kyle Moffett
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
