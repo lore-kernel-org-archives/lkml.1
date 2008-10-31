@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbYJaQlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbYJaQm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753102AbYJaQlT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 12:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbYJaQlD
+	id S1752836AbYJaQm3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 12:42:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbYJaQmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 12:41:03 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34747 "EHLO e4.ny.us.ibm.com"
+	Fri, 31 Oct 2008 12:42:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47114 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751536AbYJaQlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 12:41:01 -0400
-Subject: Re: [PATCH 2/3] integrity: Linux Integrity Module(LIM)
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-In-Reply-To: <7c05f813215804a30d03821fd8e251b250d0e000.1223869200.git.zohar@localhost.localdomain>
-References: <cover.1223869200.git.zohar@localhost.localdomain>
-	 <7c05f813215804a30d03821fd8e251b250d0e000.1223869200.git.zohar@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 31 Oct 2008 09:40:51 -0700
-Message-Id: <1225471251.12673.408.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1751353AbYJaQmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 12:42:20 -0400
+Message-ID: <490B3574.1060501@redhat.com>
+Date: Fri, 31 Oct 2008 12:42:28 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Huang Ying <ying.huang@intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATH -mm -v2] Fix a race condtion of oops_in_progress
+References: <1225268796.24095.48.camel@yhuang-dev.sh.intel.com>	 <49087871.3010303@redhat.com> <1225332179.24095.61.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1225332179.24095.61.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-13 at 13:17 -0400, Mimi Zohar wrote:
-> Concern was raised on the lkml mailing list, about adding i_integrity
-> to the inode structure.  This patch adds a comment clarifying that
-> i_integrity is only included in the inode if INTEGRITY is configured.
+Huang Ying wrote:
+> Hi, Chris,
+> 
+> On Wed, 2008-10-29 at 08:51 -0600, Chris Snook wrote:
+>> Huang Ying wrote:
+>>> Fix a race condition accessing oops_in_progress.  Which may be changed on
+>>> multiple CPU simultaneously, but it is changed via non-atomic operation
+>>> ++/--.  This patch changes the definition of oops_in_process from int to
+>>> atomic_t, and accessing method to atomic operations.
+>> You also need barriers.  I believe rmb() before atomic_read() and wmb() after 
+>> atomic_set() should suffice.
+> 
+> I don't think that is necessary. I haven't found there is particular
+> consistent requirement about oops_in_progress.
 
-Mimi, it is nice that you made this a config option.  That definitely
-helps the embedded folks and those compiling their own kernels.  But, it
-doesn't really help those who run distros.
+atomic_read() and atomic_set() don't inherently cause changes to be visible on 
+other CPUs any faster than ++ and -- operators.  Sometimes it happens to work 
+out that way as a result of how the compiler and the CPU order operations, but 
+there's no semantic guarantee, and it could even take arbitrarily long under 
+some circumstances.  If you want to use atomic ops to close the race, you need 
+to use barriers.
 
-The distributions basically ship one kernel for everybody, and it has to
-have CONFIG_KITCHEN_SINK=y in order to support everyone's individual
-users.  Although you provided a config option, in practice, this always
-bloats distro kernels which are the vast majority of users.
-
-Is this even useful for filesystems like proc or sysfs?  Should we bloat
-those inodes for a feature which might not possibly apply there?
-
--- Dave
-
+-- Chris
