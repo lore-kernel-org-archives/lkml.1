@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751335AbYJaLMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbYJaLOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751335AbYJaLMr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 07:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbYJaLMi
+	id S1751893AbYJaLOj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 07:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbYJaLOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 07:12:38 -0400
-Received: from gw.goop.org ([64.81.55.164]:53653 "EHLO mail.goop.org"
+	Fri, 31 Oct 2008 07:14:31 -0400
+Received: from ozlabs.org ([203.10.76.45]:36230 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750735AbYJaLMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 07:12:38 -0400
-Message-ID: <490AE820.1010301@goop.org>
-Date: Fri, 31 Oct 2008 22:12:32 +1100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	id S1750761AbYJaLOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 07:14:30 -0400
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Suresh Siddha <suresh.b.siddha@intel.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>,
-       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Mallick, Asit K" <asit.k.mallick@intel.com>
-Subject: Re: [patch] generic-ipi: fix the smp_mb() placement
-References: <20081029224229.GK30573@linux-os.sc.intel.com> <20081030185322.GE17822@elte.hu> <20081030202322.GM30573@linux-os.sc.intel.com> <490A9337.6090504@goop.org> <20081031093924.GG30317@elte.hu>
-In-Reply-To: <20081031093924.GG30317@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18698.59327.927555.732608@cargo.ozlabs.ibm.com>
+Date: Fri, 31 Oct 2008 22:10:55 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, benh@kernel.crashing.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.28-rc1: NVRAM being corrupted on ppc64 preventing boot (bisected)
+In-Reply-To: <20081031103646.GA24395@csn.ul.ie>
+References: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org>
+	<20081030142632.GA15645@csn.ul.ie>
+	<18698.7794.500191.189515@cargo.ozlabs.ibm.com>
+	<20081031103646.GA24395@csn.ul.ie>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
->   
->> Suresh Siddha wrote:
->>     
->>> We didn't see the lockup in our tests but Xen folks reported similar failures
->>> with their smp call function code.
->>>   
->>>       
->> ...really?  I don't remember anything like that, but perhaps I'm 
->> forgetting something.  In Xen the IPI is sent with a hypercall, 
->> which is definitely a solid enough barrier for these purposes.
->>     
->
-> i think Suresh might be referring to some of the fragilities Xen had 
-> with generic-ipi. But those AFAICT were due to the on-stack lifetime 
-> bug that Nick fixed via the kmalloc? v2.6.26-ish issue.
+Mel Gorman writes:
 
-Right, that's all I could think of.
+> Yaboot in my case and I've heard it affected a DVD installation. I don't
+> know for sure if it affects netboot but as I think it's something the
+> kernel is doing, it probably doesn't matter how it gets loaded?
 
-    J
+What changed in that commit was the contents of a couple of structures
+that the firmware looks at to see what the kernel wants from
+firmware.  Specifically the change was to say that the kernel (or
+really the zImage wrapper) would like the firmware to be based at the
+32MB point (which is what AIX uses) rather than 12MB (which was the
+default on older machines).
+
+So, as I understand it, it's not anything the kernel is actively
+doing, it's how the firmware is reacting to what the kernel says it
+wants.  And since we are requesting the same value as AIX (as far as I
+know) I'm really surprised it caused problems.
+
+We can revert that commit, but I still need to solve the problem that
+the distros are facing, namely that their installer kernel + initramfs
+images are now bigger than 12MB and can't be loaded if the firmware is
+based at 12MB.  That's why I really want to understand the problem in
+more detail.
+
+> It's been pointed out that it can be "fixed" by upgrading the firmware but
+> surely we can avoid breaking the machine in the first place?
+
+Have you upgraded the firmware on the machine you saw this problem on?
+If not, would you be willing to run some tests for me?
+
+Paul.
