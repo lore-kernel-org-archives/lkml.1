@@ -1,165 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbYJaDQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbYJaDRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754301AbYJaDQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 23:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbYJaDQt
+	id S1754885AbYJaDRX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 23:17:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbYJaDQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 23:16:49 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:63875 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751096AbYJaDQs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 23:16:48 -0400
-Date: Thu, 30 Oct 2008 23:16:45 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -v2] ring-buffer: add paranoid checks for loops
-In-Reply-To: <20081030184552.GC17822@elte.hu>
-Message-ID: <alpine.DEB.1.10.0810302314460.26352@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0810291439460.13214@gandalf.stny.rr.com> <20081030184552.GC17822@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 30 Oct 2008 23:16:54 -0400
+Received: from kroah.org ([198.145.64.141]:55966 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753485AbYJaDQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 23:16:53 -0400
+Date: Thu, 30 Oct 2008 20:13:57 -0700
+From: Greg KH <greg@kroah.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: merging other repos into linux-2.6
+Message-ID: <20081031031357.GA20944@kroah.com>
+References: <20081030054944.GA19035@kroah.com> <alpine.LFD.2.00.0810301152230.3505@nehalem.linux-foundation.org> <20081030215734.GA18822@kroah.com> <alpine.LFD.2.00.0810301619260.21084@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0810301619260.21084@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[
-  Changes since v1:
+On Thu, Oct 30, 2008 at 04:28:46PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Thu, 30 Oct 2008, Greg KH wrote:
+> > 
+> > But as for the 'bisectability' at one point in the merge, you will be
+> > adding a stand-alone driver into the kernel itself.  So for anyone
+> > traversing down that path, all you would be building would be the driver
+> > itself, the whole rest of the kernel is "gone".
+> 
+> Right. This was exactly what happened initially in the btrfs thing. And it 
+> was horrid.
+> 
+> It was horrid because it was totally unexpected for users, and causes huge 
+> churn and confusion when trying to check out a totally different directory 
+> layout (and git won't remove the old *.o files, so trust me, it _will_ be 
+> confusing).
 
-   Updated comments to be more detailed.
-]
+I agree, I don't want this to happen.
 
-While writing a new tracer, I had a bug where I caused the ring-buffer
-to recurse in a bad way. The bug was with the tracer I was writing
-and not the ring-buffer itself. But it took a long time to find the
-problem.
+> What I got Chris Mason to do was to run
+> 
+> 	git filter-branch --index odd-script-goes-here
+> 
+> with that odd script looking something like:
+> 
+> >       #!/bin/sh
+> >       exists=$(git ls-files fs/btrfs/)
+> >       [ -z "$exists" ] &&
+> >               git ls-files --stage |
+> >               awk -F '\t' '{ print "0 0000000000000000000000000000000000000000\t" $2 "\n" $1 "\tfs/btrfs/" $2 }' |
+> >               git update-index --index-info
+> 
+> which basically does a directory rename in the branch (obviously, in this 
+> case into fs/btrfs, which is not what _you_ want). That way, at least the 
+> directory structure of the tree you merge has the same layout, and you 
+> don't get _that_ particular directory jumping back and forth.
+> 
+> Chris also merged in the history at the 2.6.26 tree (I think), so that 
+> while his original history had had just a stand-alone btrfs build, the end 
+> result was actually *totally* bisectable. Again, you should ask him about 
+> any other scripts he ran.
 
-This patch adds paranoid checks into the ring-buffer infrastructure
-that will catch bugs of this nature.
+Ok, this seems a lot more reasonable, and doable.
 
-Note: I put the bug back in the tracer and this patch showed the error
-      nicely and prevented the lockup.
+But then I took a long look at the cvs commit logs.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/ring_buffer.c |   58 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 58 insertions(+)
+And you are right, they are crap, and pointless to have here.
 
-Index: linux-tip.git/kernel/trace/ring_buffer.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/ring_buffer.c	2008-10-30 11:22:43.000000000 -0400
-+++ linux-tip.git/kernel/trace/ring_buffer.c	2008-10-30 22:50:53.000000000 -0400
-@@ -1022,8 +1022,24 @@ rb_reserve_next_event(struct ring_buffer
- 	struct ring_buffer_event *event;
- 	u64 ts, delta;
- 	int commit = 0;
-+	int paranoid = 0;
- 
-  again:
-+	/*
-+	 * We allow for interrupts to reenter here and do a trace.
-+	 * If one does, it will cause this original code to loop
-+	 * back here. Even with heavy interrupts happening, this
-+	 * should only happen a few times in a row. If this happens
-+	 * 1000 times in a row, there must be either an interrupt
-+	 * storm or we have something buggy.
-+	 * Bail!
-+	 */
-+	if (unlikely(paranoid > 1000)) {
-+		RB_WARN_ON(cpu_buffer, 1);
-+		return NULL;
-+	}
-+	paranoid++;
-+
- 	ts = ring_buffer_time_stamp(cpu_buffer->cpu);
- 
- 	/*
-@@ -1532,10 +1548,24 @@ rb_get_reader_page(struct ring_buffer_pe
- {
- 	struct buffer_page *reader = NULL;
- 	unsigned long flags;
-+	int paranoid = 0;
- 
- 	spin_lock_irqsave(&cpu_buffer->lock, flags);
- 
-  again:
-+	/*
-+	 * This should normally only loop twice. But because the
-+	 * start of the reader inserts an empty page, it causes
-+	 * a case where we will loop three times. There should be no
-+	 * reason to loop four times (that I know of).
-+	 */
-+	if (unlikely(paranoid > 2)) {
-+		RB_WARN_ON(cpu_buffer, 1);
-+		reader = NULL;
-+		goto out;
-+	}
-+	paranoid++;
-+
- 	reader = cpu_buffer->reader_page;
- 
- 	/* If there's more to read, return this page */
-@@ -1665,6 +1695,7 @@ ring_buffer_peek(struct ring_buffer *buf
- 	struct ring_buffer_per_cpu *cpu_buffer;
- 	struct ring_buffer_event *event;
- 	struct buffer_page *reader;
-+	int paranoid = 0;
- 
- 	if (!cpu_isset(cpu, buffer->cpumask))
- 		return NULL;
-@@ -1672,6 +1703,19 @@ ring_buffer_peek(struct ring_buffer *buf
- 	cpu_buffer = buffer->buffers[cpu];
- 
-  again:
-+	/*
-+	 * We repeat when a timestamp is encountered. It is possible
-+	 * to get multiple timestamps from an interrupt entering just
-+	 * as one timestamp is about to be written. The max times
-+	 * that this can happen is the number of nested interrupts we
-+	 * can have.  10 should be more than enough.
-+	 */
-+	if (unlikely(paranoid > 10)) {
-+		RB_WARN_ON(cpu_buffer, 1);
-+		return NULL;
-+	}
-+	paranoid++;
-+
- 	reader = rb_get_reader_page(cpu_buffer);
- 	if (!reader)
- 		return NULL;
-@@ -1722,6 +1766,7 @@ ring_buffer_iter_peek(struct ring_buffer
- 	struct ring_buffer *buffer;
- 	struct ring_buffer_per_cpu *cpu_buffer;
- 	struct ring_buffer_event *event;
-+	int paranoid = 0;
- 
- 	if (ring_buffer_iter_empty(iter))
- 		return NULL;
-@@ -1730,6 +1775,19 @@ ring_buffer_iter_peek(struct ring_buffer
- 	buffer = cpu_buffer->buffer;
- 
-  again:
-+	/*
-+	 * We repeat when a timestamp is encountered. It is possible
-+	 * to get multiple timestamps from an interrupt entering just
-+	 * as one timestamp is about to be written. The max times
-+	 * that this can happen is the number of nested interrupts we
-+	 * can have.  10 should be more than enough.
-+	 */
-+	if (unlikely(paranoid > 10)) {
-+		RB_WARN_ON(cpu_buffer, 1);
-+		return NULL;
-+	}
-+	paranoid++;
-+
- 	if (rb_per_cpu_empty(cpu_buffer))
- 		return NULL;
- 
+So, thanks a lot for showing me how to do this properly, in the future I
+might do this (actually, for one wireless driver, I might do this now,
+as it was always developed in git), but for the comedi code, I'll just
+use the "normal" method of adding drivers one at a time, with none of
+the crazy past history sucked in as it doesn't add any value.
 
+thanks,
 
+greg k-h
