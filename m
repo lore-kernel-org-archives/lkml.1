@@ -1,73 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751521AbYJaKhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751913AbYJaKhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751521AbYJaKhA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 06:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750710AbYJaKgw
+	id S1751913AbYJaKhf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 06:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750705AbYJaKh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 06:36:52 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:41686 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750705AbYJaKgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 06:36:50 -0400
-Date: Fri, 31 Oct 2008 10:36:46 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, benh@kernel.crashing.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: 2.6.28-rc1: NVRAM being corrupted on ppc64 preventing boot (bisected)
-Message-ID: <20081031103646.GA24395@csn.ul.ie>
-References: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org> <20081030142632.GA15645@csn.ul.ie> <18698.7794.500191.189515@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Fri, 31 Oct 2008 06:37:26 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:57702 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750822AbYJaKhZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 06:37:25 -0400
+Date: Fri, 31 Oct 2008 11:37:22 +0100
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Andrey Mirkin <major@openvz.org>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [Devel] Re: [PATCH 0/9] OpenVZ kernel based
+	checkpointing/restart
+Message-ID: <20081031103722.GQ15171@hawkmoon.kerlabs.com>
+Reply-To: Louis.Rilling@kerlabs.com
+References: <1220439476-16465-1-git-send-email-major@openvz.org> <200810271707.13580.major@openvz.org> <4905D2AD.1070309@cs.columbia.edu> <200810300902.47067.major@openvz.org> <20081030114747.GL15171@hawkmoon.kerlabs.com> <4909F2B5.7040907@cs.columbia.edu> <20081030181418.GO15171@hawkmoon.kerlabs.com> <4909FDD3.5090806@cs.columbia.edu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-31372-1225449296-0001-2"
 Content-Disposition: inline
-In-Reply-To: <18698.7794.500191.189515@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4909FDD3.5090806@cs.columbia.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 31, 2008 at 07:52:02AM +1100, Paul Mackerras wrote:
-> Mel Gorman writes:
-> 
-> > On some ppc64 machines, NVRAM is being corrupted very early in boot (before
-> > console is initialised). The machine reboots and then fails to find yaboot
-> > printing the error "PReP-BOOT: Unable to load PRep image".  It's nowhere near
-> > as serious as the ftrace+e1000 problem as the machine is not bricked but it's
-> > fairly scary looking, the machine cannot boot and the fix is non-obvious. To
-> > "fix" the machine;
-> > 
-> > 1. Go to OpenFirmware prompt
-> > 2. type dev nvram
-> > 3. type wipe-nvram
-> > 
-> > The machine will reboot, reconstruct the NVRAM using some magic and yaboot
-> > work again allowing an older kernel to be used. I bisected the problem down
-> > to this commit.
-> 
-> Eek!
-> 
-> Which ppc64 machines has this been seen on, and how were they being
-> booted (netboot, yaboot, etc.)?
-> 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Yaboot in my case and I've heard it affected a DVD installation. I don't
-know for sure if it affects netboot but as I think it's something the
-kernel is doing, it probably doesn't matter how it gets loaded?
+--=_bohort-31372-1225449296-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Is it just the Powerstations with their SLOF-based firmware, or is it
-> IBM pSeries machines as well?
-> 
+On Thu, Oct 30, 2008 at 02:32:51PM -0400, Oren Laadan wrote:
+>=20
+>=20
+> Louis Rilling wrote:
+> > On Thu, Oct 30, 2008 at 01:45:25PM -0400, Oren Laadan wrote:
+> >>
+> >> Louis Rilling wrote:
+> >>> In Kerrighed this is kernel-based, and will remain kernel-based becau=
+se we
+> >>> checkpoint a distributed task tree, and want to restart it as mush as=
+ possible
+> >>> with the same distribution. The distributed protocol used for restart=
+ is
+> >>> currently too fragile and complex to rely on customized user-space
+> >>> implementations. That said, if someone brings very good arguments in =
+favor of
+> >>> userspace implementations, we might consider changing this.
+> >> Zap also has distributed checkpoint which does not require strict
+> >> kernel-side ordering. Do you need that because you do SSI ?
+> >=20
+> > Yes. Tasks from different nodes have parent-children, session leader, e=
+tc.
+> > relationships, and the distributed management of struct pid lifecycle i=
+s a bit
+> > touchy too. By the way, splitting the checkpoint image in one file for =
+each task
+> > helps us a lot to make restart parallel, because it is more efficient f=
+or the file
+> > system to handle parallel reads of different files from different nodes=
+ than
+> > parallel reads on a single file descriptor from different nodes.
+>=20
+> You can also make parallel restart work with the single stream, without
+> much effort. Particularly if you store everything on the file system.
 
-To be honest, I haven't been brave enough to try this on a Powerstation yet
-as I only have the one and I don't know if it's a) affected or b) fixable
-with the same workaround. It was an IBM pSeries that was affected in my case
-and a few people have hit the problem on pSeries AFARIK.
+Sure we can use a single stream, since we already share file descriptors ac=
+cross
+nodes. But the distributed synchronization of the file pointer is costly
+compared to having each node access different files. This way we push the
+parallelization bottelneck down to the file system rather than in the
+distributed VFS layer.
 
-It's been pointed out that it can be "fixed" by upgrading the firmware but
-surely we can avoid breaking the machine in the first place?
+>=20
+> In both cases, the limiting factor is shared resources - where one task
+> cannot proceed with checkpoint because it waits for another task to first
+> (re)create that resource.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+We just try to avoid other bottlenecks :) And besides file descriptors, sha=
+red
+resources are as common as multi-threaded programs, which are not the major=
+ity
+of the workloads we can address.
+
+Louis
+
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
+
+--=_bohort-31372-1225449296-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFJCt/iVKcRuvQ9Q1QRAmtnAKCoX1qY3l700QYYbVW4wus2bO+fpwCglCgA
+3EXqpUk1uLYYsKN/HnqWfJg=
+=noPP
+-----END PGP SIGNATURE-----
+
+--=_bohort-31372-1225449296-0001-2--
