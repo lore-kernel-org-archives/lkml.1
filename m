@@ -1,99 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753431AbYJaVyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbYJaV4I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753431AbYJaVyr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 17:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbYJaVyh
+	id S1753507AbYJaV4I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 17:56:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbYJaVz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 17:54:37 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:14134 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751703AbYJaVyf (ORCPT
+	Fri, 31 Oct 2008 17:55:56 -0400
+Received: from node02.cambriumhosting.nl ([217.19.16.163]:34838 "EHLO
+	node02.cambriumhosting.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752568AbYJaVzz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 17:54:35 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAM8S9kh5LIXk/2dsb2JhbADCJoFr
-X-IronPort-AV: E=Sophos;i="4.33,524,1220193000"; 
-   d="scan'208";a="222553264"
-Date: Sat, 1 Nov 2008 08:54:30 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: xfs@oss.sgi.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: do_sync() and XFSQA test 182 failures....
-Message-ID: <20081031215430.GB19509@disturbed>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20081030085020.GP17077@disturbed> <20081030224625.GA18690@infradead.org> <20081031001249.GM4985@disturbed> <20081031203123.GA11514@infradead.org>
+	Fri, 31 Oct 2008 17:55:55 -0400
+Message-ID: <490B7EE5.5030701@powercraft.nl>
+Date: Fri, 31 Oct 2008 22:55:49 +0100
+From: Jelle de Jong <jelledejong@powercraft.nl>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080724 Thunderbird/2.0.0.16 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081031203123.GA11514@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: em28xx@mcentral.de, linux-dvb@linuxtv.org, greg@kroah.com, akpm@osdl.org,
+       mchehab@infradead.org
+Subject: em28xx merge process issues with linuxtv and upstream kernel
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 31, 2008 at 04:31:23PM -0400, Christoph Hellwig wrote:
-> On Fri, Oct 31, 2008 at 11:12:49AM +1100, Dave Chinner wrote:
-> > Right - that's exactly where we should be going with this, I think.
-> > I'd suggest two callouts, perhaps: ->sync_data and ->sync_metadata.
-> > The freeze code can then still operate in two stages, and we can
-> > also use then for separating data and inode writeback in pdflush....
-> > 
-> > FWIW, I mentioned doing this sort of thing here:
-> > 
-> > http://xfs.org/index.php/Improving_inode_Caching#Avoiding_the_Generic_pdflush_Code
-> > 
-> > I think I'll look at redoing do_sync() to provide a custom sync
-> > method before trying to fix XFS....
-> 
-> And you weren't the first to thing of this.  Reiser4 for example
-> has bad a patch forever to turn sync_sb_inodes into a filesystem method,
-> and I think something similar is what we want.  When talking about
-> syncing we basically want a few things:
-> 
->  - sync out data, either async (from pdflush) or sync
->    (from sync, freeze, remount ro or unmount)
->  - sync out metadata (from pdflush), either async or sync
->    (from sync, freeze, remount ro or unmount)
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Effectively, yes. 
+Hello everybody,
 
-Currently we iterate inodes for data and "metadata" sync, and the
-only other concept is writing superblocks. I think most filesystems
-have more types of metadata than this, so it makes sense for sync to
-work on abstracts sync as data and metadata rather than data, inodes
-and superblocks...
+I would like to discuss some issues with the em28xx-new project and the
+re-merging process with the upstream code and the linuxtv project.
 
-> and then we want pdflush / sync / etc call into it.  If we are doing
-> this correctly this would also avoid having our own xfssyncd.
+First I would like to say that I am not an active developer on this
+project, but a very heavy user that followed the project very close and
+made some documentation, packages, helped getting some issues discussed
+and some devices added. This project is important for me because I need
+it to be merged successfully and with width support so it will become
+maintainable on large basis.
 
-Yes, though we'd need to change a couple of the functions that
-xfssynd does to pdflush operations...
+This is the situation:
 
-> And as we found out it's not just sync that gets it wrong, it's also
-> fsync (which isn't part of the above picture as it's per-inode) that
-> gets this utterly wrong, as well as all kinds of syncs, not just the
-> unmount one.
+Markus Rechberger has worked for more than 3 years on a clone/fork of
+the official code, creating the em28xx-new [1] project. He has worked
+very very hard on this project and produced a lot of code and provides a
+lot of support to the users of his project. It takes lot of energy and
+resources to pull of this kind of work! I do really respect this work
+and hope others also do this!
 
-Async writeback (write_inode()) has the same problem as fsync -
-writing the inode before waiting for data I/O to complete - which
-means we've got to jump through hoops in the filesystem to avoid
-blocking on inodes that can't be immediately flushed, and often we
-end up writing the inode multiple times and having to issue log
-forces whenw e shouldn't need to. Effectively we have to tell the
-VFS to "try again later" the entire time data is being flushed
-before we can write the inode and it's exceedingly inefficient.....
+In a good free software development process somebody would clone some
+work to his own personal repository, then add or fix one feature. Create
+a diff compared with the upstream code and then. Commit the patch with
+good description to the upstream project, so this feature and its code
+changes can be reviewed, tested and supported. After this one feature
+fix and patch, a developer moves to his next feature and repeats to
+process so step by step and patch by patch the project grows. This
+understanding of the code bye a larger group of people will lead to a
+platform of developers that can maintain and contribute to the project.
+This would be the proper way of doing things it most cases, but a
+developer need to know and understand or mentored with this from the start.
 
-> Combine this with the other data integrity issues Nick
-> found in write_cache_pages I come to the conclusion that this whole area
-> needs some profound audit and re-architecture urgently.
+However sometimes a developer works very hard on the code creating lots
+of new features, adding support for lots of new devices and fixes lots
+of issues without committing patches during the process. After 3 years
+or more its understandable that it can lead to a code base almost
+unrecognizable from the initial cloned code base. So what to do now! To
+ask from the developer to completely separate all his work in individual
+patches that can be committed to upstream is almost unrealistic. A good
+plan needs to be created and discussed by the people that matter.
 
-It's looking more and more that way, isn't it?
+In this case I have seen several attempts of Markus to make large
+patches and some smaller to try getting his code merged upstream, but
+they were after short discussion rejected, because they did not fit the
+one patch for one fix, feature, etcetera standard/idea.
 
-Cheers,
+I am going to ask for understanding of both the side of Markus that
+worked very hard on his code, and that of the upstream developers. There
+are both valid reasons on how they did there things.
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+But we need a solution to get all the code back into the upstream
+project so it can go into the kernel project and eventually be delivered
+at the Linux distributions and all there users, so no custom compiling,
+custom package install are required and non transparent bug reports can
+be stopped.
+
+Is it possible for an upstream developer to step forward and take on the
+task of merging the code of Markus back into mainstream, all questions
+on the code can be discuses on several mailing-list [2] of choice.
+
+Current the situation is kind of a hold-of, the issues are not being
+discussed, the problem is not addressed, so no process is made and
+during this time users are suffering from non working nor good supported
+devices for there hybrid dvb-t/analog broadcast experiences under Linux.
+
+I hope this lead to a productive discussion that will get the code to
+the end users through there main distribution systems.
+
+Kind regards,
+
+Jelle de Jong
+
+[1] http://mcentral.de/
+[2] http://mcentral.de/mailman/listinfo/em28xx
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iJwEAQECAAYFAkkLfuMACgkQ1WclBW9j5HnpUwP9HgYDHBeAxAtCMjH2Ffzil0En
+7g9WT9KXG+ZFP+pToDuFaIcj6uJVzivhrShzoCt9kqjjFGVnFZHz4MgG0U8k1nuh
+e/9ZFm9n1RN9zmsbbRB3agQKuCheqwrUJyJm3Pc9kcE8myC8SLv6drgHcaUTumzm
+2gdHeB4HDNtM2ADbq/g=
+=zQzU
+-----END PGP SIGNATURE-----
