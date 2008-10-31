@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752948AbYJaUFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752943AbYJaUKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752948AbYJaUFR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 16:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbYJaUFE
+	id S1752943AbYJaUKe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 16:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbYJaUKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 16:05:04 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:36661 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752069AbYJaUFD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 16:05:03 -0400
-Date: Fri, 31 Oct 2008 16:05:01 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Re: alpha: undefined reference to `save_stack_trace'
-In-Reply-To: <20081031195040.GV28946@ZenIV.linux.org.uk>
-Message-ID: <alpine.DEB.1.10.0810311604040.28774@gandalf.stny.rr.com>
-References: <20081031165751.GA13558@x200.localdomain> <20081031182411.GR28946@ZenIV.linux.org.uk> <20081031184822.GS28946@ZenIV.linux.org.uk> <20081031185526.GT28946@ZenIV.linux.org.uk> <20081031190608.GU28946@ZenIV.linux.org.uk>
- <20081031195040.GV28946@ZenIV.linux.org.uk>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 31 Oct 2008 16:10:20 -0400
+Received: from kandzendo.ru ([195.178.208.66]:36184 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751095AbYJaUKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 16:10:19 -0400
+Date: Fri, 31 Oct 2008 23:10:16 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
+       ilpo.jarvinen@helsinki.fi, rjw@sisk.pl, mingo@elte.hu,
+       s0mbre@tservice.net.ru, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, efault@gmx.de,
+       akpm@linux-foundation.org
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+Message-ID: <20081031201016.GA4748@ioremap.net>
+References: <Pine.LNX.4.64.0810302047030.22084@wrl-59.cs.helsinki.fi> <20081031.005219.141937694.davem@davemloft.net> <Pine.LNX.4.64.0810311119510.7072@wrl-59.cs.helsinki.fi> <20081031.025159.51432990.davem@davemloft.net> <490AE1CD.9040207@cosmosbay.com> <20081031125713.6c6923de@extreme>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081031125713.6c6923de@extreme>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 31, 2008 at 12:57:13PM -0700, Stephen Hemminger (shemminger@vyatta.com) wrote:
+> Why bother with last_rx at all on loopback.  I have been thinking
+> we should figure out a way to get rid of last_rx all together. It only
+> seems to be used by bonding, and the bonding driver could do the calculation
+> in its receive handling.
 
-Ingo,
+Not related to the regression: bug will be just papered out by this
+changes. Having bonding on loopback is somewhat strange idea, but still
+this kind of changes is an attempt to make a good play in the bad game:
+this loopback-only optimization does not fix the problem.
 
-I guess this is needed to make alph (and perhasp others compile).
-Can you get this ready for 2.6.28?
-
-
-On Fri, 31 Oct 2008, Al Viro wrote:
-
-> On Fri, Oct 31, 2008 at 07:06:08PM +0000, Al Viro wrote:
-> > On Fri, Oct 31, 2008 at 06:55:26PM +0000, Al Viro wrote:
-> > 
-> > > It's too ugly for words, but it does deal with this mess ;-/
-> > 
-> > ... doesn't.  Unfortunately.
-> 
-> ... since we also need to ifdef out the guts of ftrace_trace_stack().
-> We also want to disallow setting TRACE_ITER_STACKTRACE in trace_flags
-> on such configs, but that can wait.
-> 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-
-Acked-by: Steven Rostedt <srostedt@redhat.com>
-
--- Steve
-
+-- 
+	Evgeniy Polyakov
