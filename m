@@ -1,52 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753820AbYJaIxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbYJaIxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753820AbYJaIxS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 04:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbYJaIxG
+	id S1754455AbYJaIxv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 04:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbYJaIxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 04:53:06 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63306 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752984AbYJaIxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 04:53:05 -0400
-Message-ID: <490AC707.1060808@cn.fujitsu.com>
-Date: Fri, 31 Oct 2008 16:51:19 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: akpm@linux-foundation.org
-Subject: [PATCH] fork.c: cleanup for copy_sighand()
-Content-Type: text/plain; charset=GB2312
+	Fri, 31 Oct 2008 04:53:42 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:50168 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752984AbYJaIxl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 04:53:41 -0400
+Subject: Re: [PATCH] slub - fix get_object_page comment
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0810301039080.20953@quilx.com>
+References: <20081028190226.GE7357@localhost>
+	 <Pine.LNX.4.64.0810301039080.20953@quilx.com>
+Date: Fri, 31 Oct 2008 10:54:24 +0200
+Message-Id: <1225443264.19537.0.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check CLONE_SIGHAND only is enough, because combination of CLONE_THREAD and
-CLONE_SIGHAND is already done in copy_process().
+On Thu, 2008-10-30 at 10:39 -0500, Christoph Lameter wrote:
+> On Tue, 28 Oct 2008, Cyrill Gorcunov wrote:
+> 
+> > Use 'slab page' instead of 'slab object'.
+> 
+> Acked-by: Christoph Lameter <cl@linux-foundation.org>
 
-Impact: cleanup, no functionality changed
-
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- kernel/fork.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/fork.c b/kernel/fork.c
-index f608356..36a0dac 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -741,7 +741,7 @@ static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
- {
- 	struct sighand_struct *sig;
- 
--	if (clone_flags & (CLONE_SIGHAND | CLONE_THREAD)) {
-+	if (clone_flags & CLONE_SIGHAND) {
- 		atomic_inc(&current->sighand->count);
- 		return 0;
- 	}
--- 
-1.5.5.3
-
+Applied, thanks!
 
