@@ -1,52 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbYJaAFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbYJaANR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756102AbYJaAFl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 20:05:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbYJaAFd
+	id S1755534AbYJaANR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 20:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbYJaAM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 20:05:33 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:2849 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754209AbYJaAFc (ORCPT
+	Thu, 30 Oct 2008 20:12:59 -0400
+Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:58048 "EHLO
+	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753649AbYJaAM6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 20:05:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=lWlzx1vxIdshfeAcsM5KIpzV0HjCaa3CnRU/ry1iTVOUTMBiWAAovCfsjgLCkxbXkd
-         y2FmfQ+83mx0dR5qauAJvpA5q8KRyaSNgZ/RDKzyzkq8VZku9DloehwCZ6p7Mc6UwO5y
-         C90E9zIqZ3sCl1YCBsloTHqI++vL6DH55KGOU=
-Message-ID: <c62985530810301705h356decf8oea0db02def2ab3c1@mail.gmail.com>
-Date: Fri, 31 Oct 2008 01:05:30 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [RFC][PATCH] Make ftrace able to trace function return
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.10.0810301556010.19996@gandalf.stny.rr.com>
+	Thu, 30 Oct 2008 20:12:58 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAAPpCUl5LIvD/2dsb2JhbADLOYNR
+X-IronPort-AV: E=Sophos;i="4.33,519,1220193000"; 
+   d="scan'208";a="244496628"
+Date: Fri, 31 Oct 2008 11:12:49 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: xfs@oss.sgi.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: do_sync() and XFSQA test 182 failures....
+Message-ID: <20081031001249.GM4985@disturbed>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20081030085020.GP17077@disturbed> <20081030224625.GA18690@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <490A08E3.2040201@gmail.com>
-	 <alpine.DEB.1.10.0810301556010.19996@gandalf.stny.rr.com>
+In-Reply-To: <20081030224625.GA18690@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/10/30 Steven Rostedt <rostedt@goodmis.org>:
-> What about storing the return addresses on the bottom of the stack?
-> That is, start at task->stack + sizeof(thread_info), and stack up on that.
-> Be careful, there might already be users of that area. This will also need
-> to be arch dependent.
+On Thu, Oct 30, 2008 at 06:46:25PM -0400, Christoph Hellwig wrote:
+> On Thu, Oct 30, 2008 at 07:50:20PM +1100, Dave Chinner wrote:
+> > [*] Starting pdflush to sync data in the background when we are
+> >     about to start flushing ourselves is self-defeating. instead of
+> >     having a single thread doing optimal writeout patterns, we now
+> >     have two threads trying to sync the same filesystems and
+> >     competing with each other to write out dirty inodes.  This
+> >     actually causes bugs in sync because pdflush is doing async
+> >     flushes. Hence if pdflush races and wins during the sync flush
+> >     part of the sync process, sync_inodes(1) will return before all
+> >     the data/metadata is on disk because it can't be found to be
+> >     waited on.
+> 
+> Note that this is an XFS special.  Every other filesystem (at least the
+> major ones) rely on the VFS to write out data.
 
-But how could I assume there is enough space behind this address to store a long
-stack of functions calls for a same thread?
-And if an interrupt is raised, would a reference to "current task" be
-really consistant?
+The race is based on which thread removes the remaining
+dirty inodes from the sb_s_dirty list - I don't think that is XFS
+specific.
 
-I don't know much about the bottom stack of the tasks, I'm not sure
-about how much
-space I can use inside... I should study this field. Who could be the
-potential users of this area?
+> > Now the sync is _supposedly_ complete. But we still have a dirty
+> > log and superblock thanks to delayed allocation that may have
+> > occurred after the sync_supers() call. Hence we can immediately
+> > see that we cannot *ever* do a proper sync of an XFS filesystem
+> > in Linux without modifying do_sync() to do more callouts.
+> >
+> > Worse, XFS can also still have *dirty inodes* because sync_inodes(1)
+> > will remove inodes from the dirty list in the async pass, but they
+> > can get dirtied a short time later (if they had dirty data) when the
+> > data I/O completes. Hence if the second sync pass completes before
+> > the inode is dirtied again we'll miss flushing it. This will mean we
+> > don't write inode size updates during sync. This is the same race
+> > that pdflush running in the background can trigger.
+> 
+> This is a common problem that would hit any filesystem trying to have
+> some sort of ordered data or journaled data mode.
+> 
+> > However, I have a problem - I'm an expert in XFS, not the other tens
+> > of Linux filesystems so I can't begin to guess what the impact of
+> > changing do_sync() would be on those many filesystems. How many
+> > filesystems would such a change break? Indeed - how many are broken
+> > right now by having dirty inodes and superblocks slip through
+> > sync(1)?
+> 
+> I would guess more are broken now then a change in order would break.
+> Then again purely a change in order would still leave this code
+> fragile as hell.
+
+Right, which is why I want a custom ->do_sync method so I can
+*guarantee* that sync works on XFS without fear breaking other
+filesystems...
+
+> > What are the alternatives? do_sync() operates above any particular
+> > filesystem, so it's hard to provide a filesystem specific ->do_sync
+> > method to avoid changing sync order for all filesystems. Do we
+> > change do_sync() to completely sync a superblock at a time instead
+> > of doing each operation across all superblocks before moving onto
+> > the next operation? Is there any particular reason (e.g. performance, locking) for the current
+> > method that would prevent changing to completely-sync-a-superblock
+> > iteration algorithm so we can provide a custom ->do_sync method?
+> 
+> Locking can't be the reason as we should never hold locks while
+> returning from one of the VFS operations.  I think it's performance
+> or rather alledged performance as I think it doesn't really matter.
+
+Ok.
+
+> If it matters however there is an easy method to make it perform just
+> as well with a proper callout - just spawn a thread for every filesystem
+> to perform it in parallel.
+
+Sure, that will be faster as long as the filesystems are on
+separate devices.
+
+As it is, once we have custom ->do_sync, XFS will probably grow
+multiple threads per filesystem to sync AGs on independent spindles
+in parallel.....
+
+> > Are there any other ways that we can get a custom ->do_sync
+> > method for XFS? I'd prefer a custom method so we don't have to
+> > revalidate every linux filesystem, especially as XFS already has
+> > everything it needs to provide it's own sync method (used for
+> > freezing) and a test suite to validate it is working correctly.....
+> 
+> I think having a method for this would be useful.  And given that
+> a proper sync should be exactly the same as a filesysytem freeze
+> we should maybe use one method for both of those and use the chance
+> to give filesystem better control over the freeze process?
+
+Right - that's exactly where we should be going with this, I think.
+I'd suggest two callouts, perhaps: ->sync_data and ->sync_metadata.
+The freeze code can then still operate in two stages, and we can
+also use then for separating data and inode writeback in pdflush....
+
+FWIW, I mentioned doing this sort of thing here:
+
+http://xfs.org/index.php/Improving_inode_Caching#Avoiding_the_Generic_pdflush_Code
+
+I think I'll look at redoing do_sync() to provide a custom sync
+method before trying to fix XFS....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
