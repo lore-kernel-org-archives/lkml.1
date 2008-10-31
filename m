@@ -1,103 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793AbYJaKCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752580AbYJaKEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752793AbYJaKCc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 06:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbYJaKCX
+	id S1752580AbYJaKEF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 06:04:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbYJaKDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 06:02:23 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44473 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750846AbYJaKCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 06:02:22 -0400
-Date: Fri, 31 Oct 2008 11:02:01 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Roland McGrath <roland@redhat.com>,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: Re: cpu2000(both float and int) 13% regression with 2.6.28-rc1
-Message-ID: <20081031100201.GA17426@elte.hu>
-References: <1225175522.1685.57.camel@ymzhang> <20081028080327.GB15734@elte.hu> <20081028202649.GJ30573@linux-os.sc.intel.com> <7E82351C108FA840AB1866AC776AEC46401F518D@orsmsx505.amr.corp.intel.com> <490A5A80.3070203@zytor.com>
+	Fri, 31 Oct 2008 06:03:52 -0400
+Received: from smtp-vbr4.xs4all.nl ([194.109.24.24]:2578 "EHLO
+	smtp-vbr4.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041AbYJaKDv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 06:03:51 -0400
+Date: Fri, 31 Oct 2008 11:03:48 +0100
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.26] OOPS in elv_next_request
+Message-ID: <20081031100348.GL11214@vanheusden.com>
+References: <20081027090426.GN8318@vanheusden.com> <a8e1da0810272211s4b145bboef26801c3af0d652@mail.gmail.com> <20081030142550.GB11214@vanheusden.com> <a8e1da0810301822k3402e753m482d98f4530419a0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <490A5A80.3070203@zytor.com>
+In-Reply-To: <a8e1da0810301822k3402e753m482d98f4530419a0@mail.gmail.com>
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Reply-By: Wed Oct 29 12:57:18 CET 2008
+X-Message-Flag: www.unixexpert.nl
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* H. Peter Anvin <hpa@zytor.com> wrote:
-
-> Pallipadi, Venkatesh wrote:
-> > 
-> > We figured out that this is not related to signals. But to this mismerge here
-> > 
-> >>  +#define X86_FEATURE_AMDC1E  (3*32+21) /* AMD C1E detected */
-> >> + #define X86_FEATURE_XTOPOLOGY       (3*32+21) /* cpu topology enum extensions */
-> > 
-> > I had earler sent a patch to fix this.
-> > http://marc.info/?l=linux-kernel&m=122341178202930&w=2
-> > 
-> > But, somehow I don’t see this patch either in Linus's git or in tip.
-> > 
-> > ingo, hpa: Can you push that patch along.
-> > 
+> >> > While running my http://vanheusden.com/pyk/ script (which randomly
+> >> > inserts and removes modules) I triggered the folllowing oops in a 2.6.26
+> >> > kernel on a Celeron 400 (Mendocino):
+> >> >
+> >> > [ 4768.664021] Floppy drive(s): fd0 is 1.44M
+> > ...
+> >> > [ 4768.720058] ---[ end trace 6a50caff78c47574 ]---
+> >> > [ 4769.658313] Floppy drive(s): fd0 is 1.44M
+> >> > [ 4789.656060] no cont in shutdown!
+> >>
+> >> Hi, could you try the attached test patch?  sorry for using attachment
+> >> as there's some problem for my mail client to reply.
+> >
+> > As your patch is based on 2.6.27 I compiled the 2.6.27 kernel with it. But
+> > something odd is going on: when 2.6.27 boots, right after the initrd loading
+> > the screen-resolution gets changed or so, so that most text is no longer
+> > visible. Also the system seems to halt. Unfortunately too early for
+> > netconsole to emit the errors.
 > 
-> OK, thought it already had been.  I will investigate later tonight.
+> Yes, the patch is based on 2.6.27, but it can be applied to 2.6.26
+> without problem.
+> Could you try it with 2.6.26 again?
 
-i've picked it up into x86/urgent - see the commit below.
+Now compiling for 2.6.26. 
 
-	Ingo
+> BTW, for 2.6.27, did you set vga=normal or other things?
 
---------------->
->From 2576c9991758e431b73e374f6019d6e1e12a8d36 Mon Sep 17 00:00:00 2001
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Date: Tue, 7 Oct 2008 13:33:12 -0700
-Subject: [PATCH] x86: fix AMDC1E and XTOPOLOGY conflict in cpufeature
+None of that. Just a new kernel. 2.6.26 doesn't do that. It is as if the
+videocard is set to some 320x240 resolution or so.
 
-Impact: fix xsave slowdown regression
 
-Fix two features from conflicting in feature bits.
+Folkert van Heusden
 
-Fixes this performance regression:
-
-   Subject: cpu2000(both float and int) 13% regression with 2.6.28-rc1
-   http://lkml.org/lkml/2008/10/28/36
-
-Reported-by: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Bisected-by: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/include/asm/cpufeature.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
-index f73e95d..cfdf8c2 100644
---- a/arch/x86/include/asm/cpufeature.h
-+++ b/arch/x86/include/asm/cpufeature.h
-@@ -91,7 +91,7 @@
- #define X86_FEATURE_11AP	(3*32+19) /* "" Bad local APIC aka 11AP */
- #define X86_FEATURE_NOPL	(3*32+20) /* The NOPL (0F 1F) instructions */
- #define X86_FEATURE_AMDC1E	(3*32+21) /* AMD C1E detected */
--#define X86_FEATURE_XTOPOLOGY	(3*32+21) /* cpu topology enum extensions */
-+#define X86_FEATURE_XTOPOLOGY	(3*32+22) /* cpu topology enum extensions */
- 
- /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
- #define X86_FEATURE_XMM3	(4*32+ 0) /* "pni" SSE-3 */
+-- 
+MultiTail cok yonlu kullanimli bir program, loglari okumak, verilen
+kommandolari yerine getirebilen. Filter, renk verme, merge, 'diff-
+view', vs.  http://www.vanheusden.com/multitail/
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
