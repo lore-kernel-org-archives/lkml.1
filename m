@@ -1,44 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752726AbYJaP17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbYJaPbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752726AbYJaP17 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 11:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbYJaP1u
+	id S1752702AbYJaPbW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 11:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbYJaPbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 11:27:50 -0400
-Received: from styx.suse.cz ([82.119.242.94]:49910 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751267AbYJaP1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 11:27:50 -0400
-Date: Fri, 31 Oct 2008 16:27:48 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jeroen Roovers <jer@gentoo.org>
-cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-parisc@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>
-Subject: Re: 2.6.28-rc2: USB/INPUT: slab error in cache_alloc_debugcheck_after():
- double free?
-In-Reply-To: <20081031161640.16f20fd1@epia.jer-c2.orkz.net>
-Message-ID: <alpine.LNX.1.10.0810311626160.31273@jikos.suse.cz>
-References: <200810310011.08618.deller@gmx.de> <20081031044553.50882e86@epia.jer-c2.orkz.net> <alpine.LRH.1.10.0810311254400.7585@twin.jikos.cz> <20081031161640.16f20fd1@epia.jer-c2.orkz.net>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Fri, 31 Oct 2008 11:31:06 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:38296 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbYJaPbF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 11:31:05 -0400
+Message-ID: <490B247F.5070603@oracle.com>
+Date: Fri, 31 Oct 2008 08:30:07 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] ftrace: update txt document
+References: <alpine.DEB.1.10.0810231921590.4182@gandalf.stny.rr.com> <20081026193339.91e0c644.randy.dunlap@oracle.com> <alpine.DEB.1.10.0810311049090.20157@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0810311049090.20157@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.490B2496.003A:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Oct 2008, Jeroen Roovers wrote:
+Steven Rostedt wrote:
+> I finally got around to looking at the review notes.
+> 
+> On Sun, 26 Oct 2008, Randy Dunlap wrote:
+>>>  
+>>>   # sysctl kernel.ftrace_enabled=1
+>>> - # echo ftrace > /debug/tracing/current_tracer
+>>> + # echo function > /debug/tracing/current_tracer
+>>>   # echo 1 > /debug/tracing/tracing_enabled
+>>>   # usleep 1
+>>>   # echo 0 > /debug/tracing/tracing_enabled
+>>>   # cat /debug/tracing/trace
+>>> -# tracer: ftrace
+>>> +# tracer: function
+>>>  #
+>>>  #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
+>>>  #              | |      |          |         |
+>> General comment #2: debugfs is normally mounted at /sys/kernel/debug
+>> (which Doc/x86/pat.txt, Doc/filesystems/relay.txt,
+>> Doc/infiniband/ipoib.txt, and Doc/usb/usbmon.txt know about).
+>> Please either use /sys/kernel/debug or use what Doc/kernel-parameters.txt
+>> uses: <debugfs> (for the mount point).  I.e., don't use a poor example
+>> in the doc text.
+> 
+> In the beginning of the document I did have a disclaimer:
 
-> > Could you please provide your config? I am still not able to reproduce 
-> > it here. Thanks.
-> Added to the bug report[1]. The architecture is hppa (parisc).
+OK, sorry about that.  Somehow I missed seeing it.
 
-Hmm, so we have just two reports of this corruption, and both of them come 
-from PA-RISC systems. Noone else has reported this, and I haven't been 
-able to reproduce it myself on x86.
+> ------------------------
+> To mount the debugfs system:
+> 
+>   # mkdir /debug
+>   # mount -t debugfs nodev /debug
+> 
+> (Note: it is more common to mount at /sys/kernel/debug, but for simplicity
+>  this document will use /debug)
+> ------------------------
+> 
+> I know the recommended place is /sys/kernel/debug, but I never use it. And 
+> I know many others that do not either. It is just easier to make the
+> /debug directory. I feel this is more of a guideline than something
+> that must be enforced.  But if you do feel strongly on this subject, I
+> can change it to /sys/kernel/debug (which I absolutely loathe).
 
-On the other hand I don't seem to see any commit that went into 
-arch/parisc between .27 and 28-rc1 which could possibly cause this...
 
 -- 
-Jiri Kosina
-SUSE Labs
+~Randy
