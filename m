@@ -1,92 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbYJaAla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbYJaApv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbYJaAla (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 20:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbYJaAlP
+	id S1755948AbYJaApv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 20:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYJaApn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 20:41:15 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58509 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752998AbYJaAlO (ORCPT
+	Thu, 30 Oct 2008 20:45:43 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:40753 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753935AbYJaApm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 20:41:14 -0400
-Date: Fri, 31 Oct 2008 09:40:41 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       bharata@linux.vnet.ibm.com, Paul Menage <menage@google.com>,
-       linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Add hierarchical accounting to cpu accounting
- controller
-Message-Id: <20081031094041.194a32d9.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081030171622.GA19872@linux.vnet.ibm.com>
-References: <20081023054335.GC3280@in.ibm.com>
-	<6599ad830810230849x71961a0asd7f00d3baa2f2271@mail.gmail.com>
-	<20081024050830.GA4387@in.ibm.com>
-	<6599ad830810241037h575ec17bgb43f750d99bd1518@mail.gmail.com>
-	<20081025060157.GA4614@in.ibm.com>
-	<6599ad830810250838q3f96644bm6dfee8ba9f35dfa3@mail.gmail.com>
-	<20081027101703.e954071d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081027044319.GA4386@in.ibm.com>
-	<661de9470810262357y6c560facl87dcaea3ce35e3ac@mail.gmail.com>
-	<49057ADD.1050705@cn.fujitsu.com>
-	<20081030171622.GA19872@linux.vnet.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 30 Oct 2008 20:45:42 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=d3tpV7kvJcFghcDNcT8A:9 a=AfUkDDDFbUS0of2RwRCV8eu0jAcA:4
+Message-ID: <490A5532.2000704@shaw.ca>
+Date: Thu, 30 Oct 2008 18:45:38 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Jonathan Corbet <corbet@lwn.net>
+CC: e1000-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.28-rc2 hates my e1000e
+References: <fa.P5jmIAOhSJ192sfWD+qlec07fe8@ifi.uio.no>
+In-Reply-To: <fa.P5jmIAOhSJ192sfWD+qlec07fe8@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Oct 2008 22:46:22 +0530
-Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-
-> On Mon, Oct 27, 2008 at 04:25:01PM +0800, Li Zefan wrote:
-> > >>>> So in technical terms this patch looks fine now. There's still the
-> > >>>> question of whether it's OK to change the existing API, since it's
-> > >>>> been in the kernel in its currently (non-hierarchical) form for
-> > >>>> several releases now.
-> > >> Hmm... Can we consider this as an API change ? Currently cpuacct.usage
-> > >> readers of a parent accounting group are missing the usage contributions
-> > >> from its children groups. I would consider this patch as fixing the
-> > >> above problem by correctly reflecting the cpu usage for every accounting
-> > >> group.
-> > >>
-> > > 
-> > > If a particular application desires to derive the usage of its
-> > > immediate tasks and does not care about subcgroups, it is a simple
-> > > iteration (after this fix)
-> > > 
-> > > cpuacct - sigma(cpuacct_child)
-> > > 
-> > > and currently if we cared about child accounting, we could do
-> > > 
-> > > cpuacct + recursively(sigma(cpuacct_child))
-> > > 
-> > > In that sense this fix makes more sense, but like Paul said we need to
-> > > figure out if it is an API change. My take is that it is a BUG fix,
-> > > since we do care about child subgroups in accounting.
-> > > 
-> > 
-> > cpuacct was designed to count cpu usage of a group of tasks, and now some people
-> > want it to also take child group's usage into account, so I think this is a feature
-> > request but not a bug fix.
-> > 
+Jonathan Corbet wrote:
+> I tried booting -rc2 on my desktop system today.  All seems well until
+> I try to access the net; eth0 doesn't exist anymore.  dmesg tells me:
 > 
-> I disagree. The child is a part of the parent's hierarchy, and therefore
-> its usage should reflect in the parent's usage.
+> Oct 30 17:29:38 bike kernel: e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k6
+> Oct 30 17:29:38 bike kernel: e1000e: Copyright (c) 1999-2008 Intel Corporation.
+> Oct 30 17:29:38 bike kernel: e1000e 0000:00:19.0: PCI INT A -> GSI 21 (level, low) -> IRQ 21
+> Oct 30 17:29:38 bike kernel: e1000e 0000:00:19.0: BAR 0: can't reserve mem region [0xfe9e0000-0xfe9fffff]
+> Oct 30 17:29:38 bike kernel: e1000e 0000:00:19.0: PCI INT A disabled
+> Oct 30 17:29:38 bike kernel: e1000e: probe of 0000:00:19.0 failed with error -16
 > 
+> Here's what lspci thinks of my device:
+> 
+> 00:19.0 Ethernet controller: Intel Corporation 82566DM-2 Gigabit Network Connection (rev 02)
+> 	Subsystem: Dell OptiPlex 755
+> 	Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Interrupt: pin A routed to IRQ 21
+> 	Region 0: Memory at fe9e0000 (32-bit, non-prefetchable) [size=128K]
+> 	Region 1: Memory at fe9db000 (32-bit, non-prefetchable) [size=4K]
+> 	Region 2: I/O ports at ecc0 [size=32]
+> 	Capabilities: [c8] Power Management version 2
+> 		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+> 		Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+> 	Capabilities: [d0] Message Signalled Interrupts: Mask- 64bit+ Count=1/1 Enable-
+> 		Address: 0000000000000000  Data: 0000
+> 	Capabilities: [e0] PCIe advanced features <?>
+> 	Kernel modules: e1000e
+> 
+> Interestingly, under 2.6.27 it reads thus:
+> 
+> 00:19.0 Ethernet controller: Intel Corporation 82566DM-2 Gigabit Network Connection (rev 02)
+> 	Subsystem: Dell OptiPlex 755
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx+
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0
+> 	Interrupt: pin A routed to IRQ 4350
+> 	Region 0: Memory at d4200000 (32-bit, non-prefetchable) [size=128K]
+> 	Region 1: Memory at d4225000 (32-bit, non-prefetchable) [size=4K]
+> 	Region 2: I/O ports at ecc0 [size=32]
+> 	Capabilities: [c8] Power Management version 2
+> 		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+> 		Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+> 	Capabilities: [d0] Message Signalled Interrupts: Mask- 64bit+ Count=1/1 Enable+
+> 		Address: 00000000fee0200c  Data: 4181
+> 	Capabilities: [e0] PCIe advanced features <?>
+> 	Kernel driver in use: e1000e
+> 
+> The I/O memory has moved, I have no idea why.  I assume that's a feature?
+> 
+> So...what else can I do to help track this one down?
 
-In my point of view, there is no big difference. It's just whether we need a tool
-in userland or not. If there is no performance impact, I have no objections.
-
-One request from me is add Documentation/controllers/cpuacct.txt or some to explain
-"what we see".
-
-Thanks,
--Kame
-
+What's in /proc/iomem? Full dmesg output from boot would also be useful.
