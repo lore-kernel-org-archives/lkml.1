@@ -1,74 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbYJaElU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbYJaEn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239AbYJaElU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 00:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbYJaElG
+	id S1753403AbYJaEn4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 00:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750867AbYJaEnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 00:41:06 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:39986 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750809AbYJaElF (ORCPT
+	Fri, 31 Oct 2008 00:43:41 -0400
+Received: from anchor-post-35.mail.demon.net ([194.217.242.85]:4569 "EHLO
+	anchor-post-35.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750809AbYJaEnk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 00:41:05 -0400
-Message-ID: <490A8C16.6040207@oracle.com>
-Date: Thu, 30 Oct 2008 21:39:50 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 31 Oct 2008 00:43:40 -0400
+Message-ID: <490A8D02.4090407@lougher.demon.co.uk>
+Date: Fri, 31 Oct 2008 04:43:46 +0000
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
 MIME-Version: 1.0
-To: Steve French <smfrench@gmail.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Jeff Layton <jlayton@redhat.com>
-Subject: Re: mmotm 2008-10-30-02-23 uploaded (cifs)
-References: <200810300924.m9U9OPqK030938@imap1.linux-foundation.org>	 <20081030181427.bad789f5.randy.dunlap@oracle.com> <524f69650810302013t76027b12i105214daf651ce6a@mail.gmail.com>
-In-Reply-To: <524f69650810302013t76027b12i105214daf651ce6a@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+To: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>
+CC: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tim.bird@am.sony.com
+Subject: Re: [PATCH V2 10/16] Squashfs: cache operations
+References: <E1Kv0C4-0006HO-BC@dylan> <20081029093218.GA26456@logfs.org>
+In-Reply-To: <20081029093218.GA26456@logfs.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve French wrote:
-> On Thu, Oct 30, 2008 at 8:14 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
->> On Thu, 30 Oct 2008 02:24:25 -0700 akpm@linux-foundation.org wrote:
->>
->>> The mm-of-the-moment snapshot 2008-10-30-02-23 has been uploaded to
->>>
->>>    http://userweb.kernel.org/~akpm/mmotm/
->>>
->>> It contains the following patches against 2.6.28-rc2:
->> fs/cifs/connect.c: In function 'cifs_mount':
->> fs/cifs/connect.c:2180: error: request for member 'sin_addr' in something not a structure or union
->>
->> rand-config attached.
+Jörn Engel wrote:
+> On Wed, 29 October 2008 01:49:56 +0000, Phillip Lougher wrote:
+>> +/*
+>> + * Blocks in Squashfs are compressed.  To avoid repeatedly decompressing
+>> + * recently accessed data Squashfs uses two small metadata and fragment caches.
+>> + *
+>> + * This file implements a generic cache implementation used for both caches,
+>> + * plus functions layered ontop of the generic cache implementation to
+>> + * access the metadata and fragment caches.
+>> + */
 > 
-> These line numbers don't match anywhere close to what I expect to find
-> in -mm based on the contents of fs/cifs in cifs-2.6.git tree.  My
-> guess is that has a cifs patch from Jeff Layton, not in cifs-2.6.git
-> which may have other dependencies, and in any case IIRC has since been
-> removed from -mm but if not that patch may be the problem.
+> I tend to agree with Andrew that a lot of this should be done by the
+> page cache instead.  One of the problems seems to be that your blocksize
+> can exceed page size and there really isn't any infrastructure to deal
+> with such cases yet.  Bufferheads deal with blocks smaller than a page,
+> not the other way around.
 > 
-> The closest line I have is:
-> 
-> 			sprintf(pSesInfo->serverName, "%u.%u.%u.%u",
-> 				NIPQUAD(sin_server.sin_addr.s_addr));
-> 
-> and since sin_server is defined as
->    	struct sockaddr_in sin_server;
-> that should be fine.
 
-I can't tell you whether this is in cifs.git, but the erring lines are:
+I thought about using the page cache, but, the fact that blocksizes 
+exceed the page cache size is only one of a number of reasons why I 
+prefer the current solution, there is also simplicity and speed to consider.
 
-		tcon =
-		    find_unc(sin_server.sin_addr.s_addr, volume_info.UNC,
-			     volume_info.username);
+There are three types of compressed block in Squashfs: datablocks, 
+fragments, and metadata blocks.  Of these datablocks (by far the largest 
+number of blocks) are decompressed and pushed into the page cache, and 
+are not otherwise cached by Squashfs.  This, obviously (?), is because 
+they contain data for only one file, and so at time of access there is a 
+readily available address space to push the data into.
 
-where sin_server.sin_addr should be sin_server->sin_addr.
+Metadata and fragment blocks are different in that when accessed and 
+decompressed (say for an inode or for a particular tail-end block) they 
+will contain metadata or tail-ends for other files.  This data could be 
+thrown away but due to locality of reference it makes sense to 
+temporarily cache it in-case a near future file access references the 
+data.  But it doesn't make much sense to cache it more than temporarily, 
+  much of the data will probably not be reused, and it exists compressed 
+in the buffer cache.
 
-HTH.
--- 
-~Randy
+The squashfs cache is therefore designed to cache only the last couple 
+of metadata and fragment blocks.  It is also designed to be simple and 
+extremely fast.  The maximum size of the metadata cache is only 64 KiB.
+
+Simplicity and speed is extremely important.  The 
+squashfs_metadata_read() wrapper around the cache is designed to step 
+through the metadata a structure at a time (20 or so bytes), updating 
+the read position in the metadata each call, with more metadata cache 
+blocks being read and decompressed as necessary.  The common case where 
+the metadata is already in the cache (because we're stepping through it 
+20 or so bytes at a time), is designed to be extremely fast - a spinlock 
+and array search only.  I recently optimised the cache to use spinlocks 
+rather than mutexes and reduced the lock holding time (necessary to move 
+to spinlocks), and this resulted in a 20%+ speed improvement in reading 
+squashfs filesystems.
+
+Given the above using an address space in the page cache will result in 
+greater complexity, more memory overhead, and much slower operation. 
+There's a number of reasons for this.
+
+1. The amount and life-span of the data stored in the page cache is 
+outside of Squashfs' control.  As explained above it only makes sense to 
+temporarily cache the last couple of metadata and fragment blocks. 
+Using the page cache (if a 'large' address space is used) for these 
+keeps more of them around for longer than necessary, and will 
+potentially cause more worthy datablocks to be flushed on memory pressure.
+
+2. The address space will be caching uncompressed data, the squashfs 
+references to this data are the compressed locations within the 
+filesystem.  There doesn't exist a one-to-one linear mapping from 
+compressed location to decompressed location in the address space.  This 
+means a lookup table still needs to be used to store the mapping from 
+compressed location to decompressed location in the address space.  Now 
+this lookup table (however implemented) is itself at least as complex as 
+my current cache implementation.
+
+3. Once the locations of the decompressed pages in the address space 
+have been found, they'll need to be looked up in the page cache, and 
+this has to be done for every 4K page.  With the default fragment size 
+of 128 KiB this means 32 separate lookups.  Somewhat slower than one 
+spinlock and array search per 128 KiB block in the squashfs cache 
+implementation.
+
+Comments, especially those of the form "you've got this completely 
+wrong, and you can use the page cache like this, which will be simpler 
+and faster than your current implementation" welcome :)  I'm not adverse 
+  to using the page cache, but I can't see how it will be simpler or 
+faster than the current implementation.
+
+Phillip
