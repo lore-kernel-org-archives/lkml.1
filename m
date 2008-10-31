@@ -1,85 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbYJaDRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbYJaDU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754885AbYJaDRX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 23:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbYJaDQy
+	id S1754344AbYJaDU2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 23:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYJaDUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 23:16:54 -0400
-Received: from kroah.org ([198.145.64.141]:55966 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753485AbYJaDQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 23:16:53 -0400
-Date: Thu, 30 Oct 2008 20:13:57 -0700
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: merging other repos into linux-2.6
-Message-ID: <20081031031357.GA20944@kroah.com>
-References: <20081030054944.GA19035@kroah.com> <alpine.LFD.2.00.0810301152230.3505@nehalem.linux-foundation.org> <20081030215734.GA18822@kroah.com> <alpine.LFD.2.00.0810301619260.21084@nehalem.linux-foundation.org>
+	Thu, 30 Oct 2008 23:20:12 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64635 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751096AbYJaDUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 23:20:11 -0400
+Message-ID: <490A78FE.20201@cn.fujitsu.com>
+Date: Fri, 31 Oct 2008 11:18:22 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0810301619260.21084@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: linux-kernel@vger.kernel.org
+CC: viro@zeniv.linux.org.uk, mtk.manpages@gmail.com, rdunlap@xenotime.net,
+       linux-fsdevel@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: [PATCH] Correct wrong function name of d_put in kernel document and
+ source comment
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 04:28:46PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Thu, 30 Oct 2008, Greg KH wrote:
-> > 
-> > But as for the 'bisectability' at one point in the merge, you will be
-> > adding a stand-alone driver into the kernel itself.  So for anyone
-> > traversing down that path, all you would be building would be the driver
-> > itself, the whole rest of the kernel is "gone".
-> 
-> Right. This was exactly what happened initially in the btrfs thing. And it 
-> was horrid.
-> 
-> It was horrid because it was totally unexpected for users, and causes huge 
-> churn and confusion when trying to check out a totally different directory 
-> layout (and git won't remove the old *.o files, so trust me, it _will_ be 
-> confusing).
+no function named d_put(), it should be dput().
 
-I agree, I don't want this to happen.
+Impact: fix document and comment, no functionality changed
 
-> What I got Chris Mason to do was to run
-> 
-> 	git filter-branch --index odd-script-goes-here
-> 
-> with that odd script looking something like:
-> 
-> >       #!/bin/sh
-> >       exists=$(git ls-files fs/btrfs/)
-> >       [ -z "$exists" ] &&
-> >               git ls-files --stage |
-> >               awk -F '\t' '{ print "0 0000000000000000000000000000000000000000\t" $2 "\n" $1 "\tfs/btrfs/" $2 }' |
-> >               git update-index --index-info
-> 
-> which basically does a directory rename in the branch (obviously, in this 
-> case into fs/btrfs, which is not what _you_ want). That way, at least the 
-> directory structure of the tree you merge has the same layout, and you 
-> don't get _that_ particular directory jumping back and forth.
-> 
-> Chris also merged in the history at the 2.6.26 tree (I think), so that 
-> while his original history had had just a stand-alone btrfs build, the end 
-> result was actually *totally* bisectable. Again, you should ask him about 
-> any other scripts he ran.
+Signed-off-by: Zhao Lei <zhaolei@cn.fuijtsu.com>
+---
+ Documentation/filesystems/vfs.txt |    2 +-
+ fs/dcache.c                       |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Ok, this seems a lot more reasonable, and doable.
+diff --git a/Documentation/filesystems/vfs.txt b/Documentation/filesystems/vfs.txt
+index c4d348d..e663178 100644
+--- a/Documentation/filesystems/vfs.txt
++++ b/Documentation/filesystems/vfs.txt
+@@ -960,7 +960,7 @@ manipulate dentries:
+   d_lookup: look up a dentry given its parent and path name component
+ 	It looks up the child of that given name from the dcache
+ 	hash table. If it is found, the reference count is incremented
+-	and the dentry is returned. The caller must use d_put()
++	and the dentry is returned. The caller must use dput()
+ 	to free the dentry when it finishes using it.
+ 
+ For further information on dentry locking, please refer to the document
+diff --git a/fs/dcache.c b/fs/dcache.c
+index a1d86c7..db2bc6a 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1336,7 +1336,7 @@ err_out:
+  *
+  * Searches the children of the parent dentry for the name in question. If
+  * the dentry is found its reference count is incremented and the dentry
+- * is returned. The caller must use d_put to free the entry when it has
++ * is returned. The caller must use dput to free the entry when it has
+  * finished using it. %NULL is returned on failure.
+  *
+  * __d_lookup is dcache_lock free. The hash list is protected using RCU.
+-- 
+1.5.5.3
 
-But then I took a long look at the cvs commit logs.
-
-And you are right, they are crap, and pointless to have here.
-
-So, thanks a lot for showing me how to do this properly, in the future I
-might do this (actually, for one wireless driver, I might do this now,
-as it was always developed in git), but for the comedi code, I'll just
-use the "normal" method of adding drivers one at a time, with none of
-the crazy past history sucked in as it doesn't add any value.
-
-thanks,
-
-greg k-h
