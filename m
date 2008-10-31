@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426AbYJaShl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752948AbYJaSnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753426AbYJaShl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 14:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbYJaShc
+	id S1752948AbYJaSnT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 14:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbYJaSnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 14:37:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38487 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752135AbYJaShb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 14:37:31 -0400
-Message-ID: <490B5064.2000506@redhat.com>
-Date: Fri, 31 Oct 2008 13:37:24 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Arthur Jones <ajones@riverbed.com>
-CC: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "sct@redhat.com" <sct@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: ext3: slow symlink corruption on umount...
-References: <20081024183733.GA25797@ajones-laptop.nbttech.com> <20081027165423.GB25797@ajones-laptop.nbttech.com> <20081029195403.GA8333@ajones-laptop.nbttech.com> <4908C951.2000309@redhat.com> <20081030174057.GB7926@ajones-laptop.nbttech.com> <4909F705.8090904@redhat.com> <20081030213400.GA28900@ajones-laptop.nbttech.com> <20081031172446.GC8333@ajones-laptop.nbttech.com>
-In-Reply-To: <20081031172446.GC8333@ajones-laptop.nbttech.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 31 Oct 2008 14:43:03 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:41480 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751999AbYJaSnB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 14:43:01 -0400
+Date: Fri, 31 Oct 2008 16:43:51 -0200
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: "Nick Kossifidis" <mickflemm@gmail.com>
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       willy@linux.intel.com, lrodriguez@atheros.com
+Subject: Re: ath5k gets lost with eeepc-laptop removal
+Message-ID: <20081031164351.3e4a9d4e@doriath.conectiva>
+In-Reply-To: <40f31dec0810311133v65001e59h28cf6946ac3f14e7@mail.gmail.com>
+References: <20081031110502.18e33eba@doriath.conectiva>
+	<40f31dec0810310926p6edd0af5o24d7616eb54c6d0@mail.gmail.com>
+	<20081031151901.2d68c32d@doriath.conectiva>
+	<40f31dec0810311133v65001e59h28cf6946ac3f14e7@mail.gmail.com>
+Organization: Mandriva
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.4; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arthur Jones wrote:
-> On Thu, Oct 30, 2008 at 02:34:00PM -0700, Arthur Jones wrote:
->> Hi Eric,  ...
->>
->> On Thu, Oct 30, 2008 at 11:03:49AM -0700, Eric Sandeen wrote:
->>> [...]
->>> Something is definitely racy here; in my simple testcase I get failures
->>> maybe 30-50% of the time...
->> Some more info: in the working case, the inodes are put
->> back on sb->s_dirty at then next ext3_sync_fs() call:
->>
->> __fsync_super -> DQUOT_SYNC -> ext3_sync_fs -> log_wait_commit
->>
->> In the failing case, journal_start_commit returns 0 in ext_sync_fs
->> and the inodes disappear into never-never land...
-> 
-> More details, these are dumps at __log_start_commit in the
-> call chain described above, the first column is the failing
-> case, the next column is working case, t_expires is the delta
-> from the time the dump was taken:
-> 
->         journal->j_flags                                0x10    0x10
->         journal->j_tail_sequence                         515     519
->         journal->j_transaction_sequence                  517     522
->         journal->j_commit_sequence                       514     519
->         journal->j_commit_request                        516     520
-> 
->         journal->j_running_transaction->t_tid            516     521
->         journal->j_running_transaction->t_state            0       0
->         journal->j_running_transaction->t_updates          0       0
->         journal->j_running_transaction->t_handle_count 27305   27344
->         journal->j_running_transaction->t_expires       -566      28
-> 
-> Can you tell from this whether the transactions
-> are messed up or whether we're just missing a
-> wake_up?  Any other info you'd like to see?
+Em Fri, 31 Oct 2008 20:33:43 +0200
+"Nick Kossifidis" <mickflemm@gmail.com> escreveu:
 
-That's kind of along the lines of what I'm seeing; also, in particular,
-I'm never seeing the buffer_head in question (the one for the block
-which contains the slow link's data) transition from jbddirty to normal
-BH_Dirty.  I've had to take a break from this today, but will be back at
-it a bit later... since I have a solid testcase I'm sure I'll get to the
-bottom of it ... :)  I'll probably hook up akpm's buffer tracing
-infrastructure, just need to find a decent thing to trigger on to dump
-out the history.
+| 2008/10/31 Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>:
+| >
+| >  No, it doesn't. It says:
+| >
+| > """
+| > MAC revision 0xffff is not supported!
+| > """
+| >
+| >  And I have realized that I get a flood of 'failed to wakeup'
+| > and 'can't reset the hardware' error messages, just some seconds
+| > after the eeepc-laptop module removal.
+| >
+| 
+| Well it seems that during module removal, card gets no power at all.
+| I don't see any reason for this behaviour. Do you have pci-e hotplug enabled ?
 
--Eric
+ Well, the pciehp module is not loaded and the eeepc's function keys
+don't work anyway (this is the original problem I was looking at).
+
+-- 
+Luiz Fernando N. Capitulino
