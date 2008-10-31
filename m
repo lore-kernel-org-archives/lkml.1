@@ -1,46 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbYJaHGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbYJaHQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754220AbYJaHGT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 03:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYJaHGI
+	id S1754053AbYJaHQu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 03:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbYJaHQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 03:06:08 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:12807 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751530AbYJaHGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 03:06:07 -0400
-Date: Fri, 31 Oct 2008 16:05:27 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: michael <trimarchi@gandalf.sssup.it>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Michael Trimarchi <trimarchimichael@yahoo.it>
-Subject: Re: [RFC PATCH] Correct the interrupt handler in sh4 serial device.
-Message-ID: <20081031070527.GC26928@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	michael <trimarchi@gandalf.sssup.it>, linux-sh@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Michael Trimarchi <trimarchimichael@yahoo.it>
-References: <490756B9.7000902@gandalf.sssup.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <490756B9.7000902@gandalf.sssup.it>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 31 Oct 2008 03:16:37 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45284
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752998AbYJaHQg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 03:16:36 -0400
+Date: Fri, 31 Oct 2008 00:16:11 -0700 (PDT)
+Message-Id: <20081031.001611.209603762.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver updates for 2.6.29
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081031050938.GA9165@havoc.gtf.org>
+References: <20081031050938.GA9165@havoc.gtf.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 28, 2008 at 07:15:21PM +0100, michael wrote:
-> Correct the interrupt handler in sh4 serial device,
-> return the correct value and check for what is anabled
->  in the SCSCR register. The sh7722 is broken just sending
-> a break using minicom. I'm not sure for the value of
-> SCI_CTRL_FLAGS_REIE in all architecture.
-> 
-> Signed-off-by: Michael Trimarchi <trimarchimichael@yahoo.it>
-> 
-Yes, this looks like a good change. It's a good indicator that the
-original implementation of sci_mpxed_interrupt() was written with a
-particular sub-type in mind ;-)
+From: Jeff Garzik <jeff@garzik.org>
+Date: Fri, 31 Oct 2008 01:09:38 -0400
 
-Applied, thanks.
+> We'll see if eepro100 removal sticks, this time...
+
+Let's hope :)
+
+> Please pull from 'davem-next' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git davem-next
+> 
+> to receive the following updates:
+
+Pulled, thanks a lot Jeff.
