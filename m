@@ -1,96 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbYJaQKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbYJaQKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753258AbYJaQKi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 12:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYJaQKK
+	id S1753413AbYJaQKw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 12:10:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbYJaQK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 12:10:10 -0400
-Received: from hobbit.corpit.ru ([81.13.33.150]:22441 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751162AbYJaQKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 12:10:09 -0400
-Message-ID: <490B2DDF.5050809@msgid.tls.msk.ru>
-Date: Fri, 31 Oct 2008 19:10:07 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
-MIME-Version: 1.0
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-CC: Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Fri, 31 Oct 2008 12:10:29 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:49604 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752718AbYJaQK2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 12:10:28 -0400
+Message-ID: <ac3eb2510810310910w603d90bai8c23b34fb517f21a@mail.gmail.com>
+Date: Fri, 31 Oct 2008 17:10:26 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Michael Tokarev" <mjt@tls.msk.ru>
 Subject: Re: data corruption: revalidating a (removable) hdd/flash on re-insert
-References: <490B2659.9010304@msgid.tls.msk.ru> <20081031155901.GE5682@csclub.uwaterloo.ca>
-In-Reply-To: <20081031155901.GE5682@csclub.uwaterloo.ca>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: "Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <490B2659.9010304@msgid.tls.msk.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <490B2659.9010304@msgid.tls.msk.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen wrote:
-> On Fri, Oct 31, 2008 at 06:38:01PM +0300, Michael Tokarev wrote:
->> To make a long story short: is there a way to force kernel
->> to re-validate a replaced usb-connected hard drive (or a
->> flash) *automatically*?
->>
->> Because right now, the kernel does not see that the drive
->> has been replaced, and uses *some* old cached values, which
->> results in random data corruption here and there, and other
->> similar odd things.
->>
->> For example, I've an USB flash reader (Carry Computer Eng.,
->> Co., Ltd 6-in-1 Card Reader, but that's not really relevant).
->> Among other things it has a compact flash slot.  And I've
->> 2 differently-size CF cards.
-[]
->> So at some point the kernel stopped noticing the drive
->> change in this configuration some time ago.  I can't say
->> when exactly, since I didn't use the card reader for over
->> a year, and certainly didn't try it with more than one
->> card in a row for even longer time.   It worked in the
->> past, that's for sure.  And it definitely does not work
->> (resulting in the above mess) with 2.6.25, 2.6.26 and 2.6.27.
-> 
-> I have had this happen with a few usb flash card readers.  My solution
-> was to unplug the usb cable then swap the card and connect the usb cable
-> again.  In the end I went and bought a different card reader, which does
-> work correctly.
+On Fri, Oct 31, 2008 at 16:38, Michael Tokarev <mjt@tls.msk.ru> wrote:
+> To make a long story short: is there a way to force kernel
+> to re-validate a replaced usb-connected hard drive (or a
+> flash) *automatically*?
+>
+> Because right now, the kernel does not see that the drive
+> has been replaced, and uses *some* old cached values, which
+> results in random data corruption here and there, and other
+> similar odd things.
+>
+> For example, I've an USB flash reader (Carry Computer Eng.,
+> Co., Ltd 6-in-1 Card Reader, but that's not really relevant).
+> Among other things it has a compact flash slot.  And I've
+> 2 differently-size CF cards.
+>
+> So I turn the machine on, insert one CF card, mount it, do
+> something with its vfat filesystem, umount it and remove
+> it.  Next I insert another card, and when trying to mount
+> it, the kernel says:
+>
+> FAT: invalid media value (0x1e)
+> VFS: Can't find a valid FAT filesystem on dev sdb1.
+>
+> When trying to run cfdisk for example, it complains that
+> "partition 0 ends after end of the drive" (or something
+> similar).
+>
+> Sometimes the mount succeeds, but there are all sorts of
+> errors here in there, the filesystem is messed up, whith
+> parts of the files "from" just-removed card, and parts
+> from the new card.
+>
+> And sure enough, when I, forgetting the issue, trying
+> to WRITE something to the card, it becomes almost 100%
+> messy...
+>
+> What helps is to run, for example,
+>
+>  blockdev --rereadpt /dev/sdb
+>
+> manually, after replacing the card.
+>
+> The first thing I was thinking of when saw the whole mess
+> is: there must be some process like hald/udev/whatever
+> messy subsystem du jur, which holds the device node open
+> and prevents the kernel from re-reading the drive by its
+> own as it correctly did in the past.  Nope, I've shut down
+> everything, and the same happens when only shell process
+> running INSTEAD of init (booting with init=/bin/sh option).
+>
+> So at some point the kernel stopped noticing the drive
+> change in this configuration some time ago.  I can't say
+> when exactly, since I didn't use the card reader for over
+> a year, and certainly didn't try it with more than one
+> card in a row for even longer time.   It worked in the
+> past, that's for sure.  And it definitely does not work
+> (resulting in the above mess) with 2.6.25, 2.6.26 and 2.6.27.
 
-Well, this one is internal reader, which plugs into a 3" slot.
-AND it also has the regular floppy drive in it, too. It's a combo,
-a floppy drive AND a USB flash reader.  As such, I can't easily
-re-plug it (which definitely helps, too, but for that to work I
-have to open the case), and I can't replace it either, because
-this device is almost unique: I still need a floppy and there's
-no other such combo drives, at least I wasn't able to find it.
-It's a great device if you think of it: it connects two epochs
-together...
+Maybe your card reader is broken. I can not reproduce this with any of
+the many readers I have. Usually a media change results in media
+revalidation with the next access to the device. You can easily
+reproduce that:
 
-> I highly suspect it is a mistake in the hardware causing the problem
-> given the vast majority of readers do work correctly already.
+Insert the media, and force a validation:
+  $ touch /dev/sdb
 
-So at least a) I'm not alone, and b) there's SOMETHING that works.
-Excellent!
+Start logging of the kernel uevents to the console:
+  $ udevadm monitor --kernel &
 
-> So far I have had no problems with a silverstone, mitsumi, dell (in
-> monitor), sandisk.  I have had a problem with a no name cheap "15 in
-> 1" reader which I stopped using because plugging and unplugging got
-> annoying.
-> 
-> So my recommendation is get a non broken device.
+Access the device:
+  $ touch /dev/sdb
 
-The thing is that with some older kernel(s) it defeinitely worked.
-So I'd say it's the kernel which broke/regressed, not the hardware.
-Suggesting to fix the hardware because new kernel does not work with
-it anymore is.. strange at least.
+Nothing should happen, as the reader/kernel knows it is still valid.
 
-And yes it was definitely a el cheapo no-name thing.  But a..
-great (epochs!) and hence unique thing, see above.. ;)
+Now remove the media and insert it immediately again.
 
-I'll try to find out when it broke.  My first suspect was the patch
-introduced not-so-recently (in 2.6.2x series) to support media
-change notifications done by some hardware (wait for notify instead
-of constantly polling).
+Access the device:
+  $ touch /dev/sdb
+  UEVENT[1225468868.803950] change
+/devices/pci0000:00/0000:00:1d.7/usb5/5-2/5-2:1.0/host8/target8:0:0/8:0:0:0
+(scsi)
 
-Thanks!
+and you see the reader told to kernel (scsi unit attention) to
+revalidate the device.
 
-/mjt
+These events happen only when the device is accessed. That's why
+distros poll removable devices for media changes.
+
+Every access to removable media is guarded by this revalidation check.
+If you don't see these events, you should not trust this reader, and
+at least never change the media while it is connected.
+
+Kay
