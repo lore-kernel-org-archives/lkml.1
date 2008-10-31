@@ -1,51 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753156AbYJaTqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753178AbYJaTsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753156AbYJaTqd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 15:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYJaTqZ
+	id S1753178AbYJaTsq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 15:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYJaTsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 15:46:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:57652 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751133AbYJaTqY (ORCPT
+	Fri, 31 Oct 2008 15:48:38 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:34997 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752129AbYJaTsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 15:46:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=oKveKMIT6uNCmNrJJCl7NmMHFLDydxn2ob1q7cr6u0f18Z/JYvmP2hMeKOP3EhELn4
-         tGF3Ih+S5dZ2QJxyImyGBfymxevcsTVJKdgX0DisFPYXSa/Uwee50o5pivH5rKy8645x
-         fHZo9sjprBDcgM9mwa1SAUnaziEOtdo4r4ir8=
-Message-ID: <490B606F.3010100@gmail.com>
-Date: Fri, 31 Oct 2008 20:45:51 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Jeroen Roovers <jer@gentoo.org>
-CC: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-parisc@vger.kernel.org
-Subject: Re: 2.6.28-rc2: USB/INPUT: slab error in cache_alloc_debugcheck_after():
- double free?
-References: <200810310011.08618.deller@gmx.de> <20081031044553.50882e86@epia.jer-c2.orkz.net>
-In-Reply-To: <20081031044553.50882e86@epia.jer-c2.orkz.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 31 Oct 2008 15:48:37 -0400
+Subject: Re: [PATCH 2/3] integrity: Linux Integrity Module(LIM)
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <1225471902.12673.415.camel@nimitz>
+References: <cover.1223869200.git.zohar@localhost.localdomain>
+	 <7c05f813215804a30d03821fd8e251b250d0e000.1223869200.git.zohar@localhost.localdomain>
+	 <20081014132823.GA18474@infradead.org> <1225471902.12673.415.camel@nimitz>
+Content-Type: text/plain
+Date: Fri, 31 Oct 2008 15:48:34 -0400
+Message-Id: <1225482514.21941.54.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/31/2008 04:45 AM, Jeroen Roovers wrote:
-> I am seeing the same USB problem but without the SLAB errors - [1] is
-> the Gentoo bug report. The kernel boots fine with both USB keyboard and
-> mouse detached.
-> 
-> 
-> [17179609.760000] usb 1-2: configuration #1 chosen from 1 choice
-> [17179609.860000] input: Kensington Kensington USB/PS2 Trackball as
-> /class/inpu1
-> [17179609.972000] Backtrace:
+On Fri, 2008-10-31 at 09:51 -0700, Dave Hansen wrote: 
+> On Tue, 2008-10-14 at 09:28 -0400, Christoph Hellwig wrote:
+> > > --- a/include/linux/fs.h
+> > > +++ b/include/linux/fs.h
+> > > @@ -683,6 +683,9 @@ struct inode {
+> > >  #ifdef CONFIG_SECURITY
+> > >       void                    *i_security;
+> > >  #endif
+> > > +#ifdef CONFIG_INTEGRITY
+> > > +     void                    *i_integrity;
+> > > +#endif
+> > 
+> > Sorry, but as said before bloating the inode for this is not an option.
+> > Please use something like the MRU approach I suggested in the last
+> > review round.
 
-Could you boot with slub_debug kernel parameter?
+I am working on using a radix tree to store the i_integrity information,
+as Christoph suggested. Initially the measurements were awful, but after
+fixing the locking and removing an unnecessary sychronize_rcu, I'm not
+seeing a major performance hit. 
+
+> Why don't we just have a 'void *i_lots_of_bloat field', and let the
+> security folks stick whatever they want in it?  They can trade their
+> i_security space for a new one.  I know we want to conceptually separate
+> security from integrity, so let's separate it:
+> 
+> struct i_bloat_inodes {
+> #ifdef CONFIG_SECURITY
+> 	void                    *i_security;
+> #endif
+> #ifdef CONFIG_INTEGRITY
+> 	void                    *i_integrity;
+> #endif
+> };
+
+I'm not sure that the LSM people would be too happy.  If using the radix
+tree does not pan out, then we will have to look into this option.
+
+> By the way, if there's no TPM hardware, why would I want i_integrity
+> anyway?
+
+> -- Dave
+
+The integrity framework is for collecting, appraising, and storing
+integrity information.  Integrity measurements today are mainly file
+measurements, but the framework allows for other types of integrity
+measurements. Some types of integrity measurements, might only require
+collecting and appraising, but not storing, so a TPM would not be
+required.
+
+Mimi
+
