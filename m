@@ -1,60 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752642AbYJaLcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752742AbYJaLdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752642AbYJaLcg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 07:32:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbYJaLcZ
+	id S1752742AbYJaLdA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 07:33:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbYJaLct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 07:32:25 -0400
-Received: from gate.crashing.org ([63.228.1.57]:35469 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751433AbYJaLcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 07:32:24 -0400
-Subject: Re: 2.6.28-rc1: NVRAM being corrupted on ppc64 preventing boot
-	(bisected)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Paul Mackerras <paulus@samba.org>
-Cc: Mel Gorman <mel@csn.ul.ie>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <18698.59790.393775.139313@cargo.ozlabs.ibm.com>
-References: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org>
-	 <20081030142632.GA15645@csn.ul.ie>
-	 <18698.7794.500191.189515@cargo.ozlabs.ibm.com>
-	 <20081031103646.GA24395@csn.ul.ie>
-	 <18698.59790.393775.139313@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Fri, 31 Oct 2008 22:31:37 +1100
-Message-Id: <1225452697.8004.211.camel@pasglop>
+	Fri, 31 Oct 2008 07:32:49 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:40386 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041AbYJaLcs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 07:32:48 -0400
+Subject: Re: [RFC] B+Tree library
+From: Johannes Berg <johannes@sipsolutions.net>
+To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20081031112651.GD18182@logfs.org>
+References: <20081026124643.GA1328@logfs.org>
+	 <1225449314.3535.23.camel@johannes.berg> <20081031112651.GD18182@logfs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-MvWKO4jvBpz8GnlSPHzi"
+Date: Fri, 31 Oct 2008 12:32:41 +0100
+Message-Id: <1225452761.3535.28.camel@johannes.berg>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-31 at 22:18 +1100, Paul Mackerras wrote:
-> Mel Gorman writes:
-> 
-> > Yaboot in my case and I've heard it affected a DVD installation. I don't
-> > know for sure if it affects netboot but as I think it's something the
-> > kernel is doing, it probably doesn't matter how it gets loaded?
-> 
-> I do need to know whether it was the vmlinux or the zImage.pseries
-> that you were loading with yaboot.  That commit you identified affects
-> the contents of an ELF note in the zImage.pseries that firmware looks
-> at, as well as a structure in the kernel itself that gets passed as an
-> argument to a call to firmware.  If you were loading a vmlinux with
-> yaboot when you saw the corruption occur then that narrows things down
-> a bit.
 
-Unless missed something, I think it's narrowed already. When loaded from
-yaboot, there is no relevant difference between zImage and vmlinux here.
-IE. yaboot parses the ELF header of the zImage itself and ignores the
-special notes anyway so only the CAS firmware call is relevant in both
-cases, no ?
+--=-MvWKO4jvBpz8GnlSPHzi
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
-Ben.
+On Fri, 2008-10-31 at 12:26 +0100, J=C3=B6rn Engel wrote:
+> On Fri, 31 October 2008 11:35:14 +0100, Johannes Berg wrote:
+> >=20
+> > [looks like this hitting LWN means everyone suddenly found it...]
+>=20
+> It did?
 
+Yes, on the weekly kernel page, under "Patches and updates / Core kernel
+code"
+
+> > > The one aspect where my implementation is actually nice is in allowin=
+g
+> > > variable key length.  Btree keys are interpreted as an array of unsig=
+ned
+> > > long.  So by passing the correct geometry to the core functions, it i=
+s
+> > > possible to handle 32bit, 64bit or 128bit btrees, which logfs uses.  =
+If
+> > > so desired, any other weird data format can be used as well (Zach, ar=
+e
+> > > you reading this?).
+> >=20
+> > Would there be an easy way to use 48-bit keys? Or variable length keys?
+>=20
+> Variable as in one implementation for several trees with different
+> sizes, yes.  Variable as in one tree with differently sized keys, no.
+
+Ok, I guess that would blow up the key size to 6+1+32 bytes, or 10 (5)
+longs. Bit large.
+
+> > > So would something like this be merged once some users are identified=
+?
+> > > Would it be useful for anything but logfs?  Or am I plain nuts?
+> >=20
+> > I could imagine using it instead of the hash-table for stations and APs
+> > in the wireless code, stations are identified by the MAC address (48
+> > bit) and APs (BSSs) are identified by their BSSID+SSID (or mesh ID), so
+> > variable length. Currently we use a hash table with 256 slots which is
+> > quite large for the typical case of mostly less than a hundred entries.
+>=20
+> MAC address wouldn't be a problem.  For BSSID+SSID one could just keep
+> the hashing and use the btree as an 'implementation detail' of the
+> 'hashtable'.  Beware that I don't allow two identical keys.  The
+> implications of that make my toenails curl up.
+
+Heh. We don't actually hash on the SSID right now, only on the BSSID,
+and then use the SSID to distinguish (it isn't common to have two SSIDs
+on the same BSSID)
+
+> > > This implementation is extremely simple.  It splits nodes when they
+> > > overflow.  It does not move elements to neighboring nodes.  It does n=
+ot
+> > > try fancy 2:3 splits.  It does not even merge nodes when they shrink,
+> > > making degenerate cases possible.  And it requires callers to do
+> > > tree-global locking.  In effect, it will be hard to find anything les=
+s
+> > > sophisticated.
+> >=20
+> > I think the wireless case would probably want to have real shrinking
+> > because it's well possible that you're moving, with your laptop, from a=
+n
+> > area with a large number of APs to say your home out in the countryside
+> > that only has your single AP.
+>=20
+> Indeed.
+
+I guess not then for now, unless one of us wants to implement
+resizing... I'll look for replacements another time, nobody has
+complained yet about the huge hash table :)
+
+johannes
+
+--=-MvWKO4jvBpz8GnlSPHzi
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJCuzWAAoJEKVg1VMiehFYx3oP/1LxLhl/i6GWwbVir//2Iger
+oiV9oF+JYS62GwSPB21ulA4+IA1QstkQ4aFQd546QPt00SQmaHBDQTjBExvBxCYw
+MDjJTSJaCy6ugJcP4JcKyyAj46TUTdGZMarmsGJTXBXDzyL4xatatMQmPhSkpDK8
+LWvA2ODhBUe4bePTFMk++RUMaP20RFqJRbtNpZDC3jpy9Wl94g8+yA5NYRkclZc+
+C23yqJNrdMtxMs/Uy0inCvgggAaM72VJVEY74wwVed8mp7qIIyEILzFNV17ezDvs
+I0n7MU7SLaLLyxnYe9nsbyrzOemWJaCMQH6Cf7MMyf7Den0lDZCiQo5rB0VUP0Zc
+N9CDYsEVp7CseDbY8SPrFneiEvnyila6Qh5svEKFw8qPG3O1K87OszpVKD4TkcCk
+5fku4vBnxDfIIUKjLIrwFCha8wV2oAN/BBqRNNrp8R+95e9D9ypzq/HxRKSWfpg5
+psUrwZ5nD3CNA3pJ7URda0DS49hP3tKXcL/PPEdZbtuZi3LGLYUpMJdFwC9hyqG5
+mI1JXJ5zL2BJxUC6OfT+lOqKM2N6YwGip2op6zNT9H+Aq2t3SoMxd53XPfNTopYO
+4go0YZa44t+7yfcQFPS0RMxzrWhpbtN4HbTE+BwoyErRZMobkbEQWWZZ9wCYmwxm
+6GcNjLOE+t94tL/LZXtN
+=DFd5
+-----END PGP SIGNATURE-----
+
+--=-MvWKO4jvBpz8GnlSPHzi--
 
