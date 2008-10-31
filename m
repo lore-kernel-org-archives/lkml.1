@@ -1,90 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756594AbYJaAtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756200AbYJaAvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756594AbYJaAtX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 20:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYJaAtO
+	id S1756200AbYJaAvs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 20:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbYJaAvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 20:49:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60678 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752977AbYJaAtO (ORCPT
+	Thu, 30 Oct 2008 20:51:40 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:36498 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752390AbYJaAvk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 20:49:14 -0400
-Date: Thu, 30 Oct 2008 17:48:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Dmitri Monakhov <dmonakhov@openvz.org>,
-       Takashi Sato <t-sato@yk.jp.nec.com>
-Subject: Re: mmotm 2008-10-30-02-23 uploaded (mm/ + fs/)
-Message-Id: <20081030174814.cf900476.akpm@linux-foundation.org>
-In-Reply-To: <20081030172700.35383b15.randy.dunlap@oracle.com>
-References: <200810300924.m9U9OPqK030938@imap1.linux-foundation.org>
-	<20081030172700.35383b15.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 30 Oct 2008 20:51:40 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=uCZz8LgpRzh-NFZCcJ8A:9 a=1gbMsf1DOTnKSlSaGr4A:7 a=ooGSfpXWzq_QcP3SRtQelFQr6X0A:4
+Message-ID: <490A5698.4080302@shaw.ca>
+Date: Thu, 30 Oct 2008 18:51:36 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: James Renton <jrenton@castel.com>
+CC: linux-kernel@vger.kernel.org, Joe Maldonado <jmaldonado@castel.com>
+Subject: Re: sigqueue() losing signals
+References: <fa.mqI1CnLbqkcTn2yfwoMcj8Ca54c@ifi.uio.no>
+In-Reply-To: <fa.mqI1CnLbqkcTn2yfwoMcj8Ca54c@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Oct 2008 17:27:00 -0700
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
-
-> On Thu, 30 Oct 2008 02:24:25 -0700 akpm@linux-foundation.org wrote:
+James Renton wrote:
+> I needed to kick off a bunch of background threads and receive
+> notification if one failed due to fatal error.  I was hoping waitpid()
+> would work; but found out quickly that although each thread has a pid_t;
+> threads and processes were not interchangeable.  Without a timed
+> pthread_join() over multiple threads (like WIN32
+> WaitForMultipleObjects), I formulated a seemingly dead simple
+> implementation using signals.  I hacked out a quick prototype to ensure
+> I could get the signals to work as desired.  
 > 
-> > The mm-of-the-moment snapshot 2008-10-30-02-23 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > It contains the following patches against 2.6.28-rc2:
-> 
-> 
-> mm/filemap.c: In function '__generic_file_aio_write_nolock':
-> mm/filemap.c:2347: error: 'DIO_LOCKING' undeclared (first use in this function)
-> mm/filemap.c: In function 'generic_file_aio_write_nolock':
-> mm/filemap.c:2421: error: 'DIO_OWN_LOCKING' undeclared (first use in this function)
-> mm/filemap.c: In function 'generic_file_aio_write':
-> mm/filemap.c:2446: error: 'DIO_LOCKING' undeclared (first use in this function)
+> When I ran the prototype, I experienced behavior looking very bug-like;
+> but I wanted to post it here in case I am misunderstanding unix signals
+> and just doing something silly.  I am requesting for comments or
+> [hopefully clever] suggestions... Code follows:
 
-fs-truncate-blocks-outside-i_size-after-generic_file_direct_write-error.patch,
-CONFIG_BLOCK=n.
+For normal signals, you're not guaranteed that the signal handler will 
+be called once for every time the signal is raised. You may get only one 
+signal handler call for multiple events if they happen in rapid 
+succession. Maybe if you use realtime signals it will work. But this 
+seems like a bizarre way to accomplish the task.. better to just set 
+some pthread condition in your threads when they exit and do a 
+pthread_cond_timedwait on that condition in the main thread.
 
-That patch is a bit messy, carrying direct-io internals over into core
-pagecache functions.  Dmitry, can we have another look at how to do
-that?  Perhaps do the truncation back in direct-io.c?
-
-> 
-> fs/ioctl.c: In function 'ioctl_fsfreeze':
-> fs/ioctl.c:460: error: implicit declaration of function 'freeze_bdev'
-> fs/ioctl.c:460: warning: assignment makes pointer from integer without a cast
-> fs/ioctl.c: In function 'ioctl_fsthaw':
-> fs/ioctl.c:478: error: implicit declaration of function 'thaw_bdev'
-> 
-
-filesystem-freeze-implement-generic-freeze-feature.patch,
-CONFIG_BLOCK=n.  Dunno, perhaps provide do-nothing stubs for
-freeze_bdev() and thaw_bdev(), I guess.
-
---- a/include/linux/buffer_head.h~filesystem-freeze-implement-generic-freeze-feature-fix
-+++ a/include/linux/buffer_head.h
-@@ -345,6 +345,15 @@ static inline int remove_inode_buffers(s
- static inline int sync_mapping_buffers(struct address_space *mapping) { return 0; }
- static inline void invalidate_bdev(struct block_device *bdev) {}
- 
-+static inline struct super_block *freeze_bdev(struct block_device *sb)
-+{
-+	return NULL;
-+}
-+
-+static inline int thaw_bdev(struct block_device *bdev, struct super_block *sb)
-+{
-+	return 0;
-+}
- 
- #endif /* CONFIG_BLOCK */
- #endif /* _LINUX_BUFFER_HEAD_H */
-_
-
+IMHO, in general, when signals are the answer, chances are the question 
+is wrong..
 
