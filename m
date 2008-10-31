@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752803AbYJaT1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbYJaTdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752803AbYJaT1W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 15:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYJaT1P
+	id S1752839AbYJaTdS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 15:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYJaTdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 15:27:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51965 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750822AbYJaT1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 15:27:14 -0400
-Date: Fri, 31 Oct 2008 15:28:35 -0400
-From: Aristeu Rozanski <aris@redhat.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: nmi - document lapic and ioapic parameters
-Message-ID: <20081031192834.GD771@redhat.com>
-References: <20081031192358.GC20803@localhost>
+	Fri, 31 Oct 2008 15:33:07 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:43721 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751992AbYJaTdE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 15:33:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Cep3EaDLh/RXOCGpCxOpDavenXkZF4/Hn6r+mMHUS6BLfNg6xOQ/pBmw3EPs5zuQxD
+         L1D+JEhMk8yCl53bTgms04LFcK47Ck/LHDM0s0U4zr3FsVAwPISc1aIbuawXchnQ5N8l
+         oFXHO5DXecKdVHaWDc0lrQxws6ZKWnDIQpRJY=
+Message-ID: <863e9df20810311233j13f996b8qa185cceddbd90849@mail.gmail.com>
+Date: Fri, 31 Oct 2008 15:33:00 -0400
+From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH] ftrace: distinguish kretprobe'd functions in trace logs
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Al Viro" <viro@zeniv.linux.org.uk>, ananth@in.ibm.com,
+       jkenisto@us.ibm.com, mhiramat@redhat.com
+In-Reply-To: <alpine.DEB.1.10.0810311142220.22451@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081031192358.GC20803@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <483C53EE.2060602@gmail.com>
+	 <alpine.DEB.1.10.0810302227360.21031@gandalf.stny.rr.com>
+	 <alpine.DEB.1.10.0810311036130.20157@gandalf.stny.rr.com>
+	 <863e9df20810310832uadf4daay7b5a98b677d86561@mail.gmail.com>
+	 <alpine.DEB.1.10.0810311142220.22451@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+On Fri, Oct 31, 2008 at 11:50 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> From: Steven Rostedt <srostedt@redhat.com>
+> Subject: ftrace: use kretprobe trampoline name to test in output
+>
+> When a function is kprobed, the return address is set to the
+> kprobe_trampoline, or something similar. This caused the output
+> of the trace to look confusing when the parent seemed to be this
+> "kprobe_trampoline" function.
+>
+> To fix this, Abhishek Sagar added a test of the instruction pointer
+> of the parent to see if it matched the kprobe_trampoline. If it
+> did, the output would print a "[unknown/kretprobe'd]" instead.
+>
+> Unfortunately, not all archs do this the same way, and the trampoline
+> function may not be exported, which causes failures in builds.
+>
+> This patch will compare the name instead of the pointer to see
+> if it matches. This prevents us from depending on a function from
+> being exported, and should work on all archs. The worst that can
+> happen is that an arch might use a different name and then we
+> go back to the confusing output. At least the arch will still build.
+>
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 > ---
-> 
-> On top of -tip dda51106620c328b50007c259b9ef8cea2b7c3d2
-> 
-> Index: linux-2.6.git/Documentation/kernel-parameters.txt
-> ===================================================================
-> --- linux-2.6.git.orig/Documentation/kernel-parameters.txt	2008-10-27 21:35:08.000000000 +0300
-> +++ linux-2.6.git/Documentation/kernel-parameters.txt	2008-10-31 22:21:59.000000000 +0300
-> @@ -1404,6 +1404,14 @@ and is between 256 and 4096 characters. 
->  			Format: [state][,regs][,debounce][,die]
->  
->  	nmi_watchdog=	[KNL,BUGS=X86-32] Debugging features for SMP kernels
-> +			Format: [panic,][num]
-> +			Valid num: 0,1,2
-> +			0 - turn nmi_watchdog off
-> +			1 - use IO-APIC
-> +			2 - use local APIC
-> +			Instead of 1 and 2 it is possible to use the following
-> +			symbolic names: lapic and ioapic
-> +			Example: nmi_watchdog=2 or nmi_watchdog=panic,lapic
->  
->  	no387		[BUGS=X86-32] Tells the kernel to use the 387 maths
->  			emulation library even if a 387 maths coprocessor
+>  kernel/trace/trace.c |   39 +++++++++++++++++++++------------------
+>  1 file changed, 21 insertions(+), 18 deletions(-)
 
-Acked-by: Aristeu Rozanski <aris@ruivo.org>
+Looks good, and worked on x86-32.
 
--- 
-Aristeu
-
+Acked-by: Abhishek Sagar <sagar.abhishek@gmail.com>
