@@ -1,38 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbYJaIxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753915AbYJaI4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754455AbYJaIxv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 04:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbYJaIxm
+	id S1753915AbYJaI4Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 04:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbYJaI4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 04:53:42 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:50168 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752984AbYJaIxl (ORCPT
+	Fri, 31 Oct 2008 04:56:16 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:35982 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752209AbYJaI4P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 04:53:41 -0400
-Subject: Re: [PATCH] slub - fix get_object_page comment
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0810301039080.20953@quilx.com>
-References: <20081028190226.GE7357@localhost>
-	 <Pine.LNX.4.64.0810301039080.20953@quilx.com>
-Date: Fri, 31 Oct 2008 10:54:24 +0200
-Message-Id: <1225443264.19537.0.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 31 Oct 2008 04:56:15 -0400
+Date: Fri, 31 Oct 2008 16:56:12 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Kent Liu <kent.liu@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, austin.zhang@intel.com,
+       austin_zhang@linux.intel.com
+Subject: Re: [PATCH] crc32c-intel: Update copyright head
+Message-ID: <20081031085612.GA7839@gondor.apana.org.au>
+References: <20081030034146.GA9027@wliu-linux.bj.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081030034146.GA9027@wliu-linux.bj.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-30 at 10:39 -0500, Christoph Lameter wrote:
-> On Tue, 28 Oct 2008, Cyrill Gorcunov wrote:
+On Thu, Oct 30, 2008 at 11:41:46AM +0800, Kent Liu wrote:
+> The original copyright head for crc32c-intel.c is incorrect. Please merge
+> the patch to update it.
 > 
-> > Use 'slab page' instead of 'slab object'.
-> 
-> Acked-by: Christoph Lameter <cl@linux-foundation.org>
+> Signed-Off-By: Kent Liu <kent.liu@intel.com>
 
-Applied, thanks!
 
+Patch applied.  Thanks!
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
