@@ -1,43 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751828AbYJaLBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752035AbYJaLC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751828AbYJaLBV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 07:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbYJaLBM
+	id S1752035AbYJaLC1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 07:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbYJaLCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 07:01:12 -0400
-Received: from mail.gmx.net ([213.165.64.20]:52467 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750945AbYJaLBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 07:01:11 -0400
-X-Authenticated: #3270896
-X-Provags-ID: V01U2FsdGVkX19bmrUQmE9b1lc77IYSxsKwSQKgwPKFhS6xFbI2By
-	uW356F5s+eTfSi
-From: Carsten Niehaus <cniehaus@gmx.de>
-To: Rafael Cunha de Almeida <almeidaraf@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: RE: Weird behaviour on iwl3945 module
-Date: Fri, 31 Oct 2008 12:01:02 +0100
-User-Agent: KMail/1.9.10
+	Fri, 31 Oct 2008 07:02:15 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40909 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750756AbYJaLCO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 07:02:14 -0400
+Date: Fri, 31 Oct 2008 13:01:45 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: David Miller <davem@davemloft.net>, shemminger@vyatta.com, zbr@ioremap.net,
+       rjw@sisk.pl, mingo@elte.hu, s0mbre@tservice.net.ru,
+       a.p.zijlstra@chello.nl, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>, efault@gmx.de,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+In-Reply-To: <490AE1CD.9040207@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0810311300130.7072@wrl-59.cs.helsinki.fi>
+References: <Pine.LNX.4.64.0810302047030.22084@wrl-59.cs.helsinki.fi>
+ <20081031.005219.141937694.davem@davemloft.net>
+ <Pine.LNX.4.64.0810311119510.7072@wrl-59.cs.helsinki.fi>
+ <20081031.025159.51432990.davem@davemloft.net> <490AE1CD.9040207@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810311201.03588.cniehaus@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.8
+Content-Type: MULTIPART/Mixed; boundary="=_courier-3486-1225449966-0001-2"
+Content-ID: <Pine.LNX.4.64.0810311300131.7072@wrl-59.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Moin
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Is that the same issue as the one I reported agains 2.6.27 on Ubuntu 8.10?
+--=_courier-3486-1225449966-0001-2
+Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0810311300132.7072@wrl-59.cs.helsinki.fi>
 
-  https://bugs.launchpad.net/ubuntu/+source/wireless-tools/+bug/290820
+On Fri, 31 Oct 2008, Eric Dumazet wrote:
 
-Carsten
+> David Miller a écrit :
+> > From: "Ilpo Järvinen" <ilpo.jarvinen@helsinki.fi>
+> > Date: Fri, 31 Oct 2008 11:40:16 +0200 (EET)
+> > 
+> > > Let me remind that it is just a single process, so no ping-pong & other
+> > > lock related cache effects should play any significant role here, no? (I'm
+> > > no expert though :-)).
+> > 
+> > Not locks or ping-pongs perhaps, I guess.  So it just sends and
+> > receives over a socket, implementing both ends of the communication
+> > in the same process?
+> > 
+> > If hash chain conflicts do happen for those 2 sockets, just traversing
+> > the chain 2 entries deep could show up.
+> 
+> tbench is very sensible to cache line ping-pongs (on SMP machines of course)
+
+...Sorry to disappoint you but we were discussion there on my AIM9 
+tcp_test results :-).
 
 -- 
-"Never make any mistaeks."
-(Anonymous, in a mail discussion about to a kernel bug report.)
+ i.
+--=_courier-3486-1225449966-0001-2--
