@@ -1,90 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbYJaCJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753736AbYJaCKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753539AbYJaCJj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 22:09:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYJaCJa
+	id S1753736AbYJaCKe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 22:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbYJaCKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 22:09:30 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:58584 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750993AbYJaCJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 22:09:29 -0400
-Date: Fri, 31 Oct 2008 03:09:25 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Helge Deller <deller@gmx.de>
-cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-parisc@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>
-Subject: Re: 2.6.28-rc2: USB/INPUT: slab error in cache_alloc_debugcheck_after():
- double free?
-In-Reply-To: <200810310011.08618.deller@gmx.de>
-Message-ID: <alpine.LRH.1.10.0810310305000.7585@twin.jikos.cz>
-References: <200810310011.08618.deller@gmx.de>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 30 Oct 2008 22:10:25 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:55176 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750993AbYJaCKY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 22:10:24 -0400
+From: Trent Piepho <tpiepho@freescale.com>
+To: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Trent Piepho <tpiepho@freescale.com>
+Subject: [PATCH v2] of_gpio: Return GPIO flags from of_get_gpio()
+Date: Thu, 30 Oct 2008 19:03:09 -0700
+Message-Id: <1225418589-8545-1-git-send-email-tpiepho@freescale.com>
+X-Mailer: git-send-email 1.5.4.1
+In-Reply-To: <20081030111500.GB22008@oksana.dev.rtsoft.ru>
+References: <20081030111500.GB22008@oksana.dev.rtsoft.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Oct 2008, Helge Deller wrote:
+The device binding spec for OF GPIOs defines a flags field, but there is
+currently no way to get it.  This patch adds a parameter to of_get_gpio()
+where the flags will be returned if non-NULL.  of_get_gpio() in turn passes
+the parameter to the of_gpio_chip's xlate method, which can extract any
+flags present from the gpio_spec.
 
-> After sucessful bootup (without any USB devices attached)
-> I get this when I insert a USB keyboard:
-> ---------------
-> usb 1-1: new low speed USB device using ohci_hcd and address 2
-> usb 1-1: configuration #1 chosen from 1 choice
-> input: SILITEK USB Keyboard and Mouse as /class/input/input0
-> Slab corruption: size-4096 start=8dd9b000, len=4096
-> 000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> generic-usb 0004:047B:0002.0001: input,hidraw0: USB HID v1.00 Keyboard [SILITEK USB Keyboard and Mouse] on usb-0000:00:0e.2-1/input0
+The default (and currently only) of_gpio_chip xlate method,
+of_gpio_simple_xlate(), is modified to do this.
 
-Looks like something goes wrong somewhere around hid_connect() -- 
-hidinput_connect() is called, then slab complains about corruption, and 
-then the rest of the code in hid_connect() is executed, priting the 
-'generic-usb ...' message.
+Signed-off-by: Trent Piepho <tpiepho@freescale.com>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+Since this patch changes an API, it would be nice to get it into powerpc-next
+soon so that people who have new patches that use this API, like Anton, can
+base off it.
 
-I can't reproduce it here myself with CONFIG_DEBUG_SLAB=y. Could you 
-please send me your config?
+ drivers/mtd/nand/fsl_upm.c              |    2 +-
+ drivers/net/fs_enet/fs_enet-main.c      |    2 +-
+ drivers/net/phy/mdio-ofgpio.c           |    4 ++--
+ drivers/of/gpio.c                       |   13 ++++++++++---
+ drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
+ include/linux/of_gpio.h                 |   21 +++++++++++++++++----
+ 6 files changed, 32 insertions(+), 12 deletions(-)
 
-It is also quite strange that stacktrace is missing here for some 
-reason.
-
-> On 2.6.28-rc1 I saw e.g. this:
-> --------------------
-> usbcore: registered new interface driver usbhid
-> usbhid: v2.6:USB HID core driver
-> usb 1-1: new low speed USB device using ohci_hcd and address 2
-> usb 1-1: configuration #1 chosen from 1 choice
-> input: Logitech N48 as /class/input/input0
-> generic-usb 0003:046D:C001.0001: input,hidraw0: USB HID v1.00 Mouse 
-> [Logitech N48] on usb-0000:00:0e.2-1/inpu0
-> usb 1-1: New USB device found, idVendor=046d, idProduct=c001
-> usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
-> usb 1-1: Product: N48
-> usb 1-1: Manufacturer: Logitech
-> usb 1-2: new low speed USB device using ohci_hcd and address 3
-> usb 1-2: configuration #1 chosen from 1 choice
-> slab error in cache_alloc_debugcheck_after(): cache `size-512': double free, or memory outside object was oven
-> Backtrace:
->    [<101a5724>] cache_alloc_debugcheck_after+0xd8/0x200
->    [<101a5cac>] kmem_cache_alloc+0x1a0/0x1e8
->    [<1042e294>] hid_register_report+0x60/0xc4
->    [<1042e5f8>] hid_add_field+0x40/0x1a4
->    [<1042ec40>] hid_parser_main+0x94/0xc4
-
-This looks rather incomplete, backtrace starting at hid_parser_main is 
-odd.
-
-Also, this seems to happen for different slab cache than the previous 
-corrutpion.
-
+diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
+index 024e3ff..a25d962 100644
+--- a/drivers/mtd/nand/fsl_upm.c
++++ b/drivers/mtd/nand/fsl_upm.c
+@@ -218,7 +218,7 @@ static int __devinit fun_probe(struct of_device *ofdev,
+ 	}
+ 	fun->upm_cmd_offset = *prop;
+ 
+-	fun->rnb_gpio = of_get_gpio(ofdev->node, 0);
++	fun->rnb_gpio = of_get_gpio(ofdev->node, 0, NULL);
+ 	if (fun->rnb_gpio >= 0) {
+ 		ret = gpio_request(fun->rnb_gpio, ofdev->dev.bus_id);
+ 		if (ret) {
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index cb51c1f..5a3c7ee 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -994,7 +994,7 @@ static int __devinit find_phy(struct device_node *np,
+ 		goto out_put_phy;
+ 	}
+ 
+-	bus_id = of_get_gpio(mdionode, 0);
++	bus_id = of_get_gpio(mdionode, 0, NULL);
+ 	if (bus_id < 0) {
+ 		struct resource res;
+ 		ret = of_address_to_resource(mdionode, 0, &res);
+diff --git a/drivers/net/phy/mdio-ofgpio.c b/drivers/net/phy/mdio-ofgpio.c
+index 2ff9775..e3757c6 100644
+--- a/drivers/net/phy/mdio-ofgpio.c
++++ b/drivers/net/phy/mdio-ofgpio.c
+@@ -78,8 +78,8 @@ static int __devinit mdio_ofgpio_bitbang_init(struct mii_bus *bus,
+ {
+ 	struct mdio_gpio_info *bitbang = bus->priv;
+ 
+-	bitbang->mdc = of_get_gpio(np, 0);
+-	bitbang->mdio = of_get_gpio(np, 1);
++	bitbang->mdc = of_get_gpio(np, 0, NULL);
++	bitbang->mdio = of_get_gpio(np, 1, NULL);
+ 
+ 	if (bitbang->mdc < 0 || bitbang->mdio < 0)
+ 		return -ENODEV;
+diff --git a/drivers/of/gpio.c b/drivers/of/gpio.c
+index 7cd7301..ae14215 100644
+--- a/drivers/of/gpio.c
++++ b/drivers/of/gpio.c
+@@ -22,11 +22,12 @@
+  * of_get_gpio - Get a GPIO number from the device tree to use with GPIO API
+  * @np:		device node to get GPIO from
+  * @index:	index of the GPIO
++ * @flags:	GPIO's flags are returned here if non-NULL
+  *
+  * Returns GPIO number to use with Linux generic GPIO API, or one of the errno
+  * value on the error condition.
+  */
+-int of_get_gpio(struct device_node *np, int index)
++int of_get_gpio(struct device_node *np, int index, enum of_gpio_flags *flags)
+ {
+ 	int ret;
+ 	struct device_node *gc;
+@@ -59,7 +60,9 @@ int of_get_gpio(struct device_node *np, int index)
+ 		goto err1;
+ 	}
+ 
+-	ret = of_gc->xlate(of_gc, np, gpio_spec);
++	if (flags)
++		*flags = 0;
++	ret = of_gc->xlate(of_gc, np, gpio_spec, flags);
+ 	if (ret < 0)
+ 		goto err1;
+ 
+@@ -77,19 +80,23 @@ EXPORT_SYMBOL(of_get_gpio);
+  * @of_gc:	pointer to the of_gpio_chip structure
+  * @np:		device node of the GPIO chip
+  * @gpio_spec:	gpio specifier as found in the device tree
++ * @flags:	if non-NULL flags are returned here
+  *
+  * This is simple translation function, suitable for the most 1:1 mapped
+  * gpio chips. This function performs only one sanity check: whether gpio
+  * is less than ngpios (that is specified in the gpio_chip).
+  */
+ int of_gpio_simple_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
+-			 const void *gpio_spec)
++			 const void *gpio_spec, enum of_gpio_flags *flags)
+ {
+ 	const u32 *gpio = gpio_spec;
+ 
+ 	if (*gpio > of_gc->gc.ngpio)
+ 		return -EINVAL;
+ 
++	if (flags && of_gc->gpio_cells > 1)
++		*flags = gpio[1];
++
+ 	return *gpio;
+ }
+ EXPORT_SYMBOL(of_gpio_simple_xlate);
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+index bde4b4b..7835cd4 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -1094,7 +1094,7 @@ static int cpm_uart_init_port(struct device_node *np,
+ 	}
+ 
+ 	for (i = 0; i < NUM_GPIOS; i++)
+-		pinfo->gpios[i] = of_get_gpio(np, i);
++		pinfo->gpios[i] = of_get_gpio(np, i, NULL);
+ 
+ 	return cpm_uart_request_port(&pinfo->port);
+ 
+diff --git a/include/linux/of_gpio.h b/include/linux/of_gpio.h
+index 67db101..d611746 100644
+--- a/include/linux/of_gpio.h
++++ b/include/linux/of_gpio.h
+@@ -20,13 +20,23 @@
+ #ifdef CONFIG_OF_GPIO
+ 
+ /*
++ * Flags as returned by OF GPIO chip's xlate method.
++ * The GPIO specifier in the OF device tree does not need to use this
++ * same format for its flags, but it's convenient if it does.  For
++ * example, the of_mm_gpio_chip driver works this way.
++ */
++enum of_gpio_flags {
++	OF_GPIO_ACTIVE_LOW = 1,
++};
++
++/*
+  * Generic OF GPIO chip
+  */
+ struct of_gpio_chip {
+ 	struct gpio_chip gc;
+ 	int gpio_cells;
+ 	int (*xlate)(struct of_gpio_chip *of_gc, struct device_node *np,
+-		     const void *gpio_spec);
++		     const void *gpio_spec, enum of_gpio_flags *flags);
+ };
+ 
+ static inline struct of_gpio_chip *to_of_gpio_chip(struct gpio_chip *gc)
+@@ -50,16 +60,19 @@ static inline struct of_mm_gpio_chip *to_of_mm_gpio_chip(struct gpio_chip *gc)
+ 	return container_of(of_gc, struct of_mm_gpio_chip, of_gc);
+ }
+ 
+-extern int of_get_gpio(struct device_node *np, int index);
++extern int of_get_gpio(struct device_node *np, int index,
++		       enum of_gpio_flags *flags);
+ extern int of_mm_gpiochip_add(struct device_node *np,
+ 			      struct of_mm_gpio_chip *mm_gc);
+ extern int of_gpio_simple_xlate(struct of_gpio_chip *of_gc,
+ 				struct device_node *np,
+-				const void *gpio_spec);
++				const void *gpio_spec,
++				enum of_gpio_flags *flags);
+ #else
+ 
+ /* Drivers may not strictly depend on the GPIO support, so let them link. */
+-static inline int of_get_gpio(struct device_node *np, int index)
++static inline int of_get_gpio(struct device_node *np, int index,
++			      enum of_gpio_flags *flags)
+ {
+ 	return -ENOSYS;
+ }
 -- 
-Jiri Kosina
-SUSE Labs
+1.5.4.3
 
