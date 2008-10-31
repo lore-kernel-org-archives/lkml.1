@@ -1,105 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbYJaDzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbYJaEDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753338AbYJaDzT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 23:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbYJaDzE
+	id S1752866AbYJaEDe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 00:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750783AbYJaEDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 23:55:04 -0400
-Received: from smtp-vbr19.xs4all.nl ([194.109.24.39]:3857 "EHLO
-	smtp-vbr19.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751076AbYJaDzD (ORCPT
+	Fri, 31 Oct 2008 00:03:25 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:36971 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750715AbYJaEDY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 23:55:03 -0400
-X-Greylist: delayed 541 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Oct 2008 23:55:02 EDT
-Date: Fri, 31 Oct 2008 04:45:53 +0100
-From: Jeroen Roovers <jer@gentoo.org>
-To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-parisc@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>
-Subject: Re: 2.6.28-rc2: USB/INPUT: slab error in
- cache_alloc_debugcheck_after(): double free?
-Message-ID: <20081031044553.50882e86@epia.jer-c2.orkz.net>
-In-Reply-To: <200810310011.08618.deller@gmx.de>
-References: <200810310011.08618.deller@gmx.de>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 31 Oct 2008 00:03:24 -0400
+Date: Fri, 31 Oct 2008 00:03:22 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       peterz@infradead.org, torvalds@linux-foundation.org,
+       srostedt@redhat.com
+Subject: [PATCH] ftrace: nmi safe code clean ups
+In-Reply-To: <20081030141048.904c82e1.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0810310002320.28140@gandalf.stny.rr.com>
+References: <20081030200831.467420488@goodmis.org> <20081030201127.820600693@goodmis.org> <20081030133228.824e3f69.akpm@linux-foundation.org> <alpine.DEB.1.10.0810301645100.21031@gandalf.stny.rr.com> <20081030141048.904c82e1.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am seeing the same USB problem but without the SLAB errors - [1] is
-the Gentoo bug report. The kernel boots fine with both USB keyboard and
-mouse detached.
+
+This patch cleans up the NMI safe code for dynamic ftrace as suggested
+by Andrew Morton.
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ arch/arm/include/asm/ftrace.h     |    4 ++--
+ arch/powerpc/include/asm/ftrace.h |    4 ++--
+ arch/sh/include/asm/ftrace.h      |    4 ++--
+ arch/sparc/include/asm/ftrace.h   |    4 ++--
+ arch/x86/include/asm/ftrace.h     |   10 +++++-----
+ arch/x86/kernel/ftrace.c          |   16 ++++++++--------
+ include/linux/ftrace.h            |    3 +++
+ kernel/trace/trace.c              |    9 ++++-----
+ 8 files changed, 28 insertions(+), 26 deletions(-)
+
+Index: linux-tip.git/arch/arm/include/asm/ftrace.h
+===================================================================
+--- linux-tip.git.orig/arch/arm/include/asm/ftrace.h	2008-10-30 10:27:09.000000000 -0400
++++ linux-tip.git/arch/arm/include/asm/ftrace.h	2008-10-30 23:24:18.000000000 -0400
+@@ -2,8 +2,8 @@
+ #define _ASM_ARM_FTRACE
+ 
+ #ifndef __ASSEMBLY__
+-#define ftrace_nmi_enter()	do { } while (0)
+-#define ftrace_nmi_exit()	do { } while (0)
++static inline void ftrace_nmi_enter(void) { }
++static inline void ftrace_nmi_exit(void) { }
+ #endif
+ 
+ #ifdef CONFIG_FUNCTION_TRACER
+Index: linux-tip.git/arch/powerpc/include/asm/ftrace.h
+===================================================================
+--- linux-tip.git.orig/arch/powerpc/include/asm/ftrace.h	2008-10-30 10:27:09.000000000 -0400
++++ linux-tip.git/arch/powerpc/include/asm/ftrace.h	2008-10-30 23:24:30.000000000 -0400
+@@ -2,8 +2,8 @@
+ #define _ASM_POWERPC_FTRACE
+ 
+ #ifndef __ASSEMBLY__
+-#define ftrace_nmi_enter()	do { } while (0)
+-#define ftrace_nmi_exit()	do { } while (0)
++static inline void ftrace_nmi_enter(void) { }
++static inline void ftrace_nmi_exit(void) { }
+ #endif
+ 
+ #ifdef CONFIG_FUNCTION_TRACER
+Index: linux-tip.git/arch/sh/include/asm/ftrace.h
+===================================================================
+--- linux-tip.git.orig/arch/sh/include/asm/ftrace.h	2008-10-30 10:27:09.000000000 -0400
++++ linux-tip.git/arch/sh/include/asm/ftrace.h	2008-10-30 23:24:43.000000000 -0400
+@@ -2,8 +2,8 @@
+ #define __ASM_SH_FTRACE_H
+ 
+ #ifndef __ASSEMBLY__
+-#define ftrace_nmi_enter()	do { } while (0)
+-#define ftrace_nmi_exit()	do { } while (0)
++static inline void ftrace_nmi_enter(void) { }
++static inline void ftrace_nmi_exit(void) { }
+ #endif
+ 
+ #ifndef __ASSEMBLY__
+Index: linux-tip.git/arch/sparc/include/asm/ftrace.h
+===================================================================
+--- linux-tip.git.orig/arch/sparc/include/asm/ftrace.h	2008-10-30 10:27:09.000000000 -0400
++++ linux-tip.git/arch/sparc/include/asm/ftrace.h	2008-10-30 23:24:50.000000000 -0400
+@@ -2,8 +2,8 @@
+ #define _ASM_SPARC64_FTRACE
+ 
+ #ifndef __ASSEMBLY__
+-#define ftrace_nmi_enter()	do { } while (0)
+-#define ftrace_nmi_exit()	do { } while (0)
++static inline void ftrace_nmi_enter(void) { }
++static inline void ftrace_nmi_exit(void) { }
+ #endif
+ 
+ #ifdef CONFIG_MCOUNT
+Index: linux-tip.git/arch/x86/include/asm/ftrace.h
+===================================================================
+--- linux-tip.git.orig/arch/x86/include/asm/ftrace.h	2008-10-30 13:16:22.000000000 -0400
++++ linux-tip.git/arch/x86/include/asm/ftrace.h	2008-10-30 23:25:26.000000000 -0400
+@@ -22,16 +22,16 @@ static inline unsigned long ftrace_call_
+ extern void ftrace_nmi_enter(void);
+ extern void ftrace_nmi_exit(void);
+ #else
+-#define ftrace_nmi_enter()	do { } while (0)
+-#define ftrace_nmi_exit()	do { } while (0)
+-#endif
++static inline void ftrace_nmi_enter(void) { }
++static inline void ftrace_nmi_exit(void) { }
+ #endif
++#endif /* __ASSEMBLY__ */
+ 
+ #else /* CONFIG_FUNCTION_TRACER */
+ 
+ #ifndef __ASSEMBLY__
+-#define ftrace_nmi_enter()	do { } while (0)
+-#define ftrace_nmi_exit()	do { } while (0)
++static inline void ftrace_nmi_enter(void) { }
++static inline void ftrace_nmi_exit(void) { }
+ #endif
+ 
+ #endif /* CONFIG_FUNCTION_TRACER */
+Index: linux-tip.git/arch/x86/kernel/ftrace.c
+===================================================================
+--- linux-tip.git.orig/arch/x86/kernel/ftrace.c	2008-10-30 16:07:05.000000000 -0400
++++ linux-tip.git/arch/x86/kernel/ftrace.c	2008-10-30 23:30:19.000000000 -0400
+@@ -67,7 +67,7 @@ unsigned char *ftrace_call_replace(unsig
+  *
+  * Two buffers are added: An IP buffer and a "code" buffer.
+  *
+- * 1) Put in the instruction pointer into the IP buffer
++ * 1) Put the instruction pointer into the IP buffer
+  *    and the new code into the "code" buffer.
+  * 2) Set a flag that says we are modifying code
+  * 3) Wait for any running NMIs to finish.
+@@ -85,14 +85,14 @@ unsigned char *ftrace_call_replace(unsig
+  * are the same as what exists.
+  */
+ 
+-static atomic_t in_nmi;
+-static int mod_code_status;
+-static int mod_code_write;
+-static void *mod_code_ip;
+-static void *mod_code_newcode;
++static atomic_t in_nmi = ATOMIC_INIT(0);
++static int mod_code_status;		/* holds return value of text write */
++static int mod_code_write;		/* set when NMI should do the write */
++static void *mod_code_ip;		/* holds the IP to write to */
++static void *mod_code_newcode;		/* holds the text to write to the IP */
+ 
+-static int nmi_wait_count;
+-static atomic_t nmi_update_count;
++static unsigned nmi_wait_count;
++static atomic_t nmi_update_count = ATOMIC_INIT(0);
+ 
+ int ftrace_arch_read_dyn_info(char *buf, int size)
+ {
+Index: linux-tip.git/include/linux/ftrace.h
+===================================================================
+--- linux-tip.git.orig/include/linux/ftrace.h	2008-10-30 10:27:07.000000000 -0400
++++ linux-tip.git/include/linux/ftrace.h	2008-10-30 23:31:33.000000000 -0400
+@@ -74,6 +74,9 @@ extern void ftrace_caller(void);
+ extern void ftrace_call(void);
+ extern void mcount_call(void);
+ 
++/* May be defined in arch */
++extern int ftrace_arch_read_dyn_info(char *buf, int size);
++
+ /**
+  * ftrace_modify_code - modify code segment
+  * @ip: the address of the code segment
+Index: linux-tip.git/kernel/trace/trace.c
+===================================================================
+--- linux-tip.git.orig/kernel/trace/trace.c	2008-10-30 16:07:05.000000000 -0400
++++ linux-tip.git/kernel/trace/trace.c	2008-10-30 23:33:41.000000000 -0400
+@@ -2837,10 +2837,6 @@ static struct file_operations tracing_ma
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ 
+-#define DYN_INFO_BUF_SIZE 1023
+-static char ftrace_dyn_info_buffer[DYN_INFO_BUF_SIZE+1];
+-static DEFINE_MUTEX(dyn_info_mutex);
+-
+ int __weak ftrace_arch_read_dyn_info(char *buf, int size)
+ {
+ 	return 0;
+@@ -2850,14 +2846,17 @@ static ssize_t
+ tracing_read_dyn_info(struct file *filp, char __user *ubuf,
+ 		  size_t cnt, loff_t *ppos)
+ {
++	static char ftrace_dyn_info_buffer[1024];
++	static DEFINE_MUTEX(dyn_info_mutex);
+ 	unsigned long *p = filp->private_data;
+ 	char *buf = ftrace_dyn_info_buffer;
++	int size = ARRAY_SIZE(ftrace_dyn_info_buffer);
+ 	int r;
+ 
+ 	mutex_lock(&dyn_info_mutex);
+ 	r = sprintf(buf, "%ld ", *p);
+ 
+-	r += ftrace_arch_read_dyn_info(buf+r, DYN_INFO_BUF_SIZE-r);
++	r += ftrace_arch_read_dyn_info(buf+r, (size-1)-r);
+ 	buf[r++] = '\n';
+ 
+ 	r = simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
 
 
-[17179609.760000] usb 1-2: configuration #1 chosen from 1 choice
-[17179609.860000] input: Kensington Kensington USB/PS2 Trackball as
-/class/inpu1
-[17179609.972000] Backtrace:
-[17179609.972000]  [<101daa9c>] sysfs_find_dirent+0x34/0x50
-[17179609.972000]  [<101daad8>] __sysfs_add_one+0x20/0xc0
-[17179609.972000]  [<101dab8c>] sysfs_add_one+0x14/0x50
-[17179609.972000]  [<101db250>] create_dir+0x64/0xcc
-[17179609.972000]  [<101db2e4>] sysfs_create_dir+0x2c/0x5c
-[17179609.972000]  [<102f2cd0>] kobject_add_internal+0xb8/0x1b0
-[17179609.972000]  [<102f326c>] kobject_add+0x38/0x68
-[17179609.972000]  [<1035b2b0>] device_add+0xdc/0x55c
-[17179609.972000]  [<103d6930>] mousedev_create+0x17c/0x1f8
-[17179609.972000]  [<103d7284>] mousedev_connect+0x48/0x138
-[17179609.972000]  [<103d2b50>] input_attach_handler+0x6c/0xac
-[17179609.972000]  [<103d5014>] input_register_device+0x1a4/0x250
-[17179609.972000]  [<103dfe08>] hidinput_connect+0x308/0x3b40
-[17179609.972000]  [<103de5d4>] hid_connect+0x22c/0x2c0
-[17179609.972000]  [<103de740>] hid_device_probe+0xd8/0xfc
-[17179609.972000]  [<1035db94>] driver_probe_device+0xa4/0x198
-[17179609.972000]
-[17179609.972000]
-[17179609.972000] Kernel Fault: Code=26 regs=8f86d0c0 (Addr=00000000)
-[17179609.972000]
-[17179609.972000]      YZrvWESTHLNXBCVMcbcbcbcbOGFRQPDI
-[17179609.972000] PSW: 00000000000001001111111000001111 Not tainted
-[17179609.972000] r00-03  0004fe0f 105a8e50 101daa9c 8ecef000
-[17179609.972000] r04-07  8f8d4d70 fffffff4 8f296f60 8f86cf48
-[17179609.972000] r08-11  8f297ac8 8ec37000 8f293e90 00000008
-[17179609.972000] r12-15  00000006 00000001 00000002 00000003
-[17179609.972000] r16-19  8ec37000 fffeffff fffeff70 00000073
-[17179609.972000] r20-23  00000006 0000000f 000003e0 8f296f60
-[17179609.972000] r24-27  101da714 8f8d4d70 00000000 105a8650
-[17179609.972000] r28-31  8ecef000 156979c9 8f86d0c0 101a0274
-[17179609.972000] sr00-03  00000000 00000000 00000000 0000000c
-[17179609.972000] sr04-07  00000000 00000000 00000000 00000000
-[17179609.972000]
-[17179609.972000] IASQ: 00000000 00000000 IAOQ: 102f6a50 102f6a54
-[17179609.972000]  IIR: 0f40101c    ISR: 00000000  IOR: 00000000
-[17179609.972000]  CPU:        0   CR30: 8f86c000 CR31: 11111111
-[17179609.972000]  ORIG_R28: 0000000f
-[17179609.972000]  IAOQ[0]: strcmp+0x0/0x34
-[17179609.972000]  IAOQ[1]: strcmp+0x4/0x34
-[17179609.972000]  RP(r2): sysfs_find_dirent+0x34/0x50
-[17179609.972000] Backtrace:
-[17179609.972000]  [<101daa9c>] sysfs_find_dirent+0x34/0x50
-[17179609.972000]  [<101daad8>] __sysfs_add_one+0x20/0xc0
-[17179609.972000]  [<101dab8c>] sysfs_add_one+0x14/0x50
-[17179609.972000]  [<101db250>] create_dir+0x64/0xcc
-[17179609.972000]  [<101db2e4>] sysfs_create_dir+0x2c/0x5c
-[17179609.972000]  [<102f2cd0>] kobject_add_internal+0xb8/0x1b0
-[17179609.972000]  [<102f326c>] kobject_add+0x38/0x68
-[17179609.972000]  [<1035b2b0>] device_add+0xdc/0x55c
-[17179609.972000]  [<103d6930>] mousedev_create+0x17c/0x1f8
-[17179609.972000]  [<103d7284>] mousedev_connect+0x48/0x138
-[17179609.972000]  [<103d2b50>] input_attach_handler+0x6c/0xac
-[17179609.972000]  [<103d5014>] input_register_device+0x1a4/0x250
-[17179609.972000]  [<103dfe08>] hidinput_connect+0x308/0x3b40
-[17179609.972000]  [<103de5d4>] hid_connect+0x22c/0x2c0
-[17179609.972000]  [<103de740>] hid_device_probe+0xd8/0xfc
-[17179609.972000]  [<1035db94>] driver_probe_device+0xa4/0x198
-[17179609.972000]
-[17179609.972000] Kernel panic - not syncing: Kernel Fault
-
-
-Kind regards,
-     JeR
-
-
-[1] https://bugs.gentoo.org/show_bug.cgi?id=245001
