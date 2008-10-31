@@ -1,28 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbYJaWBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbYJaWB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753333AbYJaWBQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 18:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYJaWBA
+	id S1753537AbYJaWB6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 18:01:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYJaWBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 18:01:00 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:37885 "EHLO
+	Fri, 31 Oct 2008 18:01:46 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:37905 "EHLO
 	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751856AbYJaWA7 (ORCPT
+	by vger.kernel.org with ESMTP id S1752634AbYJaWBp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 18:00:59 -0400
-Subject: Re: [PATCH] fix ACPI induced voyager compile failure
+	Fri, 31 Oct 2008 18:01:45 -0400
+Subject: Re: next-20081030: voyager compile busted
 From: James Bottomley <James.Bottomley@HansenPartnership.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081030221645.GL30303@elte.hu>
-References: <1225400518.19324.11.camel@localhost.localdomain>
-	 <20081030215819.GI30303@elte.hu>
-	 <1225404299.19324.47.camel@localhost.localdomain>
-	 <20081030221645.GL30303@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <yinghai@kernel.org>
+In-Reply-To: <20081030224057.GB20507@elte.hu>
+References: <20081030173030.d8847df6.sfr@canb.auug.org.au>
+	 <20081030180323.GA13399@x200.localdomain>
+	 <1225398287.19324.1.camel@localhost.localdomain>
+	 <20081030205230.GO27407@elte.hu>
+	 <1225400283.19324.6.camel@localhost.localdomain>
+	 <20081030210704.GA25665@elte.hu>
+	 <1225401708.19324.35.camel@localhost.localdomain>
+	 <490A2A30.5040905@zytor.com>
+	 <1225403266.19324.42.camel@localhost.localdomain>
+	 <490A2C3D.4020202@zytor.com>  <20081030224057.GB20507@elte.hu>
 Content-Type: text/plain
-Date: Fri, 31 Oct 2008 12:42:02 -0500
-Message-Id: <1225474922.3264.2.camel@localhost.localdomain>
+Date: Fri, 31 Oct 2008 12:42:14 -0500
+Message-Id: <1225474934.3264.4.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -30,61 +38,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-10-30 at 23:16 +0100, Ingo Molnar wrote: 
-> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+On Thu, 2008-10-30 at 23:40 +0100, Ingo Molnar wrote: 
+> * H. Peter Anvin <hpa@zytor.com> wrote:
 > 
-> > On Thu, 2008-10-30 at 22:58 +0100, Ingo Molnar wrote:
-> > > * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > James Bottomley wrote:
 > > > 
-> > > > >From c339b7cdc39399855ec07dfbff67304f9c7fa49a Mon Sep 17 00:00:00 2001
-> > > > From: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > > > Date: Wed, 29 Oct 2008 10:58:13 -0500
-> > > > Subject: [VOYAGER] x86: don't pull asm/acpi.h into fixmap_32.h
-> > > > 
-> > > > If it's not needed it causes compile failures.
-> > > > 
-> > > > Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > > > ---
-> > > >  arch/x86/include/asm/fixmap_32.h |    2 ++
-> > > >  1 files changed, 2 insertions(+), 0 deletions(-)
-> > > > 
-> > > > diff --git a/arch/x86/include/asm/fixmap_32.h b/arch/x86/include/asm/fixmap_32.h
-> > > > index 09f29ab..c3302ee 100644
-> > > > --- a/arch/x86/include/asm/fixmap_32.h
-> > > > +++ b/arch/x86/include/asm/fixmap_32.h
-> > > > @@ -25,7 +25,9 @@ extern unsigned long __FIXADDR_TOP;
-> > > >  
-> > > >  #ifndef __ASSEMBLY__
-> > > >  #include <linux/kernel.h>
-> > > > +#ifdef CONFIG_ACPI
-> > > >  #include <asm/acpi.h>
-> > > > +#endif
-> > > 
-> > > hm, that's quite ugly - such headers are supposed to be safe even if 
-> > > CONFIG_APIC is not turned on.
-> > > 
-> > > What kind of compiler failures are you getting, could you send the 
-> > > .config that triggers it? I'm curious what the real cause of the build 
-> > > failure is - the #ifdef you are adding seems to fix a symptom, not a 
-> > > real bug - and maybe we can do a better fix.
+> > > Yes ... been having IRC conversations about that.  We'd need to use
+> > > runtime patching to fix the performance regressions virtualisation has
+> > > been causing us first ... but then we could use it for voyager.
 > > 
-> > It's the problem of voyager wanting its own definition of
-> > phys_cpu_present_map.  acpi.h pulls in mpspec.h which contaminates the
-> > voyager_smp.c build.
+> > I thought we already were, at least to some degree (the call sites 
+> > are way too big and way bigger than they need to be, so we end up 
+> > with a lot of NOPs.  I proposed a solution to Jeremy at Kernel 
+> > Summit, but he basically said "I don't want to maintain that, I 
+> > don't care about hardware performance", which is understandable but 
+> > highly unfortunate.)
 > 
-> i guess voyager could use physid_mask_t just fine?
-> 
-> physid_mask_t is MAX_APICS derived - but it should work out fine 
-> because AFAICS voyager has a maximum of 4 cpus (but definitely less 
-> than say 32), while MAX_APICS never goes below 256.
+> in practice the function pointer overhead is almost unmeasurable for 
+> things like IPIs which are rather expensive to issue. In fact it's 
+> probably more expensive on Voyager as it does not utilize the local 
+> APIC for SMP messaging (which is pretty much the only 
+> performance-sensitive thing here). It uses its own glue logic it 
+> appears, which is almost certainly behind the system bus.
 
-Voyager has a max of 32 actually. The CPU numbering is also fixed and
-identifies the processor position (for FRU replacement), so the physical
-map is what we use throughout the code.  The problem with the definition
-is that it makes a rather pointless distinction between physical and
-logical map types ... so there'd be a lot of code churn.   It would be
-really nice if physmask_t and cpumask_t could become the same type ...
-then we could do all this and no-one would notice.
+Heh ... don't be so sure:  The VIC uses an array of up to 8 standard
+8255 IRQ lines, which is slow.  The QIC uses CPI trigger via cache line
+interference, which is far faster than APIC bus based systems (but is
+fairly similar to the way SAPIC systems work ... almost a decade after
+the original QIC system).
+
+> James, how many cycles do typical SMP ops take on Voyager?
+
+To be honest, I'm not too bothered about that.  What bothers me is that
+if a normal system performance goes down because of the function pointer
+replacement (remember all x86 SMP systems will see an increase in
+function pointer usage because of this approach), then it probably
+wasn't worth it.
+
+However, the only way to be sure is to try it and get the benchmarks.
 
 James
 
