@@ -1,219 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752532AbYJaNa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbYJaNfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752532AbYJaNa2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 09:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbYJaNaS
+	id S1752127AbYJaNfa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 09:35:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbYJaNfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 09:30:18 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35918 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbYJaNaR (ORCPT
+	Fri, 31 Oct 2008 09:35:17 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:26546 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750950AbYJaNfP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 09:30:17 -0400
-Subject: Re: Deadline scheduling (was: Re: Rearranging layout of code in
- the scheduler)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Henrik Austad <henrik@austad.us>
-Cc: faggioli@gandalf.sssup.it, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>, fabio@gandalf.sssup.it,
-       Michael Trimarchi <trimarchimichael@yahoo.it>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "gregory.haskins" <gregory.haskins@gmail.com>
-In-Reply-To: <20081031120921.GA6824@alecto.austad.us>
-References: <200810281634.11285.henrik@austad.us>
-	 <20081030174925.36023f19jy3o832t@feanor.sssup.it>
-	 <1225387034.7803.182.camel@twins> <200810302244.52329.henrik@austad.us>
-	 <1225443832.7803.1160.camel@twins> <20081031120921.GA6824@alecto.austad.us>
-Content-Type: text/plain
+	Fri, 31 Oct 2008 09:35:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=tR4SqQ3QroxOH9UyCTdescKTfSolbspnJdA6orREm14DI1qNwEsCok2lby2O5gKY5v
+         i3SIb6yS8dxTfMZED6qKrXgDnC5xGQ0hpA8YqV4flfgwHvKtxqOJhXFFNF53FOqF3vnr
+         5Y5Lsh/yU/XMwCVxDxMjmch/VILYLpTl8wmsE=
+Message-ID: <490B0987.2050801@tuffmail.co.uk>
+Date: Fri, 31 Oct 2008 13:35:03 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Shivdas Gujare <shivdas.tech@gmail.com>
+CC: linux-kernel@vger.kernel.org, beagleboard@googlegroups.com
+Subject: Re: Diff between Linux-2.6.27-omap1-dirty and Linux-2.6.27-omap1
+ ?
+References: <cf70f0210810310608x37f8e3dcu3ab0023891fcb339@mail.gmail.com>
+In-Reply-To: <cf70f0210810310608x37f8e3dcu3ab0023891fcb339@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Fri, 31 Oct 2008 14:30:08 +0100
-Message-Id: <1225459808.7803.1481.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-10-31 at 13:09 +0100, Henrik Austad wrote:
-
-> Ah, ok, I thought introducing new syscalls was *really* frowned upon.
-
-We prefer not to, but sometimes there just isn't any other option.
-If we want to extend struct sched_param, we need 2 new syscalls.
-
-> > Sure, but implementing an EDF class isn't really all that hard - esp if
-> > you only want UP.
-> > 
-> > The real fun is in the PI stuff and schedulability tests on SMP.
+Shivdas Gujare wrote:
+> Hi All,
 > 
-> As a start, that is the approach at least I would like to take. Once you have a 
-> proven, functional EDF on a single core, you can extend that to handle several 
-> cores, if you really want to.
-
-Well, you're of course free to do so, but I don't think its a very
-interesting thing to do.
-
-> > > > > The main problem is that, especially to deal with SMP systems, we also
-> > > > > need to investigate theoretical issues and find out what the best
-> > > > > approach could be.
-> > > 
-> > > Yes, well, EDF is not optimal for SMP systems, only for single core. However, 
-> > > you can do a pretty good attempt by assigning tasks to cores in a greedy 
-> > > fashion (simply put the next task at the CPU with the lowest load).
-> > > 
-> > > As a further optimization, I guess you could do the whole sced-domain thing to 
-> > > minimize the search space.
-> > 
-> > The problem with greedy binpacking heuristics is that your schedulablity
-> > test are out the window, making the whole thing useless.
+> I am working on testing Linux-2.6.27 omap kernel on beagle board.
 > 
-> Well, not really. I mean, to be optimal, you should also consider WCET, but 
-> then, that's really not interesting as IMHO that's the userspace-programmer's 
-> responsibility. If the user wants to add tasks that sum up to 210% utilization, 
-> it's really not much we can do anyway. You certainly wouldn't want the kernel to 
-> stop accepting new jobs.
+> I cloned kernel from
+> git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git
 > 
-> So, keep the kernel logic as simple as possible and move the job to the user. 
-> By keeping the kernel logic simple - we make the job easier for the end-users. A 
-> very complex EDF-scheduler will make the testing very difficult.
+> and checked out to tag v2.6.27-omap1, I loaded kernel on beagle board,
+> and was able to boot properly like....
 > 
-> If, on the other hand, we *know* that the scheduler is not optimal, but that it 
-> behaves in a predictable manner, the end users have a simpler task of finding 
-> out why something bad happened.
+> OMAP3 beagleboard.org # bootm 0x80300000
+> ## Booting kernel from Legacy Image at 80300000 ...
+>    Image Name:   Linux-2.6.27-omap1
+>    Image Type:   ARM Linux Kernel Image (uncompressed)
+>    Data Size:    1614320 Bytes =  1.5 MB
+>    Load Address: 80008000
+>    Entry Point:  80008000
+>    Verifying Checksum ... OK
+>    Loading Kernel Image ... OK
+> OK
 > 
-> Because, no matter *what* you do, and *how* you implement it, with *whatever* 
-> features, there will be cases when things fall apart, and  having a simple, 
-> predictable scheduler will be necessary to figure it out.
-
-I agree that the scheduler should be simple, and even something like
-PD^2 is relatively simple.
-
-But I disagree that we should not do schedulability tests. Doing those,
-and esp. enforcing tasks to their given limits increases the QoS for
-others in the presence of faulty/malicious tasks.
-
-Also, WCET is still the users responsibility.
-
-If for each deadline task you specify a period, a deadline and a budget.
-Then the WCET computation is reflected in the budget.
-
-By enforcing the schedulability test and execution budget you raise the
-quality of service, because even in the presence of a mis-behaving task
-only that task will be impacted. The other tasks will still meet their
-deadlines.
-
-> > > No. You should have *either* FIFO/RR *or* EDF, not both at the same time. If 
-> > > you absolutely require both, you should at least separate them on a per-core 
-> > > basis. If you mix them, they need to be aware of the other in order to make 
-> > > the right descision, and that is not good.
-> > 
-> > We _have_ to have both. Its that simple.
+> Now, I done some operations, like checkout to master, checkout to
+> v2.6.26-omap1 and v2.6.25-omap1, loaded corresponding uImages to
+> beagle board
+> and was able to boot board every time.
 > 
-> No, we do not. Or, at least not at the same time (see below)
+> After this, I again checkout to v2.6.27-omap1, compiled and loaded
+> uImage to beagleboard
+> But this time I am not able to boot the board.
+> and Got the message like
 > 
-> > POSIX mandates we have SCHED_FIFO/RR, there is tons and tons of userspace that 
-> > uses it, we cannot just replace it with a deadline scheduler.
+> OMAP3 beagleboard.org # bootm 0x80300000
+> ## Booting kernel from Legacy Image at 80300000 ...
+>    Image Name:   Linux-2.6.27-omap1-dirty
+>    Image Type:   ARM Linux Kernel Image (uncompressed)
+>    Data Size:    1669176 Bytes =  1.6 MB
+>    Load Address: 80008000
+>    Entry Point:  80008000
+>    Verifying Checksum ... OK
+>    Loading Kernel Image ... OK
+> OK
 > 
-> I didn't mean to rip the whole fifo/rr out of the kernel, but adding a switch at 
-> compile-time so that you could choose *either* normal, static RT *or* EDF. Then 
-> we could, at least for the first few versions, have it depend on !SMP to avoid 
-> the whole SMP-non-optimal-mess.
-
-But _why_? why not leave FIFO/RR in? There is absolutely no downside to
-keeping it around.
-
-> > Thing is, you have to run hard tasks first, and scheduler weaker forms
-> > in its slack time, otherwise you cannot guarantee anything.
+> Starting kernel ...
 > 
-> Well, then you suddenly introduce priorities to the deadlines, and that is not 
-> good. A hard task is not more important than a soft, but the effect of missing 
-> the deadline is. If the schedule is infeasible, it really doesn't matter what 
-> you do, as you will miss deadlines, and if you prioritize hard tasks, you will 
-> end up starving firm and soft
+> Uncompressing Linux...........................................................................................................
+> done, booting the kernel.
 > 
-> Before you go on and tell me how wrong I am, note that I don't disagree with 
-> you, I think choosing hrt before the others, is the best solution from an 
-> implementation point of view.
-
-This is, if you make the soft-deadline class aware of the hard-deadline
-class's tasks and schedulability contraints, then you can keep the
-soft-rt class schedulable too.
-
-So srt is in no way less important, its just has less restrictions on
-the schedule, therefore we can run it in the hrt slack/idle time.
-
-And adding the schedulability test in the kernel avoids these starvation
-issues, because you just cannot.
-
-> > On UP - which is not interesting on a general purpose kernel that runs
-> > on machines with up to 4096 CPUs.
+> and it, stucks at here..
 > 
-> But, and pardon my ignorance, will an EDF-scheduler be intersting for such a 
-> large system? From what I've gathered, small systems are the ones that could 
-> benefit from an EDF as you can analyze and predict behaviour, and then, since 
-> EDF is optimal, tune the CPU-freq down and still know that things will work.
+> Here, the only difference I observed is "Image Name:
+> Linux-2.6.27-omap1" and "Image Name:   Linux-2.6.27-omap1-dirty",
+> where uImage with second Image name is not booting.
 > 
-> Some embedded people can probably provide a lot better input here than me, as 
-> this is just a general idea I snapped up 'somewhere' (where somewhere is an 
-> element of the set of all places I've been the last 6 months).
-
-Not that large indeed, but people are interested in running RT workloads
-on machines in the 32/64 scale.
-
-And even the embedded folks are now staring quad core arm11 chips in the
-face, wondering how to do things.
-
-> > Then there are the pfair class of scheduling algorithms which can
-> > theoretically yield up to 100% utilization on SMP systems.
+> I think, I have done something wrong here, while compilation and checkout.
 > 
-> Do you know about any pratical attempts on this, and what kind of result that 
-> produced?
+> I just want to know in what cases "-dirty" is appended to linux kernel
+> Image Names or anything I done wrong?
 
-Fairly decent, http://www.cs.unc.edu/~anderson/papers/rtss08b.pdf
+-dirty is appended to the version string when there are differences between the working tree and the git HEAD.  In other words, it sounds like you accidentally modified some file.
 
-> > > Besides that, EDF is the simplest, most brain-dead scheduler you can imagine. 
-> > > Basically you want to add the deadline to the tasks, put it in a sorted list 
-> > > and pick the leftmost task every time untill it completes.
-> > 
-> > Sure, and all that is useless without schedulability tests.
-> 
-> Yes, but should the kernel do the schedulability test? Or should the ball be 
-> passed on to userspace? To analyze the schedulability, you would need the worst 
-> case execution time (WCET) of the process, and if the kernel/scheduler should 
-> start trying to estimate that...
-> 
-> So, as a start, why not just 'ignore' WCET in the first versions, and that can 
-> be added later on, if necessary.
+You can see which files have been modified with "git status".  It will also show extra files under "untracked"; you may see a few arch-specific object files, but all the .o, .ko, etc. files will be hidden by virtue of gitignore.
 
-Like said above, WCET is represented in the execution budget.
+If the files were modified before the last "git checkout", it would have tried to preserve the modifications.  It would also warn you by listing the files, with an "M" next to their name.
 
-> A lot of good points, and I certainly see your side of it. However (and yes, I 
-> have to argue a bit more ;)), I don't think an EDF-scheduler should contain a 
-> lot of features.
-> 
-> If you want to use the EDF, why not give the user a list of consequenses like
-> - Only a single core
+Hope that helps.  You described your problem very well, btw.
 
-There won't be a single core machine left soon ;-)
-
-> - No other RT-scheduler, if other userspace program breaks, so be it, the user 
->   has been warned.
-
-That's a no go, and I don't see why you would need that.
-
-> - Best effort only
-
-That's pretty useless imho. Best-effort and RT are a bit contradictory.
-
-> - Provide handlers for a given set of signals that will be sent to any 
->   application missing a deadline
-
-Yeah, the idea was to send SIGXCPU to tasks who exceed their budget (and
-thus will miss their deadline).
-
-> - no cpu-scaling
-> - ... keep going, basically strip away every piece of dynamic behaviour and 
->   complex scheduling code
-
-I'm thinking there's little useful left after all that ;-)
+Regards
+Alan
