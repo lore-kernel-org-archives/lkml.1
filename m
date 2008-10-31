@@ -1,274 +1,300 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756395AbYJaAhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbYJaAhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756395AbYJaAhh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 20:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbYJaAhN
+	id S1756723AbYJaAhv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 20:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755949AbYJaAhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 20:37:13 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:57592 "EHLO smtp.polymtl.ca"
+	Thu, 30 Oct 2008 20:37:18 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:57599 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755045AbYJaAhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 20:37:11 -0400
-Message-Id: <20081031002756.444917075@polymtl.ca>
+	id S1755793AbYJaAhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 20:37:16 -0400
+Message-Id: <20081031002756.602176990@polymtl.ca>
 References: <20081031002659.740180716@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 30 Oct 2008 20:27:00 -0400
+Date: Thu, 30 Oct 2008 20:27:01 -0400
 From: mathieu.desnoyers@polymtl.ca
 To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 1/2] tracepoint: simplify for tracepoint using RCU
-Content-Disposition: inline; filename=tracepoint-simplify-for-tracepoint-using-rcu.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Fri, 31 Oct 2008 00:36:54 +0000
+Subject: [patch 2/2] tracepoint: introduce *_noupdate APIs. (v2)
+Content-Disposition: inline; filename=tracepoint-introduce-noupdate-apis.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Fri, 31 Oct 2008 00:36:55 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now, unused memory is handled by struct tp_probes.
+new APIs separate tracepoint_probe_register(),
+tracepoint_probe_unregister() into 2 steps. The first step of them
+is just update tracepoint_entry, not connect or disconnect.
 
-old code use these three field to handle unused memory.
-struct tracepoint_entry {
-	...
-	struct rcu_head rcu;
-	void *oldptr;
-	unsigned char rcu_pending:1;
-	...
-};
-in this way, unused memory is handled by struct tracepoint_entry.
-it bring reenter bug(it was fixed) and tracepoint.c is filled
-full of ".*rcu.*" code statements. this patch remove all these.
+this patch introduce tracepoint_probe_update_all() for update all.
 
-and:
-  rcu_barrier_sched() is removed.
-  Do not need regain tracepoints_mutex after tracepoint_update_probes()
-  several little cleanup.
+these APIs are very useful for registering a lots of probes
+but just update once only. and a very important thing is that
+*_noupdate APIs do not require module_mutex.
 
-Mathieu Desnoyers :
-Update patch to make sure it applies correctly on top of
-tracepoint-check-if-the-probe-has-been-registered.patch
+Mathieu Desnoyers : Refreshed for -tip.
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- kernel/tracepoint.c |  111 +++++++++++++++++-----------------------------------
- 1 file changed, 37 insertions(+), 74 deletions(-)
+---
+ include/linux/tracepoint.h |    4 +
+ kernel/tracepoint.c        |  170 ++++++++++++++++++++++++++++++++++-----------
+ 2 files changed, 136 insertions(+), 38 deletions(-)
+
+Index: linux-2.6-lttng/include/linux/tracepoint.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/tracepoint.h	2008-10-30 20:12:05.000000000 -0400
++++ linux-2.6-lttng/include/linux/tracepoint.h	2008-10-30 20:18:16.000000000 -0400
+@@ -112,6 +112,10 @@ extern int tracepoint_probe_register(con
+  */
+ extern int tracepoint_probe_unregister(const char *name, void *probe);
+ 
++extern int tracepoint_probe_register_noupdate(const char *name, void *probe);
++extern int tracepoint_probe_unregister_noupdate(const char *name, void *probe);
++extern void tracepoint_probe_update_all(void);
++
+ struct tracepoint_iter {
+ 	struct module *module;
+ 	struct tracepoint *tracepoint;
 Index: linux-2.6-lttng/kernel/tracepoint.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/tracepoint.c	2008-10-30 20:12:13.000000000 -0400
-+++ linux-2.6-lttng/kernel/tracepoint.c	2008-10-30 20:17:25.000000000 -0400
-@@ -43,6 +43,7 @@ static DEFINE_MUTEX(tracepoints_mutex);
-  */
- #define TRACEPOINT_HASH_BITS 6
- #define TRACEPOINT_TABLE_SIZE (1 << TRACEPOINT_HASH_BITS)
-+static struct hlist_head tracepoint_table[TRACEPOINT_TABLE_SIZE];
- 
- /*
-  * Note about RCU :
-@@ -54,40 +55,40 @@ struct tracepoint_entry {
- 	struct hlist_node hlist;
- 	void **funcs;
- 	int refcount;	/* Number of times armed. 0 if disarmed. */
--	struct rcu_head rcu;
--	void *oldptr;
--	unsigned char rcu_pending:1;
- 	char name[0];
+--- linux-2.6-lttng.orig/kernel/tracepoint.c	2008-10-30 20:17:25.000000000 -0400
++++ linux-2.6-lttng/kernel/tracepoint.c	2008-10-30 20:18:16.000000000 -0400
+@@ -59,7 +59,10 @@ struct tracepoint_entry {
  };
  
--static struct hlist_head tracepoint_table[TRACEPOINT_TABLE_SIZE];
-+struct tp_probes {
-+	struct rcu_head rcu;
-+	void *probes[0];
-+};
+ struct tp_probes {
+-	struct rcu_head rcu;
++	union {
++		struct rcu_head rcu;
++		struct list_head list;
++	} u;
+ 	void *probes[0];
+ };
  
--static void free_old_closure(struct rcu_head *head)
-+static inline void *allocate_probes(int count)
+@@ -72,7 +75,7 @@ static inline void *allocate_probes(int 
+ 
+ static void rcu_free_old_probes(struct rcu_head *head)
  {
--	struct tracepoint_entry *entry = container_of(head,
--		struct tracepoint_entry, rcu);
--	kfree(entry->oldptr);
--	/* Make sure we free the data before setting the pending flag to 0 */
--	smp_wmb();
--	entry->rcu_pending = 0;
-+	struct tp_probes *p  = kmalloc(count * sizeof(void *)
-+			+ sizeof(struct tp_probes), GFP_KERNEL);
-+	return p == NULL ? NULL : p->probes;
+-	kfree(container_of(head, struct tp_probes, rcu));
++	kfree(container_of(head, struct tp_probes, u.rcu));
  }
  
--static void tracepoint_entry_free_old(struct tracepoint_entry *entry, void *old)
-+static void rcu_free_old_probes(struct rcu_head *head)
- {
--	if (!old)
--		return;
--	entry->oldptr = old;
--	entry->rcu_pending = 1;
--	/* write rcu_pending before calling the RCU callback */
--	smp_wmb();
--	call_rcu_sched(&entry->rcu, free_old_closure);
-+	kfree(container_of(head, struct tp_probes, rcu));
+ static inline void release_probes(void *old)
+@@ -80,7 +83,7 @@ static inline void release_probes(void *
+ 	if (old) {
+ 		struct tp_probes *tp_probes = container_of(old,
+ 			struct tp_probes, probes[0]);
+-		call_rcu(&tp_probes->rcu, rcu_free_old_probes);
++		call_rcu_sched(&tp_probes->u.rcu, rcu_free_old_probes);
+ 	}
+ }
+ 
+@@ -299,6 +302,23 @@ static void tracepoint_update_probes(voi
+ 	module_update_tracepoints();
+ }
+ 
++static void *tracepoint_add_probe(const char *name, void *probe)
++{
++	struct tracepoint_entry *entry;
++	void *old;
++
++	entry = get_tracepoint(name);
++	if (!entry) {
++		entry = add_tracepoint(name);
++		if (IS_ERR(entry))
++			return entry;
++	}
++	old = tracepoint_entry_add_probe(entry, probe);
++	if (IS_ERR(old) && !entry->refcount)
++		remove_tracepoint(entry);
++	return old;
 +}
 +
-+static inline void release_probes(void *old)
-+{
-+	if (old) {
-+		struct tp_probes *tp_probes = container_of(old,
-+			struct tp_probes, probes[0]);
-+		call_rcu(&tp_probes->rcu, rcu_free_old_probes);
-+	}
- }
- 
- static void debug_print_probes(struct tracepoint_entry *entry)
- {
- 	int i;
- 
--	if (!tracepoint_debug)
-+	if (!tracepoint_debug || !entry->funcs)
- 		return;
- 
- 	for (i = 0; entry->funcs[i]; i++)
-@@ -111,12 +112,13 @@ tracepoint_entry_add_probe(struct tracep
- 				return ERR_PTR(-EEXIST);
- 	}
- 	/* + 2 : one for new probe, one for NULL func */
--	new = kzalloc((nr_probes + 2) * sizeof(void *), GFP_KERNEL);
-+	new = allocate_probes(nr_probes + 2);
- 	if (new == NULL)
- 		return ERR_PTR(-ENOMEM);
- 	if (old)
- 		memcpy(new, old, nr_probes * sizeof(void *));
- 	new[nr_probes] = probe;
-+	new[nr_probes + 1] = NULL;
- 	entry->refcount = nr_probes + 1;
- 	entry->funcs = new;
- 	debug_print_probes(entry);
-@@ -132,7 +134,7 @@ tracepoint_entry_remove_probe(struct tra
- 	old = entry->funcs;
- 
- 	if (!old)
--		return NULL;
-+		return ERR_PTR(-ENOENT);
- 
- 	debug_print_probes(entry);
- 	/* (N -> M), (N > 1, M >= 0) probes */
-@@ -151,13 +153,13 @@ tracepoint_entry_remove_probe(struct tra
- 		int j = 0;
- 		/* N -> M, (N > 1, M > 0) */
- 		/* + 1 for NULL */
--		new = kzalloc((nr_probes - nr_del + 1)
--			* sizeof(void *), GFP_KERNEL);
-+		new = allocate_probes(nr_probes - nr_del + 1);
- 		if (new == NULL)
- 			return ERR_PTR(-ENOMEM);
- 		for (i = 0; old[i]; i++)
- 			if ((probe && old[i] != probe))
- 				new[j++] = old[i];
-+		new[nr_probes - nr_del] = NULL;
- 		entry->refcount = nr_probes - nr_del;
- 		entry->funcs = new;
- 	}
-@@ -215,7 +217,6 @@ static struct tracepoint_entry *add_trac
- 	memcpy(&e->name[0], name, name_len);
- 	e->funcs = NULL;
- 	e->refcount = 0;
--	e->rcu_pending = 0;
- 	hlist_add_head(&e->hlist, head);
- 	return e;
- }
-@@ -224,32 +225,10 @@ static struct tracepoint_entry *add_trac
-  * Remove the tracepoint from the tracepoint hash table. Must be called with
-  * mutex_lock held.
+ /**
+  * tracepoint_probe_register -  Connect a probe to a tracepoint
+  * @name: tracepoint name
+@@ -309,36 +329,36 @@ static void tracepoint_update_probes(voi
   */
--static int remove_tracepoint(const char *name)
-+static inline void remove_tracepoint(struct tracepoint_entry *e)
+ int tracepoint_probe_register(const char *name, void *probe)
  {
--	struct hlist_head *head;
--	struct hlist_node *node;
--	struct tracepoint_entry *e;
--	int found = 0;
--	size_t len = strlen(name) + 1;
--	u32 hash = jhash(name, len-1, 0);
--
--	head = &tracepoint_table[hash & (TRACEPOINT_TABLE_SIZE - 1)];
--	hlist_for_each_entry(e, node, head, hlist) {
--		if (!strcmp(name, e->name)) {
--			found = 1;
--			break;
+-	struct tracepoint_entry *entry;
+-	int ret = 0;
+ 	void *old;
+ 
+ 	mutex_lock(&tracepoints_mutex);
+-	entry = get_tracepoint(name);
+-	if (!entry) {
+-		entry = add_tracepoint(name);
+-		if (IS_ERR(entry)) {
+-			ret = PTR_ERR(entry);
+-			goto end;
 -		}
 -	}
--	if (!found)
--		return -ENOENT;
--	if (e->refcount)
--		return -EBUSY;
- 	hlist_del(&e->hlist);
--	/* Make sure the call_rcu_sched has been executed */
--	if (e->rcu_pending)
--		rcu_barrier_sched();
- 	kfree(e);
--	return 0;
- }
- 
- /*
-@@ -343,25 +322,17 @@ int tracepoint_probe_register(const char
- 			goto end;
- 		}
- 	}
--	/*
--	 * If we detect that a call_rcu_sched is pending for this tracepoint,
--	 * make sure it's executed now.
--	 */
--	if (entry->rcu_pending)
--		rcu_barrier_sched();
- 	old = tracepoint_entry_add_probe(entry, probe);
- 	if (IS_ERR(old)) {
-+		if (!entry->refcount)
-+			remove_tracepoint(entry);
- 		ret = PTR_ERR(old);
- 		goto end;
- 	}
+-	old = tracepoint_entry_add_probe(entry, probe);
+-	if (IS_ERR(old)) {
+-		if (!entry->refcount)
+-			remove_tracepoint(entry);
+-		ret = PTR_ERR(old);
+-		goto end;
+-	}
++	old = tracepoint_add_probe(name, probe);
  	mutex_unlock(&tracepoints_mutex);
++	if (IS_ERR(old))
++		return PTR_ERR(old);
++
  	tracepoint_update_probes();		/* may update entry */
--	mutex_lock(&tracepoints_mutex);
--	entry = get_tracepoint(name);
--	WARN_ON(!entry);
--	if (entry->rcu_pending)
--		rcu_barrier_sched();
--	tracepoint_entry_free_old(entry, old);
-+	release_probes(old);
-+	return 0;
- end:
- 	mutex_unlock(&tracepoints_mutex);
- 	return ret;
-@@ -388,25 +359,17 @@ int tracepoint_probe_unregister(const ch
- 	entry = get_tracepoint(name);
- 	if (!entry)
- 		goto end;
--	if (entry->rcu_pending)
--		rcu_barrier_sched();
- 	old = tracepoint_entry_remove_probe(entry, probe);
--	if (!old) {
--		printk(KERN_WARNING "Warning: Trying to unregister a probe"
--				    "that doesn't exist\n");
-+	if (IS_ERR(old)) {
-+		ret = PTR_ERR(old);
- 		goto end;
- 	}
+ 	release_probes(old);
+ 	return 0;
+-end:
+-	mutex_unlock(&tracepoints_mutex);
+-	return ret;
+ }
+ EXPORT_SYMBOL_GPL(tracepoint_probe_register);
+ 
++static void *tracepoint_remove_probe(const char *name, void *probe)
++{
++	struct tracepoint_entry *entry;
++	void *old;
++
++	entry = get_tracepoint(name);
++	if (!entry)
++		return ERR_PTR(-ENOENT);
++	old = tracepoint_entry_remove_probe(entry, probe);
++	if (IS_ERR(old))
++		return old;
 +	if (!entry->refcount)
 +		remove_tracepoint(entry);
- 	mutex_unlock(&tracepoints_mutex);
- 	tracepoint_update_probes();		/* may update entry */
--	mutex_lock(&tracepoints_mutex);
++	return old;
++}
++
+ /**
+  * tracepoint_probe_unregister -  Disconnect a probe from a tracepoint
+  * @name: tracepoint name
+@@ -351,31 +371,105 @@ EXPORT_SYMBOL_GPL(tracepoint_probe_regis
+  */
+ int tracepoint_probe_unregister(const char *name, void *probe)
+ {
+-	struct tracepoint_entry *entry;
+ 	void *old;
+-	int ret = -ENOENT;
+ 
+ 	mutex_lock(&tracepoints_mutex);
 -	entry = get_tracepoint(name);
 -	if (!entry)
 -		goto end;
--	if (entry->rcu_pending)
--		rcu_barrier_sched();
--	tracepoint_entry_free_old(entry, old);
--	remove_tracepoint(name);	/* Ignore busy error message */
--	ret = 0;
-+	release_probes(old);
-+	return 0;
- end:
+-	old = tracepoint_entry_remove_probe(entry, probe);
+-	if (IS_ERR(old)) {
+-		ret = PTR_ERR(old);
+-		goto end;
+-	}
+-	if (!entry->refcount)
+-		remove_tracepoint(entry);
++	old = tracepoint_remove_probe(name, probe);
  	mutex_unlock(&tracepoints_mutex);
- 	return ret;
++	if (IS_ERR(old))
++		return PTR_ERR(old);
++
+ 	tracepoint_update_probes();		/* may update entry */
+ 	release_probes(old);
+ 	return 0;
+-end:
+-	mutex_unlock(&tracepoints_mutex);
+-	return ret;
+ }
+ EXPORT_SYMBOL_GPL(tracepoint_probe_unregister);
+ 
++static LIST_HEAD(old_probes);
++static int need_update;
++
++static void tracepoint_add_old_probes(void *old)
++{
++	need_update = 1;
++	if (old) {
++		struct tp_probes *tp_probes = container_of(old,
++			struct tp_probes, probes[0]);
++		list_add(&tp_probes->u.list, &old_probes);
++	}
++}
++
++/**
++ * tracepoint_probe_register_noupdate -  register a probe but not connect
++ * @name: tracepoint name
++ * @probe: probe handler
++ *
++ * caller must call tracepoint_probe_update_all()
++ */
++int tracepoint_probe_register_noupdate(const char *name, void *probe)
++{
++	void *old;
++
++	mutex_lock(&tracepoints_mutex);
++	old = tracepoint_add_probe(name, probe);
++	if (IS_ERR(old)) {
++		mutex_unlock(&tracepoints_mutex);
++		return PTR_ERR(old);
++	}
++	tracepoint_add_old_probes(old);
++	mutex_unlock(&tracepoints_mutex);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(tracepoint_probe_register_noupdate);
++
++/**
++ * tracepoint_probe_unregister_noupdate -  remove a probe but not disconnect
++ * @name: tracepoint name
++ * @probe: probe function pointer
++ *
++ * caller must call tracepoint_probe_update_all()
++ */
++int tracepoint_probe_unregister_noupdate(const char *name, void *probe)
++{
++	void *old;
++
++	mutex_lock(&tracepoints_mutex);
++	old = tracepoint_remove_probe(name, probe);
++	if (IS_ERR(old)) {
++		mutex_unlock(&tracepoints_mutex);
++		return PTR_ERR(old);
++	}
++	tracepoint_add_old_probes(old);
++	mutex_unlock(&tracepoints_mutex);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(tracepoint_probe_unregister_noupdate);
++
++/**
++ * tracepoint_probe_update_all -  update tracepoints
++ */
++void tracepoint_probe_update_all(void)
++{
++	LIST_HEAD(release_probes);
++	struct tp_probes *pos, *next;
++
++	mutex_lock(&tracepoints_mutex);
++	if (!need_update) {
++		mutex_unlock(&tracepoints_mutex);
++		return;
++	}
++	if (!list_empty(&old_probes))
++		list_replace_init(&old_probes, &release_probes);
++	need_update = 0;
++	mutex_unlock(&tracepoints_mutex);
++
++	tracepoint_update_probes();
++	list_for_each_entry_safe(pos, next, &release_probes, u.list) {
++		list_del(&pos->u.list);
++		call_rcu_sched(&pos->u.rcu, rcu_free_old_probes);
++	}
++}
++EXPORT_SYMBOL_GPL(tracepoint_probe_update_all);
++
+ /**
+  * tracepoint_get_iter_range - Get a next tracepoint iterator given a range.
+  * @tracepoint: current tracepoints (in), next tracepoint (out)
 
 -- 
 Mathieu Desnoyers
