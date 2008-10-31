@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbYJaBIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756475AbYJaBJB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbYJaBIh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 21:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbYJaBI2
+	id S1756475AbYJaBJB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 21:09:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbYJaBIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 21:08:28 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:34521 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753101AbYJaBI2 (ORCPT
+	Thu, 30 Oct 2008 21:08:50 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51152 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753200AbYJaBIu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 21:08:28 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=i8pK_4rDD1YQ1G_HzrYA:9 a=yYfpih1FZgiv10Vas1_9BuXTWxQA:4 a=0oqFD_1u1v8A:10
-Message-ID: <490A5A88.2040800@shaw.ca>
-Date: Thu, 30 Oct 2008 19:08:24 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Thu, 30 Oct 2008 21:08:50 -0400
+Message-ID: <490A5A80.3070203@zytor.com>
+Date: Thu, 30 Oct 2008 18:08:16 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Javier Valdehita <jvaldehita@intelligentdata.es>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Problem report
-References: <fa.TnNGsCknq1AfthMeDABi9zS13Hg@ifi.uio.no>
-In-Reply-To: <fa.TnNGsCknq1AfthMeDABi9zS13Hg@ifi.uio.no>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+CC: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Roland McGrath <roland@redhat.com>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       Yinghai Lu <yinghai@kernel.org>
+Subject: Re: cpu2000(both float and int) 13% regression with 2.6.28-rc1
+References: <1225175522.1685.57.camel@ymzhang> <20081028080327.GB15734@elte.hu> <20081028202649.GJ30573@linux-os.sc.intel.com> <7E82351C108FA840AB1866AC776AEC46401F518D@orsmsx505.amr.corp.intel.com>
+In-Reply-To: <7E82351C108FA840AB1866AC776AEC46401F518D@orsmsx505.amr.corp.intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Javier Valdehita wrote:
-> Hello,
+Pallipadi, Venkatesh wrote:
 > 
-> I was trying to configure my kernel through the Menuconfig and i
-> obtained the following message:
+> We figured out that this is not related to signals. But to this mismerge here
 > 
-> Menuconfig has encountered a possible error in one of the kernel's
-> configuration files and is unable to continue.  Here is the error
-> report:
+>>  +#define X86_FEATURE_AMDC1E  (3*32+21) /* AMD C1E detected */
+>> + #define X86_FEATURE_XTOPOLOGY       (3*32+21) /* cpu topology enum extensions */
 > 
->  Q> scripts/Menuconfig: line 828: MCmenu0: orden no encontrada
+> I had earler sent a patch to fix this.
+> http://marc.info/?l=linux-kernel&m=122341178202930&w=2
 > 
-> Please report this to the maintainer <mec@shout.net>.  You may also
-> send a problem report to <linux-kernel@vger.kernel.org>.
+> But, somehow I don’t see this patch either in Linus's git or in tip.
 > 
-> Please indicate the kernel version you are trying to configure and
-> which menu you were trying to enter when this error occurred.
+> ingo, hpa: Can you push that patch along.
 > 
-> make: *** [menuconfig] Error 1
-> 
-> So, please, Can you help me?
-> 
-> the kernel version is 2.4.20.
 
-I really doubt you're going to get much help on such an ancient kernel, 
-unfortunately..
+OK, thought it already had been.  I will investigate later tonight.
+
+	-hpa
+
