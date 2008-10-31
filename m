@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbYJaXgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbYJaXwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753548AbYJaXgb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 19:36:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbYJaXgX
+	id S1753419AbYJaXwX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 19:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbYJaXwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 19:36:23 -0400
-Received: from lazybastard.de ([212.112.238.170]:36689 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751618AbYJaXgX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 19:36:23 -0400
-Date: Sat, 1 Nov 2008 00:36:15 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Sean Young <sean@mess.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] B+Tree library
-Message-ID: <20081031233614.GA24960@logfs.org>
-References: <20081026124643.GA1328@logfs.org> <20081031201745.GA93714@atlantis.8hz.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081031201745.GA93714@atlantis.8hz.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 31 Oct 2008 19:52:11 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52779
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750965AbYJaXwK convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 19:52:10 -0400
+Date: Fri, 31 Oct 2008 16:51:44 -0700 (PDT)
+Message-Id: <20081031.165144.86556444.davem@davemloft.net>
+To: dada1@cosmosbay.com
+Cc: zbr@ioremap.net, shemminger@vyatta.com, ilpo.jarvinen@helsinki.fi,
+       rjw@sisk.pl, mingo@elte.hu, s0mbre@tservice.net.ru,
+       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, efault@gmx.de, akpm@linux-foundation.org
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <490B7284.2010003@cosmosbay.com>
+References: <20081031125713.6c6923de@extreme>
+	<20081031201016.GA4748@ioremap.net>
+	<490B7284.2010003@cosmosbay.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 October 2008 20:17:45 +0000, Sean Young wrote:
-> On Sun, Oct 26, 2008 at 01:46:44PM +0100, Joern Engel wrote:
-> > General advantages of btrees are memory density and efficient use of
-> > cachelines.  Hashtables are either too small and degrade into linked
-> > list performance, or they are too large and waste memory.  With changing
-> > workloads, both may be true on the same system.  Rbtrees have a bad
-> > fanout of less than 2 (they are not actually balanced binary trees),
-> > hence reading a fairly large number of cachelines to each lookup.
+From: Eric Dumazet <dada1@cosmosbay.com>
+Date: Fri, 31 Oct 2008 22:03:00 +0100
+
+> Evgeniy Polyakov a écrit :
+> > On Fri, Oct 31, 2008 at 12:57:13PM -0700, Stephen Hemminger (shemminger@vyatta.com) wrote:
+> >> Why bother with last_rx at all on loopback.  I have been thinking
+> >> we should figure out a way to get rid of last_rx all together. It only
+> >> seems to be used by bonding, and the bonding driver could do the calculation
+> >> in its receive handling.
+> > Not related to the regression: bug will be just papered out by this
+> > changes. Having bonding on loopback is somewhat strange idea, but still
+> > this kind of changes is an attempt to make a good play in the bad game:
+> > this loopback-only optimization does not fix the problem.
 > 
-> Which reminds me:
+> Just to be clear, this change was not meant to be committed.
+> It already was rejected by David some years ago (2005, and 2006)
 > 
-> find_vma() uses rbtrees. Now I assume find_vma() is called far more than
-> mmap() and friends. Since avltree are balanced (unlike rbtrees) lookups
-> will be faster at the expense of extra rotations during updates.
+> http://www.mail-archive.com/netdev@vger.kernel.org/msg07382.html
 
-Maybe I should have been clearer.  Rbtrees _are_ balanced trees.  They
-are not balanced _binary_ trees, but balanced 234-trees in a binary
-representation.
+However, I do like Stephen's suggestion that maybe we can get rid of
+this ->last_rx thing by encapsulating the logic completely in the
+bonding driver.
 
-> Would patches for avltrees be accepted?
+> If you read my mail, I was *only* saying that tbench results can be sensible to
+> cache line ping pongs. tbench is a crazy benchmark, and only is a crazy benchmark.
+> 
+> Optimizing linux for tbench sake would be .... crazy ?
 
-The question is whether they are an improvement.  As always.
+Unlike dbench I think tbench is worth cranking up as much as possible.
 
-JÃ¶rn
+It doesn't have a huge memory working set, it just writes mostly small
+messages over a TCP socket back and forth, and does a lot of blocking
 
--- 
-Das Aufregende am Schreiben ist es, eine Ordnung zu schaffen, wo
-vorher keine existiert hat.
--- Doris Lessing
+And I think we'd like all of those operating to run as fast as possible.
+
+When Tridge first wrote tbench I would see the expected things at the
+top of the profiles.  Things like tcp_ack(), copy to/from user, and
+perhaps SLAB.
+
+Things have changed considerably.
+
