@@ -1,581 +1,378 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753101AbYJaAsG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756659AbYJaAse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753101AbYJaAsG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 20:48:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbYJaAry
+	id S1756659AbYJaAse (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 20:48:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbYJaAsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 20:47:54 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56560 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753314AbYJaArx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 20:47:53 -0400
-Message-ID: <490A54E8.2020708@cn.fujitsu.com>
-Date: Fri, 31 Oct 2008 08:44:24 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Thu, 30 Oct 2008 20:48:22 -0400
+Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:21762 "EHLO
+	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753629AbYJaAsU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 20:48:20 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEABrwCUl5LIvD/2dsb2JhbADLa4NR
+X-IronPort-AV: E=Sophos;i="4.33,519,1220193000"; 
+   d="scan'208";a="244528910"
+Date: Fri, 31 Oct 2008 11:48:14 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: do_sync() and XFSQA test 182 failures....
+Message-ID: <20081031004814.GN4985@disturbed>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20081030085020.GP17077@disturbed> <20081030224625.GA18690@infradead.org> <20081031001249.GM4985@disturbed>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] tracepoint: introduce *_noupdate APIs.
-References: <49067E49.4040304@cn.fujitsu.com> <20081030053457.GB27381@Krystal> <20081030053949.GC27381@Krystal> <20081030231419.GA1985@elte.hu> <20081030232638.GA12778@elte.hu>
-In-Reply-To: <20081030232638.GA12778@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081031001249.GM4985@disturbed>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, Oct 31, 2008 at 11:12:49AM +1100, Dave Chinner wrote:
+> On Thu, Oct 30, 2008 at 06:46:25PM -0400, Christoph Hellwig wrote:
+> > On Thu, Oct 30, 2008 at 07:50:20PM +1100, Dave Chinner wrote:
+> > > Are there any other ways that we can get a custom ->do_sync
+> > > method for XFS? I'd prefer a custom method so we don't have to
+> > > revalidate every linux filesystem, especially as XFS already has
+> > > everything it needs to provide it's own sync method (used for
+> > > freezing) and a test suite to validate it is working correctly.....
+> > 
+> > I think having a method for this would be useful.  And given that
+> > a proper sync should be exactly the same as a filesysytem freeze
+> > we should maybe use one method for both of those and use the chance
+> > to give filesystem better control over the freeze process?
 > 
->> (Note, i had to resolve conflicts, hopefully i got the end result 
->> right. Please double-check tip/master.)
+> Right - that's exactly where we should be going with this, I think.
+> I'd suggest two callouts, perhaps: ->sync_data and ->sync_metadata.
+> The freeze code can then still operate in two stages, and we can
+> also use then for separating data and inode writeback in pdflush....
 > 
-> hm, it didnt work out. Below are the merged up commits against 
-> tip/master, but they cause this build failure:
+> FWIW, I mentioned doing this sort of thing here:
 > 
->  kernel/tracepoint.c: In function ‘tracepoint_probe_unregister’:
->  kernel/tracepoint.c:380: error: label ‘end’ used but not defined
+> http://xfs.org/index.php/Improving_inode_Caching#Avoiding_the_Generic_pdflush_Code
 > 
-> could you please resend against tip/master:
-> 
->   http://people.redhat.com/mingo/tip.git/README
-> 
-> Thanks,
-> 
-> 	Ingo
-> 
-> -------------->
-> commit 57bc8ea87d534303374932191273bdd3f3c37d09
-> Author: Lai Jiangshan <laijs@cn.fujitsu.com>
-> Date:   Tue Oct 28 10:51:53 2008 +0800
-> 
->     tracepoint: introduce *_noupdate APIs.
->     
->     Impact: add new tracepoint APIs to allow the batched registration of probes
->     
->     new APIs separate tracepoint_probe_register(),
->     tracepoint_probe_unregister() into 2 steps. The first step of them
->     is just update tracepoint_entry, not connect or disconnect.
->     
->     this patch introduces tracepoint_probe_update_all() for update all.
->     
->     these APIs are very useful for registering lots of probes
->     but just updating once. Another very important thing is that
->     *_noupdate APIs do not require module_mutex.
->     
->     Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
->     Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-> index c5bb39c..63064e9 100644
-> --- a/include/linux/tracepoint.h
-> +++ b/include/linux/tracepoint.h
-> @@ -112,6 +112,10 @@ extern int tracepoint_probe_register(const char *name, void *probe);
->   */
->  extern int tracepoint_probe_unregister(const char *name, void *probe);
->  
-> +extern int tracepoint_probe_register_noupdate(const char *name, void *probe);
-> +extern int tracepoint_probe_unregister_noupdate(const char *name, void *probe);
-> +extern void tracepoint_probe_update_all(void);
-> +
->  struct tracepoint_iter {
->  	struct module *module;
->  	struct tracepoint *tracepoint;
-> diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-> index 4159c2a..c39bdbc 100644
-> --- a/kernel/tracepoint.c
-> +++ b/kernel/tracepoint.c
-> @@ -59,7 +59,10 @@ struct tracepoint_entry {
->  };
->  
->  struct tp_probes {
-> -	struct rcu_head rcu;
-> +	union {
-> +		struct rcu_head rcu;
-> +		struct list_head list;
-> +	} u;
->  	void *probes[0];
->  };
->  
-> @@ -72,7 +75,7 @@ static inline void *allocate_probes(int count)
->  
->  static void rcu_free_old_probes(struct rcu_head *head)
->  {
-> -	kfree(container_of(head, struct tp_probes, rcu));
-> +	kfree(container_of(head, struct tp_probes, u.rcu));
->  }
->  
->  static inline void release_probes(void *old)
-> @@ -80,7 +83,7 @@ static inline void release_probes(void *old)
->  	if (old) {
->  		struct tp_probes *tp_probes = container_of(old,
->  			struct tp_probes, probes[0]);
-> -		call_rcu(&tp_probes->rcu, rcu_free_old_probes);
-> +		call_rcu_sched(&tp_probes->u.rcu, rcu_free_old_probes);
->  	}
->  }
->  
-> @@ -299,6 +302,23 @@ static void tracepoint_update_probes(void)
->  	module_update_tracepoints();
->  }
->  
-> +static void *tracepoint_add_probe(const char *name, void *probe)
-> +{
-> +	struct tracepoint_entry *entry;
-> +	void *old;
-> +
-> +	entry = get_tracepoint(name);
-> +	if (!entry) {
-> +		entry = add_tracepoint(name);
-> +		if (IS_ERR(entry))
-> +			return entry;
-> +	}
-> +	old = tracepoint_entry_add_probe(entry, probe);
-> +	if (IS_ERR(old) && !entry->refcount)
-> +		remove_tracepoint(entry);
-> +	return old;
-> +}
-> +
->  /**
->   * tracepoint_probe_register -  Connect a probe to a tracepoint
->   * @name: tracepoint name
-> @@ -309,36 +329,36 @@ static void tracepoint_update_probes(void)
->   */
->  int tracepoint_probe_register(const char *name, void *probe)
->  {
-> -	struct tracepoint_entry *entry;
-> -	int ret = 0;
->  	void *old;
->  
->  	mutex_lock(&tracepoints_mutex);
-> -	entry = get_tracepoint(name);
-> -	if (!entry) {
-> -		entry = add_tracepoint(name);
-> -		if (IS_ERR(entry)) {
-> -			ret = PTR_ERR(entry);
-> -			goto end;
-> -		}
-> -	}
-> -	old = tracepoint_entry_add_probe(entry, probe);
-> -	if (IS_ERR(old)) {
-> -		if (!entry->refcount)
-> -			remove_tracepoint(entry);
-> -		ret = PTR_ERR(old);
-> -		goto end;
-> -	}
-> +	old = tracepoint_add_probe(name, probe);
->  	mutex_unlock(&tracepoints_mutex);
-> +	if (IS_ERR(old))
-> +		return PTR_ERR(old);
-> +
->  	tracepoint_update_probes();		/* may update entry */
->  	release_probes(old);
->  	return 0;
-> -end:
-> -	mutex_unlock(&tracepoints_mutex);
-> -	return ret;
->  }
->  EXPORT_SYMBOL_GPL(tracepoint_probe_register);
->  
-> +static void *tracepoint_remove_probe(const char *name, void *probe)
-> +{
-> +	struct tracepoint_entry *entry;
-> +	void *old;
-> +
-> +	entry = get_tracepoint(name);
-> +	if (!entry)
-> +		return ERR_PTR(-ENOENT);
-> +	old = tracepoint_entry_remove_probe(entry, probe);
-> +	if (IS_ERR(old))
-> +		return old;
-> +	if (!entry->refcount)
-> +		remove_tracepoint(entry);
-> +	return old;
-> +}
-> +
->  /**
->   * tracepoint_probe_unregister -  Disconnect a probe from a tracepoint
->   * @name: tracepoint name
-> @@ -351,36 +371,110 @@ EXPORT_SYMBOL_GPL(tracepoint_probe_register);
->   */
->  int tracepoint_probe_unregister(const char *name, void *probe)
->  {
-> -	struct tracepoint_entry *entry;
->  	void *old;
-> -	int ret = -ENOENT;
->  
->  	mutex_lock(&tracepoints_mutex);
-> -	entry = get_tracepoint(name);
-> -	if (!entry)
-> -		goto end;
-> -	old = tracepoint_entry_remove_probe(entry, probe);
->  	if (!old) {
->  		printk(KERN_WARNING "Warning: Trying to unregister a probe"
->  				    "that doesn't exist\n");
->  		goto end;
->  	}
-> -	if (IS_ERR(old)) {
-> -		ret = PTR_ERR(old);
-> -		goto end;
-> -	}
-> -	if (!entry->refcount)
-> -		remove_tracepoint(entry);
-> +	old = tracepoint_remove_probe(name, probe);
->  	mutex_unlock(&tracepoints_mutex);
-> +	if (IS_ERR(old))
-> +		return PTR_ERR(old);
-> +
->  	tracepoint_update_probes();		/* may update entry */
->  	release_probes(old);
->  	return 0;
-> -end:
-> -	mutex_unlock(&tracepoints_mutex);
-> -	return ret;
->  }
->  EXPORT_SYMBOL_GPL(tracepoint_probe_unregister);
->  
-> +static LIST_HEAD(old_probes);
-> +static int need_update;
-> +
-> +static void tracepoint_add_old_probes(void *old)
-> +{
-> +	need_update = 1;
-> +	if (old) {
-> +		struct tp_probes *tp_probes = container_of(old,
-> +			struct tp_probes, probes[0]);
-> +		list_add(&tp_probes->u.list, &old_probes);
-> +	}
-> +}
-> +
-> +/**
-> + * tracepoint_probe_register_noupdate -  register a probe but not connect
-> + * @name: tracepoint name
-> + * @probe: probe handler
-> + *
-> + * caller must call tracepoint_probe_update_all()
-> + */
-> +int tracepoint_probe_register_noupdate(const char *name, void *probe)
-> +{
-> +	void *old;
-> +
-> +	mutex_lock(&tracepoints_mutex);
-> +	old = tracepoint_add_probe(name, probe);
-> +	if (IS_ERR(old)) {
-> +		mutex_unlock(&tracepoints_mutex);
-> +		return PTR_ERR(old);
-> +	}
-> +	tracepoint_add_old_probes(old);
-> +	mutex_unlock(&tracepoints_mutex);
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(tracepoint_probe_register_noupdate);
-> +
-> +/**
-> + * tracepoint_probe_unregister_noupdate -  remove a probe but not disconnect
-> + * @name: tracepoint name
-> + * @probe: probe function pointer
-> + *
-> + * caller must call tracepoint_probe_update_all()
-> + */
-> +int tracepoint_probe_unregister_noupdate(const char *name, void *probe)
-> +{
-> +	void *old;
-> +
-> +	mutex_lock(&tracepoints_mutex);
-> +	old = tracepoint_remove_probe(name, probe);
-> +	if (IS_ERR(old)) {
-> +		mutex_unlock(&tracepoints_mutex);
-> +		return PTR_ERR(old);
-> +	}
-> +	tracepoint_add_old_probes(old);
-> +	mutex_unlock(&tracepoints_mutex);
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(tracepoint_probe_unregister_noupdate);
-> +
-> +/**
-> + * tracepoint_probe_update_all -  update tracepoints
-> + */
-> +void tracepoint_probe_update_all(void)
-> +{
-> +	LIST_HEAD(release_probes);
-> +	struct tp_probes *pos, *next;
-> +
-> +	mutex_lock(&tracepoints_mutex);
-> +	if (!need_update) {
-> +		mutex_unlock(&tracepoints_mutex);
-> +		return;
-> +	}
-> +	if (!list_empty(&old_probes))
-> +		list_replace_init(&old_probes, &release_probes);
-> +	need_update = 0;
-> +	mutex_unlock(&tracepoints_mutex);
-> +
-> +	tracepoint_update_probes();
-> +	list_for_each_entry_safe(pos, next, &release_probes, u.list) {
-> +		list_del(&pos->u.list);
-> +		call_rcu_sched(&pos->u.rcu, rcu_free_old_probes);
-> +	}
-> +}
-> +EXPORT_SYMBOL_GPL(tracepoint_probe_update_all);
-> +
->  /**
->   * tracepoint_get_iter_range - Get a next tracepoint iterator given a range.
->   * @tracepoint: current tracepoints (in), next tracepoint (out)
-> 
-> commit bbec237d365b96ed6f5f372f1b090af374609059
-> Author: Lai Jiangshan <laijs@cn.fujitsu.com>
-> Date:   Tue Oct 28 10:51:49 2008 +0800
-> 
->     tracepoint: simplification for tracepoints using RCU
->     
->     Impact: simplify implementation
->     
->     Now, unused memory is handled by struct tp_probes.
->     
->     old code use these three field to handle unused memory.
->     struct tracepoint_entry {
->     	...
->     	struct rcu_head rcu;
->     	void *oldptr;
->     	unsigned char rcu_pending:1;
->     	...
->     };
->     
->     in this way, unused memory is handled by struct tracepoint_entry.
->     it bring reenter bug(it was fixed) and tracepoint.c is filled
->     full of ".*rcu.*" code statements. this patch removes all these.
->     
->     and:
->       rcu_barrier_sched() is removed.
->       Do not need regain tracepoints_mutex after tracepoint_update_probes()
->       several little cleanup.
->     
->     Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
->     Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-> index af8c856..4159c2a 100644
-> --- a/kernel/tracepoint.c
-> +++ b/kernel/tracepoint.c
-> @@ -43,6 +43,7 @@ static DEFINE_MUTEX(tracepoints_mutex);
->   */
->  #define TRACEPOINT_HASH_BITS 6
->  #define TRACEPOINT_TABLE_SIZE (1 << TRACEPOINT_HASH_BITS)
-> +static struct hlist_head tracepoint_table[TRACEPOINT_TABLE_SIZE];
->  
->  /*
->   * Note about RCU :
-> @@ -54,40 +55,40 @@ struct tracepoint_entry {
->  	struct hlist_node hlist;
->  	void **funcs;
->  	int refcount;	/* Number of times armed. 0 if disarmed. */
-> -	struct rcu_head rcu;
-> -	void *oldptr;
-> -	unsigned char rcu_pending:1;
->  	char name[0];
->  };
->  
-> -static struct hlist_head tracepoint_table[TRACEPOINT_TABLE_SIZE];
-> +struct tp_probes {
-> +	struct rcu_head rcu;
-> +	void *probes[0];
-> +};
->  
-> -static void free_old_closure(struct rcu_head *head)
-> +static inline void *allocate_probes(int count)
->  {
-> -	struct tracepoint_entry *entry = container_of(head,
-> -		struct tracepoint_entry, rcu);
-> -	kfree(entry->oldptr);
-> -	/* Make sure we free the data before setting the pending flag to 0 */
-> -	smp_wmb();
-> -	entry->rcu_pending = 0;
-> +	struct tp_probes *p  = kmalloc(count * sizeof(void *)
-> +			+ sizeof(struct tp_probes), GFP_KERNEL);
-> +	return p == NULL ? NULL : p->probes;
->  }
->  
-> -static void tracepoint_entry_free_old(struct tracepoint_entry *entry, void *old)
-> +static void rcu_free_old_probes(struct rcu_head *head)
->  {
-> -	if (!old)
-> -		return;
-> -	entry->oldptr = old;
-> -	entry->rcu_pending = 1;
-> -	/* write rcu_pending before calling the RCU callback */
-> -	smp_wmb();
-> -	call_rcu_sched(&entry->rcu, free_old_closure);
-> +	kfree(container_of(head, struct tp_probes, rcu));
-> +}
-> +
-> +static inline void release_probes(void *old)
-> +{
-> +	if (old) {
-> +		struct tp_probes *tp_probes = container_of(old,
-> +			struct tp_probes, probes[0]);
-> +		call_rcu(&tp_probes->rcu, rcu_free_old_probes);
-> +	}
->  }
->  
->  static void debug_print_probes(struct tracepoint_entry *entry)
->  {
->  	int i;
->  
-> -	if (!tracepoint_debug)
-> +	if (!tracepoint_debug || !entry->funcs)
->  		return;
->  
->  	for (i = 0; entry->funcs[i]; i++)
-> @@ -111,12 +112,13 @@ tracepoint_entry_add_probe(struct tracepoint_entry *entry, void *probe)
->  				return ERR_PTR(-EEXIST);
->  	}
->  	/* + 2 : one for new probe, one for NULL func */
-> -	new = kzalloc((nr_probes + 2) * sizeof(void *), GFP_KERNEL);
-> +	new = allocate_probes(nr_probes + 2);
->  	if (new == NULL)
->  		return ERR_PTR(-ENOMEM);
->  	if (old)
->  		memcpy(new, old, nr_probes * sizeof(void *));
->  	new[nr_probes] = probe;
-> +	new[nr_probes + 1] = NULL;
->  	entry->refcount = nr_probes + 1;
->  	entry->funcs = new;
->  	debug_print_probes(entry);
-> @@ -151,13 +153,13 @@ tracepoint_entry_remove_probe(struct tracepoint_entry *entry, void *probe)
->  		int j = 0;
->  		/* N -> M, (N > 1, M > 0) */
->  		/* + 1 for NULL */
-> -		new = kzalloc((nr_probes - nr_del + 1)
-> -			* sizeof(void *), GFP_KERNEL);
-> +		new = allocate_probes(nr_probes - nr_del + 1);
->  		if (new == NULL)
->  			return ERR_PTR(-ENOMEM);
->  		for (i = 0; old[i]; i++)
->  			if ((probe && old[i] != probe))
->  				new[j++] = old[i];
-> +		new[nr_probes - nr_del] = NULL;
->  		entry->refcount = nr_probes - nr_del;
->  		entry->funcs = new;
->  	}
-> @@ -215,7 +217,6 @@ static struct tracepoint_entry *add_tracepoint(const char *name)
->  	memcpy(&e->name[0], name, name_len);
->  	e->funcs = NULL;
->  	e->refcount = 0;
-> -	e->rcu_pending = 0;
->  	hlist_add_head(&e->hlist, head);
->  	return e;
->  }
-> @@ -224,32 +225,10 @@ static struct tracepoint_entry *add_tracepoint(const char *name)
->   * Remove the tracepoint from the tracepoint hash table. Must be called with
->   * mutex_lock held.
->   */
-> -static int remove_tracepoint(const char *name)
-> +static inline void remove_tracepoint(struct tracepoint_entry *e)
->  {
-> -	struct hlist_head *head;
-> -	struct hlist_node *node;
-> -	struct tracepoint_entry *e;
-> -	int found = 0;
-> -	size_t len = strlen(name) + 1;
-> -	u32 hash = jhash(name, len-1, 0);
-> -
-> -	head = &tracepoint_table[hash & (TRACEPOINT_TABLE_SIZE - 1)];
-> -	hlist_for_each_entry(e, node, head, hlist) {
-> -		if (!strcmp(name, e->name)) {
-> -			found = 1;
-> -			break;
-> -		}
-> -	}
-> -	if (!found)
-> -		return -ENOENT;
-> -	if (e->refcount)
-> -		return -EBUSY;
->  	hlist_del(&e->hlist);
-> -	/* Make sure the call_rcu_sched has been executed */
-> -	if (e->rcu_pending)
-> -		rcu_barrier_sched();
->  	kfree(e);
-> -	return 0;
->  }
->  
->  /*
-> @@ -343,25 +322,17 @@ int tracepoint_probe_register(const char *name, void *probe)
->  			goto end;
->  		}
->  	}
-> -	/*
-> -	 * If we detect that a call_rcu_sched is pending for this tracepoint,
-> -	 * make sure it's executed now.
-> -	 */
-> -	if (entry->rcu_pending)
-> -		rcu_barrier_sched();
->  	old = tracepoint_entry_add_probe(entry, probe);
->  	if (IS_ERR(old)) {
-> +		if (!entry->refcount)
-> +			remove_tracepoint(entry);
->  		ret = PTR_ERR(old);
->  		goto end;
->  	}
->  	mutex_unlock(&tracepoints_mutex);
->  	tracepoint_update_probes();		/* may update entry */
-> -	mutex_lock(&tracepoints_mutex);
-> -	entry = get_tracepoint(name);
-> -	WARN_ON(!entry);
-> -	if (entry->rcu_pending)
-> -		rcu_barrier_sched();
-> -	tracepoint_entry_free_old(entry, old);
-> +	release_probes(old);
-> +	return 0;
->  end:
->  	mutex_unlock(&tracepoints_mutex);
->  	return ret;
-> @@ -388,25 +359,22 @@ int tracepoint_probe_unregister(const char *name, void *probe)
->  	entry = get_tracepoint(name);
->  	if (!entry)
->  		goto end;
-> -	if (entry->rcu_pending)
-> -		rcu_barrier_sched();
->  	old = tracepoint_entry_remove_probe(entry, probe);
->  	if (!old) {
->  		printk(KERN_WARNING "Warning: Trying to unregister a probe"
->  				    "that doesn't exist\n");
->  		goto end;
->  	}
+> I think I'll look at redoing do_sync() to provide a custom sync
+> method before trying to fix XFS....
 
-it seems that this conflict is here. it seems that it is ok for just
-removing this five line. my fix have tested the "old".
+As it is, here's the somewhat cleaned up patch that demonstrates
+the changes needed to make xfsqa test 182 pass....
 
-	Lai
+Cheers,
 
-> +	if (IS_ERR(old)) {
-> +		ret = PTR_ERR(old);
-> +		goto end;
-> +	}
-> +	if (!entry->refcount)
-> +		remove_tracepoint(entry);
->  	mutex_unlock(&tracepoints_mutex);
->  	tracepoint_update_probes();		/* may update entry */
-> -	mutex_lock(&tracepoints_mutex);
-> -	entry = get_tracepoint(name);
-> -	if (!entry)
-> -		goto end;
-> -	if (entry->rcu_pending)
-> -		rcu_barrier_sched();
-> -	tracepoint_entry_free_old(entry, old);
-> -	remove_tracepoint(name);	/* Ignore busy error message */
-> -	ret = 0;
-> +	release_probes(old);
-> +	return 0;
->  end:
->  	mutex_unlock(&tracepoints_mutex);
->  	return ret;
-> 
-> 
-> 
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
 
+XFS, RFC: demonstration fix of test 182
 
+This patch shows the various changes needed to ensure sync(1)
+leave the filesystem in a consistent state. It shows the different
+format of do_sync(), the changes to mark the inode dirty before
+data I/O and the changes to xfs_fs_write_super() and the
+functions it calls to ensure the log gets covered at the
+end of the sync.
+
+This is in no way a real fix for the problem, merely a demonstration
+of the problem. The real fix is to make the XFS sync code use
+the same flush algorithm as freeze, but that first requires VFS
+level changes to provide a method for doing so.
+---
+ fs/sync.c                    |    7 +++----
+ fs/xfs/linux-2.6/xfs_aops.c  |   38 ++++++++++++++++++++++++++++----------
+ fs/xfs/linux-2.6/xfs_super.c |   29 +++++++++++------------------
+ fs/xfs/linux-2.6/xfs_sync.c  |   41 ++++++++++++++++++++++++++---------------
+ fs/xfs/linux-2.6/xfs_sync.h  |    2 +-
+ 5 files changed, 69 insertions(+), 48 deletions(-)
+
+diff --git a/fs/sync.c b/fs/sync.c
+index 137b550..69f40b7 100644
+--- a/fs/sync.c
++++ b/fs/sync.c
+@@ -23,13 +23,12 @@
+  */
+ static void do_sync(unsigned long wait)
+ {
+-	wakeup_pdflush(0);
+-	sync_inodes(0);		/* All mappings, inodes and their blockdevs */
+-	DQUOT_SYNC(NULL);
+-	sync_supers();		/* Write the superblocks */
+ 	sync_filesystems(0);	/* Start syncing the filesystems */
+ 	sync_filesystems(wait);	/* Waitingly sync the filesystems */
++	DQUOT_SYNC(NULL);
++	sync_supers();		/* Write the superblocks */
+ 	sync_inodes(wait);	/* Mappings, inodes and blockdevs, again. */
++	sync_supers();		/* Write the superblocks, again */
+ 	if (!wait)
+ 		printk("Emergency Sync complete\n");
+ 	if (unlikely(laptop_mode))
+diff --git a/fs/xfs/linux-2.6/xfs_aops.c b/fs/xfs/linux-2.6/xfs_aops.c
+index f8fa620..cb79a21 100644
+--- a/fs/xfs/linux-2.6/xfs_aops.c
++++ b/fs/xfs/linux-2.6/xfs_aops.c
+@@ -143,19 +143,37 @@ xfs_destroy_ioend(
+ }
+ 
+ /*
++ * If the end of the current ioend is beyond the current EOF,
++ * return the new EOF value, otherwise zero.
++ */
++STATIC xfs_fsize_t
++xfs_ioend_new_eof(
++	xfs_ioend_t		*ioend)
++{
++	xfs_inode_t		*ip = XFS_I(ioend->io_inode);
++	xfs_fsize_t		isize;
++	xfs_fsize_t		bsize;
++
++	bsize = ioend->io_offset + ioend->io_size;
++	isize = MAX(ip->i_size, ip->i_new_size);
++	isize = MIN(isize, bsize);
++	return isize > ip->i_d.di_size ? isize : 0;
++}
++
++/*
+  * Update on-disk file size now that data has been written to disk.
+  * The current in-memory file size is i_size.  If a write is beyond
+  * eof i_new_size will be the intended file size until i_size is
+  * updated.  If this write does not extend all the way to the valid
+  * file size then restrict this update to the end of the write.
+  */
++
+ STATIC void
+ xfs_setfilesize(
+ 	xfs_ioend_t		*ioend)
+ {
+ 	xfs_inode_t		*ip = XFS_I(ioend->io_inode);
+ 	xfs_fsize_t		isize;
+-	xfs_fsize_t		bsize;
+ 
+ 	ASSERT((ip->i_d.di_mode & S_IFMT) == S_IFREG);
+ 	ASSERT(ioend->io_type != IOMAP_READ);
+@@ -163,19 +181,13 @@ xfs_setfilesize(
+ 	if (unlikely(ioend->io_error))
+ 		return;
+ 
+-	bsize = ioend->io_offset + ioend->io_size;
+-
+ 	xfs_ilock(ip, XFS_ILOCK_EXCL);
+-
+-	isize = MAX(ip->i_size, ip->i_new_size);
+-	isize = MIN(isize, bsize);
+-
+-	if (ip->i_d.di_size < isize) {
++	isize = xfs_ioend_new_eof(ioend);
++	if (isize) {
+ 		ip->i_d.di_size = isize;
+ 		ip->i_update_size = 1;
+ 		xfs_mark_inode_dirty_sync(ip);
+ 	}
+-
+ 	xfs_iunlock(ip, XFS_ILOCK_EXCL);
+ }
+ 
+@@ -366,10 +378,16 @@ xfs_submit_ioend_bio(
+ 	struct bio	*bio)
+ {
+ 	atomic_inc(&ioend->io_remaining);
+-
+ 	bio->bi_private = ioend;
+ 	bio->bi_end_io = xfs_end_bio;
+ 
++	/*
++	 * if the I/O is beyond EOF we mark the inode dirty immediately
++	 * but don't update the inode size until I/O completion.
++	 */
++	if (xfs_ioend_new_eof(ioend))
++		xfs_mark_inode_dirty_sync(XFS_I(ioend->io_inode));
++
+ 	submit_bio(WRITE, bio);
+ 	ASSERT(!bio_flagged(bio, BIO_EOPNOTSUPP));
+ 	bio_put(bio);
+diff --git a/fs/xfs/linux-2.6/xfs_super.c b/fs/xfs/linux-2.6/xfs_super.c
+index c5cfc1e..bbac9e3 100644
+--- a/fs/xfs/linux-2.6/xfs_super.c
++++ b/fs/xfs/linux-2.6/xfs_super.c
+@@ -1118,8 +1118,7 @@ xfs_fs_write_super(
+ 	struct super_block	*sb)
+ {
+ 	if (!(sb->s_flags & MS_RDONLY))
+-		xfs_sync_fsdata(XFS_M(sb), 0);
+-	sb->s_dirt = 0;
++		xfs_sync_fsdata(XFS_M(sb), SYNC_WAIT);
+ }
+ 
+ STATIC int
+@@ -1131,22 +1130,16 @@ xfs_fs_sync_super(
+ 	int			error;
+ 
+ 	/*
+-	 * Treat a sync operation like a freeze.  This is to work
+-	 * around a race in sync_inodes() which works in two phases
+-	 * - an asynchronous flush, which can write out an inode
+-	 * without waiting for file size updates to complete, and a
+-	 * synchronous flush, which wont do anything because the
+-	 * async flush removed the inode's dirty flag.  Also
+-	 * sync_inodes() will not see any files that just have
+-	 * outstanding transactions to be flushed because we don't
+-	 * dirty the Linux inode until after the transaction I/O
+-	 * completes.
++	 * Treat a blocking sync operation like a data freeze.
++	 * The are effectively the same thing - both need to
++	 * get all the data on disk and wait for it to complete.
++	 *
++	 * Also, no point marking the superblock clean - we'll
++	 * dirty metadata flushing data out....
+ 	 */
+-	if (wait || unlikely(sb->s_frozen == SB_FREEZE_WRITE))
+-		error = xfs_quiesce_data(mp);
+-	else
+-		error = xfs_sync_fsdata(mp, 0);
+-	sb->s_dirt = 0;
++	if (unlikely(sb->s_frozen == SB_FREEZE_WRITE))
++		wait = 1;
++	error = xfs_quiesce_data(mp, wait);
+ 
+ 	if (unlikely(laptop_mode)) {
+ 		int	prev_sync_seq = mp->m_sync_seq;
+@@ -1283,7 +1276,7 @@ xfs_fs_remount(
+ 
+ 	/* rw -> ro */
+ 	if (!(mp->m_flags & XFS_MOUNT_RDONLY) && (*flags & MS_RDONLY)) {
+-		xfs_quiesce_data(mp);
++		xfs_quiesce_data(mp, 1);
+ 		xfs_quiesce_attr(mp);
+ 		mp->m_flags |= XFS_MOUNT_RDONLY;
+ 	}
+diff --git a/fs/xfs/linux-2.6/xfs_sync.c b/fs/xfs/linux-2.6/xfs_sync.c
+index d12d31b..975534b 100644
+--- a/fs/xfs/linux-2.6/xfs_sync.c
++++ b/fs/xfs/linux-2.6/xfs_sync.c
+@@ -64,8 +64,6 @@ xfs_sync_inodes_ag(
+ 	int		last_error = 0;
+ 	int		fflag = XFS_B_ASYNC;
+ 
+-	if (flags & SYNC_DELWRI)
+-		fflag = XFS_B_DELWRI;
+ 	if (flags & SYNC_WAIT)
+ 		fflag = 0;		/* synchronous overrides all */
+ 
+@@ -127,6 +125,8 @@ xfs_sync_inodes_ag(
+ 		/*
+ 		 * If we have to flush data or wait for I/O completion
+ 		 * we need to hold the iolock.
++		 *
++		 * XXX: this doesn't catch I/O in progress
+ 		 */
+ 		if ((flags & SYNC_DELWRI) && VN_DIRTY(inode)) {
+ 			xfs_ilock(ip, XFS_IOLOCK_SHARED);
+@@ -202,11 +202,15 @@ xfs_sync_inodes(
+ STATIC int
+ xfs_commit_dummy_trans(
+ 	struct xfs_mount	*mp,
+-	uint			log_flags)
++	uint			flags)
+ {
+ 	struct xfs_inode	*ip = mp->m_rootip;
+ 	struct xfs_trans	*tp;
+ 	int			error;
++	int			log_flags = XFS_LOG_FORCE;
++
++	if (flags & SYNC_WAIT)
++		log_flags |= XFS_LOG_SYNC;
+ 
+ 	/*
+ 	 * Put a dummy transaction in the log to tell recovery
+@@ -224,13 +228,12 @@ xfs_commit_dummy_trans(
+ 	xfs_trans_ijoin(tp, ip, XFS_ILOCK_EXCL);
+ 	xfs_trans_ihold(tp, ip);
+ 	xfs_trans_log_inode(tp, ip, XFS_ILOG_CORE);
+-	/* XXX(hch): ignoring the error here.. */
+ 	error = xfs_trans_commit(tp, 0);
+-
+ 	xfs_iunlock(ip, XFS_ILOCK_EXCL);
+ 
++	/* the log force ensures this transaction is pushed to disk */
+ 	xfs_log_force(mp, 0, log_flags);
+-	return 0;
++	return error;
+ }
+ 
+ int
+@@ -270,6 +273,7 @@ xfs_sync_fsdata(
+ 		 */
+ 		if (XFS_BUF_ISPINNED(bp))
+ 			xfs_log_force(mp, 0, XFS_LOG_FORCE);
++		xfs_flush_buftarg(mp->m_ddev_targp, 1);
+ 	}
+ 
+ 
+@@ -278,7 +282,13 @@ xfs_sync_fsdata(
+ 	else
+ 		XFS_BUF_ASYNC(bp);
+ 
+-	return xfs_bwrite(mp, bp);
++	error = xfs_bwrite(mp, bp);
++	if (!error && xfs_log_need_covered(mp)) {
++		error = xfs_commit_dummy_trans(mp, (flags & SYNC_WAIT));
++		if (flags & SYNC_WAIT)
++			mp->m_super->s_dirt = 0;
++	}
++	return error;
+ 
+  out_brelse:
+ 	xfs_buf_relse(bp);
+@@ -305,18 +315,21 @@ xfs_sync_fsdata(
+  */
+ int
+ xfs_quiesce_data(
+-	struct xfs_mount	*mp)
++	struct xfs_mount	*mp,
++	int			wait)
+ {
+ 	int error;
+ 
+ 	/* push non-blocking */
+-	xfs_sync_inodes(mp, SYNC_DELWRI|SYNC_BDFLUSH);
++	xfs_sync_inodes(mp, SYNC_DELWRI);
+ 	XFS_QM_DQSYNC(mp, SYNC_BDFLUSH);
+-	xfs_filestream_flush(mp);
+ 
+-	/* push and block */
+-	xfs_sync_inodes(mp, SYNC_DELWRI|SYNC_WAIT|SYNC_IOWAIT);
+-	XFS_QM_DQSYNC(mp, SYNC_WAIT);
++	/* push and block till complete */
++	if (wait) {
++		xfs_sync_inodes(mp, SYNC_DELWRI|SYNC_WAIT|SYNC_IOWAIT);
++		XFS_QM_DQSYNC(mp, SYNC_WAIT);
++		xfs_filestream_flush(mp);
++	}
+ 
+ 	/* write superblock and hoover up shutdown errors */
+ 	error = xfs_sync_fsdata(mp, 0);
+@@ -480,8 +493,6 @@ xfs_sync_worker(
+ 		/* dgc: errors ignored here */
+ 		error = XFS_QM_DQSYNC(mp, SYNC_BDFLUSH);
+ 		error = xfs_sync_fsdata(mp, SYNC_BDFLUSH);
+-		if (xfs_log_need_covered(mp))
+-			error = xfs_commit_dummy_trans(mp, XFS_LOG_FORCE);
+ 	}
+ 	mp->m_sync_seq++;
+ 	wake_up(&mp->m_wait_single_sync_task);
+diff --git a/fs/xfs/linux-2.6/xfs_sync.h b/fs/xfs/linux-2.6/xfs_sync.h
+index 5f6de1e..5586f7a 100644
+--- a/fs/xfs/linux-2.6/xfs_sync.h
++++ b/fs/xfs/linux-2.6/xfs_sync.h
+@@ -39,7 +39,7 @@ void xfs_syncd_stop(struct xfs_mount *mp);
+ int xfs_sync_inodes(struct xfs_mount *mp, int flags);
+ int xfs_sync_fsdata(struct xfs_mount *mp, int flags);
+ 
+-int xfs_quiesce_data(struct xfs_mount *mp);
++int xfs_quiesce_data(struct xfs_mount *mp, int wait);
+ void xfs_quiesce_attr(struct xfs_mount *mp);
+ 
+ void xfs_flush_inode(struct xfs_inode *ip);
