@@ -1,103 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753043AbYJaRjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753251AbYJaRkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753043AbYJaRjf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 13:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYJaRj2
+	id S1753251AbYJaRkA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 13:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbYJaRju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 13:39:28 -0400
-Received: from hobbit.corpit.ru ([81.13.33.150]:22347 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751197AbYJaRj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 13:39:27 -0400
-Message-ID: <490B42CD.7040108@msgid.tls.msk.ru>
-Date: Fri, 31 Oct 2008 20:39:25 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 31 Oct 2008 13:39:50 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:39400 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751673AbYJaRjt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 13:39:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=DkhZ+FpZVRWsud+9Ti94/9kggHK3oGgEv30Q5irqZF2IUI6YJ7xNVTq5sCUm/Zw+nh
+         FyWMVs4JOFisgNgD7/WdIHyqumVLWKBXWO4Wl2OJsInUWrVeZh+Gy1jF8lfKOQcx6bXw
+         8K1+QmVp1mQ0HbON/YvkWgHgf+8B0DTtnTUD4=
+Date: Fri, 31 Oct 2008 17:39:21 +0000
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>
+Subject: [Patch] ipc: clean up ipc/shm.c
+Message-ID: <20081031173920.GF3235@hack.voiplan.pt>
 MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: data corruption: revalidating a (removable) hdd/flash on re-insert
-References: <490B2659.9010304@msgid.tls.msk.ru> <ac3eb2510810310910w603d90bai8c23b34fb517f21a@mail.gmail.com>
-In-Reply-To: <ac3eb2510810310910w603d90bai8c23b34fb517f21a@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
-> On Fri, Oct 31, 2008 at 16:38, Michael Tokarev <mjt@tls.msk.ru> wrote:
->> To make a long story short: is there a way to force kernel
->> to re-validate a replaced usb-connected hard drive (or a
->> flash) *automatically*?
-[]
-> Insert the media, and force a validation:
->   $ touch /dev/sdb
 
-With a newly inserted flash (removed some irrelevant stuff):
+Use the macro shm_ids().
 
-DEVTYPE=disk SUBSYSTEM=block MINOR=16 ACTION=change MAJOR=8
-DEVTYPE=partition SUBSYSTEM=block MINOR=17 ACTION=add MAJOR=8
-DEVTYPE=scsi_device SUBSYSTEM=scsi DRIVER=sd SDEV_MEDIA_CHANGE=1 ACTION=change
-DEVTYPE=disk SUBSYSTEM=block MINOR=16 ACTION=change MAJOR=8
+Remove useless check for a userspace pointer, because copy_to_user()
+will check it.
 
-> Access the device:
->   $ touch /dev/sdb
-> 
-> Nothing should happen, as the reader/kernel knows it is still valid.
+Some style cleanups.
 
-Yes nothing happens.
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
 
-> Now remove the media and insert it immediately again.
-> 
-> Access the device:
->   $ touch /dev/sdb
->   UEVENT[1225468868.803950] change
-> /devices/pci0000:00/0000:00:1d.7/usb5/5-2/5-2:1.0/host8/target8:0:0/8:0:0:0
-> (scsi)
+---
+diff --git a/ipc/shm.c b/ipc/shm.c
+index 867e5d6..612249d 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -75,7 +75,7 @@ void shm_init_ns(struct ipc_namespace *ns)
+ 	ns->shm_ctlall = SHMALL;
+ 	ns->shm_ctlmni = SHMMNI;
+ 	ns->shm_tot = 0;
+-	ipc_init_ids(&ns->ids[IPC_SHM_IDS]);
++	ipc_init_ids(&shm_ids(ns));
+ }
+ 
+ /*
+@@ -644,7 +644,7 @@ asmlinkage long sys_shmctl(int shmid, int cmd, struct shmid_ds __user *buf)
+ 		if (err)
+ 			return err;
+ 
+-		memset(&shminfo,0,sizeof(shminfo));
++		memset(&shminfo, 0, sizeof(shminfo));
+ 		shminfo.shmmni = shminfo.shmseg = ns->shm_ctlmni;
+ 		shminfo.shmmax = ns->shm_ctlmax;
+ 		shminfo.shmall = ns->shm_ctlall;
+@@ -669,7 +669,7 @@ asmlinkage long sys_shmctl(int shmid, int cmd, struct shmid_ds __user *buf)
+ 		if (err)
+ 			return err;
+ 
+-		memset(&shm_info,0,sizeof(shm_info));
++		memset(&shm_info, 0, sizeof(shm_info));
+ 		down_read(&shm_ids(ns).rw_mutex);
+ 		shm_info.used_ids = shm_ids(ns).in_use;
+ 		shm_get_stat (ns, &shm_info.shm_rss, &shm_info.shm_swp);
+@@ -678,7 +678,7 @@ asmlinkage long sys_shmctl(int shmid, int cmd, struct shmid_ds __user *buf)
+ 		shm_info.swap_successes = 0;
+ 		err = ipc_get_maxid(&shm_ids(ns));
+ 		up_read(&shm_ids(ns).rw_mutex);
+-		if(copy_to_user (buf, &shm_info, sizeof(shm_info))) {
++		if (copy_to_user(buf, &shm_info, sizeof(shm_info))) {
+ 			err = -EFAULT;
+ 			goto out;
+ 		}
+@@ -692,11 +692,6 @@ asmlinkage long sys_shmctl(int shmid, int cmd, struct shmid_ds __user *buf)
+ 		struct shmid64_ds tbuf;
+ 		int result;
+ 
+-		if (!buf) {
+-			err = -EFAULT;
+-			goto out;
+-		}
+-
+ 		if (cmd == SHM_STAT) {
+ 			shp = shm_lock(ns, shmid);
+ 			if (IS_ERR(shp)) {
+@@ -712,7 +707,7 @@ asmlinkage long sys_shmctl(int shmid, int cmd, struct shmid_ds __user *buf)
+ 			}
+ 			result = 0;
+ 		}
+-		err=-EACCES;
++		err = -EACCES;
+ 		if (ipcperms (&shp->shm_perm, S_IRUGO))
+ 			goto out_unlock;
+ 		err = security_shm_shmctl(shp, cmd);
 
-> and you see the reader told to kernel (scsi unit attention) to
-> revalidate the device.
-
-Ok. So in my case, nothing happens here just like
-if it were not removed/inserted.
-
-I replaced the card with another one, and nothing
-happened as well.
-
-Only when touch'ing after REMOVING the flash, I see:
-
-DEVTYPE=scsi_device SUBSYSTEM=scsi DRIVER=sd SDEV_MEDIA_CHANGE=1 ACTION=change 
-DEVTYPE=partition SUBSYSTEM=block MINOR=17 ACTION=remove MAJOR=8
-DEVTYPE=disk SUBSYSTEM=block MINOR=16 ACTION=change MAJOR=8
-
-> Every access to removable media is guarded by this revalidation check.
-> If you don't see these events, you should not trust this reader, and
-> at least never change the media while it is connected.
-
-Ok.  So.. 3 questions.
-
-1) how it worked before (i yet to find which kernel worked)?
-   I can only guess that some older kernel never cached the
-   "validity".
-
-2) 'doze notices the insertions/removals just fine.  Again I
-   can only guess that it constantly pools for changes.
-
-3), and the most important one.  I think there should be a
-   way to stop "caching" of the media information, i.e. to force
-   revalidation events on EVERY access, for certain hardware at
-   least.  Because corruption in such cases is much worse than
-   any positive effects of caching etc... Maybe some unusual_devs.h
-   way or somesuch?..
-
-Now I see the device is somewhat(?) broken.  But as I said before
-in another email, it's a great device (as in, two epochs connected
-to each other), and it'd be sad to lose it.  A nostalgie, sort of.. ;)
-
-Ok, maybe actually polling for devices sometimes makes sense... ;)
-And there can be a workaround, using a tiny daemon that constantly
-accesses the device, in order to catch removals...  'hwell.
-
-/mjt
