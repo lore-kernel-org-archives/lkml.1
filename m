@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751881AbYJaMfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752078AbYJaMpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751881AbYJaMfA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 08:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYJaMev
+	id S1752078AbYJaMpA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 08:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbYJaMou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 08:34:51 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:61283 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750809AbYJaMeu (ORCPT
+	Fri, 31 Oct 2008 08:44:50 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:57245 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750870AbYJaMot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 08:34:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=H9mTEE9RfpdXdYdt00DOHxE4NFx+T9KS3Rr6I1JDW9cQ8hHjwz9of1o52xGPxmHux1
-         gbFRojbrNg1x8jHCgSRjSDuHyTW2vBCm6UhTGGGBVhPY3UiYTEWJLizMYi7wxok/R9ZF
-         9Y8fe7MPDP1+0FQqp5wOqk27XonHTQmMMpEFM=
-Message-ID: <490AFB65.40102@gmail.com>
-Date: Fri, 31 Oct 2008 13:34:45 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH][RESEND] tracing/ftrace: Fix a bug when switch current tracer
- to sched tracer
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 31 Oct 2008 08:44:49 -0400
+To: ncunningham@crca.org.au
+CC: miklos@szeredi.hu, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <1225452484.6574.35.camel@nigel-laptop> (message from Nigel
+	Cunningham on Fri, 31 Oct 2008 22:28:04 +1100)
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for
+	frozen	filesystems.
+References: <Pine.LNX.4.44L0.0810300955020.2401-100000@iolanthe.rowland.org>
+	 <1225403060.6574.10.camel@nigel-laptop>
+	 <E1Kvpgo-00045l-GU@pomaz-ex.szeredi.hu>
+	 <1225444253.6574.21.camel@nigel-laptop>
+	 <E1Kvq72-00049W-O1@pomaz-ex.szeredi.hu> <1225452484.6574.35.camel@nigel-laptop>
+Message-Id: <E1KvtMn-0004YD-00@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 31 Oct 2008 13:44:41 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(depends on tracing/ftrace: Types and naming corrections for sched tracer)
----
+On Fri, 31 Oct 2008, Nigel Cunningham wrote:
+> You don't. You just use FUSE_MIGHT_FREEZE to stop them before they take
+> locks that might cause problems. So my suggestion is:
 
-Fix a bug that made the sched_switch tracer unable to run
-if set as the current_tracer after the boot tracer.
+Before?  FUSE_MIGHT_FREEZE is called _after_ i_mutex is taken by the
+VFS.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace_boot.c         |    4 ++--
- kernel/trace/trace_sched_switch.c |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
-diff --git a/kernel/trace/trace_boot.c b/kernel/trace/trace_boot.c
-index 6bbc879..bd5046c 100644
---- a/kernel/trace/trace_boot.c
-+++ b/kernel/trace/trace_boot.c
-@@ -37,9 +37,9 @@ void disable_boot_trace(void)
- 		tracing_stop_cmdline_record();
- }
- 
--void reset_boot_trace(struct trace_array *tr)
-+static void reset_boot_trace(struct trace_array *tr)
- {
--	disable_boot_trace();
-+	sched_switch_trace.reset(tr);
- }
- 
- static void boot_trace_init(struct trace_array *tr)
-diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
-index 969953b..888944d 100644
---- a/kernel/trace/trace_sched_switch.c
-+++ b/kernel/trace/trace_sched_switch.c
-@@ -173,7 +173,7 @@ static void sched_switch_trace_init(struct trace_array *tr)
- 
- static void sched_switch_trace_reset(struct trace_array *tr)
- {
--	if (tr->ctrl)
-+	if (tr->ctrl && sched_ref)
- 		stop_sched_trace(tr);
- }
+> 1) Stop new requests at FUSE_MIGHT_FREEZE
+> 2) Handle existing requests by using freezer_do_not_count in
+> request_send and request_send_nowait before the spin_lock and
+> freezer_count after the spin_unlock.
+> 
+> With #2, we don't need to care about whether the request is completed
+> before freezing completes or post-resume.
+> 
+> If the userspace process tries to use an already frozen fuse filesystem
+> and gets frozen, that's okay because we'll sit waiting for an answer,
+> not be counted by the freezer and so not contribute to any failure to
+> freeze processes.
+> 
+> If the userspace process completes its work, we'll either get caught at
+> the freezer_count (if we've already been told to freeze) or be gotten
+> later, after exiting the fuse code.
+
+Yes, this is the variant of categorizing sleeps to freezing and
+non-freezing.  The problem is, you need to do that with all
+mutex_lock(&inode->i_mutex) instances as well.  Try grepping for that
+in fs/*.c!
+
+It _is_ possible, it's just not practical.
+
+Miklos
