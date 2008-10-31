@@ -1,146 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752232AbYJaMUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751871AbYJaM3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752232AbYJaMUd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 08:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbYJaMUQ
+	id S1751871AbYJaM3T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 08:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbYJaM3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 08:20:16 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:57062 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250AbYJaMUO (ORCPT
+	Fri, 31 Oct 2008 08:29:05 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:50239 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbYJaM3D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 08:20:14 -0400
+	Fri, 31 Oct 2008 08:29:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :content-type:content-transfer-encoding;
-        b=Gq+pz5D3U5QHhoodDqfSdY0bFBAJ7GKqC9CIYJ4mB86svtpjELPdHgZmpqxeF/0Bd8
-         9KX9w2OXg+xd7X5MP3wedDP7cXVdPFQMRSAX2Lx1p1G8lBA+78m6AUpDV0NO61w9CrYV
-         xFv8c8lgypYtRbVQ89WyjD++nfBcwOu4gTAiw=
-Message-ID: <490AF7F8.7090302@gmail.com>
-Date: Fri, 31 Oct 2008 13:20:08 +0100
+        b=cb/aw09HQzxFFlankjsOehJiHpcVuUlK+ScoGfVjkGcpyaMIgjHMygppBYlOOsCNjL
+         63JGq1izLNPu02KJN619R3YA9UiU3PjLDxpjuM5BudUb8hNGjLld8G7XSW3eD8hyALkS
+         djYTyIZ7jumYpyGl4Td31dido/rl0Chn7ba1w=
+Message-ID: <490AFA0A.3080708@gmail.com>
+Date: Fri, 31 Oct 2008 13:28:58 +0100
 From: Frederic Weisbecker <fweisbec@gmail.com>
 User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
 CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH][RESEND] tracing/fastboot: Use sched switch tracer from boot
- tracer
+Subject: [PATCH][RESEND] tracing/ftrace: Types and naming corrections for
+ sched tracer
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(depends on tracing/ftrace: Remove unused code in sched_switch tracer)
+(depends on tracing/fastboot: Use sched switch tracer from boot tracer)
 ---
+This patch applies some corrections suggested by Steven Rostedt.
 
-Use the sched_switch tracer from the boot tracer.
-We also can trace schedule events inside the initcalls.
-Sched tracing is disabled after the initcall has finished and then reenabled
-before the next one is started.
+Change the type of shed_ref into int since it is used
+into a Mutex, we don't need it anymore as an atomic
+variable in the sched_switch tracer.
+Also change the name of the register mutex.
+
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>
-CC: Arjan van de Ven <arjan@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/trace.c              |    2 ++
- kernel/trace/trace.h              |    1 +
- kernel/trace/trace_boot.c         |    6 ++++++
- kernel/trace/trace_sched_switch.c |    6 +++---
- 4 files changed, 12 insertions(+), 3 deletions(-)
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 78d5661..acc21bb 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3192,6 +3192,8 @@ __init static int tracer_alloc_buffers(void)
- 
- 	register_tracer(&nop_trace);
- #ifdef CONFIG_BOOT_TRACER
-+	/* We don't want to launch sched_switch tracer yet */
-+	global_trace.ctrl = 0;
- 	register_tracer(&boot_tracer);
- 	current_trace = &boot_tracer;
- 	current_trace->init(&global_trace);
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index f1f9957..d45a3cd 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -49,6 +49,7 @@ struct ftrace_entry {
- 	unsigned long		parent_ip;
- };
- extern struct tracer boot_tracer;
-+extern struct tracer sched_switch_trace; /* Used by the boot tracer */
- 
- /*
-  * Context switch trace entry - which task (and prio) we switched from/to:
-diff --git a/kernel/trace/trace_boot.c b/kernel/trace/trace_boot.c
-index d104d5b..6bbc879 100644
---- a/kernel/trace/trace_boot.c
-+++ b/kernel/trace/trace_boot.c
-@@ -27,10 +27,14 @@ void start_boot_trace(void)
- 
- void enable_boot_trace(void)
- {
-+	if (pre_initcalls_finished)
-+		tracing_start_cmdline_record();
- }
- 
- void disable_boot_trace(void)
- {
-+	if (pre_initcalls_finished)
-+		tracing_stop_cmdline_record();
- }
- 
- void reset_boot_trace(struct trace_array *tr)
-@@ -45,6 +49,8 @@ static void boot_trace_init(struct trace_array *tr)
- 
- 	for_each_cpu_mask(cpu, cpu_possible_map)
- 		tracing_reset(tr, cpu);
-+
-+	sched_switch_trace.init(tr);
- }
- 
- static void boot_trace_ctrl_update(struct trace_array *tr)
+ kernel/trace/trace_sched_switch.c |   30 +++++++++++++-----------------
+ 1 files changed, 13 insertions(+), 17 deletions(-)
 diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
-index 96620c7..9d7bdac 100644
+index 9d7bdac..969953b 100644
 --- a/kernel/trace/trace_sched_switch.c
 +++ b/kernel/trace/trace_sched_switch.c
-@@ -127,6 +127,7 @@ static void tracing_start_sched_switch(void)
- 	long ref;
+@@ -16,8 +16,8 @@
  
- 	mutex_lock(&tracepoint_mutex);
-+	tracer_enabled = 1;
- 	ref = atomic_inc_return(&sched_ref);
- 	if (ref == 1)
- 		tracing_sched_register();
-@@ -138,6 +139,7 @@ static void tracing_stop_sched_switch(void)
- 	long ref;
+ static struct trace_array	*ctx_trace;
+ static int __read_mostly	tracer_enabled;
+-static atomic_t			sched_ref;
+-static DEFINE_MUTEX(tracepoint_mutex);
++static int			sched_ref;
++static DEFINE_MUTEX(sched_register_mutex);
  
- 	mutex_lock(&tracepoint_mutex);
-+	tracer_enabled = 0;
- 	ref = atomic_dec_and_test(&sched_ref);
- 	if (ref)
- 		tracing_sched_unregister();
-@@ -158,12 +160,10 @@ static void start_sched_trace(struct trace_array *tr)
+ static void
+ probe_sched_switch(struct rq *__rq, struct task_struct *prev,
+@@ -28,7 +28,7 @@ probe_sched_switch(struct rq *__rq, struct task_struct *prev,
+ 	int cpu;
+ 	int pc;
+ 
+-	if (!atomic_read(&sched_ref))
++	if (!sched_ref)
+ 		return;
+ 
+ 	tracing_record_cmdline(prev);
+@@ -124,26 +124,22 @@ static void tracing_sched_unregister(void)
+ 
+ static void tracing_start_sched_switch(void)
  {
- 	sched_switch_reset(tr);
- 	tracing_start_cmdline_record();
+-	long ref;
+-
+-	mutex_lock(&tracepoint_mutex);
 -	tracer_enabled = 1;
+-	ref = atomic_inc_return(&sched_ref);
+-	if (ref == 1)
++	mutex_lock(&sched_register_mutex);
++	if (!(sched_ref++)) {
++		tracer_enabled = 1;
+ 		tracing_sched_register();
+-	mutex_unlock(&tracepoint_mutex);
++	}
++	mutex_unlock(&sched_register_mutex);
  }
  
- static void stop_sched_trace(struct trace_array *tr)
+ static void tracing_stop_sched_switch(void)
  {
+-	long ref;
+-
+-	mutex_lock(&tracepoint_mutex);
 -	tracer_enabled = 0;
- 	tracing_stop_cmdline_record();
+-	ref = atomic_dec_and_test(&sched_ref);
+-	if (ref)
++	mutex_lock(&sched_register_mutex);
++	if (!(--sched_ref)) {
+ 		tracing_sched_unregister();
+-	mutex_unlock(&tracepoint_mutex);
++		tracer_enabled = 0;
++	}
++	mutex_unlock(&sched_register_mutex);
  }
  
-@@ -190,7 +190,7 @@ static void sched_switch_trace_ctrl_update(struct trace_array *tr)
- 		stop_sched_trace(tr);
- }
- 
--static struct tracer sched_switch_trace __read_mostly =
-+struct tracer sched_switch_trace __read_mostly =
- {
- 	.name		= "sched_switch",
- 	.init		= sched_switch_trace_init,
+ void tracing_start_cmdline_record(void)
