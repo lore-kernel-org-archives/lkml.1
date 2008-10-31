@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbYJaDVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbYJaDcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbYJaDVa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 23:21:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbYJaDVV
+	id S1753323AbYJaDcP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 23:32:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbYJaDb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 23:21:21 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37541 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753295AbYJaDVU (ORCPT
+	Thu, 30 Oct 2008 23:31:56 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:53071 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750914AbYJaDbz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 23:21:20 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.28-rc2-mm1: possible circular locking
-Cc: kosaki.motohiro@jp.fujitsu.com, Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
-       linux-mm@kvack.org
-In-Reply-To: <20081029135840.0a50e19c.akpm@linux-foundation.org>
-References: <200810292146.03967.m.kozlowski@tuxland.pl> <20081029135840.0a50e19c.akpm@linux-foundation.org>
-Message-Id: <20081031121827.AACB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 30 Oct 2008 23:31:55 -0400
+Date: Thu, 30 Oct 2008 23:31:50 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: "J.R. Mauro" <jrm8005@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: merging other repos into linux-2.6
+Message-ID: <20081031033150.GC9781@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"J.R. Mauro" <jrm8005@gmail.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+References: <20081030054944.GA19035@kroah.com> <3aaafc130810301834w554fbd33p6f423ffef77e92aa@mail.gmail.com> <alpine.LFD.2.00.0810301843220.21084@nehalem.linux-foundation.org> <3aaafc130810301938k4ee654d6sf7de1fff5d9c9fc3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Fri, 31 Oct 2008 12:21:16 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3aaafc130810301938k4ee654d6sf7de1fff5d9c9fc3@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > stack backtrace:
-> > Pid: 4733, comm: psi Not tainted 2.6.28-rc2-mm1 #1
-> > Call Trace:
-> >  [<c013a0fd>] print_circular_bug_tail+0x78/0xb5
-> >  [<c0137a31>] ? print_circular_bug_entry+0x43/0x4b
-> >  [<c013a6e4>] validate_chain+0x5aa/0xfe0
-> >  [<c0118465>] ? hrtick_update+0x23/0x25
-> >  [<c013b388>] __lock_acquire+0x26e/0x98d
-> >  [<c0118ac0>] ? default_wake_function+0xb/0xd
-> >  [<c013bb03>] lock_acquire+0x5c/0x74
-> >  [<c012a330>] ? flush_work+0x2d/0xcb
-> >  [<c012a35c>] flush_work+0x59/0xcb
-> >  [<c012a330>] ? flush_work+0x2d/0xcb
-> >  [<c0139ae6>] ? trace_hardirqs_on+0xb/0xd
-> >  [<c012a531>] ? __queue_work+0x26/0x2b
-> >  [<c012a58c>] ? queue_work_on+0x37/0x47
-> >  [<c014fda7>] ? lru_add_drain_per_cpu+0x0/0xa
-> >  [<c014fda7>] ? lru_add_drain_per_cpu+0x0/0xa
-> >  [<c012a7a6>] schedule_on_each_cpu+0x65/0x7f
-> >  [<c014fb7e>] lru_add_drain_all+0xd/0xf
-> >  [<c0157fb2>] __mlock_vma_pages_range+0x44/0x206
-> >  [<c0159438>] ? vma_adjust+0x17e/0x384
-> >  [<c015971f>] ? split_vma+0xe1/0xf7
-> >  [<c01582d1>] mlock_fixup+0x15d/0x1c9
-> >  [<c0158479>] do_mlock+0x96/0xc8
-> >  [<c02bcb2a>] ? down_write+0x42/0x68
-> >  [<c015860e>] sys_mlock+0xb2/0xb6
-> >  [<c0102f91>] sysenter_do_call+0x12/0x35
-> > 
-> 
-> This is similar to the problem which
-> mm-move-migrate_prep-out-from-under-mmap_sem.patch was supposed to fix.
-> 
-> We've been calling schedule_on_each_cpu() from within
-> lru_add_drain_all() for ages.  What changed to cause all this
-> to start happening?
+On Thu, Oct 30, 2008 at 10:38:36PM -0400, J.R. Mauro wrote:
+> And the willingness to put in the effort may be there now, but what
+> I'm worried about is 6 months from now, when everyone who has an
+> out-of-tree driver wants history imported because "well, you did it
+> for the Comedi guys". Greg is a pretty busy guy, and we don't want him
+> buried under something like that, especially if the payoff is
+> marginal.
 
-Agreed with there are the same problem.
-please assign this bug to me.
+Greg's a big boy and he can decide what he wants to do with his own
+time --- but what I'd recommend is that if "other projects" want to
+merge their history, it should be up to the upstream projects to
+massage their git history into something that his suitable for
+merging.  It doesn't scale to have core maintainers doing heavy-duty
+git history rewrites for everybody else.  Of course, if someone wants
+to volunteer their time to help other projects do this, that's
+completely up to them.
 
-
-
+	    	  	 	       	  - Ted
