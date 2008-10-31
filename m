@@ -1,40 +1,64 @@
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbYKCDEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461AbYJaJiS (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 31 Oct 2008 05:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbYJaJh5
+	id S1754598AbYKCDEi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 22:04:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbYKCDE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 05:37:57 -0400
-Received: from ag-out-0708.google.com ([72.14.246.250]:7584 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751353AbYJaJh4 (ORCPT
+	Sun, 2 Nov 2008 22:04:29 -0500
+Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:27038 "HELO
+	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754224AbYKCDE2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 05:37:56 -0400
-Message-ID: <de5125560810310237j13865c45p33c0985769bc3cd6@mail.gmail.com>
-Date: Fri, 31 Oct 2008 17:37:54 +0800
-From: "=?BIG5?B?s6+o2Ke1?=" <x2sh8k0q29n0q@gmail.com>
-To: linko.tsai@tw.mcd.com
-Subject: =?BIG5?B?pHPgvqzsp9669K22s12tcA==?=
+	Sun, 2 Nov 2008 22:04:28 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=CapkLVblaeeIe4j3fsVEcxwpN8ekq6HDUuvSF+4lpLm7Pug8yBV+y5YZR2coj35ykpzN9URrmlPs0P3vZAkFJSdbkkN+8Znt+lE+uo8koGoR8Vr0hVKpIx5Rie7rBTODHbOGHucKi5ym2ZwBItmgva8NJtRzi9g+TjWKq0WzDhI=  ;
+X-YMail-OSG: 9STrtMwVM1lxivr3feL9lRLKA5fLwC4ql.SCTsJk8a2moqSJRtyE_hUWYvWOkNfvmN.fmy9WauNMZ9Bj31ExVg0sqWkEsnLZtZGANjdFR6IqMEpDEpoRn11FqeD3JvH6PkwXNs_vhQnYU.c4aSY7y5j0DxkEm2L.EipmOGd9OZeTwgjCK8UZ4c4LFV0X
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Eric Sandeen <sandeen@redhat.com>
+Subject: Re: ext3: slow symlink corruption on umount...
+Date: Fri, 31 Oct 2008 20:47:20 +1100
+User-Agent: KMail/1.9.5
+Cc: Theodore Tso <tytso@mit.edu>, Arthur Jones <ajones@riverbed.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       sct@redhat.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <20081024183733.GA25797@ajones-laptop.nbttech.com> <20081029210949.GA27274@mit.edu> <4909B8D6.7070206@redhat.com>
+In-Reply-To: <4909B8D6.7070206@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=BIG5
-Content-Transfer-Encoding: base64
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200810312047.20306.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753461AbYJaJiS@vger.kernel.org>
 
-pHPgvqzsp9669K22s12tcAoKp9qtzKq6qXamrqFHq8ik4aq6qEOjuKXzpHCoxrGhoUGzo6xPpHPg
-vqq6pGqoxrGhCgqn2q3MpmKxwKVYpfi3fqfOtki69K+4pV2ndKtlpXi69K22rPykdSur4aV4ut6y
-erV7pqEKCq2trsmtrbZxsU2u17v5IKV1rW4kMjksOTAwCgoopmKwZaO4pn4xMDBNQqSjra2sebZx
-uvSvuKrFtqEpCgqn2q3MsLWquqSjpXWsT7r0r7ihQabTrE+xeqX4t36quqRKpGYKCqO4rdOmbqq6
-pfi3frr0r7i46q7Gp1muyafzt3OqurN0q9esT6vcrautbqq6Cgql+Ld+ou2kxqq6sKqrfr3ouc62
-pKFBpbSzebF6qrq69Lj0qvmtsQoKv+++3KRz4L6mqLROsXqqurnat1EKCqHjoeOh46HjoeOh46Hj
-oeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeMKUFM6IL11pFfByqqruvSvuKfa
-rczB2aVptKOo0ajqpWS+96juoUEKoUChQLtQvXWkV6ZDpkyxYrPmpf6s2bZXsNMrtmynvcO6tk8u
-Li4uLi61par3rHmqQbDIvveo7gqh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh
-46HjoeOh46HjoeOh46HjCgrFd6rvqNO5cayiuN+2wLFNrfuhXVNhbaFeoUcwOTgwMTE5ODEyIC8g
-MDkzODc2NDM5NQoKpFe69LdqtE2heaFAuvSttrNdrXCkc+C+oUCheqdZpWmn5Kjsp9qtzAoKoeOh
-46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh4wqlu6S9pXGl
-dKV+tKOo0cP2weSmclNFT7HGp8eqQbDICqtPw9KxTrF6qrq69K+4pmJZeCAvIEd4IC4uLrHGpmKy
-xKRArbYKoUChQKFAoUChQKFAoUChQKFAoUChQKFAoUChQKFAoUChQKFAIMV3qu+o07lxuN+w3SEh
-IQqh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjCg==
+On Friday 31 October 2008 00:38, Eric Sandeen wrote:
+> Theodore Tso wrote:
+> > On Wed, Oct 29, 2008 at 03:36:33PM -0500, Eric Sandeen wrote:
+> >> Sorry for the silence, this is a nice bug you've found :)
+> >>
+> >> I'll look into it ...
+> >
+> > You may want to take a quick look at this thread:
+> >
+> >     http://lkml.org/lkml/2008/10/28/413
+> >
+> > 					- Ted
+>
+> I thought about that, but at least at first glance I don't see how the
+> gfp mask change would cause this behavior...?  At least, I don't think
+> we're seeing recursion back into the filesystem... but I'll ponder that.
+
+That's definitely a bug which I'll have to fix for 2.6.28, but
+I agree it's unlikely to recurse frequently like this (would only
+happen under high memory pressure, and only when writeout from
+page reclaim happens).
+
+
+> (Also, Arthur reports seeing this as long ago as 2.6.9...)
+
+OK, well that would confirm it.
