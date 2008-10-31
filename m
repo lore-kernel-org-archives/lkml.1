@@ -1,247 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbYJaJcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbYJaJif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbYJaJcS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 05:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYJaJcE
+	id S1754149AbYJaJif (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 05:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbYJaJiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 05:32:04 -0400
-Received: from rrzmta1.rz.uni-regensburg.de ([194.94.155.51]:28360 "EHLO
-	rrzmta1.rz.uni-regensburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751353AbYJaJcB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 05:32:01 -0400
-X-Greylist: delayed 1590 seconds by postgrey-1.27 at vger.kernel.org; Fri, 31 Oct 2008 05:32:00 EDT
-From: "Ulrich Windl" <ulrich.windl@rz.uni-regensburg.de>
-Organization: Universitaetsklinikum Regensburg
-To: linux-kernel@vger.kernel.org
-Date: Fri, 31 Oct 2008 10:05:11 +0100
+	Fri, 31 Oct 2008 05:38:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51864 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752028AbYJaJiW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 05:38:22 -0400
+Date: Fri, 31 Oct 2008 10:38:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -v2] ring-buffer: add paranoid checks for loops
+Message-ID: <20081031093804.GF30317@elte.hu>
+References: <alpine.DEB.1.10.0810291439460.13214@gandalf.stny.rr.com> <20081030184552.GC17822@elte.hu> <alpine.DEB.1.10.0810302314460.26352@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Subject: Ideas on printk_ratelimit()
-Message-ID: <490AD85B.15446.FDA5D58@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
-X-mailer: Pegasus Mail for Windows (4.41)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Content-Conformance: HerringScan-0.29/Sophos-P=4.34.0+V=4.34+U=2.07.214+R=06 October 2008+T=515190@20081031.085044Z
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0810302314460.26352@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-ever since I saw the first implementation on printk_ratelimit, I felt like having 
-to comment on it. Eventuelly I do:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-The implementation uses a global setting to limit the number of messages output by 
-printk() to avoid overflowing the syslog.
+> +	/*
+> +	 * This should normally only loop twice. But because the
+> +	 * start of the reader inserts an empty page, it causes
+> +	 * a case where we will loop three times. There should be no
+> +	 * reason to loop four times (that I know of).
+> +	 */
+> +	if (unlikely(paranoid > 2)) {
+> +		RB_WARN_ON(cpu_buffer, 1);
+> +		reader = NULL;
+> +		goto out;
+> +	}
+> +	paranoid++;
 
-I felt a more object-oriented approach might make sense. In simple words: I'd 
-suggest to pass a pointer to some structure describing the throttling details for 
-the "event" (i.e. message). Thus one could throttle messages based on a subsystem 
-or message (event) base, not just globally.
+ok, the explanations look nice now.
 
-I did implement a thing like that in Perl, and I'll present it here for reference. 
-Maybe someone would like to implement it in C for the Linux kernel.
+A small nit - the above comment suggests that looping 4 times is the 
+anomaly - still the test is for paranoid > 2 ?
 
-I'm talking about "events" not "messages" from here on. My events have a state 
-which can be "off (-1)", "unknown (0)", and "on (1)". Detecting some problem would 
-set the event "on", while detecting the problem is gone would reset the event.
+> +	int paranoid = 0;
 
-For printk(), any attempt to print something could count as an event being 
-detected, and events are never reset.
+another small nit: i'd suggest to rename 'paranoid' to 'nr_loops' or 
+'nr_iterations' or so. It is the _condition_ that signals paranoia, 
+not the variable in itself - making the current patch look a bit 
+weird.
 
-So far we would just set and count things, but print nothing. In my little 
-framework, one would query the event whether it has been "acknowledged" (i.e. 
-printed). And there's the trick: The flag whether the event is acknowledged 
-depends on the time of the last event, the number of events counted so far, and 
-the time of the last acknowledge.
+>   again:
+> +	/*
+> +	 * We repeat when a timestamp is encountered. It is possible
+> +	 * to get multiple timestamps from an interrupt entering just
+> +	 * as one timestamp is about to be written. The max times
+> +	 * that this can happen is the number of nested interrupts we
+> +	 * can have.  10 should be more than enough.
+> +	 */
+> +	if (unlikely(paranoid > 10)) {
+> +		RB_WARN_ON(cpu_buffer, 1);
+> +		return NULL;
 
-OK, let's see some code:
+s/10 should be more than enough/Nesting higher than 10 is clearly 
+anomalous/
 
-# make new object with acknowledge interval definitions
-sub new($$)
-{
-    my ($class, $interval_def) = @_;
-    my $self = {
-        'intd' => $interval_def || DEFAULT_ACK,
-                                # interval difinitions for acknowledgements
-        'intr' => 0,            # current interval between acknowledgements
-        'stat' => 0,            # status (-1=off, 0=unknown, 1=on)
-        'frst' => -1,           # time of first occurrence
-        'last' => -1,           # time of lasst occurrence
-        'next' => -1,           # time of next occurrence
-        'ecnt' => 0             # event count
-    };
+> +	/*
+> +	 * We repeat when a timestamp is encountered. It is possible
+> +	 * to get multiple timestamps from an interrupt entering just
+> +	 * as one timestamp is about to be written. The max times
+> +	 * that this can happen is the number of nested interrupts we
+> +	 * can have.  10 should be more than enough.
+> +	 */
+> +	if (unlikely(paranoid > 10)) {
+> +		RB_WARN_ON(cpu_buffer, 1);
+> +		return NULL;
 
-    bless $self, $class;
-    $self->reset();
-    return $self;
-}
+ditto.
 
-The hash keys are the object's features (as described in the comments). Let's have 
-a look at my DEFAULT_ACK, the definitions of when to acknowledge events:
-
-# default acknowledgement interval, al list of [counter, pause]
-use constant DEFAULT_ACK => [[5, 0], [1, 10], [3, 15], [4, 30], [2, 60],
-                             [2, 300], [3, 900], [4, 1800], [4, 3600],
-                             [2, 2 * 3600], [4, 4 * 3600], [3, 8 * 3600],
-                             [7, 24 * 3600]];
-
-The list consists of pair elements. Each pair describes a count of events and the 
-ignore interval. Reading the list above means: For the first five events, ignore 
-none. then, for the next event, ignore for 10 seconds. Then after further three 
-events, ignore for 15 seconds, ... until finally ignoring events for a whole day.
-
-The 'intr' key defines the current interval in which events are ignored. The 
-reset() code is this:
-
-# reset state
-sub reset($)
-{
-    my ($self) = @_;
-
-    $self->{'ecnt'} = 0;
-    $self->{'stat'} = -1;
-    $self->{'intr'} = $self->{'intd'}->[0]->[1]; # first pair
-    $self->{'frst'} = -1;
-    $self->{'last'} = -1;
-    $self->{'next'} = -1;
-}
-
-Now it's time to look how I set up things if an event happens:
-
-# set event status, returning the number of non-off stati counted so far
-sub set($$)
-{
-    my ($self, $status) = @_;
-
-    if ($status > -1) {
-        my $t = time();
-
-        if ($self->{'ecnt'}++ == 0) {
-            $self->{'stat'} = $status;
-            $self->{'frst'} = $t;
-            $self->{'next'} = $t + $self->{'intr'};
-        }
-        $self->{'last'} = $t;
-        return $self->{'ecnt'};         # just because it's handy...
-    } else {
-         my $ecnt = $self->{'ecnt'};
-
-        if ($self->{'stat'} != -1) {
-            $self->reset();
-        }
-        return $ecnt;                   # just because it's handy...
-    }
-}
-
-So when setting an event, we count events, remember the status and time of the 
-event, and set up the acknowledgement deadline. When resetting, we forget about 
-everything, but return the events counted (just for convenience here).
-
-The obvious test whether an acknowledgement is (not) needed is this:
-# is event already acknowledged (i.e. to be ignored)?
-sub is_ack($)
-{
-    my ($self) = @_;
-
-    return $self->{'last'} < $self->{'next'};
-}
-
-Finally when ack-ing an event, this happens:
-
-# acknowledge event
-sub ack($)
-{
-    my ($self) = @_;
-
-    if ($self->{'stat'} != -1) {
-        $self->grow_interval()
-            if ($self->{'last'} > $self->{'next'});
-        $self->{'next'} = $self->{'last'} + $self->{'intr'};
-    }
-}
-
-So basically we refresh the time when the next acknowledgement is needed, possibly 
-updating the interval. So that code follows:
-
-# increase interval for acknowledgements
-sub grow_interval($)
-{
-    my ($self) = @_;
-    my $cnt = $self->{'ecnt'};
-
-    foreach my $ar (@{$self->{'intd'}}) {
-        if (($cnt -= $ar->[0]) < 0) {
-            $self->{'intr'} = $ar->[1];
-            return;
-        }
-    }
-    $self->{'intr'} = $self->{'intd'}->[-1]->[1];
-}
-
-So basically we use the event count to advance in the list far enough to get the 
-desired element. If not enough elements are there, use the last one. Note that 
-this is not highly efficient; to improve things, one could store a count of 
-"consumed events" and an index or pointer to the "current" element in the list to 
-speed up the decision.
-
-So basically that's all the event code. Now let's see a use sample:
-
-        $event->set($status);
-        if ($status != -1) {
-            $self->LogEvent($event, 2, 'W', $logger,
-                            "We have some problem (status is $status)");
-
-Eventually LogEvent does some magic with events:
-
-# Call Log() to print a message if the EventState needs an acknowledgement.
-sub LogEvent($$$$$@)
-{
-    my ($self, $evt, @rest) = @_;
-
-    unless ($evt->is_ack()) {
-        $self->Log(@rest);
-        $self->Log(0, 'I', undef, '(Event count', $evt->count(), '(' .
-                   strftime('%Y-%m-%d %X', localtime($evt->time_first())) .
-                   ' - ' .
-                   strftime('%Y-%m-%d %X', localtime($evt->time_last())) .
-                   ')')
-            if ($evt->count() > 1);
-        $evt->ack();
-        $self->Log(0, 'I', undef, '(Ignored until',
-                   strftime('%Y-%m-%d %X', localtime($evt->time_next_ack())) .
-                   ' [' . $evt->interval() . '])')
-            if ($evt->interval() > 0);
-    }
-}
-
-That code above means: If the event is not acknowledged, Log it and acknowledge 
-it. For convenience the count of events is printed together with the times when 
-the event occurred first and last (maybe use the duration instead), as well as an 
-announcement how long further events of the same type will be ignored.
-
-I've left out the obvious access functions for event attributes, but that should 
-be obvious.
-
-For the kernel, one would use ticks instead of seconds, most likely.
-
-If you like the idea, feel free to implement a new throttling printk() and maybe 
-some event handling framework.
-
-Finally here's a sample on how things might look in my log:
-Manager@host[PID](2008-10-30 08:15:24):W:(Monitor):(Some Problem)
-Manager@host[PID](2008-10-30 08:15:54):W:(Monitor):(Some Problem)
-Manager@host[PID]:I: (Event count 2 (2008-10-30 08:15:24 - 2008-10-30 08:15:54)
-Manager@host[PID](2008-10-30 08:16:24):W:(Monitor):(Some Problem)
-Manager@host[PID]:I: (Event count 3 (2008-10-30 08:15:24 - 2008-10-30 08:16:24)
-[...]
-Manager@host[PID](2008-10-30 08:17:54):W:(Monitor):(Some Problem)
-Manager@host[PID]:I: (Event count 6 (2008-10-30 08:15:24 - 2008-10-30 08:17:54)
-Manager@host[PID]:I: (Ignored until 2008-10-30 08:18:09 [15])
-
-Enjoy,
-Ulrich
-P.S. Not subscribed to the list, so if you want to reach me, use CC:
-P.P.S. No need to send SPAM, I have enough already ;-)
-
+	Ingo
