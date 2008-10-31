@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752768AbYJaOA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbYJaOHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752768AbYJaOA1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 10:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbYJaOAM
+	id S1752360AbYJaOHz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 10:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYJaOHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 10:00:12 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51147 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750868AbYJaOAL (ORCPT
+	Fri, 31 Oct 2008 10:07:46 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:37814 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751334AbYJaOHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 10:00:11 -0400
-Date: Fri, 31 Oct 2008 10:00:09 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -v2] ring-buffer: add paranoid checks for loops
-In-Reply-To: <20081031093804.GF30317@elte.hu>
-Message-ID: <alpine.DEB.1.10.0810310958400.13290@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0810291439460.13214@gandalf.stny.rr.com> <20081030184552.GC17822@elte.hu> <alpine.DEB.1.10.0810302314460.26352@gandalf.stny.rr.com> <20081031093804.GF30317@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 31 Oct 2008 10:07:45 -0400
+Date: Fri, 31 Oct 2008 10:07:42 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Meelis Roos <mroos@linux.ee>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: ext3 __log_wait_for_space: no transactions
+Message-ID: <20081031140742.GA17651@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Meelis Roos <mroos@linux.ee>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+References: <Pine.SOC.4.64.0810301147310.10441@math.ut.ee> <20081030142103.GA14744@mit.edu> <Pine.SOC.4.64.0810302133040.6084@math.ut.ee>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.SOC.4.64.0810302133040.6084@math.ut.ee>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 31 Oct 2008, Ingo Molnar wrote:
+On Thu, Oct 30, 2008 at 10:43:25PM +0200, Meelis Roos wrote:
+> > > __log_wait_for_space: no transactions
+> > > Aborting journal on device sda3.
+> > > ext3_abort called.
+> > > EXT3-fs error (device sda3): ext3_journal_start_sb: Detected aborted journal
+> > > Remounting filesystem read-only
+> > 
+> > How big is your journal?   What does this report?
+> > 
+> >     dumpe2fs -h /dev/sda3| grep Journal
 > 
-> > +	/*
-> > +	 * This should normally only loop twice. But because the
-> > +	 * start of the reader inserts an empty page, it causes
-> > +	 * a case where we will loop three times. There should be no
-> > +	 * reason to loop four times (that I know of).
-> > +	 */
-> > +	if (unlikely(paranoid > 2)) {
-> > +		RB_WARN_ON(cpu_buffer, 1);
-> > +		reader = NULL;
-> > +		goto out;
-> > +	}
-> > +	paranoid++;
-> 
-> ok, the explanations look nice now.
-> 
-> A small nit - the above comment suggests that looping 4 times is the 
-> anomaly - still the test is for paranoid > 2 ?
+> dumpe2fs 1.41.3 (12-Oct-2008)
+> Journal inode:            8
+> Journal backup:           inode blocks
+> Journal size:             32M
 
-Yes, that's because the variable started at 0. So > 2 really means the 
-loop iterated more than 3.
+You'll almost certainly get much better performance if you increase
+your journal size.  I should make the crash go away, too, although I
+would like to figure out what is going on so we can fix it.
 
-My last patch changed it to be a bit easier to understand...
+But, if you're tired of your machine crashing, it should be possible
+to deal with the problem by umounting the filesystem (assuming this is
+not your root filesystem; if it is, you'll have to boot into a rescue
+CD) and doing:
 
-   if (unlikely(++nr_loops > 3)) {
+tune2fs -O ^has_journal /dev/sda3
+tune2fs -O has_journal -J size=128 /dev/sda3
 
--- Steve
+In the meantime, you say this happens nightly.  Can you take a look at
+the time when it normally crashes and see if you can correlate it to
+some cron job activity?  Maybe that will be a hint as to what is
+triggering it.
 
+Thanks,
+
+						- Ted
