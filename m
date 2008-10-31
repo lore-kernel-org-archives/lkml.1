@@ -1,45 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751915AbYJaLU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751845AbYJaL1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751915AbYJaLU5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 07:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbYJaLUs
+	id S1751845AbYJaL1R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 07:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYJaL1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 07:20:48 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:2808 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750735AbYJaLUr (ORCPT
+	Fri, 31 Oct 2008 07:27:01 -0400
+Received: from lazybastard.de ([212.112.238.170]:60430 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750753AbYJaL1A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 07:20:47 -0400
-Date: Fri, 31 Oct 2008 11:20:46 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: Jonas Bonn <jonas.bonn@gmail.com>
-Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>, Jon Smirl <jonsmirl@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] API for system clocks (oscillators)
-Message-ID: <20081031112045.GC7516@sirena.org.uk>
-References: <7a6abd110810300741wf73f838laa3754e23c22baf3@mail.gmail.com> <9e4733910810300840v7cd45c2cu629d23a27a02c61a@mail.gmail.com> <7a6abd110810300927l428b11f3u509ad31364c08f1f@mail.gmail.com> <9e4733910810300939x40a7afear7a49557604ced628@mail.gmail.com> <7a6abd110810301001r7fc311adifd85fece79cb5c45@mail.gmail.com> <20081030201341.GD13678@sirena.org.uk> <7a6abd110810301315h4f486412u7d88b4a75fc764ef@mail.gmail.com>
+	Fri, 31 Oct 2008 07:27:00 -0400
+Date: Fri, 31 Oct 2008 12:26:51 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] B+Tree library
+Message-ID: <20081031112651.GD18182@logfs.org>
+References: <20081026124643.GA1328@logfs.org> <1225449314.3535.23.camel@johannes.berg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <7a6abd110810301315h4f486412u7d88b4a75fc764ef@mail.gmail.com>
-X-Cookie: A man's house is his hassle.
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1225449314.3535.23.camel@johannes.berg>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 09:15:54PM +0100, Jonas Bonn wrote:
+On Fri, 31 October 2008 11:35:14 +0100, Johannes Berg wrote:
+> 
+> [looks like this hitting LWN means everyone suddenly found it...]
 
-> > BTW, on this point I don't know if you've seen Dmitry Baryshkov's work
-> > on a generic implementation of the existing clk API.
+It did?
 
-> No, I haven't... where could I find more information on this?
+> > The one aspect where my implementation is actually nice is in allowing
+> > variable key length.  Btree keys are interpreted as an array of unsigned
+> > long.  So by passing the correct geometry to the core functions, it is
+> > possible to handle 32bit, 64bit or 128bit btrees, which logfs uses.  If
+> > so desired, any other weird data format can be used as well (Zach, are
+> > you reading this?).
+> 
+> Would there be an easy way to use 48-bit keys? Or variable length keys?
 
-Here's at least one posting of the series:
+Variable as in one implementation for several trees with different
+sizes, yes.  Variable as in one tree with differently sized keys, no.
 
-	http://lkml.org/lkml/2008/6/26/279
+With the existing code, 48bit keys would need to be expressed as an
+array of longs, thereby growing to 64bit.  Alternatively one could
+replace the longset/longcmp/longcpy with memset/memcmp/memcpy.
 
-No idea if it was the most recent.  I've also CCed in Dmitry here.
+> > So would something like this be merged once some users are identified?
+> > Would it be useful for anything but logfs?  Or am I plain nuts?
+> 
+> I could imagine using it instead of the hash-table for stations and APs
+> in the wireless code, stations are identified by the MAC address (48
+> bit) and APs (BSSs) are identified by their BSSID+SSID (or mesh ID), so
+> variable length. Currently we use a hash table with 256 slots which is
+> quite large for the typical case of mostly less than a hundred entries.
+
+MAC address wouldn't be a problem.  For BSSID+SSID one could just keep
+the hashing and use the btree as an 'implementation detail' of the
+'hashtable'.  Beware that I don't allow two identical keys.  The
+implications of that make my toenails curl up.
+
+> > This implementation is extremely simple.  It splits nodes when they
+> > overflow.  It does not move elements to neighboring nodes.  It does not
+> > try fancy 2:3 splits.  It does not even merge nodes when they shrink,
+> > making degenerate cases possible.  And it requires callers to do
+> > tree-global locking.  In effect, it will be hard to find anything less
+> > sophisticated.
+> 
+> I think the wireless case would probably want to have real shrinking
+> because it's well possible that you're moving, with your laptop, from an
+> area with a large number of APs to say your home out in the countryside
+> that only has your single AP.
+
+Indeed.
+
+Jörn
+
+-- 
+Joern's library part 7:
+http://www.usenix.org/publications/library/proceedings/neworl/full_papers/mckusick.a
