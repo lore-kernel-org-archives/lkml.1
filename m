@@ -1,57 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752238AbYJaNDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669AbYJaNEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752238AbYJaNDx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 09:03:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYJaNDo
+	id S1752669AbYJaNEZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 09:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYJaNEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 09:03:44 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55362 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751302AbYJaNDo (ORCPT
+	Fri, 31 Oct 2008 09:04:16 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:41845 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751092AbYJaNEP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 09:03:44 -0400
-Date: Fri, 31 Oct 2008 08:03:41 -0500
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] small optimization to update_curr_rt
-Message-ID: <20081031130341.GA12018@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 31 Oct 2008 09:04:15 -0400
+Date: Fri, 31 Oct 2008 11:05:02 -0200
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: linux-wireless@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, willy@linux.intel.com,
+       lrodriguez@atheros.com
+Subject: ath5k gets lost with eeepc-laptop removal
+Message-ID: <20081031110502.18e33eba@doriath.conectiva>
+Organization: Mandriva
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.4; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A very minor improvement, but might it be better to check sched_rt_runtime(rt_rq)
-before taking the rt_runtime_lock?
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+ Hi guys,
 
---
+ If I do a 'rmmod eeepc-laptop', while connected to my AP, I get the
+following error messages from ath5k:
 
- kernel/sched_rt.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+"""
+ath5k phy0: noise floor calibration timeout (2417MHz)
+ath5k phy0: failed to wakeup the MAC Chip
+ath5k phy0: can't reset hardware (-5)
+ath5k phy0: failed to wakeup the MAC Chip
+ath5k phy0: can't reset hardware (-5)
+wlan0: No ProbeResp from current AP 00:1d:0f:e9:c7:c0 - assume out of range
+ath5k phy0: failed to wakeup the MAC Chip
+ath5k phy0: ath5k_chan_set: unable to reset channel (2412 Mhz)
+wlan0: failed to set freq to 2412 MHz for scan
+ath5k phy0: failed to wakeup the MAC Chip
+ath5k phy0: ath5k_chan_set: unable to reset channel (2417 Mhz)
+wlan0: failed to set freq to 2417 MHz for scan
+ath5k phy0: failed to wakeup the MAC Chip
+ath5k phy0: ath5k_chan_set: unable to reset channel (2422 Mhz)
+wlan0: failed to set freq to 2422 MHz for scan
+ath5k phy0: failed to wakeup the MAC Chip
+ath5k phy0: ath5k_chan_set: unable to reset channel (2427 Mhz)
+wlan0: failed to set freq to 2427 MHz for scan
+ath5k phy0: failed to wakeup the MAC Chip
+ath5k phy0: ath5k_chan_set: unable to reset channel (2432 Mhz)
+wlan0: failed to set freq to 2432 MHz for scan
+wlan0: failed to set freq to 2437 MHz for scan
+wlan0: failed to set freq to 2442 MHz for scan
+wlan0: failed to set freq to 2447 MHz for scan
+wlan0: failed to set freq to 2452 MHz for scan
+wlan0: failed to set freq to 2457 MHz for scan
+wlan0: failed to set freq to 2462 MHz for scan
+wlan0: failed to set freq to 2467 MHz for scan
+wlan0: failed to set freq to 2472 MHz for scan
+wlan0: failed to set freq to 2484 MHz for scan
+wlan0: failed to restore operational channel after scan
+wlan0: authenticate with AP 00:1d:0f:e9:c7:c0
+wlan0: authenticate with AP 00:1d:0f:e9:c7:c0
+wlan0: authenticate with AP 00:1d:0f:e9:c7:c0
+wlan0: authentication with AP 00:1d:0f:e9:c7:c0 timed out
+"""
 
-Index: linux/kernel/sched_rt.c
-===================================================================
---- linux.orig/kernel/sched_rt.c	2008-10-22 16:10:03.000000000 -0500
-+++ linux/kernel/sched_rt.c	2008-10-31 07:57:19.000000000 -0500
-@@ -537,13 +537,13 @@ static void update_curr_rt(struct rq *rq
- 	for_each_sched_rt_entity(rt_se) {
- 		rt_rq = rt_rq_of_se(rt_se);
- 
--		spin_lock(&rt_rq->rt_runtime_lock);
- 		if (sched_rt_runtime(rt_rq) != RUNTIME_INF) {
-+			spin_lock(&rt_rq->rt_runtime_lock);
- 			rt_rq->rt_time += delta_exec;
- 			if (sched_rt_runtime_exceeded(rt_rq))
- 				resched_task(curr);
-+			spin_unlock(&rt_rq->rt_runtime_lock);
- 		}
--		spin_unlock(&rt_rq->rt_runtime_lock);
- 	}
- }
- 
+ Then I lost my wireless connection.
+
+ I'm running latest Linus git tree (2.6.28-rc2) on a Eeepc 701.
+
+ The problem doesn't happen on 2.6.27.4, but as 2.6.28-rc1 doesn't
+boot on this machine, it would be a bit difficult to bisect it.
+
+ Thanks.
+
+-- 
+Luiz Fernando N. Capitulino
