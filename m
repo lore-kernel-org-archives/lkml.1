@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbYJaLOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752225AbYJaLP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751893AbYJaLOj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 07:14:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbYJaLOb
+	id S1752225AbYJaLP2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 07:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751041AbYJaLPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 07:14:31 -0400
-Received: from ozlabs.org ([203.10.76.45]:36230 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750761AbYJaLOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 07:14:30 -0400
+	Fri, 31 Oct 2008 07:15:10 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:33556 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750790AbYJaLPJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 07:15:09 -0400
+Date: Fri, 31 Oct 2008 13:15:00 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: David Miller <davem@davemloft.net>, shemminger@vyatta.com, zbr@ioremap.net,
+       rjw@sisk.pl, mingo@elte.hu, s0mbre@tservice.net.ru,
+       a.p.zijlstra@chello.nl, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>, efault@gmx.de,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+In-Reply-To: <490AE792.60200@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0810311313060.7072@wrl-59.cs.helsinki.fi>
+References: <Pine.LNX.4.64.0810302047030.22084@wrl-59.cs.helsinki.fi>
+ <20081031.005219.141937694.davem@davemloft.net>
+ <Pine.LNX.4.64.0810311119510.7072@wrl-59.cs.helsinki.fi>
+ <20081031.025159.51432990.davem@davemloft.net> <490AE1CD.9040207@cosmosbay.com>
+ <Pine.LNX.4.64.0810311300130.7072@wrl-59.cs.helsinki.fi> <490AE792.60200@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18698.59327.927555.732608@cargo.ozlabs.ibm.com>
-Date: Fri, 31 Oct 2008 22:10:55 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, benh@kernel.crashing.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: 2.6.28-rc1: NVRAM being corrupted on ppc64 preventing boot (bisected)
-In-Reply-To: <20081031103646.GA24395@csn.ul.ie>
-References: <alpine.LFD.2.00.0810232028500.3287@nehalem.linux-foundation.org>
-	<20081030142632.GA15645@csn.ul.ie>
-	<18698.7794.500191.189515@cargo.ozlabs.ibm.com>
-	<20081031103646.GA24395@csn.ul.ie>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1642721910-1225451700=:7072"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mel Gorman writes:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> Yaboot in my case and I've heard it affected a DVD installation. I don't
-> know for sure if it affects netboot but as I think it's something the
-> kernel is doing, it probably doesn't matter how it gets loaded?
+---696208474-1642721910-1225451700=:7072
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 
-What changed in that commit was the contents of a couple of structures
-that the firmware looks at to see what the kernel wants from
-firmware.  Specifically the change was to say that the kernel (or
-really the zImage wrapper) would like the firmware to be based at the
-32MB point (which is what AIX uses) rather than 12MB (which was the
-default on older machines).
+On Fri, 31 Oct 2008, Eric Dumazet wrote:
 
-So, as I understand it, it's not anything the kernel is actively
-doing, it's how the firmware is reacting to what the kernel says it
-wants.  And since we are requesting the same value as AIX (as far as I
-know) I'm really surprised it caused problems.
+> Ilpo Järvinen a écrit :
+> > On Fri, 31 Oct 2008, Eric Dumazet wrote:
+> > 
+> > > David Miller a écrit :
+> > > > From: "Ilpo Järvinen" <ilpo.jarvinen@helsinki.fi>
+> > > > Date: Fri, 31 Oct 2008 11:40:16 +0200 (EET)
+> > > > > > Let me remind that it is just a single process, so no ping-pong 
+> >> & other
+> > > > > lock related cache effects should play any significant role here, 
+> > > no? (I'm
+> > > > > no expert though :-)).
+> > > > > Not locks or ping-pongs perhaps, I guess.  So it just sends and
+> > > > receives over a socket, implementing both ends of the communication
+> > > > in the same process?
+> > > > > If hash chain conflicts do happen for those 2 sockets, just 
+> > > traversing
+> > > > the chain 2 entries deep could show up.
+> > >
+> > > tbench is very sensible to cache line ping-pongs (on SMP machines of
+> > > course)
+> > 
+> > ...Sorry to disappoint you but we were discussion there on my AIM9 tcp_test
+> > results :-).
+> > 
+> 
+> Well, before you added AIM9 on this topic, we were focusing on tbench :)
+>
+> Sorry to disappoint you :)
 
-We can revert that commit, but I still need to solve the problem that
-the distros are facing, namely that their installer kernel + initramfs
-images are now bigger than 12MB and can't be loaded if the firmware is
-based at 12MB.  That's why I really want to understand the problem in
-more detail.
+It's all Stephen's fault, he added port randomization first... ;-)
 
-> It's been pointed out that it can be "fixed" by upgrading the firmware but
-> surely we can avoid breaking the machine in the first place?
-
-Have you upgraded the firmware on the machine you saw this problem on?
-If not, would you be willing to run some tests for me?
-
-Paul.
+-- 
+ i.
+---696208474-1642721910-1225451700=:7072--
