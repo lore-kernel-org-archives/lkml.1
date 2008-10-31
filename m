@@ -1,216 +1,300 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753736AbYJaCKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753600AbYJaCLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753736AbYJaCKe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 22:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbYJaCKZ
+	id S1753600AbYJaCLY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 22:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbYJaCLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 22:10:25 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:55176 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750993AbYJaCKY (ORCPT
+	Thu, 30 Oct 2008 22:11:13 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:47099 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751554AbYJaCLM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 22:10:24 -0400
-From: Trent Piepho <tpiepho@freescale.com>
-To: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Trent Piepho <tpiepho@freescale.com>
-Subject: [PATCH v2] of_gpio: Return GPIO flags from of_get_gpio()
-Date: Thu, 30 Oct 2008 19:03:09 -0700
-Message-Id: <1225418589-8545-1-git-send-email-tpiepho@freescale.com>
-X-Mailer: git-send-email 1.5.4.1
-In-Reply-To: <20081030111500.GB22008@oksana.dev.rtsoft.ru>
-References: <20081030111500.GB22008@oksana.dev.rtsoft.ru>
+	Thu, 30 Oct 2008 22:11:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=CMCsXxbFP4OXbojU/jVUFvvDtRCOGFUlCBnVyM5afMvz2c3cNTpMHsrsXgiqpcwIJr
+         N5IL1smlWWiAzrq1sreQfZYz9fsvZZHh+BHqh3UR/7BuK6K+jdUttlXdIkfnRdsq3B5L
+         Jl9ChpvzentFyPXFYh1cbwy8FVNlpMXs6J5kY=
+Message-ID: <4e5ebad50810301911mb4eed2du398826e79b0f2e28@mail.gmail.com>
+Date: Fri, 31 Oct 2008 10:11:11 +0800
+From: "Sonic Zhang" <sonic.adi@gmail.com>
+To: "Jason Wessel" <jason.wessel@windriver.com>
+Subject: Re: [PATCH] [kgdb] Switch master cpu after gdb thread command for SMP (v3)
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "kgdb mailing list" <kgdb-bugreport@lists.sourceforge.net>
+In-Reply-To: <1224664817.15846.1.camel@eight.analog.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1224664817.15846.1.camel@eight.analog.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The device binding spec for OF GPIOs defines a flags field, but there is
-currently no way to get it.  This patch adds a parameter to of_get_gpio()
-where the flags will be returned if non-NULL.  of_get_gpio() in turn passes
-the parameter to the of_gpio_chip's xlate method, which can extract any
-flags present from the gpio_spec.
+Hi Jason,
 
-The default (and currently only) of_gpio_chip xlate method,
-of_gpio_simple_xlate(), is modified to do this.
+Does this patch applied on your developing tree well? Any comments?
 
-Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
-Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
-Since this patch changes an API, it would be nice to get it into powerpc-next
-soon so that people who have new patches that use this API, like Anton, can
-base off it.
+Thanks
 
- drivers/mtd/nand/fsl_upm.c              |    2 +-
- drivers/net/fs_enet/fs_enet-main.c      |    2 +-
- drivers/net/phy/mdio-ofgpio.c           |    4 ++--
- drivers/of/gpio.c                       |   13 ++++++++++---
- drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
- include/linux/of_gpio.h                 |   21 +++++++++++++++++----
- 6 files changed, 32 insertions(+), 12 deletions(-)
+Sonic
 
-diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
-index 024e3ff..a25d962 100644
---- a/drivers/mtd/nand/fsl_upm.c
-+++ b/drivers/mtd/nand/fsl_upm.c
-@@ -218,7 +218,7 @@ static int __devinit fun_probe(struct of_device *ofdev,
- 	}
- 	fun->upm_cmd_offset = *prop;
- 
--	fun->rnb_gpio = of_get_gpio(ofdev->node, 0);
-+	fun->rnb_gpio = of_get_gpio(ofdev->node, 0, NULL);
- 	if (fun->rnb_gpio >= 0) {
- 		ret = gpio_request(fun->rnb_gpio, ofdev->dev.bus_id);
- 		if (ret) {
-diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-index cb51c1f..5a3c7ee 100644
---- a/drivers/net/fs_enet/fs_enet-main.c
-+++ b/drivers/net/fs_enet/fs_enet-main.c
-@@ -994,7 +994,7 @@ static int __devinit find_phy(struct device_node *np,
- 		goto out_put_phy;
- 	}
- 
--	bus_id = of_get_gpio(mdionode, 0);
-+	bus_id = of_get_gpio(mdionode, 0, NULL);
- 	if (bus_id < 0) {
- 		struct resource res;
- 		ret = of_address_to_resource(mdionode, 0, &res);
-diff --git a/drivers/net/phy/mdio-ofgpio.c b/drivers/net/phy/mdio-ofgpio.c
-index 2ff9775..e3757c6 100644
---- a/drivers/net/phy/mdio-ofgpio.c
-+++ b/drivers/net/phy/mdio-ofgpio.c
-@@ -78,8 +78,8 @@ static int __devinit mdio_ofgpio_bitbang_init(struct mii_bus *bus,
- {
- 	struct mdio_gpio_info *bitbang = bus->priv;
- 
--	bitbang->mdc = of_get_gpio(np, 0);
--	bitbang->mdio = of_get_gpio(np, 1);
-+	bitbang->mdc = of_get_gpio(np, 0, NULL);
-+	bitbang->mdio = of_get_gpio(np, 1, NULL);
- 
- 	if (bitbang->mdc < 0 || bitbang->mdio < 0)
- 		return -ENODEV;
-diff --git a/drivers/of/gpio.c b/drivers/of/gpio.c
-index 7cd7301..ae14215 100644
---- a/drivers/of/gpio.c
-+++ b/drivers/of/gpio.c
-@@ -22,11 +22,12 @@
-  * of_get_gpio - Get a GPIO number from the device tree to use with GPIO API
-  * @np:		device node to get GPIO from
-  * @index:	index of the GPIO
-+ * @flags:	GPIO's flags are returned here if non-NULL
-  *
-  * Returns GPIO number to use with Linux generic GPIO API, or one of the errno
-  * value on the error condition.
-  */
--int of_get_gpio(struct device_node *np, int index)
-+int of_get_gpio(struct device_node *np, int index, enum of_gpio_flags *flags)
- {
- 	int ret;
- 	struct device_node *gc;
-@@ -59,7 +60,9 @@ int of_get_gpio(struct device_node *np, int index)
- 		goto err1;
- 	}
- 
--	ret = of_gc->xlate(of_gc, np, gpio_spec);
-+	if (flags)
-+		*flags = 0;
-+	ret = of_gc->xlate(of_gc, np, gpio_spec, flags);
- 	if (ret < 0)
- 		goto err1;
- 
-@@ -77,19 +80,23 @@ EXPORT_SYMBOL(of_get_gpio);
-  * @of_gc:	pointer to the of_gpio_chip structure
-  * @np:		device node of the GPIO chip
-  * @gpio_spec:	gpio specifier as found in the device tree
-+ * @flags:	if non-NULL flags are returned here
-  *
-  * This is simple translation function, suitable for the most 1:1 mapped
-  * gpio chips. This function performs only one sanity check: whether gpio
-  * is less than ngpios (that is specified in the gpio_chip).
-  */
- int of_gpio_simple_xlate(struct of_gpio_chip *of_gc, struct device_node *np,
--			 const void *gpio_spec)
-+			 const void *gpio_spec, enum of_gpio_flags *flags)
- {
- 	const u32 *gpio = gpio_spec;
- 
- 	if (*gpio > of_gc->gc.ngpio)
- 		return -EINVAL;
- 
-+	if (flags && of_gc->gpio_cells > 1)
-+		*flags = gpio[1];
-+
- 	return *gpio;
- }
- EXPORT_SYMBOL(of_gpio_simple_xlate);
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-index bde4b4b..7835cd4 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -1094,7 +1094,7 @@ static int cpm_uart_init_port(struct device_node *np,
- 	}
- 
- 	for (i = 0; i < NUM_GPIOS; i++)
--		pinfo->gpios[i] = of_get_gpio(np, i);
-+		pinfo->gpios[i] = of_get_gpio(np, i, NULL);
- 
- 	return cpm_uart_request_port(&pinfo->port);
- 
-diff --git a/include/linux/of_gpio.h b/include/linux/of_gpio.h
-index 67db101..d611746 100644
---- a/include/linux/of_gpio.h
-+++ b/include/linux/of_gpio.h
-@@ -20,13 +20,23 @@
- #ifdef CONFIG_OF_GPIO
- 
- /*
-+ * Flags as returned by OF GPIO chip's xlate method.
-+ * The GPIO specifier in the OF device tree does not need to use this
-+ * same format for its flags, but it's convenient if it does.  For
-+ * example, the of_mm_gpio_chip driver works this way.
-+ */
-+enum of_gpio_flags {
-+	OF_GPIO_ACTIVE_LOW = 1,
-+};
-+
-+/*
-  * Generic OF GPIO chip
-  */
- struct of_gpio_chip {
- 	struct gpio_chip gc;
- 	int gpio_cells;
- 	int (*xlate)(struct of_gpio_chip *of_gc, struct device_node *np,
--		     const void *gpio_spec);
-+		     const void *gpio_spec, enum of_gpio_flags *flags);
- };
- 
- static inline struct of_gpio_chip *to_of_gpio_chip(struct gpio_chip *gc)
-@@ -50,16 +60,19 @@ static inline struct of_mm_gpio_chip *to_of_mm_gpio_chip(struct gpio_chip *gc)
- 	return container_of(of_gc, struct of_mm_gpio_chip, of_gc);
- }
- 
--extern int of_get_gpio(struct device_node *np, int index);
-+extern int of_get_gpio(struct device_node *np, int index,
-+		       enum of_gpio_flags *flags);
- extern int of_mm_gpiochip_add(struct device_node *np,
- 			      struct of_mm_gpio_chip *mm_gc);
- extern int of_gpio_simple_xlate(struct of_gpio_chip *of_gc,
- 				struct device_node *np,
--				const void *gpio_spec);
-+				const void *gpio_spec,
-+				enum of_gpio_flags *flags);
- #else
- 
- /* Drivers may not strictly depend on the GPIO support, so let them link. */
--static inline int of_get_gpio(struct device_node *np, int index)
-+static inline int of_get_gpio(struct device_node *np, int index,
-+			      enum of_gpio_flags *flags)
- {
- 	return -ENOSYS;
- }
--- 
-1.5.4.3
-
+On Wed, Oct 22, 2008 at 4:40 PM, sonic zhang <sonic.adi@gmail.com> wrote:
+>   In blackfin SMP architecture, different core has its own L1 SRAM and MMR
+>   memory, which code running on the other core can't access. In current kgdb
+>   impelemntation, cpus are represented by thread with minus prefix.
+>
+> If user run thread command in gdb to switch to the thread of the other cpu,
+> kgdb should:
+> 1. send IPI signal to master cpu
+> 2. release the specific passive cpu waiting in IPI handler
+> 3. exit kgdb exception loop on master cpu and trap into kgdb wait in IPI handler
+> 4. trap the released passive cpu into kgdb exception in IPI handler
+>
+> Signed-off-by: Sonic Zhang <sonic.adi@gmail.com>
+> ---
+>  include/linux/kgdb.h |   16 +++++++++++-
+>  kernel/kgdb.c        |   66 +++++++++++++++++++++++++++++++++++++++++++-------
+>  2 files changed, 72 insertions(+), 10 deletions(-)
+>
+> diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
+> index 6adcc29..664e396 100644
+> --- a/include/linux/kgdb.h
+> +++ b/include/linux/kgdb.h
+> @@ -106,7 +106,8 @@ struct kgdb_bkpt {
+>  # define KGDB_MAX_BREAKPOINTS  1000
+>  #endif
+>
+> -#define KGDB_HW_BREAKPOINT     1
+> +#define KGDB_HW_BREAKPOINT     0x1
+> +#define KGDB_THR_PROC_SWAP     0x2
+>
+>  /*
+>  * Functions each KGDB-supporting architecture must provide:
+> @@ -203,6 +204,19 @@ kgdb_arch_handle_exception(int vector, int signo, int err_code,
+>  */
+>  extern void kgdb_roundup_cpus(unsigned long flags);
+>
+> +/**
+> + *     kgdb_roundup_cpu - Get spcific CPU into a holding pattern
+> + *     @cpu: Specific cpu id
+> + *     @flags: Current IRQ state
+> + *
+> + *     On SMP systems, we need to switch cpu from current active one to
+> + *     the other passive one. This get current active CPU into a known state
+> + *     in kgdb_wait().
+> + *
+> + *     On non-SMP systems, this is not called.
+> + */
+> +extern void kgdb_roundup_cpu(int cpu, unsigned long flags);
+> +
+>  /* Optional functions. */
+>  extern int kgdb_validate_break_address(unsigned long addr);
+>  extern int kgdb_arch_set_breakpoint(unsigned long addr, char *saved_instr);
+> diff --git a/kernel/kgdb.c b/kernel/kgdb.c
+> index e4dcfb2..277986d 100644
+> --- a/kernel/kgdb.c
+> +++ b/kernel/kgdb.c
+> @@ -565,6 +565,7 @@ static void kgdb_wait(struct pt_regs *regs)
+>  {
+>        unsigned long flags;
+>        int cpu;
+> +       struct task_struct *thread;
+>
+>        local_irq_save(flags);
+>        cpu = raw_smp_processor_id();
+> @@ -577,6 +578,8 @@ static void kgdb_wait(struct pt_regs *regs)
+>        smp_wmb();
+>        atomic_set(&cpu_in_kgdb[cpu], 1);
+>
+> +       kgdb_disable_hw_debug(regs);
+> +
+>        /* Wait till primary CPU is done with debugging */
+>        while (atomic_read(&passive_cpu_wait[cpu]))
+>                cpu_relax();
+> @@ -584,6 +587,16 @@ static void kgdb_wait(struct pt_regs *regs)
+>        kgdb_info[cpu].debuggerinfo = NULL;
+>        kgdb_info[cpu].task = NULL;
+>
+> +       /* Trap into kgdb as the active CPU if gdb asks to switch. */
+> +       thread = getthread(regs, -raw_smp_processor_id() - 2);
+> +       if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) &&
+> +               kgdb_contthread && kgdb_contthread == thread) {
+> +               kgdb_breakpoint();
+> +               clocksource_touch_watchdog();
+> +               local_irq_restore(flags);
+> +               return;
+> +       }
+> +
+>        /* fix up hardware debug registers on local cpu */
+>        if (arch_kgdb_ops.correct_hw_break)
+>                arch_kgdb_ops.correct_hw_break();
+> @@ -1066,13 +1079,16 @@ static void gdb_cmd_query(struct kgdb_state *ks)
+>                        sprintf(tmpstr, "shadowCPU%d",
+>                                        (int)(-ks->threadid - 2));
+>                        kgdb_mem2hex(tmpstr, remcom_out_buffer, strlen(tmpstr));
+> +
+> +                       if (arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP)
+> +                               ks->thr_query = 1;
+>                }
+>                break;
+>        }
+>  }
+>
+>  /* Handle the 'H' task query packets */
+> -static void gdb_cmd_task(struct kgdb_state *ks)
+> +static int gdb_cmd_task(struct kgdb_state *ks)
+>  {
+>        struct task_struct *thread;
+>        char *ptr;
+> @@ -1089,6 +1105,15 @@ static void gdb_cmd_task(struct kgdb_state *ks)
+>                kgdb_usethread = thread;
+>                ks->kgdb_usethreadid = ks->threadid;
+>                strcpy(remcom_out_buffer, "OK");
+> +#ifdef CONFIG_SMP
+> +               if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) &&
+> +                       !ks->thr_query && ks->kgdb_usethreadid < -1 &&
+> +                       - ks->kgdb_usethreadid - 2 != raw_smp_processor_id()) {
+> +                       kgdb_roundup_cpu(raw_smp_processor_id(), 0);
+> +                       kgdb_contthread = kgdb_usethread;
+> +                       return 1;
+> +               }
+> +#endif
+>                break;
+>        case 'c':
+>                ptr = &remcom_in_buffer[2];
+> @@ -1106,6 +1131,8 @@ static void gdb_cmd_task(struct kgdb_state *ks)
+>                strcpy(remcom_out_buffer, "OK");
+>                break;
+>        }
+> +
+> +       return 0;
+>  }
+>
+>  /* Handle the 'T' thread query packets */
+> @@ -1114,6 +1141,9 @@ static void gdb_cmd_thread(struct kgdb_state *ks)
+>        char *ptr = &remcom_in_buffer[1];
+>        struct task_struct *thread;
+>
+> +       if (arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP)
+> +               ks->thr_query = 0;
+> +
+>        kgdb_hex2long(&ptr, &ks->threadid);
+>        thread = getthread(ks->linux_regs, ks->threadid);
+>        if (thread)
+> @@ -1223,7 +1253,12 @@ static int gdb_serial_stub(struct kgdb_state *ks)
+>        /* Clear the out buffer. */
+>        memset(remcom_out_buffer, 0, sizeof(remcom_out_buffer));
+>
+> -       if (kgdb_connected) {
+> +       if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) && kgdb_contthread) {
+> +               remcom_out_buffer[0] = 'O';
+> +               remcom_out_buffer[1] = 'K';
+> +               remcom_out_buffer[2] = 0;
+> +               put_packet(remcom_out_buffer);
+> +       } else if (kgdb_connected) {
+>                unsigned char thref[8];
+>                char *ptr;
+>
+> @@ -1238,6 +1273,7 @@ static int gdb_serial_stub(struct kgdb_state *ks)
+>                put_packet(remcom_out_buffer);
+>        }
+>
+> +       kgdb_contthread = current;
+>        kgdb_usethread = kgdb_info[ks->cpu].task;
+>        ks->kgdb_usethreadid = shadow_pid(kgdb_info[ks->cpu].task->pid);
+>        ks->pass_exception = 0;
+> @@ -1284,7 +1320,8 @@ static int gdb_serial_stub(struct kgdb_state *ks)
+>                        gdb_cmd_query(ks);
+>                        break;
+>                case 'H': /* task related */
+> -                       gdb_cmd_task(ks);
+> +                       if (gdb_cmd_task(ks))
+> +                               goto kgdb_exit;
+>                        break;
+>                case 'T': /* Query thread status */
+>                        gdb_cmd_thread(ks);
+> @@ -1324,6 +1361,7 @@ default_handle:
+>                        if (error >= 0 || remcom_in_buffer[0] == 'D' ||
+>                            remcom_in_buffer[0] == 'k') {
+>                                error = 0;
+> +                               kgdb_contthread = NULL;
+>                                goto kgdb_exit;
+>                        }
+>
+> @@ -1464,11 +1502,15 @@ acquirelock:
+>         * Get the passive CPU lock which will hold all the non-primary
+>         * CPU in a spin state while the debugger is active
+>         */
+> -       if (!kgdb_single_step) {
+> +       if (!kgdb_single_step && !kgdb_contthread) {
+>                for (i = 0; i < NR_CPUS; i++)
+>                        atomic_set(&passive_cpu_wait[i], 1);
+>        }
+>
+> +       if (kgdb_contthread)
+> +               atomic_set(&passive_cpu_wait[raw_smp_processor_id()], 1);
+> +
+> +
+>        /*
+>         * spin_lock code is good enough as a barrier so we don't
+>         * need one here:
+> @@ -1477,7 +1519,7 @@ acquirelock:
+>
+>  #ifdef CONFIG_SMP
+>        /* Signal the other CPUs to enter kgdb_wait() */
+> -       if ((!kgdb_single_step) && kgdb_do_roundup)
+> +       if ((!kgdb_single_step && !kgdb_contthread) && kgdb_do_roundup)
+>                kgdb_roundup_cpus(flags);
+>  #endif
+>
+> @@ -1496,7 +1538,6 @@ acquirelock:
+>        kgdb_post_primary_code(ks->linux_regs, ks->ex_vector, ks->err_code);
+>        kgdb_deactivate_sw_breakpoints();
+>        kgdb_single_step = 0;
+> -       kgdb_contthread = current;
+>        exception_level = 0;
+>
+>        /* Talk to debugger with gdbserial protocol */
+> @@ -1510,7 +1551,14 @@ acquirelock:
+>        kgdb_info[ks->cpu].task = NULL;
+>        atomic_set(&cpu_in_kgdb[ks->cpu], 0);
+>
+> -       if (!kgdb_single_step) {
+> +#ifdef CONFIG_SMP
+> +       i = -(ks->kgdb_usethreadid + 2);
+> +       if ((arch_kgdb_ops.flags & KGDB_THR_PROC_SWAP) &&
+> +               kgdb_contthread && i != cpu) {
+> +               atomic_set(&passive_cpu_wait[i], 0);
+> +       }
+> +#endif
+> +       if (!kgdb_single_step && !kgdb_contthread) {
+>                for (i = NR_CPUS-1; i >= 0; i--)
+>                        atomic_set(&passive_cpu_wait[i], 0);
+>                /*
+> @@ -1536,9 +1584,9 @@ kgdb_restore:
+>  int kgdb_nmicallback(int cpu, void *regs)
+>  {
+>  #ifdef CONFIG_SMP
+> -       if (!atomic_read(&cpu_in_kgdb[cpu]) &&
+> +       if (!atomic_read(&cpu_in_kgdb[cpu]) && (kgdb_contthread ||
+>                        atomic_read(&kgdb_active) != cpu &&
+> -                       atomic_read(&cpu_in_kgdb[atomic_read(&kgdb_active)])) {
+> +                       atomic_read(&cpu_in_kgdb[atomic_read(&kgdb_active)]))) {
+>                kgdb_wait((struct pt_regs *)regs);
+>                return 0;
+>        }
+> --
+> 1.6.0
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
