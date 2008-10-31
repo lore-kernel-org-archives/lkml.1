@@ -1,30 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753560AbYJaJ4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793AbYJaKCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753560AbYJaJ4V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 05:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYJaJ4J
+	id S1752793AbYJaKCc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 06:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbYJaKCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 05:56:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59915 "EHLO mx3.mail.elte.hu"
+	Fri, 31 Oct 2008 06:02:23 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44473 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751035AbYJaJ4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 05:56:07 -0400
-Date: Fri, 31 Oct 2008 10:55:44 +0100
+	id S1750846AbYJaKCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 06:02:22 -0400
+Date: Fri, 31 Oct 2008 11:02:01 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH] tracing: fix a build error on alpha and m68k
-Message-ID: <20081031095544.GI30317@elte.hu>
-References: <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com> <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com> <49008D12.5090204@gmail.com> <Pine.LNX.4.64.0810231635440.18978@anakin> <c62985530810230757r411b4e3dj4ecec649cf8cf0b3@mail.gmail.com> <Pine.LNX.4.64.0810231727430.18978@anakin> <4900B414.7090002@gmail.com> <20081023163433.GA3160@x200.localdomain> <20081030214910.GA14679@x200.localdomain> <Pine.LNX.4.64.0810310949190.22521@anakin>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Roland McGrath <roland@redhat.com>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       Yinghai Lu <yinghai@kernel.org>
+Subject: Re: cpu2000(both float and int) 13% regression with 2.6.28-rc1
+Message-ID: <20081031100201.GA17426@elte.hu>
+References: <1225175522.1685.57.camel@ymzhang> <20081028080327.GB15734@elte.hu> <20081028202649.GJ30573@linux-os.sc.intel.com> <7E82351C108FA840AB1866AC776AEC46401F518D@orsmsx505.amr.corp.intel.com> <490A5A80.3070203@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0810310949190.22521@anakin>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <490A5A80.3070203@zytor.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,29 +42,62 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-> On Fri, 31 Oct 2008, Alexey Dobriyan wrote:
-> > On Thu, Oct 23, 2008 at 08:34:33PM +0400, Alexey Dobriyan wrote:
-> > > On Thu, Oct 23, 2008 at 07:27:48PM +0200, Frederic Weisbecker wrote:
-> > > > When tracing is enabled, some arch have included <linux/irqflags.h>
-> > > > on their <asm/system.h> but others like alpha or m68k don't.
-> > > > 
-> > > > Build error on alpha:
-> > > > 
-> > > > kernel/trace/trace.c: In function 'tracing_generic_entry_update':
-> > > > kernel/trace/trace.c:658: error: implicit declaration of function 'irqs_disabled_flags'
+> Pallipadi, Venkatesh wrote:
 > > 
-> > FYI, this error still exists in mainline (7f82f000ed030d1108b4de47d9e2d556092980c6).
+> > We figured out that this is not related to signals. But to this mismerge here
+> > 
+> >>  +#define X86_FEATURE_AMDC1E  (3*32+21) /* AMD C1E detected */
+> >> + #define X86_FEATURE_XTOPOLOGY       (3*32+21) /* cpu topology enum extensions */
+> > 
+> > I had earler sent a patch to fix this.
+> > http://marc.info/?l=linux-kernel&m=122341178202930&w=2
+> > 
+> > But, somehow I don’t see this patch either in Linus's git or in tip.
+> > 
+> > ingo, hpa: Can you push that patch along.
+> > 
 > 
-> Now it hit mainline (I can't be bothered to develop _new_ code to 
-> fix things in -next ;-), I'm implementing irqs_disabled_flags() for 
-> m68k. Stay tuned...
+> OK, thought it already had been.  I will investigate later tonight.
 
-this (now mainline) commit should have fixed it:
-
- 9244489: ftrace: handle archs that do not support irqs_disabled_flags
-
-can you still see problems?
+i've picked it up into x86/urgent - see the commit below.
 
 	Ingo
+
+--------------->
+>From 2576c9991758e431b73e374f6019d6e1e12a8d36 Mon Sep 17 00:00:00 2001
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Date: Tue, 7 Oct 2008 13:33:12 -0700
+Subject: [PATCH] x86: fix AMDC1E and XTOPOLOGY conflict in cpufeature
+
+Impact: fix xsave slowdown regression
+
+Fix two features from conflicting in feature bits.
+
+Fixes this performance regression:
+
+   Subject: cpu2000(both float and int) 13% regression with 2.6.28-rc1
+   http://lkml.org/lkml/2008/10/28/36
+
+Reported-by: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Bisected-by: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/include/asm/cpufeature.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+index f73e95d..cfdf8c2 100644
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -91,7 +91,7 @@
+ #define X86_FEATURE_11AP	(3*32+19) /* "" Bad local APIC aka 11AP */
+ #define X86_FEATURE_NOPL	(3*32+20) /* The NOPL (0F 1F) instructions */
+ #define X86_FEATURE_AMDC1E	(3*32+21) /* AMD C1E detected */
+-#define X86_FEATURE_XTOPOLOGY	(3*32+21) /* cpu topology enum extensions */
++#define X86_FEATURE_XTOPOLOGY	(3*32+22) /* cpu topology enum extensions */
+ 
+ /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
+ #define X86_FEATURE_XMM3	(4*32+ 0) /* "pni" SSE-3 */
