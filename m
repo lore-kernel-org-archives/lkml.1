@@ -1,60 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752121AbYJaN3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752532AbYJaNa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752121AbYJaN3k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 09:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbYJaN3c
+	id S1752532AbYJaNa2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 09:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbYJaNaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 09:29:32 -0400
-Received: from lazybastard.de ([212.112.238.170]:35494 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbYJaN3b (ORCPT
+	Fri, 31 Oct 2008 09:30:18 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35918 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750790AbYJaNaR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 09:29:31 -0400
-Date: Fri, 31 Oct 2008 14:29:22 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] B+Tree library
-Message-ID: <20081031132921.GG18182@logfs.org>
-References: <20081026124643.GA1328@logfs.org> <1225458974.5546.6.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1225458974.5546.6.camel@johannes.berg>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 31 Oct 2008 09:30:17 -0400
+Subject: Re: Deadline scheduling (was: Re: Rearranging layout of code in
+ the scheduler)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Henrik Austad <henrik@austad.us>
+Cc: faggioli@gandalf.sssup.it, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>, fabio@gandalf.sssup.it,
+       Michael Trimarchi <trimarchimichael@yahoo.it>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "gregory.haskins" <gregory.haskins@gmail.com>
+In-Reply-To: <20081031120921.GA6824@alecto.austad.us>
+References: <200810281634.11285.henrik@austad.us>
+	 <20081030174925.36023f19jy3o832t@feanor.sssup.it>
+	 <1225387034.7803.182.camel@twins> <200810302244.52329.henrik@austad.us>
+	 <1225443832.7803.1160.camel@twins> <20081031120921.GA6824@alecto.austad.us>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 31 Oct 2008 14:30:08 +0100
+Message-Id: <1225459808.7803.1481.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 October 2008 14:16:14 +0100, Johannes Berg wrote:
-> 
-> > +static inline size_t btree_visitorl(struct btree_headl *head, long opaque,
-> > +		visitorl_t func2)
-> > +{
-> > +	return btree_visitor(&head->h, &btree_geo32, opaque, visitorl, func2);
-> > +}
-> 
-> Incidentally, do you think it would be possible to implement a kind of 
-> 
-> btree_for_each_entry(e, ...) {
-> 	do something with e
-> }
-> 
-> macro or function/macro combination? You seem to be doing a recursive
-> walk across the tree, would it be useful to have a linked list at the
-> lowest level of nodes to be able to iterate more easily?
+On Fri, 2008-10-31 at 13:09 +0100, Henrik Austad wrote:
 
-Maybe.  On the whole, I've tried hard not to optimize much.  The idea
-was that a simple design can still receive some fundamental changes.
-But once a number of neat tricks like a linked list at the lowest level
-are used, the code becomes more resistent to changes.
+> Ah, ok, I thought introducing new syscalls was *really* frowned upon.
 
-That being said, the maze of function pointer around btree_visitor()
-does not make me very proud.  Might be worth it.
+We prefer not to, but sometimes there just isn't any other option.
+If we want to extend struct sched_param, we need 2 new syscalls.
 
-Jörn
+> > Sure, but implementing an EDF class isn't really all that hard - esp if
+> > you only want UP.
+> > 
+> > The real fun is in the PI stuff and schedulability tests on SMP.
+> 
+> As a start, that is the approach at least I would like to take. Once you have a 
+> proven, functional EDF on a single core, you can extend that to handle several 
+> cores, if you really want to.
 
--- 
-Prosperity makes friends, adversity tries them.
--- Publilius Syrus
+Well, you're of course free to do so, but I don't think its a very
+interesting thing to do.
+
+> > > > > The main problem is that, especially to deal with SMP systems, we also
+> > > > > need to investigate theoretical issues and find out what the best
+> > > > > approach could be.
+> > > 
+> > > Yes, well, EDF is not optimal for SMP systems, only for single core. However, 
+> > > you can do a pretty good attempt by assigning tasks to cores in a greedy 
+> > > fashion (simply put the next task at the CPU with the lowest load).
+> > > 
+> > > As a further optimization, I guess you could do the whole sced-domain thing to 
+> > > minimize the search space.
+> > 
+> > The problem with greedy binpacking heuristics is that your schedulablity
+> > test are out the window, making the whole thing useless.
+> 
+> Well, not really. I mean, to be optimal, you should also consider WCET, but 
+> then, that's really not interesting as IMHO that's the userspace-programmer's 
+> responsibility. If the user wants to add tasks that sum up to 210% utilization, 
+> it's really not much we can do anyway. You certainly wouldn't want the kernel to 
+> stop accepting new jobs.
+> 
+> So, keep the kernel logic as simple as possible and move the job to the user. 
+> By keeping the kernel logic simple - we make the job easier for the end-users. A 
+> very complex EDF-scheduler will make the testing very difficult.
+> 
+> If, on the other hand, we *know* that the scheduler is not optimal, but that it 
+> behaves in a predictable manner, the end users have a simpler task of finding 
+> out why something bad happened.
+> 
+> Because, no matter *what* you do, and *how* you implement it, with *whatever* 
+> features, there will be cases when things fall apart, and  having a simple, 
+> predictable scheduler will be necessary to figure it out.
+
+I agree that the scheduler should be simple, and even something like
+PD^2 is relatively simple.
+
+But I disagree that we should not do schedulability tests. Doing those,
+and esp. enforcing tasks to their given limits increases the QoS for
+others in the presence of faulty/malicious tasks.
+
+Also, WCET is still the users responsibility.
+
+If for each deadline task you specify a period, a deadline and a budget.
+Then the WCET computation is reflected in the budget.
+
+By enforcing the schedulability test and execution budget you raise the
+quality of service, because even in the presence of a mis-behaving task
+only that task will be impacted. The other tasks will still meet their
+deadlines.
+
+> > > No. You should have *either* FIFO/RR *or* EDF, not both at the same time. If 
+> > > you absolutely require both, you should at least separate them on a per-core 
+> > > basis. If you mix them, they need to be aware of the other in order to make 
+> > > the right descision, and that is not good.
+> > 
+> > We _have_ to have both. Its that simple.
+> 
+> No, we do not. Or, at least not at the same time (see below)
+> 
+> > POSIX mandates we have SCHED_FIFO/RR, there is tons and tons of userspace that 
+> > uses it, we cannot just replace it with a deadline scheduler.
+> 
+> I didn't mean to rip the whole fifo/rr out of the kernel, but adding a switch at 
+> compile-time so that you could choose *either* normal, static RT *or* EDF. Then 
+> we could, at least for the first few versions, have it depend on !SMP to avoid 
+> the whole SMP-non-optimal-mess.
+
+But _why_? why not leave FIFO/RR in? There is absolutely no downside to
+keeping it around.
+
+> > Thing is, you have to run hard tasks first, and scheduler weaker forms
+> > in its slack time, otherwise you cannot guarantee anything.
+> 
+> Well, then you suddenly introduce priorities to the deadlines, and that is not 
+> good. A hard task is not more important than a soft, but the effect of missing 
+> the deadline is. If the schedule is infeasible, it really doesn't matter what 
+> you do, as you will miss deadlines, and if you prioritize hard tasks, you will 
+> end up starving firm and soft
+> 
+> Before you go on and tell me how wrong I am, note that I don't disagree with 
+> you, I think choosing hrt before the others, is the best solution from an 
+> implementation point of view.
+
+This is, if you make the soft-deadline class aware of the hard-deadline
+class's tasks and schedulability contraints, then you can keep the
+soft-rt class schedulable too.
+
+So srt is in no way less important, its just has less restrictions on
+the schedule, therefore we can run it in the hrt slack/idle time.
+
+And adding the schedulability test in the kernel avoids these starvation
+issues, because you just cannot.
+
+> > On UP - which is not interesting on a general purpose kernel that runs
+> > on machines with up to 4096 CPUs.
+> 
+> But, and pardon my ignorance, will an EDF-scheduler be intersting for such a 
+> large system? From what I've gathered, small systems are the ones that could 
+> benefit from an EDF as you can analyze and predict behaviour, and then, since 
+> EDF is optimal, tune the CPU-freq down and still know that things will work.
+> 
+> Some embedded people can probably provide a lot better input here than me, as 
+> this is just a general idea I snapped up 'somewhere' (where somewhere is an 
+> element of the set of all places I've been the last 6 months).
+
+Not that large indeed, but people are interested in running RT workloads
+on machines in the 32/64 scale.
+
+And even the embedded folks are now staring quad core arm11 chips in the
+face, wondering how to do things.
+
+> > Then there are the pfair class of scheduling algorithms which can
+> > theoretically yield up to 100% utilization on SMP systems.
+> 
+> Do you know about any pratical attempts on this, and what kind of result that 
+> produced?
+
+Fairly decent, http://www.cs.unc.edu/~anderson/papers/rtss08b.pdf
+
+> > > Besides that, EDF is the simplest, most brain-dead scheduler you can imagine. 
+> > > Basically you want to add the deadline to the tasks, put it in a sorted list 
+> > > and pick the leftmost task every time untill it completes.
+> > 
+> > Sure, and all that is useless without schedulability tests.
+> 
+> Yes, but should the kernel do the schedulability test? Or should the ball be 
+> passed on to userspace? To analyze the schedulability, you would need the worst 
+> case execution time (WCET) of the process, and if the kernel/scheduler should 
+> start trying to estimate that...
+> 
+> So, as a start, why not just 'ignore' WCET in the first versions, and that can 
+> be added later on, if necessary.
+
+Like said above, WCET is represented in the execution budget.
+
+> A lot of good points, and I certainly see your side of it. However (and yes, I 
+> have to argue a bit more ;)), I don't think an EDF-scheduler should contain a 
+> lot of features.
+> 
+> If you want to use the EDF, why not give the user a list of consequenses like
+> - Only a single core
+
+There won't be a single core machine left soon ;-)
+
+> - No other RT-scheduler, if other userspace program breaks, so be it, the user 
+>   has been warned.
+
+That's a no go, and I don't see why you would need that.
+
+> - Best effort only
+
+That's pretty useless imho. Best-effort and RT are a bit contradictory.
+
+> - Provide handlers for a given set of signals that will be sent to any 
+>   application missing a deadline
+
+Yeah, the idea was to send SIGXCPU to tasks who exceed their budget (and
+thus will miss their deadline).
+
+> - no cpu-scaling
+> - ... keep going, basically strip away every piece of dynamic behaviour and 
+>   complex scheduling code
+
+I'm thinking there's little useful left after all that ;-)
