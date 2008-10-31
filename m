@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752711AbYJaR0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752876AbYJaR2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752711AbYJaR0j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 13:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYJaR0c
+	id S1752876AbYJaR2K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 13:28:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbYJaR1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 13:26:32 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:26018 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751559AbYJaR0b (ORCPT
+	Fri, 31 Oct 2008 13:27:55 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:4406 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751735AbYJaR1y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 13:26:31 -0400
+	Fri, 31 Oct 2008 13:27:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=rozCywWC3X1yLT+MR/HobzD9+U6tKg0DDQyCXhpFPBYu9DtMMAp/FsRgL81I29f5Tk
-         +BrwSio/3IoslINdrzBTX9RlUjpuNgCsxQDiSF1wajIEyrDDtSfkSGy5erI/QBNCPZLO
-         NeeiCiXrAVZ9cxhI6Zly37BUK8vdvccExWCeE=
-Date: Fri, 31 Oct 2008 20:29:38 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: sam@ravnborg.org, akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] tags: link from CONFIG_x to 'config x' as well
-Message-ID: <20081031172938.GA13896@x200.localdomain>
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=bn8GW1wWIpIM0i3HXhvmQ5onD13J3WwwqvtL5HqpFhUOmymC8LKjtQCsVAIw1MWzsE
+         L6GiXW0eOFUkUigUw0nkB5obhQgkKo1dnBWLS5+Rg1XyC3gk0W/z/LUS9dOtHwKMbDtb
+         y5EcBOstL8kUfTmmVOZYp8v3TP37VpVgbg98w=
+Message-ID: <490B4014.4040009@tuffmail.co.uk>
+Date: Fri, 31 Oct 2008 17:27:48 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux acpi <linux-acpi@vger.kernel.org>
+Subject: Re: eeepc-laptop rfkill, stupid question #4 and 5
+References: <490B3BB5.8060801@tuffmail.co.uk> <20081031171126.GA17313@srcf.ucam.org>
+In-Reply-To: <20081031171126.GA17313@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Inability to jump from CONFIG_ symbol in source to symbol definition in 
-Kconfig is very, very annoying. You'll jump to useless entry in autoconf.h,
-if it exists at all.
+Matthew Garrett wrote:
+> On Fri, Oct 31, 2008 at 05:09:09PM +0000, Alan Jenkins wrote:
+>   
+>> Did you miss a call to rfkill_force_state() on resume?
+>>     
+>
+> Conceivably. I didn't test the hibernation case.
+>
+>   
+>> Actually, normal boot doesn't preserve the setting either.  Your commit
+>> changes the behaviour from the rfkill state being persistent across
+>> reboot / power off (as a bios setting), to being always enabled on
+>> boot.  It seems like a bad idea to me.
+>>     
+>
+> This is the behaviour of the rfkill core.
+>   
+Documentation/rfkill.txt implied otherwise
 
-No more.
+    You should:
+        - rfkill_allocate()
+        - modify rfkill fields (flags, name)
+        - modify state to the current hardware state (THIS IS THE ONLY TIME
+          YOU CAN ACCESS state DIRECTLY)
+        - rfkill_register()
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
 
- Makefile |    6 ++++++
- 1 file changed, 6 insertions(+)
+Admittedly it doesn't say "and I promise not to gratuitously override
+the state on registration".  Buti t seems weird though, to override the
+value on registration instead of just setting a default in
+rfkill_allocate().
 
---- a/Makefile
-+++ b/Makefile
-@@ -1482,6 +1482,10 @@ define xtags
- 		--langdef=kconfig \
- 		--language-force=kconfig \
- 		--regex-kconfig='/^[[:blank:]]*(menu|)config[[:blank:]]+([[:alnum:]_]+)/\2/'; \
-+	    $(all-kconfigs) | xargs $1 -a \
-+		--langdef=kconfig \
-+		--language-force=kconfig \
-+		--regex-kconfig='/^[[:blank:]]*(menu|)config[[:blank:]]+([[:alnum:]_]+)/CONFIG_\2/'; \
- 	    $(all-defconfigs) | xargs -r $1 -a \
- 		--langdef=dotconfig \
- 		--language-force=dotconfig \
-@@ -1490,6 +1494,8 @@ define xtags
- 	    $(all-sources) | xargs $1 -a; \
- 	    $(all-kconfigs) | xargs $1 -a \
- 		--regex='/^[ \t]*\(\(menu\)*config\)[ \t]+\([a-zA-Z0-9_]+\)/\3/'; \
-+	    $(all-kconfigs) | xargs $1 -a \
-+		--regex='/^[ \t]*\(\(menu\)*config\)[ \t]+\([a-zA-Z0-9_]+\)/CONFIG_\3/'; \
- 	    $(all-defconfigs) | xargs -r $1 -a \
- 		--regex='/^#?[ \t]?\(CONFIG_[a-zA-Z0-9_]+\)/\1/'; \
- 	else \
+Thanks
+Alan
