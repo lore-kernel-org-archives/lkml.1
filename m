@@ -1,28 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbYJaJif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730AbYJaJkD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754149AbYJaJif (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 05:38:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbYJaJiX
+	id S1753730AbYJaJkD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 05:40:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbYJaJjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 05:38:23 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51864 "EHLO mx2.mail.elte.hu"
+	Fri, 31 Oct 2008 05:39:53 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38332 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752028AbYJaJiW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 05:38:22 -0400
-Date: Fri, 31 Oct 2008 10:38:04 +0100
+	id S1751798AbYJaJjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 05:39:52 -0400
+Date: Fri, 31 Oct 2008 10:39:24 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -v2] ring-buffer: add paranoid checks for loops
-Message-ID: <20081031093804.GF30317@elte.hu>
-References: <alpine.DEB.1.10.0810291439460.13214@gandalf.stny.rr.com> <20081030184552.GC17822@elte.hu> <alpine.DEB.1.10.0810302314460.26352@gandalf.stny.rr.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>,
+       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>
+Subject: Re: [patch] generic-ipi: fix the smp_mb() placement
+Message-ID: <20081031093924.GG30317@elte.hu>
+References: <20081029224229.GK30573@linux-os.sc.intel.com> <20081030185322.GE17822@elte.hu> <20081030202322.GM30573@linux-os.sc.intel.com> <490A9337.6090504@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810302314460.26352@gandalf.stny.rr.com>
+In-Reply-To: <490A9337.6090504@goop.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,59 +42,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> +	/*
-> +	 * This should normally only loop twice. But because the
-> +	 * start of the reader inserts an empty page, it causes
-> +	 * a case where we will loop three times. There should be no
-> +	 * reason to loop four times (that I know of).
-> +	 */
-> +	if (unlikely(paranoid > 2)) {
-> +		RB_WARN_ON(cpu_buffer, 1);
-> +		reader = NULL;
-> +		goto out;
-> +	}
-> +	paranoid++;
+> Suresh Siddha wrote:
+>> We didn't see the lockup in our tests but Xen folks reported similar failures
+>> with their smp call function code.
+>>   
+>
+> ...really?  I don't remember anything like that, but perhaps I'm 
+> forgetting something.  In Xen the IPI is sent with a hypercall, 
+> which is definitely a solid enough barrier for these purposes.
 
-ok, the explanations look nice now.
-
-A small nit - the above comment suggests that looping 4 times is the 
-anomaly - still the test is for paranoid > 2 ?
-
-> +	int paranoid = 0;
-
-another small nit: i'd suggest to rename 'paranoid' to 'nr_loops' or 
-'nr_iterations' or so. It is the _condition_ that signals paranoia, 
-not the variable in itself - making the current patch look a bit 
-weird.
-
->   again:
-> +	/*
-> +	 * We repeat when a timestamp is encountered. It is possible
-> +	 * to get multiple timestamps from an interrupt entering just
-> +	 * as one timestamp is about to be written. The max times
-> +	 * that this can happen is the number of nested interrupts we
-> +	 * can have.  10 should be more than enough.
-> +	 */
-> +	if (unlikely(paranoid > 10)) {
-> +		RB_WARN_ON(cpu_buffer, 1);
-> +		return NULL;
-
-s/10 should be more than enough/Nesting higher than 10 is clearly 
-anomalous/
-
-> +	/*
-> +	 * We repeat when a timestamp is encountered. It is possible
-> +	 * to get multiple timestamps from an interrupt entering just
-> +	 * as one timestamp is about to be written. The max times
-> +	 * that this can happen is the number of nested interrupts we
-> +	 * can have.  10 should be more than enough.
-> +	 */
-> +	if (unlikely(paranoid > 10)) {
-> +		RB_WARN_ON(cpu_buffer, 1);
-> +		return NULL;
-
-ditto.
+i think Suresh might be referring to some of the fragilities Xen had 
+with generic-ipi. But those AFAICT were due to the on-stack lifetime 
+bug that Nick fixed via the kmalloc? v2.6.26-ish issue.
 
 	Ingo
