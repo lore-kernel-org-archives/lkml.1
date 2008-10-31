@@ -1,147 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752361AbYJaNGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719AbYJaNHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752361AbYJaNGy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 09:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbYJaNGo
+	id S1752719AbYJaNHb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 09:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbYJaNHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 09:06:44 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:30503 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751314AbYJaNGn (ORCPT
+	Fri, 31 Oct 2008 09:07:21 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:58302 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751164AbYJaNHU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 09:06:43 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAM8S9kh5LIXk/2dsb2JhbADCJoFr
-X-IronPort-AV: E=Sophos;i="4.33,522,1220193000"; 
-   d="scan'208";a="222326651"
-Date: Sat, 1 Nov 2008 00:06:38 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Lachlan McIlroy <lachlan@sgi.com>
-Cc: xfs@oss.sgi.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: do_sync() and XFSQA test 182 failures....
-Message-ID: <20081031130638.GA19509@disturbed>
-Mail-Followup-To: Lachlan McIlroy <lachlan@sgi.com>, xfs@oss.sgi.com,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20081030085020.GP17077@disturbed> <490A833A.2090601@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <490A833A.2090601@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 31 Oct 2008 09:07:20 -0400
+Subject: Re: [RFC] B+Tree library
+From: Johannes Berg <johannes@sipsolutions.net>
+To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20081031125453.GE18182@logfs.org>
+References: <20081026124643.GA1328@logfs.org>
+	 <1225449314.3535.23.camel@johannes.berg> <20081031112651.GD18182@logfs.org>
+	 <1225452761.3535.28.camel@johannes.berg> <20081031125453.GE18182@logfs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-t1JetxqiSNB4uLvfLgjM"
+Date: Fri, 31 Oct 2008 14:07:16 +0100
+Message-Id: <1225458436.5546.2.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 31, 2008 at 03:02:02PM +1100, Lachlan McIlroy wrote:
-> Dave Chinner wrote:
->> Folks,
->>
->> I think I've finally found the bug(s) that is causing XFSQA test 182
->> to fail. Test 182 writes a bunch of files, then runs sync, then
->> shuts the filesystem down. It then unmounts and remounts the fs and
->> checks that all the files are the correct length and have the
->> correct contents. i.e. that sync semantics have been correctly
->> observed.
->>
->> The cause of the failure is that log recovery is replaying inode
->> allocation and overwriting the last inode writes that contained
->> unlogged changes (i.e. the inode size update that occurs at I/O
->> completion).
->>
->> The problem is that we've never been able to work out why recovery
->> is doing this.  What has been nagging at the back of my mind for
->> quite some time is the fact that we do actually write these inodes
->> to disk and that should allow the tail of the log to move forward
->> past the inode allocation transaction and hence it should not be
->> replayed during recovery.
->>
->> A solution that has been proposed in the past (by Lachlan) is to log
->> the inode size updates instead of writing the inode to disk.  In
->> that case, recovery also replays the inode modification transactions
->> and so we don't lose anything. It is a solution that would fix the
->> problem. However, always logging inodes instead of writing unlogged
->> changes has other performance implications that we'd prefer to avoid
->> (i.e. the number of extra transactions it will cause).
-> Logging the inode every time a file size update occured increased log
-> traffic by about 11% for the load that test 182 generates.
 
-It increases the number of transactions by 33%, (i.e one to create
-the file, one for the allocation, and an additional one for updating
-the file size). That means a significant  increase in the CPU
-overhead involved in writing inodes via pdflush, and we've still got
-to write those inodes to disk at some point.
+--=-t1JetxqiSNB4uLvfLgjM
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Besides, what do we do when we write inodes back from the AIL and we
-find unlogged changes then? We can't issue transactions from the
-AIL, as that would deadlock if the log is full. And we can't not push
-the inodes out, as that will prevent the tail of the log moving
-forward and that will deadlock the filesystemi as well...
+On Fri, 2008-10-31 at 13:54 +0100, J=C3=B6rn Engel wrote:
+> On Fri, 31 October 2008 12:32:41 +0100, Johannes Berg wrote:
+> > > >=20
+> > > > Would there be an easy way to use 48-bit keys? Or variable length k=
+eys?
+> > >=20
+> > > Variable as in one implementation for several trees with different
+> > > sizes, yes.  Variable as in one tree with differently sized keys, no.
+> >=20
+> > Ok, I guess that would blow up the key size to 6+1+32 bytes, or 10 (5)
+> > longs. Bit large.
+>=20
+> Yes.  Insanely large keys are a good indication to better avoid btrees.
 
-On top of that, XFS already logs far, far too much information.
-We need to be decreasing logging overhead, not increasing it by
-a significant fraction....
+OTOH, there is no need to put the SSID in if I put a small list into
+each node, effectively using the tree instead of the hash table and then
+disambiguating the unlikely case of multiple SSID in a list.
 
-> Logging the inode during inode writeout if, and only if, there are
-> unlogged changes (ie i_update_core is set) has a negligible impact on
-> log traffic or performance.
+> I actually have something that compiles now.  It still needs a bit of
+> water and soap before I'd consider it presentable, but turned out to be
+> less complicated than expected.
 
-Every time you write beyond EOF that happens. That's a very
-frequent occurrence, so I'd say that it's not negliable.
+:)
 
-> I thought I understood this problem yet your description is a lot more
-> detailed than I expected.  I agree with you that sync is updating
-> everything on disk
+johannes
 
-It's not, and that is the problem - it's failing to write the
-in-memory position of the tail of the log at the end of the sync.
-So while all the data and metadata is up to date on disk, the
-log is not. We haven't written everything we should be to
-disk as part of the sync.
+--=-t1JetxqiSNB4uLvfLgjM
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-> and if it wasn't for log replay messing things up
-> then everything would be good.  So although the inode on disk is up to
-> date the history of changes to that inode in the log is missing the
-> last changes involving file size updates. So when the log is replayed
-> the inode loses the file size update.  And it's all because of the
-> inode cluster buffer initialisation log entry that resets the cluster
-> (and all the inodes in it) so even the di_flushiter hack can't save us.
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-That's a red herring. My last attempt at solving this problem a
-couple of months ago was based on this premise - it (successfully)
-avoided replaying the inode allocation transaction, but the inode
-still got overwritten. It got overwritten by the allocation
-transaction being replayed in exactly the manner described by the
-log covering code....
+iQIcBAABAgAGBQJJCwMBAAoJEKVg1VMiehFYEHUP/AioLeQLn4OQ1VE2d8vsixQz
+5FgoSr0wtQX4OPs9U9q1ODOQ8MgJ75LmtYhgxBWgXNBspoimiS5pJqcc/4F++4BV
+9pZ8RMGqtdOAg84vzcdfztOaWPy8ANXGqLj7LRG68azY5WI7uoXUBGg6ESJUT/1Z
+oI9+GEjG2SU1Tvj2dBsPfUwsJE7+bhWH0INWpo+Bbdv1oPuD2M6SflDRDQNkDQqi
+CGtlHF37A8G1znMV01OQvCZbFYIgzQqFy8nVGfxUueXoJWeYGuSFWpkLSZgKl8Oo
+YVIHYN2xFfjZbC+3ErhQWpznvIc4sluZLlGQk6RM+Te+8YiuQpyIjActYrzLRH3o
+LXbOFM7GUyVkmW63aaBkYvQYqegEq+No5XL8ANi7sbMhm2JPlcNhGzeJ5fhn/bKB
+2cLvGps5wg7vGzTUWapmF+MXVd0esqe1z0zqIFIP0obvc1dwV5/gxP1e7xlJX/EC
+0sNZSQngOE9+P0EO4HeOhmBfrDTc7acpefcbp2R3JzNVGlcbMyd2yPSrsNtj7J6M
+P3ILEUiRfGHEZcHQ/zV0drp2EjEH3SIqS/ibug1LEzyXRinlMATOo0CrmgnQ/jfg
+UjtwNYmUDq4A3dL/TfmVY9+kJ+sqIOJb46qTM/H9al0eEKQy1ZQrFPm4O2sg/4az
+ybnlMgyTuhFKSgsbgAVv
+=AyVh
+-----END PGP SIGNATURE-----
 
-> The obvious solution to me was to complete the history of the inode in
-> the log so if replay wants to start from scratch it will make all the
-> necessary changes to bring the inode to a state that matches what is
-> on disk.  Logging unlogged changes during sync will achieve this.
->
-> Avoiding log replay altogether is even better but that solution is
-> only going to work if we've run sync just before our system crashes.
-> If we haven't run sync before our system crashes then we'll still hit
-> this problem with regressing inodes but if we haven't run sync there
-> are no guarantees, right?
+--=-t1JetxqiSNB4uLvfLgjM--
 
-If the system crashes while busy, there's no guarantee that cached
-write-behind data has been written out, let alone the inode or the
-allocation transaction. Recent transactions will still be in memory,
-and log buffers may have been written out of order so on a crash we
-can lose up to the last 2MB of transactions from recovery. Logging
-inodes instead of writing them back does not change this at all - we
-just lose the inode changes from the log instead of from the on disk
-location.
-
-XFS has never attempted or claimed to provide data reliability
-guarantees when a crash occurs - it was designed to ensure that
-the filesystem metadata is consistent after recovery, not that
-there was zero data loss.....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
