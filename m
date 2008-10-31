@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbYJaDU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbYJaDVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754344AbYJaDU2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 23:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYJaDUM
+	id S1754786AbYJaDVa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 23:21:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbYJaDVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 23:20:12 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:64635 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751096AbYJaDUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 23:20:11 -0400
-Message-ID: <490A78FE.20201@cn.fujitsu.com>
-Date: Fri, 31 Oct 2008 11:18:22 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 30 Oct 2008 23:21:21 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37541 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753295AbYJaDVU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 23:21:20 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.28-rc2-mm1: possible circular locking
+Cc: kosaki.motohiro@jp.fujitsu.com, Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       linux-mm@kvack.org
+In-Reply-To: <20081029135840.0a50e19c.akpm@linux-foundation.org>
+References: <200810292146.03967.m.kozlowski@tuxland.pl> <20081029135840.0a50e19c.akpm@linux-foundation.org>
+Message-Id: <20081031121827.AACB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: viro@zeniv.linux.org.uk, mtk.manpages@gmail.com, rdunlap@xenotime.net,
-       linux-fsdevel@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: [PATCH] Correct wrong function name of d_put in kernel document and
- source comment
-Content-Type: text/plain; charset=GB2312
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Fri, 31 Oct 2008 12:21:16 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-no function named d_put(), it should be dput().
+> > stack backtrace:
+> > Pid: 4733, comm: psi Not tainted 2.6.28-rc2-mm1 #1
+> > Call Trace:
+> >  [<c013a0fd>] print_circular_bug_tail+0x78/0xb5
+> >  [<c0137a31>] ? print_circular_bug_entry+0x43/0x4b
+> >  [<c013a6e4>] validate_chain+0x5aa/0xfe0
+> >  [<c0118465>] ? hrtick_update+0x23/0x25
+> >  [<c013b388>] __lock_acquire+0x26e/0x98d
+> >  [<c0118ac0>] ? default_wake_function+0xb/0xd
+> >  [<c013bb03>] lock_acquire+0x5c/0x74
+> >  [<c012a330>] ? flush_work+0x2d/0xcb
+> >  [<c012a35c>] flush_work+0x59/0xcb
+> >  [<c012a330>] ? flush_work+0x2d/0xcb
+> >  [<c0139ae6>] ? trace_hardirqs_on+0xb/0xd
+> >  [<c012a531>] ? __queue_work+0x26/0x2b
+> >  [<c012a58c>] ? queue_work_on+0x37/0x47
+> >  [<c014fda7>] ? lru_add_drain_per_cpu+0x0/0xa
+> >  [<c014fda7>] ? lru_add_drain_per_cpu+0x0/0xa
+> >  [<c012a7a6>] schedule_on_each_cpu+0x65/0x7f
+> >  [<c014fb7e>] lru_add_drain_all+0xd/0xf
+> >  [<c0157fb2>] __mlock_vma_pages_range+0x44/0x206
+> >  [<c0159438>] ? vma_adjust+0x17e/0x384
+> >  [<c015971f>] ? split_vma+0xe1/0xf7
+> >  [<c01582d1>] mlock_fixup+0x15d/0x1c9
+> >  [<c0158479>] do_mlock+0x96/0xc8
+> >  [<c02bcb2a>] ? down_write+0x42/0x68
+> >  [<c015860e>] sys_mlock+0xb2/0xb6
+> >  [<c0102f91>] sysenter_do_call+0x12/0x35
+> > 
+> 
+> This is similar to the problem which
+> mm-move-migrate_prep-out-from-under-mmap_sem.patch was supposed to fix.
+> 
+> We've been calling schedule_on_each_cpu() from within
+> lru_add_drain_all() for ages.  What changed to cause all this
+> to start happening?
 
-Impact: fix document and comment, no functionality changed
+Agreed with there are the same problem.
+please assign this bug to me.
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fuijtsu.com>
----
- Documentation/filesystems/vfs.txt |    2 +-
- fs/dcache.c                       |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/filesystems/vfs.txt b/Documentation/filesystems/vfs.txt
-index c4d348d..e663178 100644
---- a/Documentation/filesystems/vfs.txt
-+++ b/Documentation/filesystems/vfs.txt
-@@ -960,7 +960,7 @@ manipulate dentries:
-   d_lookup: look up a dentry given its parent and path name component
- 	It looks up the child of that given name from the dcache
- 	hash table. If it is found, the reference count is incremented
--	and the dentry is returned. The caller must use d_put()
-+	and the dentry is returned. The caller must use dput()
- 	to free the dentry when it finishes using it.
- 
- For further information on dentry locking, please refer to the document
-diff --git a/fs/dcache.c b/fs/dcache.c
-index a1d86c7..db2bc6a 100644
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1336,7 +1336,7 @@ err_out:
-  *
-  * Searches the children of the parent dentry for the name in question. If
-  * the dentry is found its reference count is incremented and the dentry
-- * is returned. The caller must use d_put to free the entry when it has
-+ * is returned. The caller must use dput to free the entry when it has
-  * finished using it. %NULL is returned on failure.
-  *
-  * __d_lookup is dcache_lock free. The hash list is protected using RCU.
--- 
-1.5.5.3
 
