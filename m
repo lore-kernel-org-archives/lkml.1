@@ -1,301 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbYJaAhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbYJaAla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756723AbYJaAhv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Oct 2008 20:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755949AbYJaAhS
+	id S1755939AbYJaAla (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Oct 2008 20:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbYJaAlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Oct 2008 20:37:18 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:57599 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755793AbYJaAhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Oct 2008 20:37:16 -0400
-Message-Id: <20081031002756.602176990@polymtl.ca>
-References: <20081031002659.740180716@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Thu, 30 Oct 2008 20:27:01 -0400
-From: mathieu.desnoyers@polymtl.ca
-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 2/2] tracepoint: introduce *_noupdate APIs. (v2)
-Content-Disposition: inline; filename=tracepoint-introduce-noupdate-apis.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Fri, 31 Oct 2008 00:36:55 +0000
+	Thu, 30 Oct 2008 20:41:15 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58509 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752998AbYJaAlO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Oct 2008 20:41:14 -0400
+Date: Fri, 31 Oct 2008 09:40:41 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       bharata@linux.vnet.ibm.com, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Add hierarchical accounting to cpu accounting
+ controller
+Message-Id: <20081031094041.194a32d9.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081030171622.GA19872@linux.vnet.ibm.com>
+References: <20081023054335.GC3280@in.ibm.com>
+	<6599ad830810230849x71961a0asd7f00d3baa2f2271@mail.gmail.com>
+	<20081024050830.GA4387@in.ibm.com>
+	<6599ad830810241037h575ec17bgb43f750d99bd1518@mail.gmail.com>
+	<20081025060157.GA4614@in.ibm.com>
+	<6599ad830810250838q3f96644bm6dfee8ba9f35dfa3@mail.gmail.com>
+	<20081027101703.e954071d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081027044319.GA4386@in.ibm.com>
+	<661de9470810262357y6c560facl87dcaea3ce35e3ac@mail.gmail.com>
+	<49057ADD.1050705@cn.fujitsu.com>
+	<20081030171622.GA19872@linux.vnet.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-new APIs separate tracepoint_probe_register(),
-tracepoint_probe_unregister() into 2 steps. The first step of them
-is just update tracepoint_entry, not connect or disconnect.
+On Thu, 30 Oct 2008 22:46:22 +0530
+Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
 
-this patch introduce tracepoint_probe_update_all() for update all.
+> On Mon, Oct 27, 2008 at 04:25:01PM +0800, Li Zefan wrote:
+> > >>>> So in technical terms this patch looks fine now. There's still the
+> > >>>> question of whether it's OK to change the existing API, since it's
+> > >>>> been in the kernel in its currently (non-hierarchical) form for
+> > >>>> several releases now.
+> > >> Hmm... Can we consider this as an API change ? Currently cpuacct.usage
+> > >> readers of a parent accounting group are missing the usage contributions
+> > >> from its children groups. I would consider this patch as fixing the
+> > >> above problem by correctly reflecting the cpu usage for every accounting
+> > >> group.
+> > >>
+> > > 
+> > > If a particular application desires to derive the usage of its
+> > > immediate tasks and does not care about subcgroups, it is a simple
+> > > iteration (after this fix)
+> > > 
+> > > cpuacct - sigma(cpuacct_child)
+> > > 
+> > > and currently if we cared about child accounting, we could do
+> > > 
+> > > cpuacct + recursively(sigma(cpuacct_child))
+> > > 
+> > > In that sense this fix makes more sense, but like Paul said we need to
+> > > figure out if it is an API change. My take is that it is a BUG fix,
+> > > since we do care about child subgroups in accounting.
+> > > 
+> > 
+> > cpuacct was designed to count cpu usage of a group of tasks, and now some people
+> > want it to also take child group's usage into account, so I think this is a feature
+> > request but not a bug fix.
+> > 
+> 
+> I disagree. The child is a part of the parent's hierarchy, and therefore
+> its usage should reflect in the parent's usage.
+> 
 
-these APIs are very useful for registering a lots of probes
-but just update once only. and a very important thing is that
-*_noupdate APIs do not require module_mutex.
+In my point of view, there is no big difference. It's just whether we need a tool
+in userland or not. If there is no performance impact, I have no objections.
 
-Mathieu Desnoyers : Refreshed for -tip.
+One request from me is add Documentation/controllers/cpuacct.txt or some to explain
+"what we see".
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
----
- include/linux/tracepoint.h |    4 +
- kernel/tracepoint.c        |  170 ++++++++++++++++++++++++++++++++++-----------
- 2 files changed, 136 insertions(+), 38 deletions(-)
+Thanks,
+-Kame
 
-Index: linux-2.6-lttng/include/linux/tracepoint.h
-===================================================================
---- linux-2.6-lttng.orig/include/linux/tracepoint.h	2008-10-30 20:12:05.000000000 -0400
-+++ linux-2.6-lttng/include/linux/tracepoint.h	2008-10-30 20:18:16.000000000 -0400
-@@ -112,6 +112,10 @@ extern int tracepoint_probe_register(con
-  */
- extern int tracepoint_probe_unregister(const char *name, void *probe);
- 
-+extern int tracepoint_probe_register_noupdate(const char *name, void *probe);
-+extern int tracepoint_probe_unregister_noupdate(const char *name, void *probe);
-+extern void tracepoint_probe_update_all(void);
-+
- struct tracepoint_iter {
- 	struct module *module;
- 	struct tracepoint *tracepoint;
-Index: linux-2.6-lttng/kernel/tracepoint.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/tracepoint.c	2008-10-30 20:17:25.000000000 -0400
-+++ linux-2.6-lttng/kernel/tracepoint.c	2008-10-30 20:18:16.000000000 -0400
-@@ -59,7 +59,10 @@ struct tracepoint_entry {
- };
- 
- struct tp_probes {
--	struct rcu_head rcu;
-+	union {
-+		struct rcu_head rcu;
-+		struct list_head list;
-+	} u;
- 	void *probes[0];
- };
- 
-@@ -72,7 +75,7 @@ static inline void *allocate_probes(int 
- 
- static void rcu_free_old_probes(struct rcu_head *head)
- {
--	kfree(container_of(head, struct tp_probes, rcu));
-+	kfree(container_of(head, struct tp_probes, u.rcu));
- }
- 
- static inline void release_probes(void *old)
-@@ -80,7 +83,7 @@ static inline void release_probes(void *
- 	if (old) {
- 		struct tp_probes *tp_probes = container_of(old,
- 			struct tp_probes, probes[0]);
--		call_rcu(&tp_probes->rcu, rcu_free_old_probes);
-+		call_rcu_sched(&tp_probes->u.rcu, rcu_free_old_probes);
- 	}
- }
- 
-@@ -299,6 +302,23 @@ static void tracepoint_update_probes(voi
- 	module_update_tracepoints();
- }
- 
-+static void *tracepoint_add_probe(const char *name, void *probe)
-+{
-+	struct tracepoint_entry *entry;
-+	void *old;
-+
-+	entry = get_tracepoint(name);
-+	if (!entry) {
-+		entry = add_tracepoint(name);
-+		if (IS_ERR(entry))
-+			return entry;
-+	}
-+	old = tracepoint_entry_add_probe(entry, probe);
-+	if (IS_ERR(old) && !entry->refcount)
-+		remove_tracepoint(entry);
-+	return old;
-+}
-+
- /**
-  * tracepoint_probe_register -  Connect a probe to a tracepoint
-  * @name: tracepoint name
-@@ -309,36 +329,36 @@ static void tracepoint_update_probes(voi
-  */
- int tracepoint_probe_register(const char *name, void *probe)
- {
--	struct tracepoint_entry *entry;
--	int ret = 0;
- 	void *old;
- 
- 	mutex_lock(&tracepoints_mutex);
--	entry = get_tracepoint(name);
--	if (!entry) {
--		entry = add_tracepoint(name);
--		if (IS_ERR(entry)) {
--			ret = PTR_ERR(entry);
--			goto end;
--		}
--	}
--	old = tracepoint_entry_add_probe(entry, probe);
--	if (IS_ERR(old)) {
--		if (!entry->refcount)
--			remove_tracepoint(entry);
--		ret = PTR_ERR(old);
--		goto end;
--	}
-+	old = tracepoint_add_probe(name, probe);
- 	mutex_unlock(&tracepoints_mutex);
-+	if (IS_ERR(old))
-+		return PTR_ERR(old);
-+
- 	tracepoint_update_probes();		/* may update entry */
- 	release_probes(old);
- 	return 0;
--end:
--	mutex_unlock(&tracepoints_mutex);
--	return ret;
- }
- EXPORT_SYMBOL_GPL(tracepoint_probe_register);
- 
-+static void *tracepoint_remove_probe(const char *name, void *probe)
-+{
-+	struct tracepoint_entry *entry;
-+	void *old;
-+
-+	entry = get_tracepoint(name);
-+	if (!entry)
-+		return ERR_PTR(-ENOENT);
-+	old = tracepoint_entry_remove_probe(entry, probe);
-+	if (IS_ERR(old))
-+		return old;
-+	if (!entry->refcount)
-+		remove_tracepoint(entry);
-+	return old;
-+}
-+
- /**
-  * tracepoint_probe_unregister -  Disconnect a probe from a tracepoint
-  * @name: tracepoint name
-@@ -351,31 +371,105 @@ EXPORT_SYMBOL_GPL(tracepoint_probe_regis
-  */
- int tracepoint_probe_unregister(const char *name, void *probe)
- {
--	struct tracepoint_entry *entry;
- 	void *old;
--	int ret = -ENOENT;
- 
- 	mutex_lock(&tracepoints_mutex);
--	entry = get_tracepoint(name);
--	if (!entry)
--		goto end;
--	old = tracepoint_entry_remove_probe(entry, probe);
--	if (IS_ERR(old)) {
--		ret = PTR_ERR(old);
--		goto end;
--	}
--	if (!entry->refcount)
--		remove_tracepoint(entry);
-+	old = tracepoint_remove_probe(name, probe);
- 	mutex_unlock(&tracepoints_mutex);
-+	if (IS_ERR(old))
-+		return PTR_ERR(old);
-+
- 	tracepoint_update_probes();		/* may update entry */
- 	release_probes(old);
- 	return 0;
--end:
--	mutex_unlock(&tracepoints_mutex);
--	return ret;
- }
- EXPORT_SYMBOL_GPL(tracepoint_probe_unregister);
- 
-+static LIST_HEAD(old_probes);
-+static int need_update;
-+
-+static void tracepoint_add_old_probes(void *old)
-+{
-+	need_update = 1;
-+	if (old) {
-+		struct tp_probes *tp_probes = container_of(old,
-+			struct tp_probes, probes[0]);
-+		list_add(&tp_probes->u.list, &old_probes);
-+	}
-+}
-+
-+/**
-+ * tracepoint_probe_register_noupdate -  register a probe but not connect
-+ * @name: tracepoint name
-+ * @probe: probe handler
-+ *
-+ * caller must call tracepoint_probe_update_all()
-+ */
-+int tracepoint_probe_register_noupdate(const char *name, void *probe)
-+{
-+	void *old;
-+
-+	mutex_lock(&tracepoints_mutex);
-+	old = tracepoint_add_probe(name, probe);
-+	if (IS_ERR(old)) {
-+		mutex_unlock(&tracepoints_mutex);
-+		return PTR_ERR(old);
-+	}
-+	tracepoint_add_old_probes(old);
-+	mutex_unlock(&tracepoints_mutex);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(tracepoint_probe_register_noupdate);
-+
-+/**
-+ * tracepoint_probe_unregister_noupdate -  remove a probe but not disconnect
-+ * @name: tracepoint name
-+ * @probe: probe function pointer
-+ *
-+ * caller must call tracepoint_probe_update_all()
-+ */
-+int tracepoint_probe_unregister_noupdate(const char *name, void *probe)
-+{
-+	void *old;
-+
-+	mutex_lock(&tracepoints_mutex);
-+	old = tracepoint_remove_probe(name, probe);
-+	if (IS_ERR(old)) {
-+		mutex_unlock(&tracepoints_mutex);
-+		return PTR_ERR(old);
-+	}
-+	tracepoint_add_old_probes(old);
-+	mutex_unlock(&tracepoints_mutex);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(tracepoint_probe_unregister_noupdate);
-+
-+/**
-+ * tracepoint_probe_update_all -  update tracepoints
-+ */
-+void tracepoint_probe_update_all(void)
-+{
-+	LIST_HEAD(release_probes);
-+	struct tp_probes *pos, *next;
-+
-+	mutex_lock(&tracepoints_mutex);
-+	if (!need_update) {
-+		mutex_unlock(&tracepoints_mutex);
-+		return;
-+	}
-+	if (!list_empty(&old_probes))
-+		list_replace_init(&old_probes, &release_probes);
-+	need_update = 0;
-+	mutex_unlock(&tracepoints_mutex);
-+
-+	tracepoint_update_probes();
-+	list_for_each_entry_safe(pos, next, &release_probes, u.list) {
-+		list_del(&pos->u.list);
-+		call_rcu_sched(&pos->u.rcu, rcu_free_old_probes);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(tracepoint_probe_update_all);
-+
- /**
-  * tracepoint_get_iter_range - Get a next tracepoint iterator given a range.
-  * @tracepoint: current tracepoints (in), next tracepoint (out)
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
