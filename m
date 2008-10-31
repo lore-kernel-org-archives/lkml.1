@@ -1,248 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753431AbYJaPFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753041AbYJaPIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753431AbYJaPFo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 11:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYJaPFb
+	id S1753041AbYJaPIo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 11:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbYJaPId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 11:05:31 -0400
-Received: from mail42.e.nsc.no ([193.213.115.42]:39260 "EHLO mail42.e.nsc.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752940AbYJaPF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 11:05:29 -0400
-From: Henrik Austad <henrik@austad.us>
-Reply-To: henrik@austad.us
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Deadline scheduling (was: Re: Rearranging layout of code in the scheduler)
-Date: Fri, 31 Oct 2008 16:05:07 +0100
-User-Agent: KMail/1.9.10
-Cc: faggioli@gandalf.sssup.it, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>, fabio@gandalf.sssup.it,
-       Michael Trimarchi <trimarchimichael@yahoo.it>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "gregory.haskins" <gregory.haskins@gmail.com>
-References: <200810281634.11285.henrik@austad.us> <20081031120921.GA6824@alecto.austad.us> <1225459808.7803.1481.camel@twins>
-In-Reply-To: <1225459808.7803.1481.camel@twins>
+	Fri, 31 Oct 2008 11:08:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33485 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751530AbYJaPIc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 11:08:32 -0400
+Date: Fri, 31 Oct 2008 08:07:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Jonathan Corbet <corbet@lwn.net>, Ingo Molnar <mingo@elte.hu>,
+       Robert Hancock <hancockr@shaw.ca>, e1000-devel@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.28-rc2 hates my e1000e
+In-Reply-To: <86802c440810302108h48046c08x3bbdcd0e35fd31b7@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0810310800120.21084@nehalem.linux-foundation.org>
+References: <fa.P5jmIAOhSJ192sfWD+qlec07fe8@ifi.uio.no>  <490A5532.2000704@shaw.ca> <20081030205851.3208f52f@bike.lwn.net> <86802c440810302108h48046c08x3bbdcd0e35fd31b7@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200810311605.09782.henrik@austad.us>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 31 October 2008 14:30:08 Peter Zijlstra wrote:
-> On Fri, 2008-10-31 at 13:09 +0100, Henrik Austad wrote:
-> > Ah, ok, I thought introducing new syscalls was *really* frowned upon.
->
-> We prefer not to, but sometimes there just isn't any other option.
-> If we want to extend struct sched_param, we need 2 new syscalls.
->
-> > > Sure, but implementing an EDF class isn't really all that hard - esp if
-> > > you only want UP.
-> > >
-> > > The real fun is in the PI stuff and schedulability tests on SMP.
-> >
-> > As a start, that is the approach at least I would like to take. Once you
-> > have a proven, functional EDF on a single core, you can extend that to
-> > handle several cores, if you really want to.
->
-> Well, you're of course free to do so, but I don't think its a very
-> interesting thing to do.
->
-> > > > > > The main problem is that, especially to deal with SMP systems, we
-> > > > > > also need to investigate theoretical issues and find out what the
-> > > > > > best approach could be.
-> > > >
-> > > > Yes, well, EDF is not optimal for SMP systems, only for single core.
-> > > > However, you can do a pretty good attempt by assigning tasks to cores
-> > > > in a greedy fashion (simply put the next task at the CPU with the
-> > > > lowest load).
-> > > >
-> > > > As a further optimization, I guess you could do the whole sced-domain
-> > > > thing to minimize the search space.
-> > >
-> > > The problem with greedy binpacking heuristics is that your
-> > > schedulablity test are out the window, making the whole thing useless.
-> >
-> > Well, not really. I mean, to be optimal, you should also consider WCET,
-> > but then, that's really not interesting as IMHO that's the
-> > userspace-programmer's responsibility. If the user wants to add tasks
-> > that sum up to 210% utilization, it's really not much we can do anyway.
-> > You certainly wouldn't want the kernel to stop accepting new jobs.
-> >
-> > So, keep the kernel logic as simple as possible and move the job to the
-> > user. By keeping the kernel logic simple - we make the job easier for the
-> > end-users. A very complex EDF-scheduler will make the testing very
-> > difficult.
-> >
-> > If, on the other hand, we *know* that the scheduler is not optimal, but
-> > that it behaves in a predictable manner, the end users have a simpler
-> > task of finding out why something bad happened.
-> >
-> > Because, no matter *what* you do, and *how* you implement it, with
-> > *whatever* features, there will be cases when things fall apart, and 
-> > having a simple, predictable scheduler will be necessary to figure it
-> > out.
->
-> I agree that the scheduler should be simple, and even something like
-> PD^2 is relatively simple.
->
-> But I disagree that we should not do schedulability tests. Doing those,
-> and esp. enforcing tasks to their given limits increases the QoS for
-> others in the presence of faulty/malicious tasks.
->
-> Also, WCET is still the users responsibility.
->
-> If for each deadline task you specify a period, a deadline and a budget.
-> Then the WCET computation is reflected in the budget.
->
-> By enforcing the schedulability test and execution budget you raise the
-> quality of service, because even in the presence of a mis-behaving task
-> only that task will be impacted. The other tasks will still meet their
-> deadlines.
 
-Ah, ok. I see.
 
->
-> > > > No. You should have *either* FIFO/RR *or* EDF, not both at the same
-> > > > time. If you absolutely require both, you should at least separate
-> > > > them on a per-core basis. If you mix them, they need to be aware of
-> > > > the other in order to make the right descision, and that is not good.
-> > >
-> > > We _have_ to have both. Its that simple.
-> >
-> > No, we do not. Or, at least not at the same time (see below)
-> >
-> > > POSIX mandates we have SCHED_FIFO/RR, there is tons and tons of
-> > > userspace that uses it, we cannot just replace it with a deadline
-> > > scheduler.
-> >
-> > I didn't mean to rip the whole fifo/rr out of the kernel, but adding a
-> > switch at compile-time so that you could choose *either* normal, static
-> > RT *or* EDF. Then we could, at least for the first few versions, have it
-> > depend on !SMP to avoid the whole SMP-non-optimal-mess.
->
-> But _why_? why not leave FIFO/RR in? There is absolutely no downside to
-> keeping it around.
+On Thu, 30 Oct 2008, Yinghai Lu wrote:
 
-My motivation was the increased complexity in meeting deadlines etc. By having 
-only EDF (or only RR/FIFO) things would be a lot simpler. Life is not simple 
-it seems :-)
-
->
-> > > Thing is, you have to run hard tasks first, and scheduler weaker forms
-> > > in its slack time, otherwise you cannot guarantee anything.
+> On Thu, Oct 30, 2008 at 7:58 PM, Jonathan Corbet <corbet@lwn.net> wrote:
 > >
-> > Well, then you suddenly introduce priorities to the deadlines, and that
-> > is not good. A hard task is not more important than a soft, but the
-> > effect of missing the deadline is. If the schedule is infeasible, it
-> > really doesn't matter what you do, as you will miss deadlines, and if you
-> > prioritize hard tasks, you will end up starving firm and soft
+> > /proc/iomem looks like this with 2.6.28-rc2:
 > >
-> > Before you go on and tell me how wrong I am, note that I don't disagree
-> > with you, I think choosing hrt before the others, is the best solution
-> > from an implementation point of view.
->
-> This is, if you make the soft-deadline class aware of the hard-deadline
-> class's tasks and schedulability contraints, then you can keep the
-> soft-rt class schedulable too.
->
-> So srt is in no way less important, its just has less restrictions on
-> the schedule, therefore we can run it in the hrt slack/idle time.
->
-> And adding the schedulability test in the kernel avoids these starvation
-> issues, because you just cannot.
->
-> > > On UP - which is not interesting on a general purpose kernel that runs
-> > > on machines with up to 4096 CPUs.
-> >
-> > But, and pardon my ignorance, will an EDF-scheduler be intersting for
-> > such a large system? From what I've gathered, small systems are the ones
-> > that could benefit from an EDF as you can analyze and predict behaviour,
-> > and then, since EDF is optimal, tune the CPU-freq down and still know
-> > that things will work.
-> >
-> > Some embedded people can probably provide a lot better input here than
-> > me, as this is just a general idea I snapped up 'somewhere' (where
-> > somewhere is an element of the set of all places I've been the last 6
-> > months).
->
-> Not that large indeed, but people are interested in running RT workloads
-> on machines in the 32/64 scale.
->
-> And even the embedded folks are now staring quad core arm11 chips in the
-> face, wondering how to do things.
+> > 00000000-0009fbff : System RAM
+> > 000f0000-000fffff : reserved
+> > 00100000-be4ff7ff : System RAM
+> >  00200000-004a6e45 : Kernel code
+> >  004a6e46-00649b77 : Kernel data
+> >  006c4000-007585ff : Kernel bss
+> > be4ff800-be553bff : ACPI Non-volatile Storage
+> > be553c00-be555bff : ACPI Tables
+> > be555c00-beffffff : reserved
+> > c0000000-cfffffff : 0000:00:02.0
+> > d0000000-d3ffffff : PCI Bus 0000:02
+> >  d0000000-d3ffffff : 0000:02:00.0
+> >    d0000000-d07fffff : ivtv encoder
+> >    d2000000-d200ffff : ivtv registers
+> > d4000000-d4000fff : Intel Flush Page
+> > e0000000-fe7fffff : reserved
+> > fe800000-fe8fffff : PCI Bus 0000:01
+> >  fe800000-fe8fffff : reserved
+> > fe900000-fe9d9aff : reserved
+> > fe9d9b00-fe9d9bff : 0000:00:1f.3
+> >  fe9d9b00-fe9d9bff : reserved
+> > fe9d9c00-fe9d9fff : 0000:00:1a.7
+> >  fe9d9c00-fe9d9fff : reserved
+> > fe9da000-fe9dafff : 0000:00:03.3
+> >  fe9da000-fe9dafff : reserved
+> > fe9db000-fe9dbfff : 0000:00:19.0
+> >  fe9db000-fe9dbfff : reserved
+> > fe9dc000-fe9dffff : 0000:00:1b.0
+> >  fe9dc000-fe9dffff : reserved
+> > fe9e0000-fe9fffff : 0000:00:19.0
+> >  fe9e0000-fe9fffff : reserved
+> 
+> your BIOS allocate that to your nic, and also it put that in reserved
+> in e820 table.
 
-Hmm, I must admit, that is a very good point.
+Yeah. I advocated using 'insert_resource_expand_to_fit()' instead of using 
+'reserve_region_with_split()'. There was some reason Yinghai didn't like 
+that, though. 
 
->
-> > > Then there are the pfair class of scheduling algorithms which can
-> > > theoretically yield up to 100% utilization on SMP systems.
-> >
-> > Do you know about any pratical attempts on this, and what kind of result
-> > that produced?
->
-> Fairly decent, http://www.cs.unc.edu/~anderson/papers/rtss08b.pdf
+The important part is that we should put the reserved resource _outside_ 
+the ones that it conflicts with, not inside.
 
-Thanks!
+> for 2.6.28, it change to honor PCI BAR than others...and at same time
+> use reserve_region_with_split ...
+> put the overlapping to reserved..
+> 
+> so solution will be:
+> 1.rework reserve_region_with_split not to put the overlapping to reserved...
 
->
-> > > > Besides that, EDF is the simplest, most brain-dead scheduler you can
-> > > > imagine. Basically you want to add the deadline to the tasks, put it
-> > > > in a sorted list and pick the leftmost task every time untill it
-> > > > completes.
-> > >
-> > > Sure, and all that is useless without schedulability tests.
-> >
-> > Yes, but should the kernel do the schedulability test? Or should the ball
-> > be passed on to userspace? To analyze the schedulability, you would need
-> > the worst case execution time (WCET) of the process, and if the
-> > kernel/scheduler should start trying to estimate that...
-> >
-> > So, as a start, why not just 'ignore' WCET in the first versions, and
-> > that can be added later on, if necessary.
->
-> Like said above, WCET is represented in the execution budget.
->
-> > A lot of good points, and I certainly see your side of it. However (and
-> > yes, I have to argue a bit more ;)), I don't think an EDF-scheduler
-> > should contain a lot of features.
-> >
-> > If you want to use the EDF, why not give the user a list of consequenses
-> > like - Only a single core
->
-> There won't be a single core machine left soon ;-)
->
-> > - No other RT-scheduler, if other userspace program breaks, so be it, the
-> > user has been warned.
->
-> That's a no go, and I don't see why you would need that.
->
-> > - Best effort only
->
-> That's pretty useless imho. Best-effort and RT are a bit contradictory.
->
-> > - Provide handlers for a given set of signals that will be sent to any
-> >   application missing a deadline
->
-> Yeah, the idea was to send SIGXCPU to tasks who exceed their budget (and
-> thus will miss their deadline).
->
-> > - no cpu-scaling
-> > - ... keep going, basically strip away every piece of dynamic behaviour
-> > and complex scheduling code
->
-> I'm thinking there's little useful left after all that ;-)
+This would certainly be acceptable - we don't care that it's reserved, 
+since we already know about it. 
 
-bah, you just picked all my arguments to shreds and convinced me I'm wrong. I 
-guess it's back to the drawing board then, but now I have a better 
-understanding at least.
+> 2. or update pci_request_region to check if conflicts is with name "reserved"
 
-Thans for all the feedback guys, especially Peter! I really appreciate this!
+No, that would be horribly wrong. 
 
--- 
-med Vennlig Hilsen - Yours Sincerely
-Henrik Austad
+Jonathan, what do things look like with the simple "use 'expand_to_fit'" 
+patch instead, ie something like this:
+
+			Linus
+
+---
+ arch/x86/kernel/e820.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index ce97bf3..ebe712c 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -1318,7 +1318,7 @@ void __init e820_reserve_resources_late(void)
+ 	res = e820_res;
+ 	for (i = 0; i < e820.nr_map; i++) {
+ 		if (!res->parent && res->end)
+-			reserve_region_with_split(&iomem_resource, res->start, res->end, res->name);
++			insert_resource_expand_to_fit(&iomem_resource, res->start, res->end, res->name);
+ 		res++;
+ 	}
+ }
