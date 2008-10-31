@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752629AbYJaQqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbYJaQrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752629AbYJaQqV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 12:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbYJaQqN
+	id S1753188AbYJaQrO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 12:47:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbYJaQq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 12:46:13 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:38783 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbYJaQqM (ORCPT
+	Fri, 31 Oct 2008 12:46:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48076 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750881AbYJaQq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 12:46:12 -0400
-Date: Fri, 31 Oct 2008 12:46:10 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] ftrace document version update
-In-Reply-To: <20081031093152.efbb65c1.randy.dunlap@oracle.com>
-Message-ID: <alpine.DEB.1.10.0810311245160.22754@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0810231921590.4182@gandalf.stny.rr.com> <20081026193339.91e0c644.randy.dunlap@oracle.com> <alpine.DEB.1.10.0810311102280.20404@gandalf.stny.rr.com> <20081031093152.efbb65c1.randy.dunlap@oracle.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 31 Oct 2008 12:46:58 -0400
+Date: Fri, 31 Oct 2008 09:46:19 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Jonathan Corbet <corbet@lwn.net>, Ingo Molnar <mingo@elte.hu>,
+       Robert Hancock <hancockr@shaw.ca>, e1000-devel@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.28-rc2 hates my e1000e
+In-Reply-To: <86802c440810310935w2f739679s9deaf28f6d9e64c9@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0810310944260.21084@nehalem.linux-foundation.org>
+References: <fa.P5jmIAOhSJ192sfWD+qlec07fe8@ifi.uio.no>  <490A5532.2000704@shaw.ca> <20081030205851.3208f52f@bike.lwn.net>  <86802c440810302108h48046c08x3bbdcd0e35fd31b7@mail.gmail.com>  <alpine.LFD.2.00.0810310800120.21084@nehalem.linux-foundation.org> 
+ <alpine.LFD.2.00.0810310839380.21084@nehalem.linux-foundation.org>  <20081031100040.1f0cf34f@bike.lwn.net>  <alpine.LFD.2.00.0810310916050.21084@nehalem.linux-foundation.org> <86802c440810310935w2f739679s9deaf28f6d9e64c9@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,25 +29,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Update the version that the ftrace document was written for.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- Documentation/ftrace.txt |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Fri, 31 Oct 2008, Yinghai Lu wrote:
+> 
+> then we don't need e820_reserve_resources_late, right?
 
-Index: linux-tip.git/Documentation/ftrace.txt
-===================================================================
---- linux-tip.git.orig/Documentation/ftrace.txt	2008-10-31 12:44:28.000000000 -0400
-+++ linux-tip.git/Documentation/ftrace.txt	2008-10-31 12:44:58.000000000 -0400
-@@ -8,7 +8,7 @@ Copyright 2008 Red Hat Inc.
- Reviewers:   Elias Oltmanns, Randy Dunlap, Andrew Morton,
- 	     John Kacur, and David Teigland.
- 
--Written for: 2.6.27-rc1
-+Written for: 2.6.28-rc2
- 
- Introduction
- ------------
+Wrong.
 
+Think about exactly the broken case: a buggy e820 BIOS sets the e820 map 
+resource listing so that it *straddles* a real physical resource.
 
+The fact is, the "late" part isn't because of IORESOURCE_BUSY. It's 
+because FIRMWARE IS INEVITABLY A STINKING PILE OF BUGGY SH*T THAT MUST 
+NOT BE ALLOWED TO SCREW UP DEVICE DISCOVERY.
+
+Sorry for shouting, but people really need to understand this.
+
+			Linus
