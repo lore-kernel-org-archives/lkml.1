@@ -1,105 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbYJaQZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450AbYJaQ0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369AbYJaQZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 12:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbYJaQZr
+	id S1753450AbYJaQ0l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 12:26:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYJaQ0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 12:25:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34402 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751267AbYJaQZr (ORCPT
+	Fri, 31 Oct 2008 12:26:31 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:37635 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbYJaQ0a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 12:25:47 -0400
-Date: Fri, 31 Oct 2008 09:24:40 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jonathan Corbet <corbet@lwn.net>
-cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Robert Hancock <hancockr@shaw.ca>, e1000-devel@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.28-rc2 hates my e1000e
-In-Reply-To: <20081031100040.1f0cf34f@bike.lwn.net>
-Message-ID: <alpine.LFD.2.00.0810310916050.21084@nehalem.linux-foundation.org>
-References: <fa.P5jmIAOhSJ192sfWD+qlec07fe8@ifi.uio.no> <490A5532.2000704@shaw.ca> <20081030205851.3208f52f@bike.lwn.net> <86802c440810302108h48046c08x3bbdcd0e35fd31b7@mail.gmail.com> <alpine.LFD.2.00.0810310800120.21084@nehalem.linux-foundation.org>
- <alpine.LFD.2.00.0810310839380.21084@nehalem.linux-foundation.org> <20081031100040.1f0cf34f@bike.lwn.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 31 Oct 2008 12:26:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=qeTrP9RBUYjxrpa7mKdVI0DGl3NZ2mIKAAEfhUbCjw6r+Rr+j22bctOreJOfRbVNoV
+         oKcnon+I7N4G3gx5RAjBcUBWk347aVgmhgJF9Rp3bpS+8CeflVQtqiOdE+eJ6MlC4N2h
+         Di+KcKPCKh5IodwYWwxK1SFY05I5wh14prvlY=
+Message-ID: <40f31dec0810310926p6edd0af5o24d7616eb54c6d0@mail.gmail.com>
+Date: Fri, 31 Oct 2008 18:26:28 +0200
+From: "Nick Kossifidis" <mickflemm@gmail.com>
+To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+Subject: Re: ath5k gets lost with eeepc-laptop removal
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       willy@linux.intel.com, lrodriguez@atheros.com
+In-Reply-To: <20081031110502.18e33eba@doriath.conectiva>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081031110502.18e33eba@doriath.conectiva>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2008/10/31 Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>:
+>
+>  Hi guys,
+>
+>  If I do a 'rmmod eeepc-laptop', while connected to my AP, I get the
+> following error messages from ath5k:
+>
+> """
+> ath5k phy0: noise floor calibration timeout (2417MHz)
+> ath5k phy0: failed to wakeup the MAC Chip
+> ath5k phy0: can't reset hardware (-5)
+> ath5k phy0: failed to wakeup the MAC Chip
+> ath5k phy0: can't reset hardware (-5)
+> wlan0: No ProbeResp from current AP 00:1d:0f:e9:c7:c0 - assume out of range
+> ath5k phy0: failed to wakeup the MAC Chip
+> ath5k phy0: ath5k_chan_set: unable to reset channel (2412 Mhz)
+> wlan0: failed to set freq to 2412 MHz for scan
+> ath5k phy0: failed to wakeup the MAC Chip
+> ath5k phy0: ath5k_chan_set: unable to reset channel (2417 Mhz)
+> wlan0: failed to set freq to 2417 MHz for scan
+> ath5k phy0: failed to wakeup the MAC Chip
+> ath5k phy0: ath5k_chan_set: unable to reset channel (2422 Mhz)
+> wlan0: failed to set freq to 2422 MHz for scan
+> ath5k phy0: failed to wakeup the MAC Chip
+> ath5k phy0: ath5k_chan_set: unable to reset channel (2427 Mhz)
+> wlan0: failed to set freq to 2427 MHz for scan
+> ath5k phy0: failed to wakeup the MAC Chip
+> ath5k phy0: ath5k_chan_set: unable to reset channel (2432 Mhz)
+> wlan0: failed to set freq to 2432 MHz for scan
+> wlan0: failed to set freq to 2437 MHz for scan
+> wlan0: failed to set freq to 2442 MHz for scan
+> wlan0: failed to set freq to 2447 MHz for scan
+> wlan0: failed to set freq to 2452 MHz for scan
+> wlan0: failed to set freq to 2457 MHz for scan
+> wlan0: failed to set freq to 2462 MHz for scan
+> wlan0: failed to set freq to 2467 MHz for scan
+> wlan0: failed to set freq to 2472 MHz for scan
+> wlan0: failed to set freq to 2484 MHz for scan
+> wlan0: failed to restore operational channel after scan
+> wlan0: authenticate with AP 00:1d:0f:e9:c7:c0
+> wlan0: authenticate with AP 00:1d:0f:e9:c7:c0
+> wlan0: authenticate with AP 00:1d:0f:e9:c7:c0
+> wlan0: authentication with AP 00:1d:0f:e9:c7:c0 timed out
+> """
+>
+>  Then I lost my wireless connection.
+>
+>  I'm running latest Linus git tree (2.6.28-rc2) on a Eeepc 701.
+>
+>  The problem doesn't happen on 2.6.27.4, but as 2.6.28-rc1 doesn't
+> boot on this machine, it would be a bit difficult to bisect it.
+>
+>  Thanks.
+>
+
+After this does ath_info work ?
 
 
-On Fri, 31 Oct 2008, Jonathan Corbet wrote:
-> 
-> Things change a bit with this patch, but the e1000e still fails to
-> initialize:
-
-Ahahhh! My bad. I think this was actually discussed back when the whole 
-reserved-memory-handling thing was being worked on, but it got ignored 
-because none of the developers actually ever had any machines with this 
-issue, and the whole (and only) reason for the change was some odd sound 
-card initialization issue if I recall correctly.
-
-The problem (I think) is that the e820 resource handling doesn't insert 
-the resources as some kind of magic PCI resource, but it inserts them as a 
-"I am a driver, and I actively _use_ this resource".
-
-Which means that it all ends up being very busy, and then when a PCI 
-driver says "I now want to use this", you get EBUSY.
-
-Does this patch work for you?
-
-A resource doesn't have to be busy for the resource allocator to try to 
-avoid it, so the only thing that BUSY bit does is to not allow people who 
-_do_ want to use the resources they know about from using them.
-
-So we should mark the resources busy only if we _really_ use them (like 
-the kernel *RAM* resources).
-
-Oh, and this time the patch even compiles. It includes the previous 
-change, obviously.
-
-Btw, this shows another (unrelated) issue: the BUSY bit (along with 
-various other resource flags) doesn't show up in /proc/iomem, so these 
-kinds of issues end up being debugged totally "blind". Not good.
-
-		Linus
-
----
- arch/x86/kernel/e820.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index ce97bf3..7aafeb5 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -1290,15 +1290,17 @@ void __init e820_reserve_resources(void)
- 		res->start = e820.map[i].addr;
- 		res->end = end;
- 
--		res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-+		res->flags = IORESOURCE_MEM;
- 
- 		/*
- 		 * don't register the region that could be conflicted with
- 		 * pci device BAR resource and insert them later in
- 		 * pcibios_resource_survey()
- 		 */
--		if (e820.map[i].type != E820_RESERVED || res->start < (1ULL<<20))
-+		if (e820.map[i].type != E820_RESERVED || res->start < (1ULL<<20)) {
-+			res->flags |= IORESOURCE_BUSY;
- 			insert_resource(&iomem_resource, res);
-+		}
- 		res++;
- 	}
- 
-@@ -1318,7 +1320,7 @@ void __init e820_reserve_resources_late(void)
- 	res = e820_res;
- 	for (i = 0; i < e820.nr_map; i++) {
- 		if (!res->parent && res->end)
--			reserve_region_with_split(&iomem_resource, res->start, res->end, res->name);
-+			insert_resource_expand_to_fit(&iomem_resource, res);
- 		res++;
- 	}
- }
+-- 
+GPG ID: 0xD21DB2DB
+As you read this post global entropy rises. Have Fun ;-)
+Nick
