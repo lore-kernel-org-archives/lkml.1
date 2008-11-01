@@ -1,407 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752580AbYKAKQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752681AbYKAKRO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752580AbYKAKQN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 06:16:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbYKAKP5
+	id S1752681AbYKAKRO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 06:17:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbYKAKQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 06:15:57 -0400
-Received: from smtp.zeuux.org ([210.51.160.52]:60242 "EHLO z.billxu.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751279AbYKAKP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 06:15:56 -0400
-Date: Sat, 1 Nov 2008 18:15:49 +0800
-From: Jianjun Kong <jianjun@zeuux.org>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: netdev <netdev@vger.kernel.org>,
-       Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
-Subject: [PATCH/1] nets:clean up net/unix/af_unix.c garbage.c
-	sysctl_net_unix.c
-Message-ID: <20081101101549.GF6556@ubuntu>
+	Sat, 1 Nov 2008 06:16:58 -0400
+Received: from monty.telenet-ops.be ([195.130.132.56]:35896 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751310AbYKAKQ5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Nov 2008 06:16:57 -0400
+Date: Sat, 1 Nov 2008 11:16:52 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH] tracing: fix a build error on alpha and m68k
+In-Reply-To: <20081031095544.GI30317@elte.hu>
+Message-ID: <Pine.LNX.4.64.0811011116010.7456@anakin>
+References: <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com>
+ <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com>
+ <49008D12.5090204@gmail.com> <Pine.LNX.4.64.0810231635440.18978@anakin>
+ <c62985530810230757r411b4e3dj4ecec649cf8cf0b3@mail.gmail.com>
+ <Pine.LNX.4.64.0810231727430.18978@anakin> <4900B414.7090002@gmail.com>
+ <20081023163433.GA3160@x200.localdomain> <20081030214910.GA14679@x200.localdomain>
+ <Pine.LNX.4.64.0810310949190.22521@anakin> <20081031095544.GI30317@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 31 Oct 2008, Ingo Molnar wrote:
+> * Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > On Fri, 31 Oct 2008, Alexey Dobriyan wrote:
+> > > On Thu, Oct 23, 2008 at 08:34:33PM +0400, Alexey Dobriyan wrote:
+> > > > On Thu, Oct 23, 2008 at 07:27:48PM +0200, Frederic Weisbecker wrote:
+> > > > > When tracing is enabled, some arch have included <linux/irqflags.h>
+> > > > > on their <asm/system.h> but others like alpha or m68k don't.
+> > > > > 
+> > > > > Build error on alpha:
+> > > > > 
+> > > > > kernel/trace/trace.c: In function 'tracing_generic_entry_update':
+> > > > > kernel/trace/trace.c:658: error: implicit declaration of function 'irqs_disabled_flags'
+> > > 
+> > > FYI, this error still exists in mainline (7f82f000ed030d1108b4de47d9e2d556092980c6).
+> > 
+> > Now it hit mainline (I can't be bothered to develop _new_ code to 
+> > fix things in -next ;-), I'm implementing irqs_disabled_flags() for 
+> > m68k. Stay tuned...
+> 
+> this (now mainline) commit should have fixed it:
+> 
+>  9244489: ftrace: handle archs that do not support irqs_disabled_flags
+> 
+> can you still see problems?
 
-clean up net/unix/af_unix.c garbage.c sysctl_net_unix.c
+Yes, the "undefined reference to `save_stack_trace'", as already pointed out
+by Al. I'm trying his fix now...
 
-Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
----
- net/unix/af_unix.c         |   73 +++++++++++++++++++++----------------------
- net/unix/garbage.c         |   12 +++---
- net/unix/sysctl_net_unix.c |    1 -
- 3 files changed, 42 insertions(+), 44 deletions(-)
+Gr{oetje,eeting}s,
 
-diff --git a/net/unix/af_unix.c b/net/unix/af_unix.c
-index dc504d3..0b80634 100644
---- a/net/unix/af_unix.c
-+++ b/net/unix/af_unix.c
-@@ -211,7 +211,7 @@ static int unix_mkname(struct sockaddr_un * sunaddr, int len, unsigned *hashp)
- 		 * we are guaranteed that it is a valid memory location in our
- 		 * kernel address buffer.
- 		 */
--		((char *)sunaddr)[len]=0;
-+		((char *)sunaddr)[len] = 0;
- 		len = strlen(sunaddr->sun_path)+1+sizeof(short);
- 		return len;
- 	}
-@@ -392,9 +392,9 @@ static int unix_release_sock (struct sock *sk, int embrion)
- 
- 	wake_up_interruptible_all(&u->peer_wait);
- 
--	skpair=unix_peer(sk);
-+	skpair = unix_peer(sk);
- 
--	if (skpair!=NULL) {
-+	if (skpair != NULL) {
- 		if (sk->sk_type == SOCK_STREAM || sk->sk_type == SOCK_SEQPACKET) {
- 			unix_state_lock(skpair);
- 			/* No more writes */
-@@ -414,7 +414,7 @@ static int unix_release_sock (struct sock *sk, int embrion)
- 	/* Try to flush out this socket. Throw out buffers at least */
- 
- 	while ((skb = skb_dequeue(&sk->sk_receive_queue)) != NULL) {
--		if (state==TCP_LISTEN)
-+		if (state == TCP_LISTEN)
- 			unix_release_sock(skb->sk, 1);
- 		/* passed fds are erased in the kfree_skb hook	      */
- 		kfree_skb(skb);
-@@ -630,7 +630,7 @@ static int unix_create(struct net *net, struct socket *sock, int protocol)
- 		 *	nothing uses it.
- 		 */
- 	case SOCK_RAW:
--		sock->type=SOCK_DGRAM;
-+		sock->type = SOCK_DGRAM;
- 	case SOCK_DGRAM:
- 		sock->ops = &unix_dgram_ops;
- 		break;
-@@ -736,14 +736,14 @@ static struct sock *unix_find_other(struct net *net,
- 
- 		path_put(&path);
- 
--		err=-EPROTOTYPE;
-+		err = -EPROTOTYPE;
- 		if (u->sk_type != type) {
- 			sock_put(u);
- 			goto fail;
- 		}
- 	} else {
- 		err = -ECONNREFUSED;
--		u=unix_find_socket_byname(net, sunname, len, type, hash);
-+		u = unix_find_socket_byname(net, sunname, len, type, hash);
- 		if (u) {
- 			struct dentry *dentry;
- 			dentry = unix_sk(u)->dentry;
-@@ -757,7 +757,7 @@ static struct sock *unix_find_other(struct net *net,
- put_fail:
- 	path_put(&path);
- fail:
--	*error=err;
-+	*error = err;
- 	return NULL;
- }
- 
-@@ -767,7 +767,7 @@ static int unix_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len)
- 	struct sock *sk = sock->sk;
- 	struct net *net = sock_net(sk);
- 	struct unix_sock *u = unix_sk(sk);
--	struct sockaddr_un *sunaddr=(struct sockaddr_un *)uaddr;
-+	struct sockaddr_un *sunaddr = (struct sockaddr_un *)uaddr;
- 	struct dentry * dentry = NULL;
- 	struct nameidata nd;
- 	int err;
-@@ -779,7 +779,7 @@ static int unix_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len)
- 	if (sunaddr->sun_family != AF_UNIX)
- 		goto out;
- 
--	if (addr_len==sizeof(short)) {
-+	if (addr_len == sizeof(short)) {
- 		err = unix_autobind(sock);
- 		goto out;
- 	}
-@@ -875,8 +875,8 @@ out_mknod_unlock:
- 	mutex_unlock(&nd.path.dentry->d_inode->i_mutex);
- 	path_put(&nd.path);
- out_mknod_parent:
--	if (err==-EEXIST)
--		err=-EADDRINUSE;
-+	if (err == -EEXIST)
-+		err = -EADDRINUSE;
- 	unix_release_addr(addr);
- 	goto out_up;
- }
-@@ -911,7 +911,7 @@ static int unix_dgram_connect(struct socket *sock, struct sockaddr *addr,
- {
- 	struct sock *sk = sock->sk;
- 	struct net *net = sock_net(sk);
--	struct sockaddr_un *sunaddr=(struct sockaddr_un*)addr;
-+	struct sockaddr_un *sunaddr = (struct sockaddr_un *)addr;
- 	struct sock *other;
- 	unsigned hash;
- 	int err;
-@@ -927,7 +927,7 @@ static int unix_dgram_connect(struct socket *sock, struct sockaddr *addr,
- 			goto out;
- 
- restart:
--		other=unix_find_other(net, sunaddr, alen, sock->type, hash, &err);
-+		other = unix_find_other(net, sunaddr, alen, sock->type, hash, &err);
- 		if (!other)
- 			goto out;
- 
-@@ -961,14 +961,14 @@ restart:
- 	 */
- 	if (unix_peer(sk)) {
- 		struct sock *old_peer = unix_peer(sk);
--		unix_peer(sk)=other;
-+		unix_peer(sk) = other;
- 		unix_state_double_unlock(sk, other);
- 
- 		if (other != old_peer)
- 			unix_dgram_disconnected(sk, old_peer);
- 		sock_put(old_peer);
- 	} else {
--		unix_peer(sk)=other;
-+		unix_peer(sk) = other;
- 		unix_state_double_unlock(sk, other);
- 	}
- 	return 0;
-@@ -1004,7 +1004,7 @@ static long unix_wait_for_peer(struct sock *other, long timeo)
- static int unix_stream_connect(struct socket *sock, struct sockaddr *uaddr,
- 			       int addr_len, int flags)
- {
--	struct sockaddr_un *sunaddr=(struct sockaddr_un *)uaddr;
-+	struct sockaddr_un *sunaddr = (struct sockaddr_un *)uaddr;
- 	struct sock *sk = sock->sk;
- 	struct net *net = sock_net(sk);
- 	struct unix_sock *u = unix_sk(sk), *newu, *otheru;
-@@ -1179,13 +1179,13 @@ out:
- 
- static int unix_socketpair(struct socket *socka, struct socket *sockb)
- {
--	struct sock *ska=socka->sk, *skb = sockb->sk;
-+	struct sock *ska = socka->sk, *skb = sockb->sk;
- 
- 	/* Join our sockets back to back */
- 	sock_hold(ska);
- 	sock_hold(skb);
--	unix_peer(ska)=skb;
--	unix_peer(skb)=ska;
-+	unix_peer(ska) = skb;
-+	unix_peer(skb) = ska;
- 	ska->sk_peercred.pid = skb->sk_peercred.pid = task_tgid_vnr(current);
- 	ska->sk_peercred.uid = skb->sk_peercred.uid = current->euid;
- 	ska->sk_peercred.gid = skb->sk_peercred.gid = current->egid;
-@@ -1246,7 +1246,7 @@ static int unix_getname(struct socket *sock, struct sockaddr *uaddr, int *uaddr_
- {
- 	struct sock *sk = sock->sk;
- 	struct unix_sock *u;
--	struct sockaddr_un *sunaddr=(struct sockaddr_un *)uaddr;
-+	struct sockaddr_un *sunaddr = (struct sockaddr_un *)uaddr;
- 	int err = 0;
- 
- 	if (peer) {
-@@ -1323,7 +1323,7 @@ static int unix_dgram_sendmsg(struct kiocb *kiocb, struct socket *sock,
- 	struct sock *sk = sock->sk;
- 	struct net *net = sock_net(sk);
- 	struct unix_sock *u = unix_sk(sk);
--	struct sockaddr_un *sunaddr=msg->msg_name;
-+	struct sockaddr_un *sunaddr = msg->msg_name;
- 	struct sock *other = NULL;
- 	int namelen = 0; /* fake GCC */
- 	int err;
-@@ -1364,7 +1364,7 @@ static int unix_dgram_sendmsg(struct kiocb *kiocb, struct socket *sock,
- 		goto out;
- 
- 	skb = sock_alloc_send_skb(sk, len, msg->msg_flags&MSG_DONTWAIT, &err);
--	if (skb==NULL)
-+	if (skb == NULL)
- 		goto out;
- 
- 	memcpy(UNIXCREDS(skb), &siocb->scm->creds, sizeof(struct ucred));
-@@ -1387,7 +1387,7 @@ restart:
- 
- 		other = unix_find_other(net, sunaddr, namelen, sk->sk_type,
- 					hash, &err);
--		if (other==NULL)
-+		if (other == NULL)
- 			goto out_free;
- 	}
- 
-@@ -1407,7 +1407,7 @@ restart:
- 		err = 0;
- 		unix_state_lock(sk);
- 		if (unix_peer(sk) == other) {
--			unix_peer(sk)=NULL;
-+			unix_peer(sk) = NULL;
- 			unix_state_unlock(sk);
- 
- 			unix_dgram_disconnected(sk, other);
-@@ -1473,10 +1473,10 @@ static int unix_stream_sendmsg(struct kiocb *kiocb, struct socket *sock,
- 	struct sock_iocb *siocb = kiocb_to_siocb(kiocb);
- 	struct sock *sk = sock->sk;
- 	struct sock *other = NULL;
--	struct sockaddr_un *sunaddr=msg->msg_name;
-+	struct sockaddr_un *sunaddr = msg->msg_name;
- 	int err,size;
- 	struct sk_buff *skb;
--	int sent=0;
-+	int sent = 0;
- 	struct scm_cookie tmp_scm;
- 
- 	if (NULL == siocb->scm)
-@@ -1523,9 +1523,9 @@ static int unix_stream_sendmsg(struct kiocb *kiocb, struct socket *sock,
- 		 *	Grab a buffer
- 		 */
- 
--		skb=sock_alloc_send_skb(sk,size,msg->msg_flags&MSG_DONTWAIT, &err);
-+		skb = sock_alloc_send_skb(sk,size,msg->msg_flags&MSG_DONTWAIT, &err);
- 
--		if (skb==NULL)
-+		if (skb == NULL)
- 			goto out_err;
- 
- 		/*
-@@ -1555,7 +1555,7 @@ static int unix_stream_sendmsg(struct kiocb *kiocb, struct socket *sock,
- 		skb_queue_tail(&other->sk_receive_queue, skb);
- 		unix_state_unlock(other);
- 		other->sk_data_ready(other, size);
--		sent+=size;
-+		sent += size;
- 	}
- 
- 	scm_destroy(siocb->scm);
-@@ -1734,7 +1734,7 @@ static int unix_stream_recvmsg(struct kiocb *iocb, struct socket *sock,
- 	struct scm_cookie tmp_scm;
- 	struct sock *sk = sock->sk;
- 	struct unix_sock *u = unix_sk(sk);
--	struct sockaddr_un *sunaddr=msg->msg_name;
-+	struct sockaddr_un *sunaddr = msg->msg_name;
- 	int copied = 0;
- 	int check_creds = 0;
- 	int target;
-@@ -1772,7 +1772,7 @@ static int unix_stream_recvmsg(struct kiocb *iocb, struct socket *sock,
- 
- 		unix_state_lock(sk);
- 		skb = skb_dequeue(&sk->sk_receive_queue);
--		if (skb==NULL)
-+		if (skb == NULL)
- 		{
- 			if (copied >= target)
- 				goto unlock;
-@@ -1884,7 +1884,7 @@ static int unix_shutdown(struct socket *sock, int mode)
- 	if (mode) {
- 		unix_state_lock(sk);
- 		sk->sk_shutdown |= mode;
--		other=unix_peer(sk);
-+		other = unix_peer(sk);
- 		if (other)
- 			sock_hold(other);
- 		unix_state_unlock(sk);
-@@ -1919,7 +1919,7 @@ static int unix_shutdown(struct socket *sock, int mode)
- static int unix_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
- {
- 	struct sock *sk = sock->sk;
--	long amount=0;
-+	long amount = 0;
- 	int err;
- 
- 	switch(cmd)
-@@ -1945,7 +1945,7 @@ static int unix_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
- 			} else {
- 				skb = skb_peek(&sk->sk_receive_queue);
- 				if (skb)
--					amount=skb->len;
-+					amount = skb->len;
- 			}
- 			spin_unlock(&sk->sk_receive_queue.lock);
- 			err = put_user(amount, (int __user *)arg);
-@@ -2077,6 +2077,7 @@ struct unix_iter_state {
- 	struct seq_net_private p;
- 	int i;
- };
-+
- static struct sock *unix_seq_idx(struct seq_file *seq, loff_t pos)
- {
- 	struct unix_iter_state *iter = seq->private;
-@@ -2093,7 +2094,6 @@ static struct sock *unix_seq_idx(struct seq_file *seq, loff_t pos)
- 	return NULL;
- }
- 
--
- static void *unix_seq_start(struct seq_file *seq, loff_t *pos)
- 	__acquires(unix_table_lock)
- {
-@@ -2173,7 +2173,6 @@ static const struct seq_operations unix_seq_ops = {
- 	.show   = unix_seq_show,
- };
- 
--
- static int unix_seq_open(struct inode *inode, struct file *file)
- {
- 	return seq_open_net(inode, file, &unix_seq_ops,
-diff --git a/net/unix/garbage.c b/net/unix/garbage.c
-index 2a27b84..00734e2 100644
---- a/net/unix/garbage.c
-+++ b/net/unix/garbage.c
-@@ -104,8 +104,8 @@ static struct sock *unix_get_socket(struct file *filp)
- 	 *	Socket ?
- 	 */
- 	if (S_ISSOCK(inode->i_mode)) {
--		struct socket * sock = SOCKET_I(inode);
--		struct sock * s = sock->sk;
-+		struct socket *sock = SOCKET_I(inode);
-+		struct sock *s = sock->sk;
- 
- 		/*
- 		 *	PF_UNIX ?
-@@ -124,7 +124,7 @@ static struct sock *unix_get_socket(struct file *filp)
- void unix_inflight(struct file *fp)
- {
- 	struct sock *s = unix_get_socket(fp);
--	if(s) {
-+	if (s) {
- 		struct unix_sock *u = unix_sk(s);
- 		spin_lock(&unix_gc_lock);
- 		if (atomic_long_inc_return(&u->inflight) == 1) {
-@@ -141,7 +141,7 @@ void unix_inflight(struct file *fp)
- void unix_notinflight(struct file *fp)
- {
- 	struct sock *s = unix_get_socket(fp);
--	if(s) {
-+	if (s) {
- 		struct unix_sock *u = unix_sk(s);
- 		spin_lock(&unix_gc_lock);
- 		BUG_ON(list_empty(&u->link));
-@@ -154,7 +154,7 @@ void unix_notinflight(struct file *fp)
- 
- static inline struct sk_buff *sock_queue_head(struct sock *sk)
- {
--	return (struct sk_buff *) &sk->sk_receive_queue;
-+	return (struct sk_buff *)&sk->sk_receive_queue;
- }
- 
- #define receive_queue_for_each_skb(sk, next, skb) \
-@@ -339,7 +339,7 @@ void unix_gc(void)
- 	 */
- 	skb_queue_head_init(&hitlist);
- 	list_for_each_entry(u, &gc_candidates, link)
--		scan_children(&u->sk, inc_inflight, &hitlist);
-+	scan_children(&u->sk, inc_inflight, &hitlist);
- 
- 	spin_unlock(&unix_gc_lock);
- 
-diff --git a/net/unix/sysctl_net_unix.c b/net/unix/sysctl_net_unix.c
-index 77513d7..1f4040c 100644
---- a/net/unix/sysctl_net_unix.c
-+++ b/net/unix/sysctl_net_unix.c
-@@ -61,4 +61,3 @@ void unix_sysctl_unregister(struct net *net)
- 	unregister_sysctl_table(net->unx.ctl);
- 	kfree(table);
- }
--
--- 
-1.5.6.3
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
