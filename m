@@ -1,115 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753187AbYKACaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbYKACeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753187AbYKACaa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 22:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbYKACaW
+	id S1753341AbYKACeT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 22:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbYKACeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 22:30:22 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:48959 "EHLO
-	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751170AbYKACaV (ORCPT
+	Fri, 31 Oct 2008 22:34:06 -0400
+Received: from ti-out-0910.google.com ([209.85.142.190]:50254 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751887AbYKACeF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 22:30:21 -0400
-X-BigFish: VPS-50(z21eWz62a3L1432R98dR936eQ1805M179dR936fO3b5bk8b9ck4cd6k19c2kzzzzz32i6bh68o)
-X-Spam-TCS-SCL: 7:0
-X-WSS-ID: 0K9MUXT-01-C7T-01
-Date: Sat, 1 Nov 2008 03:29:43 +0100
-From: Robert Richter <robert.richter@amd.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: linux kernel <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>
-Subject: Re: linux-2.6.28-rc2 regression : oprofile doesnt work anymore ?
-Message-ID: <20081101022943.GJ1029@erda.amd.com>
-References: <4909F690.9090208@cosmosbay.com>
+	Fri, 31 Oct 2008 22:34:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:references:mime-version:content-type
+         :content-disposition:in-reply-to:x-gpg-fingerprint:user-agent
+         :message-id;
+        b=NGnKBx0GNRCStvbXKk3MVv0yqzYlw0wUw1zdco92AEzZRYT2j4gnFKrs7O6q9MNCkn
+         xtbm2CtcMR0M5pyDiTCejcDTUZBChh3W5U7Xlm0+H4tnYpdP7F4lpMVT2cu4lNyIksVs
+         lUtaIv0JeuxGD0qt7tRbask5z1mo+wNLex3E8=
+Date: Sat, 1 Nov 2008 10:33:58 +0800
+From: Wu Fengguang <fengguang.wu@gmail.com>
+To: John Galloway <John.Galloway@ingres.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: readahead in the 2.6.25+ kernel
+References: <ABB90CDC9A08FF49851AC42557795A1802E6288D@USINVMAILB01.ingres.prv>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4909F690.9090208@cosmosbay.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 01 Nov 2008 02:30:05.0191 (UTC) FILETIME=[BFF79970:01C93BC9]
+In-Reply-To: <ABB90CDC9A08FF49851AC42557795A1802E6288D@USINVMAILB01.ingres.prv>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <1225506841.225780.4979@de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric,
+Hi John,
 
-On 30.10.08 19:01:52, Eric Dumazet wrote:
-> Hi
->
-> I tried to start my favorite tool, and discovered it wont fly on my HP 
-> BL460C G1
->
-> It samples few events then, seems to stop (no more NMI), other than that, 
-> machine
-> still running correctly.
+On Fri, Oct 31, 2008 at 09:00:30PM -0400, John Galloway wrote:
+> 
+> Hi,
+> 
+>   I'm looking into read ahead issues wrt Ingres, particularly wrt mmap.
+> I gather (but am not sure) your readahead patches have been incorporated
+> into the 2.6 kernel around 2.6.15, with some simplfications it seems??
+> Are you still maintaining a distinct patch set?
 
-hmm, I can not reproduce this on my system. I am receiving samples and
-the number is increasing. Andi, could you test this on some of your
-systems?
+The ondemand readahead patch series have been merged into linux 2.6.23/24.
+So I no longer maintain out-of-tree readahead patches.
 
--Robert
+>   And can you help me out about how linux readahead will effect mmap() as
+> opposed to read()?  i.e. is it enabled for mmap() as well?
 
-# opcontrol --dump; opreport 
-CPU: AMD64 family10, speed 2100 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (Cycles outside of halt state) with a unit mask of 0x00 (No unit mask) count 100000
-CPU_CLK_UNHALT...|
-  samples|      %|
-------------------
-    70897 98.6970 vmlinux
-      467  0.6501 libc-2.6.1.so
-      219  0.3049 bash
-      141  0.1963 ld-2.6.1.so
-       43  0.0599 oprofiled
-       15  0.0209 gawk-3.1.5
-       15  0.0209 opreport
-        9  0.0125 libstdc++.so.6.0.8
-        8  0.0111 grep
-        5  0.0070 sshd
-        4  0.0056 libcrypto.so.0.9.8
-        2  0.0028 rm
-        1  0.0014 cat
-        1  0.0014 dirname
-        1  0.0014 ls
-        1  0.0014 mkdir
-        1  0.0014 id
-        1  0.0014 ophelp
-        1  0.0014 libbfd-2.18.so
-        1  0.0014 ntpd
-# grep NMI /proc/interrupts 
-NMI:      20357      14272      20151       9967      20140      13961      16291      20826   Non-maskable interrupts
-# grep NMI /proc/interrupts 
-NMI:      20627      14458      20398      10080      20391      14204      16444      21016   Non-maskable interrupts
-# cat /proc/cpuinfo
-processor	: 0
-vendor_id	: AuthenticAMD
-cpu family	: 16
-model		: 2
-model name	: Quad-Core AMD Opteron(tm) Processor 2352
-stepping	: 3
-cpu MHz		: 2100.000
-cache size	: 512 KB
-physical id	: 0
-siblings	: 4
-core id		: 0
-cpu cores	: 4
-apicid		: 0
-initial apicid	: 0
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 5
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm 3dnowext 3dnow constant_tsc rep_good pni monitor cx16 lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs
-bogomips	: 4189.26
-TLB size	: 1024 4K pages
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 48 bits physical, 48 bits virtual
-power management: ts ttp tm stc 100mhzsteps hwpstate
-# uname -a
-Linux paloma 2.6.28-rc2-oprofile-x86_64-standard #1 SMP Sat Nov 1 01:28:08 CET 2008 x86_64 Quad-Core AMD Opteron(tm) Processor 2352 AuthenticAMD GNU/Linux
+No, mmap readahead is always a dumb and simple 'read-around' one, and
+it seems there is no general interest on improving it.
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+Currently you have two options to affect mmap readahead performance:
+- tune readahead size with command `blockdev --setra'
+- tell kernel to use the ondemand readahead routines with
+  madvise(MADV_SEQUENTIAL)
+
+Note that MADV_SEQUENTIAL is safe to use at least for the current
+readahead implementation, it won't blindly do aggressive readahead on
+seeing MADV_SEQUENTIAL. The flag only switches the readahead routine
+from the dumb read-around one to the somehow smarter readahead logic,
+which _detects_ sequential patterns for us.
+
+As a long term solution, if you get favorable numbers with MADV_SEQUENTIAL,
+that could be a 'first impetus' to improve the default mmap readahead code ;-)
+
+Cheers,
+Fengguang
 
