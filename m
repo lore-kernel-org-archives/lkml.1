@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbYKAWrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbYKAW5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753300AbYKAWrz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 18:47:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbYKAWrr
+	id S1753300AbYKAW5f (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 18:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbYKAW50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 18:47:47 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:11877 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751479AbYKAWrq (ORCPT
+	Sat, 1 Nov 2008 18:57:26 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:12541 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751619AbYKAW5Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 18:47:46 -0400
+	Sat, 1 Nov 2008 18:57:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=VqwQ2mMwhWGkGPsDxzrc6CrC5GW6axxUsaoZBO4obI0GFwG7cXf1IS6snDeUnMu/Zc
-         SLWnRGs1pgRGR4h1lJzX+qHkrcaYVUSL2jweC55TSaGdEXNF4t29iGX7HvD3aNL//vk1
-         v7D94l/GR2OMx60paLidI9Cc+SNPPFxlW1WeY=
-Message-ID: <86802c440811011547k11ab1640h4a0c51fdc6c9fb39@mail.gmail.com>
-Date: Sat, 1 Nov 2008 15:47:46 -0700
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Jonathan Corbet" <corbet@lwn.net>
-Subject: Re: 2.6.28-rc2 hates my e1000e
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Robert Hancock" <hancockr@shaw.ca>,
-       e1000-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>
-In-Reply-To: <20081101164509.5e53762c@bike.lwn.net>
+         :references;
+        b=VI15TiKSNxwh6r1Lta/T4puMXWJU0yAX+LJ7xjx+wvA3aAgJOZ0HIzwiPcxZpHzew0
+         Bps6KRHbr16uHL/SvHW92xy4dBiEUCxeZ0iSenK+BqoXPsYecn/eboLcv+LSEdSGmT3A
+         F/DwRGrxkkrK388ShDBBlpGnbv4ZvUuzTJWF8=
+Message-ID: <6de6b1650811011557j3469581wf01b264ed307e1e3@mail.gmail.com>
+Date: Sat, 1 Nov 2008 20:57:25 -0200
+From: "Rafael Almeida" <almeidaraf@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Weird behaviour on iwl3945 module
+In-Reply-To: <20081031053950.e2d22e55.almeidaraf@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <fa.P5jmIAOhSJ192sfWD+qlec07fe8@ifi.uio.no>
-	 <alpine.LFD.2.00.0810310839380.21084@nehalem.linux-foundation.org>
-	 <20081031100040.1f0cf34f@bike.lwn.net>
-	 <alpine.LFD.2.00.0810310916050.21084@nehalem.linux-foundation.org>
-	 <20081031105105.092ebad3@bike.lwn.net>
-	 <alpine.LFD.2.00.0810310953550.21084@nehalem.linux-foundation.org>
-	 <20081101090154.3d014f57@bike.lwn.net>
-	 <alpine.LFD.2.00.0811010958230.6226@nehalem.linux-foundation.org>
-	 <86802c440811011250g662b8c4di31f2e391c910954e@mail.gmail.com>
-	 <20081101164509.5e53762c@bike.lwn.net>
-X-Google-Sender-Auth: f7a3252975b78ffe
+References: <20081031053950.e2d22e55.almeidaraf@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 1, 2008 at 3:45 PM, Jonathan Corbet <corbet@lwn.net> wrote:
-> On Sat, 1 Nov 2008 12:50:20 -0700
-> "Yinghai Lu" <yinghai@kernel.org> wrote:
+On Fri, Oct 31, 2008 at 5:39 AM, Rafael Cunha de Almeida
+<almeidaraf@gmail.com> wrote:
+> Hello,
 >
->> Jonathan, can you try patch i sent?
->>
->> http://lkml.org/lkml/2008/10/31/274
->> [PATCH] x86: remove PCI bar range from e820 reserved entries
+> I'm using Debian lenny (linux 2.6.26) and I have a iwl3945 wireless
+> card. My laptop is a lenovo r61i. I've notice that, when I turn off
+> the wireles/bluetooth switch the wireless module isn't removed, the
+> kernel even displays a few warnings:
 >
-> OK, I tried it.  No joy.
-..
+> % dmesg | tail -n11
+> [ 1219.735652] iwl3945: Radio Frequency Kill Switch is On:
+> [ 1219.735652] Kill switch must be turned off for wireless networking to work.
+> [ 1219.787767] usb 1-1: USB disconnect, address 2
+> [ 1221.291865] iwl3945: WARNING: Requesting MAC access during RFKILL wakes up NIC
+> [ 1221.294246] iwl3945: MAC is in deep sleep!
+> [ 1221.341983] iwl3945: WARNING: Requesting MAC access during RFKILL wakes up NIC
+> [ 1221.345953] iwl3945: MAC is in deep sleep!
+> [ 1221.405968] iwl3945: WARNING: Requesting MAC access during RFKILL wakes up NIC
+> [ 1221.450835] iwl3945: MAC is in deep sleep!
+> [ 1221.612230] iwl3945: WARNING: Requesting MAC access during RFKILL wakes up NIC
+> [ 1221.632612] ACPI: PCI interrupt for device 0000:03:00.0 disabled
 >
-> Looks to me like Linus's patch is the way to go, at least for now...
+> So, when I turn the switch back on, my wireless card is not
+> operational. I have to manually remove and then reinstall the iwl3945
+> module in order to the device to resume working. The bluetooth device
+> doesn't have that issue.
+>
+> Is that an expected behaviour? Would it be impossible or undesirable
+> to the kernel to behave differently? Is it already fixed in the newest
+> kernel version (or on the -mm branch)? I am willing to hack into the
+> kernel code in order to fix that problem, if someone would give me
+> pointers of where to start.
+>
+> []'s
+> Rafael
 >
 
-yes Linus's is right.
-
-YH
+In order to give the issue some closure, I've recently had the chance
+of running linux 2.6.28-rc2. The kill switch works fine on the new
+version :-). I suggest anyone that's having problems with this
+wireless card to upgrade their kernels, as things seems to have
+changed recently.
