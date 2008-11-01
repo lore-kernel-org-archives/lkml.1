@@ -1,89 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601AbYKALqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719AbYKALyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752601AbYKALqG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 07:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750867AbYKALpy
+	id S1752719AbYKALyh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 07:54:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbYKALy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 07:45:54 -0400
-Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:9625 "EHLO
-	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750791AbYKALpx (ORCPT
+	Sat, 1 Nov 2008 07:54:29 -0400
+Received: from vitalin.sorra.shikadi.net ([64.71.152.201]:3200 "EHLO
+	vitalin.sorra.shikadi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751392AbYKALy2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 07:45:53 -0400
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Max Kellermann <mk@cm4all.com>
-Cc: linux-kernel@vger.kernel.org, gcosta@redhat.com,
-       Grant Coady <grant_lkml@dodo.com.au>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Tom Tucker <tom@opengridcomputing.com>
-In-Reply-To: <1224484046.23068.14.camel@localhost.localdomain>
-References: <20081017123207.GA14979@rabbit.intern.cm-ag>
-	 <1224484046.23068.14.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-9qYq4ITw/WarMglCqsy1"
-Date: Sat, 01 Nov 2008 11:45:27 +0000
-Message-Id: <1225539927.2221.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-SA-Exim-Connect-IP: 192.168.1.5
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCH] NFS regression in 2.6.26?, "task blocked for more than
-	120 seconds"
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
-X-Cloudmark-Analysis: v=1.0 c=1 a=6OAc2UI1ETEA:10 a=Gm1qT94b7fUA:10 a=4fGbTU7hGDYZjGbuzdYA:9 a=GNJKWRz-eLsIR9uMHof3lJJagTwA:4 a=LY0hPdMaydYA:10 a=4jo5AmTwbNOTfM1ua-YA:9 a=Y2sS3Fy1pZop1sd1ThGv9c3uXc4A:4 a=rPt6xJ-oxjAA:10
+	Sat, 1 Nov 2008 07:54:28 -0400
+X-Greylist: delayed 686 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Nov 2008 07:54:28 EDT
+Message-ID: <490C4365.4070805@shikadi.net>
+Date: Sat, 01 Nov 2008 21:54:13 +1000
+From: Adam Nielsen <a.nielsen@shikadi.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.16) Gecko/20080727 Thunderbird/2.0.0.16 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: Dmitry Melekhov <dm@belkam.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: serial port problem
+References: <490C3D92.5060106@belkam.com>
+In-Reply-To: <490C3D92.5060106@belkam.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I connected zyxel modem to port and I see that it gets commsnds- it's
+> data lamp blinks, but I get nothing.
+> Situation is different on my colleague machine- since ubuntu 8.04 he can
+> see in minicom or gtkterm how  connected router boots,
+> but then he can't send someting over several port to router.
+> I created bug report in ubuntu's launchpad, but there is no solution.
+> As I now see this problem exists with kernel from kernel.org could you
+> tell me how can I find where problem is?
 
---=-9qYq4ITw/WarMglCqsy1
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I had a similar problem trying to get a dial-up modem working a couple 
+of months ago.  I could use minicom to connect to the modem and type AT 
+commands and read the responses, but whenever I dialled up I would see 
+"CONNECT 48000" and that would be it.  I couldn't send or receive data 
+from the other end.  After about a minute the ISP I was calling would 
+time out and disconnect me.
 
-On Mon, 2008-10-20 at 07:27 +0100, Ian Campbell wrote:
-> So far I have bisected down to this range and am currently testing
-> acee478 which has been up for >4days.
+I have no idea what the problem was, I even went to the trouble of 
+buying extra serial ports on a PCI card thinking the hardware was 
+faulty, but nothing helped.  In the end I downgraded to 2.6.17.8 (as 
+this version was running on another PC that worked fine with the modem) 
+and suddenly the whole thing worked perfectly.
 
-Another update. It has now bisected down to a small range=20
+So it looks like some bug was introduced into the serial driver at some 
+point, and if you're having problems it must still be in the current 
+kernel version.  I would suggest trying 2.6.17.8 instead (as that worked 
+for me), and if it works for you too you might want to try upgrading 
+until you find which version stops working - then we will know when the 
+problem was first introduced.
 
-7272dcd31d56580dee7693c21e369fd167e137fe SUNRPC: xprt_autoclose() should no=
-t call xprt_disconnect()
-e06799f958bf7f9f8fae15f0c6f519953fb0257c SUNRPC: Use shutdown() instead of =
-close() when disconnecting a TCP socket
-ef80367071dce7d2533e79ae8f3c84ec42708dc8 SUNRPC: TCP clear XPRT_CLOSE_WAIT =
-when the socket is closed for writes
-3b948ae5be5e22532584113e2e02029519bbad8f SUNRPC: Allow the client to detect=
- if the TCP connection is closed
-67a391d72ca7efb387c30ec761a487e50a3ff085 SUNRPC: Fix TCP rebinding logic
-66af1e558538137080615e7ad6d1f2f80862de01 SUNRPC: Fix a race in xs_tcp_state=
-_change()
-
-I'm currently testing 3b948ae5be5e22532584113e2e02029519bbad8f.
-
-7272dcd31d56580dee7693c21e369fd167e137fe repro'd in half a day while
-ef818a28fac9bd214e676986d8301db0582b92a9 (parent of
-66af1e558538137080615e7ad6d1f2f80862de01) survived for 7 days.
-
-Ian.
---=20
-Ian Campbell
-
-There is no delight the equal of dread.  As long as it is somebody
-else's.
-		-- Clive Barker
-
---=-9qYq4ITw/WarMglCqsy1
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkkMQVQACgkQM0+0qS9rzVmihwCg1DEN9SQZQ0aMXnu/yuAc56h0
-zNoAn1KKxI82PbrrhYu27WOEzQZd2u+5
-=D9KJ
------END PGP SIGNATURE-----
-
---=-9qYq4ITw/WarMglCqsy1--
+Cheers,
+Adam.
 
