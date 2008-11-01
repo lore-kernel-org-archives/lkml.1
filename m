@@ -1,196 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbYKARqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753247AbYKARwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753222AbYKARqx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 13:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbYKARqo
+	id S1753247AbYKARwT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 13:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbYKARwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 13:46:44 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:41177 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751828AbYKARqn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 13:46:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=GcE8NqbA3EtP1wWrow18IyTJpkUUa3RfX61IitnXAfWfvdN/Se5zvF6L0jS/BmfqKR
-         DmGgwVl13ab8Efl26YWtdzOAC3p6AYNgxIKY3W07pAfN5BNPS7os+lr8c6rpPomabLOQ
-         xA2GMGOSFn/DV9SEPwi/rt2KbnQ1s7wWy6vDU=
-Message-ID: <d9def9db0811011046t58a03e3aj612cdcb06d042ca1@mail.gmail.com>
-Date: Sat, 1 Nov 2008 18:46:40 +0100
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Thierry Merle" <thierry.merle@free.fr>
-Subject: Re: [linux-dvb] em28xx merge process issues with linuxtv and upstream kernel
-Cc: "Jelle de Jong" <jelledejong@powercraft.nl>, akpm@osdl.org, greg@kroah.com,
-       linux-dvb@linuxtv.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       em28xx@mcentral.de
-In-Reply-To: <490C2432.40804@free.fr>
+	Sat, 1 Nov 2008 13:52:05 -0400
+Received: from colo.lackof.org ([198.49.126.79]:47830 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751373AbYKARwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Nov 2008 13:52:03 -0400
+Date: Sat, 1 Nov 2008 11:51:52 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-pci@vger.kernel.org, kristen.c.accardi@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add option to passively listen for PCIE hotplug events
+Message-ID: <20081101175152.GG13302@colo.lackof.org>
+References: <20081029200903.GA1678@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <490B7EE5.5030701@powercraft.nl> <490C2432.40804@free.fr>
+In-Reply-To: <20081029200903.GA1678@srcf.ucam.org>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 1, 2008 at 10:41 AM, Thierry Merle <thierry.merle@free.fr> wrote:
-> Hi Jelle,
->
-> Jelle de Jong a écrit :
->> -----BEGIN PGP SIGNED MESSAGE-----
->> Hash: SHA1
->>
->> Hello everybody,
->>
->> I would like to discuss some issues with the em28xx-new project and the
->> re-merging process with the upstream code and the linuxtv project.
->>
->> First I would like to say that I am not an active developer on this
->> project, but a very heavy user that followed the project very close and
->> made some documentation, packages, helped getting some issues discussed
->> and some devices added. This project is important for me because I need
->> it to be merged successfully and with width support so it will become
->> maintainable on large basis.
->>
->> This is the situation:
->>
->> Markus Rechberger has worked for more than 3 years on a clone/fork of
->> the official code, creating the em28xx-new [1] project. He has worked
->> very very hard on this project and produced a lot of code and provides a
->> lot of support to the users of his project. It takes lot of energy and
->> resources to pull of this kind of work! I do really respect this work
->> and hope others also do this!
->>
->> In a good free software development process somebody would clone some
->> work to his own personal repository, then add or fix one feature. Create
->> a diff compared with the upstream code and then. Commit the patch with
->> good description to the upstream project, so this feature and its code
->> changes can be reviewed, tested and supported. After this one feature
->> fix and patch, a developer moves to his next feature and repeats to
->> process so step by step and patch by patch the project grows. This
->> understanding of the code bye a larger group of people will lead to a
->> platform of developers that can maintain and contribute to the project.
->> This would be the proper way of doing things it most cases, but a
->> developer need to know and understand or mentored with this from the start.
->>
->> However sometimes a developer works very hard on the code creating lots
->> of new features, adding support for lots of new devices and fixes lots
->> of issues without committing patches during the process. After 3 years
->> or more its understandable that it can lead to a code base almost
->> unrecognizable from the initial cloned code base. So what to do now! To
->> ask from the developer to completely separate all his work in individual
->> patches that can be committed to upstream is almost unrealistic. A good
->> plan needs to be created and discussed by the people that matter.
->>
->> In this case I have seen several attempts of Markus to make large
->> patches and some smaller to try getting his code merged upstream, but
->> they were after short discussion rejected, because they did not fit the
->> one patch for one fix, feature, etcetera standard/idea.
->>
-> The last attempt was rejected because the patches were adding duplicate drivers rather than improving the existing ones.
-> In the same project, 2 drivers managing the same hardware is not correct.
-> Markus (or another people, why Markus may be the only person to do that?) should propose patches of the existing drivers, without breaking the v4l-dvb APIs.
-> - First, the tuners and video decoders modifications shall be merged since they are used by several existing drivers.
-> - Then the em28xx driver shall be improved.
-> And this is what Markus started (thanks for this initiative) but this is hard to spend time on these minor things while supporting problems because of being out-of-kernel.
->
+On Wed, Oct 29, 2008 at 08:09:03PM +0000, Matthew Garrett wrote:
+> Various pieces of hardware (such as the Acer Aspire One and Asus EEE) 
+> use PCIE hotplug to change the state of devices in response to events 
+> such as the removal of SD cards or disabling the wireless radio. 
+> However, they do not provide firmware support for this. As a consequence 
+> pciehp will refuse to load and various things break.
+> 
+> The existing workaround has been to use the pciehp_force option. This is 
+> undesirable as there is little guarantee that manipulating the power 
+> file in the slot directory will actually result in anything happening, 
+> leading to potential user confusion and hardware damage. This patch adds 
+> a new option, pciehp_passive. In this configuration pciehp will listen 
+> for events and notify the PCI core appropriately. However, it will not 
+> provide any user controllable sysfs attributes and so the risk of 
+> confusion or damage is averted. Any system slots that do have firmware 
+> support will continue to provide full functionality.
+> 
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
-In case of the cx25843 I discussed it with Hans Verkuil, there's more
-or less no option since it collides with the existing inkernel driver
-and disables support for other
-cx25843 drivers, so as for the kernel it should be merged to the
-existing one yes.
-The em28xx driver, the one in the kernel has taken a few patches from
-my repository, and it has some additional custom patches, it would
-make more sense to work those
-few patches into the new em28xx driver which is tested with most devices
+Can you add something to Documentation/ for this new option?
+Either kernel-parameters.txt or something in PCI/ seems appropriate.
 
-(compared with the driver which is in the kernel which is likely
-tested with 5-10% of the devices which are in the cardlist).
+Just cutting/pasting the above would be good enough for me.
 
-As for some reasons why not to merge it back then:
-* the driver relied on reverse engineered code, which made some
-devices extremly hot (not even xc3028/xc3028L related). Wrong gpio
-settings also enable the device to draw more power and affect the
-signal strength for analog TV/dvb-t, those settings can be custom for
-every designed device. I have had one pinnacle device which had a
-slightly melted package because of that mess.
+thanks,
+grant
 
-There are additional em28xx based chipdrivers which only work with
-em28xx based devices (eg. videology cam).
-The input layer actually fully works although I disabled it because it
-needs a redesign and shouldn't be exposed to userland like this, also
-the polling code shouldn't be used (linux timing causes
-alot trouble at low intervals - especially the deinitialization of
-such timers, I sent an email to the ML about a possible race condition
-in ir-kbd-i2c a couple of months ago.
-netBSD developers discovered that interrupt polling works fine even
-for remote controls. Practically since I worked alot with remote
-controls during the last half year returning keyboard input keys
-to userland is a mess, there was a discussion also with netbsd people
-about a more generic interface because the IR support of the device
-should be seen as RC5/RC6/NEC/.. protocol support
-and not as one interface where the device is bound to a certain remote
-and only supporting that remote control.
-(that's just the reason why IR support is disabled :)
-
-I put together a summary of differences when I submitted the patches.
-em28xx-new itself is a snapshot of the em28xx kernelcode which I
-initially committed, and retried to merge a couple of times
-over the years which luckily didn't work out (see almost melted
-pinnacle device).
-
-As incremented patches em28xx-new is more or less the inkernel em28xx
-driver constantly worked on since the beginning of 2006.
-First patches were available at:
-http://mcentral.de/v4l-dvb/ (it was kept back along time because there
-was no agreement over the useless API changes, other API changes have
-been merged which aren't necessary either in that case). those patches
-also would have added support for a couple of PCI devices, some of
-them are still not merged either .. most of it relied on reverse
-engineered code, I have to admit it was good to keep it out of the
-kernel back then, it finally resulted in much better support and some
-redesigned code.
-That code was basically merged as a one shot into the em28xx-new
-repository, everything that can be seen in that repository was
-developed ontop of it and all the support for _all_ em28xx devices
-which were supported by v4l-dvb-experimental are now supported by the
-em28xx code too _since a couple of weeks_ (and not before).
-
-> v4l-dvb people and Markus would be glad to see his drivers in the mainstream kernel.
->
->> I am going to ask for understanding of both the side of Markus that
->> worked very hard on his code, and that of the upstream developers. There
->> are both valid reasons on how they did there things.
->>
->> But we need a solution to get all the code back into the upstream
->> project so it can go into the kernel project and eventually be delivered
->> at the Linux distributions and all there users, so no custom compiling,
->> custom package install are required and non transparent bug reports can
->> be stopped.
->>
->> Is it possible for an upstream developer to step forward and take on the
->> task of merging the code of Markus back into mainstream, all questions
->> on the code can be discuses on several mailing-list [2] of choice.
->>
-> Well, I would say: "Make it so!" ;)
->
->> Current the situation is kind of a hold-of, the issues are not being
->> discussed, the problem is not addressed, so no process is made and
->> during this time users are suffering from non working nor good supported
->> devices for there hybrid dvb-t/analog broadcast experiences under Linux.
->>
->> I hope this lead to a productive discussion that will get the code to
->> the end users through there main distribution systems.
->>
-> I hope so, just to stop these useless discussions that do not discuss on patches.
->
-
-the code is there :-)
-
-br,
-Markus
+> 
+> ---
+> 
+> diff --git a/drivers/pci/hotplug/pciehp_core.c b/drivers/pci/hotplug/pciehp_core.c
+> index 4b23bc3..b878432 100644
+> --- a/drivers/pci/hotplug/pciehp_core.c
+> +++ b/drivers/pci/hotplug/pciehp_core.c
+> @@ -41,6 +41,7 @@ int pciehp_debug;
+>  int pciehp_poll_mode;
+>  int pciehp_poll_time;
+>  int pciehp_force;
+> +int pciehp_passive;
+>  struct workqueue_struct *pciehp_wq;
+>  
+>  #define DRIVER_VERSION	"0.4"
+> @@ -55,10 +56,12 @@ module_param(pciehp_debug, bool, 0644);
+>  module_param(pciehp_poll_mode, bool, 0644);
+>  module_param(pciehp_poll_time, int, 0644);
+>  module_param(pciehp_force, bool, 0644);
+> +module_param(pciehp_passive, bool, 0644);
+>  MODULE_PARM_DESC(pciehp_debug, "Debugging mode enabled or not");
+>  MODULE_PARM_DESC(pciehp_poll_mode, "Using polling mechanism for hot-plug events or not");
+>  MODULE_PARM_DESC(pciehp_poll_time, "Polling mechanism frequency, in seconds");
+>  MODULE_PARM_DESC(pciehp_force, "Force pciehp, even if _OSC and OSHP are missing");
+> +MODULE_PARM_DESC(pciehp_passive, "Listen for pciehp events, even if _OSC and OSHP are missing");
+>  
+>  #define PCIE_MODULE_NAME "pciehp"
+>  
+> @@ -85,6 +88,13 @@ static struct hotplug_slot_ops pciehp_hotplug_slot_ops = {
+>    	.get_cur_bus_speed =	get_cur_bus_speed,
+>  };
+>  
+> +static struct hotplug_slot_ops pciehp_passive_hotplug_slot_ops = {
+> +	.owner =		THIS_MODULE,
+> +	.get_adapter_status =	get_adapter_status,
+> +  	.get_max_bus_speed =	get_max_bus_speed,
+> +  	.get_cur_bus_speed =	get_cur_bus_speed,
+> +};
+> +
+>  /*
+>   * Check the status of the Electro Mechanical Interlock (EMI)
+>   */
+> @@ -212,7 +222,11 @@ static int init_slots(struct controller *ctrl)
+>  		hotplug_slot->info = info;
+>  		hotplug_slot->private = slot;
+>  		hotplug_slot->release = &release_slot;
+> -		hotplug_slot->ops = &pciehp_hotplug_slot_ops;
+> +		if (pciehp_passive &&
+> +		    pciehp_get_hp_hw_control_from_firmware(ctrl->pci_dev))
+> +			hotplug_slot->ops = &pciehp_passive_hotplug_slot_ops;
+> +		else
+> +			hotplug_slot->ops = &pciehp_hotplug_slot_ops;
+>  		slot->hotplug_slot = hotplug_slot;
+>  		snprintf(name, SLOT_NAME_SIZE, "%u", slot->number);
+>  
+> @@ -407,7 +421,7 @@ static int pciehp_probe(struct pcie_device *dev, const struct pcie_port_service_
+>  	u8 value;
+>  	struct pci_dev *pdev = dev->port;
+>  
+> -	if (pciehp_force)
+> +	if (pciehp_force || pciehp_passive)
+>  		dev_info(&dev->device,
+>  			 "Bypassing BIOS check for pciehp use on %s\n",
+>  			 pci_name(pdev));
+> @@ -435,7 +449,7 @@ static int pciehp_probe(struct pcie_device *dev, const struct pcie_port_service_
+>  	t_slot = pciehp_find_slot(ctrl, ctrl->slot_device_offset);
+>  
+>  	t_slot->hpc_ops->get_adapter_status(t_slot, &value); /* Check if slot is occupied */
+> -	if (value && pciehp_force) {
+> +	if (value && (pciehp_force || pciehp_passive)) {
+>  		rc = pciehp_enable_slot(t_slot);
+>  		if (rc)	/* -ENODEV: shouldn't happen, but deal with it */
+>  			value = 0;
+> @@ -474,7 +488,7 @@ static int pciehp_suspend (struct pcie_device *dev, pm_message_t state)
+>  static int pciehp_resume (struct pcie_device *dev)
+>  {
+>  	dev_info(&dev->device, "%s ENTRY\n", __func__);
+> -	if (pciehp_force) {
+> +	if (pciehp_force || pciehp_passive) {
+>  		struct controller *ctrl = get_service_data(dev);
+>  		struct slot *t_slot;
+>  		u8 status;
+> 
+> -- 
+> Matthew Garrett | mjg59@srcf.ucam.org
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
