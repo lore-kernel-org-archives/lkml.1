@@ -1,77 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbYKAW5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbYKAXC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753300AbYKAW5f (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 18:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbYKAW50
+	id S1753333AbYKAXC5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 19:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbYKAXCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 18:57:26 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:12541 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751619AbYKAW5Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 18:57:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=VI15TiKSNxwh6r1Lta/T4puMXWJU0yAX+LJ7xjx+wvA3aAgJOZ0HIzwiPcxZpHzew0
-         Bps6KRHbr16uHL/SvHW92xy4dBiEUCxeZ0iSenK+BqoXPsYecn/eboLcv+LSEdSGmT3A
-         F/DwRGrxkkrK388ShDBBlpGnbv4ZvUuzTJWF8=
-Message-ID: <6de6b1650811011557j3469581wf01b264ed307e1e3@mail.gmail.com>
-Date: Sat, 1 Nov 2008 20:57:25 -0200
-From: "Rafael Almeida" <almeidaraf@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Weird behaviour on iwl3945 module
-In-Reply-To: <20081031053950.e2d22e55.almeidaraf@gmail.com>
+	Sat, 1 Nov 2008 19:02:49 -0400
+Received: from styx.suse.cz ([82.119.242.94]:37063 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751776AbYKAXCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Nov 2008 19:02:48 -0400
+Date: Sun, 2 Nov 2008 00:02:47 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jiri Slaby <jirislaby@gmail.com>, Jeroen Roovers <jer@gentoo.org>,
+       Helge Deller <deller@gmx.de>
+cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] USBHID: correct start/stop cycle
+In-Reply-To: <1225579306-28524-1-git-send-email-jirislaby@gmail.com>
+Message-ID: <alpine.LNX.1.10.0811020000360.29633@jikos.suse.cz>
+References: <1225579306-28524-1-git-send-email-jirislaby@gmail.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081031053950.e2d22e55.almeidaraf@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 31, 2008 at 5:39 AM, Rafael Cunha de Almeida
-<almeidaraf@gmail.com> wrote:
-> Hello,
->
-> I'm using Debian lenny (linux 2.6.26) and I have a iwl3945 wireless
-> card. My laptop is a lenovo r61i. I've notice that, when I turn off
-> the wireles/bluetooth switch the wireless module isn't removed, the
-> kernel even displays a few warnings:
->
-> % dmesg | tail -n11
-> [ 1219.735652] iwl3945: Radio Frequency Kill Switch is On:
-> [ 1219.735652] Kill switch must be turned off for wireless networking to work.
-> [ 1219.787767] usb 1-1: USB disconnect, address 2
-> [ 1221.291865] iwl3945: WARNING: Requesting MAC access during RFKILL wakes up NIC
-> [ 1221.294246] iwl3945: MAC is in deep sleep!
-> [ 1221.341983] iwl3945: WARNING: Requesting MAC access during RFKILL wakes up NIC
-> [ 1221.345953] iwl3945: MAC is in deep sleep!
-> [ 1221.405968] iwl3945: WARNING: Requesting MAC access during RFKILL wakes up NIC
-> [ 1221.450835] iwl3945: MAC is in deep sleep!
-> [ 1221.612230] iwl3945: WARNING: Requesting MAC access during RFKILL wakes up NIC
-> [ 1221.632612] ACPI: PCI interrupt for device 0000:03:00.0 disabled
->
-> So, when I turn the switch back on, my wireless card is not
-> operational. I have to manually remove and then reinstall the iwl3945
-> module in order to the device to resume working. The bluetooth device
-> doesn't have that issue.
->
-> Is that an expected behaviour? Would it be impossible or undesirable
-> to the kernel to behave differently? Is it already fixed in the newest
-> kernel version (or on the -mm branch)? I am willing to hack into the
-> kernel code in order to fix that problem, if someone would give me
-> pointers of where to start.
->
-> []'s
-> Rafael
->
+On Sat, 1 Nov 2008, Jiri Slaby wrote:
 
-In order to give the issue some closure, I've recently had the chance
-of running linux 2.6.28-rc2. The kill switch works fine on the new
-version :-). I suggest anyone that's having problems with this
-wireless card to upgrade their kernels, as things seems to have
-changed recently.
+> `stop' left out usbhid->urb* pointers and so the next `start' thought
+> it needs to allocate nothing and used the memory pointers previously
+> pointed to. This led to memory corruption and device malfunction.
+> 
+> Also don't forget to clear disconnect flag on start which was left set
+> by the previous `stop'.
+> 
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> ---
+>  drivers/hid/usbhid/hid-core.c |    8 ++++++++
+>  1 files changed, 8 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
+> index 18e5ddd..f0339ae 100644
+> --- a/drivers/hid/usbhid/hid-core.c
+> +++ b/drivers/hid/usbhid/hid-core.c
+> @@ -781,6 +781,8 @@ static int usbhid_start(struct hid_device *hid)
+>  	unsigned int n, insize = 0;
+>  	int ret;
+>  
+> +	clear_bit(HID_DISCONNECTED, &usbhid->iofl);
+> +
+>  	usbhid->bufsize = HID_MIN_BUFFER_SIZE;
+>  	hid_find_max_report(hid, HID_INPUT_REPORT, &usbhid->bufsize);
+>  	hid_find_max_report(hid, HID_OUTPUT_REPORT, &usbhid->bufsize);
+> @@ -888,6 +890,9 @@ fail:
+>  	usb_free_urb(usbhid->urbin);
+>  	usb_free_urb(usbhid->urbout);
+>  	usb_free_urb(usbhid->urbctrl);
+> +	usbhid->urbin = NULL;
+> +	usbhid->urbout = NULL;
+> +	usbhid->urbctrl = NULL;
+>  	hid_free_buffers(dev, hid);
+>  	mutex_unlock(&usbhid->setup);
+>  	return ret;
+> @@ -924,6 +929,9 @@ static void usbhid_stop(struct hid_device *hid)
+>  	usb_free_urb(usbhid->urbin);
+>  	usb_free_urb(usbhid->urbctrl);
+>  	usb_free_urb(usbhid->urbout);
+> +	usbhid->urbin = NULL; /* don't mess up next start */
+> +	usbhid->urbctrl = NULL;
+> +	usbhid->urbout = NULL;
+>  
+>  	hid_free_buffers(hid_to_usb_dev(hid), hid);
+>  	mutex_unlock(&usbhid->setup);
+
+Jeroen, Helge,
+
+could you please verify whether this patch fixes the corruption you were 
+experiencing?
+
+[ I will be offline for the upcoming ~9 days, will push the fix upstream 
+  then, if it is not picked up through different channels in the 
+  meantime ]
+
+Thanks!
+
+-- 
+Jiri Kosina
+SUSE Labs
