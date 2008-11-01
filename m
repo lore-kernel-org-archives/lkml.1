@@ -1,117 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbYKAQyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbYKAQ7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753354AbYKAQyo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 12:54:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbYKAQye
+	id S1753240AbYKAQ7w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 12:59:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbYKAQ7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 12:54:34 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3781 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751675AbYKAQyd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 12:54:33 -0400
-Date: Sat, 1 Nov 2008 12:54:32 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Jens Axboe <axboe@kernel.dk>
-cc: SCSI development list <linux-scsi@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Problems with the block-layer timeouts
-Message-ID: <Pine.LNX.4.44L0.0811011214470.21703-100000@netrider.rowland.org>
+	Sat, 1 Nov 2008 12:59:44 -0400
+Received: from colo.lackof.org ([198.49.126.79]:47448 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751403AbYKAQ7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Nov 2008 12:59:43 -0400
+Date: Sat, 1 Nov 2008 10:59:31 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-parisc@vger.kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] parisc: remove dead BIO_VMERGE_BOUNDARY and
+	BIO_VMERGE_MAX_SIZE definitions
+Message-ID: <20081101165931.GC13302@colo.lackof.org>
+References: <20081024143826Z.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081024143826Z.fujita.tomonori@lab.ntt.co.jp>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James and Jens:
+On Fri, Oct 24, 2008 at 02:41:01PM +0900, FUJITA Tomonori wrote:
+> The block layer dropped the virtual merge feature
+> (b8b3e16cfe6435d961f6aaebcfd52a1ff2a988c5). BIO_VMERGE_BOUNDARY and
+> BIO_VMERGE_MAX_SIZE definitions are meaningless now.
 
-I spent most of the day yesterday debugging some tricky problems in the
-new block-layer timeout scheme.  Clearly it is in need of more work.
+Sweet!
+I've never liked the fact that the block layer did this but recognize
+it was useful to maximize the number of SG entries used for
+each IO sent to the storage controller.
 
-A major reason for these problems was that there doesn't seem to be a 
-clear a idea of when the timeout period should begin.  In 
-blk_add_timer() a comment says:
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
- *    Each request has its own timer, and as it is added to the queue, we
- *    set up the timer.
+Acked-by: Grant Grundler <grundler@parisc-linux.org>
 
-On the other hand, elv_next_request() says:
+thanks,
+grant
 
-			 * We are now handing the request to the hardware,
-			 * add the timeout handler
-
-(Note that this comment is wrong for an additional reason.  
-elv_next_request() doesn't hand the request to the hardware; it hands 
-the request to a driver.  What the driver chooses to do with the 
-request is its own affair.)
-
-So when should the timeout begin?  The most logical time is when the 
-driver does send the request to the hardware.  Of course, the block 
-core has no way to know when that happens, so a suitable proxy might be 
-when the request is removed from the block queue.  (On the other hand, 
-are there drivers which don't bother to dequeue a request until it has 
-completed?)  Either way, both the comments above and the actual code 
-should be changed.
-
-
-The real source of the problems I encountered is in the SCSI midlayer.  
-scsi_request_fn() can call elv_next_request() long before it is ready
-to begin executing the request.  In particular, it does so before 
-checking scsi_dev_queue_ready().  So if the lower-level driver can 
-handle up to N simultaneous requests, the midlayer will call 
-elv_next_request() N+1 times.  The last request has to wait until one 
-of the first N completes.  Surely this waiting period doesn't deserve 
-to be counted as part of the last request's timeout.
-
-In my case N was 1, and request #1 ended up being requeued.  Requeuing
-restarts the timer; as a result, the timer for request #2 expired
-before request #1's second incarnation timed out.  And this was before
-request #2 had even begun!
-
-That's not so terribly bad in itself.  However the scsi_times_out()  
-routine is completely unprepared to handle timeouts for requests that
-haven't yet been dispatched to the LLD.  Or, for that matter, requests
-which have been returned by the LLD but were requeued and have not yet
-been sent back down.
-
-So what happened was that the midlayer tried to abort a request which
-hadn't started yet.  Or, depending on the exact timing, it found itself
-being asked to abort two requests when only one was running, so it gave
-up and did nothing.  One way leads to processes hanging, the other way
-leads to a system crash.
-
-How should this be fixed?  It would help to call scsi_dev_queue_ready()  
-before elv_next_request(), but that's not sufficient.  
-scsi_times_out() needs to recognize that a timeout for a non-running
-request can be handled by directly returning BLK_EH_HANDLED.  Right?
-
-
-While I'm on the subject, there are a few related items that could be 
-improved.  In my tests, I was generating I/O requests simply by doing
-
-	dd if=/dev/sda ...
-
-I don't know where the timeouts for these requests are determined, but
-they were set to 60 seconds.  That seems much too long.
-
-In blk_del_timer(), there's no reason to test q->rq_timed_out_fn.  If 
-the method pointer is NULL then req->deadline would be 0 anyway.  In 
-addition, req->deadline should be set to 0 and the end of the routine, 
-just in case req gets requeued.
-
-In blk_add_timer(), the line
-
-	expiry = round_jiffies(req->deadline);
-
-is not optimal.  round_jiffies() will sometimes round a value _down_ to
-the nearest second.  But blk_rq_timed_out_timer() tests whether
-req->deadline is in the past -- and if the deadline was rounded down
-then this won't be true the first time through.  You wind up getting an
-unnecessary timer interrupt.  Instead there should be a
-round_jiffies_up() utility routine, and it should be used in both
-blk_add_timer() and blk_rq_timed_out_timer().
-
-Alan Stern
-
+> ---
+>  arch/parisc/include/asm/io.h |    6 ------
+>  arch/parisc/kernel/setup.c   |    5 -----
+>  drivers/parisc/ccio-dma.c    |    2 --
+>  drivers/parisc/sba_iommu.c   |    2 --
+>  4 files changed, 0 insertions(+), 15 deletions(-)
+> 
+> diff --git a/arch/parisc/include/asm/io.h b/arch/parisc/include/asm/io.h
+> index 55ddb18..b92efb3 100644
+> --- a/arch/parisc/include/asm/io.h
+> +++ b/arch/parisc/include/asm/io.h
+> @@ -4,12 +4,6 @@
+>  #include <linux/types.h>
+>  #include <asm/pgtable.h>
+>  
+> -extern unsigned long parisc_vmerge_boundary;
+> -extern unsigned long parisc_vmerge_max_size;
+> -
+> -#define BIO_VMERGE_BOUNDARY	parisc_vmerge_boundary
+> -#define BIO_VMERGE_MAX_SIZE	parisc_vmerge_max_size
+> -
+>  #define virt_to_phys(a) ((unsigned long)__pa(a))
+>  #define phys_to_virt(a) __va(a)
+>  #define virt_to_bus virt_to_phys
+> diff --git a/arch/parisc/kernel/setup.c b/arch/parisc/kernel/setup.c
+> index 7d27853..8d8b024 100644
+> --- a/arch/parisc/kernel/setup.c
+> +++ b/arch/parisc/kernel/setup.c
+> @@ -58,11 +58,6 @@ int parisc_bus_is_phys __read_mostly = 1;	/* Assume no IOMMU is present */
+>  EXPORT_SYMBOL(parisc_bus_is_phys);
+>  #endif
+>  
+> -/* This sets the vmerge boundary and size, it's here because it has to
+> - * be available on all platforms (zero means no-virtual merging) */
+> -unsigned long parisc_vmerge_boundary = 0;
+> -unsigned long parisc_vmerge_max_size = 0;
+> -
+>  void __init setup_cmdline(char **cmdline_p)
+>  {
+>  	extern unsigned int boot_args[];
+> diff --git a/drivers/parisc/ccio-dma.c b/drivers/parisc/ccio-dma.c
+> index dcc1e99..62cc21d 100644
+> --- a/drivers/parisc/ccio-dma.c
+> +++ b/drivers/parisc/ccio-dma.c
+> @@ -1578,8 +1578,6 @@ static int __init ccio_probe(struct parisc_device *dev)
+>  
+>  	ioc_count++;
+>  
+> -	parisc_vmerge_boundary = IOVP_SIZE;
+> -	parisc_vmerge_max_size = BITS_PER_LONG * IOVP_SIZE;
+>  	parisc_has_iommu();
+>  	return 0;
+>  }
+> diff --git a/drivers/parisc/sba_iommu.c b/drivers/parisc/sba_iommu.c
+> index bc73b96..bdc9a0a 100644
+> --- a/drivers/parisc/sba_iommu.c
+> +++ b/drivers/parisc/sba_iommu.c
+> @@ -1979,8 +1979,6 @@ sba_driver_callback(struct parisc_device *dev)
+>  	proc_create("sba_iommu-bitmap", 0, root, &sba_proc_bitmap_fops);
+>  #endif
+>  
+> -	parisc_vmerge_boundary = IOVP_SIZE;
+> -	parisc_vmerge_max_size = IOVP_SIZE * BITS_PER_LONG;
+>  	parisc_has_iommu();
+>  	return 0;
+>  }
+> -- 
+> 1.5.4.2
