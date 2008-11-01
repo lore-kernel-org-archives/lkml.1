@@ -1,74 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbYKAXTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbYKAXU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753486AbYKAXTc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 19:19:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbYKAXTY
+	id S1753821AbYKAXU2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 19:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbYKAXUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 19:19:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56882 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751665AbYKAXTW (ORCPT
+	Sat, 1 Nov 2008 19:20:21 -0400
+Received: from vitalin.sorra.shikadi.net ([64.71.152.201]:4137 "EHLO
+	vitalin.sorra.shikadi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751665AbYKAXUU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 19:19:22 -0400
-Date: Sat, 1 Nov 2008 16:18:18 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jonathan Corbet <corbet@lwn.net>
-cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Robert Hancock <hancockr@shaw.ca>, e1000-devel@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: 2.6.28-rc2 hates my e1000e
-In-Reply-To: <20081101164509.5e53762c@bike.lwn.net>
-Message-ID: <alpine.LFD.2.00.0811011609050.3483@nehalem.linux-foundation.org>
-References: <fa.P5jmIAOhSJ192sfWD+qlec07fe8@ifi.uio.no> <86802c440810302108h48046c08x3bbdcd0e35fd31b7@mail.gmail.com> <alpine.LFD.2.00.0810310800120.21084@nehalem.linux-foundation.org> <alpine.LFD.2.00.0810310839380.21084@nehalem.linux-foundation.org>
- <20081031100040.1f0cf34f@bike.lwn.net> <alpine.LFD.2.00.0810310916050.21084@nehalem.linux-foundation.org> <20081031105105.092ebad3@bike.lwn.net> <alpine.LFD.2.00.0810310953550.21084@nehalem.linux-foundation.org> <20081101090154.3d014f57@bike.lwn.net>
- <alpine.LFD.2.00.0811010958230.6226@nehalem.linux-foundation.org> <86802c440811011250g662b8c4di31f2e391c910954e@mail.gmail.com> <20081101164509.5e53762c@bike.lwn.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 1 Nov 2008 19:20:20 -0400
+Message-ID: <490CE432.5040005@shikadi.net>
+Date: Sun, 02 Nov 2008 09:20:18 +1000
+From: Adam Nielsen <a.nielsen@shikadi.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.16) Gecko/20080727 Thunderbird/2.0.0.16 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jiri Kosina <jkosina@suse.cz>
+CC: LKML Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: Can you use the USB HID interface within a driver?
+References: <490C4133.30400@shikadi.net> <alpine.LRH.1.10.0811012122250.19257@twin.jikos.cz>
+In-Reply-To: <alpine.LRH.1.10.0811012122250.19257@twin.jikos.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> For 2.6.28, the HID code has been completely refactored, and converted 
+> into a proper bus, making it possible to write driver easily in a way that 
+> the driver implements only parts where device deviates from the HID 
+> standard, and lets the rest to be handled by generic code. I guess this is 
+> what you are looking for?
 
+Yes, that sounds like exactly what I'm after!  This device seems to be 
+HID with a custom protocol over the top, so presumably I can let the HID 
+driver handle all the USB initialisation and just focus on the protocol.
 
-On Sat, 1 Nov 2008, Jonathan Corbet wrote:
->
-> Looks to me like Linus's patch is the way to go, at least for now...
+> Please look at drivers/hid in 2.6.28-rc1 or newer. There are quite a 
+> couple of drivers already using this new infrastructure.
 
-I'll make an -rc3 tomorrow. However, I suspect that if we have lots more 
-regressions, we'll just have to revert the resource handling back to the
-2.6.27 state.
+Great, I'll have a look now - thanks!
 
-The problem with resource handling is that even when we can write code 
-that "makes sense", in the end firmware can always do odd things. For 
-example, in your case it really does make sense to keep the already 
-allocated PCI resources in the reserved region, because the firmware 
-obviously did both the reserved region _and_ the PCI BAR allocation.
+> If you have any further questions, I'll be happy to help you, but I will 
+> be completely offline until 11th November, sorry.
 
-At the same time, I'm worried that what Windows does is something totally 
-different, probably odd, and possibly even dependent on some HAL layer 
-motherboard driver or other.  And it's really the case that every single 
-time we change resource allocation - never mind how subtly, or how much 
-sense it makes - it will break some odd setup somewhere.
+Thanks for that!  I'll see how I go.  If there are existing drivers I 
+can use as examples, hopefully I should be okay for the most part.
 
-And I would not be surprised if we end up finding some machine that really 
-had totally _broken_ PCI BAR setup, where it set up some PCI decode to 
-overlap with a reserved region and then depended on the OS re-allocating 
-the resource. 
+Cheers,
+Adam.
 
-As usual, the right answer doesn't necessarily end up being the one that 
-makes most sense, but probably the one that matches what Windows ends up 
-doing most closely - just because that's the one that was tested against. 
-And windows behaviour can in turn easily depend on some internal Windows 
-implementation detail, rather than any "thought out" solution.
-
-The good news here is that the particular behavior wrt e820 reserved 
-resources and various PCI BAR's should be totally irrelevant for 99.9% of 
-all hardware, and we _only_ have to worry about the really odd cases. But 
-even just a couple of odd BIOS versions are enough to cause a lot of pain.
-
-So let's see how it turns out in -rc3. It works for _you_, and it looks 
-sane to me, but ...
-
-			Linus
