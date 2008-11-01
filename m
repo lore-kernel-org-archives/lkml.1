@@ -1,101 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbYKAMci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752986AbYKAMfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752608AbYKAMci (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 08:32:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYKAMc3
+	id S1752986AbYKAMfm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 08:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYKAMff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 08:32:29 -0400
-Received: from vitalin.sorra.shikadi.net ([64.71.152.201]:1670 "EHLO
-	vitalin.sorra.shikadi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751348AbYKAMc2 (ORCPT
+	Sat, 1 Nov 2008 08:35:35 -0400
+Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:3892 "EHLO
+	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751374AbYKAMfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 08:32:28 -0400
-Message-ID: <490C4C59.7070003@shikadi.net>
-Date: Sat, 01 Nov 2008 22:32:25 +1000
-From: Adam Nielsen <a.nielsen@shikadi.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.16) Gecko/20080727 Thunderbird/2.0.0.16 Mnenhy/0.7.5.0
+	Sat, 1 Nov 2008 08:35:34 -0400
+X-Greylist: delayed 469 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Nov 2008 08:35:34 EDT
+Message-ID: <490C4B3D.9070309@xs4all.nl>
+Date: Sat, 01 Nov 2008 13:27:41 +0100
+From: Hans de Bruin <bruinjm@xs4all.nl>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: LKML Mailinglist <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
-Subject: Re: Can you use the USB HID interface within a driver?
-References: <490C4133.30400@shikadi.net> <200811011308.41339.oliver@neukum.org>
-In-Reply-To: <200811011308.41339.oliver@neukum.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.8-rc2 build problem
+References: <490B8D5E.2050100@xs4all.nl>
+In-Reply-To: <490B8D5E.2050100@xs4all.nl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Or perhaps someone could point me in the direction of a USB HID driver 
->> that does things "properly" already?
+Hans de Bruin wrote:
+> 2.6.8-rc2 won't do a make (silent)oldconfig. To make sure i did not lose 
+> anything I recloned linux-2.6
 > 
-> Please post "lsusb -v" for your device.
+> commit 721d5dfe7e516954c501d5e9d0dfab379cf4241a
+> 
+> $ make O=/var/diskless/kernel/psion/ oldconfig
+>   GEN     /var/diskless/kernel/psion/Makefile
+>   HOSTCC  scripts/kconfig/zconf.tab.o
+> gcc: /var/diskless/kernel/linux-2.6/scripts/kconfig/zconf.tab.c: No such 
+> file or directory
+> gcc: no input files
+> make[2]: *** [scripts/kconfig/zconf.tab.o] Error 1
+> make[1]: *** [oldconfig] Error 2
+> make: *** [sub-make] Error 2
+> 
+> 
 
-Here's the output.  I don't think any of the "class" drivers are 
-suitable, except as templates for interfacing with the main HID code...I 
-think...
+next time i will remember to use make O=.... mrproper
 
-Bus 008 Device 002: ID 1044:4001 Chu Yuen Enterprise Co., Ltd
-Device Descriptor:
-   bLength                18
-   bDescriptorType         1
-   bcdUSB               1.10
-   bDeviceClass            0 (Defined at Interface level)
-   bDeviceSubClass         0
-   bDeviceProtocol         0
-   bMaxPacketSize0         8
-   idVendor           0x1044 Chu Yuen Enterprise Co., Ltd
-   idProduct          0x4001
-   bcdDevice            1.01
-   iManufacturer           1 GIGABYTE TECHNOLOGY
-   iProduct                2 GBT 800W PSU
-   iSerial                 0
-   bNumConfigurations      1
-   Configuration Descriptor:
-     bLength                 9
-     bDescriptorType         2
-     wTotalLength           34
-     bNumInterfaces          1
-     bConfigurationValue     1
-     iConfiguration          0
-     bmAttributes         0xa0
-       (Bus Powered)
-       Remote Wakeup
-     MaxPower              100mA
-     Interface Descriptor:
-       bLength                 9
-       bDescriptorType         4
-       bInterfaceNumber        0
-       bAlternateSetting       0
-       bNumEndpoints           1
-       bInterfaceClass         3 Human Interface Device
-       bInterfaceSubClass      0 No Subclass
-       bInterfaceProtocol      0 None
-       iInterface              0
-         HID Device Descriptor:
-           bLength                 9
-           bDescriptorType        33
-           bcdHID               1.10
-           bCountryCode            0 Not supported
-           bNumDescriptors         1
-           bDescriptorType        34 Report
-           wDescriptorLength      32
-          Report Descriptors:
-            ** UNAVAILABLE **
-       Endpoint Descriptor:
-         bLength                 7
-         bDescriptorType         5
-         bEndpointAddress     0x81  EP 1 IN
-         bmAttributes            3
-           Transfer Type            Interrupt
-           Synch Type               None
-           Usage Type               Data
-         wMaxPacketSize     0x0008  1x 8 bytes
-         bInterval              10
-Device Status:     0x0000
-   (Bus Powered)
-
-
-Cheers,
-Adam.
-
+-- 
+Hans
