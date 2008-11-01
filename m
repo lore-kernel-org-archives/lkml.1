@@ -1,91 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751774AbYKAEsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751998AbYKAF4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751774AbYKAEsk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 00:48:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbYKAEsb
+	id S1751998AbYKAF4W (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 01:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbYKAF4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 00:48:31 -0400
-Received: from tone.orchestra.cse.unsw.EDU.AU ([129.94.242.59]:58858 "EHLO
-	tone.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750722AbYKAEsa (ORCPT
+	Sat, 1 Nov 2008 01:56:14 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:55175 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750900AbYKAF4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 00:48:30 -0400
-From: Matthew Chapman <matthewc@cse.unsw.edu.au>
-To: linux-kernel@vger.kernel.org
-Date: Sat, 1 Nov 2008 15:48:28 +1100
-Subject: ALPS input driver problem with DualPoint on Dell E6400/E6500
-Message-ID: <20081101044828.GC7527@cse.unsw.EDU.AU>
+	Sat, 1 Nov 2008 01:56:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=UaW2v1uwkijBs9MMphiyOGwm59y3ukfN++II0KWyY5Q2hOYyLIWvhBBdrmvgBvs00r
+         tgelyIoCmTrZ5vvVD9GJQdAbBd7JuUfZd0BXn1GvbV61yVG36BAiWN6Z8w0grhobMdz2
+         QcZ/kNOEtZJX+tJGJb8D8oT3Lqqq+q17BPc6c=
+Message-ID: <aa79d98a0810312256j490baac3o93b61c8704314dee@mail.gmail.com>
+Date: Sat, 1 Nov 2008 08:56:11 +0300
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "Yinghai Lu" <yinghai@kernel.org>
+Subject: Re: [PATCH] x86: nmi - document lapic and ioapic parameters
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       "Aristeu Rozanski" <aris@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <490B7B6F.2080800@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <20081031192358.GC20803@localhost>
+	 <86802c440810311422w79d0e697k246cb5ca76bf91b5@mail.gmail.com>
+	 <490B7AFE.2030505@zytor.com> <490B7B6F.2080800@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a Dell Latitude E6400 laptop with an ALPS touchpad/touchstick
-combination, aka DualPoint.  Individually, the touchpad and touchstick
-work fine.  However, if I accidentally touch both together, or use the
-touchpad buttons while using the touchstick (or vice versa), things go
-astray.  The pointer jumps around, stray mouse buttons are pressed, and
-the driver typically loses sync:
+On Sat, Nov 1, 2008 at 12:41 AM, Yinghai Lu <yinghai@kernel.org> wrote:
+> H. Peter Anvin wrote:
+>> Yinghai Lu wrote:
+>>> On Fri, Oct 31, 2008 at 12:23 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+>>>> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+>>>> ---
+>>>>
+>>>> On top of -tip dda51106620c328b50007c259b9ef8cea2b7c3d2
+>>>>
+>>>> Index: linux-2.6.git/Documentation/kernel-parameters.txt
+>>>> ===================================================================
+>>>> --- linux-2.6.git.orig/Documentation/kernel-parameters.txt      2008-10-27 21:35:08.000000000 +0300
+>>>> +++ linux-2.6.git/Documentation/kernel-parameters.txt   2008-10-31 22:21:59.000000000 +0300
+>>>> @@ -1404,6 +1404,14 @@ and is between 256 and 4096 characters.
+>>>>                        Format: [state][,regs][,debounce][,die]
+>>>>
+>>>>        nmi_watchdog=   [KNL,BUGS=X86-32] Debugging features for SMP kernels
+>>>> +                       Format: [panic,][num]
+>>>> +                       Valid num: 0,1,2
+>>>> +                       0 - turn nmi_watchdog off
+>>>> +                       1 - use IO-APIC
+>>>> +                       2 - use local APIC
+>>>> +                       Instead of 1 and 2 it is possible to use the following
+>>>> +                       symbolic names: lapic and ioapic
+>>>> +                       Example: nmi_watchdog=2 or nmi_watchdog=panic,lapic
+>>>>
+>>>>        no387           [BUGS=X86-32] Tells the kernel to use the 387 maths
+>>>>                        emulation library even if a 387 maths coprocessor
+>>>> --
+>>> please update
+>>>
+>>> Documentation/x86/x86_64/boot-options.txt
+>>>
+>>
+>> If it's in x86-64, it's not =X86-32, so something is fishy.  The
+>> x86_64/boot-options.txt file really should be merged into
+>> kernel-parameters.txt.
+>
+> should have all command line etc in source code .c, and use some tools to extract them to keep them consistent.
+>
+> YH
+>
+>
 
-[13333.661085] psmouse.c: DualPoint TouchPad at isa0060/serio1/input0
-lost sync at byte 5
-[13333.662353] psmouse.c: DualPoint TouchPad at isa0060/serio1/input0
-lost sync at byte 1
-[13333.669493] psmouse.c: DualPoint TouchPad at isa0060/serio1/input0 -
-driver resynched.
-
-To cut a long story short, it seems that in this case the ALPS device
-sends a 9-byte packet format, with both a relative update and an
-absolute update combined (why oh why...).  Has anyone else seen
-something like this?
-
-
-When I use just the touchstick and its buttons, the packets are normal
-PS/2 relative mode packets, e.g.:
-
-  08 01 00    dx=1 dy=0
-  09 01 00    dx=1 dy=0   left T/S button down
-  08 00 01    dx=0 dy=1   left T/S button up
-
-When I use just the touchpad and its buttons, the packets look like
-this, which also works fine with the current ALPS code:
-
-  cf 27 1a 38 24 46   x=423 y=420 z=70 fin=1
-  cf 2c 1a 39 1e 45   x=428 y=414 z=69 fin=1   left T/P button down
-  cf 2f 1a 38 17 44   x=431 y=407 z=68 fin=1   left T/P button up
-
-Let's say now I use the touchpad and press a touchstick button...
-
-  cf 15 1a 38 5e 3d           x=405 y=478 z=61
-  cf 19 1a 0f 00 00 39 56 3d  x=409 y=470 z=61  left T/P button down
-           ^^^^^^^^
-  cf 1d 1a 39 4e 3d           x=413 y=462 z=61
-
-  cf 21 1a 0f 00 00 38 49 3f  x=417 y=456 z=63  left T/P button up
-           ^^^^^^^^
-  cf 21 1a 38 48 3e           x=417 y=455 z=62
-
-Now let's try moving the touchstick also...
-
-  cf 3d 12 3f fa fd 18 4c 21  dx=-6 dy=-3 x=317 y=204 z=33
-           ^^^^^^^^
-  38 fa fd                    dx=-6 dy=-3
-  cf 3a 12 3f f9 fc 18 4c 20  dx=-7 dy=-4 x=314 y=204 z=32
-           ^^^^^^^^
-  38 fa fd                    dx=-6 dy=-3
-  etc.
-
-In other words, it seems like there's a relative update embedded right
-in the middle of the absolute mode packet, which can be identified by
-all the buttons being set to 1.
-
-I can put together a patch, but it's a non-trivial change... I'm
-interested in hearing whether anyone else has the same problem with
-their E6400/E6500 or other DualPoint laptop, or has better ideas
-regarding how to deal with this.
-
-Matt
-
+Will update boot-options.txt by a separate patch later. Thanks!
