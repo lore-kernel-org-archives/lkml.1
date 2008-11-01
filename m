@@ -1,74 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbYKAUAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbYKAUOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753423AbYKAUAZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 16:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYKAUAM
+	id S1753308AbYKAUOj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 16:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYKAUO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 16:00:12 -0400
-Received: from mail02a.mail.t-online.hu ([84.2.40.7]:56670 "EHLO
-	mail02a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752312AbYKAUAL (ORCPT
+	Sat, 1 Nov 2008 16:14:28 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:10395 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752448AbYKAUO1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 16:00:11 -0400
-Message-ID: <490CB545.90702@freemail.hu>
-Date: Sat, 01 Nov 2008 21:00:05 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Sat, 1 Nov 2008 16:14:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent:from;
+        b=aLuothYa/fZKXezdSMQlT1uJ5nRlL/jFfmwUXmm1HbvvR4KYM4hRxfnB0qNQfVCBqQ
+         qhHQiUYkxlqPSlw7f7WF5J5Ks0xs8BD0QeMWbWOxCol/7kmkLQJ7zNEj7Qw+aoP7tmPL
+         QpCGdHPjivyiFkn82nFD8e1gi+CiNP+w+uJ18=
+Date: Sat, 1 Nov 2008 21:14:20 +0100
+To: Tejun Heo <tj@kernel.org>, axboe@kernel.dk
+Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] ide-floppy partitions
+Message-ID: <20081101201419.GA29462@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, Tejun Heo <tj@kernel.org>,
+	axboe@kernel.dk, bzolnier@gmail.com, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20081029071319.GA9205@gollum.tnic>
 MIME-Version: 1.0
-To: Hans Verkuil <hverkuil@xs4all.nl>
-CC: Robert William Fuller <hydrologiccycle@gmail.com>,
-       video4linux-list@redhat.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] video: simplify cx18_get_input() and ivtv_get_input()
-References: <48F3B56E.9050404@freemail.hu> <200810132328.47170.hverkuil@xs4all.nl> <48F3C060.2050302@gmail.com> <200810132349.06834.hverkuil@xs4all.nl>
-In-Reply-To: <200810132349.06834.hverkuil@xs4all.nl>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail02a.mail.t-online.hu 32710; Body=4 Fuz1=4
-	Fuz2=4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081029071319.GA9205@gollum.tnic>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+On Wed, Oct 29, 2008 at 08:13:19AM +0100, Borislav Petkov wrote:
+> Hi Tejun,
+> 
+> recent changes at 0762b8bde9729f10f8e6249809660ff2ec3ad735 and around
+> break ide-floppy. Since it is a removable media drive and the partition
+> scan during boot returns empty (no media in the drive), when you later
+> put in a disk and try to mount it, mount returns saying
+> 
+> /dev/hdc4 is not a valid block device.
+> 
+> Which brings me to the other possible issue: Since having a hdc4
+> partition as a single FAT16 partition on a ZIP drive is the "factory
+> default" you could fabricate a case where you have a partition number> 1
+> as the only partition on a hard drive too, i.e. no continuous
+> partition numbering and the mount would theoretically fail there too
+> since, for example, there's a check in disk_get_part() which does:
+> 
+> if (likely(partno < ptbl->len)) {
+> 
+> and in this case the check will fail if partno >= 1 while you have only
+> one partition on the disk with a number higher than the partition table
+> length and the above described failure will happen too. Anyways, this is
+> just a hypothesis, but it happens with the ZIP drive here so other block
+> devices should behave similarly.
+> 
+> Here's a patch that fixes the ide-floppy case a bit clumsily, I admit.
+> 
+> ---
+> diff --git a/fs/block_dev.c b/fs/block_dev.c
+> index 88a776f..b798ea0 100644
+> --- a/fs/block_dev.c
+> +++ b/fs/block_dev.c
+> @@ -1011,6 +1011,23 @@ static int __blkdev_get(struct block_device *bdev, fmode_t mode, int for_part)
+>  	disk = get_gendisk(bdev->bd_dev, &partno);
+>  	if (!disk)
+>  		goto out_unlock_kernel;
+> +
+> +	part = disk_get_part(disk, partno);
+> +	if (!part) {
+> +		struct block_device *whole;
+> +
+> +		mutex_lock_nested(&bdev->bd_mutex, for_part);
+> +		whole = bdget_disk(disk, 0);
+> +		ret = -ENOMEM;
+> +		if (!whole)
+> +			goto out_clear;
+> +		ret = __blkdev_get(whole, mode, 1);
+> +		if (ret)
+> +			goto out_clear;
+> +		bdev->bd_contains = whole;
+> +		mutex_unlock(&bdev->bd_mutex);
+> +	}
+> +
+>  	part = disk_get_part(disk, partno);
+>  	if (!part)
+>  		goto out_unlock_kernel;
 
-The cx18_get_input() and ivtv_get_input() are called
-once from the VIDIOC_ENUMINPUT ioctl() (see
-drivers/media/video/v4l2-ioctl.c:1165) and once from
-the *_log_status() functions. In the first case the
-struct v4l2_input is already filled with zeros,
-so doing this again is unnecessary.
+Tejun, Jens,
 
-The second case is only used for debugging purposes
-from the VIDIOC_LOG_STATUS ioctl(). Currently only
-the "name" field is used in the *_log_status() functions.
+can you guys please ACK/NACK this so that we can have an agreed upon solution
+and so that I can stop applying it ontop of current git before testing any
+further.
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
-diff -upr linux-2.6.28-rc1.orig/drivers/media/video/cx18/cx18-cards.c linux-2.6.28-rc1/drivers/media/video/cx18/cx18-cards.c
---- linux-2.6.28-rc1.orig/drivers/media/video/cx18/cx18-cards.c	2008-11-01 20:27:58.000000000 +0100
-+++ linux-2.6.28-rc1/drivers/media/video/cx18/cx18-cards.c	2008-11-01 20:36:39.000000000 +0100
-@@ -419,10 +419,8 @@ int cx18_get_input(struct cx18 *cx, u16
- 		"Composite 3"
- 	};
+Thanks.
 
--	memset(input, 0, sizeof(*input));
- 	if (index >= cx->nof_inputs)
- 		return -EINVAL;
--	input->index = index;
- 	strlcpy(input->name, input_strs[card_input->video_type - 1],
- 			sizeof(input->name));
- 	input->type = (card_input->video_type == CX18_CARD_INPUT_VID_TUNER ?
-diff -upr linux-2.6.28-rc1.orig/drivers/media/video/ivtv/ivtv-cards.c linux-2.6.28-rc1/drivers/media/video/ivtv/ivtv-cards.c
---- linux-2.6.28-rc1.orig/drivers/media/video/ivtv/ivtv-cards.c	2008-10-10 00:13:53.000000000 +0200
-+++ linux-2.6.28-rc1/drivers/media/video/ivtv/ivtv-cards.c	2008-11-01 20:37:27.000000000 +0100
-@@ -1199,10 +1199,8 @@ int ivtv_get_input(struct ivtv *itv, u16
- 		"Composite 3"
- 	};
-
--	memset(input, 0, sizeof(*input));
- 	if (index >= itv->nof_inputs)
- 		return -EINVAL;
--	input->index = index;
- 	strlcpy(input->name, input_strs[card_input->video_type - 1],
- 			sizeof(input->name));
- 	input->type = (card_input->video_type == IVTV_CARD_INPUT_VID_TUNER ?
+-- 
+Regards/Gruss,
+    Boris.
