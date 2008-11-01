@@ -1,112 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbYKAAQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753185AbYKACCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753423AbYKAAQw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 20:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYKAAQk
+	id S1753185AbYKACCA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 22:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbYKACBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 20:16:40 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:45501 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751151AbYKAAQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 20:16:39 -0400
-From: Jay Vosburgh <fubar@us.ibm.com>
-To: Stephen Hemminger <shemminger@vyatta.com>
-cc: David Miller <davem@davemloft.net>, dada1@cosmosbay.com, zbr@ioremap.net,
-       ilpo.jarvinen@helsinki.fi, rjw@sisk.pl, mingo@elte.hu,
-       s0mbre@tservice.net.ru, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, efault@gmx.de,
-       akpm@linux-foundation.org
-Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
-In-reply-to: <20081031165620.7322b0e5@extreme>
-References: <20081031125713.6c6923de@extreme> <20081031201016.GA4748@ioremap.net> <490B7284.2010003@cosmosbay.com> <20081031.165144.86556444.davem@davemloft.net> <20081031165620.7322b0e5@extreme>
-Comments: In-reply-to Stephen Hemminger <shemminger@vyatta.com>
-   message dated "Fri, 31 Oct 2008 16:56:20 -0700."
-X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
-Date: Fri, 31 Oct 2008 17:16:33 -0700
-Message-ID: <22495.1225498593@death.nxdomain.ibm.com>
+	Fri, 31 Oct 2008 22:01:52 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:47635 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751292AbYKACBv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 22:01:51 -0400
+Subject: Re: [PATCH 1/4] Check for serial key in dmi_name_in_vendors
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>
+In-Reply-To: <490B8BB2.3070105@zytor.com>
+References: <1224894097.28224.71.camel@alok-dev1>
+	 <490B8BB2.3070105@zytor.com>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Fri, 31 Oct 2008 19:01:50 -0700
+Message-Id: <1225504910.4181.30.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger <shemminger@vyatta.com> wrote:
+> Since there is only one user, we could change that user, perhaps to take
+> a bitmask or pointer to one of several canned lists as an argument, or
+> we can introduce another entry point.
 
->On Fri, 31 Oct 2008 16:51:44 -0700 (PDT)
->David Miller <davem@davemloft.net> wrote:
-[...]
->> However, I do like Stephen's suggestion that maybe we can get rid of
->> this ->last_rx thing by encapsulating the logic completely in the
->> bonding driver.
->
->Since bonding driver doesn't actually see the rx packets, that isn't
->really possible.  But it would be possible to change last_rx from a variable
->to an function pointer, so that device's could apply other logic to derive
->the last value.  One example would be to keep it per cpu and then take the
->maximum.
 
-	I suspect it could also be tucked away in skb_bond_should_drop,
-which is called both by the standard input path and the VLAN accelerated
-path to see if the packet should be tossed (e.g., it arrived on an
-inactive bonding slave).
+Hi hpa, 
 
-	Since last_rx is part of struct net_device, I don't think any
-additional bonding internals knowledge would be needed.  It could be
-arranged to only update last_rx for devices that are actually bonding
-slaves.
+I have added a new interface to check for a string in the product serial
+information. And now i use this new interface to detect VMware.
 
-	Just off the top of my head (haven't tested this), something
-like this:
+This does not touch the dmi_name_in_vendors function, so the original
+patch on this thread should be ignored.
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index c8bcb59..ed1e58f 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -1743,22 +1743,24 @@ static inline int skb_bond_should_drop(struct sk_buff *skb)
- 	struct net_device *dev = skb->dev;
- 	struct net_device *master = dev->master;
+Also please note that this new patch needs to be applied on top of the
+hypervisor detection patch. 
  
--	if (master &&
--	    (dev->priv_flags & IFF_SLAVE_INACTIVE)) {
--		if ((dev->priv_flags & IFF_SLAVE_NEEDARP) &&
--		    skb->protocol == __constant_htons(ETH_P_ARP))
--			return 0;
--
--		if (master->priv_flags & IFF_MASTER_ALB) {
--			if (skb->pkt_type != PACKET_BROADCAST &&
--			    skb->pkt_type != PACKET_MULTICAST)
-+	if (master) {
-+		dev->last_rx = jiffies;
-+		if (dev->priv_flags & IFF_SLAVE_INACTIVE)) {
-+			if ((dev->priv_flags & IFF_SLAVE_NEEDARP) &&
-+			    skb->protocol == __constant_htons(ETH_P_ARP))
- 				return 0;
--		}
--		if (master->priv_flags & IFF_MASTER_8023AD &&
--		    skb->protocol == __constant_htons(ETH_P_SLOW))
--			return 0;
- 
--		return 1;
-+			if (master->priv_flags & IFF_MASTER_ALB) {
-+				if (skb->pkt_type != PACKET_BROADCAST &&
-+				    skb->pkt_type != PACKET_MULTICAST)
-+					return 0;
-+			}
-+			if (master->priv_flags & IFF_MASTER_8023AD &&
-+			    skb->protocol == __constant_htons(ETH_P_SLOW))
-+				return 0;
-+
-+			return 1;
-+		}
- 	}
- 	return 0;
- }
+Thanks,
+Alok
 
+--
+DMI, check for the string in product serial key.
 
-	That doesn't move the storage out of struct net_device, but it
-does stop the updates for devices that aren't bonding slaves.  It could
-probably be refined further to only update when the ARP monitor is
-running (the gizmo that uses last_rx).
+From: Alok N Kataria <akataria@vmware.com>
 
-	-J
+In some user configured cases, VMware may choose not to put VMware specific DMI
+information, but the product serial key is always there and is VMware specific.
+Add a interface to check the serial key, and use this new interface when
+checking for VMware specific string in the DMI information.
 
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
 ---
-	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+
+ arch/x86/kernel/cpu/vmware.c |    2 +-
+ drivers/firmware/dmi_scan.c  |   11 +++++++++++
+ include/linux/dmi.h          |    2 ++
+ 3 files changed, 14 insertions(+), 1 deletions(-)
+
+
+diff --git a/arch/x86/kernel/cpu/vmware.c b/arch/x86/kernel/cpu/vmware.c
+index d5d1b75..d0e3918 100644
+--- a/arch/x86/kernel/cpu/vmware.c
++++ b/arch/x86/kernel/cpu/vmware.c
+@@ -74,7 +74,7 @@ int vmware_platform(void)
+ 		hyper_vendor_id[12] = '\0';
+ 		if (!strcmp(hyper_vendor_id, "VMwareVMware"))
+ 			return 1;
+-	} else if (dmi_available && dmi_name_in_vendors("VMware") &&
++	} else if (dmi_available && dmi_name_in_serial("VMware") &&
+ 		   __vmware_platform())
+ 		return 1;
+ 
+diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
+index 3e526b6..d66d412 100644
+--- a/drivers/firmware/dmi_scan.c
++++ b/drivers/firmware/dmi_scan.c
+@@ -467,6 +467,17 @@ const char *dmi_get_system_info(int field)
+ }
+ EXPORT_SYMBOL(dmi_get_system_info);
+ 
++/**
++ *	dmi_name_in_serial - 	Check if string is in the DMI product serial
++ *				information.
++ */
++int dmi_name_in_serial(const char *str)
++{
++	int f = DMI_PRODUCT_SERIAL;
++	if (dmi_ident[f] && strstr(dmi_ident[f], str))
++		return 1;
++	return 0;
++}
+ 
+ /**
+  *	dmi_name_in_vendors - Check if string is anywhere in the DMI vendor information.
+diff --git a/include/linux/dmi.h b/include/linux/dmi.h
+index e5084eb..2bfda17 100644
+--- a/include/linux/dmi.h
++++ b/include/linux/dmi.h
+@@ -44,6 +44,7 @@ extern const struct dmi_device * dmi_find_device(int type, const char *name,
+ extern void dmi_scan_machine(void);
+ extern int dmi_get_year(int field);
+ extern int dmi_name_in_vendors(const char *str);
++extern int dmi_name_in_serial(const char *str);
+ extern int dmi_available;
+ extern int dmi_walk(void (*decode)(const struct dmi_header *));
+ 
+@@ -56,6 +57,7 @@ static inline const struct dmi_device * dmi_find_device(int type, const char *na
+ static inline void dmi_scan_machine(void) { return; }
+ static inline int dmi_get_year(int year) { return 0; }
+ static inline int dmi_name_in_vendors(const char *s) { return 0; }
++static inline int dmi_name_in_serial(const char *s) { return 0; }
+ #define dmi_available 0
+ static inline int dmi_walk(void (*decode)(const struct dmi_header *))
+ 	{ return -1; }
+
+
