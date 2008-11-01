@@ -1,75 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbYKAAMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbYKAAQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753307AbYKAAMS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Oct 2008 20:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756AbYKAAMB
+	id S1753423AbYKAAQw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Oct 2008 20:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYKAAQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Oct 2008 20:12:01 -0400
-Received: from miranda.se.axis.com ([193.13.178.8]:50408 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750695AbYKAAMB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Oct 2008 20:12:01 -0400
-Date: Sat, 1 Nov 2008 01:11:50 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jesper Nilsson <Jesper.Nilsson@axis.com>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: [RFC git pull 2/2] Remove CRIS build links
-Message-ID: <20081101001150.GX4608@axis.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081031235849.GW4608@axis.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 31 Oct 2008 20:16:40 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:45501 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751151AbYKAAQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Oct 2008 20:16:39 -0400
+From: Jay Vosburgh <fubar@us.ibm.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+cc: David Miller <davem@davemloft.net>, dada1@cosmosbay.com, zbr@ioremap.net,
+       ilpo.jarvinen@helsinki.fi, rjw@sisk.pl, mingo@elte.hu,
+       s0mbre@tservice.net.ru, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, efault@gmx.de,
+       akpm@linux-foundation.org
+Subject: Re: [tbench regression fixes]: digging out smelly deadmen.
+In-reply-to: <20081031165620.7322b0e5@extreme>
+References: <20081031125713.6c6923de@extreme> <20081031201016.GA4748@ioremap.net> <490B7284.2010003@cosmosbay.com> <20081031.165144.86556444.davem@davemloft.net> <20081031165620.7322b0e5@extreme>
+Comments: In-reply-to Stephen Hemminger <shemminger@vyatta.com>
+   message dated "Fri, 31 Oct 2008 16:56:20 -0700."
+X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
+Date: Fri, 31 Oct 2008 17:16:33 -0700
+Message-ID: <22495.1225498593@death.nxdomain.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Stephen Hemminger <shemminger@vyatta.com> wrote:
 
-Again, I know this is a bit late in the game, thus the RFC, but I felt it
-would be useful to have these changes in 2.6.28, and Sam Ravnborg
-also encouraged me to get these in asap.
+>On Fri, 31 Oct 2008 16:51:44 -0700 (PDT)
+>David Miller <davem@davemloft.net> wrote:
+[...]
+>> However, I do like Stephen's suggestion that maybe we can get rid of
+>> this ->last_rx thing by encapsulating the logic completely in the
+>> bonding driver.
+>
+>Since bonding driver doesn't actually see the rx packets, that isn't
+>really possible.  But it would be possible to change last_rx from a variable
+>to an function pointer, so that device's could apply other logic to derive
+>the last value.  One example would be to keep it per cpu and then take the
+>maximum.
 
-This second pull request contains two changes dependent on the first
-pull request.
+	I suspect it could also be tucked away in skb_bond_should_drop,
+which is called both by the standard input path and the VLAN accelerated
+path to see if the packet should be tossed (e.g., it arrived on an
+inactive bonding slave).
 
-These two changes remove all uses of symbolic links in the CRIS port, making
-it possible to build two CRIS architectures (with different O= parameters)
-in parallell using the same source tree.
+	Since last_rx is part of struct net_device, I don't think any
+additional bonding internals knowledge would be needed.  It could be
+arranged to only update last_rx for devices that are actually bonding
+slaves.
+
+	Just off the top of my head (haven't tested this), something
+like this:
+
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index c8bcb59..ed1e58f 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -1743,22 +1743,24 @@ static inline int skb_bond_should_drop(struct sk_buff *skb)
+ 	struct net_device *dev = skb->dev;
+ 	struct net_device *master = dev->master;
+ 
+-	if (master &&
+-	    (dev->priv_flags & IFF_SLAVE_INACTIVE)) {
+-		if ((dev->priv_flags & IFF_SLAVE_NEEDARP) &&
+-		    skb->protocol == __constant_htons(ETH_P_ARP))
+-			return 0;
+-
+-		if (master->priv_flags & IFF_MASTER_ALB) {
+-			if (skb->pkt_type != PACKET_BROADCAST &&
+-			    skb->pkt_type != PACKET_MULTICAST)
++	if (master) {
++		dev->last_rx = jiffies;
++		if (dev->priv_flags & IFF_SLAVE_INACTIVE)) {
++			if ((dev->priv_flags & IFF_SLAVE_NEEDARP) &&
++			    skb->protocol == __constant_htons(ETH_P_ARP))
+ 				return 0;
+-		}
+-		if (master->priv_flags & IFF_MASTER_8023AD &&
+-		    skb->protocol == __constant_htons(ETH_P_SLOW))
+-			return 0;
+ 
+-		return 1;
++			if (master->priv_flags & IFF_MASTER_ALB) {
++				if (skb->pkt_type != PACKET_BROADCAST &&
++				    skb->pkt_type != PACKET_MULTICAST)
++					return 0;
++			}
++			if (master->priv_flags & IFF_MASTER_8023AD &&
++			    skb->protocol == __constant_htons(ETH_P_SLOW))
++				return 0;
++
++			return 1;
++		}
+ 	}
+ 	return 0;
+ }
 
 
-Please consider pulling the following changes since commit
-556dcee7b829e5c350c3ffdbdb87a8b15aa3c5d3:
-  Jesper Nilsson (1):
-        [CRIS] Move header files from include to arch/cris/include.
+	That doesn't move the storage out of struct net_device, but it
+does stop the updates for devices that aren't bonding slaves.  It could
+probably be refined further to only update when the ARP monitor is
+running (the gizmo that uses last_rx).
 
-are available in the git repository at:
+	-J
 
-      git://www.jni.nu/cris.git link_removal
-
-Jesper Nilsson (2):
-      [CRIS] Merge asm-offsets.c for both arches into one file.
-      [CRIS] Remove links from CRIS build
-
- arch/cris/Makefile                            |   67 +++++----------
- arch/cris/arch-v10/kernel/asm-offsets.c       |   47 ----------
- arch/cris/arch-v10/vmlinux.lds.S              |  118 -------------------------
- arch/cris/arch-v32/boot/compressed/head.S     |   16 +++-
- arch/cris/arch-v32/kernel/head.S              |   20 ++++-
- arch/cris/{arch-v32 => }/kernel/asm-offsets.c |   51 +++++++----
- arch/cris/{arch-v32 => kernel}/vmlinux.lds.S  |   44 +++++++---
- 7 files changed, 117 insertions(+), 246 deletions(-)
- delete mode 100644 arch/cris/arch-v10/kernel/asm-offsets.c
- delete mode 100644 arch/cris/arch-v10/vmlinux.lds.S
- rename arch/cris/{arch-v32 => }/kernel/asm-offsets.c (55%)
- rename arch/cris/{arch-v32 => kernel}/vmlinux.lds.S (73%)
-
-
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+---
+	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
