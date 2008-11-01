@@ -1,157 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbYKAOGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbYKAOYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbYKAOGb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 10:06:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYKAOGW
+	id S1753283AbYKAOYE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 10:24:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYKAOXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 10:06:22 -0400
-Received: from smtp-vbr13.xs4all.nl ([194.109.24.33]:4076 "EHLO
-	smtp-vbr13.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751422AbYKAOGV (ORCPT
+	Sat, 1 Nov 2008 10:23:53 -0400
+Received: from rn-out-0910.google.com ([64.233.170.190]:30754 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751435AbYKAOXv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 10:06:21 -0400
-To: "Markus Rechberger" <mrechberger@gmail.com>
-Subject: Re: [PATCH 1/7] Adding empia base driver
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       em28xx <em28xx@mcentral.de>, v4l <video4linux-list@redhat.com>,
-       linux-dvb@linuxtv.org
-Content-Disposition: inline
-From: Hans Verkuil <hverkuil@xs4all.nl>
-Date: Sat, 1 Nov 2008 15:05:51 +0100
+	Sat, 1 Nov 2008 10:23:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=Rlc5HO86KHkT+Q4O1DulWqnbYZ8qsZLZMWRmOnOxMsRltzHoGFh/O7WZW/VyzR/xas
+         IyrulzBtA6D2MWQSWAkmsnvOetvvdIxs3FJdFU54HBY1VwDWoyzHOfYqakQbU4T5fMl1
+         H3ohq6e1t3s0aVi40VSMDrNzCHbDi8RqQ15BQ=
+Message-ID: <a4423d670811010723u3b271fcaxa7d3bdb251a8b246@mail.gmail.com>
+Date: Sat, 1 Nov 2008 17:23:49 +0300
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       sparclinux <sparclinux@vger.kernel.org>, linux-mm@kvack.org
+Subject: 2.6.28-rc2: Unable to handle kernel paging request at iov_iter_copy_from_user_atomic
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200811011505.51716.hverkuil@xs4all.nl>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Note: I'm reposting this since it bounced on several mailinglists due 
-to "Too many recipients". I'm now only sending it to the mailinglists 
-as I assume that most of the recipients are on at least one of these 
-mailinglists. Apologies if this is not the case.)
+ 2.6.28-rc2-00452-gf891caf on sparc64
+
+How to reproduce: run dbench on tmpfs
 
 
-Hi Markus,
+Unable to handle kernel paging request at virtual address fffff80037c1c000
+tsk->{mm,active_mm}->context = 0000000000001ae7
+tsk->{mm,active_mm}->pgd = fffff8000ec8c000
+              \|/ ____ \|/
+              "@'/ .. \`@"
+              /_| \__/ |_\
+                 \__U_/
+dbench(5007): Oops [#1]
+TSTATE: 0000000011009604 TPC: 00000000005acbac TNPC: 00000000005acbb0
+Y: 00000000    Not tainted
+TPC: <__bzero+0x20/0xc0>
+g0: 0000000000000016 g1: 0000000000000000 g2: 0000000000000000 g3:
+0000000000033ae7
+g4: fffff8000ec9c380 g5: 0000000000000020 g6: fffff8003b834000 g7:
+ffffffffffffe8b1
+o0: fffff80037c1c8b1 o1: 00000000000008b1 o2: 0000000000000000 o3:
+fffff80037c1c8b1
+o4: 0000000000000000 o5: 0000000000034398 sp: fffff8003b836e41 ret_pc:
+00000000005ae73c
+RPC: <copy_from_user_fixup+0x4c/0x70>
+l0: 0000000000852800 l1: 0000000011009603 l2: 0000000000827ff4 l3:
+0000000000000400
+l4: 0000000000000000 l5: 0000000000000001 l6: 0000000000000000 l7:
+0000000000000008
+i0: fffff80037c1e000 i1: 0000000000032398 i2: 00000000000008b1 i3:
+fffff80037c3e398
+i4: fffff80037c1e000 i5: 0000000000000000 i6: fffff8003b836f01 i7:
+0000000000486f28
+I7: <iov_iter_copy_from_user_atomic+0x90/0xe0>
+Caller[0000000000486f28]: iov_iter_copy_from_user_atomic+0x90/0xe0
+Caller[0000000000488a58]: generic_file_buffered_write+0x108/0x2a8
+Caller[0000000000489140]: __generic_file_aio_write_nolock+0x35c/0x380
+Caller[00000000004899b4]: generic_file_aio_write+0x58/0xc8
+Caller[00000000004b23d4]: do_sync_write+0x90/0xe0
+Caller[00000000004b2ca4]: vfs_write+0x7c/0x11c
+Caller[00000000004b2d98]: sys_pwrite64+0x54/0x80
+Caller[000000000043efa4]: sys32_pwrite64+0x20/0x34
+Caller[0000000000406154]: linux_sparc_syscall32+0x34/0x40
+Caller[00000000f7e8df80]: 0xf7e8df80
+Instruction DUMP: c56a2000  808a2003  02480006 <d42a2000> 90022001
+808a2003  1247fffd  92226001  808a2007
+note: dbench[5007] exited with preempt_count 2
+BUG: sleeping function called from invalid context at kernel/rwsem.c:21
+in_atomic(): 1, irqs_disabled(): 0, pid: 5007, name: dbench
+INFO: lockdep is turned off.
+Call Trace:
+ [000000000044b79c] __might_sleep+0x104/0x114
+ [00000000006d81b4] down_read+0x18/0x50
+ [0000000000451b08] exit_mm+0x28/0x128
+ [000000000045359c] do_exit+0x1c4/0x7a4
+ [0000000000429044] die_if_kernel+0x270/0x29c
+ [00000000006da6d0] unhandled_fault+0x90/0x9c
+ [00000000006dac38] do_sparc64_fault+0x55c/0x64c
+ [0000000000407854] sparc64_realfault_common+0x10/0x20
+ [00000000005acbac] __bzero+0x20/0xc0
+ [0000000000486f28] iov_iter_copy_from_user_atomic+0x90/0xe0
+ [0000000000488a58] generic_file_buffered_write+0x108/0x2a8
+ [0000000000489140] __generic_file_aio_write_nolock+0x35c/0x380
+ [00000000004899b4] generic_file_aio_write+0x58/0xc8
+ [00000000004b23d4] do_sync_write+0x90/0xe0
+ [00000000004b2ca4] vfs_write+0x7c/0x11c
+ [00000000004b2d98] sys_pwrite64+0x54/0x80
+BUG: scheduling while atomic: dbench/5007/0x04000003
+INFO: lockdep is turned off.
+Modules linked in:
+Call Trace:
+ [000000000044cc2c] __schedule_bug+0x6c/0x7c
+ [00000000006d66b8] schedule+0xa0/0x484
+ [000000000044d6d8] __cond_resched+0x2c/0x54
+ [00000000006d6c80] _cond_resched+0x40/0x60
+ [0000000000498c88] unmap_vmas+0x53c/0x644
+ [000000000049d0f4] exit_mmap+0xc4/0x1b4
+ [000000000044e24c] mmput+0x40/0xc4
+ [0000000000451bf8] exit_mm+0x118/0x128
+ [000000000045359c] do_exit+0x1c4/0x7a4
+ [0000000000429044] die_if_kernel+0x270/0x29c
+ [00000000006da6d0] unhandled_fault+0x90/0x9c
+ [00000000006dac38] do_sparc64_fault+0x55c/0x64c
+ [0000000000407854] sparc64_realfault_common+0x10/0x20
+ [00000000005acbac] __bzero+0x20/0xc0
+ [0000000000486f28] iov_iter_copy_from_user_atomic+0x90/0xe0
+ [0000000000488a58] generic_file_buffered_write+0x108/0x2a8
+BUG: scheduling while atomic: dbench/5007/0x04000003
+INFO: lockdep is turned off.
+Modules linked in:
+Call Trace:
+ [000000000044cc2c] __schedule_bug+0x6c/0x7c
+ [00000000006d66b8] schedule+0xa0/0x484
+ [000000000044d6d8] __cond_resched+0x2c/0x54
+ [00000000006d6c80] _cond_resched+0x40/0x60
+ [0000000000451ec4] put_files_struct+0xa8/0x104
+ [0000000000451f50] exit_files+0x30/0x40
+ [00000000004535ac] do_exit+0x1d4/0x7a4
+ [0000000000429044] die_if_kernel+0x270/0x29c
+ [00000000006da6d0] unhandled_fault+0x90/0x9c
+ [00000000006dac38] do_sparc64_fault+0x55c/0x64c
+ [0000000000407854] sparc64_realfault_common+0x10/0x20
+ [00000000005acbac] __bzero+0x20/0xc0
+ [0000000000486f28] iov_iter_copy_from_user_atomic+0x90/0xe0
+ [0000000000488a58] generic_file_buffered_write+0x108/0x2a8
+ [0000000000489140] __generic_file_aio_write_nolock+0x35c/0x380
+ [00000000004899b4] generic_file_aio_write+0x58/0xc8
+Unable to handle kernel paging request at virtual address fffff8003632a000
+tsk->{mm,active_mm}->context = 0000000000001af9
+tsk->{mm,active_mm}->pgd = fffff8000eca2000
+              \|/ ____ \|/
+              "@'/ .. \`@"
+              /_| \__/ |_\
+                 \__U_/
+dbench(5025): Oops [#2]
+TSTATE: 0000000011009604 TPC: 00000000005acbac TNPC: 00000000005acbb0
+Y: 00000000    Tainted: G      D
+TPC: <__bzero+0x20/0xc0>
+g0: 0000000000000000 g1: 0000000000000000 g2: 0000000000000000 g3:
+0000000000031af9
+g4: fffff8000ed86c00 g5: 0000000000000020 g6: fffff8003b6c8000 g7:
+ffffffffffffe897
+o0: fffff8003632a897 o1: 0000000000000897 o2: 0000000000000000 o3:
+fffff8003632a897
+o4: 0000000000000000 o5: 0000000000032390 sp: fffff8003b6cae41 ret_pc:
+00000000005ae73c
+RPC: <copy_from_user_fixup+0x4c/0x70>
+l0: 0000000000852800 l1: 0000000011009603 l2: 0000000000827ff4 l3:
+0000000000000400
+l4: 0000000000000000 l5: 0000000000000001 l6: 0000000000000000 l7:
+0000000000000008
+i0: fffff8003632c000 i1: 0000000000030390 i2: 0000000000000897 i3:
+fffff8003633c390
+i4: fffff8003632c000 i5: 0000000000000000 i6: fffff8003b6caf01 i7:
+0000000000486f28
+I7: <iov_iter_copy_from_user_atomic+0x90/0xe0>
 
-As promised I've done a review of your empia driver and looked at what 
-needs to be done to get it into the kernel.
-
-First of all, I've no doubt that your empia driver is better and 
-supports more devices than the current em28xx driver. I also have no 
-problem adding your driver separate from the current driver. It's been 
-done before (certain networking drivers spring to mind) and while 
-obviously not ideal I expect that the older em28xx driver can probably 
-be removed after a year or something like that.
-
-In my opinion it's pretty much hopeless trying to convert the current 
-em28xx driver into what you have. It's a huge amount of work that no 
-one wants to do and (in this case) with very little benefit. Of course, 
-Mauro has the final say in this.
-
-While there is some cleaning up to do in your code (coding style, some 
-copyright/license clarifications), that is not a big deal. The coding 
-style cleanups are a fair amount of work, but I think we can probably 
-spread that out over several people and get that done quickly.
-
-What I definitely would recommend is to use video_ioctl2 rather than 
-video_usercopy. The latter function will disappear in the future. I 
-think the policy for new drivers is to use video_ioctl2, so this is 
-probably a required task before it can be merged. Doing this will 
-improve maintenance of the code as well, so it's useful to do this 
-anyway. I think it's better if you do it, but I guess some volunteer 
-can probably be found if needed. It's not a difficult task.
-
-Now the real problems are with three duplicate i2c drivers: cx25843, 
-xc3028 and xc5000.
-
-To start with the easiest one: cx25843. There already is a driver for 
-this (cx25840) and the empia driver should use that one. Since I 
-maintain cx25840 the easiest approach for you is to see if you can get 
-me hardware (em28xx + cx25843) so that I can test and update cx25843 to 
-provide proper empia support. The alternative is that we work together 
-on this, but that's probably more work for both of us. I most 
-definitely do *not* want to duplicate this driver. Windows drivers 
-duplicate this stuff all the time, but we're not Windows and having one 
-driver ensures that fixes or new functionality become available to all 
-bridge drivers that use it.
-
-The same reasoning is true for xc3028 and xc5000. In addition, the 
-licensing of these sources is very vague. Is it even allowed to 
-distribute them under a GPL license? There is no GPL license in the 
-sources, yet in the module you specify GPL. This needs to be clarified 
-first.
-
-I see two ways forward when it comes to these drivers:
-
-1) The empia driver switches to the current xceive drivers that are 
-already in the kernel. No doubt this means that xceive driver bugs will 
-surface with certain devices, but those are bugs that the xceive driver 
-maintainer will have to fix. Obviously assistance would be appreciated, 
-but the bottom line is that a) your driver is finally in the kernel, 
-and b) there is a lot more pressure to fix bugs in the xceive drivers 
-than is the case otherwise. Yes, some devices will not work initially 
-with the empia driver, but I expect that to be a temporary situation.
-
-2) Your xceive drivers replace the current drivers. This will require 
-that a) the license situation is clarified, b) the drivers are modified 
-to fit the current v4l-dvb tuner architecture. This option will mean a 
-lot of work for you since you are the maintainer of these drivers. In 
-addition, I forsee a lot of flaming if we go this way.
-
-BTW, I noticed that the current xc5000 driver is very similar to yours 
-but with proper copyrights/license notices and coding style. So for 
-this driver option 1 is definitely the way to go.
-
-To be honest, I don't see option 2 as viable. I forsee too many 
-inter-personal problems that will appear if we go that way. Option 1 
-has the big advantage that all you need to do is to file a bug report 
-if it doesn't work with a certain device. And in the meantime users can 
-fallback to your stand-alone driver until it's fixed in the kernel. 
-Obviously, if you can state in the bug report what the precise problem 
-is, so much the better.
-
-So my recommendation would be to:
-
-1) Switch to using the current xceive drivers in your empia driver. This 
-is something you have to do, I'm afraid. Unless someone would 
-volunteer? I personally do not have enough experience with this to do 
-it.
-
-2) Switch to using the cx25840 driver. If I can get hardware, then I can 
-do this, otherwise we have to do this together. Initially we probably 
-have to disable devices using the cx25840 until the cx25840 driver has 
-been fixed for the empia driver.
-
-3) Switch to video_ioctl2 in the empia driver. You can do that, but we 
-can probably find a volunteer as well.
-
-4) Conform the code to the coding style. If several people can help with 
-this we can get it done pretty quickly.
-
-5) Merge the empia driver alongside the current em28xx driver.
-
-There are no doubt some things I missed, but I don't think I missed 
-anything major. I've put up a hg tree here:
-
-http://linuxtv.org/hg/~hverkuil/v4l-dvb-em28xx/
-
-This allows you to compile the empia module alongside the em28xx module. 
-Note that I've removed the empia cx25843 module in the last changeset 
-in order to test which dependencies the driver had on that module. So 
-if you want to test this tree with an empia+cx25843 device, then don't 
-get the latest changeset, but the one before that.
-
-My tree does contain the empia xceive drivers, though. Perhaps someone 
-more knowledgeable with DVB can take a look to see how much work it is 
-to convert to the kernel xceive drivers? And to see if I overlooked any 
-DVB-related major obstacles?
-
-I think this is a reasonable roadmap to finally get this in. If everyone 
-can pitch in then it really shouldn't take that much work to get it 
-into v4l-dvb and from there to 2.6.29.
-
-Regards,
-
-	Hans Verkuil
+and so on..
