@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752964AbYKAKSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752636AbYKAKeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752964AbYKAKSn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 06:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbYKAKSg
+	id S1752636AbYKAKeS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 06:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbYKAKeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 06:18:36 -0400
-Received: from smtp.zeuux.org ([210.51.160.52]:58241 "EHLO z.billxu.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751391AbYKAKSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 06:18:36 -0400
-Date: Sat, 1 Nov 2008 18:18:35 +0800
-From: Jianjun Kong <jianjun@zeuux.org>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: netdev <netdev@vger.kernel.org>,
-       Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
-Subject: [PATCH/2] nets: fix problem of return value
-Message-ID: <20081101101835.GG6556@ubuntu>
+	Sat, 1 Nov 2008 06:34:05 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:33368 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751344AbYKAKeE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Nov 2008 06:34:04 -0400
+Date: Sat, 1 Nov 2008 10:33:55 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Li Xiaodong <lixd@cn.fujitsu.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]swap-zero-page-bug
+In-Reply-To: <2C69C7D31680437FB174C65D043E2455@fujitsulixd>
+Message-ID: <Pine.LNX.4.64.0811011012020.21848@blonde.site>
+References: <2C69C7D31680437FB174C65D043E2455@fujitsulixd>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 29 Oct 2008, Li Xiaodong wrote:
 
-fix problem of return value
+> According to Documentation/filesystems/proc.txt, kernel should swap one page
+> as vm.page-cluster is 0, while it seems not like so in mm/swapfile.c:
+>      ...
+> 	int our_page_cluster = page_cluster;
+> 	...
+> 	if (!our_page_cluster)  /* no readahead */
+>                 return 0;
+> 	...
+> 
+> It is better to remove that checkpoint.
 
-net/unix/af_unix.c: unix_net_init()
-when error appears, it should return 'error', not always return 0.
+No, page_cluster 0 allows swapin one page at a time, but disallows
+swapin readahead (better named readaround) i.e. disallows reading
+more than the one page actually requested.
 
-Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
----
- net/unix/af_unix.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Compare with how valid_swaphandles() is used from swapin_readahead():
+there's actually one extra call to read_swap_cache_async() - because
+we must ignore failure on the readaround but not on the page requested.
 
-diff --git a/net/unix/af_unix.c b/net/unix/af_unix.c
-index 0b80634..7d2e4f8 100644
---- a/net/unix/af_unix.c
-+++ b/net/unix/af_unix.c
-@@ -2212,7 +2212,7 @@ static int unix_net_init(struct net *net)
- #endif
- 	error = 0;
- out:
--	return 0;
-+	return error;
- }
- 
- static void unix_net_exit(struct net *net)
--- 
-1.5.6.3
+That "return 0" avoids the overhead of a pointlessly doubled
+read_swap_cache_async() when there's only one page to be read.
 
+Your patch might be needed if you'd found that swapin of one page
+was not working at all - but you'd be making a stronger case if
+you'd found that, I think!
+
+Hugh
