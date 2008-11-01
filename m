@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbYKAT6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbYKAUAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753305AbYKAT6P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 15:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbYKAT57
+	id S1753423AbYKAUAZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 16:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYKAUAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 15:57:59 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:63846 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752333AbYKAT56 (ORCPT
+	Sat, 1 Nov 2008 16:00:12 -0400
+Received: from mail02a.mail.t-online.hu ([84.2.40.7]:56670 "EHLO
+	mail02a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752312AbYKAUAL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 15:57:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=xKnVMHzPYcHGjNQxMO6ZSbpbYSflflF+Vx2JApgQrGlgwERUosB/Dls+YTv23RmN4Y
-         2oyFxp1q+50VQNdzPZbaQFvdXJC6qPIKblMmTF/itP2sDtBccdCVMRZUBbYihp97ljxi
-         svVi7lgsjvnHhreiBqSaXfz3BsNsE4kprU91o=
-Message-ID: <3aaafc130811011257q3ee09f97ubc48c1871bd5df22@mail.gmail.com>
-Date: Sat, 1 Nov 2008 15:57:58 -0400
-From: "J.R. Mauro" <jrm8005@gmail.com>
-To: "Artur Szymczak" <artur.szymczak@altkom.pl>
-Subject: Re: Ralink RT2700E driver
-Cc: linux-kernel@vger.kernel.org, "Greg KH" <gregkh@suse.de>
-In-Reply-To: <490CA461.4060501@altkom.pl>
+	Sat, 1 Nov 2008 16:00:11 -0400
+Message-ID: <490CB545.90702@freemail.hu>
+Date: Sat, 01 Nov 2008 21:00:05 +0100
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <490CA461.4060501@altkom.pl>
+To: Hans Verkuil <hverkuil@xs4all.nl>
+CC: Robert William Fuller <hydrologiccycle@gmail.com>,
+       video4linux-list@redhat.com, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] video: simplify cx18_get_input() and ivtv_get_input()
+References: <48F3B56E.9050404@freemail.hu> <200810132328.47170.hverkuil@xs4all.nl> <48F3C060.2050302@gmail.com> <200810132349.06834.hverkuil@xs4all.nl>
+In-Reply-To: <200810132349.06834.hverkuil@xs4all.nl>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail02a.mail.t-online.hu 32710; Body=4 Fuz1=4
+	Fuz2=4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 1, 2008 at 2:48 PM, Artur Szymczak <artur.szymczak@altkom.pl> wrote:
-> Hi,
-> why WiFi cards with ralink chipset RT2700E are not supported by linux
-> kernel?
-> I found on ralink homepage driver for this chipset
-> http://www.ralinktech.com/ralink/Home/Support/Linux.html (2860). And it
-> works. Why it isn't added to kernel?
->
-> Best regards
->
->
+From: Márton Németh <nm127@freemail.hu>
 
-A driver for the 2860 has been added to Greg Kroah-Hartman's staging
-tree. You can obtain this tree, a set of Quilt patches, here:
-http://kernel.org/pub/scm/linux/kernel/git/gregkh/patches.git/  (If
-you need help getting the patchset, email me personally and I'll walk
-you though it)
+The cx18_get_input() and ivtv_get_input() are called
+once from the VIDIOC_ENUMINPUT ioctl() (see
+drivers/media/video/v4l2-ioctl.c:1165) and once from
+the *_log_status() functions. In the first case the
+struct v4l2_input is already filled with zeros,
+so doing this again is unnecessary.
 
-Now there do appear to be several other drivers on the webpage you
-mentioned, and I'm not sure if all of those others are supported. Greg
-could probably clear that up. But the 2860 support is coming.
+The second case is only used for debugging purposes
+from the VIDIOC_LOG_STATUS ioctl(). Currently only
+the "name" field is used in the *_log_status() functions.
 
-~J.R.
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
+diff -upr linux-2.6.28-rc1.orig/drivers/media/video/cx18/cx18-cards.c linux-2.6.28-rc1/drivers/media/video/cx18/cx18-cards.c
+--- linux-2.6.28-rc1.orig/drivers/media/video/cx18/cx18-cards.c	2008-11-01 20:27:58.000000000 +0100
++++ linux-2.6.28-rc1/drivers/media/video/cx18/cx18-cards.c	2008-11-01 20:36:39.000000000 +0100
+@@ -419,10 +419,8 @@ int cx18_get_input(struct cx18 *cx, u16
+ 		"Composite 3"
+ 	};
+
+-	memset(input, 0, sizeof(*input));
+ 	if (index >= cx->nof_inputs)
+ 		return -EINVAL;
+-	input->index = index;
+ 	strlcpy(input->name, input_strs[card_input->video_type - 1],
+ 			sizeof(input->name));
+ 	input->type = (card_input->video_type == CX18_CARD_INPUT_VID_TUNER ?
+diff -upr linux-2.6.28-rc1.orig/drivers/media/video/ivtv/ivtv-cards.c linux-2.6.28-rc1/drivers/media/video/ivtv/ivtv-cards.c
+--- linux-2.6.28-rc1.orig/drivers/media/video/ivtv/ivtv-cards.c	2008-10-10 00:13:53.000000000 +0200
++++ linux-2.6.28-rc1/drivers/media/video/ivtv/ivtv-cards.c	2008-11-01 20:37:27.000000000 +0100
+@@ -1199,10 +1199,8 @@ int ivtv_get_input(struct ivtv *itv, u16
+ 		"Composite 3"
+ 	};
+
+-	memset(input, 0, sizeof(*input));
+ 	if (index >= itv->nof_inputs)
+ 		return -EINVAL;
+-	input->index = index;
+ 	strlcpy(input->name, input_strs[card_input->video_type - 1],
+ 			sizeof(input->name));
+ 	input->type = (card_input->video_type == IVTV_CARD_INPUT_VID_TUNER ?
