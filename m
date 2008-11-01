@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752079AbYKAHOD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752012AbYKAHcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752079AbYKAHOD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 03:14:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbYKAHNx
+	id S1752012AbYKAHcU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 03:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750794AbYKAHcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 03:13:53 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:26892 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751101AbYKAHNw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 03:13:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=dHOG4mq+8+h6raVlO7el3+bo4IWn+P4U/gusrSeVu9EIvTX1lTypIo9/WSy7jmCGD5
-         CeGB9EtIOm8rJkrmvrZcrswMSjbpB7aPnkgp9+F1DW9rO2p27cJ/bxMh17P8IjTdUIpV
-         /1LahDppq8lodTNfvehJ8j8NElKnqUjKA7jqg=
-Message-ID: <804dabb00811010013t2594a03fw3cef35a2f39a4f80@mail.gmail.com>
-Date: Sat, 1 Nov 2008 15:13:49 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: removal of fs/proc/inode-alloc.txt
+	Sat, 1 Nov 2008 03:32:07 -0400
+Received: from smtp.zeuux.org ([210.51.160.52]:54056 "EHLO z.billxu.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750757AbYKAHcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Nov 2008 03:32:06 -0400
+Date: Sat, 1 Nov 2008 15:31:56 +0800
+From: Jianjun Kong <jianjun@zeuux.org>
+To: Pete Clements <clem@clem.clem-digital.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.28-rc2-git6 fails compile -- cpu/common.c
+Message-ID: <20081101073156.GC6556@ubuntu>
+References: <200811010250.mA12orqv005451@clem.clem-digital.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200811010250.mA12orqv005451@clem.clem-digital.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I find it weird, that a text file should exists among the directories
-of C and header files.   If it is a legitimate documentation it should
-go into Documentation subdirectory, correct?   Or if it is so short
-like it currently is, go into some C file.
+On Fri, Oct 31, 2008 at 10:50:53PM -0400, Pete Clements wrote:
+>Fyi
+>2.6.28-rc2-git fails compile, uniprocessor x86. (Missed git4 and git5.)
+>
+>  CC      arch/x86/kernel/cpu/common.o
+>arch/x86/kernel/cpu/common.c: In function 'cpu_init':
+>arch/x86/kernel/cpu/common.c:1141: error: 'boot_cpu_id' undeclared (first use in this function)
+>arch/x86/kernel/cpu/common.c:1141: error: (Each undeclared identifier is reported only once
+>arch/x86/kernel/cpu/common.c:1141: error: for each function it appears in.)
+>make[2]: *** [arch/x86/kernel/cpu/common.o] Error 1
+>make[1]: *** [arch/x86/kernel/cpu] Error 2
+>make: *** [arch/x86/kernel] Error 2
 
-Anyway I don't understand anything about this text file, and from its history:
+'boot_cpu_id' only defined at this head file(include/linux/smp_32.h)
 
-http://www.google.com/search?q=site%3Alkml.org+%22inode-alloc.txt%22&btnG=Google+Search
 
-I don't see its purpose here.
-
-Can someone comment on its history, can it be removed?
-
+	Jianjun
 -- 
-Regards,
-Peter Teoh
+Jianjun Kong | Happy Hacking
+HomePage: http://kongove.cn
+Gtalk: kongjianjun@gmail.com
+Hope is good thing, maybe the best of things, and no good thing ever dies.
