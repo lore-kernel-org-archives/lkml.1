@@ -1,192 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbYKAQvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbYKAQyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753338AbYKAQvg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 12:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbYKAQv3
+	id S1753354AbYKAQyo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 12:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbYKAQye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 12:51:29 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:43456 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751776AbYKAQv1 (ORCPT
+	Sat, 1 Nov 2008 12:54:34 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:3781 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751675AbYKAQyd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 12:51:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gSAE7/x2QmX6LsIXB91WPPOcnUguC5/cKx/6nslh78AGOwquiVLaRUZ/NMSHKlroSL
-         SftqtzIR3XPaofg3MK2fziWnp5ArmMivH4hfB0I4Ti/3ybFtsFR+umKynuoobxs7VovG
-         7u8Po/DGxWZXCdgYxMGTgo6P4thSoAVvQvutQ=
-Message-ID: <412bdbff0811010951i65532f11q42fb22a318f20278@mail.gmail.com>
-Date: Sat, 1 Nov 2008 12:51:25 -0400
-From: "Devin Heitmueller" <devin.heitmueller@gmail.com>
-To: "Hans Verkuil" <hverkuil@xs4all.nl>
-Subject: Re: [linux-dvb] [PATCH 1/7] Adding empia base driver
-Cc: "Markus Rechberger" <mrechberger@gmail.com>,
-       v4l <video4linux-list@redhat.com>, linux-dvb@linuxtv.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       em28xx <em28xx@mcentral.de>
-In-Reply-To: <200811011721.46016.hverkuil@xs4all.nl>
+	Sat, 1 Nov 2008 12:54:33 -0400
+Date: Sat, 1 Nov 2008 12:54:32 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Jens Axboe <axboe@kernel.dk>
+cc: SCSI development list <linux-scsi@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Problems with the block-layer timeouts
+Message-ID: <Pine.LNX.4.44L0.0811011214470.21703-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200811011505.51716.hverkuil@xs4all.nl>
-	 <412bdbff0811010846h2edd63bfn44536e8a1c72d17f@mail.gmail.com>
-	 <200811011721.46016.hverkuil@xs4all.nl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Hans,
+James and Jens:
 
-Thanks for getting back to me.  Responses inline:
+I spent most of the day yesterday debugging some tricky problems in the
+new block-layer timeout scheme.  Clearly it is in need of more work.
 
-On Sat, Nov 1, 2008 at 12:21 PM, Hans Verkuil <hverkuil@xs4all.nl> wrote:
->> As one of the half dozen people who are working on the linux-dvb
->> version of em28xx, I am against the wholesale replacement of the
->> current version with Markus's codebase.
->
-> At this time I do not advocate replacing the current em28xx driver. But
-> when they are both in the kernel, then I expect and hope that the best
-> features of the em28xx driver are merged into the empia driver and that
-> the current em28xx driver can eventually be dropped.
+A major reason for these problems was that there doesn't seem to be a 
+clear a idea of when the timeout period should begin.  In 
+blk_add_timer() a comment says:
 
-I'm certainly not against this approach, and having it in the mainline
-will make it easier for others to contribute and improve the codebase.
- We would however have to deal with how to handle all the overlapping
-product support and the increased confusion that results from users
-reporting problems and figuring out which driver they are talking
-about (this is already an issue today though as most users don't
-understand that there are two drivers).
+ *    Each request has its own timer, and as it is added to the queue, we
+ *    set up the timer.
 
->> # Doesn't leverage common infrastructure such as videobuf (resulting
->> in duplicate functionality and more difficult for those who have to
->> maintain multiple drivers)
->
-> Definitely a candidate to merge into Markus' driver eventually. There
-> are more drivers that do not use videobuf (my own ivtv and cx18 drivers
-> spring to mind).
+On the other hand, elv_next_request() says:
 
-Agreed.  If both drivers are used in parallel than this is less of an
-issue.  I was just against the wholesale replacement, which would
-result in moving backwards in these areas since the work was already
-done in the mainline driver.
+			 * We are now handing the request to the hardware,
+			 * add the timeout handler
 
->> # Firmware blobs embedded in source - While it's easier for the user,
->> many distributions do not allow firmware blobs in the kernel due to
->> the belief that this is not GPL compatible. We would need to get
->> permission from the vendor to redistribute the firmware as a file (in
->> the V4L driver, we extract it from the Windows driver binary)
->
-> From what I saw firmware blobs were only present in the xceive drivers,
-> and it is my opinion that it is not a good idea to merge these into the
-> kernel. Much better to fix the existing drivers. Having the empia
-> driver into the kernel will actually force those fixes to be made.
+(Note that this comment is wrong for an additional reason.  
+elv_next_request() doesn't hand the request to the hardware; it hands 
+the request to a driver.  What the driver chooses to do with the 
+request is its own affair.)
 
-Yes, I was referring to the Xceive drivers.   I agree with what you
-are saying, as long as we can agree that we should not have parallel
-tuner implementations in the kernel and the changes to use the
-mainline tuners should be made *before* it gets imported.
+So when should the timeout begin?  The most logical time is when the 
+driver does send the request to the hardware.  Of course, the block 
+core has no way to know when that happens, so a suitable proxy might be 
+when the request is removed from the block queue.  (On the other hand, 
+are there drivers which don't bother to dequeue a request until it has 
+completed?)  Either way, both the comments above and the actual code 
+should be changed.
 
->> # Ambigious licensing - some of the files have headers from companies
->> other than Empiatech which are very clearly not GPL compatible (like
->> the Micronas drx3973d driver). Also, it's not clear that even the
->> firmware blobs mentioned above are authorized to be redistributed by
->> their rightful owners (Xceive and Micronas). While Empiatech may be
->> ok with making a GPL driver, these parties have not consented to
->> having their intellectual property in the kernel (they may have
->> consented but the header files say just the opposite).
->
-> Licensing should obviously be addressed. But such drivers (except for
-> the xceive ones) are currently not used by the empia sources as
-> submitted by Markus.
 
-I do not believe they should be included into the codebase until the
-licensing issues are addressed.  Having the code in the kernel is a
-liability risk, even if it is not used by anything right now.
+The real source of the problems I encountered is in the SCSI midlayer.  
+scsi_request_fn() can call elv_next_request() long before it is ready
+to begin executing the request.  In particular, it does so before 
+checking scsi_dev_queue_ready().  So if the lower-level driver can 
+handle up to N simultaneous requests, the midlayer will call 
+elv_next_request() N+1 times.  The last request has to wait until one 
+of the first N completes.  Surely this waiting period doesn't deserve 
+to be counted as part of the last request's timeout.
 
->> # It has its own xc3028 and xc5000 tuner driver. I don't know whether
->> his driver is better than the one in V4L. Presumably he has the
->> datasheets for those parts, but on the other hand the V4L driver
->> allows loading of the firmware externally. The V4L drivers are also
->> used by devices beyond the em28xx and may have functionality required
->> by other companies products.
->
-> For the record: other devs have datasheets and sources as well for these
-> devices.
+In my case N was 1, and request #1 ended up being requeued.  Requeuing
+restarts the timer; as a result, the timer for request #2 expired
+before request #1's second incarnation timed out.  And this was before
+request #2 had even begun!
 
-Yes, I know.  Markus has suggested that his versions of the drivers
-are better because they are based on the reference code.  The xc5000
-driver aside (where the mainline driver is also based on the Xceive
-reference code with proper licensing and attribution), I do not
-believe he has ever offered any technical basis for his assertion.
+That's not so terribly bad in itself.  However the scsi_times_out()  
+routine is completely unprepared to handle timeouts for requests that
+haven't yet been dispatched to the LLD.  Or, for that matter, requests
+which have been returned by the LLD but were requeued and have not yet
+been sent back down.
 
->> # What I'll call "Black magic" - lots of arbitrary code without any
->> explanation as to what it is doing or why. Why does the DVB init
->> routine write 0x77 to register 0x12? What does that do? A combination
->> of poor use of constants and commented code combined with a lack of
->> access to the datasheets leaves this a mystery. You just have to
->> "trust that it's doing the right thing because it works"
->
-> This is not an uncommon occurence when datasheets are not public.
-> Hopefully Markus can address such problems when the driver is in the
-> kernel. It's IMHO not a blocking issue.
+So what happened was that the midlayer tried to abort a request which
+hadn't started yet.  Or, depending on the exact timing, it found itself
+being asked to abort two requests when only one was running, so it gave
+up and did nothing.  One way leads to processes hanging, the other way
+leads to a system crash.
 
-He has had the opportunity to do this in his own tree, and has thus
-far not done it because, as he put it in email to me "nobody cares
-about this".  I disagree with this assertion personally as someone who
-has had to fix bugs in the mainline driver and it would have been very
-helpful to at least have commented what some of the code is doing.  He
-has the datasheets, and has made a conscious decision to not describe
-what the code is doing.
+How should this be fixed?  It would help to call scsi_dev_queue_ready()  
+before elv_next_request(), but that's not sufficient.  
+scsi_times_out() needs to recognize that a timeout for a non-running
+request can be handled by directly returning BLK_EH_HANDLED.  Right?
 
->> # He's the only one who has access to the datasheets, so there is
->> limited opportunity for peer review. The community driver is based on
->> reverse engineering, and we can pass around USB traces we collect to
->> justify/explain design decisions. How do you question a design when
->> the basis of answers is essentially "because the secret document that
->> I can't show you says so"?
->
-> There are lots of drivers that are based on NDAs (e.g. my cx18 driver).
-> The code is public, but the datasheets aren't. That's actually much
-> better than to rely on reverse engineering. Of course, you get the best
-> results if the datasheets are also public, but that's sadly not always
-> possible. Often active developers can all get NDAs, so that multiple
-> devs have access to datasheets (again, that's the case for the cx18
-> driver).
->
-> I see this as an advantage, not a disadvantage.
 
-I understand the value of datasheets, as I am in this situation myself
-with several devices.  However, in many cases a well written driver
-will have good comments as to what it is doing (super secret
-algorithms aside).  In fact, now that I have access to some of the
-Empia datasheets, I have some patches for the mainline driver that
-better document some of these cases.
+While I'm on the subject, there are a few related items that could be 
+improved.  In my tests, I was generating I/O requests simply by doing
 
->> I'm sorry if the sharing of my views on this matter create more
->> animosity within the community, as that is the exact opposite of what
->> I want.
->
-> This is I think the last chance to get Markus' driver into the kernel.
-> If this fails again, then there is no other choice but to fork it all.
-> But for the end-users it's so much better if Markus would maintain the
-> empia driver since he has the datasheets and hardware.
->
-> Forget the history, and see this as a new driver. I think I presented a
-> reasonable roadmap for it to be merged.
+	dd if=/dev/sda ...
 
-Sure, and if Markus is willing to compromise on things like the tuner
-drivers, then this would be good for everybody.  Past experience has
-suggested that he was unwilling to compromise on anything (based on my
-attempts in the past), so if things have changed then I would be
-thrilled to work with him.
+I don't know where the timeouts for these requests are determined, but
+they were set to 60 seconds.  That seems much too long.
 
-Devin
+In blk_del_timer(), there's no reason to test q->rq_timed_out_fn.  If 
+the method pointer is NULL then req->deadline would be 0 anyway.  In 
+addition, req->deadline should be set to 0 and the end of the routine, 
+just in case req gets requeued.
 
--- 
-Devin J. Heitmueller
-http://www.devinheitmueller.com
-AIM: devinheitmueller
+In blk_add_timer(), the line
+
+	expiry = round_jiffies(req->deadline);
+
+is not optimal.  round_jiffies() will sometimes round a value _down_ to
+the nearest second.  But blk_rq_timed_out_timer() tests whether
+req->deadline is in the past -- and if the deadline was rounded down
+then this won't be true the first time through.  You wind up getting an
+unnecessary timer interrupt.  Instead there should be a
+round_jiffies_up() utility routine, and it should be used in both
+blk_add_timer() and blk_rq_timed_out_timer().
+
+Alan Stern
+
