@@ -1,210 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbYKAQim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbYKAQi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753132AbYKAQim (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 12:38:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbYKAQid
+	id S1753590AbYKAQi4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 12:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbYKAQij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 12:38:33 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:5580 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751612AbYKAQic (ORCPT
+	Sat, 1 Nov 2008 12:38:39 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:55258 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752235AbYKAQii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 12:38:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=EcgEQG2lLjgAEgMm2kOQaWoiVV6Mx6TGce1BJ4d0XtJxdq6IRGQQPDjDCEY3WVpZfV
-         TJqtVnPVY84DWp+rThnp6flnTweFOJLGUw8rrq4UkP/96OvcwpeNYnBX1Zbh4ChzX+3U
-         hrnbffugxbaN5VIX2spAGbcJ9hQ/EzKJuTzic=
-Message-ID: <b2cc26e40811010938k3864c48j45ce55af09516302@mail.gmail.com>
-Date: Sat, 1 Nov 2008 17:38:30 +0100
-From: "Olaf van der Spek" <olafvdspek@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: epoll behaviour after running out of descriptors
+	Sat, 1 Nov 2008 12:38:38 -0400
+Date: Sat, 1 Nov 2008 12:38:29 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Meelis Roos <mroos@linux.ee>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: ext3 __log_wait_for_space: no transactions
+Message-ID: <20081101163829.GD8134@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Meelis Roos <mroos@linux.ee>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Duane Griffin <duaneg@dghda.com>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+References: <Pine.SOC.4.64.0810301147310.10441@math.ut.ee> <20081031235459.055c35d7.akpm@linux-foundation.org> <Pine.SOC.4.64.0811011058240.18925@math.ut.ee>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <Pine.SOC.4.64.0811011058240.18925@math.ut.ee>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Nov 01, 2008 at 10:59:11AM +0200, Meelis Roos wrote:
+> > > __log_wait_for_space: no transactions
+> > > Aborting journal on device sda3.
+> > > ext3_abort called.
+> > > EXT3-fs error (device sda3): ext3_journal_start_sb: Detected aborted journal
+> > > Remounting filesystem read-only
+> > 
+> > ug.  Was 2.6.27 OK?
+> 
+> Yes, no known problems and it ran from 2.6.27 release until sometime 
+> between 28-rc1 and 28-rc2 without problems.
 
-I noticed some strange behaviour of epoll after running out of descriptors.
-I've registered a listen socket to epoll with edge triggering. On the
-client-side I use an app that simply keeps opening connections.
-When accept returns EMFILE, I call epoll_wait and accept and it
-returns with another EMFILE.
-This happens 10 times or so, after that epoll_wait no longer returns
-with the listen socket ready.
-I then close all file descriptors, but epoll_wait will still not return.
-So my question is, why does it 'only' happen 10 times and what is the
-expected behaviour?
-And how should an app handle this?
+Ok, I think see the problem.  I'm pretty sure the problem is this
+commit:
 
-The example in the epoll man page doesn't seem to handle this.
+commit be07c4ed4043ab8c26f222348136141335e47a2f
+Author: Duane Griffin <duaneg@dghda.com>
+Date:   Wed Oct 22 14:15:03 2008 -0700
 
-An idea I had was for epoll_wait to only return with accept / EMFILE
-once. Then after a descriptor becomes available, epoll_wait would
-return again.
+    jbd: abort instead of waiting for nonexistent transactions
+    
+    The __log_wait_for_space function sits in a loop checkpointing
+    transactions until there is sufficient space free in the journal.
+    However, if there are no transactions to be processed (e.g.  because the
+    free space calculation is wrong due to a corrupted filesystem) it will
+    never progress.
+    
+    Check for space being required when no transactions are outstanding and
+    abort the journal instead of endlessly looping.
+    
+    This patch fixes the bug reported by Sami Liedes at:
+    http://bugzilla.kernel.org/show_bug.cgi?id=10976
 
-See http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=502901
+The problem is that for small journals, you can run out of space even
+when there is a single transaction in the journal which is in the
+process of being committed, and no transactions ready to be
+checkpointed.  So the logic in the above patch will cause a journal
+abort too aggressively.
 
-Hi,
+My advice to increase the journal size still applies, since it will
+improve performance considerably; but hopefully this patch will make
+things work correctly even with legacy filesystems with very small
+journals.  (Hmm, I wonder if it's worth adding an e2fsck warning
+telling users that they're running with a small journal and they would
+get better performance if they increased their journal size.)
 
-I've written a web app that should be able to handle a lot of new
-connections per second (1000+). On multiple servers I've hit a bug.
-After running out of descriptors, then closing descriptors, epoll_wait
-doesn't return anymore for the listen socket.
-I've attached code to reproduce the issue. And an strace log. Even
-before closing the descriptors you see epoll_wait already stops returning.
+Can you try this patch and see if it fixes things for you?
 
-On the other side, I used a self-written app that just opens tons of
-connections. Is there a standard utility to do that?
+    	    	       	       	     	   	      - Ted
 
-#include <arpa/inet.h>
-#include <cassert>
-#include <ctime>
-#include <errno.h>
-#include <netinet/in.h>
-#include <sys/epoll.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <vector>
+>From fc329ed8e05ea0d6deebde096e1d29201f82f990 Mon Sep 17 00:00:00 2001
+From: Theodore Ts'o <tytso@mit.edu>
+Date: Sat, 1 Nov 2008 12:36:41 -0400
+Subject: [PATCH] jbd: Make __log_wait_for_space wait for the committing transaction to finish
 
-using namespace std;
+Commit be07c4ed introducd a regression because it assumed that if
+there were no transactions ready to be checkpointed, that no progress
+could be made on making space available in the journal, and so the
+journal should be aborted.  This assumption is false; for small
+journals, the currently committing transaction could be responsible
+for chewing up the required space in the log, so we need to wait for
+the currently committing transaction to finish before trying to force
+a checkpoint operation.
 
-int main()
-{
-        int l = socket(AF_INET, SOCK_STREAM, 0);
-        unsigned long p = true;
-        ioctl(l, FIONBIO, &p);
-        sockaddr_in a = {0};
-        a.sin_family = AF_INET;
-        a.sin_addr.s_addr = INADDR_ANY;
-        a.sin_port = htons(2710);
-        bind(l, reinterpret_cast<sockaddr*>(&a), sizeof(sockaddr_in));
-        listen(l, SOMAXCONN);
-        int fd = epoll_create(1 << 10);
-        epoll_event e;
-        e.data.fd = l;
-        e.events = EPOLLIN | EPOLLOUT | EPOLLPRI | EPOLLERR | EPOLLHUP
-| EPOLLET;
-        epoll_ctl(fd, EPOLL_CTL_ADD, l, &e);
-        const int c_events = 64;
-        epoll_event events[c_events];
-        typedef vector<int> sockets_t;
-        sockets_t sockets;
-        time_t t = time(NULL);
-        while (1)
-        {
-                int r = epoll_wait(fd, events, c_events, 5000);
-                if (r == -1)
-                        continue;
-                if (!r && time(NULL) - t > 30)
-                {
-                        for (int i = 0; i < sockets.size(); i++)
-                                close(sockets[i]);
-                        sockets.clear();
-                        t = INT_MAX;
-                }
-                for (int i = 0; i < r; i++)
-                {
-                        if (events[i].data.fd == l)
-                        {
-                                while (1)
-                                {
-                                        int s = accept(l, NULL, NULL);
-                                        if (s == -1)
-                                        {
-                                                if (errno == EAGAIN)
-                                                        break;
-                                                break; // continue;
-                                        }
-                                        sockets.push_back(s);
-                                }
-                        }
-                        else
-                                assert(false);
-                }
-        }
-        return 0;
-}
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Cc: Duane Griffin <duaneg@dghda.com>
 
-socket(PF_INET, SOCK_STREAM, IPPROTO_IP) = 3
-ioctl(3, FIONBIO, [1])                  = 0
-bind(3, {sa_family=AF_INET, sin_port=htons(2710),
-sin_addr=inet_addr("0.0.0.0")}, 16) = 0
-listen(3, 128)                          = 0
-epoll_create(1024)                      = 4
-epoll_ctl(4, EPOLL_CTL_ADD, 3,
-{EPOLLIN|EPOLLPRI|EPOLLOUT|EPOLLERR|EPOLLHUP|EPOLLET, {u32=3,
-u64=13806959039201935363}}) = 0
-time(NULL)                              = 1224527442
-epoll_wait(4, {}, 64, 5000)             = 0
-time(NULL)                              = 1224527447
-epoll_wait(4, {{EPOLLIN, {u32=3, u64=13806959039201935363}}}, 64, 5000) = 1
-accept(3, 0, NULL)                      = 5
-brk(0)                                  = 0x804c000
-brk(0x806d000)                          = 0x806d000
-accept(3, 0, NULL)                      = 6
-accept(3, 0, NULL)                      = 7
-accept(3, 0, NULL)                      = 8
-accept(3, 0, NULL)                      = -1 EAGAIN (Resource
-temporarily unavailable)
-epoll_wait(4, {{EPOLLIN, {u32=3, u64=13806959039201935363}}}, 64, 5000) = 1
-accept(3, 0, NULL)                      = 9
-...
-accept(3, 0, NULL)                      = 85
-accept(3, 0, NULL)                      = -1 EAGAIN (Resource
-temporarily unavailable)
-epoll_wait(4, {{EPOLLIN, {u32=3, u64=13806959039201935363}}}, 64, 5000) = 1
-accept(3, 0, NULL)                      = 86
-...
-accept(3, 0, NULL)                      = 1023
-accept(3, 0, NULL)                      = -1 EMFILE (Too many open files)
-epoll_wait(4, {{EPOLLIN, {u32=3, u64=13806959039201935363}}}, 64, 5000) = 1
-accept(3, 0, NULL)                      = -1 EMFILE (Too many open files)
-epoll_wait(4, {{EPOLLIN, {u32=3, u64=13806959039201935363}}}, 64, 5000) = 1
-...
-epoll_wait(4, {{EPOLLIN, {u32=3, u64=13806959039201935363}}}, 64, 5000) = 1
-accept(3, 0, NULL)                      = -1 EMFILE (Too many open files)
-epoll_wait(4, {}, 64, 5000)             = 0
-time(NULL)                              = 1224527454
-epoll_wait(4, {}, 64, 5000)             = 0
-time(NULL)                              = 1224527459
-epoll_wait(4, {}, 64, 5000)             = 0
-time(NULL)                              = 1224527464
-epoll_wait(4, {}, 64, 5000)             = 0
-time(NULL)                              = 1224527469
-epoll_wait(4, {}, 64, 5000)             = 0
-time(NULL)                              = 1224527474
-close(5)                                = 0
-...
-close(1023)                             = 0
-epoll_wait(4, {}, 64, 5000)             = 0
-time(NULL)                              = 1224527479
-epoll_wait(4, {}, 64, 5000)             = 0
-time(NULL)                              = 1224527484
-epoll_wait(4, {}, 64, 5000)             = 0
-time(NULL)                              = 1224527489
-epoll_wait(4, {}, 64, 5000)             = 0
-time(NULL)                              = 1224527494
-epoll_wait(4, {}, 64, 5000)             = 0
-time(NULL)                              = 1224527499
-epoll_wait(4, {}, 64, 5000)             = 0
-time(NULL)                              = 1224527504
-
--- Package-specific info:
-** Version:
-Linux version 2.6.24-etchnhalf.1-686 (Debian 2.6.24-6~etchnhalf.5)
-(dannf@debian.org) (gcc version 4.1.2 20061115 (prerelease) (Debian
-4.1.1-21)) #1 SMP Mon Sep 8 06:19:11 UTC 2008
-
-** Command line:
-root=/dev/sda1 ro
-
-** Not tainted
+diff --git a/fs/jbd/checkpoint.c b/fs/jbd/checkpoint.c
+index 1bd8d4a..89faee1 100644
+--- a/fs/jbd/checkpoint.c
++++ b/fs/jbd/checkpoint.c
+@@ -128,25 +128,36 @@ void __log_wait_for_space(journal_t *journal)
+ 		/*
+ 		 * Test again, another process may have checkpointed while we
+ 		 * were waiting for the checkpoint lock. If there are no
+-		 * outstanding transactions there is nothing to checkpoint and
+-		 * we can't make progress. Abort the journal in this case.
++		 * transactions ready to be checkpointed, we may need to
++		 * wait for the currently committing transaction to complete
++		 * first.  If there are no outstanding transactions we can't
++		 * make progress.  This should never happen, so call trigger
++		 * a BUG so we can debug the situation.
+ 		 */
+ 		spin_lock(&journal->j_state_lock);
+ 		spin_lock(&journal->j_list_lock);
+ 		nblocks = jbd_space_needed(journal);
+ 		if (__log_space_left(journal) < nblocks) {
+ 			int chkpt = journal->j_checkpoint_transactions != NULL;
++			int tid = 0;
+ 
++			if (journal->j_committing_transaction)
++				tid = journal->j_committing_transaction->t_tid;
+ 			spin_unlock(&journal->j_list_lock);
+ 			spin_unlock(&journal->j_state_lock);
+ 			if (chkpt) {
+ 				log_do_checkpoint(journal);
++			} else if (tid) {
++				log_wait_commit(journal, tid);
+ 			} else {
+-				printk(KERN_ERR "%s: no transactions\n",
+-				       __func__);
+-				journal_abort(journal, 0);
++				printk(KERN_ALERT "%s: needed %d blocks and "
++				       "only had %d space available\n",
++				       __func__, nblocks,
++				       __log_space_left(journal));
++				printk(KERN_ALERT "%s: no way to get more "
++				       "journal space\n", __func__);
++				BUG();
+ 			}
+-
+ 			spin_lock(&journal->j_state_lock);
+ 		} else {
+ 			spin_unlock(&journal->j_list_lock);
