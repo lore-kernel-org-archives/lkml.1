@@ -1,20 +1,19 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753090AbYKANcb (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 1 Nov 2008 09:32:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYKANcV
+	id S1753759AbYKAWsX (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 1 Nov 2008 18:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbYKAWsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 09:32:21 -0400
-Received: from mail-gx0-f30.google.com ([209.85.217.30]:34828 "EHLO
-	mail-gx0-f30.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751401AbYKANcU (ORCPT
+	Sat, 1 Nov 2008 18:48:12 -0400
+Received: from po-out-1718.google.com ([72.14.252.153]:25573 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751656AbYKAWsL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 09:32:20 -0400
-X-Greylist: delayed 817 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Nov 2008 09:32:19 EDT
-Message-ID: <f9e773450811010618q5c816178x9154e2d843e4fcaa@mail.gmail.com>
-Date: Sat, 1 Nov 2008 21:18:38 +0800
-From: "=?BIG5?B?qkyqWanJ?=" <y5la6i0q207@gmail.com>
-To: lines@starhub.net.sg
-Subject: =?BIG5?B?ofitt6rhtq7D/aG4dmWpyrrWpc2soaG4vGG0Qaldv0WxoaH4?=
+	Sat, 1 Nov 2008 18:48:11 -0400
+Message-ID: <c0c7da0d0811011548r78640878s9e9e0ecd4cc62d6b@mail.gmail.com>
+Date: Sun, 2 Nov 2008 06:48:04 +0800
+From: "=?BIG5?B?s6+p97ZR?=" <e7pd7k0q18k9l@gmail.com>
+To: ling1019@pixnet.net
+Subject: =?BIG5?B?sXrB2ahTprOkQK3TsU3E3aq6pfi3frr0r7i23KFI?=
 MIME-Version: 1.0
 Content-Type: text/plain; charset=BIG5
 Content-Transfer-Encoding: base64
@@ -22,11 +21,20 @@ Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753090AbYKANcb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753759AbYKAWsX@vger.kernel.org>
 
-MjAwOC8xMS8xIC0gMjE6MTg6MzMKCq23quG2rsP9obipyrrWpc2soaG4vGG0Qaldv0WxoQoKs8y3
-c6FBs8ymaKFBtNqmobPMu/Sl/qq6saG97KXOq36zo6Zis2+4zAoKsXGye6Zitn2pbKZipF2ko6XO
-rmCy26q6qOypsa2xpWi2UrGhveylzqt+pEYKCrr0p32mYrNvoUdrdXJvLnR2LzJSNgoop+K69Kd9
-vca7c6jsuvSnfaZDtkukV6dZpWkpCgqjuK3TpEiquqldsd+sT7FJueaquqFBue+m26R2pm6juMJJ
-CqO4rdOkSKRdr+C/V6bbqMmo/KnKt1K7UL9FsaGqurzWvewKCrJ7pkGlW6RKt3yt+6X+qHSmQ7DT
-q36kRafpwHW0Zgo=
+pHPgvqzsp9669K22s12tcAoKp9qtzKq6qXamrqFHq8ik4aq6qEOjuKXzpHCoxrGhoUGzo6xPpHPg
+vqq6pGqoxrGhCgqn2q3MpmKxwKVYpfi3fqfOtki69K+4pV2ndKtlpXi69K22rPykdSur4aV4ut6y
+erV7pqEKCq2trsmtrbZxsU2u17v5IKV1rW4kMjksOTAwCgoopmKwZaO4pn4xMDBNQqSjra2sebZx
+uvSvuKrFtqEpCgqn2q3MsLWquqSjpXWsT7r0r7ihQabTrE+xeqX4t36quqRKpGYKCqO4rdOmbqq6
+pfi3frr0r7i46q7Gp1muyafzt3OqurN0q9esT6vcrautbqq6Cgql+Ld+ou2kxqq6sKqrfr3ouc62
+pKFBpbSzebF6qrq69Lj0qvmtsQoKv+++3KRz4L6mqLROsXqqurnat1EKCqHjoeOh46HjoeOh46Hj
+oeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeMKUFM6IL11pFfByqqruvSvuKfa
+rczB2aVptKOo0ajqpWS+96juoUEKoUChQLtQvXWkV6ZDpkyxYrPmpf6s2bZXsNMrtmynvcO6tk8u
+Li4uLi61par3rHmqQbDIvveo7gqh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh
+46HjoeOh46HjoeOh46HjCgrFd6rvqNO5cayiuN+2wLFNrfuhXVNhbaFeoUcwOTgwMTE5ODEyIC8g
+MDkzODc2NDM5NQoKpFe69LdqtE2heaFAuvSttrNdrXCkc+C+oUCheqdZpWmn5Kjsp9qtzAoKoeOh
+46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh4wqlu6S9pXGl
+dKV+tKOo0cP2weSmclNFT7HGp8eqQbDICqtPw9KxTrF6qrq69K+4pmJZeCAvIEd4IC4uLrHGpmKy
+xKRArbYKoUChQKFAoUChQKFAoUChQKFAoUChQKFAoUChQKFAoUChQKFAIMV3qu+o07lxuN+w3SEh
+IQqh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjoeOh46HjCg==
