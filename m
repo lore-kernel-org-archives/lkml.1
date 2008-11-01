@@ -1,109 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYKARfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbYKARqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753196AbYKARfs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 13:35:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbYKARfk
+	id S1753222AbYKARqx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 13:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbYKARqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 13:35:40 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:63945 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751677AbYKARfj (ORCPT
+	Sat, 1 Nov 2008 13:46:44 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:41177 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751828AbYKARqn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 13:35:39 -0400
-Date: Sat, 1 Nov 2008 13:35:36 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Jonathan Corbet <corbet@lwn.net>, Yinghai Lu <yinghai@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Robert Hancock <hancockr@shaw.ca>,
-       e1000-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.28-rc2 hates my e1000e
-In-Reply-To: <alpine.LFD.2.00.0811010958230.6226@nehalem.linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0811011326390.9409@gandalf.stny.rr.com>
-References: <fa.P5jmIAOhSJ192sfWD+qlec07fe8@ifi.uio.no> <490A5532.2000704@shaw.ca> <20081030205851.3208f52f@bike.lwn.net> <86802c440810302108h48046c08x3bbdcd0e35fd31b7@mail.gmail.com> <alpine.LFD.2.00.0810310800120.21084@nehalem.linux-foundation.org>
- <alpine.LFD.2.00.0810310839380.21084@nehalem.linux-foundation.org> <20081031100040.1f0cf34f@bike.lwn.net> <alpine.LFD.2.00.0810310916050.21084@nehalem.linux-foundation.org> <20081031105105.092ebad3@bike.lwn.net> <alpine.LFD.2.00.0810310953550.21084@nehalem.linux-foundation.org>
- <20081101090154.3d014f57@bike.lwn.net> <alpine.LFD.2.00.0811010958230.6226@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sat, 1 Nov 2008 13:46:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=GcE8NqbA3EtP1wWrow18IyTJpkUUa3RfX61IitnXAfWfvdN/Se5zvF6L0jS/BmfqKR
+         DmGgwVl13ab8Efl26YWtdzOAC3p6AYNgxIKY3W07pAfN5BNPS7os+lr8c6rpPomabLOQ
+         xA2GMGOSFn/DV9SEPwi/rt2KbnQ1s7wWy6vDU=
+Message-ID: <d9def9db0811011046t58a03e3aj612cdcb06d042ca1@mail.gmail.com>
+Date: Sat, 1 Nov 2008 18:46:40 +0100
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Thierry Merle" <thierry.merle@free.fr>
+Subject: Re: [linux-dvb] em28xx merge process issues with linuxtv and upstream kernel
+Cc: "Jelle de Jong" <jelledejong@powercraft.nl>, akpm@osdl.org, greg@kroah.com,
+       linux-dvb@linuxtv.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       em28xx@mcentral.de
+In-Reply-To: <490C2432.40804@free.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <490B7EE5.5030701@powercraft.nl> <490C2432.40804@free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Nov 1, 2008 at 10:41 AM, Thierry Merle <thierry.merle@free.fr> wrote:
+> Hi Jelle,
+>
+> Jelle de Jong a écrit :
+>> -----BEGIN PGP SIGNED MESSAGE-----
+>> Hash: SHA1
+>>
+>> Hello everybody,
+>>
+>> I would like to discuss some issues with the em28xx-new project and the
+>> re-merging process with the upstream code and the linuxtv project.
+>>
+>> First I would like to say that I am not an active developer on this
+>> project, but a very heavy user that followed the project very close and
+>> made some documentation, packages, helped getting some issues discussed
+>> and some devices added. This project is important for me because I need
+>> it to be merged successfully and with width support so it will become
+>> maintainable on large basis.
+>>
+>> This is the situation:
+>>
+>> Markus Rechberger has worked for more than 3 years on a clone/fork of
+>> the official code, creating the em28xx-new [1] project. He has worked
+>> very very hard on this project and produced a lot of code and provides a
+>> lot of support to the users of his project. It takes lot of energy and
+>> resources to pull of this kind of work! I do really respect this work
+>> and hope others also do this!
+>>
+>> In a good free software development process somebody would clone some
+>> work to his own personal repository, then add or fix one feature. Create
+>> a diff compared with the upstream code and then. Commit the patch with
+>> good description to the upstream project, so this feature and its code
+>> changes can be reviewed, tested and supported. After this one feature
+>> fix and patch, a developer moves to his next feature and repeats to
+>> process so step by step and patch by patch the project grows. This
+>> understanding of the code bye a larger group of people will lead to a
+>> platform of developers that can maintain and contribute to the project.
+>> This would be the proper way of doing things it most cases, but a
+>> developer need to know and understand or mentored with this from the start.
+>>
+>> However sometimes a developer works very hard on the code creating lots
+>> of new features, adding support for lots of new devices and fixes lots
+>> of issues without committing patches during the process. After 3 years
+>> or more its understandable that it can lead to a code base almost
+>> unrecognizable from the initial cloned code base. So what to do now! To
+>> ask from the developer to completely separate all his work in individual
+>> patches that can be committed to upstream is almost unrealistic. A good
+>> plan needs to be created and discussed by the people that matter.
+>>
+>> In this case I have seen several attempts of Markus to make large
+>> patches and some smaller to try getting his code merged upstream, but
+>> they were after short discussion rejected, because they did not fit the
+>> one patch for one fix, feature, etcetera standard/idea.
+>>
+> The last attempt was rejected because the patches were adding duplicate drivers rather than improving the existing ones.
+> In the same project, 2 drivers managing the same hardware is not correct.
+> Markus (or another people, why Markus may be the only person to do that?) should propose patches of the existing drivers, without breaking the v4l-dvb APIs.
+> - First, the tuners and video decoders modifications shall be merged since they are used by several existing drivers.
+> - Then the em28xx driver shall be improved.
+> And this is what Markus started (thanks for this initiative) but this is hard to spend time on these minor things while supporting problems because of being out-of-kernel.
+>
 
-[ Note, lots of family activities this weekend, so my response may be 
-  slow ]
+In case of the cx25843 I discussed it with Hans Verkuil, there's more
+or less no option since it collides with the existing inkernel driver
+and disables support for other
+cx25843 drivers, so as for the kernel it should be merged to the
+existing one yes.
+The em28xx driver, the one in the kernel has taken a few patches from
+my repository, and it has some additional custom patches, it would
+make more sense to work those
+few patches into the new em28xx driver which is tested with most devices
 
-On Sat, 1 Nov 2008, Linus Torvalds wrote:
-> On Sat, 1 Nov 2008, Jonathan Corbet wrote:
-> 
-> > Networking is fine in the absence of NFS.  I retried things and
-> > stress-tested it in a few ways with no trouble.  I think your last patch
-> > fixes the network card just fine.
-> > 
-> > Then I tried NFS again, watching more closely this time around.
-> > Everything locks up.  In fact, the soft lockup watchdog starts to
-> > scream:
-> 
-> Interesting. I wonder why it happens for NFS, but not apparently for all 
-> your other modules.
-> 
-> It does look very much like a ftrace issue, though, not NFS or 
-> network-related. Steven? Is this something that you are aware of already, 
-> with what looks like a lockup in ftrace_record_ip()?
-> 
+(compared with the driver which is in the kernel which is likely
+tested with 5-10% of the devices which are in the cardlist).
 
-No, I have not seen this before. The code is now pretty straight forward.
+As for some reasons why not to merge it back then:
+* the driver relied on reverse engineered code, which made some
+devices extremly hot (not even xc3028/xc3028L related). Wrong gpio
+settings also enable the device to draw more power and affect the
+signal strength for analog TV/dvb-t, those settings can be custom for
+every designed device. I have had one pinnacle device which had a
+slightly melted package because of that mess.
 
-Jon, could you do a gdb vmlinux and a li *ftrace_record_ip+0xcb to find 
-the exact line that is?
+There are additional em28xx based chipdrivers which only work with
+em28xx based devices (eg. videology cam).
+The input layer actually fully works although I disabled it because it
+needs a redesign and shouldn't be exposed to userland like this, also
+the polling code shouldn't be used (linux timing causes
+alot trouble at low intervals - especially the deinitialization of
+such timers, I sent an email to the ML about a possible race condition
+in ir-kbd-i2c a couple of months ago.
+netBSD developers discovered that interrupt polling works fine even
+for remote controls. Practically since I worked alot with remote
+controls during the last half year returning keyboard input keys
+to userland is a mess, there was a discussion also with netbsd people
+about a more generic interface because the IR support of the device
+should be seen as RC5/RC6/NEC/.. protocol support
+and not as one interface where the device is bound to a certain remote
+and only supporting that remote control.
+(that's just the reason why IR support is disabled :)
 
-Showing the call path of this we have:
+I put together a summary of differences when I submitted the patches.
+em28xx-new itself is a snapshot of the em28xx kernelcode which I
+initially committed, and retried to merge a couple of times
+over the years which luckily didn't work out (see almost melted
+pinnacle device).
 
-in module.c:
+As incremented patches em28xx-new is more or less the inkernel em28xx
+driver constantly worked on since the beginning of 2006.
+First patches were available at:
+http://mcentral.de/v4l-dvb/ (it was kept back along time because there
+was no agreement over the useless API changes, other API changes have
+been merged which aren't necessary either in that case). those patches
+also would have added support for a couple of PCI devices, some of
+them are still not merged either .. most of it relied on reverse
+engineered code, I have to admit it was good to keep it out of the
+kernel back then, it finally resulted in much better support and some
+redesigned code.
+That code was basically merged as a one shot into the em28xx-new
+repository, everything that can be seen in that repository was
+developed ontop of it and all the support for _all_ em28xx devices
+which were supported by v4l-dvb-experimental are now supported by the
+em28xx code too _since a couple of weeks_ (and not before).
 
-  	/* sechdrs[0].sh_size is always zero */
-	mseg = section_objs(hdr, sechdrs, secstrings, "__mcount_loc",
-			    sizeof(*mseg), &num_mcount);
-	ftrace_init_module(mseg, mseg + num_mcount);
+> v4l-dvb people and Markus would be glad to see his drivers in the mainstream kernel.
+>
+>> I am going to ask for understanding of both the side of Markus that
+>> worked very hard on his code, and that of the upstream developers. There
+>> are both valid reasons on how they did there things.
+>>
+>> But we need a solution to get all the code back into the upstream
+>> project so it can go into the kernel project and eventually be delivered
+>> at the Linux distributions and all there users, so no custom compiling,
+>> custom package install are required and non transparent bug reports can
+>> be stopped.
+>>
+>> Is it possible for an upstream developer to step forward and take on the
+>> task of merging the code of Markus back into mainstream, all questions
+>> on the code can be discuses on several mailing-list [2] of choice.
+>>
+> Well, I would say: "Make it so!" ;)
+>
+>> Current the situation is kind of a hold-of, the issues are not being
+>> discussed, the problem is not addressed, so no process is made and
+>> during this time users are suffering from non working nor good supported
+>> devices for there hybrid dvb-t/analog broadcast experiences under Linux.
+>>
+>> I hope this lead to a productive discussion that will get the code to
+>> the end users through there main distribution systems.
+>>
+> I hope so, just to stop these useless discussions that do not discuss on patches.
+>
 
-Where we pass a table of mcount callers to the ftrace_init_module.
+the code is there :-)
 
-void ftrace_init_module(unsigned long *start, unsigned long *end)
-{
-	if (ftrace_disabled || start == end)
-		return;
-	ftrace_convert_nops(start, end);
-}
-
-I wonder if I should test to make sure start is < end :-/
-
-ftrace_convert_nops does the following under a mutex.
-
-	while (p < end) {
-		addr = ftrace_call_adjust(*p++);
-		ftrace_record_ip(addr);
-	}
-
-
-And ftrace_record_ip does:
-
-ftrace_record_ip(unsigned long ip)
-{
-	struct dyn_ftrace *rec;
-	if (!ftrace_enabled || ftrace_disabled)
-		return NULL;
-	rec = ftrace_alloc_dyn_node(ip);
-	if (!rec)
-		return NULL;
-	rec->ip = ip;
-	list_add(&rec->list, &ftrace_new_addrs);
-	return rec;
-}
-
-
-The ftrace_alloc_dyn_node does allocate a page if we are running low, but 
-there's no other loops or locks that I can see us deadlocking on.
-
--- Steve
-
+br,
+Markus
