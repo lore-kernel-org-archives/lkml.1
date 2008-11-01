@@ -1,119 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752392AbYKAJlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752407AbYKAKK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752392AbYKAJlV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 05:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbYKAJlN
+	id S1752407AbYKAKK7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 06:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbYKAKKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 05:41:13 -0400
-Received: from smtp6-g19.free.fr ([212.27.42.36]:59269 "EHLO smtp6-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751119AbYKAJlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 05:41:11 -0400
-Message-ID: <490C2432.40804@free.fr>
-Date: Sat, 01 Nov 2008 10:41:06 +0100
-From: Thierry Merle <thierry.merle@free.fr>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Sat, 1 Nov 2008 06:10:50 -0400
+Received: from mail.gmx.net ([213.165.64.20]:51490 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751225AbYKAKKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Nov 2008 06:10:49 -0400
+X-Authenticated: #5108953
+X-Provags-ID: V01U2FsdGVkX19a9uFnck5azmkSuIJO0HK0yTMWvpsiMqMDi1M4pg
+	9R4aoDKzJk6zAZ
+From: Toralf =?iso-8859-15?q?F=F6rster?= <toralf.foerster@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: task sadc:1148 blocked for more than 120 seconds.
+Date: Sat, 1 Nov 2008 11:10:40 +0100
+User-Agent: KMail/1.9.10
+Cc: sysstat@orange.fr
 MIME-Version: 1.0
-To: Jelle de Jong <jelledejong@powercraft.nl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, akpm@osdl.org,
-       greg@kroah.com, linux-dvb@linuxtv.org, em28xx@mcentral.de
-Subject: Re: [linux-dvb] em28xx merge process issues with linuxtv and upstream
- kernel
-References: <490B7EE5.5030701@powercraft.nl>
-In-Reply-To: <490B7EE5.5030701@powercraft.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed;
+  boundary="nextPart2481196.bVsk8YPEWL";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200811011110.45249.toralf.foerster@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jelle,
+--nextPart2481196.bVsk8YPEWL
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Jelle de Jong a écrit :
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Hello everybody,
-> 
-> I would like to discuss some issues with the em28xx-new project and the
-> re-merging process with the upstream code and the linuxtv project.
-> 
-> First I would like to say that I am not an active developer on this
-> project, but a very heavy user that followed the project very close and
-> made some documentation, packages, helped getting some issues discussed
-> and some devices added. This project is important for me because I need
-> it to be merged successfully and with width support so it will become
-> maintainable on large basis.
-> 
-> This is the situation:
-> 
-> Markus Rechberger has worked for more than 3 years on a clone/fork of
-> the official code, creating the em28xx-new [1] project. He has worked
-> very very hard on this project and produced a lot of code and provides a
-> lot of support to the users of his project. It takes lot of energy and
-> resources to pull of this kind of work! I do really respect this work
-> and hope others also do this!
-> 
-> In a good free software development process somebody would clone some
-> work to his own personal repository, then add or fix one feature. Create
-> a diff compared with the upstream code and then. Commit the patch with
-> good description to the upstream project, so this feature and its code
-> changes can be reviewed, tested and supported. After this one feature
-> fix and patch, a developer moves to his next feature and repeats to
-> process so step by step and patch by patch the project grows. This
-> understanding of the code bye a larger group of people will lead to a
-> platform of developers that can maintain and contribute to the project.
-> This would be the proper way of doing things it most cases, but a
-> developer need to know and understand or mentored with this from the start.
-> 
-> However sometimes a developer works very hard on the code creating lots
-> of new features, adding support for lots of new devices and fixes lots
-> of issues without committing patches during the process. After 3 years
-> or more its understandable that it can lead to a code base almost
-> unrecognizable from the initial cloned code base. So what to do now! To
-> ask from the developer to completely separate all his work in individual
-> patches that can be committed to upstream is almost unrealistic. A good
-> plan needs to be created and discussed by the people that matter.
-> 
-> In this case I have seen several attempts of Markus to make large
-> patches and some smaller to try getting his code merged upstream, but
-> they were after short discussion rejected, because they did not fit the
-> one patch for one fix, feature, etcetera standard/idea.
-> 
-The last attempt was rejected because the patches were adding duplicate drivers rather than improving the existing ones.
-In the same project, 2 drivers managing the same hardware is not correct.
-Markus (or another people, why Markus may be the only person to do that?) should propose patches of the existing drivers, without breaking the v4l-dvb APIs.
-- First, the tuners and video decoders modifications shall be merged since they are used by several existing drivers.
-- Then the em28xx driver shall be improved.
-And this is what Markus started (thanks for this initiative) but this is hard to spend time on these minor things while supporting problems because of being out-of-kernel.
+Hallo,
 
-v4l-dvb people and Markus would be glad to see his drivers in the mainstream kernel.
+hibernating my ThinkPad T41 yesterday evening and waking it up today in the=
+=20
+morning I got some minutes later this in my syslog:
 
-> I am going to ask for understanding of both the side of Markus that
-> worked very hard on his code, and that of the upstream developers. There
-> are both valid reasons on how they did there things.
-> 
-> But we need a solution to get all the code back into the upstream
-> project so it can go into the kernel project and eventually be delivered
-> at the Linux distributions and all there users, so no custom compiling,
-> custom package install are required and non transparent bug reports can
-> be stopped.
-> 
-> Is it possible for an upstream developer to step forward and take on the
-> task of merging the code of Markus back into mainstream, all questions
-> on the code can be discuses on several mailing-list [2] of choice.
-> 
-Well, I would say: "Make it so!" ;)
+Nov  1 10:43:19 n22 INFO: task sadc:1148 blocked for more than 120 seconds.
+Nov  1 10:43:19 n22 "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"=20
+disables this message.
+Nov  1 10:43:19 n22 sadc          D 00000282     0  1148   1147
+Nov  1 10:43:19 n22 c6403edc 00000082 c6403edc 00000282 f7f44800 003b1696=20
+f7f44840 c6403edc
+Nov  1 10:43:19 n22 c01ad66c 00000000 00000000 ce2cc7d0 c0129380 f7f44840=20
+f5cc7ee8 003b1696
+Nov  1 10:43:19 n22 f771e440 d3ed52e8 f7f44800 c01a9928 00000000 00000000=20
+00000007 f78c225c
+Nov  1 10:43:19 n22 Call Trace:
+Nov  1 10:43:19 n22 [<c01ad66c>] log_wait_commit+0x9c/0x100
+Nov  1 10:43:19 n22 [<c0129380>] autoremove_wake_function+0x0/0x50
+Nov  1 10:43:19 n22 [<c01a9928>] journal_stop+0xb8/0x170
+Nov  1 10:43:20 n22 [<c0179c93>] __writeback_single_inode+0x213/0x2e0
+Nov  1 10:43:20 n22 [<c0147880>] generic_writepages+0x20/0x30
+Nov  1 10:43:20 n22 [<c0141f22>] __filemap_fdatawrite_range+0x72/0x90
+Nov  1 10:43:20 n22 [<c019bc3c>] ext3_sync_file+0x8c/0xa0
+Nov  1 10:43:20 n22 [<c017cbee>] do_fsync+0x6e/0xb0
+Nov  1 10:43:20 n22 [<c017cc55>] __do_fsync+0x25/0x40
+Nov  1 10:43:20 n22 [<c0103e3e>] sysenter_past_esp+0x5f/0x85
+Nov  1 10:43:20 n22 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
 
-> Current the situation is kind of a hold-of, the issues are not being
-> discussed, the problem is not addressed, so no process is made and
-> during this time users are suffering from non working nor good supported
-> devices for there hybrid dvb-t/analog broadcast experiences under Linux.
-> 
-> I hope this lead to a productive discussion that will get the code to
-> the end users through there main distribution systems.
-> 
-I hope so, just to stop these useless discussions that do not discuss on patches.
 
-Cheers,
-Thierry
+Here are the cron jobs for the installed Gentoo package=20
+app-admin/sysstat-8.0.4.1 :
+
+n22 ~ # uname -a
+Linux n22 2.6.25.19 #1 Thu Oct 23 10:35:34 CEST 2008 i686 Intel(R) Pentium(=
+R)=20
+M processor 1700MHz GenuineIntel GNU/Linux
+
+n22 ~ # cat /etc/cron.d/sysstat
+*/5 * * * * root /usr/lib/sa/sa1 60 5
+
+n22 ~ # cat /etc/cron.hourly/sysstat
+#!/bin/sh
+
+/usr/lib/sa/sa2 -A
+
+
+=2D-=20
+MfG/Sincerely
+
+Toralf F=F6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+
+--nextPart2481196.bVsk8YPEWL
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkkMKyUACgkQhyrlCH22naM/iACgxHtEr8JCPJaxiaMSeBSbvk6e
+ktYAoJwbdzwxGYeiYMuq6FXnuy1lJy0h
+=6K4P
+-----END PGP SIGNATURE-----
+
+--nextPart2481196.bVsk8YPEWL--
