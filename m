@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752681AbYKAKRO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752948AbYKAKRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752681AbYKAKRO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 06:17:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbYKAKQ6
+	id S1752948AbYKAKRv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 06:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbYKAKRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 06:16:58 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:35896 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751310AbYKAKQ5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 06:16:57 -0400
-Date: Sat, 1 Nov 2008 11:16:52 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH] tracing: fix a build error on alpha and m68k
-In-Reply-To: <20081031095544.GI30317@elte.hu>
-Message-ID: <Pine.LNX.4.64.0811011116010.7456@anakin>
-References: <c62985530810230548t1b569f61g34d1900bb94fde83@mail.gmail.com>
- <c62985530810230615s3252a54ao6488e763d72dc939@mail.gmail.com>
- <49008D12.5090204@gmail.com> <Pine.LNX.4.64.0810231635440.18978@anakin>
- <c62985530810230757r411b4e3dj4ecec649cf8cf0b3@mail.gmail.com>
- <Pine.LNX.4.64.0810231727430.18978@anakin> <4900B414.7090002@gmail.com>
- <20081023163433.GA3160@x200.localdomain> <20081030214910.GA14679@x200.localdomain>
- <Pine.LNX.4.64.0810310949190.22521@anakin> <20081031095544.GI30317@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 1 Nov 2008 06:17:44 -0400
+Received: from atlantis.8hz.com ([212.129.237.78]:56666 "EHLO atlantis.8hz.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751398AbYKAKRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Nov 2008 06:17:42 -0400
+Date: Sat, 1 Nov 2008 10:17:41 +0000
+From: Sean Young <sean@mess.org>
+To: Joern Engel <joern@logfs.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] B+Tree library
+Message-ID: <20081101101741.GA99347@atlantis.8hz.com>
+References: <20081026124643.GA1328@logfs.org> <20081031201745.GA93714@atlantis.8hz.com> <20081031233614.GA24960@logfs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081031233614.GA24960@logfs.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Oct 2008, Ingo Molnar wrote:
-> * Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Fri, 31 Oct 2008, Alexey Dobriyan wrote:
-> > > On Thu, Oct 23, 2008 at 08:34:33PM +0400, Alexey Dobriyan wrote:
-> > > > On Thu, Oct 23, 2008 at 07:27:48PM +0200, Frederic Weisbecker wrote:
-> > > > > When tracing is enabled, some arch have included <linux/irqflags.h>
-> > > > > on their <asm/system.h> but others like alpha or m68k don't.
-> > > > > 
-> > > > > Build error on alpha:
-> > > > > 
-> > > > > kernel/trace/trace.c: In function 'tracing_generic_entry_update':
-> > > > > kernel/trace/trace.c:658: error: implicit declaration of function 'irqs_disabled_flags'
-> > > 
-> > > FYI, this error still exists in mainline (7f82f000ed030d1108b4de47d9e2d556092980c6).
+On Sat, Nov 01, 2008 at 12:36:15AM +0100, Joern Engel wrote:
+> On Fri, 31 October 2008 20:17:45 +0000, Sean Young wrote:
+> > On Sun, Oct 26, 2008 at 01:46:44PM +0100, Joern Engel wrote:
+> > > General advantages of btrees are memory density and efficient use of
+> > > cachelines.  Hashtables are either too small and degrade into linked
+> > > list performance, or they are too large and waste memory.  With changing
+> > > workloads, both may be true on the same system.  Rbtrees have a bad
+> > > fanout of less than 2 (they are not actually balanced binary trees),
+> > > hence reading a fairly large number of cachelines to each lookup.
 > > 
-> > Now it hit mainline (I can't be bothered to develop _new_ code to 
-> > fix things in -next ;-), I'm implementing irqs_disabled_flags() for 
-> > m68k. Stay tuned...
+> > Which reminds me:
+> > 
+> > find_vma() uses rbtrees. Now I assume find_vma() is called far more than
+> > mmap() and friends. Since avltree are balanced (unlike rbtrees) lookups
+> > will be faster at the expense of extra rotations during updates.
 > 
-> this (now mainline) commit should have fixed it:
-> 
->  9244489: ftrace: handle archs that do not support irqs_disabled_flags
-> 
-> can you still see problems?
+> Maybe I should have been clearer.  Rbtrees _are_ balanced trees.  They
+> are not balanced _binary_ trees, but balanced 234-trees in a binary
+> representation.
 
-Yes, the "undefined reference to `save_stack_trace'", as already pointed out
-by Al. I'm trying his fix now...
+I should have been more clearer. avltrees are more rigidly balanced than
+rbtrees, making them faster for lookups but slower for modification:
 
-Gr{oetje,eeting}s,
+http://en.wikipedia.org/wiki/AVL_tree#Comparison_to_other_structures
 
-						Geert
+The difference between the shortest path to a leaf node and the longest 
+path to a leaf node is +1 for avl and *2 for red-black.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Sean
