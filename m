@@ -1,47 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbYKAN7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbYKAOGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753136AbYKAN7k (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 09:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbYKAN7b
+	id S1753276AbYKAOGb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 10:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYKAOGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 09:59:31 -0400
-Received: from smtp-vbr1.xs4all.nl ([194.109.24.21]:3340 "EHLO
-	smtp-vbr1.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750780AbYKAN73 (ORCPT
+	Sat, 1 Nov 2008 10:06:22 -0400
+Received: from smtp-vbr13.xs4all.nl ([194.109.24.33]:4076 "EHLO
+	smtp-vbr13.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751422AbYKAOGV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 09:59:29 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
+	Sat, 1 Nov 2008 10:06:21 -0400
 To: "Markus Rechberger" <mrechberger@gmail.com>
 Subject: Re: [PATCH 1/7] Adding empia base driver
-Date: Sat, 1 Nov 2008 14:59:17 +0100
-User-Agent: KMail/1.9.9
 Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       em28xx <em28xx@mcentral.de>, acano@fastmail.fm,
-       "Andre Kelmanson" <akelmanson@gmail.com>,
-       "Bouwsma Barry" <freebeer.bouwsma@gmail.com>,
-       "Dan Kreiser" <kreiser@informatik.hu-berlin.de>,
-       "Frank Neuber" <fn@kernelport.de>,
-       "Jelle de Jong" <jelledejong@powercraft.nl>,
-       "John Stowers" <john.stowers.lists@gmail.com>,
-       "Lukas Kuna" <lukas.kuna@evkanet.net>,
-       "Stefan Vonolfen" <stefan.vonolfen@gmail.com>,
-       "Stephan Berberig" <s.berberig@arcor.de>,
-       "Thomas Giesecke" <thomas.giesecke@ibgmbh-naumburg.de>,
-       "Vitaly Wool" <vwool@ru.mvista.com>, "Zhenyu Wang" <zhen78@gmail.com>,
-       v4l <video4linux-list@redhat.com>, linux-dvb@linuxtv.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>, greg@kroah.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <d9def9db0810221414w5348acf3re31a033ea7179462@mail.gmail.com>
-In-Reply-To: <d9def9db0810221414w5348acf3re31a033ea7179462@mail.gmail.com>
+       em28xx <em28xx@mcentral.de>, v4l <video4linux-list@redhat.com>,
+       linux-dvb@linuxtv.org
+Content-Disposition: inline
+From: Hans Verkuil <hverkuil@xs4all.nl>
+Date: Sat, 1 Nov 2008 15:05:51 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811011459.17706.hverkuil@xs4all.nl>
+Message-Id: <200811011505.51716.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+(Note: I'm reposting this since it bounced on several mailinglists due 
+to "Too many recipients". I'm now only sending it to the mailinglists 
+as I assume that most of the recipients are on at least one of these 
+mailinglists. Apologies if this is not the case.)
+
 
 Hi Markus,
 
