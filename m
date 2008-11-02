@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbYKBWRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbYKBWWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754736AbYKBWRV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 17:17:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbYKBWRM
+	id S1754742AbYKBWWP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 17:22:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbYKBWWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 17:17:12 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:15669 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752829AbYKBWRL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 17:17:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=td+3/Jt2Z3bffJLazyO2H/eZB4V7GK7pC7b5Ha9E55V2cM+BlAR2GVnE3DtXcuazl0
-         6wPF/S1RYIRA6sjX/HYX2hXeRlzfamK1p2cI9KkMAeKIOxWSJRiUtAUQ9z4XeylvLDOC
-         62r9EhuHEvxZIJ2vBzorZvrfpYLP60D26uOEQ=
-Message-ID: <b2cc26e40811021417o38f9b171ka669961d93b9025c@mail.gmail.com>
-Date: Sun, 2 Nov 2008 23:17:07 +0100
-From: "Olaf van der Spek" <olafvdspek@gmail.com>
-To: "Davide Libenzi" <davidel@xmailserver.org>
-Subject: Re: epoll behaviour after running out of descriptors
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0811021258250.9451@alien.or.mcafeemobile.com>
+	Sun, 2 Nov 2008 17:22:00 -0500
+Received: from proxima.lp0.eu ([85.158.45.36]:46580 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753019AbYKBWV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Nov 2008 17:21:59 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	b=j47qcu8PzirL91ZGri8Txx9okjptbD0rN2XD2F8kV2HjXClTGoWQZTUGOGjIwBMi5ZBEXzZfbbZjL/XQS4aFhbsquXe7Bv937VbyNM8Fq64aI+JK4AzXbuNF0Z3Fw6cx;
+Message-ID: <490E2800.2000205@simon.arlott.org.uk>
+Date: Sun, 02 Nov 2008 22:21:52 +0000
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080928)
 MIME-Version: 1.0
+To: "Michael B. Trausch" <mike@trausch.us>
+CC: linux-kernel@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       Thomas Meyer <thomas@m3y3r.de>, Zhao Yakui <yakui.zhao@intel.com>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: [Bug 11910] AMD64 reboot regression
+References: <20081102153009.6b1f2ab4@zest>
+In-Reply-To: <20081102153009.6b1f2ab4@zest>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b2cc26e40811010938k3864c48j45ce55af09516302@mail.gmail.com>
-	 <Pine.LNX.4.64.0811021022120.9451@alien.or.mcafeemobile.com>
-	 <b2cc26e40811021033r115225e2x4747a17fc2b30256@mail.gmail.com>
-	 <Pine.LNX.4.64.0811021047300.9451@alien.or.mcafeemobile.com>
-	 <b2cc26e40811021051kc748db3x44231dc0c085a8d6@mail.gmail.com>
-	 <Pine.LNX.4.64.0811021117050.9451@alien.or.mcafeemobile.com>
-	 <b2cc26e40811021120p1fa19892m4be6e00785b79289@mail.gmail.com>
-	 <Pine.LNX.4.64.0811021122530.9451@alien.or.mcafeemobile.com>
-	 <b2cc26e40811021241t17a4fd02k32234b9e6b578b3b@mail.gmail.com>
-	 <Pine.LNX.4.64.0811021258250.9451@alien.or.mcafeemobile.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 2, 2008 at 10:17 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
->> Wouldn't the port space require about 20+ k connects? This issue
->> happens after 1 k.
->
-> The reason for "When accept returns EMFILE, I call epoll_wait and accept
-> and it returns with another EMFILE." is because your sockets-close logic
-> is broken.
+On 02/11/08 20:30, Michael B. Trausch wrote:
+> I started testing 2.6.28 with -rc1 on my system (x86-64, AMD Phenom
+> 9500 Quad Core CPU) and found that I was unable to reboot, though I was
+> able to with the Ubuntu-provided 2.6.27 kernel.  I have found that a
+> commit on 17-Oct-2008 (commit 8fd145917fb62368a9b80db59562c20576238f5a)
+> is responsible for this failure to reboot.  Reversing this single change
+> on my local kernel (current git tree plus this patch) has enabled me to
+> reboot again.
+> 
+> System board information is attached in the hopes that it will be found
+> helpful; if any other information is necessary please let me know.
+> 
+> The patch that reverts this change is attached, with stat:
+> 
+>  drivers/acpi/reboot.c |   25 +++----------------------
+>  1 files changed, 3 insertions(+), 22 deletions(-)
 
-It's not broken, it's designed that way. It's designed to hit the
-descriptor limit and then close all sockets some time after.
+I'm having the same problem and reverting this commit fixes it too.
 
-> You get an event for the listening fd, you go call accept(2)
-> and in one or two passes you fill up the avail fd space, then you go back
-> calling epoll_wait(), and yet back to accept(2). This w/out triggering the
-> file-close-relief code (yes, you fill up 1K fds *before* 30 seconds). Of
-> course you get another EMFILE.
+-- 
+Simon Arlott
 
-The second EMFILE doesn't make sense, epoll_wait shouldn't signal the
-socket as ready again, right?
