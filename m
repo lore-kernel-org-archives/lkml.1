@@ -1,99 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbYKBNVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbYKBNXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753968AbYKBNVi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 08:21:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYKBNV3
+	id S1753552AbYKBNXX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 08:23:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbYKBNXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 08:21:29 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:57747 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753443AbYKBNV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 08:21:28 -0500
-Message-ID: <490DA954.2070503@garzik.org>
-Date: Sun, 02 Nov 2008 08:21:24 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Sun, 2 Nov 2008 08:23:13 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:6615 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753443AbYKBNXM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Nov 2008 08:23:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=aDxXw//0de/q/wJkDrOBBS62PQjGR11hWyhItgZmJ/vUjqeeSFIvSnZzIrIUQHM9TV
+         A45oUaJfPe8/U8HH0PqzHo7Bm+b84HcS/f3yc/QOvSl6ghNAfEd7L2j87lEcXdEu4aTq
+         CyRQ1abD0Qibl8Ht8IwOHvYzMpVnj/gSOVFq4=
+Message-ID: <490DAA33.7010905@tuffmail.co.uk>
+Date: Sun, 02 Nov 2008 13:25:07 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-To: Greg Freemyer <greg.freemyer@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] libata fixes
-References: <20081031054949.GA10474@havoc.gtf.org> <87f94c370810310620u77f2b31r85b196d7261ef75f@mail.gmail.com>
-In-Reply-To: <87f94c370810310620u77f2b31r85b196d7261ef75f@mail.gmail.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux acpi <linux-acpi@vger.kernel.org>
+Subject: Re: eeepc-laptop rfkill, stupid question #4
+References: <490B3BB5.8060801@tuffmail.co.uk> <20081031171126.GA17313@srcf.ucam.org> <490B4014.4040009@tuffmail.co.uk> <490B70A3.8010108@tuffmail.co.uk> <20081102040008.GB29606@khazad-dum.debian.net> <490D8C4E.3010201@tuffmail.co.uk> <20081102130655.GA12766@srcf.ucam.org>
+In-Reply-To: <20081102130655.GA12766@srcf.ucam.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg Freemyer wrote:
-> On Fri, Oct 31, 2008 at 1:49 AM, Jeff Garzik <jeff@garzik.org> wrote:
->> Notes:
->>
->> 1) 1.5TB drive fix from Roland
->>
->> 2) Tejun's sata_via brings a non-working via configuration thanks to a
->>   new facility also being used in recent (ICH9/10) ata_piix.
->>
->>   Change is longer than one might like, but it accurately describes the
->>   hardware now, the previous stuff wasn't working, and the newly added
->>   support code shouldn't touch non-broken VIA controllers.
->>
->>
->>
->> Please pull from 'upstream-linus' branch of
->> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
->>
->> to receive the following updates:
->>
->>  drivers/ata/ata_piix.c    |    1 -
->>  drivers/ata/libata-core.c |   11 +++-
->>  drivers/ata/sata_via.c    |  155 +++++++++++++++++++++++++++++++++++++++++----
->>  include/linux/libata.h    |    1 +
->>  4 files changed, 152 insertions(+), 16 deletions(-)
->>
->> Jens Axboe (1):
->>      libata: add whitelist for devices with known good pata-sata bridges
->>
->> Randy Dunlap (1):
->>      ATA: remove excess kernel-doc notation
->>
->> Roland Dreier (1):
->>      libata: Avoid overflow in ata_tf_to_lba48() when tf->hba_lbal > 127
->>
->> Tejun Heo (1):
->>      sata_via: fix support for 5287
-> <snip>
-> 
->> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
->> index 2ff633c..82af701 100644
->> --- a/drivers/ata/libata-core.c
->> +++ b/drivers/ata/libata-core.c
->> @@ -1268,7 +1268,7 @@ u64 ata_tf_to_lba48(const struct ata_taskfile *tf)
->>
->>        sectors |= ((u64)(tf->hob_lbah & 0xff)) << 40;
->>        sectors |= ((u64)(tf->hob_lbam & 0xff)) << 32;
->> -       sectors |= (tf->hob_lbal & 0xff) << 24;
->> +       sectors |= ((u64)(tf->hob_lbal & 0xff)) << 24;
->>        sectors |= (tf->lbah & 0xff) << 16;
->>        sectors |= (tf->lbam & 0xff) << 8;
->>        sectors |= (tf->lbal & 0xff);
-> <snip>
-> 
-> That looks really serious.
-> 
-> What happens with all previous / stable kernels when connecting up a
-> 1.5TB drive and the user tries to use the last portion of the drive?
+Matthew Garrett wrote:
+> On Sun, Nov 02, 2008 at 11:17:34AM +0000, Alan Jenkins wrote:
+>
+>   
+>> Did you have any thoughts on the hibernation case? It's possible for the 
+>> rfkill state to change while hibernated. You can boot into a different 
+>> OS, or change it in the BIOS setup screen. At present the rfkill core 
+>> overrides the change on resume.
+>>     
+>
+> There are two choices. We can either set the rfkill to the hardware 
+> state, or we can set the hardware state to the rfkill state. I think 
+> both are valid choices and I'm happy to implement either of them in the 
+> resume path. However, as you point out, right now it's possible for the 
+> user to change the hardware state in the BIOS and cause the two to get 
+> out of sync. That's certainly not ideal.
+>   
 
-tf-to-lba48 is a far less common operation, generally used for error 
-reporting (and in Host-Protected Area code as well, it appears).
+No, the current rfkill core forces the device to restore the state on 
+resume.  So it can't be of sync after resume.  And there's no way for 
+the platform driver to affect this behaviour, aside from illegally 
+generating input events.
 
-	Jeff
+If we want resume from hibernation to preserve the hardware state 
+instead of overriding it, the rfkill API needs changing.  I'm not sure 
+how that can be justified, given how obscure it is as a use-case, and 
+the damage it would do to an API which already, uh, seems to be 
+frequently misunderstood.
 
-
-
-
+Regards
+Alan
