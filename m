@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbYKBSJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbYKBSJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754777AbYKBSJh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 13:09:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbYKBSCh
+	id S1755162AbYKBSJz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 13:09:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754695AbYKBSCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 13:02:37 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35705 "EHLO ogre.sisk.pl"
+	Sun, 2 Nov 2008 13:02:43 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35711 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754663AbYKBSCg convert rfc822-to-8bit (ORCPT
+	id S1754545AbYKBSCm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 13:02:36 -0500
+	Sun, 2 Nov 2008 13:02:42 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "alexs" <alex.shi@intel.com>
+       "Bob Copeland" <me@bobcopeland.com>
 References: <603i_OdVYPF.A.7_D.mjeDJB@chimera>
 In-Reply-To: <603i_OdVYPF.A.7_D.mjeDJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <wOAXuecskPD.A.4gF.JkeDJB@chimera>
-Subject: [Bug #11899] sometime boot failed on T61 laptop
+Message-ID: <wOAXuecskPD.A.HfF.GkeDJB@chimera>
+Subject: [Bug #11901] ath5k triggers WARN_ON in __ieee80211_rx
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun,  2 Nov 2008 17:07:05 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,9 +35,9 @@ from 2.6.27.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11899
-Subject		: sometime boot failed on T61 laptop
-Submitter	: alexs <alex.shi@intel.com>
-Date		: 2008-10-30 02:04 (4 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11901
+Subject		: ath5k triggers WARN_ON in __ieee80211_rx
+Submitter	: Bob Copeland <me@bobcopeland.com>
+Date		: 2008-10-30 09:15 (4 days old)
 
 
