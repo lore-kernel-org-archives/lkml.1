@@ -1,170 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbYKBFTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbYKBFhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752839AbYKBFTg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 01:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbYKBFT1
+	id S1752875AbYKBFhx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 01:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYKBFho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 01:19:27 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:7007 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751390AbYKBFT0 (ORCPT
+	Sun, 2 Nov 2008 01:37:44 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50655 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751840AbYKBFhn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 01:19:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=p4jMu/OmOm2Cmdn4PcPNhbBj5B5rqIo3oeugV96V3P0ZdYKGYOQYyCnRwIpbUFhRYU
-         fAEVGw5tlgymu/HYvVQvS34BE56VnoCWfFdoM/mod1eab86Vd1J2n6unmKLPd8pOzxbi
-         LSvDRrDpwebdRzaLuZ3/NBajYRk+ve8gZL6Wk=
-Message-ID: <d9def9db0811012219y21499e40ld93236da5390975d@mail.gmail.com>
-Date: Sun, 2 Nov 2008 06:19:23 +0100
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Mauro Carvalho Chehab" <mchehab@infradead.org>
-Subject: Re: [linux-dvb] em28xx merge process issues with linuxtv and upstream kernel
-Cc: "Thierry Merle" <thierry.merle@free.fr>,
-       "Jelle de Jong" <jelledejong@powercraft.nl>, akpm@osdl.org,
-       greg@kroah.com, linux-dvb@linuxtv.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       em28xx@mcentral.de
-In-Reply-To: <20081102031102.361d4ffd@pedra.chehab.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 2 Nov 2008 01:37:43 -0400
+Date: Sun, 2 Nov 2008 14:37:07 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [mm] [PATCH 3/4] Memory cgroup hierarchical reclaim
+Message-Id: <20081102143707.1bf7e2d0.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081101184849.2575.37734.sendpatchset@balbir-laptop>
+References: <20081101184812.2575.68112.sendpatchset@balbir-laptop>
+	<20081101184849.2575.37734.sendpatchset@balbir-laptop>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <490B7EE5.5030701@powercraft.nl> <490C2432.40804@free.fr>
-	 <d9def9db0811011046t58a03e3aj612cdcb06d042ca1@mail.gmail.com>
-	 <20081102031102.361d4ffd@pedra.chehab.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 2, 2008 at 6:11 AM, Mauro Carvalho Chehab
-<mchehab@infradead.org> wrote:
-> On Sat, 1 Nov 2008 18:46:40 +0100
-> "Markus Rechberger" <mrechberger@gmail.com> wrote:
->
->> > The last attempt was rejected because the patches were adding duplicate drivers rather than improving the existing ones.
->> > In the same project, 2 drivers managing the same hardware is not correct.
->> > Markus (or another people, why Markus may be the only person to do that?) should propose patches of the existing drivers, without breaking the v4l-dvb APIs.
->> > - First, the tuners and video decoders modifications shall be merged since they are used by several existing drivers.
->> > - Then the em28xx driver shall be improved.
->> > And this is what Markus started (thanks for this initiative) but this is hard to spend time on these minor things while supporting problems because of being out-of-kernel.
->> >
->>
->> In case of the cx25843 I discussed it with Hans Verkuil, there's more
->> or less no option since it collides with the existing inkernel driver
->> and disables support for other
->> cx25843 drivers, so as for the kernel it should be merged to the
->> existing one yes.
->
-> The same kind of collision exists if we keep both the upstream and your version
-> of the em28xx driver. This is also true for xc5000 and xc3028 drivers.
->
+On Sun, 02 Nov 2008 00:18:49 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-No since it doesn't use the i2c attach infrastructure. It just
-directly sends the few tuner
-bytes wherever it is needed. That way it didn't need any coreframework
-changes either.
+> 
+> This patch introduces hierarchical reclaim. When an ancestor goes over its
+> limit, the charging routine points to the parent that is above its limit.
+> The reclaim process then starts from the last scanned child of the ancestor
+> and reclaims until the ancestor goes below its limit.
+> 
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+> 
+>  mm/memcontrol.c |  153 +++++++++++++++++++++++++++++++++++++++++++++++---------
+>  1 file changed, 129 insertions(+), 24 deletions(-)
+> 
+> diff -puN mm/memcontrol.c~memcg-hierarchical-reclaim mm/memcontrol.c
+> --- linux-2.6.28-rc2/mm/memcontrol.c~memcg-hierarchical-reclaim	2008-11-02 00:14:59.000000000 +0530
+> +++ linux-2.6.28-rc2-balbir/mm/memcontrol.c	2008-11-02 00:14:59.000000000 +0530
+> @@ -132,6 +132,11 @@ struct mem_cgroup {
+>  	 * statistics.
+>  	 */
+>  	struct mem_cgroup_stat stat;
+> +	/*
+> +	 * While reclaiming in a hiearchy, we cache the last child we
+> +	 * reclaimed from.
+> +	 */
+> +	struct mem_cgroup *last_scanned_child;
+>  };
+>  static struct mem_cgroup init_mem_cgroup;
+>  
+> @@ -467,6 +472,125 @@ unsigned long mem_cgroup_isolate_pages(u
+>  	return nr_taken;
+>  }
+>  
+> +static struct mem_cgroup *
+> +mem_cgroup_from_res_counter(struct res_counter *counter)
+> +{
+> +	return container_of(counter, struct mem_cgroup, res);
+> +}
+> +
+> +/*
+> + * Dance down the hierarchy if needed to reclaim memory. We remember the
+> + * last child we reclaimed from, so that we don't end up penalizing
+> + * one child extensively based on its position in the children list
+> + */
+> +static int
+> +mem_cgroup_hierarchical_reclaim(struct mem_cgroup *mem, gfp_t gfp_mask)
+> +{
+> +	struct cgroup *cg, *cg_current, *cgroup;
+> +	struct mem_cgroup *mem_child;
+> +	int ret = 0;
+> +
+> +	if (try_to_free_mem_cgroup_pages(mem, gfp_mask))
+> +		return -ENOMEM;
+> +
+> +	/*
+> +	 * try_to_free_mem_cgroup_pages() might not give us a full
+> +	 * picture of reclaim. Some pages are reclaimed and might be
+> +	 * moved to swap cache or just unmapped from the cgroup.
+> +	 * Check the limit again to see if the reclaim reduced the
+> +	 * current usage of the cgroup before giving up
+> +	 */
+> +	if (res_counter_check_under_limit(&mem->res))
+> +		return 0;
+> +
+> +	/*
+> +	 * Scan all children under the mem_cgroup mem
+> +	 */
+> +	if (!mem->last_scanned_child)
+> +		cgroup = list_first_entry(&mem->css.cgroup->children,
+> +				struct cgroup, sibling);
+> +	else
+> +		cgroup = mem->last_scanned_child->css.cgroup;
+> +
+> +	cg_current = cgroup;
+> +
+> +	/*
+> +	 * We iterate twice, one of it is fundamental list issue, where
+> +	 * the elements are inserted using list_add and hence the list
+> +	 * behaves like a stack and list_for_entry_safe_from() stops
+> +	 * after seeing the first child. The two loops help us work
+> +	 * independently of the insertion and it helps us get a full pass at
+> +	 * scanning all list entries for reclaim
+> +	 */
+> +	list_for_each_entry_safe_from(cgroup, cg, &cg_current->parent->children,
+> +						 sibling) {
+> +		mem_child = mem_cgroup_from_cont(cgroup);
+> +
+> +		/*
+> +		 * Move beyond last scanned child
+> +		 */
+> +		if (mem_child == mem->last_scanned_child)
+> +			continue;
+> +
+> +		ret = try_to_free_mem_cgroup_pages(mem_child, gfp_mask);
+> +		mem->last_scanned_child = mem_child;
+> +
+> +		if (res_counter_check_under_limit(&mem->res)) {
+> +			ret = 0;
+> +			goto done;
+> +		}
+> +	}
 
->> The em28xx driver, the one in the kernel has taken a few patches from
->> my repository, and it has some additional custom patches, it would
->> make more sense to work those
->> few patches into the new em28xx driver which is tested with most devices
->>
->> (compared with the driver which is in the kernel which is likely
->> tested with 5-10% of the devices which are in the cardlist).
->
-> The patches should be generated against the upstream driver, not against the
-> out-of-tree.
->
-> You might use an strategy of first patching the out-of-tree, then patching back the
-> upstream. This may eventually be used as an intermediate step, but I suspect it
-> will just make things harder.
->
-> Anyway, no matter what process used to generate the patchset, it should be
-> generated in a way that it won't cause regressions upstream, and submitted as
-> incremental patches properly describing what each patch of the series is doing
-> (and not just a diff <version a> <version b>).
->
->> As for some reasons why not to merge it back then:
->> * the driver relied on reverse engineered code, which made some
->> devices extremly hot (not even xc3028/xc3028L related). Wrong gpio
->> settings also enable the device to draw more power and affect the
->> signal strength for analog TV/dvb-t, those settings can be custom for
->> every designed device. I have had one pinnacle device which had a
->> slightly melted package because of that mess.
->
-> The gpio logic is just a very few lines of code. A simple patch probably can
-> fix the issues.
->
->> There are additional em28xx based chipdrivers which only work with
->> em28xx based devices (eg. videology cam).
->
-> A patch adding videology cam support would add this functionality upstream.
->
->> The input layer actually fully works although I disabled it because it
->> needs a redesign and shouldn't be exposed to userland like this, also
->> the polling code shouldn't be used (linux timing causes
->> alot trouble at low intervals - especially the deinitialization of
->> such timers, I sent an email to the ML about a possible race condition
->> in ir-kbd-i2c a couple of months ago.
->> netBSD developers discovered that interrupt polling works fine even
->> for remote controls. Practically since I worked alot with remote
->> controls during the last half year returning keyboard input keys
->> to userland is a mess, there was a discussion also with netbsd people
->> about a more generic interface because the IR support of the device
->> should be seen as RC5/RC6/NEC/.. protocol support
->> and not as one interface where the device is bound to a certain remote
->> and only supporting that remote control.
->> (that's just the reason why IR support is disabled :)
->
-> Since it is disabled, there's no sense on currently trying to merge your IR
-> code. This would be a regression.
->
->> > v4l-dvb people and Markus would be glad to see his drivers in the mainstream kernel.
->> >
->> >> I am going to ask for understanding of both the side of Markus that
->> >> worked very hard on his code, and that of the upstream developers. There
->> >> are both valid reasons on how they did there things.
->> >>
->> >> But we need a solution to get all the code back into the upstream
->> >> project so it can go into the kernel project and eventually be delivered
->> >> at the Linux distributions and all there users, so no custom compiling,
->> >> custom package install are required and non transparent bug reports can
->> >> be stopped.
->> >>
->> >> Is it possible for an upstream developer to step forward and take on the
->> >> task of merging the code of Markus back into mainstream, all questions
->> >> on the code can be discuses on several mailing-list [2] of choice.
->> >>
->> > Well, I would say: "Make it so!" ;)
->> >
->> >> Current the situation is kind of a hold-of, the issues are not being
->> >> discussed, the problem is not addressed, so no process is made and
->> >> during this time users are suffering from non working nor good supported
->> >> devices for there hybrid dvb-t/analog broadcast experiences under Linux.
->> >>
->> >> I hope this lead to a productive discussion that will get the code to
->> >> the end users through there main distribution systems.
->> >>
->> > I hope so, just to stop these useless discussions that do not discuss on patches.
->> >
->>
->> the code is there :-)
->
-> If you are comfortable of having people converting your code on incremental
-> patches and submitting upstream, please stop making personal attacks to the
-> ones that are actually doing that ;)
->
+Is this safe against cgroup create/remove ? cgroup_mutex is held ?
 
-http://fixunix.com/kernel/553062-re-patch-1-7-adding-empia-base-driver.html
+Thanks,
+-Kame
 
-I only refer to that email and the statement Hans made
-
-"In my opinion it's pretty much hopeless trying to convert the current
-em28xx driver into what you have. It's a huge amount of work that no
-one wants to do and (in this case) with very little benefit."
-
-Markus
