@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbYKBFhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753207AbYKBFjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752875AbYKBFhx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 01:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYKBFho
+	id S1753207AbYKBFjB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 01:39:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYKBFix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 01:37:44 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50655 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751840AbYKBFhn (ORCPT
+	Sun, 2 Nov 2008 01:38:53 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43727 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751840AbYKBFiw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 01:37:43 -0400
-Date: Sun, 2 Nov 2008 14:37:07 +0900
+	Sun, 2 Nov 2008 01:38:52 -0400
+Date: Sun, 2 Nov 2008 14:38:17 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: Balbir Singh <balbir@linux.vnet.ibm.com>
 Cc: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
@@ -20,11 +20,11 @@ Cc: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
        Pavel Emelianov <xemul@openvz.org>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [mm] [PATCH 3/4] Memory cgroup hierarchical reclaim
-Message-Id: <20081102143707.1bf7e2d0.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081101184849.2575.37734.sendpatchset@balbir-laptop>
+Subject: Re: [mm] [PATCH 4/4] Memory cgroup hierarchy feature selector
+Message-Id: <20081102143817.99edca6d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081101184902.2575.11443.sendpatchset@balbir-laptop>
 References: <20081101184812.2575.68112.sendpatchset@balbir-laptop>
-	<20081101184849.2575.37734.sendpatchset@balbir-laptop>
+	<20081101184902.2575.11443.sendpatchset@balbir-laptop>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -34,111 +34,99 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 02 Nov 2008 00:18:49 +0530
+On Sun, 02 Nov 2008 00:19:02 +0530
 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
 > 
-> This patch introduces hierarchical reclaim. When an ancestor goes over its
-> limit, the charging routine points to the parent that is above its limit.
-> The reclaim process then starts from the last scanned child of the ancestor
-> and reclaims until the ancestor goes below its limit.
+> Don't enable multiple hierarchy support by default. This patch introduces
+> a features element that can be set to enable the nested depth hierarchy
+> feature. This feature can only be enabled when there is just one cgroup
+> (the root cgroup).
 > 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  mm/memcontrol.c |  153 +++++++++++++++++++++++++++++++++++++++++++++++---------
->  1 file changed, 129 insertions(+), 24 deletions(-)
-> 
-> diff -puN mm/memcontrol.c~memcg-hierarchical-reclaim mm/memcontrol.c
-> --- linux-2.6.28-rc2/mm/memcontrol.c~memcg-hierarchical-reclaim	2008-11-02 00:14:59.000000000 +0530
-> +++ linux-2.6.28-rc2-balbir/mm/memcontrol.c	2008-11-02 00:14:59.000000000 +0530
-> @@ -132,6 +132,11 @@ struct mem_cgroup {
->  	 * statistics.
->  	 */
->  	struct mem_cgroup_stat stat;
-> +	/*
-> +	 * While reclaiming in a hiearchy, we cache the last child we
-> +	 * reclaimed from.
-> +	 */
-> +	struct mem_cgroup *last_scanned_child;
->  };
->  static struct mem_cgroup init_mem_cgroup;
->  
-> @@ -467,6 +472,125 @@ unsigned long mem_cgroup_isolate_pages(u
->  	return nr_taken;
->  }
->  
-> +static struct mem_cgroup *
-> +mem_cgroup_from_res_counter(struct res_counter *counter)
-> +{
-> +	return container_of(counter, struct mem_cgroup, res);
-> +}
-> +
-> +/*
-> + * Dance down the hierarchy if needed to reclaim memory. We remember the
-> + * last child we reclaimed from, so that we don't end up penalizing
-> + * one child extensively based on its position in the children list
-> + */
-> +static int
-> +mem_cgroup_hierarchical_reclaim(struct mem_cgroup *mem, gfp_t gfp_mask)
-> +{
-> +	struct cgroup *cg, *cg_current, *cgroup;
-> +	struct mem_cgroup *mem_child;
-> +	int ret = 0;
-> +
-> +	if (try_to_free_mem_cgroup_pages(mem, gfp_mask))
-> +		return -ENOMEM;
-> +
-> +	/*
-> +	 * try_to_free_mem_cgroup_pages() might not give us a full
-> +	 * picture of reclaim. Some pages are reclaimed and might be
-> +	 * moved to swap cache or just unmapped from the cgroup.
-> +	 * Check the limit again to see if the reclaim reduced the
-> +	 * current usage of the cgroup before giving up
-> +	 */
-> +	if (res_counter_check_under_limit(&mem->res))
-> +		return 0;
-> +
-> +	/*
-> +	 * Scan all children under the mem_cgroup mem
-> +	 */
-> +	if (!mem->last_scanned_child)
-> +		cgroup = list_first_entry(&mem->css.cgroup->children,
-> +				struct cgroup, sibling);
-> +	else
-> +		cgroup = mem->last_scanned_child->css.cgroup;
-> +
-> +	cg_current = cgroup;
-> +
-> +	/*
-> +	 * We iterate twice, one of it is fundamental list issue, where
-> +	 * the elements are inserted using list_add and hence the list
-> +	 * behaves like a stack and list_for_entry_safe_from() stops
-> +	 * after seeing the first child. The two loops help us work
-> +	 * independently of the insertion and it helps us get a full pass at
-> +	 * scanning all list entries for reclaim
-> +	 */
-> +	list_for_each_entry_safe_from(cgroup, cg, &cg_current->parent->children,
-> +						 sibling) {
-> +		mem_child = mem_cgroup_from_cont(cgroup);
-> +
-> +		/*
-> +		 * Move beyond last scanned child
-> +		 */
-> +		if (mem_child == mem->last_scanned_child)
-> +			continue;
-> +
-> +		ret = try_to_free_mem_cgroup_pages(mem_child, gfp_mask);
-> +		mem->last_scanned_child = mem_child;
-> +
-> +		if (res_counter_check_under_limit(&mem->res)) {
-> +			ret = 0;
-> +			goto done;
-> +		}
-> +	}
-
-Is this safe against cgroup create/remove ? cgroup_mutex is held ?
+Why the flag is for the whole system ?
+flag-per-subtree is of no use ?
 
 Thanks,
 -Kame
+
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+> 
+>  mm/memcontrol.c |   38 +++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 37 insertions(+), 1 deletion(-)
+> 
+> diff -puN mm/memcontrol.c~memcg-add-hierarchy-selector mm/memcontrol.c
+> --- linux-2.6.28-rc2/mm/memcontrol.c~memcg-add-hierarchy-selector	2008-11-02 00:15:00.000000000 +0530
+> +++ linux-2.6.28-rc2-balbir/mm/memcontrol.c	2008-11-02 00:15:00.000000000 +0530
+> @@ -40,6 +40,9 @@
+>  struct cgroup_subsys mem_cgroup_subsys __read_mostly;
+>  #define MEM_CGROUP_RECLAIM_RETRIES	5
+>  
+> +static unsigned long mem_cgroup_features;
+> +#define MEM_CGROUP_FEAT_HIERARCHY	0x1
+> +
+>  /*
+>   * Statistics for memory cgroup.
+>   */
+> @@ -1080,6 +1083,31 @@ out:
+>  	return ret;
+>  }
+>  
+> +static u64 mem_cgroup_feature_read(struct cgroup *cont, struct cftype *cft)
+> +{
+> +	return mem_cgroup_features;
+> +}
+> +
+> +static int mem_cgroup_feature_write(struct cgroup *cont, struct cftype *cft,
+> +			    		u64 val)
+> +{
+> +	int retval = 0;
+> +	struct cgroup *cgroup = init_mem_cgroup.css.cgroup;
+> +
+> +	if (val & MEM_CGROUP_FEAT_HIERARCHY) {
+> +		if (list_empty(&cgroup->children))
+> +			mem_cgroup_features |= MEM_CGROUP_FEAT_HIERARCHY;
+> +		else
+> +			retval = -EBUSY;
+> +	} else {
+> +		if (list_empty(&cgroup->children))
+> +			mem_cgroup_features &= ~MEM_CGROUP_FEAT_HIERARCHY;
+> +		else
+> +			retval = -EBUSY;
+> +	}
+> +	return retval;
+> +}
+> +
+>  static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
+>  {
+>  	return res_counter_read_u64(&mem_cgroup_from_cont(cont)->res,
+> @@ -1214,6 +1242,11 @@ static struct cftype mem_cgroup_files[] 
+>  		.name = "stat",
+>  		.read_map = mem_control_stat_show,
+>  	},
+> +	{
+> +		.name = "features",
+> +		.write_u64 = mem_cgroup_feature_write,
+> +		.read_u64 = mem_cgroup_feature_read,
+> +	},
+>  };
+>  
+>  static int alloc_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
+> @@ -1292,7 +1325,10 @@ mem_cgroup_create(struct cgroup_subsys *
+>  			return ERR_PTR(-ENOMEM);
+>  	}
+>  
+> -	res_counter_init(&mem->res, parent ? &parent->res : NULL);
+> +	if ((mem_cgroup_features & MEM_CGROUP_FEAT_HIERARCHY) && parent)
+> +		res_counter_init(&mem->res, &parent->res);
+> +	else
+> +		res_counter_init(&mem->res, NULL);
+>  
+>  	for_each_node_state(node, N_POSSIBLE)
+>  		if (alloc_mem_cgroup_per_zone_info(mem, node))
+> _
+> 
+> -- 
+> 	Balbir
+> 
 
