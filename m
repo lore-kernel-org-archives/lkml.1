@@ -1,80 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbYKBLrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753802AbYKBMOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753765AbYKBLrt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 06:47:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753147AbYKBLrk
+	id S1753802AbYKBMOf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 07:14:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYKBMO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 06:47:40 -0500
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:44299 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753133AbYKBLrj (ORCPT
+	Sun, 2 Nov 2008 07:14:27 -0500
+Received: from fk-out-0910.google.com ([209.85.128.190]:12346 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753308AbYKBMO0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 06:47:39 -0500
-Message-ID: <490D931B.8000200@linux.vnet.ibm.com>
-Date: Sun, 02 Nov 2008 17:16:35 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Sun, 2 Nov 2008 07:14:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=q3nICT433ZdYpSvrA2auVP0A42mMn1BKvhgEMsR3oDizyItx9WzYL3gbCJTCPwVBLJ
+         gKJR4DXNzcRhUn/ipbNNNZoUsGOgkf9duN7m2yeyQ94wJwe1MnjTlzj0p3Y1A/BG4TVH
+         E1LK/abB56uIDa8nciJugao4VmbfuVdS2R/Lw=
+Message-ID: <490D999C.4070709@gmail.com>
+Date: Sun, 02 Nov 2008 13:14:20 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [mm] [PATCH 2/4] Memory cgroup resource counters for hierarchy
-References: <20081101184812.2575.68112.sendpatchset@balbir-laptop> <20081101184837.2575.98059.sendpatchset@balbir-laptop> <20081102144237.59ab5f03.kamezawa.hiroyu@jp.fujitsu.com> <490D3F72.9040408@linux.vnet.ibm.com> <20081102145641.a15f5bb3.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081102145641.a15f5bb3.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Adam Nielsen <a.nielsen@shikadi.net>
+CC: Jiri Kosina <jkosina@suse.cz>,
+       LKML Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: Driver for new hid class
+References: <490C4133.30400@shikadi.net> <alpine.LRH.1.10.0811012122250.19257@twin.jikos.cz> <490CE432.5040005@shikadi.net> <490D4C0B.603@shikadi.net>
+In-Reply-To: <490D4C0B.603@shikadi.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Sun, 02 Nov 2008 11:19:38 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->> KAMEZAWA Hiroyuki wrote:
->>> On Sun, 02 Nov 2008 00:18:37 +0530
->>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>>
->>>> Add support for building hierarchies in resource counters. Cgroups allows us
->>>> to build a deep hierarchy, but we currently don't link the resource counters
->>>> belonging to the memory controller control groups, which are linked in
->>>> cgroup hiearchy. This patch provides the infrastructure for resource counters
->>>> that have the same hiearchy as their cgroup counter parts.
->>>>
->>>> These set of patches are based on the resource counter hiearchy patches posted
->>>> by Pavel Emelianov.
->>>>
->>>> NOTE: Building hiearchies is expensive, deeper hierarchies imply charging
->>>> the all the way up to the root. It is known that hiearchies are expensive,
->>>> so the user needs to be careful and aware of the trade-offs before creating
->>>> very deep ones.
->>>>
->>> ...isn't it better to add "root_lock" to res_counter rather than taking
->>> all levels of lock one by one ?
->>>
->>>  spin_lock(&res_counter->hierarchy_root->lock);
->>>  do all charge/uncharge to hierarchy
->>>  spin_unlock(&res_counter->hierarchy_root->lock);
->>>
->>> Hmm ?
->>>
->> Good thought process, but that affects and adds code complexity for the case
->> when hierarchy is enabled/disabled. It is also inefficient, since all charges
->> will now contend on root lock, in the current process, it is step by step, the
->> contention only occurs on common parts of the hierarchy (root being the best case).
->>
-> 
-> Above code's contention level is not different from "only root no children" case.
-> Just inside-lock is heavier.
+On 11/02/2008 07:43 AM, Adam Nielsen wrote:
+> Does this mean I need to blacklist it to stop the HID input driver from
+> claiming it?
 
-Yes, correct! I think the approach in the patches is better.
-
--- 
-	Balbir
+Yes, add the ids also to hid_blacklist to forbid generic driver binding the device.
