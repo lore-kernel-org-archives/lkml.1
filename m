@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbYKBVTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbYKBVZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754224AbYKBVTo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 16:19:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754908AbYKBVT2
+	id S1754675AbYKBVZd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 16:25:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbYKBVZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 16:19:28 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:45980 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755206AbYKBVT0 (ORCPT
+	Sun, 2 Nov 2008 16:25:24 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:37721 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754034AbYKBVZX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 16:19:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=FW+UPGcA9pWM5ptrML51szya6XQkx3/tpBty0C7yPYS9Mtgb+2rpLsNEoFG2roA/Ce
-         DtJl4MJo1pxqLwNvutJYFHG5LTXDf6MRvZxhIRAjTJ5z0qGLqtWZZTymE3c/dMTI1KFD
-         NxJXBzovcnlAf2clc0cwtoY3bo3NF4oPfEtZI=
-Date: Sun, 2 Nov 2008 22:18:52 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Tejun Heo <tj@kernel.org>, Joseph Chan <JosephChan@via.com.tw>,
-       Jeff Garzik <jgarzik@redhat.com>, linux-ide@vger.kernel.org
-Subject: [PATCH] sata_via: restore vt*_prepare_host error handling
-Message-ID: <20081102211848.GA20785@joi>
+	Sun, 2 Nov 2008 16:25:23 -0500
+Date: Sun, 2 Nov 2008 21:25:12 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: T??r??k Edwin <edwintorok@gmail.com>
+Cc: mingo@elte.hu, srostedt@redhat.com, a.p.zijlstra@chello.nl,
+       sandmann@daimi.au.dk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Identify which executable object the userspace address
+	belongs to. Store thread group leader id, and use it to lookup the
+	address in the process's map. We could have looked up the address
+	on thread's map, but the thread might not exist by the time we are
+	called. The process might not exist either, but if you are reading
+	trace_pipe, that is unlikely.
+Message-ID: <20081102212512.GF28946@ZenIV.linux.org.uk>
+References: <1225660694-19765-1-git-send-email-edwintorok@gmail.com> <1225660694-19765-2-git-send-email-edwintorok@gmail.com> <1225660694-19765-3-git-send-email-edwintorok@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1225660694-19765-3-git-send-email-edwintorok@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit b9d5b89b487517cbd4cb4702da829e07ef9e4432 (sata_via: fix support
-for 5287) accidently (?) removed vt*_prepare_host error handling - restore it
+On Sun, Nov 02, 2008 at 11:18:14PM +0200, T??r??k Edwin wrote:
+> +static int
+> +trace_seq_path(struct trace_seq *s, struct path *path)
+> +{
+> +	int ret;
+> +	struct seq_file m;
+> +	m.count = s->len;
+> +	m.size = PAGE_SIZE;
+> +	m.buf = s->buffer;
+> +	ret = seq_path(&m, path, "\n");
+> +	if (ret)
+> +		s->len = m.count;
+> +	return ret;
+> +}
 
-catched by gcc:
-drivers/ata/sata_via.c: In function 'svia_init_one':
-drivers/ata/sata_via.c:567: warning: 'host' may be used uninitialized in this function
-
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: Joseph Chan <JosephChan@via.com.tw>
-Cc: Jeff Garzik <jgarzik@redhat.com>
----
- drivers/ata/sata_via.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/ata/sata_via.c b/drivers/ata/sata_via.c
-index 62367fe..c18935f 100644
---- a/drivers/ata/sata_via.c
-+++ b/drivers/ata/sata_via.c
-@@ -602,8 +602,10 @@ static int svia_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		rc = vt8251_prepare_host(pdev, &host);
- 		break;
- 	default:
--		return -EINVAL;
-+		rc = -EINVAL;
- 	}
-+	if (rc)
-+		return rc;
- 
- 	svia_configure(pdev);
- 
--- 
-1.5.6.4
-
+NAK.  seq_path() is a blatantly wrong thing to use here.
