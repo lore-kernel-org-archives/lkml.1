@@ -1,39 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753755AbYKBJSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbYKBJVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753755AbYKBJSR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 04:18:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbYKBJSA
+	id S1753856AbYKBJVW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 04:21:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYKBJVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 04:18:00 -0500
-Received: from isilmar.linta.de ([213.133.102.198]:58446 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752892AbYKBJR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 04:17:59 -0500
-Date: Sun, 2 Nov 2008 10:17:56 +0100
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Komuro <komurojun-mbn@nifty.com>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       torvalds@osdl.org, linux-pcmcia@lists.infradead.org
-Subject: Re: [BUG REPORT!!!] [PATCH 19/49] pcmcia: remove remaining in-kernel pcmcia_get_configuration_info() users
-Message-ID: <20081102091756.GA25322@isilmar.linta.de>
-Mail-Followup-To: Komuro <komurojun-mbn@nifty.com>,
-	linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	torvalds@osdl.org, linux-pcmcia@lists.infradead.org
-References: <20080922155814.2bdad40f@lxorguk.ukuu.org.uk> <20080922215617.GA13057@comet.dominikbrodowski.net> <20080922231227.2625dd09@lxorguk.ukuu.org.uk> <20080922222655.GA3792@isilmar.linta.de> <20081101110746.41733076.komurojun-mbn@nifty.com> <20081102174622.02500138.komurojun-mbn@nifty.com>
+	Sun, 2 Nov 2008 04:21:11 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:37246 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753163AbYKBJVK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Nov 2008 04:21:10 -0500
+Date: Sun, 2 Nov 2008 09:21:04 +0000
+From: Matthew Garrett <mjg@redhat.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux acpi <linux-acpi@vger.kernel.org>
+Subject: Re: eeepc-laptop rfkill, stupid question #4 and 5
+Message-ID: <20081102092104.GC10983@srcf.ucam.org>
+References: <490B3BB5.8060801@tuffmail.co.uk> <20081031171126.GA17313@srcf.ucam.org> <20081102034620.GA29606@khazad-dum.debian.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081102174622.02500138.komurojun-mbn@nifty.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081102034620.GA29606@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Komuro,
+On Sun, Nov 02, 2008 at 01:46:20AM -0200, Henrique de Moraes Holschuh wrote:
 
-thanks for tracking this down. Could I get your Signed-off-by line for the
-patch you submitted, please?
+> When you don't use rfkill_set_default().  Which, if you are a platform
+> driver, and your platform can store state across power off, you should use.
 
-Thanks,
-	Dominik
+Ah, missed that. Yes, I'll fix that up.
 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
