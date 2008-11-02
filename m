@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754007AbYKBTKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbYKBTOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754007AbYKBTKy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 14:10:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbYKBTKr
+	id S1754526AbYKBTOu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 14:14:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbYKBTOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 14:10:47 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:42959 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751668AbYKBTKq convert rfc822-to-8bit (ORCPT
+	Sun, 2 Nov 2008 14:14:42 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:58232 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752169AbYKBTOl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 14:10:46 -0500
-Message-ID: <490DFB2D.3090906@cosmosbay.com>
-Date: Sun, 02 Nov 2008 20:10:37 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Sun, 2 Nov 2008 14:14:41 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <490DFBFE.4000307@s5r6.in-berlin.de>
+Date: Sun, 02 Nov 2008 20:14:06 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.17) Gecko/20081027 SeaMonkey/1.1.12
 MIME-Version: 1.0
-To: Olaf van der Spek <olafvdspek@gmail.com>
-CC: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: epoll behaviour after running out of descriptors
-References: <b2cc26e40811010938k3864c48j45ce55af09516302@mail.gmail.com>	 <Pine.LNX.4.64.0811021022120.9451@alien.or.mcafeemobile.com>	 <b2cc26e40811021033r115225e2x4747a17fc2b30256@mail.gmail.com>	 <Pine.LNX.4.64.0811021047300.9451@alien.or.mcafeemobile.com> <b2cc26e40811021051kc748db3x44231dc0c085a8d6@mail.gmail.com>
-In-Reply-To: <b2cc26e40811021051kc748db3x44231dc0c085a8d6@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 02 Nov 2008 20:10:43 +0100 (CET)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       linux1394-devel@lists.sourceforge.net
+Subject: Re: [Bug #11824] raw1394: possible deadlock if accessed by multithreaded
+ app
+References: <603i_OdVYPF.A.7_D.mjeDJB@chimera> <wOAXuecskPD.A.stH.KleDJB@chimera>
+In-Reply-To: <wOAXuecskPD.A.stH.KleDJB@chimera>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olaf van der Spek a écrit :
-> On Sun, Nov 2, 2008 at 7:48 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
->> Why don't you grep for TIME_WAIT?
+Rafael J. Wysocki wrote at LKML:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Because I don't have access to the test environment at the moment.
+> The following bug entry is on the current list of known regressions
+> from 2.6.27.  Please verify if it still should be listed and let me know
+> (either way).
 
-Hello Olaf
+Yes, it is still open.
 
-If your application calls accept() and accept() returns EMFILE, its a nullop.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11824
+> Subject		: raw1394: possible deadlock if accessed by multithreaded app
+> Submitter	: Stefan Richter <stefan-r-bz@s5r6.in-berlin.de>
+> Date		: 2008-10-25 02:08 (9 days old)
+> Handled-By	: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> Patch		: http://bugzilla.kernel.org/show_bug.cgi?id=11824#c3
 
-On listen queue, socket is still ready for an accept().
-
-
-Since you use edge trigered epoll, you'll only reveive new notification.
-
-You probably had in you app a : listen(sock, 10), so after 10 notifications,
-your listen queue is full and TCP stack refuses to handle new connections.
-
-In order to cope with this kind of thing the trick I personnally use is to always keep
-around a *free* fd, that is :
-
-At start of program, reserve an "emergency fd"
-free_fd = open("/dev/null", O_RDONLY)
-
-Then later :
-
-newfd = accept(...)
-if (newfd == -1 && errno == EMFILE) {
-   /* emergency action : clean listen queue */
-   close(free_fd);
-   newfd = accept(...);
-   close(newfd); /* forget this incoming connection, we dont have enough fd */
-   free_fd = open("/dev/null"; O_RDONLY);
-}
-
-Of course, if your application is multi-threaded, you might adapt (and eventually reserve
-one emergency fd per thread)
-
-
+The patch has been committed to linux1394-2.6.git (commit
+638570b54346f140bc09b986d93e76025d35180f in the branches misc, for-next,
+master) and I plan to send a pull request in a few days if I receive no
+objections.
+-- 
+Stefan Richter
+-=====-==--- =-== ---=-
+http://arcgraph.de/sr/
