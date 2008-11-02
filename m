@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbYKBOvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbYKBPkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753908AbYKBOvh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 09:51:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYKBOv3
+	id S1754016AbYKBPkB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 10:40:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbYKBPjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 09:51:29 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:60764 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753385AbYKBOv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 09:51:28 -0500
-Date: Sun, 2 Nov 2008 09:51:27 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [microPATCH] linux/string.h: fix comment typo
-Message-ID: <20081102145127.GA19583@havoc.gtf.org>
+	Sun, 2 Nov 2008 10:39:52 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:4136 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753596AbYKBPjv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Nov 2008 10:39:51 -0500
+Date: Sun, 2 Nov 2008 10:39:50 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: (BUG?) round_jiffies() is non-monotonic on SMP
+In-Reply-To: <20081101194357.1810f57a@infradead.org>
+Message-ID: <Pine.LNX.4.44L0.0811021020020.11781-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 1 Nov 2008, Arjan van de Ven wrote:
 
-s/user/used/
+> On Sat, 1 Nov 2008 22:36:30 -0400 (EDT)
+> Alan Stern <stern@rowland.harvard.edu> wrote:
+> 
+> > On Sat, 1 Nov 2008, Arjan van de Ven wrote:
+> > 
+> > > > Come to think of it, is there any good reason why
+> > > > round_jiffies() doesn't always round up?  It seems a lot safer.
+> > > 
+> > > at the time folks had concerns about making a big error in that
+> > > direction...
+> > 
+> > All right then.  Would it be preferable to add a new
+> > round_jiffies_up() routine, or to change round_jiffies() so that it
+> > never rounds down?
+> 
+> I'd prefer the former.
+> But to be honest.. I would even more prefer the use of range timers ;)
+> They're in 2.6.28-rc now ... and more power friendly than rounded timers
+> (although I will readily admit that rounding is just easier)
 
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+I don't know. One of the cases I know about is the timer embedded in a 
+delayed_work -- it's hard to see how that could be converted.
 
-diff --git a/include/linux/string.h b/include/linux/string.h
-index 810d80d..d18fc19 100644
---- a/include/linux/string.h
-+++ b/include/linux/string.h
-@@ -1,7 +1,7 @@
- #ifndef _LINUX_STRING_H_
- #define _LINUX_STRING_H_
- 
--/* We don't want strings.h stuff being user by user stuff by accident */
-+/* We don't want strings.h stuff being used by user stuff by accident */
- 
- #ifndef __KERNEL__
- #include <string.h>
+The other could be converted.  But it falls in the category of
+"timeouts", as described in Documentation/timers/hrtimers.txt.  As
+such, it is best suited to an old-style timer rather than a
+high-precision timer (according to hrtimers.txt, at least).  
+Furthermore, there doesn't seem to be any documentation describing how
+to use the range timer programming interface.
+
+Under the circumstances, I'm not inclined to do any conversions.
+
+Alan Stern
+
