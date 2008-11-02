@@ -1,63 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbYKBNgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbYKBNhP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753793AbYKBNgy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 08:36:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYKBNgp
+	id S1754017AbYKBNhP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 08:37:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYKBNgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 08:36:45 -0500
-Received: from isilmar.linta.de ([213.133.102.198]:54575 "EHLO linta.de"
+	Sun, 2 Nov 2008 08:36:46 -0500
+Received: from isilmar.linta.de ([213.133.102.198]:54579 "EHLO linta.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753260AbYKBNgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753354AbYKBNgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 2 Nov 2008 08:36:44 -0500
-Date: Sun, 2 Nov 2008 13:13:20 +0100
+Date: Sun, 2 Nov 2008 13:04:34 +0100
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: pcmcia: struct device - replace bus_id with dev_name(),
-	dev_set_name()
-Message-ID: <20081102121320.GA15349@comet.dominikbrodowski.net>
-Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
-	Kay Sievers <kay.sievers@vrfy.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Greg KH <greg@kroah.com>
-References: <1225536366.13224.2.camel@nga.site>
+To: Komuro <komurojun-mbn@nifty.com>
+Cc: torvalds@osdl.org, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [BUG REPORT!!!] [PATCH 19/49] pcmcia: remove remaining
+	in-kernel pcmcia_get_configuration_info() users
+Message-ID: <20081102120434.GA14531@comet.dominikbrodowski.net>
+Mail-Followup-To: Komuro <komurojun-mbn@nifty.com>, torvalds@osdl.org,
+	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <20080922155814.2bdad40f@lxorguk.ukuu.org.uk> <20080922215617.GA13057@comet.dominikbrodowski.net> <20080922231227.2625dd09@lxorguk.ukuu.org.uk> <20080922222655.GA3792@isilmar.linta.de> <20081101110746.41733076.komurojun-mbn@nifty.com> <20081102174622.02500138.komurojun-mbn@nifty.com> <20081102091756.GA25322@isilmar.linta.de> <20081102193324.86f0d4a3.komurojun-mbn@nifty.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1225536366.13224.2.camel@nga.site>
+In-Reply-To: <20081102193324.86f0d4a3.komurojun-mbn@nifty.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Sat, Nov 01, 2008 at 11:46:06AM +0100, Kay Sievers wrote:
-> From: Kay Sievers <kay.sievers@vrfy.org>
-> Subject: pcmcia: struct device - replace bus_id with dev_name(), dev_set_name()
+On Sun, Nov 02, 2008 at 07:33:24PM +0900, Komuro wrote:
 > 
-> Cc: Dominik Brodowski <linux@dominikbrodowski.net>
-> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
+> drivers/pcmcia/ds.c
+> 
+> setup "io" and "irq" for pseudo multifunction devices.
 
-is this to go in via -pcmcia or via -driver-core?
+Applied, thanks!
 
-> diff --git a/drivers/pcmcia/cs.c b/drivers/pcmcia/cs.c
-> index c68c5d3..5d0e60e 100644
-> --- a/drivers/pcmcia/cs.c
-> +++ b/drivers/pcmcia/cs.c
-> @@ -226,7 +226,7 @@ int pcmcia_register_socket(struct pcmcia_socket *socket)
->  	/* set proper values in socket->dev */
->  	dev_set_drvdata(&socket->dev, socket);
->  	socket->dev.class = &pcmcia_socket_class;
-> -	snprintf(socket->dev.bus_id, BUS_ID_SIZE, "pcmcia_socket%u", socket->sock);
-> +	dev_set_name(&socket->dev, "pcmcia_socket%u", socket->sock);
-
-In other places, you check for !dev_name() afterwards -- why not here?
-
-Otherwise it is
-
-Acked-by: Dominik Brodowski <linux@dominikbrodowski.net>
-
-Thanks!
-	Dominik
