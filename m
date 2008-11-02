@@ -1,309 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753777AbYKBDBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbYKBDqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753777AbYKBDBx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 23:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbYKBDBp
+	id S1753549AbYKBDqg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 23:46:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYKBDq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 23:01:45 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:28713 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752545AbYKBDBo (ORCPT
+	Sat, 1 Nov 2008 23:46:27 -0400
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:51195 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752641AbYKBDq0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 23:01:44 -0400
-Subject: powerpc: struct device - replace bus_id with dev_name(),
-	dev_set_name()
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Paul Mackerras <paulus@samba.org>,
-       Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Content-Type: text/plain
-Date: Sun, 02 Nov 2008 04:01:44 +0100
-Message-Id: <1225594904.2142.26.camel@nga.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 1 Nov 2008 23:46:26 -0400
+X-Sasl-enc: T7Y9IS7KY1tMI27e9/drpFAvJ7CGA8fOxQmk16Lx/s+X 1225597584
+Date: Sun, 2 Nov 2008 01:46:20 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux acpi <linux-acpi@vger.kernel.org>
+Subject: Re: eeepc-laptop rfkill, stupid question #4 and 5
+Message-ID: <20081102034620.GA29606@khazad-dum.debian.net>
+References: <490B3BB5.8060801@tuffmail.co.uk> <20081031171126.GA17313@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081031171126.GA17313@srcf.ucam.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(I did not compile or test it, please let me know, or help fixing
- it, if something is wrong with the conversion)
+On Fri, 31 Oct 2008, Matthew Garrett wrote:
+> > Actually, normal boot doesn't preserve the setting either.  Your commit
+> > changes the behaviour from the rfkill state being persistent across
+> > reboot / power off (as a bios setting), to being always enabled on
+> > boot.  It seems like a bad idea to me.
+> 
+> This is the behaviour of the rfkill core.
 
-This patch is part of a larger patch series which will remove
-the "char bus_id[20]" name string from struct device. The device
-name is managed in the kobject anyway, and without any size
-limitation, and just needlessly copied into "struct device".
+When you don't use rfkill_set_default().  Which, if you are a platform
+driver, and your platform can store state across power off, you should use.
 
-To set and read the device name dev_name(dev) and dev_set_name(dev)
-must be used. If your code uses static kobjects, which it shouldn't
-do, "const char *init_name" can be used to statically provide the
-name the registered device should have. At registration time, the
-init_name field is cleared, to enforce the use of dev_name(dev) to
-access the device name at a later time.
+Yeah, it is a new thing, sort of. But it is in mainline already, so feel
+free to use it.  The right way to do it is to call it BEFORE doing any
+rfkill_register or rfkill_allocate.  Only the first caller for a given
+rfkill type, wins.
 
-We need to get rid of all occurrences of bus_id in the entire tree
-to be able to enable the new interface. Please apply this patch,
-and possibly convert any remaining remaining occurrences of bus_id.
-
-We want to submit a patch to -next, which will remove bus_id from
-"struct device", to find the remaining pieces to convert, and finally
-switch over to the new api, which will remove the 20 bytes array
-and does no longer have a size limitation.
-
-Thanks,
-Kay
-
-
-From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: powerpc: struct device - replace bus_id with dev_name(), dev_set_name()
-
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Geoff Levand <geoffrey.levand@am.sony.com>
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
----
- arch/powerpc/kernel/ibmebus.c             |    2 +-
- arch/powerpc/kernel/of_device.c           |   18 +++++++-----------
- arch/powerpc/kernel/vio.c                 |   12 ++++++------
- arch/powerpc/platforms/85xx/mpc85xx_mds.c |    6 +++---
- arch/powerpc/platforms/ps3/system-bus.c   |   28 ++++++++++++----------------
- 5 files changed, 29 insertions(+), 37 deletions(-)
-
---- a/arch/powerpc/kernel/ibmebus.c
-+++ b/arch/powerpc/kernel/ibmebus.c
-@@ -47,7 +47,7 @@
- #include <asm/abs_addr.h>
- 
- static struct device ibmebus_bus_device = { /* fake "parent" device */
--	.bus_id = "ibmebus",
-+	.init_name = "ibmebus",
- };
- 
- struct bus_type ibmebus_bus_type;
---- a/arch/powerpc/kernel/of_device.c
-+++ b/arch/powerpc/kernel/of_device.c
-@@ -14,7 +14,6 @@ static void of_device_make_bus_id(struct
- {
- 	static atomic_t bus_no_reg_magic;
- 	struct device_node *node = dev->node;
--	char *name = dev->dev.bus_id;
- 	const u32 *reg;
- 	u64 addr;
- 	int magic;
-@@ -27,14 +26,12 @@ static void of_device_make_bus_id(struct
- 	reg = of_get_property(node, "dcr-reg", NULL);
- 	if (reg) {
- #ifdef CONFIG_PPC_DCR_NATIVE
--		snprintf(name, BUS_ID_SIZE, "d%x.%s",
--			 *reg, node->name);
-+		dev_set_name(&dev->dev, "d%x.%s", *reg, node->name);
- #else /* CONFIG_PPC_DCR_NATIVE */
- 		addr = of_translate_dcr_address(node, *reg, NULL);
- 		if (addr != OF_BAD_ADDR) {
--			snprintf(name, BUS_ID_SIZE,
--				 "D%llx.%s", (unsigned long long)addr,
--				 node->name);
-+			dev_set_name(&dev->dev, "D%llx.%s",
-+				     (unsigned long long)addr, node->name);
- 			return;
- 		}
- #endif /* !CONFIG_PPC_DCR_NATIVE */
-@@ -48,9 +45,8 @@ static void of_device_make_bus_id(struct
- 	if (reg) {
- 		addr = of_translate_address(node, reg);
- 		if (addr != OF_BAD_ADDR) {
--			snprintf(name, BUS_ID_SIZE,
--				 "%llx.%s", (unsigned long long)addr,
--				 node->name);
-+			dev_set_name(&dev->dev, "%llx.%s",
-+				     (unsigned long long)addr, node->name);
- 			return;
- 		}
- 	}
-@@ -60,7 +56,7 @@ static void of_device_make_bus_id(struct
- 	 * counter (and pray...)
- 	 */
- 	magic = atomic_add_return(1, &bus_no_reg_magic);
--	snprintf(name, BUS_ID_SIZE, "%s.%d", node->name, magic - 1);
-+	dev_set_name(&dev->dev, "%s.%d", node->name, magic - 1);
- }
- 
- struct of_device *of_device_alloc(struct device_node *np,
-@@ -80,7 +76,7 @@ struct of_device *of_device_alloc(struct
- 	dev->dev.archdata.of_node = np;
- 
- 	if (bus_id)
--		strlcpy(dev->dev.bus_id, bus_id, BUS_ID_SIZE);
-+		dev_set_name(&dev->dev, bus_id);
- 	else
- 		of_device_make_bus_id(dev);
- 
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -41,9 +41,9 @@
- static struct bus_type vio_bus_type;
- 
- static struct vio_dev vio_bus_device  = { /* fake "parent" device */
--	.name = vio_bus_device.dev.bus_id,
-+	.name = "vio",
- 	.type = "",
--	.dev.bus_id = "vio",
-+	.dev.init_name = "vio",
- 	.dev.bus = &vio_bus_type,
- };
- 
-@@ -1216,7 +1216,7 @@ struct vio_dev *vio_register_device_node
- 
- 	viodev->irq = irq_of_parse_and_map(of_node, 0);
- 
--	snprintf(viodev->dev.bus_id, BUS_ID_SIZE, "%x", *unit_address);
-+	dev_set_name(&viodev->dev, "%x", *unit_address);
- 	viodev->name = of_node->name;
- 	viodev->type = of_node->type;
- 	viodev->unit_address = *unit_address;
-@@ -1243,7 +1243,7 @@ struct vio_dev *vio_register_device_node
- 	/* register with generic device framework */
- 	if (device_register(&viodev->dev)) {
- 		printk(KERN_ERR "%s: failed to register device %s\n",
--				__func__, viodev->dev.bus_id);
-+				__func__, dev_name(viodev->dev));
- 		/* XXX free TCE table */
- 		kfree(viodev);
- 		return NULL;
-@@ -1400,13 +1400,13 @@ static struct vio_dev *vio_find_name(con
- struct vio_dev *vio_find_node(struct device_node *vnode)
- {
- 	const uint32_t *unit_address;
--	char kobj_name[BUS_ID_SIZE];
-+	char kobj_name[20];
- 
- 	/* construct the kobject name from the device node */
- 	unit_address = of_get_property(vnode, "reg", NULL);
- 	if (!unit_address)
- 		return NULL;
--	snprintf(kobj_name, BUS_ID_SIZE, "%x", *unit_address);
-+	snprintf(kobj_name, sizeof(kobj_name), "%x", *unit_address);
- 
- 	return vio_find_name(kobj_name);
- }
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -231,7 +231,7 @@ static void __init mpc85xx_mds_setup_arc
- 
- static int __init board_fixups(void)
- {
--	char phy_id[BUS_ID_SIZE];
-+	char phy_id[20];
- 	char *compstrs[2] = {"fsl,gianfar-mdio", "fsl,ucc-mdio"};
- 	struct device_node *mdio;
- 	struct resource res;
-@@ -241,13 +241,13 @@ static int __init board_fixups(void)
- 		mdio = of_find_compatible_node(NULL, NULL, compstrs[i]);
- 
- 		of_address_to_resource(mdio, 0, &res);
--		snprintf(phy_id, BUS_ID_SIZE, "%x:%02x", res.start, 1);
-+		snprintf(phy_id, sizeof(phy_id), "%x:%02x", res.start, 1);
- 
- 		phy_register_fixup_for_id(phy_id, mpc8568_fixup_125_clock);
- 		phy_register_fixup_for_id(phy_id, mpc8568_mds_phy_fixups);
- 
- 		/* Register a workaround for errata */
--		snprintf(phy_id, BUS_ID_SIZE, "%x:%02x", res.start, 7);
-+		snprintf(phy_id, sizeof(phy_id), "%x:%02x", res.start, 7);
- 		phy_register_fixup_for_id(phy_id, mpc8568_mds_phy_fixups);
- 
- 		of_node_put(mdio);
---- a/arch/powerpc/platforms/ps3/system-bus.c
-+++ b/arch/powerpc/platforms/ps3/system-bus.c
-@@ -31,7 +31,7 @@
- #include "platform.h"
- 
- static struct device ps3_system_bus = {
--	.bus_id = "ps3_system",
-+	.init_name = "ps3_system",
- };
- 
- /* FIXME: need device usage counters! */
-@@ -356,12 +356,12 @@ static int ps3_system_bus_match(struct d
- 	if (result)
- 		pr_info("%s:%d: dev=%u.%u(%s), drv=%u.%u(%s): match\n",
- 			__func__, __LINE__,
--			dev->match_id, dev->match_sub_id, dev->core.bus_id,
-+			dev->match_id, dev->match_sub_id, dev_name(&dev->core),
- 			drv->match_id, drv->match_sub_id, drv->core.name);
- 	else
- 		pr_debug("%s:%d: dev=%u.%u(%s), drv=%u.%u(%s): miss\n",
- 			__func__, __LINE__,
--			dev->match_id, dev->match_sub_id, dev->core.bus_id,
-+			dev->match_id, dev->match_sub_id, dev_name(&dev->core),
- 			drv->match_id, drv->match_sub_id, drv->core.name);
- 
- 	return result;
-@@ -383,9 +383,9 @@ static int ps3_system_bus_probe(struct d
- 		result = drv->probe(dev);
- 	else
- 		pr_debug("%s:%d: %s no probe method\n", __func__, __LINE__,
--			dev->core.bus_id);
-+			dev_name(&dev->core));
- 
--	pr_debug(" <- %s:%d: %s\n", __func__, __LINE__, dev->core.bus_id);
-+	pr_debug(" <- %s:%d: %s\n", __func__, __LINE__, dev_name(&dev->core));
- 	return result;
- }
- 
-@@ -407,7 +407,7 @@ static int ps3_system_bus_remove(struct
- 		dev_dbg(&dev->core, "%s:%d %s: no remove method\n",
- 			__func__, __LINE__, drv->core.name);
- 
--	pr_debug(" <- %s:%d: %s\n", __func__, __LINE__, dev->core.bus_id);
-+	pr_debug(" <- %s:%d: %s\n", __func__, __LINE__, dev_name(&dev->core));
- 	return result;
- }
- 
-@@ -432,7 +432,7 @@ static void ps3_system_bus_shutdown(stru
- 	BUG_ON(!drv);
- 
- 	dev_dbg(&dev->core, "%s:%d: %s -> %s\n", __func__, __LINE__,
--		dev->core.bus_id, drv->core.name);
-+		dev_name(&dev->core), drv->core.name);
- 
- 	if (drv->shutdown)
- 		drv->shutdown(dev);
-@@ -742,22 +742,18 @@ int ps3_system_bus_device_register(struc
- 	switch (dev->dev_type) {
- 	case PS3_DEVICE_TYPE_IOC0:
- 		dev->core.archdata.dma_ops = &ps3_ioc0_dma_ops;
--		snprintf(dev->core.bus_id, sizeof(dev->core.bus_id),
--			"ioc0_%02x", ++dev_ioc0_count);
-+		dev_set_name(&dev->core, "ioc0_%02x", ++dev_ioc0_count);
- 		break;
- 	case PS3_DEVICE_TYPE_SB:
- 		dev->core.archdata.dma_ops = &ps3_sb_dma_ops;
--		snprintf(dev->core.bus_id, sizeof(dev->core.bus_id),
--			"sb_%02x", ++dev_sb_count);
-+		dev_set_name(&dev->core, "sb_%02x", ++dev_sb_count);
- 
- 		break;
- 	case PS3_DEVICE_TYPE_VUART:
--		snprintf(dev->core.bus_id, sizeof(dev->core.bus_id),
--			"vuart_%02x", ++dev_vuart_count);
-+		dev_set_name(&dev->core, "vuart_%02x", ++dev_vuart_count);
- 		break;
- 	case PS3_DEVICE_TYPE_LPM:
--		snprintf(dev->core.bus_id, sizeof(dev->core.bus_id),
--			"lpm_%02x", ++dev_lpm_count);
-+		dev_set_name(&dev->core, "lpm_%02x", ++dev_lpm_count);
- 		break;
- 	default:
- 		BUG();
-@@ -766,7 +762,7 @@ int ps3_system_bus_device_register(struc
- 	dev->core.archdata.of_node = NULL;
- 	set_dev_node(&dev->core, 0);
- 
--	pr_debug("%s:%d add %s\n", __func__, __LINE__, dev->core.bus_id);
-+	pr_debug("%s:%d add %s\n", __func__, __LINE__, dev_name(&dev->core));
- 
- 	result = device_register(&dev->core);
- 	return result;
-
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
