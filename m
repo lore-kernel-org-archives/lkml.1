@@ -1,75 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbYKBWt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbYKBW5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754509AbYKBWt4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 17:49:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753600AbYKBWts
+	id S1754071AbYKBW5s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 17:57:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYKBW5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 17:49:48 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:55623 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753447AbYKBWtr (ORCPT
+	Sun, 2 Nov 2008 17:57:39 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:39743 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751689AbYKBW5i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 17:49:47 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 2 Nov 2008 14:49:41 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Olaf van der Spek <olafvdspek@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: epoll behaviour after running out of descriptors
-In-Reply-To: <b2cc26e40811021417o38f9b171ka669961d93b9025c@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0811021445260.9451@alien.or.mcafeemobile.com>
-References: <b2cc26e40811010938k3864c48j45ce55af09516302@mail.gmail.com> 
- <Pine.LNX.4.64.0811021022120.9451@alien.or.mcafeemobile.com> 
- <b2cc26e40811021033r115225e2x4747a17fc2b30256@mail.gmail.com> 
- <Pine.LNX.4.64.0811021047300.9451@alien.or.mcafeemobile.com> 
- <b2cc26e40811021051kc748db3x44231dc0c085a8d6@mail.gmail.com> 
- <Pine.LNX.4.64.0811021117050.9451@alien.or.mcafeemobile.com> 
- <b2cc26e40811021120p1fa19892m4be6e00785b79289@mail.gmail.com> 
- <Pine.LNX.4.64.0811021122530.9451@alien.or.mcafeemobile.com> 
- <b2cc26e40811021241t17a4fd02k32234b9e6b578b3b@mail.gmail.com> 
- <Pine.LNX.4.64.0811021258250.9451@alien.or.mcafeemobile.com>
- <b2cc26e40811021417o38f9b171ka669961d93b9025c@mail.gmail.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sun, 2 Nov 2008 17:57:38 -0500
+Date: Sun, 2 Nov 2008 16:57:35 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 2/3] integrity: Linux Integrity Module(LIM)
+Message-ID: <20081102225735.GA10959@us.ibm.com>
+References: <cover.1223869200.git.zohar@localhost.localdomain> <7c05f813215804a30d03821fd8e251b250d0e000.1223869200.git.zohar@localhost.localdomain> <1225471251.12673.408.camel@nimitz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225471251.12673.408.camel@nimitz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Nov 2008, Olaf van der Spek wrote:
-
-> On Sun, Nov 2, 2008 at 10:17 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> >> Wouldn't the port space require about 20+ k connects? This issue
-> >> happens after 1 k.
-> >
-> > The reason for "When accept returns EMFILE, I call epoll_wait and accept
-> > and it returns with another EMFILE." is because your sockets-close logic
-> > is broken.
+Quoting Dave Hansen (dave@linux.vnet.ibm.com):
+> On Mon, 2008-10-13 at 13:17 -0400, Mimi Zohar wrote:
+> > Concern was raised on the lkml mailing list, about adding i_integrity
+> > to the inode structure.  This patch adds a comment clarifying that
+> > i_integrity is only included in the inode if INTEGRITY is configured.
 > 
-> It's not broken, it's designed that way. It's designed to hit the
-> descriptor limit and then close all sockets some time after.
-> 
-> > You get an event for the listening fd, you go call accept(2)
-> > and in one or two passes you fill up the avail fd space, then you go back
-> > calling epoll_wait(), and yet back to accept(2). This w/out triggering the
-> > file-close-relief code (yes, you fill up 1K fds *before* 30 seconds). Of
-> > course you get another EMFILE.
-> 
-> The second EMFILE doesn't make sense, epoll_wait shouldn't signal the
-> socket as ready again, right?
+> Mimi, it is nice that you made this a config option.  That definitely
+> helps the embedded folks and those compiling their own kernels.  But, it
+> doesn't really help those who run distros.
 
-At the time of the first EMFILE, you've filled up the fd space, but not 
-the kernel listen backlog. Additions to the backlog, triggers new events, 
-that you see after the first EMFILE. At a given point, the backlog is 
-full, so no new half connections are dropped in there, so no new events 
-are generated.
-Again, sleeping on (EMFILE && ET) is bad mojo, and nowhere is written that 
-events should be generated in the EMFILE->no-EMFILE transitions.
+Ah, of course, that makes sense - thanks for the reminder.  That answers
+my earlier stupid question.
 
-
-
-- Davide
-
-
+-serge
