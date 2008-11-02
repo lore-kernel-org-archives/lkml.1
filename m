@@ -1,41 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbYKBNho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbYKBNqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754080AbYKBNho (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 08:37:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbYKBNgq
+	id S1753840AbYKBNqX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 08:46:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYKBNqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 08:36:46 -0500
-Received: from isilmar.linta.de ([213.133.102.198]:54581 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753358AbYKBNgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 08:36:45 -0500
-Date: Sun, 2 Nov 2008 13:06:00 +0100
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: linux-pcmcia@lists.infradead.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] pcmcia: fix indentation & braces disagreement - add
-	braces
-Message-ID: <20081102120600.GB14531@comet.dominikbrodowski.net>
-Mail-Followup-To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-	linux-pcmcia@lists.infradead.org,
-	LKML <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0810301301260.7072@wrl-59.cs.helsinki.fi>
+	Sun, 2 Nov 2008 08:46:10 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:60734 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753298AbYKBNqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Nov 2008 08:46:09 -0500
+Message-ID: <490DAF1D.20002@garzik.org>
+Date: Sun, 02 Nov 2008 08:46:05 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0810301301260.7072@wrl-59.cs.helsinki.fi>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Will Newton <will.newton@gmail.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: [PATCH] drivers/net/smc911x.c: Fix lockdep warning on xmit.
+References: <87a5b0800810280506h71fd6508i9474917b0ef0b191@mail.gmail.com>
+In-Reply-To: <87a5b0800810280506h71fd6508i9474917b0ef0b191@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 30, 2008 at 01:02:54PM +0200, Ilpo Järvinen wrote:
-> Broken by d8b0a49da4f2 (pcmcia: deprecate CS_BAD_VCC and
-> CS_BAD_VPP).
+Will Newton wrote:
+>>From 0e3ec7f78e115533e4aca9ac067acbc33eb0a21f Mon Sep 17 00:00:00 2001
+> From: Will Newton <will.newton@gmail.com>
+> Date: Tue, 28 Oct 2008 10:52:36 +0000
+> Subject: [PATCH] drivers/net/smc911x.c: Fix lockdep warning on xmit.
+> 
+> dev_kfree_skb should not be called with irqs disabled, use dev_kfree_skb_irq
+> instead. The warning caused looks like this:
+> 
+> ======================================================
+> [ INFO: hard-safe -> hard-unsafe lock order detected ]
+> 2.6.28-rc1 #273
+> ------------------------------------------------------
+> swapper/0 [HC0[0]:SC1[2]:HE0:SE0] is trying to acquire:
+>  (clock-AF_INET){-..+}, at: [<4015c17c>] _sock_def_write_space+0x28/0xd8
+> 
+> and this task is already holding:
+>  (&lp->lock){++..}, at: [<4013f230>] _smc911x_hard_start_xmit+0x30/0x4b8
+> which would create a new lock dependency:
+>  (&lp->lock){++..} -> (clock-AF_INET){-..+}
+> 
+> Signed-off-by: Will Newton <will.newton@gmail.com>
+> ---
+>  drivers/net/smc911x.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/net/smc911x.c b/drivers/net/smc911x.c
+> index f59c777..5051554 100644
+> --- a/drivers/net/smc911x.c
+> +++ b/drivers/net/smc911x.c
+> @@ -499,7 +499,7 @@ static void smc911x_hardware_send_pkt(struct
+> net_device *dev)
+>  #else
+>  	SMC_PUSH_DATA(lp, buf, len);
+>  	dev->trans_start = jiffies;
+> -	dev_kfree_skb(skb);
+> +	dev_kfree_skb_irq(skb);
+>  #endif
+>  	if (!lp->tx_throttle) {
+>  		netif_wake_queue(dev);
 
-Applied, thanks!
+applied manually, your patch was corrupted
 
-	Dominik
+
