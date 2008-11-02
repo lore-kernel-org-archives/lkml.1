@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbYKBV2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbYKBV2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754777AbYKBV2Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 16:28:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbYKBV2P
+	id S1755050AbYKBV2v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 16:28:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbYKBV2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 16:28:15 -0500
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:52675 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754084AbYKBV2O (ORCPT
+	Sun, 2 Nov 2008 16:28:43 -0500
+Received: from mu-out-0910.google.com ([209.85.134.184]:19095 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754123AbYKBV2m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 16:28:14 -0500
-Date: Sun, 2 Nov 2008 16:28:12 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [Bug #11905] lots of extra timer interrupts costing 2W
-Message-ID: <20081102212811.GL8134@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Venki Pallipadi <venkatesh.pallipadi@intel.com>
-References: <603i_OdVYPF.A.7_D.mjeDJB@chimera> <wOAXuecskPD.A.xRF.DkeDJB@chimera>
+	Sun, 2 Nov 2008 16:28:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ZYuL3BMOc2YjvJ1fUOI0SGyZDT0rzygNEIV0/QIOsLZwvpGFPGmlLsy2C06yDPvlNJ
+         pFqTRAajrtOOz7+4nY1JyRPNCmgvjvLLUPe9gbeNa1lA/hZ9dxrbMymIOUyUvmH8r0+X
+         MUuSFQdaK0RC96eP2/HAy0d7Le4DBxCcqGiR0=
+Message-ID: <490E1B74.6010904@gmail.com>
+Date: Sun, 02 Nov 2008 23:28:20 +0200
+From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <wOAXuecskPD.A.xRF.DkeDJB@chimera>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: mingo@elte.hu, srostedt@redhat.com, a.p.zijlstra@chello.nl,
+       sandmann@daimi.au.dk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Identify which executable object the userspace address
+ belongs to. Store thread group leader id, and use it to lookup the address
+ in the process's map. We could have looked up the address on thread's map,
+ but the thread might not exist by the time we are called. The process might
+ not exist either, but if you are reading trace_pipe, that is unlikely.
+References: <1225660694-19765-1-git-send-email-edwintorok@gmail.com> <1225660694-19765-2-git-send-email-edwintorok@gmail.com> <1225660694-19765-3-git-send-email-edwintorok@gmail.com> <20081102212512.GF28946@ZenIV.linux.org.uk>
+In-Reply-To: <20081102212512.GF28946@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 02, 2008 at 05:07:06PM +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.27.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11905
-> Subject		: lots of extra timer interrupts costing 2W
-> Submitter	: Theodore Ts'o <tytso@mit.edu>
-> Date		: 2008-10-30 2:18 (4 days old)
-> References	: http://marc.info/?l=linux-kernel&m=122533314305315&w=4
-> 		  http://marc.info/?l=linux-kernel&m=122541849114444&w=4
+On 2008-11-02 23:25, Al Viro wrote:
+> On Sun, Nov 02, 2008 at 11:18:14PM +0200, T??r??k Edwin wrote:
+>   
+>> +static int
+>> +trace_seq_path(struct trace_seq *s, struct path *path)
+>> +{
+>> +	int ret;
+>> +	struct seq_file m;
+>> +	m.count = s->len;
+>> +	m.size = PAGE_SIZE;
+>> +	m.buf = s->buffer;
+>> +	ret = seq_path(&m, path, "\n");
+>> +	if (ret)
+>> +		s->len = m.count;
+>> +	return ret;
+>> +}
+>>     
+>
+> NAK.  seq_path() is a blatantly wrong thing to use here.
+>   
 
-Yup, should still be listed.  
+Are there any alternatives I could use?
 
-Is someone looking what the proper fix should be (other than reverting
-the commit in question)?  I've been running with the commit reverted
-on my laptop kernel for a couple of days now, with no problems.
+This function is called when I do 'cat /sys/kernel/debug/trace', not
+during tracing itself.
 
-						- Ted
-
-
+Best regards,
+--Edwin
