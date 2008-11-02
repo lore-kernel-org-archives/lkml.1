@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754536AbYKBTcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbYKBTpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754536AbYKBTcT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 14:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbYKBTcL
+	id S1754216AbYKBTpU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 14:45:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbYKBTpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 14:32:11 -0500
-Received: from fk-out-0910.google.com ([209.85.128.184]:16281 "EHLO
+	Sun, 2 Nov 2008 14:45:06 -0500
+Received: from fk-out-0910.google.com ([209.85.128.184]:18557 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751904AbYKBTcK (ORCPT
+	with ESMTP id S1752242AbYKBTpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 14:32:10 -0500
+	Sun, 2 Nov 2008 14:45:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=wKseYlfJjRwvPGO2310D8LiFBOawsy0BjFTK808l3fM1gAL005NX7gIyn4vdx5sxlK
-         wk5PVRccdqzJWPhxUUq9RPgNRIaTRoP+zQ58CUWrKT7WCYRgw9W2ze2dbs4SeJ2JSLBk
-         IHo0sfepJsY6HbKH1aFO0DT5+YZU4pfoEJf1c=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH 1/1] USBHID: correct start/stop cycle
-Date: Sun, 2 Nov 2008 20:24:31 +0100
-User-Agent: KMail/1.8.2
-Cc: Jiri Slaby <jirislaby@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
-       Jeroen Roovers <jer@gentoo.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <1225579306-28524-1-git-send-email-jirislaby@gmail.com> <490D873D.9010005@gmail.com> <490DDA69.4000404@gmx.de>
-In-Reply-To: <490DDA69.4000404@gmx.de>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=qSfHTbFy002dy/OYlQO/tSllmdGBc3d/sZyXK+uD5y3qu80yzAF/jloWhWP2Jokqvr
+         Sam5hlbuxti2wUgZFKV9MOqO6AvHh15jycgP6OENd7bkt6AGch/zuBrsOPxwIEZ2+vOB
+         +ZMKyoWhCr5ZLY+MhbI8BEojgeFq9to5YFjTM=
+Message-ID: <b2cc26e40811021115h1bf711c7i2b220a92f7cf1abc@mail.gmail.com>
+Date: Sun, 2 Nov 2008 20:15:57 +0100
+From: "Olaf van der Spek" <olafvdspek@gmail.com>
+To: "Eric Dumazet" <dada1@cosmosbay.com>
+Subject: Re: epoll behaviour after running out of descriptors
+Cc: "Davide Libenzi" <davidel@xmailserver.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <490DFB2D.3090906@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200811022024.31528.vda.linux@googlemail.com>
+References: <b2cc26e40811010938k3864c48j45ce55af09516302@mail.gmail.com>
+	 <Pine.LNX.4.64.0811021022120.9451@alien.or.mcafeemobile.com>
+	 <b2cc26e40811021033r115225e2x4747a17fc2b30256@mail.gmail.com>
+	 <Pine.LNX.4.64.0811021047300.9451@alien.or.mcafeemobile.com>
+	 <b2cc26e40811021051kc748db3x44231dc0c085a8d6@mail.gmail.com>
+	 <490DFB2D.3090906@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 02 November 2008 17:50, Helge Deller wrote:
-> Jiri Slaby wrote:
-> >>> btw. this is not expected to fix that, but if it does, the better ;).
-> >> I tried the patch and sadly it didn't fixed the parisc bug.
-> > 
-> > Could you bisect it?
-> 
-> I fully bisected it, and the final "buggy" patch seems to have been 
-> Denys Vlasenko's patch: cb8f488c33539f096580e202f5438a809195008f
-> (see 
-> http://github.com/jonsmirl/digispeaker/commit/cb8f488c33539f096580e202f5438a809195008f)
-> Denys: Any reason you removed "!prev" in front of "expand_stack"?
+On Sun, Nov 2, 2008 at 8:10 PM, Eric Dumazet <dada1@cosmosbay.com> wrote:
+> On listen queue, socket is still ready for an accept().
 
-Looks like I erroneously thought it can't be NULL,
-or that expand_upwards() is ok with getting NULL vma parameter.
+True, but not handy.
 
-I looked again and neither is true.
+> Since you use edge trigered epoll, you'll only reveive new notification.
 
-Sorry, looks like I indeed broke this.
---
-vda
+The strace shows I receive 10+.
+If a return with EMFILE is indeed a no-op, I should receive only one.
+
+> You probably had in you app a : listen(sock, 10), so after 10 notifications,
+> your listen queue is full and TCP stack refuses to handle new connections.
+
+I've got listen(l, SOMAXCONN);
+IIRC SOMAXCONN is 128.
+
+>  close(newfd); /* forget this incoming connection, we dont have enough fd */
+
+Why not keep them in the queue until you do have enough descriptors?
+
+> Of course, if your application is multi-threaded, you might adapt (and
+> eventually reserve
+> one emergency fd per thread)
+
+Sounds like a great recipe for race conditions. ;)
