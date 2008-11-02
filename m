@@ -1,29 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753755AbYKBCzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753773AbYKBC6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753755AbYKBCzX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Nov 2008 22:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbYKBCzK
+	id S1753773AbYKBC6f (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Nov 2008 22:58:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbYKBC61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Nov 2008 22:55:10 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:9108 "EHLO
+	Sat, 1 Nov 2008 22:58:27 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:9529 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752545AbYKBCzJ (ORCPT
+	with ESMTP id S1752545AbYKBC60 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Nov 2008 22:55:09 -0400
-Subject: regulator: struct device - replace bus_id with dev_name(),
+	Sat, 1 Nov 2008 22:58:26 -0400
+Subject: rapidio: struct device - replace bus_id with dev_name(),
 	dev_set_name()
 From: Kay Sievers <kay.sievers@vrfy.org>
-To: lrg@slimlogic.co.uk
+To: Matt Porter <mporter@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
 Content-Type: text/plain
-Date: Sun, 02 Nov 2008 03:55:10 +0100
-Message-Id: <1225594510.2142.20.camel@nga.site>
+Date: Sun, 02 Nov 2008 03:58:26 +0100
+Message-Id: <1225594706.2142.22.camel@nga.site>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+(I did not compile or test it, please let me know, or help fixing
+ it, if something is wrong with the conversion)
 
 This patch is part of a larger patch series which will remove
 the "char bus_id[20]" name string from struct device. The device
@@ -51,27 +55,52 @@ Kay
 
 
 From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: regulator: struct device - replace bus_id with dev_name(), dev_set_name()
+Subject: rapidio: struct device - replace bus_id with dev_name(), dev_set_name()
 
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
 Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
 ---
- drivers/regulator/core.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -1779,8 +1779,8 @@ struct regulator_dev *regulator_register
- 	/* register with sysfs */
- 	rdev->dev.class = &regulator_class;
- 	rdev->dev.parent = dev;
--	snprintf(rdev->dev.bus_id, sizeof(rdev->dev.bus_id),
--		 "regulator.%d", atomic_inc_return(&regulator_no) - 1);
-+	dev_set_name(&rdev->dev, "regulator.%d",
-+		     atomic_inc_return(&regulator_no) - 1);
- 	ret = device_register(&rdev->dev);
- 	if (ret != 0) {
- 		kfree(rdev);
+diff --git a/drivers/rapidio/rio-scan.c b/drivers/rapidio/rio-scan.c
+index a926c89..ec08acb 100644
+--- a/drivers/rapidio/rio-scan.c
++++ b/drivers/rapidio/rio-scan.c
+@@ -365,15 +365,15 @@ static struct rio_dev *rio_setup_device(struct rio_net *net,
+ 				rdid++)
+ 			rswitch->route_table[rdid] = RIO_INVALID_ROUTE;
+ 		rdev->rswitch = rswitch;
+-		sprintf(rio_name(rdev), "%02x:s:%04x", rdev->net->id,
+-			rdev->rswitch->switchid);
++		dev_set_name(&rdev->dev, "%02x:s:%04x", rdev->net->id,
++			     rdev->rswitch->switchid);
+ 		rio_route_set_ops(rdev);
+ 
+ 		list_add_tail(&rswitch->node, &rio_switches);
+ 
+ 	} else
+-		sprintf(rio_name(rdev), "%02x:e:%04x", rdev->net->id,
+-			rdev->destid);
++		dev_set_name(&rdev->dev, "%02x:e:%04x", rdev->net->id,
++			     rdev->destid);
+ 
+ 	rdev->dev.bus = &rio_bus_type;
+ 
+diff --git a/include/linux/rio_drv.h b/include/linux/rio_drv.h
+index 90987b7..32c0547 100644
+--- a/include/linux/rio_drv.h
++++ b/include/linux/rio_drv.h
+@@ -427,9 +427,9 @@ void rio_dev_put(struct rio_dev *);
+  * Get the unique RIO device identifier. Returns the device
+  * identifier string.
+  */
+-static inline char *rio_name(struct rio_dev *rdev)
++static inline const char *rio_name(struct rio_dev *rdev)
+ {
+-	return rdev->dev.bus_id;
++	return dev_name(&rdev->dev);
+ }
+ 
+ /**
 
 
