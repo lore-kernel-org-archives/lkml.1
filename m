@@ -1,20 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755624AbYKBSLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbYKBSLZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755624AbYKBSLA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 13:11:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbYKBSCw
+	id S1754883AbYKBSLZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 13:11:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbYKBSCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 13:02:52 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35722 "EHLO ogre.sisk.pl"
+	Sun, 2 Nov 2008 13:02:53 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35725 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754594AbYKBSCu convert rfc822-to-8bit (ORCPT
+	id S1754053AbYKBSCv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 13:02:50 -0500
+	Sun, 2 Nov 2008 13:02:51 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Glauber Costa" <glommer@redhat.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Nick Piggin" <npiggin@suse.de>
+       "Gene Heskett" <gene.heskett@gmail.com>
 References: <603i_OdVYPF.A.7_D.mjeDJB@chimera>
 In-Reply-To: <603i_OdVYPF.A.7_D.mjeDJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -22,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <wOAXuecskPD.A.XdF.FkeDJB@chimera>
-Subject: [Bug #11903] regression: vmalloc easily fail
+Message-ID: <wOAXuecskPD.A.IJF.AkeDJB@chimera>
+Subject: [Bug #11906] 2.6.28-rc2 seems to fail at powering down the monitor when it should
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  2 Nov 2008 17:07:05 +0100 (CET)
+Date: Sun,  2 Nov 2008 17:07:06 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -38,13 +35,10 @@ from 2.6.27.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11903
-Subject		: regression: vmalloc easily fail
-Submitter	: Glauber Costa <glommer@redhat.com>
-Date		: 2008-10-28 20:59 (6 days old)
-References	: http://marc.info/?l=linux-kernel&m=122522755530998&w=4
-Handled-By	: Glauber Costa <glommer@redhat.com>
-		  Nick Piggin <npiggin@suse.de>
-Patch		: http://marc.info/?l=linux-kernel&m=122522755530998&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11906
+Subject		: 2.6.28-rc2 seems to fail at powering down the monitor when it should
+Submitter	: Gene Heskett <gene.heskett@gmail.com>
+Date		: 2008-10-30 6:39 (4 days old)
+References	: http://marc.info/?l=linux-kernel&m=122534879721424&w=4
 
 
