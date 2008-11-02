@@ -1,53 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbYKBEHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbYKBEKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753073AbYKBEHw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 00:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbYKBEHm
+	id S1753352AbYKBEKo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 00:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbYKBEKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 00:07:42 -0400
-Received: from kroah.org ([198.145.64.141]:55043 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750804AbYKBEHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 00:07:41 -0400
-Date: Sat, 1 Nov 2008 21:05:32 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kasper Sandberg <lkml@metanurb.dk>,
-       LKML Mailinglist <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org
-Subject: Re: 2.6.27.2 USB reset/IO Error problem when high load on ICH9 USB
-Message-ID: <20081102040532.GC15360@kroah.com>
-References: <1225344169.17253.43.camel@localhost> <20081031234823.5064dd88.akpm@linux-foundation.org>
+	Sun, 2 Nov 2008 00:10:36 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:2519 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751112AbYKBEKg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Nov 2008 00:10:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Vu343ref5kwRVU/rSYYcsXfiOMIFX3+OIRAhG4qo3uf80noaZqYStMMu+uRtidPhN4
+         XbpPH90xUFEvNC8G+db4zt+QeSGTbeNDD8QYr5EWKDghF2yFRMJf0ZJLnLAJr77d1WnS
+         g9saIZhdqu9N3kGewYxIy6+O5mJPquidB/RSk=
+Message-ID: <a4423d670811012102m3fdd245apbe0a310b4890f958@mail.gmail.com>
+Date: Sun, 2 Nov 2008 07:02:40 +0300
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: "Hugh Dickins" <hugh@veritas.com>
+Subject: Re: 2.6.28-rc2: Unable to handle kernel paging request at iov_iter_copy_from_user_atomic
+Cc: "David Miller" <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
+       sparclinux <sparclinux@vger.kernel.org>, linux-mm@kvack.org
+In-Reply-To: <Pine.LNX.4.64.0811011837110.20211@blonde.site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081031234823.5064dd88.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <a4423d670811010723u3b271fcaxa7d3bdb251a8b246@mail.gmail.com>
+	 <Pine.LNX.4.64.0811011837110.20211@blonde.site>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 31, 2008 at 11:48:23PM -0700, Andrew Morton wrote:
-> (cc linux-usb)
-> 
-> On Thu, 30 Oct 2008 06:22:49 +0100 Kasper Sandberg <lkml@metanurb.dk> wrote:
-> 
-> > Hello..
-> > 
-> > I had to write an image to some usb flash drives, more specifically, 4GB
-> > kingston datatraveler sticks, and i figured, instead of doing just 1 at
-> > a time, i may aswell do 4, so i plugged in 4, and started 4 dd's of the
-> > images, to sdc, sdd, sde, sdf. However, i got usb disconnects and IO
-> > error messages from the kernel, these are at end of message. I had
-> > previously done ~5 writes of images to 5 other flash disks with no
-> > problem, but when i tried the next batch, those 4, it gave these errors.
-> > I killed the dd's, pulled them all out, and put in 1 at a time, and it
-> > worked perfectly.
+2008/11/1 Hugh Dickins <hugh@veritas.com>:
+> On Sat, 1 Nov 2008, Alexander Beregalov wrote:
+>>  2.6.28-rc2-00452-gf891caf on sparc64
+>>
+>> How to reproduce: run dbench on tmpfs
+>>
+>>
+>> Unable to handle kernel paging request at virtual address fffff80037c1c000
+>> tsk->{mm,active_mm}->context = 0000000000001ae7
+>> tsk->{mm,active_mm}->pgd = fffff8000ec8c000
+>>               \|/ ____ \|/
+>>               "@'/ .. \`@"
+>>               /_| \__/ |_\
+>>                  \__U_/
+>> dbench(5007): Oops [#1]
+>> TSTATE: 0000000011009604 TPC: 00000000005acbac TNPC: 00000000005acbb0
+>> Y: 00000000    Not tainted
+>> TPC: <__bzero+0x20/0xc0>
+>> g0: 0000000000000016 g1: 0000000000000000 g2: 0000000000000000 g3:
+>> 0000000000033ae7
+>> g4: fffff8000ec9c380 g5: 0000000000000020 g6: fffff8003b834000 g7:
+>> ffffffffffffe8b1
+>> o0: fffff80037c1c8b1 o1: 00000000000008b1 o2: 0000000000000000 o3:
+>> fffff80037c1c8b1
+>> o4: 0000000000000000 o5: 0000000000034398 sp: fffff8003b836e41 ret_pc:
+>> 00000000005ae73c
+>> RPC: <copy_from_user_fixup+0x4c/0x70>
+>> l0: 0000000000852800 l1: 0000000011009603 l2: 0000000000827ff4 l3:
+>> 0000000000000400
+>> l4: 0000000000000000 l5: 0000000000000001 l6: 0000000000000000 l7:
+>> 0000000000000008
+>> i0: fffff80037c1e000 i1: 0000000000032398 i2: 00000000000008b1 i3:
+>> fffff80037c3e398
+>> i4: fffff80037c1e000 i5: 0000000000000000 i6: fffff8003b836f01 i7:
+>> 0000000000486f28
+>> I7: <iov_iter_copy_from_user_atomic+0x90/0xe0>
+>> Caller[0000000000486f28]: iov_iter_copy_from_user_atomic+0x90/0xe0
+>> Caller[0000000000488a58]: generic_file_buffered_write+0x108/0x2a8
+>> Caller[0000000000489140]: __generic_file_aio_write_nolock+0x35c/0x380
+>> Caller[00000000004899b4]: generic_file_aio_write+0x58/0xc8
+>> Caller[00000000004b23d4]: do_sync_write+0x90/0xe0
+>> Caller[00000000004b2ca4]: vfs_write+0x7c/0x11c
+>> Caller[00000000004b2d98]: sys_pwrite64+0x54/0x80
+>> Caller[000000000043efa4]: sys32_pwrite64+0x20/0x34
+>> Caller[0000000000406154]: linux_sparc_syscall32+0x34/0x40
+>> Caller[00000000f7e8df80]: 0xf7e8df80
+>> Instruction DUMP: c56a2000  808a2003  02480006 <d42a2000> 90022001
+>> 808a2003  1247fffd  92226001  808a2007
+>
+> [ Snipped the rest of it, which is just a consequence of oopsing
+>  there, then a repeat of this one on a different address ]
+>
+> Good find!  Though surprising it's not been found before: something
+> for -stable I suspect.  Please don't take my signoff too seriously,
+> I cannot test this myself and it needs confirmation from DaveM...
+>
+>
+> Alexander Beregalov reports oops in __bzero() called from
+> copy_from_user_fixup() called from iov_iter_copy_from_user_atomic(),
+> when running dbench on tmpfs on sparc64: its __copy_from_user_inatomic
+> and __copy_to_user_inatomic should be avoiding, not calling, the fixups.
+>
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> ---
+>
+>  arch/sparc/include/asm/uaccess_64.h |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> --- 2.6.28-rc2/arch/sparc/include/asm/uaccess_64.h      2008-10-09 23:13:53.000000000 +0100
+> +++ linux/arch/sparc/include/asm/uaccess_64.h   2008-11-01 18:33:59.000000000 +0000
+> @@ -265,8 +265,8 @@ extern long __strnlen_user(const char __
+>
+>  #define strlen_user __strlen_user
+>  #define strnlen_user __strnlen_user
+> -#define __copy_to_user_inatomic __copy_to_user
+> -#define __copy_from_user_inatomic __copy_from_user
+> +#define __copy_to_user_inatomic ___copy_to_user
+> +#define __copy_from_user_inatomic ___copy_from_user
+>
+>  #endif  /* __ASSEMBLY__ */
+>
+>
+It helps, thanks.
 
-Looks like you have a hardware issue, perhaps low voltage on the ports
-that cause them to be disconnected at the electrical USB level, which is
-nothing that we can do about within the kernel.
+Should we fix also sparc32?
 
-thanks,
+diff --git a/arch/sparc/include/asm/uaccess_32.h
+b/arch/sparc/include/asm/uaccess_32.h
+index 47d5619..e878eb4 100644
+--- a/arch/sparc/include/asm/uaccess_32.h
++++ b/arch/sparc/include/asm/uaccess_32.h
+@@ -270,8 +270,8 @@ static inline unsigned long __copy_from_user(void
+*to, const void __user *from,
+        return __copy_user((__force void __user *) to, from, n);
+ }
 
-greg k-h
+-#define __copy_to_user_inatomic __copy_to_user
+-#define __copy_from_user_inatomic __copy_from_user
++#define __copy_to_user_inatomic ___copy_to_user
++#define __copy_from_user_inatomic ___copy_from_user
+
+ static inline unsigned long __clear_user(void __user *addr, unsigned long size)
+ {
