@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753858AbYKBKik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbYKBKoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753858AbYKBKik (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 05:38:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbYKBKib
+	id S1753899AbYKBKoI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 05:44:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbYKBKnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 05:38:31 -0500
-Received: from userg500.nifty.com ([202.248.238.80]:60364 "EHLO
-	userg500.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753352AbYKBKia (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 05:38:30 -0500
-DomainKey-Signature: a=rsa-sha1; s=userg500; d=nifty.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:in-reply-to:references:
-	x-mailer:mime-version:content-type:content-transfer-encoding;
-	b=WYxISEHL8I/IauMYYl/P74M74FtULo4wUNkssRVl4bDrB6us4Bevef649lzYoijAE
-	CGO1wjZuZX7zO6zWjRUTg==
-X-Nifty-SrcIP: [219.116.17.201]
-Date: Sun, 2 Nov 2008 19:33:24 +0900
-From: Komuro <komurojun-mbn@nifty.com>
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       torvalds@osdl.org, linux-pcmcia@lists.infradead.org
-Subject: Re: [BUG REPORT!!!] [PATCH 19/49] pcmcia: remove remaining
- in-kernel pcmcia_get_configuration_info() users
-Message-Id: <20081102193324.86f0d4a3.komurojun-mbn@nifty.com>
-In-Reply-To: <20081102091756.GA25322@isilmar.linta.de>
-References: <20080922155814.2bdad40f@lxorguk.ukuu.org.uk>
-	<20080922215617.GA13057@comet.dominikbrodowski.net>
-	<20080922231227.2625dd09@lxorguk.ukuu.org.uk>
-	<20080922222655.GA3792@isilmar.linta.de>
-	<20081101110746.41733076.komurojun-mbn@nifty.com>
-	<20081102174622.02500138.komurojun-mbn@nifty.com>
-	<20081102091756.GA25322@isilmar.linta.de>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 2 Nov 2008 05:43:55 -0500
+Received: from mail.gmx.net ([213.165.64.20]:58002 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753369AbYKBKny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Nov 2008 05:43:54 -0500
+X-Authenticated: #1045983
+X-Provags-ID: V01U2FsdGVkX18Z7Sx8smgZYZ6EBN/pSbfhrjcSMqlWTJBQHhoRd5
+	hdB2QC1lPPE77+
+Message-ID: <490D8467.5090206@gmx.de>
+Date: Sun, 02 Nov 2008 11:43:51 +0100
+From: Helge Deller <deller@gmx.de>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Jiri Kosina <jkosina@suse.cz>, Jeroen Roovers <jer@gentoo.org>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] USBHID: correct start/stop cycle
+References: <1225579306-28524-1-git-send-email-jirislaby@gmail.com> <alpine.LNX.1.10.0811020000360.29633@jikos.suse.cz> <490CE128.3020007@gmail.com>
+In-Reply-To: <490CE128.3020007@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.66
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jiri Slaby wrote:
+> On 11/02/2008 12:02 AM, Jiri Kosina wrote:
+>> On Sat, 1 Nov 2008, Jiri Slaby wrote:
+>>
+>>> `stop' left out usbhid->urb* pointers and so the next `start' thought
+>>> it needs to allocate nothing and used the memory pointers previously
+>>> pointed to. This led to memory corruption and device malfunction.
+> [...]
+>> could you please verify whether this patch fixes the corruption you were 
+>> experiencing?
+> 
+> btw. this is not expected to fix that, but if it does, the better ;).
 
-drivers/pcmcia/ds.c
+I tried the patch and sadly it didn't fixed the parisc bug.
 
-setup "io" and "irq" for pseudo multifunction devices.
+Helge
 
-Signed-off-by: Komuro <komurojun-mbn@nifty.com>
-
----
-
-
---- linux-2.6.28-rc2/drivers/pcmcia/ds.c.orig	2008-11-01 08:59:13.000000000 +0900
-+++ linux-2.6.28-rc2/drivers/pcmcia/ds.c	2008-11-02 18:59:18.000000000 +0900
-@@ -668,6 +668,8 @@ struct pcmcia_device * pcmcia_device_add
-         list_for_each_entry(tmp_dev, &s->devices_list, socket_device_list)
-                 if (p_dev->func == tmp_dev->func) {
- 			p_dev->function_config = tmp_dev->function_config;
-+			p_dev->io = tmp_dev->io;
-+			p_dev->irq = tmp_dev->irq;
- 			kref_get(&p_dev->function_config->ref);
- 		}
- 
+> This fixes
+> echo DEVICE > /sys/bus/hid/drivers/DRIVER/unbind
+> echo DEVICE > /sys/bus/hid/drivers/DRIVER/bind
+> failures.
+> 
+> But maybe parisc does something differently than x86 in bus handling so that it
+> triggers...
