@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbYKBVfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbYKBVlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755060AbYKBVfm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 16:35:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbYKBVfd
+	id S1754706AbYKBVlc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 16:41:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbYKBVlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 16:35:33 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:58203 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754249AbYKBVfc (ORCPT
+	Sun, 2 Nov 2008 16:41:24 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:55221 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754160AbYKBVlX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 16:35:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=UBmujBV0ekejBAdd17mAyHSZXSyE9LfeoKIVxxK2O2y+uXUW/Z0MQddQrP0s5CaTZZ
-         JSOEwQx3I/XE22hagrySDDvXStCO+o8EOLWtURhP7azxg+oj8hTgFGhgScZ2ib/UkTu+
-         2x2XEcdEB7zUG7QNiNKDfigvi1hq1ZdLE3aig=
-Message-ID: <87a5b0800811021335nfe6202fwc00681ec96d9816c@mail.gmail.com>
-Date: Sun, 2 Nov 2008 21:35:31 +0000
-From: "Will Newton" <will.newton@gmail.com>
-To: "Matt Fleming" <mjf@gentoo.org>
-Subject: Re: [PATCH 2/3] HPET: Enter hpet_interrupt_handler with interrupts disabled
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
-       venkatesh.pallipadi@intel.com
-In-Reply-To: <1225641860-6120-2-git-send-email-mjf@gentoo.org>
+	Sun, 2 Nov 2008 16:41:23 -0500
+Date: Sun, 2 Nov 2008 21:40:42 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: T?r?k Edwin <edwintorok@gmail.com>
+Cc: mingo@elte.hu, srostedt@redhat.com, a.p.zijlstra@chello.nl,
+       sandmann@daimi.au.dk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Identify which executable object the userspace address
+	belongs to. Store thread group leader id, and use it to lookup the
+	address in the process's map. We could have looked up the address
+	on thread's map, but the thread might not exist by the time we are
+	called. The process might not exist either, but if you are reading
+	trace_pipe, that is unlikely.
+Message-ID: <20081102214042.GG28946@ZenIV.linux.org.uk>
+References: <1225660694-19765-1-git-send-email-edwintorok@gmail.com> <1225660694-19765-2-git-send-email-edwintorok@gmail.com> <1225660694-19765-3-git-send-email-edwintorok@gmail.com> <20081102212512.GF28946@ZenIV.linux.org.uk> <490E1B74.6010904@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1225641860-6120-1-git-send-email-mjf@gentoo.org>
-	 <1225641860-6120-2-git-send-email-mjf@gentoo.org>
+In-Reply-To: <490E1B74.6010904@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 2, 2008 at 4:04 PM, Matt Fleming <mjf@gentoo.org> wrote:
-> Some functions that may be called from this handler require that
-> interrupts are disabled.
->
-> Signed-off-by: Matt Fleming <mjf@gentoo.org>
-> ---
->  arch/x86/kernel/hpet.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-> index f10f946..c28fff2 100644
-> --- a/arch/x86/kernel/hpet.c
-> +++ b/arch/x86/kernel/hpet.c
-> @@ -445,7 +445,8 @@ static int hpet_setup_irq(struct hpet_dev *dev)
->  {
->
->        if (request_irq(dev->irq, hpet_interrupt_handler,
-> -                       IRQF_SHARED|IRQF_NOBALANCING, dev->name, dev))
-> +                       IRQF_DISABLED|IRQF_SHARED|IRQF_NOBALANCING,
-> +                       dev->name, dev))
+On Sun, Nov 02, 2008 at 11:28:20PM +0200, T?r?k Edwin wrote:
+> On 2008-11-02 23:25, Al Viro wrote:
+> > On Sun, Nov 02, 2008 at 11:18:14PM +0200, T??r??k Edwin wrote:
+> >   
+> >> +static int
+> >> +trace_seq_path(struct trace_seq *s, struct path *path)
+> >> +{
+> >> +	int ret;
+> >> +	struct seq_file m;
+> >> +	m.count = s->len;
+> >> +	m.size = PAGE_SIZE;
+> >> +	m.buf = s->buffer;
+> >> +	ret = seq_path(&m, path, "\n");
+> >> +	if (ret)
+> >> +		s->len = m.count;
+> >> +	return ret;
+> >> +}
+> >>     
+> >
+> > NAK.  seq_path() is a blatantly wrong thing to use here.
+> >   
+> 
+> Are there any alternatives I could use?
+> 
+> This function is called when I do 'cat /sys/kernel/debug/trace', not
+> during tracing itself.
 
-Combining IRQF_DISABLED and IRQF_SHARED does not reliably disable
-interrupts in the handler. Perhaps IRQF_SHARED should be removed at
-the same time?
-
->                return -1;
->
->        disable_irq(dev->irq);
-> --
-> 1.5.6.4
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+_IF_ you want to get the mangled path, you want to take the guts of
+seq_path() into a separate helper and use it - without any references
+to struct seq_file since it's completely irrelevant there and you are
+using it only as a vehicle for passing the stuff you care about through
+the seq_path() interface.
