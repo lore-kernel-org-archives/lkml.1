@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbYKBJXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753858AbYKBKik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753867AbYKBJXx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 04:23:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbYKBJXn
+	id S1753858AbYKBKik (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 05:38:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbYKBKib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 04:23:43 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:39039 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753163AbYKBJXl (ORCPT
+	Sun, 2 Nov 2008 05:38:31 -0500
+Received: from userg500.nifty.com ([202.248.238.80]:60364 "EHLO
+	userg500.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753352AbYKBKia (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 04:23:41 -0500
-Date: Sun, 2 Nov 2008 09:23:36 +0000
-From: Matthew Garrett <mjg@redhat.com>
-To: Nick Kossifidis <mickflemm@gmail.com>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       willy@linux.intel.com, lrodriguez@atheros.com
-Subject: Re: ath5k gets lost with eeepc-laptop removal
-Message-ID: <20081102092336.GD10983@srcf.ucam.org>
-References: <20081031110502.18e33eba@doriath.conectiva> <490B0D75.8020601@tuffmail.co.uk> <20081031142318.GA9009@srcf.ucam.org> <40f31dec0810311135w76c01729lef1a6c93f18c0095@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <40f31dec0810311135w76c01729lef1a6c93f18c0095@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Sun, 2 Nov 2008 05:38:30 -0500
+DomainKey-Signature: a=rsa-sha1; s=userg500; d=nifty.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:in-reply-to:references:
+	x-mailer:mime-version:content-type:content-transfer-encoding;
+	b=WYxISEHL8I/IauMYYl/P74M74FtULo4wUNkssRVl4bDrB6us4Bevef649lzYoijAE
+	CGO1wjZuZX7zO6zWjRUTg==
+X-Nifty-SrcIP: [219.116.17.201]
+Date: Sun, 2 Nov 2008 19:33:24 +0900
+From: Komuro <komurojun-mbn@nifty.com>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       torvalds@osdl.org, linux-pcmcia@lists.infradead.org
+Subject: Re: [BUG REPORT!!!] [PATCH 19/49] pcmcia: remove remaining
+ in-kernel pcmcia_get_configuration_info() users
+Message-Id: <20081102193324.86f0d4a3.komurojun-mbn@nifty.com>
+In-Reply-To: <20081102091756.GA25322@isilmar.linta.de>
+References: <20080922155814.2bdad40f@lxorguk.ukuu.org.uk>
+	<20080922215617.GA13057@comet.dominikbrodowski.net>
+	<20080922231227.2625dd09@lxorguk.ukuu.org.uk>
+	<20080922222655.GA3792@isilmar.linta.de>
+	<20081101110746.41733076.komurojun-mbn@nifty.com>
+	<20081102174622.02500138.komurojun-mbn@nifty.com>
+	<20081102091756.GA25322@isilmar.linta.de>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 31, 2008 at 08:35:47PM +0200, Nick Kossifidis wrote:
 
-> It doesn't leave the radio in a state that's not transmitting, it
-> leaves the card in a state that doesn't get any power at all. I don't
-> see any reason for this, how do you define "safe" ?
+drivers/pcmcia/ds.c
 
-The rfkill core has no concept of what the underlying hardware 
-implementation is. The fact that you can see the card at all is a bug 
-triggered by the fact that we don't currently support PCIe hotplug on 
-this type of machine (I've just sent a patch that adds a workaround for 
-that), but the inherent reason for it happening this way is because Asus 
-implemented it that way in their platform.
+setup "io" and "irq" for pseudo multifunction devices.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Signed-off-by: Komuro <komurojun-mbn@nifty.com>
+
+---
+
+
+--- linux-2.6.28-rc2/drivers/pcmcia/ds.c.orig	2008-11-01 08:59:13.000000000 +0900
++++ linux-2.6.28-rc2/drivers/pcmcia/ds.c	2008-11-02 18:59:18.000000000 +0900
+@@ -668,6 +668,8 @@ struct pcmcia_device * pcmcia_device_add
+         list_for_each_entry(tmp_dev, &s->devices_list, socket_device_list)
+                 if (p_dev->func == tmp_dev->func) {
+ 			p_dev->function_config = tmp_dev->function_config;
++			p_dev->io = tmp_dev->io;
++			p_dev->irq = tmp_dev->irq;
+ 			kref_get(&p_dev->function_config->ref);
+ 		}
+ 
