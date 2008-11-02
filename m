@@ -1,107 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754732AbYKBVse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbYKBVte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754732AbYKBVse (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 16:48:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbYKBVs0
+	id S1754930AbYKBVte (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 16:49:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbYKBVt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 16:48:26 -0500
-Received: from os.inf.tu-dresden.de ([141.76.48.99]:49457 "EHLO
-	os.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752740AbYKBVsZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 16:48:25 -0500
-X-Greylist: delayed 2252 seconds by postgrey-1.27 at vger.kernel.org; Sun, 02 Nov 2008 16:48:25 EST
-Date: Sun, 2 Nov 2008 22:09:29 +0100
-From: "Udo A. Steinberg" <udo@hypervisor.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Contention on e1000 NVM
-Message-ID: <20081102220929.38385d60@laptop.hypervisor.org>
-X-Mailer: X-Mailer 5.0 Gold
+	Sun, 2 Nov 2008 16:49:26 -0500
+Received: from gate.crashing.org ([63.228.1.57]:51364 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754214AbYKBVtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Nov 2008 16:49:25 -0500
+Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: James Cloos <cloos@jhcloos.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Krzysztof Halasa <khc@pm.waw.pl>
+In-Reply-To: <m3k5bt2hsc.fsf@lugabout.jhcloos.org>
+References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
+	 <1225152347.8004.49.camel@pasglop>  <m3k5bt2hsc.fsf@lugabout.jhcloos.org>
+Content-Type: text/plain
+Date: Mon, 03 Nov 2008 08:48:59 +1100
+Message-Id: <1225662539.8004.237.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/wpzfgOKJbvY4VGfb.yFNkIJ";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/wpzfgOKJbvY4VGfb.yFNkIJ
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
 
-Hello,
+>         /* X here pads width to a multiple of 32 and uses the clipper to
+>          * adjust the result. Is that really necessary ? Things seem to
+>          * work ok for me without that and the doco doesn't seem to imply
+>          * there is such a restriction.
+>          */
+> 
+> is relevant?
 
-I've just hit a case of contention on the e1000 NVM with a vanilla 2.6.27
-kernel, which resulted in the following warning being logged. So far I have
-not been able to reproduce it a second time. I doubt the binary nvidia
-module had anything to do with it, though.
+Possibly.
+
+> Or whether the card is unhappy with the creg settings.  It does seem,
+> now that I read the code, that:
+> 
+> void radeon_fifo_update_and_wait(struct radeonfb_info *rinfo, int entries)
+> {
+>         int i;
+> 
+>         for (i=0; i<2000000; i++) {
+>                 rinfo->fifo_free = INREG(RBBM_STATUS) & 0x7f;
+>                 if (rinfo->fifo_free >= entries)
+>                         return;
+>                 udelay(10);
+>         }
+>         printk(KERN_ERR "radeonfb: FIFO Timeout !\n");
+>         /* XXX Todo: attempt to reset the engine */
+> }
+> 
+> is in play.  It is probably spinning through all of the 2000000 possible
+> udelay(10) calls.  I don't think I ever gave it twenty seconds before
+> giving up.  And certainly not forty seconds, if the freeze happens after
+> setting the DST_Y_X register.
+
+Well, setting DST_Y_X is what triggers the transfer. The above means
+that the FIFO isn't emptying (ie, the engine is locked up).
+
+There's a few things we can do from here:
+
+ - We can try indeed to do the alignment things though that involves
+using the clipper etc... and thus complicates things significantly
+
+ - We can also try putting a few more bubbles in the FIFO in case that's
+where the problem is
+
+ - We can blacklist that chip for imageblit (it's not a huge improvement
+on x86 anyway).
+
+ - We can be smart, reduce the timeout above, and "detect" the lockup,
+when it happens, reset the engine and disable the acceleration that
+locked up.
+
+Now, the problem is ... My second son was just born last wed. so I'm
+pretty unavailable right now. Thus, for .29, I'm tempted to go for the
+simpler approach which is to blacklist M7's from imageblit acceleration.
 
 Cheers,
+Ben.
 
-	- Udo
-
-
-Nov  2 21:52:17 laptop dhcpcd[1477]: timed out waiting for a valid DHCP ser=
-ver response
-Nov  2 21:52:17 laptop dhcpcd[1477]: timed out waiting for a valid DHCP ser=
-ver response
-Nov  2 21:52:18 laptop kernel: ------------[ cut here ]------------
-Nov  2 21:52:18 laptop kernel: WARNING: at drivers/net/e1000e/ich8lan.c:403=
- e1000_acquire_swflag_ich8lan+0x31/0xa7()
-Nov  2 21:52:18 laptop kernel: e1000e mutex contention. Owned by pid -1
-Nov  2 21:52:18 laptop kernel: Modules linked in: nvidia(P)
-Nov  2 21:52:18 laptop kernel: Pid: 1477, comm: dhcpcd Tainted: P          =
-2.6.27 #1
-Nov  2 21:52:18 laptop kernel:  [<c011d668>] warn_slowpath+0x61/0x86       =
-        =20
-Nov  2 21:52:18 laptop kernel:  [<c0115f18>] sched_slice+0x45/0x4b =20
-Nov  2 21:52:18 laptop kernel:  [<c012e3c6>] hrtimer_forward+0xe2/0xfe
-Nov  2 21:52:18 laptop kernel:  [<c01300e7>] getnstimeofday+0x32/0xb1=20
-Nov  2 21:52:18 laptop kernel:  [<c01163e1>] __dequeue_entity+0x1f/0x71
-Nov  2 21:52:18 laptop kernel:  [<c0116731>] pick_next_task_fair+0x9d/0xa7
-Nov  2 21:52:18 laptop kernel:  [<c03b30e2>] schedule+0x58d/0x5dd        =20
-Nov  2 21:52:18 laptop kernel:  [<c0275dad>] e1000_acquire_swflag_ich8lan+0=
-x31/0xa7
-Nov  2 21:52:18 laptop kernel:  [<c0276590>] e1000_read_nvm_ich8lan+0x50/0x=
-f6
-Nov  2 21:52:18 laptop kernel:  [<c0124769>] try_to_del_timer_sync+0x44/0x4a
-Nov  2 21:52:18 laptop kernel:  [<c0124779>] del_timer_sync+0xa/0x14       =
-=20
-Nov  2 21:52:18 laptop kernel:  [<c02763e0>] e1000_valid_led_default_ich8la=
-n+0x17/0x32
-Nov  2 21:52:18 laptop kernel:  [<c02789ac>] e1000e_id_led_init+0x13/0x109 =
-          =20
-Nov  2 21:52:18 laptop kernel:  [<c0276cbd>] e1000_init_hw_ich8lan+0xcd/0x1=
-7c
-Nov  2 21:52:18 laptop kernel:  [<c027ec4a>] e1000e_reset+0x124/0x1af
-Nov  2 21:52:18 laptop kernel:  [<c027edc8>] e1000e_down+0xf3/0x104
-Nov  2 21:52:18 laptop kernel:  [<c027f640>] e1000_close+0x29/0x9f
-Nov  2 21:52:18 laptop kernel:  [<c03321de>] dev_close+0x5c/0x73           =
-                               =20
-Nov  2 21:52:18 laptop kernel:  [<c0332076>] dev_change_flags+0x93/0x13f
-Nov  2 21:52:18 laptop kernel:  [<c0360c64>] devinet_ioctl+0x228/0x4f6
-Nov  2 21:52:18 laptop kernel:  [<c036c760>] packet_ioctl+0xc6/0xcb
-Nov  2 21:52:18 laptop kernel:  [<c0328488>] sock_ioctl+0x1ad/0x1d1
-Nov  2 21:52:18 laptop kernel:  [<c03282db>] sock_ioctl+0x0/0x1d1 =20
-Nov  2 21:52:18 laptop kernel:  [<c0165310>] vfs_ioctl+0x1c/0x5d
-Nov  2 21:52:18 laptop kernel:  [<c0165570>] do_vfs_ioctl+0x21f/0x22b
-Nov  2 21:52:18 laptop kernel:  [<c01655a8>] sys_ioctl+0x2c/0x44
-Nov  2 21:52:18 laptop kernel:  [<c0102c6e>] syscall_call+0x7/0xb
-Nov  2 21:52:18 laptop kernel:  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D         =20
-Nov  2 21:52:18 laptop kernel: ---[ end trace 841a8f965990a8b9 ]---
-
---Sig_/wpzfgOKJbvY4VGfb.yFNkIJ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkOFwkACgkQnhRzXSM7nSneRwCfVigCWTjoUZhNPjO6XUkdrWoo
-Gh8Anjq0LfMo4atCpBbGUSB2g+w7lPl9
-=hZzA
------END PGP SIGNATURE-----
-
---Sig_/wpzfgOKJbvY4VGfb.yFNkIJ--
