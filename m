@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756966AbYKBSxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbYKBSyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756966AbYKBSxz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 13:53:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbYKBSp2
+	id S1755330AbYKBSyW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 13:54:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbYKBSpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 13:45:28 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36219 "EHLO ogre.sisk.pl"
+	Sun, 2 Nov 2008 13:45:30 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:36224 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754620AbYKBSpV convert rfc822-to-8bit (ORCPT
+	id S1754676AbYKBSpW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 13:45:21 -0500
+	Sun, 2 Nov 2008 13:45:22 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Mel Gorman" <mel@csn.ul.ie>, "Paul Mackerras" <paulus@samba.org>
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 References: <Sl8SUNhCbfL.A.O5H.yueDJB@chimera>
 In-Reply-To: <Sl8SUNhCbfL.A.O5H.yueDJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +20,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <4xS1r6m15_B.A.2F.3ueDJB@chimera>
-Subject: [Bug #11907] NVRAM being corrupted on ppc64 preventing boot
+Message-ID: <4xS1r6m15_B.A.dU.7ueDJB@chimera>
+Subject: [Bug #11876] RCU hang on cpu re-hotplug with 2.6.27rc8
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  2 Nov 2008 17:49:39 +0100 (CET)
+Date: Sun,  2 Nov 2008 17:49:38 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,13 +36,11 @@ introduced between 2.6.26 and 2.6.27.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11907
-Subject		: NVRAM being corrupted on ppc64 preventing boot
-Submitter	: Mel Gorman <mel@csn.ul.ie>
-Date		: 2008-10-30 14:26 (4 days old)
-References	: http://marc.info/?l=linux-kernel&m=122537727204584&w=4
-Handled-By	: Paul Mackerras <paulus@samba.org>
-		  Mel Gorman <mel@csn.ul.ie>
-Patch		: http://marc.info/?l=linux-kernel&m=122547833412996&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11876
+Subject		: RCU hang on cpu re-hotplug with 2.6.27rc8
+Submitter	: Andi Kleen <andi@firstfloor.org>
+Date		: 2008-10-06 23:28 (28 days old)
+References	: http://marc.info/?l=linux-kernel&m=122333610602399&w=2
+Handled-By	: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
 
