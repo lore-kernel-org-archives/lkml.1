@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbYKBTYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbYKBT1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754600AbYKBTYq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 14:24:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbYKBTYi
+	id S1754660AbYKBT1t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 14:27:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbYKBT1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 14:24:38 -0500
-Received: from mail.deathmatch.net ([70.167.247.36]:3074 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751797AbYKBTYh (ORCPT
+	Sun, 2 Nov 2008 14:27:42 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:53472 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752901AbYKBT1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 14:24:37 -0500
-Date: Sun, 2 Nov 2008 14:24:14 -0500
-From: Bob Copeland <me@bobcopeland.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #11901] ath5k triggers WARN_ON in __ieee80211_rx
-Message-ID: <20081102192414.GA6304@hash.localnet>
-References: <603i_OdVYPF.A.7_D.mjeDJB@chimera> <wOAXuecskPD.A.HfF.GkeDJB@chimera>
+	Sun, 2 Nov 2008 14:27:42 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 2 Nov 2008 11:27:40 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Olaf van der Spek <olafvdspek@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: epoll behaviour after running out of descriptors
+In-Reply-To: <b2cc26e40811021120p1fa19892m4be6e00785b79289@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0811021122530.9451@alien.or.mcafeemobile.com>
+References: <b2cc26e40811010938k3864c48j45ce55af09516302@mail.gmail.com> 
+ <Pine.LNX.4.64.0811021022120.9451@alien.or.mcafeemobile.com> 
+ <b2cc26e40811021033r115225e2x4747a17fc2b30256@mail.gmail.com> 
+ <Pine.LNX.4.64.0811021047300.9451@alien.or.mcafeemobile.com> 
+ <b2cc26e40811021051kc748db3x44231dc0c085a8d6@mail.gmail.com> 
+ <Pine.LNX.4.64.0811021117050.9451@alien.or.mcafeemobile.com>
+ <b2cc26e40811021120p1fa19892m4be6e00785b79289@mail.gmail.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <wOAXuecskPD.A.HfF.GkeDJB@chimera>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 02, 2008 at 05:07:05PM +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.27.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11901
-> Subject		: ath5k triggers WARN_ON in __ieee80211_rx
-> Submitter	: Bob Copeland <me@bobcopeland.com>
-> Date		: 2008-10-30 09:15 (4 days old)
+On Sun, 2 Nov 2008, Olaf van der Spek wrote:
 
-Thanks, I just posted a patch for this here:
+> On Sun, Nov 2, 2008 at 8:17 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
+> > On Sun, 2 Nov 2008, Olaf van der Spek wrote:
+> >
+> >> On Sun, Nov 2, 2008 at 7:48 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
+> >> > Why don't you grep for TIME_WAIT?
+> >>
+> >> Because I don't have access to the test environment at the moment.
+> >
+> > Here:
+> >
+> > http://tinyurl.com/5ay86v
+> 
+> I know what TIME_WAIT is. I just think it's not applicable to this situation.
 
-http://lkml.org/lkml/2008/11/2/157
+It is. You are saturating the port space, so no new POLLIN/accept events 
+are sent (until some TIME_WAIT clears), so epoll_wait() returns nothing 
+(or does not return, if INF timeo).
+Keeping only 1K (if this is what you meant with your *only* 1K) 
+connections *alive*, does not mean the trail that does moving 1K 
+connections leave, is free.
+If you ever played with things like httperf, you should know what I'm 
+talking about.
 
--- 
-Bob Copeland %% www.bobcopeland.com
+
+
+- Davide
+
 
