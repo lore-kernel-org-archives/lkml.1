@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbYKBT1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754536AbYKBTcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754660AbYKBT1t (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 14:27:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbYKBT1m
+	id S1754536AbYKBTcT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 14:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbYKBTcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 14:27:42 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:53472 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752901AbYKBT1m (ORCPT
+	Sun, 2 Nov 2008 14:32:11 -0500
+Received: from fk-out-0910.google.com ([209.85.128.184]:16281 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751904AbYKBTcK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 14:27:42 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 2 Nov 2008 11:27:40 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Olaf van der Spek <olafvdspek@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: epoll behaviour after running out of descriptors
-In-Reply-To: <b2cc26e40811021120p1fa19892m4be6e00785b79289@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0811021122530.9451@alien.or.mcafeemobile.com>
-References: <b2cc26e40811010938k3864c48j45ce55af09516302@mail.gmail.com> 
- <Pine.LNX.4.64.0811021022120.9451@alien.or.mcafeemobile.com> 
- <b2cc26e40811021033r115225e2x4747a17fc2b30256@mail.gmail.com> 
- <Pine.LNX.4.64.0811021047300.9451@alien.or.mcafeemobile.com> 
- <b2cc26e40811021051kc748db3x44231dc0c085a8d6@mail.gmail.com> 
- <Pine.LNX.4.64.0811021117050.9451@alien.or.mcafeemobile.com>
- <b2cc26e40811021120p1fa19892m4be6e00785b79289@mail.gmail.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sun, 2 Nov 2008 14:32:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=wKseYlfJjRwvPGO2310D8LiFBOawsy0BjFTK808l3fM1gAL005NX7gIyn4vdx5sxlK
+         wk5PVRccdqzJWPhxUUq9RPgNRIaTRoP+zQ58CUWrKT7WCYRgw9W2ze2dbs4SeJ2JSLBk
+         IHo0sfepJsY6HbKH1aFO0DT5+YZU4pfoEJf1c=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH 1/1] USBHID: correct start/stop cycle
+Date: Sun, 2 Nov 2008 20:24:31 +0100
+User-Agent: KMail/1.8.2
+Cc: Jiri Slaby <jirislaby@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
+       Jeroen Roovers <jer@gentoo.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <1225579306-28524-1-git-send-email-jirislaby@gmail.com> <490D873D.9010005@gmail.com> <490DDA69.4000404@gmx.de>
+In-Reply-To: <490DDA69.4000404@gmx.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811022024.31528.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Nov 2008, Olaf van der Spek wrote:
-
-> On Sun, Nov 2, 2008 at 8:17 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> > On Sun, 2 Nov 2008, Olaf van der Spek wrote:
-> >
-> >> On Sun, Nov 2, 2008 at 7:48 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> >> > Why don't you grep for TIME_WAIT?
-> >>
-> >> Because I don't have access to the test environment at the moment.
-> >
-> > Here:
-> >
-> > http://tinyurl.com/5ay86v
+On Sunday 02 November 2008 17:50, Helge Deller wrote:
+> Jiri Slaby wrote:
+> >>> btw. this is not expected to fix that, but if it does, the better ;).
+> >> I tried the patch and sadly it didn't fixed the parisc bug.
+> > 
+> > Could you bisect it?
 > 
-> I know what TIME_WAIT is. I just think it's not applicable to this situation.
+> I fully bisected it, and the final "buggy" patch seems to have been 
+> Denys Vlasenko's patch: cb8f488c33539f096580e202f5438a809195008f
+> (see 
+> http://github.com/jonsmirl/digispeaker/commit/cb8f488c33539f096580e202f5438a809195008f)
+> Denys: Any reason you removed "!prev" in front of "expand_stack"?
 
-It is. You are saturating the port space, so no new POLLIN/accept events 
-are sent (until some TIME_WAIT clears), so epoll_wait() returns nothing 
-(or does not return, if INF timeo).
-Keeping only 1K (if this is what you meant with your *only* 1K) 
-connections *alive*, does not mean the trail that does moving 1K 
-connections leave, is free.
-If you ever played with things like httperf, you should know what I'm 
-talking about.
+Looks like I erroneously thought it can't be NULL,
+or that expand_upwards() is ok with getting NULL vma parameter.
 
+I looked again and neither is true.
 
-
-- Davide
-
-
+Sorry, looks like I indeed broke this.
+--
+vda
