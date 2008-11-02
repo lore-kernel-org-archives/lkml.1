@@ -1,375 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbYKBUL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbYKBUPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754537AbYKBUL3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 15:11:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbYKBULV
+	id S1754593AbYKBUPq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 15:15:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754055AbYKBUPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 15:11:21 -0500
-Received: from mu-out-0910.google.com ([209.85.134.190]:21494 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752644AbYKBULT (ORCPT
+	Sun, 2 Nov 2008 15:15:36 -0500
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:53653 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754053AbYKBUPe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 15:11:19 -0500
-Message-ID: <490E094F.7090007@colorfullife.com>
-Date: Sun, 02 Nov 2008 21:10:55 +0100
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Sun, 2 Nov 2008 15:15:34 -0500
+Date: Sun, 2 Nov 2008 21:15:18 +0100
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: herbert@gondor.apana.org.au, davem@davemloft.net,
+       linux-crypto@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] crypto: add test vectors for skein256/512/1024
+Message-ID: <20081102201518.GA23620@Chamillionaire.breakpoint.cc>
+References: <20081102161506.GA21940@havoc.gtf.org>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
-       akpm@linux-foundation.org, dipankar@in.ibm.com,
-       josht@linux.vnet.ibm.com, schamp@sgi.com, niv@us.ibm.com,
-       dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
-       andi@firstfloor.org, tglx@linutronix.de
-Subject: Re: [PATCH, RFC] v7 scalable classic RCU implementation
-References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <20080905152930.GA8124@linux.vnet.ibm.com> <20080915160221.GA9660@linux.vnet.ibm.com> <20080923235340.GA12166@linux.vnet.ibm.com> <20081010160930.GA9777@linux.vnet.ibm.com>
-In-Reply-To: <20081010160930.GA9777@linux.vnet.ibm.com>
-Content-Type: multipart/mixed;
- boundary="------------010103020806080306010305"
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20081102161506.GA21940@havoc.gtf.org>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010103020806080306010305
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+I grabed them from http://www.schneier.com/skein.html. The last test vector
+(3) in every category is currently deactivated because it failed always.
+It is unlikely that I made a type because I copy+pasted the tables + vim
+magiced them. So maybe code may missbehave on requests lengths which are
+not a multiple of 4 or the vectors can not be used due to some other
+limitations that I've overseen.
 
-Paul E. McKenney wrote:
-> --- /dev/null
-> +++ b/Documentation/RCU/trace.txt
-> @@ -0,0 +1,398 @@
-> +CONFIG_RCU_TRACE debugfs Files and Formats
-> +
-> +
-> +The rcupreempt and rcutree implementations of RCU provide debugfs trace
-> +output that summarizes counters and state.  This information is useful for
-> +debugging RCU itself, and can sometimes also help to debug abuses of RCU.
-> +Note that the rcuclassic implementation of RCU does not provide debugfs
-> +trace output.
-> +
->   
-
-What about some generic files, with the same content for all rcu backends?
-The implementation could be in rcupdate.c. At least counting the rcu 
-callbacks could be done from generic code, the grace periods could be 
-queried [Do all backends implement rcu_batches_completed?]
-
-Attached is a hack that I use right now for myself.
-Btw - on my 4-cpu system, the average latency from call_rcu() to the rcu 
-callback is 4-5 milliseconds, (CONFIG_HZ_1000).
-
---
-    Manfred
-
---------------010103020806080306010305
-Content-Type: text/plain;
- name="patch-rcu-generic-trace"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch-rcu-generic-trace"
-
-rom bf385caf2484d41157a9bef1550cdbefecdefa1b Mon Sep 17 00:00:00 2001
-rom: Manfred Spraul <manfred@colorfullife.com>
-Date: Sun, 2 Nov 2008 20:38:11 +0100
-Subject: [PATCH] kernel/rcupdate.c: add generic rcu statistics
-
-The patch adds a generic file to debugfs that contains a statistic about
-the performance of the rcu subsystem.
-The code adds a noticeable overhead, thus do not enable it unless you
-are interested in measuring the rcu performance.
-
-The patch is a hack, for example it doesn't differentiate between
-call_rcu() and call_rcu_bh()
-
-Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
-
+Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
 ---
- include/linux/rcupdate.h |   24 ++++++++
- init/Kconfig             |    9 +++
- kernel/rcuclassic.c      |    6 +-
- kernel/rcupdate.c        |  133 ++++++++++++++++++++++++++++++++++++++++++++++
- kernel/rcupreempt.c      |    6 +-
- 5 files changed, 172 insertions(+), 6 deletions(-)
+ crypto/tcrypt.c  |   24 ++++++++
+ crypto/testmgr.c |   27 +++++++++
+ crypto/testmgr.h |  166 +++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 216 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index 69c81e2..fa23572 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -49,6 +49,9 @@
-  */
- struct rcu_head {
- 	struct rcu_head *next;
-+#ifdef CONFIG_RCU_BENCHMARK
-+	unsigned long long time;
-+#endif
- 	void (*func)(struct rcu_head *head);
+diff --git a/crypto/tcrypt.c b/crypto/tcrypt.c
+index 28a45a1..c7717e8 100644
+--- a/crypto/tcrypt.c
++++ b/crypto/tcrypt.c
+@@ -661,6 +661,18 @@ static void do_test(int m)
+ 		tcrypt_test("ecb(seed)");
+ 		break;
+ 
++	case 44:
++		tcrypt_test("skein256");
++		break;
++
++	case 45:
++		tcrypt_test("skein512");
++		break;
++
++	case 46:
++		tcrypt_test("skein1024");
++		break;
++
+ 	case 100:
+ 		tcrypt_test("hmac(md5)");
+ 		break;
+@@ -851,6 +863,18 @@ static void do_test(int m)
+ 		test_hash_speed("rmd320", sec, generic_hash_speed_template);
+ 		if (mode > 300 && mode < 400) break;
+ 
++	case 318:
++		test_hash_speed("skein256", sec, generic_hash_speed_template);
++		if (mode > 300 && mode < 400) break;
++
++	case 319:
++		test_hash_speed("skein512", sec, generic_hash_speed_template);
++		if (mode > 300 && mode < 400) break;
++
++	case 320:
++		test_hash_speed("skein1024", sec, generic_hash_speed_template);
++		if (mode > 300 && mode < 400) break;
++
+ 	case 399:
+ 		break;
+ 
+diff --git a/crypto/testmgr.c b/crypto/testmgr.c
+index b828c6c..bc6fc7f 100644
+--- a/crypto/testmgr.c
++++ b/crypto/testmgr.c
+@@ -1693,6 +1693,33 @@ static const struct alg_test_desc alg_test_descs[] = {
+ 			}
+ 		}
+ 	}, {
++		.alg = "skein1024",
++		.test = alg_test_hash,
++		.suite = {
++			.hash = {
++				.vecs = skein1024_tv_template,
++				.count = SKEIN1024_TEST_VECTORS
++			}
++		}
++	}, {
++		.alg = "skein256",
++		.test = alg_test_hash,
++		.suite = {
++			.hash = {
++				.vecs = skein256_tv_template,
++				.count = SKEIN256_TEST_VECTORS
++			}
++		}
++	}, {
++		.alg = "skein512",
++		.test = alg_test_hash,
++		.suite = {
++			.hash = {
++				.vecs = skein512_tv_template,
++				.count = SKEIN512_TEST_VECTORS
++			}
++		}
++	}, {
+ 		.alg = "tgr128",
+ 		.test = alg_test_hash,
+ 		.suite = {
+diff --git a/crypto/testmgr.h b/crypto/testmgr.h
+index dee94d9..ebed56f 100644
+--- a/crypto/testmgr.h
++++ b/crypto/testmgr.h
+@@ -27,7 +27,7 @@ struct hash_testvec {
+ 	char *plaintext;
+ 	char *digest;
+ 	unsigned char tap[MAX_TAP];
+-	unsigned char psize;
++	u16 psize;
+ 	unsigned char np;
+ 	unsigned char ksize;
+ };
+@@ -986,6 +986,170 @@ static struct hash_testvec tgr128_tv_template[] = {
  };
  
-@@ -66,6 +69,27 @@ struct rcu_head {
-        (ptr)->next = NULL; (ptr)->func = NULL; \
- } while (0)
- 
-+#ifdef CONFIG_RCU_BENCHMARK
-+extern void rcu_mark_start(struct rcu_head *head);
-+extern void rcu_mark_completed(struct rcu_head *head);
-+#endif
-+
-+static inline void rcu_inithead(struct rcu_head *head, void (*func)(struct rcu_head *head))
-+{
-+	head->func = func;
-+#ifdef CONFIG_RCU_BENCHMARK
-+	rcu_mark_start(head);
-+#endif
-+}
-+
-+static inline void rcu_callback(struct rcu_head *head)
-+{
-+#ifdef CONFIG_RCU_BENCHMARK
-+	rcu_mark_completed(head);
-+#endif
-+	head->func(head);
-+}
-+
- /**
-  * rcu_read_lock - mark the beginning of an RCU read-side critical section.
-  *
-diff --git a/init/Kconfig b/init/Kconfig
-index 2227bad..ceeec8c 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -924,6 +924,15 @@ source "block/Kconfig"
- config PREEMPT_NOTIFIERS
- 	bool
- 
-+config RCU_BENCHMARK
-+	bool
-+	default y
-+	depends on STOP_MACHINE
-+	help
-+	  This option adds per-rcu head statistics about the latency
-+	  of the rcu callbacks.
-+	  If unsure, say N.
-+
- config STATE_RCU
- 	bool
- 	default y
-diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
-index e14e6b2..6774fcf 100644
---- a/kernel/rcuclassic.c
-+++ b/kernel/rcuclassic.c
-@@ -261,7 +261,7 @@ void call_rcu(struct rcu_head *head,
- {
- 	unsigned long flags;
- 
--	head->func = func;
-+	rcu_inithead(head, func);
- 	local_irq_save(flags);
- 	__call_rcu(head, &rcu_ctrlblk, &__get_cpu_var(rcu_data));
- 	local_irq_restore(flags);
-@@ -289,7 +289,7 @@ void call_rcu_bh(struct rcu_head *head,
- {
- 	unsigned long flags;
- 
--	head->func = func;
-+	rcu_inithead(head, func);
- 	local_irq_save(flags);
- 	__call_rcu(head, &rcu_bh_ctrlblk, &__get_cpu_var(rcu_bh_data));
- 	local_irq_restore(flags);
-@@ -343,7 +343,7 @@ static void rcu_do_batch(struct rcu_data *rdp)
- 	while (list) {
- 		next = list->next;
- 		prefetch(next);
--		list->func(list);
-+		rcu_callback(list);
- 		list = next;
- 		if (++count >= rdp->blimit)
- 			break;
-diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-index ad63af8..1b4eca5 100644
---- a/kernel/rcupdate.c
-+++ b/kernel/rcupdate.c
-@@ -44,6 +44,9 @@
- #include <linux/cpu.h>
- #include <linux/mutex.h>
- #include <linux/module.h>
-+#include <linux/fs.h>
-+#include <linux/debugfs.h>
-+#include <linux/stop_machine.h>
- 
- enum rcu_barrier {
- 	RCU_BARRIER_STD,
-@@ -163,6 +166,136 @@ void rcu_barrier_sched(void)
- }
- EXPORT_SYMBOL_GPL(rcu_barrier_sched);
- 
-+#ifdef CONFIG_RCU_BENCHMARK
-+
-+DEFINE_PER_CPU(unsigned long long, rcu_time_entries);
-+DEFINE_PER_CPU(unsigned long long, rcu_time_val);
-+DEFINE_PER_CPU(unsigned long long, rcu_time_square);
-+
-+#define RCU_TIME_SCALING	1000
-+
-+void rcu_mark_start(struct rcu_head *head)
-+{
-+	struct timespec tv;
-+
-+	getnstimeofday(&tv);
-+
-+	head->time = tv.tv_sec;
-+	head->time *= NSEC_PER_SEC;
-+	head->time += tv.tv_nsec;
-+}
-+static DEFINE_RATELIMIT_STATE(rcumark_rs, DEFAULT_RATELIMIT_INTERVAL,
-+				DEFAULT_RATELIMIT_BURST);
-+void rcu_mark_completed(struct rcu_head *head)
-+{
-+	unsigned long flags;
-+	struct timespec tv;
-+	unsigned long long now;
-+
-+	getnstimeofday(&tv);
-+	now = tv.tv_sec;
-+	now *= NSEC_PER_SEC;
-+	now += tv.tv_nsec;
-+	now -= head->time;
-+	/* safety check, against uninitialized rcu heads */
-+	WARN_ON_RATELIMIT(now > 600*NSEC_PER_SEC, &rcumark_rs);
-+
-+	now /= RCU_TIME_SCALING;
-+	local_irq_save(flags);
-+	__get_cpu_var(rcu_time_entries)++;
-+	__get_cpu_var(rcu_time_val) += now;
-+	now = now*now;
-+	__get_cpu_var(rcu_time_square) += now;
-+	local_irq_restore(flags);
-+}
-+
-+#define RCUMARK_BUFSIZE (256*NR_CPUS)
-+
-+static char rcumark_buf[RCUMARK_BUFSIZE];
-+static DEFINE_MUTEX(rcumark_mutex);
-+
-+static ssize_t rcumark_read(struct file *filp, char __user *buffer,
-+				size_t count, loff_t *ppos)
-+{
-+	int i;
-+	ssize_t bcount;
-+	char *buf = rcumark_buf;
-+	char *ebuf = &rcumark_buf[RCUMARK_BUFSIZE];
-+	unsigned long long entries, val, square;
-+
-+	mutex_lock(&rcumark_mutex);
-+
-+	entries = val = square = 0;
-+	for_each_possible_cpu(i) {
-+		buf += snprintf(buf, ebuf - buf,
-+			"rcu: cpu %d completed=%Ld  val=%Ld square %Ld\n",
-+			i, per_cpu(rcu_time_entries, i),
-+			per_cpu(rcu_time_val, i), per_cpu(rcu_time_square, i));
-+		entries += per_cpu(rcu_time_entries, i);
-+		val += per_cpu(rcu_time_val, i);
-+		square += per_cpu(rcu_time_square, i);
-+	}
-+	buf += snprintf(buf, ebuf - buf, "total: completed=%Ld  val=%Ld square %Ld (scale %d)\n",
-+			entries, val, square, RCU_TIME_SCALING);
-+
-+	/* avg */
-+	val = val/entries;
-+	square = int_sqrt(square/entries - val*val);
-+	buf += snprintf(buf, ebuf - buf, "total: avg=%Ld stddev=%Ld steps/sec %ld\n",
-+			val, square, NSEC_PER_SEC/RCU_TIME_SCALING);
-+
-+	bcount = simple_read_from_buffer(buffer, count, ppos,
-+			rcumark_buf, strlen(rcumark_buf));
-+	mutex_unlock(&rcumark_mutex);
-+	return bcount;
-+}
-+
-+static int __rcumark_reset(void *unused)
-+{
-+	int i;
-+
-+	for_each_possible_cpu(i) {
-+		per_cpu(rcu_time_entries, i) = 0;
-+		per_cpu(rcu_time_val, i) = 0;
-+		per_cpu(rcu_time_square, i) = 0;
-+	}
-+	return 0;
-+}
-+
-+static ssize_t rcumark_write(struct file *filp, const char __user *buffer,
-+				size_t count, loff_t *ppos)
-+{
-+	mutex_lock(&rcumark_mutex);
-+	stop_machine(__rcumark_reset, NULL, NULL);
-+	mutex_unlock(&rcumark_mutex);
-+
-+	return count;
-+}
-+
-+static struct file_operations rcumark_fops = {
-+	.owner = THIS_MODULE,
-+	.read = rcumark_read,
-+	.write = rcumark_write
+ /*
++ * SKEIN uses test vectors
++ *  from http://www.schneier.com/code/skein_NIST_CD_101308.zip
++ *  NIST/CD/KAT_MCT/skein_golden_kat_short.txt
++ */
++#define SKEIN256_TEST_VECTORS 2
++static struct hash_testvec skein256_tv_template[] = {
++	{
++		/* :Skein-256:   256-bit hash, msgLen =     8 bits */
++		.plaintext = "\xff",
++		.psize  = 1,
++		.digest = "\xa4\x7b\xe7\x1a\x18\x5b\xa0\xaf\x82\x0b\x3c\xe8\x45\xa3\xd3\x5a"
++			"\x80\xec\x64\xf9\x6a\x0d\x6a\x36\xe3\xf5\x36\x36\x24\xd8\xa0\x91",
++	}, {
++		/* :Skein-256:   256-bit hash, msgLen =   512 bits */
++		.plaintext = "\xff\xfe\xfd\xfc\xfb\xfa\xf9\xf8\xf7\xf6\xf5\xf4\xf3\xf2\xf1\xf0"
++			"\xef\xee\xed\xec\xeb\xea\xe9\xe8\xe7\xe6\xe5\xe4\xe3\xe2\xe1\xe0"
++			"\xdf\xde\xdd\xdc\xdb\xda\xd9\xd8\xd7\xd6\xd5\xd4\xd3\xd2\xd1\xd0"
++			"\xcf\xce\xcd\xcc\xcb\xca\xc9\xc8\xc7\xc6\xc5\xc4\xc3\xc2\xc1\xc0",
++		.psize  = 64,
++		.digest = "\xfa\x1a\x76\x2b\x6b\x1c\x72\xb7\x0d\x52\x92\x63\x53\xe1\x0e\xb8"
++			"\xfb\x0e\xdd\x73\x13\xda\x20\xa2\x41\x31\x80\xb8\xe2\x89\xb8\x72",
++	}, {
++		/* :Skein-256:   256-bit hash, msgLen =  1016 bits. Tree: leaf=02, node=02, maxLevels=02 */
++		.plaintext = "\x00\x01\x02\x01\x04\x01\x06\x01\x08\x01\x0a\x01\x0c\x01\x0e\x01"
++			"\x10\x01\x12\x01\x14\x01\x16\x01\x18\x01\x1a\x01\x1c\x01\x1e\x01"
++			"\x20\x01\x22\x01\x24\x01\x26\x01\x28\x01\x2a\x01\x2c\x01\x2e\x01"
++			"\x30\x01\x32\x01\x34\x01\x36\x01\x38\x01\x3a\x01\x3c\x01\x3e\x01"
++			"\x40\x01\x42\x01\x44\x01\x46\x01\x48\x01\x4a\x01\x4c\x01\x4e\x01"
++			"\x50\x01\x52\x01\x54\x01\x56\x01\x58\x01\x5a\x01\x5c\x01\x5e\x01"
++			"\x60\x01\x62\x01\x64\x01\x66\x01\x68\x01\x6a\x01\x6c\x01\x6e\x01"
++			"\x70\x01\x72\x01\x74\x01\x76\x01\x78\x01\x7a\x01\x7c\x01\x7e",
++		.psize = 127,
++		.digest = "\xa9\x52\x58\x1e\x4e\x71\x2a\x71\xd4\x5c\x5e\xd6\x51\xa3\x91\x9b"
++			"\xdc\x89\x17\xe1\xdd\x82\x80\xbf\xcf\x94\x19\x31\xf5\xad\x72\xfb",
++	},
 +};
 +
-+static struct dentry *rcudir, *mdata;
++#define SKEIN512_TEST_VECTORS 2
++static struct hash_testvec skein512_tv_template[] = {
++	{
++		/* :Skein-512:   512-bit hash, msgLen =     8 bits */
++		.plaintext = "\xff",
++		.psize  = 1,
++		.digest = "\x9b\x76\x3e\xa7\x27\x8b\x79\xa0\xd3\x34\xc3\xc8\x38\x29\x0f\x1d"
++			"\x7f\x25\x80\x6f\xf8\xae\x9b\x29\x6e\x11\x98\x91\xdd\xb4\x47\x32"
++			"\x94\xce\xba\x7c\xcb\x85\x54\x2d\xf0\x0b\xab\x6a\x41\xf2\x4d\x06"
++			"\xef\x1e\x43\xac\x7f\x5e\xac\xc7\xa2\xe3\xfd\xf5\x38\x82\x3d\xb8",
++	}, {
++		/* :Skein-512:   512-bit hash, msgLen =   512 bits */
++		.plaintext = "\xff\xfe\xfd\xfc\xfb\xfa\xf9\xf8\xf7\xf6\xf5\xf4\xf3\xf2\xf1\xf0"
++			"\xef\xee\xed\xec\xeb\xea\xe9\xe8\xe7\xe6\xe5\xe4\xe3\xe2\xe1\xe0"
++			"\xdf\xde\xdd\xdc\xdb\xda\xd9\xd8\xd7\xd6\xd5\xd4\xd3\xd2\xd1\xd0"
++			"\xcf\xce\xcd\xcc\xcb\xca\xc9\xc8\xc7\xc6\xc5\xc4\xc3\xc2\xc1\xc0",
++		.psize  = 64,
++		.digest = "\xde\xea\x5b\x2d\xda\xf4\x00\x5b\x5a\xb7\xdd\xa6\x0f\xbc\x72\x8d"
++			"\xc4\x83\xd9\xcb\x95\x10\xa3\x04\x52\x3a\x11\x41\x29\x00\x92\x8a"
++			"\x16\xac\xec\x86\xc0\x27\xed\x15\x83\xfb\xd5\x00\x4c\xb2\x49\x9e"
++			"\x06\x26\x8e\x8a\x93\xb1\xf3\xa0\x74\x05\xb8\x44\x33\x41\x9a\x77",
++	}, {
++		/* :Skein-512:   512-bit hash, msgLen =  2040 bits. Tree: leaf=02, node=02, maxLevels=02 */
++		.plaintext = "\x00\x02\x02\x02\x04\x02\x06\x02\x08\x02\x0a\x02\x0c\x02\x0e\x02"
++			"\x10\x02\x12\x02\x14\x02\x16\x02\x18\x02\x1a\x02\x1c\x02\x1e\x02"
++			"\x20\x02\x22\x02\x24\x02\x26\x02\x28\x02\x2a\x02\x2c\x02\x2e\x02"
++			"\x30\x02\x32\x02\x34\x02\x36\x02\x38\x02\x3a\x02\x3c\x02\x3e\x02"
++			"\x40\x02\x42\x02\x44\x02\x46\x02\x48\x02\x4a\x02\x4c\x02\x4e\x02"
++			"\x50\x02\x52\x02\x54\x02\x56\x02\x58\x02\x5a\x02\x5c\x02\x5e\x02"
++			"\x60\x02\x62\x02\x64\x02\x66\x02\x68\x02\x6a\x02\x6c\x02\x6e\x02"
++			"\x70\x02\x72\x02\x74\x02\x76\x02\x78\x02\x7a\x02\x7c\x02\x7e\x02"
++			"\x80\x02\x82\x02\x84\x02\x86\x02\x88\x02\x8a\x02\x8c\x02\x8e\x02"
++			"\x90\x02\x92\x02\x94\x02\x96\x02\x98\x02\x9a\x02\x9c\x02\x9e\x02"
++			"\xa0\x02\xa2\x02\xa4\x02\xa6\x02\xa8\x02\xaa\x02\xac\x02\xae\x02"
++			"\xb0\x02\xb2\x02\xb4\x02\xb6\x02\xb8\x02\xba\x02\xbc\x02\xbe\x02"
++			"\xc0\x02\xc2\x02\xc4\x02\xc6\x02\xc8\x02\xca\x02\xcc\x02\xce\x02"
++			"\xd0\x02\xd2\x02\xd4\x02\xd6\x02\xd8\x02\xda\x02\xdc\x02\xde\x02"
++			"\xe0\x02\xe2\x02\xe4\x02\xe6\x02\xe8\x02\xea\x02\xec\x02\xee\x02"
++			"\xf0\x02\xf2\x02\xf4\x02\xf6\x02\xf8\x02\xfa\x02\xfc\x02\xfe",
++		.psize = 255,
++		.digest = "\xd2\xb3\xe3\xec\x81\x4b\xaf\x4b\xc4\x8c\x8a\x85\x9b\x98\xfd\x42"
++			"\x03\x4a\xca\x33\x96\x89\x5c\x0b\x2b\x97\x23\x10\x4a\x0a\xa9\x1d"
++			"\x8f\x6a\x34\x9f\x4d\x06\x4c\x5a\xd6\x8a\x45\x5c\x58\xe2\xb2\x4c"
++			"\xac\x7b\x29\x9e\x4f\x8d\xd9\xba\xbe\xc7\x3f\xce\xb5\x49\x39\x63",
++	},
++};
 +
-+static int __init rcu_mark_init(void)
-+{
-+	rcudir = debugfs_create_dir("rcumark", NULL);
-+	if (!rcudir)
-+		goto out;
-+	mdata = debugfs_create_file("markdata", 0444, rcudir,
-+						NULL, &rcumark_fops);
++#define SKEIN1024_TEST_VECTORS 2
++static struct hash_testvec skein1024_tv_template[] = {
++	{
++		/* :Skein-1024: 1024-bit hash, msgLen =     8 bits */
++		.plaintext = "\xff",
++		.psize  = 1,
++		.digest = "\x93\x9e\x97\x6d\x2c\x1d\x76\x89\xa9\x6a\x9c\x7b\x3d\x6c\x3f\x3b"
++			"\x4d\x1e\xd2\xaf\x33\x70\x4d\xb9\x9c\xdb\x3d\xe1\xb7\x7d\x28\x3c"
++			"\x86\x8b\x62\xa6\x0a\x48\xf1\x73\x98\x06\x14\x4b\xe3\x1f\x00\x5b"
++			"\xbd\xa1\xc4\x1d\x41\xb2\x5c\x63\xae\x9d\x71\x59\x2d\x17\xfa\xb4"
++			"\xe4\x46\xc8\x8f\x2c\x1b\x19\x45\xa0\x63\x39\x66\xb9\xf2\x55\xaf"
++			"\x06\x42\x6f\xba\xd0\xee\xe0\xe9\xca\xb1\xe4\xe1\x7b\x14\xde\xdb"
++			"\xb0\x2d\x40\x88\x7f\xb7\x44\x82\xcb\xef\x9f\x17\xb7\xa1\x9f\x4b"
++			"\x79\x53\xa4\xea\xed\x00\x04\xa5\x47\x4a\xbb\x62\x95\x4e\x92\xf2",
++	}, {
++		/* :Skein-1024: 1024-bit hash, msgLen =  1024 bits */
++		.plaintext = "\xff\xfe\xfd\xfc\xfb\xfa\xf9\xf8\xf7\xf6\xf5\xf4\xf3\xf2\xf1\xf0"
++			"\xef\xee\xed\xec\xeb\xea\xe9\xe8\xe7\xe6\xe5\xe4\xe3\xe2\xe1\xe0"
++			"\xdf\xde\xdd\xdc\xdb\xda\xd9\xd8\xd7\xd6\xd5\xd4\xd3\xd2\xd1\xd0"
++			"\xcf\xce\xcd\xcc\xcb\xca\xc9\xc8\xc7\xc6\xc5\xc4\xc3\xc2\xc1\xc0"
++			"\xbf\xbe\xbd\xbc\xbb\xba\xb9\xb8\xb7\xb6\xb5\xb4\xb3\xb2\xb1\xb0"
++			"\xaf\xae\xad\xac\xab\xaa\xa9\xa8\xa7\xa6\xa5\xa4\xa3\xa2\xa1\xa0"
++			"\x9f\x9e\x9d\x9c\x9b\x9a\x99\x98\x97\x96\x95\x94\x93\x92\x91\x90"
++			"\x8f\x8e\x8d\x8c\x8b\x8a\x89\x88\x87\x86\x85\x84\x83\x82\x81\x80",
++		.psize  = 128,
++		.digest = "\xf1\xb2\x75\x2a\x26\xc1\x7b\x0e\x4d\xe4\x1c\xec\xaa\x73\xf1\xb3"
++			"\x85\x40\xb8\xe1\x63\xc2\x09\x5b\x54\x7b\xe2\xec\xaa\x65\xd9\x46"
++			"\x6a\xee\xf2\x2b\x7d\x82\xe2\x14\xdd\x3a\x4e\x82\x9c\x33\xc5\xc3"
++			"\x1f\xa6\xd9\x18\x44\x5f\x0e\xa0\x1d\xd8\x72\xe6\x1e\x43\x36\x61"
++			"\x0e\x6d\xbd\xf2\xd1\xa1\xc7\x4b\x1f\x5a\x92\xa5\x36\x6a\x6b\xb9"
++			"\x6b\x5d\xca\x53\xa4\x45\x74\x70\xcb\xff\x66\x57\xb0\x0c\x97\x94"
++			"\x28\x2f\xf1\x7f\x91\x23\x2a\x3b\x98\x27\xf9\x78\x2d\xd3\x83\x43"
++			"\x64\x9b\x4e\xcd\xd8\x27\xe4\x24\xac\xa6\xd7\x39\x82\x14\x86\x2b",
++	}, {
++		/*  :Skein-1024: 1024-bit hash, msgLen =  4088 bits. Tree: leaf=02, node=02, maxLevels=02 */
++		.plaintext = "\x00\x04\x02\x04\x04\x04\x06\x04\x08\x04\x0a\x04\x0c\x04\x0e\x04"
++			"\x10\x04\x12\x04\x14\x04\x16\x04\x18\x04\x1a\x04\x1c\x04\x1e\x04"
++			"\x20\x04\x22\x04\x24\x04\x26\x04\x28\x04\x2a\x04\x2c\x04\x2e\x04"
++			"\x30\x04\x32\x04\x34\x04\x36\x04\x38\x04\x3a\x04\x3c\x04\x3e\x04"
++			"\x40\x04\x42\x04\x44\x04\x46\x04\x48\x04\x4a\x04\x4c\x04\x4e\x04"
++			"\x50\x04\x52\x04\x54\x04\x56\x04\x58\x04\x5a\x04\x5c\x04\x5e\x04"
++			"\x60\x04\x62\x04\x64\x04\x66\x04\x68\x04\x6a\x04\x6c\x04\x6e\x04"
++			"\x70\x04\x72\x04\x74\x04\x76\x04\x78\x04\x7a\x04\x7c\x04\x7e\x04"
++			"\x80\x04\x82\x04\x84\x04\x86\x04\x88\x04\x8a\x04\x8c\x04\x8e\x04"
++			"\x90\x04\x92\x04\x94\x04\x96\x04\x98\x04\x9a\x04\x9c\x04\x9e\x04"
++			"\xa0\x04\xa2\x04\xa4\x04\xa6\x04\xa8\x04\xaa\x04\xac\x04\xae\x04"
++			"\xb0\x04\xb2\x04\xb4\x04\xb6\x04\xb8\x04\xba\x04\xbc\x04\xbe\x04"
++			"\xc0\x04\xc2\x04\xc4\x04\xc6\x04\xc8\x04\xca\x04\xcc\x04\xce\x04"
++			"\xd0\x04\xd2\x04\xd4\x04\xd6\x04\xd8\x04\xda\x04\xdc\x04\xde\x04"
++			"\xe0\x04\xe2\x04\xe4\x04\xe6\x04\xe8\x04\xea\x04\xec\x04\xee\x04"
++			"\xf0\x04\xf2\x04\xf4\x04\xf6\x04\xf8\x04\xfa\x04\xfc\x04\xfe\x04"
++			"\x00\x05\x02\x05\x04\x05\x06\x05\x08\x05\x0a\x05\x0c\x05\x0e\x05"
++			"\x10\x05\x12\x05\x14\x05\x16\x05\x18\x05\x1a\x05\x1c\x05\x1e\x05"
++			"\x20\x05\x22\x05\x24\x05\x26\x05\x28\x05\x2a\x05\x2c\x05\x2e\x05"
++			"\x30\x05\x32\x05\x34\x05\x36\x05\x38\x05\x3a\x05\x3c\x05\x3e\x05"
++			"\x40\x05\x42\x05\x44\x05\x46\x05\x48\x05\x4a\x05\x4c\x05\x4e\x05"
++			"\x50\x05\x52\x05\x54\x05\x56\x05\x58\x05\x5a\x05\x5c\x05\x5e\x05"
++			"\x60\x05\x62\x05\x64\x05\x66\x05\x68\x05\x6a\x05\x6c\x05\x6e\x05"
++			"\x70\x05\x72\x05\x74\x05\x76\x05\x78\x05\x7a\x05\x7c\x05\x7e\x05"
++			"\x80\x05\x82\x05\x84\x05\x86\x05\x88\x05\x8a\x05\x8c\x05\x8e\x05"
++			"\x90\x05\x92\x05\x94\x05\x96\x05\x98\x05\x9a\x05\x9c\x05\x9e\x05"
++			"\xa0\x05\xa2\x05\xa4\x05\xa6\x05\xa8\x05\xaa\x05\xac\x05\xae\x05"
++			"\xb0\x05\xb2\x05\xb4\x05\xb6\x05\xb8\x05\xba\x05\xbc\x05\xbe\x05"
++			"\xc0\x05\xc2\x05\xc4\x05\xc6\x05\xc8\x05\xca\x05\xcc\x05\xce\x05"
++			"\xd0\x05\xd2\x05\xd4\x05\xd6\x05\xd8\x05\xda\x05\xdc\x05\xde\x05"
++			"\xe0\x05\xe2\x05\xe4\x05\xe6\x05\xe8\x05\xea\x05\xec\x05\xee\x05"
++			"\xf0\x05\xf2\x05\xf4\x05\xf6\x05\xf8\x05\xfa\x05\xfc\x05\xfe",
++		.psize = 511,
++		.digest = "\x8c\xa9\x29\xda\xa9\xcf\xfe\x02\x74\x47\x9b\x38\x11\xf6\x8a\x0f"
++			"\x72\x06\xce\x53\x96\x27\x23\xb9\x59\xd3\xd4\xb0\x73\x86\xea\x5f"
++			"\x53\xcf\x25\x02\x98\x92\x05\x68\x03\x01\x15\x38\xb9\x5b\x4a\xd3"
++			"\xae\x9b\x3a\x4f\xcc\x70\xf2\x71\xdd\x6a\x51\x83\xac\xdf\xce\x80"
++			"\x5b\x3c\x8c\x75\x41\xce\x2f\x8d\x60\x35\xf3\x1d\xd8\xae\x09\x0a"
++			"\x5c\xa9\xa2\x9a\xd0\x07\x55\x8a\xae\xe7\x1c\xf9\x5e\x44\xd0\x9e"
++			"\x21\x76\x99\xbe\xca\xa4\x5c\xb8\x6e\x1f\x44\x80\x0e\x73\x18\xbd"
++			"\xa2\x22\xbe\x43\x49\x78\x7a\x43\x81\x57\x22\x24\x6d\xb0\x2c\x04",
++	},
++};
 +
-+out:
-+	return 0;
-+}
-+
-+module_init(rcu_mark_init);
-+
-+#endif /* CONFIG_RCU_BENCHMARK */
-+
- void __init rcu_init(void)
- {
- 	__rcu_init();
-diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
-index 7a8849b..54326c0 100644
---- a/kernel/rcupreempt.c
-+++ b/kernel/rcupreempt.c
-@@ -1100,7 +1100,7 @@ static void rcu_process_callbacks(struct softirq_action *unused)
- 	spin_unlock_irqrestore(&rdp->lock, flags);
- 	while (list) {
- 		next = list->next;
--		list->func(list);
-+		rcu_callback(list);
- 		list = next;
- 		RCU_TRACE_ME(rcupreempt_trace_invoke);
- 	}
-@@ -1111,7 +1111,7 @@ void call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
- 	unsigned long flags;
- 	struct rcu_data *rdp;
- 
--	head->func = func;
-+	rcu_inithead(head, func);
- 	head->next = NULL;
- 	local_irq_save(flags);
- 	rdp = RCU_DATA_ME();
-@@ -1130,7 +1130,7 @@ void call_rcu_sched(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
- 	struct rcu_data *rdp;
- 	int wake_gp = 0;
- 
--	head->func = func;
-+	rcu_inithead(head, func);
- 	head->next = NULL;
- 	local_irq_save(flags);
- 	rdp = RCU_DATA_ME();
++/*
+  * HMAC-MD5 test vectors from RFC2202
+  * (These need to be fixed to not use strlen).
+  */
 -- 
 1.5.6.5
 
-
---------------010103020806080306010305--
