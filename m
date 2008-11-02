@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbYKBNqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753818AbYKBNz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753840AbYKBNqX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 08:46:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYKBNqK
+	id S1753818AbYKBNz6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 08:55:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbYKBNzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 08:46:10 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:60734 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753298AbYKBNqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 08:46:09 -0500
-Message-ID: <490DAF1D.20002@garzik.org>
-Date: Sun, 02 Nov 2008 08:46:05 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Sun, 2 Nov 2008 08:55:48 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:27206 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752637AbYKBNzr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Nov 2008 08:55:47 -0500
+Message-ID: <ac3eb2510811020555r417a3b10xbadc9d87b0c3ea0a@mail.gmail.com>
+Date: Sun, 2 Nov 2008 14:55:46 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Dominik Brodowski" <linux@dominikbrodowski.net>,
+       "Kay Sievers" <kay.sievers@vrfy.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>
+Subject: Re: pcmcia: struct device - replace bus_id with dev_name(), dev_set_name()
+In-Reply-To: <20081102121320.GA15349@comet.dominikbrodowski.net>
 MIME-Version: 1.0
-To: Will Newton <will.newton@gmail.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH] drivers/net/smc911x.c: Fix lockdep warning on xmit.
-References: <87a5b0800810280506h71fd6508i9474917b0ef0b191@mail.gmail.com>
-In-Reply-To: <87a5b0800810280506h71fd6508i9474917b0ef0b191@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+References: <1225536366.13224.2.camel@nga.site>
+	 <20081102121320.GA15349@comet.dominikbrodowski.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Will Newton wrote:
->>From 0e3ec7f78e115533e4aca9ac067acbc33eb0a21f Mon Sep 17 00:00:00 2001
-> From: Will Newton <will.newton@gmail.com>
-> Date: Tue, 28 Oct 2008 10:52:36 +0000
-> Subject: [PATCH] drivers/net/smc911x.c: Fix lockdep warning on xmit.
-> 
-> dev_kfree_skb should not be called with irqs disabled, use dev_kfree_skb_irq
-> instead. The warning caused looks like this:
-> 
-> ======================================================
-> [ INFO: hard-safe -> hard-unsafe lock order detected ]
-> 2.6.28-rc1 #273
-> ------------------------------------------------------
-> swapper/0 [HC0[0]:SC1[2]:HE0:SE0] is trying to acquire:
->  (clock-AF_INET){-..+}, at: [<4015c17c>] _sock_def_write_space+0x28/0xd8
-> 
-> and this task is already holding:
->  (&lp->lock){++..}, at: [<4013f230>] _smc911x_hard_start_xmit+0x30/0x4b8
-> which would create a new lock dependency:
->  (&lp->lock){++..} -> (clock-AF_INET){-..+}
-> 
-> Signed-off-by: Will Newton <will.newton@gmail.com>
-> ---
->  drivers/net/smc911x.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/net/smc911x.c b/drivers/net/smc911x.c
-> index f59c777..5051554 100644
-> --- a/drivers/net/smc911x.c
-> +++ b/drivers/net/smc911x.c
-> @@ -499,7 +499,7 @@ static void smc911x_hardware_send_pkt(struct
-> net_device *dev)
->  #else
->  	SMC_PUSH_DATA(lp, buf, len);
->  	dev->trans_start = jiffies;
-> -	dev_kfree_skb(skb);
-> +	dev_kfree_skb_irq(skb);
->  #endif
->  	if (!lp->tx_throttle) {
->  		netif_wake_queue(dev);
+On Sun, Nov 2, 2008 at 13:13, Dominik Brodowski
+<linux@dominikbrodowski.net> wrote:
+> On Sat, Nov 01, 2008 at 11:46:06AM +0100, Kay Sievers wrote:
+>> From: Kay Sievers <kay.sievers@vrfy.org>
+>> Subject: pcmcia: struct device - replace bus_id with dev_name(), dev_set_name()
+>>
+>> Cc: Dominik Brodowski <linux@dominikbrodowski.net>
+>> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+>> Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
+>
+> is this to go in via -pcmcia or via -driver-core?
 
-applied manually, your patch was corrupted
+Would be great if this goes through -pcmcia, and show up in -next
+soon, so we can continue to address the rest of the tree in -next,
+after the patches are merged from the subsystem trees.
 
+>> diff --git a/drivers/pcmcia/cs.c b/drivers/pcmcia/cs.c
+>> index c68c5d3..5d0e60e 100644
+>> --- a/drivers/pcmcia/cs.c
+>> +++ b/drivers/pcmcia/cs.c
+>> @@ -226,7 +226,7 @@ int pcmcia_register_socket(struct pcmcia_socket *socket)
+>>       /* set proper values in socket->dev */
+>>       dev_set_drvdata(&socket->dev, socket);
+>>       socket->dev.class = &pcmcia_socket_class;
+>> -     snprintf(socket->dev.bus_id, BUS_ID_SIZE, "pcmcia_socket%u", socket->sock);
+>> +     dev_set_name(&socket->dev, "pcmcia_socket%u", socket->sock);
+>
+> In other places, you check for !dev_name() afterwards -- why not here?
 
+The name is used in the line just below setting it, which is why we
+need to check that it is not NULL. The other case, like in almost all
+other cases, the unlikely event of failing to set the name is handled
+by a failing call to device_register().
+
+Thanks,
+Kay
