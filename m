@@ -1,34 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbYKCJLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbYKCJQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755338AbYKCJLV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 04:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbYKCJLK
+	id S1755259AbYKCJQT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 04:16:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754860AbYKCJQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 04:11:10 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41068 "EHLO mx2.mail.elte.hu"
+	Mon, 3 Nov 2008 04:16:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58836 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754786AbYKCJLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 04:11:09 -0500
-Date: Mon, 3 Nov 2008 10:11:01 +0100
+	id S1754830AbYKCJQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 04:16:08 -0500
+Date: Mon, 3 Nov 2008 10:15:55 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Re: alpha: undefined reference to `save_stack_trace'
-Message-ID: <20081103091101.GK11730@elte.hu>
-References: <20081031165751.GA13558@x200.localdomain> <20081031182411.GR28946@ZenIV.linux.org.uk> <20081031184822.GS28946@ZenIV.linux.org.uk> <20081031185526.GT28946@ZenIV.linux.org.uk> <20081031190608.GU28946@ZenIV.linux.org.uk> <20081031195040.GV28946@ZenIV.linux.org.uk> <alpine.DEB.1.10.0810311604040.28774@gandalf.stny.rr.com> <20081031201315.GW28946@ZenIV.linux.org.uk>
+To: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
+Cc: linux-kernel@vger.kernel.org, glommer@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 1/6] x86: rename __FIXADDR_SIZE and __FIXADDR_BOOT_SIZE
+Message-ID: <20081103091555.GL11730@elte.hu>
+References: <1225592633-9948-1-git-send-email-gustavo@las.ic.unicamp.br> <1225592633-9948-2-git-send-email-gustavo@las.ic.unicamp.br>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081031201315.GW28946@ZenIV.linux.org.uk>
+In-Reply-To: <1225592633-9948-2-git-send-email-gustavo@las.ic.unicamp.br>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
+X-ELTE-SpamScore: -1.1
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0719]
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0119]
 	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
 	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,17 +37,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Al Viro <viro@ZenIV.linux.org.uk> wrote:
+* Gustavo F. Padovan <gustavo@las.ic.unicamp.br> wrote:
 
-> On Fri, Oct 31, 2008 at 04:05:01PM -0400, Steven Rostedt wrote:
-> > 
-> > Ingo,
-> > 
-> > I guess this is needed to make alph (and perhasp others compile).
+> Rename __FIXADDR_SIZE to FIXADDR_SIZE
+> and __FIXADDR_BOOT_SIZE to FIXADDR_BOOT_SIZE.
 > 
-> ... and shitloads more than alpha.  Itanic, parisc, all embedded ones,
-> m68k, uml, sparc32...
+> Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
+> Acked-by: Glauber Costa <gcosta@redhat.com>
 
-queued it up in tip/tracing/urgent, thanks guys.
+ok, the patches look nice. Could you please rework them against 
+tip/master? We already have a commit in 
+arch/x86/include/asm/fixmap_32.h (the DRM speedup patches) which cause 
+rejects.
 
 	Ingo
