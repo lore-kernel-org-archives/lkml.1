@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752055AbYKCRVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752985AbYKCRV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752055AbYKCRVb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 12:21:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbYKCRVX
+	id S1752985AbYKCRV6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 12:21:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbYKCRVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 12:21:23 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60844 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750934AbYKCRVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 12:21:22 -0500
-Date: Mon, 3 Nov 2008 15:21:12 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][v3] blktrace: conversion to tracepoints
-Message-ID: <20081103172112.GB32603@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20081029120556.GD28123@ghostprotocols.net> <20081029131855.GC31673@kernel.dk> <20081029194323.GA25056@ghostprotocols.net> <20081030073134.GM31673@kernel.dk> <20081030110352.GB25056@ghostprotocols.net> <20081030111144.GQ31673@kernel.dk>
+	Mon, 3 Nov 2008 12:21:48 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:8017 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750759AbYKCRVr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 12:21:47 -0500
+Date: Mon, 3 Nov 2008 20:21:46 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Jonathan Cameron <Jonathan.Cameron@gmail.com>
+Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
+       cbou@mail.ru, Andrew Morton <akpm@linux-foundation.org>,
+       Marek Vasut <marek.vasut@gmail.com>
+Subject: Re: [PATCH] power_supply: change the way how wm97xx-bat driver is
+	registered
+Message-ID: <20081103172146.GA8913@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1225271050-21171-1-git-send-email-dbaryshkov@gmail.com> <1225271050-21171-2-git-send-email-dbaryshkov@gmail.com> <20081103151151.GB23466@oksana.dev.rtsoft.ru> <490F2CE1.8070707@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1251
 Content-Disposition: inline
-In-Reply-To: <20081030111144.GQ31673@kernel.dk>
-X-Url: http://oops.ghostprotocols.net:81/blog
+In-Reply-To: <490F2CE1.8070707@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, Oct 30, 2008 at 12:11:45PM +0100, Jens Axboe escreveu:
-> On Thu, Oct 30 2008, Arnaldo Carvalho de Melo wrote:
-> > Yes, I tested it, run 'btrace /dev/sda' several times, while doing a
-> > 45 GB backup using rsync over NFS, etc. So it should have exercised the
-> > tracepoints use and repeated registrater/unregister cycles.
-> 
-> Awesome, just wanted to know what level of testing you had done (from
-> "none" to "doesn't crash" to "actually works"), so thanks for that.
+On Mon, Nov 03, 2008 at 04:54:57PM +0000, Jonathan Cameron wrote:
+[...]
+> It is needlessly complex for this sort of thing, but that's not it's
+> purpose.  (though that's not to say it won't be able to do this sort
+> of thing).  It's gotten a smigeon delayed due to a change of my own
+> requirements for what it does.  As a reminder, the purpose of that
+> subsystem was at least partly to provide reasonably high performance
+> data capture facilities (ring buffers, triggered sampling etc alongside
+> suitably powerful userspace interfaces.)  Possibly my apps are somewhat
+> unusual, but the complexity is absolutely necessary for what I'm doing
+> (annoyingly!)
 
-Jens,
+Yeah, I understand that. But when you need simple driver for very
+simple ADC device, the subsystem is a bit scary. Maybe we could just
+implement "simple API" on top of it, that would hide the complexity.
 
-	Now I'm working on the marker glue code for systemtap to use
-these tracepoints and I noticed that one important piece of information
-is not available unless one first uses blk_trace_ioctl to fill in
-request_queue->blk_trace, that is request_queue->blk_trace->dev, i.e.
-the device associated with the request_queue.
+Something like
 
-	Is there a way to, from the request_queue, get the dev? I guess
-not, as if there would be you wouldn't have added it to struct
-blk_trace...
+value = adc_sample_pin(adc_device, "voltage");
 
-	Would it be sane to add get struct block_device->bd_dev dev_t
-info into struct request_queue at sd_probe time or most probably at some
-more suitable routine in the device/disk registration sequence of
-events?
+And
 
-	I am certainly missing lots of connections here, there are many
-objects and relationships among these objects that may make the
-association of a block_device with a request_queue not to be fixed all
-the time, thus requiring the struct blk_trace ->dev field to be set up
-at ioctl time, but I'm just trying to figure out how to remove the
-requirement of a setup routine for the tracepoints to know what is the
-dev_t associated with the request_queue they are getting as a parameter.
+struct adc_pin pins[2];
+pins[0].name = "x-axis";
+pins[0].num_samples = 5;
+pins[1].name = "y-axis";
+pins[2].num_samples = 5;
 
-Best Regards,
+adc_sample_pins(adc_device, pins);
+for (i = 0; i < ARRAY_SIZE(pins); i++) {
+	for (j = 0; j < pins[i].num_samples; i++)
+		process(pins[i].values[j].value);
+}
 
-- Arnaldo
+That would work for most in-kernel ADC users (batteries, touchscreens).
+
+> Anyhow, definitely not given up on it.
+
+Great, looking forward to your patches.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
