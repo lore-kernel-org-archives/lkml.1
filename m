@@ -1,122 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbYKCXAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902AbYKCXBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756772AbYKCXAr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 18:00:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbYKCXAi
+	id S1756902AbYKCXBU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 18:01:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbYKCXBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 18:00:38 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43383 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753723AbYKCXAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 18:00:38 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH] hibernation should work ok with memory hotplug
-Date: Tue, 4 Nov 2008 00:05:11 +0100
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz,
-       linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org,
-       Matt Tolentino <matthew.e.tolentino@intel.com>,
-       Dave Hansen <haveblue@us.ibm.com>, linux-mm@kvack.org,
-       Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz> <200811032324.02163.rjw@sisk.pl> <1225751665.12673.511.camel@nimitz>
-In-Reply-To: <1225751665.12673.511.camel@nimitz>
+	Mon, 3 Nov 2008 18:01:06 -0500
+Received: from smtp1.riverbed.com ([206.169.144.12]:25088 "EHLO
+	smtp1.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753869AbYKCXBF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 18:01:05 -0500
+Date: Mon, 3 Nov 2008 15:01:04 -0800
+From: Arthur Jones <ajones@riverbed.com>
+To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       sandeen@redhat.com, linux-ext4@vger.kernel.org, sct@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
+Message-ID: <20081103230104.GC3371@ajones-laptop.nbttech.com>
+References: <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com> <20081103123750.67c96224.akpm@linux-foundation.org> <20081103205854.GC30565@ajones-laptop.nbttech.com> <20081103131313.e9ae2f93.akpm@linux-foundation.org> <20081103211929.GA18117@mit.edu> <20081103132735.9e63a3d0.akpm@linux-foundation.org> <20081103220144.GD18117@mit.edu> <20081103142706.92e3a2ae.akpm@linux-foundation.org> <20081103225544.GH18117@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-Message-Id: <200811040005.12418.rjw@sisk.pl>
+In-Reply-To: <20081103225544.GH18117@mit.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 3 of November 2008, Dave Hansen wrote:
-> On Mon, 2008-11-03 at 23:24 +0100, Rafael J. Wysocki wrote:
-> > On Monday, 3 of November 2008, Dave Hansen wrote:
-> > > On Mon, 2008-11-03 at 12:51 -0800, Andrew Morton wrote:
-> > > > On Wed, 29 Oct 2008 13:25:00 +0100
-> > > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > > > On Wednesday, 29 of October 2008, Pavel Machek wrote:
-> > > > > > 
-> > > > > > hibernation + memory hotplug was disabled in kconfig because we could
-> > > > > > not handle hibernation + sparse mem at some point. It seems to work
-> > > > > > now, so I guess we can enable it.
-> > > > > 
-> > > > > OK, if "it seems to work now" means that it has been tested and confirmed to
-> > > > > work, no objection from me.
-> > > > 
-> > > > yes, that was not a terribly confidence-inspiring commit message.
-> > > > 
-> > > > 3947be1969a9ce455ec30f60ef51efb10e4323d1 said "For now, disable memory
-> > > > hotplug when swsusp is enabled.  There's a lot of churn there right
-> > > > now.  We'll fix it up properly once it calms down." which is also
-> > > > rather rubbery.  
-> > > > 
-> > > > Cough up, guys: what was the issue with memory hotplug and swsusp, and
-> > > > is it indeed now fixed?
-> > > 
-> > > I suck.  That commit message was horrid and I'm racking my brain now to
-> > > remember what I meant.  Don't end up like me, kids.
-> > > 
-> > > I've attached the message that I sent to the swsusp folks.  I never got
-> > > a reply from that as far as I can tell.
-> > > 
-> > > http://sourceforge.net/mailarchive/forum.php?thread_name=1118682535.22631.22.camel%40localhost&forum_name=lhms-devel
-> > > 
-> > > As I look at it now, it hasn't improved much since 2005.  Take a look at
-> > > kernel/power/snapshot.c::copy_data_pages().  It still assumes that the
-> > > list of zones that a system has is static.  Memory hotplug needs to be
-> > > excluded while that operation is going on.
-> > 
-> > This operation is carried out on one CPU with interrupts disabled.  Is that
-> > not enough?
-> 
-> If that's true then you don't need any locking for anything at all,
-> right?
+Hi Ted, ...
 
-Yes.
-
-> All of the changes I was talking about occur inside the kernel and code
-> has to run for it to happen.  So, if you are saying that absolutely no
-> other code on the system can possibly run, then it should be OK.
+On Mon, Nov 03, 2008 at 02:55:44PM -0800, Theodore Tso wrote:
+> @@ -2922,15 +2919,15 @@ static void ext4_write_super(struct super_block *sb)
 > 
-> > > page_is_saveable() checks for pfn_valid().  But, with memory hotplug,
-> > > things can become invalid at any time since no references are held or
-> > > taken on the page.  Or, a page that *was* invalid may become valid and
-> > > get missed.
-> > 
-> > Can that really happen given the conditions above?
+>  static int ext4_sync_fs(struct super_block *sb, int wait)
+>  {
+> -       tid_t target;
+> +       int ret;
 > 
-> Nope.
+>         trace_mark(ext4_sync_fs, "dev %s wait %d", sb->s_id, wait);
+>         sb->s_dirt = 0;
+> -       if (jbd2_journal_start_commit(EXT4_SB(sb)->s_journal, &target)) {
+> -               if (wait)
+> -                       jbd2_log_wait_commit(EXT4_SB(sb)->s_journal, target);
+> -       }
+> -       return 0;
+> +       if (wait)
+> +               ret = ext4_force_commit(sb);
+> +       else
+> +               ret = jbd2_journal_start_commit(EXT4_SB(sb)->s_journal, NULL);
+> +       return ret;
+>  }
 > 
-> But, as I think about it, there is another issue that we need to
-> address, CONFIG_NODES_SPAN_OTHER_NODES.
-> 
-> A node might have a node_start_pfn=0 and a node_end_pfn=100 (and it may
-> have only one zone).  But, there may be another node with
-> node_start_pfn=10 and a node_end_pfn=20.  This loop:
-> 
->         for_each_zone(zone) {
-> 		...
->                 for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
->                         if (page_is_saveable(zone, pfn))
->                                 memory_bm_set_bit(orig_bm, pfn);
->         }
-> 
-> will walk over the smaller node's pfn range multiple times.  Is this OK?
+>  /*
 
-Hm, well, I'm not really sure at the moment.
+Same problem as the last one, jbd2_journal_start_commit returns
+true if it started a commit, not an error...
 
-Does it mean that, in your example, the pfns 10 to 20 from the first node
-refer to the same page frames that are referred to by the pfns from the
-second node?
-
-> I think all you have to do to fix it is check page_zone(page) == zone
-> and skip out if they don't match.
-
-Well, probably.  I need to know exactly what's the relationship between pfns,
-pages and physical page frames in that case.
-
-Thanks,
-Rafael
+Arthur
