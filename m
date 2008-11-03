@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbYKCTqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbYKCTrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754840AbYKCTqv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 14:46:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbYKCTqk
+	id S1755404AbYKCTrY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 14:47:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbYKCTrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 14:46:40 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:53192 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751016AbYKCTqj (ORCPT
+	Mon, 3 Nov 2008 14:47:15 -0500
+Received: from hs-out-0708.google.com ([64.233.178.248]:21743 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753986AbYKCTrO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 14:46:39 -0500
-Date: Mon, 3 Nov 2008 14:46:38 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Luciano Rocha <luciano@eurotux.com>
-cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-Subject: Re: usb hdd problems with 2.6.27.2
-In-Reply-To: <20081103155254.GA3368@bit.office.eurotux.com>
-Message-ID: <Pine.LNX.4.44L0.0811031444130.2194-100000@iolanthe.rowland.org>
+	Mon, 3 Nov 2008 14:47:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=iJAHkvi7K9B8EI2frFHMBbhbLQe/m7P9KJX/PCdqyekXWwW3Qju3uLYv2t5YqsT8Df
+         Kz9t8+svhJmAXlgKaGtLdV27U4WB+OGnHBGMuxqfIC+iRKwDusevHbUGxo89e+fERLFm
+         WbYvEkaLXNaf1JlG3PnCePSyGr2oihVfrRXv0=
+Message-ID: <524f69650811031147g6c133ed8wc8031a8586d66eaa@mail.gmail.com>
+Date: Mon, 3 Nov 2008 13:47:10 -0600
+From: "Steve French" <smfrench@gmail.com>
+To: "Jeff Layton" <jlayton@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Do iov_len and iov_base have to be reset after EAGAIN on kernel_recvmsg?
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Nov 2008, Luciano Rocha wrote:
+In cifs_demultiplex_thread Shirish suggested changing the following to
+handle the case in which EAGAIN is returned from kernel_recvmsg and
+has corrupted the value of iov_len and iov_base
 
-> On Tue, Oct 28, 2008 at 01:38:11PM -0400, Alan Stern wrote:
-> > > Do you wish me to test anything else?
-> > 
-> > Yes.  Please post a usbmon trace for each of the last two tests.  That 
-> > is, with the unusual_devs update only, and with the unusual_devs update 
-> > plus the invoke_transport update and the scsi_requeue_command update.
-> 
-> I've updated the bugzilla entry with traces for some combinations of the
-> discussed patches:
-> http://bugzilla.kernel.org/show_bug.cgi?id=11843
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -417,10 +417,16 @@ incomplete_rcv:
+ 			msleep(1); /* minimum sleep to prevent looping
+ 				allowing socket to clear and app threads to set
+ 				tcpStatus CifsNeedReconnect if server hung */
+-			if (pdu_length < 4)
++			if (pdu_length < 4) {
++				iov.iov_base = (4 - pdu_length) +
++							(char *)smb_buffer;
++				iov.iov_len = pdu_length;
++				smb_msg.msg_control = NULL;
++				smb_msg.msg_controllen = 0;
+ 				goto incomplete_rcv;
 
-Okay, thanks.  I see the problem.  This whole area is a mess, and it's 
-going to be different in 2.6.28.  But for now...
+based on Sridhar's comment:
 
-Please rerun the A+B and A+B+C tests, but this time using the B' patch
-below instead of B.
+"i think you are running into a case where kernel_recvmsg() is called
+via 'goto incomplete_rcv'
+It happens if the previous call fails with EAGAIN.  If you want to
+call recvmsg() after EAGAIN failure, you need to reset iov."
 
-Alan Stern
+It sounds strange to reset iov_len and iov_base on EAGAIN or ENOSPACE
+from the socket, but seems harmless ... but what about resetting
+msg_control and msg_controllen ... is that ever necessary?  Is that
+safe?
 
+-- 
+Thanks,
 
-
-Index: 2.6.27.4/drivers/scsi/scsi_lib.c
-===================================================================
---- 2.6.27.4.orig/drivers/scsi/scsi_lib.c
-+++ 2.6.27.4/drivers/scsi/scsi_lib.c
-@@ -611,6 +611,11 @@ static void scsi_requeue_command(struct 
- 	struct request *req = cmd->request;
- 	unsigned long flags;
- 
-+	if (--req->retries <= 0) {
-+		blk_end_request(req, -EIO, blk_rq_bytes(req));
-+		scsi_next_command(cmd);
-+		return;
-+	}
- 	scsi_unprep_request(req);
- 	spin_lock_irqsave(q->queue_lock, flags);
- 	blk_requeue_request(q, req);
-@@ -690,6 +695,8 @@ static struct scsi_cmnd *scsi_end_reques
- 				 * leftovers in the front of the
- 				 * queue, and goose the queue again.
- 				 */
-+				if (bytes > 0)		/* Made progress */
-+					++req->retries;
- 				scsi_requeue_command(q, cmd);
- 				cmd = NULL;
- 			}
-
+Steve
