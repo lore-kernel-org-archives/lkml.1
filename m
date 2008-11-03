@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbYKCWd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756679AbYKCWfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756751AbYKCWd6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 17:33:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbYKCWdf
+	id S1756679AbYKCWfm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 17:35:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbYKCWfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 17:33:35 -0500
-Received: from outbound-mail-133.bluehost.com ([67.222.39.23]:34156 "HELO
-	outbound-mail-133.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752993AbYKCWde (ORCPT
+	Mon, 3 Nov 2008 17:35:30 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57831 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753558AbYKCWf3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 17:33:34 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=X1AbNTK2fBRKxbl6nwLrPhvzVws+Rx287uUlpYJ7H3H8QFGUYOrF0TwmABGPxrgDxc77ZXND9aBUEAOtgr+2CrySw1lAoRinVF4ZHfGm04i5611VCGsJf590zNj2a5Rk;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH] pci: annotate return value of pci_ioremap_bar with __iomem
-Date: Mon, 3 Nov 2008 14:33:31 -0800
-User-Agent: KMail/1.10.1 (Linux/2.6.26.5-45.fc9.x86_64; KDE/4.1.2; x86_64; ; )
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1225661563.5496.65.camel@brick>
-In-Reply-To: <1225661563.5496.65.camel@brick>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Mon, 3 Nov 2008 17:35:29 -0500
+Date: Mon, 3 Nov 2008 14:35:26 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: roel kluin <roel.kluin@gmail.com>
+Cc: len.brown@intel.com, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH] intel_menlo: max_state is unsigned, invalid test
+Message-Id: <20081103143526.375be238.akpm@linux-foundation.org>
+In-Reply-To: <4908D067.9080207@gmail.com>
+References: <4908D067.9080207@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811031433.31746.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, November 2, 2008 1:32 pm Harvey Harrison wrote:
-> Acked-by: Arjan van de Ven <arjan@linux.intel.com>
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+On Wed, 29 Oct 2008 17:06:47 -0400
+roel kluin <roel.kluin@gmail.com> wrote:
+
+> max_state is unsigned, so the test is invalid.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 > ---
->  include/linux/pci.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 9194adf..03b0b8c 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -1142,7 +1142,7 @@ static inline void pci_mmcfg_late_init(void) { }
->  #endif
->
->  #ifdef CONFIG_HAS_IOMEM
-> -static inline void * pci_ioremap_bar(struct pci_dev *pdev, int bar)
-> +static inline void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar)
->  {
->  	/*
->  	 * Make sure the BAR is actually a memory resource, not an IO resource
+> I think max_state can only become -1, no? then probably a different
+> patch is required.
+> I may not be able to respond for a few weeks.
+> 
+> diff --git a/drivers/misc/intel_menlow.c b/drivers/misc/intel_menlow.c
+> index e00a275..980171d 100644
+> --- a/drivers/misc/intel_menlow.c
+> +++ b/drivers/misc/intel_menlow.c
+> @@ -121,7 +121,7 @@ static int memory_set_cur_bandwidth(struct thermal_cooling_device *cdev,
+>  	if (memory_get_int_max_bandwidth(cdev, &max_state))
+>  		return -EFAULT;
+>  
+> -	if (max_state < 0 || state > max_state)
+> +	if (max_state == -1 || state > max_state)
+>  		return -EINVAL;
+>  
+>  	arg_list.count = 1;
+> 
 
-Applied to my for-linus branch.
+hm, maybe.
 
-Thanks,
-Jesse
+This can only happen if acpi_evaluate_integer(MEMORY_GET_BANDWIDTH)
+returned no-error and a bandwidth of zero (I assume).
 
+Is this a special case which the driver really wanted to handle?  If
+so, why is "0" the only bad value which we're checking for?  Or is this
+all some big brainfart which should be removed?
