@@ -1,89 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbYKCSO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbYKCST2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754156AbYKCSO6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 13:14:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbYKCSOs
+	id S1753472AbYKCST2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 13:19:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbYKCSTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 13:14:48 -0500
-Received: from an-out-0708.google.com ([209.85.132.249]:38667 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751324AbYKCSOr (ORCPT
+	Mon, 3 Nov 2008 13:19:21 -0500
+Received: from www17.your-server.de ([213.133.104.17]:46295 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751665AbYKCSTU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 13:14:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=F0QO0E9//TfFU2H71Ls3ahQMd2F4PJch/zS4835G9u0knz7P0KqGo67yH/0FmCYCyB
-         V3vDf/X9BKWGpwwVVETvZ+0sGx5i+0vZl9KM5LgUkGAD0KThgUqZWKql4bTT9878Ncig
-         27f5wnrDHD4ztm4POoDxUjw+/O1NirNNQ6ZCs=
-Message-ID: <bc64b4640811031014x7ceec076r44260fef2a4a9b6f@mail.gmail.com>
-Date: Mon, 3 Nov 2008 21:14:46 +0300
-From: Dmitry <dbaryshkov@gmail.com>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] power_supply: only register tosa_battery driver on tosa
-Cc: linux-kernel@vger.kernel.org, cbou@mail.ru,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Mark Brown" <broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <20081103173237.GA13733@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 3 Nov 2008 13:19:20 -0500
+Subject: BUG: sleeping function called from invalid context at
+	kernel/sched.c:5558
+From: Thomas Meyer <thomas@m3y3r.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 03 Nov 2008 19:19:21 +0100
+Message-Id: <1225736361.5126.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1225271050-21171-1-git-send-email-dbaryshkov@gmail.com>
-	 <bc64b4640811021236t3458bf69vd1becc4ab1133be1@mail.gmail.com>
-	 <20081103145514.GA23466@oksana.dev.rtsoft.ru>
-	 <bc64b4640811030820j660b8386x39bf2285b1dba887@mail.gmail.com>
-	 <20081103162547.GA25546@oksana.dev.rtsoft.ru>
-	 <bc64b4640811030841h5bcc537fy4b645c6d293b7b46@mail.gmail.com>
-	 <20081103165820.GA8004@oksana.dev.rtsoft.ru>
-	 <bc64b4640811030909s5bbb05dao9f83523aac9dd8ef@mail.gmail.com>
-	 <20081103173237.GA13733@oksana.dev.rtsoft.ru>
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/3 Anton Vorontsov <avorontsov@ru.mvista.com>:
-> On Mon, Nov 03, 2008 at 08:09:14PM +0300, Dmitry wrote:
-> [...]
->> >> Yup.
->> >> I see few ways to resolve this:
->> >> * write better wm97xx interface. Dunno if that is feasible or possible.
->> >>   One of the possible solutions is to pass battery and ts device names
->> >>   and data from within board data via ac97 layer to wm97xx-core. This
->> >>   will provide several benefits (e.g. then we can drop lots of parameters
->> >>   from wm97xx-core, which are really board parameters).
->> >
->> > That would be great indeed. But for now, just don't compile the two
->> > drivers on the tosa platform. No need for machine_is_*() hacks...
->>
->> That is a bit strange requirement. During several past months there was
->> a lot of efforts put into supporting multi-machine PXA kernel images.
->
-> Yes, I know this.
->
-> But you're implementing hacks instead of fixing the problem.
->
-> Btw, you inserted the machine_is() into the tosa driver, but
-> wm97xx driver registers unconditionally. That could be a problem
-> when wm97xx loads first, and then you try to load the tosa_battery
-> module on tosa machine.
->
-> Let's insert machine_is() hack into the wm97xx driver as well?
+False positive, while suspend/resume-to/from-disk?
 
-That's why I suggested moving driver registration into _set_pdata()
-function in that driver.
-
->
-> --
-> Anton Vorontsov
-> email: cbouatmailru@gmail.com
-> irc://irc.freenode.net/bd2
->
-
+[19332.352863] BUG: sleeping function called from invalid context at kernel/sched.c:5558
+[19332.352866] in_atomic(): 0, irqs_disabled(): 1, pid: 3287, name: pm-hibernate
+[19332.352869] Pid: 3287, comm: pm-hibernate Tainted: G        W  2.6.28-rc2 #97
+[19332.352871] Call Trace:
+[19332.352878]  [<c0436408>] __might_sleep+0xdc/0xe3
+[19332.352882]  [<c043bbde>] __cond_resched+0x12/0x36
+[19332.352886]  [<c09d29a8>] _cond_resched+0x27/0x32
+[19332.352889]  [<c0697d9c>] acpi_ps_complete_op+0x1e0/0x1ef
+[19332.352892]  [<c069884e>] ? acpi_ps_alloc_op+0x82/0x84
+[19332.352896]  [<c0689814>] ? acpi_ds_exec_end_op+0x30c/0x370
+[19332.352899]  [<c069839f>] acpi_ps_parse_loop+0x5f4/0x721
+[19332.352902]  [<c069779c>] acpi_ps_parse_aml+0x6d/0x267
+[19332.352905]  [<c06989e1>] acpi_ps_execute_method+0x11c/0x1d7
+[19332.352909]  [<c069563c>] acpi_ns_evaluate+0x11c/0x1e4
+[19332.352913]  [<c069d223>] ? acpi_ut_create_internal_object_dbg+0x15/0x6d
+[19332.352916]  [<c0699c0b>] acpi_rs_set_srs_method_data+0xb7/0xd2
+[19332.352919]  [<c0699768>] acpi_set_current_resources+0x2e/0x39
+[19332.352923]  [<c06a5cfb>] acpi_pci_link_set+0xff/0x1a4
+[19332.352926]  [<c06a5de9>] irqrouter_resume+0x49/0x60
+[19332.352930]  [<c06fb1ac>] __sysdev_resume+0x14/0x38
+[19332.352933]  [<c06fb1f1>] sysdev_resume+0x21/0x54
+[19332.352936]  [<c06ff712>] device_power_up+0xb/0x15
+[19332.352940]  [<c0463819>] hibernation_snapshot+0x149/0x1ba
+[19332.352943]  [<c0463936>] hibernate+0xac/0x17d
+[19332.352945]  [<c04628c9>] ? state_store+0x0/0xa8
+[19332.352948]  [<c046291f>] state_store+0x56/0xa8
+[19332.352951]  [<c04628c9>] ? state_store+0x0/0xa8
+[19332.352954]  [<c0645565>] kobj_attr_store+0x1a/0x22
+[19332.352958]  [<c04e08cb>] sysfs_write_file+0xb4/0xdf
+[19332.352961]  [<c04e0817>] ? sysfs_write_file+0x0/0xdf
+[19332.352964]  [<c04a557d>] vfs_write+0x84/0xdf
+[19332.352967]  [<c04a5671>] sys_write+0x3b/0x60
+[19332.352970]  [<c0417b15>] sysenter_do_call+0x12/0x21
+[19332.352986] Enabling non-boot CPUs ...
 
 
--- 
-With best wishes
-Dmitry
