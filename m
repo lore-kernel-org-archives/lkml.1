@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbYKCUXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754450AbYKCUX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755165AbYKCUXm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 15:23:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754685AbYKCUXQ
+	id S1754450AbYKCUX7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 15:23:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbYKCUXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 15:23:16 -0500
-Received: from kroah.org ([198.145.64.141]:44973 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754302AbYKCUXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 15:23:14 -0500
-Date: Mon, 3 Nov 2008 12:19:30 -0800
-From: Greg KH <greg@kroah.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Subbu Seetharaman <subbus@serverengines.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RESEND] benet: BladeEngine 10Gb NIC driver
-Message-ID: <20081103201930.GB13299@kroah.com>
-References: <20081103122512.06063fc9@mailhost.serverengines.com> <20081103193641.GA12552@kroah.com> <490F5667.3080904@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <490F5667.3080904@garzik.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 3 Nov 2008 15:23:33 -0500
+Received: from gate.crashing.org ([63.228.1.57]:57119 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755803AbYKCUXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 15:23:31 -0500
+Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: James Cloos <cloos@jhcloos.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Krzysztof Halasa <khc@pm.waw.pl>
+In-Reply-To: <m33ai8akoo.fsf@lugabout.jhcloos.org>
+References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
+	 <1225152347.8004.49.camel@pasglop> <m3k5bt2hsc.fsf@lugabout.jhcloos.org>
+	 <1225662539.8004.237.camel@pasglop>  <m33ai8akoo.fsf@lugabout.jhcloos.org>
+Content-Type: text/plain
+Date: Tue, 04 Nov 2008 07:22:34 +1100
+Message-Id: <1225743754.8004.260.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 03, 2008 at 02:52:07PM -0500, Jeff Garzik wrote:
-> Greg KH wrote:
->> On Mon, Nov 03, 2008 at 04:25:12AM -0800, Subbu Seetharaman wrote:
->>> If we could get more specific feedback about the areas that require
->>> cleanup, we can take care of them quickly.  
->>> Since the last posting, we have brought up the driver in a PPC system
->>> and fixed some endianness issues.  As soon as I have some specific
->>> feedback, we can update the driver with these fixes as well.
->>>
->>> Please let me know as soon as the driver is in the staging area.
->> Does someone have a pointer to the driver, so that we can see what is
->> needed to be done?
->
-> It was in my email :)  Repeating,
->
-> The 'benet' branch of
-> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
->
-> It should be suitable for pulling directly into staging.
+On Mon, 2008-11-03 at 10:33 -0500, James Cloos wrote:
+> >>>>> "Benjamin" == Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> 
+> >> is in play.  It is probably spinning through all of the 2000000 possible
+> >> udelay(10) calls.  I don't think I ever gave it twenty seconds before
+> >> giving up.  And certainly not forty seconds, if the freeze happens after
+> >> setting the DST_Y_X register.
+> 
+> Benjamin> Well, setting DST_Y_X is what triggers the transfer. The above
+> Benjamin> means that the FIFO isn't emptying (ie, the engine is locked up).
+> 
+> I gave it another try over the weekend and let it sit for five minutes.
+> The reset message never appeared.
 
-Hm, call me extreemly stupid, but I don't see anything in that branch
-for this driver.
+Because it's probably going to lockup trying to display it :-) I need to
+make that stuff a bit more robust, by disabling acceleration if the
+engine locks up for example.
 
-Here's what I did:
-  git fetch git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git benet master:jeff
-  git checkout jeff
+> Again, that is fine by me.  Otherwise I'll just leave the #if0 commit
+> in my compile clone.
 
-Even looking around at this tree with 'gitk --all' I don't see anything.
-So what did I do wrong here?
+Allright, we'll see what I come up with, and at worst, I'll just revert
+the whole thing.
 
-confused,
+Ben.
 
-greg k-h
+
