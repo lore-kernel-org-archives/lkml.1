@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbYKCJxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbYKCKCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755235AbYKCJxt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 04:53:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbYKCJxj
+	id S1755276AbYKCKCc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 05:02:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754911AbYKCKCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 04:53:39 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46313 "EHLO mx3.mail.elte.hu"
+	Mon, 3 Nov 2008 05:02:24 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49839 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754640AbYKCJxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 04:53:38 -0500
-Date: Mon, 3 Nov 2008 10:53:23 +0100
+	id S1754904AbYKCKCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 05:02:23 -0500
+Date: Mon, 3 Nov 2008 11:02:06 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [VOYAGER] fix smp_intr_init() compile breakage
-Message-ID: <20081103095323.GB13671@elte.hu>
-References: <1225400572.19324.13.camel@localhost.localdomain> <20081030220338.GJ30303@elte.hu> <1225475989.3264.19.camel@localhost.localdomain>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix ACPI induced voyager compile failure
+Message-ID: <20081103100206.GC13671@elte.hu>
+References: <1225400518.19324.11.camel@localhost.localdomain> <20081030215819.GI30303@elte.hu> <1225404299.19324.47.camel@localhost.localdomain> <20081030221645.GL30303@elte.hu> <1225474922.3264.2.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1225475989.3264.19.camel@localhost.localdomain>
+In-Reply-To: <1225474922.3264.2.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,77 +39,78 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-> On Thu, 2008-10-30 at 23:03 +0100, Ingo Molnar wrote:
+> On Thu, 2008-10-30 at 23:16 +0100, Ingo Molnar wrote: 
 > > * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 > > 
-> > > >From 4d4d1ebea1e30d0ea51784139f18aa15acbff5d9 Mon Sep 17 00:00:00 2001
-> > > From: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > > Date: Wed, 29 Oct 2008 11:13:33 -0500
-> > > Subject: [VOYAGER] x86: fix smp_intr_init() compile breakage
+> > > On Thu, 2008-10-30 at 22:58 +0100, Ingo Molnar wrote:
+> > > > * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > > > 
+> > > > > >From c339b7cdc39399855ec07dfbff67304f9c7fa49a Mon Sep 17 00:00:00 2001
+> > > > > From: James Bottomley <James.Bottomley@HansenPartnership.com>
+> > > > > Date: Wed, 29 Oct 2008 10:58:13 -0500
+> > > > > Subject: [VOYAGER] x86: don't pull asm/acpi.h into fixmap_32.h
+> > > > > 
+> > > > > If it's not needed it causes compile failures.
+> > > > > 
+> > > > > Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+> > > > > ---
+> > > > >  arch/x86/include/asm/fixmap_32.h |    2 ++
+> > > > >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > > > > 
+> > > > > diff --git a/arch/x86/include/asm/fixmap_32.h b/arch/x86/include/asm/fixmap_32.h
+> > > > > index 09f29ab..c3302ee 100644
+> > > > > --- a/arch/x86/include/asm/fixmap_32.h
+> > > > > +++ b/arch/x86/include/asm/fixmap_32.h
+> > > > > @@ -25,7 +25,9 @@ extern unsigned long __FIXADDR_TOP;
+> > > > >  
+> > > > >  #ifndef __ASSEMBLY__
+> > > > >  #include <linux/kernel.h>
+> > > > > +#ifdef CONFIG_ACPI
+> > > > >  #include <asm/acpi.h>
+> > > > > +#endif
+> > > > 
+> > > > hm, that's quite ugly - such headers are supposed to be safe even if 
+> > > > CONFIG_APIC is not turned on.
+> > > > 
+> > > > What kind of compiler failures are you getting, could you send the 
+> > > > .config that triggers it? I'm curious what the real cause of the build 
+> > > > failure is - the #ifdef you are adding seems to fix a symptom, not a 
+> > > > real bug - and maybe we can do a better fix.
 > > > 
-> > > Looks like this became static on the rest of x86.  Fix it up by adding
-> > > an external definition to mach-voyager/setup.c
-> > > 
-> > > Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > > ---
-> > >  arch/x86/mach-voyager/setup.c |    2 +-
-> > >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > > 
-> > > diff --git a/arch/x86/mach-voyager/setup.c b/arch/x86/mach-voyager/setup.c
-> > > index 6bbdd63..7c6ff1a 100644
-> > > --- a/arch/x86/mach-voyager/setup.c
-> > > +++ b/arch/x86/mach-voyager/setup.c
-> > > @@ -24,6 +24,7 @@ static struct irqaction irq2 = {
-> > >  	.name = "cascade",
-> > >  };
-> > >  
-> > > +extern void smp_intr_init(void);
-> > >  void __init intr_init_hook(void)
+> > > It's the problem of voyager wanting its own definition of
+> > > phys_cpu_present_map.  acpi.h pulls in mpspec.h which contaminates the
+> > > voyager_smp.c build.
 > > 
-> > please add function prototypes to the proper .h file. 
-> > (arch/x86/include/asm/voyager.h in this case)
+> > i guess voyager could use physid_mask_t just fine?
 > > 
-> > I'd also suggest to rename the function to voyager_smp_intr_init(). 
-> > 
-> > Note that Voyager already has a voyager_smp_intr_init() prototype in 
-> > voyager.h. Something like the (completely untested) patch below.
-> > 
-> > 	Ingo
-> > 
-> > ---
-> >  arch/x86/mach-voyager/setup.c       |    2 +-
-> >  arch/x86/mach-voyager/voyager_smp.c |    2 +-
-> >  2 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/x86/mach-voyager/setup.c b/arch/x86/mach-voyager/setup.c
-> > index 6bbdd63..a580b95 100644
-> > --- a/arch/x86/mach-voyager/setup.c
-> > +++ b/arch/x86/mach-voyager/setup.c
-> > @@ -27,7 +27,7 @@ static struct irqaction irq2 = {
-> >  void __init intr_init_hook(void)
-> >  {
-> >  #ifdef CONFIG_SMP
-> > -	smp_intr_init();
-> > +	voyager_smp_intr_init();
-> >  #endif
-> >  
-> >  	setup_irq(2, &irq2);
-> > diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
-> > index ff2b2ed..95c9035 100644
-> > --- a/arch/x86/mach-voyager/voyager_smp.c
-> > +++ b/arch/x86/mach-voyager/voyager_smp.c
-> > @@ -1250,7 +1250,7 @@ static void handle_vic_irq(unsigned int irq, struct irq_desc *desc)
-> >  #define QIC_SET_GATE(cpi, vector) \
-> >  	set_intr_gate((cpi) + QIC_DEFAULT_CPI_BASE, (vector))
-> >  
-> > -void __init smp_intr_init(void)
-> > +void __init voyager_smp_intr_init(void)
-> >  {
-> >  	int i;
+> > physid_mask_t is MAX_APICS derived - but it should work out fine 
+> > because AFAICS voyager has a maximum of 4 cpus (but definitely less 
+> > than say 32), while MAX_APICS never goes below 256.
 > 
-> Not quite: still get the undeclared function in setup.c.  However, 
-> this should work (also untested: I'm in flight at the moment).
+> Voyager has a max of 32 actually. [...]
 
-applied to tip/x86/urgent, thanks James!
+(yes, <= 32 is what i meant.)
+
+> [...] The CPU numbering is also fixed and identifies the processor 
+> position (for FRU replacement), so the physical map is what we use 
+> throughout the code.  The problem with the definition is that it 
+> makes a rather pointless distinction between physical and logical 
+> map types ... so there'd be a lot of code churn.  It would be really 
+> nice if physmask_t and cpumask_t could become the same type ... then 
+> we could do all this and no-one would notice.
+
+if you mean physid_mask_t, i agree that it would be a tempting 
+simplification if we got rid of the physid_mask_t distinction and made 
+it equal to cpumask_t.
+
+If the largest APIC ID in the bootup gets larger than NR_CPUS we 
+should just clip it and print a warning about it in the syslog. (it 
+would likely not boot up though, if that ID is an ioapic's ID)
+
+OTOH, right now there's some practical complications: even on small 
+systems we can easily get a relatively large APIC ID, needlessly 
+driving up the NR_CPUS limit.
+
+Yinghai, Peter, what do you think?
 
 	Ingo
