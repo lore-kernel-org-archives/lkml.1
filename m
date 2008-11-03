@@ -1,147 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755792AbYKCUhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbYKCUkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755792AbYKCUhu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 15:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbYKCUhg
+	id S1755874AbYKCUkU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 15:40:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754374AbYKCUkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 15:37:36 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39115 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752675AbYKCUhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 15:37:35 -0500
-Date: Mon, 3 Nov 2008 15:24:43 -0500
-From: Josef Bacik <jbacik@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Josef Bacik <jbacik@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       rwheeler@redhat.com
-Subject: Re: [PATCH] improve jbd fsync batching
-Message-ID: <20081103202442.GA25736@unused.rdu.redhat.com>
-References: <20081028201614.GA21600@unused.rdu.redhat.com> <20081103122729.60582692.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081103122729.60582692.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 3 Nov 2008 15:40:04 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55433 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754184AbYKCUkB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 15:40:01 -0500
+Date: Mon, 3 Nov 2008 12:37:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Arthur Jones <ajones@riverbed.com>
+Cc: sandeen@redhat.com, linux-ext4@vger.kernel.org, sct@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
+Message-Id: <20081103123750.67c96224.akpm@linux-foundation.org>
+In-Reply-To: <20081103201428.GB30565@ajones-laptop.nbttech.com>
+References: <4908C951.2000309@redhat.com>
+	<20081103184426.GA31894@ajones-laptop.nbttech.com>
+	<20081103113318.35b0c266.akpm@linux-foundation.org>
+	<20081103201428.GB30565@ajones-laptop.nbttech.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 03, 2008 at 12:27:29PM -0800, Andrew Morton wrote:
-> On Tue, 28 Oct 2008 16:16:15 -0400
-> Josef Bacik <jbacik@redhat.com> wrote:
-> 
-> > Hello,
-> > 
-> > This is a rework of the patch I did a few months ago, taking into account some
-> > comments from Andrew and using the new schedule_hrtimeout function (thanks
-> > Arjan!).
-> > 
-> > There is a flaw with the way jbd handles fsync batching.  If we fsync() a file
-> > and we were not the last person to run fsync() on this fs then we automatically
-> > sleep for 1 jiffie in order to wait for new writers to join into the transaction
-> > before forcing the commit.  The problem with this is that with really fast
-> > storage (ie a Clariion) the time it takes to commit a transaction to disk is way
-> > faster than 1 jiffie in most cases, so sleeping means waiting longer with
-> > nothing to do than if we just committed the transaction and kept going.  Ric
-> > Wheeler noticed this when using fs_mark with more than 1 thread, the throughput
-> > would plummet as he added more threads.
-> > 
-> > ...
-> >
-> > ...
-> >  
-> > @@ -49,6 +50,7 @@ get_transaction(journal_t *journal, transaction_t *transaction)
-> >  {
-> >  	transaction->t_journal = journal;
-> >  	transaction->t_state = T_RUNNING;
-> > +	transaction->t_start_time = ktime_get();
-> >  	transaction->t_tid = journal->j_transaction_sequence++;
-> >  	transaction->t_expires = jiffies + journal->j_commit_interval;
-> >  	spin_lock_init(&transaction->t_handle_lock);
-> > @@ -1371,7 +1373,7 @@ int journal_stop(handle_t *handle)
-> >  {
-> >  	transaction_t *transaction = handle->h_transaction;
-> >  	journal_t *journal = transaction->t_journal;
-> > -	int old_handle_count, err;
-> > +	int err;
-> >  	pid_t pid;
-> >  
-> >  	J_ASSERT(journal_current_handle() == handle);
-> > @@ -1407,11 +1409,26 @@ int journal_stop(handle_t *handle)
-> >  	 */
-> >  	pid = current->pid;
-> >  	if (handle->h_sync && journal->j_last_sync_writer != pid) {
-> 
-> It would be nice to have a comment here explaining the overall design. 
-> it's a bit opaque working that out from the raw implementation.
-> 
-> > +		u64 commit_time, trans_time;
-> > +
-> >  		journal->j_last_sync_writer = pid;
-> > -		do {
-> > -			old_handle_count = transaction->t_handle_count;
-> > -			schedule_timeout_uninterruptible(1);
-> > -		} while (old_handle_count != transaction->t_handle_count);
-> > +
-> > +		spin_lock(&journal->j_state_lock);
-> > +		commit_time = journal->j_average_commit_time;
-> > +		spin_unlock(&journal->j_state_lock);
-> 
-> OK, the lock is needed on 32-bit machines, I guess.
-> 
-> 
-> > +		trans_time = ktime_to_ns(ktime_sub(ktime_get(),
-> > +						   transaction->t_start_time));
-> > +
-> > +		commit_time = min_t(u64, commit_time,
-> > +				    1000*jiffies_to_usecs(1));
-> 
-> OK.  The multiplication of an unsigned by 1000 could overflow, but only
-> if HZ is less than 0.25.  I don't think we need worry about that ;)
-> 
-> 
-> > +		if (trans_time < commit_time) {
-> > +			ktime_t expires = ktime_add_ns(ktime_get(),
-> > +						       commit_time);
-> > +			set_current_state(TASK_UNINTERRUPTIBLE);
-> > +			schedule_hrtimeout(&expires, HRTIMER_MODE_ABS);
-> 
-> We should have schedule_hrtimeout_uninterruptible(), but we don't.
-> 
-> > +		}
-> >  	}
-> >  
-> >  	current->journal_info = NULL;
-> > diff --git a/include/linux/jbd.h b/include/linux/jbd.h
-> > index 346e2b8..d842230 100644
-> > --- a/include/linux/jbd.h
-> > +++ b/include/linux/jbd.h
-> > @@ -543,6 +543,11 @@ struct transaction_s
-> >  	unsigned long		t_expires;
-> >  
-> >  	/*
-> > +	 * When this transaction started, in nanoseconds [no locking]
-> > +	 */
-> > +	ktime_t			t_start_time;
-> > +
-> > +	/*
-> >  	 * How many handles used this transaction? [t_handle_lock]
-> >  	 */
-> >  	int t_handle_count;
-> > @@ -800,6 +805,8 @@ struct journal_s
-> >  
-> >  	pid_t			j_last_sync_writer;
-> >  
-> > +	u64			j_average_commit_time;
-> 
-> Every field in that structure is carefully documented (except for
-> j_last_sync_writer - what vandal did that?)
-> 
-> please fix.
+On Mon, 3 Nov 2008 12:14:28 -0800
+Arthur Jones <ajones@riverbed.com> wrote:
 
-I see you already pulled this into -mm, would you like me to repost with the
-same changelog and the patch updated, or just reply to this with the updated
-patch?  Thanks,
+> Hi Andrew, ...
+> 
+> On Mon, Nov 03, 2008 at 11:33:18AM -0800, Andrew Morton wrote:
+> > [...]
+> > > --- a/fs/ext3/super.c
+> > > +++ b/fs/ext3/super.c
+> > > @@ -2392,7 +2392,13 @@ static int ext3_sync_fs(struct super_block *sb, int wait)
+> > >       if (journal_start_commit(EXT3_SB(sb)->s_journal, &target)) {
+> > >               if (wait)
+> > >                       log_wait_commit(EXT3_SB(sb)->s_journal, target);
+> > > -     }
+> > > +     } else if (wait)
+> > > +             /*
+> > > +              * We may have a commit in progress, clear it out
+> > > +              * before we go on...
+> > > +              */
+> > > +             ext3_force_commit(sb);
+> > > +
+> > >       return 0;
+> > >  }
+> > 
+> > Can we do
+> > 
+> >         sb->s_dirt = 0;
+> >         if (wait)
+> >                 ext3_force_commit(...);
+> >         else
+> >                 journal_start_commit(...);
+> 
+> I think this is what you had in mind:
 
-Josef
+yup.
+
+> 
+> diff --git a/fs/ext3/super.c b/fs/ext3/super.c
+> index 18eaa78..2b48b85 100644
+> --- a/fs/ext3/super.c
+> +++ b/fs/ext3/super.c
+> @@ -2386,13 +2386,12 @@ static void ext3_write_super (struct super_block * sb)
+>  
+>  static int ext3_sync_fs(struct super_block *sb, int wait)
+>  {
+> -	tid_t target;
+> -
+>  	sb->s_dirt = 0;
+> -	if (journal_start_commit(EXT3_SB(sb)->s_journal, &target)) {
+> -		if (wait)
+> -			log_wait_commit(EXT3_SB(sb)->s_journal, target);
+> -	}
+> +	if (wait)
+> +		ext3_force_commit(sb);
+> +	else
+> +		journal_start_commit(EXT3_SB(sb)->s_journal, NULL);
+> +
+>  	return 0;
+>  }
+>  
+> I tried this and it too fixes the problem.  FWIW I agree it
+> looks better...
+> 
+
+OK.  But still, questions remain.
+
+- should we clear s_dirt if log_wait_commit() didn't work?
+
+- ext3_force_commit() clears s_dirt also
+
+- should ext3_sync_fs() be dropping the ext3_force_commit() return
+  value on the floor?
+
+This is all rather worrisome.
