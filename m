@@ -1,96 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbYKCOsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbYKCOtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756275AbYKCOsP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 09:48:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbYKCOr6
+	id S1756230AbYKCOtx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 09:49:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbYKCOtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 09:47:58 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:40035 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754685AbYKCOr5 (ORCPT
+	Mon, 3 Nov 2008 09:49:45 -0500
+Received: from tombstone.ecm.ub.es ([161.116.81.124]:1525 "EHLO
+	tombstone.ecm.ub.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755284AbYKCOto (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 09:47:57 -0500
-X-Sasl-enc: liKlRyp56nannBCiTgZ238NQ4mTzhzPsq1jDoKWg7CXF 1225723676
-Date: Mon, 3 Nov 2008 12:47:49 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux acpi <linux-acpi@vger.kernel.org>
-Subject: Re: eeepc-laptop rfkill, stupid question #4
-Message-ID: <20081103144749.GC31078@khazad-dum.debian.net>
-References: <490B3BB5.8060801@tuffmail.co.uk> <20081031171126.GA17313@srcf.ucam.org> <490B4014.4040009@tuffmail.co.uk> <490B70A3.8010108@tuffmail.co.uk> <20081102040008.GB29606@khazad-dum.debian.net> <490D8C4E.3010201@tuffmail.co.uk> <20081102130655.GA12766@srcf.ucam.org> <490DAA33.7010905@tuffmail.co.uk>
+	Mon, 3 Nov 2008 09:49:44 -0500
+X-Greylist: delayed 1545 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Nov 2008 09:49:43 EST
+Message-ID: <490F0972.4000303@ecm.ub.es>
+Date: Mon, 03 Nov 2008 15:23:46 +0100
+From: Albert Comerma <albert@ecm.ub.es>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <490DAA33.7010905@tuffmail.co.uk>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] to SIS USB2VGA DRIVER
+Content-Type: multipart/mixed;
+ boundary="------------000401000902060206020003"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 02 Nov 2008, Alan Jenkins wrote:
-> No, the current rfkill core forces the device to restore the state on  
-> resume.  So it can't be of sync after resume.  And there's no way for  
-> the platform driver to affect this behaviour, aside from illegally  
-> generating input events.
+This is a multi-part message in MIME format.
+--------------000401000902060206020003
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Actually, there might be some sort of mess in this (i.e. a bug in the core).
+Hi list!, first of all I'm not subscrived to the list but would be great 
+if you CC me the answers for this mail.
+I write because a long time ago I detected that just adding a new USB ID 
+to the USB2VGA driver it can work with a new adapter. I contacted the 
+maintainer as appeared in the MAINTAINERS list;
 
-Here's what it is doing:
+SIS FRAMEBUFFER DRIVER
+P:      Thomas Winischhofer
+M:      thomas@winischhofer.net
+W:      http://www.winischhofer.net/linuxsisvga.shtml
+S:      Maintained
 
-At resume, it does a forced rfkill_toggle_radio() with either the value
-cached in rfkill->state or SOFT_BLOCK (if EPO is active), so
-rfkill_toggle_radio() will call your driver's toggle_radio() hook regardless
-of whether it thinks the rfkill state is already correct or not.
+SIS USB2VGA DRIVER
+P:      Thomas Winischhofer
+M:      thomas@winischhofer.net
+W:      http://www.winischhofer.at/linuxsisusbvga.shtml
+S:      Maintained
 
-HOWEVER, rfkill->state *IS* updated by rfkill_force_state(), which your
-driver is supposed to have called in its resume handling, that runs BEFORE
-rfkill core's rfkill class resume hander (devices resume before their
-classes AFAIK).
+He didn't answered nor added the line, and his web seems down.
+So it would be great if somebody could do this for him.
+I send the patch...
 
-So, the core will NOT restore the pre-sleep state of the transmitter.  It
-will sync itself, and not cause worse trouble, but it seems not to be doing
-what it is supposed to.
+Cheers,
 
-Argh.
+Albert
 
-I will send a patch after I do some testing to validate the above (and if
-the bug is validated, after making sure the patch fixes it).
 
-> If we want resume from hibernation to preserve the hardware state  
-> instead of overriding it, the rfkill API needs changing.  I'm not sure  
+--------------000401000902060206020003
+Content-Type: text/x-diff;
+ name="sisusb.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="sisusb.patch"
 
-Oh, we DO want to override UNLESS what changed was actually something
-capable of HARD_BLOCK (in which case the core already does things right if
-you used rfkill_force_state()).   It is the path of least surprise for the
-user.
+diff -r -u linux-2.6.27.4/drivers/usb/misc/sisusbvga/sisusb.c linux-2.6.27.4-new/drivers/usb/misc/sisusbvga/sisusb.c
+--- linux-2.6.27.4/drivers/usb/misc/sisusbvga/sisusb.c	2008-10-26 00:05:07.000000000 +0200
++++ linux-2.6.27.4-new/drivers/usb/misc/sisusbvga/sisusb.c	2008-11-03 15:21:03.000000000 +0100
+@@ -3270,6 +3270,7 @@
+ 	{ USB_DEVICE(0x0711, 0x0900) },
+ 	{ USB_DEVICE(0x0711, 0x0901) },
+ 	{ USB_DEVICE(0x0711, 0x0902) },
++	{ USB_DEVICE(0x0711, 0x0903) },
+ 	{ USB_DEVICE(0x0711, 0x0918) },
+ 	{ USB_DEVICE(0x182d, 0x021c) },
+ 	{ USB_DEVICE(0x182d, 0x0269) },
 
-Frankly, I do not *CARE* to think about things like hibernate, boot another
-OS, hibernate again or shutdown, try to boot back on the previous OS.  This
-is in NO WAY supported by ACPI, and can cause massive crappage if either OS
-uses S4 instead of S5 for hibernation (and you ARE supposed to use S4, so
-you can see the big pitfall right away).
-
-All that matters is straight sleep-resume, hibernate-resume, and the fact
-that the user IS allowed to mess with the hardware config (e.g. eject bays,
-undock, remove non-fixed storage, and of course, toggle a hardware rfkill
-input device).
-
-> the damage it would do to an API which already, uh, seems to be  
-> frequently misunderstood.
-
-That is an understatement...  Hell, I probably am the one more acquinted
-with the current rfkill API, and I still end up getting confused by it...
-
-It really could benefit of a fine comb and code flow diagram analysis to
-validate everything and catch bugs like the one I described above (which
-*seems* to exist, I haven't tested for it yet, and I might be mistaken).
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+--------------000401000902060206020003--
