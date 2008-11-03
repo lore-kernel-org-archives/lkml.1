@@ -1,63 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756679AbYKCWfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756969AbYKCWf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756679AbYKCWfm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 17:35:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbYKCWfa
+	id S1756969AbYKCWf6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 17:35:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818AbYKCWfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 17:35:30 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57831 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753558AbYKCWf3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 17:35:29 -0500
-Date: Mon, 3 Nov 2008 14:35:26 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: roel kluin <roel.kluin@gmail.com>
-Cc: len.brown@intel.com, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH] intel_menlo: max_state is unsigned, invalid test
-Message-Id: <20081103143526.375be238.akpm@linux-foundation.org>
-In-Reply-To: <4908D067.9080207@gmail.com>
-References: <4908D067.9080207@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 3 Nov 2008 17:35:47 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:48118 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753698AbYKCWfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 17:35:46 -0500
+Subject: Re: [PATCH] hibernation should work ok with memory hotplug
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz,
+       linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org,
+       Matt Tolentino <matthew.e.tolentino@intel.com>,
+       Dave Hansen <haveblue@us.ibm.com>, linux-mm@kvack.org,
+       Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <200811032324.02163.rjw@sisk.pl>
+References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
+	 <20081103125108.46d0639e.akpm@linux-foundation.org>
+	 <1225747308.12673.486.camel@nimitz>  <200811032324.02163.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Mon, 03 Nov 2008 14:34:25 -0800
+Message-Id: <1225751665.12673.511.camel@nimitz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Oct 2008 17:06:47 -0400
-roel kluin <roel.kluin@gmail.com> wrote:
-
-> max_state is unsigned, so the test is invalid.
+On Mon, 2008-11-03 at 23:24 +0100, Rafael J. Wysocki wrote:
+> On Monday, 3 of November 2008, Dave Hansen wrote:
+> > On Mon, 2008-11-03 at 12:51 -0800, Andrew Morton wrote:
+> > > On Wed, 29 Oct 2008 13:25:00 +0100
+> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > > On Wednesday, 29 of October 2008, Pavel Machek wrote:
+> > > > > 
+> > > > > hibernation + memory hotplug was disabled in kconfig because we could
+> > > > > not handle hibernation + sparse mem at some point. It seems to work
+> > > > > now, so I guess we can enable it.
+> > > > 
+> > > > OK, if "it seems to work now" means that it has been tested and confirmed to
+> > > > work, no objection from me.
+> > > 
+> > > yes, that was not a terribly confidence-inspiring commit message.
+> > > 
+> > > 3947be1969a9ce455ec30f60ef51efb10e4323d1 said "For now, disable memory
+> > > hotplug when swsusp is enabled.  There's a lot of churn there right
+> > > now.  We'll fix it up properly once it calms down." which is also
+> > > rather rubbery.  
+> > > 
+> > > Cough up, guys: what was the issue with memory hotplug and swsusp, and
+> > > is it indeed now fixed?
+> > 
+> > I suck.  That commit message was horrid and I'm racking my brain now to
+> > remember what I meant.  Don't end up like me, kids.
+> > 
+> > I've attached the message that I sent to the swsusp folks.  I never got
+> > a reply from that as far as I can tell.
+> > 
+> > http://sourceforge.net/mailarchive/forum.php?thread_name=1118682535.22631.22.camel%40localhost&forum_name=lhms-devel
+> > 
+> > As I look at it now, it hasn't improved much since 2005.  Take a look at
+> > kernel/power/snapshot.c::copy_data_pages().  It still assumes that the
+> > list of zones that a system has is static.  Memory hotplug needs to be
+> > excluded while that operation is going on.
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> I think max_state can only become -1, no? then probably a different
-> patch is required.
-> I may not be able to respond for a few weeks.
+> This operation is carried out on one CPU with interrupts disabled.  Is that
+> not enough?
+
+If that's true then you don't need any locking for anything at all,
+right?
+
+All of the changes I was talking about occur inside the kernel and code
+has to run for it to happen.  So, if you are saying that absolutely no
+other code on the system can possibly run, then it should be OK.
+
+> > page_is_saveable() checks for pfn_valid().  But, with memory hotplug,
+> > things can become invalid at any time since no references are held or
+> > taken on the page.  Or, a page that *was* invalid may become valid and
+> > get missed.
 > 
-> diff --git a/drivers/misc/intel_menlow.c b/drivers/misc/intel_menlow.c
-> index e00a275..980171d 100644
-> --- a/drivers/misc/intel_menlow.c
-> +++ b/drivers/misc/intel_menlow.c
-> @@ -121,7 +121,7 @@ static int memory_set_cur_bandwidth(struct thermal_cooling_device *cdev,
->  	if (memory_get_int_max_bandwidth(cdev, &max_state))
->  		return -EFAULT;
->  
-> -	if (max_state < 0 || state > max_state)
-> +	if (max_state == -1 || state > max_state)
->  		return -EINVAL;
->  
->  	arg_list.count = 1;
-> 
+> Can that really happen given the conditions above?
 
-hm, maybe.
+Nope.
 
-This can only happen if acpi_evaluate_integer(MEMORY_GET_BANDWIDTH)
-returned no-error and a bandwidth of zero (I assume).
+But, as I think about it, there is another issue that we need to
+address, CONFIG_NODES_SPAN_OTHER_NODES.
 
-Is this a special case which the driver really wanted to handle?  If
-so, why is "0" the only bad value which we're checking for?  Or is this
-all some big brainfart which should be removed?
+A node might have a node_start_pfn=0 and a node_end_pfn=100 (and it may
+have only one zone).  But, there may be another node with
+node_start_pfn=10 and a node_end_pfn=20.  This loop:
+
+        for_each_zone(zone) {
+		...
+                for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
+                        if (page_is_saveable(zone, pfn))
+                                memory_bm_set_bit(orig_bm, pfn);
+        }
+
+will walk over the smaller node's pfn range multiple times.  Is this OK?
+
+I think all you have to do to fix it is check page_zone(page) == zone
+and skip out if they don't match.
+
+Andy, does anything else stick out to you?
+
+-- Dave
+
