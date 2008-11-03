@@ -1,77 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748AbYKCQ6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbYKCRCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756748AbYKCQ6a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 11:58:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755958AbYKCQ6W
+	id S1756716AbYKCRCT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 12:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbYKCRCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 11:58:22 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:7951 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755938AbYKCQ6W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 11:58:22 -0500
-Date: Mon, 3 Nov 2008 19:58:20 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Dmitry <dbaryshkov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, cbou@mail.ru,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH] power_supply: only register tosa_battery driver on tosa
-Message-ID: <20081103165820.GA8004@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1225271050-21171-1-git-send-email-dbaryshkov@gmail.com> <bc64b4640811021236t3458bf69vd1becc4ab1133be1@mail.gmail.com> <20081103145514.GA23466@oksana.dev.rtsoft.ru> <bc64b4640811030820j660b8386x39bf2285b1dba887@mail.gmail.com> <20081103162547.GA25546@oksana.dev.rtsoft.ru> <bc64b4640811030841h5bcc537fy4b645c6d293b7b46@mail.gmail.com>
+	Mon, 3 Nov 2008 12:02:11 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60791 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755907AbYKCRCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 12:02:10 -0500
+Date: Mon, 3 Nov 2008 15:01:15 -0200
+From: Eduardo Habkost <ehabkost@redhat.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
+       Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Use BIOS reboot on Toshiba Portege 4000
+Message-ID: <20081103170115.GC23893@blackpad>
+References: <200810312118.45368.arvidjaar@mail.ru> <20081103090843.GI11730@elte.hu> <490ECC4D.9090704@redhat.com> <20081103133306.GZ23893@blackpad> <490F0DA3.4090108@redhat.com> <m1myggdbzg.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <bc64b4640811030841h5bcc537fy4b645c6d293b7b46@mail.gmail.com>
+In-Reply-To: <m1myggdbzg.fsf@frodo.ebiederm.org>
+X-Fnord: you can see the fnord
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 03, 2008 at 07:41:47PM +0300, Dmitry wrote:
-[...]
-> >> >> diff --git a/drivers/power/tosa_battery.c b/drivers/power/tosa_battery.c
-> >> >> index 2eab35a..4e52c22 100644
-> >> >> --- a/drivers/power/tosa_battery.c
-> >> >> +++ b/drivers/power/tosa_battery.c
-> >> >> @@ -469,6 +469,9 @@ static struct platform_driver tosa_bat_driver = {
-> >> >>
-> >> >>  static int __init tosa_bat_init(void)
-> >> >>  {
-> >> >> +     if (!machine_is_tosa())
-> >> >> +             return -EINVAL;
-> >> >> +
-> >> >
-> >> > I tend to reject this approach. You should rename the driver instead.
-> >> >
-> >> > I.e.
-> >> > -.driver.name    = "wm97xx-battery",
-> >> > -.driver.name    = "tosa-battery",
-> >> >
-> >> > And make sure that this won't break users of that driver (though
-> >> > I don't see any).
-> >>
-> >> The wm97xx-battery device is registered by
-> >> drivers/input/toucscreen/wm97xx-core.c
-> >
-> > Hmm.. So you can't rename the tosa driver, because then it won't
-> > work, correct?
+On Mon, Nov 03, 2008 at 08:13:07AM -0800, Eric W. Biederman wrote:
+> Avi Kivity <avi@redhat.com> writes:
 > 
-> Yup.
-> I see few ways to resolve this:
-> * write better wm97xx interface. Dunno if that is feasible or possible.
->   One of the possible solutions is to pass battery and ts device names
->   and data from within board data via ac97 layer to wm97xx-core. This
->   will provide several benefits (e.g. then we can drop lots of parameters
->   from wm97xx-core, which are really board parameters).
+> > Eduardo Habkost wrote:
+> >> We probably need to disable vmx on all CPUs, but emergency reboot skips
+> >> native_smp_send_stop() (where we could hook a virt_disable call in).
+> >>
+> >> As relying on IPIs defeats the whole point of emergency_restart, a proper
+> >> fix will need to use NMIs like the kdump code does.
+> >>
+> >
+> > They should use the same code; they have a similar environment at entry and
+> > reliability requirements for e_r are not greater than kdump's.
+> 
+> Just a sec.
+> 
+> I think we are confusing two issues here.
+> 
+> - Ordinary machine_restart which happens to call emergency_restart.
+>   And is proceeded by machine_shutdown.
+> 
+> - And emergency_restart itself.
+> 
 
-That would be great indeed. But for now, just don't compile the two
-drivers on the tosa platform. No need for machine_is_*() hacks...
+I am considering only emergency_restart() itself, that simply reboots
+the machine. All other cases should be calling the KVM reboot notifier,
+that disables virtualization on all CPUs.
 
-Thanks,
+
+> To some extent I would be a lot happier if Alt-sysrq-r did what
+> was necessary to get into a context where it can call machine_restart
+> or even better kernel_restart().
+> emergency_restart() is a nice idea but is broken by design.
+
+Eliminating emergency_restart() looks good in theory, but can we
+eliminate it on all cases? We need something for cases when we are on
+a possibly-broken state and we want to reboot the machine as reliably
+as possible.
+
+
+> 
+> That said.  If we can turn off vmx on that one processor.
+> That should be enough for the cpu to triple fault and let
+> the BIOS do what it needs to do on that cpu i.e. outb(magic, 0x92)
+> and toggle a motherboard level reset?
+> 
+> If I read the earlier comments correctly the deep issue is
+> that going through ACPI to reset systems is less reliable than
+> doing it the classic way.
+
+That's what Ingo suggested: instead of defaulting to ACPI reboot,
+disable VMX before rebooting if needed and get back to a safer default.
+
+That leads us to the NMI stuff: we need to disable VMX on all CPUs,
+and we can't use IPIs if we are on a possibly-broken state.
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Eduardo
