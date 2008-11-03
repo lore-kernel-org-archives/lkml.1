@@ -1,49 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbYKCUK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756125AbYKCUKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755756AbYKCUK3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 15:10:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbYKCUKO
+	id S1756125AbYKCUKn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 15:10:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbYKCUKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 15:10:14 -0500
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:36626 "EHLO
+	Mon, 3 Nov 2008 15:10:15 -0500
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:36622 "EHLO
 	teyla.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754169AbYKCUKN (ORCPT
+	with ESMTP id S1754177AbYKCUKN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 3 Nov 2008 15:10:13 -0500
-Message-Id: <20081103201010.165171320@fluff.org.uk>
+Message-Id: <20081103201010.820070757@fluff.org.uk>
 References: <20081103200944.099353331@fluff.org.uk>
 User-Agent: quilt/0.46-1
-Date: Mon, 03 Nov 2008 20:09:46 +0000
+Date: Mon, 03 Nov 2008 20:09:50 +0000
 From: Ben Dooks <ben-linux@fluff.org>
 To: linux-kernel@vger.kernel.org
 Cc: drzeus-mmc@drzeus.cx, sdhci-devel@list.drzeus.cx,
        Ben Dooks <ben-linux@fluff.org>
-Subject: [patch 2/7] SDHCI: Print ADMA status and pointer on debug
-Content-Disposition: inline; filename=simtec/s3c64xx/sdhci-print-adma-status-if-enabled.patch
+Subject: [patch 6/7] SDHCI: Check DMA for overruns at end of transfer
+Content-Disposition: inline; filename=simtec/s3c64xx/debug-card.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If using ADMA, then we should print the ADMA error
-and current pointer in sdhci_dumpregs() when any
-debug is requested.
+At the end of a transfer, check that the DMA engine in the
+SDHCI controller actually did what it was meant to and didn't
+overrun the end of the buffer.
+
+This seems to be triggered by a timeout during an CMD25 (multiple block         
+write) to a card. The mmc_block module then issues a command to find out        
+how much data was moved and this seems to end up triggering this DMA            
+check. The result is the card's queue generates an OOPS as the stack has        
+been trampled on due to the extra data transfered.
 
 Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
---- linux.git.orig/drivers/mmc/host/sdhci.c	2008-10-27 08:17:43.000000000 +0000
-+++ linux.git/drivers/mmc/host/sdhci.c	2008-10-27 11:01:20.000000000 +0000
-@@ -73,6 +73,11 @@ static void sdhci_dumpregs(struct sdhci_
- 		readl(host->ioaddr + SDHCI_CAPABILITIES),
- 		readl(host->ioaddr + SDHCI_MAX_CURRENT));
- 
-+	if (host->flags & SDHCI_USE_ADMA)
-+		printk(KERN_DEBUG DRIVER_NAME ": ADMA Err: 0x%08x | ADMA Ptr: 0x%08x\n",
-+		       readl(host->ioaddr + SDHCI_ADMA_ERROR),
-+		       readl(host->ioaddr + SDHCI_ADMA_ADDRESS));
-+
- 	printk(KERN_DEBUG DRIVER_NAME ": ===========================================\n");
+Index: linux.git/drivers/mmc/host/sdhci.c
+===================================================================
+--- linux.git.orig/drivers/mmc/host/sdhci.c	2008-10-29 16:59:38.000000000 +0000
++++ linux.git/drivers/mmc/host/sdhci.c	2008-10-29 16:59:41.000000000 +0000
+@@ -736,6 +736,23 @@ static void sdhci_set_transfer_mode(stru
+ 	writew(mode, host->ioaddr + SDHCI_TRANSFER_MODE);
  }
  
++static void shdci_check_dma_overrun(struct sdhci_host *host, struct mmc_data *data)
++{
++	u32 dma_pos = readl(host->ioaddr + SDHCI_DMA_ADDRESS);
++	u32 dma_start = sg_dma_address(data->sg);
++	u32 dma_end = dma_start + data->sg->length;
++
++	/* Test whether we ended up moving more data than
++	 * was originally requested. */
++
++	if (dma_pos <= dma_end)
++		return;
++
++	printk(KERN_ERR "%s: dma overrun, dma %08x, req %08x..%08x\n",
++	       mmc_hostname(host->mmc), dma_pos,
++	       dma_start, dma_end);
++}
++
+ static void sdhci_finish_data(struct sdhci_host *host)
+ {
+ 	struct mmc_data *data;
+@@ -749,6 +766,8 @@ static void sdhci_finish_data(struct sdh
+ 		if (host->flags & SDHCI_USE_ADMA)
+ 			sdhci_adma_table_post(host, data);
+ 		else {
++			shdci_check_dma_overrun(host, data);
++
+ 			dma_unmap_sg(mmc_dev(host->mmc), data->sg,
+ 				data->sg_len, (data->flags & MMC_DATA_READ) ?
+ 					DMA_FROM_DEVICE : DMA_TO_DEVICE);
 
 -- 
 Ben (ben@fluff.org, http://www.fluff.org/)
