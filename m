@@ -1,80 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbYKCLF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbYKCLGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755379AbYKCLF5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 06:05:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755072AbYKCLFr
+	id S1755535AbYKCLGU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 06:06:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbYKCLF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 06:05:47 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:46406 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755041AbYKCLFq (ORCPT
+	Mon, 3 Nov 2008 06:05:56 -0500
+Received: from anchor-post-30.mail.demon.net ([194.217.242.88]:3366 "EHLO
+	anchor-post-30.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755312AbYKCLFz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 06:05:46 -0500
-Date: Mon, 3 Nov 2008 11:04:49 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Pavel Machek <pavel@suse.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, pavel.urban@ct.cz, Cyril Hrubis <metan@ucw.cz>,
-       thommycheck@gmail.com
-Subject: Re: 2.6.28-rc2-git1: spitz still won't boot
-Message-ID: <20081103110449.GB26372@flint.arm.linux.org.uk>
-References: <20081031150601.GA1457@ucw.cz> <200810312255.38112.rjw@sisk.pl> <20081103104035.GA19153@atrey.karlin.mff.cuni.cz>
+	Mon, 3 Nov 2008 06:05:55 -0500
+Subject: [PATCH 0/8] staging/wlan-ng: apply changes from wlan-ng-devel that
+	get the driver working
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: gregkh <gregkh@suse.de>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 03 Nov 2008 11:05:53 +0000
+Message-Id: <1225710353.3113.5.camel@castor.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081103104035.GA19153@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 03, 2008 at 11:40:35AM +0100, Pavel Machek wrote:
-> > On Friday, 31 of October 2008, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > ...unfortunately, 2.6.27 contains the 'reset floating' bug, and from
-> > > the point 'reset floating' is fixed, to 2.6.28-rc1, tree will not
-> > > compile, so bisect is quite hard to do. Any ideas?
-> > 
-> > Is this a regression from .27?
-> 
-> Yes, it is (*).
-> 									Pavel
-> (*) Okay, so 2.6.27 does not boot due to the 'reset floating' bug.
+These changes from wlan-ng-devel get the card in my laptop working. 
+All the patches are needed to get it fully working.
+Patches are against 2.6.28-rc2 + latest wlan-ng cleanup-patches
 
-I wouldn't say that was a bug.  That was by design of Dmitry, which
-I'm far from happy with.  If an output is being used to drive a
-reset line, you always want to actively drive it to the inactive
-state for noise immunity reasons.
+My laptop can now connected to wep enable access point under the control
+of NetworkManager
 
-> 'reset floating' is fixed in 2.6.28-rc1, and compilation of spitz
-> is fixed in 2.6.28-rc2, but it still will not boot.
+Regards
+Richard
 
-Compilation errors are only going to get worse as ARM continues to
-diversify.  We're entirely reliant on sfr's linux-next project to
-find build errors prior to merging, and it is unfortunate that this
-time around, sfr was on vacation on the run up to the merge window.
-Hence, there was very little build coverage of the changes that
-went in during this last merge window.  I spent most of the merge
-window fixing up all the shitty patches that people had submitted up
-until that point that either broke compilation or had runtime
-problems.
 
-> So yes, some new spitz-breaking bug got introduced. But no, 2.6.27
-> will not boot due to other bug. 2.6.26 boots.
+Richard Kennedy (8):
+  p80211netdev.c fix netdev alloc to prevent oops on device start
+  prism2_usb.c always enable the card in probe_usb
+  hfa384x_usb.c use newest version of 384x_drvr_start
+  p80211netdev.c correctly enable wext handlers
+  p80211wext.c add latest changes & remove extra nulls from wext_handlers
+  p80211wext.c don't set default key id twice
+  hfa384x_usb.c hfa384x_usbin_callback: check for hardware removed
+  p80211conv.c copy code from wlan-ng-devel branch to not drop packets 
 
-If 2.6.27 doesn't boot even with the reset fixes applied, there's a hell
-of a lot of changes that could be the culpret (and I don't remember much
-that happened before this last merge window.)  The only thing I can
-suggest is to bisect with the reset fixes on top.
+ drivers/staging/wlan-ng/hfa384x_usb.c  |   70 +++++++++++++++++++++++++------
+ drivers/staging/wlan-ng/p80211conv.c   |   49 ++++++++++++++++++++++-
+ drivers/staging/wlan-ng/p80211netdev.c |   18 ++------
+ drivers/staging/wlan-ng/p80211wext.c   |   44 +++++++++++---------
+ drivers/staging/wlan-ng/prism2_usb.c   |   14 ++++--
+ 5 files changed, 142 insertions(+), 53 deletions(-)
 
-This is precisely where we're let down by not having a Zaurus maintainer
-who knows the Zaurus issues inside out, and regularly puts effort into
-building and testing kernels for these platforms.  That's a hint for
-anyone who's reading this.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+
