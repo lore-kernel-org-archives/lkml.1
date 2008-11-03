@@ -1,59 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbYKCUxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756564AbYKCUyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756760AbYKCUxX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 15:53:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756633AbYKCUw4
+	id S1756564AbYKCUyZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 15:54:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbYKCUyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 15:52:56 -0500
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:14715 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756195AbYKCUwy (ORCPT
+	Mon, 3 Nov 2008 15:54:12 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:2219 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754771AbYKCUyK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 15:52:54 -0500
-X-IronPort-AV: E=Sophos;i="4.33,538,1220227200"; 
-   d="scan'208";a="101175246"
-From: Roland Dreier <rdreier@cisco.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       sfr <sfr@canb.auug.org.au>, rolandd@cisco.com, ericvh@gmail.com,
-       akpm <akpm@linux-foundation.org>, davem@davemloft.net,
+	Mon, 3 Nov 2008 15:54:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=AP2z1xBUTHVess9qcl8UeksRKAphmGKU1A7p/8KwkLjrpZe1BOM+lxVSryX8UjJVNd
+         ucSVC0RSEKx7HsbBwx/9Z56zZNki6SJqhXjfSh/ZzWN8nWq+Tv8pU9MNfueXnJAWL3hn
+         DsUvT1NPO5M2y/VvRq0V1AijPdjEbgySCFRnc=
+Date: Mon, 3 Nov 2008 23:57:26 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH] net/9p: limit RDMA to INET
-References: <20081103111731.d12dbb84.randy.dunlap@oracle.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Mon, 03 Nov 2008 12:52:50 -0800
-In-Reply-To: <20081103111731.d12dbb84.randy.dunlap@oracle.com> (Randy Dunlap's
-	message of "Mon, 3 Nov 2008 11:17:31 -0800")
-Message-ID: <aday700v8f1.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+Subject: Re: xfrm_policy_kill: inconsistent {softirq-on-W} ->
+	{in-softirq-W} usage
+Message-ID: <20081103205726.GA3589@x200.localdomain>
+References: <490F3C08.6000209@simon.arlott.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 03 Nov 2008 20:52:51.0255 (UTC) FILETIME=[22D73C70:01C93DF6]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <490F3C08.6000209@simon.arlott.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Make 9p's RDMA option depend on INET since it uses Infiniband rdma_*
- > functions and that code depends on INET.  Otherwise 9p can try to
- > use symbols which don't exist.
- > 
- > ERROR: "rdma_destroy_id" [net/9p/9pnet_rdma.ko] undefined!
+On Mon, Nov 03, 2008 at 05:59:36PM +0000, Simon Arlott wrote:
+> [163040.503328] =================================
+> [163040.504264] [ INFO: inconsistent lock state ]
+> [163040.504264] 2.6.28-rc2-git #19424-g083ead5
+> [163040.504264] ---------------------------------
+> [163040.504264] inconsistent {softirq-on-W} -> {in-softirq-W} usage.
+> [163040.504264] swapper/0 [HC0[0]:SC1[1]:HE1:SE0] takes:
+> [163040.531914]  (xfrm_policy_gc_lock){-+..}, at: [<7846bf3f>] xfrm_policy_kill+0x46/0x7e
+> [163040.531914] {softirq-on-W} state was registered at:
+> [163040.531914]   [<782430ea>] __lock_acquire+0x4d2/0x653
+> [163040.531914]   [<782432b3>] lock_acquire+0x48/0x64
+> [163040.531914]   [<784ca073>] _spin_lock+0x25/0x34
+> [163040.531914]   [<7846bf3f>] xfrm_policy_kill+0x46/0x7e
+> [163040.531914]   [<7846c052>] xfrm_policy_delete+0x44/0x4a
+> [163040.531914]   [<783fadc7>] sk_common_release+0x61/0x9f
+> [163040.531914]   [<784480fe>] udp_lib_close+0x8/0xa
+> [163040.531914]   [<7844f0b6>] inet_release+0x42/0x48
+> [163040.531914]   [<783f90d2>] sock_release+0x14/0x8a
+> [163040.531914]   [<783f95a0>] sock_close+0x29/0x30
+> [163040.531914]   [<782707c7>] __fput+0xad/0x159
+> [163040.531914]   [<78270afa>] fput+0x17/0x19
+> [163040.531914]   [<7826e247>] filp_close+0x50/0x5a
+> [163040.531914]   [<7826e2b9>] sys_close+0x68/0xa7
+> [163040.531914]   [<78202e11>] sysenter_do_call+0x12/0x35
+> [163040.531914]   [<ffffffff>] 0xffffffff
+> [163040.531914] irq event stamp: 1417665572
+> [163040.531914] hardirqs last  enabled at (1417665572): [<7822ace6>] local_bh_enable_ip+0xa7/0xbd
+> [163040.531914] hardirqs last disabled at (1417665571): [<7822ac84>] local_bh_enable_ip+0x45/0xbd
+> [163040.531914] softirqs last  enabled at (1417665530): [<7822abe2>] __do_softirq+0x114/0x11c
+> [163040.531914] softirqs last disabled at (1417665541): [<7822ac23>] do_softirq+0x39/0x55
+> [163040.531914] 
+> [163040.531914] other info that might help us debug this:
+> [163040.531914] no locks held by swapper/0.
+> [163040.531914] 
+> [163040.531914] stack backtrace:
+> [163040.531914] Pid: 0, comm: swapper Not tainted 2.6.28-rc2-git #19424-g083ead5
+> [163040.531914] Call Trace:
+> [163040.531914]  [<78240aa7>] print_usage_bug+0x144/0x150
+> [163040.531914]  [<78241599>] mark_lock+0x2f9/0x7e7
+> [163040.531914]  [<78243072>] __lock_acquire+0x45a/0x653
+> [163040.531914]  [<782432b3>] lock_acquire+0x48/0x64
+> [163040.531914]  [<7846bf3f>] ? xfrm_policy_kill+0x46/0x7e
+> [163040.531914]  [<784ca073>] _spin_lock+0x25/0x34
+> [163040.531914]  [<7846bf3f>] ? xfrm_policy_kill+0x46/0x7e
+> [163040.531914]  [<7846bf3f>] xfrm_policy_kill+0x46/0x7e
+> [163040.531914]  [<7846c052>] xfrm_policy_delete+0x44/0x4a
+> [163040.531914]  [<7846d556>] xfrm_policy_timer+0x197/0x1c9
+> [163040.531914]  [<78241c34>] ? trace_hardirqs_on_caller+0xca/0x101
+> [163040.531914]  [<7822e3c3>] run_timer_softirq+0x102/0x15d
+> [163040.531914]  [<7846d3bf>] ? xfrm_policy_timer+0x0/0x1c9
+> [163040.531914]  [<7822ab4b>] __do_softirq+0x7d/0x11c
+> [163040.531914]  [<7822ac23>] do_softirq+0x39/0x55
 
-Good catch.
+If it's easily reproducible, try this patch:
 
- >  config NET_9P_RDMA
- > -	depends on NET_9P && INFINIBAND && EXPERIMENTAL
- > +	depends on INET && INFINIBAND && EXPERIMENTAL
-
-I wonder if there's a way to make this depend on INFINIBAND_ADDR_TRANS
-instead of INET, since that's the real dependency to get the rdma_*
-symbols.  However INFINIBAND_ADDR_TRANS is a bool that gets set to y iff
-INET and INFINIBAND are set, so it's not trivial to make a tristate
-depend on it.
-
-Maybe this patch is fine as it is, since the Kconfig dependencies are
-unlikely to change anyway...
-
- - R.
+--- a/net/xfrm/xfrm_policy.c
++++ b/net/xfrm/xfrm_policy.c
+@@ -315,9 +315,9 @@ static void xfrm_policy_kill(struct xfrm_policy *policy)
+ 		return;
+ 	}
+ 
+-	spin_lock(&xfrm_policy_gc_lock);
++	spin_lock_bh(&xfrm_policy_gc_lock);
+ 	hlist_add_head(&policy->bydst, &xfrm_policy_gc_list);
+-	spin_unlock(&xfrm_policy_gc_lock);
++	spin_unlock_bh(&xfrm_policy_gc_lock);
+ 
+ 	schedule_work(&xfrm_policy_gc_work);
+ }
