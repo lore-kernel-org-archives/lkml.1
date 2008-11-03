@@ -1,122 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbYKCRSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752055AbYKCRVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752575AbYKCRSc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 12:18:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbYKCRSY
+	id S1752055AbYKCRVb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 12:21:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbYKCRVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 12:18:24 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34703 "EHLO mx2.redhat.com"
+	Mon, 3 Nov 2008 12:21:23 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60844 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751118AbYKCRSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 12:18:23 -0500
-Message-ID: <490F317C.9040603@redhat.com>
-Date: Mon, 03 Nov 2008 11:14:36 -0600
-From: David Smith <dsmith@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1750934AbYKCRVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 12:21:22 -0500
+Date: Mon, 3 Nov 2008 15:21:12 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][v3] blktrace: conversion to tracepoints
+Message-ID: <20081103172112.GB32603@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20081029120556.GD28123@ghostprotocols.net> <20081029131855.GC31673@kernel.dk> <20081029194323.GA25056@ghostprotocols.net> <20081030073134.GM31673@kernel.dk> <20081030110352.GB25056@ghostprotocols.net> <20081030111144.GQ31673@kernel.dk>
 MIME-Version: 1.0
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-CC: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [patch 15/21] ptrace changes
-References: <20081001083317.782967473@de.ibm.com> <20081001084129.042880937@de.ibm.com>
-In-Reply-To: <20081001084129.042880937@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081030111144.GQ31673@kernel.dk>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Note that I know ~0 about s390 register layouts, but...
+Em Thu, Oct 30, 2008 at 12:11:45PM +0100, Jens Axboe escreveu:
+> On Thu, Oct 30 2008, Arnaldo Carvalho de Melo wrote:
+> > Yes, I tested it, run 'btrace /dev/sda' several times, while doing a
+> > 45 GB backup using rsync over NFS, etc. So it should have exercised the
+> > tracepoints use and repeated registrater/unregister cycles.
+> 
+> Awesome, just wanted to know what level of testing you had done (from
+> "none" to "doesn't crash" to "actually works"), so thanks for that.
 
-Martin Schwidefsky wrote:
-> Index: quilt-2.6/arch/s390/kernel/ptrace.c
-> ===================================================================
-> --- quilt-2.6.orig/arch/s390/kernel/ptrace.c
-> +++ quilt-2.6/arch/s390/kernel/ptrace.c
-> @@ -639,40 +640,44 @@ long compat_arch_ptrace(struct task_stru
->  }
->  #endif
->
-> -asmlinkage void
-> -syscall_trace(struct pt_regs *regs, int entryexit)
-> +asmlinkage long do_syscall_trace_enter(struct pt_regs *regs)
->  {
+Jens,
 
-...
+	Now I'm working on the marker glue code for systemtap to use
+these tracepoints and I noticed that one important piece of information
+is not available unless one first uses blk_trace_ioctl to fill in
+request_queue->blk_trace, that is request_queue->blk_trace->dev, i.e.
+the device associated with the request_queue.
 
-> +	if (unlikely(current->audit_context))
-> +		audit_syscall_entry(test_thread_flag(TIF_31BIT) ?
-> +					AUDIT_ARCH_S390 : AUDIT_ARCH_S390X,
-> +				    regs->gprs[2], regs->orig_gpr2,
-> +				    regs->gprs[3], regs->gprs[4],
-> +				    regs->gprs[5]);
-> +	return ret;
-> +}
+	Is there a way to, from the request_queue, get the dev? I guess
+not, as if there would be you wouldn't have added it to struct
+blk_trace...
 
-According to the above, the syscall number is in regs->gprs[2] and the
-1st syscall argument is in regs->orig_gpr2.
+	Would it be sane to add get struct block_device->bd_dev dev_t
+info into struct request_queue at sd_probe time or most probably at some
+more suitable routine in the device/disk registration sequence of
+events?
 
-Then in:
+	I am certainly missing lots of connections here, there are many
+objects and relationships among these objects that may make the
+association of a block_device with a request_queue not to be fixed all
+the time, thus requiring the struct blk_trace ->dev field to be set up
+at ioctl time, but I'm just trying to figure out how to remove the
+requirement of a setup routine for the tracepoints to know what is the
+dev_t associated with the request_queue they are getting as a parameter.
 
-> Index: quilt-2.6/arch/s390/include/asm/syscall.h
-> ===================================================================
+Best Regards,
 
-...
-
-> +static inline long syscall_get_nr(struct task_struct *task,
-> +				  struct pt_regs *regs)
-> +{
-> +	if (regs->trap != __LC_SVC_OLD_PSW)
-> +		return -1;
-> +	return regs->gprs[2];
-> +}
-
-... according to the syscall_get_nr(), the syscall number is in
-regs->gprs[2], which matches what is in arch/s390/kernel/ptrace.c ...
-
-> +static inline void syscall_get_arguments(struct task_struct *task,
-> +					 struct pt_regs *regs,
-> +					 unsigned int i, unsigned int n,
-> +					 unsigned long *args)
-> +{
-> +	BUG_ON(i + n > 6);
-> +#ifdef CONFIG_COMPAT
-> +	if (test_tsk_thread_flag(task, TIF_31BIT)) {
-> +		if (i + n == 6)
-> +			args[--n] = (u32) regs->args[0];
-> +		while (n-- > 0)
-> +			args[n] = (u32) regs->gprs[2 + i + n];
-> +	}
-> +#endif
-> +	if (i + n == 6)
-> +		args[--n] = regs->args[0];
-> +	memcpy(args, &regs->gprs[2 + i], n * sizeof(args[0]));
-> +}
-> +
-> +static inline void syscall_set_arguments(struct task_struct *task,
-> +					 struct pt_regs *regs,
-> +					 unsigned int i, unsigned int n,
-> +					 const unsigned long *args)
-> +{
-> +	BUG_ON(i + n > 6);
-> +	if (i + n == 6)
-> +		regs->args[0] = args[--n];
-> +	memcpy(&regs->gprs[2 + i], args, n * sizeof(args[0]));
-> +}
-> +
-> +#endif	/* _ASM_SYSCALL_H */
-
-According to syscall_get_arguments()/syscall_set_arguments(), the 1st
-syscall argument is in regs->gprs[2], which *doesn't* match what is in
-arch/s390/kernel/ptrace.c.
-
-Is this correct, or should the 1st syscall argument be found in
-regs->orig_gpr2 by syscall_get_arguments()/syscall_set_arguments()?
-
--- 
-David Smith
-dsmith@redhat.com
-Red Hat
-http://www.redhat.com
-256.217.0141 (direct)
-256.837.0057 (fax)
+- Arnaldo
