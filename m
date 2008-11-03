@@ -1,74 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbYKCV7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbYKCWCM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755910AbYKCV7q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 16:59:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYKCV7h
+	id S1756138AbYKCWCM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 17:02:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYKCWB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 16:59:37 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:33386 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752945AbYKCV7g (ORCPT
+	Mon, 3 Nov 2008 17:01:57 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:53316 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752655AbYKCWB4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 16:59:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :x-enigmail-version:content-type;
-        b=RsvkRGza+YFiU4x15WXuIrW3JkcNoL8F2HKEZJp6BHBEqPxhctG5Ccdn/WHlbBZWlV
-         iftGQEosUHmJMSeECxCZfHLxvaaJCX7HidgRjH9oPHWPVHZigHcTsVRQhNTEcAY5eXd7
-         EvU6wi20faG23vWmj5/ZDpTuCpKn8MhRjSVSc=
-Message-ID: <490F73CD.4010705@gmail.com>
-Date: Mon, 03 Nov 2008 23:57:33 +0200
-From: "Eugene V. Lyubimkin" <jackyf.devel@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+	Mon, 3 Nov 2008 17:01:56 -0500
+Date: Mon, 3 Nov 2008 17:01:44 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: ajones@riverbed.com, sandeen@redhat.com, linux-ext4@vger.kernel.org,
+       sct@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
+Message-ID: <20081103220144.GD18117@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrew Morton <akpm@linux-foundation.org>, ajones@riverbed.com,
+	sandeen@redhat.com, linux-ext4@vger.kernel.org, sct@redhat.com,
+	linux-kernel@vger.kernel.org
+References: <4908C951.2000309@redhat.com> <20081103184426.GA31894@ajones-laptop.nbttech.com> <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com> <20081103123750.67c96224.akpm@linux-foundation.org> <20081103205854.GC30565@ajones-laptop.nbttech.com> <20081103131313.e9ae2f93.akpm@linux-foundation.org> <20081103211929.GA18117@mit.edu> <20081103132735.9e63a3d0.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: mmap: is default non-populating behavior stable?
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE277DC70624059272E51407A"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081103132735.9e63a3d0.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE277DC70624059272E51407A
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Here's the ext4 version of the patch.  It's slightly altered from the
+ext3 version in that we do reflect the errors up to sync_fs's callers
+(which then throw it on the floor, but we might as well take away some
+of the fun from all of those academic researchers who like to write
+papers complaining about how often Linux doesn't do appropriat eerror
+checking :-).
 
-Hello kernel hackers!
+After doing some testing, I plan to carry it in the ext4 patch queue.
+I think similar changes should be made to the ext3 version of the
+patch; agreed?
 
-The current implementation of mmap() in kernel is very convenient.
-It allows to mmap(fd) very big amount of memory having small file as back=
--end.
-So one can mmap() 100 MiB on empty file, use first 10 KiB of memory, munm=
-ap() and have
-only 10 KiB of file at the end. And while working with memory, file will =
-automatically be
-grown by read/write memory requests.
+						- Ted
 
-Question is: can user-space application rely on this behavior (I failed t=
-o find any
-documentation about this)?
+commit 8106ea5364c2680a385ed240e8f898611babf661
+Author: Theodore Ts'o <tytso@mit.edu>
+Date:   Mon Nov 3 17:01:22 2008 -0500
 
-TIA and please CC me in replies.
+    ext4: wait on all pending commits in ext4_sync_fs()
+    
+    In ext4_sync_fs, we only wait for a commit to finish if we started it,
+    but there may be one already in progress which will not be synced.
+    
+    In the case of a data=ordered umount with pending long symlinks which
+    are delayed due to a long list of other I/O on the backing block
+    device, this causes the buffer associated with the long symlinks to
+    not be moved to the inode dirty list in the second phase of
+    fsync_super.  Then, before they can be dirtied again, kjournald exits,
+    seeing the UMOUNT flag and the dirty pages are never written to the
+    backing block device, causing long symlink corruption and exposing new
+    or previously freed block data to userspace.
+    
+    To ensure all commits are synced, we flush all journal commits now
+    when sync_fs'ing ext4.
+    
+    Signed-off-by: Arthur Jones <ajones@riverbed.com>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+    Cc: Eric Sandeen <sandeen@redhat.com>
+    Cc: <linux-ext4@vger.kernel.org>
 
---=20
-Eugene V. Lyubimkin aka JackYF
-
-
---------------enigE277DC70624059272E51407A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkPc88ACgkQchorMMFUmYzb0gCcDhSzz+MbkLKj2imeQS3CZPYg
-g7IAoK7K4DLf1AkY6WOGE2HnQDl4JSHL
-=/WW7
------END PGP SIGNATURE-----
-
---------------enigE277DC70624059272E51407A--
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 97cb896..e199773 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -2899,8 +2899,9 @@ int ext4_force_commit(struct super_block *sb)
+ 		return 0;
+ 
+ 	journal = EXT4_SB(sb)->s_journal;
+-	sb->s_dirt = 0;
+ 	ret = ext4_journal_force_commit(journal);
++	if (!ret)
++		sb->s_dirt = 0;
+ 	return ret;
+ }
+ 
+@@ -2922,15 +2923,16 @@ static void ext4_write_super(struct super_block *sb)
+ 
+ static int ext4_sync_fs(struct super_block *sb, int wait)
+ {
+-	tid_t target;
++	int ret;
+ 
+ 	trace_mark(ext4_sync_fs, "dev %s wait %d", sb->s_id, wait);
+-	sb->s_dirt = 0;
+-	if (jbd2_journal_start_commit(EXT4_SB(sb)->s_journal, &target)) {
+-		if (wait)
+-			jbd2_log_wait_commit(EXT4_SB(sb)->s_journal, target);
+-	}
+-	return 0;
++	if (wait)
++		ret = ext4_force_commit(sb);
++	else
++		ret = jbd2_journal_start_commit(EXT4_SB(sb)->s_journal, NULL);
++	if (!ret)
++		sb->s_dirt = 0;
++	return ret;
+ }
+ 
+ /*
