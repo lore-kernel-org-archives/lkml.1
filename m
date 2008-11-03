@@ -1,50 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbYKCOyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbYKCOza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756545AbYKCOyg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 09:54:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbYKCOy2
+	id S1756563AbYKCOza (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 09:55:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbYKCOzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 09:54:28 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:60635 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753947AbYKCOy1 (ORCPT
+	Mon, 3 Nov 2008 09:55:19 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:7574 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753823AbYKCOzQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 09:54:27 -0500
-X-Sasl-enc: kCPbKFUGbS0h7KikK5elbrkRhtNBeDkTvw+qw8Ymd3v6 1225724066
-Date: Mon, 3 Nov 2008 12:54:23 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: thinkpad_acpi: struct device - replace bus_id with dev_name(),
-	dev_set_name()
-Message-ID: <20081103145423.GE31078@khazad-dum.debian.net>
-References: <1225330737.5970.96.camel@nga.site>
+	Mon, 3 Nov 2008 09:55:16 -0500
+Date: Mon, 3 Nov 2008 17:55:14 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Dmitry <dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, cbou@mail.ru,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] power_supply: only register tosa_battery driver on tosa
+Message-ID: <20081103145514.GA23466@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1225271050-21171-1-git-send-email-dbaryshkov@gmail.com> <bc64b4640811021236t3458bf69vd1becc4ab1133be1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1251
 Content-Disposition: inline
-In-Reply-To: <1225330737.5970.96.camel@nga.site>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
+In-Reply-To: <bc64b4640811021236t3458bf69vd1becc4ab1133be1@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Oct 2008, Kay Sievers wrote:
-> From: Kay Sievers <kay.sievers@vrfy.org>
-> Subject: thinkpad_acpi: struct device - replace bus_id with dev_name(), dev_set_name()
+On Sun, Nov 02, 2008 at 11:36:08PM +0300, Dmitry wrote:
+> 2008/10/29 Dmitry Baryshkov <dbaryshkov@gmail.com>:
+> > There are already several wm97xx-battery drivers. Do register the tosa one
+> > only on tosa machines.
+> >
+> > Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+> > ---
+> >  drivers/power/tosa_battery.c |    3 +++
+> >  1 files changed, 3 insertions(+), 0 deletions(-)
 > 
-> CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
+> What about this patch?
 
-Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Sorry for the delay.
 
-Do you want me to push it to Len for merge through the acpi tree, or are
-you guys going to be handle it through another tree?
+> IMO it can and should be merged during 2.6.28-rc cycle.
+> 
+> diff --git a/drivers/power/tosa_battery.c b/drivers/power/tosa_battery.c
+> index 2eab35a..4e52c22 100644
+> --- a/drivers/power/tosa_battery.c
+> +++ b/drivers/power/tosa_battery.c
+> @@ -469,6 +469,9 @@ static struct platform_driver tosa_bat_driver = {
+>  
+>  static int __init tosa_bat_init(void)
+>  {
+> +	if (!machine_is_tosa())
+> +		return -EINVAL;
+> +
+
+I tend to reject this approach. You should rename the driver instead.
+
+I.e.
+-.driver.name    = "wm97xx-battery",
+-.driver.name    = "tosa-battery",
+
+And make sure that this won't break users of that driver (though
+I don't see any).
+
+>  	return platform_driver_register(&tosa_bat_driver);
+>  }
+
+Thanks,
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
