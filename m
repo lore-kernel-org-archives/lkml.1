@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbYKCNjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbYKCNn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755881AbYKCNjR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 08:39:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbYKCNjF
+	id S1755774AbYKCNn0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 08:43:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbYKCNnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 08:39:05 -0500
-Received: from mail.atmel.fr ([81.80.104.162]:40391 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753117AbYKCNjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 08:39:04 -0500
-Message-ID: <490EFEE0.8030104@atmel.com>
-Date: Mon, 03 Nov 2008 14:38:40 +0100
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Mon, 3 Nov 2008 08:43:17 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:3093 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753993AbYKCNnQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 08:43:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=lnAKFEdQq5I9SQ21S1NUGx9GE03MplL0DyQM7uSfyzzSuYnBIgeWj8Rh1usSp0Z6LN
+         l1FOHFLmuSmuJgQK4OwwMkkiyVyjfd7278A0vc1kKYLeOiswAtjfDvHxo1ijpJyVPUsX
+         8raYoxiRbq6TSv/SVUNxpWRadHX1h16cV07QY=
+Message-ID: <b637ec0b0811030543p997e7ddg7949069553c731f3@mail.gmail.com>
+Date: Mon, 3 Nov 2008 14:43:14 +0100
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Matthew Garrett" <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH v2] Add option to passively listen for PCIE hotplug events
+Cc: "Grant Grundler" <grundler@parisc-linux.org>, linux-pci@vger.kernel.org,
+       kristen.c.accardi@intel.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20081103132606.GA30537@srcf.ucam.org>
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: LAK <linux-arm-kernel@lists.arm.linux.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: MMC maintainership help needed
-References: <20081029184254.56e05c4f@mjolnir.drzeus.cx>
-In-Reply-To: <20081029184254.56e05c4f@mjolnir.drzeus.cx>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081029200903.GA1678@srcf.ucam.org>
+	 <20081101175152.GG13302@colo.lackof.org>
+	 <20081103132606.GA30537@srcf.ucam.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pierre,
+Hi.
 
-Pierre Ossman :
-> I'm having trouble finding time and energy for handling MMC stuff in a
-> timely manner (as those of you sending patches to me have noticed).
-> Therefore I'm sending out this general plea for assistance.
-> 
-> If you see any MMC/SD/SDIO patches, bug reports or general questions,
-> don't be afraid to comment and/or ask for more information. Even if you
-> don't feel like you can solve the issue, any help you can provide means
-> that my limited time can be better spent. And you'll probably also get
-> more comfortable with the MMC parts in the process. :)
+On Mon, Nov 3, 2008 at 2:26 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> Various pieces of hardware (such as the Acer Aspire One and Asus EEE)
+> use PCIE hotplug to change the state of devices in response to events
+> such as the removal of SD cards or disabling the wireless radio.
+> However, they do not provide firmware support for this. As a consequence
+> pciehp will refuse to load and various things break.
+>
+> The existing workaround has been to use the pciehp_force option. This is
+> undesirable as there is little guarantee that manipulating the power
+> file in the slot directory will actually result in anything happening,
+> leading to potential user confusion and hardware damage. This patch adds
+> a new option, pciehp_passive. In this configuration pciehp will listen
+> for events and notify the PCI core appropriately. However, it will not
+> provide any user controllable sysfs attributes and so the risk of
+> confusion or damage is averted. Any system slots that do have firmware
+> support will continue to provide full functionality.
+>
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+>
 
-Ok.
+On my system (a hp laptop) I have to use pciehp_force=1 to have the
+service driver hpdriver loaded and an IRQ (MSI-Edge) assigned.
 
-> On a related note, I see very little comments to my reviews except from
-> the original author. As such I'm having a hard time evaluating my role.
-> Are people satisified with my work as a gatekeeper or am I just being a
-> pain in the ass? I know I can be a bit anal at times. :)
+Does this patch mean that in the future I'd have to use the new
+pciehp_passive=1 switch instead?
 
-Hey Pierre, you are just perfect in this role from my point of view.
+Sorry if I wasn't clear, I'm not an English native speaker.
 
-With many contributors, we manage to enhance significantly the quality 
-of the at91_mci SD/MMC driver and your view and comments, as a 
-maintainer, have always been valuable.
-
-Kind regards,
--- 
-Nicolas Ferre
-
+Regards,
+Fabio
