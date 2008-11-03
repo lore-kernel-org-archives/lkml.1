@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756418AbYKCW6K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbYKCW7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756418AbYKCW6K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 17:58:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136AbYKCW54
+	id S1756638AbYKCW7n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 17:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbYKCW7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 17:57:56 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38353 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753807AbYKCW5z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 17:57:55 -0500
-Date: Mon, 3 Nov 2008 14:57:33 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: dougthompson@xmission.com, linux-kernel@vger.kernel.org, greg@kroah.com
-Subject: Re: edac: struct device - replace bus_id with dev_name(),
- dev_set_name()
-Message-Id: <20081103145733.3b1701d1.akpm@linux-foundation.org>
-In-Reply-To: <1225327145.5970.30.camel@nga.site>
-References: <1225327145.5970.30.camel@nga.site>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 3 Nov 2008 17:59:33 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:59361 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752314AbYKCW7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 17:59:32 -0500
+Message-ID: <490F824E.3070809@garzik.org>
+Date: Mon, 03 Nov 2008 17:59:26 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Marcel Holtmann <marcel@holtmann.org>
+CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] net driver fixes for 2.6.28-rc
+References: <20081103205121.GA6005@havoc.gtf.org> <B9DCBB9E-9DE3-4114-9FFC-7A7C0C3DA920@holtmann.org>
+In-Reply-To: <B9DCBB9E-9DE3-4114-9FFC-7A7C0C3DA920@holtmann.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Oct 2008 01:39:05 +0100
-Kay Sievers <kay.sievers@vrfy.org> wrote:
+Marcel Holtmann wrote:
+> Hi Jeff,
+> 
+>> Please pull from 'davem-fixes' branch of
+>> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git 
+>> davem-fixes
+>>
+>> to receive the following updates:
+>>
+>> drivers/net/Kconfig                |   18 +++++++++++++++---
+>> drivers/net/fs_enet/fs_enet-main.c |    6 ++++--
+>> drivers/net/mv643xx_eth.c          |    9 ++++++---
+>> 3 files changed, 25 insertions(+), 8 deletions(-)
+> 
+> are you also queuing patches for drivers/net/usb/hso.c, because the 
+> current state of that driver is fully broken. It oopses and shows up 
+> with a WLAN RFKILL switch instead of WWAN. Also it has some weird 
+> disconnect race with the TTY layer. Some patches have been posted, but 
+> seems that nobody has picked them up so far.
 
-> Subject: edac: struct device - replace bus_id with dev_name(), dev_set_name()
+Last patch sent me was sent on 9/16 by Denis Joseph Barrow; I replied 
+and never received a response after that.
 
-um,
+Patches welcome...
 
-ERROR: space required after that ',' (ctx:VxV)
-#40: FILE: drivers/edac/edac_mc.c:404:
-+               "%s (%s) %s %s already assigned %d\n",dev_name( p->dev),
-                                                     ^
+I don't see any hso patches on
+http://patchwork.ozlabs.org/project/netdev/list/ nor in my inbox, so I'm 
+guessing that no one sent me or netdev any hso patches.
 
-ERROR: space prohibited after that open parenthesis '('
-#40: FILE: drivers/edac/edac_mc.c:404:
-+               "%s (%s) %s %s already assigned %d\n",dev_name( p->dev),
+	Jeff
 
 
-where did this crap come from?  It looks like some automated thing
-placed a space at the wrong end of the string?
-
-If so, are we about to send hundreds of such mistakes into the tree?
-
-(checkpatch!  Is good!)
