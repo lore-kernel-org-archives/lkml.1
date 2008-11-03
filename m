@@ -1,81 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbYKCUvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbYKCUvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755321AbYKCUvV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 15:51:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbYKCUvF
+	id S1754879AbYKCUvi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 15:51:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbYKCUvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 15:51:05 -0500
-Received: from kroah.org ([198.145.64.141]:40112 "EHLO coco.kroah.org"
+	Mon, 3 Nov 2008 15:51:07 -0500
+Received: from kroah.org ([198.145.64.141]:40115 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754135AbYKCUvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754165AbYKCUvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 3 Nov 2008 15:51:04 -0500
-Date: Mon, 3 Nov 2008 12:46:19 -0800
+Date: Mon, 3 Nov 2008 12:47:26 -0800
 From: Greg KH <greg@kroah.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Subbu Seetharaman <subbus@serverengines.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RESEND] benet: BladeEngine 10Gb NIC driver
-Message-ID: <20081103204619.GA19936@kroah.com>
-References: <20081103122512.06063fc9@mailhost.serverengines.com> <20081103193641.GA12552@kroah.com> <490F5667.3080904@garzik.org> <20081103201930.GB13299@kroah.com> <490F6234.4060805@garzik.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: stable@kernel.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Peter Chubb <peterc@gelato.unsw.edu.au>, jbarnes@virtuousgeek.org,
+       matthew@wil.cx
+Subject: Re: [stable] [patch] fix 64-vbit prefetchable memory resource BARs
+Message-ID: <20081103204726.GB19936@kroah.com>
+References: <8763nx1fr3.wl%peter@chubb.wattle.id.au> <200811031342.11018.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <490F6234.4060805@garzik.org>
+In-Reply-To: <200811031342.11018.bjorn.helgaas@hp.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 03, 2008 at 03:42:28PM -0500, Jeff Garzik wrote:
-> Greg KH wrote:
->> On Mon, Nov 03, 2008 at 02:52:07PM -0500, Jeff Garzik wrote:
->>> Greg KH wrote:
->>>> On Mon, Nov 03, 2008 at 04:25:12AM -0800, Subbu Seetharaman wrote:
->>>>> If we could get more specific feedback about the areas that require
->>>>> cleanup, we can take care of them quickly.  Since the last posting, we 
->>>>> have brought up the driver in a PPC system
->>>>> and fixed some endianness issues.  As soon as I have some specific
->>>>> feedback, we can update the driver with these fixes as well.
->>>>>
->>>>> Please let me know as soon as the driver is in the staging area.
->>>> Does someone have a pointer to the driver, so that we can see what is
->>>> needed to be done?
->>> It was in my email :)  Repeating,
->>>
->>> The 'benet' branch of
->>> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
->>>
->>> It should be suitable for pulling directly into staging.
->> Hm, call me extreemly stupid, but I don't see anything in that branch
->> for this driver.
->> Here's what I did:
->>   git fetch 
->> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git benet 
->> master:jeff
->>   git checkout jeff
->> Even looking around at this tree with 'gitk --all' I don't see anything.
->> So what did I do wrong here?
->
-> Well, the commit has been there long enough to mirror out, and show up on 
-> the web interface:
->
-> http://git.kernel.org/?p=linux/kernel/git/jgarzik/netdev-2.6.git;a=shortlog;h=benet
->
-> therefore I am guessing there is some git user error here... but I could 
-> not say what, since I am unfamiliar with your style of git invocation.
->
-> I would recommend creating a new branch, or switching to an existing one, 
-> and then pulling into it.  Pulling from a branch always works in my 
-> experience, and that's what I've been doing since git was first written.
->
-> URL=git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
-> git checkout -b tmp master
-> git pull $URL benet
+On Mon, Nov 03, 2008 at 02:42:10PM -0600, Bjorn Helgaas wrote:
+> On Sunday 12 October 2008 06:49:04 pm Peter Chubb wrote:
+> > Since patch 6ac665c63dcac8fcec534a1d224ecbb8b867ad59
+> > my infiniband controller hasn't worked.  This is because it has
+> > 64-bit prefetchable memory, which was mistakenly being  taken to be
+> > 32-bit memory.  The resource flags in this case are
+> > PCI_BASE_ADDRESS_MEM_TYPE_64|PCI_BASE_ADDRESS_MEM_PREFETCH.
+> > 
+> > This patch checks only for the PCI_BASE_ADDRESS_MEM_TYPE_64 bit; thus
+> > whether the region is prefetchable or not is ignored.  This fixes my
+> > Infiniband.
+> 
+> I think this patch needs to be put in a 2.6.27-stable release.
+> 
+> Without it, we ignore the upper bits of 64-bit prefetchable BARs.
+> 
+> This is commit e354597cce8d219d135d65e585dc4f30323486b9 in Linus's
+> tree.
 
-Ok, that worked just fine, sorry for the noise, I was trying to be
-"nice" and not use 'git pull' and use 'git fetch' like I thought I was
-supposed to be doing :)
-
-I can take it from here...
+Thanks for the info, we will queue it up.
 
 greg k-h
