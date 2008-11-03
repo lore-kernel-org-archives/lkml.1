@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752714AbYKCRYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbYKCRZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752714AbYKCRYS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 12:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbYKCRYK
+	id S1753255AbYKCRZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 12:25:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbYKCRZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 12:24:10 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:49186 "EHLO pasmtpB.tele.dk"
+	Mon, 3 Nov 2008 12:25:12 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:49435 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750759AbYKCRYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 12:24:10 -0500
-Date: Mon, 3 Nov 2008 18:22:45 +0100
+	id S1751065AbYKCRZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 12:25:10 -0500
+Date: Mon, 3 Nov 2008 18:23:50 +0100
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][v3] blktrace: conversion to tracepoints
-Message-ID: <20081103172244.GU31673@kernel.dk>
-References: <20081029120556.GD28123@ghostprotocols.net> <20081029131855.GC31673@kernel.dk> <20081029194323.GA25056@ghostprotocols.net> <20081030073134.GM31673@kernel.dk> <20081030110352.GB25056@ghostprotocols.net> <20081030111144.GQ31673@kernel.dk> <20081103172112.GB32603@ghostprotocols.net>
+To: James Smart <James.Smart@Emulex.Com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Problems with the block-layer timeouts
+Message-ID: <20081103172350.GV31673@kernel.dk>
+References: <Pine.LNX.4.44L0.0811011214470.21703-100000@netrider.rowland.org> <20081103085247.GO31673@kernel.dk> <490F0822.6010406@emulex.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081103172112.GB32603@ghostprotocols.net>
+In-Reply-To: <490F0822.6010406@emulex.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 03 2008, Arnaldo Carvalho de Melo wrote:
-> Em Thu, Oct 30, 2008 at 12:11:45PM +0100, Jens Axboe escreveu:
-> > On Thu, Oct 30 2008, Arnaldo Carvalho de Melo wrote:
-> > > Yes, I tested it, run 'btrace /dev/sda' several times, while doing a
-> > > 45 GB backup using rsync over NFS, etc. So it should have exercised the
-> > > tracepoints use and repeated registrater/unregister cycles.
-> > 
-> > Awesome, just wanted to know what level of testing you had done (from
-> > "none" to "doesn't crash" to "actually works"), so thanks for that.
+On Mon, Nov 03 2008, James Smart wrote:
+> Jens Axboe wrote:
+> >>While I'm on the subject, there are a few related items that could be
+> >>improved.  In my tests, I was generating I/O requests simply by doing
+> >>
+> >>      dd if=/dev/sda ...
+> >>
+> >>I don't know where the timeouts for these requests are determined, but
+> >>they were set to 60 seconds.  That seems much too long.
+> >
+> >Fully agreed, as Mike mentioned this actually looks like a dumb udev
+> >rule that didn't have any effect until this generic timeout work. For
+> >normal IO, something in the 10 second range is a lot more appropriate.
 > 
-> Jens,
-> 
-> 	Now I'm working on the marker glue code for systemtap to use
-> these tracepoints and I noticed that one important piece of information
-> is not available unless one first uses blk_trace_ioctl to fill in
-> request_queue->blk_trace, that is request_queue->blk_trace->dev, i.e.
-> the device associated with the request_queue.
-> 
-> 	Is there a way to, from the request_queue, get the dev? I guess
-> not, as if there would be you wouldn't have added it to struct
-> blk_trace...
-> 
-> 	Would it be sane to add get struct block_device->bd_dev dev_t
-> info into struct request_queue at sd_probe time or most probably at some
-> more suitable routine in the device/disk registration sequence of
-> events?
+> Yes and no. For direct-attach storage with no other initiators, ok.
+> But for larger arrays, potentially with multiple initiators - no.  I
+> can name several arrays that depend on a 30 second timeout, and a few
+> that, underload, require 60 seconds.  I assume that there's usually
+> "best practices" guides for the integrators to ensure the defaults are
+> set right.
 
-You can't do that, the queue is nothing more than a transport. There's
-no sane way to map from a queue to a device, since it's not given that
-there will be a 1:1 mapping even. So no go there, sorry.
-
-> 	I am certainly missing lots of connections here, there are many
-> objects and relationships among these objects that may make the
-> association of a block_device with a request_queue not to be fixed all
-> the time, thus requiring the struct blk_trace ->dev field to be set up
-> at ioctl time, but I'm just trying to figure out how to remove the
-> requirement of a setup routine for the tracepoints to know what is the
-> dev_t associated with the request_queue they are getting as a parameter.
-> 
-> Best Regards,
-> 
-> - Arnaldo
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Sure I agree, it depends on what kind of storage you have. What I mean
+is that for a normal disk you want something like 10 seconds.
 
 -- 
 Jens Axboe
