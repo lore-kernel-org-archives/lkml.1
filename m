@@ -1,228 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbYKCTCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbYKCTEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbYKCTCh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 14:02:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbYKCTC2
+	id S1754414AbYKCTEn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 14:04:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbYKCTEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 14:02:28 -0500
-Received: from main.gmane.org ([80.91.229.2]:55439 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751435AbYKCTC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 14:02:27 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Frederik Himpe <fhimpe@telenet.be>
-Subject: Re: ALPS input driver problem with DualPoint on Dell E6400/E6500
-Date: Mon, 3 Nov 2008 19:02:04 +0000 (UTC)
-Message-ID: <pan.2008.11.03.19.02.04@telenet.be>
-References: <20081101044828.GC7527@cse.unsw.EDU.AU>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 78-21-61-244.access.telenet.be
-User-Agent: Pan/0.133 (House of Butterflies)
-Cc: linux-input@vger.kernel.org
+	Mon, 3 Nov 2008 14:04:34 -0500
+Received: from gv-out-0910.google.com ([216.239.58.188]:61575 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752522AbYKCTEd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 14:04:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=E2F6HlFSW34zbZNZ2a6XtB/CpLD/buLmMwnU20nCtxTPEY/TGgyj6qC9PTzGdRxGqI
+         wizsAJ3uBGc5poBmKEqeOnh1nIeZCqpflYL8Hij1VpjLoalvgfimMgt/IzSXJ01+ODXn
+         ZfXqVh/mr/UWF+BfxwnsVMAaFmAFqjAt/CRmc=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: akataria@vmware.com
+Subject: Re: upstream regression (IO-APIC?)
+Date: Mon, 3 Nov 2008 20:01:54 +0100
+User-Agent: KMail/1.9.10
+Cc: Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Robert Hancock <hancockr@shaw.ca>,
+       Arjan van de Ven <arjan@infradead.org>, Pavel Machek <pavel@suse.cz>
+References: <fa.mewpISr5S4wcdUNw1DVfOnQfl8s@ifi.uio.no> <200811031828.07285.bzolnier@gmail.com> <1225735444.8168.24.camel@alok-dev1>
+In-Reply-To: <1225735444.8168.24.camel@alok-dev1>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811032001.54806.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 01 Nov 2008 15:48:28 +1100, Matthew Chapman wrote:
+On Monday 03 November 2008, Alok Kataria wrote:
+> On Mon, 2008-11-03 at 09:28 -0800, Bartlomiej Zolnierkiewicz wrote:
+> > On Sunday 02 November 2008, Bartlomiej Zolnierkiewicz wrote:
+> > > On Sunday 02 November 2008, Bartlomiej Zolnierkiewicz wrote:
+> > > > On Thursday 30 October 2008, Robert Hancock wrote:
+> > > > > Bartlomiej Zolnierkiewicz wrote:
+> > > > > > The current Linus tree as of commit e946217e4fdaa67681bbabfa8e6b18641921f750
+> > > > > > is broken for me.  I get either the following panic (see log from qemu below)
+> > > > > > or lost IRQs on ATA init...  Is this a known issue?
+> > > > > > 
+> > > > > > PS The tree that I used before and was supposedly good (sorry, I'm too tired
+> > > > > > to verify it now) had commit 57f8f7b60db6f1ed2c6918ab9230c4623a9dbe37 at head.
+> > > > 
+> > > > Unfortunately 57f8f7b60db6f1ed2c6918ab9230c4623a9dbe37 (v2.6.28-rc1)
+> > > > is also bad.  Bisecting it further was a real pain (i.e. I hit broken
+> > > > build with x86 irqbalance changes, broken build with netfilter nat
+> > > > changes and jbd journal problem).  In the end it turned out that 2.6.27
+> > > > is bad too!  However with 2.6.27 the panic occurs only once per several
+> > > > attempts and if there is no panic kernel boots normally (no lost IRQs).
+> > > > 
+> > > > [...]
+> > > > 
+> > > > I finally managed to narrow it down to change making x86 use tsc_khz
+> > > > for loops_per_jiffy -- commit 3da757daf86e498872855f0b5e101f763ba79499
+> > > > ("x86: use cpu_khz for loops_per_jiffy calculation").  This approach
+> > > > seems too simplistic (as I see now Arjan & Pavel expressed concerns
+> > > > about it back when the patch was posted initially [1][2]).  Also it
+> > > > would probably be preferred to re-use existing preset_lpj variable
+> > > > (just like KVM does it for similar purpose [3]) instead of adding a
+> > > > lpj_tsc one and increasing complexity.
+> > > 
+> > > It turned out that I can boot a kernel with different config with
+> > > HZ == 250 just fine and switching to HZ == 1000 makes it fail.
+> > > 
+> > > 
+> > > Looking into it some more:
+> > > 
+> > > HZ == 250 kernel (good):
+> > > 
+> > > Calibrating delay loop (skipped), value calculated using timer frequency.. 2986.79 BogoMIPS (lpj=5973580)
+> > > 
+> > > HZ == 1000 kernel (bad):
+> > > 
+> > > Calibrating delay loop (skipped), using tsc calculated value.. 2990.35 BogoMIPS (lpj=1495176)
+> > > 
+> > > HZ == 1000 kernel with hackyfix (good):
+> > > 
+> > > Calibrating delay using timer specific routine.. 3016.68 BogoMIPS (lpj=6033376)
+> > > 
+> > > 
+> > > Argggh... lpj is used for udelay() & friends so this bug is quite
+> > > dangerous (since udelay() & friends are used for hardware delays)...
+> > 
+> > It may be not as severe as I initially thought,
+> > (obviously) the real hardware works fine:
+> > 
+> > calibrate_delay_direct(): lpj=1495884
+> > Calibrating delay loop (skipped), value calculated using timer frequency.. 2990.36 BogoMIPS (lpj=1495183)
+> > 
+> > So the issue only affects qemu ATM.
+> Oh so its on a emulator, something wrong in the timer emulation logic in
+> qemu ?
 
-> I have a Dell Latitude E6400 laptop with an ALPS touchpad/touchstick
-> combination, aka DualPoint.  Individually, the touchpad and touchstick
-> work fine.  However, if I accidentally touch both together, or use the
-> touchpad buttons while using the touchstick (or vice versa), things go
-> astray.  The pointer jumps around, stray mouse buttons are pressed, and
-> the driver typically loses sync:
-> 
-> [13333.661085] psmouse.c: DualPoint TouchPad at isa0060/serio1/input0
-> lost sync at byte 5
-> [13333.662353] psmouse.c: DualPoint TouchPad at isa0060/serio1/input0
-> lost sync at byte 1
-> [13333.669493] psmouse.c: DualPoint TouchPad at isa0060/serio1/input0 -
-> driver resynched.
-> 
-> To cut a long story short, it seems that in this case the ALPS device
-> sends a 9-byte packet format, with both a relative update and an
-> absolute update combined (why oh why...).  Has anyone else seen
-> something like this?
+Probably.  I now noticed that the problem happens only with HZ == 250 host
+and HZ == 1000 guest.  When host and guest are using the same HZ setting
+everything works fine.
 
-I can definitely confirm this problem, also on a Dell Latitutde E6400 with 
-2.6.27 kernel.
-
-dmesg contains errors like this:
-
-psmouse.c: DualPoint TouchPad at isa0060/serio1/input0 lost sync at byte 6
-psmouse.c: DualPoint TouchPad at isa0060/serio1/input0 - driver resynched.
-psmouse.c: DualPoint TouchPad at isa0060/serio1/input0 lost sync at byte 5
-psmouse.c: DualPoint TouchPad at isa0060/serio1/input0 lost sync at byte 1
-psmouse.c: DualPoint TouchPad at isa0060/serio1/input0 - driver resynched.
-psmouse.c: DualPoint TouchPad at isa0060/serio1/input0 lost sync at byte 5
-psmouse.c: DualPoint TouchPad at isa0060/serio1/input0 lost sync at byte 6
-psmouse.c: DualPoint TouchPad at isa0060/serio1/input0 lost sync at byte 3
-psmouse.c: DualPoint TouchPad at isa0060/serio1/input0 lost sync at byte 3
-psmouse.c: DualPoint TouchPad at isa0060/serio1/input0 lost sync at byte 3
-psmouse.c: issuing reconnect request
-input: PS/2 Generic Mouse as /class/input/input13
-
-(Note also that this patch is still required to make this patch to make 
-the synaptic driver recognize the touchpad:
-http://lkml.org/lkml/2008/9/7/133 )
-
-# cat /proc/bus/input/devices
-I: Bus=0017 Vendor=0001 Product=0001 Version=0100
-N: Name="Macintosh mouse button emulation"
-P: Phys=
-S: Sysfs=/class/input/input0
-U: Uniq=
-H: Handlers=mouse0 event0 
-B: EV=7
-B: KEY=70000 0 0 0 0
-B: REL=3
-
-I: Bus=0011 Vendor=0001 Product=0001 Version=ab41
-N: Name="AT Translated Set 2 keyboard"
-P: Phys=isa0060/serio0/input0
-S: Sysfs=/class/input/input1
-U: Uniq=
-H: Handlers=kbd event1 
-B: EV=120013
-B: KEY=800000000000 0 0 500f02102002 380303cf810d001 feffffdfffefffff 
-ffffffffffffffff
-B: MSC=10
-B: LED=7
-
-I: Bus=0019 Vendor=0000 Product=0005 Version=0000
-N: Name="Lid Switch"
-P: Phys=PNP0C0D/button/input0
-S: Sysfs=/class/input/input4
-U: Uniq=
-H: Handlers=event4 
-B: EV=21
-B: SW=1
-
-I: Bus=0019 Vendor=0000 Product=0001 Version=0000
-N: Name="Power Button (CM)"
-P: Phys=PNP0C0C/button/input0
-S: Sysfs=/class/input/input5
-U: Uniq=
-H: Handlers=kbd event5 
-B: EV=3
-B: KEY=10000000000000 0
-
-I: Bus=0019 Vendor=0000 Product=0003 Version=0000
-N: Name="Sleep Button (CM)"
-P: Phys=PNP0C0E/button/input0
-S: Sysfs=/class/input/input6
-U: Uniq=
-H: Handlers=kbd event6 
-B: EV=3
-B: KEY=4000 0 0
-
-I: Bus=0019 Vendor=0000 Product=0006 Version=0000
-N: Name="Video Bus"
-P: Phys=/video/input0
-S: Sysfs=/class/input/input7
-U: Uniq=
-H: Handlers=kbd event7 
-B: EV=3
-B: KEY=3f000b00000000 0 0 0
-
-I: Bus=0019 Vendor=0000 Product=0006 Version=0000
-N: Name="Video Bus"
-P: Phys=/video/input0
-S: Sysfs=/class/input/input8
-U: Uniq=
-H: Handlers=kbd event8 
-B: EV=3
-B: KEY=3f000b00000000 0 0 0
-
-I: Bus=0019 Vendor=0000 Product=0006 Version=0000
-N: Name="Video Bus"
-P: Phys=/video/input0
-S: Sysfs=/class/input/input9
-U: Uniq=
-H: Handlers=kbd event9 
-B: EV=3
-B: KEY=3f000b00000000 0 0 0
-
-I: Bus=0003 Vendor=413c Product=8157 Version=0111
-N: Name="HID 413c:8157"
-P: Phys=usb-0000:00:1a.0-1.1/input0
-S: Sysfs=/class/input/input10
-U: Uniq=
-H: Handlers=kbd event10 
-B: EV=120013
-B: KEY=1000000000007 ff800000000007ff febeffdff3cfffff fffffffffffffffe
-B: MSC=10
-B: LED=7
-
-I: Bus=0001 Vendor=111d Product=76b2 Version=0001
-N: Name="HDA Digital PCBeep"
-P: Phys=card0/codec#0/beep0
-S: Sysfs=/class/input/input12
-U: Uniq=
-H: Handlers=kbd event12 
-B: EV=40001
-B: SND=6
-
-I: Bus=0011 Vendor=0002 Product=0001 Version=0000
-N: Name="PS/2 Generic Mouse"
-P: Phys=isa0060/serio1/input0
-S: Sysfs=/class/input/input13
-U: Uniq=
-H: Handlers=mouse1 event2 
-B: EV=7
-B: KEY=70000 0 0 0 0
-B: REL=3
-
-
- 
-> When I use just the touchstick and its buttons, the packets are normal
-> PS/2 relative mode packets, e.g.:
-> 
->   08 01 00    dx=1 dy=0
->   09 01 00    dx=1 dy=0   left T/S button down 08 00 01    dx=0 dy=1  
->   left T/S button up
-> 
-> When I use just the touchpad and its buttons, the packets look like
-> this, which also works fine with the current ALPS code:
-> 
->   cf 27 1a 38 24 46   x=423 y=420 z=70 fin=1 cf 2c 1a 39 1e 45   x=428
->   y=414 z=69 fin=1   left T/P button down cf 2f 1a 38 17 44   x=431
->   y=407 z=68 fin=1   left T/P button up
-> 
-> Let's say now I use the touchpad and press a touchstick button...
-> 
->   cf 15 1a 38 5e 3d           x=405 y=478 z=61 cf 19 1a 0f 00 00 39 56
->   3d  x=409 y=470 z=61  left T/P button down
->            ^^^^^^^^
->   cf 1d 1a 39 4e 3d           x=413 y=462 z=61
-> 
->   cf 21 1a 0f 00 00 38 49 3f  x=417 y=456 z=63  left T/P button up
->            ^^^^^^^^
->   cf 21 1a 38 48 3e           x=417 y=455 z=62
-> 
-> Now let's try moving the touchstick also...
-> 
->   cf 3d 12 3f fa fd 18 4c 21  dx=-6 dy=-3 x=317 y=204 z=33
->            ^^^^^^^^
->   38 fa fd                    dx=-6 dy=-3 cf 3a 12 3f f9 fc 18 4c 20 
->   dx=-7 dy=-4 x=314 y=204 z=32
->            ^^^^^^^^
->   38 fa fd                    dx=-6 dy=-3 etc.
-> 
-> In other words, it seems like there's a relative update embedded right
-> in the middle of the absolute mode packet, which can be identified by
-> all the buttons being set to 1.
-> 
-> I can put together a patch, but it's a non-trivial change... I'm
-> interested in hearing whether anyone else has the same problem with
-> their E6400/E6500 or other DualPoint laptop, or has better ideas
-> regarding how to deal with this.
-
--- 
-Frederik Himpe
-
-
+Thanks,
+Bart
