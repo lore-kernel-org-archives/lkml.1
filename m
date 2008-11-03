@@ -1,83 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbYKCJQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbYKCJTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871AbYKCJQf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 04:16:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755294AbYKCJQX
+	id S1755229AbYKCJTc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 04:19:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbYKCJTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 04:16:23 -0500
-Received: from mx40.mail.ru ([194.67.23.36]:54705 "EHLO mx40.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755279AbYKCJQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 04:16:21 -0500
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: linux-acpi@vger.kernel.org
-Subject: [PATCH] Fix argument type for acpi_evaluate_integer in acpi_get_physical_pci_device
-Date: Mon, 3 Nov 2008 12:16:13 +0300
-User-Agent: KMail/1.9.10
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Mon, 3 Nov 2008 04:19:24 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35636 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754639AbYKCJTX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 04:19:23 -0500
+Date: Mon, 3 Nov 2008 10:19:22 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #11835] 2.6.27-git8: max1111_read_channel and corgi_ssp_ads7846_putget missing
+Message-ID: <20081103091922.GB28982@atrey.karlin.mff.cuni.cz>
+References: <nw2Y6lk-0lG.A.VUB.RV5AJB@chimera> <t1C3RWL0r7M.A.xbC.tV5AJB@chimera> <20081027085640.GC30526@atrey.karlin.mff.cuni.cz> <200810271246.08373.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2580284.8bpasYynaP";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200811031216.15690.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: OK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200810271246.08373.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2580284.8bpasYynaP
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> On Monday, 27 of October 2008, Pavel Machek wrote:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > > 
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.27.  Please verify if it still should be listed and let me know
+> > > (either way).
+> > > 
+> > > 
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11835
+> > > Subject		: 2.6.27-git8: max1111_read_channel and corgi_ssp_ads7846_putget missing
+> > > Submitter	: Pavel Machek <pavel@suse.cz>
+> > > Date		: 2008-10-20 12:10 (6 days old)
+> > > References	: http://marc.info/?l=linux-kernel&m=122450475101945&w=4
+> > 
+> > ...seems to be fixed in 2.6.28-rc1. Unfortunately, resulting kernel
+> > still will not boot :-(.
+> 
+> -rc2 should be better at that. :-)
 
-Subject: [PATCH] Fix argument type for acpi_evaluate_integer in acpi_get_ph=
-ysical_pci_device
-=46rom: Andrey Borzenkov <arvidjaar@mail.ru>
-
-CC      drivers/acpi/glue.o
-/home/bor/src/linux-git/drivers/acpi/glue.c: In function 'acpi_get_physical=
-_pci_device':
-/home/bor/src/linux-git/drivers/acpi/glue.c:157: warning: passing argument =
-4 of 'acpi_evaluate_integer' from incompatible pointer type
-
-acpi_evaluate_integer takes pointer to unsigned long long as fourth argument
-
-Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
-
-=2D--
-
- drivers/acpi/glue.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Unfortunately it is not :-(.
 
 
-diff --git a/drivers/acpi/glue.c b/drivers/acpi/glue.c
-index 98c9c76..436c8a3 100644
-=2D-- a/drivers/acpi/glue.c
-+++ b/drivers/acpi/glue.c
-@@ -150,7 +150,7 @@ EXPORT_SYMBOL(acpi_get_physical_device);
- struct device *acpi_get_physical_pci_device(acpi_handle handle)
- {
- 	struct device *dev;
-=2D	long device_id;
-+	unsigned long long device_id;
- 	acpi_status status;
-=20
- 	status =3D
-
---nextPart2580284.8bpasYynaP
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkkOwV8ACgkQR6LMutpd94yiWwCgxMdkhPNPfg50nlYC3EWwo5gu
-c8cAoKm+xRainmJn5ipBLOSkl/qgF8G0
-=4y5F
------END PGP SIGNATURE-----
-
---nextPart2580284.8bpasYynaP--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
