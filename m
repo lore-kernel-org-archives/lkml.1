@@ -1,145 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbYKCV2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757052AbYKCV3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757229AbYKCV2m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 16:28:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755767AbYKCV1n
+	id S1757052AbYKCV3L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 16:29:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755767AbYKCV2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 16:27:43 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:51723 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755599AbYKCV1k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 16:27:40 -0500
-From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH -v2 3/3] filesystems: use has_capability_noaudit interface for
-	reserved blocks checks
-To: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-Cc: sds@tycho.nsa.gov, jmorris@namei.org, serue@us.ibm.com, morgan@kernel.org,
-       casey@schaufler-ca.com, esandeen@redhat.com
-Date: Mon, 03 Nov 2008 16:27:29 -0500
-Message-ID: <20081103212729.21837.99352.stgit@paris.rdu.redhat.com>
-In-Reply-To: <20081103212718.21837.2539.stgit@paris.rdu.redhat.com>
-References: <20081103212718.21837.2539.stgit@paris.rdu.redhat.com>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Mon, 3 Nov 2008 16:28:53 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37504 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755588AbYKCV2w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 16:28:52 -0500
+Date: Mon, 3 Nov 2008 13:27:35 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: ajones@riverbed.com, sandeen@redhat.com, linux-ext4@vger.kernel.org,
+       sct@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
+Message-Id: <20081103132735.9e63a3d0.akpm@linux-foundation.org>
+In-Reply-To: <20081103211929.GA18117@mit.edu>
+References: <4908C951.2000309@redhat.com>
+	<20081103184426.GA31894@ajones-laptop.nbttech.com>
+	<20081103113318.35b0c266.akpm@linux-foundation.org>
+	<20081103201428.GB30565@ajones-laptop.nbttech.com>
+	<20081103123750.67c96224.akpm@linux-foundation.org>
+	<20081103205854.GC30565@ajones-laptop.nbttech.com>
+	<20081103131313.e9ae2f93.akpm@linux-foundation.org>
+	<20081103211929.GA18117@mit.edu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ext[2,3,4], ufs, and ubifs all check for  CAP_SYS_RESOURCE to determine
-if they should allow reserved blocks to be used.  A process not having
-this capability is not failing some security decision and should not be
-audited.  Thus move to using has_capability_noaudit.
+On Mon, 3 Nov 2008 16:19:29 -0500
+Theodore Tso <tytso@mit.edu> wrote:
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
----
+> On Mon, Nov 03, 2008 at 01:13:13PM -0800, Andrew Morton wrote:
+> > On Mon, 3 Nov 2008 12:58:54 -0800
+> > Arthur Jones <ajones@riverbed.com> wrote:
+> > 
+> > > Hi Andrew, ...
+> > > 
+> > > On Mon, Nov 03, 2008 at 12:37:50PM -0800, Andrew Morton wrote:
+> > > > [...]
+> > > > OK.  But still, questions remain.
+> > > > 
+> > > > - should we clear s_dirt if log_wait_commit() didn't work?
+> > > > 
+> > > > - ext3_force_commit() clears s_dirt also
+> > > > 
+> > > > - should ext3_sync_fs() be dropping the ext3_force_commit() return
+> > > >   value on the floor?
+> 
+> Should all the callers of ->sync_fs also be dropping the error returns
+> on the floor?
 
- fs/ext2/balloc.c     |    2 +-
- fs/ext3/balloc.c     |    2 +-
- fs/ext4/balloc.c     |    2 +-
- fs/ubifs/budget.c    |    3 ++-
- fs/ufs/balloc.c      |    2 +-
- security/commoncap.c |    1 +
- security/security.c  |    1 +
- 7 files changed, 8 insertions(+), 5 deletions(-)
+Oh, this is sync_fs.  How meaningful would it be to return an error
+from sys_umount()?  Would there be any point in leaving the errored fs
+mounted?  Dunno.
 
-diff --git a/fs/ext2/balloc.c b/fs/ext2/balloc.c
-index 6dac7ba..e06d96d 100644
---- a/fs/ext2/balloc.c
-+++ b/fs/ext2/balloc.c
-@@ -1192,7 +1192,7 @@ static int ext2_has_free_blocks(struct ext2_sb_info *sbi)
- 
- 	free_blocks = percpu_counter_read_positive(&sbi->s_freeblocks_counter);
- 	root_blocks = le32_to_cpu(sbi->s_es->s_r_blocks_count);
--	if (free_blocks < root_blocks + 1 && !capable(CAP_SYS_RESOURCE) &&
-+	if (free_blocks < root_blocks + 1 && !has_capability_noaudit(current, CAP_SYS_RESOURCE) &&
- 		sbi->s_resuid != current->fsuid &&
- 		(sbi->s_resgid == 0 || !in_group_p (sbi->s_resgid))) {
- 		return 0;
-diff --git a/fs/ext3/balloc.c b/fs/ext3/balloc.c
-index f5b57a2..f224ee4 100644
---- a/fs/ext3/balloc.c
-+++ b/fs/ext3/balloc.c
-@@ -1421,7 +1421,7 @@ static int ext3_has_free_blocks(struct ext3_sb_info *sbi)
- 
- 	free_blocks = percpu_counter_read_positive(&sbi->s_freeblocks_counter);
- 	root_blocks = le32_to_cpu(sbi->s_es->s_r_blocks_count);
--	if (free_blocks < root_blocks + 1 && !capable(CAP_SYS_RESOURCE) &&
-+	if (free_blocks < root_blocks + 1 && !has_capability_noaudit(current, CAP_SYS_RESOURCE) &&
- 		sbi->s_resuid != current->fsuid &&
- 		(sbi->s_resgid == 0 || !in_group_p (sbi->s_resgid))) {
- 		return 0;
-diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
-index d2003cd..a7c7c52 100644
---- a/fs/ext4/balloc.c
-+++ b/fs/ext4/balloc.c
-@@ -626,7 +626,7 @@ int ext4_has_free_blocks(struct ext4_sb_info *sbi, s64 nblocks)
- 	/* Hm, nope.  Are (enough) root reserved blocks available? */
- 	if (sbi->s_resuid == current->fsuid ||
- 	    ((sbi->s_resgid != 0) && in_group_p(sbi->s_resgid)) ||
--	    capable(CAP_SYS_RESOURCE)) {
-+	    has_capability_noaudit(current, CAP_SYS_RESOURCE)) {
- 		if (free_blocks >= (nblocks + dirty_blocks))
- 			return 1;
- 	}
-diff --git a/fs/ubifs/budget.c b/fs/ubifs/budget.c
-index 1a4973e..d17b8b4 100644
---- a/fs/ubifs/budget.c
-+++ b/fs/ubifs/budget.c
-@@ -32,6 +32,7 @@
- 
- #include "ubifs.h"
- #include <linux/writeback.h>
-+#include <linux/capability.h>
- #include <asm/div64.h>
- 
- /*
-@@ -363,7 +364,7 @@ long long ubifs_calc_available(const struct ubifs_info *c, int min_idx_lebs)
-  */
- static int can_use_rp(struct ubifs_info *c)
- {
--	if (current->fsuid == c->rp_uid || capable(CAP_SYS_RESOURCE) ||
-+	if (current->fsuid == c->rp_uid || has_capability_noaudit(current, CAP_SYS_RESOURCE) ||
- 	    (c->rp_gid != 0 && in_group_p(c->rp_gid)))
- 		return 1;
- 	return 0;
-diff --git a/fs/ufs/balloc.c b/fs/ufs/balloc.c
-index 0d9ada1..ad4398b 100644
---- a/fs/ufs/balloc.c
-+++ b/fs/ufs/balloc.c
-@@ -411,7 +411,7 @@ u64 ufs_new_fragments(struct inode *inode, void *p, u64 fragment,
- 	/*
- 	 * There is not enough space for user on the device
- 	 */
--	if (!capable(CAP_SYS_RESOURCE) && ufs_freespace(uspi, UFS_MINFREE) <= 0) {
-+	if (!has_capability_noaudit(current, CAP_SYS_RESOURCE) && ufs_freespace(uspi, UFS_MINFREE) <= 0) {
- 		unlock_super (sb);
- 		UFSD("EXIT (FAILED)\n");
- 		return 0;
-diff --git a/security/commoncap.c b/security/commoncap.c
-index 73999f6..5401e77 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -55,6 +55,7 @@ int cap_capable(struct task_struct *tsk, int cap, int audit)
- 		return 0;
- 	return -EPERM;
- }
-+EXPORT_SYMBOL(cap_capable);
- 
- int cap_settime(struct timespec *ts, struct timezone *tz)
- {
-diff --git a/security/security.c b/security/security.c
-index 346f21e..d061eb1 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -170,6 +170,7 @@ int security_capable_noaudit(struct task_struct *tsk, int cap)
- {
- 	return security_ops->capable(tsk, cap, SECURITY_CAP_NOAUDIT);
- }
-+EXPORT_SYMBOL(security_capable_noaudit);
- 
- int security_acct(struct file *file)
- {
+But if we're going to drop this error on the floor, we should do
+that at a higher level, not on a per-fs basis ;)
 
