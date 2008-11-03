@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbYKCXFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbYKCXGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756055AbYKCXFu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 18:05:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbYKCXFm
+	id S1756691AbYKCXGx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 18:06:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753688AbYKCXGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 18:05:42 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:31555 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbYKCXFm (ORCPT
+	Mon, 3 Nov 2008 18:06:45 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:26599 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752800AbYKCXGp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 18:05:42 -0500
-Message-ID: <ac3eb2510811031505s38c1519ck83f5d89c68566da8@mail.gmail.com>
-Date: Tue, 4 Nov 2008 00:05:35 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: edac: struct device - replace bus_id with dev_name(), dev_set_name()
-Cc: dougthompson@xmission.com, linux-kernel@vger.kernel.org, greg@kroah.com
-In-Reply-To: <20081103145733.3b1701d1.akpm@linux-foundation.org>
+	Mon, 3 Nov 2008 18:06:45 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=IN6XX1wIyPzuVWEHuGhJufe0FGOl8ffH8SdXq/9teOxlFEY0H1cfsN0m12eMVAUtiQVaXi8zMDwvdFSmilMsqQTbYcVwy9TTuUVkajXN7PeC1YBKtaoQKFA7jnSzzStT5faeDEya/HJAKwxFPdXDOqm4oJJzRhsEdCy1maPw4dk=  ;
+X-YMail-OSG: AT.3Y9QVM1nD9qV_y7CoOxDID6lakIdRI6kNe6KY_ITQ_c9GXveCAqITI.h0JBP3voZIBv05xzmLCyGUOTxALPdhoQuSSoLj.2H8iuUC1yh4gfwLwLE6pisq3TEGYfg1jSF_5OBWbpMIB5QG6gzQugJR
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: [PATCH] rtc-cmos: Fix boot log message
+Date: Mon, 3 Nov 2008 16:06:41 -0700
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org,
+       Dominik Brodowski <linux@dominikbrodowski.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200811031942.20360.elendil@planet.nl> <200811031952.39423.elendil@planet.nl>
+In-Reply-To: <200811031952.39423.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-References: <1225327145.5970.30.camel@nga.site>
-	 <20081103145733.3b1701d1.akpm@linux-foundation.org>
+Message-Id: <200811031506.42247.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 3, 2008 at 23:57, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Thu, 30 Oct 2008 01:39:05 +0100
-> Kay Sievers <kay.sievers@vrfy.org> wrote:
->
->> Subject: edac: struct device - replace bus_id with dev_name(), dev_set_name()
->
-> um,
->
-> ERROR: space required after that ',' (ctx:VxV)
-> #40: FILE: drivers/edac/edac_mc.c:404:
-> +               "%s (%s) %s %s already assigned %d\n",dev_name( p->dev),
->                                                     ^
->
-> ERROR: space prohibited after that open parenthesis '('
-> #40: FILE: drivers/edac/edac_mc.c:404:
-> +               "%s (%s) %s %s already assigned %d\n",dev_name( p->dev),
->
->
-> where did this crap come from?  It looks like some automated thing
-> placed a space at the wrong end of the string?
->
-> If so, are we about to send hundreds of such mistakes into the tree?
+On Monday 03 November 2008, Frans Pop wrote:
+> Alternative would be to change the following line at 808:
+>                         is_hpet_enabled() ? ", hpet irqs" : "");
+> to:
+>                         is_hpet_enabled() ? "hpet" : "<sensible value>");
 
-It was me feeling automated, maybe 4 am in the morning.
-It's only one instance in the ~60 patches I have so far:
-  $ cat * | wc -l
-  7255
+The intent was "hpet irqs" vs "native IRQs" (typical PC options)
+vs "no irqs" (e.g. on SPARCs).
 
-  $ grep '( ' *
-  bus_id-edac.patch:+		"%s (%s) %s %s already assigned %d\n",dev_name( p->dev),
+I think fixes got trashed when the patch queue got corrupted
+by some queue-jumping ... see the patch in 
 
-Sorry for that.
+  http://bugzilla.kernel.org/show_bug.cgi?id=11153
 
-Thanks,
-Kay
+which was broken by a474aaedac99ba86e28ef6c912a7647c482db6dd,
+and has appropriately sane messaging.
+
+- Dave
+
+
+
