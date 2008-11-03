@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbYKCVpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbYKCVsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756037AbYKCVpe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 16:45:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbYKCVpT
+	id S1756277AbYKCVsU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 16:48:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYKCVsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 16:45:19 -0500
-Received: from kroah.org ([198.145.64.141]:33057 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752568AbYKCVpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 16:45:18 -0500
-Date: Mon, 3 Nov 2008 13:40:46 -0800
-From: Greg KH <greg@kroah.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Subbu Seetharaman <subbus@serverengines.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RESEND] benet: BladeEngine 10Gb NIC driver
-Message-ID: <20081103214046.GA13796@kroah.com>
-References: <20081103122512.06063fc9@mailhost.serverengines.com> <20081103193641.GA12552@kroah.com> <490F5667.3080904@garzik.org> <20081103201930.GB13299@kroah.com> <490F6234.4060805@garzik.org> <20081103204619.GA19936@kroah.com> <490F653D.2080902@garzik.org>
+	Mon, 3 Nov 2008 16:48:10 -0500
+Received: from mga03.intel.com ([143.182.124.21]:42178 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752655AbYKCVsJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 16:48:09 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,538,1220252400"; 
+   d="scan'208";a="70192422"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Robin Holt <holt@sgi.com>
+CC: Petr Tesarik <ptesarik@suse.cz>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
+Date: Mon, 3 Nov 2008 13:47:58 -0800
+Subject: RE: [PATCH V2 0/2] enable irqs when waiting for rwlocks
+Thread-Topic: [PATCH V2 0/2] enable irqs when waiting for rwlocks
+Thread-Index: Ack9qeCyuNA5uz6aRHefuDsw1fpU2QAU4xPw
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA35BE0554D@orsmsx505.amr.corp.intel.com>
+References: <1224777451.11530.52.camel@elijah.suse.cz>
+ <1225443142.6825.4.camel@elijah.suse.cz>
+ <57C9024A16AD2D4C97DC78E552063EA35A7ED9D3@orsmsx505.amr.corp.intel.com>
+ <20081103114638.GD8483@sgi.com>
+In-Reply-To: <20081103114638.GD8483@sgi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <490F653D.2080902@garzik.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 03, 2008 at 03:55:25PM -0500, Jeff Garzik wrote:
-> Greg KH wrote:
->> Ok, that worked just fine, sorry for the noise, I was trying to be
->
-> Cool...
->
->
->> "nice" and not use 'git pull' and use 'git fetch' like I thought I was
->> supposed to be doing :)
->
-> Curious...  does "nice" mean nicer to the server, i.e. less expensive and 
-> faster to calculate a download?
+> Just a few years of experiencal evidence.  The equivalent of this patch
+> has been in the SuSE SLES10 kernel for years and not been detected as
+> being negative.
 
-No, sorry, "nice" on my side so that a merge would not happen, just a
-fetch, so I could see the patches and not have to worry about any merge
-issues.
+That's good to know.
 
-thanks,
+Petr: I tried to apply these ... but the patches seem corrupted
+(leading spaces dropped? ... I checked in the marc.info archive
+and they seem broken there too).  Can you regenerate them and
+repost (attachments are ok).
 
-greg k-h
+-Tony
