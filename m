@@ -1,87 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756092AbYKCPeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbYKCPe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756092AbYKCPeW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 10:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbYKCPeN
+	id S1756391AbYKCPe5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 10:34:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbYKCPes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 10:34:13 -0500
-Received: from eagle.jhcloos.com ([207.210.242.212]:51231 "EHLO
-	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754039AbYKCPeM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 10:34:12 -0500
-From: James Cloos <cloos@jhcloos.com>
-To: benh@kernel.crashing.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
-In-Reply-To: <1225662539.8004.237.camel@pasglop> (Benjamin Herrenschmidt's
-	message of "Mon, 03 Nov 2008 08:48:59 +1100")
-References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
-	<1225152347.8004.49.camel@pasglop>
-	<m3k5bt2hsc.fsf@lugabout.jhcloos.org>
-	<1225662539.8004.237.camel@pasglop>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
-Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
- REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
- eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
- FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
-Copyright: Copyright 2008 James Cloos
-OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
-OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
-Date: Mon, 03 Nov 2008 10:33:04 -0500
-Message-ID: <m33ai8akoo.fsf@lugabout.jhcloos.org>
+	Mon, 3 Nov 2008 10:34:48 -0500
+Received: from ns2.suse.de ([195.135.220.15]:46042 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754104AbYKCPer (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 10:34:47 -0500
+Message-ID: <490F1A10.3010302@suse.de>
+Date: Mon, 03 Nov 2008 16:34:40 +0100
+From: Stefan Assmann <sassmann@suse.de>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Hashcash: 1:23:081103:benh@kernel.crashing.org::kDfaErG1vcAL+7e4:00000000000000000000000000000000000008dz4
-X-Hashcash: 1:23:081103:linux-fbdev-devel@lists.sourceforge.net::U/53PaQpUezbvnal:0000000000000000000000OsUr
-X-Hashcash: 1:23:081103:linux-kernel@vger.kernel.org::Hiyr3eEsda0qp5Uk:000000000000000000000000000000002fmZh
-X-Hashcash: 1:23:081103:akpm@linux-foundation.org::hBQ/kh2436smhZ6n:0000000000000000000000000000000000003ULX
-X-Hashcash: 1:23:081103:torvalds@linux-foundation.org::L2lib4NuMLo0PW9Y:00000000000000000000000000000000I3Eq
-X-Hashcash: 1:23:081103:davem@davemloft.net::3MjCZ1f0aixerLkC:0000000000000000000000000000000000000000000MbH
-X-Hashcash: 1:23:081103:khc@pm.waw.pl::CbTq0qtY35pd7r2G:0000L8p5
+To: "M. Vefa Bicakci" <bicave@superonline.com>
+Cc: Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Olaf Dabrunz <odabrunz@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: Update: "nobody cared" on Toshiba Satellite A100
+References: <48FB3ED5.60904@superonline.com> <1224431722.26279.4.camel@sven.thebigcorporation.com> <48FB6321.7030501@superonline.com> <48FC38AE.3030007@suse.de> <48FD0152.60907@superonline.com> <48FDFB97.1050208@suse.de> <490E1207.9050508@superonline.com>
+In-Reply-To: <490E1207.9050508@superonline.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Benjamin" == Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+M. Vefa Bicakci wrote:
+> Hello,
+> 
+> Stefan Assmann wrote:
+>> To get some more information I have some more things to suggest:
+> 
+> I am sorry for not letting you know of the results of my tests so far.
+> As you know, this problem is not predictable, and I have to wait a long
+> time or reboot multiple times before I can get a "nobody cared" message.
+> 
+> The contents of this e-mail were not written in chronological order.
+> I have tried your suggestions in the following order: third, first
+> and second.
+> 
+>> 1. try the noapic option
+> 
+> With the "noapic" option, there is yet another unpredictable problem.
+> Sometimes booting with the "noapic" option is okay, whereas sometimes
+> it causes "nobody cared" messages to get printed after the initramfs
+> phase.
+> 
+> With the "noapic" option, the problematic IRQ has switched from 18
+> to 11 and sometimes 10.
+> 
+> I have not tested a kernel with the "noapic" option long enough to see
+> whether a "nobody cared" message would pop up hours or days after the
+> computer boots.
 
->> is in play.  It is probably spinning through all of the 2000000 possible
->> udelay(10) calls.  I don't think I ever gave it twenty seconds before
->> giving up.  And certainly not forty seconds, if the freeze happens after
->> setting the DST_Y_X register.
+What looks interesting:
 
-Benjamin> Well, setting DST_Y_X is what triggers the transfer. The above
-Benjamin> means that the FIFO isn't emptying (ie, the engine is locked up).
+irq 11: nobody cared (try booting with the "irqpoll" option)
+[...]
+handlers:
+[<f8890820>] (usb_hcd_irq+0x0/0x80 [usbcore])
+[<f8890820>] (usb_hcd_irq+0x0/0x80 [usbcore])
+[<f8890820>] (usb_hcd_irq+0x0/0x80 [usbcore])
+[<f8878b60>] (irq_handler+0x0/0x490 [firewire_ohci])
+Disabling IRQ #11
 
-I gave it another try over the weekend and let it sit for five minutes.
-The reset message never appeared.
+irq 10: nobody cared (try booting with the "irqpoll" option)
+[...]
+handlers:
+[<f8890820>] (usb_hcd_irq+0x0/0x80 [usbcore])
+[<f887f940>] (sdhci_irq+0x0/0x610 [sdhci])
+[<f8890820>] (usb_hcd_irq+0x0/0x80 [usbcore])
+[<f8afa8e0>] (yenta_interrupt+0x0/0xf0 [yenta_socket])
+[<f8b89640>] (tifm_7xx1_isr+0x0/0x140 [tifm_7xx1])
+[<f8cbe7a0>] (azx_interrupt+0x0/0x130 [snd_hda_intel])
+[<f88e31a0>] (e100_intr+0x0/0xe0 [e100])
+[<f8e6ea90>] (i915_driver_irq_handler+0x0/0x230 [i915])
+Disabling IRQ #10
 
-Benjamin>  - We can blacklist that chip for imageblit (it's not a huge
-Benjamin> improvement on x86 anyway).
+irq 18: nobody cared (try booting with the "irqpoll" option)
+[...]
+handlers:
+[<f8890830>] (usb_hcd_irq+0x0/0x80 [usbcore])
+[<f88c5940>] (sdhci_irq+0x0/0x610 [sdhci])
+[<f8afa8e0>] (yenta_interrupt+0x0/0xf0 [yenta_socket])
+[<f8bd4640>] (tifm_7xx1_isr+0x0/0x140 [tifm_7xx1])
+Disabling IRQ #18
 
-No objections here.
+If you compare the handlers from all the different warnings you'll see
+that they all share the USB handler.
 
-Benjamin>  - We can be smart, reduce the timeout above, and "detect" the
-Benjamin> lockup, when it happens, reset the engine and disable the
-Benjamin> acceleration that locked up.
+>> 2. try the irqpoll option
+> 
+> I have compiled 2.6.27.4 with the spurious interrupt patch you provided,
+> and I have booted it with the irqpoll option. Currently I am waiting for
+> a "nobody cared" message.
+> 
+> By the way, would I get any messages from the kernel if one of the IRQs
+> was not handled properly and hence the functionality enabled by "irqpoll"
+> was used?
 
-Given Paul's report, that seems like the long term solution.
+No, I don't think there is any notification.
 
-Benjamin> Now, the problem is ... My second son was just born last
-Benjamin> wed. so I'm pretty unavailable right now.
+> 
+>> 3. try the latest 2.6.26 kernel to verify this has been introduced with
+>> 2.6.27
+> 
+> I have done some testing with Sidux's 2.6.27-6.slh.4, vanilla 2.6.27.7 and
+> vanilla 2.6.27.2, the last two of which had a modified version your patch
+> applied. The modification was the replacement of 99900 with 99 instead of
+> the 999 that you suggested in your patch. I hope that this has not caused
+> false positives. I didn't use any kernel command line options. 
+> 
+> Version:                                "nobody cared"?
+> 2.6.27.2 (vanilla, no patch)            Yes
+> 2.6.26.7 (vanilla, with patch)          Yes
+> 2.6.26-6.slh.4 (Sidux, no patch)        Yes
+> 
+> Here's the chronology:
+> 
+> I first tried 2.6.27.2 without the patch. I got the "nobody cared"
+> message approximately 3.5 hours after the boot. Because of the
+> relative quickness, I didn't see the need to try it with the patch.
+> 
+> I then tried 2.6.26.7 with the patch, and I got the "nobody cared"
+> message after 9.5 hours.
 
-Congrats!
+I expected this to happen much quicker if it would be a generic problem.
+Looks like one of the drivers is doing something fishy under certain
+circumstances. And which driver appeared in all of the messages? USB!
 
-Benjamin>  Thus, for .29, I'm tempted to go for the simpler approach
-Benjamin> which is to blacklist M7's from imageblit acceleration.
+> Then I wanted to make sure that my changing the 999 into 99 did
+> not cause a false positive. I tried Sidux's 2.6.26.6 based kernel,
+> unmodified - that is without the patch applied. I got the "nobody
+> cared" message after approximately three days.
+> 
+> ===
+> 
+> So, this might not be regression caused by 2.6.27 after all.
+> Before switching to 2.6.27-rcX series, I used 2.6.25.X, and I used to
+> attach my USB keyboard to one of the USB ports on the right side of the
+> laptop. During the time of the switch to 2.6.27-rcX, I started to use
+> the USB ports on the rear panel of the laptop to reduce desktop clutter,
+> and I started to get the "nobody cared" message. Not thinking about the
+> possibility of port or controller specific issues, I thought that this
+> could be a regression. (I will try 2.6.25.19 after I'm done with 2.6.27.4
+> and irqpoll.)
+> 
+> Is there anything I can do to get more information about this problem?
+> There seems to be too many variables and unpredictable behavior. If you
+> could provide me with a step by step systematic method to debug this
+> problem, I would really appreciate it.
 
-Again, that is fine by me.  Otherwise I'll just leave the #if0 commit
-in my compile clone.
+We need to narrow down where exactly this problem was introduced. To do
+that it's helpful to bisect the kernel. A good start on how to do it
+can be found at http://www.kernel.org/doc/local/git-quick.html.
 
--JimC
+Since I have a strong hunch that this is a USB issue please try the
+following first. Boot your system with one of the mentioned kernels and
+unload all USB modules. Then try to reproduce. If you cannot reproduce
+the problem it's pretty clear where the problem originates.
+
+> Again, thank you for your help.
+> 
+> M. Vefa Bicakci
+> 
+
+  Stefan
+
 -- 
-James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
+Stefan Assmann          | SUSE LINUX Products GmbH
+Software Engineer       | Maxfeldstr. 5, D-90409 Nuernberg
+Mail : sassmann@suse.de | GF: Markus Rex, HRB 16746 (AG Nuernberg)
