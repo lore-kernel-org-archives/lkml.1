@@ -1,66 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752916AbYKCIPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbYKCIQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752916AbYKCIPP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 03:15:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbYKCIO4
+	id S1755117AbYKCIQr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 03:16:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbYKCIQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 03:14:56 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:57222 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755241AbYKCIOz (ORCPT
+	Mon, 3 Nov 2008 03:16:39 -0500
+Received: from fk-out-0910.google.com ([209.85.128.191]:5969 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754453AbYKCIQi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 03:14:55 -0500
-X-Greylist: delayed 621 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Nov 2008 03:14:54 EST
-Date: Mon, 3 Nov 2008 09:04:30 +0100
-From: Andreas Mohr <andim2@users.sourceforge.net>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: andi@lisas.de, e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, bunk@kernel.org
-Subject: Re: [RFC/PATCH] e100 driver didn't support any MII-less PHYs...
-Message-ID: <20081103080430.GA32459@rhlx01.hs-esslingen.de>
-Reply-To: andi@lisas.de
-References: <20071228235118.GA31059@rhlx01.hs-esslingen.de> <477732A5.5020501@intel.com> <20080101200908.GA14805@rhlx01.hs-esslingen.de> <20080129230315.GA13389@rhlx01.hs-esslingen.de> <479FB225.7090604@intel.com> <20080130064909.GA19793@rhlx01.hs-esslingen.de> <47A0A713.7030304@intel.com>
+	Mon, 3 Nov 2008 03:16:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=IPvkhffcn3/Q8Sc8SiW09bg419/5GfzupfSeuSjTsHJW9i4ZBLDn2tf0yDOHZxYD8c
+         zFBlWvJe1SQ+Lcw3M8aD2q+JKqWCXtoZVB1DjvmfjjQuVTz3A7aayZmL2RUL8+eLbrHX
+         g3ThsCamN+/GofRqsuK0M6B54raJISxikL1II=
+Message-ID: <490EB361.9090007@gmail.com>
+Date: Mon, 03 Nov 2008 10:16:33 +0200
+From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47A0A713.7030304@intel.com>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: srostedt@redhat.com, a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Identify which executable object the userspace address
+ belongs to. Store thread group leader id, and use it to lookup the address
+ in the process's map. We could have looked up the address on thread's map,
+ but the thread might not exist by the time we are called. The process might
+ not exist either, but if you are reading trace_pipe, that is unlikely.
+References: <1225660694-19765-1-git-send-email-edwintorok@gmail.com> <1225660694-19765-2-git-send-email-edwintorok@gmail.com> <1225660694-19765-3-git-send-email-edwintorok@gmail.com> <20081103074754.GB13727@elte.hu>
+In-Reply-To: <20081103074754.GB13727@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 2008-11-03 09:47, Ingo Molnar wrote:
+> * Török Edwin <edwintorok@gmail.com> wrote:
+>
+>   
+>> +		struct task_struct *task;
+>> +		/* we do the lookup on the thread group leader,
+>> +		 * since individual threads might have already quit! */
+>>     
+>
+> please use the customary comment style:
+>
+>   /*
+>    * Comment .....
+>    * ...... goes here:
+>    */
+>
+>   
 
-On Wed, Jan 30, 2008 at 08:34:27AM -0800, Kok, Auke wrote:
-> Andreas Mohr wrote:
-> > Hi,
-> > 
-> > On Tue, Jan 29, 2008 at 03:09:25PM -0800, Kok, Auke wrote:
-> >> Andreas Mohr wrote:
-> >>> Perhaps it's useful to file a bug/patch
-> >>> on http://sourceforge.net/projects/e1000/ ? Perhaps -mm testing?
-> >> I wanted to push this though our testing labs first which has not happened due to
-> >> time constraints - that should quickly at least confirm that the most common nics
-> >> work OK after the change with your patch. I'll try and see if we can get this
-> >> testing done soon.
-> > 
-> > Oh, full-scale regression testing even? Nice idea...
-> > Would optionally be even better if during hardware tests one could also
-> > dig out some i82503-based card (or additional MII-less cards?)
-> > since I didn't really make any effort yet to try to make them all
-> > recognized/supported by my patch already (would have been out of scope anyway
-> > since I have this single card only).
-> 
-> the problem is that I think that most of those (mii-less cards) are customly
-> designed by OEM's that buy the silicon and glue on a different interface and we
-> usually do not carry those designs in our labs apart from a few exceptions. So, I
-> can at least touch the common hardware in testing, but not the exotic stuff.
+. Can checkpatch.pl warn me of situations like this?
 
-Any update on how to get this support in? (it's not available in 2.6.28-rc2)
+>> -		if (ret /*&& (sym_flags & TRACE_ITER_SYM_ADDR)*/)
+>> +		if (mm) {
+>> +			const struct vm_area_struct *vma = find_vma(mm, ip);
+>> +			if (vma) {
+>> +				file = vma->vm_file;
+>> +				vmstart = vma->vm_start;
+>> +			}
+>> +		}
+>> +		if (file) {
+>> +			ret = trace_seq_path(s, &file->f_path);
+>> +			if (ret)
+>> +				ret = trace_seq_printf(s, "[+0x%lx]",
+>> +						ip - vmstart);
+>> +		}
+>> +		if (ret && ((sym_flags & TRACE_ITER_SYM_ADDR) || !file))
+>>  			ret = trace_seq_printf(s, " <" IP_FMT ">", ip);
+>>     
+>
+> the function is getting a bit large - would it make sense to split out 
+> this section into a helper inline function?
+>   
 
-As it stands, I'm not the only one who would need this...
+Yes, I'll do that.
 
-Thanks!
+> another small nit: i cleaned up the subject line and the commit log 
+> message for you - see the two patches below - could you please keep it 
+> for future (v3) submissions of these patches? It's just small 
+> formatting changes.
+>   
 
-Andreas Mohr
+Ok, luckily git-rebase -i allows me to rewrite the log message too ;)
+
+> Your patches are a nice feature we want to have nevertheless - to be 
+> able to see where a user-space app is running has been one of the 
+> historically weak points of kernel instrumentation.
+
+Thanks.
+It currently works for x86 only, but architecture porters can add
+support for theirs quite easily, it just needs to modeled after how
+oprofile does it for example.
+BTW would it make sense to change oprofile and the sysprof tracer to use
+save_stack_trace_user? It would eliminate some code duplication.
+
+Would it make sense to add a script that post-processes the output to
+scripts/tracing?
+It would parse a trace log (from trace or latency_trace) and use
+addr2line to resolve the address to source:line, and if successful
+replace the relative address with that; and also
+group identical stack traces together.
+
+Best regards,
+--Edwin
