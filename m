@@ -1,140 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbYKCU20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbYKCUco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755958AbYKCU20 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 15:28:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbYKCU2O
+	id S1755481AbYKCUco (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 15:32:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbYKCUcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 15:28:14 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50473 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754126AbYKCU2M (ORCPT
+	Mon, 3 Nov 2008 15:32:36 -0500
+Received: from ik-out-1112.google.com ([66.249.90.176]:13403 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752911AbYKCUcf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 15:28:12 -0500
-Date: Mon, 3 Nov 2008 12:27:29 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Josef Bacik <jbacik@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, rwheeler@redhat.com
-Subject: Re: [PATCH] improve jbd fsync batching
-Message-Id: <20081103122729.60582692.akpm@linux-foundation.org>
-In-Reply-To: <20081028201614.GA21600@unused.rdu.redhat.com>
-References: <20081028201614.GA21600@unused.rdu.redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Nov 2008 15:32:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=pTuHb6RQSMaqEfEeemkKMH/3+4nRGj4YAUoJTtS3qzezaUAkf4E1OQ5FHTeIsBi4sP
+         mR6zlrAjX0UU9fjZAZmLyo4UbcbHyG2kgEHAHGLA2X8XxS9C2R99ptteCq9eCZ7P/CkS
+         Xh8YLbXTSIFlTsAmxpOfY49CaWKa1FFHk+pBE=
+Date: Mon, 3 Nov 2008 23:25:44 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [GIT] /proc/uptime fix
+Message-ID: <20081103202544.GA3317@x200.localdomain>
+References: <20081103145023.GA3986@x200.localdomain> <alpine.LFD.2.00.0811031000020.3459@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0811031000020.3459@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Oct 2008 16:16:15 -0400
-Josef Bacik <jbacik@redhat.com> wrote:
+On Mon, Nov 03, 2008 at 10:14:16AM -0800, Linus Torvalds wrote:
+> On Mon, 3 Nov 2008, Alexey Dobriyan wrote:
+> > 
+> > Alexey Dobriyan (1):
+> >       proc: revert /proc/uptime to ->read_proc hook
+> 
+> Ok, pulled, but it's a bit sad. 
+> 
+> Al: the commit is 6c87df37dcb9c6c33923707fa5191e0a65874d60, and the 
+> message explains it all:
+> 
+>     Turned out some VMware userspace does pread(2) on /proc/uptime, but
+>     seqfiles currently don't allow pread() resulting in -ESPIPE.
+>     
+>     Seqfiles in theory can do pread(), but this can be a long story,
+>     so revert to ->read_proc until then.
+>     
+> and I bet that the pread() usage is just with a constant loff_t of 0, and 
+> just there to avoid a simple case of "lseek+read". 
+> 
+> I wonder how hard it is to make seqfiles support pread.
 
-> Hello,
-> 
-> This is a rework of the patch I did a few months ago, taking into account some
-> comments from Andrew and using the new schedule_hrtimeout function (thanks
-> Arjan!).
-> 
-> There is a flaw with the way jbd handles fsync batching.  If we fsync() a file
-> and we were not the last person to run fsync() on this fs then we automatically
-> sleep for 1 jiffie in order to wait for new writers to join into the transaction
-> before forcing the commit.  The problem with this is that with really fast
-> storage (ie a Clariion) the time it takes to commit a transaction to disk is way
-> faster than 1 jiffie in most cases, so sleeping means waiting longer with
-> nothing to do than if we just committed the transaction and kept going.  Ric
-> Wheeler noticed this when using fs_mark with more than 1 thread, the throughput
-> would plummet as he added more threads.
-> 
-> ...
->
-> ...
->  
-> @@ -49,6 +50,7 @@ get_transaction(journal_t *journal, transaction_t *transaction)
->  {
->  	transaction->t_journal = journal;
->  	transaction->t_state = T_RUNNING;
-> +	transaction->t_start_time = ktime_get();
->  	transaction->t_tid = journal->j_transaction_sequence++;
->  	transaction->t_expires = jiffies + journal->j_commit_interval;
->  	spin_lock_init(&transaction->t_handle_lock);
-> @@ -1371,7 +1373,7 @@ int journal_stop(handle_t *handle)
->  {
->  	transaction_t *transaction = handle->h_transaction;
->  	journal_t *journal = transaction->t_journal;
-> -	int old_handle_count, err;
-> +	int err;
->  	pid_t pid;
->  
->  	J_ASSERT(journal_current_handle() == handle);
-> @@ -1407,11 +1409,26 @@ int journal_stop(handle_t *handle)
+Not hard at all, if ->read hook has information if it's called from read(2)
+or pread(2) (or something equivalent).
+
+> Maybe it's something as trivial as just flushing the buffer whenever 'pos'
+> doesn't match f_pos?
+
+> --- a/fs/seq_file.c
+> +++ b/fs/seq_file.c
+> @@ -48,8 +48,8 @@ int seq_open(struct file *file, const struct seq_operations *op)
 >  	 */
->  	pid = current->pid;
->  	if (handle->h_sync && journal->j_last_sync_writer != pid) {
+>  	file->f_version = 0;
+>  
+> -	/* SEQ files support lseek, but not pread/pwrite */
+> -	file->f_mode &= ~(FMODE_PREAD | FMODE_PWRITE);
+> +	/* SEQ files support lseek, but not pwrite */
+> +	file->f_mode &= ~(FMODE_PWRITE);
 
-It would be nice to have a comment here explaining the overall design. 
-it's a bit opaque working that out from the raw implementation.
+FMODE_PWRITE is aliased to FMODE_PREAD so you have to split them first. ;-)
 
-> +		u64 commit_time, trans_time;
-> +
->  		journal->j_last_sync_writer = pid;
-> -		do {
-> -			old_handle_count = transaction->t_handle_count;
-> -			schedule_timeout_uninterruptible(1);
-> -		} while (old_handle_count != transaction->t_handle_count);
-> +
-> +		spin_lock(&journal->j_state_lock);
-> +		commit_time = journal->j_average_commit_time;
-> +		spin_unlock(&journal->j_state_lock);
-
-OK, the lock is needed on 32-bit machines, I guess.
-
-
-> +		trans_time = ktime_to_ns(ktime_sub(ktime_get(),
-> +						   transaction->t_start_time));
-> +
-> +		commit_time = min_t(u64, commit_time,
-> +				    1000*jiffies_to_usecs(1));
-
-OK.  The multiplication of an unsigned by 1000 could overflow, but only
-if HZ is less than 0.25.  I don't think we need worry about that ;)
-
-
-> +		if (trans_time < commit_time) {
-> +			ktime_t expires = ktime_add_ns(ktime_get(),
-> +						       commit_time);
-> +			set_current_state(TASK_UNINTERRUPTIBLE);
-> +			schedule_hrtimeout(&expires, HRTIMER_MODE_ABS);
-
-We should have schedule_hrtimeout_uninterruptible(), but we don't.
-
-> +		}
+> @@ -91,6 +91,8 @@ ssize_t seq_read(struct file *file, char __user *buf, size_t size, loff_t *ppos)
+>  		if (!m->buf)
+>  			goto Enomem;
 >  	}
->  
->  	current->journal_info = NULL;
-> diff --git a/include/linux/jbd.h b/include/linux/jbd.h
-> index 346e2b8..d842230 100644
-> --- a/include/linux/jbd.h
-> +++ b/include/linux/jbd.h
-> @@ -543,6 +543,11 @@ struct transaction_s
->  	unsigned long		t_expires;
->  
->  	/*
-> +	 * When this transaction started, in nanoseconds [no locking]
-> +	 */
-> +	ktime_t			t_start_time;
-> +
-> +	/*
->  	 * How many handles used this transaction? [t_handle_lock]
->  	 */
->  	int t_handle_count;
-> @@ -800,6 +805,8 @@ struct journal_s
->  
->  	pid_t			j_last_sync_writer;
->  
-> +	u64			j_average_commit_time;
-
-Every field in that structure is carefully documented (except for
-j_last_sync_writer - what vandal did that?)
-
-please fix.
+> +	if (pos != file->f_pos)
+> +		m->count = 0;
+>  	/* if not empty - flush it first */
+>  	if (m->count) {
+>  		n = min(m->count, size);
+> @@ -175,6 +177,8 @@ Done:
+>  	else
+>  		*ppos += copied;
+>  	file->f_version = m->version;
+> +	if (pos != file->f_pos)
+> +		m->count = 0;
